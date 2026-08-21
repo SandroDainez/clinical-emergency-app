@@ -1130,18 +1130,22 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   // uma aparece no ponto da tentação E na recapitulação com o MESMO texto.
   "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.":
     "⚠️ NO DÉ VOLUMEN POR CAUSA DE LA CREATININA — délo por el estado de perfusión. El número no es hipovolemia, y en quien ya está congesto el volumen empeora.",
-  "⚠️ DIURÉTICO NÃO TRATA A IRA — a KDIGO SUGERE não usá-lo para tratar, EXCETO no manejo da SOBRECARGA DE VOLUME (3.4.2, grau 2C). A sobrecarga é a indicação que resta.":
-    "⚠️ EL DIURÉTICO NO TRATA LA IRA — la KDIGO SUGIERE no usarlo para tratar, EXCEPTO en el manejo de la SOBRECARGA DE VOLUMEN (3.4.2, grado 2C). La sobrecarga es la indicación que resta.",
   "⚠️ E NÃO USE DIURÉTICO PARA PREVENIR IRA — é outra afirmação, e mais forte: aqui a KDIGO RECOMENDA não usar (3.4.1, grau 1B), não apenas sugere.":
     "⚠️ Y NO USE DIURÉTICO PARA PREVENIR IRA — es otra afirmación, y más fuerte: aquí la KDIGO RECOMIENDA no usar (3.4.1, grado 1B), no solo sugiere.",
-  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege o rim e acrescenta arritmia.":
-    "⚠️ NO USE DOPAMINA EN DOSIS RENAL — la KDIGO recomienda no usar dosis baja ni para prevenir ni para tratar la IRA (3.5.1, grado 1A). No protege el riñón y agrega arritmia.",
+  "⚠️ NÃO USE DIURÉTICO PARA TRATAR A LESÃO nem para recuperar função renal — a KDIGO sugere não usar com esse objetivo (3.4.2, grau 2C).":
+    "⚠️ NO USE DIURÉTICO PARA TRATAR LA LESIÓN ni para recuperar función renal — la KDIGO sugiere no usar con ese objetivo (3.4.2, grado 2C).",
+  "✅ MAS CONSIDERE O DIURÉTICO DE ALÇA SE HOUVER SOBRECARGA DE VOLUME ou congestão, quando clinicamente apropriado — é a exceção literal da mesma 3.4.2.":
+    "✅ PERO CONSIDERE EL DIURÉTICO DE ASA SI HAY SOBRECARGA DE VOLUMEN o congestión, cuando sea clínicamente apropiado — es la excepción literal de la misma 3.4.2.",
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — SEM EXCEÇÃO: a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege e arritmiza.":
+    "⚠️ NO USE DOPAMINA EN DOSIS RENAL — SIN EXCEPCIÓN: la KDIGO recomienda no usar dosis baja ni para prevenir ni para tratar la IRA (3.5.1, grado 1A). No protege y arritmiza.",
+  "➜ São TRÊS afirmações, não uma: não prevenir (1B), não tratar a lesão (2C) e, na mesma 3.4.2, CONSIDERAR a alça se houver sobrecarga.":
+    "➜ Son TRES afirmaciones, no una: no prevenir (1B), no tratar la lesión (2C) y, en la misma 3.4.2, CONSIDERAR el asa si hay sobrecarga.",
+  "➜ O negativo e a sua exceção andam juntos: sozinho, o negativo vira um falso absoluto e some a única indicação que resta.":
+    "➜ El negativo y su excepción van juntos: solo, el negativo se vuelve un falso absoluto y desaparece la única indicación que resta.",
   "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.":
     "➜ Las tres dicen lo mismo: no trate el NÚMERO, trate lo que causó el número.",
   "➜ O diurético aumenta o débito urinário sem mudar função nem desfecho: transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.":
     "➜ El diurético aumenta el débito urinario sin cambiar función ni desenlace: transforma un oligúrico en no oligúrico, con la misma enfermedad y menos volumen.",
-  "➜ Prevenir e tratar são afirmações diferentes, com graus diferentes — 1B e 2C. Quem só ouviu uma delas ouviu a mais fraca.":
-    "➜ Prevenir y tratar son afirmaciones diferentes, con grados diferentes — 1B y 2C. Quien solo oyó una de ellas oyó la más débil.",
   // ── `sem_base` sem a atribuição à diretriz (2026-08-21) ───────────────────
   "Não saber a creatinina de base é o caso COMUM, não a exceção — e o atendimento não pode parar por isso.":
     "No saber la creatinina de base es el caso COMÚN, no la excepción — y la atención no puede parar por eso.",

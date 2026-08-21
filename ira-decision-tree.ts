@@ -14,6 +14,7 @@ import {
   IRA_NEFROTOXICO_ACOES,
   IRA_NEFROTOXICO_PORQUE,
   IRA_O_QUE_NAO_CONDUZ_PORQUE,
+  ALCA_QUANDO_HA_SOBRECARGA,
   ARMADILHA_DIURETICO_PARA_O_RIM,
   ARMADILHA_DIURETICO_PARA_PREVENIR,
   ARMADILHA_DOPAMINA_RENAL,
@@ -617,7 +618,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // ⚠️ PONTO DA TENTAÇÃO do diurético: é a única tela do módulo que o
       // prescreve, e a indicação certa (sobrecarga) fica a um passo da errada
       // (o rim). A armadilha vem antes da dose, não depois.
-      actions: [ARMADILHA_DIURETICO_PARA_O_RIM, ALCA_CONGESTO, ALCA_REAVALIACAO],
+      actions: [ARMADILHA_DIURETICO_PARA_O_RIM, ALCA_QUANDO_HA_SOBRECARGA, ALCA_CONGESTO, ALCA_REAVALIACAO],
       porque: ALCA_CONGESTO_PORQUE,
       procedencia: {
         forca: "recomendacao_formal",
@@ -1034,6 +1035,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       actions: [
         ARMADILHA_VOLUME_PELA_CREATININA,
         ARMADILHA_DIURETICO_PARA_O_RIM,
+        ALCA_QUANDO_HA_SOBRECARGA, // ⚠️ IMEDIATAMENTE depois do negativo — travado
         ARMADILHA_DIURETICO_PARA_PREVENIR,
         ARMADILHA_DOPAMINA_RENAL,
         "NÃO ESPERE A CREATININA para agir.",

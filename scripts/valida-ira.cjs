@@ -368,6 +368,7 @@ if (Object.keys(nos).length < 10) {
     ["volume pela creatinina", "ARMADILHA_VOLUME_PELA_CREATININA", "pre_renal"],
     ["diurético para o rim", "ARMADILHA_DIURETICO_PARA_O_RIM", "alca_congesto"],
     ["diurético para PREVENIR", "ARMADILHA_DIURETICO_PARA_PREVENIR", null],
+    ["a exceção da sobrecarga", "ALCA_QUANDO_HA_SOBRECARGA", "alca_congesto"],
     ["dopamina em dose renal", "ARMADILHA_DOPAMINA_RENAL", null],
   ];
   const libTexto = lerFonte(path.join(appDir, LIB));
@@ -430,6 +431,39 @@ if (Object.keys(nos).length < 10) {
           `        « ${texto.slice(0, 110)}… »`
         );
       }
+    }
+  }
+  // ── PROXIMIDADE: O NEGATIVO E A SUA EXCEÇÃO NÃO SE SEPARAM ────────────────
+  //
+  // ⚠️ ISTO NÃO É ESTILO, É A ASSERÇÃO. A 3.4.2 tem duas faces — "não use para
+  // tratar a lesão" E "exceto no manejo da sobrecarga de volume". Um card com só
+  // a primeira produz um FALSO ABSOLUTO: o médico lê "não use diurético na IRA" e
+  // não vê a sobrecarga, que é justamente a indicação que resta e a que ele tem na
+  // frente com o paciente congesto. Não basta as duas estarem no mesmo nó: a
+  // exceção tem de ser o item IMEDIATAMENTE seguinte, porque quem lê uma lista
+  // pára no primeiro item que responde à pergunta dele.
+  {
+    const negativo = lib?.ARMADILHA_DIURETICO_PARA_O_RIM;
+    const excecao = lib?.ALCA_QUANDO_HA_SOBRECARGA;
+    if (!negativo || !excecao) {
+      falhas.push("as duas faces da 3.4.2 não existem como constantes — a proximidade não tem o que conferir.");
+    } else {
+      let cards = 0;
+      for (const n of Object.values(nos)) {
+        const itens = n.actions ?? [];
+        const i = itens.indexOf(negativo);
+        if (i < 0) continue;
+        cards += 1;
+        if (itens[i + 1] !== excecao) {
+          falhas.push(
+            `${n.id}: o "não use para tratar a lesão" (3.4.2) aparece SEM a sua exceção logo depois.\n` +
+            `        ⚠️ FALSO ABSOLUTO. O leitor conclui "não use diurético na IRA" e perde a sobrecarga,\n` +
+            `        que é a única indicação que a própria 3.4.2 preserva. Separar não omite — muda a asserção.\n` +
+            `        ➜ item seguinte hoje: ${itens[i + 1] ? `« ${itens[i + 1].slice(0, 80)}… »` : "(nenhum — é o último do card)"}`
+          );
+        }
+      }
+      if (!cards) falhas.push("o negativo da 3.4.2 sumiu de todos os cards — não há proximidade a conferir.");
     }
   }
   const restantes = [

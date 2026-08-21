@@ -2774,6 +2774,9 @@ foi retirada em 2026-08-21; a conduta ficou, declarada como nossa.
 arquivo verbatim. A trava de `valida-ira` que hoje exige a AUSÊNCIA da atribuição
 se desarma sozinha quando essa seção existir — não é preciso mexer no script.
 
-**Também aberto no mesmo arquivo:** o texto das três recomendações foi transcrito
-pelo AUTOR do PDF público, e **não conferido contra o primário** — a busca do PDF
-na sessão devolveu HTTP 403. Mesma marca da Parte 9 do AHA 2025.
+**✅ FECHADO EM 2026-08-21 (a outra metade desta dívida):** o texto das três
+recomendações foi **conferido contra o primário pelo autor, médico**, no resumo das
+recomendações, **página 12** do PDF. A marca "não conferida" saiu — não porque eu
+tenha conseguido abrir o PDF (não consegui: HTTP 403), mas porque quem podia abrir,
+abriu. **A cadeia fecha com um humano, não com um agente.** O que continua aberto é
+só o das Tabelas 8 e 9, acima.

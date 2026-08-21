@@ -1292,7 +1292,9 @@
       ],
       "nossa": {
         "versao": "2012",
-        "revisadoEm": "2026-08-20"
+        "revisadoEm": "2026-08-21",
+        "revisadoPor": "autor (médico) — Dr. Sandro Dainez",
+        "conferidoContraOPrimario": "✅ 2026-08-21 — PDF público, resumo das recomendações, PÁGINA 12: as três frases, a numeração e o grau"
       },
       "url": "https://kdigo.org/guidelines/acute-kidney-injury/",
       "citation": "KDIGO. Clinical Practice Guideline for Acute Kidney Injury. Kidney Int Suppl. 2012;2(1).",
@@ -1301,15 +1303,15 @@
         "injuria-renal-aguda"
       ],
       "key_recommendations_covered": [
-        "3.5.1 (1A) — não usar dopamina em dose baixa para prevenir ou tratar IRA [VERBATIM no repositório]",
-        "3.4.1 (1B) — não usar diurético para PREVENIR IRA [VERBATIM no repositório]",
-        "3.4.2 (2C) — não usar diurético para TRATAR IRA, exceto no manejo da sobrecarga de volume [VERBATIM no repositório]",
+        "3.5.1 (1A) — não usar dopamina em dose baixa para prevenir ou tratar IRA — ABSOLUTA, sem exceção [VERBATIM, conferida na p.12]",
+        "3.4.1 (1B) — não usar diurético para PREVENIR IRA [VERBATIM, conferida na p.12]",
+        "3.4.2 (2C) — não usar diurético para TRATAR A LESÃO, EXCETO no manejo da sobrecarga de volume — as duas faces andam juntas na tela [VERBATIM, conferida na p.12]",
         "Definição e estadiamento por DOIS eixos — creatinina e diurese —, valendo o pior dos dois (texto NÃO transcrito)",
         "Janelas da definição: 0,3 mg/dL em 48 h, ou 1,5 vez a base em 7 dias (texto NÃO transcrito)",
         "Oligúria por peso: < 0,5 mL/kg/h; estágio 3 com < 0,3 mL/kg/h por 24 h ou anúria por 12 h (texto NÃO transcrito)",
         "Indicação de TRS pelo contexto clínico, sem limiar isolado de ureia ou creatinina (texto NÃO transcrito)"
       ],
-      "notes": "⚠️ TRÊS RECOMENDAÇÕES ESTÃO VERBATIM em `protocols/fontes-verbatim/kdigo-2012-aki.md` (3.4.1, 3.4.2, 3.5.1) — transcritas pelo autor do PDF público, NÃO conferidas por mim contra o primário (a busca do PDF devolveu HTTP 403). ⚠️ O RESTO DESTA LISTA NÃO TEM TEXTO NO REPOSITÓRIO: os itens marcados 'NÃO transcrito' foram escritos a partir do conteúdo do módulo em 2026-08-20 e NÃO servem de prova do que a diretriz diz. ⚠️ AS TABELAS 8 E 9 (creatinina basal desconhecida) continuam não transcritas — é por isso que o nó `sem_base` não atribui nada à diretriz. ⚠️ ESTADIAMENTO E AS TRÊS RECOMENDAÇÕES, SÓ. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada.",
+      "notes": "⚠️ TRÊS RECOMENDAÇÕES ESTÃO VERBATIM em `protocols/fontes-verbatim/kdigo-2012-aki.md` (3.4.1, 3.4.2, 3.5.1) — transcritas E CONFERIDAS CONTRA O PRIMÁRIO pelo autor (médico) em 2026-08-21, no resumo das recomendações, PÁGINA 12. Há um humano no fim da cadeia — eu não consegui abrir o PDF (HTTP 403), quem podia abrir abriu. ⚠️ O RESTO DESTA LISTA NÃO TEM TEXTO NO REPOSITÓRIO: os itens marcados 'NÃO transcrito' foram escritos a partir do conteúdo do módulo em 2026-08-20 e NÃO servem de prova do que a diretriz diz. ⚠️ AS TABELAS 8 E 9 (creatinina basal desconhecida) continuam não transcritas — é por isso que o nó `sem_base` não atribui nada à diretriz. ⚠️ ESTADIAMENTO E AS TRÊS RECOMENDAÇÕES, SÓ. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada.",
       "texto_verbatim": "protocols/fontes-verbatim/kdigo-2012-aki.md"
     },
     {

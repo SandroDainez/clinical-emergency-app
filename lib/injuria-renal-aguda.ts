@@ -371,34 +371,47 @@ export const ARMADILHA_VOLUME_PELA_CREATININA =
   "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.";
 
 /**
- * ⚠️ PREVENIR E TRATAR SÃO DUAS AFIRMAÇÕES, COM GRAUS DIFERENTES.
+ * ⚠️ O DIURÉTICO SÃO TRÊS AFIRMAÇÕES, E A TERCEIRA É POSITIVA.
  *
- * O app dizia UMA linha — "diurético não melhora o rim" — e a KDIGO 2012 tem
- * duas, com força desigual:
+ * A KDIGO 2012 (verbatim em `protocols/fontes-verbatim/kdigo-2012-aki.md`,
+ * conferida pelo autor na PÁGINA 12 do PDF):
  *
- *   3.4.1 (1B) "We recommend not using diuretics to prevent AKI."
- *   3.4.2 (2C) "We suggest not using diuretics to treat AKI, except in the
- *               management of volume overload."
+ *   3.4.1 (1B) não usar para PREVENIR AKI
+ *   3.4.2 (2C) não usar com o objetivo de TRATAR A LESÃO / recuperar função
+ *   3.4.2      ...EXCETO no manejo da sobrecarga de volume  ← a exceção literal
  *
- * A que estava na tela era a de TRATAR — a mais fraca das duas. A de PREVENIR,
- * que é a mais forte, não estava em lugar nenhum. Agora as duas estão, cada uma
- * com o seu número e o seu grau, em `protocols/fontes-verbatim/kdigo-2012-aki.md`.
+ * ⚠️ AS DUAS ÚLTIMAS NÃO SE SEPARAM, E ISTO É REGRA, NÃO ESTILO. São as duas
+ * faces da MESMA recomendação. Um card que mostra só o negativo produz um FALSO
+ * ABSOLUTO: o médico lê "não use diurético na IRA" e **não vê a sobrecarga** —
+ * que é justamente a indicação que sobra, e a que ele tem na frente quando o
+ * paciente está congesto. Separar não omite: **muda a asserção**.
  *
- * ⚠️ E A EXCEÇÃO DA 3.4.2 NÃO É RESSALVA — É A ESTRUTURA. "except in the
- * management of volume overload" é exatamente o que sustenta a arquitetura C do
- * diurético de alça neste módulo: a sobrecarga é a indicação que RESTA.
+ * `valida-ira` trava a proximidade — onde o negativo aparecer, a exceção tem de
+ * ser o item IMEDIATAMENTE seguinte. Não basta estar no mesmo card.
+ *
+ * A que estava na tela antes era a de TRATAR, sozinha e sem a exceção — o falso
+ * absoluto, com a recomendação mais forte (a de prevenir) ausente.
  */
 export const ARMADILHA_DIURETICO_PARA_O_RIM =
-  "⚠️ DIURÉTICO NÃO TRATA A IRA — a KDIGO SUGERE não usá-lo para tratar, EXCETO no manejo da SOBRECARGA DE VOLUME (3.4.2, grau 2C). A sobrecarga é a indicação que resta.";
+  "⚠️ NÃO USE DIURÉTICO PARA TRATAR A LESÃO nem para recuperar função renal — a KDIGO sugere não usar com esse objetivo (3.4.2, grau 2C).";
+
+export const ALCA_QUANDO_HA_SOBRECARGA =
+  "✅ MAS CONSIDERE O DIURÉTICO DE ALÇA SE HOUVER SOBRECARGA DE VOLUME ou congestão, quando clinicamente apropriado — é a exceção literal da mesma 3.4.2.";
 
 export const ARMADILHA_DIURETICO_PARA_PREVENIR =
   "⚠️ E NÃO USE DIURÉTICO PARA PREVENIR IRA — é outra afirmação, e mais forte: aqui a KDIGO RECOMENDA não usar (3.4.1, grau 1B), não apenas sugere.";
 
+/**
+ * ⚠️ A ÚNICA DAS TRÊS QUE É ABSOLUTA — e por isso o app pode dizê-la assim.
+ * A 3.5.1 não tem exceção: nem prevenir, nem tratar, em nenhum cenário. É o
+ * contraste que dá sentido ao par acima, onde a exceção é obrigatória.
+ */
 export const ARMADILHA_DOPAMINA_RENAL =
-  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege o rim e acrescenta arritmia.";
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — SEM EXCEÇÃO: a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege e arritmiza.";
 
 export const ARMADILHAS_PORQUE = [
   "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.",
   "➜ O diurético aumenta o débito urinário sem mudar função nem desfecho: transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.",
-  "➜ Prevenir e tratar são afirmações diferentes, com graus diferentes — 1B e 2C. Quem só ouviu uma delas ouviu a mais fraca.",
+  "➜ São TRÊS afirmações, não uma: não prevenir (1B), não tratar a lesão (2C) e, na mesma 3.4.2, CONSIDERAR a alça se houver sobrecarga.",
+  "➜ O negativo e a sua exceção andam juntos: sozinho, o negativo vira um falso absoluto e some a única indicação que resta.",
 ];

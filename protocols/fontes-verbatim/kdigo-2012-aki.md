@@ -16,15 +16,18 @@ corrigido duas vezes neste projeto.
 
 Este arquivo guarda o TEXTO. É contra ele que a força de cada nó é conferida.
 
-## PROCEDÊNCIA DESTE ARQUIVO — leia antes de usar
+## PROCEDÊNCIA DESTE ARQUIVO — a cadeia fechou
 
-- **Transcrito pelo autor** (Dr. Sandro Dainez) a partir do PDF público acima, na
-  mensagem de 2026-08-21, com número e grau.
-- **⚠️ NÃO CONFERIDO POR MIM CONTRA O PRIMÁRIO.** Tentei buscar o PDF na sessão e o
-  servidor devolveu **HTTP 403**. Registro isso porque é a diferença entre "conferi"
-  e "recebi" — e é a mesma marca que já usamos na Parte 9 do AHA 2025.
-- **O que falta:** as **Tabelas 8 e 9** (creatinina basal desconhecida) continuam
-  não transcritas. É o que mantém o nó `sem_base` sem atribuição à diretriz.
+- **Transcrito pelo autor** (Dr. Sandro Dainez) a partir do PDF público acima.
+- **✅ CONFERIDO CONTRA O PRIMÁRIO em 2026-08-21**, pelo autor, **médico**, no
+  **resumo das recomendações, PÁGINA 12** do PDF: as três frases, a numeração e o
+  grau. `revisadoPor: autor (médico)`.
+- **⚠️ O que isso significa e o que não significa:** significa que há **um humano
+  no fim da cadeia**, que abriu o documento e leu. A marca "não conferida contra o
+  primário" saiu por isso — não por eu ter conseguido abrir o PDF (não consegui; a
+  busca devolveu HTTP 403), mas porque quem podia abrir, abriu.
+- **O que continua faltando:** as **Tabelas 8 e 9** (creatinina basal desconhecida),
+  não transcritas. É o que mantém o nó `sem_base` sem atribuição à diretriz (D-65).
 
 ---
 
@@ -47,14 +50,27 @@ Este arquivo guarda o TEXTO. É contra ele que a força de cada nó é conferida
 | não usar diurético para **prevenir** IRA | 3.4.1 | **1B** |
 | não usar diurético para **tratar** IRA | 3.4.2 | **2C** |
 
-⚠️ **Prevenir e tratar são duas afirmações, com graus diferentes.** O app dizia
-uma linha só. Agora diz as duas, cada uma com o seu número e o seu grau — a de
-prevenir é a mais forte, e não era a que estava na tela.
+### ⚠️ SÃO TRÊS AFIRMAÇÕES, NÃO DUAS
 
-⚠️ **A exceção da 3.4.2 é estrutural, não uma ressalva.** *"except in the management
-of volume overload"* é exatamente o que sustenta a arquitetura C do diurético de
-alça neste módulo: a sobrecarga é a indicação que RESTA depois que "tratar a IRA"
-sai de cena.
+O diurético não aparece duas vezes aqui — aparece **três**, e a terceira é positiva:
+
+1. **não usar para PREVENIR** AKI — 3.4.1, **1B**
+2. **não usar com o objetivo de TRATAR A LESÃO** ou recuperar função — 3.4.2, **2C**
+3. **CONSIDERAR alça quando houver sobrecarga volêmica / congestão**, se
+   clinicamente apropriado — a **exceção literal** da 3.4.2
+
+⚠️ **A 2 e a 3 são as duas faces da MESMA recomendação e não se separam.** Um card
+que diz só a 2 produz um falso absoluto: o médico lê "não use diurético na IRA" e
+**não vê a sobrecarga** — que é justamente a indicação que sobra, e a que ele tem
+na frente quando o paciente está congesto. É a regra de proximidade do app:
+separar não omite, **muda a asserção**.
+
+⚠️ **A exceção é estrutural.** *"except in the management of volume overload"* é o
+que sustenta a arquitetura C do diurético de alça neste módulo.
+
+⚠️ **A 3.5.1 é a única absoluta.** Dopamina em dose renal é NÃO USAR, sem exceção,
+grau **1A** — e o app pode dizê-la assim, com a segurança que as outras duas não
+têm.
 
 **NÃO sustentam:**
 
