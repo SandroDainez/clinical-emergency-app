@@ -3071,3 +3071,58 @@ lista atualizada a qualquer momento.
 
 **A correção é por módulo, com o autor** — e boa parte dela provavelmente cai junto
 com a reescrita de cada módulo no formato novo.
+
+## D-74 · AS CALCULADORAS — 148 limiares de interpretação, ZERO com fonte no limiar
+
+**Aberta em 2026-08-21.** Inventário: `npm run mapa:calculadoras`. ⚠️ **Nada foi
+corrigido, removido ou desligado.**
+
+### O universo, que ninguém tinha olhado
+
+```
+15 ferramentas · 62 campos de entrada · 143 limiares dentro das ferramentas
+                                       + 5 em funções AUXILIARES
+```
+
+⚠️ **São 15, não 17.** O "17" que reportei na rodada anterior veio de
+`grep -c "^  {"` — proxy do número de ferramentas, e errado. O número medido, do
+objeto compilado, é 15.
+
+### As três colunas
+
+| coluna | total |
+|---|---|
+| fonte declarada **no nível da ferramenta** | **15 de 15** |
+| ferramenta sem referência nenhuma | **0** |
+| ⚠️ limiar com fonte declarada **no nível do limiar** | **0 de 148** |
+
+### O achado
+
+**A fonte é declarada POR FERRAMENTA (`reference`), nunca POR LIMIAR.** É o mesmo
+defeito que a regra B corrigiu nas árvores — um selo por tela, quando a tela afirma
+coisas de procedências diferentes. Aqui: **uma referência por calculadora, quando
+cada faixa é uma afirmação própria.**
+
+O `clearance-creatinina` declara *"Cockcroft & Gault 1976 · CKD-EPI Inker NEJM 2021 ·
+KDIGO 2012"* — três fontes para sete limiares, e nada diz qual sustenta qual. Os
+cortes G1–G5 (90 · 60 · 45 · 30 · 15) são do KDIGO; os de ajuste de dose não são.
+**Na tela, os sete parecem iguais.**
+
+### Por que é pior que um preset
+
+Um preset **sugere**; uma calculadora **entrega um número pronto com aparência de
+cálculo objetivo**. O usuário sem experiência — o alvo do app — não tem como saber
+que o corte que pinta o resultado de vermelho foi escolhido por alguém, e não pela
+fonte.
+
+### ⚠️ E por que nunca foram vistas
+
+O campo `forca` foi para as **árvores**. O `mapa:fontes` audita **módulos**. As
+calculadoras ficaram **entre as duas coisas**, e não foram alcançadas por nenhuma —
+pela mesma razão que os botões: **ninguém audita o que parece infraestrutura.**
+
+### Como fechar
+
+Por calculadora, com o autor: fonte **por limiar**, no molde do `procedencia` das
+árvores — força, fonte e, quando houver, classe/grau. Provavelmente cai junto com a
+revisão de cada módulo que consome a ferramenta.

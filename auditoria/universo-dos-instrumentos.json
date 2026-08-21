@@ -47,5 +47,9 @@
     "campos_de_entrada": 197,
     "telas_sem_arvore": 11,
     "placeholders_de_calculadora": 35
+  },
+  "mapa-de-calculadoras": {
+    "ferramentas": 15,
+    "limiares": 148
   }
 }
