@@ -31,6 +31,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { conferirUniverso } = require("./lib/universo.cjs");
+const { lerFonte } = require("./lib/fonte.cjs");
 
 const app = path.resolve(__dirname, "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "presets-"));
@@ -95,10 +96,36 @@ for (const arq of arquivos) {
 
 fs.rmSync(tmp, { recursive: true, force: true });
 
+// ── AS TELAS FORA DE ÁRVORE ────────────────────────────────────────────────
+//
+// ⚠️ O UNIVERSO NÃO É SÓ ÁRVORE, E DIZER "31 MÓDULOS" VARRENDO 20 É R-87. Onze
+// dos 31 módulos não têm árvore: são telas próprias, calculadoras e painéis — e
+// é exatamente lá que moram campos numéricos, como o de eletrólitos, de onde
+// saíram as doses da hipercalemia.
+//
+// O que a varredura alcança HOJE nessas telas: os PLACEHOLDERS numéricos do
+// motor de calculadoras ("ex: 175"). Eles são classe própria — exemplo de
+// digitação, mais fraco que botão, e ainda assim um número sugerido. Os demais
+// campos daquelas telas são livres, e isso está declarado no registro.
+// ⚠️ `lerFonte` E NÃO `readFileSync`: comentário não renderiza nada, e um
+// placeholder citado num comentário não é um placeholder na tela. Contá-lo
+// inflaria o universo com coisa que o usuário nunca vê.
+const engineSrc = lerFonte(path.join(app, "clinical-calculators-engine.ts"));
+const placeholders = [...engineSrc.matchAll(/id:\s*"([a-zA-Z0-9_]+)"[^}]*?placeholder:\s*"ex:\s*([^"]+)"/g)]
+  .map((m) => ({ campo: m[1], exemplo: m[2] }));
+const semArvore = registro.modulos_sem_arvore ?? [];
+const comCampo = semArvore.filter((m) => m.tem_campo_numerico);
+
 console.log("\nTODO PRESET NUMÉRICO DO APP — medição, não correção (R-99)\n");
-console.log(`   universo: ${arvores} árvores · ${nos} nós · ${campos} campos de entrada · ${presets} presets`);
+console.log(
+  `   universo: ${arvores} árvores + ${semArvore.length} telas fora de árvore · ${nos} nós · ` +
+  `${campos} campos de entrada · ${presets} presets · ${placeholders.length} placeholders de calculadora`
+);
+console.log(`   dos ${semArvore.length} módulos SEM árvore, ${comCampo.length} têm campo numérico e ${semArvore.length - comCampo.length} não têm (declarado, um a um)`);
 const okA = conferirUniverso("mapa-de-presets", "arvores", arvores);
 const okC = conferirUniverso("mapa-de-presets", "campos_de_entrada", campos);
+const okT = conferirUniverso("mapa-de-presets", "telas_sem_arvore", semArvore.length);
+const okP = conferirUniverso("mapa-de-presets", "placeholders_de_calculadora", placeholders.length);
 
 const bloco = (titulo, itens, extra) => {
   console.log(`\n── ${titulo}: ${itens.length} ──`);
@@ -112,13 +139,25 @@ bloco("ESCALA DE DIGITAÇÃO (não é corte clínico)", linhas.escala, (l) => l.
 bloco("VALOR CLÍNICO COM FONTE DECLARADA", linhas.com_fonte, (l) => l.fonte);
 bloco("⚠️ VALOR CLÍNICO SEM FONTE DECLARADA — a lista que interessa", linhas.sem_fonte);
 
+console.log(`\n── PLACEHOLDERS NUMÉRICOS DAS CALCULADORAS (fora de árvore): ${placeholders.length} ──`);
+console.log("   Classe própria: são EXEMPLO de digitação (\"ex: 175\"), mais fracos que botão — mas");
+console.log("   ainda assim número sugerido, e nenhum deles tem procedência declarada.");
+for (const ph of placeholders.slice(0, 8)) console.log(`   ${ph.campo}: ex: ${ph.exemplo}`);
+if (placeholders.length > 8) console.log(`   … e mais ${placeholders.length - 8}`);
+
+console.log("\n── MÓDULOS SEM ÁRVORE, UM A UM ──");
+for (const m of semArvore) {
+  console.log(`   ${m.tem_campo_numerico ? "campo numérico SIM" : "campo numérico não"} · ${m.modulo}`);
+  console.log(`      ${m.onde} — ${m.o_que}`);
+}
+
 console.log(
   `\n   TOTAIS · escala ${linhas.escala.length} · com fonte ${linhas.com_fonte.length} · SEM FONTE ${linhas.sem_fonte.length}`
 );
 console.log("   ⚠️ Esta varredura NÃO corrige e NÃO julga o valor. A correção é por módulo, com o autor.");
 console.log("   ⚠️ O que não está declarado cai em SEM FONTE: ausência de declaração é ausência de procedência.\n");
 
-if (!okA || !okC) {
+if (!okA || !okC || !okT || !okP) {
   console.log("❌ universo abaixo do piso — as contagens acima NÃO significam cobertura.\n");
   process.exit(1);
 }

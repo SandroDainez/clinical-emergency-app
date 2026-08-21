@@ -64,6 +64,7 @@ import {
   ACIDOSE_SEM_LIMIAR,
   BEXIGA_CHEIA_NAO_E_ANURIA,
   CAMPOS_DE_ACIDOSE,
+  SEM_ESSE_VALOR,
   CAMPO_DE_JULGAMENTO_ACIDOSE,
   CAMPOS_DE_ACIDOSE_GUIADA,
   ACIDOSE_GUIADA_INTRO,
@@ -347,11 +348,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
           id: "potassio",
           label: "Potássio",
           unit: "mEq/L",
+          // ⚠️ OS QUATRO DEGRAUS SAÍRAM (R-99). Eram cortes de gravidade da
+          // hipercalemia sem fonte declarada — e o 6,5 é o K_GRAVE do módulo,
+          // indistinguível dos outros três na tela. Botão não carrega procedência.
           presets: [
-            { value: "5.0", label: "5,0" },
-            { value: "6.0", label: "6,0" },
-            { value: "6.5", label: "6,5" },
-            { value: "7.5", label: "7,5" },
+            SEM_ESSE_VALOR,
           ],
           allowCustom: true,
           customLabel: "Outro valor",
@@ -516,11 +517,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
           id: "glicemia",
           label: "Glicemia capilar agora",
           unit: "mg/dL",
+          // ⚠️ ESTES QUATRO ERAM O DESCENDENTE DO 126 mg/dL. Tiramos um número
+          // do texto e o buraco foi preenchido com quatro na interface (R-97).
           presets: [
-            { value: "70", label: "70" },
-            { value: "100", label: "100" },
-            { value: "140", label: "140" },
-            { value: "200", label: "200" },
+            SEM_ESSE_VALOR,
           ],
           allowCustom: true,
           customLabel: "Outro valor",
@@ -1277,9 +1277,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Os números do caso",
       intro: "O que você tiver. O app diz o que dá para concluir com isso.",
       fields: [
+        // ⚠️ 1,5 É VIZINHO DE CRITÉRIO ANTIGO DE RIFLE, não do estadiamento
+        // KDIGO que este módulo usa. Escada fora, campo livre.
         { id: "creatinina", label: "Creatinina atual", unit: "mg/dL",
-          presets: [{ label: "1,5", value: "1.5" }, { label: "2,0", value: "2.0" },
-                    { label: "3,0", value: "3.0" }, { label: "4,0", value: "4.0" }],
+          presets: [SEM_ESSE_VALOR],
           allowCustom: true, customLabel: "Outro valor", customKeyboard: "numeric" },
         { id: "peso", label: "Peso", unit: "kg",
           presets: [{ label: "60", value: "60" }, { label: "70", value: "70" },
@@ -1357,9 +1358,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "A creatinina de base",
       intro: "O menor valor conhecido nos últimos 3 a 12 meses — não a média.",
       fields: [
+        // ⚠️ O MAIS IRÔNICO DOS CINCO. A D-65 foi fechada tirando "presuma base
+        // normal" do TEXTO — e a tela sugeria quatro creatininas normais logo
+        // abaixo, no mesmo nó. A correção foi feita no texto e o número
+        // sobreviveu na interface: é a prova de que o R-99 está vivo no módulo
+        // que estávamos chamando de pronto.
         { id: "basal", label: "Creatinina de base", unit: "mg/dL",
-          presets: [{ label: "0,7", value: "0.7" }, { label: "0,9", value: "0.9" },
-                    { label: "1,1", value: "1.1" }, { label: "1,3", value: "1.3" }],
+          presets: [SEM_ESSE_VALOR],
           allowCustom: true, customLabel: "Outro valor", customKeyboard: "numeric" },
       ],
       next: "estagio_kdigo",

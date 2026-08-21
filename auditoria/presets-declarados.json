@@ -8,24 +8,142 @@
       "sem_fonte": "⚠️ valor clínico SEM procedência declarada. É a lista que interessa. NÃO se corrige aqui: a correção é por módulo, com o autor."
     },
     "regra_de_omissao": "⚠️ O QUE NÃO ESTÁ DECLARADO CAI EM `sem_fonte`, e é assim de propósito. Ausência de declaração é ausência de procedência — nunca presunção de que exista uma.",
-    "estado": "Varredura de 2026-08-21. MEDIÇÃO, não correção."
+    "estado": "Varredura de 2026-08-21. MEDIÇÃO, não correção.",
+    "telas_fora_de_arvore": "⚠️ O UNIVERSO NÃO É SÓ ÁRVORE. Onze dos 31 módulos não têm árvore de decisão — são telas próprias, calculadoras e painéis. Um instrumento que varre o que é fácil de varrer e imprime '31 módulos' no cabeçalho é R-87. Os onze estão nomeados em `modulos_sem_arvore`, cada um com campo numérico sim/não."
   },
   "escala": [
-    { "campo": "peso", "porque": "quilos do paciente — escala de digitação" },
-    { "campo": "idade", "porque": "anos — escala de digitação" },
-    { "campo": "idadeParaMetaDePas", "porque": "anos — escala de digitação" },
-    { "campo": "tempoDaUltimaDose", "porque": "minutos decorridos — escala de tempo" },
-    { "campo": "tempoDeSulfatacao", "porque": "minutos decorridos — escala de tempo" },
-    { "campo": "horas_oliguria", "porque": "horas decorridas — escala de tempo" },
-    { "campo": "horasDeInfusao", "porque": "horas decorridas — escala de tempo" },
-    { "campo": "volumeDaBolsa", "porque": "mL da bolsa — escala de preparo, não corte" },
-    { "campo": "diurese_ml_h", "porque": "mL/h medidos — escala de digitação" },
-    { "campo": "fc", "porque": "bpm medidos — escala de digitação" },
-    { "campo": "pas", "porque": "mmHg medidos — escala de digitação" },
-    { "campo": "pad", "porque": "mmHg medidos — escala de digitação" },
-    { "campo": "spo2", "porque": "% medida — escala de digitação" },
-    { "campo": "nihss", "porque": "pontos do escore — escala do próprio escore" },
-    { "campo": "pf", "porque": "pico de fluxo medido — escala de digitação" }
+    {
+      "campo": "peso",
+      "porque": "quilos do paciente — escala de digitação"
+    },
+    {
+      "campo": "idade",
+      "porque": "anos — escala de digitação"
+    },
+    {
+      "campo": "idadeParaMetaDePas",
+      "porque": "anos — escala de digitação"
+    },
+    {
+      "campo": "tempoDaUltimaDose",
+      "porque": "minutos decorridos — escala de tempo"
+    },
+    {
+      "campo": "tempoDeSulfatacao",
+      "porque": "minutos decorridos — escala de tempo"
+    },
+    {
+      "campo": "horas_oliguria",
+      "porque": "horas decorridas — escala de tempo"
+    },
+    {
+      "campo": "horasDeInfusao",
+      "porque": "horas decorridas — escala de tempo"
+    },
+    {
+      "campo": "volumeDaBolsa",
+      "porque": "mL da bolsa — escala de preparo, não corte"
+    },
+    {
+      "campo": "diurese_ml_h",
+      "porque": "mL/h medidos — escala de digitação"
+    },
+    {
+      "campo": "fc",
+      "porque": "bpm medidos — escala de digitação"
+    },
+    {
+      "campo": "pas",
+      "porque": "mmHg medidos — escala de digitação"
+    },
+    {
+      "campo": "pad",
+      "porque": "mmHg medidos — escala de digitação"
+    },
+    {
+      "campo": "spo2",
+      "porque": "% medida — escala de digitação"
+    },
+    {
+      "campo": "nihss",
+      "porque": "pontos do escore — escala do próprio escore"
+    },
+    {
+      "campo": "pf",
+      "porque": "pico de fluxo medido — escala de digitação"
+    },
+    {
+      "campo": "altura",
+      "porque": "centímetros do paciente, usados para PESO PREDITO — escala de digitação, não corte. Reclassificada em 2026-08-21: a escada 150…190 é antropometria, e nenhum degrau dela decide nada."
+    }
   ],
-  "com_fonte": []
+  "com_fonte": [],
+  "modulos_sem_arvore": [
+    {
+      "modulo": "calculadoras-clinicas",
+      "tem_campo_numerico": true,
+      "onde": "clinical-calculators-engine.ts",
+      "o_que": "35 PLACEHOLDERS numéricos (\"ex: 175\", \"ex: 1,5\") em 17 calculadoras — exemplo de digitação, não botão; entram na varredura como classe própria"
+    },
+    {
+      "modulo": "correcoes-eletroliticas",
+      "tem_campo_numerico": true,
+      "onde": "components/protocol-screen/electrolyte-calculator-screen.tsx",
+      "o_que": "campos livres (peso, valor atual, glicose, albumina, volume da bolsa) — SEM preset e SEM placeholder numérico"
+    },
+    {
+      "modulo": "drogas-vasoativas",
+      "tem_campo_numerico": true,
+      "onde": "components/protocol-screen/vasoactive-calculator-screen.tsx",
+      "o_que": "campos livres — sem preset numérico"
+    },
+    {
+      "modulo": "sedoanalgesia",
+      "tem_campo_numerico": true,
+      "onde": "components/protocol-screen/sedation-calculator-screen.tsx",
+      "o_que": "campos livres — sem preset numérico"
+    },
+    {
+      "modulo": "pcr-adulto",
+      "tem_campo_numerico": false,
+      "onde": "components/protocol-screen/acls-protocol-screen.tsx",
+      "o_que": "fluxo por botões de ritmo e cronômetro; nenhum campo de valor"
+    },
+    {
+      "modulo": "ritmos-acls",
+      "tem_campo_numerico": false,
+      "onde": "acls-rhythms-screen-v2.tsx",
+      "o_que": "tela de CONSULTA — tabela de ritmos, sem entrada"
+    },
+    {
+      "modulo": "farmacologia-acls",
+      "tem_campo_numerico": false,
+      "onde": "acls-pharmacology-screen-v2.tsx",
+      "o_que": "tela de CONSULTA — doses fixas, sem entrada"
+    },
+    {
+      "modulo": "causas-reversiveis-acls",
+      "tem_campo_numerico": false,
+      "onde": "acls-reversible-causes-screen-v2.tsx",
+      "o_que": "tela de CONSULTA — os H e T, sem entrada"
+    },
+    {
+      "modulo": "pos-pcr-acls",
+      "tem_campo_numerico": false,
+      "onde": "acls-post-rosc-screen-v2.tsx",
+      "o_que": "metas e bundle, sem campo de valor"
+    },
+    {
+      "modulo": "pcr-gestacao-acls",
+      "tem_campo_numerico": false,
+      "onde": "acls-pregnancy-screen.tsx",
+      "o_que": "fluxo por passos, sem campo de valor"
+    },
+    {
+      "modulo": "ovace-adulto",
+      "tem_campo_numerico": false,
+      "onde": "acls-choking-screen.tsx",
+      "o_que": "fluxo por passos, sem campo de valor"
+    }
+  ]
 }

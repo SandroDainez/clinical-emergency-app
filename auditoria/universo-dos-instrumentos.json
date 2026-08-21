@@ -44,6 +44,8 @@
   },
   "mapa-de-presets": {
     "arvores": 20,
-    "campos_de_entrada": 197
+    "campos_de_entrada": 197,
+    "telas_sem_arvore": 11,
+    "placeholders_de_calculadora": 35
   }
 }

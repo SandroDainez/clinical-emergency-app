@@ -339,10 +339,13 @@ export const CAMPOS_DE_DIURESE: InputField[] = [
     id: "debitoUltimaHora",
     label: "Com sonda: quanto saiu na última hora?",
     unit: "mL",
-    presets: ["0", "10", "30", "60"].map((v) => ({ value: v, label: v })),
+    // ⚠️ O 30 DESTA ESCADA ERA O PISO SEM PESO DA C3 — trocado no texto por
+    // 0,5 mL/kg/h, e vivo aqui como botão. Registrar o débito é legítimo;
+    // sugerir 0 · 10 · 30 · 60 é afirmar que essa escada significa alguma coisa.
+    presets: [SEM_ESSE_VALOR],
     allowCustom: true,
     customKeyboard: "numeric",
-    customLabel: "Outro valor",
+    customLabel: "Informar o valor",
     optional: true,
   },
   {

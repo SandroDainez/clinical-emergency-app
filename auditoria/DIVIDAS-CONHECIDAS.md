@@ -2988,3 +2988,86 @@ emprestado não é.
 
 **Até lá, fica fora do fluxo.** O ramo do diurético existe e aponta sem saltar; o que
 não existe é dose na tela sem procedência.
+
+## D-72 · `dka-hhs` — a escada de pH mistura corte real e enchimento, e OMITE o corte diagnóstico
+
+**Aberta em 2026-08-21.** ⚠️ **NÃO CORRIGIDA NESTA RODADA, de propósito** — é revisão
+de módulo inteiro, com o autor, não conserto de botão.
+
+### O que a tela oferece
+
+```
+pH        [6,8] [6,9] [7,0] [7,1] [7,25] [7,35]
+potássio  [2,8] [3,2] [3,5] [4] [4,5] [5] [5,8]
+```
+
+### O que a fonte diz
+
+Consenso 2024 de crises hiperglicêmicas em adultos (Umpierrez et al., *Diabetes
+Care* 2024;47:1257–1275; ADA/EASD/AACE/JBDS/DTS), **conferido pelo autor nesta
+rodada**:
+
+- **Diagnóstico de CAD:** glicose ≥ 200 mg/dL ou diabetes prévio · β-hidroxibutirato
+  ≥ 3,0 mmol/L ou cetonúria ≥ 2+ · **pH < 7,3, bicarbonato < 18 mmol/L, ou ambos**
+- **Gravidade:** leve **pH > 7,25**, HCO₃ ≥ 15 · moderada **pH 7,0–7,25**, HCO₃ 10 a
+  < 15 · grave **pH < 7,0**, HCO₃ < 10
+- **Potássio:** adiar insulina se **K < 3,5 mmol/L** na apresentação
+
+### O achado
+
+| degrau | o que é |
+|---|---|
+| **7,0** e **7,25** | **cortes reais** de gravidade |
+| 6,8 · 6,9 · 7,1 · 7,35 | **enchimento** — não são nada |
+| **7,3** | ⚠️ **o corte DIAGNÓSTICO, e ele NÃO ESTÁ na escada** |
+| **3,5** (potássio) | corte real — o que adia a insulina |
+| 2,8 · 3,2 | enchimento, ladeando o corte real |
+
+⚠️ **O controle mistura, indistinguíveis, degraus COM fonte e degraus INVENTADOS — e
+omite justamente o que define o diagnóstico.** É o problema que o campo `forca`
+resolveu para o texto e que a interface não tem: **botão não carrega procedência.**
+
+### A leitura que vale para os outros
+
+**Quando há corte real, ele está na escada — disfarçado entre degraus inventados.**
+O preset não inventou o número do zero; ele **apagou a diferença** entre o número que
+decide e o que enfeita.
+
+### O selo do módulo — resposta à pergunta
+
+Nem 2022, nem 2024. A entrada é `ada_dka_hhs_2024`, e:
+
+```json
+"base": [{ "referencia": "American Diabetes Association — CAD e EHH", "ano": null }]
+"nossa": { "versao": "Síntese clínica", "revisadoEm": "2026-04-11" }
+```
+
+⚠️ **O ano 2024 existe só no ID.** A base não declara ano nenhum — por isso o selo
+aparece sem ano na tela —, e a referência é genérica: "American Diabetes Association
+— CAD e EHH", sem publicação nomeada. **O módulo cita um consenso que o metadata não
+tem.**
+
+### Como fechar
+
+Revisão do módulo inteiro, com o autor: verbatim do PDF do consenso 2024 para
+`protocols/fontes-verbatim/`, base nomeada com ano e DOI, força por conduta, e só
+então os presets — se houver — com o corte real declarado e o enchimento fora.
+
+⚠️ **Os números transcritos acima NÃO entram em tela ainda.** São transcrição
+secundária (*Cleve Clin J Med* 2025;92(3):152 sobre o original); o verbatim tem de
+sair do PDF do consenso, como foi feito com a KDIGO.
+
+## D-73 · Os outros presets clínicos sem fonte — fila, com a leitura escrita
+
+**Aberta em 2026-08-21.** Medição, sem correção. `npm run mapa:presets` imprime a
+lista atualizada a qualquer momento.
+
+| módulo · campo | valores | leitura |
+|---|---|---|
+| `sepsis` · lactato | 1 · **2** · 3 · **4** · 6 · 8 | **2 e 4 são os números da SSC**; 1 · 3 · 6 · 8 não são |
+| `seizure` · tempoDeCrise | 0 · 2 · **5** · 10 · **20** · 40 | **5 e 20 são estado de mal e refratariedade**; 0 · 2 · 10 · 40 não são |
+| `avc` · glicemia | **50** · 80 · 110 · 150 · 200 · 300 · 400 | **50 é hipoglicemia** — mimic de AVC, decisão real; 110 e 150 não são nada |
+| `dka-hhs` · glicemia, potássio, ph | ver D-72 | corte real disfarçado entre enchimento |
+
+**A correção é por módulo, com o autor** — e boa parte dela provavelmente cai junto
+com a reescrita de cada módulo no formato novo.
