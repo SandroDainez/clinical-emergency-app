@@ -72,6 +72,7 @@ const SEM_FORCA = {
 
 const falhas = [];
 let condutas = 0;
+let declaracoes = 0;
 let classificados = 0;
 const porForca = { recomendacao_formal: 0, pratica_aceita: 0, mecanismo_fisiologico: 0, definicao: 0 };
 const porNatureza = {};
@@ -99,8 +100,68 @@ for (const arq of ARVORES) {
             `Ou é conduta, ou não é.`
           );
         }
-        continue;
+        // ⚠️ NÃO SAI AQUI: um nó de organização do atendimento pode conter UMA
+        // afirmação clínica no meio do fluxo (`fazer_agora` e o nefrotóxico). As
+        // declarações são conferidas abaixo, e é por isso que elas existem.
       }
+
+      // ── DECLARAÇÕES POR AFIRMAÇÃO — o padrão da tela e as exceções ────────
+      //
+      // ⚠️ UMA TELA PODE AFIRMAR COISAS DE FORÇAS DIFERENTES. `pre_renal` diz
+      // "cristaloide, não coloide" (recomendação formal 2B) e "dê em alíquotas e
+      // reavalie" (que a KDIGO não recomenda em lugar nenhum). Com um selo só,
+      // ou o 2B carimba a alíquota, ou a alíquota rebaixa o 2B — as duas mentem,
+      // e para lados opostos.
+      for (const d of n.declaracoes ?? []) {
+        declaracoes += 1;
+        if (!d.afirmacao) {
+          falhas.push(`${arq} · ${n.id}: declaração sem \`afirmacao\` — não se sabe qual linha ela cobre.`);
+          continue;
+        }
+        // ⚠️ IDENTIDADE, NÃO SEMELHANÇA: a afirmação é o texto LITERAL do item.
+        // Se alguém reescrever a ação, a declaração deixa de casar e reprova —
+        // que é o ponto: procedência apontando para frase que já não existe é
+        // pior que procedência ausente.
+        if (!(n.actions ?? []).includes(d.afirmacao)) {
+          falhas.push(
+            `${arq} · ${n.id}: a declaração cobre uma afirmação que NÃO está nas ações da tela.\n` +
+            `        « ${d.afirmacao.slice(0, 90)}… »`
+          );
+        }
+        const semForca = d.natureza && SEM_FORCA[d.natureza];
+        if (semForca && d.procedencia) {
+          falhas.push(
+            `${arq} · ${n.id}: declaração de natureza "${d.natureza}" COM procedência — ou é conduta, ou não é.`
+          );
+        }
+        if (!semForca) {
+          if (!d.procedencia) {
+            falhas.push(`${arq} · ${n.id}: declaração de conduta SEM \`procedencia\`.`);
+            continue;
+          }
+          const dp = d.procedencia;
+          if (!OBRIGA[dp.forca]) {
+            falhas.push(`${arq} · ${n.id}: declaração com força "${dp.forca}", que não existe.`);
+            continue;
+          }
+          porForca[dp.forca] += 1;
+          if (!dp[OBRIGA[dp.forca].campo]) {
+            falhas.push(
+              `${arq} · ${n.id}: declaração "${dp.forca}" sem \`${OBRIGA[dp.forca].campo}\` — falta ${OBRIGA[dp.forca].porque}.`
+            );
+          }
+          if (!dp.fonte) falhas.push(`${arq} · ${n.id}: declaração sem \`fonte\`.`);
+          // ⚠️ EXCEÇÃO QUE NÃO EXCEPCIONA É RUÍDO, e ruído ensina a ignorar
+          // exceção. Se a declaração repete o padrão do nó, ela não separa nada.
+          if (n.procedencia && JSON.stringify(dp) === JSON.stringify(n.procedencia)) {
+            falhas.push(`${arq} · ${n.id}: declaração idêntica ao padrão da tela — exceção que não excepciona.`);
+          }
+        }
+      }
+
+      // Nó de natureza sem força pode carregar declarações (é o caso de
+      // `fazer_agora`), e nesse caso ele já foi contado acima e sai aqui.
+      if (n.natureza && SEM_FORCA[n.natureza]) continue;
 
       condutas += 1;
       const p = n.procedencia;
@@ -141,6 +202,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 console.log("\nA força da afirmação — que TIPO de coisa cada conduta diz\n");
 const universoOk = conferirUniverso("valida-forca-da-afirmacao", "nos_da_arvore", nosLidos);
 console.log(`   condutas: ${condutas} · classificadas: ${classificados} · pendentes declaradas: ${semDeclaracao.length}`);
+console.log(`   declarações POR AFIRMAÇÃO: ${declaracoes} — telas que afirmam mais de uma coisa`);
 console.log(
   `   fora da conta — transição ${porNatureza.transicao ?? 0} · organização do atendimento ${porNatureza.organizacao_do_atendimento ?? 0}`
 );

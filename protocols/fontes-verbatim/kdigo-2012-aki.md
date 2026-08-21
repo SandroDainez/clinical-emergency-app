@@ -19,9 +19,10 @@ Este arquivo guarda o TEXTO. É contra ele que a força de cada nó é conferida
 ## PROCEDÊNCIA DESTE ARQUIVO — a cadeia fechou
 
 - **Transcrito pelo autor** (Dr. Sandro Dainez) a partir do PDF público acima.
-- **✅ CONFERIDO CONTRA O PRIMÁRIO em 2026-08-21**, pelo autor, **médico**, no
-  **resumo das recomendações, PÁGINA 12** do PDF: as três frases, a numeração e o
-  grau. `revisadoPor: autor (médico)`.
+- **✅ CONFERIDO CONTRA O PRIMÁRIO em 2026-08-21**, pelo autor, **médico**: as
+  três primeiras no **resumo das recomendações, PÁGINA 12** do PDF; a **5.1.1**, a
+  **3.1.1** e a **exclusão da rabdomiólise** na mesma revisão, transcritas do PDF
+  público e conferidas na fonte. `revisadoPor: autor (médico)`.
 - **⚠️ O que isso significa e o que não significa:** significa que há **um humano
   no fim da cadeia**, que abriu o documento e leu. A marca "não conferida contra o
   primário" saiu por isso — não por eu ter conseguido abrir o PDF (não consegui; a
@@ -39,6 +40,30 @@ Este arquivo guarda o TEXTO. É contra ele que a força de cada nó é conferida
 > management of volume overload."
 
 > **3.5.1 (1A)** — "We recommend not using low-dose dopamine to prevent or treat AKI."
+
+> **3.1.1 (2B)** — "In the absence of hemorrhagic shock, we suggest using isotonic
+> crystalloids rather than colloids (albumin or starches) as initial management for
+> expansion of intravascular volume in patients at risk for AKI or with AKI."
+
+> **5.1.1 (Not Graded)** — "Initiate RRT emergently when life-threatening changes in
+> fluid, electrolyte, and acid-base balance exist."
+
+### ⚠️ "NOT GRADED" É UM GRAU LITERAL, NÃO GRAU AUSENTE
+
+A KDIGO usa **"Not Graded"** como categoria própria: a afirmação **está na
+diretriz** e **não foi graduada**. Registrar como `recomendacao_formal` com
+`classeOuGrau: "Not Graded"` diz as duas coisas ao mesmo tempo.
+
+**Rebaixar para `pratica_aceita` perderia a informação de que a diretriz a faz** —
+e é uma perda que não se recupera depois, porque ninguém volta a procurar a fonte
+de algo já classificado como prática.
+
+### ⚠️ A RESSALVA DA 3.1.1 ANDA COLADA À AFIRMAÇÃO
+
+*"In the absence of hemorrhagic shock"* não é ornamento da frase: é a condição que
+a torna verdadeira. Separada, sobra "use cristaloide, não coloide" — que num
+choque hemorrágico é o conselho errado. Mesmo tratamento da exceção do diurético
+(3.4.2): **separar a afirmação da sua ressalva cria falso absoluto.**
 
 ## O QUE ELAS SUSTENTAM, E O QUE NÃO SUSTENTAM
 
@@ -81,3 +106,19 @@ têm.
 - **Creatinina basal desconhecida.** Está nas Tabelas 8 e 9, **não transcritas**.
   Enquanto não estiverem, nenhum nó do app diz que "a diretriz autoriza" nada a
   respeito. Isso é "não consegui olhar", não "não há".
+
+- **Desafio volêmico — dar em alíquotas e reavaliar a resposta.** A 3.1.1 diz QUAL
+  fluido; **não diz como dar, nem que se reavalie entre alíquotas**. Não há
+  recomendação da KDIGO sobre isso. No app é `pratica_aceita`, sem grau.
+
+- ⚠️ **RABDOMIÓLISE ESTÁ FORA DO ESCOPO DA KDIGO 2012, POR ESCRITO.** Capítulo 1.2,
+  metodologia:
+
+  > "We excluded studies on AKI from rhabdomyolysis, specific infections, and
+  > poisoning or drug overdose"
+
+  **Este registro existe para impedir uma invenção futura.** A linha do app sobre
+  CPK alta, urina escura e hidratação vigorosa é `pratica_aceita` — e sem esta
+  anotação, alguém "acha" uma justificativa KDIGO para ela daqui a um ano, porque
+  o módulo inteiro cita KDIGO e a vizinhança convence. É o mesmo mecanismo da
+  procedência herdada por vizinhança, agora prevenido em vez de corrigido.

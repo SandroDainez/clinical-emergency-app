@@ -31,7 +31,21 @@ import { useTr } from "../../lib/use-tr";
  * fonte foi tomada de outro cenário. É o campo que existe por causa do pH < 7,0
  * da cetoacidose e do 126 mg/dL do diagnóstico de diabetes.
  */
-export default function SeloDeForca({ procedencia }: { procedencia?: ProcedenciaDaConduta }) {
+/**
+ * ⚠️ `afirmacao` — QUAL DAS AFIRMAÇÕES DA TELA ESTE SELO COBRE.
+ *
+ * Só aparece quando a tela declara mais de uma (ver `DeclaracaoDeAfirmacao`).
+ * Sem ele, dois selos empilhados sob quatro ações não dizem qual cobre qual — e
+ * um selo que o leitor atribui à ação errada é pior que selo nenhum: ele
+ * empresta força para a linha que não a tem.
+ */
+export default function SeloDeForca({
+  procedencia,
+  afirmacao,
+}: {
+  procedencia?: ProcedenciaDaConduta;
+  afirmacao?: string;
+}) {
   const tr = useTr();
   const { cores } = useTheme();
 
@@ -77,6 +91,11 @@ export default function SeloDeForca({ procedencia }: { procedencia?: Procedencia
           backgroundColor: forca === "mecanismo_fisiologico" ? cores.surface : "transparent",
         },
       ]}>
+      {afirmacao ? (
+        <Text style={[e.afirmacao, { color: cores.textSecondary }]} numberOfLines={2}>
+          {tr(afirmacao)}
+        </Text>
+      ) : null}
       <View style={e.linha}>
         <Text style={[e.rotulo, { color: corDaMarca }]}>{rotulo}</Text>
         {detalhe ? (
@@ -103,6 +122,7 @@ const e = StyleSheet.create({
     gap: 2,
     marginTop: ESPACO.xs,
   },
+  afirmacao: { ...TIPOGRAFIA.micro, fontStyle: "italic", marginBottom: 2 },
   linha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, flexWrap: "wrap" },
   rotulo: { ...TIPOGRAFIA.micro, letterSpacing: 0.6 },
   detalhe: { ...TIPOGRAFIA.micro, fontWeight: "600" },

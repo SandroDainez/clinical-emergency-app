@@ -413,7 +413,12 @@ if (Object.keys(nos).length < 10) {
     );
   } else {
     const verbatim = fs.readFileSync(VERB, "utf8");
-    for (const [num, grau] of [["3.4.1", "1B"], ["3.4.2", "2C"], ["3.5.1", "1A"]]) {
+    // ⚠️ TODO GRAU CITADO NA ÁRVORE É CONFERIDO CONTRA O VERBATIM. Inclui
+    // "Not Graded", que é GRAU LITERAL da KDIGO — categoria própria, que diz "a
+    // diretriz faz esta afirmação E não a graduou". Trocá-lo por 1A inventaria
+    // uma força que a diretriz não deu; rebaixá-lo para prática aceita apagaria
+    // que a diretriz a faz. As duas perdas são silenciosas.
+    for (const [num, grau] of [["3.4.1", "1B"], ["3.4.2", "2C"], ["3.5.1", "1A"], ["3.1.1", "2B"], ["5.1.1", "Not Graded"]]) {
       if (!new RegExp(`${num.replace(/\./g, "\\.")}[^\n]*${grau}`).test(verbatim)) {
         falhas.push(`o verbatim da KDIGO perdeu a ${num} (${grau}) — a fonte do grau sumiu.`);
       }
@@ -423,6 +428,29 @@ if (Object.keys(nos).length < 10) {
       // `nao_faca` já contém "3.4.2 (2C)", e ele casava sozinho. O selo é proxy
       // do item; o que o usuário lê na linha é o item (R-87).
       const dono = { "3.4.1": "ARMADILHA_DIURETICO_PARA_PREVENIR", "3.4.2": "ARMADILHA_DIURETICO_PARA_O_RIM", "3.5.1": "ARMADILHA_DOPAMINA_RENAL" }[num];
+      // A 3.1.1 e a 5.1.1 não vivem no texto do aviso: vivem no SELO
+      // (`procedencia.classeOuGrau`). Conferidas ali, contra o mesmo verbatim.
+      if (!dono) {
+        const selos = [];
+        for (const n of Object.values(nos)) {
+          for (const pr of [n.procedencia, ...(n.declaracoes ?? []).map((d) => d.procedencia)]) {
+            if (pr?.fonte?.includes(num)) selos.push({ id: n.id, grau: pr.classeOuGrau });
+          }
+        }
+        if (!selos.length) {
+          falhas.push(`nenhum nó cita a KDIGO ${num} — a recomendação saiu da árvore sem o verbatim sair do arquivo.`);
+        }
+        for (const sel of selos) {
+          if (sel.grau !== grau) {
+            falhas.push(
+              `${sel.id}: cita a KDIGO ${num} com grau "${sel.grau}", e o verbatim diz "${grau}".\n` +
+              `        ⚠️ Grau não se corrige de memória. "Not Graded" é categoria da própria KDIGO — trocá-lo\n` +
+              `        por uma classe inventa força; rebaixá-lo para prática aceita apaga que a diretriz o afirma.`
+            );
+          }
+        }
+        continue;
+      }
       const texto = lib?.[dono] ?? "";
       if (!new RegExp(`${num.replace(/\./g, "\\.")}[^\n]{0,20}${grau}`).test(texto)) {
         falhas.push(
@@ -466,6 +494,54 @@ if (Object.keys(nos).length < 10) {
       if (!cards) falhas.push("o negativo da 3.4.2 sumiu de todos os cards — não há proximidade a conferir.");
     }
   }
+  // ── A RESSALVA DA 3.1.1 ANDA COLADA (regra C) ────────────────────────────
+  //
+  // ⚠️ "Na ausência de choque hemorrágico" É a condição da recomendação, não um
+  // adorno. Separada, sobra "use cristaloide, não coloide" — que num choque
+  // hemorrágico é o conselho ERRADO. A conferência é a mesma dos avisos: conta o
+  // VALOR da constante na árvore compilada, então partir em duas linhas quebra.
+  {
+    const cristaloide = lib?.PRE_RENAL_CRISTALOIDE;
+    if (typeof cristaloide !== "string") {
+      falhas.push("PRE_RENAL_CRISTALOIDE não existe — a escolha do fluido (3.1.1) saiu do módulo.");
+    } else {
+      if (!/hemorr[áa]gico/i.test(cristaloide)) {
+        falhas.push(
+          "a recomendação da 3.1.1 perdeu a ressalva do CHOQUE HEMORRÁGICO.\n" +
+          "        ⚠️ FALSO ABSOLUTO: sem ela sobra \"cristaloide em vez de coloide\", que no choque hemorrágico\n" +
+          "        é o conselho errado. A ressalva é a condição da recomendação, e anda no MESMO item."
+        );
+      }
+      // ⚠️ CONTA NAS AÇÕES, NÃO EM `tudo`: a declaração por afirmação repete o
+      // texto do item de propósito (é assim que ela diz qual linha cobre), e
+      // contar as duas daria 2 onde o certo é 1. O objeto aqui é a LINHA DA
+      // TELA — é ela que não pode ser partida.
+      const nasAcoes = Object.values(nos).reduce(
+        (n, no) => n + (no.actions ?? []).filter((i) => i === cristaloide).length, 0);
+      if (nasAcoes !== 1) {
+        falhas.push(
+          `a linha da 3.1.1 aparece ${nasAcoes}× nas AÇÕES da árvore, esperado 1 — em item ÚNICO e inteiro.\n` +
+          "        ⚠️ Partir a recomendação da sua ressalva em duas linhas é o que esta contagem impede."
+        );
+      }
+    }
+  }
+
+  // ── A EXCLUSÃO DA RABDOMIÓLISE FICA REGISTRADA ───────────────────────────
+  //
+  // ⚠️ ESTE REGISTRO EXISTE PARA IMPEDIR UMA INVENÇÃO FUTURA. A KDIGO 2012
+  // excluiu rabdomiólise do escopo, por escrito. Sem a anotação, alguém "acha"
+  // uma justificativa KDIGO para a linha da CPK daqui a um ano — o módulo inteiro
+  // cita KDIGO, e a vizinhança convence. É a procedência herdada por vizinhança,
+  // desta vez prevenida em vez de corrigida.
+  if (fs.existsSync(VERB) && !/rhabdomyolysis/i.test(fs.readFileSync(VERB, "utf8"))) {
+    falhas.push(
+      "o registro da EXCLUSÃO da rabdomiólise sumiu do verbatim da KDIGO.\n" +
+      "        ⚠️ Ele não é curiosidade: é o que impede alguém carimbar KDIGO na linha da CPK alta\n" +
+      "        daqui a um ano. A diretriz diz, na metodologia, que excluiu esses estudos."
+    );
+  }
+
   const restantes = [
     ["não esperar a creatinina", /NÃO ESPERE A CREATININA/i],
   ].filter(([, re]) => !re.test(tudo));

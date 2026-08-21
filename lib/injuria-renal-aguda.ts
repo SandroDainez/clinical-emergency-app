@@ -126,6 +126,25 @@ export const IRA_REVISAO_EM_CURSO = [
  * normal, tratar como agudo, volume em alíquotas menores — fica VISÍVEL; as
  * duas janelas da definição e a citação da diretriz vão para `porque`.
  */
+/**
+ * A ESCOLHA DO FLUIDO — e a ressalva vem COLADA, porque ela é a condição.
+ *
+ * KDIGO 2012, 3.1.1 (grau 2B), verbatim em
+ * `protocols/fontes-verbatim/kdigo-2012-aki.md`:
+ *
+ *   "In the absence of hemorrhagic shock, we suggest using isotonic crystalloids
+ *    rather than colloids (albumin or starches) as initial management for
+ *    expansion of intravascular volume in patients at risk for AKI or with AKI."
+ *
+ * ⚠️ "NA AUSÊNCIA DE CHOQUE HEMORRÁGICO" NÃO É ORNAMENTO — é o que torna a frase
+ * verdadeira. Separada, sobra "use cristaloide, não coloide", que num choque
+ * hemorrágico é o conselho ERRADO. Mesmo tratamento da exceção do diurético: a
+ * ressalva anda colada, num item só, e `valida-ira` conta o valor desta constante
+ * na árvore — quem partir em duas linhas quebra a trava.
+ */
+export const PRE_RENAL_CRISTALOIDE =
+  "⚠️ NA AUSÊNCIA DE CHOQUE HEMORRÁGICO, use CRISTALOIDE ISOTÔNICO — não coloide (albumina ou amido) — para expandir o intravascular (KDIGO 3.1.1, grau 2B).";
+
 export const IRA_SEM_BASE_ACOES = [
   "Presuma que a base era NORMAL para a idade e o sexo, e trate como AGUDO até prova em contrário.",
   "Dê volume em alíquotas menores, não em carga plena.",

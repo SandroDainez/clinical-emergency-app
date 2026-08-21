@@ -21,6 +21,7 @@ import {
   ARMADILHA_VOLUME_PELA_CREATININA,
   ARMADILHAS_PORQUE,
   IRA_ACIONAR_ACOES,
+  PRE_RENAL_CRISTALOIDE,
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
 import {
@@ -442,6 +443,15 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     k_ecg_normal: {
       id: "k_ecg_normal",
       type: "action",
+      // ⚠️ AFIRMAÇÃO SOBRE DESEMPENHO DE TESTE, não sobre conduta — por isso
+      // prática aceita, e não recomendação. A citação NÃO foi transcrita: a
+      // pendência de fonte tem alvo nomeado e aparece NA TELA, porque um selo
+      // que cita fonte inexistente é pior que selo nenhum (D-67).
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "⚠️ PENDÊNCIA DE FONTE — alvo: UKKA 2023, a frase sobre sensibilidade do ECG na hipercalemia. NÃO transcrita para este repositório.",
+        tipoDeDocumento: "Prática aceita — citação ainda não transcrita",
+      },
       title: "ECG normal não exclui — siga e cobre o exame",
       summary: "A sensibilidade do ECG para hipercalemia é baixa.",
       actions: [
@@ -855,6 +865,17 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     trata_acidose: {
       id: "trata_acidose",
       type: "action",
+      // ⚠️ "Not Graded" É GRAU LITERAL, NÃO GRAU AUSENTE. A KDIGO usa a categoria
+      // para dizer as duas coisas: a afirmação ESTÁ na diretriz E não foi
+      // graduada. Rebaixar para prática aceita perderia a primeira metade — e
+      // ninguém volta a procurar a fonte do que já está classificado como prática.
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 5.1.1",
+        classeOuGrau: "Not Graded",
+        contextoDaFonte:
+          "⚠️ A 5.1.1 fala de alterações AMEAÇADORAS de fluidos, eletrólitos e equilíbrio ácido-base. A acidemia grave refratária é literalmente uma delas.",
+      },
       title: "Acidemia grave — tratar a causa e sustentar",
       summary: "A acidose do rim é sinal, não doença isolada.",
       actions: [
@@ -950,6 +971,14 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     retencao: {
       id: "retencao",
       type: "action",
+      // Aliviar obstrução é quase definicional: nenhuma diretriz gradua a
+      // passagem de uma sonda de alívio. Prática aceita SEM grau — e o campo diz
+      // isso, em vez de emprestar grau de recomendação vizinha.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — sem recomendação graduada conhecida",
+        tipoDeDocumento: "Prática clínica estabelecida",
+      },
       title: "Bexiga cheia — é retenção, não anúria",
       summary: "A saída está bloqueada; o rim pode estar filtrando normalmente.",
       actions: [
@@ -988,6 +1017,31 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     fazer_agora: {
       id: "fazer_agora",
       type: "action",
+      // ⚠️ ESTA TELA AFIRMA COISAS DE NATUREZAS DIFERENTES, e forçar uma força
+      // para todas produziria mentira nos dois sentidos. O PADRÃO da tela é
+      // ORGANIZAÇÃO DO ATENDIMENTO — medir a diurese, anotar a creatinina com a
+      // hora, pedir a bateria de exames são o fluxo, não recomendações graduadas.
+      // As duas exceções vêm nomeadas em `declaracoes`.
+      natureza: "organizacao_do_atendimento",
+      declaracoes: [
+        {
+          afirmacao: "Suspenda o que é nefrotóxico e revise as doses por função renal.",
+          procedencia: {
+            forca: "pratica_aceita",
+            fonte: "KDIGO 2012 — recomendações DROGA-ESPECÍFICAS; a regra geral é prática aceita",
+            tipoDeDocumento: "Diretriz clínica — sem recomendação graduada GERAL para nefrotóxicos",
+            contextoDaFonte:
+              "⚠️ A KDIGO gradua por DROGA (aminoglicosídeo, anfotericina, contraste), não como regra única. Carimbar grau aqui seria emprestar força de outro assunto.",
+          },
+        },
+        {
+          // ⚠️ NÃO É CONDUTA DESTA TELA: aponta para o módulo de eletrólitos, e a
+          // força é a das condutas de lá. Declarar força aqui duplicaria
+          // procedência — o mecanismo pelo qual dois módulos divergem.
+          afirmacao: "Trate a hipercalemia se houver — ela mata antes do rim.",
+          natureza: "transicao",
+        },
+      ],
       title: "Creatinina subiu ou parou de urinar",
       summary: "Este módulo é do turno, não da investigação.",
       actions: [
@@ -1073,6 +1127,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     cronico_agudizado: {
       id: "cronico_agudizado",
       type: "action",
+      // Método de interpretação (ler o número contra a base DELE) e prudência
+      // clínica (volume mais cauteloso). Não há grau para nenhum dos dois.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — método de interpretação, sem recomendação graduada",
+        tipoDeDocumento: "Prática clínica estabelecida",
+      },
       title: "Crônico agudizado — três coisas mudam",
       summary: "O alvo não é recuperar função — é não perder o que resta.",
       actions: [
@@ -1255,6 +1316,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     indeterminado: {
       id: "indeterminado",
       type: "action",
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — presumir agudo erra para o lado da AÇÃO",
+        tipoDeDocumento: "Prática clínica estabelecida",
+        contextoDaFonte:
+          "⚠️ A razão de presumir AGUDO: erra para o lado da ação, que é o lado seguro quando a base é desconhecida. Presumir crônico faria perder o intervalo em que a causa ainda é reversível.",
+      },
       title: "Não dá para dizer se é agudo — e isso se declara",
       summary: "⚠️ Trate como agudo, com o volume mais cauteloso.",
       actions: [
@@ -1294,6 +1362,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     obstrucao_conduta: {
       id: "obstrucao_conduta",
       type: "action",
+      // Sequenciamento (a obstrução é reversível e barata de excluir) e manejo da
+      // diurese pós-desobstrução. Prática estabelecida, sem grau conhecido.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — sequenciamento diagnóstico e manejo pós-desobstrução",
+        tipoDeDocumento: "Prática clínica estabelecida",
+      },
       title: "Suspeita de obstrução — a sonda é o exame",
       summary: "A sonda é o exame — e o tratamento, se for isso.",
       actions: [...IRA_OBSTRUCAO_ACOES, ...IRA_APOS_ALIVIO_ACOES],
@@ -1332,13 +1407,39 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // ⚠️ AQUI É O PONTO DA TENTAÇÃO (E-7): esta é a tela em que se prescreve
       // volume, e é aqui que a creatinina alta convida a prescrevê-lo pelo
       // motivo errado. A mesma frase recapitula em `nao_faca`, da mesma fonte.
+      // ⚠️ DUAS AFIRMAÇÕES, E SÓ UMA TEM GRAU. O PADRÃO da tela é prática
+      // aceita: a KDIGO NÃO tem recomendação sobre desafio volêmico em alíquotas
+      // nem sobre reavaliar entre elas — a ausência está registrada no arquivo de
+      // fontes. A EXCEÇÃO nomeada é a escolha do fluido, que é 3.1.1 grau 2B.
+      // Um selo só faria o 2B carimbar a alíquota, ou a alíquota rebaixar o 2B.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — a KDIGO não recomenda desafio volêmico nem reavaliação entre alíquotas",
+        tipoDeDocumento: "Prática clínica estabelecida",
+      },
+      declaracoes: [
+        {
+          afirmacao: PRE_RENAL_CRISTALOIDE,
+          procedencia: {
+            forca: "recomendacao_formal",
+            fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 3.1.1",
+            classeOuGrau: "2B",
+            contextoDaFonte:
+              "⚠️ A ressalva É a condição: a recomendação vale NA AUSÊNCIA de choque hemorrágico, e por isso ela anda no mesmo item, nunca em linha separada.",
+          },
+        },
+      ],
       actions: [
         ARMADILHA_VOLUME_PELA_CREATININA,
+        PRE_RENAL_CRISTALOIDE,
         ...IRA_PRE_RENAL_ACOES,
         "⚠️ Reavalie ENTRE as alíquotas, não depois de todas — débito urinário, ausculta, oximetria e perfusão.",
         "⚠️ Se você não sabe a creatinina de base, as alíquotas são menores.",
-        "Se respondeu: siga o volume até a euvolemia e reavalie a creatinina em 6 a 12 h.",
-        "Se NÃO respondeu depois de reposição adequada, siga para a exposição a nefrotóxico.",
+        // ⚠️ AS DUAS SAÍDAS FUNDIDAS NUM ITEM (§7.4): a linha do cristaloide 2B
+        // entrou e a tela foi a 8 ações. Fundir a resposta e a não-resposta é a
+        // fusão certa — é UMA decisão ("respondeu?"), com dois destinos; separá-las
+        // nunca ajudou ninguém a decidir, só ocupava dois números.
+        "Se RESPONDEU: siga até a euvolemia e reavalie a creatinina em 6 a 12 h. Se NÃO respondeu após reposição adequada, siga para a exposição a nefrotóxico.",
       ],
       porque: [
         ...IRA_PRE_RENAL_PORQUE,
@@ -1443,6 +1544,17 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     renal_conduta: {
       id: "renal_conduta",
       type: "action",
+      // ⚠️ E A EXCLUSÃO ESTÁ REGISTRADA NO ARQUIVO DE FONTES, de propósito: a
+      // KDIGO 2012 EXCLUIU rabdomiólise do escopo, por escrito (Capítulo 1.2).
+      // Sem esse registro, alguém "acha" uma justificativa KDIGO para esta linha
+      // daqui a um ano — o módulo inteiro cita KDIGO, e a vizinhança convence.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Prática estabelecida — ⚠️ a KDIGO 2012 EXCLUIU rabdomiólise do escopo (Cap. 1.2)",
+        tipoDeDocumento: "Prática clínica estabelecida",
+        contextoDaFonte:
+          "⚠️ NÃO PROCURE GRAU KDIGO PARA ESTA LINHA: a diretriz diz, na metodologia, que excluiu os estudos de IRA por rabdomiólise.",
+      },
       title: "Lesão do próprio rim — remova o que se pode remover",
       summary: "A primeira pergunta é sempre a exposição — é a única causa removível hoje.",
       actions: [

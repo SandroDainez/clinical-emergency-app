@@ -651,6 +651,12 @@ function ActionStep({
               separa "a diretriz recomenda" de "é plausível pela fisiologia". A
               lacuna de evidência renderiza aqui, não atrás do toque. */}
           <SeloDeForca procedencia={step.procedencia} />
+          {/* ⚠️ UM SELO POR AFIRMAÇÃO quando a tela afirma mais de uma coisa. As
+              declarações de natureza `transicao` não têm selo — e é assim que
+              deve ser: elas declaram que NÃO afirmam. */}
+          {step.declaracoes.map((d, i) => (
+            <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
+          ))}
           {/* O PORQUÊ, recolhido — ver `ActionNode.porque`. Fica ao LADO da ação
               que ele explica, não numa tela de consulta: quem não tem
               experiência precisa da razão junto do gesto, e longe dele vira
@@ -697,6 +703,11 @@ function ActionStep({
           ))}
         </View>
         <SeloDeForca procedencia={step.procedencia} />
+        {/* Os dois renderizadores mostram os MESMOS selos por afirmação: ligar
+            só um faria a força sumir para metade dos usuários. */}
+        {step.declaracoes.map((d, i) => (
+          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
+        ))}
         {/* O porquê, recolhido — o MESMO conteúdo do caminho v2. Os dois
             renderizadores existem e os dois precisam mostrar: ligar só um
             faria o texto sumir para metade dos usuários. */}

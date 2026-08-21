@@ -227,6 +227,41 @@ export type ProcedenciaDaConduta = {
   contextoDaFonte?: string;
 };
 
+/**
+ * UMA DECLARAÇÃO POR AFIRMAÇÃO — porque uma tela pode afirmar duas coisas.
+ *
+ * ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-21) ────────────────────────────────
+ *
+ * `procedencia` é do NÓ, e isso pressupõe que toda tela faz uma afirmação só.
+ * A revisão das dez pendências do renal mostrou que não: `pre_renal` diz
+ * "cristaloide isotônico, não coloide" — que é **recomendação formal 2B** — e
+ * também "dê em alíquotas e reavalie", que a KDIGO **não recomenda em lugar
+ * nenhum**. `fazer_agora` mistura conduta com transição para outro módulo.
+ *
+ * Com um selo por tela, as duas viram uma: ou o 2B carimba a alíquota (força
+ * emprestada), ou a alíquota rebaixa o 2B (força perdida). **As duas mentem, e
+ * mentem para lados opostos.**
+ *
+ * ── COMO ISSO É DIFERENTE DE PARTIR O NÓ ──────────────────────────────────
+ *
+ * Partir seria a solução de arquitetura, e ela custa um passo a mais no fluxo —
+ * quem está com o paciente na frente pagaria por um problema de catalogação.
+ * Aqui a tela continua uma; **o que se separa é a declaração**.
+ *
+ * ⚠️ `afirmacao` É O TEXTO EXATO do item de `actions` que a declaração cobre. Não
+ * é rótulo nem resumo: a trava confere identidade, não semelhança — se o item
+ * mudar de redação, a declaração precisa mudar junto, e é isso que impede a
+ * procedência ficar apontando para uma frase que já não existe.
+ */
+export type DeclaracaoDeAfirmacao = {
+  /** O item de `actions`, LITERAL, que esta declaração cobre. */
+  afirmacao: string;
+  /** Ausente = `conduta`, e conduta exige `procedencia`. Ver `ActionNode.natureza`. */
+  natureza?: "conduta" | "transicao" | "organizacao_do_atendimento";
+  /** Proibida quando a natureza não é conduta — declarar força ali seria mentira. */
+  procedencia?: ProcedenciaDaConduta;
+};
+
 export type ActionNode = BaseNode & {
   type: "action";
   actions: string[];
@@ -271,6 +306,20 @@ export type ActionNode = BaseNode & {
    * procedência e sem pendência declarada reprova.
    */
   procedencia?: ProcedenciaDaConduta;
+  /**
+   * QUANDO A TELA AFIRMA MAIS DE UMA COISA — uma declaração por afirmação.
+   *
+   * ⚠️ `procedencia` É O PADRÃO DA TELA; `declaracoes` são as EXCEÇÕES NOMEADAS.
+   * Não são duas fontes de verdade: são default e exceção, e a exceção diz a
+   * qual item ela se aplica. `pre_renal` é o caso: a tela inteira é prática
+   * aceita — desafio volêmico não é recomendado por diretriz nenhuma —, MENOS a
+   * escolha do fluido, que é recomendação formal 2B. Um selo só faria o 2B
+   * carimbar a alíquota, ou a alíquota rebaixar o 2B.
+   *
+   * ⚠️ Uma declaração que repete o padrão é ruído e reprova: exceção que não
+   * excepciona só ensina a ignorar exceções.
+   */
+  declaracoes?: DeclaracaoDeAfirmacao[];
   /**
    * O QUE ESTE NÓ É — e nem todo nó de ação faz afirmação clínica.
    *
@@ -412,6 +461,8 @@ export type FrontendTreeStep =
       porque: string[];
       /** Força e procedência, já interpoladas. Ver `ProcedenciaDaConduta`. */
       procedencia?: ProcedenciaDaConduta;
+      /** Uma declaração por afirmação, já interpoladas. Ver `DeclaracaoDeAfirmacao`. */
+      declaracoes: DeclaracaoDeAfirmacao[];
       canContinue: true;
     }
   | {

@@ -1163,6 +1163,47 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "La declaración de fuerza y fuente por conducta se está aplicando módulo a módulo. Donde aún no aparece, la ausencia de sello NO significa recomendación fuerte — significa que ese módulo aún no fue auditado.",
   " ({0} de {1})":
     " ({0} de {1})",
+  // ── AS 10 FORÇAS REVISADAS COM O AUTOR (2026-08-21) ──────────────────────
+  "⚠️ PENDÊNCIA DE FONTE — alvo: UKKA 2023, a frase sobre sensibilidade do ECG na hipercalemia. NÃO transcrita para este repositório.":
+    "⚠️ PENDIENTE DE FUENTE — objetivo: UKKA 2023, la frase sobre sensibilidad del ECG en la hipercalemia. NO transcrita para este repositorio.",
+  "Prática estabelecida — sem recomendação graduada conhecida":
+    "Práctica establecida — sin recomendación graduada conocida",
+  "KDIGO 2012 — recomendações DROGA-ESPECÍFICAS; a regra geral é prática aceita":
+    "KDIGO 2012 — recomendaciones FÁRMACO-ESPECÍFICAS; la regla general es práctica aceptada",
+  "Prática estabelecida — método de interpretação, sem recomendação graduada":
+    "Práctica establecida — método de interpretación, sin recomendación graduada",
+  "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 5.1.1":
+    "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 5.1.1",
+  "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 3.1.1":
+    "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 3.1.1",
+  "Prática estabelecida — presumir agudo erra para o lado da AÇÃO":
+    "Práctica establecida — presumir agudo yerra hacia el lado de la ACCIÓN",
+  "Prática estabelecida — sequenciamento diagnóstico e manejo pós-desobstrução":
+    "Práctica establecida — secuenciación diagnóstica y manejo posdesobstrucción",
+  "Prática estabelecida — a KDIGO não recomenda desafio volêmico nem reavaliação entre alíquotas":
+    "Práctica establecida — la KDIGO no recomienda desafío volémico ni reevaluación entre alícuotas",
+  "Prática estabelecida — ⚠️ a KDIGO 2012 EXCLUIU rabdomiólise do escopo (Cap. 1.2)":
+    "Práctica establecida — ⚠️ la KDIGO 2012 EXCLUYÓ la rabdomiólisis del alcance (Cap. 1.2)",
+  "⚠️ NA AUSÊNCIA DE CHOQUE HEMORRÁGICO, use CRISTALOIDE ISOTÔNICO — não coloide (albumina ou amido) — para expandir o intravascular (KDIGO 3.1.1, grau 2B).":
+    "⚠️ EN AUSENCIA DE CHOQUE HEMORRÁGICO, use CRISTALOIDE ISOTÓNICO — no coloide (albúmina o almidón) — para expandir el intravascular (KDIGO 3.1.1, grado 2B).",
+  "Se RESPONDEU: siga até a euvolemia e reavalie a creatinina em 6 a 12 h. Se NÃO respondeu após reposição adequada, siga para a exposição a nefrotóxico.":
+    "Si RESPONDIÓ: siga hasta la euvolemia y reevalúe la creatinina en 6 a 12 h. Si NO respondió tras reposición adecuada, siga hacia la exposición a nefrotóxico.",
+  "Prática clínica estabelecida":
+    "Práctica clínica establecida",
+  "Prática aceita — citação ainda não transcrita":
+    "Práctica aceptada — cita aún no transcrita",
+  "Diretriz clínica — sem recomendação graduada GERAL para nefrotóxicos":
+    "Directriz clínica — sin recomendación graduada GENERAL para nefrotóxicos",
+  "⚠️ A 5.1.1 fala de alterações AMEAÇADORAS de fluidos, eletrólitos e equilíbrio ácido-base. A acidemia grave refratária é literalmente uma delas.":
+    "⚠️ La 5.1.1 habla de alteraciones AMENAZANTES de fluidos, electrolitos y equilibrio ácido-base. La acidemia grave refractaria es literalmente una de ellas.",
+  "⚠️ A KDIGO gradua por DROGA (aminoglicosídeo, anfotericina, contraste), não como regra única. Carimbar grau aqui seria emprestar força de outro assunto.":
+    "⚠️ La KDIGO gradúa por FÁRMACO (aminoglucósido, anfotericina, contraste), no como regla única. Sellar un grado aquí sería tomar prestada la fuerza de otro asunto.",
+  "⚠️ A razão de presumir AGUDO: erra para o lado da ação, que é o lado seguro quando a base é desconhecida. Presumir crônico faria perder o intervalo em que a causa ainda é reversível.":
+    "⚠️ La razón de presumir AGUDO: yerra hacia el lado de la acción, que es el lado seguro cuando la base es desconocida. Presumir crónico haría perder el intervalo en que la causa aún es reversible.",
+  "⚠️ A ressalva É a condição: a recomendação vale NA AUSÊNCIA de choque hemorrágico, e por isso ela anda no mesmo item, nunca em linha separada.":
+    "⚠️ La salvedad ES la condición: la recomendación vale EN AUSENCIA de choque hemorrágico, y por eso va en el mismo ítem, nunca en línea separada.",
+  "⚠️ NÃO PROCURE GRAU KDIGO PARA ESTA LINHA: a diretriz diz, na metodologia, que excluiu os estudos de IRA por rabdomiólise.":
+    "⚠️ NO BUSQUE GRADO KDIGO PARA ESTA LÍNEA: la directriz dice, en la metodología, que excluyó los estudios de IRA por rabdomiólisis.",
   "Diretriz clínica — sem recomendação graduada geral para nefrotóxicos":
     "Directriz clínica — sin recomendación graduada general para nefrotóxicos",
   "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":

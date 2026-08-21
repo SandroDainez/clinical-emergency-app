@@ -4,19 +4,11 @@
     "por_que_existe": "Ordem do autor em 2026-08-20: «Não invente a força de nenhuma conduta. Onde não estiver claro, marque como pendência e PARE — preencher por suposição é o mesmo defeito com nome novo.» Sem esta lista, 21 condutas ficariam sem classificação e sem ninguém saber.",
     "como_sai_daqui": "Quando o autor disser qual é a força (e a classe/grau, o tipo de documento ou a lacuna), o nó ganha `procedencia` na árvore e a linha some daqui. `test:forca-da-afirmacao` cobra: nó sem procedência E sem linha aqui reprova.",
     "medido_em": "2026-08-20",
-    "reclassificado_em": "2026-08-20: oito saíram da lista por decisão do autor — 1 é DEFINIÇÃO (estagio_kdigo, KDIGO 2012, sem grau), 2 são TRANSIÇÃO (trata_choque, trata_congestao) e 5 são ORGANIZAÇÃO DO ATENDIMENTO (k_sem_valor, nefro_descobrir, acionar, trata_anuria, seguimento). O que sobra é afirmação clínica de verdade, e é do autor."
+    "reclassificado_em": "2026-08-20: oito saíram da lista por decisão do autor — 1 é DEFINIÇÃO (estagio_kdigo, KDIGO 2012, sem grau), 2 são TRANSIÇÃO (trata_choque, trata_congestao) e 5 são ORGANIZAÇÃO DO ATENDIMENTO (k_sem_valor, nefro_descobrir, acionar, trata_anuria, seguimento). O que sobra é afirmação clínica de verdade, e é do autor.",
+    "estado": "2026-08-21 — as 10 pendências de FORÇA foram revisadas com o autor e aplicadas, MENOS `trata_uremia`, que parou por instrução dele (o verbatim da 5.1.1 não nomeia pericardite nem sangramento urêmico). `sem_base` NÃO é pendência de força: é pendência de FONTE (D-65), e está aqui só para o instrumento não a confundir com nó esquecido."
   },
   "pendentes": {
-    "k_ecg_normal": "«ECG normal não exclui» — a afirmação sobre sensibilidade do ECG na hipercalemia não tem fonte declarada no repositório.",
-    "trata_acidose": "«Tratar a causa» e «sustentar ventilação» sem fonte declarada; o app já recusa escolher dose de bicarbonato.",
-    "trata_uremia": "Indicações de TRS por uremia sintomática — o repositório não tem a diretriz que as gradua.",
-    "retencao": "Sondagem de alívio na retenção: prática difundida, sem documento declarado no repositório.",
-    "fazer_agora": "Bloco de abertura do módulo — mistura estadiamento (KDIGO 2012), ordens operacionais e ponteiros. Precisa ser repartido antes de receber UMA força.",
-    "sem_base": "⚠️ ALVO NOMEADO: KDIGO 2012, Tabelas 8 e 9 (creatinina basal desconhecida) — NÃO transcritas. A atribuição à diretriz foi RETIRADA da tela em 2026-08-21; a conduta ficou como nossa. Quem transcrever as tabelas devolve a atribuição.",
-    "cronico_agudizado": "Conduta de IRA sobre DRC sem fonte graduada declarada.",
-    "indeterminado": "Conduta do caso indeterminado — a §6 da especificação manda existir, mas não gradua.",
-    "obstrucao_conduta": "Sondagem e ultrassom na obstrução: o repositório não declara a fonte.",
-    "pre_renal": "Reposição volêmica guiada por resposta — sem fonte graduada declarada aqui.",
-    "renal_conduta": "Lesão intrínseca: remover o removível — sem fonte graduada declarada."
+    "trata_uremia": "⚠️ PARADO E AVISADO, conforme a instrução do autor (2026-08-21). A decisão dele foi KDIGO 5.1.1 \"Not Graded\", pela mesma frase da acidose — mas o VERBATIM da 5.1.1 diz \"life-threatening changes in FLUID, ELECTROLYTE, and ACID-BASE balance\" e NÃO nomeia pericardite nem sangramento urêmico. Uremia não é fluido, eletrólito nem ácido-base. Encaixar seria forçar — e a instrução era parar e avisar nesse caso. ALVO: a KDIGO 2012 no capítulo 5.1, o trecho que trata das indicações por uremia sintomática (5.1.2 e texto), ainda não transcrito para este repositório.",
+    "sem_base": "⚠️ ALVO NOMEADO: KDIGO 2012, Tabelas 8 e 9 (creatinina basal desconhecida) — NÃO transcritas. A atribuição à diretriz foi RETIRADA da tela em 2026-08-21; a conduta ficou como nossa. Quem transcrever as tabelas devolve a atribuição."
   }
 }

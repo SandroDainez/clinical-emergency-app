@@ -2831,3 +2831,39 @@ virada para o usuário: um "não medi" sem etiqueta é lido como "medi e não ac
 `MODULOS_COM_FORCA_DECLARADA.length === 31`. Nesse dia a trava passa a **reprovar o
 aviso**, e ele sai das telas — aviso que sobrevive ao motivo vira ruído, e ruído
 ensina a ignorar avisos.
+
+## D-67 · A citação do "ECG normal não exclui hipercalemia"
+
+**Aberta em:** 2026-08-21 · **Nó:** `k_ecg_normal` · **Força já decidida:** `pratica_aceita`
+(afirmação sobre **desempenho de teste**, não sobre conduta).
+
+**O que falta:** a frase literal da **UKKA 2023** sobre a sensibilidade do ECG na
+hipercalemia — **não transcrita** para este repositório.
+
+**O que NÃO foi feito, de propósito:** inventar a citação. A pendência aparece **na
+própria tela**, dentro do selo (`fonte: "⚠️ PENDÊNCIA DE FONTE — alvo: UKKA 2023…"`),
+porque um selo que cita fonte inexistente é pior que selo nenhum: ele parece
+procedência.
+
+**Como fechar:** transcrever a frase para `protocols/fontes-verbatim/`, com número de
+seção, e trocar o texto do campo `fonte`.
+
+## D-68 · As indicações de diálise por UREMIA — `trata_uremia`
+
+**Aberta em:** 2026-08-21 · ⚠️ **PARADA E AVISADA**, conforme a instrução do autor.
+
+**A decisão dele** foi KDIGO 2012 · 5.1.1 · "Not Graded", pela mesma frase que
+sustenta a acidose. **O verbatim não sustenta.** A 5.1.1 diz:
+
+> "Initiate RRT emergently when life-threatening changes in **fluid, electrolyte, and
+> acid-base balance** exist."
+
+**Ela não nomeia pericardite nem sangramento urêmico** — e uremia não é fluido, não é
+eletrólito e não é equilíbrio ácido-base. A acidose refratária cabe literalmente; a
+uremia sintomática, não. Encaixar seria forçar, e a instrução era **parar e avisar**
+exatamente nesse caso.
+
+**Alvo nomeado:** KDIGO 2012, capítulo 5.1 — o trecho das indicações por uremia
+sintomática (5.1.2 e texto de apoio), ainda não transcrito.
+
+**Enquanto isso:** a conduta continua na tela; o que falta é o selo.

@@ -10,6 +10,7 @@ import type {
   DecisionTreeValidationIssue,
   FrontendTreeStep,
   InputNode,
+  ProcedenciaDaConduta,
   ProximoNo,
   TransitionNode,
   TreeValues,
@@ -535,19 +536,29 @@ function mapActionNode(node: ActionNode, interpolate: (t: string) => string): Fr
     actions: node.actions.map(interpolate),
     // Interpolado como as ações: o porquê pode citar peso, dose ou valor do caso.
     porque: (node.porque ?? []).map(interpolate),
-    procedencia: node.procedencia
-      ? {
-          ...node.procedencia,
-          fonte: interpolate(node.procedencia.fonte),
-          lacunaDeEvidencia: node.procedencia.lacunaDeEvidencia
-            ? interpolate(node.procedencia.lacunaDeEvidencia)
-            : undefined,
-          contextoDaFonte: node.procedencia.contextoDaFonte
-            ? interpolate(node.procedencia.contextoDaFonte)
-            : undefined,
-        }
-      : undefined,
+    procedencia: node.procedencia ? interpolarProcedencia(node.procedencia, interpolate) : undefined,
+    // ⚠️ A AFIRMAÇÃO TAMBÉM É INTERPOLADA — ela é o texto LITERAL do item, e o
+    // item pode citar peso ou dose. Interpolar um lado só faria a declaração
+    // deixar de casar com a ação que ela cobre, justamente nos nós com valor.
+    declaracoes: (node.declaracoes ?? []).map((d) => ({
+      ...d,
+      afirmacao: interpolate(d.afirmacao),
+      procedencia: d.procedencia ? interpolarProcedencia(d.procedencia, interpolate) : undefined,
+    })),
     canContinue: true,
+  };
+}
+
+/** Interpola os campos de texto da procedência — um lugar só, dois usos. */
+function interpolarProcedencia(
+  p: ProcedenciaDaConduta,
+  interpolate: (t: string) => string
+): ProcedenciaDaConduta {
+  return {
+    ...p,
+    fonte: interpolate(p.fonte),
+    lacunaDeEvidencia: p.lacunaDeEvidencia ? interpolate(p.lacunaDeEvidencia) : undefined,
+    contextoDaFonte: p.contextoDaFonte ? interpolate(p.contextoDaFonte) : undefined,
   };
 }
 
