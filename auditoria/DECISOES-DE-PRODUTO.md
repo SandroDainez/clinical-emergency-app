@@ -609,3 +609,45 @@ em cada bloco desta auditoria, que afirmação anônima não entra.
 - ⚠️ **31 ícones de módulo em SVG usam hexadecimal cravado** (31 de 31, medido).
   Ilustração decorativa multicolorida — fora do alcance de `currentColor`, e
   declarado como tal em vez de fingir conformidade.
+
+## PD-12 · ATRIBUIÇÃO NÃO PENDE DE QUEM FEZ O ARQUIVO — DECIDIDA (2026-08-21)
+
+**Decisão permanente.** O modelo técnico está em `AM-6`; aqui, o que ele significa
+para o produto.
+
+### A pergunta que o modelo responde
+
+Quando o app mostra alguma coisa que veio de fora — um ícone, um desenho, um dia um
+ECG real —, **quem tem direito sobre aquilo?** A resposta não muda porque nós
+recortamos, compilamos ou embrulhamos o arquivo.
+
+- **Autoria** responde *"quem montou este arquivo aqui?"*
+- **Procedência** responde *"de quem é o que está dentro dele?"*
+
+São perguntas diferentes, e só a segunda decide atribuição e licença.
+
+### Por que isso é decisão de produto
+
+Porque é **o que o app deve ao autor do conteúdo** — e isso é obrigação, não estilo.
+A Apache 2.0 dos ícones exige reter o aviso na distribuição; a licença de uma imagem
+clínica pode exigir mais, ou proibir uso comercial. Um app que perde a atribuição no
+caminho da compilação **descumpre em silêncio**.
+
+E porque estabelece o custo de incorporar: **conteúdo de terceiro entra com licença
+ou não entra.** Isso torna a inclusão mais lenta de propósito, exatamente como a
+regra de dose sem fonte.
+
+### A frase que a trava imprime, e que é o resumo
+
+> **Assinatura não substitui conformidade.**
+
+Uma declaração assinada pelo autor, com a licença faltando, **reprova**. Quem
+declara responde pela declaração; não compra a conformidade dela.
+
+### Estado
+
+- ✅ Modelo aplicado em `test:origem-vetor` (33 vetores) e `test:imagem-clinica`.
+- ✅ Buraco medido e fechado: autoria própria + procedência de terceiro + licença
+  vazia **passava verde** e agora reprova, nos dois caminhos.
+- ✅ Noto Emoji: arquivo/componente nosso · conteúdo Google/Noto · Apache 2.0.
+- ✅ Desenhos produzidos por nós a partir de descrição: arquivo e conteúdo próprios.

@@ -236,7 +236,7 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:imagem-clinica` → `scripts/valida-imagem-clinica.cjs`
 
-- **PROMETE:** que toda imagem em `assets/clinico/` tenha entrada em `auditoria/imagens-clinicas.json` com fonte, procedência, licença e força; e que nenhuma entrada aponte para arquivo inexistente.
+- **PROMETE:** que toda imagem em `assets/clinico/` tenha entrada em `auditoria/imagens-clinicas.json` seguindo o MODELO DE CONTEÚDO INCORPORADO (AM-6): autoria do arquivo, procedência do conteúdo, e — quando a procedência for de terceiro — `quem` e `licenca`, INDEPENDENTE da autoria e de `declarado_por`. E que nenhuma entrada aponte para arquivo inexistente.
 - **NÃO PROMETE:** que a imagem seja a certa, nem que a licença seja válida — ler licença é trabalho humano. A trava garante que alguém DECLAROU.
 - **UNIVERSO:** hoje ZERO imagens. E é por isso que ela é FECHADA POR PADRÃO. ── ⚠️ POR QUE ELA NÃO DIZ "TUDO CERTO" ──────────────────────────────────── Um instrumento com universo zero que imprime "✅ nenhuma irregularidade" é o falso verde que este projeto já pagou três vezes (ver `scripts/lib/universo.cjs`). Aqui o universo zero é o estado NORMAL — não há imagem clínica no app — e a trava diz exatamente isso: "nada a conferir", não "está conforme". Ela existe para reprovar a PRIMEIRA imagem que entrar sem declaração. ── ⚠️ E POR QUE ELA NÃO CONVERTE NADA ───────────────────────────────────── A outra metade da AM-5 — nunca vetorizar imagem clínica real — não é verificável por script: nenhum programa distingue um SVG desenhado à mão de um SVG traçado a partir de uma foto. Isso fica como REGRA ESCRITA e revisão humana, declarado aqui para que a ausência não passe por cobertura.
 

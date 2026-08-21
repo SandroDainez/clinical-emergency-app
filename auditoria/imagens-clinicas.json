@@ -7,11 +7,12 @@
       "arquivo",
       "o_que_mostra",
       "fonte",
+      "autoria",
       "procedencia",
-      "licenca",
       "forca"
     ],
-    "estado": "⚠️ VAZIO DE PROPÓSITO — não há nenhuma imagem clínica raster no app hoje. Isto NÃO é conformidade: é ausência. A trava é fechada por padrão e reprova a primeira que entrar sem declaração."
+    "estado": "⚠️ VAZIO DE PROPÓSITO — não há nenhuma imagem clínica raster no app hoje. Isto NÃO é conformidade: é ausência. A trava é fechada por padrão e reprova a primeira que entrar sem declaração.",
+    "modelo": "⚠️ MODELO GERAL DE CONTEÚDO INCORPORADO (AM-6 · PD-12), o mesmo dos vetores: `autoria` = quem criou o arquivo aqui (propria|terceiro) · `procedencia` = origem do conteúdo visual (propria|terceiro) · `quem` = de quem é esse conteúdo · `licenca` = o direito que autoriza usá-lo. ⚠️ É a PROCEDÊNCIA que obriga `quem` e `licenca` — nunca a autoria do arquivo. Uma imagem clínica é o caso extremo disto: o arquivo costuma ser nosso (recorte, anotação, montagem) e o conteúdo é de terceiro. Um ECG real recortado por nós continua sendo o traçado de outra pessoa. ⚠️ `declarado_por` NÃO entra na conta: assinatura não substitui conformidade."
   },
   "imagens": []
 }

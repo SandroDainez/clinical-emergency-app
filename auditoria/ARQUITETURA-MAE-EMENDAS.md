@@ -331,3 +331,59 @@ ficou com **autoria própria** — o arquivo é nosso, é compilação, nada nel
 Mas **a arte compilada continua sendo do Noto sob Apache 2.0**, e é este o arquivo que
 o app REALMENTE desenha. Por isso `quem` e `licenca` seguem preenchidos ali mesmo com
 autoria própria: a licença acompanha a arte, não o formato em que ela é guardada.
+
+---
+
+## AM-6 · CONTEÚDO INCORPORADO — autoria do arquivo ≠ procedência do conteúdo
+
+**Decisão permanente do autor, 2026-08-21.** ⚠️ **Não é ajuste do registro de
+vetores: é o modelo que vale para TODO conteúdo incorporado daqui para frente**,
+incluindo imagem clínica raster quando ela existir. Ver `PD-12`.
+
+### Os campos
+
+```
+autoria      quem criou o ARQUIVO/COMPONENTE no nosso repositório   propria | terceiro
+procedencia  origem do CONTEÚDO VISUAL incorporado                  propria | terceiro
+quem         de quem é esse conteúdo
+licenca      a licença que autoriza usá-lo
+```
+
+**Um arquivo PODE ser nosso e conter arte de terceiro.** Nesse caso, **atribuição e
+licença continuam OBRIGATÓRIAS**. Não é contradição — é compilação, e vai acontecer
+toda vez que o app empacotar conteúdo de fora.
+
+### A regra da trava
+
+> **Procedência de terceiro exige `quem` e `licenca` — independentemente da autoria
+> do arquivo e de `declarado_por`.**
+>
+> ⚠️ **Assinatura não substitui conformidade.**
+
+### O buraco que isto fecha, medido antes de mexer (2026-08-21)
+
+A exigência pendurava na **autoria do arquivo**. `autoria: "propria"` + conteúdo de
+terceiro + **licença vazia passava VERDE**, com o `declarado_por` assinado pelo
+autor. Quem lesse "autoria: propria" daqui a um ano concluiria que **não há
+atribuição a preservar** — e a Apache 2.0 exige reter o aviso na distribuição.
+
+⚠️ **`procedencia` é ENUM, não prosa.** Adivinhar pelo nome escrito em `quem` se o
+conteúdo é de fora mediria a **redação** em vez do fato (R-87).
+
+### Por que a imagem clínica é o caso extremo
+
+Numa imagem clínica o arquivo é **quase sempre nosso** — recorte, anotação,
+montagem — e o conteúdo é de **terceiro**: do serviço, do paciente, do banco de
+imagens. Pendurar a licença na autoria deixaria a atribuição cair **exatamente onde
+ela mais importa**. Um ECG real recortado por nós continua sendo o traçado de outra
+pessoa.
+
+### Aplicação hoje
+
+| conteúdo | autoria | procedência | licença |
+|---|---|---|---|
+| Noto Emoji (31 ícones + o componente que os desenha) | **própria** | Google/Noto | Apache 2.0 |
+| `tracado-de-ecg.ts` — sintetizado por gaussianas, sem copiar nem traçar | **própria** | **própria** | próprio |
+
+**Travas que já aplicam o modelo:** `test:origem-vetor` (33 vetores) e
+`test:imagem-clinica` (fechada por padrão, universo zero).

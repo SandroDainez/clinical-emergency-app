@@ -3,8 +3,10 @@
  * IMAGEM CLÍNICA RASTER É AFIRMAÇÃO CLÍNICA (AM-5 §4 · PD-11).
  *
  * PROMETE: que toda imagem em `assets/clinico/` tenha entrada em
- *   `auditoria/imagens-clinicas.json` com fonte, procedência, licença e força; e
- *   que nenhuma entrada aponte para arquivo inexistente.
+ *   `auditoria/imagens-clinicas.json` seguindo o MODELO DE CONTEÚDO INCORPORADO
+ *   (AM-6): autoria do arquivo, procedência do conteúdo, e — quando a procedência
+ *   for de terceiro — `quem` e `licenca`, INDEPENDENTE da autoria e de
+ *   `declarado_por`. E que nenhuma entrada aponte para arquivo inexistente.
  * NÃO PROMETE: que a imagem seja a certa, nem que a licença seja válida — ler
  *   licença é trabalho humano. A trava garante que alguém DECLAROU.
  * UNIVERSO: hoje ZERO imagens. E é por isso que ela é FECHADA POR PADRÃO.
@@ -30,7 +32,10 @@ const path = require("path");
 const app = path.resolve(__dirname, "..");
 const PASTA = path.join(app, "assets", "clinico");
 const REGISTRO = path.join(app, "auditoria", "imagens-clinicas.json");
-const OBRIGATORIOS = ["arquivo", "o_que_mostra", "fonte", "procedencia", "licenca", "forca"];
+// ⚠️ MODELO GERAL DE CONTEÚDO INCORPORADO (AM-6 · PD-12), o MESMO dos vetores:
+// `autoria` é quem criou o arquivo aqui; `procedencia` é a origem do conteúdo
+// visual; e é a PROCEDÊNCIA que obriga `quem` e `licenca`, nunca a autoria.
+const OBRIGATORIOS = ["arquivo", "o_que_mostra", "fonte", "autoria", "procedencia", "forca"];
 const RASTER = /\.(png|jpe?g|webp|gif|tiff?|bmp)$/i;
 
 const falhas = [];
@@ -63,6 +68,24 @@ for (const d of declaradas) {
   const faltando = OBRIGATORIOS.filter((c) => !d[c]);
   if (faltando.length) {
     falhas.push(`entrada "${d.arquivo ?? "(sem arquivo)"}" sem: ${faltando.join(", ")}.`);
+  }
+  // ⚠️ A LICENÇA PENDE DA PROCEDÊNCIA DO CONTEÚDO, NÃO DA AUTORIA DO ARQUIVO.
+  // Uma imagem clínica é, quase sempre, o caso extremo disto: o arquivo é nosso
+  // (recorte, anotação, montagem) e o conteúdo é de terceiro — do serviço, do
+  // paciente, do banco de imagens. Pendurar a licença na autoria deixaria a
+  // atribuição cair exatamente onde ela mais importa.
+  // ⚠️ E `declarado_por` não entra na conta: assinatura não substitui conformidade.
+  if (d.procedencia && !["propria", "terceiro"].includes(d.procedencia)) {
+    falhas.push(`entrada "${d.arquivo}": \`procedencia\` deve ser "propria" ou "terceiro" (veio "${d.procedencia}").`);
+  }
+  if (d.procedencia === "terceiro" && (!d.quem || !d.licenca)) {
+    falhas.push(
+      `entrada "${d.arquivo}": conteúdo de TERCEIRO sem \`quem\` e/ou \`licenca\` — e \`autoria\` "${d.autoria}" NÃO isenta.\n` +
+      `      ⚠️ Um ECG real recortado por nós continua sendo o traçado de outra pessoa.`
+    );
+  }
+  if (d.autoria === "terceiro" && d.procedencia === "propria") {
+    falhas.push(`entrada "${d.arquivo}": arquivo de terceiro com conteúdo declarado como nosso — ou um, ou outro.`);
   }
   if (d.arquivo && !noDisco.includes(d.arquivo)) {
     falhas.push(`entrada "${d.arquivo}" declarada, mas o arquivo não existe em assets/clinico/.`);
