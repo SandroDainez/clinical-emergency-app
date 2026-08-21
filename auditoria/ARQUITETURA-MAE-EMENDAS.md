@@ -258,3 +258,41 @@ arquivos em `assets/images/` são ícone, splash e logotipos. A trava
 `test:imagem-clinica` é **fechada por padrão**: ela não diz "está tudo certo", ela
 **reprova a primeira imagem que entrar sem declaração**. Trava de universo zero que
 diz "✅ nenhuma irregularidade" é o falso verde que este projeto já pagou três vezes.
+
+### §5 · TODO ASSET SVG DECLARA COMO NASCEU (2026-08-21)
+
+```
+origem: 'desenhado'  — construído a partir de descrição, sem imagem de base
+      | 'derivado'   — traçado, vetorizado ou decalcado sobre imagem existente
+                       (e aí exige a procedência e a LICENÇA da imagem de base)
+```
+
+⚠️ **Continua não verificável por script** — nenhum programa distingue um SVG
+desenhado de um SVG traçado sobre uma fotografia; a diferença está na intenção de
+quem o produziu, não nos bytes.
+
+**O que a declaração muda não é a verificabilidade — é o custo de violar.** Antes,
+decalcar um ECG real e chamá-lo de ícone era **silêncio**: nada no repositório
+dizia o contrário. Agora exige uma **afirmação falsa**, escrita, num arquivo
+versionado — e afirmação escrita alguém confere depois.
+
+É a mesma conversão do `contextoDaFonte`: **o que não se mede, se declara; e o que
+se declara, alguém pode conferir depois.**
+
+A trava `test:origem-vetor` **não julga se a declaração é verdadeira**. Ela reprova
+**asset sem declaração**, e diz no cabeçalho que a veracidade é do autor.
+
+**Registro:** `auditoria/origem-dos-vetores.json` · **Universo hoje:** 33 vetores
+(31 arquivos `.svg` + 2 embutidos em código), todos declarados `desenhado`.
+
+⚠️ **`autoria` / `quem` / `licenca` são acréscimo do agente, pendentes de
+confirmação.** O eixo de duas pontas responde *"foi traçado sobre imagem?"* — não
+responde *"quem desenhou"*, que é de onde a licença pende. Os 31 ícones são arte de
+**terceiro** (Noto Emoji, Google, Apache 2.0). Sem esse campo, um asset de terceiro
+passaria como `desenhado` sem que a licença aparecesse em lugar nenhum. O autor pode
+remover os campos; a trava só os exige de quem se declara `terceiro`.
+
+⚠️ **E as 33 entradas foram escritas pelo AGENTE**, a partir dos documentos do
+repositório (`assets/emoji/LICENSE-NOTO-EMOJI.txt` e cabeçalhos de código) — **não
+pelo autor**. São rastreáveis, não confirmadas, e cada entrada diz isso no campo
+`declarado_por`.
