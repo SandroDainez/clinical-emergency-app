@@ -151,6 +151,42 @@ L("\n⚠️ Este mapa NÃO reprova e NÃO confere a literatura: 'vigente' é o q
   }
 }
 
+// ── 7. Repetições declaradas de linha recolhida ─────────────────────────────
+//
+// ⚠️ MESMA LIÇÃO DO `CUES_SEM_MP3`, APLICADA DE NOVO. `REPETICOES_DECLARADAS`
+// vive dentro de `valida-ira.cjs`, e lista dentro de código é BACKLOG
+// SILENCIOSO com outro nome. A trava reprova repetição NOVA — mas as declaradas
+// ficariam invisíveis para sempre.
+//
+// ⚠️ E ELAS ENVELHECEM. Uma repetição legítima hoje pode deixar de ser legítima
+// quando o conteúdo mudar: basta uma das cópias ganhar selo, ou o caminho do
+// usuário mudar e as duas passarem a aparecer na mesma sessão. Ninguém revisita
+// uma lista que não aparece em lugar nenhum.
+{
+  const trava = lerFonte(path.join(app, "scripts/valida-ira.cjs"));
+  const bloco = trava.match(/const REPETICOES_DECLARADAS = \[([\s\S]*?)\n\s*\];/);
+  const itens = bloco ? [...bloco[1].matchAll(/\[\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\]/g)] : [];
+  L(`\n── 7. REPETIÇÕES DECLARADAS (linha recolhida em mais de um nó): ${itens.length} ──`);
+  // ⚠️ VACUIDADE, a mesma da seção 6: lista não encontrada e lista vazia dizem
+  // coisas opostas. Se alguém renomear a constante, "nenhuma" seria mentira.
+  if (!bloco) {
+    L("   ⚠️ REPETICOES_DECLARADAS NÃO ENCONTRADA em scripts/valida-ira.cjs — a lista mudou de");
+    L("      nome ou de forma, e este relatório parou de enxergar as repetições aceitas.");
+  } else if (!itens.length) {
+    L("   nenhuma — nenhuma linha recolhida se repete entre nós.");
+  } else {
+    L("   Repetição NÃO é defeito por si: um aviso pode caber em dois caminhos alternativos.");
+    L("   O que a trava impede é repetição NOVA entrar sem ninguém decidir — foi assim que a");
+    L("   tabela de estadiamento passou a viver em dois nós e as cópias JÁ divergiram.");
+    for (const [, marca, motivo] of itens) {
+      L(`   • « ${marca} »`);
+      L(`     porque: ${motivo.replace(/\\"/g, '"')}`);
+    }
+    L("   ⚠️ REVISITE quando o conteúdo mudar: se uma das cópias ganhar selo, a outra deve");
+    L("      APONTAR em vez de repetir.");
+  }
+}
+
 if (!universoOk) {
   L("❌ universo insuficiente — os zeros deste mapa NÃO significam ausência de dívida.\n");
   process.exit(1);

@@ -184,3 +184,66 @@ aposentado.
 
 **Nada aqui é urgente e nada aqui está esquecido** — cada item tem trava ou
 registro que o mantém visível.
+
+---
+
+# O MÓDULO RENAL FECHADO — e por que ele é o argumento para os outros trinta
+
+**Fechado pelo autor em 2026-08-21.** Primeiro módulo do app com **procedência
+declarada de ponta a ponta**.
+
+## O que ele tem
+
+- **Toda conduta com força e fonte.** 17 de 18 condutas declaradas — a que falta é
+  pendência de FONTE, não de força (D-65), e está nomeada.
+- **Seis recomendações da KDIGO 2012 transcritas VERBATIM** em
+  `protocols/fontes-verbatim/kdigo-2012-aki.md` — 3.1.1, 3.4.1, 3.4.2, 3.5.1, 5.1.1,
+  5.1.2 —, **conferidas contra o primário pelo autor, médico**, na página 12 do PDF.
+  Antes disso o repositório tinha a *referência bibliográfica* e nada mais:
+  **referência não é fonte; texto é.**
+- **Três ausências REGISTRADAS**, que é o que a maioria dos apps não faz:
+  nefrotóxico sem recomendação geral · desafio volêmico sem recomendação nenhuma ·
+  **rabdomiólise explicitamente FORA DO ESCOPO**, com o verbatim da metodologia. Esta
+  última existe para impedir que alguém "ache" uma justificativa KDIGO daqui a um ano
+  — o módulo inteiro cita KDIGO, e a vizinhança convence.
+- **Uma recomendação 1A que estava na tela SEM SELO NENHUM**, ao lado de adjuvantes
+  2C. O usuário sem experiência não tinha como distinguir as duas — que era o defeito
+  que originou o campo de força.
+
+## As quatro pendências, todas nomeadas e com alvo
+
+| # | o que falta | alvo |
+|---|---|---|
+| D-65 | atribuição da basal desconhecida | KDIGO 2012, **Tabelas 8 e 9** |
+| D-67 | a citação do "ECG normal não exclui" | **UKKA 2023**, frase sobre sensibilidade |
+| D-69 | selo em nó de decisão | **bloqueante da fase do motor**, 2 instâncias nomeadas |
+| D-70 | "vanco + pip-tazo somam nefrotoxicidade" | **a definir** — evidência sem fonte |
+
+**Nenhuma escondida.** Duas aparecem na própria tela do app.
+
+## O que o módulo ensinou aos instrumentos
+
+Cinco travas nasceram ou mudaram aqui, e nenhuma delas é sobre rim:
+
+1. **Força por AFIRMAÇÃO, não por tela** — uma tela pode afirmar duas coisas com
+   forças diferentes, e um selo só faz a forte carimbar a fraca ou a fraca rebaixar a
+   forte. **As duas mentem, para lados opostos.**
+2. **"Not Graded" é grau literal**, não grau ausente — rebaixá-lo apaga que a diretriz
+   faz a afirmação.
+3. **A ressalva anda colada à afirmação** — separar cria falso absoluto. Vale para a
+   exceção do diurético (3.4.2) e para o choque hemorrágico (3.1.1).
+4. **Caber numa frase geral não é ser nomeado** — foi o que impediu encaixar
+   pericardite na 5.1.1 e depois na 5.1.2.
+5. **Repetição de linha recolhida reprova** — e a prova não foi teórica: a tabela de
+   estadiamento vivia em dois nós e **as cópias já tinham divergido**, na nota da
+   calculadora, dentro do mesmo módulo, sem ninguém notar.
+
+⚠️ **O item 5 converteu o R-95 de previsão em observação.** O argumento era "a
+duplicata VAI divergir". A medição mostrou: **ela já estava divergindo.**
+
+## O que decide se o formato vale para os outros trinta
+
+**Não é esta página.** É o **percurso das seis emergências no celular** — se o médico
+com o paciente na frente atravessa o fluxo sem tropeçar no que a auditoria acrescentou.
+Selo, porquê e procedência custam tela; se o custo aparecer no meio de uma parada, o
+formato muda antes de ser replicado.
