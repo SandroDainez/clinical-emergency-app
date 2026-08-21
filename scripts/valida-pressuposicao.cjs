@@ -64,6 +64,7 @@ const { execFileSync } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { conferirUniverso } = require("./lib/universo.cjs");
 
 const app = path.resolve(__dirname, "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pressup-"));
@@ -209,6 +210,11 @@ function caminhoSemCaptura(N, entrada, alvo, capturas) {
 
 const falhas = [];
 let candidatas = 0;
+// ⚠️ UNIVERSO E RESULTADO SAEM JUNTOS. "0 afirmações" sem "de quantos nós, com
+// quantos achados no vocabulário" foi exatamente o verde falso desta trava.
+console.log("\nNenhum nó afirma achado que ninguém perguntou\n");
+let universoOk = conferirUniverso("valida-pressuposicao", "achados_no_vocabulario", ACHADOS.length);
+let nosLidos = 0;
 const contagem = { nao_afirma: 0, afirmacao: 0, vinheta: 0 };
 
 for (const arq of ARVORES) {
@@ -216,6 +222,7 @@ for (const arq of ARVORES) {
   for (const arv of Object.values(mod)) {
     if (!arv || typeof arv !== "object" || !arv.nodes) continue;
     const N = arv.nodes;
+    nosLidos += Object.keys(N).length;
     const capta = {};
     for (const [nome, re] of ACHADOS) {
       capta[nome] = new Set(Object.values(N).filter((n) => re.test(perguntaDeNo(n))).map((n) => n.id));
@@ -246,7 +253,7 @@ for (const arq of ARVORES) {
 
 fs.rmSync(tmp, { recursive: true, force: true });
 
-console.log("\nNenhum nó afirma achado que ninguém perguntou\n");
+if (!conferirUniverso("valida-pressuposicao", "nos_da_arvore", nosLidos)) universoOk = false;
 console.log(`   ocorrências candidatas: ${candidatas}`);
 console.log(`   ordem/critério/enunciado geral: ${contagem.nao_afirma} · AFIRMAÇÃO: ${contagem.afirmacao} · VINHETA: ${contagem.vinheta}`);
 
@@ -258,6 +265,10 @@ if (falhas.length) {
     "      · o achado MUDA o que se faz nos próximos minutos → vira PERGUNTA, com as três saídas;\n" +
     "      · não muda → a frase SAI. Texto condicional (\"se houver…\") é a poluição já reprovada.\n"
   );
+  process.exit(1);
+}
+if (!universoOk) {
+  console.log("❌ universo insuficiente — o resultado acima NÃO significa ausência de defeito.\n");
   process.exit(1);
 }
 console.log("\n✅ nenhuma afirmação sobre achado não capturado\n");

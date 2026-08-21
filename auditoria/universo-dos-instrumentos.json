@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "o_que_e": "O PISO do universo de cada instrumento: quantos itens ele precisa ter conseguido olhar para que o resultado dele signifique alguma coisa.",
+    "por_que_existe": "Três instrumentos deste projeto passaram VERDE com o universo vazio (varredura de 2026-08-20): valida-pressuposicao com o vocabulário apagado, a cobertura do 'não sei' com o regex sem casar, e mapa:fontes §5 com guidelines vazio. Falso negativo carimbado de verde é a forma mais cara: ninguém confere boa notícia.",
+    "como_usar": "scripts/lib/universo.cjs lê este arquivo. O instrumento imprime universo E resultado juntos; universo abaixo do piso REPROVA com a frase que separa 'não consegui olhar' de 'não há'.",
+    "erosao": "⚠️ O piso também é RETRATO: se o número medido cair, alguém tirou conteúdo do radar sem perceber. Queda legítima se corrige AQUI, com o motivo — nunca afrouxando o código do instrumento.",
+    "nao_e": "Não é meta e não é teto. Piso alto demais vira falso positivo; piso zero é o defeito que ele existe para matar.",
+    "medido_em": "2026-08-20"
+  },
+
+  "valida-pressuposicao": {
+    "_nota": "Medido: 28 achados no vocabulário, 55 nós no renal. Pisos com folga para edição normal, mas longe de zero.",
+    "achados_no_vocabulario": 20,
+    "nos_da_arvore": 40
+  },
+
+  "auditoria-padroes-ui": {
+    "_nota": "Medido: 20 árvores, 135 nós de decisão, 22 deles no radar da regra de gravidade (regex ESTAB). É o radar que some quando alguém reescreve um título — foi a mutação que passou verde.",
+    "arvores": 15,
+    "nos_de_decisao": 100,
+    "decisoes_no_radar_de_gravidade": 15
+  },
+
+  "mapa-de-fontes": {
+    "_nota": "Medido: 46 fontes, todas com módulo declarado.",
+    "fontes": 35,
+    "fontes_com_modulo": 35
+  },
+
+  "valida-prazo-visivel": {
+    "_nota": "Resistia por ACIDENTE — falhava porque os tetos por módulo não fechavam, não porque soubesse que não tinha olhado. Medido: 20 árvores.",
+    "arvores": 15
+  },
+
+  "valida-tamanho-de-item": {
+    "_nota": "O piso de nós já estava embutido no próprio script (minimoDeNos). Fica aqui para o retrato ser um só.",
+    "nos_da_arvore": 40
+  }
+}

@@ -27,6 +27,7 @@
 const fs = require("fs");
 const path = require("path");
 const { lerFonte } = require("./lib/fonte.cjs");
+const { conferirUniverso } = require("./lib/universo.cjs");
 
 const app = path.resolve(__dirname, "..");
 const meta = JSON.parse(fs.readFileSync(path.join(app, "protocols/guidelines_metadata.json"), "utf8"));
@@ -46,6 +47,11 @@ const anoBase = (g) => {
 const rev = (g) => mmAAAA(g.nossa && g.nossa.revisadoEm);
 
 L("\n════ MAPA DE FONTES ════\n");
+// ⚠️ UNIVERSO PRIMEIRO. Com `guidelines: []` este mapa dizia "0 fontes sem ano
+// de base" e "0 cues sem MP3" — duas boas notícias sobre nada.
+let universoOk = conferirUniverso("mapa-de-fontes", "fontes", meta.guidelines.length);
+if (!conferirUniverso("mapa-de-fontes", "fontes_com_modulo", meta.guidelines.filter((g) => (g.modules_using ?? []).length).length)) universoOk = false;
+L("");
 L(`versão de conteúdo do app: ${meta.app_content_version} · última revisão completa: ${meta.last_full_review} · próxima prevista: ${meta.next_review_due}`);
 
 // ── 1. Por módulo ───────────────────────────────────────────────────────────
@@ -143,6 +149,11 @@ L("\n⚠️ Este mapa NÃO reprova e NÃO confere a literatura: 'vigente' é o q
     L("   Para ligar: gravar (mesma voz), registrar em web-audio-cues.ts e no manifesto,");
     L("   e tirar a chave de CUES_SEM_MP3 — uma linha, sem flag para lembrar.");
   }
+}
+
+if (!universoOk) {
+  L("❌ universo insuficiente — os zeros deste mapa NÃO significam ausência de dívida.\n");
+  process.exit(1);
 }
 
 for (const a of vig.achados_de_brinde ?? []) {

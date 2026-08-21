@@ -34,6 +34,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { conferirUniverso } = require("./lib/universo.cjs");
 const { execFileSync } = require("node:child_process");
 
 const appDir = path.resolve(__dirname, "..");
@@ -48,6 +49,17 @@ const PRAZO = /\b\d+([,.]\d+)?\s*(h|hora|horas|min|minutos|segundos|semanas?|dia
 const PRECEDENCIA = /\bANTES DE\b|\bantes da\b|\bantes do\b|\bnão espere\b|\bnão aguarde\b|\bprimeiro\b|\bsó depois\b|\bnão faça .{0,40}antes\b/i;
 
 const arquivos = fs.readdirSync(appDir).filter((f) => /-decision-tree\.ts$/.test(f)).sort();
+
+// ⚠️ ESTA TRAVA RESISTIA POR ACIDENTE. Com o universo vazio ela reprovava — mas
+// por causa dos tetos por módulo que não fechavam, não porque soubesse que não
+// tinha olhado. Acidente não é proteção: no dia em que os tetos zerassem junto,
+// o verde voltaria. Agora ela sabe dizer "não consegui olhar".
+console.log("");
+const universoOk = conferirUniverso("valida-prazo-visivel", "arvores", arquivos.length);
+if (!universoOk) {
+  console.log("❌ universo insuficiente — nenhuma conferência de prazo foi feita.\n");
+  process.exit(1);
+}
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prazo-visivel-"));
 const arvores = {};
 try {

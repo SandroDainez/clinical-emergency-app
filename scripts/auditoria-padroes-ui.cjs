@@ -40,6 +40,7 @@
  */
 const fs = require("node:fs");
 const { lerFonte } = require("./lib/fonte.cjs");
+const { conferirUniverso } = require("./lib/universo.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -79,6 +80,8 @@ const { FAIXA_DE_ENTRADA } = require(path.join(tmp, "lib", "faixas-de-entrada.js
 const ESTAB = /instabil|instável|instavel|est[áa]vel|gravidade|grave\b|crítico|critico|choque/i;
 const semFaixa = [];
 const semGuiado = [];
+let nosDeDecisao = 0;
+let decisoesNoRadar = 0;
 for (const f of arqs) {
   const out = path.join(tmp, f.replace(/\.ts$/, ".js"));
   if (!fs.existsSync(out)) continue;
@@ -94,6 +97,7 @@ for (const f of arqs) {
         }
       }
       if (no.type !== "decision") continue;
+      nosDeDecisao += 1;
       // ⚠️ O UNIVERSO NÃO PODE DEPENDER DA COBERTURA — era circular.
       //
       // Antes isto lia também o `summary`. Como as regras de "na dúvida" vivem
@@ -105,6 +109,7 @@ for (const f of arqs) {
       // o que fizemos com ele, e não pode definir se ele deveria ser medido.
       const txt = [no.title, no.question].filter(Boolean).join(" ");
       if (!ESTAB.test(txt)) continue;
+      decisoesNoRadar += 1;
       const rot = (no.options || []).map((o) => o.label).join(" | ");
       // ⚠️ REGRA TAMBÉM COBRE A DÚVIDA — e às vezes é a cobertura CERTA.
       //
@@ -153,7 +158,14 @@ L(`\n2. CAMPO NUMÉRICO SEM FAIXA — ${semFaixa.length}`);
 for (const s of semFaixa) L(`   ❌ ${s}`);
 L(`\n3. UI v2 — padrão do app: ${uiV2Padrao} · ${todos.length - foraV2.length} de ${todos.length} módulos`);
 for (const m of foraV2) L(`   ❌ ${m}`);
-L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length}`);
+// ⚠️ UNIVERSO ANTES DO RESULTADO. "0 decisões sem caminho guiado" com o radar
+// vazio foi o falso verde desta seção: basta alguém reescrever um título e o
+// regex de gravidade deixa de casar.
+L("");
+let universoOk = conferirUniverso("auditoria-padroes-ui", "arvores", arqs.length);
+if (!conferirUniverso("auditoria-padroes-ui", "nos_de_decisao", nosDeDecisao)) universoOk = false;
+if (!conferirUniverso("auditoria-padroes-ui", "decisoes_no_radar_de_gravidade", decisoesNoRadar)) universoOk = false;
+L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length} (de ${decisoesNoRadar} no radar)`);
 for (const s of semGuiado) L(`   ❌ ${s}`);
 const pendencias =
   caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
@@ -178,6 +190,11 @@ fs.rmSync(tmp, { recursive: true, force: true });
 //
 // TETO CONGELADO, mesmo molde do legado de cor e da D-35: o número de hoje é o
 // máximo. Só desce. Cada bloco da convergência de UI aperta o próprio teto.
+if (!universoOk) {
+  console.log("❌ universo insuficiente — as contagens acima NÃO significam ausência de pendência.\n");
+  process.exit(1);
+}
+
 const TETO = 10;
 
 if (pendencias > TETO) {

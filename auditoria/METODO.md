@@ -5307,6 +5307,40 @@ módulo.
 em bloco separado dos critérios que uma trava sustenta. E, se o número importa o
 bastante para virar critério, ele vira TRAVA antes de virar linha de tabela.
 
+#### E a mais cara de todas: FALSO NEGATIVO CARIMBADO DE VERDE
+
+Uma trava que não consegue olhar e diz **"não há"** é pior que uma trava
+quebrada: a quebrada faz barulho, e esta entrega boa notícia — **e boa notícia
+ninguém confere**.
+
+**A varredura (2026-08-20).** Sete instrumentos foram mutados para ficar sem
+universo. **Três disseram que estava tudo certo:**
+
+| instrumento | mutação | o que dizia |
+|---|---|---|
+| `valida-pressuposicao` | vocabulário de achados apagado | ✅ *nenhuma afirmação* — com 0 candidatas |
+| cobertura do "não sei" | regex de gravidade sem casar | *0 pendências*, teto folgado |
+| `mapa:fontes` §5 | `guidelines: []` | *0 fontes sem ano de base* |
+
+E dois dos que **resistiram, resistiram por acidente** — `valida-prazo-visivel`
+falhava porque os tetos por módulo não fechavam, não porque soubesse que não
+tinha olhado. Acidente não é proteção: no dia em que os tetos zerassem junto, o
+verde voltaria.
+
+**O conserto, em três partes** (`scripts/lib/universo.cjs`):
+
+1. **Universo e resultado saem juntos.** Nenhum "0 achados" sem o "de quantos".
+2. **Universo abaixo do piso REPROVA**, com a frase que separa os dois casos:
+   *"isto é «não consegui olhar», não «não há achado»"*.
+3. **O piso mora em arquivo** (`auditoria/universo-dos-instrumentos.json`), não
+   no código do instrumento — **piso escrito dentro do instrumento é piso que se
+   afrouxa junto com ele**. E ele é também RETRATO CONTRA EROSÃO: se o número
+   medido cair, alguém tirou conteúdo do radar sem perceber.
+
+⚠️ **O piso não é meta nem teto.** Ele responde uma pergunta só: *o instrumento
+conseguiu olhar?* Piso alto demais vira falso positivo; piso zero é o defeito que
+ele existe para matar.
+
 ---
 
 ## R-1 · COROLÁRIO — ASSERÇÃO QUE ACEITA "UM DOS DOIS" NÃO PROTEGE NENHUM

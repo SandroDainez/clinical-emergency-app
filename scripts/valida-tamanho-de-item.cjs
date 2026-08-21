@@ -29,12 +29,17 @@ const { execFileSync } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { conferirUniverso } = require("./lib/universo.cjs");
 
 const app = path.resolve(__dirname, "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "tamanho-item-"));
 
-/** Árvores auditadas, e o mínimo de nós que cada uma tem de ter. */
-const ARVORES = [{ arquivo: "ira-decision-tree.ts", minimoDeNos: 40 }];
+/**
+ * Árvores auditadas. ⚠️ O PISO DE NÓS SAIU DAQUI para o retrato
+ * (`auditoria/universo-dos-instrumentos.json`): piso escrito dentro do
+ * instrumento é piso que se afrouxa junto com o instrumento.
+ */
+const ARVORES = [{ arquivo: "ira-decision-tree.ts" }];
 
 /** §7.4 — os dois limites. */
 const MAX_ACOES_VISIVEIS = 7;
@@ -55,18 +60,15 @@ let telasDeAcao = 0;
 const recolhidosGrandes = [];
 let maiorRecolhido = 0;
 
-for (const { arquivo, minimoDeNos } of ARVORES) {
+for (const { arquivo } of ARVORES) {
   const mod = require(path.join(tmp, arquivo.replace(/\.ts$/, ".js")));
   for (const arv of Object.values(mod)) {
     if (!arv || typeof arv !== "object" || !arv.nodes) continue;
     const nos = Object.values(arv.nodes);
 
-    // ── Piso de universo: menos nós que o declarado é "não enxerguei" ───────
-    if (nos.length < minimoDeNos) {
-      falhas.push(
-        `${arquivo}: só ${nos.length} nó(s) lidos, mínimo declarado ${minimoDeNos} — ` +
-        `NADA foi conferido. Isto é "não consegui olhar", não "não há item grande".`
-      );
+    // ── Piso de universo, lido do retrato ──────────────────────────────────
+    if (!conferirUniverso("valida-tamanho-de-item", "nos_da_arvore", nos.length)) {
+      falhas.push(`${arquivo}: universo abaixo do piso — NADA foi conferido.`);
       continue;
     }
 
