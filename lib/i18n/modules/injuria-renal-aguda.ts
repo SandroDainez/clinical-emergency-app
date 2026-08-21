@@ -1163,6 +1163,70 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "La declaración de fuerza y fuente por conducta se está aplicando módulo a módulo. Donde aún no aparece, la ausencia de sello NO significa recomendación fuerte — significa que ese módulo aún no fue auditado.",
   " ({0} de {1})":
     " ({0} de {1})",
+  // ── O RAMO DO "NÃO SEI" DA ACIDOSE (2026-08-21) ──────────────────────────
+  // ⚠️ TOKEN PURO: a leitura é montada em `derive` e cada peça dela tem chave
+  // própria acima. A entrada existe para a varredura enxergar a string como
+  // traduzida — mesmo tratamento de `{estagio_explicacao}`.
+  "{leitura_acidose}":
+    "{leitura_acidose}",
+  "⚠️ Acidose sem causa identificada não é \"leve\" — é NÃO AVALIADA.":
+    "⚠️ Acidosis sin causa identificada no es \"leve\" — es NO EVALUADA.",
+  "A causa da acidose está identificada? (perfusão, sepse, cetoacidose, intoxicação, perda digestiva, a própria IRA)":
+    "¿La causa de la acidosis está identificada? (perfusión, sepsis, cetoacidosis, intoxicación, pérdida digestiva, la propia IRA)",
+  "A causa está sendo tratada AGORA?":
+    "¿La causa está siendo tratada AHORA?",
+  "Ainda não deu tempo":
+    "Aún no dio tiempo",
+  "COM repercussão atribuível":
+    "CON repercusión atribuible",
+  "Coexiste outra indicação de diálise? (potássio, congestão refratária, oligúria ou anúria, uremia)":
+    "¿Coexiste otra indicación de diálisis? (potasio, congestión refractaria, oliguria o anuria, uremia)",
+  "GRAVE (definição NOSSA) = com repercussão hemodinâmica, de ritmo, de consciência ou ventilatória ATRIBUÍVEL à acidemia.":
+    "GRAVE (definición NUESTRA) = con repercusión hemodinámica, de ritmo, de consciencia o ventilatoria ATRIBUIBLE a la acidemia.",
+  "Houve reavaliação depois de tratar a causa e restaurar a perfusão?":
+    "¿Hubo reevaluación después de tratar la causa y restaurar la perfusión?",
+  "Há repercussão atribuível à acidemia AGORA? (hipotensão que não responde a vasopressor · arritmia · rebaixamento de consciência · esforço ventilatório que o paciente não sustenta)":
+    "¿Hay repercusión atribuible a la acidemia AHORA? (hipotensión que no responde a vasopresor · arritmia · deterioro de la consciencia · esfuerzo ventilatorio que el paciente no sostiene)",
+  "Nenhuma destas perguntas pede número. ⚠️ As duas palavras da pergunta anterior são operacionalização NOSSA — a KDIGO não as define por valor.":
+    "Ninguna de estas preguntas pide número. ⚠️ Las dos palabras de la pregunta anterior son operacionalización NUESTRA — la KDIGO no las define por valor.",
+  "REFRATÁRIA (definição NOSSA) = persiste ou piora APESAR do tratamento da causa e da restauração da perfusão.":
+    "REFRACTARIA (definición NUESTRA) = persiste o empeora A PESAR del tratamiento de la causa y de la restauración de la perfusión.",
+  "ainda sem tempo de reavaliar":
+    "aún sin tiempo de reevaluar",
+  "ainda sem tratamento da causa":
+    "aún sin tratamiento de la causa",
+  "causa NÃO identificada":
+    "causa NO identificada",
+  "em tratamento":
+    "en tratamiento",
+  "reavaliada após correção":
+    "reevaluada tras corrección",
+  "sem reavaliação":
+    "sin reevaluación",
+  "sem repercussão atribuível":
+    "sin repercusión atribuible",
+  "causa identificada":
+    "causa identificada",
+  "A causa vem antes de graduar a acidemia":
+    "La causa viene antes de graduar la acidemia",
+  "Com outra indicação coexistindo, a decisão passa a ser a INDICAÇÃO DIALÍTICA pelo conjunto — não o grau da acidemia.":
+    "Con otra indicación coexistiendo, la decisión pasa a ser la INDICACIÓN DIALÍTICA por el conjunto — no el grado de la acidemia.",
+  "Descobrir · Grave ou refratária?":
+    "Descubrir · ¿Grave o refractaria?",
+  "Identifique a causa da acidose antes de decidir se ela é grave.":
+    "Identifique la causa de la acidosis antes de decidir si es grave.",
+  "Isto já não é graduar a acidose":
+    "Esto ya no es graduar la acidosis",
+  "Siga a varredura: a conversa da diálise vem adiante, com o caso inteiro na mão.":
+    "Siga el barrido: la conversación de la diálisis viene más adelante, con el caso entero en la mano.",
+  "Trate a causa e restaure a perfusão; depois reavalie.":
+    "Trate la causa y restaure la perfusión; después reevalúe.",
+  "➜ A KDIGO 5.1.1 fala do conjunto — alteração de volume, eletrólito ou ácido-base que ameace a vida —, não de um eixo isolado.":
+    "➜ La KDIGO 5.1.1 habla del conjunto — alteración de volumen, electrolito o ácido-base que amenace la vida —, no de un eje aislado.",
+  "➜ As duas definições acima são OPERACIONALIZAÇÃO NOSSA: a KDIGO fala em alteração ameaçadora à vida, e não define grave nem refratária por valor.":
+    "➜ Las dos definiciones de arriba son OPERACIONALIZACIÓN NUESTRA: la KDIGO habla de alteración amenazante para la vida, y no define grave ni refractaria por valor.",
+  "➜ Por isso nenhuma das perguntas deste ramo pede número — nem pH, nem bicarbonato, nem base excess.":
+    "➜ Por eso ninguna de las preguntas de esta rama pide número — ni pH, ni bicarbonato, ni base excess.",
   // ── AS 10 FORÇAS REVISADAS COM O AUTOR (2026-08-21) ──────────────────────
   // ── O pH < 7,0 SAIU COMO LIMIAR, E NADA ENTROU NO LUGAR (R-97) ───────────
   "⚠️ NÃO USE O pH ISOLADO COMO CRITÉRIO ÚNICO. O que decide é acidemia metabólica GRAVE ou REFRATÁRIA — avalie contexto, causa, possibilidade de correção e indicação de TRS.":

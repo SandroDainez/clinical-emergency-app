@@ -65,6 +65,12 @@ import {
   BEXIGA_CHEIA_NAO_E_ANURIA,
   CAMPOS_DE_ACIDOSE,
   CAMPO_DE_JULGAMENTO_ACIDOSE,
+  CAMPOS_DE_ACIDOSE_GUIADA,
+  ACIDOSE_GUIADA_INTRO,
+  ACIDOSE_GRAVE_DEFINICAO,
+  ACIDOSE_REFRATARIA_DEFINICAO,
+  destinoDaAcidoseGuiada,
+  leituraDaAcidose,
   CAMPOS_DE_CONGESTAO,
   CAMPOS_DE_DIURESE,
   CAMPOS_DE_UREMIA,
@@ -129,6 +135,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
    * final é o PIOR dos dois — nunca a soma (KDIGO 2012).
    */
   derive: (v) => {
+    // ⚠️ A LEITURA DA ACIDOSE É DERIVADA AQUI, e não no nó: `derive` é da ÁRVORE
+    // (um lugar só para todos os tokens). Ela devolve o que foi respondido, lido
+    // junto — não um selo automático, e nunca uma conclusão de diálise.
+    const leitura_acidose = leituraDaAcidose(v);
     const num = (x?: string) => {
       const n = Number(String(x ?? "").replace(",", "."));
       return Number.isFinite(n) ? n : undefined;
@@ -181,6 +191,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         : pior === ecr ? "o eixo da creatinina" : "o eixo da diurese";
 
     return {
+      leitura_acidose,
       estagio_texto: pior === undefined ? "dados insuficientes" : String(pior),
       estagio_explicacao:
         pior === undefined
@@ -852,9 +863,74 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       intro: ACIDOSE_SEM_LIMIAR,
       fields: [...CAMPOS_DE_ACIDOSE, ...CAMPO_DE_JULGAMENTO_ACIDOSE],
       next: {
-        possiveis: ["trata_acidose", "e5_uremia"],
-        escolher: (v) => (concluiAcidose(v) === "sim" ? "trata_acidose" : "e5_uremia"),
+        // ⚠️ A TERCEIRA SAÍDA ABRE RAMO, não texto: "não sei" que devolve
+        // explicação já foi reprovado duas vezes neste app.
+        possiveis: ["acid_descobrir", "trata_acidose", "e5_uremia"],
+        escolher: (v) =>
+          v.acidemiaGrave === "nao_sei"
+            ? "acid_descobrir"
+            : concluiAcidose(v) === "sim"
+              ? "trata_acidose"
+              : "e5_uremia",
       },
+    },
+
+    /**
+     * ⚠️ O RAMO DO "NÃO SEI" DA ACIDOSE — perguntas menores, de beira de leito.
+     * Nenhuma delas pede número, e `valida-ira` reprova se algum entrar.
+     */
+    acid_descobrir: {
+      id: "acid_descobrir",
+      type: "input",
+      title: "Descobrir · Grave ou refratária?",
+      intro: ACIDOSE_GUIADA_INTRO,
+      fields: CAMPOS_DE_ACIDOSE_GUIADA,
+      next: {
+        possiveis: ["acid_causa", "acid_outra_trs", "trata_acidose", "e5_uremia"],
+        escolher: destinoDaAcidoseGuiada,
+      },
+    },
+
+    acid_causa: {
+      id: "acid_causa",
+      type: "action",
+      title: "A causa vem antes de graduar a acidemia",
+      summary: "{leitura_acidose}",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO: o nó devolve a leitura do que foi
+      // respondido e manda ao passo anterior do raciocínio. Não afirma gravidade
+      // e não conclui diálise — quem decide indicação dialítica é o nó da 5.1.1.
+      natureza: "organizacao_do_atendimento",
+      actions: [
+        "Identifique a causa da acidose antes de decidir se ela é grave.",
+        "⚠️ Acidose sem causa identificada não é \"leve\" — é NÃO AVALIADA.",
+        "Trate a causa e restaure a perfusão; depois reavalie.",
+        ACIDOSE_GRAVE_DEFINICAO,
+        ACIDOSE_REFRATARIA_DEFINICAO,
+      ],
+      porque: [
+        "➜ As duas definições acima são OPERACIONALIZAÇÃO NOSSA: a KDIGO fala em alteração ameaçadora à vida, e não define grave nem refratária por valor.",
+        "➜ Por isso nenhuma das perguntas deste ramo pede número — nem pH, nem bicarbonato, nem base excess.",
+      ],
+      next: "e5_uremia",
+    },
+
+    acid_outra_trs: {
+      id: "acid_outra_trs",
+      type: "action",
+      title: "Isto já não é graduar a acidose",
+      summary: "{leitura_acidose}",
+      // ⚠️ APONTA SEM SALTAR. A conversa da diálise acontece no fim da varredura,
+      // com o caso inteiro na mão — saltar para lá daqui pularia a coleta dos
+      // dados, e foi a trava de pressuposição que pegou isso.
+      natureza: "organizacao_do_atendimento",
+      actions: [
+        "Com outra indicação coexistindo, a decisão passa a ser a INDICAÇÃO DIALÍTICA pelo conjunto — não o grau da acidemia.",
+        "Siga a varredura: a conversa da diálise vem adiante, com o caso inteiro na mão.",
+      ],
+      porque: [
+        "➜ A KDIGO 5.1.1 fala do conjunto — alteração de volume, eletrólito ou ácido-base que ameace a vida —, não de um eixo isolado.",
+      ],
+      next: "e5_uremia",
     },
 
     acid_sinais: {

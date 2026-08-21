@@ -5928,3 +5928,46 @@ plausível que a literatura oferecer.
 É a mesma família de **R-87** (medir o proxy em vez do objeto) e da procedência por
 vizinhança: em todas, um número correto **em outro contexto** entra aqui parecendo
 que sempre pertenceu.
+
+## R-98 · LIMIAR PRESSUPOSTO SEM NÚMERO ESCRITO — a lacuna que não tem instrumento
+
+**Registrada em 2026-08-21, como LACUNA NOMEADA. Não foi resolvida, e não deve
+ser inventada às pressas.**
+
+### O que ficou sem cobertura
+
+Ao remover o `pH < 7,0` do módulo renal, duas frases vizinhas continuaram
+pressupondo o limiar **sem citar número nenhum**:
+
+> *"acidemia se decide por pH, não por impressão clínica"*
+> *"com ela, o pH decide"*
+
+Nenhuma trava as pegaria: elas **não contêm o número**. Foram achadas **por
+leitura**, corrigindo o texto ao redor da mudança.
+
+### Por que não há instrumento — e por que fingir que há seria pior
+
+Busca por redação é **proxy fraco** (R-87): pega o que já sabemos procurar e dá
+**falso negativo no resto**. Uma trava de "frases que pressupõem limiar" teria de
+enumerar as formas de pressupor — *"decide por", "define", "corta em", "acima de"* —
+e a que faltasse passaria **carimbada de verde**, que é a forma cara do falso
+negativo.
+
+### O que fica no lugar, e é obrigatório
+
+⚠️ **Enquanto não houver instrumento, isto é REVISÃO HUMANA POR MÓDULO, no momento
+em que o módulo entra na auditoria.** Etapa obrigatória, não zelo eventual:
+
+> **Ao remover ou alterar um limiar, leia o texto AO REDOR dele** — resumo,
+> pergunta, `porque`, `evidence`, rótulo de opção — procurando frases que só fazem
+> sentido se o limiar existir. Elas não citam o número; elas **contam com ele**.
+
+### O que a torna reconhecível
+
+O sinal não é lexical, é lógico: **a frase perde o sentido quando o limiar sai.**
+"O pH decide" não é falso por causa de um número — é falso porque **nada decide
+sozinho** depois que o corte foi removido.
+
+⚠️ **Esta lacuna é diferente de uma dívida comum:** não há tarefa a agendar. O que
+há é uma etapa a executar **toda vez** que um módulo entrar — e ela está escrita
+aqui para que a ausência de instrumento não passe por ausência de risco.

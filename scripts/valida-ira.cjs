@@ -605,6 +605,74 @@ if (Object.keys(nos).length < 10) {
     }
   }
 
+  // ── O RAMO DO "NÃO SEI" DA ACIDOSE NÃO PODE TER NÚMERO ───────────────────
+  //
+  // ⚠️ É O BURACO QUE O R-97 MANDA NÃO PREENCHER. O `pH < 7,0` saiu como limiar
+  // e NADA entrou no lugar — nem 7,20, que é critério de INCLUSÃO do BICARICU-2
+  // (ensaio negativo), não limiar de conduta. O ramo guiado existe justamente
+  // para responder "grave ou refratária?" SEM número: ele pergunta o que se pode
+  // VER, não o que se pode medir.
+  //
+  // ⚠️ E A TENTAÇÃO É DE SIMETRIA: tirar um número deixa um buraco, e buraco pede
+  // número. Esta conferência é o que impede o próximo a mexer aqui de "completar"
+  // o ramo com um corte plausível.
+  {
+    const RAMO = [
+      "ACIDOSE_GRAVE_DEFINICAO", "ACIDOSE_REFRATARIA_DEFINICAO", "ACIDOSE_GUIADA_INTRO",
+      "ACIDOSE_SEM_LIMIAR",
+    ];
+    const guiado = require(path.join(tempDir, "lib/descoberta-guiada-renal.js"));
+    const textos = [];
+    for (const k of RAMO) {
+      if (typeof guiado?.[k] !== "string") {
+        falhas.push(`${k} sumiu de lib/descoberta-guiada-renal.ts — o ramo do "não sei" da acidose perdeu uma peça.`);
+        continue;
+      }
+      textos.push([k, guiado[k]]);
+    }
+    for (const campo of guiado?.CAMPOS_DE_ACIDOSE_GUIADA ?? []) {
+      textos.push([`campo ${campo.id}`, campo.label]);
+      for (const p of campo.presets ?? []) textos.push([`preset ${campo.id}`, p.label]);
+    }
+    if (!(guiado?.CAMPOS_DE_ACIDOSE_GUIADA ?? []).length) {
+      falhas.push('CAMPOS_DE_ACIDOSE_GUIADA vazio — o ramo do "não sei" da acidose não existe, e isto não é "nenhum número".');
+    }
+    // Números com casa decimal, unidade de gasometria, ou comparação com pH/BE.
+    const NUMERO = /\d+[,.]\d+|\bpH\s*[<>≤≥=]|\bBE\b|base\s*excess\s*[<>≤≥]|bicarbonato\s*[<>≤≥]|\b\d+\s*(mEq|mmol|mg\/dL)\b/i;
+    for (const [onde, txt] of textos) {
+      if (NUMERO.test(txt)) {
+        falhas.push(
+          `${onde}: entrou NÚMERO no ramo guiado da acidose — « ${String(txt).slice(0, 90)}… »\n` +
+          `      ⚠️ R-97: o ramo pergunta o que se pode VER, não o que se pode medir. Nem pH, nem BE,\n` +
+          `      nem bicarbonato, nem decimal. "Não temos limiar" é informação verdadeira; preencher\n` +
+          `      o buraco com o primeiro número plausível é o defeito que este ramo existe para evitar.`
+        );
+      }
+    }
+  }
+
+  // ── A TERCEIRA SAÍDA DA PERGUNTA DE JULGAMENTO ───────────────────────────
+  //
+  // ⚠️ TODA DECISÃO TEM "NÃO SEI", e esta tela nasceu sem. Trocar um limiar falso
+  // por uma pergunta de julgamento transfere o julgamento inteiro para o usuário
+  // — e o usuário-alvo deste app é exatamente quem não o tem. Sem ramo, a tela
+  // vira beco, e a saída provável é chutar ou abandonar.
+  {
+    const guiado = require(path.join(tempDir, "lib/descoberta-guiada-renal.js"));
+    const campo = (guiado?.CAMPO_DE_JULGAMENTO_ACIDOSE ?? [])[0];
+    const temNaoSei = (campo?.presets ?? []).some((p) => p.value === "nao_sei");
+    if (!temNaoSei) {
+      falhas.push(
+        'a pergunta "grave ou refratária?" perdeu a saída "não sei".\n' +
+        "      ⚠️ Ela vira BECO para quem não tem o julgamento — que é o usuário-alvo. A terceira\n" +
+        "      saída abre RAMO, com perguntas de beira de leito; nunca texto explicativo."
+      );
+    }
+    if (!nos.acid_descobrir) {
+      falhas.push('o nó `acid_descobrir` sumiu — a saída "não sei" da acidose deixou de ter para onde ir.');
+    }
+  }
+
   const restantes = [
     ["não esperar a creatinina", /NÃO ESPERE A CREATININA/i],
   ].filter(([, re]) => !re.test(tudo));

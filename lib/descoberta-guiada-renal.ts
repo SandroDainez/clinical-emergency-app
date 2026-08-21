@@ -151,9 +151,106 @@ export const CAMPO_DE_JULGAMENTO_ACIDOSE: InputField[] = [
   {
     id: "acidemiaGrave",
     label: "Considerando contexto, causa e possibilidade de correção: é acidemia grave ou refratária?",
+    // ⚠️ A TERCEIRA SAÍDA É A REGRA DO APP, não cortesia: sem ela a tela vira
+    // beco para quem não tem o julgamento — que é o usuário-alvo.
+    presets: [...SIM_NAO, { value: "nao_sei", label: OPCAO_DESCOBRIR }],
+  },
+];
+
+/* ── O RAMO DO "NÃO SEI" DA ACIDOSE ────────────────────────────────────────── */
+
+/**
+ * ⚠️ A PERGUNTA DE JULGAMENTO TINHA VIRADO UM BECO, E O DEFEITO É NOSSO.
+ *
+ * Trocar `pH < 7,0` por *"é acidemia grave ou refratária?"* corrigiu a fonte e
+ * criou outro problema: **transferiu o julgamento inteiro para o usuário — e o
+ * usuário-alvo deste app é exatamente quem não tem esse julgamento.** Para quem
+ * sabe responder, ótimo. Para quem não sabe, não havia ramo, não havia pista, e a
+ * saída provável era chutar ou abandonar.
+ *
+ * A regra do app é anterior a esta rodada: toda decisão tem
+ * **[Sim] [Não] [Não sei — me ajude a descobrir]**, e o "não sei" abre perguntas
+ * **menores, respondíveis à beira do leito**. Sete módulos já fazem isso por
+ * `instabilidade-guiada.ts`. Esta tela nasceu sem, e é correção, não trabalho novo.
+ *
+ * ⚠️ NENHUM NÚMERO NOVO ENTROU AQUI, e isso é travado: o ramo pergunta **o que se
+ * pode ver**, não o que se pode medir. `valida-ira` reprova pH, BE, bicarbonato ou
+ * qualquer decimal dentro deste bloco — é o buraco que o R-97 manda não preencher.
+ */
+export const ACIDOSE_GRAVE_DEFINICAO =
+  "GRAVE (definição NOSSA) = com repercussão hemodinâmica, de ritmo, de consciência ou ventilatória ATRIBUÍVEL à acidemia.";
+
+export const ACIDOSE_REFRATARIA_DEFINICAO =
+  "REFRATÁRIA (definição NOSSA) = persiste ou piora APESAR do tratamento da causa e da restauração da perfusão.";
+
+export const ACIDOSE_GUIADA_INTRO =
+  "Nenhuma destas perguntas pede número. ⚠️ As duas palavras da pergunta anterior são operacionalização NOSSA — a KDIGO não as define por valor.";
+
+export const CAMPOS_DE_ACIDOSE_GUIADA: InputField[] = [
+  {
+    id: "causaIdentificada",
+    // ⚠️ ACIDOSE SEM CAUSA IDENTIFICADA NÃO É "LEVE", É NÃO AVALIADA — e era
+    // assim que ela saía desta tela antes deste ramo existir.
+    label: "A causa da acidose está identificada? (perfusão, sepse, cetoacidose, intoxicação, perda digestiva, a própria IRA)",
+    presets: SIM_NAO,
+  },
+  { id: "causaTratada", label: "A causa está sendo tratada AGORA?", presets: SIM_NAO },
+  {
+    id: "reavaliou",
+    // ⚠️ É ESTE ITEM QUE DEFINE REFRATÁRIA — e ele é TEMPORAL, não numérico.
+    label: "Houve reavaliação depois de tratar a causa e restaurar a perfusão?",
+    presets: [...SIM_NAO, { value: "sem_tempo", label: "Ainda não deu tempo" }],
+  },
+  {
+    id: "repercussao",
+    label: "Há repercussão atribuível à acidemia AGORA? (hipotensão que não responde a vasopressor · arritmia · rebaixamento de consciência · esforço ventilatório que o paciente não sustenta)",
+    presets: SIM_NAO,
+  },
+  {
+    id: "outraTrs",
+    label: "Coexiste outra indicação de diálise? (potássio, congestão refratária, oligúria ou anúria, uremia)",
     presets: SIM_NAO,
   },
 ];
+
+/**
+ * A LEITURA, ESCRITA — não selo automático.
+ *
+ * ⚠️ O RETORNO NÃO CONCLUI TRS. Quem decide indicação dialítica é o nó da 5.1.1;
+ * aqui se devolve o que foi respondido, lido junto, e o fluxo continua.
+ */
+export function leituraDaAcidose(v: TreeValues): string {
+  const partes: string[] = [];
+  partes.push(v.causaIdentificada === "sim" ? "causa identificada" : "causa NÃO identificada");
+  if (v.causaIdentificada === "sim") {
+    partes.push(v.causaTratada === "sim" ? "em tratamento" : "ainda sem tratamento da causa");
+  }
+  if (v.reavaliou === "sim") partes.push("reavaliada após correção");
+  else if (v.reavaliou === "sem_tempo") partes.push("ainda sem tempo de reavaliar");
+  else partes.push("sem reavaliação");
+  partes.push(v.repercussao === "sim" ? "COM repercussão atribuível" : "sem repercussão atribuível");
+  return partes.join(" · ");
+}
+
+/** Onde o ramo devolve — e nenhuma das saídas é "conclui diálise". */
+export function destinoDaAcidoseGuiada(
+  v: TreeValues
+): "acid_causa" | "acid_outra_trs" | "trata_acidose" | "e5_uremia" {
+  // ⚠️ A DECISÃO MIGRA quando há outra indicação — mas APONTA SEM SALTAR, e foi
+  // a trava de pressuposição que mostrou por quê: saltar daqui para `trs_check`
+  // criava caminho até os nós de destino PULANDO a coleta dos dados do caso, e
+  // lá adiante o texto fala de creatinina e de exposição a nefrotóxico como se
+  // alguém as tivesse perguntado. Mesmo desenho dos ramos do diurético.
+  if (v.outraTrs === "sim") return "acid_outra_trs";
+  // Sem causa identificada ou sem tratamento da causa: o passo seguinte é esse,
+  // não graduar a acidemia.
+  if (v.causaIdentificada !== "sim" || v.causaTratada !== "sim") return "acid_causa";
+  // GRAVE (repercussão) ou REFRATÁRIA (persiste apesar de causa tratada e
+  // perfusão restaurada) — as duas definições, aplicadas.
+  if (v.repercussao === "sim") return "trata_acidose";
+  if (v.reavaliou === "sim") return "trata_acidose";
+  return "e5_uremia";
+}
 
 export function concluiAcidose(v: TreeValues): "sim" | "nao" {
   // ⚠️ O JULGAMENTO DECIDE. O pH e o bicarbonato continuam sendo colhidos porque
