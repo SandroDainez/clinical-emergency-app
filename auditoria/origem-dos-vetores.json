@@ -5,10 +5,10 @@
       "desenhado": "construído a partir de descrição, sem imagem de base",
       "derivado": "traçado, vetorizado ou decalcado sobre imagem existente — EXIGE a procedência e a licença da imagem de base, no campo `base`"
     },
-    "campos_extra": "⚠️ `autoria`, `quem` e `licenca` são ACRÉSCIMO DO AGENTE, não estavam no eixo de duas pontas do autor. Razão: os 31 ícones são arte de TERCEIRO (Noto/Google, Apache 2.0), e 'desenhado × derivado' responde 'foi traçado sobre imagem?' — não responde 'quem desenhou', que é de onde a licença pende. O autor pode remover os campos; a trava só os exige de quem se declara `terceiro`.",
+    "campos_extra": "⚠️ `autoria`, `quem` e `licenca` são ACRÉSCIMO DO AGENTE, não estavam no eixo de duas pontas do autor. Razão: os 31 ícones são arte de TERCEIRO (Noto/Google, Apache 2.0), e 'desenhado × derivado' responde 'foi traçado sobre imagem?' — não responde 'quem desenhou', que é de onde a licença pende. Confirmados pelo autor em 2026-08-21; a trava só os exige de quem se declara `terceiro`.",
     "o_que_a_trava_faz": "Reprova ASSET SEM DECLARAÇÃO. Ela NÃO julga se a declaração é verdadeira.",
     "veracidade": "⚠️ É DO AUTOR. Nenhum script distingue um SVG desenhado de um SVG traçado sobre foto. O que a declaração muda: violar a AM-5 passa a exigir uma AFIRMAÇÃO FALSA escrita no repositório, em vez de silêncio — e afirmação escrita alguém confere depois. É a mesma conversão do `contextoDaFonte`.",
-    "pendencia": "⚠️ As 33 entradas abaixo foram escritas pelo AGENTE a partir dos documentos do repositório (LICENSE-NOTO-EMOJI.txt e cabeçalhos de código), não pelo autor. Elas são rastreáveis, não confirmadas — o campo `declarado_por` diz isso em cada uma."
+    "confirmacao": "✅ CONFIRMADO PELO AUTOR — Dr. Sandro Dainez, 2026-08-21. As 33 entradas foram lidas e confirmadas por ele: os 31 ícones do Noto como `desenhado` / terceiro / Apache 2.0 (arte vetorial original não é traçada sobre imagem, e o SVGO otimiza caminho existente sem criar traço), e os dois arquivos de código como `desenhado` / autoria própria. O campo `declarado_por` de cada entrada nomeia quem responde."
   },
   "assets": [
     {
@@ -18,7 +18,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/anafilaxia.svg",
@@ -27,7 +27,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/avc.svg",
@@ -36,7 +36,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/bradicardia-acls.svg",
@@ -45,7 +45,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/calculadoras-clinicas.svg",
@@ -54,7 +54,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/causas-reversiveis-acls.svg",
@@ -63,7 +63,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/cetoacidose-hiperosmolar.svg",
@@ -72,7 +72,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/choque.svg",
@@ -81,7 +81,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/correcoes-eletroliticas.svg",
@@ -90,7 +90,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/crises-convulsivas.svg",
@@ -99,7 +99,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/drogas-vasoativas.svg",
@@ -108,7 +108,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/edema-agudo-pulmao.svg",
@@ -117,7 +117,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/farmacologia-acls.svg",
@@ -126,7 +126,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/injuria-renal-aguda.svg",
@@ -135,7 +135,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/insuficiencia-respiratoria.svg",
@@ -144,7 +144,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/intoxicacoes-exogenas.svg",
@@ -153,7 +153,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/isr-rapida.svg",
@@ -162,7 +162,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/ovace-adulto.svg",
@@ -171,7 +171,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/pcr-adulto.svg",
@@ -180,7 +180,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/pcr-gestacao-acls.svg",
@@ -189,7 +189,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/politrauma.svg",
@@ -198,7 +198,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/pos-pcr-acls.svg",
@@ -207,7 +207,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/pre-eclampsia.svg",
@@ -216,7 +216,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/ritmos-acls.svg",
@@ -225,7 +225,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/sedoanalgesia.svg",
@@ -234,7 +234,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/sepse-adulto.svg",
@@ -243,7 +243,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/sindromes-coronarianas.svg",
@@ -252,7 +252,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/taquicardia-acls.svg",
@@ -261,7 +261,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/tce.svg",
@@ -270,7 +270,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/tep.svg",
@@ -279,7 +279,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "assets/emoji/ventilacao-mecanica.svg",
@@ -288,7 +288,7 @@
       "quem": "Noto Emoji — Google LLC (https://github.com/googlefonts/noto-emoji)",
       "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
       "porque": "Arte original do projeto Noto, entregue JÁ em vetor — não foi traçada nem decalcada sobre imagem. Documentado em assets/emoji/LICENSE-NOTO-EMOJI.txt e no cabeçalho de design-system/desenho-do-modulo.ts. Processado com SVGO --multipass, que otimiza o caminho existente e não cria traço novo.",
-      "declarado_por": "agente, a partir dos documentos do repositório — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "design-system/tracado-de-ecg.ts",
@@ -297,16 +297,16 @@
       "quem": "Este projeto",
       "licenca": "próprio",
       "porque": "Os cinco traçados são SINTETIZADOS por soma de gaussianas (P/Q/R/S/T) a partir de parâmetros descritos no código — 460 amostras calculadas, nenhuma imagem de base. São traçados ESQUEMÁTICOS, e o arquivo diz isso: não representam registro de paciente.",
-      "declarado_por": "agente, a partir do código — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     },
     {
       "asset": "design-system/desenho-do-modulo.ts",
       "origem": "desenhado",
-      "autoria": "terceiro",
-      "quem": "Noto Emoji — Google LLC",
-      "licenca": "Apache License 2.0 — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
-      "porque": "É a cópia em texto dos 31 SVGs de assets/emoji (o Metro não importa .svg sem transformer). Mesma origem, mesma licença — declarado à parte porque é o arquivo que o app REALMENTE desenha.",
-      "declarado_por": "agente, a partir do cabeçalho do próprio arquivo — ⚠️ PENDENTE DE CONFIRMAÇÃO DO AUTOR"
+      "autoria": "nossa",
+      "quem": "Este projeto (compilação) · arte dos desenhos: Noto Emoji — Google LLC",
+      "licenca": "Apache License 2.0 sobre a arte — aviso retido em assets/emoji/LICENSE-NOTO-EMOJI.txt",
+      "porque": "Arquivo NOSSO, criado a partir de descrição: é a compilação em texto dos 31 SVGs (o Metro não importa .svg sem transformer). Nada aqui foi traçado sobre imagem. ⚠️ A arte compilada continua sendo do Noto/Google sob Apache 2.0, e por isso `quem` e `licenca` ficam preenchidos mesmo com autoria própria: é este o arquivo que o app realmente desenha, e a licença acompanha a arte, não o formato em que ela é guardada.",
+      "declarado_por": "Dr. Sandro Dainez (autor), 2026-08-21 — CONFIRMADO"
     }
   ]
 }

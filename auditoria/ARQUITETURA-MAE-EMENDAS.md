@@ -285,14 +285,22 @@ A trava `test:origem-vetor` **não julga se a declaração é verdadeira**. Ela 
 **Registro:** `auditoria/origem-dos-vetores.json` · **Universo hoje:** 33 vetores
 (31 arquivos `.svg` + 2 embutidos em código), todos declarados `desenhado`.
 
-⚠️ **`autoria` / `quem` / `licenca` são acréscimo do agente, pendentes de
-confirmação.** O eixo de duas pontas responde *"foi traçado sobre imagem?"* — não
+✅ **`autoria` / `quem` / `licenca` — acréscimo do agente, CONFIRMADO pelo autor em
+2026-08-21.** O eixo de duas pontas responde *"foi traçado sobre imagem?"* — não
 responde *"quem desenhou"*, que é de onde a licença pende. Os 31 ícones são arte de
 **terceiro** (Noto Emoji, Google, Apache 2.0). Sem esse campo, um asset de terceiro
-passaria como `desenhado` sem que a licença aparecesse em lugar nenhum. O autor pode
-remover os campos; a trava só os exige de quem se declara `terceiro`.
+passaria como `desenhado` sem que a licença aparecesse em lugar nenhum. A trava só os
+exige de quem se declara `terceiro`.
 
-⚠️ **E as 33 entradas foram escritas pelo AGENTE**, a partir dos documentos do
-repositório (`assets/emoji/LICENSE-NOTO-EMOJI.txt` e cabeçalhos de código) — **não
-pelo autor**. São rastreáveis, não confirmadas, e cada entrada diz isso no campo
-`declarado_por`.
+✅ **AS 33 ENTRADAS FORAM CONFIRMADAS PELO AUTOR** — Dr. Sandro Dainez, 2026-08-21.
+Ele leu e confirmou os dois julgamentos: arte vetorial original não é traçada sobre
+imagem (e o SVGO otimiza caminho existente sem criar traço), e os dois arquivos de
+código são `desenhado` de autoria própria. O `declarado_por` de cada entrada nomeia
+quem responde por ela — que é o ponto inteiro da regra: **declaração de quem não
+responde por ela não é declaração.**
+
+⚠️ **Uma ressalva registrada, não silenciada:** `design-system/desenho-do-modulo.ts`
+ficou com **autoria própria** — o arquivo é nosso, é compilação, nada nele foi traçado.
+Mas **a arte compilada continua sendo do Noto sob Apache 2.0**, e é este o arquivo que
+o app REALMENTE desenha. Por isso `quem` e `licenca` seguem preenchidos ali mesmo com
+autoria própria: a licença acompanha a arte, não o formato em que ela é guardada.
