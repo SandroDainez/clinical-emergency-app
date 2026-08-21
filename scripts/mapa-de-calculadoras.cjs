@@ -107,6 +107,42 @@ for (const l of linhas) {
   if (l.limiares.length > 10) console.log(`         … e mais ${l.limiares.length - 10}`);
 }
 
+// ── TRIAGEM POR CONSEQUÊNCIA (A · B · C · D) ───────────────────────────────
+//
+// ⚠️ A FILA NÃO É POR ORDEM DE ARQUIVO, É POR DANO. 148 é grande demais para
+// atacar de frente e pequeno demais para desistir; o critério é clínico, e o
+// primeiro é o que muda PRESCRIÇÃO — ajuste de dose por função renal é o lugar
+// clássico de erro em app médico.
+const TRIAGEM = path.join(app, "auditoria", "limiares-de-calculadora.json");
+if (fs.existsSync(TRIAGEM)) {
+  const tri = JSON.parse(fs.readFileSync(TRIAGEM, "utf8"));
+  const conta = { A: [], B: [], C: [], D: [], "NÃO CLASSIFICADO": [] };
+  const classificar = (idFerramenta, expr) => {
+    const t = tri.por_ferramenta?.[idFerramenta];
+    if (!t) return "NÃO CLASSIFICADO";
+    return t.excecoes?.[expr] ?? t.classe ?? "NÃO CLASSIFICADO";
+  };
+  for (const l of linhas) {
+    for (const e of l.limiares) conta[classificar(l.id, e)]?.push(`${l.id} · ${e}`);
+  }
+  for (const e of auxiliares) {
+    const aux = tri.auxiliares ?? {};
+    const dono = Object.entries(aux).find(([k, v]) => k === e || (v.expressoes ?? []).includes(e));
+    const cls = dono ? dono[1].classe : "NÃO CLASSIFICADO";
+    conta[cls]?.push(`(auxiliar) ${e}`);
+  }
+  console.log("\n── TRIAGEM POR CONSEQUÊNCIA ──");
+  for (const [cls, rotulo] of [["A", "MUDA PRESCRIÇÃO"], ["B", "MUDA CONDUTA"], ["C", "MUDA RÓTULO"], ["D", "DEFINICIONAL — não é limiar de interpretação"], ["NÃO CLASSIFICADO", "⚠️ SEM CLASSIFICAÇÃO DECLARADA"]]) {
+    console.log(`   ${cls.padEnd(18)} ${String(conta[cls].length).padStart(3)}  ${rotulo}`);
+  }
+  console.log("\n   ⚠️ CLASSE A — A LISTA COMPLETA (muda dose, intervalo, via, ou suspende droga):");
+  for (const x of conta.A) console.log(`      · ${x}`);
+  if (conta["NÃO CLASSIFICADO"].length) {
+    console.log("\n   ⚠️ SEM CLASSIFICAÇÃO DECLARADA — aparecem porque default silencioso viraria classe C por omissão:");
+    for (const x of conta["NÃO CLASSIFICADO"].slice(0, 20)) console.log(`      · ${x}`);
+  }
+}
+
 console.log("\n── AS TRÊS COLUNAS ──");
 console.log(`   fonte declarada NO NÍVEL DA FERRAMENTA ....... ${linhas.length - semReferencia.length} de ${linhas.length}`);
 console.log(`   ferramenta SEM referência nenhuma ............ ${semReferencia.length}`);

@@ -387,3 +387,46 @@ pessoa.
 
 **Travas que já aplicam o modelo:** `test:origem-vetor` (33 vetores) e
 `test:imagem-clinica` (fechada por padrão, universo zero).
+
+---
+
+## AM-7 · EM CALCULADORA, CÁLCULO E INTERPRETAÇÃO DECLARAM PROCEDÊNCIA SEPARADAMENTE
+
+**Decisão do autor, 2026-08-21.** ⚠️ **Registrada como emenda e como PORTÃO — não
+implementada nesta rodada.**
+
+### A regra
+
+> **A fonte da fórmula não cobre a faixa, a cor nem a conduta.**
+>
+> **Limiar de interpretação sem fonte própria não pode renderizar rótulo clínico**
+> — mostra o número calculado e diz que a faixa não tem fonte declarada.
+
+### O defeito de fundo
+
+Uma calculadora mistura **duas coisas com procedências diferentes e as apresenta
+como uma só**:
+
+- **o cálculo** — a fórmula. Tem fonte, é verificável, e em geral é a parte certa.
+- **a interpretação** — a faixa, a cor, o rótulo, a frase de conduta que aparece
+  junto do resultado. **É afirmação clínica**, e hoje viaja de carona na fonte da
+  fórmula.
+
+Cockcroft-Gault tem fonte. **"TFG < 60 = doença renal crônica" é outra afirmação, de
+outra fonte** — e aparece na mesma tela com o mesmo peso visual.
+
+### É a regra B, ainda não aplicada às calculadoras
+
+Nas árvores isto já foi resolvido: uma tela pode afirmar coisas de forças
+diferentes, e cada afirmação declara a sua (`DeclaracaoDeAfirmacao`). Nas
+calculadoras, a referência é **por ferramenta** — `clearance-creatinina` declara
+*três* fontes para *sete* limiares, e nada diz qual sustenta qual.
+
+**Medido em 2026-08-21:** 15 ferramentas · **148 limiares** · **0 com fonte no nível
+do limiar** (D-74).
+
+### ⚠️ O PORTÃO
+
+**Nenhuma calculadora nova entra sem isso** — mesma regra que valeu para `fonte` por
+nó (AM-2). As existentes entram na fila por consequência: primeiro as **12 de classe
+A**, que mudam dose e intervalo de antibiótico.

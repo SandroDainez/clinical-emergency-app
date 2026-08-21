@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "o_que_e": "Triagem dos limiares de interpretação das calculadoras POR CONSEQUÊNCIA — o que cada um muda na vida do paciente. Critério do autor, 2026-08-21.",
+    "por_que_por_consequencia": "148 é grande demais para atacar de frente e pequeno demais para desistir. A fila não é por ordem de arquivo: é por dano. Ajuste de dose por função renal é o lugar clássico de erro em app médico, e é por isso que a classe A vem primeiro.",
+    "classes": {
+      "A": "MUDA PRESCRIÇÃO — altera dose, intervalo, via, ou manda suspender droga",
+      "B": "MUDA CONDUTA — indica exame, internação, TRS, transferência, monitorização",
+      "C": "MUDA RÓTULO — nomeia faixa, estágio, cor, categoria, sem ação atrelada",
+      "D": "DEFINICIONAL — guarda de entrada, coeficiente de fórmula, tabela de pontos do próprio escore. Não é limiar de interpretação."
+    },
+    "regra_de_omissao": "⚠️ O que não estiver classificado sai como NÃO CLASSIFICADO, com o número à vista. Default silencioso viraria classe C por omissão — e classe C é a que não tem pressa.",
+    "estado": "Triagem de 2026-08-21. NENHUM limiar corrigido."
+  },
+  "por_ferramenta": {
+    "dose-antibiotico": {
+      "classe": "A",
+      "porque": "Cada faixa de ClCr muda DOSE e INTERVALO de vancomicina, piperacilina-tazobactam e meropeném — e a cor laranja abaixo do corte é a única pista de que a dose mudou.",
+      "excecoes": { "peso <= 0": "D" }
+    },
+    "clearance-creatinina": {
+      "classe": "B",
+      "porque": "As faixas indicam ajuste e vigilância; duas delas são classe A porque mandam SUSPENDER droga.",
+      "excecoes": {
+        "TFG < 30": "A",
+        "tfg < 30": "A",
+        "cr <= 0": "D",
+        "peso > 0": "D",
+        "cr <= 0.7": "D",
+        "cr <= 0.9": "D"
+      }
+    },
+    "osmolalidade": { "classe": "B", "porque": "O limiar osmolar do EHH muda o que se investiga e o que se trata." },
+    "anion-gap": { "classe": "B", "porque": "AG elevado e delta-delta mudam a investigação da acidose.", "excecoes": { "hco3 < 24": "D" } },
+    "glasgow": {
+      "classe": "C",
+      "porque": "As faixas nomeiam gravidade.",
+      "excecoes": { "t === 8": "B", "GCS < 13": "B" }
+    },
+    "qsofa": { "classe": "B", "porque": "≥ 2 dispara triagem de sepse e monitorização.", "excecoes": { "GCS < 15": "D" } },
+    "sofa": {
+      "classe": "D",
+      "porque": "A maior parte é a TABELA DE PONTOS do próprio escore — é a definição dele, não interpretação.",
+      "excecoes": { "t >= 2": "B", "t >= 8": "C", "t >= 12": "C", "inicial > 11": "C" }
+    },
+    "wells-tep": {
+      "classe": "D",
+      "porque": "Os itens pontuados são a definição do escore.",
+      "excecoes": { "t > 4": "B", "Wells > 4": "B" }
+    },
+    "curb-65": {
+      "classe": "D",
+      "porque": "Os itens pontuados são a definição do escore.",
+      "excecoes": { "t >= 3": "B", "t === 2": "B" }
+    },
+    "heart": { "classe": "B", "porque": "As faixas decidem alta, observação ou estratégia invasiva." },
+    "nihss": { "classe": "D", "porque": "Os cortes são a definição dos itens do próprio escore." },
+    "rass": { "classe": "C", "porque": "As faixas nomeiam nível de sedação; a conduta associada vem em texto, não do corte." },
+    "apache2": { "classe": "D", "porque": "77 comparações, quase todas a tabela de pontos do escore.", "excecoes": { "total >= 25": "C", "total >= 15": "C", "total >= 10": "C" } },
+    "saps3": { "classe": "D", "porque": "Tabela de pontos e guardas.", "excecoes": { "mort >= 50": "C", "mort >= 25": "C", "mort >= 10": "C" } },
+    "peso-predito": { "classe": "D", "porque": "Guarda de altura implausível — não interpreta nada." }
+  },
+  "auxiliares": {
+    "faixaTFG": {
+      "classe": "C",
+      "porque": "G1–G5 nomeiam estágio de doença renal crônica. ⚠️ Não caem em A: neste app o estágio rotula, e quem muda dose é a calculadora de antibiótico, com os cortes DELA. Mas são o exemplo do achado: decidem faixa e cor sem herdar nem a referência do nível da ferramenta.",
+      "expressoes": ["tfg >= 90", "tfg >= 60", "tfg >= 45", "tfg >= 30", "tfg >= 15"]
+    },
+    "se > 50": { "classe": "B", "porque": "D-dímero ajustado à idade acima de 50 anos — muda a leitura do exame que exclui TEP." }
+  }
+}

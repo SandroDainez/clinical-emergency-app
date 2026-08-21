@@ -6126,3 +6126,42 @@ autor sobre não abrir rota sem login vale mais que qualquer captura de tela.
   que é o objeto que o app monta, e é honesta sobre o que é.
 - **Medições** do que o instrumento alcança: contagem de itens, universo, piso.
 - **Nunca**: aprovação de layout, legibilidade, contraste percebido ou "cabe na tela".
+
+## R-101 · TODO TOTAL EM RELATÓRIO VEM COM O UNIVERSO DE ONDE SAIU
+
+**Registrada em 2026-08-21**, e vale para os dois lados da conversa.
+
+### A regra
+
+> **"Cinco itens" sem dizer de quantos é RECORTE até prova em contrário.** Se a
+> listagem foi truncada, a linha diz **"5 de 9"**. Vale para prosa, não só para
+> saída de instrumento.
+
+### O que ela custou para nascer
+
+Eu imprimi uma lista de fontes sem ano com `grep … | head -5` e reportei os cinco
+como se fossem o conjunto. A lista tinha **nove**, e o item que faltava —
+`ada_dka_hhs_2024` — era justamente o que interessava. O autor leu cinco como o
+total e construiu em cima **uma rodada inteira de raciocínio**: a hipótese de que o
+instrumento lia o ano do nome do arquivo, e de que o conserto da página de
+assinatura não tinha consertado nada.
+
+Nada disso era verdade. **O ano vem de `base[].ano` nos dois lugares** —
+`mapa-de-fontes.cjs:43` e `lib/procedencia.ts:147` —, e a mutação do id `_1999`
+provou. O defeito estava no meu relatório.
+
+### Por que é R-87, e não desatenção
+
+**O relatório é PROXY do repositório.** Quem lê o relatório não tem como distinguir
+"a lista tem cinco" de "eu mostrei cinco" — e a diferença é exatamente onde o
+raciocínio seguinte se apoia. É o mesmo defeito do selo como proxy do item, do
+import como proxy do render, do recorte do grafo como proxy do grafo.
+
+⚠️ **Aqui o proxy é o CANAL entre quem mede e quem decide** — e esse é o mais caro,
+porque o erro não fica no instrumento: vai direto para a decisão de quem lê.
+
+### O que fazer, na prática
+
+- Toda lista truncada diz **"N de M"**, sempre — inclusive em prosa.
+- `head`, `slice` e `…e mais N` são recorte, e recorte se anuncia.
+- Quando o total for zero, dizer **de quantos**: "0 de 148" é medição; "0" é sorte.
