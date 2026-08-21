@@ -64,6 +64,12 @@ const linhas = [];
 const vistos = new Map();
 
 function numerico(v) {
+  // ⚠️ VAZIO NÃO É ZERO. O preset "Não tenho esse valor" carrega `value: ""`, e
+  // `Number("")` é 0 — que caía fora de toda faixa e reprovava um campo correto.
+  // Ele não é um preset numérico: é a declaração de que o dado não existe, que é
+  // a ÚNICA opção pronta que um campo de valor clínico pode oferecer depois que
+  // os presets de pH e bicarbonato saíram (eram o limiar com outra roupa).
+  if (String(v ?? "").trim() === "") return null;
   const n = Number(String(v).replace(",", "."));
   return Number.isFinite(n) ? n : null;
 }

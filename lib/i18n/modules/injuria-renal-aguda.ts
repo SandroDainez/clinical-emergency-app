@@ -1164,6 +1164,8 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   " ({0} de {1})":
     " ({0} de {1})",
   // ── O RAMO DO "NÃO SEI" DA ACIDOSE (2026-08-21) ──────────────────────────
+  "Informar o valor":
+    "Informar el valor",
   // ⚠️ TOKEN PURO: a leitura é montada em `derive` e cada peça dela tem chave
   // própria acima. A entrada existe para a varredura enxergar a string como
   // traduzida — mesmo tratamento de `{estagio_explicacao}`.

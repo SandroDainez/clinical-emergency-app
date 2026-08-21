@@ -29,6 +29,7 @@
 
 const fs = require("node:fs");
 const { lerFonte } = require("./lib/fonte.cjs");
+const { conferirUniverso } = require("./lib/universo.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -605,48 +606,86 @@ if (Object.keys(nos).length < 10) {
     }
   }
 
-  // ── O RAMO DO "NÃO SEI" DA ACIDOSE NÃO PODE TER NÚMERO ───────────────────
+  // ── O SUBGRAFO DA ACIDOSE NÃO PODE TER NÚMERO SUGERIDO ───────────────────
   //
-  // ⚠️ É O BURACO QUE O R-97 MANDA NÃO PREENCHER. O `pH < 7,0` saiu como limiar
-  // e NADA entrou no lugar — nem 7,20, que é critério de INCLUSÃO do BICARICU-2
-  // (ensaio negativo), não limiar de conduta. O ramo guiado existe justamente
-  // para responder "grave ou refratária?" SEM número: ele pergunta o que se pode
-  // VER, não o que se pode medir.
+  // ⚠️ ESTA CONFERÊNCIA JÁ EXISTIU OLHANDO O LUGAR ERRADO, E DEU VERDE (R-87).
+  // A primeira versão varria só o RAMO novo (`acid_descobrir`). O ramo estava
+  // limpo — e o número estava na TELA QUE ABRE O RAMO: `acid_gaso` oferecia
+  // `[7,0] [7,15] [7,25] [7,35]` para o pH, com o 7,0 sendo exatamente o limiar
+  // recém-removido por não ter procedência. A trava não falhou em detectar: ela
+  // olhou um universo que NÃO CONTINHA O DEFEITO e imprimiu verde com honestidade.
   //
-  // ⚠️ E A TENTAÇÃO É DE SIMETRIA: tirar um número deixa um buraco, e buraco pede
-  // número. Esta conferência é o que impede o próximo a mexer aqui de "completar"
-  // o ramo com um corte plausível.
+  // ⚠️ E PRESET É CONTEÚDO CLÍNICO COM APARÊNCIA DE UI — foi por isso que passou.
+  // Botão pré-fabricado afirma que aquele valor importa; quatro em escada afirmam
+  // que existe uma escada. O universo agora é o SUBGRAFO INTEIRO da acidose.
   {
-    const RAMO = [
-      "ACIDOSE_GRAVE_DEFINICAO", "ACIDOSE_REFRATARIA_DEFINICAO", "ACIDOSE_GUIADA_INTRO",
-      "ACIDOSE_SEM_LIMIAR",
-    ];
+    const SUBGRAFO = ["e4_acidose", "acid_tem_gaso", "acid_gaso", "acid_sinais",
+                      "acid_descobrir", "acid_causa", "acid_outra_trs", "trata_acidose"];
     const guiado = require(path.join(tempDir, "lib/descoberta-guiada-renal.js"));
+    // ⚠️ A PRIMEIRA VERSÃO DESTE REGEX ACUSOU AS CITAÇÕES DA PRÓPRIA DIRETRIZ —
+    // "KDIGO 5.1.1" casava com `\d+[.,]\d+`. Citar a recomendação é o oposto de
+    // inventar limiar. A distinção que o texto do app respeita: **valor clínico
+    // em português usa VÍRGULA** (7,0 · 0,5) e **citação usa PONTO** (5.1.1).
+    // Os presets são conferidos à parte, pelo VALOR — lá o ponto não escapa.
+    const NUMERO = /\d+,\d+|\bpH\s*[<>≤≥=]\s*\d|\bBE\s*[<>≤≥]|base\s*excess\s*[<>≤≥]|bicarbonato\s*[<>≤≥]\s*\d|\b\d+(?:[.,]\d+)?\s*(mEq|mmol|mg\/dL)\b/i;
+
+    let nosOlhados = 0, camposOlhados = 0, presetsOlhados = 0;
     const textos = [];
-    for (const k of RAMO) {
+    for (const id of SUBGRAFO) {
+      const n = nos[id];
+      if (!n) {
+        falhas.push(`o subgrafo da acidose perdeu o nó \`${id}\` — o universo desta conferência encolheu.`);
+        continue;
+      }
+      nosOlhados += 1;
+      for (const t of textosDoNo(n)) textos.push([`${id}`, t]);
+      for (const campo of n.fields ?? []) {
+        camposOlhados += 1;
+        textos.push([`${id} · campo ${campo.id}`, campo.label]);
+        for (const pr of campo.presets ?? []) {
+          presetsOlhados += 1;
+          // ⚠️ O PRESET É JULGADO PELO VALOR, não pelo rótulo: um chip "7,0" com
+          // rótulo "grave" continuaria sendo o limiar de volta.
+          const cru = String(pr.value ?? "").trim();
+          if (cru !== "" && Number.isFinite(Number(cru.replace(",", ".")))) {
+            falhas.push(
+              `${id} · campo ${campo.id}: PRESET NUMÉRICO « ${pr.label} » num campo de valor clínico.\n` +
+              `      ⚠️ Botão pré-fabricado é AFIRMAÇÃO de que aquele valor importa, e uma escada de\n` +
+              `      botões afirma que existe uma escada. Foi assim que o 7,0 voltou depois de removido:\n` +
+              `      saiu do texto decisório e reentrou como atalho de digitação. Campo livre + "não\n` +
+              `      tenho esse valor" — registrar o dado é legítimo, sugerir os valores não é.`
+            );
+          }
+          textos.push([`${id} · preset ${campo.id}`, pr.label]);
+        }
+      }
+    }
+    for (const k of ["ACIDOSE_GRAVE_DEFINICAO", "ACIDOSE_REFRATARIA_DEFINICAO", "ACIDOSE_GUIADA_INTRO", "ACIDOSE_SEM_LIMIAR"]) {
       if (typeof guiado?.[k] !== "string") {
         falhas.push(`${k} sumiu de lib/descoberta-guiada-renal.ts — o ramo do "não sei" da acidose perdeu uma peça.`);
         continue;
       }
       textos.push([k, guiado[k]]);
     }
-    for (const campo of guiado?.CAMPOS_DE_ACIDOSE_GUIADA ?? []) {
-      textos.push([`campo ${campo.id}`, campo.label]);
-      for (const p of campo.presets ?? []) textos.push([`preset ${campo.id}`, p.label]);
-    }
     if (!(guiado?.CAMPOS_DE_ACIDOSE_GUIADA ?? []).length) {
       falhas.push('CAMPOS_DE_ACIDOSE_GUIADA vazio — o ramo do "não sei" da acidose não existe, e isto não é "nenhum número".');
     }
-    // Números com casa decimal, unidade de gasometria, ou comparação com pH/BE.
-    const NUMERO = /\d+[,.]\d+|\bpH\s*[<>≤≥=]|\bBE\b|base\s*excess\s*[<>≤≥]|bicarbonato\s*[<>≤≥]|\b\d+\s*(mEq|mmol|mg\/dL)\b/i;
     for (const [onde, txt] of textos) {
       if (NUMERO.test(txt)) {
         falhas.push(
-          `${onde}: entrou NÚMERO no ramo guiado da acidose — « ${String(txt).slice(0, 90)}… »\n` +
-          `      ⚠️ R-97: o ramo pergunta o que se pode VER, não o que se pode medir. Nem pH, nem BE,\n` +
+          `${onde}: entrou NÚMERO no subgrafo da acidose — « ${String(txt).slice(0, 90)}… »\n` +
+          `      ⚠️ R-97: aqui se pergunta o que se pode VER, não o que se pode medir. Nem pH, nem BE,\n` +
           `      nem bicarbonato, nem decimal. "Não temos limiar" é informação verdadeira; preencher\n` +
-          `      o buraco com o primeiro número plausível é o defeito que este ramo existe para evitar.`
+          `      o buraco com o primeiro número plausível é o defeito que este subgrafo existe para evitar.`
         );
+      }
+    }
+    // ⚠️ UNIVERSO JUNTO DO RESULTADO. Verde com universo pequeno foi exatamente
+    // o que aconteceu aqui — e o piso mora no retrato, não neste arquivo.
+    console.log(`   subgrafo da acidose: ${nosOlhados} nós · ${camposOlhados} campos · ${presetsOlhados} presets · ${textos.length} textos`);
+    for (const [dim, medido] of [["nos_da_acidose", nosOlhados], ["campos_da_acidose", camposOlhados]]) {
+      if (!conferirUniverso("valida-ira", dim, medido)) {
+        falhas.push(`o universo "${dim}" encolheu — esta conferência NÃO olhou o subgrafo inteiro.`);
       }
     }
   }

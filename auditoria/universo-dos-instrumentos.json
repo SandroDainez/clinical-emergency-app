@@ -37,5 +37,9 @@
   },
   "valida-aviso-de-auditoria": {
     "modulos_clinicos": 31
+  },
+  "valida-ira": {
+    "nos_da_acidose": 8,
+    "campos_da_acidose": 11
   }
 }

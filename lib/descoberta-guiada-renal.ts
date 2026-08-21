@@ -34,6 +34,13 @@ const SIM_NAO = [
   { value: "nao", label: "Não" },
 ];
 
+/**
+ * ⚠️ A ÚNICA OPÇÃO PRONTA QUE UM CAMPO DE VALOR CLÍNICO PODE TER. Ela não sugere
+ * número nenhum — diz que o dado não existe, que é informação clínica de verdade
+ * e muda o que o app pode concluir.
+ */
+export const SEM_ESSE_VALOR = { value: "", label: "Não tenho esse valor" };
+
 /** Rótulo da terceira saída. Igual em todas as seis, para o olho reconhecer. */
 export const OPCAO_DESCOBRIR = "Não sei — me ajude a descobrir";
 
@@ -78,23 +85,55 @@ export function concluiCongestao(v: TreeValues): "sim" | "nao" {
 
 /* ── 4/6 · ÁCIDO-BASE ──────────────────────────────────────────────────────── */
 
+/**
+ * ⚠️ OS PRESETS SAÍRAM EM 2026-08-21 — ELES ERAM O LIMIAR COM OUTRA ROUPA.
+ *
+ * A tela dizia, no topo, «NÃO USE O pH ISOLADO COMO CRITÉRIO ÚNICO» — e três
+ * linhas abaixo oferecia `[7,0] [7,15] [7,25] [7,35]`. **O primeiro degrau era
+ * exatamente o número que acabara de ser removido por não ter procedência.** Ele
+ * saiu do texto decisório e voltou como atalho de digitação.
+ *
+ * ⚠️ **BOTÃO PRÉ-FABRICADO É AFIRMAÇÃO DE QUE AQUELE VALOR IMPORTA**, e quatro
+ * botões em escada afirmam que existe uma escada. Para quem não tem experiência —
+ * a população-alvo — a leitura da tela é "o app me deu quatro opções; a primeira
+ * deve ser a grave".
+ *
+ * ── DE ONDE ELES VIERAM, RESPONDIDO ────────────────────────────────────────
+ *
+ * **Fui eu, em 2026-08-18, no commit do bloco das 6 (`eecf1ba`), sem fonte
+ * nenhuma.** O 7,0 é o corte de CAD/EHH — herdado de outro módulo, na mesma
+ * leva em que a transposição foi declarada. Os outros sete (7,15 · 7,25 · 7,35 ·
+ * 6 · 10 · 16 · 22) foram **escolhidos por conveniência de interface**: uma
+ * escada plausível para poupar digitação. O 16 e o 22 são vizinhos dos cortes de
+ * cetoacidose, e não de indicação de TRS.
+ *
+ * É o terceiro caso da mesma família neste módulo — 126 mg/dL, pH < 7,0, estes
+ * oito. **Três casos deixam de ser acidente:** ver R-99.
+ *
+ * ── O QUE FICOU ────────────────────────────────────────────────────────────
+ *
+ * Campo numérico livre e "não tenho esse valor". **Registrar o dado é legítimo;
+ * sugerir os valores não é.** E nenhuma "faixa sugerida" no lugar — seria o mesmo
+ * defeito com nome mais elegante.
+ */
 export const CAMPOS_DE_ACIDOSE: InputField[] = [
   {
     id: "ph",
     label: "pH da gasometria",
-    presets: ["7.0", "7.15", "7.25", "7.35"].map((v) => ({ value: v, label: v.replace(".", ",") })),
+    presets: [SEM_ESSE_VALOR],
     allowCustom: true,
     customKeyboard: "numeric",
-    customLabel: "Outro valor",
+    customLabel: "Informar o valor",
+    optional: true,
   },
   {
     id: "hco3",
     label: "Bicarbonato",
     unit: "mEq/L",
-    presets: ["6", "10", "16", "22"].map((v) => ({ value: v, label: v })),
+    presets: [SEM_ESSE_VALOR],
     allowCustom: true,
     customKeyboard: "numeric",
-    customLabel: "Outro valor",
+    customLabel: "Informar o valor",
     optional: true,
   },
 ];

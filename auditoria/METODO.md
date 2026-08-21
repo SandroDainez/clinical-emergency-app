@@ -2327,6 +2327,29 @@ cp "$SCRATCH/alvo.bak" scripts/valida-origem-de-vetor.cjs
 diff -q "$SCRATCH/alvo.bak" scripts/valida-origem-de-vetor.cjs && git status --short
 ```
 
+#### ⚠️ TERCEIRA VIOLAÇÃO, 2026-08-21 — E DESTA VEZ O ARQUIVO ERA RASTREADO
+
+A forma operacional acima foi escrita **de manhã**, depois de duas falhas em
+arquivos não rastreados. **À tarde eu violei a regra de novo**, e o caso é o pior
+dos três porque o `git checkout` **funcionou**:
+
+    git checkout scripts/valida-ira.cjs   # o arquivo ERA rastreado
+
+Ele restaurou a versão do último commit — **apagando a conferência inteira do
+subgrafo da acidose**, escrita minutos antes e ainda não commitada. A mutação que eu
+estava desfazendo tinha mudado **uma linha**; o checkout desfez **oitenta**.
+
+**É exatamente o defeito original do R-47**, que a forma operacional deveria ter
+impedido: *"a reversão alcança mais que a mutação"*. Ter a regra escrita não bastou
+— o comando saiu no mesmo fôlego da mutação, que é o terceiro dos três sinais que a
+própria regra lista.
+
+⚠️ **O que isto ensina sobre a regra:** ela não tem exceção para arquivo rastreado.
+Rastreado é justamente onde o `checkout` faz mais estrago, porque ele **não falha** —
+executa, sai limpo, e leva junto tudo que ainda não foi commitado. Para arquivo novo
+o comando é inútil; para arquivo rastreado ele é perigoso. **Em nenhum dos dois ele
+serve.**
+
 #### As duas frases que resumem
 
 - **`git checkout` não restaura o que não está rastreado** — e sai com código 0
@@ -5929,6 +5952,34 @@ plausível que a literatura oferecer.
 vizinhança: em todas, um número correto **em outro contexto** entra aqui parecendo
 que sempre pertenceu.
 
+### R-87, quarta instância · TRAVA ANCORADA NO LUGAR ERRADO DO GRAFO
+
+**2026-08-21.** A conferência dos números da acidose varria **o ramo novo** —
+`acid_descobrir` — e imprimiu **verde**. O ramo estava limpo. **O número estava na
+tela que ABRE o ramo:** `acid_gaso` oferecia `[7,0] [7,15] [7,25] [7,35]` para o
+pH, e o primeiro degrau era exatamente o limiar removido na mesma rodada por não
+ter procedência.
+
+⚠️ **A trava não falhou em detectar. Ela olhou um universo que não continha o
+defeito, e imprimiu verde com toda a honestidade.**
+
+**Isto NÃO é a lacuna do R-98** (limiar pressuposto *sem número escrito*, que
+instrumento nenhum pega). Aqui **havia número escrito**, e ele estava **a uma tela
+de distância** do universo escolhido. É R-87 na forma mais pura: os dois lados não
+podiam discordar, porque o lado onde o defeito mora ficou fora da conta.
+
+**Parente direto das outras três:** o selo como proxy do item · o import como proxy
+do render · a redação como proxy do fato. Aqui o proxy é **o recorte do grafo**.
+
+**O conserto tem forma reaproveitável:** universo = **subgrafo inteiro** (a decisão,
+a coleta, o ramo e os retornos), **impresso junto do resultado** com a contagem —
+`8 nós · 11 campos · 22 presets · 125 textos` — e **piso no retrato**, que reprova
+se encolher.
+
+⚠️ **E PRESET É CONTEÚDO CLÍNICO COM APARÊNCIA DE UI.** Foi por isso que passou por
+tantas revisões: ninguém audita um botão. Botão pré-fabricado **afirma que aquele
+valor importa**; quatro em escada afirmam **que existe uma escada**.
+
 ## R-98 · LIMIAR PRESSUPOSTO SEM NÚMERO ESCRITO — a lacuna que não tem instrumento
 
 **Registrada em 2026-08-21, como LACUNA NOMEADA. Não foi resolvida, e não deve
@@ -5971,3 +6022,38 @@ sozinho** depois que o corte foi removido.
 ⚠️ **Esta lacuna é diferente de uma dívida comum:** não há tarefa a agendar. O que
 há é uma etapa a executar **toda vez** que um módulo entrar — e ela está escrita
 aqui para que a ausência de instrumento não passe por ausência de risco.
+
+## R-99 · TRÊS CASOS DEIXAM DE SER ACIDENTE — o número que entra sem procedência
+
+**Registrada em 2026-08-21, depois da terceira instância no MESMO módulo.**
+
+| # | o número | como entrou | como saiu |
+|---|---|---|---|
+| 1 | **126 mg/dL** (glicemia, hipercalemia) | herdado do diagnóstico de diabetes em jejum | invertido para o lado seguro; sem fonte, declarado |
+| 2 | **pH < 7,0** (acidose renal) | herdado do módulo de CAD/EHH, transposição declarada | removido, **sem substituto** (R-97) |
+| 3 | **7,0 · 7,15 · 7,25 · 7,35 · 6 · 10 · 16 · 22** (presets de gasometria) | escritos por mim, por conveniência de interface; o primeiro herdado do CAD | presets removidos; campo livre + "não tenho esse valor" |
+
+### O padrão, que é o mesmo nos três
+
+Um número **correto em algum contexto** aparece aqui **sem que ninguém tenha
+declarado de onde veio** — e passa, porque *parece* clínico. Nenhum dos três foi
+inventado do nada: todos vieram de um lugar real, **e é isso que os torna difíceis
+de ver.**
+
+### O que a terceira instância acrescentou
+
+As duas primeiras eram **texto**. A terceira era **interface** — e por isso
+atravessou várias revisões: **ninguém audita um botão.**
+
+### A regra
+
+⚠️ **Todo número que chega à tela tem de responder "de onde veio" ANTES de chegar.**
+Três respostas são aceitáveis, e todas se escrevem:
+
+1. **fonte com nome** (e então vai para `fontes-verbatim/` com número e grau);
+2. **"operacionalização nossa"** (e então vai rotulada, como a janela de 6 h e as
+   definições de grave/refratária);
+3. **"não temos"** — e aí **o número não entra**, nem como texto, nem como preset,
+   nem como faixa sugerida.
+
+**"Escolhido por conveniência de interface" não é uma das três.**
