@@ -11,7 +11,12 @@
  *   recomendação formal ou plausibilidade — isso é leitura de fonte, e é do
  *   médico. A trava garante que alguém DECLAROU, e que o que se declara aparece
  *   na tela.
- * UNIVERSO: as árvores de ARVORES, compiladas, com piso no retrato.
+ * UNIVERSO: os nós de AÇÃO das árvores de ARVORES, compiladas, com piso no retrato.
+ *   ⚠️ OS NÓS DE DECISÃO ESTÃO FORA — `DecisionNode` não tem `procedencia`, e por
+ *   isso o "zero pendências" desta trava é verdadeiro para CONDUTAS e silencioso
+ *   sobre decisões. A linha do relatório diz as duas coisas, sempre: zero sobre
+ *   um universo que exclui um tipo inteiro de nó é a nossa regra aplicada contra
+ *   nós mesmos.
  *
  * ── ⚠️ POR QUE A PENDÊNCIA É DECLARADA, E NÃO SILENCIOSA ───────────────────
  *
@@ -73,6 +78,8 @@ const SEM_FORCA = {
 const falhas = [];
 let condutas = 0;
 let declaracoes = 0;
+let decisao = 0;
+let decisaoComSinal = 0;
 let classificados = 0;
 const porForca = { recomendacao_formal: 0, pratica_aceita: 0, mecanismo_fisiologico: 0, definicao: 0 };
 const porNatureza = {};
@@ -87,6 +94,27 @@ for (const arq of ARVORES) {
     nosLidos += nos.length;
 
     for (const n of nos) {
+      // ── ⚠️ OS NÓS DE DECISÃO ESTÃO FORA DO ALCANCE DO CAMPO ────────────────
+      //
+      // `DecisionNode` NÃO TEM `procedencia` — o tipo não permite. Isso não é
+      // omissão de quem escreveu: não existe onde pôr. E o `evidence` recolhe a
+      // partir de 3 itens (C1), que é justamente onde moram os critérios que
+      // sustentam uma decisão.
+      //
+      // ⚠️ POR QUE ISTO É CONTADO E IMPRESSO: sem esta linha, o "toda conduta
+      // declara a força" convida a ler "módulo inteiramente declarado" — zero
+      // sobre um universo que exclui um TIPO INTEIRO de nó. É a nossa própria
+      // regra aplicada contra nós.
+      //
+      // ⚠️ E O SINAL É PROXY, declarado como tal: procurar "KDIGO"/"diretriz" no
+      // texto mede a REDAÇÃO, não o fato. Serve para dimensionar, não para
+      // afirmar quantas recomendações formais estão escondidas ali.
+      if (n.type === "decision") {
+        decisao += 1;
+        const txt = [...(n.evidence ?? []), ...(n.comparativo ?? []).map((c) => c.significado ?? "")].join("\n");
+        if (/KDIGO|UKKA|ESC \d|AHA \d|diretriz|guideline|Not Graded/i.test(txt)) decisaoComSinal += 1;
+        continue;
+      }
       if (n.type !== "action") continue;
 
       // ⚠️ NEM TODO NÓ DE AÇÃO FAZ AFIRMAÇÃO CLÍNICA. Transição e organização do
@@ -201,7 +229,11 @@ fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log("\nA força da afirmação — que TIPO de coisa cada conduta diz\n");
 const universoOk = conferirUniverso("valida-forca-da-afirmacao", "nos_da_arvore", nosLidos);
-console.log(`   condutas: ${condutas} · classificadas: ${classificados} · pendentes declaradas: ${semDeclaracao.length}`);
+console.log(`   condutas: ${classificados} de ${condutas} declaradas · pendentes declaradas: ${semDeclaracao.length}`);
+console.log(
+  `   nós de DECISÃO: FORA DO ALCANCE DO CAMPO — ${decisao} nós, ${decisaoComSinal} com sinal de diretriz no evidence`
+);
+console.log("   ⚠️ `DecisionNode` não tem `procedencia`: o \"zero\" acima vale para CONDUTAS, não para o módulo.");
 console.log(`   declarações POR AFIRMAÇÃO: ${declaracoes} — telas que afirmam mais de uma coisa`);
 console.log(
   `   fora da conta — transição ${porNatureza.transicao ?? 0} · organização do atendimento ${porNatureza.organizacao_do_atendimento ?? 0}`
@@ -226,4 +258,5 @@ if (falhas.length) {
   console.log("");
   process.exit(1);
 }
-console.log("\n✅ toda conduta declara a força, e cada força carrega o que obriga\n");
+console.log("\n✅ toda CONDUTA declara a força, e cada força carrega o que obriga");
+console.log("   ⚠️ E isto não diz nada sobre os nós de decisão — ver a linha do universo acima.\n");

@@ -2880,3 +2880,81 @@ universo protege nos instrumentos, agora aplicada à leitura de uma diretriz.
 o PDF inteiro. Se ele nomear pericardite ou sangramento urêmico, a segunda linha sobe
 de `pratica_aceita` para `recomendacao_formal` — e o caminho para isso está no
 `contextoDaFonte` do próprio selo, visível na tela.
+
+## D-69 · ⚠️ BLOQUEANTE DA FASE DO MOTOR — `DecisionNode` não tem `procedencia`
+
+**Aberta em:** 2026-08-21 · **Tipo:** bloqueante de fase, não dívida de módulo.
+
+### O que é
+
+`DecisionNode` **não tem campo de procedência**. Não existe onde pôr o selo — não é
+omissão de quem escreveu o módulo, é o tipo que não permite. E o `evidence` recolhe a
+partir de 3 itens (C1), que é **exatamente onde moram os critérios que sustentam uma
+decisão**.
+
+Consequência medida: um módulo pode ter recomendações formais nos seus nós de decisão
+e **exibir zero selos**, sem que nenhuma trava perceba.
+
+### As duas instâncias conhecidas, nomeadas
+
+| nó | item recolhido | o que é |
+|---|---|---|
+| `e5_uremia` (`evidence`) | *"⚠️ UREIA ISOLADA NÃO INDICA DIÁLISE… e a diretriz recusa decidir por limiar isolado."* | KDIGO **5.1.2** · Not Graded |
+| `sobre_drc` (`evidence`) | *"A definição do KDIGO usa duas janelas: 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS."* | **definição** KDIGO 2012 |
+
+### Por que NÃO se resolve agora
+
+Decisão do autor, 2026-08-21: **é tipo, engine e duas telas — e é justamente o que a
+fase do motor formaliza.** Fazer à mão agora, dentro de um módulo, seria **construir a
+abstração duas vezes**, e a segunda construção herda os atalhos da primeira.
+
+### O que fica no lugar, enquanto não se resolve
+
+`test:forca-da-afirmacao` passou a **imprimir as duas coisas**, sempre:
+
+```
+condutas: 17 de 18 declaradas · pendentes declaradas: 1
+nós de DECISÃO: FORA DO ALCANCE DO CAMPO — 17 nós, 2 com sinal de diretriz no evidence
+⚠️ `DecisionNode` não tem `procedencia`: o "zero" acima vale para CONDUTAS, não para o módulo.
+```
+
+⚠️ **A razão de a linha existir é a nossa própria regra virada contra nós:** "zero
+pendências" sobre um universo que exclui um tipo inteiro de nó é o mesmo defeito que o
+piso de universo existe para matar. O relatório não pode dizer "zero" sem dizer **sobre
+o quê**.
+
+⚠️ **E o sinal do `evidence` é PROXY, declarado como tal:** procurar "KDIGO"/"diretriz"
+no texto mede a redação, não o fato. Serve para dimensionar o problema, não para afirmar
+quantas recomendações formais estão escondidas ali.
+
+## D-70 · "Vanco + pip-tazo somam nefrotoxicidade" — evidência sem procedência
+
+**Aberta em:** 2026-08-21 · **Onde:** `nefrotoxico_check` (`evidence`) e `renal_conduta`
+(`porque`) · **Alvo:** **a definir**.
+
+### A afirmação
+
+> *"A combinação vancomicina + piperacilina-tazobactam tem nefrotoxicidade somada maior
+> que a de cada uma isolada."*
+
+### Por que é pendência de verdade
+
+Não cita diretriz — e **não tem fonte alguma**. É uma **afirmação de evidência
+circulando sem procedência dentro de uma tela de conduta**: ela muda prescrição (faz
+trocar antibiótico), e é do tipo que o usuário aceita porque está escrita ao lado de
+coisas que têm fonte. **Vizinhança de novo, agora emprestando credibilidade em vez de
+grau.**
+
+⚠️ Classe diferente das outras cinco desta varredura: aquelas são **força** não
+declarada de coisa que TEM fonte; esta é **fonte que não existe no repositório**.
+
+### O que NÃO fazer
+
+Preencher de memória. Existe literatura sobre esta combinação, e é exatamente por
+parecer conhecida que ela entrou sem citação — o mesmo caminho do 126 mg/dL.
+
+### Como fechar
+
+Achar a publicação, transcrever a frase para `protocols/fontes-verbatim/`, e declarar a
+força nos dois lugares. Se a evidência for fraca ou contestada, a força é
+`mecanismo_fisiologico` **com a lacuna escrita** — nunca silêncio.
