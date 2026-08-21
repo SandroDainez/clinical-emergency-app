@@ -1157,6 +1157,12 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "⚠️ El sello cubre las TRES primeras líneas (dopamina y diurético). \"No espere la creatinina\" y \"no repita contraste\" NO son recomendaciones graduadas de la KDIGO.",
   "KDIGO 2012 — recomendações droga-específicas; prática aceita para a regra geral":
     "KDIGO 2012 — recomendaciones droga-específicas; práctica aceptada para la regla general",
+  // ── O AVISO DA AUDITORIA PARCIAL (`lib/auditoria-de-forca.ts`) ────────────
+  // ⚠️ Some sozinho quando todos os módulos entrarem — e a tradução some junto.
+  "A declaração de força e fonte por conduta está sendo aplicada módulo a módulo. Onde ela ainda não aparece, ausência de selo NÃO significa recomendação forte — significa que aquele módulo ainda não foi auditado.":
+    "La declaración de fuerza y fuente por conducta se está aplicando módulo a módulo. Donde aún no aparece, la ausencia de sello NO significa recomendación fuerte — significa que ese módulo aún no fue auditado.",
+  " ({0} de {1})":
+    " ({0} de {1})",
   "Diretriz clínica — sem recomendação graduada geral para nefrotóxicos":
     "Directriz clínica — sin recomendación graduada general para nefrotóxicos",
   "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":

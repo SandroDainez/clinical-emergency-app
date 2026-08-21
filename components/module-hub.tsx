@@ -10,6 +10,12 @@ import { IDS_DA_SECAO_PCR, TITULO_DA_SECAO_PCR } from "@/constants/secao-do-pcr"
 import { getClinicalModules } from "../clinical-modules";
 import { clearAuthRole, getAuthRole } from "../lib/auth-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
+import {
+  auditoriaDeForcaIncompleta,
+  AVISO_DE_AUDITORIA_PARCIAL,
+  progressoDaAuditoriaDeForca,
+} from "../lib/auditoria-de-forca";
+import { trf } from "../lib/i18n/trf";
 import { isModuleFree } from "../lib/subscription";
 import { useSubscription } from "../lib/subscription-context";
 import { supabase } from "../lib/supabase";
@@ -340,6 +346,15 @@ export default function ModuleHub() {
           <Text style={s.headerDisclaimer}>
             {tr("Material de referência de uso privado — não é protocolo institucional. A decisão final é sempre do médico.")}
           </Text>
+          {/* ⚠️ AUSÊNCIA DE MARCA NÃO É MARCA DE AUSÊNCIA. Enquanto o selo de força
+              existir em parte dos módulos, esta tela — que é ONDE O USUÁRIO
+              COMPARA — precisa dizer o que a ausência dele significa. Some
+              sozinha quando todos os módulos entrarem. */}
+          {auditoriaDeForcaIncompleta(primaryModules.length) && (
+            <Text style={[s.headerDisclaimer, s.headerAuditoria]}>
+              ⚖️ {tr(AVISO_DE_AUDITORIA_PARCIAL)} {trf(tr, " ({0} de {1})", progressoDaAuditoriaDeForca(primaryModules.length))}
+            </Text>
+          )}
           {!isPremium && (
             <Pressable
               style={({ pressed }) => [s.upgradeBar, pressed && { opacity: 0.85 }]}
@@ -547,6 +562,18 @@ const s = StyleSheet.create({
     color: "#aab6c6",
     lineHeight: 15,
     fontStyle: "italic",
+  },
+  headerAuditoria: {
+    marginTop: 8,
+    fontSize: 11,
+    fontWeight: "700",
+    // ⚠️ SEM COR PRÓPRIA, DE PROPÓSITO. Este arquivo é legado de cor e o teto de
+    // hexadecimais SÓ DESCE — o `test:paleta` reprova QUALQUER hexadecimal novo,
+    // inclusive um já usado no arquivo (ele conta ocorrências, não tons). O
+    // aviso herda a cor do disclaimer, com que divide a vizinhança, e se separa
+    // pelo peso e por não ser itálico.
+    fontStyle: "normal",
+    lineHeight: 15,
   },
   upgradeBar: {
     backgroundColor: "#0d2a2d",

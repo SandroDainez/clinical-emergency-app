@@ -3,6 +3,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { UNLOCK_ALL_MODULES } from "../lib/subscription";
+import {
+  auditoriaDeForcaIncompleta,
+  AVISO_DE_AUDITORIA_PARCIAL,
+  progressoDaAuditoriaDeForca,
+} from "../lib/auditoria-de-forca";
+import { trf } from "../lib/i18n/trf";
+import { getClinicalModules } from "../clinical-modules";
 import { resumoDeProcedencia, selosDeProcedencia } from "../lib/procedencia";
 import { useTr } from "../lib/use-tr";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../design-system/tokens";
@@ -121,6 +128,7 @@ export default function PaywallScreen() {
   const { cores } = useTheme();
 
   const selos = selosDeProcedencia();
+  const totalDeModulos = getClinicalModules().length;
   const resumo = resumoDeProcedencia();
 
   return (
@@ -180,6 +188,16 @@ export default function PaywallScreen() {
           <Text style={[e.procedenciaLinha, { color: cores.textSecondary }]}>
             {tr("Toda conduta do app tem fonte declarada e data de revisão.")}
           </Text>
+          {/* ⚠️ ESTA É A PÁGINA ONDE SE COMPARA — e a frase acima, sozinha, deixa
+              entender que a declaração POR CONDUTA já vale em todo o app. Ela vale
+              hoje em 1 módulo de 31. Sem esta linha, a ausência de selo nos outros
+              30 é lida como "recomendação mais fraca", que é falso: é módulo ainda
+              não auditado. Some sozinha quando a auditoria fechar. */}
+          {auditoriaDeForcaIncompleta(totalDeModulos) && (
+            <Text style={[e.procedenciaAuditoria, { color: cores.warning }]}>
+              ⚖️ {tr(AVISO_DE_AUDITORIA_PARCIAL)} {trf(tr, " ({0} de {1})", progressoDaAuditoriaDeForca(totalDeModulos))}
+            </Text>
+          )}
           <View style={e.selos}>
             {selos.map((s) => (
               <View
@@ -259,6 +277,12 @@ const e = StyleSheet.create({
   selo: { borderWidth: 1, borderRadius: RAIO.input, paddingHorizontal: 10, paddingVertical: 6 },
   seloNome: { ...TIPOGRAFIA.micro, fontWeight: "800" },
   seloData: { ...TIPOGRAFIA.micro, fontWeight: "500" },
+  procedenciaAuditoria: {
+    ...TIPOGRAFIA.micro,
+    fontWeight: "700",
+    marginTop: ESPACO.xs,
+    lineHeight: 15,
+  },
   procedenciaNota: { ...TIPOGRAFIA.micro },
 
 });

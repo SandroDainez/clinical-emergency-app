@@ -2780,3 +2780,54 @@ recomendações, **página 12** do PDF. A marca "não conferida" saiu — não p
 tenha conseguido abrir o PDF (não consegui: HTTP 403), mas porque quem podia abrir,
 abriu. **A cadeia fecha com um humano, não com um agente.** O que continua aberto é
 só o das Tabelas 8 e 9, acima.
+
+## D-66 · A assimetria do selo de força — 1 módulo de 31
+
+**Aberta em:** 2026-08-21 · **Tipo:** dívida com prazo, **não observação** ·
+**Fecha sozinha:** sim, quando o 31º módulo entrar.
+
+### O que é
+
+A declaração de força e fonte **por conduta** existe hoje em **1 módulo de 31**
+(injúria renal aguda). Nos outros 30, nenhum card tem selo.
+
+### Por que é dívida, e não detalhe
+
+Ela **mente para o lado perigoso**, e é do tipo que ninguém nota: não quebra tela,
+não falha teste, não aparece em relatório. Quem compara dois módulos lê a diferença
+como se fosse informação clínica —
+
+> "este tem selo de recomendação formal; aquele não tem selo nenhum, então deve ser
+> consenso fraco."
+
+É falso. **Ausência de selo não diz nada sobre a força da conduta**: diz que aquele
+módulo ainda não foi auditado. É a regra do piso de universo (`scripts/lib/universo.cjs`)
+virada para o usuário: um "não medi" sem etiqueta é lido como "medi e não achei".
+
+### O que já foi feito (2026-08-21)
+
+- Aviso nas **duas telas onde o usuário compara** — o hub (31 cards lado a lado) e a
+  página de produto (que fala de procedência). Texto único em
+  [`lib/auditoria-de-forca.ts`](../lib/auditoria-de-forca.ts), com o progresso: "1 de 31".
+- Trava `test:aviso-auditoria`, que exige o aviso **enquanto** a assimetria existir,
+  exige a **remoção** dele quando acabar, e impede a lista de módulos auditados de
+  **adiantar** — ela é conferida contra `valida-forca-da-afirmacao`, quem realmente
+  audita. Auditoria por declaração é o oposto de auditoria.
+
+### Prazo
+
+- **A cada bloco de auditoria concluído**, `MODULOS_COM_FORCA_DECLARADA` cresce e o
+  número na tela muda. É o prazo natural, e é automático.
+- **Ponto de revisão: 2026-11-21 (três meses).** Se nessa data menos de **1/3** dos
+  módulos (11 de 31) declararem força, o aviso deixa de ser rodapé e passa a faixa
+  fixa no topo do hub — porque uma assimetria que dura deixa de ser transitória, e
+  rodapé de coisa permanente ninguém lê.
+- ⚠️ **Este ponto de revisão é PROPOSTA minha, não compromisso do autor.** Ele muda a
+  data ou o critério se quiser; o que não pode é a assimetria voltar a ser observação
+  sem prazo.
+
+### Fecha quando
+
+`MODULOS_COM_FORCA_DECLARADA.length === 31`. Nesse dia a trava passa a **reprovar o
+aviso**, e ele sai das telas — aviso que sobrevive ao motivo vira ruído, e ruído
+ensina a ignorar avisos.

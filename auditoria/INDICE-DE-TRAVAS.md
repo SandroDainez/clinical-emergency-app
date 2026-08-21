@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**48 de 65 travas com declaração completa.**
+**49 de 66 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -227,6 +227,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que todo nó de CONDUTA das árvores auditadas declare `procedencia` com `forca`, e que cada força carregue o que ela obriga — classe/grau na recomendação formal, tipo de documento na prática aceita, lacuna de evidência no mecanismo fisiológico. Nó sem procedência só passa se estiver na lista de PENDÊNCIAS DECLARADAS, com motivo.
 - **NÃO PROMETE:** que a força esteja CERTA. Nenhum script julga se uma conduta é recomendação formal ou plausibilidade — isso é leitura de fonte, e é do médico. A trava garante que alguém DECLAROU, e que o que se declara aparece na tela.
 - **UNIVERSO:** as árvores de ARVORES, compiladas, com piso no retrato. ── ⚠️ POR QUE A PENDÊNCIA É DECLARADA, E NÃO SILENCIOSA ─────────────────── A ordem do autor foi explícita: "não invente a força de nenhuma conduta; onde não estiver claro, marque como pendência e PARE — preencher por suposição é o mesmo defeito com nome novo". Uma trava que aceitasse nó sem `procedencia` em silêncio deixaria a maior parte do módulo sem classificação e sem ninguém saber. Aqui, o que falta tem nome, motivo e sai no relatório.
+
+## `test:aviso-auditoria` → `scripts/valida-aviso-de-auditoria.cjs`
+
+- **PROMETE:** que, ENQUANTO houver módulo sem declaração de força por conduta, as duas telas onde o usuário COMPARA módulos (o hub e a página de produto) mostrem o aviso; e que a lista de módulos auditados não possa "adiantar" — ela é conferida contra o instrumento que realmente audita.
+- **NÃO PROMETE:** que o aviso esteja legível, nem que o usuário o leia. Isso é medição de layout e de comportamento, e nenhuma das duas é feita aqui.
+- **UNIVERSO:** os módulos clínicos declarados no app, com piso no retrato. ── ⚠️ POR QUE ISTO É TRAVA E NÃO OBSERVAÇÃO ─────────────────────────────── A assimetria (1 módulo com selo, 30 sem) é do tipo que NINGUÉM NOTA: ela não quebra tela, não falha teste, não aparece em relatório. E ela mente para o lado perigoso — quem compara lê "sem selo" como "recomendação mais fraca", quando o que ela significa é "ainda não auditado". É a mesma regra do piso de universo, agora virada para o usuário: um "não medi" apresentado sem etiqueta é lido como "medi e não achei". ── ⚠️ E POR QUE ELA SE DESARMA SOZINHA ──────────────────────────────────── Quando `MODULOS_COM_FORCA_DECLARADA` cobrir todos os módulos, o aviso deixa de ser exigido — e passa a ser exigida a REMOÇÃO dele, porque aviso que sobrevive ao seu motivo vira ruído e ensina a ignorar avisos.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 

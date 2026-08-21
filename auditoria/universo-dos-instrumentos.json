@@ -34,5 +34,8 @@
   "valida-forca-da-afirmacao": {
     "_nota": "Medido: 60 nós no renal em 2026-08-20.",
     "nos_da_arvore": 40
+  },
+  "valida-aviso-de-auditoria": {
+    "modulos_clinicos": 31
   }
 }
