@@ -132,9 +132,26 @@ export const IRA_SEM_BASE_ACOES = [
   "Reavalie ausculta e oximetria entre as alíquotas.",
 ];
 
+/**
+ * ⚠️ A ATRIBUIÇÃO À DIRETRIZ SAIU DAQUI EM 2026-08-21, E A CONDUTA FICOU.
+ *
+ * Este nó dizia, na tela, que "a própria diretriz resolve" e que a palavra
+ * "presumido" era dela. **Ninguém verificou.** O repositório passou a ter o texto
+ * VERBATIM da KDIGO 2012 (`protocols/fontes-verbatim/kdigo-2012-aki.md`), mas só
+ * das três recomendações sobre diurético e dopamina — a basal desconhecida está
+ * nas **Tabelas 8 e 9**, que não foram transcritas.
+ *
+ * Isso é "NÃO CONSEGUI OLHAR", não "não há". A diferença é a razão de a frase
+ * sair: presumir base normal e tratar como agudo é **prática defensável**, e
+ * continua na tela como nossa — o que não continua é dizer que uma diretriz
+ * autoriza, sem ter lido a diretriz.
+ *
+ * ⚠️ ALVO NOMEADO DA PENDÊNCIA: KDIGO 2012, Tabelas 8 e 9. Quem transcrever
+ * devolve a atribuição — e aí ela terá lastro.
+ */
 export const IRA_SEM_BASE_PORQUE = [
-  "Não saber a creatinina de base é o caso comum, e a própria diretriz resolve.",
-  "A definição do KDIGO fala de aumento \"conhecido OU PRESUMIDO\" nos últimos 7 dias — a palavra é dela, não uma licença deste app.",
+  "Não saber a creatinina de base é o caso COMUM, não a exceção — e o atendimento não pode parar por isso.",
+  "⚠️ Presumir base normal é decisão NOSSA, defensável: não há aqui atribuição a diretriz nenhuma. A KDIGO 2012 trata basal desconhecida nas Tabelas 8 e 9, ainda não transcritas para este repositório.",
   "As duas janelas que a definição usa: aumento de 0,3 mg/dL em 48 horas, ou 1,5 vez a base em 7 dias.",
   "Presumir base normal é o erro mais seguro dos dois.",
   "⚠️ Mas se o rim já era doente e você não sabe, a prova de volume que ajudaria um pré-renal congestiona um crônico.",
@@ -353,13 +370,35 @@ export const IRA_ACIONAR_PORQUE = [
 export const ARMADILHA_VOLUME_PELA_CREATININA =
   "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.";
 
+/**
+ * ⚠️ PREVENIR E TRATAR SÃO DUAS AFIRMAÇÕES, COM GRAUS DIFERENTES.
+ *
+ * O app dizia UMA linha — "diurético não melhora o rim" — e a KDIGO 2012 tem
+ * duas, com força desigual:
+ *
+ *   3.4.1 (1B) "We recommend not using diuretics to prevent AKI."
+ *   3.4.2 (2C) "We suggest not using diuretics to treat AKI, except in the
+ *               management of volume overload."
+ *
+ * A que estava na tela era a de TRATAR — a mais fraca das duas. A de PREVENIR,
+ * que é a mais forte, não estava em lugar nenhum. Agora as duas estão, cada uma
+ * com o seu número e o seu grau, em `protocols/fontes-verbatim/kdigo-2012-aki.md`.
+ *
+ * ⚠️ E A EXCEÇÃO DA 3.4.2 NÃO É RESSALVA — É A ESTRUTURA. "except in the
+ * management of volume overload" é exatamente o que sustenta a arquitetura C do
+ * diurético de alça neste módulo: a sobrecarga é a indicação que RESTA.
+ */
 export const ARMADILHA_DIURETICO_PARA_O_RIM =
-  "⚠️ DIURÉTICO NÃO MELHORA O RIM — ele trata SOBRECARGA, que é outra indicação. Aumenta o débito urinário sem mudar função nem desfecho.";
+  "⚠️ DIURÉTICO NÃO TRATA A IRA — a KDIGO SUGERE não usá-lo para tratar, EXCETO no manejo da SOBRECARGA DE VOLUME (3.4.2, grau 2C). A sobrecarga é a indicação que resta.";
+
+export const ARMADILHA_DIURETICO_PARA_PREVENIR =
+  "⚠️ E NÃO USE DIURÉTICO PARA PREVENIR IRA — é outra afirmação, e mais forte: aqui a KDIGO RECOMENDA não usar (3.4.1, grau 1B), não apenas sugere.";
 
 export const ARMADILHA_DOPAMINA_RENAL =
-  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — ela não protege o rim e acrescenta arritmia.";
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege o rim e acrescenta arritmia.";
 
 export const ARMADILHAS_PORQUE = [
   "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.",
-  "➜ O diurético transforma um oligúrico em não oligúrico, com a mesma doença e menos volume — o débito melhora, o rim não.",
+  "➜ O diurético aumenta o débito urinário sem mudar função nem desfecho: transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.",
+  "➜ Prevenir e tratar são afirmações diferentes, com graus diferentes — 1B e 2C. Quem só ouviu uma delas ouviu a mais fraca.",
 ];

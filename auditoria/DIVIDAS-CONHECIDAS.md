@@ -2758,3 +2758,22 @@ que ela diz sustentar já são cobertas por `aha_ecc_2025_destaques_ptbr` e
 ⚠️ **Não removi.** Aposentar uma fonte é decisão de procedência do autor — e
 remover a entrada errada sem ele decidir seria escolher um ano para encerrar a
 dúvida, que é como o 126 entrou.
+
+## D-65 · KDIGO 2012, Tabelas 8 e 9 — creatinina basal desconhecida
+
+**O que falta:** o TEXTO das Tabelas 8 e 9 da KDIGO 2012, transcrito para
+`protocols/fontes-verbatim/kdigo-2012-aki.md`.
+
+**Por que importa:** o nó `sem_base` afirmava na tela que "a diretriz autoriza
+seguir" e que a palavra "presumido" era dela. **Ninguém verificou.** A atribuição
+foi retirada em 2026-08-21; a conduta ficou, declarada como nossa.
+
+**Isto é "não consegui olhar", não "não há".** A distinção é a dívida.
+
+**Como fechar:** transcrever as duas tabelas numa seção `## … Tabelas 8 …` do
+arquivo verbatim. A trava de `valida-ira` que hoje exige a AUSÊNCIA da atribuição
+se desarma sozinha quando essa seção existir — não é preciso mexer no script.
+
+**Também aberto no mesmo arquivo:** o texto das três recomendações foi transcrito
+pelo AUTOR do PDF público, e **não conferido contra o primário** — a busca do PDF
+na sessão devolveu HTTP 403. Mesma marca da Parte 9 do AHA 2025.

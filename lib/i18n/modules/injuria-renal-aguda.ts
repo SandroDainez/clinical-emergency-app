@@ -1130,14 +1130,27 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   // uma aparece no ponto da tentação E na recapitulação com o MESMO texto.
   "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.":
     "⚠️ NO DÉ VOLUMEN POR CAUSA DE LA CREATININA — délo por el estado de perfusión. El número no es hipovolemia, y en quien ya está congesto el volumen empeora.",
-  "⚠️ DIURÉTICO NÃO MELHORA O RIM — ele trata SOBRECARGA, que é outra indicação. Aumenta o débito urinário sem mudar função nem desfecho.":
-    "⚠️ EL DIURÉTICO NO MEJORA EL RIÑÓN — trata SOBRECARGA, que es otra indicación. Aumenta el débito urinario sin cambiar función ni desenlace.",
-  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — ela não protege o rim e acrescenta arritmia.":
-    "⚠️ NO USE DOPAMINA EN DOSIS RENAL — no protege el riñón y agrega arritmia.",
+  "⚠️ DIURÉTICO NÃO TRATA A IRA — a KDIGO SUGERE não usá-lo para tratar, EXCETO no manejo da SOBRECARGA DE VOLUME (3.4.2, grau 2C). A sobrecarga é a indicação que resta.":
+    "⚠️ EL DIURÉTICO NO TRATA LA IRA — la KDIGO SUGIERE no usarlo para tratar, EXCEPTO en el manejo de la SOBRECARGA DE VOLUMEN (3.4.2, grado 2C). La sobrecarga es la indicación que resta.",
+  "⚠️ E NÃO USE DIURÉTICO PARA PREVENIR IRA — é outra afirmação, e mais forte: aqui a KDIGO RECOMENDA não usar (3.4.1, grau 1B), não apenas sugere.":
+    "⚠️ Y NO USE DIURÉTICO PARA PREVENIR IRA — es otra afirmación, y más fuerte: aquí la KDIGO RECOMIENDA no usar (3.4.1, grado 1B), no solo sugiere.",
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — a KDIGO recomenda não usar dose baixa nem para prevenir nem para tratar a IRA (3.5.1, grau 1A). Não protege o rim e acrescenta arritmia.":
+    "⚠️ NO USE DOPAMINA EN DOSIS RENAL — la KDIGO recomienda no usar dosis baja ni para prevenir ni para tratar la IRA (3.5.1, grado 1A). No protege el riñón y agrega arritmia.",
   "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.":
     "➜ Las tres dicen lo mismo: no trate el NÚMERO, trate lo que causó el número.",
-  "➜ O diurético transforma um oligúrico em não oligúrico, com a mesma doença e menos volume — o débito melhora, o rim não.":
-    "➜ El diurético transforma un oligúrico en no oligúrico, con la misma enfermedad y menos volumen — el débito mejora, el riñón no.",
+  "➜ O diurético aumenta o débito urinário sem mudar função nem desfecho: transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.":
+    "➜ El diurético aumenta el débito urinario sin cambiar función ni desenlace: transforma un oligúrico en no oligúrico, con la misma enfermedad y menos volumen.",
+  "➜ Prevenir e tratar são afirmações diferentes, com graus diferentes — 1B e 2C. Quem só ouviu uma delas ouviu a mais fraca.":
+    "➜ Prevenir y tratar son afirmaciones diferentes, con grados diferentes — 1B y 2C. Quien solo oyó una de ellas oyó la más débil.",
+  // ── `sem_base` sem a atribuição à diretriz (2026-08-21) ───────────────────
+  "Não saber a creatinina de base é o caso COMUM, não a exceção — e o atendimento não pode parar por isso.":
+    "No saber la creatinina de base es el caso COMÚN, no la excepción — y la atención no puede parar por eso.",
+  "⚠️ Presumir base normal é decisão NOSSA, defensável: não há aqui atribuição a diretriz nenhuma. A KDIGO 2012 trata basal desconhecida nas Tabelas 8 e 9, ainda não transcritas para este repositório.":
+    "⚠️ Presumir base normal es decisión NUESTRA, defendible: no hay aquí atribución a directriz alguna. La KDIGO 2012 trata basal desconocida en las Tablas 8 y 9, aún no transcritas para este repositorio.",
+  "Sem a creatinina de base — e o atendimento não para por isso":
+    "Sin la creatinina de base — y la atención no para por eso",
+  "Diretriz clínica — sem recomendação graduada geral para nefrotóxicos":
+    "Directriz clínica — sin recomendación graduada general para nefrotóxicos",
   "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":
     "➜ La furosemida aumenta el débito urinario sin mejorar función ni desenlace.",
   "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.":

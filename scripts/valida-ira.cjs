@@ -256,7 +256,6 @@ if (Object.keys(nos).length < 10) {
   // `sem_base` seria exigir a volta do defeito.
   const pistas = textosDoNo(nos.drc_pistas ?? {}).join("\n");
   const pecas = [
-    ["a palavra PRESUMIDO, que é da diretriz", /PRESUMIDO/i, semBase],
     ["as duas janelas (48 h e 7 dias)", /48 HORAS/i, semBase],
     ["a janela de 7 dias", /7 DIAS/i, semBase],
     ["tratar como agudo até prova em contrário", /AGUDO AT[ÉE] PROVA EM CONTR[ÁA]RIO/i, semBase],
@@ -268,8 +267,8 @@ if (Object.keys(nos).length < 10) {
   if (pecas.length) {
     falhas.push(
       `a saída "não sei a base" perdeu ${pecas.length} peça(s): ${pecas.map((x) => x[0]).join(" · ")}.\n` +
-      `      ⚠️ A palavra PRESUMIDO é da própria diretriz, e é ela que AUTORIZA agir sem histórico. ` +
-      `Sem ela o app estaria improvisando permissão; com ela, tem procedência.`
+      `      ⚠️ Esta saída existe porque não saber a base é o caso COMUM. Ela não pode perder ` +
+      `a conduta — o que ela perdeu, em 2026-08-21, foi a ATRIBUIÇÃO à diretriz (conferência abaixo).`
     );
   } else ok++;
 }
@@ -325,6 +324,39 @@ if (Object.keys(nos).length < 10) {
   } else ok++;
 }
 
+// ── A ATRIBUIÇÃO QUE SÓ VOLTA COM O TEXTO ──────────────────────────────────
+{
+  // ⚠️ ESTA CONFERÊNCIA É UMA AUSÊNCIA, E DE PROPÓSITO. O nó `sem_base` dizia na
+  // tela que "a diretriz autoriza seguir" e que a palavra "presumido" era dela.
+  // Ninguém tinha lido a diretriz: a KDIGO 2012 trata basal desconhecida nas
+  // TABELAS 8 E 9, que não estão transcritas no repositório. Isso é "não
+  // consegui olhar", não "não há" — e enquanto for, a conduta fica e a citação
+  // não. No dia em que alguém transcrever as tabelas, esta trava sai do caminho
+  // sozinha: ela só exige a ausência ENQUANTO o texto estiver ausente.
+  const semBase = textosDoNo(nos.sem_base ?? {}).join("\n");
+  const VERBATIM = path.join(appDir, "protocols", "fontes-verbatim", "kdigo-2012-aki.md");
+  const temTabelas =
+    fs.existsSync(VERBATIM) && /##[^\n]*Tabela[s]?\s*8\b/i.test(fs.readFileSync(VERBATIM, "utf8"));
+
+  if (temTabelas) {
+    ok++; // o texto chegou — a atribuição passa a ser assunto de conteúdo, não desta trava
+  } else {
+    const atribuicoes = [
+      ["\"a diretriz autoriza\"", /a diretriz autoriza|a pr[óo]pria diretriz (resolve|autoriza)/i],
+      ["\"a palavra é dela\"", /a palavra [ée] dela/i],
+      ["a permissão vinda da diretriz", /diretriz[^.]{0,40}(autoriza|permite) (seguir|agir)/i],
+    ].filter(([, re]) => re.test(semBase));
+    if (atribuicoes.length) {
+      falhas.push(
+        `a saída "não sei a base" voltou a ATRIBUIR à diretriz o que ninguém leu: ${atribuicoes.map((x) => x[0]).join(" · ")}.\n` +
+        `      ⚠️ ALVO NOMEADO: KDIGO 2012, Tabelas 8 e 9. Transcreva para \`protocols/fontes-verbatim/kdigo-2012-aki.md\`\n` +
+        `      (uma seção \`## ... Tabelas 8 ...\`) e a atribuição volta a ter lastro. Até lá, presumir base normal\n` +
+        `      é conduta NOSSA, defensável — e é assim que a tela precisa dizer.`
+      );
+    } else ok++;
+  }
+}
+
 // ── 7. O QUE NÃO FAZER — os erros correntes ────────────────────────────────
 {
   // ⚠️ ESTA CONFERÊNCIA FOI REESCRITA (R-87): ela ancorava na REDAÇÃO —
@@ -335,6 +367,7 @@ if (Object.keys(nos).length < 10) {
   const familia = [
     ["volume pela creatinina", "ARMADILHA_VOLUME_PELA_CREATININA", "pre_renal"],
     ["diurético para o rim", "ARMADILHA_DIURETICO_PARA_O_RIM", "alca_congesto"],
+    ["diurético para PREVENIR", "ARMADILHA_DIURETICO_PARA_PREVENIR", null],
     ["dopamina em dose renal", "ARMADILHA_DOPAMINA_RENAL", null],
   ];
   const libTexto = lerFonte(path.join(appDir, LIB));
@@ -367,6 +400,37 @@ if (Object.keys(nos).length < 10) {
   // em ALGUM lugar da família, seja qual for a frase.
   if (!/desfecho/i.test(libTexto)) {
     falhas.push('a família das armadilhas perdeu a razão: nada nela diz que o diurético não muda DESFECHO.');
+  }
+  // ⚠️ PREVENIR E TRATAR NÃO PODEM VOLTAR A SER UMA LINHA SÓ. São duas
+  // recomendações, com graus diferentes — e a que estava na tela era a MAIS
+  // FRACA. Cada grau é conferido contra o arquivo verbatim, não contra memória.
+  const VERB = path.join(appDir, "protocols", "fontes-verbatim", "kdigo-2012-aki.md");
+  if (!fs.existsSync(VERB)) {
+    falhas.push(
+      `${path.relative(appDir, VERB)} não existe — sem o TEXTO da diretriz, os graus na tela ` +
+      `não têm contra o que ser conferidos. Referência bibliográfica não é fonte.`
+    );
+  } else {
+    const verbatim = fs.readFileSync(VERB, "utf8");
+    for (const [num, grau] of [["3.4.1", "1B"], ["3.4.2", "2C"], ["3.5.1", "1A"]]) {
+      if (!new RegExp(`${num.replace(/\./g, "\\.")}[^\n]*${grau}`).test(verbatim)) {
+        falhas.push(`o verbatim da KDIGO perdeu a ${num} (${grau}) — a fonte do grau sumiu.`);
+      }
+      // ⚠️ CONFERE O TEXTO DA CONSTANTE, NÃO A ÁRVORE INTEIRA. A primeira versão
+      // desta checagem procurava "3.4.2 … 2C" em `tudo` e passou VERDE com o
+      // grau do AVISO trocado para 1A — porque o `classeOuGrau` do SELO de
+      // `nao_faca` já contém "3.4.2 (2C)", e ele casava sozinho. O selo é proxy
+      // do item; o que o usuário lê na linha é o item (R-87).
+      const dono = { "3.4.1": "ARMADILHA_DIURETICO_PARA_PREVENIR", "3.4.2": "ARMADILHA_DIURETICO_PARA_O_RIM", "3.5.1": "ARMADILHA_DOPAMINA_RENAL" }[num];
+      const texto = lib?.[dono] ?? "";
+      if (!new RegExp(`${num.replace(/\./g, "\\.")}[^\n]{0,20}${grau}`).test(texto)) {
+        falhas.push(
+          `\`${dono}\` não diz mais QUAL recomendação a sustenta: falta "${num} … ${grau}" NO PRÓPRIO AVISO.\n` +
+          `        ⚠️ Prevenir (3.4.1, 1B) e tratar (3.4.2, 2C) são afirmações DIFERENTES. Uma linha só esconde a mais forte.\n` +
+          `        « ${texto.slice(0, 110)}… »`
+        );
+      }
+    }
   }
   const restantes = [
     ["não esperar a creatinina", /NÃO ESPERE A CREATININA/i],

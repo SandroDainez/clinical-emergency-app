@@ -15,6 +15,7 @@ import {
   IRA_NEFROTOXICO_PORQUE,
   IRA_O_QUE_NAO_CONDUZ_PORQUE,
   ARMADILHA_DIURETICO_PARA_O_RIM,
+  ARMADILHA_DIURETICO_PARA_PREVENIR,
   ARMADILHA_DOPAMINA_RENAL,
   ARMADILHA_VOLUME_PELA_CREATININA,
   ARMADILHAS_PORQUE,
@@ -1016,12 +1017,24 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "O que não fazer",
       summary: "Cada um destes é erro corrente.",
+      // ⚠️ O SELO COBRE AS TRÊS PRIMEIRAS, E O `contextoDaFonte` DIZ ISSO NA
+      // TELA. Os dois últimos itens não são da KDIGO — deixar o selo cobrir a
+      // lista inteira seria empréstimo de força, que é o defeito que este campo
+      // existe para impedir. Os graus por item estão no próprio texto.
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury",
+        classeOuGrau: "3.5.1 (1A) · 3.4.1 (1B) · 3.4.2 (2C)",
+        contextoDaFonte:
+          "⚠️ O selo cobre as TRÊS primeiras linhas (dopamina e diurético). \"Não espere a creatinina\" e \"não repita contraste\" NÃO são recomendações graduadas da KDIGO.",
+      },
       // ⚠️ A LISTA RECAPITULA, com o texto vindo da MESMA fonte que alimenta os
       // nós da tentação (E-7). Duas cópias do mesmo aviso divergiriam — e a que
       // divergisse seria justamente a que ninguém releu.
       actions: [
         ARMADILHA_VOLUME_PELA_CREATININA,
         ARMADILHA_DIURETICO_PARA_O_RIM,
+        ARMADILHA_DIURETICO_PARA_PREVENIR,
         ARMADILHA_DOPAMINA_RENAL,
         "NÃO ESPERE A CREATININA para agir.",
         "Não repita contraste sem reavaliar a indicação.",
@@ -1044,7 +1057,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     sem_base: {
       id: "sem_base",
       type: "action",
-      title: "Sem a creatinina de base — e a diretriz autoriza seguir",
+      // ⚠️ O TÍTULO PERDEU A ATRIBUIÇÃO em 2026-08-21: ele dizia "e a diretriz
+      // autoriza seguir" sem que ninguém tivesse lido a diretriz. A conduta ficou;
+      // a citação saiu. Pendência com alvo nomeado: KDIGO 2012, Tabelas 8 e 9.
+      title: "Sem a creatinina de base — e o atendimento não para por isso",
       summary:
         "PRESUMA BASE NORMAL E TRATE COMO AGUDO ATÉ PROVA EM CONTRÁRIO — é o erro mais seguro dos dois. Mas com o VOLUME MAIS CAUTELOSO, em alíquotas menores, reavaliando ausculta e oximetria entre elas.",
       actions: IRA_SEM_BASE_ACOES,
@@ -1209,6 +1225,16 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     drc_sem_agudizacao: {
       id: "drc_sem_agudizacao",
       type: "action",
+      // ⚠️ SEM GRAU, E DE PROPÓSITO. Suspender nefrotóxico e revisar doses por
+      // função renal NÃO tem recomendação graduada geral na KDIGO 2012 — ela
+      // gradua por DROGA (aminoglicosídeo, anfotericina, contraste), não uma
+      // regra única. Carimbar "1A" aqui seria pegar emprestada a força das
+      // recomendações do diurético, que são de outro assunto.
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "KDIGO 2012 — recomendações droga-específicas; prática aceita para a regra geral",
+        tipoDeDocumento: "Diretriz clínica — sem recomendação graduada geral para nefrotóxicos",
+      },
       title: "DRC sem agudização — o número é o dele",
       summary: "⚠️ Este paciente não tem IRA. Tratar como se tivesse é que faz dano.",
       actions: [

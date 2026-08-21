@@ -1,6 +1,6 @@
 # PROPOSTA DE FORÇA — os 13 nós de conduta ainda sem procedência
 
-**Módulo:** injúria renal aguda · **Data:** 2026-08-20 · **Estado:** proposta, não formulário.
+**Módulo:** injúria renal aguda · **Data:** 2026-08-20 · **Atualizado:** 2026-08-21 · **Estado:** 3 aplicadas, 10 abertas.
 
 Cada nó abaixo vem com a força que EU proponho, a fonte, o grau quando houver, e a
 razão. Você confirma ou corrige. **Onde não há base, está escrito "sem proposta,
@@ -9,7 +9,45 @@ evitar.
 
 ---
 
-## ⚠️ ANTES DE TUDO: a KDIGO 2012 NÃO está no repositório
+---
+
+# ✅ ATUALIZAÇÃO 2026-08-21 — O TEXTO CHEGOU, E TRÊS FORÇAS FECHARAM
+
+O autor transcreveu do PDF público as três recomendações e elas estão VERBATIM em
+[`protocols/fontes-verbatim/kdigo-2012-aki.md`](../protocols/fontes-verbatim/kdigo-2012-aki.md).
+**Referência bibliográfica não é fonte; texto é** — e era exatamente isso que
+travava a lista.
+
+| nó | força aplicada | fonte | grau |
+|---|---|---|---|
+| `nao_faca` | `recomendacao_formal` | KDIGO 2012 | 3.5.1 (1A) · 3.4.1 (1B) · 3.4.2 (2C) |
+| `drc_sem_agudizacao` | `pratica_aceita` | KDIGO 2012 (droga-específicas) | **sem grau**, de propósito |
+| `sem_base` | — | — | **atribuição RETIRADA da tela** |
+
+**Prevenir e tratar viraram duas linhas.** O app dizia uma só, e era a mais fraca
+(3.4.2, 2C). Agora a de prevenir está lá com o grau dela (3.4.1, **1B**), e cada
+aviso carrega o número e o grau no PRÓPRIO texto — não só no selo.
+
+**A exceção da 3.4.2 entrou citada** ("exceto no manejo da sobrecarga de volume"):
+ela não é ressalva, é o que sustenta a arquitetura C do diurético de alça.
+
+**`sem_base` perdeu a citação e manteve a conduta.** O título dizia "e a diretriz
+autoriza seguir"; o `porque` dizia que a palavra "presumido" era da diretriz.
+Ninguém tinha lido — a basal desconhecida está nas **Tabelas 8 e 9**, não
+transcritas. Presumir base normal continua na tela **como nossa**. Trava nova
+impede a atribuição voltar sem o texto, e ela **se desarma sozinha** no dia em que
+uma seção `## … Tabelas 8 …` aparecer no verbatim.
+
+**Sem grau, de propósito:** suspender nefrotóxico e revisar doses. A KDIGO gradua
+por DROGA (aminoglicosídeo, anfotericina, contraste), não uma regra geral —
+carimbar 1A ali seria pegar emprestada a força de outro assunto.
+
+**Restam 10 pendências.** As da tabela lá embaixo continuam válidas, menos as três
+acima.
+
+---
+
+## ⚠️ REGISTRO HISTÓRICO — por que isto travou (2026-08-20)
 
 Você mandou conferir na KDIGO 2012 quais destas afirmações têm recomendação
 **graduada**, apontando duas candidatas fortes — dopamina em dose renal e diurético

@@ -1301,12 +1301,16 @@
         "injuria-renal-aguda"
       ],
       "key_recommendations_covered": [
-        "Definição e estadiamento por DOIS eixos — creatinina e diurese —, valendo o pior dos dois",
-        "Janelas da definição: 0,3 mg/dL em 48 h, ou 1,5 vez a base em 7 dias",
-        "Oligúria por peso: < 0,5 mL/kg/h; estágio 3 com < 0,3 mL/kg/h por 24 h ou anúria por 12 h",
-        "Indicação de TRS pelo contexto clínico, sem limiar isolado de ureia ou creatinina"
+        "3.5.1 (1A) — não usar dopamina em dose baixa para prevenir ou tratar IRA [VERBATIM no repositório]",
+        "3.4.1 (1B) — não usar diurético para PREVENIR IRA [VERBATIM no repositório]",
+        "3.4.2 (2C) — não usar diurético para TRATAR IRA, exceto no manejo da sobrecarga de volume [VERBATIM no repositório]",
+        "Definição e estadiamento por DOIS eixos — creatinina e diurese —, valendo o pior dos dois (texto NÃO transcrito)",
+        "Janelas da definição: 0,3 mg/dL em 48 h, ou 1,5 vez a base em 7 dias (texto NÃO transcrito)",
+        "Oligúria por peso: < 0,5 mL/kg/h; estágio 3 com < 0,3 mL/kg/h por 24 h ou anúria por 12 h (texto NÃO transcrito)",
+        "Indicação de TRS pelo contexto clínico, sem limiar isolado de ureia ou creatinina (texto NÃO transcrito)"
       ],
-      "notes": "⚠️ ESTADIAMENTO SOMENTE. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. A separação existe porque generalizar uma fonte sobre a outra foi o defeito corrigido em 2026-08-20 (rodapé 'KDIGO 2012' sob doses que não são do KDIGO). ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada."
+      "notes": "⚠️ TRÊS RECOMENDAÇÕES ESTÃO VERBATIM em `protocols/fontes-verbatim/kdigo-2012-aki.md` (3.4.1, 3.4.2, 3.5.1) — transcritas pelo autor do PDF público, NÃO conferidas por mim contra o primário (a busca do PDF devolveu HTTP 403). ⚠️ O RESTO DESTA LISTA NÃO TEM TEXTO NO REPOSITÓRIO: os itens marcados 'NÃO transcrito' foram escritos a partir do conteúdo do módulo em 2026-08-20 e NÃO servem de prova do que a diretriz diz. ⚠️ AS TABELAS 8 E 9 (creatinina basal desconhecida) continuam não transcritas — é por isso que o nó `sem_base` não atribui nada à diretriz. ⚠️ ESTADIAMENTO E AS TRÊS RECOMENDAÇÕES, SÓ. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada.",
+      "texto_verbatim": "protocols/fontes-verbatim/kdigo-2012-aki.md"
     },
     {
       "id": "pa_psa_hipercalemia_insulina",
