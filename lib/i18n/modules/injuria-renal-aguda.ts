@@ -1149,6 +1149,10 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "⚠️ Presumir base normal es decisión NUESTRA, defendible: no hay aquí atribución a directriz alguna. La KDIGO 2012 trata basal desconocida en las Tablas 8 y 9, aún no transcritas para este repositorio.",
   "Sem a creatinina de base — e o atendimento não para por isso":
     "Sin la creatinina de base — y la atención no para por eso",
+  "⚠️ O selo cobre as TRÊS primeiras linhas (dopamina e diurético). \"Não espere a creatinina\" e \"não repita contraste\" NÃO são recomendações graduadas da KDIGO.":
+    "⚠️ El sello cubre las TRES primeras líneas (dopamina y diurético). \"No espere la creatinina\" y \"no repita contraste\" NO son recomendaciones graduadas de la KDIGO.",
+  "KDIGO 2012 — recomendações droga-específicas; prática aceita para a regra geral":
+    "KDIGO 2012 — recomendaciones droga-específicas; práctica aceptada para la regla general",
   "Diretriz clínica — sem recomendação graduada geral para nefrotóxicos":
     "Directriz clínica — sin recomendación graduada general para nefrotóxicos",
   "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":
