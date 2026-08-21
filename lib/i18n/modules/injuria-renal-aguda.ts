@@ -1124,6 +1124,20 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "Lo que no hacer — cada uno de estos es error corriente.",
   "NÃO USE DIURÉTICO PARA \"melhorar o rim\".":
     "NO USE DIURÉTICO PARA \"mejorar el riñón\".",
+  // ── A FAMÍLIA DAS ARMADILHAS (`lib/injuria-renal-aguda.ts`) ────────────────
+  // Uma fonte só em português, uma tradução só em espanhol: as quatro linhas
+  // que diziam a mesma coisa em quatro lugares viraram três constantes, e cada
+  // uma aparece no ponto da tentação E na recapitulação com o MESMO texto.
+  "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.":
+    "⚠️ NO DÉ VOLUMEN POR CAUSA DE LA CREATININA — délo por el estado de perfusión. El número no es hipovolemia, y en quien ya está congesto el volumen empeora.",
+  "⚠️ DIURÉTICO NÃO MELHORA O RIM — ele trata SOBRECARGA, que é outra indicação. Aumenta o débito urinário sem mudar função nem desfecho.":
+    "⚠️ EL DIURÉTICO NO MEJORA EL RIÑÓN — trata SOBRECARGA, que es otra indicación. Aumenta el débito urinario sin cambiar función ni desenlace.",
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — ela não protege o rim e acrescenta arritmia.":
+    "⚠️ NO USE DOPAMINA EN DOSIS RENAL — no protege el riñón y agrega arritmia.",
+  "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.":
+    "➜ Las tres dicen lo mismo: no trate el NÚMERO, trate lo que causó el número.",
+  "➜ O diurético transforma um oligúrico em não oligúrico, com a mesma doença e menos volume — o débito melhora, o rim não.":
+    "➜ El diurético transforma un oligúrico en no oligúrico, con la misma enfermedad y menos volumen — el débito mejora, el riñón no.",
   "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":
     "➜ La furosemida aumenta el débito urinario sin mejorar función ni desenlace.",
   "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.":
