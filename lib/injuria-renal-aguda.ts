@@ -346,16 +346,31 @@ export const IRA_ACIONAR_ACOES = [
   "Mantenha as doses revistas pela função renal e o nefrotóxico suspenso.",
 ];
 
+/**
+ * ⚠️ DUAS LINHAS SAÍRAM DAQUI EM 2026-08-21, E A RAZÃO NÃO É TAMANHO.
+ *
+ * Elas eram a KDIGO 5.1.1 ("o critério é UMA categoria: volume, eletrólito ou
+ * ácido-base que ameace a vida") e a 5.1.2 ("a diretriz RECUSA decidir por limiar
+ * isolado"). **As duas já estão SELADAS onde decidem** — a 5.1.1 em
+ * `trata_acidose`, a 5.1.2 em `trata_uremia`, ambas com número e grau na tela.
+ *
+ * Aqui elas eram TERCEIRA e SEGUNDA cópia da mesma afirmação, recolhidas e sem
+ * selo. Isso não é afirmação escondida: é **afirmação duplicada com tratamentos
+ * diferentes**, que é o mecanismo pelo qual duas partes do app divergem — o mesmo
+ * argumento que levou as doses para `lib/hipercalemia.ts` (R-95).
+ *
+ * ⚠️ E NÃO GANHARAM SELO PRÓPRIO, de propósito: selo duplicado é divergência
+ * esperando acontecer. O `acionar` explica **por que chamar a nefrologia**; não
+ * precisa reensinar o critério da diretriz.
+ */
 export const IRA_ACIONAR_PORQUE = [
   "A conversa não precisa do diagnóstico fechado; a dúvida já é motivo.",
   "Pedir vaga não é desistir de tratar — as horas da vaga correm junto com o tratamento.",
-  "O critério da diretriz é UMA categoria, não uma lista de números: alteração de volume, eletrólito ou ácido-base que ameace a vida.",
   "Hipercalemia refratária ao tratamento clínico, ou com alteração de ECG que não melhora.",
   "Acidose grave que não responde.",
   "Sobrecarga de volume com hipoxemia, sem resposta a diurético.",
   "Sinais de uremia — encefalopatia, pericardite, sangramento.",
   "Intoxicação por substância dialisável (lítio, salicilato, metanol, etilenoglicol) — a única em que a diálise trata o veneno, não o rim.",
-  "⚠️ A diretriz RECUSA explicitamente decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto e a tendência.",
   "➜ Este app não escolhe modalidade, dose nem momento — isso é de nefrologista e do serviço.",
   "Nada do que você sustenta espera a diálise, e é o que mantém o paciente vivo até ela.",
 ];

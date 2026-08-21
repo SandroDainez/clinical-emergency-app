@@ -1164,6 +1164,8 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   " ({0} de {1})":
     " ({0} de {1})",
   // ── AS 10 FORÇAS REVISADAS COM O AUTOR (2026-08-21) ──────────────────────
+  "➜ Os critérios completos dos dois eixos estão na tela ESTÁGIO KDIGO, mais adiante neste fluxo — é lá que eles têm fonte e versão declaradas.":
+    "➜ Los criterios completos de los dos ejes están en la pantalla ESTADIO KDIGO, más adelante en este flujo — es allí donde tienen fuente y versión declaradas.",
   "⚠️ UREIA ISOLADA, SEM SINTOMA, NÃO INDICA DIÁLISE — decida pelo contexto, pelo que a diálise corrige e pela TENDÊNCIA dos exames.":
     "⚠️ UREA AISLADA, SIN SÍNTOMA, NO INDICA DIÁLISIS — decida por el contexto, por lo que la diálisis corrige y por la TENDENCIA de los exámenes.",
   "Prática estabelecida — a KDIGO 5.1.2 NÃO nomeia estas complicações":

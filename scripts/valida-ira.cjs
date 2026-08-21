@@ -280,9 +280,20 @@ if (Object.keys(nos).length < 10) {
 // app possa oferecer em substituição, o que torna a alternativa obrigatória.
 {
   const acionar = textosDoNo(nos.acionar ?? {}).join("\n");
+  // ⚠️ A MODÉSTIA DA FONTE MUDOU DE LUGAR, E DE GUARDIÃO (2026-08-21).
+  //
+  // Esta conferência exigia, AQUI, que o `acionar` repetisse a categoria da
+  // 5.1.1 e a recusa de limiar da 5.1.2. As duas saíram: elas já estão SELADAS
+  // onde decidem — 5.1.1 em `trata_acidose`, 5.1.2 em `trata_uremia` —, com
+  // número e grau NA TELA. Eram terceira e segunda cópia da mesma afirmação, e
+  // afirmação duplicada é como duas partes do app divergem (R-95).
+  //
+  // ⚠️ E O GUARDIÃO FICOU MAIS FORTE, não mais fraco: a modéstia agora é
+  // conferida contra o VERBATIM da KDIGO — a checagem de grau exige que alguém
+  // cite a 5.1.1 e a 5.1.2 com o grau que o arquivo de fontes registra ("Not
+  // Graded"), e reprova se ninguém as citar. Antes, bastava a redação bater
+  // dentro de um nó; agora o grau bate contra o texto da diretriz.
   const pecas = [
-    ["a categoria da diretriz (volume, eletrólito, ácido-base)", /VOLUME, ELETR[ÓO]LITO ou [ÁA]CIDO-BASE/i],
-    ["que a diretriz RECUSA limiar isolado", /RECUSA EXPLICITAMENTE/i],
     ["que o app não escolhe modalidade nem momento", /N[ÃA]O ESCOLHE MODALIDADE/i],
     ["acionar quem existe", /acione quem existe/i],
     ["a transferência EM PARALELO", /EM PARALELO/i],
@@ -299,10 +310,9 @@ if (Object.keys(nos).length < 10) {
   if (pecas.length) {
     falhas.push(
       `a fronteira da diálise perdeu ${pecas.length} peça(s): ${pecas.map((x) => x[0]).join(" · ")}.\n` +
-      `      ⚠️ Duas coisas se protegem aqui. A PRIMEIRA é a modéstia da fonte: KDIGO 5.1.1 dá uma ` +
-      `CATEGORIA e 5.1.2 recusa limiar de ureia/creatinina — chamar de "as cinco indicações" seria ` +
-      `inventar precisão que ela nega. A SEGUNDA é o R-23: sem alternativa para quem não tem ` +
-      `nefrologista, "acione agora" é beco.`
+      `      ⚠️ O que se protege aqui é o R-23: sem alternativa para quem não tem nefrologista, ` +
+      `"acione agora" é beco. (A modéstia da fonte — 5.1.1 dá uma CATEGORIA, 5.1.2 recusa limiar ` +
+      `isolado — mudou de guardião: agora é conferida contra o VERBATIM, na checagem de grau.)`
     );
   } else ok++;
 }
@@ -547,6 +557,52 @@ if (Object.keys(nos).length < 10) {
       "        ⚠️ Ele não é curiosidade: é o que impede alguém carimbar KDIGO na linha da CPK alta\n" +
       "        daqui a um ano. A diretriz diz, na metodologia, que excluiu esses estudos."
     );
+  }
+
+  // ── LINHA RECOLHIDA REPETIDA EM MAIS DE UM NÓ ────────────────────────────
+  //
+  // ⚠️ ESTA CONFERÊNCIA NASCEU DE UMA MUTAÇÃO QUE PASSOU VERDE (2026-08-21). A
+  // tabela de estadiamento vivia em DOIS nós — `fazer_agora`, recolhida e sem
+  // selo, e `estagio_kdigo`, que é o canônico e tem o selo de definição. Ao
+  // desfazer a duplicação, testei devolvê-la: NENHUMA trava reprovou. Duplicar
+  // afirmação clínica é o mecanismo pelo qual duas partes do app divergem — e o
+  // repositório já tinha prova disso, porque as duas cópias JÁ diferiam na nota
+  // da calculadora.
+  //
+  // ⚠️ REPETIÇÃO NEM SEMPRE É DEFEITO, e por isso a lista é declarada em vez de
+  // proibida: um aviso pode caber legitimamente em dois caminhos que o usuário
+  // percorre alternativamente. O que a trava impede é repetição NOVA entrar sem
+  // ninguém decidir — que é como a divergência começa.
+  {
+    const REPETICOES_DECLARADAS = [
+      // [texto que se repete, por quê] — os quatro medidos em 2026-08-21.
+      ["pseudo-hipercalemia", "o mesmo aviso serve a quem NÃO tem o valor e a quem já está tratando"],
+      ["BEXIGA CHEIA NÃO É ANÚRIA", "é a mesma armadilha em dois pontos do fluxo, e o segundo é onde se age"],
+      ["Presumir base normal é o erro mais seguro dos dois", "as duas saídas do \"não sei\" chegam à mesma decisão"],
+      ["a prova de volume que ajudaria um pré-renal congestiona um crônico", "idem — mesma ressalva, dois caminhos"],
+    ];
+    const mapa = new Map();
+    for (const n of Object.values(nos)) {
+      for (const x of [...(n.porque ?? []), ...(n.evidence ?? [])]) {
+        if (!mapa.has(x)) mapa.set(x, new Set());
+        mapa.get(x).add(n.id);
+      }
+    }
+    const novas = [];
+    for (const [txt, ids] of mapa) {
+      if (ids.size < 2) continue;
+      if (REPETICOES_DECLARADAS.some(([marca]) => txt.includes(marca))) continue;
+      novas.push({ txt, ids: [...ids] });
+    }
+    if (novas.length) {
+      falhas.push(
+        `${novas.length} linha(s) recolhida(s) repetida(s) em mais de um nó, sem declaração:\n` +
+        novas.map((n) => `        [${n.ids.join(", ")}] « ${n.txt.slice(0, 90)}… »`).join("\n") + "\n" +
+        `      ⚠️ Duplicar afirmação é como duas partes do app divergem: a cópia que ninguém relê é a que\n` +
+        `      envelhece errado. Se a afirmação tem selo em algum nó, o outro APONTA — não copia. Se a\n` +
+        `      repetição for legítima, declare-a em REPETICOES_DECLARADAS com o motivo.`
+      );
+    }
   }
 
   const restantes = [

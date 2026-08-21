@@ -1086,8 +1086,12 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "➜ O app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico.",
         "➜ O módulo de Eletrólitos tem a conduta completa da hipercalemia, inclusive a escolha entre cloreto e gluconato de cálcio.",
         ...IRA_DOIS_EIXOS,
-        ...IRA_ESTADIAMENTO_KDIGO,
-        ...IRA_REVISAO_EM_CURSO,
+        // ⚠️ A TABELA DE ESTADIAMENTO SAIU DAQUI, E O PONTEIRO ENTROU. Ela vivia
+        // em DOIS lugares — aqui, recolhida e sem selo, e em `estagio_kdigo`, que
+        // é o nó canônico e tem o selo de DEFINIÇÃO com a versão. Duas cópias já
+        // divergiam na redação da nota da calculadora.
+        // ⚠️ COPIAR NÃO; LEVAR SIM: o conteúdo não se repete, o leitor é levado.
+        "➜ Os critérios completos dos dois eixos estão na tela ESTÁGIO KDIGO, mais adiante neste fluxo — é lá que eles têm fonte e versão declaradas.",
       ],
       next: "nao_faca",
     },
@@ -1301,15 +1305,16 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "{estagio_eixo_diurese}",
         "Reavalie o estágio a cada nova creatinina ou nova medida de diurese.",
       ],
+      // ⚠️ O NÓ CANÔNICO PASSA A USAR A CONSTANTE, em vez de uma segunda cópia
+      // inline. A tabela existia aqui E em `fazer_agora`, com os mesmos números e
+      // redações JÁ DIFERENTES na nota da calculadora — divergência começada.
+      // Aqui é onde ela tem selo (`definicao`, versão 2012), então é aqui que ela
+      // fica; e a nota da revisão em curso vem junto, porque o que ela discute é
+      // exatamente a VERSÃO que o selo declara.
       porque: [
         "O estágio é o PIOR dos dois eixos, nunca a soma — creatinina e diurese estadiam separadamente.",
-        "Estágio 1 · creatinina 1,5 a 1,9 vezes a base, ou aumento de pelo menos 0,3 mg/dL.",
-        "Estágio 1 · diurese abaixo de 0,5 mL/kg/h por 6 a 12 h.",
-        "Estágio 2 · creatinina 2,0 a 2,9 vezes a base.",
-        "Estágio 2 · diurese abaixo de 0,5 mL/kg/h por mais de 12 h.",
-        "Estágio 3 · creatinina 3 vezes a base, ou creatinina acima de 4,0 mg/dL, ou início de terapia de substituição renal.",
-        "Estágio 3 · diurese abaixo de 0,3 mL/kg/h por 24 h, ou anúria por 12 h.",
-        "⚠️ A calculadora de clearance não conhece a sua diurese: o estágio dela pode ser MENOR que o real.",
+        ...IRA_ESTADIAMENTO_KDIGO,
+        ...IRA_REVISAO_EM_CURSO,
       ],
       next: "volume_check",
     },
