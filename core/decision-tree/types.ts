@@ -180,7 +180,21 @@ export type ForcaDaAfirmacao =
   /** Consenso, painel de especialistas, prática difundida. Não é recomendação graduada. */
   | "pratica_aceita"
   /** Plausível pela fisiologia; SEM evidência de eficácia no cenário. */
-  | "mecanismo_fisiologico";
+  | "mecanismo_fisiologico"
+  /**
+   * ⚠️ DEFINIÇÃO NÃO SE GRADUA — e por isso ela é um valor, não um caso especial
+   * de recomendação.
+   *
+   * Uma diretriz não RECOMENDA que o estágio 3 seja o estágio 3: ela ESTABELECE.
+   * Não se discorda de uma definição — adota-se ou não. Exigir classe/grau aqui
+   * produziria uma classe que a fonte não dá, que é declaração falsa.
+   *
+   * ⚠️ E O RISCO DELA É OUTRO: não é evidência fraca, é VERSÃO DESATUALIZADA.
+   * Por isso o campo obrigatório é a VERSÃO, e ela aparece na tela. Liga direto
+   * na emenda E-9: a KDIGO 2026 segue draft, e no dia em que mudar o
+   * estadiamento, é este campo que denuncia o app.
+   */
+  | "definicao";
 
 /**
  * A procedência de um nó de conduta — força, fonte e o que cada força obriga.
@@ -201,6 +215,11 @@ export type ProcedenciaDaConduta = {
   tipoDeDocumento?: string;
   /** Obrigatório em `mecanismo_fisiologico`: o que falta de evidência. */
   lacunaDeEvidencia?: string;
+  /**
+   * Obrigatório em `definicao`: a versão adotada. É ela que envelhece — e é o
+   * único aviso que o app dá quando a fonte publica uma revisão.
+   */
+  versao?: string;
   /**
    * Obrigatório quando o contexto ORIGINAL da fonte — população, cenário,
    * agudo × crônico — difere do nó que a usa.
@@ -252,6 +271,21 @@ export type ActionNode = BaseNode & {
    * procedência e sem pendência declarada reprova.
    */
   procedencia?: ProcedenciaDaConduta;
+  /**
+   * O QUE ESTE NÓ É — e nem todo nó de ação faz afirmação clínica.
+   *
+   * ⚠️ `transicao` — só roteia para outro módulo. A força é a das condutas do
+   * módulo de DESTINO, e restá-la aqui seria DUPLICAR PROCEDÊNCIA, que é
+   * exatamente como dois módulos divergem com o tempo.
+   *
+   * ⚠️ `organizacao_do_atendimento` — "acionar a nefrologia", "colher o exame",
+   * "abrir a prescrição". Não são recomendações graduadas: são o fluxo do
+   * atendimento. **Exigir força delas produziria declaração falsa** — o defeito
+   * que este campo existe para impedir.
+   *
+   * Ausente = `conduta`, e conduta exige `procedencia`.
+   */
+  natureza?: "conduta" | "transicao" | "organizacao_do_atendimento";
   next: ProximoNo;
 };
 

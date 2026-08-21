@@ -357,6 +357,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     k_sem_valor: {
       id: "k_sem_valor",
       type: "action",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO, não afirmação clínica: colher, acionar,
+      // procurar, vigiar. Exigir força daqui produziria declaração falsa — o
+      // defeito que o campo existe para impedir.
+      natureza: "organizacao_do_atendimento",
       title: "Descobrir · Os dois caminhos, ao mesmo tempo",
       summary: "Um confirma, o outro decide antes do laboratório.",
       actions: [
@@ -722,6 +726,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     trata_choque: {
       id: "trata_choque",
       type: "action",
+      // ⚠️ TRANSIÇÃO: este nó roteia para outro módulo. A força das condutas é a
+      // das fontes DAQUELE módulo — restá-la aqui seria duplicar procedência, e
+      // procedência duplicada é como dois módulos divergem com o tempo.
+      natureza: "transicao",
       title: "Choque com IRA — a perfusão vem antes do rim",
       summary: "Sem pressão de perfusão não há filtração.",
       actions: [
@@ -763,6 +771,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     trata_congestao: {
       id: "trata_congestao",
       type: "action",
+      // ⚠️ TRANSIÇÃO: este nó roteia para outro módulo. A força das condutas é a
+      // das fontes DAQUELE módulo — restá-la aqui seria duplicar procedência, e
+      // procedência duplicada é como dois módulos divergem com o tempo.
+      natureza: "transicao",
       title: "Congestão com hipoxemia — a troca gasosa primeiro",
       summary: "O alvo é a respiração, não a creatinina.",
       actions: [
@@ -944,6 +956,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     trata_anuria: {
       id: "trata_anuria",
       type: "action",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO, não afirmação clínica: colher, acionar,
+      // procurar, vigiar. Exigir força daqui produziria declaração falsa — o
+      // defeito que o campo existe para impedir.
+      natureza: "organizacao_do_atendimento",
       title: "Anúria — a obstrução vem antes de qualquer conta",
       summary: "Anúria de 12 h já é estágio 3 pelo eixo da diurese.",
       actions: [
@@ -1149,6 +1165,16 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     estagio_kdigo: {
       id: "estagio_kdigo",
       type: "action",
+      // ⚠️ DEFINIÇÃO, NÃO RECOMENDAÇÃO. A diretriz não RECOMENDA que o estágio 3
+      // seja o estágio 3 — ela ESTABELECE. Não se discorda de uma definição;
+      // adota-se ou não, e por isso ela não tem classe. O risco dela é VERSÃO
+      // DESATUALIZADA, e é a versão que aparece na tela (E-9: a KDIGO 2026 segue
+      // draft — no dia em que mudar o estadiamento, é este campo que denuncia).
+      procedencia: {
+        forca: "definicao",
+        fonte: "KDIGO — Clinical Practice Guideline for Acute Kidney Injury",
+        versao: "2012",
+      },
       title: "Estágio KDIGO: {estagio_texto}",
       summary: "{estagio_explicacao}",
       actions: [
@@ -1352,6 +1378,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     nefro_descobrir: {
       id: "nefro_descobrir",
       type: "action",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO, não afirmação clínica: colher, acionar,
+      // procurar, vigiar. Exigir força daqui produziria declaração falsa — o
+      // defeito que o campo existe para impedir.
+      natureza: "organizacao_do_atendimento",
       title: "Descobrir · O que entrou neste paciente",
       summary: "São quatro lugares, e os quatro levam minutos.",
       actions: [
@@ -1412,6 +1442,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     acionar: {
       id: "acionar",
       type: "action",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO, não afirmação clínica: colher, acionar,
+      // procurar, vigiar. Exigir força daqui produziria declaração falsa — o
+      // defeito que o campo existe para impedir.
+      natureza: "organizacao_do_atendimento",
       title: "Acione agora — e a transferência em paralelo",
       summary:
         "⚠️ DUAS COISAS AO MESMO TEMPO, NÃO UMA: acione quem existe no seu serviço E acione a transferência em paralelo, porque vaga com diálise leva horas e essas horas correm junto com o tratamento. Pedir vaga não é desistir de tratar.",
@@ -1423,6 +1457,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     seguimento: {
       id: "seguimento",
       type: "action",
+      // ⚠️ ORGANIZAÇÃO DO ATENDIMENTO, não afirmação clínica: colher, acionar,
+      // procurar, vigiar. Exigir força daqui produziria declaração falsa — o
+      // defeito que o campo existe para impedir.
+      natureza: "organizacao_do_atendimento",
       title: "O que vigiar nas próximas horas",
       summary: "⚠️ O que estadia é a TENDÊNCIA: creatinina com hora anotada e diurese em mL/kg/h, medidas de novo. Uma medida isolada não diz se está melhorando.",
       actions: [

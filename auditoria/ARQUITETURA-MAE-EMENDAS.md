@@ -153,3 +153,47 @@ lista, com motivo, cada conduta ainda sem classificação. Ordem do autor: *"nã
 invente a força de nenhuma conduta; onde não estiver claro, marque como pendência
 e pare"*. Hoje: **27 condutas no renal · 6 classificadas · 21 pendentes com
 motivo**.
+
+
+## AM-4 · O quarto valor, e as duas naturezas que não declaram força
+
+Registrado em 2026-08-20, no mesmo dia da AM-3 e por causa dela: a primeira
+implementação tratava TODO nó de ação como afirmação clínica, e isso produziria
+declaração falsa em três lugares.
+
+### `definicao` — porque definição não se gradua
+
+> Uma diretriz não RECOMENDA que o estágio 3 seja o estágio 3 — ela ESTABELECE.
+> Não se discorda de uma definição: adota-se ou não.
+
+Exige **fonte + VERSÃO**, e **não exige** classe/grau — pedir uma classe que a
+fonte não dá seria inventar procedência.
+
+⚠️ **E o risco dela é outro:** não é evidência fraca, é **versão desatualizada**.
+Por isso o campo obrigatório é a versão, e é ela que aparece na tela. Liga direto
+na **E-9**: a KDIGO 2026 segue draft, e no dia em que mudar o estadiamento, é
+este campo que denuncia o app.
+
+`estagio_kdigo` · `definicao` · KDIGO 2012 · sem grau.
+
+### `transicao` — porque procedência duplicada é como módulos divergem
+
+Nó que só roteia para outro módulo (`trata_choque`, `trata_congestao`) não faz
+afirmação própria. A força é a das condutas do módulo de destino, e repeti-la
+aqui criaria **duas declarações da mesma coisa** — que é exatamente o mecanismo
+pelo qual dois módulos divergem com o tempo.
+
+⚠️ **A trava reprova nos dois sentidos:** transição sem força passa; transição
+QUE DECLARA força reprova, com a frase *"ou é conduta, ou não é"*.
+
+### `organizacao_do_atendimento` — porque exigir força produziria mentira
+
+"Acionar a nefrologia", "colher o exame", "abrir a prescrição das últimas 72 h"
+não são recomendações graduadas: são o fluxo do atendimento. **Exigir força delas
+produziria declaração falsa — o defeito que o campo existe para impedir.**
+
+### O que a reclassificação mostrou
+
+Das 21 pendências, **8 não eram pendência**: 1 definição, 2 transições, 5
+organização. **Sobraram 13 afirmações clínicas de verdade sem força declarada** —
+e essas são do autor.

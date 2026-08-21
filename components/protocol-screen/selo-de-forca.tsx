@@ -45,17 +45,27 @@ export default function SeloDeForca({ procedencia }: { procedencia?: Procedencia
       ? tr("RECOMENDAÇÃO FORMAL")
       : forca === "pratica_aceita"
         ? tr("PRÁTICA ACEITA")
-        : tr("MECANISMO FISIOLÓGICO");
+        : forca === "definicao"
+          ? tr("DEFINIÇÃO")
+          : tr("MECANISMO FISIOLÓGICO");
 
   const corDaMarca =
-    forca === "recomendacao_formal"
+    forca === "recomendacao_formal" || forca === "definicao"
       ? cores.primary
       : forca === "pratica_aceita"
         ? cores.textSecondary
         : cores.warning;
 
+  // ⚠️ NA DEFINIÇÃO O DETALHE É A VERSÃO, não a classe: definição não se gradua,
+  // e o que envelhece nela é a versão adotada.
   const detalhe =
-    forca === "recomendacao_formal" ? classeOuGrau : forca === "pratica_aceita" ? tipoDeDocumento : undefined;
+    forca === "recomendacao_formal"
+      ? classeOuGrau
+      : forca === "pratica_aceita"
+        ? tipoDeDocumento
+        : forca === "definicao"
+          ? procedencia.versao
+          : undefined;
 
   return (
     <View

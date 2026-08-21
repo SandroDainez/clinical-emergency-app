@@ -58,12 +58,23 @@ const OBRIGA = {
   recomendacao_formal: { campo: "classeOuGrau", porque: "a classe/grau LITERAL da fonte" },
   pratica_aceita: { campo: "tipoDeDocumento", porque: "o tipo do documento (consenso, painel, revisão, bula)" },
   mecanismo_fisiologico: { campo: "lacunaDeEvidencia", porque: "a lacuna de evidência, escrita" },
+  // ⚠️ DEFINIÇÃO NÃO SE GRADUA — exige VERSÃO, nunca classe. Uma diretriz não
+  // recomenda que o estágio 3 seja o estágio 3: ela estabelece. O risco dela não
+  // é evidência fraca, é versão desatualizada.
+  definicao: { campo: "versao", porque: "a VERSÃO adotada (definição não tem classe)" },
+};
+
+/** Naturezas que NÃO fazem afirmação clínica e por isso não declaram força. */
+const SEM_FORCA = {
+  transicao: "roteia para outro módulo — a força é a das condutas de lá",
+  organizacao_do_atendimento: "fluxo do atendimento, não recomendação graduada",
 };
 
 const falhas = [];
 let condutas = 0;
 let classificados = 0;
-const porForca = { recomendacao_formal: 0, pratica_aceita: 0, mecanismo_fisiologico: 0 };
+const porForca = { recomendacao_formal: 0, pratica_aceita: 0, mecanismo_fisiologico: 0, definicao: 0 };
+const porNatureza = {};
 const semDeclaracao = [];
 let nosLidos = 0;
 
@@ -76,6 +87,21 @@ for (const arq of ARVORES) {
 
     for (const n of nos) {
       if (n.type !== "action") continue;
+
+      // ⚠️ NEM TODO NÓ DE AÇÃO FAZ AFIRMAÇÃO CLÍNICA. Transição e organização do
+      // atendimento saem da conta ANTES de virar pendência: exigir força delas
+      // produziria declaração falsa.
+      if (n.natureza && SEM_FORCA[n.natureza]) {
+        porNatureza[n.natureza] = (porNatureza[n.natureza] ?? 0) + 1;
+        if (n.procedencia) {
+          falhas.push(
+            `${arq} · ${n.id}: natureza "${n.natureza}" NÃO declara força — e este nó declarou. ` +
+            `Ou é conduta, ou não é.`
+          );
+        }
+        continue;
+      }
+
       condutas += 1;
       const p = n.procedencia;
 
@@ -116,7 +142,10 @@ console.log("\nA força da afirmação — que TIPO de coisa cada conduta diz\n"
 const universoOk = conferirUniverso("valida-forca-da-afirmacao", "nos_da_arvore", nosLidos);
 console.log(`   condutas: ${condutas} · classificadas: ${classificados} · pendentes declaradas: ${semDeclaracao.length}`);
 console.log(
-  `   recomendação formal ${porForca.recomendacao_formal} · prática aceita ${porForca.pratica_aceita} · mecanismo fisiológico ${porForca.mecanismo_fisiologico}`
+  `   fora da conta — transição ${porNatureza.transicao ?? 0} · organização do atendimento ${porNatureza.organizacao_do_atendimento ?? 0}`
+);
+console.log(
+  `   recomendação formal ${porForca.recomendacao_formal} · prática aceita ${porForca.pratica_aceita} · mecanismo fisiológico ${porForca.mecanismo_fisiologico} · definição ${porForca.definicao}`
 );
 
 if (semDeclaracao.length) {
