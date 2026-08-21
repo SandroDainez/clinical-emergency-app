@@ -2848,22 +2848,35 @@ procedência.
 **Como fechar:** transcrever a frase para `protocols/fontes-verbatim/`, com número de
 seção, e trocar o texto do campo `fonte`.
 
-## D-68 · As indicações de diálise por UREMIA — `trata_uremia`
+## D-68 · As indicações de diálise por UREMIA — ✅ RESOLVIDA (2026-08-21)
 
-**Aberta em:** 2026-08-21 · ⚠️ **PARADA E AVISADA**, conforme a instrução do autor.
+**Como se resolveu:** eram **duas afirmações**, não uma — e a que eu não tinha
+separado é a que a diretriz nomeia.
 
-**A decisão dele** foi KDIGO 2012 · 5.1.1 · "Not Graded", pela mesma frase que
-sustenta a acidose. **O verbatim não sustenta.** A 5.1.1 diz:
+| afirmação | força | fonte |
+|---|---|---|
+| "ureia isolada, sem sintoma, não indica diálise" | `recomendacao_formal` | KDIGO **5.1.2** · "Not Graded" |
+| "pericardite e sangramento urêmico mudam a urgência" | `pratica_aceita` | **sem grau** |
 
-> "Initiate RRT emergently when life-threatening changes in **fluid, electrolyte, and
-> acid-base balance** exist."
+### ⚠️ CABER NUMA FRASE GERAL NÃO É SER NOMEADO
 
-**Ela não nomeia pericardite nem sangramento urêmico** — e uremia não é fluido, não é
-eletrólito e não é equilíbrio ácido-base. A acidose refratária cabe literalmente; a
-uremia sintomática, não. Encaixar seria forçar, e a instrução era **parar e avisar**
-exatamente nesse caso.
+A 5.1.2 manda considerar *"conditions that can be modified with RRT"* e o *"broader
+clinical context"*. Pericardite e sangramento urêmicos **cabem ali** — e a diretriz
+**não os nomeia**. Por isso a segunda linha ficou sem grau.
 
-**Alvo nomeado:** KDIGO 2012, capítulo 5.1 — o trecho das indicações por uremia
-sintomática (5.1.2 e texto de apoio), ainda não transcrito.
+É **a mesma distinção que derrubou a proposta anterior** (encaixar pericardite na
+5.1.1, que fala de fluidos, eletrólitos e ácido-base). Caber e ser nomeado são coisas
+diferentes, e a diferença é exatamente onde a força se inventa.
 
-**Enquanto isso:** a conduta continua na tela; o que falta é o selo.
+### ⚠️ O QUE CONTINUA ABERTO — limite de leitura declarado
+
+Palavras do autor, 2026-08-21: *"o trecho que eu consegui ler do capítulo 5.1 não
+desenvolve as complicações urêmicas específicas."*
+
+**Isso é "não consegui ler tudo", não "não existe"** — a mesma distinção que o piso de
+universo protege nos instrumentos, agora aplicada à leitura de uma diretriz.
+
+**ALVO NOMEADO:** o **texto narrativo do capítulo 5.1** da KDIGO 2012, para quem abrir
+o PDF inteiro. Se ele nomear pericardite ou sangramento urêmico, a segunda linha sobe
+de `pratica_aceita` para `recomendacao_formal` — e o caminho para isso está no
+`contextoDaFonte` do próprio selo, visível na tela.

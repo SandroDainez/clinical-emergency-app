@@ -418,7 +418,7 @@ if (Object.keys(nos).length < 10) {
     // diretriz faz esta afirmação E não a graduou". Trocá-lo por 1A inventaria
     // uma força que a diretriz não deu; rebaixá-lo para prática aceita apagaria
     // que a diretriz a faz. As duas perdas são silenciosas.
-    for (const [num, grau] of [["3.4.1", "1B"], ["3.4.2", "2C"], ["3.5.1", "1A"], ["3.1.1", "2B"], ["5.1.1", "Not Graded"]]) {
+    for (const [num, grau] of [["3.4.1", "1B"], ["3.4.2", "2C"], ["3.5.1", "1A"], ["3.1.1", "2B"], ["5.1.1", "Not Graded"], ["5.1.2", "Not Graded"]]) {
       if (!new RegExp(`${num.replace(/\./g, "\\.")}[^\n]*${grau}`).test(verbatim)) {
         falhas.push(`o verbatim da KDIGO perdeu a ${num} (${grau}) — a fonte do grau sumiu.`);
       }
@@ -434,7 +434,14 @@ if (Object.keys(nos).length < 10) {
         const selos = [];
         for (const n of Object.values(nos)) {
           for (const pr of [n.procedencia, ...(n.declaracoes ?? []).map((d) => d.procedencia)]) {
-            if (pr?.fonte?.includes(num)) selos.push({ id: n.id, grau: pr.classeOuGrau });
+            // ⚠️ SÓ CONTA QUEM CITA A RECOMENDAÇÃO COMO SUA FONTE. Um selo de
+            // PRÁTICA ACEITA pode nomear o número para dizer o contrário — é o
+            // caso de `trata_uremia`, cuja segunda afirmação cita a 5.1.2 para
+            // registrar que ela NÃO nomeia pericardite. Tratar essa menção como
+            // citação de grau seria ler a prosa e concluir o oposto do que ela diz.
+            if (pr?.forca === "recomendacao_formal" && pr?.fonte?.includes(num)) {
+              selos.push({ id: n.id, grau: pr.classeOuGrau });
+            }
           }
         }
         if (!selos.length) {

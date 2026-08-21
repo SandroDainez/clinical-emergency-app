@@ -1164,6 +1164,12 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   " ({0} de {1})":
     " ({0} de {1})",
   // ── AS 10 FORÇAS REVISADAS COM O AUTOR (2026-08-21) ──────────────────────
+  "⚠️ UREIA ISOLADA, SEM SINTOMA, NÃO INDICA DIÁLISE — decida pelo contexto, pelo que a diálise corrige e pela TENDÊNCIA dos exames.":
+    "⚠️ UREA AISLADA, SIN SÍNTOMA, NO INDICA DIÁLISIS — decida por el contexto, por lo que la diálisis corrige y por la TENDENCIA de los exámenes.",
+  "Prática estabelecida — a KDIGO 5.1.2 NÃO nomeia estas complicações":
+    "Práctica establecida — la KDIGO 5.1.2 NO nombra estas complicaciones",
+  "⚠️ Elas CABEM em \"condições que a diálise corrige\", e caber não é ser nomeado. Alvo aberto: o texto narrativo do capítulo 5.1, ainda não lido por inteiro.":
+    "⚠️ Ellas CABEN en \"condiciones que la diálisis corrige\", y caber no es ser nombrado. Objetivo abierto: el texto narrativo del capítulo 5.1, aún no leído por completo.",
   "⚠️ PENDÊNCIA DE FONTE — alvo: UKKA 2023, a frase sobre sensibilidade do ECG na hipercalemia. NÃO transcrita para este repositório.":
     "⚠️ PENDIENTE DE FUENTE — objetivo: UKKA 2023, la frase sobre sensibilidad del ECG en la hipercalemia. NO transcrita para este repositorio.",
   "Prática estabelecida — sem recomendação graduada conhecida":

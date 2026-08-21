@@ -8,7 +8,6 @@
     "estado": "2026-08-21 — as 10 pendências de FORÇA foram revisadas com o autor e aplicadas, MENOS `trata_uremia`, que parou por instrução dele (o verbatim da 5.1.1 não nomeia pericardite nem sangramento urêmico). `sem_base` NÃO é pendência de força: é pendência de FONTE (D-65), e está aqui só para o instrumento não a confundir com nó esquecido."
   },
   "pendentes": {
-    "trata_uremia": "⚠️ PARADO E AVISADO, conforme a instrução do autor (2026-08-21). A decisão dele foi KDIGO 5.1.1 \"Not Graded\", pela mesma frase da acidose — mas o VERBATIM da 5.1.1 diz \"life-threatening changes in FLUID, ELECTROLYTE, and ACID-BASE balance\" e NÃO nomeia pericardite nem sangramento urêmico. Uremia não é fluido, eletrólito nem ácido-base. Encaixar seria forçar — e a instrução era parar e avisar nesse caso. ALVO: a KDIGO 2012 no capítulo 5.1, o trecho que trata das indicações por uremia sintomática (5.1.2 e texto), ainda não transcrito para este repositório.",
     "sem_base": "⚠️ ALVO NOMEADO: KDIGO 2012, Tabelas 8 e 9 (creatinina basal desconhecida) — NÃO transcritas. A atribuição à diretriz foi RETIRADA da tela em 2026-08-21; a conduta ficou como nossa. Quem transcrever as tabelas devolve a atribuição."
   }
 }

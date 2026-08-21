@@ -921,13 +921,42 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Uremia complicada — a diálise entra na conversa",
       summary: "Estas três complicações são indicação, não sinal de gravidade apenas.",
+      // ⚠️ DUAS AFIRMAÇÕES, E SÓ UMA É NOMEADA PELA DIRETRIZ. O padrão da tela é
+      // ORGANIZAÇÃO DO ATENDIMENTO — acionar a nefrologia, acionar a transferência.
+      // As duas afirmações clínicas vêm nomeadas abaixo, e a distinção entre elas
+      // é a que derrubou a proposta anterior: CABER NUMA FRASE GERAL NÃO É SER
+      // NOMEADO. A 5.1.2 recusa o limiar isolado — isso ela diz. Pericardite e
+      // sangramento urêmico cabem em "conditions that can be modified with RRT",
+      // e a diretriz NÃO os nomeia: por isso ficam sem grau.
+      natureza: "organizacao_do_atendimento",
+      declaracoes: [
+        {
+          afirmacao:
+            "⚠️ UREIA ISOLADA, SEM SINTOMA, NÃO INDICA DIÁLISE — decida pelo contexto, pelo que a diálise corrige e pela TENDÊNCIA dos exames.",
+          procedencia: {
+            forca: "recomendacao_formal",
+            fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 5.1.2",
+            classeOuGrau: "Not Graded",
+          },
+        },
+        {
+          afirmacao: "⚠️ Pericardite urêmica e sangramento urêmico mudam a urgência da diálise.",
+          procedencia: {
+            forca: "pratica_aceita",
+            fonte: "Prática estabelecida — a KDIGO 5.1.2 NÃO nomeia estas complicações",
+            tipoDeDocumento: "Prática clínica estabelecida",
+            contextoDaFonte:
+              "⚠️ Elas CABEM em \"condições que a diálise corrige\", e caber não é ser nomeado. Alvo aberto: o texto narrativo do capítulo 5.1, ainda não lido por inteiro.",
+          },
+        },
+      ],
       actions: [
         "Acione a nefrologia agora.",
         "Acione a transferência EM PARALELO se não houver diálise no seu serviço.",
+        "⚠️ UREIA ISOLADA, SEM SINTOMA, NÃO INDICA DIÁLISE — decida pelo contexto, pelo que a diálise corrige e pela TENDÊNCIA dos exames.",
         "⚠️ Pericardite urêmica e sangramento urêmico mudam a urgência da diálise.",
       ],
       porque: [
-        "⚠️ A diretriz recusa decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto.",
         "Encefalopatia, pericardite e sangramento são as complicações urêmicas que entram no critério.",
       ],
       next: "e6_anuria",

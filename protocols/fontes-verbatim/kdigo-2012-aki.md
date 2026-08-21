@@ -48,6 +48,29 @@ Este arquivo guarda o TEXTO. É contra ele que a força de cada nó é conferida
 > **5.1.1 (Not Graded)** — "Initiate RRT emergently when life-threatening changes in
 > fluid, electrolyte, and acid-base balance exist."
 
+> **5.1.2 (Not Graded)** — "Consider the broader clinical context, the presence of
+> conditions that can be modified with RRT, and trends of laboratory tests—rather than
+> single BUN and creatinine thresholds alone—when making the decision to start RRT."
+
+### ⚠️ CABER NUMA FRASE GERAL NÃO É SER NOMEADO
+
+A 5.1.2 manda considerar *"conditions that can be modified with RRT"* e o *"broader
+clinical context"*. **Pericardite urêmica e sangramento urêmico cabem ali** — e a
+diretriz **não os nomeia**.
+
+Por isso, no app, a linha das complicações urêmicas é `pratica_aceita`, **sem grau**,
+enquanto a recusa do limiar isolado de ureia é `recomendacao_formal` 5.1.2.
+
+⚠️ **É a mesma distinção que derrubou a proposta anterior** — a de encaixar pericardite
+na 5.1.1, que fala de fluidos, eletrólitos e ácido-base. Caber e ser nomeado são coisas
+diferentes, e a diferença é exatamente onde a força se inventa.
+
+⚠️ **LIMITE DECLARADO DE LEITURA (autor, 2026-08-21):** *"o trecho que eu consegui ler do
+capítulo 5.1 não desenvolve as complicações urêmicas específicas."* Isso é **"não
+consegui ler tudo", não "não existe"** — e a diferença é a mesma que este projeto
+protege em toda medição. **ALVO NOMEADO:** o texto narrativo do capítulo 5.1, para quem
+abrir o PDF inteiro.
+
 ### ⚠️ "NOT GRADED" É UM GRAU LITERAL, NÃO GRAU AUSENTE
 
 A KDIGO usa **"Not Graded"** como categoria própria: a afirmação **está na
