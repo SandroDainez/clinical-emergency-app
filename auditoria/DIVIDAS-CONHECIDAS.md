@@ -3221,3 +3221,42 @@ removed by dialysis."*
 Que o app esteja clinicamente errado na vancomicina — ajuste por nível e faixas de
 intervalo são prática corrente e defensável. **Significa que a força está errada:**
 declarar bula onde a bula não fala é o defeito que a AM-7 existe para impedir.
+
+## D-77 · VANCOMICINA EM HEMODIÁLISE — dois números, e a decisão é do autor
+
+**Aberta em 2026-08-22.** ⚠️ **Nada foi trocado.**
+
+| | dose de ataque | manutenção |
+|---|---|---|
+| **o app mostra** | — | **15–20 mg/kg após a sessão** |
+| **consenso 2020**, após o fim da sessão, dialisador de **alta permeabilidade** | **25 mg/kg** | **10 mg/kg** |
+| consenso 2020, após o fim da sessão, baixa permeabilidade | 25 mg/kg | 7,5 mg/kg |
+| consenso 2020, intradialítica, alta permeabilidade | 35 mg/kg | 10–15 mg/kg |
+
+**Por que não troquei:** trocar número clínico a partir de leitura minha é o que o
+método não admite (R-5), por mais primária que seja a fonte. E aqui há uma escolha
+clínica embutida que não é minha: **a tabela do consenso depende da permeabilidade do
+dialisador e de a dose ser dada durante ou após a sessão** — o app não pergunta nem
+uma coisa nem outra.
+
+**Verbatim:** `protocols/fontes-verbatim/vancomicina-consenso-2020.md`.
+
+**O que fechar junto:** se a dose passar a depender de permeabilidade e de momento da
+sessão, isso é **eixo novo no catálogo** — como a indicação foi para o pip-tazo.
+
+## D-78 · O catálogo não tem eixo de INDICAÇÃO
+
+**Aberta em 2026-08-22.** O pip-tazo mostrou que dose não depende só de função renal.
+
+A Tabela 1 do label tem **duas colunas** — "todas as indicações exceto pneumonia
+nosocomial" e "pneumonia nosocomial" —, e o `FaixaRenal` do catálogo tem **uma dose
+por faixa**. Hoje as faixas carregam a coluna de "outras indicações" e a de pneumonia
+vive em `observacoes`, o que é honesto mas **não é estrutura**: quem consumir o
+catálogo por programa não sabe que existe a segunda coluna.
+
+⚠️ **A tela já resolve isto** — ela pergunta a indicação e o "não sei" mostra as duas.
+**O catálogo é que ainda não sabe.** E é ele que vai receber 25 fármacos.
+
+**Como fechar:** `faixas[]` ganha eixo de indicação (ou o fármaco ganha um conjunto de
+faixas por indicação), **antes** do primeiro lote de beta-lactâmicos — vários deles
+têm dose por sítio de infecção.

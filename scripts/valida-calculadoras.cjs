@@ -551,7 +551,22 @@ for (const calc of CALC_TOOLS) {
         [40, "12/12h", 39], [39, "24/24h", 40],
         [20, "24/24h", 19], [19, "48/48h", 20],
       ]],
-      ["piptazo", [[41, "6/6h", 40], [40, "8/8h", 41], [20, "8/8h", 19], [19, "12/12h", 20]]],
+      // ── PIP-TAZO — FRONTEIRAS DO LABEL, POR COLUNA DE INDICAÇÃO ────────────
+      //
+      // ⚠️ ESTA LINHA PASSOU POR ACIDENTE ANTES DE SER CORRIGIDA, e o modo importa:
+      // o fragmento "8/8h" que ela procurava passou a existir no texto da
+      // HEMODIÁLISE, não na faixa — a trava conferia o RESULTADO INTEIRO, e
+      // qualquer aparição do fragmento a satisfazia. Casar substring em bloco
+      // grande é medir a vizinhança, não o objeto (R-87).
+      //
+      // ⚠️ E O QUE MUDOU NO APP: a linha "4,5 g 8/8h" em ClCr 20–40 NÃO EXISTE no
+      // label — procurada no documento inteiro. Saiu. Entraram as duas colunas
+      // da Tabela 1, e a indicação virou pergunta.
+      // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
+      ["piptazo", [
+        [41, "3,375 g IV 6/6h", 40], [40, "2,25 g IV 6/6h", 41],
+        [20, "2,25 g IV 6/6h", 19], [19, "2,25 g IV 8/8h", 20],
+      ]],
       // ── MEROPENÉM — FRONTEIRAS ATUALIZADAS EM 2026-08-22 (R-93) ────────────
       //
       // ⚠️ ESTA TRAVA REPROVOU, E ESTAVA CERTA: a fronteira SE DESLOCOU. O que
@@ -578,8 +593,13 @@ for (const calc of CALC_TOOLS) {
     ];
     for (const [farmaco, fronteiras] of FRONTEIRAS) {
       for (const [dentro, frag, fora] of fronteiras) {
-        const r1 = antib.compute({ farmaco, peso: "70", tfg: String(dentro) });
-        const r2 = antib.compute({ farmaco, peso: "70", tfg: String(fora) });
+        // ⚠️ A INDICAÇÃO É FIXADA AQUI, e não deixada no padrão: com "não sei" a
+        // tela mostra AS DUAS colunas, e as duas juntas contêm quase todo
+        // fragmento — o teste passaria sem provar nada. Fixar a coluna é o que
+        // torna a fronteira mensurável.
+        const fixo = { farmaco, peso: "70", indicacao: "outras" };
+        const r1 = antib.compute({ ...fixo, tfg: String(dentro) });
+        const r2 = antib.compute({ ...fixo, tfg: String(fora) });
         if (!r1 || !r2) { falhas++, linhas.push(`❌ dose-antibiotico/${farmaco}: compute devolveu null — a trava de limiar não rodou.`); continue; }
         // O resultado INTEIRO, não só as métricas: a dose em mg/kg vive no
         // rótulo da interpretação, e as métricas já trazem o valor convertido

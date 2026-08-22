@@ -929,6 +929,18 @@ export const CALC_TOOLS: CalcTool[] = [
     inputs: [
       { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
         { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" } ] },
+      // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO — e o app conhecia só metade.
+      // A dose de pip-tazo depende de DUAS coisas: função renal e indicação. A
+      // tabela do label tem duas colunas, e o app usava a da PNEUMONIA
+      // NOSOCOMIAL para todo mundo. Escolher a coluna por conta própria seria
+      // decidir clínica pelo usuário.
+      // ⚠️ E O "NÃO SEI" É A REGRA DAS ÁRVORES, aqui também: quem não sabe qual
+      // coluna usar é exatamente quem mais precisa da ferramenta. Ele não
+      // escolhe — mostra AS DUAS, lado a lado, com o rótulo de cada uma.
+      { id: "indicacao", label: "Indicação (só para pip-tazo)", kind: "toggle", options: [
+        { label: "Outras indicações", value: "outras" },
+        { label: "Pneumonia nosocomial", value: "pneumonia" },
+        { label: "Não sei — ver as duas", value: "nao_sei" } ] },
       { id: "peso", label: "Peso (real)", unit: "kg", kind: "number", placeholder: "ex: 70" },
       { id: "tfg", label: "ClCr ABSOLUTO (mL/min) — não a TFG indexada", unit: "mL/min", kind: "number", placeholder: "ex: 80", helperText: CLCR_PARA_DOSE },
     ],
@@ -959,11 +971,38 @@ export const CALC_TOOLS: CalcTool[] = [
         };
       }
       if (f === "piptazo") {
-        const band = tfg > 40 ? "4,5 g IV 6/6h (Pseudomonas: infusão estendida 4 h)" : tfg >= 20 ? "4,5 g IV 8/8h" : "2,25 g IV 8/8h (HD: 2,25 g 12/12h + 0,75 g pós-diálise)";
+        // ── AS DUAS COLUNAS DO LABEL, e a linha que não existia ──────────────
+        //
+        // ⚠️ O APP DAVA "4,5 g 8/8h" EM ClCr 20–40, e essa linha NÃO EXISTE no
+        // label — procurada no documento inteiro, em coluna nenhuma, nem em
+        // seção de infusão prolongada. Ela saiu. O que entrou foram as duas
+        // colunas da Tabela 1, com a indicação perguntada.
+        // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
+        const outras = tfg > 40 ? "3,375 g IV 6/6h" : tfg >= 20 ? "2,25 g IV 6/6h" : "2,25 g IV 8/8h";
+        const pneumonia = tfg > 40 ? "4,5 g IV 6/6h" : tfg >= 20 ? "3,375 g IV 6/6h" : "2,25 g IV 6/6h";
+        const ind = v.indicacao ?? "nao_sei";
+        const metrics =
+          ind === "outras"
+            ? [{ label: `Pip-tazo — outras indicações (ClCr ${r0(tfg)})`, value: outras, highlight: true }]
+            : ind === "pneumonia"
+              ? [{ label: `Pip-tazo — pneumonia nosocomial (ClCr ${r0(tfg)})`, value: pneumonia, highlight: true }]
+              : [
+                  // ⚠️ O "NÃO SEI" MOSTRA AS DUAS. Ver as duas é melhor do que
+                  // receber uma sem saber que existia outra.
+                  { label: `Outras indicações (ClCr ${r0(tfg)})`, value: outras, highlight: true },
+                  { label: `Pneumonia nosocomial (ClCr ${r0(tfg)})`, value: pneumonia, highlight: true },
+                ];
         return {
-          metrics: [{ label: `Pip-tazo (ClCr ${r0(tfg)})`, value: band, highlight: true }],
-          interpret: { tone: tfg < 20 ? "orange" : "green", label: "Piperacilina-tazobactam" },
-          tables: [{ title: "Infusão estendida (Pseudomonas)", rows: [{ k: "PK/PD", v: "4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC)." }] }],
+          metrics,
+          interpret: {
+            tone: tfg < 20 ? "orange" : "green",
+            label: ind === "nao_sei" ? "Piperacilina-tazobactam — a dose depende da INDICAÇÃO" : "Piperacilina-tazobactam",
+          },
+          tables: [{ title: "O que mais o label diz", rows: [
+            { k: "Hemodiálise", v: "2,25 g 12/12h (outras indicações) ou 2,25 g 8/8h (pneumonia nosocomial), MAIS 0,75 g após cada sessão — a hemodiálise remove 30% a 40% da dose." },
+            { k: "CAPD", v: "2,25 g 12/12h (outras) ou 2,25 g 8/8h (pneumonia). Sem dose adicional." },
+            { k: "Infusão", v: "O label descreve infusão de 30 minutos e NÃO tem seção de infusão prolongada. A infusão estendida de 4 h é prática, não está na bula — e por isso não aparece como se fosse dela." },
+          ] }],
         };
       }
       // ── MEROPENÉM — CORRIGIDO EM 2026-08-22 CONTRA O LABEL ────────────────

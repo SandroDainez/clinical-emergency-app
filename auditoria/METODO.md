@@ -6203,3 +6203,48 @@ app tinha três faixas e que a quarta não existia — **e ela existia.**
 **A tabela de AMOSTRA parecia a tabela de FAIXAS.** É o R-101 aplicado a mim mesmo,
 um dia depois de eu o registrar: todo total em relatório vem com o universo de onde
 saiu, **e toda amostra diz que é amostra.**
+
+## R-103 · FONTE PRIMÁRIA NÃO É AUTOMATICAMENTE A INFORMAÇÃO VIGENTE
+
+**Registrada em 2026-08-22.** É o **inverso simétrico** do defeito que esta sequência
+inteira vinha combatendo — e é igualmente perigoso.
+
+### A regra
+
+> **Um documento pode estar correto, verificável e desatualizado ao mesmo tempo.**
+>
+> Quando bula e prática divergem, **as duas entram declaradas**, com data e razão da
+> divergência. **Nunca se apaga a prática em nome da procedência.**
+
+### O caso que a produziu
+
+O label da vancomicina diz, na superdosagem:
+
+> *"Vancomycin is poorly removed by dialysis."*
+
+É texto de bula, primário, verificável — e **reflete membranas de baixa
+permeabilidade**, da época em que foi escrito. O consenso ASHP/IDSA/PIDS/SIDP 2020
+diz o oposto, com a razão:
+
+> *"Vancomycin is cleared substantially by contemporary high-permeability
+> hemodialyzers"* · *"maintenance vancomycin doses are recommended to be administered
+> with each hemodialysis session"*
+
+⚠️ **Se o app "corrigisse" para o label, ficaria atualizado na procedência e ERRADO na
+clínica** — e o paciente em hemodiálise ficaria subdosado, que é como se seleciona
+resistência e se perde o tratamento.
+
+### O que se faz, então
+
+1. **A conduta não se rebaixa** para o documento mais antigo.
+2. **As duas afirmações ficam declaradas, lado a lado**, cada uma com a sua fonte e a
+   sua data — é a regra B outra vez: uma tela, duas afirmações, duas forças.
+3. **A razão da divergência entra por escrito** — aqui, a mudança de membrana. Sem
+   ela, a contradição parece descuido e alguém a "resolve" apagando um dos lados.
+
+### ⚠️ E O QUE ESTA REGRA NÃO AUTORIZA
+
+**Trocar número clínico porque a fonte nova diz outro.** No mesmo episódio, o consenso
+tabela 25 mg/kg de ataque e 10 mg/kg de manutenção em HD, e o app mostra 15–20 mg/kg.
+**Os números não foram trocados** — foram para a D-77, lado a lado, para o autor
+decidir. Fonte melhor não é autorização: R-5 continua valendo.

@@ -37,6 +37,25 @@ const METODO = "cockcroft_gault" as const;
  * lido no DailyMed, não de fonte terciária. Verbatim em
  * `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
  */
+/**
+ * ⚠️ A VANCOMICINA É O CASO EM QUE A BULA **NÃO** É A VERDADE ATUAL.
+ *
+ * O label PLR não tem tabela por ClCr: ele manda dose inicial ≥ 15 mg/kg em
+ * qualquer grau de disfunção e ajuste por NÍVEL. A escada por faixa que o app usa
+ * não está lá — e isso não a torna errada: dose guiada por função renal com alvo
+ * de nível é **prática consolidada**. O que estaria errado é declarar bula onde a
+ * bula não fala.
+ */
+const CONSENSO_VANCO_2020: ProcedenciaDeFaixa = {
+  fonte: "Rybak MJ et al. — consenso ASHP/IDSA/PIDS/SIDP 2020, Am J Health Syst Pharm 2020;77(11):835–864",
+  forca: "pratica_aceita",
+};
+
+const LABEL_PIPTAZO: ProcedenciaDeFaixa = {
+  fonte: "Piperacillin and Tazobactam for Injection, USP — US prescribing information, Tabela 1 (coluna «todas as indicações exceto pneumonia nosocomial»). DailyMed setid 39e19789-de4b-4fd1-ab1c-92f59496f496, lido em 2026-08-22",
+  forca: "recomendacao_formal",
+};
+
 const LABEL_MEROPENEM: ProcedenciaDeFaixa = {
   fonte: "Meropenem for injection (I.V.) — US prescribing information, Tabela 1 (ajuste renal no adulto). DailyMed setid 092ebd9b-77a0-4877-afc3-dd8211730f71, lido em 2026-08-22",
   forca: "recomendacao_formal",
@@ -68,20 +87,37 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       procedencia: PENDENTE_DA_MIGRACAO,
     },
     ajusteRenal: "ajusta",
+    // ⚠️ `pratica_aceita`, NÃO recomendação formal de bula — e o contexto diz por
+    // quê: o consenso 2020 recomenda ALVO (AUC/MIC 400–600) e abandonou o vale
+    // isolado; a escada por faixa de clearance é OPERACIONALIZAÇÃO, não texto do
+    // documento. Verbatim: `protocols/fontes-verbatim/vancomicina-consenso-2020.md`.
     faixas: [
-      { de: 0, ate: 20, dose: "10–15 mg/kg", intervalo: "48/48h ou por nível", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 20, ate: 40, dose: "10–15 mg/kg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 40, ate: 60, dose: "10–15 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
+      { de: 0, ate: 20, dose: "10–15 mg/kg", intervalo: "48/48h ou por nível", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 20, ate: 40, dose: "10–15 mg/kg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 40, ate: 60, dose: "10–15 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       // ⚠️ O 90 PERTENCE A ESTA FAIXA: o código dizia `tfg > 90 ? … : tfg >= 60 ? …`.
-      { de: 60, ate: 90, ateInclusivo: true, dose: "15–20 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 90, ate: null, deInclusivo: false, dose: "15–20 mg/kg", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
+      { de: 60, ate: 90, ateInclusivo: true, dose: "15–20 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 90, ate: null, deInclusivo: false, dose: "15–20 mg/kg", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
     ],
     dialise: {
+      // ⚠️ AS DUAS AFIRMAÇÕES, DECLARADAS — e a conduta NÃO foi rebaixada para o
+      // label. Ele diz "poorly removed by dialysis", e isso reflete membranas de
+      // BAIXA permeabilidade da época em que o texto foi escrito. O consenso 2020
+      // diz o oposto, com a razão: "vancomycin is cleared substantially by
+      // contemporary high-permeability hemodialyzers", e recomenda dose A CADA
+      // sessão. Corrigir para o label deixaria o app atualizado na procedência e
+      // ERRADO na clínica — subdosando quem está em HD.
+      //
+      // ⚠️ E O NÚMERO NÃO FOI TROCADO POR MIM: o consenso tabela 25 mg/kg de
+      // ataque e 10 mg/kg de manutenção (após o fim da sessão, alta
+      // permeabilidade); o app mostra 15–20 mg/kg. Os dois valores estão lado a
+      // lado na D-77, para o autor decidir. Trocar dose a partir de leitura minha
+      // é o que o método não admite (R-5).
       HD: {
         dose: "15–20 mg/kg",
         intervalo: "após a sessão",
         relacaoComASessao: "depois",
-        procedencia: PENDENTE_DA_MIGRACAO,
+        procedencia: CONSENSO_VANCO_2020,
       },
       CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
       SLED: SEM_DADOS_DIALISE("SLED"),
@@ -97,21 +133,32 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     id: "piperacilina-tazobactam",
     nome: "Piperacilina-tazobactam",
     classe: "Beta-lactâmico + inibidor de beta-lactamase",
-    doseUsual: { dose: "4,5 g", via: "IV", intervalo: "6/6h", procedencia: PENDENTE_DA_MIGRACAO },
+    doseUsual: { dose: "3,375 g (outras indicações) · 4,5 g (pneumonia nosocomial)", via: "IV", intervalo: "6/6h", procedencia: LABEL_PIPTAZO },
+    // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO. A Tabela 1 do label tem DUAS
+    // colunas — "todas as indicações exceto pneumonia nosocomial" e "pneumonia
+    // nosocomial" —, e o app usava a segunda para todo mundo. As faixas abaixo
+    // são a coluna de OUTRAS INDICAÇÕES; a de pneumonia vive em `observacoes`
+    // até o catálogo ganhar eixo de indicação (D-78).
+    //
+    // ⚠️ E A LINHA "4,5 g 8/8h" EM 20–40 NÃO EXISTE NO LABEL — procurada no
+    // documento inteiro, em coluna nenhuma, sem seção de infusão prolongada. Ela
+    // saiu; não foi substituída por adivinhação.
     ajusteRenal: "ajusta",
     faixas: [
-      { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 20, ate: 40, ateInclusivo: true, dose: "4,5 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 40, ate: null, deInclusivo: false, dose: "4,5 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
+      { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+      { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+      { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
     ],
     dialise: {
-      HD: { dose: "2,25 g", intervalo: "12/12h + 0,75 g pós-diálise", relacaoComASessao: "depois", procedencia: PENDENTE_DA_MIGRACAO },
+      HD: { dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", relacaoComASessao: "depois", procedencia: LABEL_PIPTAZO },
       CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
       SLED: SEM_DADOS_DIALISE("SLED"),
     },
-    fonteDoFarmaco: PENDENTE_DA_MIGRACAO,
+    fonteDoFarmaco: LABEL_PIPTAZO,
     observacoes: [
-      { texto: "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).", procedencia: PENDENTE_DA_MIGRACAO },
+      { texto: "PNEUMONIA NOSOCOMIAL é a outra coluna do label: 4,5 g 6/6h acima de 40 · 3,375 g 6/6h entre 20 e 40 · 2,25 g 6/6h abaixo de 20 · hemodiálise 2,25 g 8/8h.", procedencia: LABEL_PIPTAZO },
+      { texto: "A hemodiálise remove 30% a 40% da dose administrada — daí os 0,75 g após cada sessão.", procedencia: LABEL_PIPTAZO },
+      { texto: "Infusão estendida de 4 h em Pseudomonas: é PRÁTICA (maximiza tempo acima da CIM). O label descreve infusão de 30 minutos e não tem seção de infusão prolongada.", procedencia: PENDENTE_DA_MIGRACAO },
     ],
   },
   {

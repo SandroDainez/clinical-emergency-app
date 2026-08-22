@@ -27,6 +27,43 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "MDR: 2 g em 100 mL SF → infundir em 3 h.": "MDR: 2 g en 100 mL SF → infundir en 3 h.",
   "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).":
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
+  // ── PIP-TAZO: AS DUAS COLUNAS DO LABEL (2026-08-22) ──────────────────────
+  "Indicação (só para pip-tazo)":
+    "Indicación (solo para pip-tazo)",
+  "Outras indicações":
+    "Otras indicaciones",
+  "Pneumonia nosocomial":
+    "Neumonía nosocomial",
+  "Não sei — ver as duas":
+    "No sé — ver las dos",
+  "Piperacilina-tazobactam — a dose depende da INDICAÇÃO":
+    "Piperacilina-tazobactam — la dosis depende de la INDICACIÓN",
+  "O que mais o label diz":
+    "Lo que más dice el prospecto",
+  "2,25 g 12/12h (outras indicações) ou 2,25 g 8/8h (pneumonia nosocomial), MAIS 0,75 g após cada sessão — a hemodiálise remove 30% a 40% da dose.":
+    "2,25 g 12/12h (otras indicaciones) o 2,25 g 8/8h (neumonía nosocomial), MÁS 0,75 g tras cada sesión — la hemodiálisis remueve 30% a 40% de la dosis.",
+  "2,25 g 12/12h (outras) ou 2,25 g 8/8h (pneumonia). Sem dose adicional.":
+    "2,25 g 12/12h (otras) o 2,25 g 8/8h (neumonía). Sin dosis adicional.",
+  "O label descreve infusão de 30 minutos e NÃO tem seção de infusão prolongada. A infusão estendida de 4 h é prática, não está na bula — e por isso não aparece como se fosse dela.":
+    "El prospecto describe infusión de 30 minutos y NO tiene sección de infusión prolongada. La infusión extendida de 4 h es práctica, no está en el prospecto — y por eso no aparece como si fuera de él.",
+  "12/12h + 0,75 g após cada sessão":
+    "12/12h + 0,75 g tras cada sesión",
+  "3,375 g (outras indicações) · 4,5 g (pneumonia nosocomial)":
+    "3,375 g (otras indicaciones) · 4,5 g (neumonía nosocomial)",
+  "A hemodiálise remove 30% a 40% da dose administrada — daí os 0,75 g após cada sessão.":
+    "La hemodiálisis remueve 30% a 40% de la dosis administrada — de ahí los 0,75 g tras cada sesión.",
+  "Infusão estendida de 4 h em Pseudomonas: é PRÁTICA (maximiza tempo acima da CIM). O label descreve infusão de 30 minutos e não tem seção de infusão prolongada.":
+    "Infusión extendida de 4 h en Pseudomonas: es PRÁCTICA (maximiza tiempo por encima de la CIM). El prospecto describe infusión de 30 minutos y no tiene sección de infusión prolongada.",
+  "PNEUMONIA NOSOCOMIAL é a outra coluna do label: 4,5 g 6/6h acima de 40 · 3,375 g 6/6h entre 20 e 40 · 2,25 g 6/6h abaixo de 20 · hemodiálise 2,25 g 8/8h.":
+    "NEUMONÍA NOSOCOMIAL es la otra columna del prospecto: 4,5 g 6/6h por encima de 40 · 3,375 g 6/6h entre 20 y 40 · 2,25 g 6/6h por debajo de 20 · hemodiálisis 2,25 g 8/8h.",
+  "3,375 g IV 6/6h":
+    "3,375 g IV 6/6h",
+  "2,25 g IV 6/6h":
+    "2,25 g IV 6/6h",
+  "2,25 g IV 8/8h":
+    "2,25 g IV 8/8h",
+  "4,5 g IV 6/6h":
+    "4,5 g IV 6/6h",
   // ── MEROPENÉM, CORRIGIDO CONTRA O LABEL (2026-08-22) ─────────────────────
   "1 g IV 8/8h (dose recomendada) — MDR: 2 g 8/8h infusão 3 h; meningite: 2 g 8/8h":
     "1 g IV 8/8h (dosis recomendada) — MDR: 2 g 8/8h infusión 3 h; meningitis: 2 g 8/8h",
