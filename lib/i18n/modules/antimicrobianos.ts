@@ -29,6 +29,59 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
   "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.":
     "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
+  // ── LOTE 1 · CEFAZOLINA — indicação + peso (2026-08-22) ──────────────────
+  "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)":
+    "500 mg a 1 g (infección moderada a grave) · 1 a 1,5 g (grave/amenazante)",
+  "8/8h ou mais espaçado":
+    "8/8h o más espaciado",
+  "Cefalosporina de 1ª geração":
+    "Cefalosporina de 1ª generación",
+  "IV ou IM":
+    "IV o IM",
+  "METADE da dose usual":
+    "LA MITAD de la dosis usual",
+  "dose usual INTEIRA":
+    "dosis usual COMPLETA",
+  "Profilaxia cirúrgica":
+    "Profilaxis quirúrgica",
+  "dose única, ½ h a 1 h antes da incisão":
+    "dosis única, ½ h a 1 h antes de la incisión",
+  "⚠️ o label não dá dose de profilaxia para ClCr < 55":
+    "⚠️ el prospecto no da dosis de profilaxis para ClCr < 55",
+  "ALVO NOMEADO: diretriz de profilaxia antimicrobiana cirúrgica (ASHP/IDSA/SIS/SHEA), que o autor decide se adota — outra fonte, outra força. NÃO preencher de memória: é exatamente aqui que a tentação é máxima, porque todo mundo sabe de cor.":
+    "OBJETIVO NOMBRADO: directriz de profilaxis antimicrobiana quirúrgica (ASHP/IDSA/SIS/SHEA), que el autor decide si adopta — otra fuente, otra fuerza. NO rellenar de memoria: es exactamente aquí donde la tentación es máxima, porque todo el mundo lo sabe de memoria.",
+  "Cirurgia longa (≥ 2 h): 500 mg a 1 g durante o ato. Pós-operatório: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ O label NÃO dá intervalo numérico de redose.":
+    "Cirugía larga (≥ 2 h): 500 mg a 1 g durante el acto. Postoperatorio: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ El prospecto NO da intervalo numérico de redosis.",
+  "Em cirurgia onde a infecção seria devastadora (cardíaca aberta, artroplastia com prótese), a profilaxia pode seguir por 3 a 5 dias.":
+    "En cirugía donde la infección sería devastadora (cardíaca abierta, artroplastia con prótesis), la profilaxis puede seguir por 3 a 5 días.",
+  "Nenhum dos labels declara dose máxima diária: o único teto é a frase de que doses de até 12 g/dia já foram usadas em casos raros — o que descreve o que ocorreu, não um limite recomendado.":
+    "Ninguno de los prospectos declara dosis máxima diaria: el único techo es la frase de que dosis de hasta 12 g/día ya fueron usadas en casos raros — lo que describe lo ocurrido, no un límite recomendado.",
+  "Profilaxia: a dose pré-incisão depende do PESO (1 a 2 g abaixo de 120 kg · 3 g de 120 kg para cima), não do clearance.":
+    "Profilaxis: la dosis preincisión depende del PESO (1 a 2 g por debajo de 120 kg · 3 g de 120 kg hacia arriba), no del clearance.",
+  "⚠️ 120 kg ou mais: 3 g. O label não repete a dose intraoperatória nem a de 24 h para esta faixa de peso.":
+    "⚠️ 120 kg o más: 3 g. El prospecto no repite la dosis intraoperatoria ni la de 24 h para esta franja de peso.",
+  "⚠️ ALERTA DE VIGILÂNCIA (seção de REAÇÕES NEUROLÓGICAS do label, não a de dosagem): há encefalopatia por ceftriaxona descrita em disfunção renal GRAVE — em pacientes que não receberam ajuste E em pacientes que receberam. Foi reversível com a suspensão. O label pede ajuste apropriado nesses casos. Isto NÃO contradiz a regra de dose acima: aquela é sobre a rotina, esta é sobre vigiar quem já está com disfunção grave.":
+    "⚠️ ALERTA DE VIGILANCIA (sección de REACCIONES NEUROLÓGICAS del prospecto, no la de dosificación): hay encefalopatía por ceftriaxona descrita en disfunción renal GRAVE — en pacientes que no recibieron ajuste Y en pacientes que lo recibieron. Fue reversible con la suspensión. El prospecto pide ajuste apropiado en esos casos. Esto NO contradice la regla de dosis de arriba: aquella es sobre la rutina, esta es sobre vigilar a quien ya tiene disfunción grave.",
+  "⚠️ TODA redução de dose no tratamento vale APÓS uma dose de ataque apropriada à gravidade — a frase está só no label clássico, não no PLR.":
+    "⚠️ TODA reducción de dosis en el tratamiento vale TRAS una dosis de carga apropiada a la gravedad — la frase está solo en el prospecto clásico, no en el PLR.",
+  "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção — a frase está só no label clássico.":
+    "⚠️ Toda reducción vale TRAS una dosis de carga apropiada a la gravedad de la infección — la frase está solo en el prospecto clásico.",
+  "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção.":
+    "⚠️ Toda reducción vale TRAS una dosis de carga apropiada a la gravedad de la infección.",
+  "Cefazolina":
+    "Cefazolina",
+  "Tratamento":
+    "Tratamiento",
+  "18/18h a 24/24h":
+    "18/18h a 24/24h",
+  "6/6h a 8/8h":
+    "6/6h a 8/8h",
+  "1 a 2 g":
+    "1 a 2 g",
+  "3 g":
+    "3 g",
+  "—":
+    "—",
   // ── LOTE 1 · CEFTRIAXONA — o caso do `nao_ajusta` (2026-08-22) ───────────
   "Ceftriaxona":
     "Ceftriaxona",

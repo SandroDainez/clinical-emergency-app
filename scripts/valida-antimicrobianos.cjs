@@ -118,7 +118,39 @@ for (const f of CAT) {
   if (f.indicacoes && (f.faixas ?? []).length) {
     falhas.push(`${f.id}: tem eixo de indicação E faixas soltas — duas fontes de verdade sobre a mesma dose.`);
   }
-  for (const [rotulo, lista] of conjuntos) {
+  for (const [rotuloBase, listaBase] of conjuntos) {
+  // ── ⚠️ O EIXO DE PESO ────────────────────────────────────────────────────
+  //
+  // Quando as faixas declaram `peso`, cada BALDE DE PESO tem a sua própria reta
+  // de clearance, e cada uma é conferida inteira. Um buraco no balde dos obesos
+  // é tão perigoso quanto no dos demais — e é justamente o balde que ninguém
+  // testa, porque o caso comum passa pelo outro.
+  const baldes = new Map();
+  for (const x of listaBase) {
+    const chave = x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"} kg` : "";
+    if (!baldes.has(chave)) baldes.set(chave, []);
+    baldes.get(chave).push(x);
+  }
+  if (baldes.size > 1) {
+    // As faixas de peso também não podem se sobrepor nem deixar buraco.
+    // ⚠️ DESDUPLICA POR VALOR, NÃO POR REFERÊNCIA. `new Set` de objetos guarda
+    // identidade: dois `{de:0,ate:120}` escritos em faixas diferentes são objetos
+    // diferentes, e a lista vinha com repetição — o que fazia a conferência
+    // acusar sobreposição de uma faixa com ela mesma. Falso positivo, e do tipo
+    // que faria alguém "consertar" o catálogo que estava certo.
+    const pesos = [...new Map(
+      listaBase.filter((x) => x.peso).map((x) => [`${x.peso.de}|${x.peso.ate}`, x.peso])
+    ).values()].sort((a, b) => a.de - b.de);
+    if (pesos[0].de !== 0) falhas.push(`${rotuloBase}: o eixo de PESO começa em ${pesos[0].de} kg, não em 0.`);
+    if (pesos[pesos.length - 1].ate !== null) falhas.push(`${rotuloBase}: o eixo de PESO termina em ${pesos[pesos.length - 1].ate} kg — acima disso não há dose.`);
+    for (let i = 0; i < pesos.length - 1; i += 1) {
+      if (pesos[i].ate !== pesos[i + 1].de) {
+        falhas.push(`${rotuloBase}: eixo de PESO com ${pesos[i].ate > pesos[i + 1].de ? "SOBREPOSIÇÃO" : "BURACO"} entre ${pesos[i].ate} e ${pesos[i + 1].de} kg.`);
+      }
+    }
+  }
+  for (const [balde, lista] of baldes) {
+  const rotulo = balde ? `${rotuloBase} {${balde}}` : rotuloBase;
   if (!lista.length) {
     falhas.push(`${rotulo}: declara "ajusta" e não tem faixa nenhuma.`);
     continue;
@@ -181,6 +213,7 @@ for (const f of CAT) {
     }
   }
   }
+  }
 }
 
 console.log("\nCatálogo de antimicrobianos — sobreposição e buraco reprovam\n");
@@ -192,7 +225,10 @@ const okX = conferirUniverso("valida-antimicrobianos", "faixas", faixas);
 const AMOSTRA = [0, 5, 9, 10, 15, 19, 20, 24, 25, 30, 39, 40, 45, 49, 50, 55, 59, 60, 75, 89, 90, 91, 120, 200];
 for (const f of CAT.filter((x) => x.ajusteRenal === "ajusta")) {
   const listas = f.indicacoes ? f.indicacoes.map((i) => [i.id, i.faixas]) : [["", f.faixas]];
-  for (const [ind, lista] of listas)
+  for (const [ind, listaToda] of listas) {
+  const chaves = [...new Set(listaToda.map((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "")))];
+  for (const chave of chaves) {
+  const lista = listaToda.filter((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "") === chave);
   for (const clcr of AMOSTRA) {
     const achadas = lista.filter((x) => {
       const piso = x.deInclusivo === false ? clcr > x.de : clcr >= x.de;
@@ -200,8 +236,10 @@ for (const f of CAT.filter((x) => x.ajusteRenal === "ajusta")) {
       return piso && teto;
     });
     if (achadas.length !== 1) {
-      falhas.push(`${f.id}${ind ? ` [${ind}]` : ""}: ClCr ${clcr} cai em ${achadas.length} faixa(s) — tem de cair em exatamente 1.`);
+      falhas.push(`${f.id}${ind ? ` [${ind}]` : ""}${chave ? ` {${chave} kg}` : ""}: ClCr ${clcr} cai em ${achadas.length} faixa(s) — tem de cair em exatamente 1.`);
     }
+  }
+  }
   }
 }
 console.log(`   cobertura conferida em ${AMOSTRA.length} valores de ClCr por fármaco, fronteiras incluídas`);

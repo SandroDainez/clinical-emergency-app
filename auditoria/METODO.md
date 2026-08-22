@@ -6248,3 +6248,39 @@ resistência e se perde o tratamento.
 tabela 25 mg/kg de ataque e 10 mg/kg de manutenção em HD, e o app mostra 15–20 mg/kg.
 **Os números não foram trocados** — foram para a D-77, lado a lado, para o autor
 decidir. Fonte melhor não é autorização: R-5 continua valendo.
+
+## R-104 · AUSÊNCIA NUM LABEL NÃO É AUSÊNCIA NA FONTE
+
+**Registrada em 2026-08-22**, depois da ceftriaxona e confirmada na cefazolina.
+
+### A regra
+
+> **Um fármaco pode ter mais de um label, e os formatos trazem coisas
+> diferentes.** Procure o **PLR** e o **clássico** antes de declarar `sem_dados`, e
+> registre **quais setids** foram lidos, por fármaco.
+>
+> **"Não encontrado" só vale depois de dizer onde se procurou.**
+
+### As duas instâncias que a produziram
+
+**Ceftriaxona:** o label PLR **não traz** a frase da hemodiálise nem a
+contraindicação em neonato com cálcio; o clássico traz. Ler um só teria produzido
+"não encontrado" para duas informações que existem — e uma delas é uma
+**contraindicação**.
+
+**Cefazolina:** o clássico tem a frase da **dose de ataque** (*"All reduced dosage
+recommendations apply after an initial loading dose…"*) — a palavra "loading" **não
+aparece** no PLR. E o PLR tem a **Tabela 3 com o eixo de peso** na profilaxia, que o
+clássico não tem. **Cada um tinha metade.**
+
+### Por que o modo de falhar é silencioso
+
+Um "não encontrado" honesto e um "não existe" são indistinguíveis no relatório — e o
+segundo vira decisão clínica: `sem_dados` na tela, ou pior, a suposição de que não
+precisa. **É o R-101 outra vez, agora entre a fonte e quem a lê.**
+
+### O que fica registrado, por fármaco
+
+Os setids lidos e **o que cada um trouxe** — no arquivo verbatim, em tabela. Na
+cefazolina foram **cinco**, três deles consultados só para confirmar que "hemodialysis"
+não aparece em nenhum.

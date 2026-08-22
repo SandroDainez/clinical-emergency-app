@@ -430,3 +430,51 @@ do limiar** (D-74).
 **Nenhuma calculadora nova entra sem isso** — mesma regra que valeu para `fonte` por
 nó (AM-2). As existentes entram na fila por consequência: primeiro as **12 de classe
 A**, que mudam dose e intervalo de antibiótico.
+
+
+---
+
+## AM-8 · ESTADO QUE RENDERIZA AFIRMAÇÃO CLÍNICA É CAMPO, NUNCA ITEM DE LISTA
+
+**Registrada em 2026-08-22.** Generalização de uma mutação que passou verde.
+
+### A regra
+
+> **Todo estado do catálogo que renderiza afirmação clínica precisa de CAMPO
+> OBRIGATÓRIO, não de item em lista.**
+
+### O que a produziu
+
+A ceftriaxona é `nao_ajusta`, e a frase *"NÃO REQUER AJUSTE por função renal"* morava
+em `observacoes[]`. Apaguei-a numa mutação: **nenhuma trava reprovou**. A tela ficaria
+sem a informação que evita o subajuste por conta própria — que é a razão de o estado
+existir.
+
+⚠️ **Texto em lista solta é opcional NA PRÁTICA e obrigatório só na INTENÇÃO.** Campo
+obrigatório se confere; item de lista, não.
+
+Virou `textoDoEstado`, com procedência própria, exigido pela trava sempre que
+`ajusteRenal` não for `"ajusta"` — e na tela ele vem **primeiro**, como título do
+bloco, não como mais uma linha que pode sumir sem ninguém notar.
+
+## AM-9 · O EIXO DE PESO — descoberto na cefazolina, e ele não cabia
+
+**Registrada em 2026-08-22.**
+
+A profilaxia cirúrgica da cefazolina depende do **peso**: 1–2 g abaixo de 120 kg,
+**3 g de 120 kg para cima** (Tabela 3 do label PLR). O catálogo tinha eixo de
+clearance e de indicação — **não tinha de peso**.
+
+⚠️ **A gambiarra que NÃO foi feita:** escrever *"1 a 2 g se < 120 kg · 3 g se ≥ 120
+kg"* dentro do campo `dose`. O número viraria **prosa**, e nenhuma trava poderia
+conferir sobreposição, buraco ou fronteira — que é a única coisa que este catálogo
+garante.
+
+O peso virou eixo com a mesma disciplina: limites explícitos, e a trava exige que os
+**baldes de peso** cubram a reta sem se sobrepor, **e que cada balde tenha a sua
+própria reta de clearance completa**. Um buraco no balde dos 120 kg ou mais é tão
+perigoso quanto no outro — e é justamente o que ninguém testa, porque o caso comum
+passa pelo primeiro.
+
+**Vale para o que vem:** aminoglicosídeo, vancomicina e as doses de profilaxia por
+peso são todas assim.

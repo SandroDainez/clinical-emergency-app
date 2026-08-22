@@ -50,7 +50,25 @@ export type ProcedenciaDeFaixa = {
  */
 export type MetodoDaTFG = "cockcroft_gault" | "ckd_epi" | "mdrd" | "sem_dados";
 
+/**
+ * ⚠️ O TERCEIRO EIXO, DESCOBERTO NA CEFAZOLINA — e ele NÃO cabia no que existia.
+ *
+ * A profilaxia cirúrgica da cefazolina depende do PESO: o label dá 1–2 g abaixo
+ * de 120 kg e 3 g de 120 kg para cima. Escrever isso como uma frase dentro do
+ * campo `dose` ("1 a 2 g se < 120 kg · 3 g se ≥ 120 kg") seria gambiarra: o
+ * número viraria PROSA, e nenhuma trava poderia conferir sobreposição, buraco ou
+ * fronteira — que é exatamente o que este catálogo existe para garantir.
+ *
+ * Então o peso virou eixo, com a mesma disciplina do clearance: limites
+ * explícitos, e a trava exige que as faixas de peso cubram a reta sem se
+ * sobrepor. Vale para o que vem: aminoglicosídeo, vancomicina e as doses de
+ * profilaxia por peso são todas assim.
+ */
+export type FaixaDePeso = { de: number; ate: number | null };
+
 export type FaixaRenal = {
+  /** Quando existe, esta faixa só vale nesta faixa de PESO (kg). */
+  peso?: FaixaDePeso;
   /** Limite inferior, INCLUSIVO por padrão. */
   de: number;
   /** Limite superior, EXCLUSIVO por padrão. `null` = sem teto. */

@@ -69,6 +69,19 @@ const LABEL_CEFTRIAXONA: ProcedenciaDeFaixa = {
   forca: "recomendacao_formal",
 };
 
+const LABEL_CEFAZOLINA: ProcedenciaDeFaixa = {
+  fonte: "Cefazolin — US prescribing information. DailyMed setids 18e7366a-1b3e-4010-8f4a-dd559d4f2146 (clássico) e d91a8d13-99a0-4d87-88dc-71cbd37922b4 (PLR), lidos em 2026-08-22",
+  forca: "recomendacao_formal",
+};
+
+/** O que o label NÃO tem, com o alvo nomeado — nunca preenchido de memória. */
+const SEM_FONTE_PROFILAXIA: ProcedenciaDeFaixa = {
+  fonte: "⚠️ NÃO ESTÁ NO LABEL — nenhum dos cinco setids lidos traz este número",
+  forca: "pendente",
+  pendencia:
+    "ALVO NOMEADO: diretriz de profilaxia antimicrobiana cirúrgica (ASHP/IDSA/SIS/SHEA), que o autor decide se adota — outra fonte, outra força. NÃO preencher de memória: é exatamente aqui que a tentação é máxima, porque todo mundo sabe de cor.",
+};
+
 const METADE_DE_1G: ProcedenciaDeFaixa = {
   fonte: "Operacionalização NOSSA: metade da dose recomendada, adotando 1 g como dose de referência (dose usual do app)",
   forca: "pratica_aceita",
@@ -284,6 +297,73 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     ],
   },
   {
+    id: "cefazolina",
+    nome: "Cefazolina",
+    classe: "Cefalosporina de 1ª geração",
+    doseUsual: {
+      dose: "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)",
+      via: "IV ou IM",
+      intervalo: "6/6h a 8/8h",
+      procedencia: LABEL_CEFAZOLINA,
+    },
+    // ⚠️ O EIXO DE INDICAÇÃO COUBE. O de PESO NÃO EXISTIA — e a profilaxia
+    // precisa dele: o label dá 1–2 g abaixo de 120 kg e 3 g de 120 kg para cima.
+    // Escrever isso dentro do campo `dose` seria gambiarra: o número viraria
+    // prosa e nenhuma trava conferiria fronteira. O eixo foi criado.
+    ajusteRenal: "ajusta",
+    faixas: [],
+    indicacoes: [
+      {
+        id: "tratamento",
+        rotulo: "Tratamento",
+        faixas: [
+          { de: 0, ate: 10, ateInclusivo: true, dose: "METADE da dose usual", intervalo: "18/18h a 24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+            notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção — a frase está só no label clássico.", procedencia: LABEL_CEFAZOLINA } },
+          { de: 10, ate: 35, deInclusivo: false, dose: "METADE da dose usual", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+            notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção.", procedencia: LABEL_CEFAZOLINA } },
+          { de: 35, ate: 55, dose: "dose usual INTEIRA", intervalo: "8/8h ou mais espaçado", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
+          { de: 55, ate: null, dose: "dose usual INTEIRA", intervalo: "6/6h a 8/8h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
+        ],
+      },
+      {
+        id: "profilaxia",
+        rotulo: "Profilaxia cirúrgica",
+        // ⚠️ A DOSE PRÉ-INCISÃO DEPENDE DO PESO, NÃO DO CLEARANCE — e o label não
+        // dá dose de profilaxia para ClCr < 55. Isso NÃO virou "use a mesma":
+        // virou faixa com procedência PENDENTE e alvo nomeado, porque inventar
+        // aqui é o caminho do 126 mg/dL.
+        faixas: [
+          { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não dá dose de profilaxia para ClCr < 55", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 0, ate: 120 }, de: 55, ate: null, dose: "1 a 2 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+            notaDeFaixa: { texto: "Cirurgia longa (≥ 2 h): 500 mg a 1 g durante o ato. Pós-operatório: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ O label NÃO dá intervalo numérico de redose.", procedencia: LABEL_CEFAZOLINA } },
+          { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não dá dose de profilaxia para ClCr < 55", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 120, ate: null }, de: 55, ate: null, dose: "3 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+            notaDeFaixa: { texto: "⚠️ 120 kg ou mais: 3 g. O label não repete a dose intraoperatória nem a de 24 h para esta faixa de peso.", procedencia: LABEL_CEFAZOLINA } },
+        ],
+      },
+    ],
+    dialise: {
+      // ⚠️ "hemodialysis" NÃO APARECE EM NENHUM DOS CINCO SETIDS LIDOS. Isto é
+      // ausência conferida, com onde se procurou — não ausência presumida.
+      HD: {
+        estado: "sem_dados" as const,
+        sobre: "hemodiálise intermitente",
+        pendencia:
+          "⚠️ A PALAVRA \"hemodialysis\" NÃO APARECE EM NENHUM DOS CINCO SETIDS de cefazolina lidos no DailyMed. Só há diálise PERITONEAL, e como farmacocinética, não como dose. Ausência conferida — não presumida.",
+      },
+      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
+      SLED: SEM_DADOS_DIALISE("SLED"),
+    },
+    fonteDoFarmaco: LABEL_CEFAZOLINA,
+    observacoes: [
+      { texto: "⚠️ TODA redução de dose no tratamento vale APÓS uma dose de ataque apropriada à gravidade — a frase está só no label clássico, não no PLR.", procedencia: LABEL_CEFAZOLINA },
+      { texto: "Profilaxia: a dose pré-incisão depende do PESO (1 a 2 g abaixo de 120 kg · 3 g de 120 kg para cima), não do clearance.", procedencia: LABEL_CEFAZOLINA },
+      { texto: "Em cirurgia onde a infecção seria devastadora (cardíaca aberta, artroplastia com prótese), a profilaxia pode seguir por 3 a 5 dias.", procedencia: LABEL_CEFAZOLINA },
+      { texto: "⚠️ REDOSE POR PERDA SANGUÍNEA e INTERVALO NUMÉRICO de redose intraoperatória NÃO ESTÃO NO LABEL — em nenhum dos cinco setids. O label diz apenas \"durante cirurgias longas (≥ 2 h)\" e \"a intervalos apropriados\". Alvo nomeado: diretriz de profilaxia cirúrgica (ASHP/IDSA/SIS/SHEA), que o autor decide se adota.", procedencia: SEM_FONTE_PROFILAXIA },
+      { texto: "Nenhum dos labels declara dose máxima diária: o único teto é a frase de que doses de até 12 g/dia já foram usadas em casos raros — o que descreve o que ocorreu, não um limite recomendado.", procedencia: LABEL_CEFAZOLINA },
+    ],
+  },
+  {
     id: "ceftriaxona",
     nome: "Ceftriaxona",
     classe: "Cefalosporina de 3ª geração",
@@ -325,7 +405,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       { texto: "⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia — e monitorizar de perto.", procedencia: LABEL_CEFTRIAXONA },
       // ⚠️ O PRÓPRIO LABEL SE TENSIONA, e as duas frases entram. Apagar uma para
       // deixar o app coerente seria inventar coerência que a fonte não tem.
-      { texto: "⚠️ O label também registra reações neurológicas em disfunção renal GRAVE — algumas em quem não recebeu ajuste, outras em quem recebeu — e pede ajuste apropriado nesses casos. Convive, no mesmo documento, com o \"não é necessário ajuste\" da dosagem.", procedencia: LABEL_CEFTRIAXONA },
+      // ⚠️ AS DUAS FRASES DO LABEL NÃO SE CONTRADIZEM — FALAM DE COISAS
+      // DIFERENTES, e o enquadramento é o que impede a confusão. "Não requer
+      // ajuste" é REGRA DE DOSE, e vive no `textoDoEstado`. A frase abaixo é
+      // ALERTA DE VIGILÂNCIA, e vem da seção de reações neurológicas: é sobre o
+      // paciente que DESENVOLVE neurotoxicidade, sobretudo em disfunção renal
+      // grave. Sem o rótulo de onde cada uma vem, duas frases opostas confundem
+      // exatamente o usuário sem experiência que o app existe para ajudar.
+      { texto: "⚠️ ALERTA DE VIGILÂNCIA (seção de REAÇÕES NEUROLÓGICAS do label, não a de dosagem): há encefalopatia por ceftriaxona descrita em disfunção renal GRAVE — em pacientes que não receberam ajuste E em pacientes que receberam. Foi reversível com a suspensão. O label pede ajuste apropriado nesses casos. Isto NÃO contradiz a regra de dose acima: aquela é sobre a rotina, esta é sobre vigiar quem já está com disfunção grave.", procedencia: LABEL_CEFTRIAXONA },
       { texto: "Não é removida por hemodiálise nem por diálise peritoneal. Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.", procedencia: LABEL_CEFTRIAXONA },
       { texto: "⚠️ CÁLCIO: não administrar junto com solução que contenha cálcio na MESMA linha — precipita. RINGER LACTATO e Hartmann estão nomeados no label e não servem nem para reconstituir.", procedencia: LABEL_CEFTRIAXONA },
       { texto: "Fora do período neonatal, ceftriaxona e solução com cálcio podem ser dadas em SEQUÊNCIA, lavando a linha entre elas com SF 0,9% ou SG 5%.", procedencia: LABEL_CEFTRIAXONA },
@@ -342,11 +429,19 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
  * indicação devolve `undefined`, e não a primeira coluna. Escolher a coluna por
  * omissão é exatamente o defeito que o pip-tazo tinha.
  */
-export function faixaPara(farmaco: Antimicrobiano, clcr: number, indicacao?: string) {
+export function faixaPara(farmaco: Antimicrobiano, clcr: number, indicacao?: string, pesoKg?: number) {
   const lista = farmaco.indicacoes
     ? (farmaco.indicacoes.find((i) => i.id === indicacao)?.faixas ?? [])
     : farmaco.faixas;
   return lista.find((f) => {
+    // ⚠️ O PESO FILTRA ANTES DO CLEARANCE: sem peso informado, a faixa que exige
+    // peso não é candidata — devolver a do balde errado seria pior que devolver
+    // nada, porque a dose sairia com cara de calculada.
+    if (f.peso) {
+      if (pesoKg === undefined) return false;
+      const dentro = pesoKg >= f.peso.de && (f.peso.ate === null || pesoKg < f.peso.ate);
+      if (!dentro) return false;
+    }
     const acimaDoPiso = f.deInclusivo === false ? clcr > f.de : clcr >= f.de;
     const abaixoDoTeto = f.ate === null ? true : f.ateInclusivo ? clcr <= f.ate : clcr < f.ate;
     return acimaDoPiso && abaixoDoTeto;
