@@ -29,6 +29,8 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
   "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.":
     "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
+  "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada":
+    "⚠️ el prospecto no trae esquema de profilaxis para ClCr < 55 — esto NO significa que la profilaxis esté contraindicada",
   // ── LOTE 1 · CEFAZOLINA — indicação + peso (2026-08-22) ──────────────────
   "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)":
     "500 mg a 1 g (infección moderada a grave) · 1 a 1,5 g (grave/amenazante)",

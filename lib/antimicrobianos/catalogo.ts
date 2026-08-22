@@ -333,10 +333,10 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         // virou faixa com procedência PENDENTE e alvo nomeado, porque inventar
         // aqui é o caminho do 126 mg/dL.
         faixas: [
-          { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não dá dose de profilaxia para ClCr < 55", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
           { peso: { de: 0, ate: 120 }, de: 55, ate: null, dose: "1 a 2 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "Cirurgia longa (≥ 2 h): 500 mg a 1 g durante o ato. Pós-operatório: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ O label NÃO dá intervalo numérico de redose.", procedencia: LABEL_CEFAZOLINA } },
-          { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não dá dose de profilaxia para ClCr < 55", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
           { peso: { de: 120, ate: null }, de: 55, ate: null, dose: "3 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ 120 kg ou mais: 3 g. O label não repete a dose intraoperatória nem a de 24 h para esta faixa de peso.", procedencia: LABEL_CEFAZOLINA } },
         ],
