@@ -57,8 +57,25 @@ export type FaixaRenal = {
   ate: number | null;
   deInclusivo?: boolean;
   ateInclusivo?: boolean;
+  /** Como a FONTE diz — "METADE da dose recomendada", "2,25 g". */
   dose: string;
   intervalo: string;
+  /**
+   * ⚠️ O QUE A TELA MOSTRA, quando a fonte fala em fração e o médico precisa do
+   * número. "METADE da dose recomendada" é fiel ao label e inútil com o paciente
+   * na frente; "500 mg" é útil e pressupõe qual é a dose recomendada. As duas
+   * coisas existem, e a segunda tem **procedência própria** — é operacionalização
+   * nossa, não texto da fonte. Regra B, aplicada à mesma faixa.
+   */
+  doseConcreta?: { texto: string; procedencia: ProcedenciaDeFaixa };
+  /**
+   * ⚠️ O QUE VALE SÓ NESTA FAIXA, e não é o texto da fonte — a dose de MDR ou de
+   * meningite, a infusão estendida. Vive aqui, com PROCEDÊNCIA PRÓPRIA, porque a
+   * alternativa seria um `if` no motor testando o mesmo limiar de novo: aí a
+   * FRONTEIRA teria duas cópias, e mudar uma delas faria a nota desaparecer em
+   * silêncio na outra.
+   */
+  notaDeFaixa?: { texto: string; procedencia: ProcedenciaDeFaixa };
   metodoDaTFG: MetodoDaTFG;
   procedencia: ProcedenciaDeFaixa;
 };
@@ -107,6 +124,18 @@ export type Antimicrobiano = {
   ajusteRenal: AjusteRenal;
   /** Vazio quando `ajusteRenal` não é "ajusta" — e aí o texto vem do estado. */
   faixas: FaixaRenal[];
+  /**
+   * ⚠️ A DOSE NEM SEMPRE DEPENDE SÓ DA FUNÇÃO RENAL — e o pip-tazo mostrou.
+   *
+   * A Tabela 1 do label dele tem DUAS colunas de indicação, com doses e
+   * intervalos diferentes na mesma faixa de clearance. Um catálogo com uma dose
+   * por faixa não consegue representar isso: ou escolhe uma coluna (decidindo
+   * clínica pelo usuário), ou perde a outra.
+   *
+   * Quando este campo existe, ele MANDA — `faixas` fica vazio e cada indicação
+   * traz o seu conjunto completo, conferido pela mesma trava.
+   */
+  indicacoes?: { id: string; rotulo: string; faixas: FaixaRenal[] }[];
   dialise: { HD: DoseEmDialise; CRRT: DoseEmDialise; SLED: DoseEmDialise };
   /** Documento que autoriza a dose do fármaco — bula/prescribing information. */
   fonteDoFarmaco: ProcedenciaDeFaixa;

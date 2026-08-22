@@ -51,6 +51,24 @@ const CONSENSO_VANCO_2020: ProcedenciaDeFaixa = {
   forca: "pratica_aceita",
 };
 
+/**
+ * ⚠️ O NÚMERO CONCRETO DO MEROPENÉM É NOSSO, NÃO DO LABEL. O label diz "one-half
+ * recommended dose", e a dose recomendada dele depende da indicação (500 mg em
+ * cSSSI, 1 g em intra-abdominal). O app usa 1 g como referência — que é a dose
+ * usual do serviço —, e por isso "500 mg" é METADE DE 1 g: aritmética nossa
+ * sobre a fração da fonte, declarada como tal.
+ */
+/** A camada de paciente crítico — afirmação separada, força separada (regra B). */
+const PRATICA_CRITICO: ProcedenciaDeFaixa = {
+  fonte: "Prática em paciente crítico — dose estendida e infusão prolongada; NÃO consta da tabela de ajuste renal do label",
+  forca: "pratica_aceita",
+};
+
+const METADE_DE_1G: ProcedenciaDeFaixa = {
+  fonte: "Operacionalização NOSSA: metade da dose recomendada, adotando 1 g como dose de referência (dose usual do app)",
+  forca: "pratica_aceita",
+};
+
 const LABEL_PIPTAZO: ProcedenciaDeFaixa = {
   fonte: "Piperacillin and Tazobactam for Injection, USP — US prescribing information, Tabela 1 (coluna «todas as indicações exceto pneumonia nosocomial»). DailyMed setid 39e19789-de4b-4fd1-ab1c-92f59496f496, lido em 2026-08-22",
   forca: "recomendacao_formal",
@@ -144,10 +162,29 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // documento inteiro, em coluna nenhuma, sem seção de infusão prolongada. Ela
     // saiu; não foi substituída por adivinhação.
     ajusteRenal: "ajusta",
-    faixas: [
-      { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-      { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-      { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+    faixas: [],
+    // ⚠️ AS DUAS COLUNAS DO LABEL, COMO DADO — e não mais uma escolhida e a outra
+    // em nota de rodapé. Fecha a D-78: a tela já perguntava a indicação, e o
+    // catálogo agora sabe que ela existe.
+    indicacoes: [
+      {
+        id: "outras",
+        rotulo: "Outras indicações",
+        faixas: [
+          { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+        ],
+      },
+      {
+        id: "pneumonia",
+        rotulo: "Pneumonia nosocomial",
+        faixas: [
+          { de: 0, ate: 20, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 20, ate: 40, ateInclusivo: true, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 40, ate: null, deInclusivo: false, dose: "4,5 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+        ],
+      },
     ],
     dialise: {
       HD: { dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", relacaoComASessao: "depois", procedencia: LABEL_PIPTAZO },
@@ -181,6 +218,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       {
         de: 0, ate: 10,
         dose: "METADE da dose recomendada",
+        doseConcreta: { texto: "500 mg", procedencia: METADE_DE_1G },
         intervalo: "24/24h",
         metodoDaTFG: METODO,
         procedencia: LABEL_MEROPENEM,
@@ -188,6 +226,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       {
         de: 10, ate: 25, ateInclusivo: true,
         dose: "METADE da dose recomendada",
+        doseConcreta: { texto: "500 mg", procedencia: METADE_DE_1G },
         intervalo: "12/12h",
         metodoDaTFG: METODO,
         procedencia: LABEL_MEROPENEM,
@@ -199,6 +238,8 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         // cima. É operacionalização NOSSA, não do label.
         de: 25, ate: 50, deInclusivo: false, ateInclusivo: true,
         dose: "dose recomendada",
+        doseConcreta: { texto: "1 g", procedencia: METADE_DE_1G },
+        notaDeFaixa: { texto: "MDR/meningite: 2 g 12/12h", procedencia: PRATICA_CRITICO },
         intervalo: "12/12h",
         metodoDaTFG: METODO,
         procedencia: LABEL_MEROPENEM,
@@ -206,6 +247,8 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       {
         de: 50, ate: null, deInclusivo: false,
         dose: "dose recomendada (500 mg em cSSSI · 1 g em intra-abdominal)",
+        doseConcreta: { texto: "1 g", procedencia: METADE_DE_1G },
+        notaDeFaixa: { texto: "MDR: 2 g 8/8h em infusão de 3 h · meningite: 2 g 8/8h", procedencia: PRATICA_CRITICO },
         intervalo: "8/8h",
         metodoDaTFG: METODO,
         procedencia: LABEL_MEROPENEM,
@@ -237,9 +280,18 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
   },
 ];
 
-/** A faixa que contém um ClCr — respeitando a inclusividade declarada. */
-export function faixaPara(farmaco: Antimicrobiano, clcr: number) {
-  return farmaco.faixas.find((f) => {
+/**
+ * A faixa que contém um ClCr — respeitando a inclusividade declarada.
+ *
+ * ⚠️ QUANDO O FÁRMACO TEM EIXO DE INDICAÇÃO, ELE MANDA: pedir a faixa sem dizer a
+ * indicação devolve `undefined`, e não a primeira coluna. Escolher a coluna por
+ * omissão é exatamente o defeito que o pip-tazo tinha.
+ */
+export function faixaPara(farmaco: Antimicrobiano, clcr: number, indicacao?: string) {
+  const lista = farmaco.indicacoes
+    ? (farmaco.indicacoes.find((i) => i.id === indicacao)?.faixas ?? [])
+    : farmaco.faixas;
+  return lista.find((f) => {
     const acimaDoPiso = f.deInclusivo === false ? clcr > f.de : clcr >= f.de;
     const abaixoDoTeto = f.ate === null ? true : f.ateInclusivo ? clcr <= f.ate : clcr < f.ate;
     return acimaDoPiso && abaixoDoTeto;

@@ -30,6 +30,7 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara } from "./lib/antimicrobianos/catalogo";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
 /**
@@ -73,6 +74,15 @@ const SOFA_DEPENDE_DA_TENDENCIA =
  * (absoluta, do paciente real). O campo de dose aceitava qualquer uma sob o
  * rótulo "ClCr / TFG", e elas divergem tanto mais quanto o paciente se afasta da
  * superfície padrão.
+ */
+/**
+ * ⚠️ AS DOSES VÊM DO CATÁLOGO, E ESTA É A ÚNICA CÓPIA (D-75 · R-95).
+ *
+ * Elas moravam em ternários aqui dentro E no catálogo, desde que a estrutura
+ * nasceu — duas cópias das mesmas faixas, que é o mecanismo pelo qual duas partes
+ * do app divergem. E não era hipótese: as duas JÁ diferiam no texto do meropeném.
+ * Agora o motor não sabe clínica nenhuma: ele lê `lib/antimicrobianos/catalogo.ts`
+ * e formata.
  */
 const CLCR_PARA_DOSE =
   "Informar o clearance ABSOLUTO em mL/min (Cockcroft-Gault), não a TFG indexada em mL/min/1,73 m² (CKD-EPI). São medidas diferentes: a indexada corrige para uma superfície corporal padrão e serve para estadiar doença renal; a absoluta é a do paciente que está na frente, e é a que os estudos de ajuste de dose usaram. No obeso e no caquético as duas se separam bastante. A ferramenta Clearance/TFG desta mesma tela devolve as duas, rotuladas.";
@@ -955,18 +965,35 @@ export const CALC_TOOLS: CalcTool[] = [
         // e elas divergiam a partir de 110 kg (lib/dose-antibiotico-renal.ts).
         const ataque = ataqueVancomicinaMg(peso)!;
         const loadLo = r0(ataque.min), loadHi = r0(ataque.max);
-        const band = tfg > 90 ? { d: "15–20 mg/kg", i: "8/8h" } : tfg >= 60 ? { d: "15–20 mg/kg", i: "12/12h" } : tfg >= 40 ? { d: "10–15 mg/kg", i: "12/12h" } : tfg >= 20 ? { d: "10–15 mg/kg", i: "24/24h" } : { d: "10–15 mg/kg", i: "48/48h ou por nível" };
+        // ⚠️ DO CATÁLOGO — uma cópia só (D-75). E a escada é de MANUTENÇÃO: a
+        // dose de ATAQUE não se ajusta por função renal, porque depende do
+        // volume de distribuição, e não da eliminação. Subdose de ataque em
+        // paciente renal é dos erros mais comuns de antimicrobiano em UTI, e é
+        // silencioso — o paciente não piora à vista, só demora dias para atingir
+        // alvo, no meio de uma sepse.
+        const fxV = faixaPara(CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "vancomicina")!, tfg);
+        if (!fxV) return null;
+        const band = { d: fxV.dose, i: fxV.intervalo };
         const mLo = r0(parseFloat(band.d) * peso), mHi = r0((band.d.includes("15–20") ? 20 : 15) * peso);
         return {
           metrics: [
             { label: "Dose de ataque (peso real)", value: `${loadLo}–${loadHi} mg (25–30 mg/kg, máx 3 g)`, highlight: true },
             { label: `Manutenção (ClCr ${r0(tfg)})`, value: `${mLo}–${mHi} mg ${band.i}` },
           ],
-          interpret: { tone: tfg < 20 ? "orange" : "green", label: `Vancomicina — ${band.d} ${band.i}` },
-          tables: [{ title: "Monitorização", rows: [
-            { k: "Alvo", v: "AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). Vale 15–20 mcg/mL se AUC indisponível." },
+          interpret: { tone: tfg < 20 ? "orange" : "green", label: `Vancomicina — MANUTENÇÃO ${band.d} ${band.i}` },
+          // ⚠️ A TELA TERMINA EM CONDUTA, NÃO NO NÚMERO. O consenso 2020 tem uma
+          // mensagem central que não é uma tabela: a dose inicial é só o começo,
+          // e o que decide é o ALVO com nível medido — ele abandonou o vale
+          // isolado justamente porque dose fixa por faixa não prediz exposição.
+          // Uma escada sem "meça depois" ensina a prática que a fonte que ela
+          // cita abandonou: os números ficam aceitáveis e a MENSAGEM inverte.
+          tables: [{ title: "Monitorização — é ela que decide", rows: [
+            { k: "Alvo (recomendação formal — consenso 2020)", v: "AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). O vale isolado de 15–20 mcg/mL NÃO é mais recomendado como alvo em infecção grave por MRSA." },
+            { k: "A dose acima é só o começo", v: "COLHA NÍVEL e ajuste: a dose seguinte depende do que voltar, não desta faixa. A escada por clearance é operacionalização — prática aceita, não texto do consenso." },
+            { k: "Se o serviço não dosa nível", v: "Isto é limitação REAL e muda a conduta: sem nível, a exposição não é conhecida — reavalie função renal com mais frequência e discuta com a farmácia clínica. A limitação fica escrita, não escondida." },
+            { k: "Ataque NÃO se ajusta", v: "A dose de ataque depende do volume de distribuição, não da eliminação: ela é a mesma em qualquer grau de disfunção renal. Só a manutenção acompanha o clearance." },
             { k: "Infusão", v: "Diluir 1 g em ≥ 250 mL; infundir ≥ 60 min (máx 10 mg/min) — evitar síndrome do homem vermelho." },
-            { k: "Hemodiálise", v: "15–20 mg/kg após a sessão; dosar nível pré-diálise." },
+            { k: "Hemodiálise", v: "15–20 mg/kg após a sessão; dosar nível pré-diálise. ⚠️ O consenso 2020 tabela outros valores (25 mg/kg de ataque · 10 mg/kg de manutenção, após a sessão, dialisador de alta permeabilidade) e depende de duas coisas que esta tela não pergunta — permeabilidade do dialisador e se a dose é intra ou pós-sessão. Ver D-77." },
           ] }],
         };
       }
@@ -978,8 +1005,14 @@ export const CALC_TOOLS: CalcTool[] = [
         // seção de infusão prolongada. Ela saiu. O que entrou foram as duas
         // colunas da Tabela 1, com a indicação perguntada.
         // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
-        const outras = tfg > 40 ? "3,375 g IV 6/6h" : tfg >= 20 ? "2,25 g IV 6/6h" : "2,25 g IV 8/8h";
-        const pneumonia = tfg > 40 ? "4,5 g IV 6/6h" : tfg >= 20 ? "3,375 g IV 6/6h" : "2,25 g IV 6/6h";
+        // ⚠️ AS DUAS COLUNAS VÊM DO CATÁLOGO, pelo eixo de indicação (D-78).
+        const pt = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "piperacilina-tazobactam")!;
+        const fxCol = (id: string) => {
+          const fx = faixaPara(pt, tfg, id);
+          return fx ? `${fx.doseConcreta?.texto ?? fx.dose} IV ${fx.intervalo}` : "—";
+        };
+        const outras = fxCol("outras");
+        const pneumonia = fxCol("pneumonia");
         const ind = v.indicacao ?? "nao_sei";
         const metrics =
           ind === "outras"
@@ -1022,7 +1055,18 @@ export const CALC_TOOLS: CalcTool[] = [
       //
       // Verbatim: `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
       // Catálogo (fonte por faixa): `lib/antimicrobianos/catalogo.ts`.
-      const band = tfg > 50 ? "1 g IV 8/8h (dose recomendada) — MDR: 2 g 8/8h infusão 3 h; meningite: 2 g 8/8h" : tfg > 25 ? "1 g IV 12/12h (dose recomendada) — MDR/meningite: 2 g 12/12h" : tfg >= 10 ? "500 mg IV 12/12h (METADE da dose recomendada)" : "500 mg IV 24/24h (METADE da dose recomendada)";
+      const fxM = faixaPara(CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "meropenem")!, tfg);
+      if (!fxM) return null;
+      // ⚠️ O CONCRETO E A FRAÇÃO, JUNTOS: o label fala em "metade da dose", que é
+      // fiel e inútil com o paciente na frente; o "500 mg" é útil e pressupõe a
+      // dose de referência. Os dois aparecem, e o catálogo declara que a
+      // aritmética é nossa.
+      // ⚠️ A NOTA VEM DA FAIXA, não de um `if` que re-testa o limiar. Enquanto
+      // ela era `tfg > 50 ? … : tfg > 25 ? …`, a FRONTEIRA tinha duas cópias — a
+      // do catálogo e esta —, e mudar a do catálogo faria a nota grudar na faixa
+      // errada, em silêncio. Uma cópia só, também para a fronteira.
+      const extraM = fxM.notaDeFaixa ? ` — ${fxM.notaDeFaixa.texto}` : "";
+      const band = `${fxM.doseConcreta?.texto ?? fxM.dose} IV ${fxM.intervalo} (${fxM.dose})${extraM}`;
       return {
         metrics: [{ label: `Meropeném (ClCr ${r0(tfg)})`, value: band, highlight: true }],
         interpret: { tone: tfg < 25 ? "orange" : "green", label: "Meropeném" },

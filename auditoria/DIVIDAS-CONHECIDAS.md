@@ -3127,7 +3127,7 @@ Por calculadora, com o autor: fonte **por limiar**, no molde do `procedencia` da
 árvores — força, fonte e, quando houver, classe/grau. Provavelmente cai junto com a
 revisão de cada módulo que consome a ferramenta.
 
-## D-75 · O catálogo de antimicrobianos está pronto e AINDA NÃO É LIDO PELO MOTOR
+## D-75 · ✅ FECHADA em 2026-08-22 — o motor lê o catálogo, e só existe uma cópia
 
 **Aberta em 2026-08-22.** Estrutura entregue; conteúdo pendente; ligação pendente.
 
@@ -3146,17 +3146,32 @@ revisão de cada módulo que consome a ferramenta.
 - **Fonte por faixa.** As 12 faixas migradas estão `forca: "pendente"`, cada uma com
   a pendência escrita. A ferramenta declarava UMA referência para os dez cortes, e
   migrar não descobre fonte.
-- **Ligação com o motor.** A tela continua lendo os ternários de
-  `clinical-calculators-engine.ts`. ⚠️ **Enquanto durar, há duas cópias das mesmas
-  doses** — e duplicata é como duas partes do app divergem (R-95). É a razão de esta
-  dívida ter prazo curto.
+- ~~**Ligação com o motor.**~~ ✅ Feita em 2026-08-22.
 - **Diálise:** só vancomicina (HD) e pip-tazo (HD) têm dado. Os outros sete campos
   são `sem_dados` **declarado**, com a pendência — nunca silêncio.
 
+### ✅ COMO FECHOU
+
+- **O motor lê o catálogo.** Os ternários de faixa saíram de
+  `clinical-calculators-engine.ts` — **nenhum sobrou**, conferido por varredura. As
+  doses, as fronteiras e até as notas de faixa (MDR, meningite) vêm de
+  `lib/antimicrobianos/catalogo.ts`.
+- **As 15 faixas têm fonte:** 0 pendentes. Meropeném e pip-tazo com o label
+  (`recomendacao_formal`), vancomicina com o consenso 2020 (`pratica_aceita`, com o
+  contexto dizendo que a escada é operacionalização).
+- **Provado por mutação:** mudar uma dose no catálogo muda a tela (a trava de
+  fronteira acusa); tirar um fármaco do catálogo derruba a calculadora. Se houvesse
+  segunda cópia, nenhuma das duas aconteceria.
+
+⚠️ **E a última cópia era a FRONTEIRA, não a dose.** Depois de mover as doses, ainda
+havia `tfg > 50 ? … : tfg > 25 ? …` no motor, decidindo qual nota de MDR/meningite
+mostrar. Mudar o limiar no catálogo faria a nota grudar na faixa errada, **em
+silêncio**. A nota virou campo da própria faixa, com procedência própria.
+
 ### ⚠️ O PORTÃO
 
-**Nenhum fármaco novo entra antes de:** (1) o motor ler o catálogo, e (2) as 12
-faixas existentes ganharem fonte por faixa. Com 28 fármacos na estrutura atual
+**Nenhum fármaco novo entra antes de:** (1) o motor ler o catálogo ✅, e (2) as
+faixas existentes ganharem fonte por faixa ✅. Com 28 fármacos na estrutura atual
 seriam ~70 cortes de dose sem procedência — **multiplicar o defeito por sete seria o
 pior desfecho desta sequência, e feito por nós, sabendo.**
 
@@ -3244,7 +3259,17 @@ uma coisa nem outra.
 **O que fechar junto:** se a dose passar a depender de permeabilidade e de momento da
 sessão, isso é **eixo novo no catálogo** — como a indicação foi para o pip-tazo.
 
-## D-78 · O catálogo não tem eixo de INDICAÇÃO
+### ⚠️ A SAÍDA PROVÁVEL JÁ TEM FORMA NO APP — e não é escolher por ele
+
+**Quando faltam dados para decidir, este app pergunta.** Permeabilidade do dialisador
+e momento da dose (intradialítica × após o fim) são **duas perguntas objetivas**, que
+quem prescreve em HD sabe responder ou pergunta à enfermagem em trinta segundos.
+
+É a mesma forma que resolveu a indicação do pip-tazo: **duas perguntas, não uma
+escolha nossa.** Fica registrado para quando o autor revisar a vancomicina — **não
+implementado agora.**
+
+## D-78 · ✅ FECHADA em 2026-08-22 — o catálogo ganhou eixo de INDICAÇÃO
 
 **Aberta em 2026-08-22.** O pip-tazo mostrou que dose não depende só de função renal.
 
@@ -3257,6 +3282,9 @@ catálogo por programa não sabe que existe a segunda coluna.
 ⚠️ **A tela já resolve isto** — ela pergunta a indicação e o "não sei" mostra as duas.
 **O catálogo é que ainda não sabe.** E é ele que vai receber 25 fármacos.
 
-**Como fechar:** `faixas[]` ganha eixo de indicação (ou o fármaco ganha um conjunto de
-faixas por indicação), **antes** do primeiro lote de beta-lactâmicos — vários deles
-têm dose por sítio de infecção.
+**✅ Como fechou:** `Antimicrobiano.indicacoes[]` — cada indicação com o seu conjunto
+completo de faixas, **conferido inteiro pela mesma trava**: um buraco na segunda
+coluna é tão perigoso quanto na primeira. Quando o eixo existe, `faixas` fica vazio
+(a trava reprova os dois juntos: seriam duas fontes de verdade sobre a mesma dose), e
+`faixaPara()` **devolve `undefined` se ninguém disser a indicação** — escolher a
+coluna por omissão é exatamente o defeito que o pip-tazo tinha.

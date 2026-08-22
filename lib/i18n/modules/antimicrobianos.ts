@@ -27,6 +27,31 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "MDR: 2 g em 100 mL SF → infundir em 3 h.": "MDR: 2 g en 100 mL SF → infundir en 3 h.",
   "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).":
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
+  // ── VANCO: A TELA TERMINA EM CONDUTA (2026-08-22) ────────────────────────
+  "Monitorização — é ela que decide":
+    "Monitorización — es ella la que decide",
+  "Alvo (recomendação formal — consenso 2020)":
+    "Objetivo (recomendación formal — consenso 2020)",
+  "AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). O vale isolado de 15–20 mcg/mL NÃO é mais recomendado como alvo em infecção grave por MRSA.":
+    "AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). El valle aislado de 15–20 mcg/mL YA NO se recomienda como objetivo en infección grave por MRSA.",
+  "A dose acima é só o começo":
+    "La dosis de arriba es solo el comienzo",
+  "COLHA NÍVEL e ajuste: a dose seguinte depende do que voltar, não desta faixa. A escada por clearance é operacionalização — prática aceita, não texto do consenso.":
+    "TOME NIVEL y ajuste: la dosis siguiente depende de lo que vuelva, no de esta franja. La escalera por clearance es operacionalización — práctica aceptada, no texto del consenso.",
+  "Se o serviço não dosa nível":
+    "Si el servicio no mide nivel",
+  "Isto é limitação REAL e muda a conduta: sem nível, a exposição não é conhecida — reavalie função renal com mais frequência e discuta com a farmácia clínica. A limitação fica escrita, não escondida.":
+    "Es una limitación REAL y cambia la conducta: sin nivel, la exposición no se conoce — reevalúe función renal con más frecuencia y discuta con la farmacia clínica. La limitación queda escrita, no escondida.",
+  "Ataque NÃO se ajusta":
+    "La carga NO se ajusta",
+  "A dose de ataque depende do volume de distribuição, não da eliminação: ela é a mesma em qualquer grau de disfunção renal. Só a manutenção acompanha o clearance.":
+    "La dosis de carga depende del volumen de distribución, no de la eliminación: es la misma en cualquier grado de disfunción renal. Solo el mantenimiento acompaña el clearance.",
+  "15–20 mg/kg após a sessão; dosar nível pré-diálise. ⚠️ O consenso 2020 tabela outros valores (25 mg/kg de ataque · 10 mg/kg de manutenção, após a sessão, dialisador de alta permeabilidade) e depende de duas coisas que esta tela não pergunta — permeabilidade do dialisador e se a dose é intra ou pós-sessão. Ver D-77.":
+    "15–20 mg/kg tras la sesión; medir nivel prediálisis. ⚠️ El consenso 2020 tabula otros valores (25 mg/kg de carga · 10 mg/kg de mantenimiento, tras la sesión, dializador de alta permeabilidad) y depende de dos cosas que esta pantalla no pregunta — permeabilidad del dializador y si la dosis es intra o postsesión. Ver D-77.",
+  "MDR: 2 g 8/8h em infusão de 3 h · meningite: 2 g 8/8h":
+    "MDR: 2 g 8/8h en infusión de 3 h · meningitis: 2 g 8/8h",
+  "MDR/meningite: 2 g 12/12h":
+    "MDR/meningitis: 2 g 12/12h",
   // ── PIP-TAZO: AS DUAS COLUNAS DO LABEL (2026-08-22) ──────────────────────
   "Indicação (só para pip-tazo)":
     "Indicación (solo para pip-tazo)",
