@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**51 de 68 travas com declaração completa.**
+**52 de 69 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -245,6 +245,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que todo asset vetorial do repositório — arquivo `.svg` ou SVG embutido em código — tenha entrada em `auditoria/origem-dos-vetores.json` declarando a origem; que `derivado` traga a procedência e a LICENÇA da imagem de base; e que `terceiro` traga quem desenhou e sob que licença.
 - **NÃO PROMETE:** que a declaração seja VERDADEIRA — e isto é o ponto inteiro. Nenhum script distingue um SVG desenhado de um SVG traçado sobre uma fotografia; a diferença está na intenção de quem o produziu, não nos bytes. **A veracidade é do autor.** O que a declaração muda não é a verificabilidade — é o CUSTO DE VIOLAR. Antes, decalcar um ECG real e chamá-lo de ícone era SILÊNCIO: nada no repositório dizia o contrário. Agora exige uma AFIRMAÇÃO FALSA, escrita, assinada e datada num arquivo versionado — e afirmação escrita alguém confere depois. É a mesma conversão do `contextoDaFonte`: o que não se mede, se declara; o que se declara, alguém confere.
 - **UNIVERSO:** `assets/**\/*.svg` mais os arquivos de código com SVG embutido.
+
+## `test:antimicrobianos` → `scripts/valida-antimicrobianos.cjs`
+
+- **PROMETE:** que as faixas de cada fármaco cubram a reta de ClCr SEM SOBREPOSIÇÃO e SEM BURACO, de 0 ao infinito; que toda faixa declare `metodoDaTFG` e procedência (fonte + força, ou `pendente` COM a pendência escrita); que as três modalidades de diálise existam, ainda que como `sem_dados` declarado; e que os quatro estados de `ajusteRenal` sejam coerentes com as faixas.
+- **NÃO PROMETE:** que a dose esteja certa, nem que a fonte seja a melhor. Isso é leitura de bula, e é do médico. A trava garante que o CATÁLOGO não pode mentir por construção.
+- **UNIVERSO:** `lib/antimicrobianos/catalogo.ts`, compilado, com piso no retrato. ── ⚠️ POR QUE SOBREPOSIÇÃO E BURACO SÃO A TRAVA CENTRAL ─────────────────── Enquanto a dose morava em ternários (`tfg > 50 ? A : tfg >= 25 ? B : …`), sobreposição era invisível: o encadeamento SEMPRE devolve alguma coisa, e a primeira condição verdadeira vence. Ninguém enxerga que duas faixas se cruzam lendo `if`s — e um buraco simplesmente cai no `else`, com a dose errada. Como DADO, os dois viram impossíveis por construção: **um ClCr pertence a exatamente uma faixa, ou a trava reprova.** ⚠️ E A FRONTEIRA É O PONTO CEGO CLÁSSICO. Um erro em `> 50` × `>= 50` muda a dose EXATAMENTE no valor 50 — um único ponto da reta, que nenhum teste de amostra pega e nenhuma revisão lê. Por isso a inclusividade é declarada campo a campo, e conferida aqui.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 

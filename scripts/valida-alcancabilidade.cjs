@@ -58,6 +58,19 @@ const MORTOS_CONHECIDOS = {
   // para sempre, e exceção silenciosa é o defeito que ela combate.
   "lib/modulos-canonicos.ts":
     "consumido por scripts/ (inventário e índice de travas), não por app/ — alcançável pelo instrumento, não pelo usuário",
+  // ⚠️ ESTRUTURA PRONTA, AINDA NÃO CONSUMIDA — e é assim de PROPÓSITO.
+  //
+  // O catálogo de antimicrobianos existe porque a ordem foi decidida: primeiro a
+  // estrutura com fonte por faixa (AM-7), depois os fármacos, um a um. Ligá-lo à
+  // tela agora significaria escrever dose nesta rodada, que é exatamente o que a
+  // instrução proíbe — e as três calculadoras atuais continuam no ar.
+  //
+  // ⚠️ A DÍVIDA QUE O COBRE É A D-75, e ela tem a data de fechamento amarrada ao
+  // primeiro fármaco novo: nenhum entra sem que o motor leia daqui.
+  "lib/antimicrobianos/catalogo.ts":
+    "estrutura pronta e não consumida — D-75; ligar ao motor é a próxima etapa, e nenhum fármaco novo entra antes disso",
+  "lib/antimicrobianos/tipos.ts":
+    "tipos do catálogo acima — mesma dívida (D-75)",
   // VAZIO PARA CONTEÚDO DE TELA — e é o desfecho da D-22. Os oito engines órfãos de render foram
   // deletados (ver auditoria/DELECAO.md). Entrada aqui cujo arquivo não exista
   // mais é acusada logo abaixo: a lista não pode virar cemitério permanente.

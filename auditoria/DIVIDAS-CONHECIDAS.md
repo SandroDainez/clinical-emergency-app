@@ -3126,3 +3126,41 @@ pela mesma razão que os botões: **ninguém audita o que parece infraestrutura.
 Por calculadora, com o autor: fonte **por limiar**, no molde do `procedencia` das
 árvores — força, fonte e, quando houver, classe/grau. Provavelmente cai junto com a
 revisão de cada módulo que consome a ferramenta.
+
+## D-75 · O catálogo de antimicrobianos está pronto e AINDA NÃO É LIDO PELO MOTOR
+
+**Aberta em 2026-08-22.** Estrutura entregue; conteúdo pendente; ligação pendente.
+
+### O que existe hoje
+
+- `lib/antimicrobianos/tipos.ts` — o esquema: `doseUsual` · `ajusteRenal` (4 estados)
+  · `faixas[]` com fonte e força **por faixa** · `metodoDaTFG` · `dialise` (HD, CRRT,
+  SLED) · `fonteDoFarmaco` · `observacoes[]` com força própria.
+- `lib/antimicrobianos/catalogo.ts` — os **três** fármacos existentes migrados, com
+  **os mesmos números** (603 comparações contra o motor, 0 divergências).
+- `test:antimicrobianos` — sobreposição e buraco reprovam, **inclusive no ponto de
+  fronteira**.
+
+### O que NÃO existe
+
+- **Fonte por faixa.** As 12 faixas migradas estão `forca: "pendente"`, cada uma com
+  a pendência escrita. A ferramenta declarava UMA referência para os dez cortes, e
+  migrar não descobre fonte.
+- **Ligação com o motor.** A tela continua lendo os ternários de
+  `clinical-calculators-engine.ts`. ⚠️ **Enquanto durar, há duas cópias das mesmas
+  doses** — e duplicata é como duas partes do app divergem (R-95). É a razão de esta
+  dívida ter prazo curto.
+- **Diálise:** só vancomicina (HD) e pip-tazo (HD) têm dado. Os outros sete campos
+  são `sem_dados` **declarado**, com a pendência — nunca silêncio.
+
+### ⚠️ O PORTÃO
+
+**Nenhum fármaco novo entra antes de:** (1) o motor ler o catálogo, e (2) as 12
+faixas existentes ganharem fonte por faixa. Com 28 fármacos na estrutura atual
+seriam ~70 cortes de dose sem procedência — **multiplicar o defeito por sete seria o
+pior desfecho desta sequência, e feito por nós, sabendo.**
+
+### Enquanto isso
+
+As três calculadoras **continuam no ar**, com o aviso que já existe. Desligar
+ferramenta que colegas usam também tem custo clínico.

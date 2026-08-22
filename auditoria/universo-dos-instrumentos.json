@@ -51,5 +51,9 @@
   "mapa-de-calculadoras": {
     "ferramentas": 15,
     "limiares": 148
+  },
+  "valida-antimicrobianos": {
+    "farmacos": 3,
+    "faixas": 12
   }
 }
