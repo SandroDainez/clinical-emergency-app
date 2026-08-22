@@ -64,6 +64,11 @@ const PRATICA_CRITICO: ProcedenciaDeFaixa = {
   forca: "pratica_aceita",
 };
 
+const LABEL_CEFTRIAXONA: ProcedenciaDeFaixa = {
+  fonte: "Ceftriaxone for injection — US prescribing information. DailyMed setids 5cd2d96f-83e5-4326-ae87-d0ede4ba493a (PLR) e 365fc265-8e6c-432f-9fda-911f5f7fb451 (clássico), lidos em 2026-08-22",
+  forca: "recomendacao_formal",
+};
+
 const METADE_DE_1G: ProcedenciaDeFaixa = {
   fonte: "Operacionalização NOSSA: metade da dose recomendada, adotando 1 g como dose de referência (dose usual do app)",
   forca: "pratica_aceita",
@@ -276,6 +281,52 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         procedencia: LABEL_MEROPENEM,
       },
       { texto: "MDR: 2 g em 100 mL SF → infundir em 3 h.", procedencia: PENDENTE_DA_MIGRACAO },
+    ],
+  },
+  {
+    id: "ceftriaxona",
+    nome: "Ceftriaxona",
+    classe: "Cefalosporina de 3ª geração",
+    doseUsual: {
+      dose: "1 a 2 g por dia (teto de 4 g/dia)",
+      via: "IV em ~30 min",
+      intervalo: "1×/dia, ou dividido 12/12h",
+      procedencia: LABEL_CEFTRIAXONA,
+    },
+    doseMaxima: { valor: "4 g/dia — e 2 g/dia se houver disfunção hepática E renal significativa", procedencia: LABEL_CEFTRIAXONA },
+    // ⚠️ `nao_ajusta` É CONTEÚDO, NÃO AUSÊNCIA — e é o estado que este catálogo
+    // nunca tinha usado de verdade. Quem procura "ceftriaxona + insuficiência
+    // renal" e não acha nada ajusta por conta e SUBDOSA. A tela diz, afirmando.
+    //
+    // ⚠️ E A EXCEÇÃO É A QUE IMPORTA NA UTI: renal E hepática JUNTAS têm teto de
+    // 2 g/dia. É o cirrótico com injúria renal aguda, que não é caso raro.
+    ajusteRenal: "nao_ajusta",
+    faixas: [],
+    dialise: {
+      // ⚠️ NÃO É REMOVIDA — e por isso não há dose suplementar. Isto é conteúdo
+      // positivo do label, e evita a redose "por precaução" que subiria a
+      // exposição sem ganho.
+      HD: {
+        dose: "sem dose suplementar",
+        intervalo: "manter o esquema habitual",
+        relacaoComASessao: "independente",
+        procedencia: LABEL_CEFTRIAXONA,
+      },
+      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
+      SLED: SEM_DADOS_DIALISE("SLED"),
+    },
+    fonteDoFarmaco: LABEL_CEFTRIAXONA,
+    observacoes: [
+      { texto: "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia — e monitorizar de perto.", procedencia: LABEL_CEFTRIAXONA },
+      // ⚠️ O PRÓPRIO LABEL SE TENSIONA, e as duas frases entram. Apagar uma para
+      // deixar o app coerente seria inventar coerência que a fonte não tem.
+      { texto: "⚠️ O label também registra reações neurológicas em disfunção renal GRAVE — algumas em quem não recebeu ajuste, outras em quem recebeu — e pede ajuste apropriado nesses casos. Convive, no mesmo documento, com o \"não é necessário ajuste\" da dosagem.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "Não é removida por hemodiálise nem por diálise peritoneal. Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "⚠️ CÁLCIO: não administrar junto com solução que contenha cálcio na MESMA linha — precipita. RINGER LACTATO e Hartmann estão nomeados no label e não servem nem para reconstituir.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "Fora do período neonatal, ceftriaxona e solução com cálcio podem ser dadas em SEQUÊNCIA, lavando a linha entre elas com SF 0,9% ou SG 5%.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "⚠️ CONTRAINDICADA em neonato (≤ 28 dias) que precise de solução com cálcio, inclusive nutrição parenteral — risco de precipitação com desfecho fatal descrito.", procedencia: LABEL_CEFTRIAXONA },
+      { texto: "Profilaxia cirúrgica: 1 g IV em dose única, de ½ a 2 horas antes da incisão.", procedencia: LABEL_CEFTRIAXONA },
     ],
   },
 ];

@@ -27,6 +27,47 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "MDR: 2 g em 100 mL SF → infundir em 3 h.": "MDR: 2 g en 100 mL SF → infundir en 3 h.",
   "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).":
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
+  // ── LOTE 1 · CEFTRIAXONA — o caso do `nao_ajusta` (2026-08-22) ───────────
+  "Ceftriaxona":
+    "Ceftriaxona",
+  "Cefalosporina de 3ª geração":
+    "Cefalosporina de 3ª generación",
+  "1 a 2 g por dia (teto de 4 g/dia)":
+    "1 a 2 g por día (techo de 4 g/día)",
+  "1×/dia, ou dividido 12/12h":
+    "1×/día, o dividido 12/12h",
+  "IV em ~30 min":
+    "IV en ~30 min",
+  "4 g/dia — e 2 g/dia se houver disfunção hepática E renal significativa":
+    "4 g/día — y 2 g/día si hay disfunción hepática Y renal significativa",
+  "NÃO REQUER AJUSTE por função renal":
+    "NO REQUIERE AJUSTE por función renal",
+  "CONTRAINDICADO na disfunção renal":
+    "CONTRAINDICADO en la disfunción renal",
+  "SEM DADOS de ajuste renal no label":
+    "SIN DATOS de ajuste renal en el prospecto",
+  "O que o label diz":
+    "Lo que dice el prospecto",
+  "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal.":
+    "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal.",
+  "⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia — e monitorizar de perto.":
+    "⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día — y monitorizar de cerca.",
+  "Não é removida por hemodiálise nem por diálise peritoneal. Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.":
+    "No se remueve por hemodiálisis ni por diálisis peritoneal. En 6 de 26 pacientes en diálisis la eliminación estaba muy reducida: medir nivel si está disponible.",
+  "⚠️ CÁLCIO: não administrar junto com solução que contenha cálcio na MESMA linha — precipita. RINGER LACTATO e Hartmann estão nomeados no label e não servem nem para reconstituir.":
+    "⚠️ CALCIO: no administrar junto con solución que contenga calcio en la MISMA línea — precipita. RINGER LACTATO y Hartmann están nombrados en el prospecto y no sirven ni para reconstituir.",
+  "Fora do período neonatal, ceftriaxona e solução com cálcio podem ser dadas em SEQUÊNCIA, lavando a linha entre elas com SF 0,9% ou SG 5%.":
+    "Fuera del período neonatal, ceftriaxona y solución con calcio pueden darse en SECUENCIA, lavando la línea entre ellas con SF 0,9% o SG 5%.",
+  "⚠️ CONTRAINDICADA em neonato (≤ 28 dias) que precise de solução com cálcio, inclusive nutrição parenteral — risco de precipitação com desfecho fatal descrito.":
+    "⚠️ CONTRAINDICADA en neonato (≤ 28 días) que necesite solución con calcio, incluida nutrición parenteral — riesgo de precipitación con desenlace fatal descrito.",
+  "Profilaxia cirúrgica: 1 g IV em dose única, de ½ a 2 horas antes da incisão.":
+    "Profilaxis quirúrgica: 1 g IV en dosis única, de ½ a 2 horas antes de la incisión.",
+  "sem dose suplementar":
+    "sin dosis suplementaria",
+  "manter o esquema habitual":
+    "mantener el esquema habitual",
+  "⚠️ O label também registra reações neurológicas em disfunção renal GRAVE — algumas em quem não recebeu ajuste, outras em quem recebeu — e pede ajuste apropriado nesses casos. Convive, no mesmo documento, com o \"não é necessário ajuste\" da dosagem.":
+    "⚠️ El prospecto también registra reacciones neurológicas en disfunción renal GRAVE — algunas en quien no recibió ajuste, otras en quien lo recibió — y pide ajuste apropiado en esos casos. Convive, en el mismo documento, con el \"no es necesario ajuste\" de la dosificación.",
   // ── VANCO: A TELA TERMINA EM CONDUTA (2026-08-22) ────────────────────────
   "Monitorização — é ela que decide":
     "Monitorización — es ella la que decide",

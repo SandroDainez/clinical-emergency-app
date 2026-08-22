@@ -938,7 +938,8 @@ export const CALC_TOOLS: CalcTool[] = [
     reference: "ASHP/IDSA/SIDP 2020 (vanco AUC) · UpToDate 2024 / SBI 2022.",
     inputs: [
       { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
-        { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" } ] },
+        { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" },
+        { label: "Ceftriaxona", value: "ceftriaxona" } ] },
       // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO — e o app conhecia só metade.
       // A dose de pip-tazo depende de DUAS coisas: função renal e indicação. A
       // tabela do label tem duas colunas, e o app usava a da PNEUMONIA
@@ -957,6 +958,38 @@ export const CALC_TOOLS: CalcTool[] = [
     compute: (v) => {
       const peso = parseFloat((v.peso ?? "").replace(",", ".")); const tfg = parseFloat((v.tfg ?? "").replace(",", "."));
       const f = v.farmaco ?? "vanco";
+
+      // ── ⚠️ QUEM NÃO AJUSTA RESPONDE ANTES DE PEDIR O CLEARANCE ─────────────
+      //
+      // "Não requer ajuste por função renal" é CONTEÚDO, e é a informação que
+      // evita o subajuste por conta própria. Exigir o ClCr para depois dizer que
+      // ele não muda nada seria transformar a resposta em obstáculo — e quem não
+      // acha a resposta ajusta sozinho e SUBDOSA.
+      const semAjuste = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === f && x.ajusteRenal !== "ajusta");
+      if (semAjuste) {
+        const ROTULO: Record<string, string> = {
+          nao_ajusta: "NÃO REQUER AJUSTE por função renal",
+          contraindicado: "CONTRAINDICADO na disfunção renal",
+          sem_dados: "SEM DADOS de ajuste renal no label",
+        };
+        const rotulo = ROTULO[semAjuste.ajusteRenal] ?? semAjuste.ajusteRenal;
+        const hd = "estado" in semAjuste.dialise.HD
+          ? semAjuste.dialise.HD.pendencia
+          : `${semAjuste.dialise.HD.dose} — ${semAjuste.dialise.HD.intervalo}`;
+        return {
+          metrics: [
+            { label: `${semAjuste.nome} — dose usual`, value: `${semAjuste.doseUsual.dose} — ${semAjuste.doseUsual.via}`, highlight: true },
+            { label: "Intervalo", value: semAjuste.doseUsual.intervalo },
+            ...(semAjuste.doseMaxima ? [{ label: "Teto", value: semAjuste.doseMaxima.valor }] : []),
+          ],
+          interpret: { tone: "green" as const, label: `${semAjuste.nome} — ${rotulo}` },
+          tables: [
+            { title: "O que o label diz", rows: semAjuste.observacoes.map((o) => ({ k: "•", v: o.texto })) },
+            { title: "Hemodiálise", rows: [{ k: "HD", v: hd }] },
+          ],
+        };
+      }
+
       if (!Number.isFinite(tfg)) return null;
       const r0 = (x: number) => Math.round(x).toString();
       if (f === "vanco") {
