@@ -552,11 +552,27 @@ for (const calc of CALC_TOOLS) {
         [20, "24/24h", 19], [19, "48/48h", 20],
       ]],
       ["piptazo", [[41, "6/6h", 40], [40, "8/8h", 41], [20, "8/8h", 19], [19, "12/12h", 20]]],
-      // Faixas: > 50 → 8/8h · ≥ 25 → 1 g 12/12h · ≥ 10 → 500 mg–1 g 12/12h ·
-      // < 10 → 24/24h. A fronteira dos 25 muda a DOSE mantendo o intervalo.
+      // ── MEROPENÉM — FRONTEIRAS ATUALIZADAS EM 2026-08-22 (R-93) ────────────
+      //
+      // ⚠️ ESTA TRAVA REPROVOU, E ESTAVA CERTA: a fronteira SE DESLOCOU. O que
+      // mudou não foi o app por engano — foi a fonte entrar. As faixas antigas
+      // («≥ 25 → 1 g 12/12h» e «≥ 10 → 500 mg–1 g») divergiam do label:
+      //
+      //   label (DailyMed, Tabela 1)   app ANTES              app DEPOIS
+      //   26–50  dose recomendada      ≥ 25 dose plena        > 25 dose plena
+      //   10–25  METADE da dose        ≥ 10 "500 mg–1 g"      500 mg (metade)
+      //
+      // Em ClCr exatamente 25 o paciente recebia DOSE PLENA, e o label o coloca
+      // na faixa da metade. E entre 10 e 25 o app permitia 1 g, quando o label
+      // diz "one-half recommended dose".
+      //
+      // A RAZÃO DA TRAVA SOBREVIVE — ela existe para que fronteira não se mova em
+      // silêncio, e foi exatamente isso que ela fez: acusou o movimento. O que
+      // muda é o valor de referência, que agora vem da FONTE (R-102), não do
+      // código. Verbatim: `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
       ["mero", [
         [51, "8/8h", 50], [50, "12/12h", 51],
-        [25, "1 g IV 12/12h", 24], [24, "500 mg–1 g", 25],
+        [26, "1 g IV 12/12h", 25], [25, "METADE", 26],
         [10, "12/12h", 9], [9, "24/24h", 10],
       ]],
     ];

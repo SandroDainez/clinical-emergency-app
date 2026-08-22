@@ -3164,3 +3164,60 @@ pior desfecho desta sequência, e feito por nós, sabendo.**
 
 As três calculadoras **continuam no ar**, com o aviso que já existe. Desligar
 ferramenta que colegas usam também tem custo clínico.
+
+## D-76 · PIP-TAZO e VANCOMICINA contra o label — achados, SEM correção
+
+**Medido em 2026-08-22**, lido nos labels do DailyMed. ⚠️ **Nada foi corrigido**, por
+instrução do autor: reportar antes.
+
+### PIPERACILINA-TAZOBACTAM
+
+Label (DailyMed setid `39e19789-de4b-4fd1-ab1c-92f59496f496`, Tabela 1) — **a tabela
+tem DUAS COLUNAS de indicação**, e o app não tem essa distinção:
+
+| ClCr | todas as indicações | pneumonia nosocomial | app hoje |
+|---|---|---|---|
+| > 40 | **3,375 g 6/6h** | 4,5 g 6/6h | **4,5 g 6/6h** |
+| 20–40 | **2,25 g 6/6h** | 3,375 g 6/6h | **4,5 g 8/8h** ⚠️ |
+| < 20 | **2,25 g 8/8h** | 2,25 g 6/6h | 2,25 g 8/8h ✅ |
+| hemodiálise | 2,25 g 12/12h | 2,25 g 8/8h | 2,25 g 12/12h ✅ |
+
+**Três achados:**
+
+1. ⚠️ **A faixa 20–40 não bate com nenhuma das duas colunas.** O app dá **4,5 g
+   8/8h** = 13,5 g/dia; o label diz 2,25 g 6/6h (9 g/dia) ou, na pneumonia
+   nosocomial, 3,375 g 6/6h (13,5 g/dia — mesma dose diária, **outro intervalo**).
+   Para um beta-lactâmico, dependente de tempo acima da CIM, **o intervalo é a
+   variável que importa**.
+2. **O app usa a coluna da pneumonia nosocomial como se fosse universal** na faixa
+   > 40 (4,5 g 6/6h). Não é erro de dose — é ausência da distinção de indicação.
+3. ✅ **A hemodiálise bate**, incluindo os 0,75 g após cada sessão.
+
+### VANCOMICINA — o achado é de outra natureza
+
+**O label moderno (PLR, setid `0543b2b5-…`) NÃO TEM TABELA por ClCr.** Ele diz,
+verbatim:
+
+> "The initial dose should be no less than 15 mg/kg, in patients with any degree of
+> renal impairment." · "Measure trough vancomycin serum concentrations to guide
+> therapy" · para anéfricos: "an initial dose of 15 mg/kg … A dose of 1.9 mg/kg/24 hr
+> should be given after the initial dose."
+
+O label antigo (setid `00946db3-…`) tem uma tabela **em mg/24 h** (Moellering),
+100 → 1.545 mg … 10 → 155 mg. **Nenhum dos dois traz as faixas de intervalo que o app
+usa** (8/8h · 12/12h · 24/24h · 48/48h).
+
+⚠️ **Ou seja: as faixas de vancomicina do app não vêm da bula — vêm da prática.** Não
+é divergência de valor; é **procedência de outra natureza**. Elas não podem receber
+`recomendacao_formal` de bula: são `pratica_aceita`, e a bula sustenta outra coisa
+(dose inicial ≥ 15 mg/kg em qualquer grau de disfunção, e ajuste por NÍVEL).
+
+**E a hemodiálise do app** ("15–20 mg/kg após a sessão") **não está no label**. O que
+o label diz, na superdosagem, é o oposto do que se assumiria: *"Vancomycin is poorly
+removed by dialysis."*
+
+### O que isto NÃO significa
+
+Que o app esteja clinicamente errado na vancomicina — ajuste por nível e faixas de
+intervalo são prática corrente e defensável. **Significa que a força está errada:**
+declarar bula onde a bula não fala é o defeito que a AM-7 existe para impedir.

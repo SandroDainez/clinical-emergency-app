@@ -33,6 +33,17 @@ const PENDENTE_DA_MIGRACAO: ProcedenciaDeFaixa = {
 const METODO = "cockcroft_gault" as const;
 
 /**
+ * O primeiro `forca: "recomendacao_formal"` do catálogo — e ele veio do LABEL,
+ * lido no DailyMed, não de fonte terciária. Verbatim em
+ * `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
+ */
+const LABEL_MEROPENEM: ProcedenciaDeFaixa = {
+  fonte: "Meropenem for injection (I.V.) — US prescribing information, Tabela 1 (ajuste renal no adulto). DailyMed setid 092ebd9b-77a0-4877-afc3-dd8211730f71, lido em 2026-08-22",
+  forca: "recomendacao_formal",
+  pendencia: undefined,
+};
+
+/**
  * ⚠️ A FRASE É LITERAL E A MODALIDADE VIAJA À PARTE. Montá-la com template
  * (`... para ${o_que} ...`) produziria uma frase que nunca vira chave de
  * dicionário — o usuário em espanhol a leria em português (D-19/R-82). O texto
@@ -108,20 +119,72 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     nome: "Meropeném",
     classe: "Carbapenêmico",
     doseUsual: { dose: "1 g", via: "IV", intervalo: "8/8h", procedencia: PENDENTE_DA_MIGRACAO },
+    // ⚠️ QUATRO FAIXAS, E O APP TINHA TRÊS. A faixa `< 10` NÃO EXISTIA: o motor
+    // devolvia 12/12h para quem tem a menor depuração, quando o label manda
+    // 24/24h — o DOBRO da exposição diária de um carbapenêmico neurotóxico, em
+    // paciente anúrico e em geral sedado, onde mioclonia e crise convulsiva
+    // passam por "encefalopatia da sepse".
+    //
+    // ⚠️ E A DOSE CAI À METADE em ClCr < 25, não só o intervalo. O motor dizia
+    // "500 mg–1 g" — o label diz METADE da dose recomendada.
+    //
+    // Verbatim em `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
     ajusteRenal: "ajusta",
     faixas: [
-      { de: 0, ate: 10, dose: "500 mg (MDR/meningite: 1 g)", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 10, ate: 25, dose: "500 mg–1 g (MDR/meningite: 1 g)", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 25, ate: 50, ateInclusivo: true, dose: "1 g (MDR/meningite: 2 g)", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
-      { de: 50, ate: null, deInclusivo: false, dose: "1 g (MDR: 2 g infusão 3 h; meningite: 2 g)", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: PENDENTE_DA_MIGRACAO },
+      {
+        de: 0, ate: 10,
+        dose: "METADE da dose recomendada",
+        intervalo: "24/24h",
+        metodoDaTFG: METODO,
+        procedencia: LABEL_MEROPENEM,
+      },
+      {
+        de: 10, ate: 25, ateInclusivo: true,
+        dose: "METADE da dose recomendada",
+        intervalo: "12/12h",
+        metodoDaTFG: METODO,
+        procedencia: LABEL_MEROPENEM,
+      },
+      {
+        // ⚠️ A TABELA DO LABEL É EM NÚMEROS INTEIROS ("10 to 25" e "26 to 50") e
+        // deixa 25,1–25,9 sem faixa. Este app precisa cobrir a reta inteira, e a
+        // escolha está DECLARADA aqui: o fracionário acima de 25 segue a faixa de
+        // cima. É operacionalização NOSSA, não do label.
+        de: 25, ate: 50, deInclusivo: false, ateInclusivo: true,
+        dose: "dose recomendada",
+        intervalo: "12/12h",
+        metodoDaTFG: METODO,
+        procedencia: LABEL_MEROPENEM,
+      },
+      {
+        de: 50, ate: null, deInclusivo: false,
+        dose: "dose recomendada (500 mg em cSSSI · 1 g em intra-abdominal)",
+        intervalo: "8/8h",
+        metodoDaTFG: METODO,
+        procedencia: LABEL_MEROPENEM,
+      },
     ],
     dialise: {
-      HD: SEM_DADOS_DIALISE("hemodiálise intermitente"),
+      // ⚠️ "INFORMAÇÃO INADEQUADA" É CONTEÚDO, NÃO LACUNA — e não é "não precisa
+      // ajustar". O label diz textualmente que não há informação suficiente para
+      // hemodiálise e diálise peritoneal.
+      HD: {
+        estado: "sem_dados" as const,
+        sobre: "hemodiálise intermitente",
+        pendencia:
+          "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.",
+      },
       CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
       SLED: SEM_DADOS_DIALISE("SLED"),
     },
-    fonteDoFarmaco: PENDENTE_DA_MIGRACAO,
+    fonteDoFarmaco: LABEL_MEROPENEM,
     observacoes: [
+      {
+        // Farmacocinética, não posologia — e por isso vive aqui, com força
+        // própria, e não dentro da faixa.
+        texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem do label) — mas o label NÃO diz qual dose dar após a sessão.",
+        procedencia: LABEL_MEROPENEM,
+      },
       { texto: "MDR: 2 g em 100 mL SF → infundir em 3 h.", procedencia: PENDENTE_DA_MIGRACAO },
     ],
   },

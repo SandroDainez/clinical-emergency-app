@@ -6165,3 +6165,41 @@ porque o erro não fica no instrumento: vai direto para a decisão de quem lê.
 - Toda lista truncada diz **"N de M"**, sempre — inclusive em prosa.
 - `head`, `slice` e `…e mais N` são recorte, e recorte se anuncia.
 - Quando o total for zero, dizer **de quantos**: "0 de 148" é medição; "0" é sorte.
+
+## R-102 · A FRONTEIRA VEM DA FONTE, NUNCA DO CÓDIGO
+
+**Registrada em 2026-08-22.** É a forma mais silenciosa do R-87.
+
+### A regra
+
+> **Testar as fronteiras que o código declara nunca encontra a fronteira que o
+> código não declara.**
+>
+> O teste se monta **lendo a fonte**, e o código é que tem de bater com ele — nunca
+> o contrário. E inclui sempre os **extremos**: 0, 1, e o valor logo abaixo do menor
+> corte declarado.
+
+### Como ela nasceu
+
+O teste de fronteira do meropeném usou os valores **20 · 25 · 40 · 50 · 60 · 90** —
+e **todos eles são os cortes que o próprio código já declarava**. Um teste derivado
+do objeto medido confirma o que existe e é **cego para o que falta**: se o código
+tivesse três faixas onde a bula tem quatro, aqueles seis valores nunca mostrariam.
+
+**Universo derivado do objeto medido** — é o mesmo defeito do selo como proxy do
+item e do recorte do grafo como proxy do grafo, agora no desenho do teste.
+
+### O conserto, e ele é barato
+
+Varrer **0 a 200, de 1 em 1, contra as faixas da FONTE** — não contra o motor. Foi
+o que expôs as duas divergências reais do meropeném contra o label.
+
+### ⚠️ E UMA SEGUNDA LIÇÃO, DO MESMO EPISÓDIO
+
+O relatório daquele teste imprimiu **três linhas de faixa**, porque a amostra
+(20 · 25 · 40 · 50 · 60 · 90) **nunca tocou a faixa `< 10`**. Quem leu concluiu que o
+app tinha três faixas e que a quarta não existia — **e ela existia.**
+
+**A tabela de AMOSTRA parecia a tabela de FAIXAS.** É o R-101 aplicado a mim mesmo,
+um dia depois de eu o registrar: todo total em relatório vem com o universo de onde
+saiu, **e toda amostra diz que é amostra.**

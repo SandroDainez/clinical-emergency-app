@@ -27,6 +27,25 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "MDR: 2 g em 100 mL SF → infundir em 3 h.": "MDR: 2 g en 100 mL SF → infundir en 3 h.",
   "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).":
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
+  // ── MEROPENÉM, CORRIGIDO CONTRA O LABEL (2026-08-22) ─────────────────────
+  "1 g IV 8/8h (dose recomendada) — MDR: 2 g 8/8h infusão 3 h; meningite: 2 g 8/8h":
+    "1 g IV 8/8h (dosis recomendada) — MDR: 2 g 8/8h infusión 3 h; meningitis: 2 g 8/8h",
+  "1 g IV 12/12h (dose recomendada) — MDR/meningite: 2 g 12/12h":
+    "1 g IV 12/12h (dosis recomendada) — MDR/meningitis: 2 g 12/12h",
+  "500 mg IV 12/12h (METADE da dose recomendada)":
+    "500 mg IV 12/12h (LA MITAD de la dosis recomendada)",
+  "500 mg IV 24/24h (METADE da dose recomendada)":
+    "500 mg IV 24/24h (LA MITAD de la dosis recomendada)",
+  "dose recomendada": "dosis recomendada",
+  "METADE da dose recomendada": "LA MITAD de la dosis recomendada",
+  "dose recomendada (500 mg em cSSSI · 1 g em intra-abdominal)":
+    "dosis recomendada (500 mg en cSSSI · 1 g en intraabdominal)",
+  "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem do label) — mas o label NÃO diz qual dose dar após a sessão.":
+    "Es prontamente dializable y efectivamente removido por hemodiálisis (sección de sobredosis del label) — pero el label NO dice qué dosis dar tras la sesión.",
+  "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.":
+    "⚠️ EL LABEL DICE, TEXTUALMENTE, QUE LA INFORMACIÓN ES INADECUADA para hemodiálisis y diálisis peritoneal. Esto NO es \"no necesita ajuste\": es ausencia de dosis recomendada, declarada por el propio prospecto.",
+  "O label declara INFORMAÇÃO INADEQUADA para hemodiálise e diálise peritoneal — não é \"não precisa ajustar\". E declara, na superdosagem, que o meropeném é prontamente dialisável e removido por hemodiálise: a dose após a sessão não está no label.":
+    "El label declara INFORMACIÓN INADECUADA para hemodiálisis y diálisis peritoneal — no es \"no necesita ajuste\". Y declara, en la sobredosis, que el meropenem es prontamente dializable y removido por hemodiálisis: la dosis tras la sesión no está en el label.",
   "hemodiálise intermitente": "hemodiálisis intermitente",
   "CVVHD/CVVHDF": "CVVHD/CVVHDF",
   "SLED": "SLED",

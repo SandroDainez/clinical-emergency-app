@@ -966,12 +966,32 @@ export const CALC_TOOLS: CalcTool[] = [
           tables: [{ title: "Infusão estendida (Pseudomonas)", rows: [{ k: "PK/PD", v: "4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC)." }] }],
         };
       }
-      // meropenem
-      const band = tfg > 50 ? "1 g IV 8/8h (MDR: 2 g 8/8h infusão 3 h; meningite: 2 g 8/8h)" : tfg >= 25 ? "1 g IV 12/12h (MDR/meningite: 2 g 12/12h)" : tfg >= 10 ? "500 mg–1 g IV 12/12h (MDR/meningite: 1 g 12/12h)" : "500 mg IV 24/24h (MDR/meningite: 1 g 24/24h)";
+      // ── MEROPENÉM — CORRIGIDO EM 2026-08-22 CONTRA O LABEL ────────────────
+      //
+      // ⚠️ FALTAVA UMA FAIXA. O label tem QUATRO (> 50 · 26–50 · 10–25 · < 10) e
+      // este código tinha três: `> 50`, `>= 25` e `>= 10`, com o último `else`
+      // servindo de fundo. O resultado é que **ClCr < 10 recebia 12/12h**, quando
+      // o label manda 24/24h — o DOBRO da exposição diária de um carbapenêmico
+      // neurotóxico, em paciente anúrico e em geral sedado, onde mioclonia e
+      // crise convulsiva passam por "encefalopatia da sepse".
+      //
+      // ⚠️ E A DOSE CAI À METADE abaixo de 25, não só o intervalo: o código dizia
+      // "500 mg–1 g" onde o label diz "one-half recommended dose".
+      //
+      // ⚠️ A FRONTEIRA TAMBÉM MUDOU: o label abre a faixa de cima em 26, e o
+      // código abria em 25 — em ClCr exatamente 25 o paciente recebia dose plena.
+      //
+      // Verbatim: `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
+      // Catálogo (fonte por faixa): `lib/antimicrobianos/catalogo.ts`.
+      const band = tfg > 50 ? "1 g IV 8/8h (dose recomendada) — MDR: 2 g 8/8h infusão 3 h; meningite: 2 g 8/8h" : tfg > 25 ? "1 g IV 12/12h (dose recomendada) — MDR/meningite: 2 g 12/12h" : tfg >= 10 ? "500 mg IV 12/12h (METADE da dose recomendada)" : "500 mg IV 24/24h (METADE da dose recomendada)";
       return {
         metrics: [{ label: `Meropeném (ClCr ${r0(tfg)})`, value: band, highlight: true }],
         interpret: { tone: tfg < 25 ? "orange" : "green", label: "Meropeném" },
-        tables: [{ title: "Infusão estendida (MDR)", rows: [{ k: "PK/PD", v: "2 g em 100 mL SF → infundir em 3 h." }] }],
+        tables: [{ title: "Infusão estendida (MDR)", rows: [
+          { k: "PK/PD", v: "2 g em 100 mL SF → infundir em 3 h." },
+          // ⚠️ AS DUAS FRASES DO LABEL, E ELAS DIZEM COISAS DIFERENTES.
+          { k: "Hemodiálise", v: "O label declara INFORMAÇÃO INADEQUADA para hemodiálise e diálise peritoneal — não é \"não precisa ajustar\". E declara, na superdosagem, que o meropeném é prontamente dialisável e removido por hemodiálise: a dose após a sessão não está no label." },
+        ] }],
       };
     },
     alert: ["Valores orientativos — confirmar com farmacêutico clínico e bula. Vancomicina: ataque pelo PESO REAL; ajustar manutenção por nível/AUC e função renal."],
