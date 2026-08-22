@@ -122,6 +122,17 @@ export type Antimicrobiano = {
   doseUsual: { dose: string; via: string; intervalo: string; procedencia: ProcedenciaDeFaixa };
   doseMaxima?: { valor: string; procedencia: ProcedenciaDeFaixa };
   ajusteRenal: AjusteRenal;
+  /**
+   * ⚠️ O QUE A TELA DIZ QUANDO NÃO HÁ FAIXA — obrigatório em `nao_ajusta`,
+   * `contraindicado` e `sem_dados`.
+   *
+   * Nasceu de uma mutação que passou VERDE: apagar a frase "não requer ajuste"
+   * das observações não reprovava nada, e a tela ficava sem a informação que
+   * evita o subajuste por conta própria. Enquanto o texto morava numa lista
+   * solta, ele era opcional na prática — agora é campo, e campo obrigatório se
+   * confere.
+   */
+  textoDoEstado?: { texto: string; procedencia: ProcedenciaDeFaixa };
   /** Vazio quando `ajusteRenal` não é "ajusta" — e aí o texto vem do estado. */
   faixas: FaixaRenal[];
   /**

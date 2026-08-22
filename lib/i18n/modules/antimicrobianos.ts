@@ -27,6 +27,8 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "MDR: 2 g em 100 mL SF → infundir em 3 h.": "MDR: 2 g en 100 mL SF → infundir en 3 h.",
   "Pseudomonas: 4,5 g em 250 mL SF → infundir em 4 h (maximiza tempo > MIC).":
     "Pseudomonas: 4,5 g en 250 mL SF → infundir en 4 h (maximiza tiempo > MIC).",
+  "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.":
+    "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
   // ── LOTE 1 · CEFTRIAXONA — o caso do `nao_ajusta` (2026-08-22) ───────────
   "Ceftriaxona":
     "Ceftriaxona",

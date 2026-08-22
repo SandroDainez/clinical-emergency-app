@@ -301,6 +301,10 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // ⚠️ E A EXCEÇÃO É A QUE IMPORTA NA UTI: renal E hepática JUNTAS têm teto de
     // 2 g/dia. É o cirrótico com injúria renal aguda, que não é caso raro.
     ajusteRenal: "nao_ajusta",
+    textoDoEstado: {
+      texto: "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.",
+      procedencia: LABEL_CEFTRIAXONA,
+    },
     faixas: [],
     dialise: {
       // ⚠️ NÃO É REMOVIDA — e por isso não há dose suplementar. Isto é conteúdo

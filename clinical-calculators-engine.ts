@@ -984,6 +984,9 @@ export const CALC_TOOLS: CalcTool[] = [
           ],
           interpret: { tone: "green" as const, label: `${semAjuste.nome} — ${rotulo}` },
           tables: [
+            // ⚠️ O TEXTO DO ESTADO VEM PRIMEIRO, e é campo do catálogo — não uma
+            // linha da lista de observações, que podia sumir sem ninguém notar.
+            { title: rotulo, rows: [{ k: "•", v: semAjuste.textoDoEstado?.texto ?? "" }] },
             { title: "O que o label diz", rows: semAjuste.observacoes.map((o) => ({ k: "•", v: o.texto })) },
             { title: "Hemodiálise", rows: [{ k: "HD", v: hd }] },
           ],

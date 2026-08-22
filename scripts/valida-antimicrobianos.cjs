@@ -90,6 +90,20 @@ for (const f of CAT) {
 
   if (f.ajusteRenal !== "ajusta") {
     if ((f.faixas ?? []).length) falhas.push(`${f.id}: \`ajusteRenal\` é "${f.ajusteRenal}" e mesmo assim declara faixas.`);
+    // ⚠️ OS QUATRO ESTADOS RENDERIZAM TEXTO — NENHUM RENDERIZA SILÊNCIO. Esta
+    // conferência nasceu de uma MUTAÇÃO QUE PASSOU VERDE: apagar a frase "não
+    // requer ajuste" das observações não reprovava nada, e a tela ficava sem a
+    // informação que evita o subajuste por conta própria. Texto em lista solta é
+    // opcional na prática; campo obrigatório se confere.
+    if (!f.textoDoEstado?.texto) {
+      falhas.push(
+        `${f.id}: \`ajusteRenal\` é "${f.ajusteRenal}" e não há \`textoDoEstado\`.\n` +
+        `      ⚠️ "Não requer ajuste" é CONTEÚDO: quem procura e não acha ajusta por conta e SUBDOSA.\n` +
+        `      Os quatro estados renderizam texto — nenhum renderiza silêncio.`
+      );
+    } else {
+      confereProcedencia(`${f.id} · textoDoEstado`, f.textoDoEstado.procedencia);
+    }
     continue;
   }
 
