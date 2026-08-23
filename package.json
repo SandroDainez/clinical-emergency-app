@@ -28,6 +28,7 @@
     "test:censo": "node ./scripts/censo-de-instrumentos.cjs",
     "test:gravidade-eletrolitica": "node ./scripts/valida-gravidade-eletrolitica.cjs",
     "medir:conteudo": "node ./scripts/mede-conteudo-clinico.cjs",
+    "medir:queda": "node ./scripts/mede-conclusao-por-queda.cjs",
     "medir:pt-es": "node ./scripts/compara-numeros-pt-es.cjs",
     "test:i18n": "node ./scripts/varredura-pt.cjs",
     "test:traducao-runtime": "node ./scripts/valida-traducao-runtime.cjs",

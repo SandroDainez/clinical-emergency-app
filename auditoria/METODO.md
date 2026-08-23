@@ -6488,3 +6488,46 @@ número e critério (`e` × `ou`) vai **por extenso**, nunca inferida da prosa.
 ⚠️ Isto **serve o app inteiro**, não só os eletrólitos: toda vez que uma fonte
 escreveu "conforme o quadro clínico" e o app precisou de um número para caber no
 modelo, foi este buraco. Procurar os outros é medição de uma rodada futura.
+
+## R-111 — AUSÊNCIA NÃO CONCLUI
+
+> **Nenhum caminho pode produzir classificação, grau ou conduta porque as
+> condições anteriores não bateram.** Quando nada se aplica, a resposta é **"não
+> classificado"** — e ela é dita na tela, nunca substituída pelo degrau mais
+> brando.
+
+⚠️ **A regra nasceu de um defeito do próprio motor desta auditoria** (2026-08-23):
+o degrau `restante` engolia o cálcio ionizado e devolvia "Leve a moderada".
+**Classificar por queda é classificar**, com a agravante de parecer conclusão e
+ser omissão.
+
+É a irmã clínica do **verde por ausência** (R-108). Lá, um instrumento que não
+rodava dizia "está tudo bem". Aqui, um caminho que não sabe classificar diz o grau
+mais brando — e o viés tem direção: **cair no último degrau erra SEMPRE para o
+lado tranquilizador.** Um app de emergência que erra para "leve" na dúvida é o
+oposto do que ele existe para ser.
+
+### ⚠️ O COROLÁRIO, e ele vale para o app inteiro
+
+> **"Não classificado" tem que ser RENDERIZÁVEL.**
+
+Se a tela não sabe mostrar "não sei", o motor **será empurrado a inventar uma
+resposta** — que é exatamente como este defeito nasce. A estrutura de dizer
+"não sei" vem antes da regra de não concluir; sem ela, a regra é impossível de
+obedecer.
+
+Medição em `auditoria/VARREDURA-CONCLUSAO-POR-QUEDA.md` (`npm run medir:queda`).
+
+## R-112 — ZERO DEFEITO PODE SER ZERO TRABALHO
+
+Da varredura de unidades (2026-08-23), e é a métrica invertida que todo projeto
+maduro precisa saber ler:
+
+> *"Os outros dez estão protegidos por um motivo desconfortável: **não têm fonte
+> nenhuma**. Não há conversão errada onde não houve conversão."*
+
+**Zero defeitos numa área pode significar zero trabalho feito nela** — e os dois
+se parecem no relatório. É a mesma família do universo vazio do R-101: o número
+baixo só significa alguma coisa depois de se saber **quantos itens ele olhou**.
+
+⚠️ É o argumento mais honesto que temos para **não comemorar número baixo**.

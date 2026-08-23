@@ -13,6 +13,7 @@ import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 import {
   AGUARDANDO_VALOR,
   APOIAM_SINTOMATICO,
+  corteDoDegrau,
   degrauDeGravidade,
   EXIGEM_COMPATIBILIDADE,
   IONIZADO_NOTAS,
@@ -1951,6 +1952,19 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   const leituraDoCalcio = ehCalcio
     ? calcioParaClassificar({ tipo: tipoDeCalcio, valor: parsedCurrent, albumina: parseNumber(albumin) })
     : { valor: parsedCurrent, aviso: null };
+  // ⚠️ AS DUAS UNIDADES NA TELA (decisão do autor): quem digita em mg/dL vê
+  // onde o corte da fonte cai. O texto é SAÍDA — a comparação nunca o usa.
+  const degrauAtual = ehCalcio || disorder === "hypophosphatemia"
+    ? degrauDeGravidade(
+        disorder,
+        leituraDoCalcio.valor,
+        ecgChanges,
+        disorder === "hypocalcemia" ? temSintomaDeCalcio : null,
+        ehCalcio ? (tipoDeCalcio === "ionico" ? "ionico" : "total") : null
+      )
+    : null;
+  const corteExibido = degrauAtual ? corteDoDegrau(disorder, degrauAtual) : null;
+  const condutaDoDegrau = degrauAtual?.conduta?.texto ?? null;
   const severitySummary = getSeveritySummary(
     disorder,
     leituraDoCalcio.valor,
@@ -2460,6 +2474,14 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                 <Text style={styles.clinicalSummaryLabel}>{tr("Classificação atual")}</Text>
                 <Text style={styles.clinicalSummaryValue}>{tr(severitySummary.label)}</Text>
                 <Text style={styles.clinicalSummaryText}>{tr(severitySummary.signs)}</Text>
+                {corteExibido ? (
+                  <Text style={styles.clinicalSummaryText}>{trf(tr, "Corte desta faixa: {0}", [corteExibido])}</Text>
+                ) : null}
+                {/* ⚠️ CONDUTA EM LUGAR PRÓPRIO — não em `sinais`. A classificação
+                    diz o que o caso É; isto diz o que muda a urgência. */}
+                {condutaDoDegrau ? (
+                  <Text style={styles.referralLine}>{tr(condutaDoDegrau)}</Text>
+                ) : null}
                 {leituraDoCalcio.aviso ? (
                   <Text style={styles.clinicalSummaryText}>{tr(leituraDoCalcio.aviso)}</Text>
                 ) : null}

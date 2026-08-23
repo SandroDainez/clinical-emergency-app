@@ -33,6 +33,15 @@ export type UnidadeDeConcentracao = "mg/dL" | "mmol/L" | "mEq/L";
 export const MG_DL_POR_MMOL_L = {
   /** Cálcio — peso atômico 40,08 */
   calcio: 40.08 / 10,
+  /**
+   * Fósforo — peso atômico 30,97.
+   *
+   * ⚠️ Entrou em 2026-08-23 sem mudar UMA classificação: o app guardava
+   * `< 1 mg/dL` e o consenso diz `< 0,32 mmol/L`, que dá 0,99 — a conversão já
+   * estava certa. O que mudou foi a conta SAIR DA CABEÇA DE QUEM ESCREVEU e
+   * entrar no repositório, para quem reler a fonte amanhã poder conferir.
+   */
+  fosforo: 30.97 / 10,
 } as const;
 
 export type Analito = keyof typeof MG_DL_POR_MMOL_L;

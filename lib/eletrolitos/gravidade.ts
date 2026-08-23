@@ -143,8 +143,20 @@ export const SEM_ESCALA_HIPERFOSFATEMIA =
   "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa, a velocidade de instalação e o cálcio associado";
 
 export type DegrauDeGravidade = {
+  /** CLASSIFICA — o que o caso é. */
   rotulo: string;
+  /** O que se vê no paciente. */
   sinais: string;
+  /**
+   * ⚠️ MODULA A CONDUTA, E NÃO CLASSIFICA — camadas diferentes.
+   *
+   * `combinado` existe para quando o critério clínico MUDA A CLASSIFICAÇÃO (o
+   * sintoma torna grave um valor que o número não tornaria). Aqui é outra coisa:
+   * o número classifica e o julgamento modula a URGÊNCIA. Enfiar isto em
+   * `sinais` seria achatar as duas — e, em três distúrbios, ninguém saberia mais
+   * o que o degrau significa.
+   */
+  conduta?: { texto: string; procedencia: ProcedenciaDeGravidade };
   /** Vários cortes = qualquer um deles basta (OU). */
   cortes: CorteDeGravidade[];
   procedencia: ProcedenciaDeGravidade;
@@ -261,6 +273,7 @@ export const IONIZADO_NOTAS = [
  */
 const UNIDADE_DA_TELA: Partial<Record<DisturbioEletrolitico, { unidade: UnidadeDeConcentracao; analito: Analito }>> = {
   hypocalcemia: { unidade: "mg/dL", analito: "calcio" },
+  hypophosphatemia: { unidade: "mg/dL", analito: "fosforo" },
   hypercalcemia: { unidade: "mg/dL", analito: "calcio" },
 };
 
@@ -317,7 +330,20 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     // ⚠️ A FAIXA DO MEIO, QUE NÃO EXISTIA (D-91). Ela CLASSIFICA por número — o
     // julgamento clínico modula a CONDUTA, não a classificação, e por isso ela
     // NÃO é `combinado`. Ver auditoria/PROPOSTA-CLASSIFICACAO-VS-CONDUTA.md.
-    { rotulo: "Significativa", sinais: "Náusea, constipação, poliúria e fadiga predominam.", cortes: [{ tipo: "faixa", de: 3.0, ate: 3.5, unidade: "mmol/L" }], procedencia: P_CA },
+    {
+      rotulo: "Significativa",
+      sinais: "Náusea, constipação, poliúria e fadiga predominam.",
+      // ⚠️ TEXTO LITERAL DO AUTOR (2026-08-23). Note o que ele diz no fim: o
+      // número NÃO É TETO. Sintomas, velocidade de elevação e contexto podem
+      // justificar tratamento urgente fora dele.
+      conduta: {
+        texto:
+          "Hipercalcemia significativa; necessidade e urgência do tratamento dependem de sintomas, velocidade de instalação, causa e contexto clínico; em geral requer avaliação e tratamento, mas não constitui emergência automaticamente pelo número isolado.",
+        procedencia: P_CA,
+      },
+      cortes: [{ tipo: "faixa", de: 3.0, ate: 3.5, unidade: "mmol/L" }],
+      procedencia: P_CA,
+    },
     { rotulo: "Leve a moderada", sinais: "Náusea, constipação, poliúria e fadiga predominam.", cortes: [{ tipo: "restante" }], procedencia: P_CA },
   ],
   hypomagnesemia: [
@@ -329,7 +355,11 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     { rotulo: "Moderada", sinais: "Rubor, letargia e reflexos diminuídos podem aparecer.", cortes: [{ tipo: "restante" }], procedencia: P_MG },
   ],
   hypophosphatemia: [
-    { rotulo: "Grave", sinais: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.", cortes: [{ tipo: "abaixoDe", valor: 1 }], procedencia: P_P },
+    // ⚠️ 0,32 mmol/L É O NÚMERO DO CONSENSO. O app guardava `< 1 mg/dL`, que é a
+    // conversão CERTA (0,32 × 3,097 = 0,99) — e mesmo assim a conta estava fora
+    // do repositório, que é a forma que produziu a D-90. Converter não muda uma
+    // classificação sequer hoje; muda quem pode conferir amanhã (D-92).
+    { rotulo: "Grave", sinais: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.", cortes: [{ tipo: "abaixoDe", valor: 0.32, unidade: "mmol/L" }], procedencia: P_P },
     { rotulo: "Leve a moderada", sinais: "Fraqueza e queda de performance muscular são os sinais mais prováveis.", cortes: [{ tipo: "restante" }], procedencia: P_P },
   ],
   hyperphosphatemia: [
@@ -397,6 +427,45 @@ function casa(
  * ⚠️ Distúrbio sem entrada devolve `null` em vez de chutar um degrau. Um
  * eletrólito novo que ninguém classificou não é "moderado" por omissão.
  */
+/**
+ * O corte de um degrau NAS DUAS UNIDADES — para quem digita em mg/dL ver onde o
+ * corte da fonte cai.
+ *
+ * ⚠️ E O AVISO QUE ESTE TEXTO CARREGA (decisão do autor, 2026-08-23): o valor
+ * exibido é DERIVADO e ARREDONDADO. Ele é SAÍDA, nunca entrada da lógica —
+ * classificar pelo número da tela desfaz a decisão sobre o 14,03.
+ */
+export function textoDoCorte(disturbio: string, corte: CorteDeGravidade): string | null {
+  const alvo = UNIDADE_DA_TELA[disturbio as DisturbioEletrolitico];
+  const n = (v: number) => String(v).replace(".", ",");
+  const conv = (v: number, u: UnidadeDeConcentracao) => {
+    if (!alvo || u === alvo.unidade) return null;
+    const x = converter(v, u, alvo.unidade, alvo.analito);
+    return x == null ? null : `${x.toFixed(2).replace(".", ",")} ${alvo.unidade}`;
+  };
+  const par = (v: number, u: UnidadeDeConcentracao) => {
+    const outra = conv(v, u);
+    return `${n(v)} ${u}${outra ? ` (≈ ${outra})` : ""}`;
+  };
+  switch (corte.tipo) {
+    case "abaixoDe": return corte.unidade ? `< ${par(corte.valor, corte.unidade)}` : null;
+    case "aPartirDe": return corte.unidade ? `≥ ${par(corte.valor, corte.unidade)}` : null;
+    case "acimaDe": return corte.unidade ? `> ${par(corte.valor, corte.unidade)}` : null;
+    case "faixa": return corte.unidade ? `${par(corte.de, corte.unidade)} a ${par(corte.ate, corte.unidade)}` : null;
+    case "combinado": return textoDoCorte(disturbio, corte.faixa);
+    default: return null;
+  }
+}
+
+/** O corte do degrau, nas duas unidades — ou `null` se ele não tem número. */
+export function corteDoDegrau(disturbio: string, degrau: DegrauDeGravidade): string | null {
+  for (const c of degrau.cortes) {
+    const t = textoDoCorte(disturbio, c);
+    if (t) return t;
+  }
+  return null;
+}
+
 export function degrauDeGravidade(
   disturbio: string,
   valorAtual: number | null,

@@ -3653,3 +3653,33 @@ do fósforo.
 Não convertido nesta rodada porque a instrução foi reportar antes. Recomendação:
 converter — o benefício não é o número de hoje, é a conta ficar dentro do
 repositório para quando alguém reler a fonte.
+
+## D-93 — VELOCIDADE DE ELEVAÇÃO: O APP NÃO TEM O DADO
+
+O autor nomeou, na decisão do 14,0 mg/dL (2026-08-23): *"sintomas, **velocidade
+de elevação** e contexto clínico continuam podendo justificar tratamento urgente
+independentemente desse limite numérico"*.
+
+⚠️ **O app não conhece o valor anterior nem o intervalo entre as duas medidas** —
+não tem como calcular velocidade de nada. Registrado **sem inventar campo**: um
+campo vazio "variação" convidaria alguém a preenchê-lo com estimativa.
+
+O que entrou já: o texto da faixa intermediária deixa claro que **o número não é
+teto** — a urgência pode vir de fora dele.
+
+## D-94 — TRÊS CONCLUSÕES POR QUEDA, MEDIDAS E NÃO CORRIGIDAS
+
+`auditoria/VARREDURA-CONCLUSAO-POR-QUEDA.md` · `npm run medir:queda`.
+
+1. **hipocalcemia** (tela, :1270) — o ramo final afirma *"menos intensa e paciente
+   estável"* quando `severe` é falso, o que inclui **sem valor** e **ionizado**.
+   ⚠️ E o texto ainda cita **`< 7 mg/dL`**, que deixou de ser o corte.
+2. **hipofosfatemia** (tela, :1660) — o ramo final afirma *"fósforo > 2 mg/dL"*,
+   valor que ninguém verificou.
+3. **ânion gap** (`clinical-calculators-engine.ts`:423) — tudo que não é `> 12`
+   vira *"Ânion gap normal"* em **verde**, incluindo o **AG BAIXO**, que não é
+   normal e tem causas próprias. ⚠️ O mais consequente: sai em verde, que é a
+   forma visual de dizer "pode seguir".
+
+Não corrigidos de propósito: o item 1 esbarra em decisão clínica (o que a tela diz
+quando não há valor) e num corte que mudou. É revisão com o autor.

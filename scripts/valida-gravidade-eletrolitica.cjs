@@ -28,6 +28,7 @@
 const fs = require("fs"), os = require("os"), path = require("path");
 const { execFileSync } = require("child_process");
 const { conferirUniverso } = require("./lib/universo.cjs");
+const { lerFonte } = require("./lib/fonte.cjs");
 
 const RAIZ = path.resolve(__dirname, "..");
 const TELA = path.join(RAIZ, "components", "protocol-screen", "electrolyte-calculator-screen.tsx");
@@ -206,6 +207,69 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
         erro(`${disturbio}: corte numérico sem a unidade da fonte (${unidade}) — ele veio de uma diretriz que escreve em ${unidade}, e guardar o valor já convertido tira a conta do repositório (D-90)`);
     console.log(`  ${disturbio}: ${numericos.length} corte(s) numérico(s), todos em ${unidade} (unidade da fonte)`);
   }
+}
+
+// ── 3b-bis. CONDUTA NÃO É CLASSIFICAÇÃO — e `sinais` não é onde ela mora
+//
+// ⚠️ O ACHATAMENTO É INVISÍVEL NA TELA: mover o texto da conduta para dentro de
+// `sinais` mostra AS MESMAS PALAVRAS ao usuário. É o defeito, não as palavras —
+// e sem esta trava a distinção viraria prosa e sumiria na próxima edição.
+{
+  const comConduta = [];
+  for (const d of disturbios)
+    for (const g of G.GRAVIDADE_POR_DISTURBIO[d]) if (g.conduta) comConduta.push({ d, g });
+  console.log(`  degraus com conduta própria: ${comConduta.length}`);
+
+  for (const { d, g } of comConduta) {
+    if (!g.conduta.procedencia?.alvo || g.conduta.procedencia.alvo.trim().length < 20)
+      erro(`${d} · "${g.rotulo}": conduta sem procedência própria`);
+    if (g.sinais.includes(g.conduta.texto))
+      erro(`${d} · "${g.rotulo}": a conduta foi ACHATADA dentro de sinais — mesmas palavras na tela, camadas diferentes no dado`);
+    if (g.rotulo === g.conduta.texto)
+      erro(`${d} · "${g.rotulo}": rótulo e conduta são o mesmo texto — a classificação diz o que o caso É, a conduta diz o que muda a urgência`);
+  }
+
+  // ⚠️ O CASO NOMEADO: a faixa intermediária da hipercalcemia TEM conduta, e ela
+  // é o texto do autor. Apagá-la ou mudá-la de campo reprova.
+  const media = G.GRAVIDADE_POR_DISTURBIO.hypercalcemia.find((g) => g.rotulo === "Significativa");
+  if (!media?.conduta)
+    erro('hipercalcemia · "Significativa" perdeu a conduta própria — o texto do autor modula a urgência sem mudar a classificação, e enfiá-lo em `sinais` acha[ta] as duas camadas');
+  // E a tela renderiza a conduta em lugar DISTINTO da classificação.
+  if (media?.conduta && !/condutaDoDegrau/.test(tela))
+    erro("a tela não renderiza a conduta em lugar próprio — sem isso o campo existe no dado e some para o usuário");
+}
+
+// ── 3c-bis. O VALOR DE TELA É SAÍDA, NUNCA ENTRADA DA LÓGICA
+//
+// ⚠️ TRAVA DE UMA DECISÃO, e é o caminho pelo qual ela seria desfeita sem ninguém
+// perceber. O autor decidiu (2026-08-23) que o corte canônico é > 3,5 mmol/L e
+// que 14,0 mg/dL exatos NÃO entram em correção urgente por número isolado —
+// porque 3,5 mmol/L = 14,03. Basta alguém arredondar 14,03 para 14,0 na EXIBIÇÃO
+// e, três meses depois, outra pessoa ler "14,0" na tela e escrever `>= 14` na
+// comparação: a decisão volta ao contrário e o commit parece cosmético.
+{
+  // (a) a comparação usa o valor EXATO na unidade da fonte
+  const em14 = G.degrauDeGravidade("hypercalcemia", 14.0);
+  const em14e1 = G.degrauDeGravidade("hypercalcemia", 14.1);
+  if (em14?.rotulo !== "Significativa")
+    erro(`14,0 mg/dL devolveu « ${em14?.rotulo} » — a decisão do autor é que 14,0 exatos NÃO entram em correção urgente por número isolado (3,5 mmol/L = 14,03). O valor de tela é derivado e arredondado; classificar por ele desfaz a decisão`);
+  if (em14e1?.rotulo !== "Correção urgente")
+    erro(`14,1 mg/dL devolveu « ${em14e1?.rotulo} » — acima de 14,03 tem de ser correção urgente`);
+
+  // (b) nenhum corte de classificação guarda o número ARREDONDADO DA EXIBIÇÃO
+  // ⚠️ SEM COMENTÁRIO: o arquivo EXPLICA a decisão citando 14,03 e 7,62, e uma
+  // leitura crua acusaria a própria explicação — o mesmo defeito que já corrigi
+  // duas vezes nesta sequência.
+  const fonteDaGravidade = lerFonte(path.join(RAIZ, "lib", "eletrolitos", "gravidade.ts"));
+  const suspeitos = [...fonteDaGravidade.matchAll(/(?:valor|de|ate):\s*(14|7\.6|12|12\.02|14\.03|7\.62)\b/g)];
+  for (const m of suspeitos)
+    erro(`corte guardando o número da EXIBIÇÃO (${m[1]}) — o valor convertido é saída; a comparação usa o exato na unidade da fonte`);
+
+  // (c) e a faixa aparece nas DUAS unidades para quem digita em mg/dL
+  const texto = G.corteDoDegrau("hypercalcemia", G.GRAVIDADE_POR_DISTURBIO.hypercalcemia[0]);
+  if (!texto || !/mmol\/L/.test(texto) || !/mg\/dL/.test(texto))
+    erro(`o corte da hipercalcemia não sai nas duas unidades: « ${texto} »`);
+  else console.log(`  corte exibido: ${texto}`);
 }
 
 // ── 3d. O IONIZADO NÃO RECEBE O CORTE DO TOTAL/AJUSTADO

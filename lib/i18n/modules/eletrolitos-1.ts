@@ -464,4 +464,8 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "Corrección urgente",
   "Significativa":
     "Significativa",
+  "Corte desta faixa: {0}":
+    "Punto de corte de este tramo: {0}",
+  "Hipercalcemia significativa; necessidade e urgência do tratamento dependem de sintomas, velocidade de instalação, causa e contexto clínico; em geral requer avaliação e tratamento, mas não constitui emergência automaticamente pelo número isolado.":
+    "Hipercalcemia significativa; la necesidad y la urgencia del tratamiento dependen de los síntomas, la velocidad de instauración, la causa y el contexto clínico; en general requiere evaluación y tratamiento, pero no constituye una emergencia automáticamente por el número aislado.",
 };
