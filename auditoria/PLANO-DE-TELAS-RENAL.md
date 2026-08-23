@@ -1,158 +1,167 @@
-# Plano de telas do módulo renal — para revisão ANTES de implementar
+# Plano de telas do módulo renal — v2, pelo fluxo ditado pelo autor
 
-**Nada foi implementado.** Escrito em 2026-08-23, depois do percurso do autor no
-celular.
-
----
-
-## §1 · ⚠️ UM CONFLITO QUE PRECISA SER RESOLVIDO ANTES DA PRIMEIRA LINHA
-
-O plano recebido põe **as seis emergências no passo 4**, depois de confirmar IRA
-e estadiar. **A especificação do autor diz o contrário, em título de seção:**
-
-> **"4. PRIMEIRA TELA — TRIAGEM DE GRAVIDADE.** Logo no início, **antes de longas
-> investigações**, verificar se existe emergência renal ou metabólica. […] **Não
-> obrigar o médico a percorrer toda a investigação antes de tratar uma ameaça
-> imediata."**
-
-E colide também com a regra universal do app — estabilização antes do protocolo.
-
-**A minha leitura, e é a razão de eu não ter começado a escrever:** o que o autor
-reprovou no celular **não foi a POSIÇÃO das seis. Foi a PORTA.** A tela pergunta
-*"Você já sabe qual das seis é?"* — categorização antes de olhar. Mas a varredura
-que vem depois do "Não sei — verifique comigo" **já faz exatamente o que o plano
-pede**: uma emergência por vez, por sinal observável, na ordem de risco de morte,
-com "não sei" em cada uma.
-
-> **O defeito é a bifurcação de entrada, não o lugar da triagem.**
-
-**Proposta:** as seis continuam cedo (passo 2, logo após situar), e o passo de
-confirmação/estadiamento vem depois delas — como está hoje e como a especificação
-manda. **Se o autor quiser mesmo as seis depois do estadiamento, é decisão dele e
-contraria a própria especificação — por isso não decido.**
+**Nada implementado.** Reescrito em 2026-08-23 sobre o fluxo literal do autor.
+Substitui a v1, cuja ordem ele não confirmou.
 
 ---
 
-## §2 · O QUE A ESPECIFICAÇÃO PEDE PARA AS ETAPAS 0–3 E NÃO EXISTE HOJE
+## §1 · O PLANO — uma linha por decisão
 
-| etapa | o que a especificação pede | existe? |
-|---|---|---|
-| **0 · instável agora?** | *"Não obrigar o médico a percorrer toda a investigação antes de tratar uma ameaça imediata"* | ⚠️ **existe como CARD, não como passo.** `StabilizationFirstCard` é um bloco que se rola por cima — não pergunta nada e não tem resposta |
-| **1 · o que fez pensar em rim?** | §2 lista as oito situações de entrada: creatinina elevada · aumento recente · oligúria · anúria · redução inexplicada · IRA já diagnosticada · suspeita de IRA sobre DRC · distúrbio hidroeletrolítico | ❌ **não existe nenhuma tela.** ⚠️ O conteúdo **já está escrito pelo autor** — não precisa inventar nada |
-| **2 · isto é IRA?** | §5: creatinina atual · basal conhecida · valores anteriores e intervalo · diurese · peso · tempo de evolução | ✅ existe (`dados_do_caso`, `basal_conhecida`, `sem_base`) — **mas só depois das seis** |
-| **2b · IRA sobre DRC** | §6: quatro saídas — IRA isolada · DRC sem agudização · IRA sobre DRC · **indeterminada** | ✅ existe (`sobre_drc`, `drc_pistas`, `cronico_agudizado`, `drc_sem_agudizacao`, `indeterminado`) |
-| **3 · estágio** | §5: calcular quando houver dados · **explicar qual critério determinou o estágio** · informar quando insuficiente · não presumir basal · não inventar diurese | ✅ existe, e **melhor do que a especificação pede**: o `derive` devolve os dois eixos por extenso (*"Eixo creatinina: estágio 2 (2,1× a base)"* · *"Eixo diurese: 0,42 mL/kg/h por 8 h"*) |
-| **3b · diurese por peso** | §5 | ✅ já é `mL/kg/h` com peso e horas — **não existe `30 mL/h` fixo em lugar nenhum** |
-
-**Conclusão da leitura:** falta **uma tela** (a etapa 1) e falta **transformar o
-card 0 em passo**. Todo o resto das etapas 0–3 já está escrito e funcionando —
-**no lugar errado da fila, não ausente.**
-
-⚠️ **E há uma coisa que a especificação pede e ninguém notou que falta:** §5 pede
-*"valores anteriores e intervalo entre eles"*. O app coleta creatinina atual e
-basal, **mas não o intervalo entre as duas medidas** — que é o dado da D-93 (o
-tempo de instalação). É a mesma lacuna que apareceu no sódio e na hipercalcemia,
-pela terceira vez.
-
----
-
-## §3 · O PLANO DE TELAS — uma linha por decisão
-
-| # | tela | a decisão que ela toma | origem |
+| # | tela | a decisão que ela toma | estado |
 |---|---|---|---|
-| **0** | **Está instável agora?** | via aérea, respiração, circulação, consciência → estabilizar antes, ou seguir | ⚠️ **novo como passo**; o conteúdo é o card que já existe |
-| **1** | **O que fez você pensar em rim?** | situa o caso e escolhe por onde entrar | ⚠️ **nova**; conteúdo da §2 da especificação, com **"não sei, me ajude a entender o que estou vendo"** |
-| **2** | **As seis, uma por vez** | há ameaça à vida agora? | ✅ **existe** (`e1`…`e6`) — muda só a porta |
-| 2·atalho | **Já sei qual é** | pula para a emergência reconhecida | ✅ existe (`atalhos`) — **vira saída secundária**, sai da entrada |
-| **3** | **Isto é IRA?** | creatinina, basal, diurese, peso, tempo | ✅ existe (`dados_do_caso`) |
-| **3b** | **Basal desconhecida** | estimar (MDRD eGFR 75, na ausência de DRC) ou seguir sem estadiar | ✅ existe (`sem_base`, D-65) |
-| **4** | **É IRA sobre DRC?** | quatro saídas, com a indeterminada | ✅ existe (`sobre_drc`) |
-| **5** | **Qual o estágio?** | KDIGO 1/2/3 pelos dois eixos, calculado | ✅ existe (`estagio_kdigo`) |
-| **6** | **Há obstrução?** | descartar o pós-renal primeiro | ✅ existe (`obstrucao_check`) |
-| **7** | **Volemia e perfusão** | hipovolemia · vasoplegia · congestão · baixo débito · **incerto** | ✅ existe (`volume_check`, `vol_dados`) |
-| **8** | **Nefrotóxicos** | suspender e reajustar | ✅ existe (`nefrotoxico_check`) |
-| **9** | **Precisa de TRS?** | indicação, e quem decide | ✅ existe (`trs_check`) |
-| **10** | **Reavaliação e destino** | o que medir, quando, quem chamar | ✅ existe (`seguimento`, `destino_*`) |
+| **0** | **ABCDE — como está o paciente agora?** | via aérea · respiração · circulação · consciência → tratar a ameaça, ou seguir | ⚠️ **nova como PASSO**; hoje é card que se rola por cima |
+| **0b** | **Tratar a ameaça** | qual ameaça, e para onde ir | ✅ existe: os seis atalhos do card (parada · via aérea · ventilação · choque · bradi · taqui) |
+| **1** | **Motivo de entrada / apresentação clínica** | situa o caso pelas oito | ⚠️ **nova**; as oito são do autor, literais |
+| **2** | **Triagem das ameaças renais imediatas** | as seis, uma a uma, por sinal observável, com "não sei" em cada | ✅ existe (`e1_hipercalemia` … `e6_anuria`) |
+| 2·atalho | **Já sei qual é** | pula para a emergência reconhecida | ✅ existe (`atalhos`) — **sai da entrada, vira saída secundária** |
+| **3** | **Há IRA?** | creatinina atual e prévia · **intervalo entre as medidas** · diurese · basal | ✅ existe (`dados_do_caso`) · ⚠️ **falta o intervalo** |
+| **3b** | **Basal desconhecida** | estimar (D-65) ou seguir sem estadiar | ✅ existe (`sem_base`) |
+| **3c** | **DRC prévia?** | IRA isolada · DRC sem agudização · IRA sobre DRC · indeterminada | ✅ existe (`sobre_drc`, `drc_pistas`) |
+| **3d** | **Estágio KDIGO** | 1, 2 ou 3 — calculado, não perguntado | ✅ existe (`estagio_kdigo`) |
+| **4** | **Mecanismo / causa** | obstrução · perfusão e volemia · nefrotóxicos · intrínseca | ✅ existe (`obstrucao_check`, `volume_check`, `vol_dados`, `nefrotoxico_check`) |
+| **5** | **Conduta específica** | por ameaça, causa e estágio | ✅ existe (`trata_*`, `pre_renal`, `congesto_conduta`, `renal_conduta`, `trs_check`) |
+| **6** | **Reavaliar resposta** | **melhorou · não respondeu · piorou · surgiram dados novos** | ⚠️ **nova como DECISÃO**; hoje `seguimento` é ação que diz o que vigiar, sem as quatro saídas |
 
-**Telas novas: 2.** Telas que só mudam de posição: 1 (o atalho). O resto fica
-como está.
+**Telas novas: 3** (0, 1 e 6). Uma muda de posição (o atalho). O resto fica.
 
 ---
 
-## §4 · A CONTAGEM DE BLOCOS ATÉ A PRIMEIRA DECISÃO — hoje
+## §2 · A TENSÃO ENTRE AMEAÇA E APRESENTAÇÃO — três formas, e eu não decido
 
-`npm run medir:blocos`
+**A tensão, literal:** no fluxo do renal a instabilidade é o passo **0** e o
+motivo de entrada é o **1**. Na regra dos 31, *"o que tenho na minha frente"* vem
+**antes** de *"há ameaça imediata"*. Em telas, é uma ordem só.
 
+### Forma A · Portão binário antes da apresentação
+
+*"Há ameaça imediata à vida?"* → [Sim, tratar agora] [Não] [Não sei]
+
+⚠️ **Contra:** pede exatamente o tipo de julgamento que o autor reprovou na porta
+de entrada. *"Há ameaça imediata"* é conclusão, não observação — e quem não sabe
+o que está vendo não sabe responder. **É o defeito do "qual das seis" com outro
+nome.**
+
+### Forma B · Apresentação primeiro, portão sempre alcançável no topo
+
+⚠️ **Contra:** é o que existe hoje. O portão vira banner, e banner se rola por
+cima — foi exatamente a queixa.
+
+### Forma C · ⚠️ RECOMENDADA — o passo 0 pergunta o que se VÊ, não o que se conclui
+
+Uma tela, opções observáveis, sem exigir raciocínio anterior:
+
+> **Como está o paciente agora?**
+> · Respirando mal, saturando baixo ou com esforço
+> · Rebaixado, confuso ou não responde bem
+> · Pressão baixa, mal perfundido, pele fria
+> · Ritmo muito lento ou muito rápido
+> · **Nenhuma dessas — está conversando e estável por enquanto**
+> · **Não sei dizer — me ajude a olhar**
+
+Quem marca qualquer uma das quatro primeiras vai para o atalho de estabilização
+correspondente **e volta**. Quem marca "nenhuma dessas" segue para o motivo de
+entrada. O **"não sei"** abre o ABCDE item a item.
+
+**Por que ela resolve a tensão:** a pergunta é *"o que tenho na minha frente"* —
+**e a resposta já é a triagem de ameaça**. As duas acontecem juntas, como na
+prática, porque a pergunta é observacional dos dois lados. Não há ordem a
+escolher: há uma tela que faz as duas coisas.
+
+**Custo:** um toque a mais para o paciente estável — o caso comum. É o mesmo
+preço que a varredura das seis já paga, e pelo mesmo motivo.
+
+⚠️ **O que a Forma C exige e eu não tenho:** o texto das quatro linhas de
+observação. Escrevi-as acima **como forma, não como conteúdo** — elas precisam
+sair da especificação ou do autor. É a diferença entre propor a estrutura e
+inventar clínica.
+
+---
+
+## §3 · A SEPARAÇÃO — o que existe · o que sai da especificação · o que falta
+
+### Etapa 0 · ABCDE operacional
+
+| | |
+|---|---|
+| **existe** | os seis atalhos de estabilização (`StabilizationFirstCard`): parada · via aérea · ventilação mecânica · choque/vasopressor · bradicardia instável · taquicardia instável. **O destino de cada ameaça já está pronto** |
+| **sai da especificação** | §4: *"instabilidade hemodinâmica/choque · rápida deterioração clínica"* entre as situações a identificar no início |
+| ⚠️ **falta** | **as frases observacionais** da Forma C ("respirando mal…", "rebaixado…"). O card de hoje lista **módulos de destino**, não **sinais**. Transformar "Via aérea / IOT (ISR)" em "respirando mal, saturando baixo" **é escrever conteúdo clínico novo** — e não está na especificação |
+
+### Etapa 1 · Motivo de entrada
+
+| | |
+|---|---|
+| **existe** | nada. Não há tela |
+| **sai do autor, literal** | as oito: oligúria/anúria · creatinina elevada ou em ascensão · distúrbio eletrolítico · sobrecarga volêmica · acidose · paciente crítico com risco de IRA · alteração renal incidental · **"Ainda não sei — me ajude a identificar o problema."** |
+| ⚠️ **falta** | **para onde cada uma das oito leva.** O autor deu a lista; o roteamento é decisão de fluxo. Sete têm destino óbvio dentro do que já existe; **"ainda não sei" não tem** — e é justamente a que importa |
+
+### Etapa 6 · Reavaliar resposta
+
+| | |
+|---|---|
+| **existe** | `seguimento` (o que vigiar, com a tendência), `destino_monitorizado`, `destino_suporte`, `acionar`. **O conteúdo do que medir e de quando chamar está escrito** |
+| **sai da especificação** | §12 (reavaliar resposta) e §13 (destino, monitorização, seguimento) |
+| ⚠️ **falta** | **a decisão com as quatro saídas.** Hoje `seguimento` é `action`: informa e segue para o destino. As quatro — melhorou · não respondeu · piorou · surgiram dados novos — **não existem como opções**, e cada uma precisa de destino: para onde volta quem piorou? Reentra na triagem das seis? Isso é **desenho de fluxo com consequência clínica**, e é do autor |
+
+---
+
+## §4 · A ESTRUTURA DA D-93 — sem número
+
+Autorizada como **campo reutilizável**. Três usos, um campo: cálcio (velocidade
+de elevação) · sódio (aguda × crônica) · creatinina (valor prévio e intervalo).
+
+```ts
+/**
+ * ⚠️ ESTRUTURA SEM CLÍNICA DENTRO. Nenhum limiar de tempo, nenhuma velocidade de
+ * correção, nenhum número — quem os fornece é o módulo que a consome, com fonte.
+ */
+export type MedidaAnterior = {
+  /** O valor de antes, na unidade DO CAMPO (R-119). */
+  valor: number;
+  unidade: UnidadeDeCampo;
+  /** Quando foi medido — o dado que o app nunca teve. */
+  medidaEm: { tipo: "horasAtras"; horas: number } | { tipo: "dataHora"; iso: string };
+};
+
+export type TempoDeInstalacao =
+  | { tipo: "conhecido"; anterior: MedidaAnterior }
+  /** Sabe-se que é antigo, sem valor anterior à mão. */
+  | { tipo: "previo_sem_valor" }
+  /** ⚠️ O caso mais comum à beira do leito. */
+  | { tipo: "indeterminado" };
+
+/** O intervalo é DERIVADO — nunca perguntado nem digitado. */
+export function intervaloEmHoras(t: TempoDeInstalacao, agoraIso: string): number | null;
+
+/** O "não sei" ensina onde procurar, em vez de escolher pelo médico. */
+export const ONDE_ACHAR_A_MEDIDA_ANTERIOR: string[];
 ```
-1. Header (título do módulo + voltar)
-2. Barra de retomada — «Você estava aqui»      ⟨só se houver percurso anterior⟩
-3. Card «Estabilização primeiro (ABCDE)»
-4. Faixa «peso não aferido»                     ⟨só se o peso for estimado⟩
-5. Descrição do módulo (texto + «ver mais»)     ⟨só no passo 1⟩
-6. Chip «Passo N» + trilha
-7. ⟵ AQUI a primeira decisão
 
-BLOCOS ATÉ A PRIMEIRA DECISÃO: 3 sempre · 6 no pior caso
-DENTRO do card: title + question + summary + 2 linhas de evidência, antes de 2 botões
-```
+⚠️ **O que ela NÃO traz, de propósito:** nenhum corte de "agudo × crônico",
+nenhuma velocidade de correção, nenhuma faixa. A regra de que
+`indeterminado` deve ser tratado como o cenário mais cauteloso está **proposta**
+em `PROPOSTA-TEMPO-DE-INSTALACAO.md` e **é clínica** — não entra no campo.
 
-⚠️ **O pior caso é o primeiro acesso do dia com peso estimado — que é o caso
-comum à beira do leito**, não a exceção.
-
-E dentro do card, **a pergunta aparece duas vezes**: no `title` (*"Você já sabe
-qual das seis é?"*) e no `question` (*"Escolha por onde começar…"*). Mais o
-`summary` (*"Antes de investigar, trate o que ameaça a vida"*), que **repete o
-card de estabilização** que está logo acima.
+⚠️ **E `ONDE_ACHAR_A_MEDIDA_ANTERIOR` está vazio até o autor escrever.** "Exame
+anterior no prontuário, internação prévia" é plausível e **seria invenção
+minha**.
 
 ---
 
-## §5 · O QUE SAI DA TELA E VAI PARA O «POR QUE ISTO»
+## §5 · O TESTE QUE TODA TELA NOVA PRECISA PASSAR
 
-Medido: **9 literais** com linguagem de PROCESSO na árvore renal.
+Do autor, ao corrigir a minha tela 1:
 
-**Saem para o "Por que isto" (ou só para o arquivo de procedência):**
+> *"'O que fez pensar em rim?' ainda pressupõe que alguém já pensou em rim."*
 
-1. *"Nenhuma diretriz de hipercalemia está citada no repositório. A UKKA aguda existe e NÃO recomenda diurético de alça; a KDIGO não tem diretriz de hipercalemia, só relatório de conferência."*
-2. *"⚠️ FORÇA NÃO INFLADA: o grau que a diretriz dá a ESTE trecho não foi conferido no documento…"*
-3. *"⚠️ FORÇA NÃO INFLADA: revisão nomeada sustenta a dose como prática aceita… Verbatim em protocols/fontes-verbatim/riccardi-2025-ira-uti.md…"*
-4. *"A exceção literal da mesma 3.4.2… Verbatim em protocols/fontes-verbatim/kdigo-2012-aki.md."*
+> **A pergunta exige que a pessoa já saiba a resposta de algo anterior? Se exige,
+> está errada.**
 
-**À beira do leito, o que resta na tela é uma linha:** a força e a fonte, curtas
-— *"prática aceita · UKKA 2023"*. O que o app **não** tem, o que **outra**
-diretriz diz e por que a fonte X não serve é registro de auditoria.
+⚠️ **Apliquei o teste às três telas novas deste plano:**
 
-**FICAM na tela** (são conduta, não processo):
-
-- *"Este app não escolhe dose de bicarbonato — isso é do contexto e do serviço."*
-- *"Este app não escolhe modalidade, dose nem momento de diálise — isso é do nefrologista e do serviço."*
-- *"Este app não conduz a síndrome hepatorrenal — reconhecê-la é o que faz chamar quem conduz."*
-- *"⚠️ ENQUANTO A DIÁLISE NÃO CHEGA, o que sustenta o paciente é o que este app sabe fazer…"*
-
-⚠️ **A diferença entre os dois grupos:** o primeiro fala do **repositório**; o
-segundo fala do **limite do app diante do paciente** — e esse limite é conduta:
-diz ao médico que chamar alguém é o próximo passo.
-
----
-
-## §6 · OS DEFEITOS DE ESTRUTURA, E O QUE FAZER COM CADA UM
-
-| # | defeito | proposta |
-|---|---|---|
-| 1 | a pergunta aparece no chip do passo **e** no título | o chip mostra só `Passo N` + o nome curto da etapa; a pergunta fica só no título |
-| 2 | dois cards de DECISÃO CLÍNICA na mesma tela | uma decisão por tela — regra do projeto, e a entrada nova já resolve |
-| 3 | quatro blocos antes da primeira decisão | a retomada já é condicional; **a descrição do módulo colapsa por padrão** e o `summary` da entrada sai |
-| 4 | banner de estabilização **e** *"Antes de investigar, trate o que ameaça a vida"* dizem o mesmo | fica **uma**, e ela vira o **passo 0** |
-| 5 | a lista das seis aparece antes de a pessoa decidir | sai da entrada; vira as perguntas do passo 2 |
-
----
-
-## §7 · O QUE EU NÃO VOU FAZER SEM RESPOSTA
-
-1. **A ordem das seis** (§1) — contraria a especificação, e a especificação é do
-   autor.
-2. **O texto da tela 1** — as oito situações de entrada estão na especificação,
-   mas **o texto exato do "não sei, me ajude a entender o que estou vendo"** é
-   clínico e é dele.
-3. **O intervalo entre as creatininas** (§2) — é a D-93 pela terceira vez, e a
-   forma já está proposta em `auditoria/PROPOSTA-TEMPO-DE-INSTALACAO.md`, sem
-   "pode aplicar".
+- **Tela 0 (Forma C):** *"Como está o paciente agora?"* → passa. É observação.
+- **Tela 0 (Forma A):** *"Há ameaça imediata à vida?"* → **reprova.** É conclusão.
+- **Tela 1:** *"Motivo de entrada / apresentação clínica"* → passa.
+- **Tela 6:** *"O paciente melhorou?"* → passa **se** as opções forem
+  observáveis (diurese subiu, creatinina caiu, continua igual). **Reprova** se
+  perguntar *"respondeu ao tratamento?"*, que é julgamento.

@@ -6715,3 +6715,31 @@ progressão**, *"não são limites absolutos nem recomendação graduada"*.
 ⚠️ Sem a terceira espécie, o número **vira corte** — porque é o único lugar onde
 cabe. Forma proposta em `auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md`, e
 a metade da trava que a protege **já existe e já foi provada** (M91).
+
+## R-121 — A ESPINHA DE TODO MÓDULO (a regra dos 31)
+
+Decisão do autor, 2026-08-23 — e ela é maior que o módulo em que nasceu:
+
+> **Todo módulo começa em "o que tenho na minha frente?", depois "há ameaça
+> imediata?", depois "qual síndrome é essa?", e só então entra em diagnóstico
+> fino e tratamento específico.**
+
+Quando o motor dos módulos for construído, **é este o esqueleto**, e cada um dos
+31 preenche as quatro camadas com o seu conteúdo.
+
+### ⚠️ O TESTE QUE TODA TELA PRECISA PASSAR
+
+Do mesmo autor, ao recusar a minha formulação *"o que fez pensar em rim?"*:
+
+> *"ainda pressupõe que alguém já pensou em rim."*
+
+> **A pergunta exige que a pessoa já saiba a resposta de algo anterior? Se exige,
+> está errada.**
+
+A diferença parece pequena e é grande: *"o que fez pensar em rim"* pede uma
+**hipótese**; *"motivo de entrada / apresentação clínica"* pede **o que está
+acontecendo**. Uma exige que o usuário já tenha raciocinado; a outra aceita que
+ele ainda não.
+
+⚠️ É o mesmo defeito de *"qual das seis é?"*, de *"há emergência agora?"* e do
+campo que pedia "cálcio" sem dizer qual — **em escala de módulo inteiro**.

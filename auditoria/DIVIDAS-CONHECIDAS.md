@@ -3787,3 +3787,19 @@ Forma proposta em `auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md` (R-120).
 (M91) — hoje com a lista escrita à mão; com o campo, ela passa a ser derivada.
 
 </details>
+
+## D-100 — O MENU JÁ PRESSUPÕE O DIAGNÓSTICO SINDRÔMICO
+
+Registrada em 2026-08-23. ⚠️ **Não começar** — é assunto de outra fase.
+
+A regra dos 31 (R-121) diz que todo módulo começa em *"o que tenho na minha
+frente?"*. Mas o app só chega ao módulo **depois** de a pessoa escolher
+"Injúria renal aguda" no menu — ou seja, **a escolha do módulo já pressupõe o
+diagnóstico sindrômico**.
+
+> Para quem não sabe o que está vendo, **o beco não está no passo 1: está no
+> menu.**
+
+Isso pede uma **entrada por apresentação clínica no nível do app inteiro** — o
+mesmo teste do R-121 aplicado à porta da frente. Alvo: decisão do autor sobre
+quando abrir essa fase.
