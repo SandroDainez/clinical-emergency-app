@@ -3538,7 +3538,30 @@ mutação M79.
 decisão do autor, escolher iônico faz a tela dizer que **não classifica por
 número** — em vez de aplicar nele um corte que não é dele.
 
-## D-89 — O MODELO DE GRAVIDADE SÓ SABE NÚMERO
+## D-89 — O MODELO DE GRAVIDADE SÓ SABIA NÚMERO — ✅ ESTRUTURA APLICADA (2026-08-23)
+
+**Aprovado pelo autor e aplicado:** `CorteDeGravidade` ganhou `faixa` (dois
+lados), `clinico` (critério sem número, com procedência) e `combinado` (faixa +
+clínico, com a `ligacao` escrita por extenso). A hipocalcemia grave passou a ser
+`combinado … ligacao: "ou"`, que é o que a fonte escreveu.
+
+**Três conferências na trava** (`test:gravidade-eletrolitica`): todo critério
+clínico COM TEXTO chega à tela · `combinado` declara a ligação · critério clínico
+sem procedência reprova. Mais a quarta, que é o alvo da mutação M80: a
+hipocalcemia grave não pode voltar a classificar só por número.
+
+⚠️ **O CONTEÚDO CONTINUA PENDENTE, e é a parte que importa:** o degrau
+sintomático existe com `texto: ""`. Critério sem texto **nunca casa** — a tela
+não classifica por ele e nada mudou para o usuário. A lista de sintomas é
+afirmação clínica e é do autor (pergunta 6). Quando ele preencher, o degrau passa
+a valer **sem tocar em código de tela**.
+
+⚠️ **Universo hoje: 1 critério clínico, 0 com texto.** A conferência (1) existe e
+não tem o que conferir — dito de propósito, porque regra silenciosa com universo
+vazio é o falso verde que o R-101 persegue.
+
+<details><summary>o registro original</summary>
+
 
 A fonte de hipocalcemia tem *"sintomas em qualquer valor abaixo da referência"* —
 critério **sem número** — e a de hipercalcemia tem uma faixa que é
@@ -3551,3 +3574,5 @@ fonte tem critério e o modelo só sabe número — e modelo que só aceita núm
 
 **Proposta escrita e NÃO aplicada** em `auditoria/PROPOSTA-CRITERIO-NAO-NUMERICO.md`,
 com a trava e a mutação previstas. Alvo: "pode aplicar" do autor.
+
+</details>

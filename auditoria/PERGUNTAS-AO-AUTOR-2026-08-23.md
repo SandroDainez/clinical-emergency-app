@@ -95,16 +95,37 @@ o lugar delas é decidir **o que auditar** — escopo, não conserto.
 
 ---
 
-## 6 · Qual cálcio o app passa a pedir?
+## 6 · Cálcio — proposta a confirmar
 
-O campo agora pergunta **qual** cálcio (iônico · total com albumina · não sei), e
-gravidade e dose passaram a usar **o mesmo**. Faltam duas decisões suas:
+⚠️ **A pergunta anterior estava mal feita** e foi reescrita: ela pedia "os cortes
+do iônico", um número que provavelmente não existe em diretriz — a mesma
+armadilha da "referência-base única" que o senhor já recusou uma vez.
 
-> **a)** O arranjo está certo — **iônico preferencial, com fallback para
-> total+albumina**? Ou outro?
-> **b)** Se adotar o iônico: **quais são os cortes dele?** (a escala é mmol/L, e
-> eu não os escolhi — hoje a tela diz que não classifica por número quando o
-> médico informa iônico)
+**O que a fonte diz muda o arranjo:** a Society for Endocrinology escreve
+*"grave: < 1,9 mmol/L **e/ou sintomas em qualquer valor abaixo da referência**"*.
+Ou seja, **o critério que decide conduta na hipocalcemia é o SINTOMA** — e
+sintoma é igual nos três ensaios (total, ajustado, iônico).
+
+**Proposta:** o app pergunta **primeiro** se há sintoma. Havendo, trata como
+grave qualquer que seja o ensaio e o valor. Não havendo, o número orienta
+conforme o ensaio informado.
+
+> **1.** Confirma esse arranjo?
+> **2.** Qual a **lista de sintomas** que entra na pergunta?
+> *(proposta, para o senhor cortar ou acrescentar: parestesia peribucal e de
+> extremidades, cãibra, tetania, Chvostek/Trousseau, laringoespasmo, convulsão,
+> QT longo/arritmia)*
+> **3.** Para o **iônico**: prefere corte próprio (e de qual fonte) ou **sem
+> corte**, deixando o ramo sintomático e a referência do laboratório
+> responderem?
+>
+> ⚠️ **"Sem corte, com o critério clínico no lugar" é resposta legítima** — e é
+> o que evita repetir o erro de pedir número onde não há.
+
+**A estrutura já está pronta e vazia:** o degrau sintomático existe em
+`lib/eletrolitos/gravidade.ts` com `texto: ""`. Enquanto estiver vazio ele
+**nunca casa** e nada muda na tela. Quando o senhor preencher, ele passa a valer
+sem tocar em código de tela.
 
 ## 7 · A faixa intermediária da hipercalcemia
 

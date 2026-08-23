@@ -86,6 +86,48 @@ if (comparacoes.length) erro(`getSeveritySummary voltou a classificar por númer
 const restantes = [...tela.matchAll(/\bcurrent\s*(?:<|>|<=|>=|===|!==)\s*-?\d/g)].length;
 console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente, fora da gravidade: ${restantes} (D-84)`);
 
+// ── 3b. O CRITÉRIO QUE NÃO É NÚMERO — as três conferências
+//
+// ⚠️ POR QUE ELAS EXISTEM: a fonte da hipocalcemia diz "grave: < 1,9 mmol/L
+// E/OU sintomas em qualquer valor abaixo da referência". Um modelo que só sabe
+// número apaga a segunda metade — e apagar a segunda metade foi como se chegou a
+// "grave é abaixo de X" onde a fonte nunca escreveu X sozinho.
+{
+  const todos = [];
+  const achatar = (c) => { todos.push(c); if (c.tipo === "combinado") { achatar(c.faixa); achatar(c.clinico); } };
+  for (const d of disturbios) for (const g of G.GRAVIDADE_POR_DISTURBIO[d]) g.cortes.forEach(achatar);
+
+  const clinicos = todos.filter((c) => c.tipo === "clinico");
+  const pendentes = clinicos.filter((c) => !c.texto.trim());
+  const ativos = clinicos.filter((c) => c.texto.trim());
+  console.log(`  critérios clínicos: ${clinicos.length} (${ativos.length} com texto · ${pendentes.length} PENDENTES, estrutura sem conteúdo)`);
+
+  // (1) TODO CLÍNICO COM TEXTO CHEGA À TELA. ⚠️ Hoje o universo de ativos é 0 —
+  // a regra existe e não tem o que conferir, e isto sai impresso de propósito:
+  // regra silenciosa com universo vazio é o falso verde que o R-101 persegue.
+  for (const c of ativos)
+    if (!tela.includes(c.texto))
+      erro(`critério clínico não chega à tela: « ${c.texto.slice(0, 60)} » — degrau com critério clínico não pode ser renderizado só pelo número`);
+
+  // (2) `combinado` DECLARA A LIGAÇÃO, e ela é escrita, não inferida.
+  for (const c of todos.filter((x) => x.tipo === "combinado"))
+    if (c.ligacao !== "e" && c.ligacao !== "ou")
+      erro(`combinado sem ligação declarada: "e" e "ou" mudam a conduta e não se deduzem do texto da fonte`);
+
+  // (3) CRITÉRIO CLÍNICO SEM PROCEDÊNCIA REPROVA, como já vale para o numérico.
+  for (const c of clinicos)
+    if (!c.procedencia?.alvo || c.procedencia.alvo.trim().length < 20)
+      erro(`critério clínico sem alvo de procedência: « ${(c.texto || "(pendente)").slice(0, 40)} »`);
+
+  // (4) E O CASO QUE A FONTE NOMEIA: a hipocalcemia grave TEM critério clínico.
+  // ⚠️ É esta linha que a mutação prevista derruba — apagar o `clinico` faz o
+  // degrau voltar a classificar só por número, que é o defeito de origem.
+  const grave = G.GRAVIDADE_POR_DISTURBIO.hypocalcemia[0];
+  const temClinico = JSON.stringify(grave.cortes).includes('"clinico"');
+  if (!temClinico)
+    erro("hipocalcemia grave voltou a classificar SÓ por número — a fonte diz «< 1,9 mmol/L E/OU sintomas em qualquer valor abaixo da referência», e a segunda metade sumiu");
+}
+
 // ── 4b. UM CÁLCIO SÓ — gravidade e dose leem o MESMO valor
 //
 // ⚠️ O DEFEITO QUE ISTO IMPEDE JÁ ACONTECEU, e era erro clínico ativo: a tela

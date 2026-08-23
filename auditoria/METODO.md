@@ -6460,3 +6460,31 @@ eletrólitos", como se existisse uma. **Ela não existe** — e responder à per
 errada teria produzido um selo único cobrindo doze distúrbios com origens
 diferentes. Fonte por afirmação, sempre; e "não há cutoff formal" é uma resposta
 legítima, que se escreve.
+
+## R-97 (segunda metade) — O BURACO EXISTIA PORQUE O MODELO SÓ SABIA DIZER NÚMERO
+
+O R-97 diz que **tirar um número deixa buraco, e buraco pede número**. Faltava a
+outra metade, e ela explica *por que* o buraco existia:
+
+> **O modelo não sabia dizer outra coisa.** Uma estrutura que só aceita número
+> OBRIGA a inventar número — e foi assim que se chegou a "grave é abaixo de X"
+> onde a fonte nunca escreveu X sozinho.
+
+O caso que mostrou (2026-08-23): a Society for Endocrinology escreve *"grave:
+cálcio < 1,9 mmol/L **e/ou sintomas em qualquer valor abaixo da referência**"*.
+A segunda metade não cabia em `CorteDeGravidade`, e por isso não existia na tela.
+**A fonte já subordinava o número ao quadro, e o modelo apagou a subordinação.**
+
+⚠️ E a consequência prática, que é o oposto do que se espera de "ser honesto":
+sem o critério clínico, quem informava **cálcio iônico** — o melhor exame —
+recebia *"os cortes não estão definidos aqui"* e parava. **Quem tinha o melhor
+dado recebia a pior resposta.** O ramo sintomático desfaz o beco sem escolher
+corte nenhum, porque **sintoma é igual nos três ensaios**.
+
+**A regra:** quando a fonte escrever critério sem número, o modelo aprende a
+dizê-lo — não se converte o critério em número para caber. E a ligação entre
+número e critério (`e` × `ou`) vai **por extenso**, nunca inferida da prosa.
+
+⚠️ Isto **serve o app inteiro**, não só os eletrólitos: toda vez que uma fonte
+escreveu "conforme o quadro clínico" e o app precisou de um número para caber no
+modelo, foi este buraco. Procurar os outros é medição de uma rodada futura.
