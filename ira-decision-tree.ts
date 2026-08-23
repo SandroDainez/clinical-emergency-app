@@ -459,21 +459,25 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       // ⚠️ AFIRMAÇÃO SOBRE DESEMPENHO DE TESTE, não sobre conduta — por isso
       // prática aceita, e não recomendação. A citação NÃO foi transcrita: a
-      // pendência de fonte tem alvo nomeado e aparece NA TELA, porque um selo
-      // que cita fonte inexistente é pior que selo nenhum (D-67).
+      // ✅ D-67 FECHADA em 2026-08-23: o verbatim está em
+      // protocols/fontes-verbatim/ukka-2023-hipercalemia.md, transcrito pelo
+      // autor. A força NÃO subiu junto — ver contextoDaFonte.
       procedencia: {
         forca: "pratica_aceita",
-        fonte: "⚠️ PENDÊNCIA DE FONTE — alvo: UKKA 2023, a frase sobre sensibilidade do ECG na hipercalemia. NÃO transcrita para este repositório.",
-        tipoDeDocumento: "Prática aceita — citação ainda não transcrita",
+        fonte: "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., outubro de 2023): sensibilidade média do ECG 0,19 ± 0,16 e especificidade 0,97 ± 0,04; alterações em ~66% com K ≥ 6,5 mmol/L.",
+        tipoDeDocumento: "Diretriz de sociedade — desempenho de teste",
+        contextoDaFonte:
+          "⚠️ FORÇA NÃO INFLADA: o grau que a diretriz dá a ESTE trecho não foi conferido no documento, e por isso a afirmação segue como prática aceita COM o documento nomeado, não como recomendação graduada. Verbatim em protocols/fontes-verbatim/ukka-2023-hipercalemia.md, transcrito pelo autor em 2026-08-23.",
       },
       title: "ECG normal não exclui — siga e cobre o exame",
-      summary: "A sensibilidade do ECG para hipercalemia é baixa.",
+      summary: "ECG normal NÃO exclui hipercalemia grave.",
       actions: [
         "Siga para a próxima emergência — não pare a verificação aqui.",
         "Cobre o potássio da gasometria: ele é quem confirma ou afasta.",
       ],
       porque: [
         "⚠️ Existe potássio letal com ECG normal. Um traçado sem alteração muda pouco a probabilidade e não autoriza tranquilidade.",
+        "O ECG CONFIRMA, NÃO EXCLUI: sensibilidade média 0,19 e especificidade 0,97 (UKKA 2023). Alteração presente diz muito; alteração ausente diz pouco — e alterações só aparecem em cerca de 2 de cada 3 pacientes com K ≥ 6,5 mmol/L.",
       ],
       next: "e2_choque",
     },
@@ -1578,19 +1582,42 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Mal perfundido e cheio de água — volume não é a resposta",
       summary: "⚠️ Aqui o problema é DÉBITO ou DISTRIBUIÇÃO, não falta de volume.",
       actions: [
+        // ⚠️ A INDICAÇÃO VEM ANTES DA DOSE, e não é enfeite: esta é a tela que
+        // prescreve, e a declaração de procedência da KDIGO cobre ESTA linha.
+        // Declaração que cobre afirmação ausente da tela é selo solto — foi o
+        // que a trava acusou quando eu escrevi a declaração sem pôr a frase.
+        ALCA_QUANDO_HA_SOBRECARGA,
         DOSE_ALCA_DESCONGESTAO,
         DOSE_ALCA_ESCALADA,
         "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir essa situação.",
         "Se a causa é cardíaca, procure a causa da descompensação — isquemia, arritmia, má adesão.",
         "Se há cirrose com ascite e creatinina subindo sem outra causa, pense em síndrome hepatorrenal.",
       ],
+      // ⚠️ DUAS AFIRMAÇÕES, DUAS FONTES, DUAS FORÇAS (regra B). A INDICAÇÃO do
+      // diurético e a DOSE dele não vêm do mesmo documento e não têm o mesmo
+      // peso — e o selo anterior dizia `recomendacao_formal` para as duas, com
+      // uma fonte de INSUFICIÊNCIA CARDÍACA sustentando dose num módulo de rim.
+      // Importar a faixa de IC sem dizer que a fonte é de IC é transposição, e
+      // foi por isso que a D-71 segurou este ramo fora do fluxo.
       procedencia: {
-        forca: "recomendacao_formal",
-        fonte: "ESC 2021 — insuficiência cardíaca aguda e crônica",
-        classeOuGrau: "recomendação de descongestão",
+        forca: "pratica_aceita",
+        fonte: "Riccardi M, Pagnesi M, Lombardi CM, Metra M. Severe acute kidney injury in the intensive care unit: step-to-step management. Eur Heart J Acute Cardiovasc Care. 2025;14:618–630.",
+        tipoDeDocumento: "revisão de manejo em periódico de sociedade — não é diretriz graduada",
         contextoDaFonte:
-          "⚠️ É fonte de DESCONGESTÃO, não de hipercalemia — e é por isso que a dose mora aqui, no ramo congesto, e não na tela do potássio.",
+          "⚠️ FORÇA NÃO INFLADA: revisão nomeada sustenta a dose como prática aceita, nunca como recomendação graduada. Verbatim em protocols/fontes-verbatim/riccardi-2025-ira-uti.md. ⚠️ A faixa 40–80 mg NÃO foi usada: ela tem suporte em consenso de insuficiência cardíaca, e trazê-la para o módulo de IRA sem dizer que a fonte é de IC seria transposição (decisão do autor, 2026-08-23).",
       },
+      declaracoes: [
+        {
+          afirmacao: ALCA_QUANDO_HA_SOBRECARGA,
+          procedencia: {
+            forca: "recomendacao_formal",
+            fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 3.4.2",
+            classeOuGrau: "2C",
+            contextoDaFonte:
+              "A exceção literal da mesma 3.4.2: não usar diuréticos para TRATAR a IRA, EXCETO no manejo da sobrecarga de volume. Verbatim em protocols/fontes-verbatim/kdigo-2012-aki.md.",
+          },
+        },
+      ],
       porque: [
         ...DOSE_ALCA_PORQUE,
         "Diurético trata a SOBRECARGA (é indicação legítima) e não trata o rim — a distinção importa porque tratar rim com furosemida é o erro mais comum deste cenário.",

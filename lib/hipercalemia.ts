@@ -214,7 +214,9 @@ export const HIPERCALEMIA_PSEUDO =
  *                                                      ⚠️ é de hipercalemia CRÔNICA
  *   uso agudo como adjuvante                           Rafique 2021, JACEP Open
  *                                                      ⚠️ consenso de painel
- *   dose e escalada                                    ESC 2021 (descongestão)
+ *   dose e escalada                                    Riccardi 2025 (EHJ-ACVC)
+ *                                                      ⚠️ revisão, não diretriz
+ *                                                      graduada → pratica_aceita
  *
  * ⚠️ A UKKA AGUDA NÃO RECOMENDA ALÇA no algoritmo hospitalar — o algoritmo dela
  * é cálcio, insulina-glicose, salbutamol, bicarbonato e ligantes. Não citar como
@@ -265,12 +267,31 @@ export const ALCA_REAVALIACAO =
  * já está dito por "20–40 mg" mais a palavra emergência.
  */
 export const DOSE_ALCA_DESCONGESTAO =
-  "Furosemida EV: sem uso prévio de alça, 20–40 mg — na emergência com hipervolemia, comece em 40. Em uso crônico de alça, DRC ou resposta reduzida, dose EV igual ou maior que a oral diária prévia.";
+  "Furosemida EV: sem uso prévio de alça, 40 mg. Em uso crônico de alça, dose EV inicial de 1 a 2× a dose oral diária equivalente prévia.";
 
 export const DOSE_ALCA_ESCALADA =
-  "Se a resposta for inadequada, DOBRE a dose — não some doses pequenas. Reavalie a diurese em 1 a 2 h.";
+  "Reavalie a resposta em 2 a 6 h. Se for inadequada, AUMENTE — geralmente dobrando; não some doses pequenas.";
+
+/**
+ * ⚠️ O TESTE DE ESTRESSE COM FUROSEMIDA NÃO É DOSE — e este bloco existe para
+ * que ele não vire uma.
+ *
+ * 1,0 mg/kg IV sem exposição prévia e 1,5 mg/kg com exposição prévia é
+ * **ferramenta prognóstica/funcional**: mede se o néfron responde. Aparece nas
+ * mesmas revisões que trazem a dose de descongestão, e é exatamente o tipo de
+ * número que MIGRA DE CONTEXTO SOZINHO — alguém copia e 1,5 mg/kg vira "dose
+ * alta de furosemida".
+ *
+ * Não está na tela. Se entrar um dia, entra com este rótulo e em card próprio.
+ * A constante fica aqui SEM SER EXPORTADA PARA A ÁRVORE de propósito: registra a
+ * distinção sem oferecer o número.
+ */
+const TESTE_DE_ESTRESSE_NAO_E_DOSE =
+  "Teste de estresse com furosemida (1,0 mg/kg IV sem exposição prévia; 1,5 mg/kg com exposição) é PROGNÓSTICO, não terapêutico — não é dose de congestão.";
+void TESTE_DE_ESTRESSE_NAO_E_DOSE;
 
 export const DOSE_ALCA_PORQUE = [
   "⚠️ A escalada é por DOBRA porque o efeito é de LIMIAR farmacodinâmico: 20 → 40 → 60 → 80 gasta tempo em degraus que não atingem o limiar, e quem já usa alça em casa tem o limiar mais alto.",
   "Esta dose é de DESCONGESTÃO. Não existe «dose de furosemida para hipercalemia», e o app não apresenta uma.",
+  "⚠️ NÃO É PARA «TRATAR A IRA», converter oligúria nem evitar a terapia de substituição renal — a indicação é a sobrecarga de volume, e só ela.",
 ];

@@ -92,7 +92,22 @@ export const DOMAINS: Domain[] = [
       // associação de vasopressina — esta tela ficou para trás. Mesma redação
       // das outras superfícies, de propósito.
       { label: "Vasopressor de 1ª escolha", value: "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM. A faixa é a HABITUAL, não um teto: acima de 1 mcg/kg/min é dose alta (marcador de gravidade, com saturação progressiva dos receptores alfa) e doses excepcionais de até ~3 mcg/kg/min estão documentadas em choque vasoplégico refratário, com monitorização invasiva e estratégia multimodal." },
-      { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5) — REFERÊNCIA DE PRÁTICA, NÃO É PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha. Considerar hidrocortisona 200 mg/dia se a dose se mantiver ≥ 0,25 por pelo menos 4 h.", alert: true },
+      // ⚠️ DUAS LINHAS, PORQUE SÃO DOIS CRITÉRIOS DE RECOMENDAÇÕES DIFERENTES.
+      //
+      // Estavam fundidos numa frase só, e a fusão é o defeito: o "0,25–0,5" e o
+      // "≥ 0,25 por ≥ 4 h" parecem o mesmo número dito duas vezes, e não são.
+      //
+      //   0,25–0,5 mcg/kg/min      → REMARK DE PRÁTICA DO PAINEL, noutra
+      //                              recomendação: quando o painel costuma
+      //                              INICIAR vasopressina.
+      //   ≥ 0,25 por ≥ 4 h         → RATIONALE da recomendação de CORTICOIDE:
+      //                              a definição operacional de "necessidade
+      //                              contínua" de vasopressor.
+      //
+      // Lidos juntos, o segundo vira portão do primeiro — que é exatamente o que
+      // nenhum dos dois diz.
+      { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — o painel costuma iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). ⚠️ REMARK DE PRÁTICA DO PAINEL, NÃO PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha — se a escalada já está evidente, não espere chegar a 0,5.", alert: true },
+      { label: "Considerar corticoide", value: "Hidrocortisona 200 mg/dia no choque séptico. ⚠️ CRITÉRIO DE OUTRA RECOMENDAÇÃO, e não é portão: noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é a definição operacional de necessidade CONTÍNUA de vasopressor usada no rationale — a SSC 2026 recomenda o corticoide no choque séptico SEM número de entrada, e o limiar não deve impedir a indicação em quem já tem necessidade persistente.", alert: true },
       { label: "Inotrópico (baixo DC)", value: "Dobutamina se IC baixo com PAM adequada" },
       { label: "Dobutamina — início", value: DOBUTAMINA_INICIO },
       { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },

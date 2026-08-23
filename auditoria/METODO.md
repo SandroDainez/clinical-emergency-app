@@ -6428,3 +6428,35 @@ instrumento QUE RODA. Esta cobre o que NÃO roda:
 ⚠️ E a datação, porque o custo importa: os três instrumentos nasceram em
 **2026-07-28** e entraram no portão em **2026-08-23**. **349 commits** foram para
 produção sem eles — incluindo o que levou a exceção da ceftriaxona.
+
+## R-109 — DIRETRIZ SUPERADA DOCUMENTA ORIGEM, NÃO SUSTENTA CONDUTA
+
+Decisão do autor, 2026-08-23, a propósito da sepse — e vale além dela:
+
+> **A SSC 2021 entra apenas para documentar a ORIGEM HISTÓRICA de um número —
+> nunca como diretriz-base atual do módulo.**
+
+O app é de 2026 e a **SSC 2026** já substituiu a 2021 como diretriz vigente. Ela
+mantém o corticoide no choque séptico e **reformulou várias recomendações
+hemodinâmicas**.
+
+⚠️ E a consequência operacional, que é o oposto do reflexo: **trocar o selo sem
+revisar o módulo cria mentira nova.** Um card que diz "SSC 2026" com o conteúdo
+de 2021 é pior que um card honesto dizendo 2021 — porque o primeiro parece
+conferido. Por isso o registro da base e a revisão do conteúdo são **duas
+tarefas**, e a segunda é do autor.
+
+## R-110 — QUANDO NÃO EXISTE CUTOFF FORMAL, NÃO SE INVENTA GRADUAÇÃO
+
+Regra editorial do autor, 2026-08-23, nascida dos eletrólitos e válida para todo
+o repositório:
+
+> **Quando existe cutoff formal, cita-se a sociedade/diretriz. Quando não existe,
+> classifica-se como prática aceita ou referência de revisão — e NÃO se inventa
+> graduação.**
+
+⚠️ Ela desfaz uma tentação minha: eu havia pedido ao autor "a referência-base dos
+eletrólitos", como se existisse uma. **Ela não existe** — e responder à pergunta
+errada teria produzido um selo único cobrindo doze distúrbios com origens
+diferentes. Fonte por afirmação, sempre; e "não há cutoff formal" é uma resposta
+legítima, que se escreve.

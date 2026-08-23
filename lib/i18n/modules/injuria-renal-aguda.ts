@@ -1528,4 +1528,41 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "Edema agudo de pulmón",
   "Sobrecarga de volume com hipoxemia":
     "Sobrecarga de volumen con hipoxemia",
+
+  // ── D-67, D-71 e D-82 (2026-08-23) ────────────────────────────────────
+  "A INDICAÇÃO — diurético de alça na sobrecarga de volume, e não para tratar a lesão renal.":
+    "LA INDICACIÓN — diurético de asa en la sobrecarga de volumen, y no para tratar la lesión renal.",
+  "A exceção literal da mesma 3.4.2: não usar diuréticos para TRATAR a IRA, EXCETO no manejo da sobrecarga de volume. Verbatim em protocols/fontes-verbatim/kdigo-2012-aki.md.":
+    "La excepción literal de la misma 3.4.2: no usar diuréticos para TRATAR la LRA, EXCEPTO en el manejo de la sobrecarga de volumen. Verbatim en protocols/fontes-verbatim/kdigo-2012-aki.md.",
+  "Diretriz de sociedade — desempenho de teste":
+    "Guía de sociedad — rendimiento de la prueba",
+  "ECG normal NÃO exclui hipercalemia grave.":
+    "Un ECG normal NO excluye hiperpotasemia grave.",
+  "O ECG CONFIRMA, NÃO EXCLUI: sensibilidade média 0,19 e especificidade 0,97 (UKKA 2023). Alteração presente diz muito; alteração ausente diz pouco — e alterações só aparecem em cerca de 2 de cada 3 pacientes com K ≥ 6,5 mmol/L.":
+    "El ECG CONFIRMA, NO EXCLUYE: sensibilidad media 0,19 y especificidad 0,97 (UKKA 2023). Una alteración presente dice mucho; su ausencia dice poco — y las alteraciones solo aparecen en cerca de 2 de cada 3 pacientes con K ≥ 6,5 mmol/L.",
+  "revisão de manejo em periódico de sociedade — não é diretriz graduada":
+    "revisión de manejo en revista de sociedad — no es una guía graduada",
+  "⚠️ FORÇA NÃO INFLADA: o grau que a diretriz dá a ESTE trecho não foi conferido no documento, e por isso a afirmação segue como prática aceita COM o documento nomeado, não como recomendação graduada. Verbatim em protocols/fontes-verbatim/ukka-2023-hipercalemia.md, transcrito pelo autor em 2026-08-23.":
+    "⚠️ FUERZA NO INFLADA: el grado que la guía asigna a ESTE pasaje no fue verificado en el documento, y por eso la afirmación sigue como práctica aceptada CON el documento nombrado, no como recomendación graduada. Verbatim en protocols/fontes-verbatim/ukka-2023-hipercalemia.md, transcrito por el autor el 2026-08-23.",
+  "⚠️ FORÇA NÃO INFLADA: revisão nomeada sustenta a dose como prática aceita, nunca como recomendação graduada. Verbatim em protocols/fontes-verbatim/riccardi-2025-ira-uti.md. ⚠️ A faixa 40–80 mg NÃO foi usada: ela tem suporte em consenso de insuficiência cardíaca, e trazê-la para o módulo de IRA sem dizer que a fonte é de IC seria transposição (decisão do autor, 2026-08-23).":
+    "⚠️ FUERZA NO INFLADA: una revisión nombrada sostiene la dosis como práctica aceptada, nunca como recomendación graduada. Verbatim en protocols/fontes-verbatim/riccardi-2025-ira-uti.md. ⚠️ El rango 40–80 mg NO fue usado: tiene respaldo en consenso de insuficiencia cardíaca, y traerlo al módulo de LRA sin decir que la fuente es de IC sería transposición (decisión del autor, 2026-08-23).",
+  "Furosemida EV: sem uso prévio de alça, 40 mg. Em uso crônico de alça, dose EV inicial de 1 a 2× a dose oral diária equivalente prévia.":
+    "Furosemida IV: sin uso previo de diurético de asa, 40 mg. En uso crónico de asa, dosis IV inicial de 1 a 2× la dosis oral diaria equivalente previa.",
+  "Reavalie a resposta em 2 a 6 h. Se for inadequada, AUMENTE — geralmente dobrando; não some doses pequenas.":
+    "Reevalúe la respuesta en 2 a 6 h. Si es inadecuada, AUMENTE — generalmente duplicando; no sume dosis pequeñas.",
+  "Teste de estresse com furosemida (1,0 mg/kg IV sem exposição prévia; 1,5 mg/kg com exposição) é PROGNÓSTICO, não terapêutico — não é dose de congestão.":
+    "La prueba de estrés con furosemida (1,0 mg/kg IV sin exposición previa; 1,5 mg/kg con exposición) es PRONÓSTICA, no terapéutica — no es dosis de congestión.",
+  "⚠️ NÃO É PARA «TRATAR A IRA», converter oligúria nem evitar a terapia de substituição renal — a indicação é a sobrecarga de volume, e só ela.":
+    "⚠️ NO ES PARA «TRATAR LA LRA», convertir la oliguria ni evitar la terapia de reemplazo renal — la indicación es la sobrecarga de volumen, y solo esa.",
+  "0,03 U/min, dose FIXA (não titular) — o painel costuma iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). ⚠️ REMARK DE PRÁTICA DO PAINEL, NÃO PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha — se a escalada já está evidente, não espere chegar a 0,5.":
+    "0,03 U/min, dosis FIJA (no titular) — el panel suele iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (rango usual de inicio 0,25–0,5). ⚠️ COMENTARIO DE PRÁCTICA DEL PANEL, NO UNA PUERTA: la SSC 2026 no fija un umbral de dosis para asociar. Asociar en vez de escalar la noradrenalina sola — si la escalada ya es evidente, no espere llegar a 0,5.",
+  "Considerar corticoide":
+    "Considerar corticoide",
+  "Hidrocortisona 200 mg/dia no choque séptico. ⚠️ CRITÉRIO DE OUTRA RECOMENDAÇÃO, e não é portão: noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é a definição operacional de necessidade CONTÍNUA de vasopressor usada no rationale — a SSC 2026 recomenda o corticoide no choque séptico SEM número de entrada, e o limiar não deve impedir a indicação em quem já tem necessidade persistente.":
+    "Hidrocortisona 200 mg/día en el choque séptico. ⚠️ CRITERIO DE OTRA RECOMENDACIÓN, y no es una puerta: noradrenalina ≥ 0,25 mcg/kg/min durante ≥ 4 h es la definición operativa de necesidad CONTINUA de vasopresor usada en el rationale — la SSC 2026 recomienda el corticoide en el choque séptico SIN número de entrada, y el umbral no debe impedir la indicación en quien ya tiene necesidad persistente.",
+  // ⚠️ ESTE `fonte` É RENDERIZADO: valida-traducao-runtime provou que ele chega
+  // à tela montado, e por isso precisa de chave — a dispensa de `fonte:` na
+  // varredura de texto vale para os que NÃO aparecem, não para este.
+  "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., outubro de 2023): sensibilidade média do ECG 0,19 ± 0,16 e especificidade 0,97 ± 0,04; alterações em ~66% com K ≥ 6,5 mmol/L.":
+    "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., octubre de 2023): sensibilidad media del ECG 0,19 ± 0,16 y especificidad 0,97 ± 0,04; alteraciones en ~66% con K ≥ 6,5 mmol/L.",
 };

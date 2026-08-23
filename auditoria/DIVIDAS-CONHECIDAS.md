@@ -2832,7 +2832,16 @@ virada para o usuário: um "não medi" sem etiqueta é lido como "medi e não ac
 aviso**, e ele sai das telas — aviso que sobrevive ao motivo vira ruído, e ruído
 ensina a ignorar avisos.
 
-## D-67 · A citação do "ECG normal não exclui hipercalemia"
+## D-67 · A citação do "ECG normal não exclui hipercalemia" — ✅ RESOLVIDA (2026-08-23)
+
+**Como se resolveu:** o autor transcreveu a UKKA 2023 para
+`protocols/fontes-verbatim/ukka-2023-hipercalemia.md`. ⚠️ **A FORÇA NÃO SUBIU
+JUNTO:** segue `pratica_aceita` com o documento nomeado, porque o grau que a
+diretriz dá àquele trecho não foi conferido no documento. Inflar seria o defeito
+que a própria dívida existia para evitar.
+
+<details><summary>o registro original</summary>
+
 
 **Aberta em:** 2026-08-21 · **Nó:** `k_ecg_normal` · **Força já decidida:** `pratica_aceita`
 (afirmação sobre **desempenho de teste**, não sobre conduta).
@@ -2959,7 +2968,25 @@ Achar a publicação, transcrever a frase para `protocols/fontes-verbatim/`, e d
 força nos dois lugares. Se a evidência for fraca ou contestada, a força é
 `mecanismo_fisiologico` **com a lacuna escrita** — nunca silêncio.
 
-## D-71 · A DOSE DO DIURÉTICO DE ALÇA — o motivo da pendência MUDOU
+</details>
+
+## D-71 · A DOSE DO DIURÉTICO DE ALÇA — ✅ RESOLVIDA (2026-08-23)
+
+**Como se resolveu:** duas afirmações, duas fontes, duas forças.
+
+| afirmação | força | fonte |
+|---|---|---|
+| a INDICAÇÃO (sobrecarga de volume, não o rim) | `recomendacao_formal` | KDIGO 2012, **3.4.2**, grau 2C |
+| a DOSE e a escalada | `pratica_aceita` | **Riccardi 2025**, Eur Heart J Acute Cardiovasc Care 2025;14:618–630 |
+
+40 mg sem uso prévio · 1–2× a dose oral prévia em uso crônico · reavaliar em
+2–6 h · aumentar dobrando. ⚠️ **A faixa 40–80 mg NÃO foi usada** (é de
+insuficiência cardíaca — importá-la sem dizer seria transposição), e o **teste de
+estresse com furosemida ficou registrado como PROGNÓSTICO, não dose**.
+Ver D-86 para o conflito de tempo que isso deixou visível.
+
+<details><summary>o registro original</summary>
+
 
 **Aberta em:** 2026-08-21 (substitui a formulação anterior) · **Estado:** fora do fluxo.
 
@@ -2988,6 +3015,8 @@ emprestado não é.
 
 **Até lá, fica fora do fluxo.** O ramo do diurético existe e aponta sem saltar; o que
 não existe é dose na tela sem procedência.
+
+</details>
 
 ## D-72 · `dka-hhs` — a escada de pH mistura corte real e enchimento, e OMITE o corte diagnóstico
 
@@ -3444,3 +3473,29 @@ O que continua:
 - **30 comparações contra o valor do paciente** no componente, impressas a cada
   rodada por `test:gravidade-eletrolitica`.
 - `deriveAutomaticTarget` — a meta de correção por distúrbio.
+
+## D-86 — DOIS TEMPOS DE REAVALIAÇÃO DO DIURÉTICO, NO MESMO MÓDULO
+
+Apareceu ao aplicar a D-71. O módulo renal agora diz as duas coisas, em telas
+vizinhas:
+
+- `ALCA_REAVALIACAO` (nós `alca_congesto` e `alca_euvolemico`):
+  *"Reavalie a RESPOSTA DIURÉTICA em **1 a 2 horas** após o bolus."*
+- `DOSE_ALCA_ESCALADA` (nó `congesto_conduta`, fonte Riccardi 2025):
+  *"Reavalie a resposta em **2 a 6 h**."*
+
+⚠️ NÃO UNIFICADO DE PROPÓSITO. O 2–6 h tem fonte nomeada desde hoje; o 1–2 h não
+tem, e é anterior. Escolher um deles é decisão clínica do autor — e apagar o
+antigo em silêncio seria exatamente o que este projeto persegue. Alvo: veredito
+do autor sobre qual tempo fica, e a fonte do que ficar.
+
+## D-87 — SSC 2026 É A BASE DO MÓDULO DE SEPSE, E O CONTEÚDO NÃO FOI REVISTO
+
+Registrada em 2026-08-23 por decisão do autor (R-109). A **SSC 2026** é a
+diretriz-base do módulo de sepse; a **SSC 2021** só documenta origem histórica de
+número.
+
+⚠️ O CONTEÚDO CLÍNICO DO MÓDULO NÃO FOI ATUALIZADO NESTA RODADA, de propósito: a
+2026 reformulou várias recomendações hemodinâmicas, e trocar o selo sem revisar o
+módulo cria mentira nova. **Alvo: revisão do módulo de sepse com o autor**,
+recomendação por recomendação.
