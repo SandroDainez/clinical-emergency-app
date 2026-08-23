@@ -3697,3 +3697,29 @@ O que mudou foi **deixar de fingir que tinham fonte**.
 
 Alvo: pergunta 10 ao autor — quais cortes ele adota e com que fonte; e o verbatim
 de **Figge et al.** para o fator, antes de a força subir de `pendente`.
+
+## D-96 — VERBATIMS PENDENTES DAS CINCO RESPOSTAS (2026-08-23)
+
+As forças e as fontes foram **aplicadas**; o texto literal de cada documento
+ainda **não está em `protocols/fontes-verbatim/`**:
+
+| documento | o que sustenta | força já aplicada |
+|---|---|---|
+| **Spasovski 2014** (European Clinical Practice Guideline on Hyponatraemia) | referência-base do sódio | `recomendacao_formal` |
+| **SSC 2021** — rationale/remark da recomendação de corticosteroide | `≥ 0,25 por ≥ 4 h` | `pratica_aceita` |
+| **SSC 2021** — remark de prática do painel | `0,25–0,5` para iniciar vasopressina | `pratica_aceita` |
+| **Figge et al.** | fator 2,5 de correção do AG pela albumina | `literatura_primaria` |
+
+⚠️ **A localização está registrada em cada um** (documento, e que é
+rationale/remark e não recomendação) — que era a condição do autor para aplicar a
+força antes do verbatim.
+
+## D-97 — O ALVO DO AUDITOR DE TROMBOLÍTICO DO AVC AINDA NÃO FOI LOCALIZADO
+
+O escopo foi decidido (autor, 2026-08-23): **só AVC**, não coronárias — no AVC a
+janela e os critérios de exclusão são rígidos e o erro é catastrófico; nas
+coronárias a angioplastia primária é a regra e o trombolítico é exceção.
+
+⚠️ **Mas `avc/calculators.ts` não existe mais** e a dose de trombolítico do AVC
+vive hoje noutro arquivo, com outro nome. O bloco segue **pulado e contado**. O
+que deixou de ser dúvida é o ESCOPO; falta localizar o alvo.

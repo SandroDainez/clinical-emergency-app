@@ -106,8 +106,20 @@ export const DOMAINS: Domain[] = [
       //
       // Lidos juntos, o segundo vira portão do primeiro — que é exatamente o que
       // nenhum dos dois diz.
-      { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — o painel costuma iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). ⚠️ REMARK DE PRÁTICA DO PAINEL, NÃO PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha — se a escalada já está evidente, não espere chegar a 0,5.", alert: true },
-      { label: "Considerar corticoide", value: "Hidrocortisona 200 mg/dia no choque séptico. ⚠️ CRITÉRIO DE OUTRA RECOMENDAÇÃO, e não é portão: noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é a definição operacional de necessidade CONTÍNUA de vasopressor usada no rationale — a SSC 2026 recomenda o corticoide no choque séptico SEM número de entrada, e o limiar não deve impedir a indicação em quem já tem necessidade persistente.", alert: true },
+      // ⚠️ FORÇA: `pratica_aceita` — remark de prática do painel, noutra
+      // recomendação. Localização registrada; verbatim pendente.
+      { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — o painel costuma iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). ⚠️ PRÁTICA ACEITA — REMARK DE PRÁTICA DO PAINEL na SSC 2021 (verbatim pendente), NÃO PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha — se a escalada já está evidente, não espere chegar a 0,5.", alert: true },
+      // ⚠️ FORÇA APLICADA (autor, 2026-08-23): `pratica_aceita`. O ≥ 0,25 por
+      // ≥ 4 h NÃO é recomendação graduada independente — é critério operacional
+      // definido no RATIONALE/REMARK da recomendação de corticosteroide. O
+      // schema só aceita recomendacao_formal ou pratica_aceita, e chamar de
+      // formal seria inflar; a distinção fica escrita no texto, que é onde o
+      // médico a lê.
+      //
+      // ⚠️ LOCALIZAÇÃO DA FONTE REGISTRADA, com o verbatim pendente: SSC 2021,
+      // rationale/remark da recomendação de corticosteroide — não a
+      // recomendação em si.
+      { label: "Considerar corticoide", value: "Hidrocortisona 200 mg/dia no choque séptico. ⚠️ PRÁTICA ACEITA, NÃO RECOMENDAÇÃO GRADUADA: noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é critério operacional do RATIONALE da recomendação de corticosteroide da SSC 2021 (verbatim pendente de transcrição) — não é portão. A SSC 2026 recomenda o corticoide no choque séptico SEM número de entrada, e o limiar não deve impedir a indicação em quem já tem necessidade persistente.", alert: true },
       { label: "Inotrópico (baixo DC)", value: "Dobutamina se IC baixo com PAM adequada" },
       { label: "Dobutamina — início", value: DOBUTAMINA_INICIO },
       { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },

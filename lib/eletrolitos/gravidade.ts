@@ -34,8 +34,14 @@ export type DisturbioEletrolitico =
 export type ProcedenciaDeGravidade = {
   /** Documento que sustenta o corte. `null` enquanto a pendência estiver aberta. */
   fonte: string | null;
-  /** `definicao` = afirmação do autor sobre o que a clínica é, não corte de diretriz. */
-  forca?: "definicao";
+  /**
+   * `definicao`        — afirmação do autor sobre o que a clínica É.
+   * `recomendacao_formal` — corte que a diretriz grada.
+   * `pratica_aceita`   — número consagrado SEM cutoff formal. ⚠️ É resposta
+   *                      legítima, e escrevê-la é o oposto de inventar
+   *                      graduação (R-110).
+   */
+  forca?: "definicao" | "recomendacao_formal" | "pratica_aceita";
   /** ⚠️ Quem assina a afirmação. Assinatura não substitui conferência. */
   declaradoPor?: string;
   /** ⚠️ Alvo NOMEADO da pendência — nunca vazio, nunca "a conferir". */
@@ -176,10 +182,50 @@ const DEFINICAO_DO_AUTOR: ProcedenciaDeGravidade = {
   alvo: "afirmação de que não há escala de apresentação nestes três — confirmação do autor pendente, e nenhum sintoma foi inventado para preencher o degrau que saiu",
 };
 
-const P_NA = PENDENTE("limiar de hiponatremia grave — alvo: diretriz europeia de hiponatremia (ESICM/ESE/ERA-EDTA 2014), verbatim em protocols/fontes-verbatim/");
-const P_NA_ALTA = PENDENTE("limiar de hipernatremia grave — alvo: fonte primária a nomear pelo autor");
-const P_K_BAIXO = PENDENTE("limiar de hipocalemia grave — alvo: fonte primária a nomear pelo autor");
-const P_K_ALTO = PENDENTE("limiar já vem de lib/hipercalemia.ts (K_GRAVE); a procedência do NÚMERO segue lá, esta linha só o consome");
+/**
+ * ⚠️ REFERÊNCIA-BASE DO SÓDIO, nomeada pelo autor em 2026-08-23.
+ *
+ * E ela pede mais do que um número: a Spasovski 2014 **não classifica
+ * hiponatremia só por valor**. Separa moderadamente grave e grave por
+ * MANIFESTAÇÃO, e distingue AGUDA (< 48 h) de crônica — e a segunda distinção
+ * muda a conduta e o risco. Ver `auditoria/PROPOSTA-TEMPO-DE-INSTALACAO.md`.
+ */
+const P_NA: ProcedenciaDeGravidade = {
+  fonte: "Spasovski G et al. — European Clinical Practice Guideline on Diagnosis and Treatment of Hyponatraemia, 2014",
+  forca: "recomendacao_formal",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "verbatim da Spasovski 2014 a transcrever em protocols/fontes-verbatim/ — e o corte atual precisa ser conferido contra ela, porque a diretriz classifica por sintoma e por velocidade de instalação, não só por valor",
+};
+/**
+ * ⚠️ HIPERNATREMIA NÃO ESTAVA NA LISTA DO AUTOR, e por isso continua pendente.
+ * A Spasovski 2014 é de HIPOnatremia — estendê-la para o outro lado seria
+ * transposição, o mesmo defeito da faixa de insuficiência cardíaca importada
+ * para o módulo renal (D-71).
+ */
+const P_NA_ALTA = PENDENTE("limiar de hipernatremia grave — alvo: fonte primária a nomear pelo autor. ⚠️ NÃO herda a Spasovski 2014, que é de hiponatremia");
+/**
+ * ⚠️ `pratica_aceita` POR DECISÃO, e isso é uma resposta — não uma pendência
+ * disfarçada. O autor decidiu (2026-08-23): sem inventar graduação. O número
+ * fica com a força que ele tem de verdade, escrita (R-110).
+ */
+const P_K_BAIXO: ProcedenciaDeGravidade = {
+  fonte: null,
+  forca: "pratica_aceita",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "não há cutoff formal de sociedade para hipocalemia grave — número consagrado, declarado como prática aceita. ⚠️ Isto é a resposta, não a pendência: inventar graduação aqui seria o que a R-110 proíbe",
+};
+/**
+ * ⚠️ APONTA PARA A FONTE QUE JÁ EXISTE NO REPOSITÓRIO — decisão do autor: usar a
+ * UKKA 2023, que já foi transcrita para o módulo renal, em vez de criar entrada
+ * nova. Duas entradas para o mesmo documento é a segunda cópia que a auditoria
+ * persegue, agora no nível da fonte.
+ */
+const P_K_ALTO: ProcedenciaDeGravidade = {
+  fonte: "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (verbatim em protocols/fontes-verbatim/ukka-2023-hipercalemia.md)",
+  forca: "recomendacao_formal",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "o VALOR vem de lib/hipercalemia.ts (K_GRAVE) e a procedência dele segue lá; esta linha aponta para a mesma UKKA 2023 já transcrita, sem criar segunda entrada",
+};
 const P_CA = PENDENTE("limiares de cálcio — alvo: Society for Endocrinology, Emergency management of acute hypocalcaemia / hypercalcaemia in adult patients (nomeada pelo autor em 2026-08-23). ⚠️ Os cortes do app estão em mg/dL e os da fonte em mmol/L — NADA foi convertido, e a conversão é decisão do autor");
 
 /**
@@ -199,9 +245,28 @@ const P_CA = PENDENTE("limiares de cálcio — alvo: Society for Endocrinology, 
  * SINTOMA É IGUAL NOS TRÊS ENSAIOS. O corte do iônico continua pendente; o beco,
  * não.
  */
-const P_MG = PENDENTE("limiares de magnésio — ⚠️ INTOCADOS por decisão do autor (2026-08-23): ele quer conferir número por número");
+/**
+ * ⚠️ `pratica_aceita`, E OS CORTES SEGUEM INTOCADOS. O autor decidiu a FORÇA
+ * (2026-08-23) e reservou os NÚMEROS para conferência individual — são coisas
+ * diferentes, e aplicar uma não autoriza mexer na outra.
+ */
+const P_MG: ProcedenciaDeGravidade = {
+  fonte: null,
+  forca: "pratica_aceita",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "não há cutoff formal de sociedade para magnésio — prática aceita, declarada. ⚠️ Os dois cortes seguem INTOCADOS, aguardando conferência número a número do autor",
+};
 const P_P = PENDENTE("limiar de fósforo grave — consenso amplo em < 0,32 mmol/L (< 1 mg/dL), nomeado pelo autor; ⚠️ NÃO rotular como diretriz internacional, e não há consenso universal para todas as faixas");
-const P_CL = PENDENTE("limiares de cloro — alvo: fonte primária a nomear pelo autor");
+/**
+ * ⚠️ CLORO NÃO TEM CORTE, e isso é a decisão — não uma lacuna. Degrau único
+ * mantido, sem escala graduada artificial (autor, 2026-08-23).
+ */
+const P_CL: ProcedenciaDeGravidade = {
+  fonte: null,
+  forca: "definicao",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "cloro é marcador, não doença: degrau único mantido, SEM escala graduada artificial. Não há corte a fundamentar porque não há corte",
+};
 
 const FONTE_SE = "Society for Endocrinology — Emergency management of acute hypocalcaemia in adult patients";
 const P_SINTOMA = (papel: PapelDoCriterio, nota: string): ProcedenciaDeGravidade => ({

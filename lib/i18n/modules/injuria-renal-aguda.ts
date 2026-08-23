@@ -1567,4 +1567,23 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., octubre de 2023): sensibilidad media del ECG 0,19 ± 0,16 y especificidad 0,97 ± 0,04; alteraciones en ~66% con K ≥ 6,5 mmol/L.",
   "Reavalie a RESPOSTA DIURÉTICA em 2 a 6 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.":
     "Reevalúe la RESPUESTA DIURÉTICA en 2 a 6 horas tras el bolo. ⚠️ El potasio sigue el protocolo propio de la hiperpotasemia — no la respuesta al diurético.",
+
+  // ── As cinco respondidas (2026-08-23) ─────────────────────────────────
+  "Correção pela albumina":
+    "Corrección por la albúmina",
+  "Fórmula":
+    "Fórmula",
+  "Faixa de referência 8–12 com albumina 4 g/dL — ⚠️ cortes herdados, sem fonte conferida. A fórmula sai do dado e aparece junto do resultado.":
+    "Rango de referencia 8–12 con albúmina 4 g/dL — ⚠️ puntos de corte heredados, sin fuente verificada. La fórmula sale del dato y aparece junto al resultado.",
+  "Correção pela albumina: relação de Figge — literatura primária / prática aceita, não guideline.":
+    "Corrección por la albúmina: relación de Figge — literatura primaria / práctica aceptada, no una guía.",
+  "0,03 U/min, dose FIXA (não titular) — o painel costuma iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). ⚠️ PRÁTICA ACEITA — REMARK DE PRÁTICA DO PAINEL na SSC 2021 (verbatim pendente), NÃO PORTÃO: a SSC 2026 não fixa limiar de dose para associar. Associar em vez de escalar a noradrenalina sozinha — se a escalada já está evidente, não espere chegar a 0,5.":
+    "0,03 U/min, dosis FIJA (no titular) — el panel suele iniciar a partir de noradrenalina ≈ 0,25 mcg/kg/min (rango usual de inicio 0,25–0,5). ⚠️ PRÁCTICA ACEPTADA — COMENTARIO DE PRÁCTICA DEL PANEL en la SSC 2021 (verbatim pendiente), NO UNA PUERTA: la SSC 2026 no fija un umbral de dosis para asociar. Asociar en vez de escalar la noradrenalina sola — si la escalada ya es evidente, no espere llegar a 0,5.",
+  "Hidrocortisona 200 mg/dia no choque séptico. ⚠️ PRÁTICA ACEITA, NÃO RECOMENDAÇÃO GRADUADA: noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é critério operacional do RATIONALE da recomendação de corticosteroide da SSC 2021 (verbatim pendente de transcrição) — não é portão. A SSC 2026 recomenda o corticoide no choque séptico SEM número de entrada, e o limiar não deve impedir a indicação em quem já tem necessidade persistente.":
+    "Hidrocortisona 200 mg/día en el choque séptico. ⚠️ PRÁCTICA ACEPTADA, NO RECOMENDACIÓN GRADUADA: noradrenalina ≥ 0,25 mcg/kg/min durante ≥ 4 h es un criterio operativo del RATIONALE de la recomendación de corticosteroide de la SSC 2021 (verbatim pendiente de transcripción) — no es una puerta. La SSC 2026 recomienda el corticoide en el choque séptico SIN número de entrada, y el umbral no debe impedir la indicación en quien ya tiene necesidad persistente.",
+  // ⚠️ `fonte` NÃO é dispensado da tradução, de propósito: o `fonte` do nó
+  // k_ecg_normal É renderizado, e a trava de runtime provou isso. Só `alvo`
+  // tem dispensa.
+  "Figge et al. — relação entre albumina e ânion gap":
+    "Figge et al. — relación entre albúmina y anión gap",
 };

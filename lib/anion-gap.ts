@@ -30,7 +30,65 @@
  * Sem albumina, a resposta honesta não é "normal": é **"não é possível
  * interpretar o AG sem a albumina"** (R-111 — ausência não conclui).
  */
-export type ProcedenciaDoAG = { fonte: string | null; forca: "pendente"; alvo: string };
+export type ProcedenciaDoAG = {
+  fonte: string | null;
+  forca: "pendente" | "decisao_do_autor" | "literatura_primaria";
+  alvo: string;
+  declaradoPor?: string;
+};
+
+/**
+ * ⚠️ A FÓRMULA É DADO, NÃO SÓ CÓDIGO — decisão do autor, 2026-08-23.
+ *
+ * **O app usa AG = Na − (Cl + HCO₃), SEM potássio.** Existe a variante com K
+ * (Na + K − Cl − HCO₃), e as duas dão números diferentes com intervalos de
+ * referência diferentes: trocar uma pela outra sem trocar o intervalo desloca
+ * TODA a classificação, e o rótulo continua o mesmo na tela.
+ *
+ * ⚠️ POR ISSO O TEXTO É DERIVADO DOS TERMOS, e não escrito ao lado deles: duas
+ * cópias da fórmula (uma no rótulo, outra na conta) é o R-95 no lugar mais caro
+ * possível. Mudar o rótulo aqui muda a conta junto — e a trava confere que a
+ * ENGINE calcula o que estes termos dizem.
+ */
+export const FORMULA_DO_AG = {
+  /** Somados. */
+  positivos: ["Na"] as const,
+  /** Subtraídos. */
+  negativos: ["Cl", "HCO₃"] as const,
+  procedencia: {
+    fonte: null,
+    forca: "decisao_do_autor",
+    declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+    alvo:
+      "escolha entre AG com e sem potássio — decisão do autor: SEM potássio. O intervalo de referência e os cortes só se definem depois da fórmula fixada, e não foram tocados nesta rodada",
+  } as ProcedenciaDoAG,
+};
+
+/** "AG = Na − (Cl + HCO₃)" — derivado dos termos, nunca escrito ao lado. */
+export function textoDaFormula(): string {
+  const pos = FORMULA_DO_AG.positivos.join(" + ");
+  const neg = FORMULA_DO_AG.negativos.join(" + ");
+  return `AG = ${pos} − (${neg})`;
+}
+
+/**
+ * O cálculo, a partir dos MESMOS termos que geram o rótulo.
+ * ⚠️ A engine chama esta função. Se alguém somar o potássio lá dentro sem mexer
+ * aqui, a trava vê a divergência entre o que a fórmula declara e o que a
+ * calculadora devolve.
+ */
+export function calcularAG(valores: Record<string, number>): number | null {
+  let total = 0;
+  for (const t of FORMULA_DO_AG.positivos) {
+    if (valores[t] == null) return null;
+    total += valores[t];
+  }
+  for (const t of FORMULA_DO_AG.negativos) {
+    if (valores[t] == null) return null;
+    total -= valores[t];
+  }
+  return total;
+}
 
 /**
  * ⚠️ FATOR HERDADO, SEM VERBATIM. Ele JÁ ESTAVA no código (`ag + 2.5 * (4 - alb)`)
@@ -40,11 +98,16 @@ export type ProcedenciaDoAG = { fonte: string | null; forca: "pendente"; alvo: s
 export const FATOR_ALBUMINA = {
   valor: 2.5,
   porGDlAbaixoDe: 4,
+  // ⚠️ FIGGE É LITERATURA PRIMÁRIA, NÃO GUIDELINE — e o rótulo na tela diz isso
+  // (decisão do autor, 2026-08-23). A diferença importa: uma relação publicada e
+  // amplamente adotada não é uma recomendação graduada de sociedade, e chamar de
+  // guideline seria inflar exatamente como a auditoria proíbe.
   procedencia: {
-    fonte: null,
-    forca: "pendente",
+    fonte: "Figge et al. — relação entre albumina e ânion gap",
+    forca: "literatura_primaria",
+    declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
     alvo:
-      "fator de correção do AG pela albumina (≈ 2,5 mEq/L por 1 g/dL abaixo de 4) — alvo: Figge et al., verbatim a transcrever em protocols/fontes-verbatim/. ⚠️ O número já estava no código; o que faltava era dizer que ele não tem fonte conferida",
+      "verbatim de Figge et al. a transcrever em protocols/fontes-verbatim/. ⚠️ A força já está declarada como literatura primária / prática aceita — NÃO é guideline",
   } as ProcedenciaDoAG,
 };
 
@@ -75,6 +138,9 @@ export const AG_SEM_ALBUMINA_PORQUE =
 
 export const AG_BAIXO =
   "ÂNION GAP BAIXO — não é «normal». Procure hipoalbuminemia (a causa mais comum), paraproteína do mieloma múltiplo e intoxicação por lítio ou brometo.";
+
+export const AG_FATOR_ROTULO =
+  "Correção pela albumina: relação de Figge — literatura primária / prática aceita, não guideline.";
 
 export const AG_ELEVADO_CAUSAS =
   "MUDPILES: Metanol/Metformina, Uremia, Diabética (CAD), Propilenoglicol/Paracetaldeído, Isoniazida, Lactato, Etilenoglicol, Salicilatos.";

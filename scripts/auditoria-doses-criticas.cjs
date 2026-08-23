@@ -49,6 +49,18 @@ execFileSync(
     "--outDir", tempDir,
     path.join(appDir, "vasoactive-engine.ts"),
     path.join(appDir, "sedation-engine.ts"),
+    // ⚠️ REAPONTADO SÓ PARA O AVC — decisão do autor, 2026-08-23, e a razão é
+    // clínica, não de conveniência: no AVC a janela e os critérios de exclusão
+    // são RÍGIDOS e o erro é catastrófico; nas coronárias a angioplastia
+    // primária é a regra e o trombolítico é exceção. Ampliar para coronárias
+    // fica para a revisão específica daquele módulo.
+    //
+    // ⚠️ E O ARQUIVO AINDA NÃO EXISTE: `avc/calculators.ts` foi apagado em
+    // a9b16ad e a dose de trombolítico do AVC vive hoje noutro lugar, com outro
+    // nome. O bloco continua PULADO e contado — o que mudou é que o escopo
+    // deixou de ser dúvida: quando o alvo for localizado, ele entra aqui, e só
+    // ele.
+    //
     // ⚠️ COBERTURA REDUZIDA, DECLARADA (D-83): apontava também para
     // `avc/calculators.ts` e `coronary/calculators.ts`, apagados no refactor
     // a9b16ad. Desde então este instrumento CRASHAVA na compilação a cada
@@ -297,7 +309,8 @@ fs.writeFileSync(path.join(saidaDir, "CAMADA-4-DOSES-CRITICAS.md"), L.join("\n")
 fs.writeFileSync(path.join(saidaDir, "camada-4-doses-criticas.json"), JSON.stringify({ idaEVoltaTestados, achados }, null, 1));
 
 console.log(`\nConversões dose ↔ velocidade testadas: ${idaEVoltaTestados}`);
-console.log(`⚠️ Blocos PULADOS por falta do arquivo auditado: ${pulados} (D-83 — trombolítico do AVC e das coronárias)`);
+console.log(`⚠️ Blocos PULADOS por falta do arquivo auditado: ${pulados} (D-83)`);
+console.log(`   escopo decidido pelo autor em 2026-08-23: o auditor volta SÓ para o AVC — nas coronárias a angioplastia primária é a regra e o trombolítico é exceção`);
 console.log(`Erros: ${erros.length} · Avisos: ${avisos.length}`);
 for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - a[1].length)) {
   console.log(`  ${tipo}: ${itens.length}`);

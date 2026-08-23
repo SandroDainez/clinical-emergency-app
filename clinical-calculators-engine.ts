@@ -34,6 +34,9 @@ import { baseDe, CATALOGO_DE_ANTIMICROBIANOS, doseUsualDerivada, faixaPara, text
 import {
   AG_BAIXO,
   AG_ELEVADO_CAUSAS,
+  AG_FATOR_ROTULO,
+  calcularAG,
+  textoDaFormula,
   AG_NA_FAIXA,
   AG_SEM_ALBUMINA,
   AG_SEM_ALBUMINA_PORQUE,
@@ -405,7 +408,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "anion-gap",
     name: "Ânion gap",
     subtitle: "AG · correção pela albumina · delta-delta",
-    reference: "AG = Na − (Cl + HCO₃). Faixa de referência 8–12 com albumina 4 g/dL — ⚠️ cortes herdados, sem fonte conferida.",
+    reference: "Faixa de referência 8–12 com albumina 4 g/dL — ⚠️ cortes herdados, sem fonte conferida. A fórmula sai do dado e aparece junto do resultado.",
     inputs: [
       { id: "na", label: "Sódio", unit: "mEq/L", kind: "number", placeholder: "ex: 140" },
       { id: "cl", label: "Cloro", unit: "mEq/L", kind: "number", placeholder: "ex: 104" },
@@ -421,7 +424,10 @@ export const CALC_TOOLS: CalcTool[] = [
       const hco3 = numNaFaixa(v.hco3, ...FAIXA.bicarbonatoMeqL);
       const alb = numNaFaixa(v.alb, ...FAIXA.albuminaGDl);
       if (na == null || cl == null || hco3 == null) return null;
-      const ag = na - (cl + hco3);
+      // ⚠️ O CÁLCULO VEM DA FÓRMULA DECLARADA, não de uma conta escrita aqui.
+      // O app usa AG = Na − (Cl + HCO₃), SEM potássio (decisão do autor).
+      const ag = calcularAG({ Na: na, Cl: cl, "HCO₃": hco3 });
+      if (ag == null) return null;
       // ⚠️ O FATOR E OS CORTES VÊM DO DADO, com a procedência declarada — e
       // ambos são HERDADOS SEM FONTE, o que agora está escrito em vez de
       // suposto (lib/anion-gap.ts).
@@ -436,8 +442,14 @@ export const CALC_TOOLS: CalcTool[] = [
       const dd = agRef != null && hco3 < 24 ? (agRef - CORTE_AG.elevadoAcimaDe) / (24 - hco3) : null;
       const metrics: ResultMetric[] = [
         { label: "Ânion gap", value: `${f1(ag)} mEq/L`, highlight: true },
+        // ⚠️ A FÓRMULA APARECE JUNTO DO RESULTADO: existe a variante com K, e
+        // quem lê o número precisa saber qual das duas o app usou.
+        { label: "Fórmula", value: textoDaFormula() },
       ];
-      if (agCorr != null) metrics.push({ label: "AG corrigido (albumina)", value: `${f1(agCorr)} mEq/L` });
+      if (agCorr != null) {
+        metrics.push({ label: "AG corrigido (albumina)", value: `${f1(agCorr)} mEq/L` });
+        metrics.push({ label: "Correção pela albumina", value: AG_FATOR_ROTULO });
+      }
       if (dd != null) metrics.push({ label: "Delta-delta", value: f1(dd) });
       // ⚠️ TRÊS DESTINOS + O "NÃO SEI", e nenhum deles é verde.
       //

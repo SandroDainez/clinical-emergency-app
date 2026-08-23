@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**61 de 78 travas com declaração completa.**
+**62 de 79 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -95,6 +95,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que nenhum número escrito na PROSA da tela dos eletrólitos contradiga o corte declarado no dado para o mesmo analito. Se o texto diz "Ca < 7 mg/dL" e o corte é 1,9 mmol/L (≈ 7,62 mg/dL), reprova.
 - **NÃO PROMETE:** que o corte esteja clínico certo, nem que a prosa esteja completa. Ela confere COERÊNCIA entre as duas cópias, não a verdade de nenhuma.
 - **UNIVERSO:** os cortes com unidade declarada em `lib/eletrolitos/gravidade.ts` (impressos antes do resultado) × as strings da tela dos eletrólitos. ── R-95 NA SUA FORMA MAIS TEIMOSA ────────────────────────────────────────── O corte da hipocalcemia mudou de `< 7 mg/dL` para `< 1,9 mmol/L` (≈ 7,62) em 2026-08-23 — e **a prosa ao lado continuou dizendo o número velho**. Ninguém mente de propósito: o número saiu do lugar onde a trava olha e ficou onde ela não olhava. ⚠️ A segunda cópia não está em outro campo. Está NA FRASE.
+
+## `test:formula-ag` → `scripts/valida-formula-do-ag.cjs`
+
+- **PROMETE:** que o ânion gap que a calculadora DEVOLVE seja exatamente o que a fórmula declarada em `lib/anion-gap.ts` diz — e que o rótulo mostrado na tela seja derivado dos MESMOS termos que fazem a conta.
+- **NÃO PROMETE:** que a fórmula escolhida seja a melhor, nem que os cortes estejam certos. A escolha entre AG com e sem potássio é decisão do autor (2026-08-23, SEM potássio); os cortes seguem herdados e pendentes (D-95).
+- **UNIVERSO:** a ferramenta `anion-gap` de `clinical-calculators-engine.ts`, compilada, varrida em combinações de Na, Cl e HCO₃ — o número sai impresso. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118. ── POR QUE ELA EXISTE ────────────────────────────────────────────────────── Existem duas fórmulas de ânion gap: com potássio (Na + K − Cl − HCO₃) e sem (Na − Cl − HCO₃). **Elas dão números diferentes e têm intervalos de referência diferentes.** Trocar uma pela outra sem trocar o intervalo desloca TODA a classificação — e o rótulo na tela continua idêntico. ⚠️ Sem esta trava, a decisão se desfaz em silêncio na primeira edição, como quase aconteceu com o `>= 14` da hipercalcemia.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
