@@ -420,4 +420,44 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "⚠️ CALCIO TOTAL SIN ALBÚMINA: sin ella no hay cómo corregir, y el total aislado subestima o sobrestima según la albuminemia. Informe la albúmina de la misma extracción, o use el iónico.",
   "⚠️ ESTE APP AINDA NÃO CLASSIFICA GRAVIDADE PELO CÁLCIO IÔNICO: a escala dele é outra (mmol/L) e os cortes não estão definidos aqui. Use o valor e o quadro clínico; a conduta abaixo não foi graduada por número.":
     "⚠️ ESTA APP AÚN NO CLASIFICA LA GRAVEDAD POR EL CALCIO IÓNICO: su escala es otra (mmol/L) y los puntos de corte no están definidos aquí. Use el valor y el cuadro clínico; la conducta de abajo no fue graduada por número.",
+
+  // ── SINTOMA PRIMEIRO, NÚMERO DEPOIS (2026-08-23) ──────────────────────
+  "Há manifestação clínica de hipocalcemia?":
+    "¿Hay manifestación clínica de hipocalcemia?",
+  "Considerando o cálcio ABAIXO DA REFERÊNCIA do seu laboratório — o app não conhece o intervalo do seu método.":
+    "Considerando el calcio POR DEBAJO DE LA REFERENCIA de su laboratorio — la app no conoce el intervalo de su método.",
+  "Parestesia perioral e de extremidades":
+    "Parestesia perioral y de extremidades",
+  "Espasmo carpopedal ou tetania":
+    "Espasmo carpopedal o tetania",
+  "Sinal de Trousseau ou de Chvostek":
+    "Signo de Trousseau o de Chvostek",
+  "Laringoespasmo ou estridor":
+    "Laringoespasmo o estridor",
+  "Convulsão":
+    "Convulsión",
+  "QT prolongado e/ou arritmia":
+    "QT prolongado o arritmia",
+  "Broncoespasmo":
+    "Broncoespasmo",
+  "Hipotensão refratária a vasopressor":
+    "Hipotensión refractaria a vasopresores",
+  "Disfunção miocárdica aguda":
+    "Disfunción miocárdica aguda",
+  "O cálcio ionizado é influenciado pelo pH — alcalose reduz a fração ionizada sem mudar o cálcio total.":
+    "El calcio ionizado está influido por el pH — la alcalosis reduce la fracción ionizada sin cambiar el calcio total.",
+  "Os intervalos de referência do ionizado dependem do MÉTODO e do EQUIPAMENTO: use a referência do laudo, não um número decorado.":
+    "Los intervalos de referencia del ionizado dependen del MÉTODO y del EQUIPO: use la referencia del informe, no un número memorizado.",
+  "Por isso este app não cria faixas de gravidade para o ionizado. O ramo sintomático acima responde igual nos três ensaios.":
+    "Por eso esta app no crea rangos de gravedad para el ionizado. La rama sintomática de arriba responde igual en los tres ensayos.",
+  "Definem hipocalcemia sintomática":
+    "Definen hipocalcemia sintomática",
+  "Aparecem, mas não definem":
+    "Aparecen, pero no definen",
+  "Possíveis na hipocalcemia grave — exigem compatibilidade":
+    "Posibles en la hipocalcemia grave — exigen compatibilidad",
+  "Quais são?":
+    "¿Cuáles son?",
+  "⚠️ ALTAMENTE INESPECÍFICAS no paciente crítico: lembre-as quando o cálcio JÁ estiver baixo. Nunca concluem hipocalcemia sozinhas.":
+    "⚠️ ALTAMENTE INESPECÍFICAS en el paciente crítico: recuérdelas cuando el calcio YA esté bajo. Nunca concluyen hipocalcemia por sí solas.",
 };

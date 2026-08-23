@@ -96,6 +96,11 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
   const todos = [];
   const achatar = (c) => { todos.push(c); if (c.tipo === "combinado") { achatar(c.faixa); achatar(c.clinico); } };
   for (const d of disturbios) for (const g of G.GRAVIDADE_POR_DISTURBIO[d]) g.cortes.forEach(achatar);
+  // ⚠️ OS QUE NÃO ESTÃO EM DEGRAU TAMBÉM CONTAM. `apoia` e `exigeCompatibilidade`
+  // existem para ser lembrados na tela, e por isso não vivem dentro de nenhum
+  // degrau — mas seguem sendo afirmação clínica com procedência a conferir.
+  // Deixá-los fora do universo seria auditá-los por não existirem.
+  [...G.APOIAM_SINTOMATICO, ...G.EXIGEM_COMPATIBILIDADE].forEach(achatar);
 
   const clinicos = todos.filter((c) => c.tipo === "clinico");
   const pendentes = clinicos.filter((c) => !c.texto.trim());
@@ -105,8 +110,21 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
   // (1) TODO CLÍNICO COM TEXTO CHEGA À TELA. ⚠️ Hoje o universo de ativos é 0 —
   // a regra existe e não tem o que conferir, e isto sai impresso de propósito:
   // regra silenciosa com universo vazio é o falso verde que o R-101 persegue.
+  // ⚠️ "CHEGA À TELA" NÃO É "ESTÁ ESCRITO NO ARQUIVO DA TELA". A primeira versão
+  // procurava o texto literal e acusou os seis do núcleo — que a tela renderiza
+  // por `NUCLEO_SINTOMATICO.map(... tr(c.texto) ...)`. Era o R-87 dentro do
+  // próprio instrumento: literal no arquivo é proxy de renderização.
+  //
+  // O que vale é a COLEÇÃO ser percorrida e o texto de cada item ser impresso.
+  const COLECOES = { NUCLEO_SINTOMATICO: G.NUCLEO_SINTOMATICO, APOIAM_SINTOMATICO: G.APOIAM_SINTOMATICO, EXIGEM_COMPATIBILIDADE: G.EXIGEM_COMPATIBILIDADE };
+  const renderizados = new Set();
+  for (const [nome, lista] of Object.entries(COLECOES)) {
+    const percorre = new RegExp(`${nome}\\.map\\(`);
+    const imprime = /tr\(c\.texto\)/;
+    if (percorre.test(tela) && imprime.test(tela)) for (const c of lista) renderizados.add(c.texto);
+  }
   for (const c of ativos)
-    if (!tela.includes(c.texto))
+    if (!tela.includes(c.texto) && !renderizados.has(c.texto))
       erro(`critério clínico não chega à tela: « ${c.texto.slice(0, 60)} » — degrau com critério clínico não pode ser renderizado só pelo número`);
 
   // (2) `combinado` DECLARA A LIGAÇÃO, e ela é escrita, não inferida.
@@ -118,6 +136,39 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
   for (const c of clinicos)
     if (!c.procedencia?.alvo || c.procedencia.alvo.trim().length < 20)
       erro(`critério clínico sem alvo de procedência: « ${(c.texto || "(pendente)").slice(0, 40)} »`);
+
+  // (3b) O PAPEL É CAMPO, NÃO REDAÇÃO — e há afirmações que NUNCA podem definir.
+  //
+  // ⚠️ A razão é do autor e é clínica: hipotensão refratária a vasopressor e
+  // disfunção miocárdica aguda são ALTAMENTE INESPECÍFICAS no paciente crítico.
+  // Elas podem ser LEMBRADAS quando o cálcio já está baixo; usá-las para concluir
+  // que está seria transformar cinquenta causas possíveis num diagnóstico.
+  // Broncoespasmo aparece, não define.
+  const NUNCA_DEFINE = {
+    "Hipotensão refratária a vasopressor":
+      "altamente inespecífica no paciente crítico — tem cinquenta causas antes do cálcio",
+    "Disfunção miocárdica aguda":
+      "altamente inespecífica no paciente crítico — possível na hipocalcemia grave, jamais definidora",
+    Broncoespasmo: "manifestação possível, não definidora (decisão do autor, 2026-08-23)",
+  };
+  const PAPEIS = ["define", "apoia", "exigeCompatibilidade"];
+  for (const c of clinicos) {
+    if (!PAPEIS.includes(c.papel))
+      erro(`critério clínico sem papel válido: « ${c.texto.slice(0, 40)} » tem papel ${JSON.stringify(c.papel)}`);
+    if (NUNCA_DEFINE[c.texto] && c.papel === "define")
+      erro(`« ${c.texto} » foi promovida a "define" — ${NUNCA_DEFINE[c.texto]}`);
+  }
+  // E o inverso, medido no COMPORTAMENTO e não no campo: nenhum critério que não
+  // seja `define` pode classificar sozinho.
+  for (const c of clinicos.filter((x) => x.papel !== "define")) {
+    const fake = { hypo_teste: [{ rotulo: "casou", sinais: "", cortes: [c], procedencia: c.procedencia }] };
+    Object.assign(G.GRAVIDADE_POR_DISTURBIO, fake);
+    if (G.degrauDeGravidade("hypo_teste", null, false, true))
+      erro(`« ${c.texto} » (papel ${c.papel}) classificou SOZINHA — só "define" pode concluir`);
+    delete G.GRAVIDADE_POR_DISTURBIO.hypo_teste;
+  }
+  const porPapel = PAPEIS.map((p) => `${clinicos.filter((c) => c.papel === p).length} ${p}`).join(" · ");
+  console.log(`  papéis: ${porPapel}`);
 
   // (4) E O CASO QUE A FONTE NOMEIA: a hipocalcemia grave TEM critério clínico.
   // ⚠️ É esta linha que a mutação prevista derruba — apagar o `clinico` faz o
@@ -139,7 +190,7 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
   const formula = /0\.8\s*\*\s*\(\s*4\s*-/;
   if (formula.test(tela))
     erro("a correção pela albumina voltou a ser calculada DENTRO da tela — ela vive em lib/eletrolitos/calcio.ts, e duas cópias foram exatamente o defeito");
-  if (!/getSeveritySummary\(disorder,\s*leituraDoCalcio\.valor/.test(tela))
+  if (!/getSeveritySummary\(\s*disorder,\s*leituraDoCalcio\.valor/.test(tela))
     erro("a gravidade não está lendo o MESMO cálcio da dose (`leituraDoCalcio.valor`) — é o defeito dos dois cálcios voltando");
   const usosNaDose = (tela.match(/calcioParaClassificar\(/g) ?? []).length;
   if (usosNaDose < 3)

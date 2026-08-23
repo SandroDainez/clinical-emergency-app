@@ -63,6 +63,25 @@ export type ProcedenciaDeGravidade = {
  * extenso. `e` × `ou` mudam a conduta, e deixá-los para a interpretação de quem
  * lê o código é a mesma classe de defeito que os dois cálcios na mesma tela.
  */
+/**
+ * ⚠️ O PESO DA AFIRMAÇÃO É CAMPO, NÃO REDAÇÃO — mesmo princípio do `forca` nas
+ * condutas.
+ *
+ * O autor separou os sintomas de hipocalcemia em TRÊS pesos (2026-08-23), e sem
+ * um campo a distinção viraria prosa e sumiria na próxima edição:
+ *
+ *   `define`                → o núcleo sustentado pela Society for Endocrinology.
+ *                             Qualquer um deles, com cálcio abaixo da referência,
+ *                             faz o quadro ser grave independentemente do valor.
+ *   `apoia`                 → aparece, não define. É o caso do broncoespasmo.
+ *   `exigeCompatibilidade`  → ⚠️ NUNCA conclui sozinho. Hipotensão refratária a
+ *                             vasopressor e disfunção miocárdica aguda são
+ *                             ALTAMENTE INESPECÍFICAS no paciente crítico: o app
+ *                             pode lembrá-las quando o cálcio JÁ está baixo,
+ *                             nunca usá-las para concluir que está.
+ */
+export type PapelDoCriterio = "define" | "apoia" | "exigeCompatibilidade";
+
 export type CorteDeGravidade =
   | { tipo: "abaixoDe"; valor: number }
   | { tipo: "aPartirDe"; valor: number }
@@ -81,7 +100,7 @@ export type CorteDeGravidade =
    * autor, e enquanto estiver vazio o critério NUNCA casa. Vazio que casasse
    * classificaria por um critério que ninguém escreveu.
    */
-  | { tipo: "clinico"; texto: string; procedencia: ProcedenciaDeGravidade }
+  | { tipo: "clinico"; texto: string; papel: PapelDoCriterio; procedencia: ProcedenciaDeGravidade }
   /** Faixa e critério clínico, com a ligação dita por extenso. */
   | { tipo: "combinado"; faixa: CorteDeGravidade; ligacao: "e" | "ou"; clinico: CorteDeGravidade }
   /** O ECG alterado sozinho sobe o degrau, sem número. */
@@ -159,16 +178,72 @@ const P_CA = PENDENTE("limiares de cálcio — alvo: Society for Endocrinology, 
  * SINTOMA É IGUAL NOS TRÊS ENSAIOS. O corte do iônico continua pendente; o beco,
  * não.
  */
-const SINTOMA_DE_HIPOCALCEMIA: CorteDeGravidade = {
-  tipo: "clinico",
-  texto: "",
-  procedencia: PENDENTE(
-    "lista de sintomas de hipocalcemia que decide o degrau — alvo: o autor (pergunta 6 de auditoria/PERGUNTAS-AO-AUTOR-2026-08-23.md). Estrutura pronta, conteúdo vazio de propósito: critério sem texto não casa."
-  ),
-};
-const P_MG = PENDENTE("limiares de magnésio — alvo: fonte primária a nomear pelo autor");
-const P_P = PENDENTE("limiares de fósforo — alvo: fonte primária a nomear pelo autor");
+const P_MG = PENDENTE("limiares de magnésio — ⚠️ INTOCADOS por decisão do autor (2026-08-23): ele quer conferir número por número");
+const P_P = PENDENTE("limiar de fósforo grave — consenso amplo em < 0,32 mmol/L (< 1 mg/dL), nomeado pelo autor; ⚠️ NÃO rotular como diretriz internacional, e não há consenso universal para todas as faixas");
 const P_CL = PENDENTE("limiares de cloro — alvo: fonte primária a nomear pelo autor");
+
+const FONTE_SE = "Society for Endocrinology — Emergency management of acute hypocalcaemia in adult patients";
+const P_SINTOMA = (papel: PapelDoCriterio, nota: string): ProcedenciaDeGravidade => ({
+  fonte: FONTE_SE,
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: `${nota} — confirmado pelo autor; o verbatim da Society for Endocrinology ainda não foi transcrito para protocols/fontes-verbatim/`,
+});
+
+/**
+ * ⚠️ A CONDIÇÃO QUE A FONTE ESCREVEU JUNTO, E QUE O APP NÃO SABE AVALIAR.
+ *
+ * A fonte diz "sintomas em qualquer valor ABAIXO DA REFERÊNCIA" — e o app não
+ * tem o intervalo de referência do laboratório de quem está usando. Inventar um
+ * seria exatamente o defeito que este módulo passou a semana removendo.
+ *
+ * Então a condição vai ESCRITA na pergunta, e quem julga é quem tem o laudo na
+ * mão. O app não finge saber o que não sabe.
+ */
+export const SINTOMATICO_CONDICAO =
+  "Considerando o cálcio ABAIXO DA REFERÊNCIA do seu laboratório — o app não conhece o intervalo do seu método.";
+
+export const SINTOMATICO_PERGUNTA = "Há manifestação clínica de hipocalcemia?";
+
+/**
+ * O NÚCLEO — qualquer um destes, com cálcio abaixo da referência, é grave
+ * independentemente do valor. Confirmado pelo autor em 2026-08-23.
+ */
+export const NUCLEO_SINTOMATICO: CorteDeGravidade[] = [
+  { tipo: "clinico", texto: "Parestesia perioral e de extremidades", papel: "define", procedencia: P_SINTOMA("define", "parestesia perioral e de extremidades") },
+  { tipo: "clinico", texto: "Espasmo carpopedal ou tetania", papel: "define", procedencia: P_SINTOMA("define", "espasmo carpopedal / tetania") },
+  { tipo: "clinico", texto: "Sinal de Trousseau ou de Chvostek", papel: "define", procedencia: P_SINTOMA("define", "sinais de Trousseau e Chvostek") },
+  { tipo: "clinico", texto: "Laringoespasmo ou estridor", papel: "define", procedencia: P_SINTOMA("define", "laringoespasmo / estridor") },
+  { tipo: "clinico", texto: "Convulsão", papel: "define", procedencia: P_SINTOMA("define", "convulsão") },
+  { tipo: "clinico", texto: "QT prolongado e/ou arritmia", papel: "define", procedencia: P_SINTOMA("define", "QT prolongado e/ou arritmia") },
+];
+
+/** APARECE, NÃO DEFINE. */
+export const APOIAM_SINTOMATICO: CorteDeGravidade[] = [
+  { tipo: "clinico", texto: "Broncoespasmo", papel: "apoia", procedencia: P_SINTOMA("apoia", "broncoespasmo — manifestação possível, não definidora") },
+];
+
+/**
+ * ⚠️ EXIGEM COMPATIBILIDADE — e a razão é a que impede o erro: são altamente
+ * INESPECÍFICAS no paciente crítico. Hipotensão refratária a vasopressor tem
+ * cinquenta causas antes do cálcio. O app as LEMBRA quando o cálcio já está
+ * baixo; nunca conclui por elas.
+ */
+export const EXIGEM_COMPATIBILIDADE: CorteDeGravidade[] = [
+  { tipo: "clinico", texto: "Hipotensão refratária a vasopressor", papel: "exigeCompatibilidade", procedencia: P_SINTOMA("exigeCompatibilidade", "hipotensão refratária a vasopressor — possível na hipocalcemia grave, altamente inespecífica no crítico") },
+  { tipo: "clinico", texto: "Disfunção miocárdica aguda", papel: "exigeCompatibilidade", procedencia: P_SINTOMA("exigeCompatibilidade", "disfunção miocárdica aguda — possível na hipocalcemia grave, altamente inespecífica no crítico") },
+];
+
+/**
+ * ⚠️ O CÁLCIO IONIZADO NÃO GANHOU FAIXA DE GRAVIDADE, por decisão do autor — e a
+ * decisão é o oposto de omissão: usa-se o valor medido, a REFERÊNCIA DO
+ * LABORATÓRIO e o contexto. Converter o corte do total/ajustado para o ionizado
+ * está explicitamente proibido.
+ */
+export const IONIZADO_NOTAS = [
+  "O cálcio ionizado é influenciado pelo pH — alcalose reduz a fração ionizada sem mudar o cálcio total.",
+  "Os intervalos de referência do ionizado dependem do MÉTODO e do EQUIPAMENTO: use a referência do laudo, não um número decorado.",
+  "Por isso este app não cria faixas de gravidade para o ionizado. O ramo sintomático acima responde igual nos três ensaios.",
+];
 
 export const AGUARDANDO_VALOR = {
   rotulo: "Aguardando valor",
@@ -201,7 +276,12 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     {
       rotulo: "Grave",
       sinais: "Tetania, broncoespasmo, convulsão e QT longo.",
-      cortes: [{ tipo: "combinado", faixa: { tipo: "abaixoDe", valor: 7 }, ligacao: "ou", clinico: SINTOMA_DE_HIPOCALCEMIA }],
+      // ⚠️ `ou` entre o número e CADA um do núcleo: o sintoma sozinho basta.
+      cortes: [
+        ...NUCLEO_SINTOMATICO.map((c): CorteDeGravidade => ({
+          tipo: "combinado", faixa: { tipo: "abaixoDe", valor: 7 }, ligacao: "ou", clinico: c,
+        })),
+      ],
       procedencia: P_CA,
     },
     { rotulo: "Leve a moderada", sinais: "Parestesia perioral, câimbras e desconforto neuromuscular.", cortes: [{ tipo: "restante" }], procedencia: P_CA },
@@ -244,7 +324,12 @@ function casa(corte: CorteDeGravidade, valor: number | null, ecgAlterado: boolea
     case "faixa": return valor != null && valor >= corte.de && valor < corte.ate;
     // ⚠️ PENDENTE NÃO CASA: texto vazio é estrutura à espera do autor, e um
     // critério sem texto classificando seria classificar por nada.
-    case "clinico": return corte.texto.trim().length > 0 && sintomatico === true;
+    // ⚠️ SÓ `define` CLASSIFICA. `apoia` e `exigeCompatibilidade` existem para
+    // serem LEMBRADOS na tela, nunca para concluir — e é isso que impede uma
+    // hipotensão refratária (inespecífica no crítico) de virar diagnóstico de
+    // hipocalcemia.
+    case "clinico":
+      return corte.papel === "define" && corte.texto.trim().length > 0 && sintomatico === true;
     case "combinado": {
       const a = casa(corte.faixa, valor, ecgAlterado, sintomatico);
       const b = casa(corte.clinico, valor, ecgAlterado, sintomatico);

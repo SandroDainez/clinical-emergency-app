@@ -154,7 +154,12 @@ function isProcedencia(prefixo) {
   // pendência, não como valor de campo — o prefixo que a varredura vê é a
   // abertura do parêntese, e sem esta metade a regra de `alvo:` não alcança
   // nenhuma das 8 pendências que ela existe para dispensar.
-  return /\b(?:fonte|alvo)\s*:\s*$/.test(prefixo) || /\b(?:PENDENTE|QUIMICA)\(\s*$/.test(prefixo);
+  // ⚠️ `P_SINTOMA("define", "…")` tem o alvo no SEGUNDO argumento — a fábrica
+  // recebe o papel antes. Sem esta metade, a descrição de cada pendência (que
+  // ninguém renderiza) seria cobrada como texto de tela.
+  return /\b(?:fonte|alvo)\s*:\s*$/.test(prefixo)
+    || /\b(?:PENDENTE|QUIMICA)\(\s*$/.test(prefixo)
+    || /\bP_SINTOMA\([^)]*$/.test(prefixo);
 }
 
 function isSpeakMessage(lines, lit) {

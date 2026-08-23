@@ -10,7 +10,16 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
-import { AGUARDANDO_VALOR, degrauDeGravidade } from "../../lib/eletrolitos/gravidade";
+import {
+  AGUARDANDO_VALOR,
+  APOIAM_SINTOMATICO,
+  degrauDeGravidade,
+  EXIGEM_COMPATIBILIDADE,
+  IONIZADO_NOTAS,
+  NUCLEO_SINTOMATICO,
+  SINTOMATICO_CONDICAO,
+  SINTOMATICO_PERGUNTA,
+} from "../../lib/eletrolitos/gravidade";
 // ⚠️ QUAL CÁLCIO — a tela usava DOIS (bruto para gravidade, ajustado para dose).
 import {
   CALCIO_ONDE_ACHAR,
@@ -472,8 +481,13 @@ function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): n
  * Foi para `lib/eletrolitos/gravidade.ts` SEM MUDAR NENHUM NÚMERO — mover
  * conteúdo não decide conteúdo.
  */
-function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgChanges: boolean) {
-  const degrau = degrauDeGravidade(disorder, current, ecgChanges);
+function getSeveritySummary(
+  disorder: DisorderKey,
+  current: number | null,
+  ecgChanges: boolean,
+  sintomatico: boolean | null = null
+) {
+  const degrau = degrauDeGravidade(disorder, current, ecgChanges, sintomatico);
   if (!degrau) return { label: AGUARDANDO_VALOR.rotulo, signs: AGUARDANDO_VALOR.sinais };
   return { label: degrau.rotulo, signs: degrau.sinais };
 }
@@ -1895,6 +1909,10 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   // ⚠️ O CAMPO PERGUNTA QUAL CÁLCIO. Antes ele pedia "Cálcio (mg/dL)" e a tela
   // decidia sozinha — com dois cálcios diferentes em dois lugares.
   const [tipoDeCalcio, setTipoDeCalcio] = useState<TipoDeCalcio>("total");
+  // ⚠️ SINTOMA PRIMEIRO, NÚMERO DEPOIS — decisão do autor: "a presença de
+  // manifestações clínicas relevantes deve prevalecer sobre uma classificação
+  // exclusivamente numérica". `null` = ninguém respondeu ainda.
+  const [temSintomaDeCalcio, setTemSintomaDeCalcio] = useState<boolean | null>(null);
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
@@ -1932,7 +1950,12 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   const leituraDoCalcio = ehCalcio
     ? calcioParaClassificar({ tipo: tipoDeCalcio, valor: parsedCurrent, albumina: parseNumber(albumin) })
     : { valor: parsedCurrent, aviso: null };
-  const severitySummary = getSeveritySummary(disorder, leituraDoCalcio.valor, ecgChanges);
+  const severitySummary = getSeveritySummary(
+    disorder,
+    leituraDoCalcio.valor,
+    ecgChanges,
+    disorder === "hypocalcemia" ? temSintomaDeCalcio : null
+  );
   const hypernatremiaVolumeSummary = useMemo(() => {
     if (disorder !== "hypernatremia") return null;
 
@@ -2456,6 +2479,43 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                   </View>
                 </View>
                 {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
+                {disorder === "hypocalcemia" ? (
+                  <View style={styles.inputGroup}>
+                    {/* ⚠️ VEM ANTES DO NÚMERO, de propósito: é o critério que decide. */}
+                    <Text style={styles.inputLabel}>{tr(SINTOMATICO_PERGUNTA)}</Text>
+                    <Text style={styles.referralLine}>{tr(SINTOMATICO_CONDICAO)}</Text>
+                    <View style={styles.rowWrap}>
+                      {renderPill(tr("Sim"), temSintomaDeCalcio === true, () => setTemSintomaDeCalcio(true))}
+                      {renderPill(tr("Não"), temSintomaDeCalcio === false, () => setTemSintomaDeCalcio(false))}
+                      {renderPill(tr("Quais são?"), temSintomaDeCalcio === null, () => setTemSintomaDeCalcio(null))}
+                    </View>
+                    {temSintomaDeCalcio === null ? (
+                      <>
+                        <Text style={styles.inputLabel}>{tr("Definem hipocalcemia sintomática")}</Text>
+                        {NUCLEO_SINTOMATICO.map((c) =>
+                          c.tipo === "clinico" ? (
+                            <Text key={c.texto} style={styles.referralLine}>• {tr(c.texto)}</Text>
+                          ) : null
+                        )}
+                        <Text style={styles.inputLabel}>{tr("Aparecem, mas não definem")}</Text>
+                        {APOIAM_SINTOMATICO.map((c) =>
+                          c.tipo === "clinico" ? (
+                            <Text key={c.texto} style={styles.referralLine}>• {tr(c.texto)}</Text>
+                          ) : null
+                        )}
+                        <Text style={styles.inputLabel}>{tr("Possíveis na hipocalcemia grave — exigem compatibilidade")}</Text>
+                        <Text style={styles.referralLine}>
+                          {tr("⚠️ ALTAMENTE INESPECÍFICAS no paciente crítico: lembre-as quando o cálcio JÁ estiver baixo. Nunca concluem hipocalcemia sozinhas.")}
+                        </Text>
+                        {EXIGEM_COMPATIBILIDADE.map((c) =>
+                          c.tipo === "clinico" ? (
+                            <Text key={c.texto} style={styles.referralLine}>• {tr(c.texto)}</Text>
+                          ) : null
+                        )}
+                      </>
+                    ) : null}
+                  </View>
+                ) : null}
                 {ehCalcio ? (
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>{tr(CALCIO_PERGUNTA)}</Text>
@@ -2466,6 +2526,11 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                     </View>
                   </View>
                 ) : null}
+                {ehCalcio && tipoDeCalcio === "ionico"
+                  ? IONIZADO_NOTAS.map((linha) => (
+                      <Text key={linha} style={styles.referralLine}>• {tr(linha)}</Text>
+                    ))
+                  : null}
                 {ehCalcio && tipoDeCalcio === "nao_sei"
                   ? CALCIO_ONDE_ACHAR.map((linha) => (
                       <Text key={linha} style={styles.referralLine}>• {tr(linha)}</Text>

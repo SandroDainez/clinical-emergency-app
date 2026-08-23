@@ -3576,3 +3576,34 @@ fonte tem critério e o modelo só sabe número — e modelo que só aceita núm
 com a trava e a mutação previstas. Alvo: "pode aplicar" do autor.
 
 </details>
+
+## D-90 — O CORTE DE HIPOCALCEMIA DO APP NÃO É O DA FONTE
+
+Medido em 2026-08-23, ao conferir a conversão. **Nada foi alterado.**
+
+- **fonte:** grave = cálcio ajustado **< 1,9 mmol/L** ≈ **7,62 mg/dL**
+- **app:** grave = **< 7 mg/dL** ≈ 1,75 mmol/L
+
+**A faixa 7,00–7,62 mg/dL o app chama de "leve a moderada" e a fonte chama de
+GRAVE.** O corte foi adotado da fonte e **a conversão nunca foi conferida** — é
+o defeito que a auditoria existe para achar, e a prova de que conversão de
+unidade tem que morar no dado, declarada.
+
+⚠️ **Mitigação parcial, desde a mesma data:** o ramo sintomático classifica como
+grave qualquer manifestação clínica em qualquer valor. Escapa o **assintomático**
+na faixa.
+
+Conta completa em `auditoria/CONVERSAO-CALCIO-APP-VS-FONTE.md`. Alvo: pergunta 9
+ao autor. ⚠️ Não corrigido de propósito — trocar número clínico com base numa
+conta minha é o R-5.
+
+## D-91 — A FAIXA DO MEIO DA HIPERCALCEMIA NÃO EXISTE NO APP
+
+A fonte tem três faixas; o app tem uma. O corte de cima praticamente coincide
+(14 mg/dL ≈ 3,49 mmol/L contra 3,5 — dentro do arredondamento). **Falta
+3,0–3,5 mmol/L ≈ 12,02–14,03 mg/dL**, que a fonte descreve como *"trata conforme
+sintomas e contexto"*.
+
+⚠️ Ela **não é faixa pura** — é `combinado` (faixa + critério clínico), e o
+texto de conduta é do autor (pergunta 7). A estrutura para expressá-la já existe
+desde a aplicação do tipo `combinado`.

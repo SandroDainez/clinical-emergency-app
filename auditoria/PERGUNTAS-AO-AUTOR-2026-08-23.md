@@ -141,3 +141,28 @@ que a fonte descreve como *"trata conforme sintomas e contexto"*.
 
 `< 1,2` e `≥ 4,9` mg/dL continuam exatamente como estavam, sem fonte. Aguardando
 a sua conferência **número a número**, como o senhor pediu.
+
+
+---
+
+## 9 · ⚠️ O corte de hipocalcemia do app NÃO é o corte da fonte
+
+Achado ao conferir a conversão que o senhor mandou fazer. Medido, não alterado —
+a conta está em `auditoria/CONVERSAO-CALCIO-APP-VS-FONTE.md`.
+
+| | valor | equivalente |
+|---|---|---|
+| fonte (Society for Endocrinology) | **< 1,9 mmol/L** | **≈ 7,62 mg/dL** |
+| app, hoje | **< 7 mg/dL** | ≈ 1,75 mmol/L |
+
+**A faixa 7,00–7,62 mg/dL o app chama de "leve a moderada" e a fonte chama de
+GRAVE.** O ramo sintomático que entrou hoje pega quem tem manifestação clínica em
+qualquer valor — escapa o **assintomático** nessa faixa.
+
+> **O corte do app passa a ser 7,6 mg/dL (o equivalente de 1,9 mmol/L), ou fica
+> em 7?**
+> ⚠️ Não mudei nada: trocar número clínico com base numa conta minha é o R-5.
+
+**Hipercalcemia, na mesma conta:** o corte de cima praticamente coincide
+(14 mg/dL ≈ 3,49 mmol/L contra 3,5 — diferença dentro do arredondamento). O que
+falta mesmo é a **faixa do meio**, que é a pergunta 7.
