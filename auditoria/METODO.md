@@ -6569,3 +6569,46 @@ versão acusou três números legítimos: diferença < 0,1 é o mesmo corte com 
 casas; entre 0,1 e 1,0 é o número que **queria ser o corte e ficou para trás**;
 acima de 1,0 é outro número, com outro propósito clínico. **Trava que grita por
 número legítimo é trava que se desliga.**
+
+## R-115 — UMA TRAVA PODE FOSSILIZAR O DEFEITO QUE DEVERIA IMPEDIR
+
+> **Trava se escreve a partir da FONTE, não do comportamento.** Um critério
+> derivado do que o código faz hoje não é verificação — é fotografia. Se a trava
+> não puder apontar de onde vem o que ela exige, ela **documenta o presente e
+> impede o futuro**.
+
+O caso (2026-08-23): `valida-calculadoras` rodava a varredura do ânion gap **sem
+albumina** e exigia que a calculadora dissesse *"normal"*. Ela dizia, e a trava
+aprovava. Quem a escreveu olhou o comportamento, achou razoável, e o transformou
+em exigência — **a partir dali, consertar o defeito passava a reprovar**.
+
+É o R-87 na forma mais difícil de ver: **a trava mediu o código contra si
+mesmo.**
+
+⚠️ **E a inversão perversa:** quanto mais travas o repositório tem, **mais caro
+fica corrigir um erro antigo** — cada trava escrita a partir do comportamento
+observado é uma âncora.
+
+### ⚠️ E O QUE A VARREDURA DA FUNDAÇÃO ENSINOU SOBRE ESTA REGRA
+
+A medição de origem (`npm run medir:origem`, 87 instrumentos) classificou
+`valida-calculadoras` — **a única fossilização que conhecemos** — como *fonte
+clínica*. O cabeçalho dela cita fontes de verdade; o que estava podre era **um
+caso de teste no meio do corpo**.
+
+> **A fossilização não se detecta lendo a trava. Detecta-se CONSERTANDO O DEFEITO
+> e vendo a trava brigar.**
+
+A varredura mostra **onde a origem não está escrita** — que é útil e é onde
+olhar. Mas ela **não é o instrumento que acha fossilização**, e dizer o contrário
+seria vender falso conforto.
+
+## R-116 — NÃO SE DEFORMA CONTEÚDO CLÍNICO PARA AGRADAR INSTRUMENTO
+
+> **Quando o instrumento e o texto clínico brigam, o texto ganha e o falso
+> positivo fica registrado.** Reescrever a frase para caber no regex é otimizar o
+> número às custas do paciente — e **o número era proxy do paciente, nunca o
+> contrário**.
+
+O falso positivo aceito, com nome, vive em `auditoria/EXCECOES-DECLARADAS.md`.
+Ele **não é dívida a resolver**: é o custo aceito do instrumento.

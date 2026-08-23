@@ -29,6 +29,7 @@
     "test:texto-vs-corte": "node ./scripts/valida-texto-vs-corte.cjs",
     "test:gravidade-eletrolitica": "node ./scripts/valida-gravidade-eletrolitica.cjs",
     "medir:conteudo": "node ./scripts/mede-conteudo-clinico.cjs",
+    "medir:origem": "node ./scripts/mede-origem-das-travas.cjs",
     "medir:queda": "node ./scripts/mede-conclusao-por-queda.cjs",
     "medir:pt-es": "node ./scripts/compara-numeros-pt-es.cjs",
     "test:i18n": "node ./scripts/varredura-pt.cjs",
