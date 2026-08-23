@@ -3324,3 +3324,23 @@ mutação que prova que ela mede o REFERENTE e não o resultado: trocar a fraç�
 ⚠️ **E a lição é da estrutura:** o catálogo guarda `dose` como TEXTO. Quando a fonte
 escreve FRAÇÃO, o texto carrega um **referente** que o dado não representa — e alguém
 resolve à mão, uma vez, e o resultado passa a parecer número.
+
+## D-80 — DUAS LINHAS EM QUE O ESPANHOL NÃO É TRADUÇÃO (`lib/i18n/modules/sepse-vasoativos.ts`)
+
+Achadas pela medição PT × ES de 2026-08-23 (`npm run medir:pt-es`). Não são erro
+de número — os números batem. São **conteúdo clínico diferente**, e por isso
+nenhuma trava de tradução as pegaria.
+
+1. **O critério da hidrocortisona virou vago.**
+   - PT: "Considerar hidrocortisona 200 mg/dia **se a dose se mantiver ≥ 0,25 por pelo menos 4 h**."
+   - ES: "Considerar hidrocortisona 200 mg/día **si el choque persiste**."
+   Um critério quantitativo (dose e tempo) virou um critério de julgamento. Não é
+   a mesma conduta.
+
+2. **Uma frase de conduta inteira não atravessou.**
+   - PT termina: "Se a noradrenalina está subindo, associar poupa alfa — **não esperar chegar a 0,5**."
+   - ES termina em "dosis en escalada." A instrução some.
+
+⚠️ NÃO CORRIGIDO DE PROPÓSITO: qual das duas versões é a certa é decisão clínica
+do autor, não conserto de tradução. Alvo: veredito do Dr. Sandro Dainez sobre
+cada uma das duas linhas.

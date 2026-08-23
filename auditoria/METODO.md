@@ -6374,3 +6374,23 @@ São eixos independentes, e confundi-los custa das duas formas:
 é a MULTIPLICAÇÃO — o momento de estender o padrão do módulo-piloto aos outros.
 Enquanto o veredito não vem, o motor amadurece em um módulo só, onde desfazer é
 barato.
+
+## R-107 — NÚMERO NO DICIONÁRIO TEM DUAS DONAS
+
+Enquanto a dose mora dentro da frase traduzível, ela existe **duas vezes**: uma
+em português, outra em espanhol, escritas em momentos diferentes, sem nada entre
+elas. É o mesmo defeito do `doseUsual` em prosa ao lado da base — só que
+multiplicado por 3.613 pares e distribuído por 121 dicionários.
+
+A medição de 2026-08-23 mostrou o formato do risco: **zero divergências
+numéricas**, e ainda assim duas linhas em que o espanhol não é tradução, é OUTRO
+critério clínico (um limiar quantitativo virou "se o choque persistir"; uma frase
+de conduta inteira não atravessou). Nenhuma trava podia ter pego isso, porque
+não há divergência de número — há divergência de **frase**.
+
+**A regra:** o número vive uma vez, no dado. A tradução traduz a MOLDURA em volta
+dele. Os dois idiomas mostram o mesmo número por construção, não por revisão —
+e o que sobra para revisar é texto, onde a revisão humana funciona.
+
+⚠️ Este é o argumento mais forte a favor do motor, e ele não veio de gosto por
+arquitetura: veio de medir.

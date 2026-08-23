@@ -129,6 +129,19 @@ export const MODULOS_CANONICOS: ModuloCanonico[] = [
   },
   { id: "choque", rotulo: "Choque", apelidos: ["shock"] },
   {
+    // ⚠️ ENTRADA QUE FALTOU POR TODA A AUDITORIA DE AGOSTO DE 2026.
+    //
+    // O módulo renal foi auditado por semanas — e estava fora deste mapa o tempo
+    // inteiro. Não foi silêncio: valida-rastreabilidade AVISAVA, em três linhas
+    // ("ira" com 11 afirmações críticas, "ira-flow" com 1, e um ERRO dizendo que
+    // guidelines_metadata cita um módulo que o mapa não conhece). O aviso existia
+    // e passou. É o R-87 na forma mais cara: o universo tinha um buraco nomeado,
+    // e o buraco era justamente o módulo que estávamos medindo.
+    id: "injuria-renal-aguda",
+    rotulo: "Injúria renal aguda",
+    apelidos: ["ira", "ira-flow", "injuria_renal_aguda", "aki", "renal"],
+  },
+  {
     id: "insuficiencia-respiratoria",
     rotulo: "Insuficiência respiratória",
     apelidos: ["dyspnea", "insuficiencia_respiratoria", "dispneia"],
