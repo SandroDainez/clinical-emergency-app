@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**54 de 71 travas com declaração completa.**
+**58 de 75 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -84,11 +84,35 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 _não executa script em scripts/ (e2e, playwright)_
 
+## `test:gravidade-eletrolitica` → `scripts/valida-gravidade-eletrolitica.cjs`
+
+- **PROMETE:** que os 12 distúrbios eletrolíticos tenham a classificação de gravidade COMO DADO, cada degrau com procedência de ALVO NOMEADO; que nenhum distúrbio fique sem degrau de base; que `getSeveritySummary` não volte a comparar contra o valor do paciente; e que um distúrbio existente SÓ no dado seja classificado sem tocar no componente.
+- **NÃO PROMETE:** que os 12 cortes estejam clínicos certos — nenhum tem fonte ainda, e é exatamente isso que o campo `alvo` declara. Também não cobre o resto da tela: imprime, a cada rodada, quantas comparações contra o valor do paciente continuam no componente (D-84).
+- **UNIVERSO:** `lib/eletrolitos/gravidade.ts`, compilado, com piso no retrato de 2026-08-23 (12 distúrbios, 24 degraus). A GRAVIDADE ELETROLÍTICA CONTINUA SENDO DADO — e o componente continua sem classificar. ⚠️ O QUE ESTA TRAVA IMPEDE: que o próximo corte volte para dentro do JSX. A extração é barata de fazer e barata de desfazer — basta alguém escrever `current < 3` numa condição de tela e o conteúdo clínico volta a morar onde nenhum instrumento o vê. ⚠️ E ELA CONFERE O QUE FOI EXTRAÍDO, não se a extração aconteceu: conta os degraus, exige procedência com ALVO nomeado em cada um, e prova que um distúrbio que existe SÓ no dado é classificado sem ninguém tocar no componente.
+
 ## `audit:confirmacao` → `scripts/diag-confirmacao-repetida.cjs`
 
 - **PROMETE:** ⚠️ NÃO DECLARADO
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
+
+## `audit:calculos` → `scripts/auditoria-calculos.cjs`
+
+- **PROMETE:** que toda fórmula e todo escore das calculadoras rodem sem exceção e devolvam número finito nos casos varridos; e — desde 2026-08-23 — que qualquer achado que ELE MESMO classifica como "erro" REPROVE o build.
+- **NÃO PROMETE:** que a fórmula seja a fórmula clínica certa. Ele confere que o cálculo não quebra e não devolve absurdo, não que o número seja o correto para o paciente — isso é conferência de fonte, e é do médico.
+- **UNIVERSO:** as ferramentas de `clinical-calculators-engine.ts`, compiladas, com fórmulas e escores contados e impressos antes do resultado. CAMADA 4 — Auditoria de doses, diluições e cálculos. Dirige TODAS as calculadoras do app com valores-limite e observa o que sai. Não confere se a fórmula é a certa segundo a diretriz — confere se ela se comporta: um `NaN`, um `Infinity` ou um número negativo chegando à tela como dose é risco clínico independente de qual fórmula deveria estar ali. Casos exercitados, seguindo a lista do plano: - campo vazio, ausente e só espaço; - zero e negativo; - valores extremos (peso de 1 kg e de 400 kg, altura de 50 cm e 250 cm); - vírgula e ponto decimal (o app é pt-BR: "72,5" precisa valer); - texto onde se espera número; - casas decimais longas; - todos os presets declarados pela própria ferramenta. Para escores: verifica se `interpret` cobre a faixa inteira declarada em `totalRange`, extremos inclusive — faixa com buraco significa paciente sem classificação. Uso: node scripts/auditoria-calculos.cjs
+
+## `audit:doses` → `scripts/auditoria-doses-criticas.cjs`
+
+- **PROMETE:** que as conversões dose ↔ velocidade das vasoativas e da sedação sejam monotônicas, respeitem teto e BLOQUEIEM peso ausente ou inválido; e que achado classificado como "erro" REPROVE o build.
+- **NÃO PROMETE:** cobertura do trombolítico. Os dois arquivos que a continham foram apagados em a9b16ad e ele passou a CRASHAR em silêncio (D-83). Hoje ele imprime `Blocos PULADOS: 2` a cada rodada, em vez de pular calado.
+- **UNIVERSO:** `vasoactive-engine.ts` e `sedation-engine.ts`, compilados; o número de conversões testadas sai impresso junto do resultado. CAMADA 4 (parte 2) — Funções críticas de dose fora do motor de calculadoras. O `clinical-calculators-engine` tem 15 ferramentas. As contas de MAIOR risco não estão lá: conversão dose ↔ velocidade de infusão das drogas vasoativas, bolus e infusão de sedação, dose de trombolítico por peso no AVC e nas síndromes coronarianas. São elas que produzem o número que entra na bomba. ## A propriedade central: IDA E VOLTA `calcFromDose` transforma dose em mL/h; `calcFromRate` faz o caminho inverso. Aplicar as duas em sequência tem de devolver a dose original. Se não devolver, há erro de conversão — e é o tipo de erro que não aparece em revisão de código, porque cada função isolada parece certa. É teste de PROPRIEDADE, não de exemplo: vale para toda combinação de droga, peso, diluição e unidade, não para um caso escolhido a dedo. ## O resto Limites (dose máxima respeitada), monotonicidade (mais peso nunca dá menos dose), peso ausente (tem de BLOQUEAR, não estimar), e valores impossíveis. Uso: node scripts/auditoria-doses-criticas.cjs
+
+## `audit:rastreabilidade` → `scripts/valida-rastreabilidade.cjs`
+
+- **PROMETE:** que todo módulo com conteúdo clínico crítico tenha diretriz declarada em `guidelines_metadata.json`; que toda grafia de módulo usada por lá exista no mapa canônico; e — desde 2026-08-23 — que achado classificado como "erro" REPROVE o build. Antes ele saía com código 0 com 1 erro no meio de 50 avisos, e o erro era o módulo renal fora do mapa.
+- **NÃO PROMETE:** que a diretriz declarada seja a certa, nem que esteja vigente. Ele confere que EXISTE declaração e que os nomes casam — a data de revisão continua saindo como aviso, não como reprovação.
+- **UNIVERSO:** `guidelines_metadata.json` × `lib/modulos-canonicos.ts`, com o número de módulos críticos impresso antes do resultado. CAMADA 9 — Rastreabilidade: cada módulo clínico sabe de qual diretriz veio? ───────────────────────────────────────────────────────────────────────────── Por que isto vem ANTES da auditoria científica São 5.752 afirmações de risco crítico no app. Auditar cada uma exige saber contra o que conferir. Hoje a resposta está espalhada: parte em `protocols/guidelines_metadata.json`, parte escrita em comentário no topo do arquivo, parte em lugar nenhum. Este script mede a cobertura e aponta os buracos. Ele não julga se a diretriz citada é a certa nem se ela sustenta a afirmação — isso é a auditoria científica em si, com as fontes abertas e olho médico. ## O que verifica 1. módulo com conteúdo clínico e NENHUMA diretriz declarada; 2. diretriz cadastrada que não é usada por módulo nenhum; 3. `modules_using` apontando para módulo que não existe; 4. grafia de módulo que o mapa canônico ainda não conhece; 5. diretriz vencida pela própria política de revisão do app. Uso: node scripts/valida-rastreabilidade.cjs
 
 ## `validate:acls-audio` → `scripts/validate-acls-audio.cjs`
 

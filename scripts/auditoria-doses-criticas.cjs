@@ -1,5 +1,14 @@
 #!/usr/bin/env node
 /**
+ * PROMETE: que as conversões dose ↔ velocidade das vasoativas e da sedação
+ *   sejam monotônicas, respeitem teto e BLOQUEIEM peso ausente ou inválido; e
+ *   que achado classificado como "erro" REPROVE o build.
+ * NÃO PROMETE: cobertura do trombolítico. Os dois arquivos que a continham
+ *   foram apagados em a9b16ad e ele passou a CRASHAR em silêncio (D-83). Hoje
+ *   ele imprime `Blocos PULADOS: 2` a cada rodada, em vez de pular calado.
+ * UNIVERSO: `vasoactive-engine.ts` e `sedation-engine.ts`, compilados; o número
+ *   de conversões testadas sai impresso junto do resultado.
+ *
  * CAMADA 4 (parte 2) — Funções críticas de dose fora do motor de calculadoras.
  *
  * O `clinical-calculators-engine` tem 15 ferramentas. As contas de MAIOR risco não
@@ -40,16 +49,23 @@ execFileSync(
     "--outDir", tempDir,
     path.join(appDir, "vasoactive-engine.ts"),
     path.join(appDir, "sedation-engine.ts"),
-    path.join(appDir, "avc", "calculators.ts"),
-    path.join(appDir, "coronary", "calculators.ts"),
+    // ⚠️ COBERTURA REDUZIDA, DECLARADA (D-83): apontava também para
+    // `avc/calculators.ts` e `coronary/calculators.ts`, apagados no refactor
+    // a9b16ad. Desde então este instrumento CRASHAVA na compilação a cada
+    // rodada — e ninguém viu, porque ele não estava no test:all. Voltou a rodar
+    // sobre os dois que existem. O que deixou de ser auditado está na D-83.
   ],
   { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
 );
 
 const vaso = require(path.join(tempDir, "vasoactive-engine.js"));
 const sed = require(path.join(tempDir, "sedation-engine.js"));
-const avc = require(path.join(tempDir, "avc", "calculators.js"));
-const cor = require(path.join(tempDir, "coronary", "calculators.js"));
+// ⚠️ D-83: os dois módulos de trombolítico não têm mais este arquivo. Objeto
+// vazio faz os blocos que dependem deles serem PULADOS — e o pulo é contado e
+// impresso no fim, para não virar cobertura silenciosa.
+let pulados = 0;
+const avc = {};
+const cor = {};
 
 const achados = [];
 const registrar = (area, gravidade, tipo, detalhe) =>
@@ -145,49 +161,55 @@ for (const unidade of UNIDADES) {
 }
 
 // ── 2. Trombolítico do AVC ──────────────────────────────────────────────────
-const trombos = ["alteplase", "tenecteplase"];
-for (const id of trombos) {
-  // Peso ausente TEM de bloquear: dose de trombolítico estimada é risco de sangramento.
-  for (const peso of [null, 0, -70]) {
-    const r = avc.calculateThrombolyticDose(id, peso, false);
-    if (r && r.totalDoseMg != null) {
-      registrar("avc-trombolitico", "erro", "peso-ausente-nao-bloqueia", `${id} com peso ${peso} devolveu ${r.totalDoseMg} mg`);
+if (typeof avc.calculateThrombolyticDose === "function") {
+  const trombos = ["alteplase", "tenecteplase"];
+  for (const id of trombos) {
+    // Peso ausente TEM de bloquear: dose de trombolítico estimada é risco de sangramento.
+    for (const peso of [null, 0, -70]) {
+      const r = avc.calculateThrombolyticDose(id, peso, false);
+      if (r && r.totalDoseMg != null) {
+        registrar("avc-trombolitico", "erro", "peso-ausente-nao-bloqueia", `${id} com peso ${peso} devolveu ${r.totalDoseMg} mg`);
+      }
+    }
+
+    let anterior = -Infinity;
+    let tetoVisto = null;
+    for (const peso of [30, 50, 70, 90, 100, 120, 200, 400]) {
+      const r = avc.calculateThrombolyticDose(id, peso, false);
+      if (!r || r.totalDoseMg == null) continue;
+      if (!Number.isFinite(r.totalDoseMg) || r.totalDoseMg <= 0) {
+        registrar("avc-trombolitico", "erro", "dose-invalida", `${id} peso ${peso} → ${r.totalDoseMg} mg`);
+      }
+      if (r.totalDoseMg < anterior) {
+        registrar("avc-trombolitico", "erro", "nao-monotonico", `${id}: peso ${peso} recebe MENOS dose que peso menor`);
+      }
+      anterior = r.totalDoseMg;
+      if (tetoVisto === null && peso >= 120) tetoVisto = r.totalDoseMg;
+      // Bolus + infusão têm de somar o total.
+      if (r.bolusDoseMg != null && r.infusionDoseMg != null) {
+        const soma = r.bolusDoseMg + r.infusionDoseMg;
+        if (Math.abs(soma - r.totalDoseMg) > 0.51) {
+          registrar(
+            "avc-trombolitico", "erro", "bolus-mais-infusao-nao-fecha",
+            `${id} peso ${peso}: bolus ${r.bolusDoseMg} + infusão ${r.infusionDoseMg} = ${soma} ≠ total ${r.totalDoseMg}`
+          );
+        }
+      }
+    }
+    // Teto de dose: peso alto não pode escalar sem limite.
+    const gigante = avc.calculateThrombolyticDose(id, 400, false);
+    const normal = avc.calculateThrombolyticDose(id, 100, false);
+    if (gigante?.totalDoseMg && normal?.totalDoseMg && gigante.totalDoseMg > normal.totalDoseMg * 1.5) {
+      registrar(
+        "avc-trombolitico", "aviso", "sem-teto-aparente",
+        `${id}: peso 400 kg → ${gigante.totalDoseMg} mg (peso 100 kg → ${normal.totalDoseMg} mg)`
+      );
     }
   }
 
-  let anterior = -Infinity;
-  let tetoVisto = null;
-  for (const peso of [30, 50, 70, 90, 100, 120, 200, 400]) {
-    const r = avc.calculateThrombolyticDose(id, peso, false);
-    if (!r || r.totalDoseMg == null) continue;
-    if (!Number.isFinite(r.totalDoseMg) || r.totalDoseMg <= 0) {
-      registrar("avc-trombolitico", "erro", "dose-invalida", `${id} peso ${peso} → ${r.totalDoseMg} mg`);
-    }
-    if (r.totalDoseMg < anterior) {
-      registrar("avc-trombolitico", "erro", "nao-monotonico", `${id}: peso ${peso} recebe MENOS dose que peso menor`);
-    }
-    anterior = r.totalDoseMg;
-    if (tetoVisto === null && peso >= 120) tetoVisto = r.totalDoseMg;
-    // Bolus + infusão têm de somar o total.
-    if (r.bolusDoseMg != null && r.infusionDoseMg != null) {
-      const soma = r.bolusDoseMg + r.infusionDoseMg;
-      if (Math.abs(soma - r.totalDoseMg) > 0.51) {
-        registrar(
-          "avc-trombolitico", "erro", "bolus-mais-infusao-nao-fecha",
-          `${id} peso ${peso}: bolus ${r.bolusDoseMg} + infusão ${r.infusionDoseMg} = ${soma} ≠ total ${r.totalDoseMg}`
-        );
-      }
-    }
-  }
-  // Teto de dose: peso alto não pode escalar sem limite.
-  const gigante = avc.calculateThrombolyticDose(id, 400, false);
-  const normal = avc.calculateThrombolyticDose(id, 100, false);
-  if (gigante?.totalDoseMg && normal?.totalDoseMg && gigante.totalDoseMg > normal.totalDoseMg * 1.5) {
-    registrar(
-      "avc-trombolitico", "aviso", "sem-teto-aparente",
-      `${id}: peso 400 kg → ${gigante.totalDoseMg} mg (peso 100 kg → ${normal.totalDoseMg} mg)`
-    );
-  }
+} else {
+  // ⚠️ PULO CONTADO, não silencioso: o arquivo auditado não existe mais (D-83).
+  pulados++;
 }
 
 // ── 3. Sedação ──────────────────────────────────────────────────────────────
@@ -216,6 +238,9 @@ for (const peso of [0, -10]) {
 }
 
 // ── 4. Trombolítico e anticoagulação coronariana ────────────────────────────
+// ⚠️ ESTA GUARDA JÁ EXISTIA E ERA MUDA: pulava o bloco inteiro sem dizer, o que
+// é cobertura silenciosa — a pior espécie, porque o relatório sai limpo.
+if (typeof cor.calculateLyticDose !== "function") pulados++;
 if (typeof cor.calculateLyticDose === "function") {
   for (const peso of [null, 0, -70, 30, 70, 120, 400]) {
     let r;
@@ -272,8 +297,21 @@ fs.writeFileSync(path.join(saidaDir, "CAMADA-4-DOSES-CRITICAS.md"), L.join("\n")
 fs.writeFileSync(path.join(saidaDir, "camada-4-doses-criticas.json"), JSON.stringify({ idaEVoltaTestados, achados }, null, 1));
 
 console.log(`\nConversões dose ↔ velocidade testadas: ${idaEVoltaTestados}`);
+console.log(`⚠️ Blocos PULADOS por falta do arquivo auditado: ${pulados} (D-83 — trombolítico do AVC e das coronárias)`);
 console.log(`Erros: ${erros.length} · Avisos: ${avisos.length}`);
 for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - a[1].length)) {
   console.log(`  ${tipo}: ${itens.length}`);
 }
 console.log(`\nSaída em auditoria/CAMADA-4-DOSES-CRITICAS.md`);
+
+// ⚠️ SE UM ACHADO IMPORTA, ELE REPROVA. SE NÃO REPROVA, É DECORAÇÃO.
+//
+// Este instrumento classificava achado como "erro" e saía com código 0. Em
+// 2026-08-23 isso custou caro e de forma medida: o instrumento irmão (auditoria-calculos) deixou passar uma exceção em
+// produção pela mesma forma. Esta linha existe antes de custar aqui também.
+// Uma lista de 50 avisos onde mora 1 erro é a forma mais confiável de esconder
+// o erro. Aviso continua aviso; erro reprova.
+if (erros.length) {
+  console.error(`\n❌ ${erros.length} achado(s) classificado(s) como ERRO por este instrumento.`);
+}
+process.exit(erros.length ? 1 : 0);

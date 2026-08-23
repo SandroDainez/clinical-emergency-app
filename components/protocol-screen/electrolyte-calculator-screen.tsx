@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
+import { AGUARDANDO_VALOR, degrauDeGravidade } from "../../lib/eletrolitos/gravidade";
 // ⚠️ LIMIARES E DOSES DA HIPERCALEMIA POR IMPORTAÇÃO, NÃO POR LITERAL.
 // Saíram desta tela para `lib/hipercalemia.ts` quando o módulo renal passou a
 // precisar dos mesmos números. Os valores não mudaram — a fonte é que passou a
@@ -434,130 +435,19 @@ function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): n
   }
 }
 
+/**
+ * A GRAVIDADE VEM DO DADO — este componente não classifica mais.
+ *
+ * ⚠️ Eram 127 linhas de `switch` com 25 cortes numéricos escritos aqui dentro.
+ * Cada corte é uma afirmação clínica ("grave começa em 120"), e enquanto morava
+ * no JSX não tinha onde declarar procedência nem instrumento que a enxergasse.
+ * Foi para `lib/eletrolitos/gravidade.ts` SEM MUDAR NENHUM NÚMERO — mover
+ * conteúdo não decide conteúdo.
+ */
 function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgChanges: boolean) {
-  if (current == null) {
-    return {
-      label: "Aguardando valor",
-      signs: "Preencha o valor atual para classificar gravidade e destacar sinais principais.",
-    };
-  }
-
-  switch (disorder) {
-    case "hyponatremia":
-      if (current < 120) {
-        return {
-          label: "Grave",
-          signs: "Maior risco de confusão, sonolência, convulsão e herniação iminente se queda for aguda.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Costuma cursar com náusea, cefaleia, mal-estar e alteração neurológica mais discreta.",
-      };
-    case "hypernatremia":
-      if (current >= 160) {
-        return {
-          label: "Grave",
-          signs: "Sede intensa, letargia, irritabilidade, mioclonia e convulsão; monitorização próxima.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Sede, fraqueza, irritabilidade e desidratação são os achados mais comuns.",
-      };
-    case "hypokalemia":
-      if (current < 2.5) {
-        return {
-          label: "Grave",
-          signs: "Fraqueza importante, íleo, paralisia, rabdomiólise e arritmia.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
-      };
-    case "hyperkalemia":
-      if (current >= K_GRAVE || ecgChanges) {
-        return {
-          label: "Emergência",
-          signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
-        };
-      }
-      return {
-        label: "Moderada",
-        signs: "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
-      };
-    case "hypocalcemia":
-      if (current < 7) {
-        return {
-          label: "Grave",
-          signs: "Tetania, broncoespasmo, convulsão e QT longo.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Parestesia perioral, câimbras e desconforto neuromuscular.",
-      };
-    case "hypercalcemia":
-      if (current >= 14) {
-        return {
-          label: "Grave",
-          signs: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Náusea, constipação, poliúria e fadiga predominam.",
-      };
-    case "hypomagnesemia":
-      if (current < 1.2) {
-        return {
-          label: "Grave",
-          signs: "QT longo, torsades, tremor, tetania e convulsão.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Tremor, fraqueza e piora de hipocalemia refratária.",
-      };
-    case "hypermagnesemia":
-      if (current >= 4.9) {
-        return {
-          label: "Grave",
-          signs: "Hiporreflexia, sonolência, hipotensão e depressão respiratória.",
-        };
-      }
-      return {
-        label: "Moderada",
-        signs: "Rubor, letargia e reflexos diminuídos podem aparecer.",
-      };
-    case "hypophosphatemia":
-      if (current < 1) {
-        return {
-          label: "Grave",
-          signs: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.",
-        };
-      }
-      return {
-        label: "Leve a moderada",
-        signs: "Fraqueza e queda de performance muscular são os sinais mais prováveis.",
-      };
-    case "hyperphosphatemia":
-      return {
-        label: current > 6 ? "Importante" : "Moderada",
-        signs: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.",
-      };
-    case "hypochloremia":
-      return {
-        label: current < 95 ? "Importante" : "Moderada",
-        signs: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.",
-      };
-    case "hyperchloremia":
-      return {
-        label: current >= 115 ? "Importante" : "Moderada",
-        signs: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.",
-      };
-  }
+  const degrau = degrauDeGravidade(disorder, current, ecgChanges);
+  if (!degrau) return { label: AGUARDANDO_VALOR.rotulo, signs: AGUARDANDO_VALOR.sinais };
+  return { label: degrau.rotulo, signs: degrau.sinais };
 }
 
 /**

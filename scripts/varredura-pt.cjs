@@ -135,8 +135,26 @@ function isInvariantMessage(lines, lit) {
  * O que o usuário lê sobre a ampola são `label` e `notes`, que a varredura
  * continua cobrando normalmente.
  */
+/**
+ * ⚠️ `alvo:` é da MESMA espécie que `fonte:` — e entrou em 2026-08-23, com a
+ * extração da gravidade eletrolítica.
+ *
+ * A procedência pendente declara O ALVO da conferência que falta ("limiar de
+ * hiponatremia grave — alvo: diretriz europeia de hiponatremia, verbatim em
+ * protocols/fontes-verbatim/"). É instrução para quem vai conferir, lida por
+ * quem mantém o app, cobrada pela trava, e nunca renderizada. Traduzi-la
+ * sugeriria que é conteúdo de tela — e conteúdo de tela alguém um dia mostra.
+ *
+ * O que o médico lê sobre o distúrbio são `rotulo` e `sinais`, que a varredura
+ * continua cobrando normalmente — e são justamente os que já tinham tradução
+ * antes da extração e continuaram tendo depois.
+ */
 function isProcedencia(prefixo) {
-  return /\bfonte\s*:\s*$/.test(prefixo);
+  // ⚠️ `PENDENTE(` entra junto porque o alvo chega como ARGUMENTO da fábrica de
+  // pendência, não como valor de campo — o prefixo que a varredura vê é a
+  // abertura do parêntese, e sem esta metade a regra de `alvo:` não alcança
+  // nenhuma das 8 pendências que ela existe para dispensar.
+  return /\b(?:fonte|alvo)\s*:\s*$/.test(prefixo) || /\bPENDENTE\(\s*$/.test(prefixo);
 }
 
 function isSpeakMessage(lines, lit) {

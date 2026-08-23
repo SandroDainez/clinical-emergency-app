@@ -130,7 +130,7 @@ export const ES_CAD: Record<string, string> = {
   "CAD euglicêmica (uso de SGLT2i): glicemia pode ser < 250 mg/dL com cetonemia + acidose — suspender SGLT2i e tratar como CAD com glicose IV desde o início.":
     "CAD euglucémica (uso de iSGLT2): la glucemia puede ser < 250 mg/dL con cetonemia + acidosis — suspender el iSGLT2 y tratarla como CAD con dextrosa IV desde el inicio.",
   "1ª hora: SF 0,9% {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L). Em choque: 500 mL em 15–30 min, repetir até PAS ≥ 90 mmHg.":
-    "1.ª hora: solución fisiológica {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L). En choque: 500 mL en 15–30 min, repetir hasta PAS ≥ 90 mmHg.",
+    "1.ª hora: solución fisiológica al 0,9% {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L). En choque: 500 mL en 15–30 min, repetir hasta PAS ≥ 90 mmHg.",
   "Manutenção (2ª–12ª h) pelo Na⁺ CORRIGIDO: corrigido < 135 → manter SF 0,9% 250–500 mL/h; corrigido ≥ 135 → SF 0,45% 250–500 mL/h.":
     "Mantenimiento (2.ª–12.ª h) según el Na⁺ CORREGIDO: corregido < 135 → mantener solución fisiológica al 0,9% 250–500 mL/h; corregido ≥ 135 → solución salina al 0,45% 250–500 mL/h.",
   "Repor ~50% do déficit nas primeiras 8–12 h; restante em 12–24 h. Total estimado 24 h: 4–6 L.":
@@ -140,7 +140,7 @@ export const ES_CAD: Record<string, string> = {
   "Cuidado em idosos/cardiopatas/nefropatas: ausculta pulmonar e SpO₂ — risco de edema pulmonar.":
     "Cuidado en ancianos/cardiópatas/nefrópatas: auscultación pulmonar y SpO₂ — riesgo de edema pulmonar.",
   "1ª–2ª hora: SF 0,9% 1.000–1.500 mL/h ({sfLow}–{sfHigh} mL na 1ª hora).":
-    "1.ª–2.ª hora: solución fisiológica 1.000–1.500 mL/h ({sfLow}–{sfHigh} mL en la 1.ª hora).",
+    "1.ª–2.ª hora: solución fisiológica al 0,9% 1.000–1.500 mL/h ({sfLow}–{sfHigh} mL en la 1.ª hora).",
   "Manutenção: SF 0,45% 250–500 mL/h após expansão. Se Na⁺ corrigido > 150 mEq/L, SF 0,45% (ou água livre via SNE com cautela).":
     "Mantenimiento: solución salina al 0,45% 250–500 mL/h tras la expansión. Si el Na⁺ corregido > 150 mEq/L, solución al 0,45% (o agua libre por sonda enteral con cautela).",
   "ALVO de correção da osmolalidade: ≤ 3 mOsm/kg/h. Correção do Na⁺: ≤ 0,5 mEq/L/h. NÃO normalizar a osmolalidade em menos de 24–36 h.":

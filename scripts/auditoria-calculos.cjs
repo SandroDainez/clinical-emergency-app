@@ -1,5 +1,14 @@
 #!/usr/bin/env node
 /**
+ * PROMETE: que toda fórmula e todo escore das calculadoras rodem sem exceção e
+ *   devolvam número finito nos casos varridos; e — desde 2026-08-23 — que
+ *   qualquer achado que ELE MESMO classifica como "erro" REPROVE o build.
+ * NÃO PROMETE: que a fórmula seja a fórmula clínica certa. Ele confere que o
+ *   cálculo não quebra e não devolve absurdo, não que o número seja o correto
+ *   para o paciente — isso é conferência de fonte, e é do médico.
+ * UNIVERSO: as ferramentas de `clinical-calculators-engine.ts`, compiladas, com
+ *   fórmulas e escores contados e impressos antes do resultado.
+ *
  * CAMADA 4 — Auditoria de doses, diluições e cálculos.
  *
  * Dirige TODAS as calculadoras do app com valores-limite e observa o que sai. Não
@@ -270,3 +279,15 @@ for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - 
   console.log(`  ${tipo}: ${itens.length}`);
 }
 console.log(`\nSaída em auditoria/CAMADA-4-CALCULOS.md`);
+
+// ⚠️ SE UM ACHADO IMPORTA, ELE REPROVA. SE NÃO REPROVA, É DECORAÇÃO.
+//
+// Este instrumento classificava achado como "erro" e saía com código 0. Em
+// 2026-08-23 isso custou caro e de forma medida: ele acusou `dose-antibiotico` lançando exceção com ceftriaxona, saiu
+// verde, o test:all passou e o defeito foi para produção no commit 448f188.
+// Uma lista de 50 avisos onde mora 1 erro é a forma mais confiável de esconder
+// o erro. Aviso continua aviso; erro reprova.
+if (erros.length) {
+  console.error(`\n❌ ${erros.length} achado(s) classificado(s) como ERRO por este instrumento.`);
+}
+process.exit(erros.length ? 1 : 0);

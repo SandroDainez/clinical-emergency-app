@@ -249,7 +249,7 @@ export const ES_SEPSE: Record<string, string> = {
   "Internar em UTI se choque, necessidade de vasopressor ou disfunção orgânica significativa.":
     "Ingresar a UCI si hay choque, necesidad de vasopresor o disfunción orgánica significativa.",
   "Suporte orgânico (SSC 2021): glicemia 140–180; transfusão se Hb < 7 (8–9 em isquemia); VM protetora (VC 6 mL/kg, Pplat ≤ 30); profilaxia de TEV (HBPM) e de úlcera de estresse (IBP se VM ≥ 48 h/coagulopatia); nutrição enteral precoce (24–48 h); sedação leve RASS −1/−2; mobilização precoce.":
-    "Soporte orgánico (SSC): glucemia 140–180; transfusión si Hb < 7 (8–9 en isquemia); VM protectora (VC 6 mL/kg, Pmeseta ≤ 30); profilaxis de ETV (HBPM) y de úlcera de estrés (IBP si VM ≥ 48 h/coagulopatía); nutrición enteral precoz (24–48 h); sedación ligera RASS −1/−2; movilización precoz.",
+    "Soporte orgánico (SSC 2021): glucemia 140–180; transfusión si Hb < 7 (8–9 en isquemia); VM protectora (VC 6 mL/kg, Pmeseta ≤ 30); profilaxis de ETV (HBPM) y de úlcera de estrés (IBP si VM ≥ 48 h/coagulopatía); nutrición enteral precoz (24–48 h); sedación ligera RASS −1/−2; movilización precoz.",
   "De-escalonamento do ATB em 48–72 h por culturas; duração 7–10 dias (5–7 se foco controlado); PCT para apoiar suspensão; TRS na LRA grau 3 com indicação clássica.":
     "Desescalamiento del ATB en 48–72 h según cultivos; duración 7–10 días (5–7 si el foco está controlado); PCT para apoyar la suspensión; TRR en LRA grado 3 con indicación clásica.",
   "Metas: PAM ≥ 65, clearance de lactato ≥ 10%/2h → < 2, diurese ≥ 0,5 mL/kg/h, temperatura < 38,3 °C.":

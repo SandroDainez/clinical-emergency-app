@@ -157,7 +157,7 @@ export const ES_TEP: Record<string, string> = {
   "Fatores de risco: cirurgia/trauma/imobilização recente, câncer ativo, TVP/TEP prévios, estrogênio, gestação/puerpério, trombofilia.":
     "Factores de riesgo: cirugía/trauma/inmovilización reciente, cáncer activo, TVP/TEP previos, estrógenos, embarazo/puerperio y trombofilia.",
   "Suporte: O₂ (IOT se insuficiência respiratória grave); fluidos CAUTELOSOS — SF 0,9% 500 mL (máx 500–1.000 mL): sobrecarga piora a função do VD.":
-    "Soporte: O₂ (intubación si hay insuficiencia respiratoria grave); líquidos con CAUTELA — solución fisiológica 500 mL (máx. 500–1.000 mL): la sobrecarga empeora la función del VD.",
+    "Soporte: O₂ (intubación si hay insuficiencia respiratoria grave); líquidos con CAUTELA — solución fisiológica al 0,9% 500 mL (máx. 500–1.000 mL): la sobrecarga empeora la función del VD.",
   "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina 2–10 mcg/kg/min se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.":
     "Vasopresor: noradrenalina 0,1–1 mcg/kg/min para una PAM ≥ 65. Dobutamina 2–10 mcg/kg/min si hay bajo gasto con la PA conservada. Evitar la hipoxia y la hipercapnia.",
   "HNF IV imediata: bolus {hnfBolus} U (80 U/kg, máx 10.000) + {hnfInf} U/h (18 U/kg/h); alvo TTPa 60–100 s. Iniciar ANTES da AngioTC se risco de morte iminente.":

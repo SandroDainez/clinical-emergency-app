@@ -1021,6 +1021,12 @@ export const CALC_TOOLS: CalcTool[] = [
         });
       }
 
+      // ⚠️ O MOTOR NÃO ACEITA VALOR DE EIXO SEM O FÁRMACO JUNTO: se a chave não
+      // pertence ao fármaco selecionado, ela é ignorada e as colunas aparecem
+      // todas — em vez de uma responder pela outra.
+      const [donoDoEixo, valorDoEixo] = (v.eixo ?? "").split("::");
+      const escolhido = valorDoEixo && donoDoEixo === alvo.id ? valorDoEixo : undefined;
+
       // ── QUEM NÃO AJUSTA RESPONDE ANTES DE PEDIR O CLEARANCE ───────────────
       if (alvo.ajusteRenal !== "ajusta") {
         const modais = alvo.linhas.filter((l) => l.modalidade);
@@ -1041,11 +1047,6 @@ export const CALC_TOOLS: CalcTool[] = [
 
       if (!Number.isFinite(tfg)) return null;
 
-      // ⚠️ O MOTOR NÃO ACEITA VALOR DE EIXO SEM O FÁRMACO JUNTO: se a chave não
-      // pertence ao fármaco selecionado, ela é ignorada e as colunas aparecem
-      // todas — em vez de uma responder pela outra.
-      const [donoDoEixo, valorDoEixo] = (v.eixo ?? "").split("::");
-      const escolhido = valorDoEixo && donoDoEixo === alvo.id ? valorDoEixo : undefined;
       const conjuntos = alvo.eixo
         ? alvo.eixo.valores.filter((x) => !escolhido || x.id === escolhido)
         : [{ id: "", rotulo: "", linhas: alvo.linhas }];

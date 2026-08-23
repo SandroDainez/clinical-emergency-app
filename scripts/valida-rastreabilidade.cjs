@@ -1,5 +1,16 @@
 #!/usr/bin/env node
 /**
+ * PROMETE: que todo módulo com conteúdo clínico crítico tenha diretriz
+ *   declarada em `guidelines_metadata.json`; que toda grafia de módulo usada
+ *   por lá exista no mapa canônico; e — desde 2026-08-23 — que achado
+ *   classificado como "erro" REPROVE o build. Antes ele saía com código 0 com
+ *   1 erro no meio de 50 avisos, e o erro era o módulo renal fora do mapa.
+ * NÃO PROMETE: que a diretriz declarada seja a certa, nem que esteja vigente.
+ *   Ele confere que EXISTE declaração e que os nomes casam — a data de revisão
+ *   continua saindo como aviso, não como reprovação.
+ * UNIVERSO: `guidelines_metadata.json` × `lib/modulos-canonicos.ts`, com o
+ *   número de módulos críticos impresso antes do resultado.
+ *
  * CAMADA 9 — Rastreabilidade: cada módulo clínico sabe de qual diretriz veio?
  *
  * ─────────────────────────────────────────────────────────────────────────────
@@ -264,3 +275,15 @@ for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - 
   console.log(`  ${tipo}: ${itens.length}`);
 }
 console.log(`\nSaída em auditoria/CAMADA-9-RASTREABILIDADE.md`);
+
+// ⚠️ SE UM ACHADO IMPORTA, ELE REPROVA. SE NÃO REPROVA, É DECORAÇÃO.
+//
+// Este instrumento classificava achado como "erro" e saía com código 0. Em
+// 2026-08-23 isso custou caro e de forma medida: ele avisava havia semanas que o módulo renal não estava no mapa canônico,
+// como o ÚNICO erro entre 50 avisos, e o aviso passou.
+// Uma lista de 50 avisos onde mora 1 erro é a forma mais confiável de esconder
+// o erro. Aviso continua aviso; erro reprova.
+if (erros.length) {
+  console.error(`\n❌ ${erros.length} achado(s) classificado(s) como ERRO por este instrumento.`);
+}
+process.exit(erros.length ? 1 : 0);

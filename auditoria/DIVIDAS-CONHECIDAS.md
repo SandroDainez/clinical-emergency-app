@@ -3344,3 +3344,89 @@ nenhuma trava de tradução as pegaria.
 ⚠️ NÃO CORRIGIDO DE PROPÓSITO: qual das duas versões é a certa é decisão clínica
 do autor, não conserto de tradução. Alvo: veredito do Dr. Sandro Dainez sobre
 cada uma das duas linhas.
+
+## D-81 — TERCEIRA LINHA EM QUE O ESPANHOL NÃO É TRADUÇÃO (`lib/i18n/modules/coronarias-oclusao.ts`)
+
+Apareceu ao corrigir o §2 do parecer de 2026-08-23 ("o ano da diretriz caindo no
+ES"). **Não é ano caído — é outro parágrafo.** As duas versões afirmam coisas
+diferentes sobre o mesmo enquadramento OMI/NOMI:
+
+- **PT:** "A ACC/AHA **2025** MANTÉM STEMI/NSTEMI e incorpora só parte desse
+  reconhecimento; as diretrizes australianas de **2025** adotaram a nomenclatura
+  OMI. O app usa a nomenclatura corrente **de propósito**: é a que a equipe ao seu
+  lado fala."
+- **ES:** "**No es nomenclatura oficial** de las guías actuales, y **esta app no la
+  adopta como criterio** — está citada porque explica por qué los patrones de
+  arriba importan tanto."
+
+O PT cita duas diretrizes com ano e diz que a escolha é deliberada. O ES não cita
+nenhuma, e afirma que a nomenclatura não é oficial. Não é a mesma afirmação sobre
+o estado das diretrizes.
+
+⚠️ NÃO CORRIGIDO: restaurar "o ano" aqui significaria reescrever o parágrafo
+inteiro do espanhol, e qual das duas leituras está certa é decisão clínica do
+autor. Alvo: veredito do Dr. Sandro Dainez.
+
+## D-82 — FONTE PARA 0,25 · 4 h · 0,5 (`lib/i18n/modules/sepse-vasoativos.ts`)
+
+A D-80 alinhou o espanhol ao português, mas os três números do critério
+continuam **sem verbatim no repositório**:
+
+- **≥ 0,25 mcg/kg/min de noradrenalina** — limiar
+- **por pelo menos 4 h** — tempo, no critério da hidrocortisona
+- **0,5 mcg/kg/min** — o teto que a frase manda NÃO esperar
+
+Alvo nomeado: **Surviving Sepsis Campaign 2021**, verbatim em
+`protocols/fontes-verbatim/`. ⚠️ E a conferência tem uma pergunta antes da força:
+se a SSC escreve o critério no TEXTO DE PRÁTICA e não na recomendação graduada, a
+força não é `recomendacao_formal` — é `pratica_aceita`, e o `contextoDaFonte` diz
+de onde saiu. O próprio texto do app já suspeita disso ("SSC 2021, texto de
+prática, nunca recomendação graduada"), o que torna a conferência mais necessária,
+não menos.
+
+## D-83 — O AUDITOR DE DOSE DO TROMBOLÍTICO ESTÁ MORTO DESDE `a9b16ad`
+
+`scripts/auditoria-doses-criticas.cjs` compilava quatro arquivos. Dois deles —
+`avc/calculators.ts` e `coronary/calculators.ts` — foram apagados no refactor
+a9b16ad (D-22, os 8 engines órfãos de render). Desde então o instrumento
+**crashava na compilação a cada rodada**, e ninguém viu: ele não estava no
+`test:all`.
+
+O que deixou de ser auditado, nomeado:
+
+- **dose de trombolítico do AVC por peso** (teto, monotonicidade, peso ausente)
+- **dose lítica das coronárias** (tenecteplase por peso) — e este bloco já tinha
+  uma guarda `typeof … === "function"` que o **pulava em silêncio**, o que é pior
+  que crashar: o relatório saía limpo.
+
+Agora ele roda sobre os dois arquivos que existem, e imprime `Blocos PULADOS: 2`.
+⚠️ Reapontá-lo é decisão de escopo, não conserto: as funções não existem mais com
+o mesmo nome, e escolher qual código de hoje ocupa o lugar delas é decidir o que
+auditar. Alvo: veredito do autor sobre onde vive hoje a dose de trombolítico.
+
+## D-84 — A EXTRAÇÃO DOS ELETRÓLITOS SAIU UMA CAMADA, E FALTAM DUAS
+
+Em 2026-08-23 saiu a **camada de gravidade** (12 distúrbios, 24 degraus, 12
+cortes numéricos) para `lib/eletrolitos/gravidade.ts`, com trava e mutação. O que
+continua dentro de `electrolyte-calculator-screen.tsx`:
+
+- **30 comparações contra o valor do paciente** fora da gravidade — em
+  `detectDisorderFromCurrent`, `deriveAutomaticTarget` e no `calculateResult` de
+  ~1.300 linhas. O instrumento imprime esse número a cada rodada.
+- **67 strings com dose literal dentro da frase traduzível.** ⚠️ É AQUI que o
+  dicionário encolhe, e por isso o critério 3 do parecer NÃO foi atendido nesta
+  rodada: a camada de gravidade não tem número DENTRO da frase (o número estava
+  no código, `current < 120`, e a frase é prosa pura). O dicionário continua com
+  11.396 chaves — medido antes e depois.
+- **`deriveAutomaticTarget`** escolhe a META de correção por distúrbio. Mover é
+  mecânico; os números são conduta e precisam de fonte, como qualquer dose.
+
+## D-85 — TRÊS DISTÚRBIOS TÊM O MESMO TEXTO DE SINAIS NOS DOIS DEGRAUS
+
+`hyperphosphatemia`, `hypochloremia` e `hyperchloremia` mudam o RÓTULO com o
+corte ("Importante" × "Moderada") mas repetem os mesmos sinais clínicos nos dois
+degraus. Era assim dentro do `switch` e **continuou assim na extração** — mover
+conteúdo não decide conteúdo.
+
+⚠️ Pode ser proposital (os sinais realmente não mudam com a gravidade nesses
+três) ou pode ser texto que ninguém escreveu. Alvo: veredito do autor.

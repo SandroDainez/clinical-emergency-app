@@ -61,5 +61,10 @@
   },
   "valida-metodo-da-tfg": {
     "linhas_continuas": 44
+  },
+  "gravidade-eletrolitica": {
+    "_nota": "Medido em 2026-08-23, na extração: 12 distúrbios, 24 degraus, 12 cortes numéricos. ⚠️ CORREÇÃO DE UM NÚMERO MEU: reportei '25 cortes' antes de medir — 25 era a contagem de STRINGS com limiar no arquivo inteiro, não de cortes na classificação. O instrumento devolveu 12.",
+    "disturbios": 12,
+    "degraus": 24
   }
 }
