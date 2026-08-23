@@ -1,7 +1,7 @@
-# Plano de telas do módulo renal — v2, pelo fluxo ditado pelo autor
+# Plano de telas do módulo renal — v2 · ✅ IMPLEMENTADO em 2026-08-23
 
-**Nada implementado.** Reescrito em 2026-08-23 sobre o fluxo literal do autor.
-Substitui a v1, cuja ordem ele não confirmou.
+**Implementado.** O que segue é o plano como foi aprovado; o que mudou na
+execução está no fim, em «O QUE A EXECUÇÃO ENSINOU».
 
 ---
 
@@ -165,3 +165,48 @@ Do autor, ao corrigir a minha tela 1:
 - **Tela 6:** *"O paciente melhorou?"* → passa **se** as opções forem
   observáveis (diurese subiu, creatinina caiu, continua igual). **Reprova** se
   perguntar *"respondeu ao tratamento?"*, que é julgamento.
+
+
+---
+
+# O QUE A EXECUÇÃO ENSINOU
+
+## 1 · O nó `entry` foi APAGADO, não movido
+
+O plano dizia que o atalho viraria "saída secundária". Na prática o nó `entry`
+**era** a pergunta reprovada (*"Você já sabe qual das seis é?"*) — não havia o
+que mover. Ele saiu, e `atalhos` ganhou porta na **primeira tela da triagem**:
+*"Já sei que é outra das seis — ir direto"*.
+
+⚠️ **Isto acrescentou uma opção a uma tela que o autor não desenhou.** É a única
+coisa nesta rodada que não veio dele. Se ele preferir outro lugar, é uma linha.
+
+## 2 · O destino de D não existia inteiro — e o próprio texto dele resolveu metade
+
+O passo 0 precisa de destino para as sete opções. **Seis tinham**; a D
+(*"rebaixamento, confusão aguda ou convulsão"*) não.
+
+- **convulsão** → `crises-convulsivas`, que existe
+- **rebaixamento** → o texto da opção **A**, escrito pelo autor, já inclui *"ou
+  rebaixamento importante"* — então ele já rota para a via aérea por decisão dele
+- ⚠️ **confusão aguda ISOLADA não tem ramo.** Não inventei: está escrito no
+  `exitCriteria` da tela, dizendo que quem tem só isso siga o fluxo e considere
+  a uremia complicada na triagem.
+
+## 3 · A opção C do ritmo tem DOIS destinos, e isso é certo
+
+*"Bradicardia, taquicardia ou ritmo irregular com repercussão"* leva a uma
+transição com **dois** módulos (bradi e taqui). Escolher por número seria
+perguntar antes de olhar — a transição oferece os dois e o médico escolhe.
+
+## 4 · O card de estabilização saiu SÓ deste módulo
+
+`estabilizacaoNoFluxo` é prop do shell. ⚠️ **Nos outros 18 módulos o card
+continua** — removê-lo em todos trocaria um defeito de poluição por um de
+omissão, porque neles o ABCDE ainda não é passo.
+
+## 5 · A trilha passou a mostrar de ONDE se veio
+
+Ela mostrava o título do nó **atual** — o mesmo texto do card logo abaixo. No
+primeiro passo não tinha o que dizer. Agora mostra o passo anterior, e no passo 1
+não aparece.

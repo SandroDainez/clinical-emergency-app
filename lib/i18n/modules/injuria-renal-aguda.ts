@@ -1586,4 +1586,170 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   // tem dispensa.
   "Figge et al. — relação entre albumina e ânion gap":
     "Figge et al. — relación entre albúmina y anión gap",
+
+  // ── Passos 0, 1 e 6 do fluxo ditado pelo autor (2026-08-23) ───────────
+  "A via aérea vem antes do rim, e antes de tudo o mais deste módulo.":
+    "La vía aérea viene antes que el riñón, y antes que todo lo demás de este módulo.",
+  "A · Fala? Consegue proteger a via aérea? Há estridor, secreção ou vômito que ameace?":
+    "A · ¿Habla? ¿Puede proteger la vía aérea? ¿Hay estridor, secreción o vómito que amenace?",
+  "A · Via aérea ameaçada":
+    "A · Vía aérea amenazada",
+  "A · Via aérea ameaçada ou não protegida — estridor, incapacidade de manter ou proteger a via aérea, secreções ou vômitos com risco de aspiração, ou rebaixamento importante":
+    "A · Vía aérea amenazada o no protegida — estridor, incapacidad de mantener o proteger la vía aérea, secreciones o vómitos con riesgo de aspiración, o deterioro importante del nivel de conciencia",
+  "Acidose":
+    "Acidosis",
+  "Ainda não sei — me ajude a identificar o problema":
+    "Todavía no sé — ayúdeme a identificar el problema",
+  "Alteração renal encontrada incidentalmente":
+    "Alteración renal encontrada de forma incidental",
+  "Apareceu nova ameaça ou novo dado importante":
+    "Apareció una nueva amenaza o un dato nuevo importante",
+  "Apenas o paciente, sem exames":
+    "Solo el paciente, sin exámenes",
+  "B · A respiração está confortável? Qual a saturação? Há esforço, tiragem, frequência alta?":
+    "B · ¿La respiración es cómoda? ¿Cuál es la saturación? ¿Hay esfuerzo, tiraje, frecuencia alta?",
+  "B · Dificuldade respiratória importante, hipoxemia ou esforço respiratório":
+    "B · Dificultad respiratoria importante, hipoxemia o esfuerzo respiratorio",
+  "B · Respiração":
+    "B · Respiración",
+  "Bradicardia instável":
+    "Bradicardia inestable",
+  "C · Bradicardia, taquicardia ou ritmo irregular com repercussão":
+    "C · Bradicardia, taquicardia o ritmo irregular con repercusión",
+  "C · Como está a pressão? A pele está fria, o enchimento capilar lento? Qual o ritmo e a frequência?":
+    "C · ¿Cómo está la presión? ¿La piel está fría, el llenado capilar lento? ¿Cuál es el ritmo y la frecuencia?",
+  "C · Hipotensão ou sinais de má perfusão":
+    "C · Hipotensión o signos de mala perfusión",
+  "C · Perfusão ou pressão":
+    "C · Perfusión o presión",
+  "C · Ritmo com repercussão":
+    "C · Ritmo con repercusión",
+  "Como está o paciente agora?":
+    "¿Cómo está el paciente ahora?",
+  "Convulsão em curso ou recente":
+    "Convulsión en curso o reciente",
+  "Creatinina elevada ou em ascensão":
+    "Creatinina elevada o en ascenso",
+  "Crises convulsivas":
+    "Crisis convulsivas",
+  "D · Está acordado e orientado? Houve convulsão ou queda do nível de consciência?":
+    "D · ¿Está despierto y orientado? ¿Hubo convulsión o caída del nivel de conciencia?",
+  "D · Neurológico":
+    "D · Neurológico",
+  "D · Rebaixamento do nível de consciência, confusão aguda ou convulsão":
+    "D · Deterioro del nivel de conciencia, confusión aguda o convulsión",
+  "Definir o tipo de choque antes da droga":
+    "Definir el tipo de choque antes del fármaco",
+  "Depois do que foi feito, o que mudou no paciente?":
+    "Después de lo que se hizo, ¿qué cambió en el paciente?",
+  "Dificuldade respiratória importante, hipoxemia ou esforço respiratório":
+    "Dificultad respiratoria importante, hipoxemia o esfuerzo respiratorio",
+  "Distúrbio eletrolítico":
+    "Trastorno electrolítico",
+  "Drogas vasoativas":
+    "Fármacos vasoactivos",
+  "Exames laboratoriais":
+    "Exámenes de laboratorio",
+  "Frequência alta com repercussão":
+    "Frecuencia alta con repercusión",
+  "Frequência baixa com repercussão":
+    "Frecuencia baja con repercusión",
+  "Hipoxemia ou esforço respiratório":
+    "Hipoxemia o esfuerzo respiratorio",
+  "Já sei que é outra das seis — ir direto":
+    "Ya sé que es otra de las seis — ir directo",
+  "Marque o que existe agora — o app segue a partir daí, sem rotular o diagnóstico antes da hora.":
+    "Marque lo que existe ahora — la app sigue a partir de ahí, sin etiquetar el diagnóstico antes de tiempo.",
+  "Melhorou clinicamente":
+    "Mejoró clínicamente",
+  "Motivo de entrada":
+    "Motivo de ingreso",
+  "Nenhuma dessas — paciente aparentemente estável":
+    "Ninguna de estas — paciente aparentemente estable",
+  "Neurológico":
+    "Neurológico",
+  "Não sei dizer — me ajude a verificar":
+    "No sé decir — ayúdeme a verificar",
+  "O que está acontecendo com este paciente?":
+    "¿Qué está pasando con este paciente?",
+  "O que você tem em mãos?":
+    "¿Qué tiene a mano?",
+  "Olhe as quatro — nenhuma está presente":
+    "Miré las cuatro — ninguna está presente",
+  "Olhei as quatro — nenhuma está presente":
+    "Miré las cuatro — ninguna está presente",
+  "Olhe nesta ordem — A, B, C, D":
+    "Mire en este orden — A, B, C, D",
+  "Olhe o paciente e marque o que você vê. Se houver mais de uma, comece pela primeira da lista.":
+    "Mire al paciente y marque lo que ve. Si hay más de una, empiece por la primera de la lista.",
+  "Oligúria ou anúria":
+    "Oliguria o anuria",
+  "Oxigenação e ventilação antes da investigação renal.":
+    "Oxigenación y ventilación antes de la investigación renal.",
+  "Oxigenação sustentada e o suporte ventilatório decidido.":
+    "Oxigenación sostenida y el soporte ventilatorio decidido.",
+  "Paciente crítico com risco de IRA":
+    "Paciente crítico con riesgo de LRA",
+  "Perfusão e pressão sustentadas, com a causa do choque em investigação.":
+    "Perfusión y presión sostenidas, con la causa del choque en investigación.",
+  "Perfusão primeiro":
+    "Perfusión primero",
+  "Permanece sem melhora significativa":
+    "Permanece sin mejoría significativa",
+  "Piorou ou ficou instável":
+    "Empeoró o se puso inestable",
+  "Reavaliar a resposta":
+    "Reevaluar la respuesta",
+  "Rebaixamento que ameaça a proteção da via aérea":
+    "Deterioro que amenaza la protección de la vía aérea",
+  "Respiração primeiro":
+    "Respiración primero",
+  "Ritmo com repercussão":
+    "Ritmo con repercusión",
+  "Ritmo tratado ou o plano definido.":
+    "Ritmo tratado o el plan definido.",
+  "Se a causa da hipoxemia for congestão":
+    "Si la causa de la hipoxemia es congestión",
+  "Sem perfusão não há filtração — e o choque mata antes do rim.":
+    "Sin perfusión no hay filtración — y el choque mata antes que el riñón.",
+  "Sinais clínicos relevantes":
+    "Signos clínicos relevantes",
+  "Sobrecarga volêmica":
+    "Sobrecarga volémica",
+  "Taquicardia instável":
+    "Taquicardia inestable",
+  "Via aérea / ISR":
+    "Vía aérea / ISR",
+  "Via aérea / intubação em sequência rápida":
+    "Vía aérea / intubación de secuencia rápida",
+  "Via aérea ameaçada ou não protegida":
+    "Vía aérea amenazada o no protegida",
+  "Via aérea primeiro":
+    "Vía aérea primero",
+  "Via aérea protegida ou o plano de proteção em curso.":
+    "Vía aérea protegida o el plan de protección en curso.",
+  "Volte a este módulo depois — o rim continua esperando, a via aérea não.":
+    "Vuelva a este módulo después — el riñón sigue esperando, la vía aérea no.",
+  "Volte a este módulo depois — a hipercalemia pode ser a causa, e ela é tratada aqui.":
+    "Vuelva a este módulo después — la hiperpotasemia puede ser la causa, y se trata aquí.",
+  "Volte a este módulo depois.":
+    "Vuelva a este módulo después.",
+  "Ventilação mecânica":
+    "Ventilación mecánica",
+  "Convulsão controlada, ou o rebaixamento com a via aérea garantida.":
+    "Convulsión controlada, o el deterioro con la vía aérea garantizada.",
+  "⚠️ Confusão aguda ISOLADA não tem ramo próprio neste app — se ela for o único achado, siga o fluxo e considere a uremia complicada na triagem das seis.":
+    "⚠️ La confusión aguda AISLADA no tiene rama propia en esta app — si es el único hallazgo, siga el flujo y considere la uremia complicada en el triaje de las seis.",
+  "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá primeiro.":
+    "⚠️ El deterioro importante ya entró en A: quien no protege la vía aérea va por ahí primero.",
+  "⚠️ Ritmo é circulação — e com repercussão ele entra antes do rim.":
+    "⚠️ El ritmo es circulación — y con repercusión entra antes que el riñón.",
+  "⚠️ A creatinina NÃO acompanha a resposta clínica em tempo real: ela entra como dado de evolução nas reavaliações seguintes, não como critério de resposta imediata.":
+    "⚠️ La creatinina NO acompaña la respuesta clínica en tiempo real: entra como dato de evolución en las reevaluaciones siguientes, no como criterio de respuesta inmediata.",
+  "⚠️ Olhe a TENDÊNCIA da diurese, dos eletrólitos, do equilíbrio ácido-base, da congestão e da perfusão.":
+    "⚠️ Mire la TENDENCIA de la diuresis, los electrolitos, el equilibrio ácido-base, la congestión y la perfusión.",
+  "Depois de olhar, alguma delas está presente?":
+    "Después de mirar, ¿alguna de ellas está presente?",
+  "Vasopressor com dose e preparo":
+    "Vasopresor con dosis y preparación",
 };

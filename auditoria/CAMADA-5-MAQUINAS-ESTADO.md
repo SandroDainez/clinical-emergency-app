@@ -5,13 +5,13 @@
 
 - Árvores analisadas: **20**
 - Erros estruturais: **0**
-- Avisos: **6**
+- Avisos: **8**
 
 ## Visão por árvore
 
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
-| ira-decision-tree (iraDecisionTree) | 63 | 63 | 2 | 4 |
+| ira-decision-tree (iraDecisionTree) | 72 | 72 | 7 | 6 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | coronary-decision-tree (coronaryDecisionTree) | 27 | 27 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
@@ -36,14 +36,16 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 6 |
+| escolha-sem-efeito | aviso | 8 |
 
-### escolha-sem-efeito (6)
+### escolha-sem-efeito (8)
 
 | árvore | nó | detalhe |
 |---|---|---|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | `severity_grade` | opções grade2, grade3 levam todas a "immediate_im_epinephrine" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `nste_risco` | opções alto, intermediario levam todas a "nste_invasiva_precoce" — a escolha não muda o fluxo |
+| ira-decision-tree (iraDecisionTree) | `motivo_de_entrada` | opções creatinina, eletrolitico, critico, incidental levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
+| ira-decision-tree (iraDecisionTree) | `entrada_dados` | opções lab, diurese, sinais, so_paciente levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `atalhos` | opções k, nao_sei levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `obstrucao_check` | opções sim, sonda_nao_drena, rim_unico, nao_sei levam todas a "obstrucao_conduta" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `nefrotoxico_check` | opções exposto, sedimento, rabdo, nada levam todas a "renal_conduta" — a escolha não muda o fluxo |

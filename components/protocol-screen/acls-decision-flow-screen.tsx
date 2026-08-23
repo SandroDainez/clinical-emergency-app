@@ -50,6 +50,22 @@ type AclsDecisionFlowScreenProps = {
   currentModuleSlug?: string;
   /** Conteúdo opcional fixo no topo (ex.: configurador da VM), sempre visível. */
   topContent?: ReactNode;
+  /**
+   * ⚠️ O CARD DE ESTABILIZAÇÃO SAI QUANDO O MÓDULO JÁ TEM O ABCDE COMO PASSO.
+   *
+   * O card universal é um AVISO no topo de toda tela — e aviso não pergunta nada
+   * e não tem resposta: rola-se por cima. O autor percorreu o renal no celular e
+   * reprovou por isso.
+   *
+   * Quando o módulo transforma o ABCDE no PASSO 0 — uma pergunta observacional
+   * com sete saídas —, o card passa a dizer a mesma coisa duas vezes, uma delas
+   * pior. Aí ele sai.
+   *
+   * ⚠️ E SÓ AÍ. Nos outros 18 módulos que ainda não têm o passo 0, o card
+   * continua sendo a única coisa que lembra a estabilização — removê-lo em todos
+   * seria trocar um defeito de poluição por um de omissão.
+   */
+  estabilizacaoNoFluxo?: boolean;
 };
 
 const DISPOSITION_META: Record<
@@ -69,6 +85,7 @@ export default function AclsDecisionFlowScreen({
   source,
   headerTitle,
   currentModuleSlug,
+  estabilizacaoNoFluxo,
   topContent,
 }: AclsDecisionFlowScreenProps) {
   const tr = useTr();
@@ -359,11 +376,13 @@ export default function AclsDecisionFlowScreen({
           />
         ) : null}
 
-        <StabilizationFirstCard
-          compacto={emV2}
-          currentModuleSlug={currentModuleSlug}
-          onOpenModule={(slug) => abrirOutroModulo(slug)}
-        />
+        {estabilizacaoNoFluxo ? null : (
+          <StabilizationFirstCard
+            compacto={emV2}
+            currentModuleSlug={currentModuleSlug}
+            onOpenModule={(slug) => abrirOutroModulo(slug)}
+          />
+        )}
 
         {/* ── Peso não aferido ───────────────────────────────────────────────
             Fica no SHELL, e não no texto de cada nó, de propósito. Os nove
@@ -412,9 +431,15 @@ export default function AclsDecisionFlowScreen({
           <View style={styles.trailBadge}>
             <Text style={styles.trailBadgeText}>{tr("Passo")} {stepCount}</Text>
           </View>
-          <Text style={styles.trailText} numberOfLines={1}>
-            {tr(trail[trail.length - 1])}
-          </Text>
+          {/* ⚠️ A TRILHA MOSTRA DE ONDE SE VEIO, NÃO ONDE SE ESTÁ.
+              Ela mostrava `trail[último]`, que é o título do nó ATUAL — o mesmo
+              texto do card logo abaixo. A pergunta aparecia duas vezes na mesma
+              tela, e no primeiro passo a trilha não tinha o que dizer de novo. */}
+          {trail.length > 1 ? (
+            <Text style={styles.trailText} numberOfLines={1}>
+              {tr(trail[trail.length - 2])}
+            </Text>
+          ) : null}
         </View>
 
         <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>

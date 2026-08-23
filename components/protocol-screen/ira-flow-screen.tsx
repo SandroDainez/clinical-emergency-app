@@ -25,6 +25,10 @@ export default function IraFlowScreen() {
       headerTitle="Injúria renal aguda"
       intro="Creatinina que subiu ou paciente que parou de urinar: os dois eixos do KDIGO (creatinina e diurese), a base de creatinina — inclusive quando você não a tem —, a exclusão da obstrução em primeiro lugar, hipoperfusão e nefrotóxico pelo que se observa, e quando a conversa sobre diálise precisa começar."
       currentModuleSlug="injuria-renal-aguda"
+      // ⚠️ O ABCDE É O PASSO 0 DESTE MÓDULO, então o card universal sai: ele
+      // diria a mesma coisa duas vezes, e a versão dele é a pior — aviso não
+      // pergunta nada e se rola por cima.
+      estabilizacaoNoFluxo
     />
   );
 }

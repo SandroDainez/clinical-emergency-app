@@ -119,7 +119,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
   id: "injuria_renal_aguda",
   version: "1.0.0",
   label: "Injúria renal aguda",
-  entryNodeId: "entry",
+  // ⚠️ A PORTA DO MÓDULO É O PASSO 0, não mais a bifurcação "você já sabe qual
+  // das seis é?". Aquela pergunta exigia categorizar antes de olhar — de quem,
+  // por definição, ainda não olhou. O nó `entry` continua existindo como SAÍDA
+  // SECUNDÁRIA (o atalho de quem já sabe), alcançado a partir da triagem.
+  entryNodeId: "abcde",
 
   /**
    * ⚠️ O ESTÁGIO KDIGO É DERIVADO DOS DADOS, NUNCA ESCRITO À MÃO.
@@ -237,42 +241,180 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     // Custo medido em telas: quem NÃO tem emergência gasta 1 (o caso comum);
     // quem tem, percorre 6 perguntas. As telas de "não tem" são o preço de não
     // abandonar nenhuma emergência, e é o preço certo.
-    entry: {
-      id: "entry",
+    /**
+     * ⚠️ PASSO 0 — E ELE É PASSO, NÃO BANNER.
+     *
+     * Era o card "Estabilização primeiro (ABCDE)" no topo de toda tela: um aviso
+     * que se rola por cima. O autor percorreu no celular e reprovou — não porque
+     * o conteúdo estivesse errado, mas porque **aviso não pergunta nada e não
+     * tem resposta**.
+     *
+     * ⚠️ A PERGUNTA É OBSERVACIONAL, E ISSO É O DESENHO INTEIRO. Perguntar "há
+     * ameaça imediata à vida?" seria pedir uma CONCLUSÃO — e quem não sabe o que
+     * está vendo não sabe concluir. É o mesmo defeito de "você já sabe qual das
+     * seis é?", que foi o que derrubou a entrada anterior.
+     *
+     * ⚠️ A ORDEM É CONTEÚDO, e é fixa: A → B → C → D. Ela comunica prioridade
+     * sem texto didático, e por isso não se reordena por estética. Ritmo entra
+     * em C junto com perfusão — ajuste do autor: ritmo é circulação.
+     */
+    abcde: {
+      id: "abcde",
       type: "decision",
-      // ⚠️ GARFO, NÃO PORTÃO — e a diferença é clínica.
-      //
-      // A entrada perguntava "há emergência agora?" com Sim e Não. É a pergunta
-      // que o usuário-alvo não sabe responder: se soubesse, não precisaria do
-      // app. E "Não" não é resposta que alguém possa dar ANTES de verificar —
-      // afirmar que não há emergência é conclusão, não ponto de partida.
-      //
-      // As duas saídas de agora respeitam os dois usuários reais: quem já sabe
-      // qual é vai direto (velocidade preservada), e quem não sabe recebe a
-      // varredura das seis — que JÁ É a resposta ao "não sei". Um terceiro
-      // botão "não sei" caindo na mesma varredura seria um toque a mais sem
-      // informação nova.
-      // ⚠️ E O TÍTULO PRECISA NOMEAR O OBJETO. "Você já sabe qual é?" perguntava
-      // sobre algo que a própria frase não dizia — pronome sem antecedente, no
-      // topo da primeira tela do módulo. "Qual das SEIS" amarra a pergunta à
-      // lista que está logo abaixo, e aí os dois botões respondem uma pergunta
-      // completa.
-      //
-      // ⚠️ O TÍTULO É A PERGUNTA QUE OS BOTÕES RESPONDEM. "Há emergência agora?"
-      // sobreviveu à troca da entrada e ficou órfão: uma pergunta no topo da
-      // tela que nenhum dos dois botões responde. Para quem não tem
-      // experiência isso é pior que ruído — é a tela pedindo uma resposta que
-      // não aceita.
-      title: "Você já sabe qual das seis é?",
-      question: "Escolha por onde começar: ir direto à emergência que você reconheceu, ou verificar as seis comigo.",
-      summary: "Antes de investigar, trate o que ameaça a vida.",
+      title: "Como está o paciente agora?",
+      question: "Olhe o paciente e marque o que você vê. Se houver mais de uma, comece pela primeira da lista.",
+      // ⚠️ Esta tela não afirma nada clínico: pergunta o que se vê e roteia.
+      // `DecisionNode` não tem `natureza` nem `procedencia` — é a D-69, e ela
+      // aparece aqui de novo: o campo que diria "isto não é conduta" não existe
+      // em nó de decisão.
+      options: [
+        { id: "a_via_aerea", label: "A · Via aérea ameaçada ou não protegida — estridor, incapacidade de manter ou proteger a via aérea, secreções ou vômitos com risco de aspiração, ou rebaixamento importante", next: "abcde_a" },
+        { id: "b_respiracao", label: "B · Dificuldade respiratória importante, hipoxemia ou esforço respiratório", next: "abcde_b" },
+        { id: "c_perfusao", label: "C · Hipotensão ou sinais de má perfusão", next: "abcde_c_perfusao" },
+        { id: "c_ritmo", label: "C · Bradicardia, taquicardia ou ritmo irregular com repercussão", next: "abcde_c_ritmo" },
+        { id: "d_neuro", label: "D · Rebaixamento do nível de consciência, confusão aguda ou convulsão", next: "abcde_d" },
+        { id: "estavel", label: "Nenhuma dessas — paciente aparentemente estável", next: "motivo_de_entrada" },
+        { id: "nao_sei", label: "Não sei dizer — me ajude a verificar", next: "abcde_guiado" },
+      ],
+    },
+
+    /**
+     * ⚠️ O "NÃO SEI" NÃO CONCLUI POR NINGUÉM: ele devolve a MESMA lista, item a
+     * item, para ser olhada. É o padrão do "não sei" do resto do app — ensina
+     * onde olhar em vez de escolher pelo médico.
+     */
+    abcde_guiado: {
+      id: "abcde_guiado",
+      type: "decision",
+      title: "Olhe nesta ordem — A, B, C, D",
+      question: "Depois de olhar, alguma delas está presente?",
       evidence: [
-        "As seis: potássio alto ou ECG alterado · choque · edema agudo de pulmão com hipoxemia · acidemia grave · uremia complicada · anúria ou oligúria piorando rápido.",
-        "⚠️ Elas se acumulam no mesmo paciente. Se houver mais de uma, o app pergunta por todas, em ordem de risco de morte.",
+        "A · Fala? Consegue proteger a via aérea? Há estridor, secreção ou vômito que ameace?",
+        "B · A respiração está confortável? Qual a saturação? Há esforço, tiragem, frequência alta?",
+        "C · Como está a pressão? A pele está fria, o enchimento capilar lento? Qual o ritmo e a frequência?",
+        "D · Está acordado e orientado? Houve convulsão ou queda do nível de consciência?",
       ],
       options: [
-        { id: "sei", label: "Já sei qual é — ir direto", next: "atalhos" },
-        { id: "verificar", label: "Não sei — verifique comigo", next: "e1_hipercalemia" },
+        { id: "a", label: "A · Via aérea ameaçada", next: "abcde_a" },
+        { id: "b", label: "B · Respiração", next: "abcde_b" },
+        { id: "c1", label: "C · Perfusão ou pressão", next: "abcde_c_perfusao" },
+        { id: "c2", label: "C · Ritmo com repercussão", next: "abcde_c_ritmo" },
+        { id: "d", label: "D · Neurológico", next: "abcde_d" },
+        { id: "nenhuma", label: "Olhei as quatro — nenhuma está presente", next: "motivo_de_entrada" },
+      ],
+    },
+
+    /**
+     * ⚠️ OS CINCO DESTINOS APONTAM PARA OS MÓDULOS QUE JÁ EXISTEM. Nenhum
+     * protocolo novo, nenhum número novo: a saída é o ramo de estabilização que
+     * o app já conduz, e este módulo não o substitui.
+     */
+    abcde_a: {
+      id: "abcde_a",
+      type: "transition",
+      title: "Via aérea primeiro",
+      summary: "A via aérea vem antes do rim, e antes de tudo o mais deste módulo.",
+      disposition: "other_module",
+      exitCriteria: ["Via aérea protegida ou o plano de proteção em curso.", "Volte a este módulo depois — o rim continua esperando, a via aérea não."],
+      targets: [{ moduleId: "isr-rapida", label: "Via aérea / intubação em sequência rápida", reason: "Via aérea ameaçada ou não protegida" }],
+    },
+    abcde_b: {
+      id: "abcde_b",
+      type: "transition",
+      title: "Respiração primeiro",
+      summary: "Oxigenação e ventilação antes da investigação renal.",
+      disposition: "other_module",
+      exitCriteria: ["Oxigenação sustentada e o suporte ventilatório decidido.", "Volte a este módulo depois."],
+      targets: [
+        { moduleId: "ventilacao-mecanica", label: "Ventilação mecânica", reason: "Hipoxemia ou esforço respiratório" },
+        { moduleId: "edema-agudo-pulmao", label: "Edema agudo de pulmão", reason: "Se a causa da hipoxemia for congestão" },
+      ],
+    },
+    abcde_c_perfusao: {
+      id: "abcde_c_perfusao",
+      type: "transition",
+      title: "Perfusão primeiro",
+      summary: "Sem perfusão não há filtração — e o choque mata antes do rim.",
+      disposition: "other_module",
+      exitCriteria: ["Perfusão e pressão sustentadas, com a causa do choque em investigação.", "Volte a este módulo depois."],
+      targets: [
+        { moduleId: "choque", label: "Choque", reason: "Definir o tipo de choque antes da droga" },
+        { moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Vasopressor com dose e preparo" },
+      ],
+    },
+    abcde_c_ritmo: {
+      id: "abcde_c_ritmo",
+      type: "transition",
+      title: "Ritmo com repercussão",
+      summary: "⚠️ Ritmo é circulação — e com repercussão ele entra antes do rim.",
+      disposition: "other_module",
+      exitCriteria: ["Ritmo tratado ou o plano definido.", "Volte a este módulo depois — a hipercalemia pode ser a causa, e ela é tratada aqui."],
+      targets: [
+        { moduleId: "bradicardia-acls", label: "Bradicardia instável", reason: "Frequência baixa com repercussão" },
+        { moduleId: "taquicardia-acls", label: "Taquicardia instável", reason: "Frequência alta com repercussão" },
+      ],
+    },
+    abcde_d: {
+      id: "abcde_d",
+      type: "transition",
+      title: "Neurológico",
+      summary: "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá primeiro.",
+      disposition: "other_module",
+      exitCriteria: [
+        "Convulsão controlada, ou o rebaixamento com a via aérea garantida.",
+        "⚠️ Confusão aguda ISOLADA não tem ramo próprio neste app — se ela for o único achado, siga o fluxo e considere a uremia complicada na triagem das seis.",
+      ],
+      targets: [
+        { moduleId: "crises-convulsivas", label: "Crises convulsivas", reason: "Convulsão em curso ou recente" },
+        { moduleId: "isr-rapida", label: "Via aérea / ISR", reason: "Rebaixamento que ameaça a proteção da via aérea" },
+      ],
+    },
+
+    /**
+     * ⚠️ PASSO 1 — MOTIVO DE ENTRADA, e a formulação é do autor.
+     *
+     * A minha era "o que fez pensar em rim?" — e ele recusou com a razão que
+     * virou teste do projeto (R-121): *"ainda pressupõe que alguém já pensou em
+     * rim"*. Uma pergunta pede HIPÓTESE; a outra pede O QUE ESTÁ ACONTECENDO.
+     */
+    motivo_de_entrada: {
+      id: "motivo_de_entrada",
+      type: "decision",
+      title: "Motivo de entrada",
+      question: "O que está acontecendo com este paciente?",
+      options: [
+        { id: "oliguria", label: "Oligúria ou anúria", next: "e6_anuria" },
+        { id: "creatinina", label: "Creatinina elevada ou em ascensão", next: "e1_hipercalemia" },
+        { id: "eletrolitico", label: "Distúrbio eletrolítico", next: "e1_hipercalemia" },
+        { id: "sobrecarga", label: "Sobrecarga volêmica", next: "e3_congestao" },
+        { id: "acidose", label: "Acidose", next: "e4_acidose" },
+        { id: "critico", label: "Paciente crítico com risco de IRA", next: "e1_hipercalemia" },
+        { id: "incidental", label: "Alteração renal encontrada incidentalmente", next: "e1_hipercalemia" },
+        { id: "nao_sei", label: "Ainda não sei — me ajude a identificar o problema", next: "entrada_dados" },
+      ],
+    },
+
+    /**
+     * ⚠️ O "AINDA NÃO SEI" PERGUNTA O QUE A PESSOA **TEM**, NUNCA O QUE ELA
+     * CONCLUI — decisão do autor. Organizar por dados disponíveis, não por
+     * julgamento.
+     *
+     * ⚠️ E AS QUATRO SAÍDAS LEVAM AO MESMO LUGAR, DE PROPÓSITO: a triagem das
+     * seis é o caminho padrão. Quem não sabe **não é desviado para um lugar
+     * especial** — segue o fluxo normal, que já foi feito para conduzir. Isto é
+     * desenho, não acaso, e está escrito aqui porque é o oposto de um beco e
+     * alguém vai querer "otimizar" depois.
+     */
+    entrada_dados: {
+      id: "entrada_dados",
+      type: "decision",
+      title: "O que você tem em mãos?",
+      question: "Marque o que existe agora — o app segue a partir daí, sem rotular o diagnóstico antes da hora.",
+      options: [
+        { id: "lab", label: "Exames laboratoriais", next: "e1_hipercalemia" },
+        { id: "diurese", label: "Diurese", next: "e1_hipercalemia" },
+        { id: "sinais", label: "Sinais clínicos relevantes", next: "e1_hipercalemia" },
+        { id: "so_paciente", label: "Apenas o paciente, sem exames", next: "e1_hipercalemia" },
       ],
     },
 
@@ -323,6 +465,14 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "sim", label: "Sim — tratar agora", next: "k_glicemia" },
         { id: "nao", label: "Não", next: "e2_choque" },
         { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "k_tem_valor" },
+        // ⚠️ O ATALHO PERDEU A PORTA DE ENTRADA E GANHOU ESTA — de propósito.
+        //
+        // Ele era a PERGUNTA do módulo ("você já sabe qual das seis é?"), e foi
+        // isso que o autor reprovou: exigia categorizar antes de olhar. Mas ele
+        // não deixa de existir — "quem já sabe o diagnóstico avança rápido para
+        // o ponto correspondente". Aqui ele é o que sempre deveria ter sido:
+        // uma SAÍDA dentro da triagem, ao lado das outras, e não o portão dela.
+        { id: "outra", label: "Já sei que é outra das seis — ir direto", next: "atalhos" },
       ],
     },
 
@@ -466,8 +616,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         forca: "pratica_aceita",
         fonte: "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., outubro de 2023): sensibilidade média do ECG 0,19 ± 0,16 e especificidade 0,97 ± 0,04; alterações em ~66% com K ≥ 6,5 mmol/L.",
         tipoDeDocumento: "Diretriz de sociedade — desempenho de teste",
-        contextoDaFonte:
-          "⚠️ FORÇA NÃO INFLADA: o grau que a diretriz dá a ESTE trecho não foi conferido no documento, e por isso a afirmação segue como prática aceita COM o documento nomeado, não como recomendação graduada. Verbatim em protocols/fontes-verbatim/ukka-2023-hipercalemia.md, transcrito pelo autor em 2026-08-23.",
+        // ⚠️ SAIU DA TELA (§6.5): "FORÇA NÃO INFLADA: o grau que a diretriz dá
+        // a ESTE trecho não foi conferido… Verbatim em
+        // protocols/fontes-verbatim/ukka-2023-hipercalemia.md". A força já está
+        // declarada no campo `forca`; explicar POR QUE ela não é maior é
+        // conversa de auditoria.
       },
       title: "ECG normal não exclui — siga e cobre o exame",
       summary: "ECG normal NÃO exclui hipercalemia grave.",
@@ -569,8 +722,16 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         forca: "pratica_aceita",
         fonte: "Módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia",
         tipoDeDocumento: "bula e recomendações amplamente aceitas — NÃO é diretriz graduada",
-        contextoDaFonte:
-          "⚠️ Nenhuma diretriz de hipercalemia está citada no repositório. A UKKA aguda existe e NÃO recomenda diurético de alça; a KDIGO não tem diretriz de hipercalemia, só relatório de conferência.",
+        // ⚠️ O QUE FALAVA DO REPOSITÓRIO SAIU DA TELA (§6.5, 2026-08-23).
+        //
+        // Estava aqui: "Nenhuma diretriz de hipercalemia está citada no
+        // repositório. A UKKA aguda existe e NÃO recomenda diurético de alça; a
+        // KDIGO não tem diretriz de hipercalemia, só relatório de conferência."
+        //
+        // Isso é informação sobre o NOSSO PROCESSO, não sobre o paciente. À
+        // beira do leito o que importa cabe em `tipoDeDocumento`: prática
+        // aceita, não diretriz graduada. O resto é registro de auditoria e mora
+        // no repositório — este comentário é o registro.
       },
       porque: [
         HIPERCALEMIA_POR_QUE_TRES_FRENTES,
@@ -1603,8 +1764,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         forca: "pratica_aceita",
         fonte: "Riccardi M, Pagnesi M, Lombardi CM, Metra M. Severe acute kidney injury in the intensive care unit: step-to-step management. Eur Heart J Acute Cardiovasc Care. 2025;14:618–630.",
         tipoDeDocumento: "revisão de manejo em periódico de sociedade — não é diretriz graduada",
-        contextoDaFonte:
-          "⚠️ FORÇA NÃO INFLADA: revisão nomeada sustenta a dose como prática aceita, nunca como recomendação graduada. Verbatim em protocols/fontes-verbatim/riccardi-2025-ira-uti.md. ⚠️ A faixa 40–80 mg NÃO foi usada: ela tem suporte em consenso de insuficiência cardíaca, e trazê-la para o módulo de IRA sem dizer que a fonte é de IC seria transposição (decisão do autor, 2026-08-23).",
+        // ⚠️ SAIU DA TELA (§6.5): a explicação de que a força não foi inflada,
+        // o caminho do verbatim, e a razão de a faixa 40–80 mg (consenso de
+        // insuficiência cardíaca) não ter sido usada. Tudo isso é registro de
+        // auditoria — na tela ficam a força e a fonte, curtas.
       },
       declaracoes: [
         {
@@ -1613,8 +1776,8 @@ export const iraDecisionTree: DecisionTreeDefinition = {
             forca: "recomendacao_formal",
             fonte: "KDIGO 2012 — Clinical Practice Guideline for Acute Kidney Injury, 3.4.2",
             classeOuGrau: "2C",
-            contextoDaFonte:
-              "A exceção literal da mesma 3.4.2: não usar diuréticos para TRATAR a IRA, EXCETO no manejo da sobrecarga de volume. Verbatim em protocols/fontes-verbatim/kdigo-2012-aki.md.",
+            // ⚠️ SAIU DA TELA (§6.5) o caminho do verbatim. A afirmação em si —
+            // a exceção da sobrecarga — está na AÇÃO, que é onde o médico a lê.
           },
         },
       ],
@@ -1738,7 +1901,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "sim", label: "Hipercalemia ou acidose refratárias, sobrecarga com hipoxemia, uremia sintomática, ou intoxicação dialisável", next: "acionar" },
-        { id: "nao", label: "Nada disso — o paciente está sustentado por agora", next: "seguimento" },
+        // ⚠️ QUEM ESTÁ SUSTENTADO PASSA PELA REAVALIAÇÃO, não direto ao
+        // seguimento: é ali que "piorou" tem para onde voltar.
+        { id: "nao", label: "Nada disso — o paciente está sustentado por agora", next: "reavaliar" },
         { id: "nao_sei", label: "Não sei dizer se já é grave o bastante", next: "acionar" },
       ],
     },
@@ -1756,6 +1921,37 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       actions: IRA_ACIONAR_ACOES,
       porque: IRA_ACIONAR_PORQUE,
       next: "destino_suporte",
+    },
+
+    /**
+     * ⚠️ PASSO 6 — REAVALIAÇÃO, e as quatro saídas são do autor.
+     *
+     * `seguimento` já dizia o que vigiar, mas era AÇÃO: informava e seguia para
+     * o destino. Não havia decisão — e sem decisão não há para onde voltar quem
+     * piorou.
+     *
+     * ⚠️ E A TRAVA CLÍNICA QUE VEM COM ELA, decidida pelo autor: **não usar
+     * "creatinina caiu" como critério de resposta imediata.** A creatinina não
+     * acompanha a resposta clínica em tempo real — ela entra como dado de
+     * EVOLUÇÃO em reavaliações subsequentes, junto com tendência de diurese,
+     * eletrólitos, equilíbrio ácido-base, congestão e perfusão. É por isso que
+     * nenhuma das quatro opções abaixo cita creatinina.
+     */
+    reavaliar: {
+      id: "reavaliar",
+      type: "decision",
+      title: "Reavaliar a resposta",
+      question: "Depois do que foi feito, o que mudou no paciente?",
+      evidence: [
+        "⚠️ Olhe a TENDÊNCIA da diurese, dos eletrólitos, do equilíbrio ácido-base, da congestão e da perfusão.",
+        "⚠️ A creatinina NÃO acompanha a resposta clínica em tempo real: ela entra como dado de evolução nas reavaliações seguintes, não como critério de resposta imediata.",
+      ],
+      options: [
+        { id: "melhorou", label: "Melhorou clinicamente", next: "seguimento" },
+        { id: "sem_melhora", label: "Permanece sem melhora significativa", next: "volume_check" },
+        { id: "piorou", label: "Piorou ou ficou instável", next: "e1_hipercalemia" },
+        { id: "novo_dado", label: "Apareceu nova ameaça ou novo dado importante", next: "motivo_de_entrada" },
+      ],
     },
 
     seguimento: {
