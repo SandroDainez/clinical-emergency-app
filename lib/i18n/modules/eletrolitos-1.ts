@@ -398,4 +398,26 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "La gravedad aquí no cambia la presentación. Lo que cambia la conducta es la causa y la velocidad de instauración",
   "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa, a velocidade de instalação e o cálcio associado":
     "La gravedad aquí no cambia la presentación. Lo que cambia la conducta es la causa, la velocidad de instauración y el calcio asociado",
+
+  // ── QUAL CÁLCIO (2026-08-23) ──────────────────────────────────────────
+  "Qual cálcio você tem?":
+    "¿Qué calcio tiene?",
+  "Iônico":
+    "Iónico",
+  "Total (com albumina)":
+    "Total (con albúmina)",
+  "Não sei — onde acho cada um?":
+    "No sé — ¿dónde encuentro cada uno?",
+  "IÔNICO: sai na GASOMETRIA — a mesma que este módulo já manda colher. Em UTI costuma ser padrão.":
+    "IÓNICO: sale en la GASOMETRÍA — la misma que este módulo ya indica extraer. En UCI suele ser estándar.",
+  "TOTAL: sai na bioquímica de rotina. ⚠️ Para valer, precisa vir com a ALBUMINA da mesma coleta.":
+    "TOTAL: sale en la bioquímica de rutina. ⚠️ Para servir, tiene que venir con la ALBÚMINA de la misma extracción.",
+  "Se tiver os dois, prefira o iônico: ele mede o cálcio biologicamente ativo, sem depender de correção.":
+    "Si tiene los dos, prefiera el iónico: mide el calcio biológicamente activo, sin depender de corrección.",
+  "⚠️ APROXIMAÇÃO: o cálcio total foi corrigido pela albumina. Essa correção é imprecisa no doente crítico — se houver cálcio iônico, ele decide.":
+    "⚠️ APROXIMACIÓN: el calcio total fue corregido por la albúmina. Esa corrección es imprecisa en el paciente crítico — si hay calcio iónico, él decide.",
+  "⚠️ CÁLCIO TOTAL SEM ALBUMINA: sem ela não há como corrigir, e o total isolado subestima ou superestima conforme a albuminemia. Informe a albumina da mesma coleta, ou use o iônico.":
+    "⚠️ CALCIO TOTAL SIN ALBÚMINA: sin ella no hay cómo corregir, y el total aislado subestima o sobrestima según la albuminemia. Informe la albúmina de la misma extracción, o use el iónico.",
+  "⚠️ ESTE APP AINDA NÃO CLASSIFICA GRAVIDADE PELO CÁLCIO IÔNICO: a escala dele é outra (mmol/L) e os cortes não estão definidos aqui. Use o valor e o quadro clínico; a conduta abaixo não foi graduada por número.":
+    "⚠️ ESTA APP AÚN NO CLASIFICA LA GRAVEDAD POR EL CALCIO IÓNICO: su escala es otra (mmol/L) y los puntos de corte no están definidos aquí. Use el valor y el cuadro clínico; la conducta de abajo no fue graduada por número.",
 };

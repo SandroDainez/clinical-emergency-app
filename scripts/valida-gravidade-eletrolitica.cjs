@@ -86,6 +86,24 @@ if (comparacoes.length) erro(`getSeveritySummary voltou a classificar por númer
 const restantes = [...tela.matchAll(/\bcurrent\s*(?:<|>|<=|>=|===|!==)\s*-?\d/g)].length;
 console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente, fora da gravidade: ${restantes} (D-84)`);
 
+// ── 4b. UM CÁLCIO SÓ — gravidade e dose leem o MESMO valor
+//
+// ⚠️ O DEFEITO QUE ISTO IMPEDE JÁ ACONTECEU, e era erro clínico ativo: a tela
+// classificava gravidade pelo cálcio BRUTO (`< 7` → "Grave") e calculava a dose
+// pelo AJUSTADO pela albumina, dentro do mesmo card e com o mesmo rótulo. Em
+// hipoalbuminemia — a regra em UTI — isso chama de "hipocalcemia grave" um
+// paciente com cálcio ajustado normal e o manda para gluconato EV.
+{
+  const formula = /0\.8\s*\*\s*\(\s*4\s*-/;
+  if (formula.test(tela))
+    erro("a correção pela albumina voltou a ser calculada DENTRO da tela — ela vive em lib/eletrolitos/calcio.ts, e duas cópias foram exatamente o defeito");
+  if (!/getSeveritySummary\(disorder,\s*leituraDoCalcio\.valor/.test(tela))
+    erro("a gravidade não está lendo o MESMO cálcio da dose (`leituraDoCalcio.valor`) — é o defeito dos dois cálcios voltando");
+  const usosNaDose = (tela.match(/calcioParaClassificar\(/g) ?? []).length;
+  if (usosNaDose < 3)
+    erro(`a dose deveria ler pelo mesmo caminho da gravidade: esperava ao menos 3 usos de calcioParaClassificar (gravidade + hipo + hipercalcemia), achei ${usosNaDose}`);
+}
+
 // ── 5. O DISTÚRBIO FICTÍCIO — só no dado, sem tocar no componente
 const FICTICIO = "sandroemia";
 G.GRAVIDADE_POR_DISTURBIO[FICTICIO] = [

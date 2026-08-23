@@ -1565,4 +1565,6 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   // varredura de texto vale para os que NÃO aparecem, não para este.
   "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., outubro de 2023): sensibilidade média do ECG 0,19 ± 0,16 e especificidade 0,97 ± 0,04; alterações em ~66% com K ≥ 6,5 mmol/L.":
     "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults (Alfonzo et al., octubre de 2023): sensibilidad media del ECG 0,19 ± 0,16 y especificidad 0,97 ± 0,04; alteraciones en ~66% con K ≥ 6,5 mmol/L.",
+  "Reavalie a RESPOSTA DIURÉTICA em 2 a 6 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.":
+    "Reevalúe la RESPUESTA DIURÉTICA en 2 a 6 horas tras el bolo. ⚠️ El potasio sigue el protocolo propio de la hiperpotasemia — no la respuesta al diurético.",
 };

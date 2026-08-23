@@ -11,6 +11,14 @@ import {
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 import { AGUARDANDO_VALOR, degrauDeGravidade } from "../../lib/eletrolitos/gravidade";
+// ⚠️ QUAL CÁLCIO — a tela usava DOIS (bruto para gravidade, ajustado para dose).
+import {
+  CALCIO_ONDE_ACHAR,
+  CALCIO_OPCOES,
+  CALCIO_PERGUNTA,
+  calcioParaClassificar,
+  type TipoDeCalcio,
+} from "../../lib/eletrolitos/calcio";
 // ⚠️ O NÚMERO VEM DO DADO, A FRASE É MOLDURA (R-107). Enquanto `154 mEq/L` e
 // `8–10 mEq/L em 24 h` moravam dentro da frase traduzível, cada um tinha uma
 // segunda cópia em espanhol, escrita noutro momento, sem nada entre as duas.
@@ -584,6 +592,8 @@ function calculateResult(tr: (pt: string) => string, args: {
   target: number | null;
   glucose: number | null;
   albumin: number | null;
+  /** ⚠️ QUAL cálcio o médico informou — a dose e a gravidade usam o MESMO. */
+  tipoDeCalcio: TipoDeCalcio;
   bagVolumeMl: number | null;
   infusionHours: number | null;
   plannedVolumeL: number | null;
@@ -605,6 +615,7 @@ function calculateResult(tr: (pt: string) => string, args: {
     target,
     glucose,
     albumin,
+    tipoDeCalcio,
     bagVolumeMl,
     infusionHours,
     plannedVolumeL,
@@ -1190,8 +1201,10 @@ function calculateResult(tr: (pt: string) => string, args: {
       };
     }
     case "hypocalcemia": {
+      // ⚠️ O MESMO CÁLCIO DA GRAVIDADE — antes esta linha corrigia por conta
+      // própria enquanto a classificação usava o bruto, dentro do mesmo card.
       const correctedCa =
-        albumin != null ? current + 0.8 * (4 - albumin) : current;
+        calcioParaClassificar({ tipo: tipoDeCalcio, valor: current, albumina: albumin }).valor ?? current;
       const doseG = correctedCa < 7 || current < 7 ? 2 : 1;
       const severe = correctedCa < 7 || current < 7;
       const volumeMl = doseG * 10;
@@ -1280,7 +1293,10 @@ function calculateResult(tr: (pt: string) => string, args: {
     case "hypercalcemia": {
       const calcitoninUnits = weightKg * 4;
       const calcitoninMl = calcitoninUnits / 200;
-      const severe = current >= 14;
+      // ⚠️ MESMO CÁLCIO da gravidade, pela mesma razão da hipocalcemia.
+      const calcioLido =
+        calcioParaClassificar({ tipo: tipoDeCalcio, valor: current, albumina: albumin }).valor ?? current;
+      const severe = calcioLido >= 14;
       return {
         headline: "Hipercalcemia importante é sobretudo problema de volume, rim e causa de base; o laboratório acompanha a reversão clínica.",
         metrics: [
@@ -1876,6 +1892,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("");
+  // ⚠️ O CAMPO PERGUNTA QUAL CÁLCIO. Antes ele pedia "Cálcio (mg/dL)" e a tela
+  // decidia sozinha — com dois cálcios diferentes em dois lugares.
+  const [tipoDeCalcio, setTipoDeCalcio] = useState<TipoDeCalcio>("total");
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
@@ -1906,7 +1925,14 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
     elderly: false,
     target: automaticTarget,
   });
-  const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
+  // ⚠️ UM CÁLCIO SÓ, para gravidade e para dose. `calcioParaClassificar` devolve
+  // null quando não há valor utilizável (iônico sem cortes definidos), e a tela
+  // diz o que falta em vez de classificar pelo número errado.
+  const ehCalcio = disorder === "hypocalcemia" || disorder === "hypercalcemia";
+  const leituraDoCalcio = ehCalcio
+    ? calcioParaClassificar({ tipo: tipoDeCalcio, valor: parsedCurrent, albumina: parseNumber(albumin) })
+    : { valor: parsedCurrent, aviso: null };
+  const severitySummary = getSeveritySummary(disorder, leituraDoCalcio.valor, ecgChanges);
   const hypernatremiaVolumeSummary = useMemo(() => {
     if (disorder !== "hypernatremia") return null;
 
@@ -2045,6 +2071,7 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
         target: automaticTarget,
         glucose: parseNumber(glucose),
         albumin: parseNumber(albumin),
+        tipoDeCalcio,
         bagVolumeMl: parseNumber(bagVolumeMl),
         infusionHours: parseNumber(infusionHours),
         plannedVolumeL: automaticPlannedVolumeL,
@@ -2256,7 +2283,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   }
 
   const showGlucose = disorder === "hyponatremia" || disorder === "hyperkalemia";
-  const showAlbumin = disorder === "hypocalcemia";
+  // ⚠️ A ALBUMINA ACOMPANHA O CÁLCIO TOTAL — nos DOIS distúrbios de cálcio, e
+  // não só na hipocalcemia: a hipercalcemia lê o mesmo corte no mesmo cálcio.
+  const showAlbumin = (disorder === "hypocalcemia" || disorder === "hypercalcemia") && tipoDeCalcio === "total";
   const showAccess = disorder === "hypokalemia" || disorder === "hypophosphatemia";
   const showBag = disorder === "hypokalemia";
   const showHours = disorder === "hypokalemia";
@@ -2307,6 +2336,7 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
     showEcgToggle,
     glucose,
     albumin,
+    tipoDeCalcio,
     bagVolumeMl,
     infusionHours,
     magnesiumCurrent,
@@ -2403,6 +2433,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                 <Text style={styles.clinicalSummaryLabel}>{tr("Classificação atual")}</Text>
                 <Text style={styles.clinicalSummaryValue}>{tr(severitySummary.label)}</Text>
                 <Text style={styles.clinicalSummaryText}>{tr(severitySummary.signs)}</Text>
+                {leituraDoCalcio.aviso ? (
+                  <Text style={styles.clinicalSummaryText}>{tr(leituraDoCalcio.aviso)}</Text>
+                ) : null}
               </View>
               {leadLines.map((line) => (
                 <Text key={line} style={styles.referralLine}>• {line}</Text>
@@ -2423,6 +2456,21 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                   </View>
                 </View>
                 {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
+                {ehCalcio ? (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>{tr(CALCIO_PERGUNTA)}</Text>
+                    <View style={styles.rowWrap}>
+                      {CALCIO_OPCOES.map((o) =>
+                        renderPill(tr(o.rotulo), tipoDeCalcio === o.valor, () => setTipoDeCalcio(o.valor))
+                      )}
+                    </View>
+                  </View>
+                ) : null}
+                {ehCalcio && tipoDeCalcio === "nao_sei"
+                  ? CALCIO_ONDE_ACHAR.map((linha) => (
+                      <Text key={linha} style={styles.referralLine}>• {tr(linha)}</Text>
+                    ))
+                  : null}
                 {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
                 {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
                 {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}

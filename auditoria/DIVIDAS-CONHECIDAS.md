@@ -3474,7 +3474,20 @@ O que continua:
   rodada por `test:gravidade-eletrolitica`.
 - `deriveAutomaticTarget` — a meta de correção por distúrbio.
 
-## D-86 — DOIS TEMPOS DE REAVALIAÇÃO DO DIURÉTICO, NO MESMO MÓDULO
+## D-86 — DOIS TEMPOS DE REAVALIAÇÃO DO DIURÉTICO — ✅ RESOLVIDA (2026-08-23)
+
+**Como se resolveu, e a regra decidiu sozinha:** os dois eram clinicamente
+defensáveis, e por isso não houve discussão clínica — **ficou o que tem fonte**.
+`ALCA_REAVALIACAO` passou a dizer **2 a 6 h** (Riccardi 2025).
+
+⚠️ **A ORIGEM DO ERRO, REGISTRADA, PORQUE IMPORTA MAIS QUE A CORREÇÃO:** o
+"1 a 2 h" foi **ditado de cabeça pelo próprio condutor da auditoria**, várias
+rodadas atrás, na arquitetura da furosemida — e ninguém pediu procedência.
+Sobreviveu **três rodadas** convivendo, no mesmo módulo, com um número que tinha
+fonte. É o defeito que a auditoria persegue, vindo de dentro dela.
+
+<details><summary>o registro original</summary>
+
 
 Apareceu ao aplicar a D-71. O módulo renal agora diz as duas coisas, em telas
 vizinhas:
@@ -3489,6 +3502,8 @@ tem, e é anterior. Escolher um deles é decisão clínica do autor — e apagar
 antigo em silêncio seria exatamente o que este projeto persegue. Alvo: veredito
 do autor sobre qual tempo fica, e a fonte do que ficar.
 
+</details>
+
 ## D-87 — SSC 2026 É A BASE DO MÓDULO DE SEPSE, E O CONTEÚDO NÃO FOI REVISTO
 
 Registrada em 2026-08-23 por decisão do autor (R-109). A **SSC 2026** é a
@@ -3499,3 +3514,40 @@ número.
 2026 reformulou várias recomendações hemodinâmicas, e trocar o selo sem revisar o
 módulo cria mentira nova. **Alvo: revisão do módulo de sepse com o autor**,
 recomendação por recomendação.
+
+
+## D-88 — O CORTE DE CÁLCIO ESTAVA APLICADO NO CÁLCIO ERRADO — ✅ CORRIGIDO (2026-08-23)
+
+**O defeito:** a tela pedia "Cálcio (mg/dL)" sem qualificar, classificava
+gravidade pelo **bruto** (`< 7` → "Grave") e calculava a dose pelo **ajustado
+pela albumina** — dois cálcios no mesmo card, e o corte da fonte (que usa o
+ajustado) aplicado no que não é dele.
+
+⚠️ **Era erro clínico ativo na população do app.** Hipoalbuminemia é a regra em
+UTI; nela o cálcio total cai sem que o ativo caia (pseudo-hipocalcemia). Albumina
+2,0 com total 7,0 dá ajustado ≈ 8,6 — normal. A tela chamava isso de
+"hipocalcemia grave" e mandava para gluconato EV, que tem risco próprio.
+
+**O que se fez:** o campo passou a perguntar **qual** cálcio (iônico · total com
+albumina · não sei, com onde achar cada um); gravidade e dose passaram a ler o
+**mesmo** valor por `lib/eletrolitos/calcio.ts`; a albumina passou a aparecer
+também na hipercalcemia. Travado por `test:gravidade-eletrolitica` e provado pela
+mutação M79.
+
+**O que NÃO se decidiu:** os cortes do cálcio **iônico**. Enquanto não houver
+decisão do autor, escolher iônico faz a tela dizer que **não classifica por
+número** — em vez de aplicar nele um corte que não é dele.
+
+## D-89 — O MODELO DE GRAVIDADE SÓ SABE NÚMERO
+
+A fonte de hipocalcemia tem *"sintomas em qualquer valor abaixo da referência"* —
+critério **sem número** — e a de hipercalcemia tem uma faixa que é
+*"conforme sintomas e contexto"*. `CorteDeGravidade` não sabe expressar nenhum
+dos dois.
+
+É o **R-97 pelo avesso**: lá o app queria número onde a fonte não tinha; aqui a
+fonte tem critério e o modelo só sabe número — e modelo que só aceita número
+**obriga a inventar número**.
+
+**Proposta escrita e NÃO aplicada** em `auditoria/PROPOSTA-CRITERIO-NAO-NUMERICO.md`,
+com a trava e a mutação previstas. Alvo: "pode aplicar" do autor.

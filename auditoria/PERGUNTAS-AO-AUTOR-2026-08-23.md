@@ -92,3 +92,31 @@ As funções não existem mais com o mesmo nome. Escolher qual código de hoje o
 o lugar delas é decidir **o que auditar** — escopo, não conserto.
 
 > **Para onde eu reaponto o auditor?**
+
+---
+
+## 6 · Qual cálcio o app passa a pedir?
+
+O campo agora pergunta **qual** cálcio (iônico · total com albumina · não sei), e
+gravidade e dose passaram a usar **o mesmo**. Faltam duas decisões suas:
+
+> **a)** O arranjo está certo — **iônico preferencial, com fallback para
+> total+albumina**? Ou outro?
+> **b)** Se adotar o iônico: **quais são os cortes dele?** (a escala é mmol/L, e
+> eu não os escolhi — hoje a tela diz que não classifica por número quando o
+> médico informa iônico)
+
+## 7 · A faixa intermediária da hipercalcemia
+
+A fonte tem três faixas; o app tem uma. Falta **3,0–3,5 mmol/L (≈ 12–14 mg/dL)**,
+que a fonte descreve como *"trata conforme sintomas e contexto"*.
+
+> **Qual texto de conduta entra nessa faixa?**
+> ⚠️ Ela não é faixa pura — é faixa **+** critério clínico. Ver a proposta em
+> `auditoria/PROPOSTA-CRITERIO-NAO-NUMERICO.md`, que precisa do seu "pode
+> aplicar" antes de existir.
+
+## 8 · Magnésio — segue intocado
+
+`< 1,2` e `≥ 4,9` mg/dL continuam exatamente como estavam, sem fonte. Aguardando
+a sua conferência **número a número**, como o senhor pediu.

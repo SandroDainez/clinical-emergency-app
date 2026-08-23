@@ -256,8 +256,25 @@ export const ALCA_OLIGURIA_PORQUE = [
   "Sem resposta diurética não há via de remoção renal: o potássio sai por diálise ou não sai.",
 ];
 
+/**
+ * ⚠️ ERA "1 A 2 HORAS", E O NÚMERO NÃO TINHA FONTE — ORIGEM REGISTRADA.
+ *
+ * O 1–2 h foi ditado de cabeça na arquitetura da furosemida, várias rodadas
+ * atrás, e ninguém pediu procedência. Sobreviveu TRÊS rodadas convivendo, no
+ * mesmo módulo, com um 2–6 h que tinha fonte — e só apareceu quando a D-71 pôs
+ * os dois lado a lado (D-86).
+ *
+ * Os dois são clinicamente defensáveis: a diurese começa cedo, mas a RESPOSTA
+ * QUE DECIDE CONDUTA — débito e natriurese — se avalia em horas. É justamente
+ * por serem os dois defensáveis que a regra decide sozinha, sem discussão
+ * clínica: **fica o que tem fonte**.
+ *
+ * ⚠️ E o registro da origem é a parte que importa mais que a correção: número
+ * ditado por quem conduz a auditoria, aceito sem procedência, é o mesmo defeito
+ * que a auditoria persegue — só que vindo de dentro.
+ */
 export const ALCA_REAVALIACAO =
-  "Reavalie a RESPOSTA DIURÉTICA em 1 a 2 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.";
+  "Reavalie a RESPOSTA DIURÉTICA em 2 a 6 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.";
 
 /* ── A dose, que é de DESCONGESTÃO e mora no ramo congesto ────────────────── */
 
