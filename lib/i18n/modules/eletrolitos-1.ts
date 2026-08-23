@@ -516,4 +516,28 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "Grave (punto de corte provisional)",
   "⚠️ 8–12 mEq/L é ORIENTAÇÃO, não cutoff formal: o intervalo de referência do SEU laboratório prevalece, porque a metodologia analítica interfere no resultado.":
     "⚠️ 8–12 mEq/L es ORIENTACIÓN, no un punto de corte formal: el rango de referencia de SU laboratorio prevalece, porque la metodología analítica interfiere en el resultado.",
+
+  // ── referencias: a terceira espécie (2026-08-23) ──────────────────────
+  "Referência de progressão — orienta, não classifica":
+    "Referencia de progresión — orienta, no clasifica",
+  "⚠️ Faixas APROXIMADAS: não são limites absolutos nem recomendação graduada. A decisão considera sintomas, função renal e a TENDÊNCIA da concentração.":
+    "⚠️ Rangos APROXIMADOS: no son límites absolutos ni recomendación graduada. La decisión considera los síntomas, la función renal y la TENDENCIA de la concentración.",
+  "Perda importante de reflexos":
+    "Pérdida importante de reflejos",
+  "Depressão ou paralisia respiratória":
+    "Depresión o parálisis respiratoria",
+  "Risco de parada cardíaca":
+    "Riesgo de paro cardíaco",
+  "Valor atual":
+    "Valor actual",
+  "Magnésio atual":
+    "Magnesio actual",
+  "Não sei":
+    "No sé",
+  "Bolsa final":
+    "Bolsa final",
+  "Tempo da infusão":
+    "Tiempo de la infusión",
+  "Potássio atual":
+    "Potasio actual",
 };

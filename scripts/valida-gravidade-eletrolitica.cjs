@@ -253,7 +253,12 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
 // o dia em que alguém os digitar no lugar errado — que é o caminho mais curto
 // entre "referência de progressão" e "corte de gravidade".
 {
-  const PROIBIDOS_COMO_CORTE = [8, 10, 15, 25, 30];
+  // ⚠️ DERIVADA DO CAMPO, não escrita à mão. A lista era `[8, 10, 15, 25, 30]`
+  // digitada aqui — uma segunda cópia dos mesmos números dentro da trava que
+  // existe para impedir que eles virem número em outro lugar. Com
+  // `referencias`, ela sai do próprio dado: um lugar só.
+  const PROIBIDOS_COMO_CORTE = G.valoresQueNaoClassificam();
+  console.log(`  referências que NÃO classificam: ${PROIBIDOS_COMO_CORTE.length} valor(es), derivados do campo`);
   const numericos = [];
   const colher = (c) => {
     if (["abaixoDe", "aPartirDe", "acimaDe"].includes(c.tipo)) numericos.push(c.valor);

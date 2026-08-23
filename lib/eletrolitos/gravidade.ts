@@ -172,6 +172,17 @@ export const SEM_ESCALA_DE_APRESENTACAO =
 export const SEM_ESCALA_HIPERFOSFATEMIA =
   "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa, a velocidade de instalação e o cálcio associado";
 
+/**
+ * Número que ORIENTA e não decide. ⚠️ O campo se chama `aproximadamente` de
+ * propósito: `faixa` classifica, e dar o mesmo nome às duas seria convidar a
+ * confusão que este tipo existe para impedir.
+ */
+export type ReferenciaQueNaoClassifica = {
+  manifestacao: string;
+  aproximadamente: { de: number; ate: number; unidade: UnidadeDeConcentracao | "mEq/L" };
+  procedencia: ProcedenciaDeGravidade;
+};
+
 export type DegrauDeGravidade = {
   /** CLASSIFICA — o que o caso é. */
   rotulo: string;
@@ -187,6 +198,20 @@ export type DegrauDeGravidade = {
    * o que o degrau significa.
    */
   conduta?: { texto: string; procedencia: ProcedenciaDeGravidade };
+  /**
+   * ⚠️ A TERCEIRA ESPÉCIE — ORIENTAM, NÃO DECIDEM (R-120).
+   *
+   *   `cortes`      classifica — decide o degrau
+   *   `conduta`     modula     — muda a urgência sem mudar a classificação
+   *   `referencias` orienta    — ajuda a ler a tendência e NÃO decide nada
+   *
+   * Sem ela, o número **vira corte** — porque é o único lugar onde cabe. Foi
+   * exatamente o risco da progressão de toxicidade do magnésio, que o autor
+   * entregou dizendo com todas as letras: *"não são limites absolutos nem
+   * recomendação graduada; a decisão considera sintomas, função renal e
+   * tendência da concentração"*.
+   */
+  referencias?: ReferenciaQueNaoClassifica[];
   /** Vários cortes = qualquer um deles basta (OU). */
   cortes: CorteDeGravidade[];
   procedencia: ProcedenciaDeGravidade;
@@ -473,6 +498,14 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
           "Fora de magnesioterapia, valor acima da referência do SEU laboratório é hipermagnesemia. ⚠️ Este app NÃO gradua hipermagnesemia por número: interprete em conjunto com a função renal, a exposição a magnésio (antiácidos, laxantes, reposição) e as manifestações clínicas.",
         procedencia: P_MG,
       },
+      // ⚠️ A PROGRESSÃO DE TOXICIDADE ENTRA COMO `referencias`, NÃO COMO CORTE.
+      // Ela orienta a leitura da tendência; quem decide são os sintomas, a
+      // função renal e a direção em que a concentração está indo.
+      referencias: [
+        { manifestacao: "Perda importante de reflexos", aproximadamente: { de: 8, ate: 10, unidade: "mEq/L" }, procedencia: P_MG },
+        { manifestacao: "Depressão ou paralisia respiratória", aproximadamente: { de: 10, ate: 15, unidade: "mEq/L" }, procedencia: P_MG },
+        { manifestacao: "Risco de parada cardíaca", aproximadamente: { de: 25, ate: 30, unidade: "mEq/L" }, procedencia: P_MG },
+      ],
       cortes: [{ tipo: "restante" }],
       procedencia: P_MG,
     },
@@ -589,6 +622,25 @@ export function corteDoDegrau(disturbio: string, degrau: DegrauDeGravidade): str
     if (t) return t;
   }
   return null;
+}
+
+/**
+ * Todos os números que ORIENTAM, achatados — a fonte da lista de proibidos como
+ * corte. ⚠️ Antes ela era escrita à mão na trava: uma segunda cópia dos mesmos
+ * números, no lugar mais irônico possível.
+ */
+export function valoresQueNaoClassificam(): number[] {
+  const out = new Set<number>();
+  for (const degraus of Object.values(GRAVIDADE_POR_DISTURBIO))
+    for (const g of degraus)
+      for (const r of g.referencias ?? []) { out.add(r.aproximadamente.de); out.add(r.aproximadamente.ate); }
+  return [...out];
+}
+
+/** "~8–10 mEq/L" — derivado, com o "~" que diz que é aproximado. */
+export function textoDaReferencia(r: ReferenciaQueNaoClassifica): string {
+  const n = (v: number) => String(v).replace(".", ",");
+  return `~${n(r.aproximadamente.de)}–${n(r.aproximadamente.ate)} ${r.aproximadamente.unidade}`;
 }
 
 export function degrauDeGravidade(

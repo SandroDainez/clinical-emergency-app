@@ -46,7 +46,12 @@ for (const arq of TODOS) {
   // Campos declarados como entrada numérica: { id: "x", label: "…", kind: "number" … }
   for (const m of txt.matchAll(/\{[^{}]*kind:\s*"number"[^{}]*\}/g)) {
     const bloco = m[0];
-    const id = (bloco.match(/id:\s*"([^"]+)"/) ?? [])[1] ?? "?";
+    // ⚠️ A DECLARAÇÃO DE TIPO NÃO É UM CAMPO. O bloco
+    // `{ id: string; label: string; unit?: string; kind: "number" … }` casava com
+    // o regex e saía na lista como "campo sem unidade" — o instrumento acusando
+    // a própria definição de campo.
+    const id = (bloco.match(/id:\s*"([^"]+)"/) ?? [])[1];
+    if (!id) continue;
     const label = (bloco.match(/label:\s*"([^"]+)"/) ?? [])[1] ?? "";
     const unidade = (bloco.match(/unit:\s*"([^"]+)"/) ?? [])[1] ?? null;
     const item = { arq: path.relative(RAIZ, arq), id, label, unidade };

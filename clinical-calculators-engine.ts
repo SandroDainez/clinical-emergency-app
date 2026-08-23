@@ -127,6 +127,14 @@ export type CalcKind = "formula" | "score";
 export type ToggleOption = { label: string; value: string };
 
 export type FormulaInput =
+  /**
+   * ⚠️ `unit` DEIXOU DE SER OPCIONAL EM SILÊNCIO (R-119). Ele continua podendo
+   * ficar de fora do texto exibido, mas "sem unidade" e "adimensional" não são a
+   * mesma coisa no dado: pH não tem unidade POR PROPRIEDADE, e escore não tem
+   * POR NATUREZA. Sem os dois valores na enum, o instrumento nunca distingue
+   * esquecimento de propriedade — e a trava vira negociável no primeiro caso
+   * duvidoso.
+   */
   | { id: string; label: string; unit?: string; kind: "number"; placeholder?: string; optional?: boolean; helperText?: string }
   | { id: string; label: string; kind: "toggle"; options: ToggleOption[] };
 
@@ -778,14 +786,14 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "fio2high", label: "FiO₂ ≥ 0,5?", kind: "toggle", options: [{ label: "Não (usar PaO₂)", value: "nao" }, { label: "Sim (usar A-aDO₂)", value: "sim" }] },
       { id: "pao2", label: "PaO₂ (se FiO₂ < 0,5)", unit: "mmHg", kind: "number", optional: true },
       { id: "aado2", label: "A-aDO₂ (se FiO₂ ≥ 0,5)", unit: "mmHg", kind: "number", optional: true },
-      { id: "ph", label: "pH arterial", kind: "number", placeholder: "ex: 7,40" },
+      { id: "ph", label: "pH arterial", unit: "adimensional", kind: "number", placeholder: "ex: 7,40" },
       { id: "na", label: "Sódio", unit: "mEq/L", kind: "number", placeholder: "ex: 140" },
       { id: "k", label: "Potássio", unit: "mEq/L", kind: "number", placeholder: "ex: 4" },
       { id: "cr", label: "Creatinina", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
       { id: "ira", label: "Insuficiência renal aguda?", kind: "toggle", options: [{ label: "Não", value: "nao" }, { label: "Sim (dobra Cr)", value: "sim" }] },
       { id: "ht", label: "Hematócrito", unit: "%", kind: "number", placeholder: "ex: 40" },
       { id: "leuco", label: "Leucócitos", unit: "×10³/mm³", kind: "number", placeholder: "ex: 10" },
-      { id: "gcs", label: "Glasgow (GCS)", kind: "number", placeholder: "3–15" },
+      { id: "gcs", label: "Glasgow (GCS)", unit: "pontos", kind: "number", placeholder: "3–15" },
       { id: "idade", label: "Idade", unit: "anos", kind: "number", placeholder: "ex: 60" },
       { id: "cronica", label: "Doença crônica grave", kind: "toggle", options: [{ label: "Nenhuma", value: "0" }, { label: "Cirurgia eletiva (+2)", value: "2" }, { label: "Emergência/clínico (+5)", value: "5" }] },
     ],
@@ -885,13 +893,13 @@ export const CALC_TOOLS: CalcTool[] = [
         { label: "Neurocirurgia por AVC (+5)", value: "5" } ] },
 
       // ── Caixa III ──
-      { id: "gcs", label: "Glasgow (menor)", kind: "number", placeholder: "3–15" },
+      { id: "gcs", label: "Glasgow (menor)", unit: "pontos", kind: "number", placeholder: "3–15" },
       { id: "bili", label: "Bilirrubina total (maior)", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
       { id: "temp", label: "Temperatura (maior)", unit: "°C", kind: "number", placeholder: "ex: 37" },
       { id: "cr", label: "Creatinina (maior)", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
       { id: "fc", label: "Frequência cardíaca (maior)", unit: "bpm", kind: "number", placeholder: "ex: 90" },
       { id: "leuco", label: "Leucócitos (maior)", unit: "×10³/mm³", kind: "number", placeholder: "ex: 10" },
-      { id: "ph", label: "pH (menor)", kind: "number", placeholder: "ex: 7,40" },
+      { id: "ph", label: "pH (menor)", unit: "adimensional", kind: "number", placeholder: "ex: 7,40" },
       { id: "plaq", label: "Plaquetas (menor)", unit: "×10³/mm³", kind: "number", placeholder: "ex: 200" },
       { id: "pas", label: "PA sistólica (menor)", unit: "mmHg", kind: "number", placeholder: "ex: 120" },
       { id: "vm", label: "Em ventilação mecânica?", kind: "toggle", options: [{ label: "Não", value: "nao" }, { label: "Sim", value: "sim" }] },

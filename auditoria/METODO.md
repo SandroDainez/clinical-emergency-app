@@ -6684,6 +6684,23 @@ achou **7 campos** cuja unidade só existe na prosa, além de 3 sem unidade algu
 2,43 mg/dL. **As duas vezes em que este projeto tropeçou não foram no magnésio:**
 o `1,9 mmol/L` virando `7` (D-90) e o `3,5` virando `14` (D-91).
 
+### ⚠️ E O MOTIVO QUE FECHA A DISCUSSÃO
+
+> **Unidade em prosa é TRADUZÍVEL; unidade em campo, não.**
+
+O app tem uma segunda cópia de todo texto em espanhol. Uma tradução que escreva
+`Peso (lb)` — por descuido ou por convenção local — **muda a unidade de entrada
+de um cálculo, e nenhum instrumento vê**, porque para eles aquilo é só prosa.
+
+Não aconteceu. Mas é o **mesmo mecanismo do D-80**, em que o critério da
+hidrocortisona **de fato** divergiu entre os idiomas. Ali era conduta; aqui seria
+unidade de dose.
+
+**Fechado em 2026-08-23:** `test:unidade-de-campo` no portão, 41 campos com
+unidade declarada, o rótulo derivado do campo, e `adimensional`/`pontos` na enum
+— porque **"sem unidade" e "adimensional" não podem ser a mesma coisa no dado**,
+senão o instrumento nunca distingue esquecimento de propriedade.
+
 ## R-120 — REFERÊNCIA QUE NÃO CLASSIFICA É UMA TERCEIRA ESPÉCIE
 
 Do magnésio (autor, 2026-08-23): a progressão de toxicidade é **referência de

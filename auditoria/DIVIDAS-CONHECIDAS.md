@@ -3724,7 +3724,19 @@ coronárias a angioplastia primária é a regra e o trombolítico é exceção.
 vive hoje noutro arquivo, com outro nome. O bloco segue **pulado e contado**. O
 que deixou de ser dúvida é o ESCOPO; falta localizar o alvo.
 
-## D-98 — DEZ CAMPOS DE ENTRADA SEM UNIDADE DE VERDADE
+## D-98 — DEZ CAMPOS DE ENTRADA SEM UNIDADE — ✅ RESOLVIDA (2026-08-23)
+
+**Fechada na mesma data em que foi medida.** Os 7 com a unidade na prosa
+passaram a declará-la no CAMPO, com o rótulo derivado; os 2 de pH e os 2 de
+Glasgow ganharam `adimensional` e `pontos`. `test:unidade-de-campo` entrou no
+portão, com M93 (tirar a unidade de um campo) e **M94 (mudar a unidade só na
+prosa, deixando o campo)** — a segunda é a que importa, porque é invisível para
+todo o resto.
+
+Medição final: **41 campos, 41 com unidade, 0 na prosa.**
+
+<details><summary>o registro original</summary>
+
 
 Medido em 2026-08-23 (`npm run medir:unidade`), **não corrigido** — o autor pediu
 o tamanho antes.
@@ -3750,7 +3762,21 @@ conseguiu ler.
 declaram entrada por `input("Peso (kg)", …)`, e a unidade fica dentro do texto.
 É o R-119: **a unidade é do campo, não do rótulo em prosa.**
 
-## D-99 — A PROGRESSÃO DE TOXICIDADE DO MAGNÉSIO ESPERA ESTRUTURA
+</details>
+
+## D-99 — A PROGRESSÃO DE TOXICIDADE DO MAGNÉSIO — ✅ RESOLVIDA (2026-08-23)
+
+`referencias` implementado (R-120), e as três faixas entraram como o primeiro
+caso. **A lista de números proibidos como corte passou a ser DERIVADA do campo** —
+antes era `[8, 10, 15, 25, 30]` escrita à mão dentro da trava, que é uma segunda
+cópia dos mesmos números no lugar mais irônico possível.
+
+A tela mostra as três em bloco separado da classificação, com "aproximadamente"
+visível e a ressalva do autor junto: *não são limites absolutos nem recomendação
+graduada; a decisão considera sintomas, função renal e a TENDÊNCIA*.
+
+<details><summary>o registro original</summary>
+
 
 As três faixas que o autor deu (~8–10 · ~10–15 · ~25–30 mEq/L) **não estão no
 app**: a estrutura só sabe guardar número que classifica, e elas explicitamente
@@ -3759,3 +3785,5 @@ não classificam.
 Forma proposta em `auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md` (R-120).
 ⚠️ A trava que impede esses números de virarem corte **já existe e foi provada**
 (M91) — hoje com a lista escrita à mão; com o campo, ela passa a ser derivada.
+
+</details>

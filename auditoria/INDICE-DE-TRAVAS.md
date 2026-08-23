@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**62 de 79 travas com declaração completa.**
+**63 de 80 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -101,6 +101,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o ânion gap que a calculadora DEVOLVE seja exatamente o que a fórmula declarada em `lib/anion-gap.ts` diz — e que o rótulo mostrado na tela seja derivado dos MESMOS termos que fazem a conta.
 - **NÃO PROMETE:** que a fórmula escolhida seja a melhor, nem que os cortes estejam certos. A escolha entre AG com e sem potássio é decisão do autor (2026-08-23, SEM potássio); os cortes seguem herdados e pendentes (D-95).
 - **UNIVERSO:** a ferramenta `anion-gap` de `clinical-calculators-engine.ts`, compilada, varrida em combinações de Na, Cl e HCO₃ — o número sai impresso. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118. ── POR QUE ELA EXISTE ────────────────────────────────────────────────────── Existem duas fórmulas de ânion gap: com potássio (Na + K − Cl − HCO₃) e sem (Na − Cl − HCO₃). **Elas dão números diferentes e têm intervalos de referência diferentes.** Trocar uma pela outra sem trocar o intervalo desloca TODA a classificação — e o rótulo na tela continua idêntico. ⚠️ Sem esta trava, a decisão se desfaz em silêncio na primeira edição, como quase aconteceu com o `>= 14` da hipercalcemia.
+
+## `test:unidade-de-campo` → `scripts/valida-unidade-de-campo.cjs`
+
+- **PROMETE:** que todo campo de entrada numérica declare a unidade NO CAMPO, e que o rótulo exibido seja DERIVADO dela — nunca a fonte dela.
+- **NÃO PROMETE:** que a unidade declarada seja a certa para a grandeza. Ela garante que existe e que a prosa não a contradiz — não que "mEq/L" seja o correto para aquele analito.
+- **UNIVERSO:** os campos `kind: "number"` das calculadoras + as chamadas de `input(...)` da tela dos eletrólitos, contados antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-119. ── ⚠️ UNIDADE EM PROSA É TRADUZÍVEL; UNIDADE EM CAMPO, NÃO ───────────────── O app tem uma segunda cópia de todo texto em espanhol. Uma tradução que escreva "Peso (lb)" — por descuido ou por convenção local — **muda a unidade de entrada de um cálculo, e nenhum instrumento vê**, porque para eles aquilo é só prosa. Não aconteceu. Mas é o MESMO MECANISMO do D-80, em que o critério da hidrocortisona de fato divergiu entre os idiomas. Ali era conduta; aqui seria unidade de dose.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 

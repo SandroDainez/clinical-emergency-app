@@ -19,6 +19,7 @@ import {
   type ContextoClinico,
   corteDoDegrau,
   degrauDeGravidade,
+  textoDaReferencia,
   GRAVIDADE_POR_DISTURBIO,
   EXIGEM_COMPATIBILIDADE,
   IONIZADO_NOTAS,
@@ -27,6 +28,7 @@ import {
   SINTOMATICO_PERGUNTA,
 } from "../../lib/eletrolitos/gravidade";
 // ⚠️ QUAL CÁLCIO — a tela usava DOIS (bruto para gravidade, ajustado para dose).
+import { rotuloComUnidade, type UnidadeDeCampo } from "../../lib/eletrolitos/unidade-de-campo";
 import {
   CALCIO_ONDE_ACHAR,
   CALCIO_OPCOES,
@@ -1982,7 +1984,7 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   // ⚠️ AS DUAS UNIDADES NA TELA (decisão do autor): quem digita em mg/dL vê
   // onde o corte da fonte cai. O texto é SAÍDA — a comparação nunca o usa.
   const ehMagnesio = disorder === "hypermagnesemia" || disorder === "hypomagnesemia";
-  const degrauAtual = ehCalcio || disorder === "hypophosphatemia"
+  const degrauAtual = ehCalcio || ehMagnesio || disorder === "hypophosphatemia"
     ? degrauDeGravidade(
         disorder,
         leituraDoCalcio.valor,
@@ -2311,7 +2313,21 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
    * residual. Rótulo em cima, controle ocupando a largura inteira — como na
    * árvore, que é onde ele funciona.
    */
-  function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
+  /**
+   * ⚠️ `unidade` É OBRIGATÓRIA, e o rótulo é DERIVADO dela (R-119).
+   *
+   * Antes o nome vinha pronto — `input("Peso (kg)", …)` — e a unidade morava
+   * dentro do texto: traduzível, ilegível para qualquer trava, e capaz de virar
+   * "(lb)" numa tradução sem que nada percebesse.
+   */
+  function input(
+    nome: string,
+    unidade: UnidadeDeCampo,
+    value: string,
+    field: PickerFieldId,
+    placeholder?: string
+  ) {
+    const label = rotuloComUnidade(nome, unidade);
     const faixa = faixaDoPicker(field, electrolyte, currentUnit, magnesiumUnit);
     const numero = Number(String(value).replace(",", "."));
     const temValor = value !== "" && Number.isFinite(numero);
@@ -2508,6 +2524,25 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                 ) : null}
                 {/* ⚠️ CONDUTA EM LUGAR PRÓPRIO — não em `sinais`. A classificação
                     diz o que o caso É; isto diz o que muda a urgência. */}
+                {/* ⚠️ BLOCO SEPARADO DA CLASSIFICAÇÃO, com "aproximadamente"
+                    visível: são números que ORIENTAM a leitura da tendência e
+                    NÃO decidem o degrau (R-120). Misturá-los com o rótulo os
+                    transformaria em corte aos olhos de quem lê. */}
+                {degrauAtual?.referencias?.length ? (
+                  <>
+                    <Text style={styles.clinicalSummaryLabel}>
+                      {tr("Referência de progressão — orienta, não classifica")}
+                    </Text>
+                    {degrauAtual.referencias.map((r) => (
+                      <Text key={r.manifestacao} style={styles.referralLine}>
+                        • {tr(r.manifestacao)}: {textoDaReferencia(r)}
+                      </Text>
+                    ))}
+                    <Text style={styles.referralLine}>
+                      {tr("⚠️ Faixas APROXIMADAS: não são limites absolutos nem recomendação graduada. A decisão considera sintomas, função renal e a TENDÊNCIA da concentração.")}
+                    </Text>
+                  </>
+                ) : null}
                 {condutaDoDegrau ? (
                   <Text style={styles.referralLine}>{tr(condutaDoDegrau)}</Text>
                 ) : null}
@@ -2523,8 +2558,8 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
             <View style={styles.card}>
               <Text style={styles.cardLabel}>{tr("PACIENTE")}</Text>
               <View style={styles.formGrid}>
-                {input("Peso (kg)", weightKg, "weightKg", "70")}
-                {input(trf(tr, "Valor atual ({0})", [currentUnit]), current, "current", "Selecionar")}
+                {input("Peso", "kg", weightKg, "weightKg", "70")}
+                {input(tr("Valor atual"), currentUnit as UnidadeDeCampo, current, "current", "Selecionar")}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>{tr("Meta / alvo")}</Text>
                   <View style={[styles.inputPicker, styles.inputPickerLocked]}>
@@ -2533,7 +2568,7 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                     </Text>
                   </View>
                 </View>
-                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
+                {showGlucose ? input("Glicemia", "mg/dL", glucose, "glucose", "opcional") : null}
                 {ehMagnesio ? (
                   <View style={styles.inputGroup}>
                     {/* ⚠️ O CONTEXTO VEM ANTES DO NÚMERO: ele muda a leitura do
@@ -2607,10 +2642,10 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                       <Text key={linha} style={styles.referralLine}>• {tr(linha)}</Text>
                     ))
                   : null}
-                {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
-                {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
-                {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
-                {showMagnesiumCurrent ? input(trf(tr, "Magnésio atual ({0})", [magnesiumUnit]), magnesiumCurrent, "magnesiumCurrent", "se disponível") : null}
+                {showAlbumin ? input("Albumina", "g/dL", albumin, "albumin", "Selecionar") : null}
+                {showBag ? input("Bolsa final", "mL", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
+                {showHours ? input("Tempo da infusão", "h", infusionHours, "infusionHours", "Selecionar") : null}
+                {showMagnesiumCurrent ? input(tr("Magnésio atual"), magnesiumUnit as UnidadeDeCampo, magnesiumCurrent, "magnesiumCurrent", "se disponível") : null}
                 {showVolumePlan ? (
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>{tr("Água livre alvo (L)")}</Text>
@@ -2627,8 +2662,8 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                     ) : null}
                   </View>
                 ) : null}
-                {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
-                {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
+                {showPotassiumCurrent ? input("Potássio atual", "mEq/L", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
+                {showBicarbonate ? input("Bicarbonato", "mEq/L", bicarbonate, "bicarbonate", "se disponível") : null}
               </View>
 
               <Text style={styles.fieldSectionLabel}>{tr("Unidade do eletrólito")}</Text>
