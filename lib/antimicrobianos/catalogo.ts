@@ -147,9 +147,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     nome: "Vancomicina",
     classe: "Glicopeptídeo",
     doseUsual: {
-      dose: "25–30 mg/kg de ataque (peso real, máx 3 g)",
       via: "IV",
-      intervalo: "dose única de ataque",
       procedencia: PENDENTE_DA_MIGRACAO,
     },
     // ⚠️ O ATAQUE DA VANCOMICINA NÃO SE AJUSTA POR FUNÇÃO RENAL — ele depende do
@@ -203,7 +201,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     id: "piperacilina-tazobactam",
     nome: "Piperacilina-tazobactam",
     classe: "Beta-lactâmico + inibidor de beta-lactamase",
-    doseUsual: { dose: "3,375 g (outras indicações) · 4,5 g (pneumonia nosocomial)", via: "IV", intervalo: "6/6h", procedencia: LABEL_PIPTAZO },
+    doseUsual: { via: "IV", procedencia: LABEL_PIPTAZO },
     // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO. A Tabela 1 do label tem DUAS
     // colunas — "todas as indicações exceto pneumonia nosocomial" e "pneumonia
     // nosocomial" —, e o app usava a segunda para todo mundo. As faixas abaixo
@@ -268,7 +266,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     id: "meropenem",
     nome: "Meropeném",
     classe: "Carbapenêmico",
-    doseUsual: { dose: "500 mg (pele) · 1 g (intra-abdominal)", via: "IV", intervalo: "8/8h", procedencia: LABEL_MEROPENEM },
+    doseUsual: { via: "IV", procedencia: LABEL_MEROPENEM },
     // ⚠️ D-79 FECHADA PELA ESTRUTURA, NÃO À MÃO. A tabela renal do label diz
     // "one-half recommended dose" — e "recommended dose" é um REFERENTE, que
     // depende da indicação: 500 mg em pele e partes moles, 1 g em intra-abdominal.
@@ -391,9 +389,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     nome: "Cefepima",
     classe: "Cefalosporina de 4ª geração",
     doseUsual: {
-      dose: "1 a 2 g (pneumonia) · 2 g (neutropenia febril, ITU grave, pele, intra-abdominal) · 0,5 a 1 g (ITU leve a moderada)",
       via: "IV em ~30 min (IM só em ITU leve por E. coli)",
-      intervalo: "8/8h a 12/12h conforme a indicação",
       procedencia: LABEL_CEFEPIMA,
     },
     // ⚠️ A TABELA DO LABEL É MATRICIAL, E A LINHA DE ENTRADA É O ESQUEMA BASAL —
@@ -497,9 +493,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     nome: "Ceftazidima",
     classe: "Cefalosporina de 3ª geração (antipseudomonas)",
     doseUsual: {
-      dose: "1 g (usual) · 2 g (meningite, intra-abdominal grave, osso/articulação, infecção muito grave) · 250 mg (ITU não complicada)",
       via: "IV ou IM",
-      intervalo: "8/8h a 12/12h conforme a indicação",
       procedencia: LABEL_CEFTAZIDIMA,
     },
     // ⚠️ A DOSE DE ATAQUE É EXPLÍCITA NESTE LABEL — e o campo não existia. Ela
@@ -530,6 +524,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     ],
     fonteDoFarmaco: LABEL_CEFTAZIDIMA,
     observacoes: [
+      { texto: "⚠️ DOSE POR INDICAÇÃO (Tabela 3 do label), AINDA NÃO ESTRUTURADA NESTE CATÁLOGO: 1 g (usual) · 2 g (meningite, intra-abdominal grave, osso e articulação, infecção muito grave) · 500 mg (ITU complicada, pneumonia não complicada, pele leve) · 250 mg (ITU não complicada). Enquanto não houver eixo de indicação aqui, a faixa acima de 50 mL/min defere a esta lista — e é por isso que ela aparece como texto, com o achado dito.", procedencia: LABEL_CEFTAZIDIMA },
       { texto: "⚠️ A NOTA DO LABEL, EM CAIXA ALTA: se a dose da tabela por indicação for MENOR que a da tabela renal, use A MENOR.", procedencia: LABEL_CEFTAZIDIMA },
       { texto: "Infecção grave que receberia 6 g/dia se o rim fosse normal: o label permite AUMENTAR a dose unitária em 50% ou encurtar o intervalo — e depois guiar por monitorização, gravidade e sensibilidade.", procedencia: LABEL_CEFTAZIDIMA },
       { texto: "⚠️ NEUROTOXICIDADE — níveis elevados em insuficiência renal levam a crise convulsiva, ESTADO DE MAL NÃO CONVULSIVO, encefalopatia, coma, ASTERIXIS, excitabilidade neuromuscular e mioclonia. Os relatos são em pacientes renais tratados com esquema NÃO AJUSTADO. A dose diária total deve ser reduzida na insuficiência renal.", procedencia: LABEL_CEFTAZIDIMA },
@@ -547,9 +542,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // buraco que produziu a D-79 no meropeném.
     base: { tipo: "absoluta", min: 500, max: 1000, unidade: "mg" },
     doseUsual: {
-      dose: "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)",
       via: "IV ou IM",
-      intervalo: "6/6h a 8/8h",
       procedencia: LABEL_CEFAZOLINA,
     },
     // ⚠️ O EIXO DE INDICAÇÃO COUBE. O de PESO NÃO EXISTIA — e a profilaxia
@@ -615,9 +608,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     nome: "Ceftriaxona",
     classe: "Cefalosporina de 3ª geração",
     doseUsual: {
-      dose: "1 a 2 g por dia (teto de 4 g/dia)",
       via: "IV em ~30 min",
-      intervalo: "1×/dia, ou dividido 12/12h",
       procedencia: LABEL_CEFTRIAXONA,
     },
     doseMaxima: { valor: "4 g/dia — e 2 g/dia se houver disfunção hepática E renal significativa", procedencia: LABEL_CEFTRIAXONA },
@@ -627,6 +618,9 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     //
     // ⚠️ E A EXCEÇÃO É A QUE IMPORTA NA UTI: renal E hepática JUNTAS têm teto de
     // 2 g/dia. É o cirrótico com injúria renal aguda, que não é caso raro.
+    // ⚠️ BASE DECLARADA: a ceftriaxona não tem faixa (não ajusta), e sem base a
+    // dose usual não teria de onde ser derivada. 1 a 2 g/dia é o que o label diz.
+    base: { tipo: "absoluta", min: 1, max: 2, unidade: "g" },
     ajusteRenal: "nao_ajusta",
     textoDoEstado: {
       texto: "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.",
@@ -707,6 +701,35 @@ export function textoDaDose(v: DoseEstruturada, base?: DoseEstruturada): string 
 export function baseDe(farmaco: Antimicrobiano, valorDoEixo?: string): DoseEstruturada | undefined {
   if (farmaco.eixo) return farmaco.eixo.valores.find((v) => v.id === valorDoEixo)?.base ?? farmaco.base;
   return farmaco.base;
+}
+
+/**
+ * A DOSE USUAL, DERIVADA — uma cópia só.
+ *
+ * ⚠️ Ela vem da BASE de cada valor do eixo (ou do fármaco) e, quando não há
+ * base, da FAIXA SEM TETO — que é, por definição, a dose com função renal
+ * normal. Enquanto era prosa ao lado da estrutura, as duas diziam a mesma coisa
+ * sem nada entre elas, e a que divergisse seria a que ninguém releria.
+ */
+export function doseUsualDerivada(f: Antimicrobiano): string {
+  const conjuntos = f.eixo
+    ? f.eixo.valores.map((v) => ({ rotulo: v.rotulo, base: v.base ?? f.base, linhas: v.linhas }))
+    : [{ rotulo: "", base: f.base, linhas: f.linhas }];
+  const partes = conjuntos.map((c) => {
+    const topo = c.linhas.find((l) => !l.modalidade && l.ate === null);
+    const doseTexto = c.base
+      ? textoDaDose(c.base)
+      : topo?.valor && topo.valor.tipo !== "textoLivre"
+        ? textoDaDose(topo.valor, c.base)
+        : "";
+    // ⚠️ SEM BASE E SEM TOPO ESTRUTURADO, NÃO SE INVENTA: diz-se que depende, e
+    // o detalhe fica na observação — é o caso da ceftazidima, cujo topo defere à
+    // tabela por indicação que este catálogo ainda não estrutura.
+    if (!doseTexto) return `${c.rotulo ? `${c.rotulo}: ` : ""}depende da indicação — ver observações`;
+    const intervalo = topo?.intervalo ? ` ${topo.intervalo}` : "";
+    return `${c.rotulo ? `${c.rotulo}: ` : ""}${doseTexto}${intervalo}`;
+  });
+  return partes.join(" · ");
 }
 
 /**

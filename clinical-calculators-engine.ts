@@ -30,7 +30,7 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
-import { baseDe, CATALOGO_DE_ANTIMICROBIANOS, faixaPara, textoDaDose } from "./lib/antimicrobianos/catalogo";
+import { baseDe, CATALOGO_DE_ANTIMICROBIANOS, doseUsualDerivada, faixaPara, textoDaDose } from "./lib/antimicrobianos/catalogo";
 import type { DoseEstruturada, LinhaRenal } from "./lib/antimicrobianos/tipos";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
@@ -1026,8 +1026,8 @@ export const CALC_TOOLS: CalcTool[] = [
         const modais = alvo.linhas.filter((l) => l.modalidade);
         return {
           metrics: [
-            { label: `${alvo.nome} — dose usual`, value: `${alvo.doseUsual.dose} — ${alvo.doseUsual.via}`, highlight: true },
-            { label: "Intervalo", value: alvo.doseUsual.intervalo },
+            // ⚠️ A DOSE USUAL É DERIVADA do catálogo — uma cópia só (R-95).
+            { label: `${alvo.nome} — dose usual`, value: `${doseUsualDerivada(alvo)} — ${alvo.doseUsual.via}`, highlight: true },
             ...(alvo.doseMaxima ? [{ label: "Teto", value: alvo.doseMaxima.valor }] : []),
           ],
           interpret: { tone: "green" as Tone, label: `${alvo.nome} — ${alvo.textoDoEstado?.texto ?? ""}` },

@@ -181,7 +181,17 @@ export type Antimicrobiano = {
   id: string;
   nome: string;
   classe: string;
-  doseUsual: { dose: string; via: string; intervalo: string; procedencia: ProcedenciaDeFaixa };
+  /**
+   * ⚠️ A DOSE USUAL É DERIVADA, NÃO ESCRITA — só a VIA fica, porque não se deduz
+   * de faixa nenhuma.
+   *
+   * Ela era prosa ao lado da base estruturada, dizendo a mesma coisa sem nada
+   * entre as duas: R-95 na peça recém-nascida. A saída não foi uma trava
+   * conferindo as duas — foi **não ter duas**. `doseUsualDerivada()` monta o texto
+   * a partir da BASE de cada valor do eixo, ou da faixa SEM TETO (que é, por
+   * definição, a dose com função renal normal).
+   */
+  doseUsual: { via: string; procedencia: ProcedenciaDeFaixa };
   doseMaxima?: { valor: string; procedencia: ProcedenciaDeFaixa };
   /**
    * ⚠️ A DOSE DE ATAQUE — CAMPO QUE FALTAVA, e a ceftazidima foi o terceiro

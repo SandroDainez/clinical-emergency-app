@@ -113,6 +113,8 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "tras CADA sesión de hemodiálisis",
   "dose da Tabela 3, pela indicação":
     "dosis de la Tabla 3, por la indicación",
+  "⚠️ DOSE POR INDICAÇÃO (Tabela 3 do label), AINDA NÃO ESTRUTURADA NESTE CATÁLOGO: 1 g (usual) · 2 g (meningite, intra-abdominal grave, osso e articulação, infecção muito grave) · 500 mg (ITU complicada, pneumonia não complicada, pele leve) · 250 mg (ITU não complicada). Enquanto não houver eixo de indicação aqui, a faixa acima de 50 mL/min defere a esta lista — e é por isso que ela aparece como texto, com o achado dito.":
+    "⚠️ DOSIS POR INDICACIÓN (Tabla 3 del prospecto), AÚN NO ESTRUCTURADA EN ESTE CATÁLOGO: 1 g (habitual) · 2 g (meningitis, intraabdominal grave, hueso y articulación, infección muy grave) · 500 mg (ITU complicada, neumonía no complicada, piel leve) · 250 mg (ITU no complicada). Mientras no haya eje de indicación aquí, el tramo por encima de 50 mL/min remite a esta lista — y por eso aparece como texto, con el hallazgo dicho.",
   "⚠️ A NOTA DO LABEL, EM CAIXA ALTA: se a dose da tabela por indicação for MENOR que a da tabela renal, use A MENOR.":
     "⚠️ LA NOTA DEL PROSPECTO, EN MAYÚSCULAS: si la dosis de la tabla por indicación es MENOR que la de la tabla renal, use LA MENOR.",
   "⚠️ ESTE LABEL NÃO AFIRMA que o quadro neurológico seja reversível — ao contrário do da cefepima. A frase da superdosagem fala em remover A DROGA por diálise, não em reverter o quadro. A ausência fica declarada, não preenchida com o texto do outro fármaco.":

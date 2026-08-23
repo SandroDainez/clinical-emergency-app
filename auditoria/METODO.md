@@ -6353,3 +6353,24 @@ ignorada, e as opções aparecem todas, em vez de uma responder pela outra.
 
 ⚠️ **Quando o motor dos módulos começar, ele começa destas quatro** — já provadas em
 sete fármacos, não inventadas no papel.
+
+## R-106 — O MOTOR NÃO ESPERA O VEREDITO DO CELULAR
+
+O veredito do autor no aparelho é sobre **formato clínico**: se a tela conduz,
+se a ordem das perguntas é a ordem do atendimento, se o texto cabe na urgência.
+O motor é sobre **forma técnica**: se o conteúdo é dado declarativo ou está
+grudado em `if` dentro de componente, se a dose tem uma cópia só, se o eixo é
+declarado em vez de escrito à mão fármaco a fármaco.
+
+São eixos independentes, e confundi-los custa das duas formas:
+
+- Segurar o motor esperando o veredito **para nada**: o veredito não vai dizer
+  se a dose usual está duplicada em prosa — ele não tem como ver isso.
+- Multiplicar para os 30 módulos **antes** do veredito: aí sim o veredito importa,
+  porque replicar um formato clínico ruim trinta vezes é trinta vezes o custo de
+  desfazer.
+
+**A regra:** o trabalho de forma técnica segue sem o veredito. O que depende dele
+é a MULTIPLICAÇÃO — o momento de estender o padrão do módulo-piloto aos outros.
+Enquanto o veredito não vem, o motor amadurece em um módulo só, onde desfazer é
+barato.
