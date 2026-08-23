@@ -6662,3 +6662,39 @@ E o modelo de como o campo deve soar já existe, escrito por travas que não tin
 o campo: *"a lista de fármacos vem do que o próprio app já declara — nenhum teto
 é exigido por conhecimento externo"* (`valida-teto-por-kg`). **Coerência interna
 declarada como tal não fossiliza nada, porque não opina sobre clínica.**
+
+## R-119 — ENTRADA E CORTE TÊM QUE FALAR A MESMA LÍNGUA, E A LÍNGUA TEM QUE ESTAR ESCRITA NOS DOIS
+
+Decisão do autor, 2026-08-23, e **é regra do app, não de magnésio**:
+
+> **O campo identifica obrigatoriamente `mg/dL`, `mEq/L` ou `mmol/L`. Armazenar
+> uma unidade canônica e converter de forma programática e auditável. Não
+> permitir que um valor seja interpretado sem unidade.**
+
+O R-90 pôs o **corte** na unidade da fonte. Faltava a **entrada** — e sem as duas
+a conversão fica com um lado só.
+
+⚠️ **A unidade é DO CAMPO, não do rótulo em prosa.** `input("Peso (kg)")` tem a
+unidade dentro do TEXTO: ninguém converte por ela, nenhuma trava a lê, e traduzir
+a tela pode mudá-la sem que nada perceba. Foi assim que a medição de 2026-08-23
+achou **7 campos** cuja unidade só existe na prosa, além de 3 sem unidade alguma
+(`npm run medir:unidade`).
+
+⚠️ E o magnésio é só o pior caso — três unidades em circulação, 1 mmol = 2 mEq =
+2,43 mg/dL. **As duas vezes em que este projeto tropeçou não foram no magnésio:**
+o `1,9 mmol/L` virando `7` (D-90) e o `3,5` virando `14` (D-91).
+
+## R-120 — REFERÊNCIA QUE NÃO CLASSIFICA É UMA TERCEIRA ESPÉCIE
+
+Do magnésio (autor, 2026-08-23): a progressão de toxicidade é **referência de
+progressão**, *"não são limites absolutos nem recomendação graduada"*.
+
+| campo | o que faz |
+|---|---|
+| `cortes` | **classifica** — decide o degrau |
+| `conduta` | **modula** — muda a urgência sem mudar a classificação |
+| `referencias` | **orienta** — ajuda a ler a tendência e **não decide nada** |
+
+⚠️ Sem a terceira espécie, o número **vira corte** — porque é o único lugar onde
+cabe. Forma proposta em `auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md`, e
+a metade da trava que a protege **já existe e já foi provada** (M91).

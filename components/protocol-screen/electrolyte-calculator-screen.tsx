@@ -13,6 +13,10 @@ import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 import {
   AGUARDANDO_VALOR,
   APOIAM_SINTOMATICO,
+  CONTEXTO_NAO_SEI,
+  CONTEXTO_OPCOES,
+  CONTEXTO_PERGUNTA,
+  type ContextoClinico,
   corteDoDegrau,
   degrauDeGravidade,
   GRAVIDADE_POR_DISTURBIO,
@@ -488,9 +492,10 @@ function getSeveritySummary(
   current: number | null,
   ecgChanges: boolean,
   sintomatico: boolean | null = null,
-  ensaio: "total" | "ajustado" | "ionico" | null = null
+  ensaio: "total" | "ajustado" | "ionico" | null = null,
+  contexto: ContextoClinico | null = null
 ) {
-  const degrau = degrauDeGravidade(disorder, current, ecgChanges, sintomatico, ensaio);
+  const degrau = degrauDeGravidade(disorder, current, ecgChanges, sintomatico, ensaio, contexto);
   if (!degrau) return { label: AGUARDANDO_VALOR.rotulo, signs: AGUARDANDO_VALOR.sinais };
   return { label: degrau.rotulo, signs: degrau.sinais };
 }
@@ -1934,6 +1939,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
   // manifestações clínicas relevantes deve prevalecer sobre uma classificação
   // exclusivamente numérica". `null` = ninguém respondeu ainda.
   const [temSintomaDeCalcio, setTemSintomaDeCalcio] = useState<boolean | null>(null);
+  // ⚠️ EIXO `contexto_clinico`: o mesmo magnésio é achado esperado numa gestante
+  // em sulfato e é hipermagnesemia a investigar fora dela.
+  const [contextoClinico, setContextoClinico] = useState<ContextoClinico | null>(null);
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
@@ -1973,6 +1981,7 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
     : { valor: parsedCurrent, aviso: null };
   // ⚠️ AS DUAS UNIDADES NA TELA (decisão do autor): quem digita em mg/dL vê
   // onde o corte da fonte cai. O texto é SAÍDA — a comparação nunca o usa.
+  const ehMagnesio = disorder === "hypermagnesemia" || disorder === "hypomagnesemia";
   const degrauAtual = ehCalcio || disorder === "hypophosphatemia"
     ? degrauDeGravidade(
         disorder,
@@ -1991,7 +2000,8 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
     disorder === "hypocalcemia" ? temSintomaDeCalcio : null,
     // ⚠️ O ENSAIO VIAJA JUNTO: é ele que impede o corte do total/ajustado de
     // alcançar um valor de ionizado.
-    ehCalcio ? (tipoDeCalcio === "ionico" ? "ionico" : "total") : null
+    ehCalcio ? (tipoDeCalcio === "ionico" ? "ionico" : "total") : null,
+    contextoClinico
   );
   const hypernatremiaVolumeSummary = useMemo(() => {
     if (disorder !== "hypernatremia") return null;
@@ -2524,6 +2534,22 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
                   </View>
                 </View>
                 {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
+                {ehMagnesio ? (
+                  <View style={styles.inputGroup}>
+                    {/* ⚠️ O CONTEXTO VEM ANTES DO NÚMERO: ele muda a leitura do
+                        mesmo valor, e é por isso que o corte por número saiu. */}
+                    <Text style={styles.inputLabel}>{tr(CONTEXTO_PERGUNTA)}</Text>
+                    <View style={styles.rowWrap}>
+                      {CONTEXTO_OPCOES.map((o) =>
+                        renderPill(tr(o.rotulo), contextoClinico === o.valor, () => setContextoClinico(o.valor))
+                      )}
+                      {renderPill(tr("Não sei"), contextoClinico === null, () => setContextoClinico(null))}
+                    </View>
+                    {contextoClinico === null ? (
+                      <Text style={styles.referralLine}>{tr(CONTEXTO_NAO_SEI)}</Text>
+                    ) : null}
+                  </View>
+                ) : null}
                 {disorder === "hypocalcemia" ? (
                   <View style={styles.inputGroup}>
                     {/* ⚠️ VEM ANTES DO NÚMERO, de propósito: é o critério que decide. */}

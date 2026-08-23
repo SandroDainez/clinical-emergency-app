@@ -32,7 +32,14 @@
  */
 export type ProcedenciaDoAG = {
   fonte: string | null;
-  forca: "pendente" | "decisao_do_autor" | "literatura_primaria";
+  /**
+   * `pendente`            — ninguém conferiu ainda.
+   * `decisao_do_autor`    — escolha datada e assinada.
+   * `literatura_primaria` — publicação, ⚠️ NÃO guideline.
+   * `pratica_aceita`      — número consagrado sem cutoff formal. É resposta
+   *                         legítima, não pendência disfarçada (R-110).
+   */
+  forca: "pendente" | "decisao_do_autor" | "literatura_primaria" | "pratica_aceita";
   alvo: string;
   declaradoPor?: string;
 };
@@ -119,16 +126,29 @@ export const FATOR_ALBUMINA = {
  * A pergunta de qual corte adotar, e com que fonte, está em
  * auditoria/PERGUNTAS-AO-AUTOR-2026-08-23.md.
  */
+/**
+ * ⚠️ 8–12 mEq/L É ORIENTAÇÃO, E O INTERVALO DO LABORATÓRIO PREVALECE — decisão
+ * do autor, 2026-08-23.
+ *
+ * A razão é a mesma do cálcio ionizado, e ela vai para a tela: **a metodologia
+ * analítica interfere**. Dois laboratórios medem o mesmo sangue e devolvem
+ * intervalos de referência diferentes; um número decorado atravessa os dois e
+ * erra num deles.
+ */
 export const CORTE_AG = {
   elevadoAcimaDe: 12,
   baixoAbaixoDe: 8,
   procedencia: {
     fonte: null,
-    forca: "pendente",
+    forca: "pratica_aceita",
+    declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
     alvo:
-      "cortes de AG elevado (> 12) e baixo (< 8) — herdados da linha de referência do próprio app, sem fonte conferida. Alvo: veredito do autor sobre quais cortes adota e com que fonte",
+      "8–12 mEq/L é ORIENTAÇÃO, não cutoff formal — prática aceita, declarada como tal (R-110). ⚠️ O intervalo do laboratório PREVALECE sobre estes números, e a tela diz isso",
   } as ProcedenciaDoAG,
 };
+
+export const AG_LABORATORIO_PREVALECE =
+  "⚠️ 8–12 mEq/L é ORIENTAÇÃO, não cutoff formal: o intervalo de referência do SEU laboratório prevalece, porque a metodologia analítica interfere no resultado.";
 
 export const AG_SEM_ALBUMINA =
   "⚠️ NÃO É POSSÍVEL INTERPRETAR O ÂNION GAP SEM A ALBUMINA. Ela é o principal ânion não medido: quando cai, o AG cai junto e MASCARA uma acidose de AG elevado que existe. Albumina 2,0 com AG 12 corresponde a um AG corrigido de ~17.";

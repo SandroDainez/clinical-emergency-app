@@ -35,6 +35,7 @@ import {
   AG_BAIXO,
   AG_ELEVADO_CAUSAS,
   AG_FATOR_ROTULO,
+  AG_LABORATORIO_PREVALECE,
   calcularAG,
   textoDaFormula,
   AG_NA_FAIXA,
@@ -460,10 +461,10 @@ export const CALC_TOOLS: CalcTool[] = [
         agRef == null
           ? { tone: "neutral", label: AG_SEM_ALBUMINA, lines: [AG_SEM_ALBUMINA_PORQUE] }
           : agRef > CORTE_AG.elevadoAcimaDe
-            ? { tone: "orange", label: "Ânion gap ELEVADO — acidose com AG aumentado", lines: [AG_ELEVADO_CAUSAS] }
+            ? { tone: "orange", label: "Ânion gap ELEVADO — acidose com AG aumentado", lines: [AG_ELEVADO_CAUSAS, AG_LABORATORIO_PREVALECE] }
             : agRef < CORTE_AG.baixoAbaixoDe
-              ? { tone: "yellow", label: AG_BAIXO, lines: [] }
-              : { tone: "yellow", label: "Ânion gap corrigido dentro da faixa de referência", lines: [AG_NA_FAIXA] };
+              ? { tone: "yellow", label: AG_BAIXO, lines: [AG_LABORATORIO_PREVALECE] }
+              : { tone: "yellow", label: "Ânion gap corrigido dentro da faixa de referência", lines: [AG_NA_FAIXA, AG_LABORATORIO_PREVALECE] };
       const tables: RefTable[] = [];
       if (dd != null) {
         tables.push({

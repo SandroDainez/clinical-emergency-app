@@ -494,4 +494,26 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "Albúmina (necesaria para interpretar)",
   "Ânion gap corrigido dentro da faixa de referência":
     "Anión gap corregido dentro del rango de referencia",
+
+  // ── Magnésio: contexto no lugar do corte (2026-08-23) ─────────────────
+  "A paciente está recebendo sulfato de magnésio?":
+    "¿La paciente está recibiendo sulfato de magnesio?",
+  "Sim — em magnesioterapia":
+    "Sí — en tratamiento con magnesio",
+  "Não sei — a pergunta que resolve é uma só: a paciente está recebendo sulfato de magnésio por pré-eclâmpsia ou eclâmpsia? Confira a prescrição e a bomba de infusão.":
+    "No sé — la pregunta que lo resuelve es una sola: ¿la paciente está recibiendo sulfato de magnesio por preeclampsia o eclampsia? Revise la prescripción y la bomba de infusión.",
+  "Faixa esperada em magnesioterapia":
+    "Rango esperado en tratamiento con magnesio",
+  "Faixa sérica tradicionalmente considerada terapêutica/esperada durante magnesioterapia — NÃO é alvo terapêutico obrigatório: a concentração sérica necessária para prevenir eclâmpsia não está estabelecida com grande precisão. Valores nessa faixa não devem ser rotulados automaticamente como toxicidade; decida pelos reflexos, pela frequência respiratória, pela diurese e pela função renal.":
+    "Rango sérico tradicionalmente considerado terapéutico/esperado durante el tratamiento con magnesio — NO es un objetivo terapéutico obligatorio: la concentración sérica necesaria para prevenir la eclampsia no está establecida con gran precisión. Los valores en ese rango no deben rotularse automáticamente como toxicidad; decida por los reflejos, la frecuencia respiratoria, la diuresis y la función renal.",
+  "Hipermagnesemia — interpretar no contexto":
+    "Hipermagnesemia — interpretar en el contexto",
+  "Fora de magnesioterapia, valor acima da referência do SEU laboratório é hipermagnesemia. ⚠️ Este app NÃO gradua hipermagnesemia por número: interprete em conjunto com a função renal, a exposição a magnésio (antiácidos, laxantes, reposição) e as manifestações clínicas.":
+    "Fuera del tratamiento con magnesio, un valor por encima de la referencia de SU laboratorio es hipermagnesemia. ⚠️ Esta app NO gradúa la hipermagnesemia por número: interprete en conjunto con la función renal, la exposición a magnesio (antiácidos, laxantes, reposición) y las manifestaciones clínicas.",
+  "Hiporreflexia, sonolência, hipotensão e depressão respiratória são os sinais que importam.":
+    "Hiporreflexia, somnolencia, hipotensión y depresión respiratoria son los signos que importan.",
+  "Grave (corte provisório)":
+    "Grave (punto de corte provisional)",
+  "⚠️ 8–12 mEq/L é ORIENTAÇÃO, não cutoff formal: o intervalo de referência do SEU laboratório prevalece, porque a metodologia analítica interfere no resultado.":
+    "⚠️ 8–12 mEq/L es ORIENTACIÓN, no un punto de corte formal: el rango de referencia de SU laboratorio prevalece, porque la metodología analítica interfiere en el resultado.",
 };

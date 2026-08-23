@@ -239,6 +239,45 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
     erro("a tela não renderiza a conduta em lugar próprio — sem isso o campo existe no dado e some para o usuário");
 }
 
+// ── 3b-ter. AS FAIXAS DE TOXICIDADE DO MAGNÉSIO NÃO PODEM CLASSIFICAR
+//
+// ⚠️ O autor deu a progressão aproximada (perda de reflexos ~8–10 mEq/L,
+// depressão respiratória ~10–15, risco de parada ~25–30) e disse com todas as
+// letras: **não são limites absolutos nem recomendação graduada**. São
+// REFERÊNCIA DE PROGRESSÃO — a decisão considera sintomas, função renal e
+// tendência da concentração.
+//
+// ⚠️ Estes números NÃO ESTÃO NO APP: a estrutura ainda não sabe guardar
+// referência que não classifica, e a forma foi proposta antes de implementar
+// (auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md). Esta trava existe para
+// o dia em que alguém os digitar no lugar errado — que é o caminho mais curto
+// entre "referência de progressão" e "corte de gravidade".
+{
+  const PROIBIDOS_COMO_CORTE = [8, 10, 15, 25, 30];
+  const numericos = [];
+  const colher = (c) => {
+    if (["abaixoDe", "aPartirDe", "acimaDe"].includes(c.tipo)) numericos.push(c.valor);
+    if (c.tipo === "faixa") numericos.push(c.de, c.ate);
+    if (c.tipo === "combinado") { colher(c.faixa); colher(c.clinico); }
+  };
+  for (const d of ["hypomagnesemia", "hypermagnesemia"])
+    for (const g of G.GRAVIDADE_POR_DISTURBIO[d]) g.cortes.forEach(colher);
+  for (const v of numericos)
+    if (PROIBIDOS_COMO_CORTE.includes(v))
+      erro(`magnésio: ${v} virou corte de gravidade — é número da PROGRESSÃO DE TOXICIDADE, que o autor declarou não ser limite absoluto nem recomendação graduada. Referência de progressão não classifica`);
+  // E o corte que saiu não pode voltar.
+  if (numericos.includes(4.9))
+    erro(`o corte ≥ 4,9 mg/dL da hipermagnesemia voltou — ele foi REMOVIDO em 2026-08-23 porque colide com a faixa esperada em magnesioterapia e mistura concentração terapêutica com toxicidade`);
+  console.log(`  magnésio: ${numericos.length} corte(s) numérico(s) — nenhum da progressão de toxicidade`);
+
+  // ⚠️ E "ALVO TERAPÊUTICO" É PROIBIDO EM QUALQUER LUGAR: a redação foi decidida
+  // pelo autor, e a razão (a concentração para prevenir eclâmpsia não está
+  // estabelecida com precisão) vai escrita junto — senão alguém "simplifica".
+  const textos = JSON.stringify(G.GRAVIDADE_POR_DISTURBIO);
+  if (/alvo terapêutico obrigat[óo]rio/i.test(textos.replace(/NÃO é alvo terapêutico obrigatório/gi, "")))
+    erro('"alvo terapêutico obrigatório" apareceu como afirmação — a redação decidida é "faixa sérica tradicionalmente considerada terapêutica/esperada"');
+}
+
 // ── 3c-bis. O VALOR DE TELA É SAÍDA, NUNCA ENTRADA DA LÓGICA
 //
 // ⚠️ TRAVA DE UMA DECISÃO, e é o caminho pelo qual ela seria desfeita sem ninguém

@@ -63,7 +63,7 @@
     "linhas_continuas": 44
   },
   "gravidade-eletrolitica": {
-    "_nota": "Medido em 2026-08-23, na extração: 12 distúrbios, 24 degraus, 12 cortes numéricos. ⚠️ CORREÇÃO DE UM NÚMERO MEU: reportei '25 cortes' antes de medir — 25 era a contagem de STRINGS com limiar no arquivo inteiro, não de cortes na classificação. O instrumento devolveu 12. ⚠️ QUEDA LEGÍTIMA 24→21 em 2026-08-23: hiperfosfatemia, hipocloremia e hipercloremia passaram a ter UM degrau, porque não têm escala de apresentação (parecer do autor). Não foi conteúdo removido — foi degrau que não existia clinicamente. ⚠️ 21→22 em 2026-08-23: entrou a faixa do meio da hipercalcemia (D-91), que a fonte tem e o app não tinha.",
+    "_nota": "Medido em 2026-08-23, na extração: 12 distúrbios, 24 degraus, 12 cortes numéricos. ⚠️ CORREÇÃO DE UM NÚMERO MEU: reportei '25 cortes' antes de medir — 25 era a contagem de STRINGS com limiar no arquivo inteiro, não de cortes na classificação. O instrumento devolveu 12. ⚠️ QUEDA LEGÍTIMA 24→21 em 2026-08-23: hiperfosfatemia, hipocloremia e hipercloremia passaram a ter UM degrau, porque não têm escala de apresentação (parecer do autor). Não foi conteúdo removido — foi degrau que não existia clinicamente. ⚠️ 21→22 em 2026-08-23: entrou a faixa do meio da hipercalcemia (D-91), que a fonte tem e o app não tinha. ⚠️ 2026-08-23: o corte ≥ 4,9 da hipermagnesemia SAIU (colidia com a faixa esperada em magnesioterapia) e o degrau virou eixo de contexto — degraus continuam 22, cortes numéricos caíram para 7.",
     "disturbios": 12,
     "degraus": 22
   },

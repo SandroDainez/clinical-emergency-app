@@ -89,6 +89,18 @@ export type ProcedenciaDeGravidade = {
  */
 export type PapelDoCriterio = "define" | "apoia" | "exigeCompatibilidade";
 
+/** Enum FECHADO do eixo `contexto_clinico`. */
+export type ContextoClinico = "em_magnesioterapia" | "fora_de_magnesioterapia";
+
+export const CONTEXTO_PERGUNTA = "A paciente está recebendo sulfato de magnésio?";
+export const CONTEXTO_OPCOES: { valor: ContextoClinico; rotulo: string }[] = [
+  { valor: "em_magnesioterapia", rotulo: "Sim — em magnesioterapia" },
+  { valor: "fora_de_magnesioterapia", rotulo: "Não" },
+];
+/** O "não sei" pergunta o que resolve, em vez de escolher pelo médico. */
+export const CONTEXTO_NAO_SEI =
+  "Não sei — a pergunta que resolve é uma só: a paciente está recebendo sulfato de magnésio por pré-eclâmpsia ou eclâmpsia? Confira a prescrição e a bomba de infusão.";
+
 export type CorteDeGravidade =
   /**
    * ⚠️ `unidade` É A DA FONTE, não a da tela.
@@ -118,6 +130,18 @@ export type CorteDeGravidade =
   | { tipo: "clinico"; texto: string; papel: PapelDoCriterio; procedencia: ProcedenciaDeGravidade }
   /** Faixa e critério clínico, com a ligação dita por extenso. */
   | { tipo: "combinado"; faixa: CorteDeGravidade; ligacao: "e" | "ou"; clinico: CorteDeGravidade }
+  /**
+   * ⚠️ EIXO `contexto_clinico` — autorizado pelo autor em 2026-08-23, e o tipo
+   * é novo de propósito.
+   *
+   * O contexto muda a INTERPRETAÇÃO DO MESMO NÚMERO. Não é `indicacao`, que
+   * significa "para que a droga é usada" e mora no fármaco: aqui o contexto é
+   * **do paciente**. Forçar em `indicacao` seria a gambiarra que se evitou na
+   * cefepima.
+   *
+   * ⚠️ Enum fechado. Nenhum valor novo sem decisão do autor.
+   */
+  | { tipo: "contextoClinico"; exige: ContextoClinico }
   /** O ECG alterado sozinho sobe o degrau, sem número. */
   | { tipo: "ecgAlterado" }
   /** Degrau de base: vale quando nenhum corte acima casou. */
@@ -254,7 +278,7 @@ const P_MG: ProcedenciaDeGravidade = {
   fonte: null,
   forca: "pratica_aceita",
   declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
-  alvo: "não há cutoff formal de sociedade para magnésio — prática aceita, declarada. ⚠️ Os dois cortes seguem INTOCADOS, aguardando conferência número a número do autor",
+  alvo: "⚠️ PROVISÓRIO — e a palavra está aqui, no dado, não só na dívida. O `< 1,2 mg/dL` da hipomagnesemia NÃO foi validado: fica como prática aceita provisória até a fonte e o significado clínico do corte serem conferidos. O corte de hipermagnesemia foi REMOVIDO em 2026-08-23 (colidia com a faixa esperada em magnesioterapia)",
 };
 const P_P = PENDENTE("limiar de fósforo grave — consenso amplo em < 0,32 mmol/L (< 1 mg/dL), nomeado pelo autor; ⚠️ NÃO rotular como diretriz internacional, e não há consenso universal para todas as faixas");
 /**
@@ -412,12 +436,46 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     { rotulo: "Leve a moderada", sinais: "Náusea, constipação, poliúria e fadiga predominam.", cortes: [{ tipo: "restante" }], procedencia: P_CA },
   ],
   hypomagnesemia: [
-    { rotulo: "Grave", sinais: "QT longo, torsades, tremor, tetania e convulsão.", cortes: [{ tipo: "abaixoDe", valor: 1.2 }], procedencia: P_MG },
+    // ⚠️ `< 1,2 mg/dL` NÃO VALIDADO — provisório, ver P_MG.
+    { rotulo: "Grave (corte provisório)", sinais: "QT longo, torsades, tremor, tetania e convulsão.", cortes: [{ tipo: "abaixoDe", valor: 1.2 }], procedencia: P_MG },
     { rotulo: "Leve a moderada", sinais: "Tremor, fraqueza e piora de hipocalemia refratária.", cortes: [{ tipo: "restante" }], procedencia: P_MG },
   ],
+  // ⚠️ O CORTE `≥ 4,9 mg/dL` SAIU — decisão do autor, 2026-08-23.
+  //
+  // Razão dele: **colide com a faixa esperada durante magnesioterapia
+  // obstétrica e mistura concentração terapêutica com toxicidade**. E ele
+  // recusou o substituto óbvio: NÃO quer escala universal leve/moderada/grave
+  // baseada só em número.
+  //
+  // O que entra no lugar não é outro número — é o CONTEXTO. O mesmo 6 mg/dL é
+  // achado esperado numa gestante em sulfato e é hipermagnesemia a investigar
+  // fora dela.
   hypermagnesemia: [
-    { rotulo: "Grave", sinais: "Hiporreflexia, sonolência, hipotensão e depressão respiratória.", cortes: [{ tipo: "aPartirDe", valor: 4.9 }], procedencia: P_MG },
-    { rotulo: "Moderada", sinais: "Rubor, letargia e reflexos diminuídos podem aparecer.", cortes: [{ tipo: "restante" }], procedencia: P_MG },
+    {
+      rotulo: "Faixa esperada em magnesioterapia",
+      sinais: "Rubor, letargia e reflexos diminuídos podem aparecer.",
+      // ⚠️ REDAÇÃO DECIDIDA PELO AUTOR, E A RAZÃO VAI JUNTO — sem ela alguém
+      // "simplifica" e o alvo terapêutico volta. É proibido escrever "alvo
+      // terapêutico obrigatório" em qualquer lugar deste app.
+      conduta: {
+        texto:
+          "Faixa sérica tradicionalmente considerada terapêutica/esperada durante magnesioterapia — NÃO é alvo terapêutico obrigatório: a concentração sérica necessária para prevenir eclâmpsia não está estabelecida com grande precisão. Valores nessa faixa não devem ser rotulados automaticamente como toxicidade; decida pelos reflexos, pela frequência respiratória, pela diurese e pela função renal.",
+        procedencia: P_MG,
+      },
+      cortes: [{ tipo: "contextoClinico", exige: "em_magnesioterapia" }],
+      procedencia: P_MG,
+    },
+    {
+      rotulo: "Hipermagnesemia — interpretar no contexto",
+      sinais: "Hiporreflexia, sonolência, hipotensão e depressão respiratória são os sinais que importam.",
+      conduta: {
+        texto:
+          "Fora de magnesioterapia, valor acima da referência do SEU laboratório é hipermagnesemia. ⚠️ Este app NÃO gradua hipermagnesemia por número: interprete em conjunto com a função renal, a exposição a magnésio (antiácidos, laxantes, reposição) e as manifestações clínicas.",
+        procedencia: P_MG,
+      },
+      cortes: [{ tipo: "restante" }],
+      procedencia: P_MG,
+    },
   ],
   hypophosphatemia: [
     // ⚠️ 0,32 mmol/L É O NÚMERO DO CONSENSO. O app guardava `< 1 mg/dL`, que é a
@@ -459,7 +517,8 @@ function casa(
   valor: number | null,
   ecgAlterado: boolean,
   sintomatico: boolean | null,
-  alvo?: { unidade: UnidadeDeConcentracao; analito: Analito }
+  alvo?: { unidade: UnidadeDeConcentracao; analito: Analito },
+  contexto?: ContextoClinico | null
 ): boolean {
   const conv = (v: number) => naUnidadeDaTela(v, corte as { unidade?: UnidadeDeConcentracao }, alvo);
   switch (corte.tipo) {
@@ -476,10 +535,11 @@ function casa(
     case "clinico":
       return corte.papel === "define" && corte.texto.trim().length > 0 && sintomatico === true;
     case "combinado": {
-      const a = casa(corte.faixa, valor, ecgAlterado, sintomatico, alvo);
-      const b = casa(corte.clinico, valor, ecgAlterado, sintomatico, alvo);
+      const a = casa(corte.faixa, valor, ecgAlterado, sintomatico, alvo, contexto);
+      const b = casa(corte.clinico, valor, ecgAlterado, sintomatico, alvo, contexto);
       return corte.ligacao === "ou" ? a || b : a && b;
     }
+    case "contextoClinico": return contexto === corte.exige;
     case "ecgAlterado": return ecgAlterado;
     case "restante": return true;
   }
@@ -547,7 +607,9 @@ export function degrauDeGravidade(
    * aplicá-lo a um ionizado é decisão de uma linha. Proibição explícita do
    * autor (2026-08-23).
    */
-  ensaio: "total" | "ajustado" | "ionico" | null = null
+  ensaio: "total" | "ajustado" | "ionico" | null = null,
+  /** ⚠️ Eixo `contexto_clinico`. `null` = ninguém perguntou ainda. */
+  contexto: ContextoClinico | null = null
 ): DegrauDeGravidade | null {
   const degraus = GRAVIDADE_POR_DISTURBIO[disturbio as DisturbioEletrolitico];
   if (!degraus) return null;
@@ -569,10 +631,10 @@ export function degrauDeGravidade(
     const porSintoma = degraus.find((d) =>
       d.cortes.some((c) => {
         const clinico = c.tipo === "combinado" ? c.clinico : c;
-        return clinico.tipo === "clinico" && casa(clinico, null, ecgAlterado, sintomatico, alvo);
+        return clinico.tipo === "clinico" && casa(clinico, null, ecgAlterado, sintomatico, alvo, contexto);
       })
     );
     return porSintoma ?? null;
   }
-  return degraus.find((d) => d.cortes.some((c) => casa(c, valorAtual, ecgAlterado, sintomatico, alvo))) ?? null;
+  return degraus.find((d) => d.cortes.some((c) => casa(c, valorAtual, ecgAlterado, sintomatico, alvo, contexto))) ?? null;
 }

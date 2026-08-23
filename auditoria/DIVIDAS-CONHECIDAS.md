@@ -3723,3 +3723,39 @@ coronárias a angioplastia primária é a regra e o trombolítico é exceção.
 ⚠️ **Mas `avc/calculators.ts` não existe mais** e a dose de trombolítico do AVC
 vive hoje noutro arquivo, com outro nome. O bloco segue **pulado e contado**. O
 que deixou de ser dúvida é o ESCOPO; falta localizar o alvo.
+
+## D-98 — DEZ CAMPOS DE ENTRADA SEM UNIDADE DE VERDADE
+
+Medido em 2026-08-23 (`npm run medir:unidade`), **não corrigido** — o autor pediu
+o tamanho antes.
+
+```
+455 arquivos · 42 campos com kind:"number"
+COM unidade 37 · SEM unidade 3 · sem unidade por natureza 2
+UNIDADE SÓ NO RÓTULO EM PROSA: 7
+TOTAL A RESOLVER: 10
+```
+
+**Os 3 sem unidade nenhuma:** dois campos de `pH` (que é adimensional — provável
+falso positivo, precisa de julgamento) e um campo cujo bloco o regex não
+conseguiu ler.
+
+**Os 7 com a unidade só na prosa**, todos em
+`electrolyte-calculator-screen.tsx`: `Peso (kg)` · `Glicemia (mg/dL)` ·
+`Albumina (g/dL)` · `Bolsa final (mL)` · `Tempo da infusão (h)` · `Potássio atual
+(mEq/L)` · `Bicarbonato (mEq/L)`.
+
+⚠️ **A primeira versão da medição parou nos 42 campos das calculadoras e concluiu
+"3 sem unidade"** — número tranquilizador e incompleto. As telas de protocolo
+declaram entrada por `input("Peso (kg)", …)`, e a unidade fica dentro do texto.
+É o R-119: **a unidade é do campo, não do rótulo em prosa.**
+
+## D-99 — A PROGRESSÃO DE TOXICIDADE DO MAGNÉSIO ESPERA ESTRUTURA
+
+As três faixas que o autor deu (~8–10 · ~10–15 · ~25–30 mEq/L) **não estão no
+app**: a estrutura só sabe guardar número que classifica, e elas explicitamente
+não classificam.
+
+Forma proposta em `auditoria/PROPOSTA-REFERENCIA-QUE-NAO-CLASSIFICA.md` (R-120).
+⚠️ A trava que impede esses números de virarem corte **já existe e foi provada**
+(M91) — hoje com a lista escrita à mão; com o campo, ela passa a ser derivada.
