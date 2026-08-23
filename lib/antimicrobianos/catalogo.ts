@@ -1,4 +1,4 @@
-import type { Antimicrobiano, LinhaRenal, ModalidadeDeTRS, ProcedenciaDeFaixa } from "./tipos";
+import type { Antimicrobiano, DoseEstruturada, LinhaRenal, ModalidadeDeTRS, ProcedenciaDeFaixa } from "./tipos";
 
 /**
  * O CATÁLOGO — hoje com os TRÊS que já existiam, migrados sem mudar um número.
@@ -169,12 +169,12 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // isolado; a escada por faixa de clearance é OPERACIONALIZAÇÃO, não texto do
     // documento. Verbatim: `protocols/fontes-verbatim/vancomicina-consenso-2020.md`.
     linhas: [
-      { de: 0, ate: 20, dose: "10–15 mg/kg", intervalo: "48/48h ou por nível", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
-      { de: 20, ate: 40, dose: "10–15 mg/kg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
-      { de: 40, ate: 60, dose: "10–15 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 0, ate: 20, dose: "10–15 mg/kg", intervalo: "48/48h ou por nível", valor: { tipo: "absoluta", min: 10, max: 15, unidade: "mg", porQuilo: true }, intervaloHoras: { horas: 48 }, metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 20, ate: 40, dose: "10–15 mg/kg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 10, max: 15, unidade: "mg", porQuilo: true }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 40, ate: 60, dose: "10–15 mg/kg", intervalo: "12/12h", valor: { tipo: "absoluta", min: 10, max: 15, unidade: "mg", porQuilo: true }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       // ⚠️ O 90 PERTENCE A ESTA FAIXA: o código dizia `tfg > 90 ? … : tfg >= 60 ? …`.
-      { de: 60, ate: 90, ateInclusivo: true, dose: "15–20 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
-      { de: 90, ate: null, deInclusivo: false, dose: "15–20 mg/kg", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 60, ate: 90, ateInclusivo: true, dose: "15–20 mg/kg", intervalo: "12/12h", valor: { tipo: "absoluta", min: 15, max: 20, unidade: "mg", porQuilo: true }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
+      { de: 90, ate: null, deInclusivo: false, dose: "15–20 mg/kg", intervalo: "8/8h", valor: { tipo: "absoluta", min: 15, max: 20, unidade: "mg", porQuilo: true }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       // ⚠️ AS DUAS AFIRMAÇÕES DE HD, e a conduta NÃO foi rebaixada para o label:
       // ele diz "poorly removed by dialysis", frase da era das membranas de baixa
       // permeabilidade; o consenso 2020 diz o oposto, com a razão, e recomenda
@@ -183,6 +183,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         modalidade: "HD",
         dose: "15–20 mg/kg",
         intervalo: "após a sessão",
+        valor: { tipo: "absoluta", min: 15, max: 20, unidade: "mg", porQuilo: true },
         metodoDaTFG: "sem_dados",
         procedencia: CONSENSO_VANCO_2020,
         notaDeFaixa: { texto: "Dosar nível PRÉ-diálise. ⚠️ O consenso 2020 tabela 25 mg/kg de ataque e 10 mg/kg de manutenção (após o fim da sessão, dialisador de alta permeabilidade) — ver D-77.", procedencia: CONSENSO_VANCO_2020 },
@@ -226,14 +227,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "outras",
         rotulo: "Outras indicações",
         linhas: [
-          { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-          { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-          { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, intervaloHoras: { horas: 6 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", valor: { tipo: "absoluta", min: 3.375, unidade: "g" }, intervaloHoras: { horas: 6 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
           // ⚠️ A HEMODIÁLISE TAMBÉM É POR INDICAÇÃO — e antes da refatoração ela
           // vivia fora do eixo, num campo único, com UMA dose para as duas colunas.
-          { modalidade: "HD", dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+          { modalidade: "HD", dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
             notaDeFaixa: { texto: "A hemodiálise remove 30% a 40% da dose — daí os 0,75 g após cada sessão.", procedencia: LABEL_PIPTAZO } },
-          { modalidade: "DP", dose: "2,25 g", intervalo: "12/12h", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+          { modalidade: "DP", dose: "2,25 g", intervalo: "12/12h", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, intervaloHoras: { horas: 12 }, metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
             notaDeFaixa: { texto: "CAPD: sem dose adicional.", procedencia: LABEL_PIPTAZO } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -243,12 +244,12 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "pneumonia",
         rotulo: "Pneumonia nosocomial",
         linhas: [
-          { de: 0, ate: 20, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-          { de: 20, ate: 40, ateInclusivo: true, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-          { de: 40, ate: null, deInclusivo: false, dose: "4,5 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
-          { modalidade: "HD", dose: "2,25 g", intervalo: "8/8h + 0,75 g após cada sessão", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+          { de: 0, ate: 20, dose: "2,25 g", intervalo: "6/6h", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, intervaloHoras: { horas: 6 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 20, ate: 40, ateInclusivo: true, dose: "3,375 g", intervalo: "6/6h", valor: { tipo: "absoluta", min: 3.375, unidade: "g" }, intervaloHoras: { horas: 6 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { de: 40, ate: null, deInclusivo: false, dose: "4,5 g", intervalo: "6/6h", valor: { tipo: "absoluta", min: 4.5, unidade: "g" }, intervaloHoras: { horas: 6 }, metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { modalidade: "HD", dose: "2,25 g", intervalo: "8/8h + 0,75 g após cada sessão", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
             notaDeFaixa: { texto: "A hemodiálise remove 30% a 40% da dose — daí os 0,75 g após cada sessão.", procedencia: LABEL_PIPTAZO } },
-          { modalidade: "DP", dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+          { modalidade: "DP", dose: "2,25 g", intervalo: "8/8h", valor: { tipo: "absoluta", min: 2.25, unidade: "g" }, intervaloHoras: { horas: 8 }, metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
             notaDeFaixa: { texto: "CAPD: sem dose adicional.", procedencia: LABEL_PIPTAZO } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -267,57 +268,33 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     id: "meropenem",
     nome: "Meropeném",
     classe: "Carbapenêmico",
-    doseUsual: { dose: "1 g", via: "IV", intervalo: "8/8h", procedencia: PENDENTE_DA_MIGRACAO },
-    // ⚠️ QUATRO FAIXAS, E O APP TINHA TRÊS. A faixa `< 10` NÃO EXISTIA: o motor
-    // devolvia 12/12h para quem tem a menor depuração, quando o label manda
-    // 24/24h — o DOBRO da exposição diária de um carbapenêmico neurotóxico, em
-    // paciente anúrico e em geral sedado, onde mioclonia e crise convulsiva
-    // passam por "encefalopatia da sepse".
+    doseUsual: { dose: "500 mg (pele) · 1 g (intra-abdominal)", via: "IV", intervalo: "8/8h", procedencia: LABEL_MEROPENEM },
+    // ⚠️ D-79 FECHADA PELA ESTRUTURA, NÃO À MÃO. A tabela renal do label diz
+    // "one-half recommended dose" — e "recommended dose" é um REFERENTE, que
+    // depende da indicação: 500 mg em pele e partes moles, 1 g em intra-abdominal.
+    // O catálogo fixava 1 g, e a metade saía 500 mg: certo na intra-abdominal e
+    // ERRADO na de pele, onde seria 250 mg — o dobro do label, num carbapenêmico
+    // neurotóxico, em quem tem ClCr baixo.
     //
-    // ⚠️ E A DOSE CAI À METADE em ClCr < 25, não só o intervalo. O motor dizia
-    // "500 mg–1 g" — o label diz METADE da dose recomendada.
-    //
-    // Verbatim em `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
+    // ⚠️ O ERRO NÃO ESTAVA NA FRONTEIRA, ESTAVA NO REFERENTE. Agora a fração é
+    // dado (`fracaoDaBase: 0.5`) e a base vem do EIXO — que é exatamente como o
+    // label a escreveu.
     ajusteRenal: "ajusta",
-    linhas: [
-      {
-        de: 0, ate: 10,
-        dose: "METADE da dose recomendada",
-        doseConcreta: { texto: "500 mg", procedencia: METADE_DE_1G },
-        intervalo: "24/24h",
-        metodoDaTFG: METODO,
-        procedencia: LABEL_MEROPENEM,
-      },
-      {
-        de: 10, ate: 25, ateInclusivo: true,
-        dose: "METADE da dose recomendada",
-        doseConcreta: { texto: "500 mg", procedencia: METADE_DE_1G },
-        intervalo: "12/12h",
-        metodoDaTFG: METODO,
-        procedencia: LABEL_MEROPENEM,
-      },
-      {
-        // ⚠️ A TABELA DO LABEL É EM NÚMEROS INTEIROS ("10 to 25" e "26 to 50") e
-        // deixa 25,1–25,9 sem faixa. Este app precisa cobrir a reta inteira, e a
-        // escolha está DECLARADA aqui: o fracionário acima de 25 segue a faixa de
-        // cima. É operacionalização NOSSA, não do label.
-        de: 25, ate: 50, deInclusivo: false, ateInclusivo: true,
-        dose: "dose recomendada",
-        doseConcreta: { texto: "1 g", procedencia: METADE_DE_1G },
-        notaDeFaixa: { texto: "MDR/meningite: 2 g 12/12h", procedencia: PRATICA_CRITICO },
-        intervalo: "12/12h",
-        metodoDaTFG: METODO,
-        procedencia: LABEL_MEROPENEM,
-      },
-      {
-        de: 50, ate: null, deInclusivo: false,
-        dose: "dose recomendada (500 mg em cSSSI · 1 g em intra-abdominal)",
-        doseConcreta: { texto: "1 g", procedencia: METADE_DE_1G },
-        notaDeFaixa: { texto: "MDR: 2 g 8/8h em infusão de 3 h · meningite: 2 g 8/8h", procedencia: PRATICA_CRITICO },
-        intervalo: "8/8h",
-        metodoDaTFG: METODO,
-        procedencia: LABEL_MEROPENEM,
-      },
+    linhas: [],
+    eixo: {
+      tipo: "indicacao",
+      pergunta: "Qual é a indicação? (é ela que define a dose de referência)",
+      naoSei: "Não sei — ver as três. O label dá 500 mg 8/8h em pele e partes moles, 1 g 8/8h em intra-abdominal complicada, e 1 g 8/8h quando a infecção de pele é por Pseudomonas aeruginosa. Meningite, neste label, é indicação PEDIÁTRICA.",
+      valores: [
+        {
+          id: "pele",
+          rotulo: "Pele e partes moles",
+          base: { tipo: "absoluta", min: 500, unidade: "mg" },
+          linhas: [
+          { de: 0, ate: 10, dose: "METADE da dose recomendada", intervalo: "24/24h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 10, ate: 25, ateInclusivo: true, dose: "METADE da dose recomendada", intervalo: "12/12h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 25, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "dose recomendada", intervalo: "12/12h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 50, ate: null, deInclusivo: false, dose: "dose recomendada", intervalo: "8/8h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
       // ⚠️ AS DUAS FRASES DO LABEL, AGORA COMO LINHAS DO MESMO EIXO. "Informação
       // inadequada" é ausência de dose recomendada — NÃO é "não precisa ajustar";
       // e "prontamente dialisável" é farmacocinética, que muda a conversa sem dar
@@ -337,16 +314,76 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       },
       SEM_DADOS("CRRT", RAZAO_CRRT),
       SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
-    ],
-    fonteDoFarmaco: LABEL_MEROPENEM,
-    observacoes: [
+        ],
+        },
+        {
+          id: "pele-pseudomonas",
+          rotulo: "Pele — Pseudomonas aeruginosa",
+          base: { tipo: "absoluta", min: 1, unidade: "g" },
+          linhas: [
+          { de: 0, ate: 10, dose: "METADE da dose recomendada", intervalo: "24/24h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 10, ate: 25, ateInclusivo: true, dose: "METADE da dose recomendada", intervalo: "12/12h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 25, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "dose recomendada", intervalo: "12/12h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 50, ate: null, deInclusivo: false, dose: "dose recomendada", intervalo: "8/8h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+      // ⚠️ AS DUAS FRASES DO LABEL, AGORA COMO LINHAS DO MESMO EIXO. "Informação
+      // inadequada" é ausência de dose recomendada — NÃO é "não precisa ajustar";
+      // e "prontamente dialisável" é farmacocinética, que muda a conversa sem dar
+      // dose. Antes viviam num campo à parte, sem trava.
       {
-        // Farmacocinética, não posologia — e por isso vive aqui, com força
-        // própria, e não dentro da faixa.
-        texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem do label) — mas o label NÃO diz qual dose dar após a sessão.",
+        modalidade: "HD",
+        semDados: "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.",
+        metodoDaTFG: "sem_dados",
+        procedencia: LABEL_MEROPENEM,
+        notaDeFaixa: { texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem) — mas o label NÃO diz qual dose dar após a sessão.", procedencia: LABEL_MEROPENEM },
+      },
+      {
+        modalidade: "DP",
+        semDados: "⚠️ O label declara informação INADEQUADA também para diálise peritoneal.",
+        metodoDaTFG: "sem_dados",
         procedencia: LABEL_MEROPENEM,
       },
+      SEM_DADOS("CRRT", RAZAO_CRRT),
+      SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+        },
+        {
+          id: "intra-abdominal",
+          rotulo: "Intra-abdominal complicada",
+          base: { tipo: "absoluta", min: 1, unidade: "g" },
+          linhas: [
+          { de: 0, ate: 10, dose: "METADE da dose recomendada", intervalo: "24/24h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 10, ate: 25, ateInclusivo: true, dose: "METADE da dose recomendada", intervalo: "12/12h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 25, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "dose recomendada", intervalo: "12/12h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+          { de: 50, ate: null, deInclusivo: false, dose: "dose recomendada", intervalo: "8/8h", valor: { tipo: "igualABase" }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: LABEL_MEROPENEM },
+      // ⚠️ AS DUAS FRASES DO LABEL, AGORA COMO LINHAS DO MESMO EIXO. "Informação
+      // inadequada" é ausência de dose recomendada — NÃO é "não precisa ajustar";
+      // e "prontamente dialisável" é farmacocinética, que muda a conversa sem dar
+      // dose. Antes viviam num campo à parte, sem trava.
+      {
+        modalidade: "HD",
+        semDados: "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.",
+        metodoDaTFG: "sem_dados",
+        procedencia: LABEL_MEROPENEM,
+        notaDeFaixa: { texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem) — mas o label NÃO diz qual dose dar após a sessão.", procedencia: LABEL_MEROPENEM },
+      },
+      {
+        modalidade: "DP",
+        semDados: "⚠️ O label declara informação INADEQUADA também para diálise peritoneal.",
+        metodoDaTFG: "sem_dados",
+        procedencia: LABEL_MEROPENEM,
+      },
+      SEM_DADOS("CRRT", RAZAO_CRRT),
+      SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+        },
+      ],
+    },
+    fonteDoFarmaco: LABEL_MEROPENEM,
+    observacoes: [
+      { texto: "⚠️ A DOSE DE REFERÊNCIA DEPENDE DA INDICAÇÃO: 500 mg 8/8h em pele e partes moles · 1 g 8/8h em intra-abdominal complicada · 1 g 8/8h se a infecção de pele for por Pseudomonas aeruginosa. A tabela renal do label reduz À METADE dessa base — não de um valor fixo.", procedencia: LABEL_MEROPENEM },
+      { texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem do label) — mas o label NÃO diz qual dose dar após a sessão.", procedencia: LABEL_MEROPENEM },
       { texto: "MDR: 2 g em 100 mL SF → infundir em 3 h.", procedencia: PENDENTE_DA_MIGRACAO },
+      { texto: "Meningite bacteriana, neste label, é indicação PEDIÁTRICA (3 meses ou mais) — não adulta.", procedencia: LABEL_MEROPENEM },
     ],
   },
   {
@@ -378,14 +415,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "e500",
         rotulo: "500 mg 12/12h",
         linhas: [
-          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 60, ate: null, deInclusivo: false, dose: "500 mg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 250, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "500 mg", intervalo: "12/12h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", valor: { tipo: "textoLivre" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "DP", dose: "500 mg", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "DP", dose: "500 mg", intervalo: "48/48h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 48 }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -395,14 +432,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "e1g12",
         rotulo: "1 g 12/12h",
         linhas: [
-          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 60, ate: null, deInclusivo: false, dose: "1 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 250, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "1 g", intervalo: "12/12h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", valor: { tipo: "textoLivre" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "DP", dose: "1 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "DP", dose: "1 g", intervalo: "48/48h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 48 }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -412,14 +449,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "e2g12",
         rotulo: "2 g 12/12h",
         linhas: [
-          { de: 0, ate: 11, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 11, ate: 29, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+          { de: 0, ate: 11, dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "12/12h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", valor: { tipo: "textoLivre" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 48 }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -429,14 +466,14 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "e2g8",
         rotulo: "2 g 8/8h",
         linhas: [
-          { de: 0, ate: 11, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 11, ate: 29, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
-          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+          { de: 0, ate: 11, dose: "1 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "12/12h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "8/8h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 8 }, metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "HD", dose: "1 g", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "HD", dose: "1 g", intervalo: "após a sessão, no mesmo horário todo dia", valor: { tipo: "absoluta", min: 1, unidade: "g" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
-          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", valor: { tipo: "absoluta", min: 2, unidade: "g" }, intervaloHoras: { horas: 48 }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
             notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
           SEM_DADOS("CRRT", RAZAO_CRRT),
           SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -477,16 +514,16 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // seria inventar estrutura que a fonte não deu.
     ajusteRenal: "ajusta",
     linhas: [
-      { de: 0, ate: 6, dose: "500 mg", intervalo: "48/48h", metodoDaTFG: METODO, procedencia: ARREDONDAMENTO_CEFTAZIDIMA,
+      { de: 0, ate: 6, dose: "500 mg", intervalo: "48/48h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 48 }, metodoDaTFG: METODO, procedencia: ARREDONDAMENTO_CEFTAZIDIMA,
         notaDeFaixa: { texto: "⚠️ O label diz \"menos de 5\" para 500 mg 48/48h e \"15 a 6\" para 500 mg 24/24h — 5 a 5,9 fica sem faixa NA FONTE. Aqui segue a de MENOR exposição, apoiado na NOTA do label de que a dose menor deve ser usada.", procedencia: ARREDONDAMENTO_CEFTAZIDIMA } },
-      { de: 6, ate: 15, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
-      { de: 15, ate: 30, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
-      { de: 30, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
-      { de: 50, ate: null, deInclusivo: false, dose: "dose da Tabela 3, pela indicação", intervalo: "8/8h a 12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA,
+      { de: 6, ate: 15, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 15, ate: 30, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 30, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "12/12h", valor: { tipo: "absoluta", min: 1, unidade: "g" }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 50, ate: null, deInclusivo: false, dose: "dose da Tabela 3, pela indicação", intervalo: "8/8h a 12/12h", valor: { tipo: "textoLivre" }, intervaloHoras: { min: 8, max: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA,
         notaDeFaixa: { texto: "Acima de 50 mL/min não há redução: vale a dose por indicação (1 g usual · 2 g nas graves · 250 mg em ITU não complicada).", procedencia: LABEL_CEFTAZIDIMA } },
-      { modalidade: "HD", dose: "1 g", intervalo: "após CADA sessão de hemodiálise", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
+      { modalidade: "HD", dose: "1 g", intervalo: "após CADA sessão de hemodiálise", valor: { tipo: "absoluta", min: 1, unidade: "g" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
         notaDeFaixa: { texto: "Precedida de ataque de 1 g — e aqui o label diz \"is recommended\", não \"may be given\".", procedencia: LABEL_CEFTAZIDIMA } },
-      { modalidade: "DP", dose: "500 mg", intervalo: "24/24h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
+      { modalidade: "DP", dose: "500 mg", intervalo: "24/24h", valor: { tipo: "absoluta", min: 500, unidade: "mg" }, intervaloHoras: { horas: 24 }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
         notaDeFaixa: { texto: "Precedida de ataque de 1 g. Além da via IV, o label permite incorporar 250 mg a cada 2 L do líquido de diálise.", procedencia: LABEL_CEFTAZIDIMA } },
       { modalidade: "CRRT", semDados: "⚠️ TRS CONTÍNUA NÃO EXISTE NESTE LABEL: as palavras hemofiltration, arteriovenous, venovenous, CAVH, CVVH, CAVHD e CVVHD não aparecem em NENHUM dos nove setids varridos. Ausência conferida, não presumida — e é por isso que a nota genérica de CRRT continua valendo aqui.", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA },
       SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
@@ -505,6 +542,10 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     id: "cefazolina",
     nome: "Cefazolina",
     classe: "Cefalosporina de 1ª geração",
+    // ⚠️ A BASE DE REFERÊNCIA, DECLARADA: "metade da dose usual" precisa de
+    // metade DE QUÊ. Sem este campo, a fração fica sem referente — que foi o
+    // buraco que produziu a D-79 no meropeném.
+    base: { tipo: "absoluta", min: 500, max: 1000, unidade: "mg" },
     doseUsual: {
       dose: "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)",
       via: "IV ou IM",
@@ -526,12 +567,12 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         id: "tratamento",
         rotulo: "Tratamento",
         linhas: [
-          { de: 0, ate: 10, ateInclusivo: true, dose: "METADE da dose usual", intervalo: "18/18h a 24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+          { de: 0, ate: 10, ateInclusivo: true, dose: "METADE da dose usual", intervalo: "18/18h a 24/24h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { min: 18, max: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção — a frase está só no label clássico.", procedencia: LABEL_CEFAZOLINA } },
-          { de: 10, ate: 35, deInclusivo: false, dose: "METADE da dose usual", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+          { de: 10, ate: 35, deInclusivo: false, dose: "METADE da dose usual", intervalo: "12/12h", valor: { tipo: "fracaoDaBase", fracao: 0.5 }, intervaloHoras: { horas: 12 }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção.", procedencia: LABEL_CEFAZOLINA } },
-          { de: 35, ate: 55, dose: "dose usual INTEIRA", intervalo: "8/8h ou mais espaçado", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
-          { de: 55, ate: null, dose: "dose usual INTEIRA", intervalo: "6/6h a 8/8h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
+          { de: 35, ate: 55, dose: "dose usual INTEIRA", intervalo: "8/8h ou mais espaçado", valor: { tipo: "igualABase" }, intervaloHoras: { min: 8, max: 24 }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
+          { de: 55, ate: null, dose: "dose usual INTEIRA", intervalo: "6/6h a 8/8h", valor: { tipo: "igualABase" }, intervaloHoras: { min: 6, max: 8 }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
           SEM_DADOS("HD", "⚠️ A palavra \"hemodialysis\" NÃO APARECE em nenhum dos CINCO setids de cefazolina lidos no DailyMed. Ausência conferida, não presumida."),
           { modalidade: "DP", semDados: "O label traz diálise PERITONEAL apenas como farmacocinética (níveis séricos com solução de 50 e 150 mg/L), não como dose recomendada.", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFAZOLINA },
           SEM_DADOS("CRRT", RAZAO_CRRT),
@@ -546,11 +587,11 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         // virou faixa com procedência PENDENTE e alvo nomeado, porque inventar
         // aqui é o caminho do 126 mg/dL.
         linhas: [
-          { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
-          { peso: { de: 0, ate: 120 }, de: 55, ate: null, dose: "1 a 2 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+          { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", valor: { tipo: "textoLivre" }, metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 0, ate: 120 }, de: 55, ate: null, dose: "1–2 g", intervalo: "dose única, ½ h a 1 h antes da incisão", valor: { tipo: "absoluta", min: 1, max: 2, unidade: "g" }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "Cirurgia longa (≥ 2 h): 500 mg a 1 g durante o ato. Pós-operatório: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ O label NÃO dá intervalo numérico de redose.", procedencia: LABEL_CEFAZOLINA } },
-          { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
-          { peso: { de: 120, ate: null }, de: 55, ate: null, dose: "3 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
+          { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", valor: { tipo: "textoLivre" }, metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
+          { peso: { de: 120, ate: null }, de: 55, ate: null, dose: "3 g", intervalo: "dose única, ½ h a 1 h antes da incisão", valor: { tipo: "absoluta", min: 3, unidade: "g" }, metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ 120 kg ou mais: 3 g. O label não repete a dose intraoperatória nem a de 24 h para esta faixa de peso.", procedencia: LABEL_CEFAZOLINA } },
           SEM_DADOS("HD", "O label não traz esquema de profilaxia em hemodiálise."),
           SEM_DADOS("DP", "O label não traz esquema de profilaxia em diálise peritoneal."),
@@ -594,9 +635,9 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
 linhas: [
       // ⚠️ NÃO AJUSTA POR CLEARANCE — e mesmo assim as modalidades entram, porque
       // "não é removida por diálise" é conteúdo positivo do label.
-      { modalidade: "HD", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA,
+      { modalidade: "HD", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", valor: { tipo: "textoLivre" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA,
         notaDeFaixa: { texto: "Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.", procedencia: LABEL_CEFTRIAXONA } },
-      { modalidade: "DP", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA },
+      { modalidade: "DP", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", valor: { tipo: "textoLivre" }, metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA },
       SEM_DADOS("CRRT", RAZAO_CRRT),
       SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
     ],
@@ -622,6 +663,51 @@ linhas: [
     ],
   },
 ];
+
+/**
+ * ⚠️ O TEXTO É DERIVADO DA ESTRUTURA — nunca o contrário.
+ *
+ * Enquanto a dose era prosa, "metade da dose recomendada" carregava um referente
+ * que ninguém resolvia (D-79), e o motor procurava "mg/kg" com `parseFloat`. Aqui
+ * o valor é dado, e o texto sai dele — o que torna possível a trava que confere
+ * se o que a tela mostra bate com o que o dado diz.
+ */
+export function textoDaDose(v: DoseEstruturada, base?: DoseEstruturada): string {
+  const numero = (n: number) => String(n).replace(".", ",");
+  /**
+   * ⚠️ A CONVERSÃO SÓ É POSSÍVEL PORQUE A UNIDADE É DECLARADA. Metade de 1 g dá
+   * "0,5 g", que está certo e ninguém prescreve — vira "500 mg". Sem a unidade no
+   * dado, isto seria adivinhação sobre string; com ela, é aritmética.
+   */
+  const normaliza = (d: Extract<DoseEstruturada, { tipo: "absoluta" }>) =>
+    d.unidade === "g" && !d.porQuilo && d.min < 1
+      ? { ...d, min: d.min * 1000, max: d.max !== undefined ? d.max * 1000 : undefined, unidade: "mg" as const }
+      : d;
+  const abs = (bruto: Extract<DoseEstruturada, { tipo: "absoluta" }>) => {
+    const d = normaliza(bruto);
+    return `${numero(d.min)}${d.max !== undefined ? `–${numero(d.max)}` : ""} ${d.unidade}${d.porQuilo ? "/kg" : ""}`;
+  };
+  if (v.tipo === "absoluta") return abs(v);
+  if (v.tipo === "textoLivre") return "";
+  // ⚠️ SEM BASE, A FRAÇÃO NÃO TEM METADE DE QUÊ — e a trava reprova antes de
+  // chegar aqui. Este retorno existe para não mentir se alguém a chamar direto.
+  if (!base || base.tipo !== "absoluta") return v.tipo === "igualABase" ? "dose de referência" : "fração da dose de referência";
+  if (v.tipo === "igualABase") return abs(base);
+  const fator = v.fracao;
+  return abs({
+    tipo: "absoluta",
+    min: base.min * fator,
+    max: base.max !== undefined ? base.max * fator : undefined,
+    unidade: base.unidade,
+    porQuilo: base.porQuilo,
+  });
+}
+
+/** A base que vale para um conjunto — a do valor do eixo, ou a do fármaco. */
+export function baseDe(farmaco: Antimicrobiano, valorDoEixo?: string): DoseEstruturada | undefined {
+  if (farmaco.eixo) return farmaco.eixo.valores.find((v) => v.id === valorDoEixo)?.base ?? farmaco.base;
+  return farmaco.base;
+}
 
 /**
  * A LINHA que vale para um caso — contínua (ClCr) ou categórica (modalidade).

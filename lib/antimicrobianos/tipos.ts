@@ -89,6 +89,32 @@ export const MODALIDADES: ModalidadeDeTRS[] = ["HD", "DP", "CRRT", "SLED"];
  * Uma linha do eixo renal. Ou ela é CONTÍNUA (faixa de clearance) ou é
  * CATEGÓRICA (modalidade de TRS) — nunca as duas, e nunca nenhuma.
  */
+/**
+ * ⚠️ A DOSE ESTRUTURADA — e ela existe porque TRÊS defeitos diferentes tinham a
+ * mesma causa: **número dentro de texto.**
+ *
+ *   · o meropeném — "metade da dose recomendada" tem um REFERENTE que o dado não
+ *     representava; alguém o resolveu à mão e virou número fixo, certo numa
+ *     indicação e errado nas outras;
+ *   · o mg/kg — o motor procurava a string "mg/kg" e usava `parseFloat`, que cala
+ *     ou erra com "1,5 g/kg", "mg/kg/dia", "7,5 a 10 mg/kg";
+ *   · a unidade — nunca esteve declarada, então converter era adivinhar.
+ *
+ * **Texto é para humano ler; o motor precisa de valor, unidade e referente.** E o
+ * texto passa a ser DERIVADO da estrutura — nunca o contrário. A trava confere
+ * que o texto exibido bate com o dado, coisa impossível enquanto a dose era prosa.
+ */
+export type DoseEstruturada =
+  | { tipo: "absoluta"; min: number; max?: number; unidade: "mg" | "g" | "UI"; porQuilo?: boolean }
+  /** ⚠️ "metade da dose recomendada" — e a base vem do EIXO, como no label. */
+  | { tipo: "fracaoDaBase"; fracao: number }
+  | { tipo: "igualABase" }
+  /** Quando a fonte não dá dose: o texto é a própria ausência. */
+  | { tipo: "textoLivre" };
+
+/** Horas entre doses — número, faixa, ou o que a fonte disser por extenso. */
+export type IntervaloEstruturado = { horas: number } | { min: number; max: number } | { texto: true };
+
 export type LinhaRenal = {
   /** Quando existe, esta linha só vale nesta faixa de PESO (kg). */
   peso?: FaixaDePeso;
@@ -100,9 +126,16 @@ export type LinhaRenal = {
   ateInclusivo?: boolean;
   /** CATEGÓRICA: a modalidade de substituição renal. */
   modalidade?: ModalidadeDeTRS;
-  /** Como a FONTE diz. Ausente só quando `semDados` estiver preenchido. */
+  /**
+   * ⚠️ O TEXTO É DERIVADO DA ESTRUTURA. Ele continua existindo porque é a chave
+   * de tradução (D-19) e porque é o que o humano lê — mas `valor` é o que o motor
+   * usa, e a trava confere que os dois dizem a mesma coisa.
+   */
   dose?: string;
   intervalo?: string;
+  /** O que o MOTOR usa. Ausente só em `semDados`. */
+  valor?: DoseEstruturada;
+  intervaloHoras?: IntervaloEstruturado;
   /** ⚠️ Ausência DECLARADA, com a razão — nunca silêncio. */
   semDados?: string;
   /** O que a tela mostra quando a fonte fala em fração. Procedência própria. */
@@ -133,7 +166,13 @@ export type EixoDeEntrada = {
   pergunta: string;
   /** O texto da saída "não sei" — que NUNCA escolhe por ele. */
   naoSei: string;
-  valores: { id: string; rotulo: string; linhas: LinhaRenal[] }[];
+  /**
+   * ⚠️ A CHAVE É COMPOSTA — `farmaco.eixo.valor` —, e o `id` aqui é só o último
+   * pedaço. Id global colidiria em silêncio: dois fármacos com "tratamento" e um
+   * responderia pelo outro, sem nada quebrar. Falha silenciosa é o modo de falha
+   * mais caro, e é o que este projeto passa o dia caçando.
+   */
+  valores: { id: string; rotulo: string; base?: DoseEstruturada; linhas: LinhaRenal[] }[];
 };
 
 export type AjusteRenal = "ajusta" | "nao_ajusta" | "contraindicado" | "sem_dados";
@@ -188,6 +227,12 @@ export type Antimicrobiano = {
   linhas: LinhaRenal[];
   /** Quando existe, `linhas` fica vazio e cada valor traz o seu conjunto. */
   eixo?: EixoDeEntrada;
+  /**
+   * ⚠️ A BASE DE REFERÊNCIA — obrigatória quando alguma linha usa
+   * `fracaoDaBase` ou `igualABase`. Sem ela, "metade da dose" não tem metade de
+   * quê, e foi exatamente esse buraco que produziu a D-79.
+   */
+  base?: DoseEstruturada;
   fonteDoFarmaco: ProcedenciaDeFaixa;
   observacoes: { texto: string; procedencia: ProcedenciaDeFaixa }[];
 };

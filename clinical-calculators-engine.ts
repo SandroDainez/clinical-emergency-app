@@ -30,8 +30,8 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
-import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara } from "./lib/antimicrobianos/catalogo";
-import type { LinhaRenal } from "./lib/antimicrobianos/tipos";
+import { baseDe, CATALOGO_DE_ANTIMICROBIANOS, faixaPara, textoDaDose } from "./lib/antimicrobianos/catalogo";
+import type { DoseEstruturada, LinhaRenal } from "./lib/antimicrobianos/tipos";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
 /**
@@ -967,7 +967,10 @@ export const CALC_TOOLS: CalcTool[] = [
       // pergunta de cada fármaco aparece na tela junto do resultado.
       { id: "eixo", label: "Se o fármaco pedir: indicação · esquema basal", kind: "toggle",
         options: [
-          ...CATALOGO_DE_ANTIMICROBIANOS.flatMap((a) => (a.eixo?.valores ?? []).map((v) => ({ label: v.rotulo, value: v.id }))),
+          // ⚠️ CHAVE COMPOSTA — `farmaco::valor`, nunca id global. Dois fármacos
+          // com "tratamento" fariam um responder pelo outro EM SILÊNCIO, e falha
+          // silenciosa é o modo de falha mais caro: nada quebra.
+          ...CATALOGO_DE_ANTIMICROBIANOS.flatMap((a) => (a.eixo?.valores ?? []).map((v) => ({ label: `${a.nome} · ${v.rotulo}`, value: `${a.id}::${v.id}` }))),
           { label: "Não sei — ver todas", value: "nao_sei" },
         ] },
     ],
@@ -977,8 +980,15 @@ export const CALC_TOOLS: CalcTool[] = [
       const peso = parseFloat((v.peso ?? "").replace(",", "."));
       const tfg = parseFloat((v.tfg ?? "").replace(",", "."));
       const r0 = (x: number) => Math.round(x).toString();
-      const texto = (l: LinhaRenal) =>
-        l.semDados ?? `${l.doseConcreta?.texto ?? l.dose} ${l.intervalo ?? ""}`.trim();
+      // ⚠️ O TEXTO SAI DA ESTRUTURA, e a base vem do eixo — é assim que "metade
+      // da dose recomendada" vira 250 mg na indicação de pele e 500 mg na
+      // intra-abdominal, sem ninguém resolver o referente à mão (D-79).
+      const texto = (l: LinhaRenal, base?: DoseEstruturada) => {
+        if (l.semDados) return l.semDados;
+        const derivado = l.valor && l.valor.tipo !== "textoLivre" ? textoDaDose(l.valor, base) : "";
+        const corpo = derivado || l.doseConcreta?.texto || l.dose || "";
+        return `${corpo} ${l.intervalo ?? ""}`.trim();
+      };
 
       const tabelas: { title: string; rows: { k: string; v: string }[] }[] = [];
       // ⚠️ O MÉTODO DA LINHA, NA TELA. Se um dia divergir do que o campo pede, a
@@ -1023,7 +1033,7 @@ export const CALC_TOOLS: CalcTool[] = [
           interpret: { tone: "green" as Tone, label: `${alvo.nome} — ${alvo.textoDoEstado?.texto ?? ""}` },
           tables: [
             ...tabelas,
-            { title: "Substituição renal", rows: modais.map((l) => ({ k: l.modalidade!, v: texto(l) })) },
+            { title: "Substituição renal", rows: modais.map((l) => ({ k: l.modalidade!, v: texto(l, baseDe(alvo, escolhido)) })) },
             { title: "O que a fonte diz", rows: alvo.observacoes.map((o) => ({ k: "•", v: o.texto })) },
           ],
         };
@@ -1031,7 +1041,11 @@ export const CALC_TOOLS: CalcTool[] = [
 
       if (!Number.isFinite(tfg)) return null;
 
-      const escolhido = v.eixo && v.eixo !== "nao_sei" ? v.eixo : undefined;
+      // ⚠️ O MOTOR NÃO ACEITA VALOR DE EIXO SEM O FÁRMACO JUNTO: se a chave não
+      // pertence ao fármaco selecionado, ela é ignorada e as colunas aparecem
+      // todas — em vez de uma responder pela outra.
+      const [donoDoEixo, valorDoEixo] = (v.eixo ?? "").split("::");
+      const escolhido = valorDoEixo && donoDoEixo === alvo.id ? valorDoEixo : undefined;
       const conjuntos = alvo.eixo
         ? alvo.eixo.valores.filter((x) => !escolhido || x.id === escolhido)
         : [{ id: "", rotulo: "", linhas: alvo.linhas }];
@@ -1045,11 +1059,14 @@ export const CALC_TOOLS: CalcTool[] = [
           return [{ label: rotulo, value: "⚠️ falta o peso para esta coluna", highlight: true }];
         }
         // Dose em mg/kg vira mg quando o peso existe — sem inventar quando não existe.
-        const emMgKg = /mg\/kg/.test(fx.dose ?? "");
+        // ⚠️ `porQuilo` É CAMPO, NÃO STRING ENCONTRADA. Antes o motor procurava
+        // "mg/kg" no texto e usava `parseFloat` — o que cala ou erra com
+        // "1,5 g/kg", "mg/kg/dia" ou "7,5 a 10 mg/kg".
+        const emMgKg = fx.valor?.tipo === "absoluta" && fx.valor.porQuilo === true;
         const valor =
           emMgKg && Number.isFinite(peso)
-            ? `${texto(fx)}  ·  ${r0(parseFloat(fx.dose!) * peso)}–${r0((fx.dose!.includes("15–20") ? 20 : 15) * peso)} mg`
-            : texto(fx);
+            ? `${texto(fx, baseDe(alvo, c.id || undefined))}  ·  ${r0((fx.valor as { min: number }).min * peso)}–${r0(((fx.valor as { max?: number }).max ?? (fx.valor as { min: number }).min) * peso)} mg`
+            : texto(fx, baseDe(alvo, c.id || undefined));
         return [{ label: rotulo, value: valor, highlight: true }];
       });
 

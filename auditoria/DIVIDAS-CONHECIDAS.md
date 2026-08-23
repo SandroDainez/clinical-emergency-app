@@ -3289,7 +3289,7 @@ coluna é tão perigoso quanto na primeira. Quando o eixo existe, `faixas` fica 
 `faixaPara()` **devolve `undefined` se ninguém disser a indicação** — escolher a
 coluna por omissão é exatamente o defeito que o pip-tazo tinha.
 
-## D-79 · MEROPENÉM — "metade da dose recomendada" tem base POR INDICAÇÃO
+## D-79 · ✅ FECHADA em 2026-08-23 — pela ESTRUTURA, não à mão
 
 **Aberta em 2026-08-23.** ⚠️ **Levantada pelo autor, conferida no label, NÃO
 corrigida** — reportar antes era a instrução.
@@ -3303,8 +3303,23 @@ carbapenêmico neurotóxico, em paciente com ClCr baixo.
 
 **O erro não está na fronteira, está no REFERENTE.** As faixas continuam corretas.
 
-**Como fechar:** eixo de indicação no meropeném (pele · intra-abdominal · pele por
-*P. aeruginosa*), com a `doseConcreta` derivada da base de cada uma.
+**✅ Como fechou:** o meropeném ganhou **eixo de indicação** (pele 500 mg ·
+pele/*P. aeruginosa* 1 g · intra-abdominal 1 g), e a tabela renal passou a declarar
+**`fracaoDaBase: 0.5`** em vez de um número — que é **exatamente como o label a
+escreveu**. A base vem do eixo; o texto é derivado.
+
+| ClCr | pele (base 500 mg) | pele/*Pseudomonas* (1 g) | intra-abdominal (1 g) |
+|---|---|---|---|
+| 60 | 500 mg 8/8h | 1 g 8/8h | 1 g 8/8h |
+| 40 | 500 mg 12/12h | 1 g 12/12h | 1 g 12/12h |
+| 20 | **250 mg** 12/12h | 500 mg 12/12h | 500 mg 12/12h |
+| 5 | **250 mg** 24/24h | 500 mg 24/24h | 500 mg 24/24h |
+
+⚠️ **A coluna de pele era o erro:** o app dava 500 mg onde o label dá 250 mg.
+
+**A trava que teria pego sozinha:** `fracaoDaBase` sem base declarada reprova. E a
+mutação que prova que ela mede o REFERENTE e não o resultado: trocar a fração por
+`absoluta` **com o mesmo número** também reprova.
 
 ⚠️ **E a lição é da estrutura:** o catálogo guarda `dose` como TEXTO. Quando a fonte
 escreve FRAÇÃO, o texto carrega um **referente** que o dado não representa — e alguém

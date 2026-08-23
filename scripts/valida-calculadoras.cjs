@@ -604,7 +604,15 @@ for (const calc of CALC_TOOLS) {
         // tela mostra AS DUAS colunas, e as duas juntas contêm quase todo
         // fragmento — o teste passaria sem provar nada. Fixar a coluna é o que
         // torna a fronteira mensurável.
-        const fixo = { farmaco, peso: "70", eixo: "outras" };
+        // ⚠️ A CHAVE DO EIXO É COMPOSTA (2026-08-23): `farmaco::valor`. Passar
+        // só "outras" faria o motor ignorar o eixo — e o teste mediria a tela do
+        // "não sei", não a coluna. A trava passa a montar a chave como a tela.
+        // ⚠️ O VALOR DE EIXO É POR FÁRMACO — e a chave, composta. Fixá-lo é o
+        // que torna a fronteira mensurável: sem ele a tela mostra TODAS as
+        // colunas, e o teste passaria casando fragmento de qualquer uma.
+        const VALOR_DO_EIXO = { "piperacilina-tazobactam": "outras", meropenem: "intra-abdominal" };
+        const eixo = VALOR_DO_EIXO[farmaco] ? `${farmaco}::${VALOR_DO_EIXO[farmaco]}` : undefined;
+        const fixo = { farmaco, peso: "70", ...(eixo ? { eixo } : {}) };
         const r1 = antib.compute({ ...fixo, tfg: String(dentro) });
         const r2 = antib.compute({ ...fixo, tfg: String(fora) });
         if (!r1 || !r2) { falhas++, linhas.push(`❌ dose-antibiotico/${farmaco}: compute devolveu null — a trava de limiar não rodou.`); continue; }

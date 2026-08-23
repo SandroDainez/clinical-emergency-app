@@ -32,6 +32,28 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
   "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada":
     "⚠️ el prospecto no trae esquema de profilaxis para ClCr < 55 — esto NO significa que la profilaxis esté contraindicada",
   // ── O MOTOR DIRIGIDO PELO CATÁLOGO (2026-08-23) ──────────────────────────
+  "Meningite bacteriana, neste label, é indicação PEDIÁTRICA (3 meses ou mais) — não adulta.":
+    "Meningitis bacteriana, en este prospecto, es indicación PEDIÁTRICA (3 meses o más) — no adulta.",
+  "Não sei — ver as três. O label dá 500 mg 8/8h em pele e partes moles, 1 g 8/8h em intra-abdominal complicada, e 1 g 8/8h quando a infecção de pele é por Pseudomonas aeruginosa. Meningite, neste label, é indicação PEDIÁTRICA.":
+    "No sé — ver las tres. El prospecto da 500 mg 8/8h en piel y partes blandas, 1 g 8/8h en intraabdominal complicada, y 1 g 8/8h cuando la infección de piel es por Pseudomonas aeruginosa. Meningitis, en este prospecto, es indicación PEDIÁTRICA.",
+  "Qual é a indicação? (é ela que define a dose de referência)":
+    "¿Cuál es la indicación? (es ella la que define la dosis de referencia)",
+  "dose de referência":
+    "dosis de referencia",
+  "fração da dose de referência":
+    "fracción de la dosis de referencia",
+  "⚠️ A DOSE DE REFERÊNCIA DEPENDE DA INDICAÇÃO: 500 mg 8/8h em pele e partes moles · 1 g 8/8h em intra-abdominal complicada · 1 g 8/8h se a infecção de pele for por Pseudomonas aeruginosa. A tabela renal do label reduz À METADE dessa base — não de um valor fixo.":
+    "⚠️ LA DOSIS DE REFERENCIA DEPENDE DE LA INDICACIÓN: 500 mg 8/8h en piel y partes blandas · 1 g 8/8h en intraabdominal complicada · 1 g 8/8h si la infección de piel es por Pseudomonas aeruginosa. La tabla renal del prospecto reduce A LA MITAD esa base — no de un valor fijo.",
+  "Pele e partes moles":
+    "Piel y partes blandas",
+  "Pele — Pseudomonas aeruginosa":
+    "Piel — Pseudomonas aeruginosa",
+  "Intra-abdominal complicada":
+    "Intraabdominal complicada",
+  "500 mg (pele) · 1 g (intra-abdominal)":
+    "500 mg (piel) · 1 g (intraabdominal)",
+  "1–2 g":
+    "1–2 g",
   "25–30 mg/kg pelo peso REAL (máx 3 g)":
     "25–30 mg/kg por el peso REAL (máx 3 g)",
   "sempre, em qualquer grau de disfunção renal — o label diz que a dose inicial não deve ser menor que 15 mg/kg em nenhum grau":

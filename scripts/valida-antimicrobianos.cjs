@@ -46,7 +46,7 @@ execFileSync("npx", [
 // comum vira `lib/antimicrobianos` e o `.js` sai na RAIZ do tmp. Procurar o
 // caminho longo devolve MODULE_NOT_FOUND — e isso seria lido como "o catálogo
 // não existe", que é o oposto do que aconteceu.
-const { CATALOGO_DE_ANTIMICROBIANOS: CAT } = require(path.join(tmp, "catalogo.js"));
+const { CATALOGO_DE_ANTIMICROBIANOS: CAT, textoDaDose } = require(path.join(tmp, "catalogo.js"));
 fs.rmSync(tmp, { recursive: true, force: true });
 
 const falhas = [];
@@ -69,6 +69,8 @@ const confereProcedencia = (onde, p) => {
 };
 
 let linhasContinuas = 0, linhasCategoricas = 0;
+const chavesDeEixo = new Map();
+const globaisDeEixo = new Map();
 
 for (const f of CAT) {
   if (!ESTADOS.includes(f.ajusteRenal)) {
@@ -82,6 +84,53 @@ for (const f of CAT) {
   for (const at of f.doseDeAtaque ?? []) {
     confereProcedencia(`${f.id} · ataque (${at.quando?.slice(0, 40)}…)`, at.procedencia);
     if (!at.quando) falhas.push(`${f.id}: dose de ataque sem \`quando\` — ataque sem gatilho é dose solta.`);
+  }
+
+  // ── ⚠️ SE A BASE MUDA ENTRE AS COLUNAS, A LINHA TEM DE SER RELATIVA ──────
+  //
+  // Este é o teste do REFERENTE, e ele não olha o número: olha se o dado ainda
+  // SABE de que a dose é fração. Trocar `fracaoDaBase: 0.5` por
+  // `absoluta: 500 mg` dá o mesmo resultado na coluna cuja base é 1 g — e
+  // perde a informação para todas as outras. Foi assim que a D-79 nasceu, e
+  // deu certo por seis dias.
+  if (f.eixo) {
+    const bases = f.eixo.valores.map((v) => JSON.stringify(v.base ?? f.base ?? null));
+    const basesDiferem = new Set(bases).size > 1;
+    if (basesDiferem) {
+      for (const v of f.eixo.valores) {
+        for (const l of v.linhas) {
+          if (l.modalidade || l.semDados) continue;
+          if (l.valor?.tipo === "absoluta") {
+            falhas.push(
+              `${f.id} [${v.id}] · faixa ${l.de}–${l.ate ?? "∞"}: dose ABSOLUTA num fármaco cuja BASE muda entre as colunas.\n` +
+              `      ⚠️ PERDA DE REFERENTE. O número pode até coincidir nesta coluna — e estará errado nas\n` +
+              `      outras, porque a tabela do label reduz à fração DA BASE, não de um valor fixo. É\n` +
+              `      exatamente a D-79: certo na intra-abdominal, errado na de pele.`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // ── ⚠️ A CHAVE DO EIXO É COMPOSTA: farmaco.eixo.valor ────────────────────
+  //
+  // Id global colidiria EM SILÊNCIO: dois fármacos com "tratamento" e um
+  // responderia pelo outro, sem nada quebrar. Falha silenciosa é o modo de falha
+  // mais caro — e com 28 fármacos a colisão deixa de ser hipótese.
+  for (const v of f.eixo?.valores ?? []) {
+    const chave = `${f.id}.${f.eixo.tipo}.${v.id}`;
+    if (chavesDeEixo.has(chave)) falhas.push(`chave de eixo repetida: ${chave}`);
+    chavesDeEixo.set(chave, f.id);
+    const global = globaisDeEixo.get(v.id);
+    if (global && global !== f.id) {
+      falhas.push(
+        `o valor de eixo « ${v.id} » existe em ${global} E em ${f.id}.\n` +
+        `      ⚠️ Enquanto a tela usar id GLOBAL, um responde pelo outro em silêncio. A chave é\n` +
+        `      composta — \`farmaco.eixo.valor\` —, e o motor não aceita valor sem o fármaco junto.`
+      );
+    }
+    globaisDeEixo.set(v.id, f.id);
   }
 
   // ── ⚠️ O TIPO DE EIXO É ENUMERADO E FECHADO ─────────────────────────────
@@ -126,6 +175,39 @@ for (const f of CAT) {
       if (!METODOS.includes(l.metodoDaTFG)) {
         falhas.push(`${onde}: \`metodoDaTFG\` inválido ("${l.metodoDaTFG}") — transpor equação é transpor calibração.`);
       }
+      // ── ⚠️ A DOSE ESTRUTURADA, E O REFERENTE ────────────────────────────
+      //
+      // `fracaoDaBase` SEM BASE REPROVA. É o instrumento que teria pego a D-79
+      // sozinho: "metade da dose recomendada" sem base declarada é metade de
+      // quê — e a resposta ficou seis dias sendo "de 1 g", resolvida à mão,
+      // certa numa indicação e errada nas outras.
+      if (!l.semDados) {
+        if (!l.valor) {
+          falhas.push(`${onde}: sem \`valor\` estruturado — número dentro de texto é dívida que sempre cobra na dose.`);
+        } else if (l.valor.tipo === "fracaoDaBase" || l.valor.tipo === "igualABase") {
+          const base = f.eixo
+            ? (f.eixo.valores.find((v) => v.linhas.includes(l))?.base ?? f.base)
+            : f.base;
+          if (!base) {
+            falhas.push(
+              `${onde}: usa "${l.valor.tipo}" e NÃO HÁ BASE declarada.\n` +
+              `      ⚠️ Fração sem referente é o defeito da D-79: alguém resolve à mão, uma vez, e o\n` +
+              `      resultado passa a parecer número — certo numa indicação e errado nas outras.`
+            );
+          } else if (base.tipo !== "absoluta") {
+            falhas.push(`${onde}: a base declarada não é absoluta — não dá para tirar fração dela.`);
+          }
+        }
+        // ⚠️ O TEXTO TEM DE BATER COM O DADO. Enquanto a dose era prosa, isto era
+        // impossível de conferir; agora o texto é derivado e a divergência aparece.
+        if (l.valor && l.valor.tipo === "absoluta" && l.dose) {
+          const esperado = textoDaDose(l.valor);
+          if (esperado && l.dose !== esperado) {
+            falhas.push(`${onde}: o texto « ${l.dose} » não bate com o dado « ${esperado} ».`);
+          }
+        }
+      }
+
       // ⚠️ OU DOSE, OU AUSÊNCIA DECLARADA. Linha muda sem as duas é silêncio.
       const temDose = Boolean(l.dose);
       if (!temDose && !l.semDados) {

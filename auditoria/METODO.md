@@ -6304,3 +6304,52 @@ oficial**.
 
 ⚠️ **É a forma mais grave do R-104:** o que faltava no PLR não era um dado, era **a
 chave de leitura da tabela inteira**.
+
+## R-105 · AS QUATRO REGRAS DO MOTOR
+
+**Registradas em 2026-08-23**, e elas **não são sobre a calculadora**: valem igual
+para os 31 módulos. Foram provadas em sete fármacos com **quatro formas diferentes de
+tabela** — escada simples, matriz por esquema basal, dupla coluna por indicação, e
+eixo de peso — antes de o motor grande começar.
+
+### 1 · CLÍNICA MORA NO DADO; O RENDERIZADOR NÃO SABE NOMES
+
+Trava por `grep`: **nome, id, dose literal ou limiar numérico no componente
+reprovam.** E o que se procura vem **do próprio dado**, não de uma lista escrita à
+mão — assim o item novo passa a ser vigiado sozinho.
+
+⚠️ **Ela mordeu quem a escreveu no mesmo dia:** eu tinha deixado
+`tone: tfg < 30 ? "orange" : "green"` no renderizador — um limiar clínico em código.
+
+### 2 · ITEM NOVO RENDERIZA SEM TOCAR EM COMPONENTE
+
+O teste é o **item fictício**: acrescente um oitavo, só no dado, com todas as formas
+que o modelo suporta. Se ele aparece, pergunta, ramifica e mostra o "não sei" **sem
+uma linha de código**, é motor. **Se precisou de código, não é motor — é uma coleção
+de casos.**
+
+### 3 · VALOR É ESTRUTURADO; TEXTO É DERIVADO
+
+**Número dentro de string é dívida com juros — e sempre cobra na dose.** Três
+defeitos diferentes tiveram a mesma causa:
+
+- a **fração sem referente** ("metade da dose recomendada" — metade de quê?), que
+  alguém resolve à mão uma vez e vira número fixo, certo num caso e errado nos outros;
+- o **`parseFloat` no texto**, que cala ou erra em "1,5 g/kg" e "mg/kg/dia";
+- a **unidade não declarada**, que torna qualquer conversão adivinhação.
+
+⚠️ **E o teste que separa estrutura de resultado:** trocar a fração por um número
+**absoluto que dá o mesmo resultado no caso da vez** tem de **reprovar**. Se a trava
+olha o número, ela mede o resultado; se olha o referente, mede a coisa certa.
+
+### 4 · CHAVE COMPOSTA, NUNCA GLOBAL
+
+`item.eixo.valor`, sempre. **Colisão silenciosa entre conteúdos é o modo de falha mais
+caro, porque nada quebra** — dois fármacos com "tratamento" e um responde pelo outro.
+E o motor **não aceita** valor de eixo sem o item junto: chave de outro item é
+ignorada, e as opções aparecem todas, em vez de uma responder pela outra.
+
+---
+
+⚠️ **Quando o motor dos módulos começar, ele começa destas quatro** — já provadas em
+sete fármacos, não inventadas no papel.
