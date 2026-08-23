@@ -55,5 +55,11 @@
   "valida-antimicrobianos": {
     "farmacos": 7,
     "faixas": 44
+  },
+  "valida-motor-antibiotico": {
+    "nomes_procurados": 14
+  },
+  "valida-metodo-da-tfg": {
+    "linhas_continuas": 44
   }
 }

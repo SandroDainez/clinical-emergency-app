@@ -3288,3 +3288,24 @@ coluna é tão perigoso quanto na primeira. Quando o eixo existe, `faixas` fica 
 (a trava reprova os dois juntos: seriam duas fontes de verdade sobre a mesma dose), e
 `faixaPara()` **devolve `undefined` se ninguém disser a indicação** — escolher a
 coluna por omissão é exatamente o defeito que o pip-tazo tinha.
+
+## D-79 · MEROPENÉM — "metade da dose recomendada" tem base POR INDICAÇÃO
+
+**Aberta em 2026-08-23.** ⚠️ **Levantada pelo autor, conferida no label, NÃO
+corrigida** — reportar antes era a instrução.
+
+O label dá **dose base por indicação**: pele e partes moles **500 mg 8/8h** (1 g se
+*P. aeruginosa*), intra-abdominal complicada **1 g 8/8h**. O catálogo fixou **1 g**.
+
+**Consequência:** nas faixas de metade, o app mostra **500 mg** — certo na
+intra-abdominal, **errado na de pele**, onde seria 250 mg. ⚠️ **Erra para CIMA**, num
+carbapenêmico neurotóxico, em paciente com ClCr baixo.
+
+**O erro não está na fronteira, está no REFERENTE.** As faixas continuam corretas.
+
+**Como fechar:** eixo de indicação no meropeném (pele · intra-abdominal · pele por
+*P. aeruginosa*), com a `doseConcreta` derivada da base de cada uma.
+
+⚠️ **E a lição é da estrutura:** o catálogo guarda `dose` como TEXTO. Quando a fonte
+escreve FRAÇÃO, o texto carrega um **referente** que o dado não representa — e alguém
+resolve à mão, uma vez, e o resultado passa a parecer número.

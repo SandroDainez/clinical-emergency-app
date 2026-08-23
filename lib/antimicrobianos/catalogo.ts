@@ -152,6 +152,17 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       intervalo: "dose única de ataque",
       procedencia: PENDENTE_DA_MIGRACAO,
     },
+    // ⚠️ O ATAQUE DA VANCOMICINA NÃO SE AJUSTA POR FUNÇÃO RENAL — ele depende do
+    // volume de distribuição, não da eliminação. E ele é CALCULADO: a fórmula
+    // tem uma dona só no repositório, compartilhada com a sepse.
+    doseDeAtaque: [
+      {
+        dose: "25–30 mg/kg pelo peso REAL (máx 3 g)",
+        quando: "sempre, em qualquer grau de disfunção renal — o label diz que a dose inicial não deve ser menor que 15 mg/kg em nenhum grau",
+        calculo: "ataque_glicopeptideo_peso_real",
+        procedencia: CONSENSO_VANCO_2020,
+      },
+    ],
     ajusteRenal: "ajusta",
     // ⚠️ `pratica_aceita`, NÃO recomendação formal de bula — e o contexto diz por
     // quê: o consenso 2020 recomenda ALVO (AUC/MIC 400–600) e abandonou o vale

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**52 de 69 travas com declaração completa.**
+**54 de 71 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -251,6 +251,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que as faixas de cada fármaco cubram a reta de ClCr SEM SOBREPOSIÇÃO e SEM BURACO, de 0 ao infinito; que toda faixa declare `metodoDaTFG` e procedência (fonte + força, ou `pendente` COM a pendência escrita); que as três modalidades de diálise existam, ainda que como `sem_dados` declarado; e que os quatro estados de `ajusteRenal` sejam coerentes com as faixas.
 - **NÃO PROMETE:** que a dose esteja certa, nem que a fonte seja a melhor. Isso é leitura de bula, e é do médico. A trava garante que o CATÁLOGO não pode mentir por construção.
 - **UNIVERSO:** `lib/antimicrobianos/catalogo.ts`, compilado, com piso no retrato. ── ⚠️ POR QUE SOBREPOSIÇÃO E BURACO SÃO A TRAVA CENTRAL ─────────────────── Enquanto a dose morava em ternários (`tfg > 50 ? A : tfg >= 25 ? B : …`), sobreposição era invisível: o encadeamento SEMPRE devolve alguma coisa, e a primeira condição verdadeira vence. Ninguém enxerga que duas faixas se cruzam lendo `if`s — e um buraco simplesmente cai no `else`, com a dose errada. Como DADO, os dois viram impossíveis por construção: **um ClCr pertence a exatamente uma faixa, ou a trava reprova.** ⚠️ E A FRONTEIRA É O PONTO CEGO CLÁSSICO. Um erro em `> 50` × `>= 50` muda a dose EXATAMENTE no valor 50 — um único ponto da reta, que nenhum teste de amostra pega e nenhuma revisão lê. Por isso a inclusividade é declarada campo a campo, e conferida aqui.
+
+## `test:motor-antibiotico` → `scripts/valida-motor-antibiotico.cjs`
+
+- **PROMETE:** que o motor da calculadora de antimicrobianos e a tela que a desenha NÃO contenham nome de fármaco, id de fármaco, dose nem limiar de ClCr do catálogo. A renderização é dirigida pelo DADO.
+- **NÃO PROMETE:** que o dado esteja certo — isso é a `test:antimicrobianos` e a leitura de label. Aqui só se garante que o código não sabe clínica.
+- **UNIVERSO:** a ferramenta `dose-antibiotico` em `clinical-calculators-engine.ts` e a tela `components/protocol-screen/clinical-calculators-screen.tsx`. ── ⚠️ POR QUE ISTO É TRAVA, E NÃO ESTILO ────────────────────────────────── Enquanto havia um `if` por fármaco, o bloco do próximo seria COPIADO do anterior — e é exatamente aí que a divergência nasce. Com 28 fármacos seriam 28 cópias, cada uma com a chance de errar a linha que o vizinho acertou. **Se o nome do remédio aparece na tela, a tela sabe clínica** — e clínica mora no catálogo, onde tem fonte por linha, trava de fronteira e varredura. ⚠️ E ESTA CALCULADORA É O ENSAIO DO MOTOR: é o mesmo padrão que o app inteiro precisa ter — dado declarativo + renderização dirigida pelo dado. Sete fármacos, quatro formas de tabela, escopo pequeno e verificável.
+
+## `test:metodo-da-tfg` → `scripts/valida-metodo-da-tfg.cjs`
+
+- **PROMETE:** que nenhuma linha do catálogo pressuponha uma equação de clearance diferente da que o campo de entrada da calculadora pede — e, se pressupuser, que isso apareça declarado, nunca em silêncio.
+- **NÃO PROMETE:** que a equação declarada seja a certa para o fármaco. Isso é leitura de label, e está no verbatim de cada um.
+- **UNIVERSO:** as linhas contínuas do catálogo (as de modalidade não pedem clearance), com piso no retrato. ── ⚠️ ESTA TRAVA NASCE VERDE, DE PROPÓSITO ──────────────────────────────── Hoje todas as linhas contínuas declaram `cockcroft_gault`, e é o que a tela pede. **É o instrumento que existe antes de precisar dele** — foi assim que o `deInclusivo` salvou o ponto 25 do meropeném, escrito quando ainda não havia divergência nenhuma para achar. ⚠️ E O DEFEITO QUE ELA IMPEDE É CARO: bula de aminoglicosídeo pressupõe ClCr ABSOLUTO (Cockcroft-Gault); corte de diretriz renal pressupõe TFG INDEXADA (CKD-EPI). No obeso e no caquético as duas se separam bastante — usar uma no lugar da outra é transpor calibração, a mesma família do pH < 7,0 vindo da cetoacidose.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 

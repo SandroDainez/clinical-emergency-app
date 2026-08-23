@@ -31,6 +31,45 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
   "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada":
     "⚠️ el prospecto no trae esquema de profilaxis para ClCr < 55 — esto NO significa que la profilaxis esté contraindicada",
+  // ── O MOTOR DIRIGIDO PELO CATÁLOGO (2026-08-23) ──────────────────────────
+  "25–30 mg/kg pelo peso REAL (máx 3 g)":
+    "25–30 mg/kg por el peso REAL (máx 3 g)",
+  "sempre, em qualquer grau de disfunção renal — o label diz que a dose inicial não deve ser menor que 15 mg/kg em nenhum grau":
+    "siempre, en cualquier grado de disfunción renal — el prospecto dice que la dosis inicial no debe ser menor que 15 mg/kg en ningún grado",
+  "a dose depende de:":
+    "la dosis depende de:",
+  "Ajuste renal — dirigido pelo catálogo, não por código":
+    "Ajuste renal — dirigido por el catálogo, no por código",
+  "Cada linha declara a SUA fonte — ver lib/antimicrobianos/catalogo.ts e protocols/fontes-verbatim/.":
+    "Cada línea declara SU fuente — ver lib/antimicrobianos/catalogo.ts y protocols/fontes-verbatim/.",
+  "ClCr ABSOLUTO (mL/min) — Cockcroft-Gault, como nos estudos de ajuste de dose":
+    "ClCr ABSOLUTO (mL/min) — Cockcroft-Gault, como en los estudios de ajuste de dosis",
+  "Cockcroft-Gault (ClCr absoluto) — é o que este campo pede":
+    "Cockcroft-Gault (ClCr absoluto) — es lo que este campo pide",
+  "Dose de ataque — não se ajusta por função renal":
+    "Dosis de carga — no se ajusta por función renal",
+  "Nesta faixa":
+    "En esta franja",
+  "Não sei — ver todas":
+    "No sé — ver todas",
+  "O que a fonte diz":
+    "Lo que dice la fuente",
+  "Qual clearance esta faixa pressupõe":
+    "Qué clearance presupone esta franja",
+  "Se o fármaco pedir: indicação · esquema basal":
+    "Si el fármaco lo pide: indicación · esquema basal",
+  "Valores orientativos — confirmar com farmacêutico clínico e bula. Cada linha declara a sua fonte no catálogo.":
+    "Valores orientativos — confirmar con farmacéutico clínico y prospecto. Cada línea declara su fuente en el catálogo.",
+  "sem método declarado (linha de modalidade)":
+    "sin método declarado (línea de modalidad)",
+  "⚠️ CKD-EPI (indexada por superfície) — DIFERENTE do que este campo pede":
+    "⚠️ CKD-EPI (indexada por superficie) — DIFERENTE de lo que este campo pide",
+  "⚠️ MDRD (indexada) — DIFERENTE do que este campo pede":
+    "⚠️ MDRD (indexada) — DIFERENTE de lo que este campo pide",
+  "⚠️ falta o peso para esta coluna":
+    "⚠️ falta el peso para esta columna",
+  "Dose de antibiótico (TFG)":
+    "Dosis de antibiótico (TFG)",
   // ── LOTE 1 · CEFTAZIDIMA (2026-08-23) ───────────────────────────────────
   "Ceftazidima":
     "Ceftazidima",

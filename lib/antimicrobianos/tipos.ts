@@ -158,7 +158,19 @@ export type Antimicrobiano = {
    * "may be given" (na suspeita de insuficiência renal) de "is recommended" (na
    * hemodiálise), e a diferença não é estilo.
    */
-  doseDeAtaque?: { dose: string; quando: string; procedencia: ProcedenciaDeFaixa }[];
+  doseDeAtaque?: {
+    dose: string;
+    quando: string;
+    /**
+     * ⚠️ QUANDO O ATAQUE É CALCULADO, E NÃO ESCRITO. O nome aponta para O QUE SE
+     * CALCULA, nunca para o fármaco: o motor não pode saber nome de remédio
+     * (`test:motor-antibiotico`), e a fórmula tem UMA dona no repositório — a
+     * mesma que a sepse usa. Repetir a fórmula aqui a faria divergir a partir de
+     * certo peso, que foi exatamente o defeito que a dona única corrigiu.
+     */
+    calculo?: "ataque_glicopeptideo_peso_real";
+    procedencia: ProcedenciaDeFaixa;
+  }[];
   ajusteRenal: AjusteRenal;
   /**
    * ⚠️ O QUE A TELA DIZ QUANDO NÃO HÁ LINHA — obrigatório em `nao_ajusta`,

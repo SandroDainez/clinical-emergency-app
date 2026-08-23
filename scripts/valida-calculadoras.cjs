@@ -545,7 +545,11 @@ for (const calc of CALC_TOOLS) {
       // ≥ 40 → 10–15 mg/kg 12/12h · ≥ 20 → 10–15 mg/kg 24/24h · < 20 → 48/48h.
       // A fronteira dos 40 muda a DOSE mantendo o intervalo, e por isso o
       // fragmento ali é a dose, não o intervalo.
-      ["vanco", [
+      // ⚠️ OS IDs MUDARAM PORQUE PASSARAM A VIR DO CATÁLOGO (2026-08-23). A tela não
+      // conhece mais "vanco"/"mero": as opções são geradas de
+      // `lib/antimicrobianos/catalogo.ts`, e o id do fármaco é o do dado. A razão
+      // da trava sobrevive inteira — ela vigia FRONTEIRA, não nome (R-93).
+      ["vancomicina", [
         [91, "8/8h", 90], [90, "12/12h", 91],
         [60, "15–20 mg/kg", 59], [59, "10–15 mg/kg", 60],
         [40, "12/12h", 39], [39, "24/24h", 40],
@@ -563,9 +567,12 @@ for (const calc of CALC_TOOLS) {
       // label — procurada no documento inteiro. Saiu. Entraram as duas colunas
       // da Tabela 1, e a indicação virou pergunta.
       // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
-      ["piptazo", [
-        [41, "3,375 g IV 6/6h", 40], [40, "2,25 g IV 6/6h", 41],
-        [20, "2,25 g IV 6/6h", 19], [19, "2,25 g IV 8/8h", 20],
+      ["piperacilina-tazobactam", [
+        // ⚠️ O FRAGMENTO PERDEU O " IV ": a tela passou a montar a linha a partir
+        // do catálogo (dose + intervalo), e a via vive em `doseUsual`, não na
+        // faixa. O que se vigia continua sendo a FRONTEIRA.
+        [41, "3,375 g 6/6h", 40], [40, "2,25 g 6/6h", 41],
+        [20, "2,25 g 6/6h", 19], [19, "2,25 g 8/8h", 20],
       ]],
       // ── MEROPENÉM — FRONTEIRAS ATUALIZADAS EM 2026-08-22 (R-93) ────────────
       //
@@ -585,9 +592,9 @@ for (const calc of CALC_TOOLS) {
       // silêncio, e foi exatamente isso que ela fez: acusou o movimento. O que
       // muda é o valor de referência, que agora vem da FONTE (R-102), não do
       // código. Verbatim: `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
-      ["mero", [
+      ["meropenem", [
         [51, "8/8h", 50], [50, "12/12h", 51],
-        [26, "1 g IV 12/12h", 25], [25, "METADE", 26],
+        [26, "1 g 12/12h", 25], [25, "500 mg 12/12h", 26],
         [10, "12/12h", 9], [9, "24/24h", 10],
       ]],
     ];
@@ -597,7 +604,7 @@ for (const calc of CALC_TOOLS) {
         // tela mostra AS DUAS colunas, e as duas juntas contêm quase todo
         // fragmento — o teste passaria sem provar nada. Fixar a coluna é o que
         // torna a fronteira mensurável.
-        const fixo = { farmaco, peso: "70", indicacao: "outras" };
+        const fixo = { farmaco, peso: "70", eixo: "outras" };
         const r1 = antib.compute({ ...fixo, tfg: String(dentro) });
         const r2 = antib.compute({ ...fixo, tfg: String(fora) });
         if (!r1 || !r2) { falhas++, linhas.push(`❌ dose-antibiotico/${farmaco}: compute devolveu null — a trava de limiar não rodou.`); continue; }

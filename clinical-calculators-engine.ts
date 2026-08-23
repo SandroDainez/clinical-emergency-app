@@ -30,7 +30,8 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
-import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara, linhaDaModalidade } from "./lib/antimicrobianos/catalogo";
+import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara } from "./lib/antimicrobianos/catalogo";
+import type { LinhaRenal } from "./lib/antimicrobianos/tipos";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
 /**
@@ -84,6 +85,8 @@ const SOFA_DEPENDE_DA_TENDENCIA =
  * Agora o motor não sabe clínica nenhuma: ele lê `lib/antimicrobianos/catalogo.ts`
  * e formata.
  */
+const DEPENDE_DE = "a dose depende de:";
+
 const CLCR_PARA_DOSE =
   "Informar o clearance ABSOLUTO em mL/min (Cockcroft-Gault), não a TFG indexada em mL/min/1,73 m² (CKD-EPI). São medidas diferentes: a indexada corrige para uma superfície corporal padrão e serve para estadiar doença renal; a absoluta é a do paciente que está na frente, e é a que os estudos de ajuste de dose usaram. No obeso e no caquético as duas se separam bastante. A ferramenta Clearance/TFG desta mesma tela devolve as duas, rotuladas.";
 
@@ -934,251 +937,162 @@ export const CALC_TOOLS: CalcTool[] = [
     kind: "formula",
     id: "dose-antibiotico",
     name: "Dose de antibiótico (TFG)",
-    subtitle: "Vancomicina · Pip-tazo · Meropeném por função renal",
-    reference: "ASHP/IDSA/SIDP 2020 (vanco AUC) · UpToDate 2024 / SBI 2022.",
+    subtitle: "Ajuste renal — dirigido pelo catálogo, não por código",
+    reference: "Cada linha declara a SUA fonte — ver lib/antimicrobianos/catalogo.ts e protocols/fontes-verbatim/.",
+    // ⚠️ NENHUM `if` POR FÁRMACO, E NENHUM NOME DE REMÉDIO NESTE ARQUIVO.
+    //
+    // Esta ferramenta é o ENSAIO DO MOTOR: o mesmo padrão que o app inteiro
+    // precisa ter — dado declarativo + renderização dirigida pelo dado. Enquanto
+    // havia um bloco por fármaco, o bloco do próximo seria copiado do anterior, e
+    // é exatamente aí que a divergência nasce. Com 28 fármacos seriam 28 cópias.
+    //
+    // ⚠️ A PERGUNTA VEM DO EIXO, não da tela. Fármaco com eixo de indicação
+    // pergunta indicação; com esquema basal, pergunta esquema. O "não sei" nasce
+    // do catálogo — se morasse aqui, o próximo fármaco esqueceria de oferecê-lo.
+    //
+    // ⚠️ E A TRAVA `test:motor-antibiotico` REPROVA nome de fármaco neste arquivo
+    // e na tela: se o nome do remédio aparece no código, o código sabe clínica —
+    // e clínica mora no catálogo.
     inputs: [
-      { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
-        { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" },
-        { label: "Ceftriaxona", value: "ceftriaxona" }, { label: "Cefepima", value: "cefepima" },
-        { label: "Ceftazidima", value: "ceftazidima" } ] },
-      // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO — e o app conhecia só metade.
-      // A dose de pip-tazo depende de DUAS coisas: função renal e indicação. A
-      // tabela do label tem duas colunas, e o app usava a da PNEUMONIA
-      // NOSOCOMIAL para todo mundo. Escolher a coluna por conta própria seria
-      // decidir clínica pelo usuário.
-      // ⚠️ E O "NÃO SEI" É A REGRA DAS ÁRVORES, aqui também: quem não sabe qual
-      // coluna usar é exatamente quem mais precisa da ferramenta. Ele não
-      // escolhe — mostra AS DUAS, lado a lado, com o rótulo de cada uma.
-      // ⚠️ A PERGUNTA VEM DO EIXO, e o eixo vem do catálogo. A cefepima entra
-      // pelo ESQUEMA BASAL — não pela indicação, não pelo peso —, e o "não sei"
-      // não escolhe: mostra as quatro colunas, como o pip-tazo mostra as duas.
-      { id: "esquema", label: "Esquema com função NORMAL — cefepima", kind: "toggle", options: [
-        { label: "500 mg 12/12h", value: "e500" },
-        { label: "1 g 12/12h", value: "e1g12" },
-        { label: "2 g 12/12h", value: "e2g12" },
-        { label: "2 g 8/8h", value: "e2g8" },
-        { label: "Não sei — ver as quatro", value: "nao_sei" } ] },
-      { id: "indicacao", label: "Indicação (só para pip-tazo)", kind: "toggle", options: [
-        { label: "Outras indicações", value: "outras" },
-        { label: "Pneumonia nosocomial", value: "pneumonia" },
-        { label: "Não sei — ver as duas", value: "nao_sei" } ] },
-      { id: "peso", label: "Peso (real)", unit: "kg", kind: "number", placeholder: "ex: 70" },
-      { id: "tfg", label: "ClCr ABSOLUTO (mL/min) — não a TFG indexada", unit: "mL/min", kind: "number", placeholder: "ex: 80", helperText: CLCR_PARA_DOSE },
+      { id: "farmaco", label: "Antibiótico", kind: "toggle",
+        options: CATALOGO_DE_ANTIMICROBIANOS.map((a) => ({ label: a.nome, value: a.id })) },
+      { id: "peso", label: "Peso (real)", unit: "kg", kind: "number", placeholder: "ex: 70", optional: true },
+      // ⚠️ `metodoDaTFG` GANHA CONSEQUÊNCIA: a tela DIZ qual equação a linha
+      // pressupõe, em vez de o campo existir só no dado. Campo verdadeiro sem
+      // consequência é o começo de campo mentiroso — ninguém o mantém, porque
+      // nada quebra quando ele erra. No dia em que um fármaco exigir CKD-EPI, a
+      // divergência aparece NA TELA, e não fica no dado.
+      { id: "tfg", label: "ClCr ABSOLUTO (mL/min) — Cockcroft-Gault, como nos estudos de ajuste de dose", unit: "mL/min", kind: "number", placeholder: "ex: 80", helperText: CLCR_PARA_DOSE, optional: true },
+      // ⚠️ UM CAMPO SÓ PARA TODOS OS EIXOS. Os valores vêm do catálogo, e a
+      // pergunta de cada fármaco aparece na tela junto do resultado.
+      { id: "eixo", label: "Se o fármaco pedir: indicação · esquema basal", kind: "toggle",
+        options: [
+          ...CATALOGO_DE_ANTIMICROBIANOS.flatMap((a) => (a.eixo?.valores ?? []).map((v) => ({ label: v.rotulo, value: v.id }))),
+          { label: "Não sei — ver todas", value: "nao_sei" },
+        ] },
     ],
     compute: (v) => {
-      const peso = parseFloat((v.peso ?? "").replace(",", ".")); const tfg = parseFloat((v.tfg ?? "").replace(",", "."));
-      const f = v.farmaco ?? "vanco";
+      const alvo = CATALOGO_DE_ANTIMICROBIANOS.find((a) => a.id === (v.farmaco ?? CATALOGO_DE_ANTIMICROBIANOS[0].id));
+      if (!alvo) return null;
+      const peso = parseFloat((v.peso ?? "").replace(",", "."));
+      const tfg = parseFloat((v.tfg ?? "").replace(",", "."));
+      const r0 = (x: number) => Math.round(x).toString();
+      const texto = (l: LinhaRenal) =>
+        l.semDados ?? `${l.doseConcreta?.texto ?? l.dose} ${l.intervalo ?? ""}`.trim();
 
-      // ── ⚠️ QUEM NÃO AJUSTA RESPONDE ANTES DE PEDIR O CLEARANCE ─────────────
-      //
-      // "Não requer ajuste por função renal" é CONTEÚDO, e é a informação que
-      // evita o subajuste por conta própria. Exigir o ClCr para depois dizer que
-      // ele não muda nada seria transformar a resposta em obstáculo — e quem não
-      // acha a resposta ajusta sozinho e SUBDOSA.
-      const semAjuste = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === f && x.ajusteRenal !== "ajusta");
-      if (semAjuste) {
-        const ROTULO: Record<string, string> = {
-          nao_ajusta: "NÃO REQUER AJUSTE por função renal",
-          contraindicado: "CONTRAINDICADO na disfunção renal",
-          sem_dados: "SEM DADOS de ajuste renal no label",
+      const tabelas: { title: string; rows: { k: string; v: string }[] }[] = [];
+      // ⚠️ O MÉTODO DA LINHA, NA TELA. Se um dia divergir do que o campo pede, a
+      // divergência aparece aqui — e a trava `test:metodo-da-tfg` reprova antes.
+      const METODO_NA_TELA: Record<string, string> = {
+        cockcroft_gault: "Cockcroft-Gault (ClCr absoluto) — é o que este campo pede",
+        ckd_epi: "⚠️ CKD-EPI (indexada por superfície) — DIFERENTE do que este campo pede",
+        mdrd: "⚠️ MDRD (indexada) — DIFERENTE do que este campo pede",
+        sem_dados: "sem método declarado (linha de modalidade)",
+      };
+
+      // ── ATAQUE: campo próprio, e ele NÃO desce com o clearance ─────────────
+      if (alvo.doseDeAtaque?.length) {
+        // ⚠️ O ATAQUE CALCULADO CHAMA A DONA DA FÓRMULA — não a reescreve. O
+        // nome do cálculo diz O QUE se calcula, nunca de que remédio se trata:
+        // o motor não sabe clínica, e a fórmula tem dona única no repositório
+        // (a mesma que a sepse usa), porque duas cópias divergiam acima de 110 kg.
+        const CALCULOS: Record<string, (kg: number) => string | null> = {
+          ataque_glicopeptideo_peso_real: (kg) => {
+            const a = ataqueVancomicinaMg(kg);
+            return a ? `${Math.round(a.min)}–${Math.round(a.max)} mg` : null;
+          },
         };
-        const rotulo = ROTULO[semAjuste.ajusteRenal] ?? semAjuste.ajusteRenal;
-        // ⚠️ A DIÁLISE É LINHA DO MESMO EIXO desde a refatoração de 2026-08-22.
-        const linhaHD = linhaDaModalidade(semAjuste, "HD");
-        const hd = linhaHD?.semDados ?? `${linhaHD?.dose ?? "—"} — ${linhaHD?.intervalo ?? ""}`;
+        tabelas.push({
+          title: "Dose de ataque — não se ajusta por função renal",
+          rows: alvo.doseDeAtaque.map((a) => {
+            const calculado = a.calculo && Number.isFinite(peso) ? CALCULOS[a.calculo]?.(peso) : null;
+            return { k: calculado ? `${calculado} (${a.dose})` : a.dose, v: a.quando };
+          }),
+        });
+      }
+
+      // ── QUEM NÃO AJUSTA RESPONDE ANTES DE PEDIR O CLEARANCE ───────────────
+      if (alvo.ajusteRenal !== "ajusta") {
+        const modais = alvo.linhas.filter((l) => l.modalidade);
         return {
           metrics: [
-            { label: `${semAjuste.nome} — dose usual`, value: `${semAjuste.doseUsual.dose} — ${semAjuste.doseUsual.via}`, highlight: true },
-            { label: "Intervalo", value: semAjuste.doseUsual.intervalo },
-            ...(semAjuste.doseMaxima ? [{ label: "Teto", value: semAjuste.doseMaxima.valor }] : []),
+            { label: `${alvo.nome} — dose usual`, value: `${alvo.doseUsual.dose} — ${alvo.doseUsual.via}`, highlight: true },
+            { label: "Intervalo", value: alvo.doseUsual.intervalo },
+            ...(alvo.doseMaxima ? [{ label: "Teto", value: alvo.doseMaxima.valor }] : []),
           ],
-          interpret: { tone: "green" as const, label: `${semAjuste.nome} — ${rotulo}` },
+          interpret: { tone: "green" as Tone, label: `${alvo.nome} — ${alvo.textoDoEstado?.texto ?? ""}` },
           tables: [
-            // ⚠️ O TEXTO DO ESTADO VEM PRIMEIRO, e é campo do catálogo — não uma
-            // linha da lista de observações, que podia sumir sem ninguém notar.
-            { title: rotulo, rows: [{ k: "•", v: semAjuste.textoDoEstado?.texto ?? "" }] },
-            { title: "O que o label diz", rows: semAjuste.observacoes.map((o) => ({ k: "•", v: o.texto })) },
-            { title: "Hemodiálise", rows: [{ k: "HD", v: hd }] },
+            ...tabelas,
+            { title: "Substituição renal", rows: modais.map((l) => ({ k: l.modalidade!, v: texto(l) })) },
+            { title: "O que a fonte diz", rows: alvo.observacoes.map((o) => ({ k: "•", v: o.texto })) },
           ],
         };
       }
 
       if (!Number.isFinite(tfg)) return null;
-      const r0 = (x: number) => Math.round(x).toString();
-      if (f === "vanco") {
-        if (!Number.isFinite(peso) || peso <= 0) return null;
-        // ⚠️ FONTE ÚNICA com a Sepse — antes cada lado tinha a própria fórmula,
-        // e elas divergiam a partir de 110 kg (lib/dose-antibiotico-renal.ts).
-        const ataque = ataqueVancomicinaMg(peso)!;
-        const loadLo = r0(ataque.min), loadHi = r0(ataque.max);
-        // ⚠️ DO CATÁLOGO — uma cópia só (D-75). E a escada é de MANUTENÇÃO: a
-        // dose de ATAQUE não se ajusta por função renal, porque depende do
-        // volume de distribuição, e não da eliminação. Subdose de ataque em
-        // paciente renal é dos erros mais comuns de antimicrobiano em UTI, e é
-        // silencioso — o paciente não piora à vista, só demora dias para atingir
-        // alvo, no meio de uma sepse.
-        const fxV = faixaPara(CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "vancomicina")!, tfg);
-        if (!fxV) return null;
-        const band = { d: fxV.dose ?? "", i: fxV.intervalo ?? "" };
-        const mLo = r0(parseFloat(band.d) * peso), mHi = r0((band.d.includes("15–20") ? 20 : 15) * peso);
-        return {
-          metrics: [
-            { label: "Dose de ataque (peso real)", value: `${loadLo}–${loadHi} mg (25–30 mg/kg, máx 3 g)`, highlight: true },
-            { label: `Manutenção (ClCr ${r0(tfg)})`, value: `${mLo}–${mHi} mg ${band.i}` },
-          ],
-          interpret: { tone: tfg < 20 ? "orange" : "green", label: `Vancomicina — MANUTENÇÃO ${band.d} ${band.i}` },
-          // ⚠️ A TELA TERMINA EM CONDUTA, NÃO NO NÚMERO. O consenso 2020 tem uma
-          // mensagem central que não é uma tabela: a dose inicial é só o começo,
-          // e o que decide é o ALVO com nível medido — ele abandonou o vale
-          // isolado justamente porque dose fixa por faixa não prediz exposição.
-          // Uma escada sem "meça depois" ensina a prática que a fonte que ela
-          // cita abandonou: os números ficam aceitáveis e a MENSAGEM inverte.
-          tables: [{ title: "Monitorização — é ela que decide", rows: [
-            { k: "Alvo (recomendação formal — consenso 2020)", v: "AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). O vale isolado de 15–20 mcg/mL NÃO é mais recomendado como alvo em infecção grave por MRSA." },
-            { k: "A dose acima é só o começo", v: "COLHA NÍVEL e ajuste: a dose seguinte depende do que voltar, não desta faixa. A escada por clearance é operacionalização — prática aceita, não texto do consenso." },
-            { k: "Se o serviço não dosa nível", v: "Isto é limitação REAL e muda a conduta: sem nível, a exposição não é conhecida — reavalie função renal com mais frequência e discuta com a farmácia clínica. A limitação fica escrita, não escondida." },
-            { k: "Ataque NÃO se ajusta", v: "A dose de ataque depende do volume de distribuição, não da eliminação: ela é a mesma em qualquer grau de disfunção renal. Só a manutenção acompanha o clearance." },
-            { k: "Infusão", v: "Diluir 1 g em ≥ 250 mL; infundir ≥ 60 min (máx 10 mg/min) — evitar síndrome do homem vermelho." },
-            { k: "Hemodiálise", v: "15–20 mg/kg após a sessão; dosar nível pré-diálise. ⚠️ O consenso 2020 tabela outros valores (25 mg/kg de ataque · 10 mg/kg de manutenção, após a sessão, dialisador de alta permeabilidade) e depende de duas coisas que esta tela não pergunta — permeabilidade do dialisador e se a dose é intra ou pós-sessão. Ver D-77." },
-          ] }],
-        };
-      }
-      if (f === "piptazo") {
-        // ── AS DUAS COLUNAS DO LABEL, e a linha que não existia ──────────────
-        //
-        // ⚠️ O APP DAVA "4,5 g 8/8h" EM ClCr 20–40, e essa linha NÃO EXISTE no
-        // label — procurada no documento inteiro, em coluna nenhuma, nem em
-        // seção de infusão prolongada. Ela saiu. O que entrou foram as duas
-        // colunas da Tabela 1, com a indicação perguntada.
-        // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
-        // ⚠️ AS DUAS COLUNAS VÊM DO CATÁLOGO, pelo eixo de indicação (D-78).
-        const pt = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "piperacilina-tazobactam")!;
-        const fxCol = (id: string): string => {
-          const fx = faixaPara(pt, tfg, id);
-          return fx ? `${fx.doseConcreta?.texto ?? fx.dose} IV ${fx.intervalo}` : "—";
-        };
-        const outras = fxCol("outras");
-        const pneumonia = fxCol("pneumonia");
-        const ind = v.indicacao ?? "nao_sei";
-        const metrics =
-          ind === "outras"
-            ? [{ label: `Pip-tazo — outras indicações (ClCr ${r0(tfg)})`, value: outras, highlight: true }]
-            : ind === "pneumonia"
-              ? [{ label: `Pip-tazo — pneumonia nosocomial (ClCr ${r0(tfg)})`, value: pneumonia, highlight: true }]
-              : [
-                  // ⚠️ O "NÃO SEI" MOSTRA AS DUAS. Ver as duas é melhor do que
-                  // receber uma sem saber que existia outra.
-                  { label: `Outras indicações (ClCr ${r0(tfg)})`, value: outras, highlight: true },
-                  { label: `Pneumonia nosocomial (ClCr ${r0(tfg)})`, value: pneumonia, highlight: true },
-                ];
-        return {
-          metrics,
-          interpret: {
-            tone: tfg < 20 ? "orange" : "green",
-            label: ind === "nao_sei" ? "Piperacilina-tazobactam — a dose depende da INDICAÇÃO" : "Piperacilina-tazobactam",
-          },
-          tables: [{ title: "O que mais o label diz", rows: [
-            { k: "Hemodiálise", v: "2,25 g 12/12h (outras indicações) ou 2,25 g 8/8h (pneumonia nosocomial), MAIS 0,75 g após cada sessão — a hemodiálise remove 30% a 40% da dose." },
-            { k: "CAPD", v: "2,25 g 12/12h (outras) ou 2,25 g 8/8h (pneumonia). Sem dose adicional." },
-            { k: "Infusão", v: "O label descreve infusão de 30 minutos e NÃO tem seção de infusão prolongada. A infusão estendida de 4 h é prática, não está na bula — e por isso não aparece como se fosse dela." },
-          ] }],
-        };
-      }
-      if (f === "ceftazidima") {
-        const cz = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "ceftazidima")!;
-        const fx = faixaPara(cz, tfg);
-        if (!fx) return null;
-        const hd = linhaDaModalidade(cz, "HD"), dp = linhaDaModalidade(cz, "DP");
-        return {
-          metrics: [
-            // ⚠️ O ATAQUE VEM PRIMEIRO E NÃO DESCE COM O CLEARANCE — campo próprio
-            // do catálogo, não a primeira faixa.
-            { label: "Ataque (na suspeita de insuficiência renal)", value: `${cz.doseDeAtaque?.[0].dose} — o label diz "pode ser dado"`, highlight: true },
-            { label: `Manutenção (ClCr ${r0(tfg)})`, value: `${fx.dose} ${fx.intervalo}`, highlight: true },
-          ],
-          interpret: { tone: (tfg < 16 ? "orange" : "green") as Tone, label: `Ceftazidima — manutenção ${fx.dose} ${fx.intervalo}` },
-          tables: [
-            { title: "Substituição renal", rows: [
-              { k: "Hemodiálise", v: `Ataque 1 g (aqui o label RECOMENDA), depois ${hd?.dose} ${hd?.intervalo}.` },
-              { k: "DP / CAPD", v: `Ataque 1 g, depois ${dp?.dose} ${dp?.intervalo}. O label também permite 250 mg a cada 2 L do líquido de diálise.` },
-              { k: "CRRT", v: linhaDaModalidade(cz, "CRRT")?.semDados ?? "" },
-            ] },
-            { title: "O que o label diz", rows: cz.observacoes.map((o) => ({ k: "•", v: o.texto })) },
-          ],
-        };
-      }
 
-      if (f === "cefepima") {
-        const cf = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "cefepima")!;
-        const escolhido = v.esquema ?? "nao_sei";
-        const linhaDe = (id: string) => {
-          const fx = faixaPara(cf, tfg, id);
-          return fx ? `${fx.dose} ${fx.intervalo}` : "—";
-        };
-        const valores = cf.eixo!.valores;
-        const metrics =
-          escolhido !== "nao_sei"
-            ? [{ label: `Cefepima — ${valores.find((x) => x.id === escolhido)?.rotulo} (ClCr ${r0(tfg)})`, value: linhaDe(escolhido), highlight: true }]
-            : valores.map((x) => ({ label: `${x.rotulo} → ClCr ${r0(tfg)}`, value: linhaDe(x.id), highlight: true }));
-        const hd = (id: string) => linhaDaModalidade(cf, "HD", id);
-        return {
-          metrics,
-          interpret: {
-            tone: (tfg < 30 ? "orange" : "green") as Tone,
-            label: escolhido === "nao_sei" ? "Cefepima — a dose depende do ESQUEMA que se usaria com função normal" : "Cefepima",
-          },
-          tables: [
-            { title: cf.eixo!.pergunta, rows: [{ k: "Não sabe?", v: cf.eixo!.naoSei }] },
-            { title: "Substituição renal", rows: [
-              { k: "Hemodiálise", v: `${hd("e2g12")?.dose} 24/24h após a sessão, no mesmo horário todo dia. Neutropenia febril (esquema 2 g 8/8h): ${hd("e2g8")?.dose} 24/24h.` },
-              { k: "CAPD", v: "O esquema habitual, a cada 48 h — CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29." },
-              { k: "CRRT", v: "⚠️ NÃO ESTÁ NO LABEL. As doses diferem entre CVVH, CVVHD e CVVHDF e o label não distingue — fingir a distinção sem fonte seria pior que não tê-la." },
-            ] },
-            { title: "O que o label diz", rows: cf.observacoes.map((o) => ({ k: "•", v: o.texto })) },
-          ],
-        };
-      }
+      const escolhido = v.eixo && v.eixo !== "nao_sei" ? v.eixo : undefined;
+      const conjuntos = alvo.eixo
+        ? alvo.eixo.valores.filter((x) => !escolhido || x.id === escolhido)
+        : [{ id: "", rotulo: "", linhas: alvo.linhas }];
+      // ⚠️ EIXO PEDIDO E NÃO RESPONDIDO NÃO ESCOLHE POR OMISSÃO: mostra TODOS.
+      if (!conjuntos.length) return null;
 
-      // ── MEROPENÉM — CORRIGIDO EM 2026-08-22 CONTRA O LABEL ────────────────
+      const metrics = conjuntos.flatMap((c) => {
+        const fx = faixaPara(alvo, tfg, c.id || undefined, Number.isFinite(peso) ? peso : undefined);
+        const rotulo = c.rotulo ? `${c.rotulo} — ClCr ${r0(tfg)}` : `${alvo.nome} (ClCr ${r0(tfg)})`;
+        if (!fx) {
+          return [{ label: rotulo, value: "⚠️ falta o peso para esta coluna", highlight: true }];
+        }
+        // Dose em mg/kg vira mg quando o peso existe — sem inventar quando não existe.
+        const emMgKg = /mg\/kg/.test(fx.dose ?? "");
+        const valor =
+          emMgKg && Number.isFinite(peso)
+            ? `${texto(fx)}  ·  ${r0(parseFloat(fx.dose!) * peso)}–${r0((fx.dose!.includes("15–20") ? 20 : 15) * peso)} mg`
+            : texto(fx);
+        return [{ label: rotulo, value: valor, highlight: true }];
+      });
+
+      const modais = (alvo.eixo ? conjuntos[0].linhas : alvo.linhas).filter((l) => l.modalidade);
+      if (alvo.eixo) {
+        tabelas.push({ title: alvo.eixo.pergunta, rows: [{ k: "Não sabe?", v: alvo.eixo.naoSei }] });
+      }
+      tabelas.push({ title: "Substituição renal", rows: modais.map((l) => ({ k: l.modalidade!, v: texto(l) })) });
+      const escolhidasParaMetodo = conjuntos.map((c) => faixaPara(alvo, tfg, c.id || undefined, Number.isFinite(peso) ? peso : undefined));
+      const notas = conjuntos.flatMap((c) => {
+        const fx = faixaPara(alvo, tfg, c.id || undefined, Number.isFinite(peso) ? peso : undefined);
+        return fx?.notaDeFaixa ? [{ k: "⚠️", v: fx.notaDeFaixa.texto }] : [];
+      });
+      if (notas.length) tabelas.push({ title: "Nesta faixa", rows: notas });
+      const metodos = [...new Set(escolhidasParaMetodo.filter(Boolean).map((l) => l!.metodoDaTFG))];
+      tabelas.push({
+        title: "Qual clearance esta faixa pressupõe",
+        rows: metodos.map((m) => ({ k: m, v: METODO_NA_TELA[m] ?? m })),
+      });
+      tabelas.push({ title: "O que a fonte diz", rows: alvo.observacoes.map((o) => ({ k: "•", v: o.texto })) });
+
+      // ⚠️ O TOM TAMBÉM VEM DO DADO. A primeira versão desta linha dizia
+      // `tfg < 30 ? "orange" : "green"` — um limiar clínico escrito no
+      // RENDERIZADOR, que é o defeito que esta ferramenta existe para não ter. E
+      // foi a trava nova que pegou, no mesmo dia em que nasceu.
       //
-      // ⚠️ FALTAVA UMA FAIXA. O label tem QUATRO (> 50 · 26–50 · 10–25 · < 10) e
-      // este código tinha três: `> 50`, `>= 25` e `>= 10`, com o último `else`
-      // servindo de fundo. O resultado é que **ClCr < 10 recebia 12/12h**, quando
-      // o label manda 24/24h — o DOBRO da exposição diária de um carbapenêmico
-      // neurotóxico, em paciente anúrico e em geral sedado, onde mioclonia e
-      // crise convulsiva passam por "encefalopatia da sepse".
-      //
-      // ⚠️ E A DOSE CAI À METADE abaixo de 25, não só o intervalo: o código dizia
-      // "500 mg–1 g" onde o label diz "one-half recommended dose".
-      //
-      // ⚠️ A FRONTEIRA TAMBÉM MUDOU: o label abre a faixa de cima em 26, e o
-      // código abria em 25 — em ClCr exatamente 25 o paciente recebia dose plena.
-      //
-      // Verbatim: `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
-      // Catálogo (fonte por faixa): `lib/antimicrobianos/catalogo.ts`.
-      const fxM = faixaPara(CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "meropenem")!, tfg);
-      if (!fxM) return null;
-      // ⚠️ O CONCRETO E A FRAÇÃO, JUNTOS: o label fala em "metade da dose", que é
-      // fiel e inútil com o paciente na frente; o "500 mg" é útil e pressupõe a
-      // dose de referência. Os dois aparecem, e o catálogo declara que a
-      // aritmética é nossa.
-      // ⚠️ A NOTA VEM DA FAIXA, não de um `if` que re-testa o limiar. Enquanto
-      // ela era `tfg > 50 ? … : tfg > 25 ? …`, a FRONTEIRA tinha duas cópias — a
-      // do catálogo e esta —, e mudar a do catálogo faria a nota grudar na faixa
-      // errada, em silêncio. Uma cópia só, também para a fronteira.
-      const extraM = fxM.notaDeFaixa ? ` — ${fxM.notaDeFaixa.texto}` : "";
-      const band = `${fxM.doseConcreta?.texto ?? fxM.dose} IV ${fxM.intervalo} (${fxM.dose})${extraM}`;
+      // Agora o alerta é ESTRUTURAL: laranja quando a linha escolhida é a faixa
+      // MAIS BAIXA do conjunto (a de maior disfunção) ou quando não há dado.
+      const escolhidas = conjuntos.map((c) => faixaPara(alvo, tfg, c.id || undefined, Number.isFinite(peso) ? peso : undefined));
+      const naFaixaMaisBaixa = escolhidas.some((l) => l && l.de === 0);
       return {
-        metrics: [{ label: `Meropeném (ClCr ${r0(tfg)})`, value: band, highlight: true }],
-        interpret: { tone: tfg < 25 ? "orange" : "green", label: "Meropeném" },
-        tables: [{ title: "Infusão estendida (MDR)", rows: [
-          { k: "PK/PD", v: "2 g em 100 mL SF → infundir em 3 h." },
-          // ⚠️ AS DUAS FRASES DO LABEL, E ELAS DIZEM COISAS DIFERENTES.
-          { k: "Hemodiálise", v: "O label declara INFORMAÇÃO INADEQUADA para hemodiálise e diálise peritoneal — não é \"não precisa ajustar\". E declara, na superdosagem, que o meropeném é prontamente dialisável e removido por hemodiálise: a dose após a sessão não está no label." },
-        ] }],
+        metrics,
+        interpret: {
+          tone: (naFaixaMaisBaixa ? "orange" : "green") as Tone,
+          // ⚠️ FRASE MONTADA NÃO VIRA CHAVE DE DICIONÁRIO (D-19/R-82): as duas
+          // partes já têm chave própria — o nome vem do catálogo e a pergunta
+          // vem do eixo —, e o conector fica como constante traduzível.
+          label: alvo.eixo && !escolhido ? `${alvo.nome} · ${DEPENDE_DE} ${alvo.eixo.pergunta}` : alvo.nome,
+        },
+        tables: tabelas,
       };
     },
-    alert: ["Valores orientativos — confirmar com farmacêutico clínico e bula. Vancomicina: ataque pelo PESO REAL; ajustar manutenção por nível/AUC e função renal."],
+    alert: ["Valores orientativos — confirmar com farmacêutico clínico e bula. Cada linha declara a sua fonte no catálogo."],
   },
 ];
 
