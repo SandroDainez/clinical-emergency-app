@@ -32,6 +32,7 @@
     "test:gravidade-eletrolitica": "node ./scripts/valida-gravidade-eletrolitica.cjs",
     "medir:conteudo": "node ./scripts/mede-conteudo-clinico.cjs",
     "gera:perguntas": "node ./scripts/gera-perguntas-ao-autor.cjs",
+    "medir:blocos": "node ./scripts/mede-blocos-ate-decisao.cjs",
     "medir:unidade": "node ./scripts/mede-campos-sem-unidade.cjs",
     "medir:origem": "node ./scripts/mede-origem-das-travas.cjs",
     "medir:queda": "node ./scripts/mede-conclusao-por-queda.cjs",
