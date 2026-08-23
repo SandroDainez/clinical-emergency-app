@@ -460,4 +460,8 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "¿Cuáles son?",
   "⚠️ ALTAMENTE INESPECÍFICAS no paciente crítico: lembre-as quando o cálcio JÁ estiver baixo. Nunca concluem hipocalcemia sozinhas.":
     "⚠️ ALTAMENTE INESPECÍFICAS en el paciente crítico: recuérdelas cuando el calcio YA esté bajo. Nunca concluyen hipocalcemia por sí solas.",
+  "Correção urgente":
+    "Corrección urgente",
+  "Significativa":
+    "Significativa",
 };

@@ -179,6 +179,52 @@ console.log(`⚠️ Comparações contra o valor do paciente AINDA no componente
     erro("hipocalcemia grave voltou a classificar SÓ por número — a fonte diz «< 1,9 mmol/L E/OU sintomas em qualquer valor abaixo da referência», e a segunda metade sumiu");
 }
 
+// ── 3c. O CORTE MORA NA UNIDADE DA FONTE
+//
+// ⚠️ O DEFEITO QUE ISTO IMPEDE JÁ CUSTOU (D-90): alguém leu "1,9 mmol/L" na
+// diretriz, converteu de cabeça, arredondou para 7 e digitou. A conta ficou FORA
+// do repositório, e por isso ninguém a conferiu por meses — a faixa 7,00–7,62
+// mg/dL ficou "leve a moderada" onde a fonte dizia GRAVE.
+//
+// ⚠️ E A MUTAÇÃO QUE ESTA REGRA TEM DE PEGAR NÃO MUDA O NÚMERO DA TELA: trocar
+// `{ valor: 1.9, unidade: "mmol/L" }` por `{ valor: 7.6 }` exibe o mesmo 7,6 e
+// mesmo assim é o defeito, porque a conta volta a sair do repositório.
+{
+  const EM_UNIDADE_DA_FONTE = {
+    hypocalcemia: "mmol/L",
+    hypercalcemia: "mmol/L",
+  };
+  for (const [disturbio, unidade] of Object.entries(EM_UNIDADE_DA_FONTE)) {
+    const numericos = [];
+    const colher = (c) => {
+      if (["abaixoDe", "aPartirDe", "acimaDe", "faixa"].includes(c.tipo)) numericos.push(c);
+      if (c.tipo === "combinado") { colher(c.faixa); colher(c.clinico); }
+    };
+    for (const g of G.GRAVIDADE_POR_DISTURBIO[disturbio]) g.cortes.forEach(colher);
+    for (const c of numericos)
+      if (c.unidade !== unidade)
+        erro(`${disturbio}: corte numérico sem a unidade da fonte (${unidade}) — ele veio de uma diretriz que escreve em ${unidade}, e guardar o valor já convertido tira a conta do repositório (D-90)`);
+    console.log(`  ${disturbio}: ${numericos.length} corte(s) numérico(s), todos em ${unidade} (unidade da fonte)`);
+  }
+}
+
+// ── 3d. O IONIZADO NÃO RECEBE O CORTE DO TOTAL/AJUSTADO
+//
+// ⚠️ Proibição explícita do autor, e é o erro mais provável desta rodada: o
+// número está ali do lado, na mesma estrutura. Conferido pelo COMPORTAMENTO.
+{
+  const baixo = 6.0; // mg/dL — grave por qualquer corte de total/ajustado
+  const comoTotal = G.degrauDeGravidade("hypocalcemia", baixo, false, false, "total");
+  const comoIonizado = G.degrauDeGravidade("hypocalcemia", baixo, false, false, "ionico");
+  if (comoTotal?.rotulo !== "Grave")
+    erro(`o corte do total/ajustado deixou de funcionar: ${baixo} mg/dL devolveu ${JSON.stringify(comoTotal?.rotulo)}`);
+  if (comoIonizado !== null)
+    erro(`⚠️ O CORTE DO TOTAL/AJUSTADO ALCANÇOU UM VALOR DE IONIZADO: ${baixo} declarado como ionizado devolveu « ${comoIonizado?.rotulo} ». Proibição explícita do autor — o ionizado não tem faixa de gravidade neste app`);
+  const ionizadoComSintoma = G.degrauDeGravidade("hypocalcemia", baixo, false, true, "ionico");
+  if (ionizadoComSintoma?.rotulo !== "Grave")
+    erro(`o ramo sintomático deixou de responder ao ionizado — era ele que tirava o beco de quem tem o melhor exame`);
+}
+
 // ── 4b. UM CÁLCIO SÓ — gravidade e dose leem o MESMO valor
 //
 // ⚠️ O DEFEITO QUE ISTO IMPEDE JÁ ACONTECEU, e era erro clínico ativo: a tela

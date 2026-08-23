@@ -3577,7 +3577,19 @@ com a trava e a mutação previstas. Alvo: "pode aplicar" do autor.
 
 </details>
 
-## D-90 — O CORTE DE HIPOCALCEMIA DO APP NÃO É O DA FONTE
+## D-90 — O CORTE DE HIPOCALCEMIA DO APP NÃO ERA O DA FONTE — ✅ RESOLVIDA (2026-08-23)
+
+**Como se resolveu, e a saída foi estrutural:** o corte passou a morar na
+**unidade da fonte** (`{ valor: 1.9, unidade: "mmol/L" }`), e a tela converte com
+o fator declarado em `lib/eletrolitos/unidades.ts` (1 mmol/L de Ca = 40,08 ÷ 10
+mg/dL). **A conta voltou para dentro do repositório.**
+
+⚠️ **Mudou classificação de paciente real:** o assintomático entre 7,0 e 7,6
+mg/dL passou de "leve a moderada" para **grave**. Medido em 7,0 · 7,3 · 7,5 · 7,6
+(mudam) e 7,7 (não muda).
+
+<details><summary>o registro original</summary>
+
 
 Medido em 2026-08-23, ao conferir a conversão. **Nada foi alterado.**
 
@@ -3597,7 +3609,22 @@ Conta completa em `auditoria/CONVERSAO-CALCIO-APP-VS-FONTE.md`. Alvo: pergunta 9
 ao autor. ⚠️ Não corrigido de propósito — trocar número clínico com base numa
 conta minha é o R-5.
 
-## D-91 — A FAIXA DO MEIO DA HIPERCALCEMIA NÃO EXISTE NO APP
+</details>
+
+## D-91 — A FAIXA DO MEIO DA HIPERCALCEMIA — ✅ CLASSIFICAÇÃO APLICADA (2026-08-23)
+
+A faixa **3,0–3,5 mmol/L** entrou como degrau "Significativa", na unidade da
+fonte. O corte de cima virou **> 3,5 mmol/L** ("Correção urgente") — e isso
+mudou 14,0 mg/dL, que antes era "Grave" pelo `≥ 14` e agora é "Significativa",
+porque 3,5 mmol/L = 14,03.
+
+⚠️ **O TEXTO DE CONDUTA DO AUTOR NÃO FOI APLICADO**, de propósito: ele modula a
+conduta sem mudar a classificação, e a estrutura não separa as duas camadas.
+Forma proposta em `auditoria/PROPOSTA-CLASSIFICACAO-VS-CONDUTA.md`, com o texto
+literal dele pronto para entrar.
+
+<details><summary>o registro original</summary>
+
 
 A fonte tem três faixas; o app tem uma. O corte de cima praticamente coincide
 (14 mg/dL ≈ 3,49 mmol/L contra 3,5 — dentro do arredondamento). **Falta
@@ -3607,3 +3634,22 @@ sintomas e contexto"*.
 ⚠️ Ela **não é faixa pura** — é `combinado` (faixa + critério clínico), e o
 texto de conduta é do autor (pergunta 7). A estrutura para expressá-la já existe
 desde a aplicação do tipo `combinado`.
+
+</details>
+
+## D-92 — HIPOFOSFATEMIA: A CONVERSÃO ESTÁ CERTA, A FORMA NÃO
+
+Varredura de 2026-08-23 (`auditoria/VARREDURA-UNIDADE-DA-FONTE.md`). O autor
+nomeou o consenso como **< 0,32 mmol/L (< 1 mg/dL)** e o app guarda `< 1 mg/dL`.
+
+**Confere:** fósforo tem peso atômico 30,97, então 0,32 × 3,097 = **0,99 mg/dL**.
+Não há divergência — ao contrário do cálcio, onde `1,9 → 7` errava por 0,62.
+
+⚠️ **Mas a FORMA é a que produziu a D-90:** o número está guardado já convertido
+e a conta está fora do repositório. Converter para `{ valor: 0.32, unidade:
+"mmol/L" }` **não mudaria uma classificação sequer**, e exigiria declarar o fator
+do fósforo.
+
+Não convertido nesta rodada porque a instrução foi reportar antes. Recomendação:
+converter — o benefício não é o número de hoje, é a conta ficar dentro do
+repositório para quando alguém reler a fonte.

@@ -24,6 +24,7 @@
  * é diferente de campo em branco: em branco ninguém sabe que falta.
  */
 import { K_GRAVE } from "../hipercalemia";
+import { type Analito, converter, type UnidadeDeConcentracao } from "./unidades";
 
 export type DisturbioEletrolitico =
   | "hyponatremia" | "hypernatremia" | "hypokalemia" | "hyperkalemia"
@@ -83,16 +84,24 @@ export type ProcedenciaDeGravidade = {
 export type PapelDoCriterio = "define" | "apoia" | "exigeCompatibilidade";
 
 export type CorteDeGravidade =
-  | { tipo: "abaixoDe"; valor: number }
-  | { tipo: "aPartirDe"; valor: number }
-  | { tipo: "acimaDe"; valor: number }
+  /**
+   * ⚠️ `unidade` É A DA FONTE, não a da tela.
+   *
+   * Sem ela, o `1,9 mmol/L` da diretriz vira `7` mg/dL digitado à mão e a conta
+   * some do repositório — foi assim que a D-90 nasceu. Com ela, o corte é o
+   * número que a fonte escreveu, e a tela converte na hora com o fator visível.
+   * Ausente = o corte já está na unidade em que o app trabalha.
+   */
+  | { tipo: "abaixoDe"; valor: number; unidade?: UnidadeDeConcentracao }
+  | { tipo: "aPartirDe"; valor: number; unidade?: UnidadeDeConcentracao }
+  | { tipo: "acimaDe"; valor: number; unidade?: UnidadeDeConcentracao }
   /**
    * Faixa com os DOIS lados. As três acima são a mesma família com um lado
    * aberto — e continuam como estão de propósito: dar a elas uma segunda grafia
    * seria criar duas formas de dizer a mesma coisa (R-95), e unificá-las exige
    * tocar nos outros dez distúrbios, que não é desta rodada.
    */
-  | { tipo: "faixa"; de: number; ate: number }
+  | { tipo: "faixa"; de: number; ate: number; unidade?: UnidadeDeConcentracao }
   /**
    * ⚠️ CRITÉRIO QUE A FONTE ESCREVEU SEM NÚMERO.
    *
@@ -245,6 +254,16 @@ export const IONIZADO_NOTAS = [
   "Por isso este app não cria faixas de gravidade para o ionizado. O ramo sintomático acima responde igual nos três ensaios.",
 ];
 
+/**
+ * A unidade em que a TELA trabalha, por distúrbio — o outro lado da conversão.
+ * ⚠️ Só entram os que têm corte com unidade de fonte declarada; o resto compara
+ * na unidade em que já está, e a ausência aqui é o que diz isso.
+ */
+const UNIDADE_DA_TELA: Partial<Record<DisturbioEletrolitico, { unidade: UnidadeDeConcentracao; analito: Analito }>> = {
+  hypocalcemia: { unidade: "mg/dL", analito: "calcio" },
+  hypercalcemia: { unidade: "mg/dL", analito: "calcio" },
+};
+
 export const AGUARDANDO_VALOR = {
   rotulo: "Aguardando valor",
   sinais: "Preencha o valor atual para classificar gravidade e destacar sinais principais.",
@@ -279,7 +298,11 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
       // ⚠️ `ou` entre o número e CADA um do núcleo: o sintoma sozinho basta.
       cortes: [
         ...NUCLEO_SINTOMATICO.map((c): CorteDeGravidade => ({
-          tipo: "combinado", faixa: { tipo: "abaixoDe", valor: 7 }, ligacao: "ou", clinico: c,
+          // ⚠️ 1,9 mmol/L É O NÚMERO DA FONTE. Ele passou a morar aqui na unidade
+          // em que a Society for Endocrinology o escreveu; a tela converte com o
+          // fator declarado em lib/eletrolitos/unidades.ts. O corte anterior era
+          // `< 7 mg/dL` — uma conversão feita de cabeça e nunca conferida (D-90).
+          tipo: "combinado", faixa: { tipo: "abaixoDe", valor: 1.9, unidade: "mmol/L" }, ligacao: "ou", clinico: c,
         })),
       ],
       procedencia: P_CA,
@@ -287,7 +310,14 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     { rotulo: "Leve a moderada", sinais: "Parestesia perioral, câimbras e desconforto neuromuscular.", cortes: [{ tipo: "restante" }], procedencia: P_CA },
   ],
   hypercalcemia: [
-    { rotulo: "Grave", sinais: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.", cortes: [{ tipo: "aPartirDe", valor: 14 }], procedencia: P_CA },
+    // ⚠️ AS DUAS FAIXAS DA FONTE, na unidade dela. A de cima praticamente
+    // coincidia com o `≥ 14 mg/dL` que estava aqui (14 mg/dL ≈ 3,49 mmol/L), mas
+    // coincidir por acaso não é o mesmo que vir da fonte.
+    { rotulo: "Correção urgente", sinais: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.", cortes: [{ tipo: "acimaDe", valor: 3.5, unidade: "mmol/L" }], procedencia: P_CA },
+    // ⚠️ A FAIXA DO MEIO, QUE NÃO EXISTIA (D-91). Ela CLASSIFICA por número — o
+    // julgamento clínico modula a CONDUTA, não a classificação, e por isso ela
+    // NÃO é `combinado`. Ver auditoria/PROPOSTA-CLASSIFICACAO-VS-CONDUTA.md.
+    { rotulo: "Significativa", sinais: "Náusea, constipação, poliúria e fadiga predominam.", cortes: [{ tipo: "faixa", de: 3.0, ate: 3.5, unidade: "mmol/L" }], procedencia: P_CA },
     { rotulo: "Leve a moderada", sinais: "Náusea, constipação, poliúria e fadiga predominam.", cortes: [{ tipo: "restante" }], procedencia: P_CA },
   ],
   hypomagnesemia: [
@@ -316,12 +346,32 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
   ],
 };
 
-function casa(corte: CorteDeGravidade, valor: number | null, ecgAlterado: boolean, sintomatico: boolean | null): boolean {
+/**
+ * ⚠️ O CORTE VEM PARA A UNIDADE DA TELA, e não o contrário.
+ *
+ * Devolve `null` quando não sabe converter — e `null` NÃO CASA. Comparar um
+ * corte em mmol/L com um valor em mg/dL daria 1,9 contra 7,3 e chamaria de leve
+ * o que é grave: exatamente ao contrário do defeito que isto conserta, e pior.
+ */
+function naUnidadeDaTela(valor: number, corte: { unidade?: UnidadeDeConcentracao }, alvo: { unidade: UnidadeDeConcentracao; analito: Analito } | undefined): number | null {
+  if (!corte.unidade) return valor;
+  if (!alvo) return null;
+  return converter(valor, corte.unidade, alvo.unidade, alvo.analito);
+}
+
+function casa(
+  corte: CorteDeGravidade,
+  valor: number | null,
+  ecgAlterado: boolean,
+  sintomatico: boolean | null,
+  alvo?: { unidade: UnidadeDeConcentracao; analito: Analito }
+): boolean {
+  const conv = (v: number) => naUnidadeDaTela(v, corte as { unidade?: UnidadeDeConcentracao }, alvo);
   switch (corte.tipo) {
-    case "abaixoDe": return valor != null && valor < corte.valor;
-    case "aPartirDe": return valor != null && valor >= corte.valor;
-    case "acimaDe": return valor != null && valor > corte.valor;
-    case "faixa": return valor != null && valor >= corte.de && valor < corte.ate;
+    case "abaixoDe": { const c = conv(corte.valor); return valor != null && c != null && valor < c; }
+    case "aPartirDe": { const c = conv(corte.valor); return valor != null && c != null && valor >= c; }
+    case "acimaDe": { const c = conv(corte.valor); return valor != null && c != null && valor > c; }
+    case "faixa": { const de = conv(corte.de), ate = conv(corte.ate); return valor != null && de != null && ate != null && valor >= de && valor < ate; }
     // ⚠️ PENDENTE NÃO CASA: texto vazio é estrutura à espera do autor, e um
     // critério sem texto classificando seria classificar por nada.
     // ⚠️ SÓ `define` CLASSIFICA. `apoia` e `exigeCompatibilidade` existem para
@@ -331,8 +381,8 @@ function casa(corte: CorteDeGravidade, valor: number | null, ecgAlterado: boolea
     case "clinico":
       return corte.papel === "define" && corte.texto.trim().length > 0 && sintomatico === true;
     case "combinado": {
-      const a = casa(corte.faixa, valor, ecgAlterado, sintomatico);
-      const b = casa(corte.clinico, valor, ecgAlterado, sintomatico);
+      const a = casa(corte.faixa, valor, ecgAlterado, sintomatico, alvo);
+      const b = casa(corte.clinico, valor, ecgAlterado, sintomatico, alvo);
       return corte.ligacao === "ou" ? a || b : a && b;
     }
     case "ecgAlterado": return ecgAlterado;
@@ -355,7 +405,15 @@ export function degrauDeGravidade(
    * ⚠️ `true` = o médico afirmou que HÁ sintoma. `null` = ninguém perguntou —
    * e é o estado de hoje, porque a lista de sintomas é do autor.
    */
-  sintomatico: boolean | null = null
+  sintomatico: boolean | null = null,
+  /**
+   * ⚠️ QUAL ENSAIO produziu o valor. `"ionico"` faz TODO corte numérico deixar
+   * de casar — e a trava confere isso, porque é o erro mais provável desta
+   * rodada: o corte do total/ajustado está ali do lado, na mesma estrutura, e
+   * aplicá-lo a um ionizado é decisão de uma linha. Proibição explícita do
+   * autor (2026-08-23).
+   */
+  ensaio: "total" | "ajustado" | "ionico" | null = null
 ): DegrauDeGravidade | null {
   const degraus = GRAVIDADE_POR_DISTURBIO[disturbio as DisturbioEletrolitico];
   if (!degraus) return null;
@@ -364,5 +422,23 @@ export function degrauDeGravidade(
   // qualquer que seja o ensaio. Só se não houver valor NEM sintoma é que não há
   // o que classificar.
   if (valorAtual == null && sintomatico !== true) return null;
-  return degraus.find((d) => d.cortes.some((c) => casa(c, valorAtual, ecgAlterado, sintomatico))) ?? null;
+  const alvo = UNIDADE_DA_TELA[disturbio as DisturbioEletrolitico];
+  // ⚠️ O IONIZADO NÃO RECEBE O CORTE DO TOTAL/AJUSTADO, POR NENHUM CAMINHO —
+  // e "nenhum caminho" inclui o DEGRAU DE BASE.
+  //
+  // A primeira versão só zerava o valor, e o `restante` engolia: o ionizado caía
+  // no último degrau e a tela dizia "Leve a moderada". Classificar por QUEDA é
+  // classificar — com a agravante de parecer conclusão e ser omissão. Com
+  // ionizado, só o critério CLÍNICO pode concluir; sem ele, não há classificação
+  // e a tela mostra as notas do ionizado.
+  if (ensaio === "ionico") {
+    const porSintoma = degraus.find((d) =>
+      d.cortes.some((c) => {
+        const clinico = c.tipo === "combinado" ? c.clinico : c;
+        return clinico.tipo === "clinico" && casa(clinico, null, ecgAlterado, sintomatico, alvo);
+      })
+    );
+    return porSintoma ?? null;
+  }
+  return degraus.find((d) => d.cortes.some((c) => casa(c, valorAtual, ecgAlterado, sintomatico, alvo))) ?? null;
 }

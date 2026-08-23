@@ -485,9 +485,10 @@ function getSeveritySummary(
   disorder: DisorderKey,
   current: number | null,
   ecgChanges: boolean,
-  sintomatico: boolean | null = null
+  sintomatico: boolean | null = null,
+  ensaio: "total" | "ajustado" | "ionico" | null = null
 ) {
-  const degrau = degrauDeGravidade(disorder, current, ecgChanges, sintomatico);
+  const degrau = degrauDeGravidade(disorder, current, ecgChanges, sintomatico, ensaio);
   if (!degrau) return { label: AGUARDANDO_VALOR.rotulo, signs: AGUARDANDO_VALOR.sinais };
   return { label: degrau.rotulo, signs: degrau.sinais };
 }
@@ -1954,7 +1955,10 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
     disorder,
     leituraDoCalcio.valor,
     ecgChanges,
-    disorder === "hypocalcemia" ? temSintomaDeCalcio : null
+    disorder === "hypocalcemia" ? temSintomaDeCalcio : null,
+    // ⚠️ O ENSAIO VIAJA JUNTO: é ele que impede o corte do total/ajustado de
+    // alcançar um valor de ionizado.
+    ehCalcio ? (tipoDeCalcio === "ionico" ? "ionico" : "total") : null
   );
   const hypernatremiaVolumeSummary = useMemo(() => {
     if (disorder !== "hypernatremia") return null;
