@@ -30,7 +30,7 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
-import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara } from "./lib/antimicrobianos/catalogo";
+import { CATALOGO_DE_ANTIMICROBIANOS, faixaPara, linhaDaModalidade } from "./lib/antimicrobianos/catalogo";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
 /**
@@ -939,7 +939,7 @@ export const CALC_TOOLS: CalcTool[] = [
     inputs: [
       { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
         { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" },
-        { label: "Ceftriaxona", value: "ceftriaxona" } ] },
+        { label: "Ceftriaxona", value: "ceftriaxona" }, { label: "Cefepima", value: "cefepima" } ] },
       // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO — e o app conhecia só metade.
       // A dose de pip-tazo depende de DUAS coisas: função renal e indicação. A
       // tabela do label tem duas colunas, e o app usava a da PNEUMONIA
@@ -948,6 +948,15 @@ export const CALC_TOOLS: CalcTool[] = [
       // ⚠️ E O "NÃO SEI" É A REGRA DAS ÁRVORES, aqui também: quem não sabe qual
       // coluna usar é exatamente quem mais precisa da ferramenta. Ele não
       // escolhe — mostra AS DUAS, lado a lado, com o rótulo de cada uma.
+      // ⚠️ A PERGUNTA VEM DO EIXO, e o eixo vem do catálogo. A cefepima entra
+      // pelo ESQUEMA BASAL — não pela indicação, não pelo peso —, e o "não sei"
+      // não escolhe: mostra as quatro colunas, como o pip-tazo mostra as duas.
+      { id: "esquema", label: "Esquema com função NORMAL — cefepima", kind: "toggle", options: [
+        { label: "500 mg 12/12h", value: "e500" },
+        { label: "1 g 12/12h", value: "e1g12" },
+        { label: "2 g 12/12h", value: "e2g12" },
+        { label: "2 g 8/8h", value: "e2g8" },
+        { label: "Não sei — ver as quatro", value: "nao_sei" } ] },
       { id: "indicacao", label: "Indicação (só para pip-tazo)", kind: "toggle", options: [
         { label: "Outras indicações", value: "outras" },
         { label: "Pneumonia nosocomial", value: "pneumonia" },
@@ -973,9 +982,9 @@ export const CALC_TOOLS: CalcTool[] = [
           sem_dados: "SEM DADOS de ajuste renal no label",
         };
         const rotulo = ROTULO[semAjuste.ajusteRenal] ?? semAjuste.ajusteRenal;
-        const hd = "estado" in semAjuste.dialise.HD
-          ? semAjuste.dialise.HD.pendencia
-          : `${semAjuste.dialise.HD.dose} — ${semAjuste.dialise.HD.intervalo}`;
+        // ⚠️ A DIÁLISE É LINHA DO MESMO EIXO desde a refatoração de 2026-08-22.
+        const linhaHD = linhaDaModalidade(semAjuste, "HD");
+        const hd = linhaHD?.semDados ?? `${linhaHD?.dose ?? "—"} — ${linhaHD?.intervalo ?? ""}`;
         return {
           metrics: [
             { label: `${semAjuste.nome} — dose usual`, value: `${semAjuste.doseUsual.dose} — ${semAjuste.doseUsual.via}`, highlight: true },
@@ -1009,7 +1018,7 @@ export const CALC_TOOLS: CalcTool[] = [
         // alvo, no meio de uma sepse.
         const fxV = faixaPara(CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "vancomicina")!, tfg);
         if (!fxV) return null;
-        const band = { d: fxV.dose, i: fxV.intervalo };
+        const band = { d: fxV.dose ?? "", i: fxV.intervalo ?? "" };
         const mLo = r0(parseFloat(band.d) * peso), mHi = r0((band.d.includes("15–20") ? 20 : 15) * peso);
         return {
           metrics: [
@@ -1043,7 +1052,7 @@ export const CALC_TOOLS: CalcTool[] = [
         // Verbatim: `protocols/fontes-verbatim/piptazo-label-dailymed.md`.
         // ⚠️ AS DUAS COLUNAS VÊM DO CATÁLOGO, pelo eixo de indicação (D-78).
         const pt = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "piperacilina-tazobactam")!;
-        const fxCol = (id: string) => {
+        const fxCol = (id: string): string => {
           const fx = faixaPara(pt, tfg, id);
           return fx ? `${fx.doseConcreta?.texto ?? fx.dose} IV ${fx.intervalo}` : "—";
         };
@@ -1074,6 +1083,37 @@ export const CALC_TOOLS: CalcTool[] = [
           ] }],
         };
       }
+      if (f === "cefepima") {
+        const cf = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "cefepima")!;
+        const escolhido = v.esquema ?? "nao_sei";
+        const linhaDe = (id: string) => {
+          const fx = faixaPara(cf, tfg, id);
+          return fx ? `${fx.dose} ${fx.intervalo}` : "—";
+        };
+        const valores = cf.eixo!.valores;
+        const metrics =
+          escolhido !== "nao_sei"
+            ? [{ label: `Cefepima — ${valores.find((x) => x.id === escolhido)?.rotulo} (ClCr ${r0(tfg)})`, value: linhaDe(escolhido), highlight: true }]
+            : valores.map((x) => ({ label: `${x.rotulo} → ClCr ${r0(tfg)}`, value: linhaDe(x.id), highlight: true }));
+        const hd = (id: string) => linhaDaModalidade(cf, "HD", id);
+        return {
+          metrics,
+          interpret: {
+            tone: (tfg < 30 ? "orange" : "green") as Tone,
+            label: escolhido === "nao_sei" ? "Cefepima — a dose depende do ESQUEMA que se usaria com função normal" : "Cefepima",
+          },
+          tables: [
+            { title: cf.eixo!.pergunta, rows: [{ k: "Não sabe?", v: cf.eixo!.naoSei }] },
+            { title: "Substituição renal", rows: [
+              { k: "Hemodiálise", v: `${hd("e2g12")?.dose} 24/24h após a sessão, no mesmo horário todo dia. Neutropenia febril (esquema 2 g 8/8h): ${hd("e2g8")?.dose} 24/24h.` },
+              { k: "CAPD", v: "O esquema habitual, a cada 48 h — CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29." },
+              { k: "CRRT", v: "⚠️ NÃO ESTÁ NO LABEL. As doses diferem entre CVVH, CVVHD e CVVHDF e o label não distingue — fingir a distinção sem fonte seria pior que não tê-la." },
+            ] },
+            { title: "O que o label diz", rows: cf.observacoes.map((o) => ({ k: "•", v: o.texto })) },
+          ],
+        };
+      }
+
       // ── MEROPENÉM — CORRIGIDO EM 2026-08-22 CONTRA O LABEL ────────────────
       //
       // ⚠️ FALTAVA UMA FAIXA. O label tem QUATRO (> 50 · 26–50 · 10–25 · < 10) e

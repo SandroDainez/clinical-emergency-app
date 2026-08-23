@@ -31,6 +31,117 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
   "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada":
     "⚠️ el prospecto no trae esquema de profilaxis para ClCr < 55 — esto NO significa que la profilaxis esté contraindicada",
+  // ── LOTE 1 · CEFEPIMA + refatoração do eixo renal (2026-08-22) ───────────
+  "1 g no dia 1, depois 500 mg":
+    "1 g el día 1, después 500 mg",
+  "8/8h + 0,75 g após cada sessão":
+    "8/8h + 0,75 g tras cada sesión",
+  "8/8h a 12/12h conforme a indicação":
+    "8/8h a 12/12h según la indicación",
+  "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.":
+    "La hemodiálisis de 3 h remueve ~68% de lo que estaba en el cuerpo al inicio de la sesión. ⚠️ Aquí la dosis INICIAL también cambia — es la única situación en que cambia.",
+  "A hemodiálise remove 30% a 40% da dose — daí os 0,75 g após cada sessão.":
+    "La hemodiálisis remueve 30% a 40% de la dosis — de ahí los 0,75 g tras cada sesión.",
+  "A maioria dos casos de neurotoxicidade ocorreu em disfunção renal SEM ajuste apropriado — mas há casos COM ajuste apropriado. Ajustar não isenta de vigiar.":
+    "La mayoría de los casos de neurotoxicidad ocurrió en disfunción renal SIN ajuste apropiado — pero hay casos CON ajuste apropiado. Ajustar no exime de vigilar.",
+  "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.":
+    "Por encima de 60 mL/min es el esquema NORMAL — la dosis inicial no se ajusta; solo el mantenimiento.",
+  "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.":
+    "CAPD es LÍNEA de la misma tabla del prospecto, al lado de 30–60 y 11–29.",
+  "CAPD: sem dose adicional.":
+    "CAPD: sin dosis adicional.",
+  "Cefalosporina de 4ª geração":
+    "Cefalosporina de 4ª generación",
+  "Dosar nível PRÉ-diálise. ⚠️ O consenso 2020 tabela 25 mg/kg de ataque e 10 mg/kg de manutenção (após o fim da sessão, dialisador de alta permeabilidade) — ver D-77.":
+    "Medir nivel PREdiálisis. ⚠️ El consenso 2020 tabula 25 mg/kg de carga y 10 mg/kg de mantenimiento (tras el fin de la sesión, dializador de alta permeabilidad) — ver D-77.",
+  "Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.":
+    "En 6 de 26 pacientes en diálisis la eliminación estaba muy reducida: medir nivel si está disponible.",
+  "Hemodiálise: 1 g no dia 1, depois 500 mg 24/24h para todas as infecções, EXCETO neutropenia febril, que é 1 g 24/24h. Dar sempre APÓS a sessão, no mesmo horário todo dia.":
+    "Hemodiálisis: 1 g el día 1, después 500 mg 24/24h para todas las infecciones, EXCEPTO neutropenia febril, que es 1 g 24/24h. Dar siempre TRAS la sesión, al mismo horario todos los días.",
+  "IV em ~30 min (IM só em ITU leve por E. coli)":
+    "IV en ~30 min (IM solo en ITU leve por E. coli)",
+  "Não sei — ver as duas colunas do label":
+    "No sé — ver las dos columnas del prospecto",
+  "Não sei — ver as duas, com o que muda em cada uma":
+    "No sé — ver las dos, con lo que cambia en cada una",
+  "O consenso 2020 lido não traz dose para diálise peritoneal.":
+    "El consenso 2020 leído no trae dosis para diálisis peritoneal.",
+  "O consenso 2020 traz recomendação para terapias híbridas (15 mg/kg após o fim), ainda NÃO transcrita para este catálogo — pendência nomeada, não ausência.":
+    "El consenso 2020 trae recomendación para terapias híbridas (15 mg/kg tras el fin), aún NO transcrita para este catálogo — pendencia nombrada, no ausencia.",
+  "O label indica a equação de Cockcroft-Gault para estimar o clearance — é a fonte que diz qual usar.":
+    "El prospecto indica la ecuación de Cockcroft-Gault para estimar el clearance — es la fuente la que dice cuál usar.",
+  "O label não traz dose para terapias híbridas.":
+    "El prospecto no trae dosis para terapias híbridas.",
+  "O label não traz esquema de profilaxia em hemodiálise.":
+    "El prospecto no trae esquema de profilaxis en hemodiálisis.",
+  "O label não traz esquema de profilaxia em diálise peritoneal.":
+    "El prospecto no trae esquema de profilaxis en diálisis peritoneal.",
+  "O label não traz esquema de profilaxia em terapias híbridas.":
+    "El prospecto no trae esquema de profilaxis en terapias híbridas.",
+  "O label traz diálise PERITONEAL apenas como farmacocinética (níveis séricos com solução de 50 e 150 mg/L), não como dose recomendada.":
+    "El prospecto trae diálisis PERITONEAL solo como farmacocinética (niveles séricos con solución de 50 y 150 mg/L), no como dosis recomendada.",
+  "Para Pseudomonas aeruginosa, o label manda 2 g IV 8/8h.":
+    "Para Pseudomonas aeruginosa, el prospecto indica 2 g IV 8/8h.",
+  "Qual esquema você usaria com função renal NORMAL?":
+    "¿Qué esquema usaría con función renal NORMAL?",
+  "É tratamento ou profilaxia cirúrgica?":
+    "¿Es tratamiento o profilaxis quirúrgica?",
+  "Qual é a indicação?":
+    "¿Cuál es la indicación?",
+  "após a sessão, no mesmo horário todo dia":
+    "tras la sesión, al mismo horario todos los días",
+  "⚠️ A DOSE INICIAL NÃO SE AJUSTA por função renal — só a manutenção. A ÚNICA exceção é a hemodiálise.":
+    "⚠️ LA DOSIS INICIAL NO SE AJUSTA por función renal — solo el mantenimiento. La ÚNICA excepción es la hemodiálisis.",
+  "1 a 2 g (pneumonia) · 2 g (neutropenia febril, ITU grave, pele, intra-abdominal) · 0,5 a 1 g (ITU leve a moderada)":
+    "1 a 2 g (neumonía) · 2 g (neutropenia febril, ITU grave, piel, intraabdominal) · 0,5 a 1 g (ITU leve a moderada)",
+  "Cefepima":
+    "Cefepima",
+  "Não sei — escolher pela INDICAÇÃO (o label dá o esquema por tipo de infecção): pneumonia 1–2 g 8/8h–12/12h · neutropenia febril 2 g 8/8h · ITU leve/moderada 0,5–1 g 12/12h · ITU grave, pele ou intra-abdominal 2 g 12/12h · Pseudomonas 2 g 8/8h. Sem saber a indicação, veja as quatro colunas lado a lado.":
+    "No sé — elegir por la INDICACIÓN (el prospecto da el esquema por tipo de infección): neumonía 1–2 g 8/8h–12/12h · neutropenia febril 2 g 8/8h · ITU leve/moderada 0,5–1 g 12/12h · ITU grave, piel o intraabdominal 2 g 12/12h · Pseudomonas 2 g 8/8h. Sin saber la indicación, vea las cuatro columnas lado a lado.",
+  "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem) — mas o label NÃO diz qual dose dar após a sessão.":
+    "Es prontamente dializable y efectivamente removido por hemodiálisis (sección de sobredosis) — pero el prospecto NO dice qué dosis dar tras la sesión.",
+  "⚠️ CRRT É UM VALOR SÓ, COM NOTA: as doses diferem entre CVVH, CVVHD e CVVHDF, e os labels quase nunca distinguem — fingir a distinção sem fonte seria pior que não tê-la. A fonte lida não traz dose para TRS contínua.":
+    "⚠️ CRRT ES UN VALOR SOLO, CON NOTA: las dosis difieren entre CVVH, CVVHD y CVVHDF, y los prospectos casi nunca distinguen — fingir la distinción sin fuente sería peor que no tenerla. La fuente leída no trae dosis para TRS continua.",
+  "⚠️ NEUROTOXICIDADE — suspeite diante de confusão, mioclonia, AFASIA, alucinação, estupor, rebaixamento, crise convulsiva ou estado de mal NÃO CONVULSIVO em paciente com disfunção renal, sobretudo se a dose não foi ajustada. REAVALIE A DROGA: os dois labels divergem entre SUSPENDER (PLR) e CONSIDERAR suspender ou ajustar (clássico). O quadro costuma melhorar após a suspensão e/ou hemodiálise.":
+    "⚠️ NEUROTOXICIDAD — sospeche ante confusión, mioclonía, AFASIA, alucinación, estupor, deterioro de consciencia, crisis convulsiva o estado de mal NO CONVULSIVO en paciente con disfunción renal, sobre todo si la dosis no fue ajustada. REEVALÚE EL FÁRMACO: los dos prospectos divergen entre SUSPENDER (PLR) y CONSIDERAR suspender o ajustar (clásico). El cuadro suele mejorar tras la suspensión y/o hemodiálisis.",
+  "⚠️ O label declara informação INADEQUADA também para diálise peritoneal.":
+    "⚠️ El prospecto declara información INADECUADA también para diálisis peritoneal.",
+  "Cefepima — a dose depende do ESQUEMA que se usaria com função normal":
+    "Cefepima — la dosis depende del ESQUEMA que se usaría con función normal",
+  "Esquema com função NORMAL — cefepima":
+    "Esquema con función NORMAL — cefepima",
+  "Não sabe?":
+    "¿No sabe?",
+  "Não sei — ver as quatro":
+    "No sé — ver las cuatro",
+  "O esquema habitual, a cada 48 h — CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.":
+    "El esquema habitual, cada 48 h — CAPD es LÍNEA de la misma tabla del prospecto, al lado de 30–60 y 11–29.",
+  "Substituição renal":
+    "Sustitución renal",
+  "⚠️ NÃO ESTÁ NO LABEL. As doses diferem entre CVVH, CVVHD e CVVHDF e o label não distingue — fingir a distinção sem fonte seria pior que não tê-la.":
+    "⚠️ NO ESTÁ EN EL PROSPECTO. Las dosis difieren entre CVVH, CVVHD y CVVHDF y el prospecto no distingue — fingir la distinción sin fuente sería peor que no tenerla.",
+  "⚠️ A palavra \"hemodialysis\" NÃO APARECE em nenhum dos CINCO setids de cefazolina lidos no DailyMed. Ausência conferida, não presumida.":
+    "⚠️ La palabra \"hemodialysis\" NO APARECE en ninguno de los CINCO setids de cefazolina leídos en DailyMed. Ausencia comprobada, no presumida.",
+  "500 mg 12/12h":
+    "500 mg 12/12h",
+  "1 g 12/12h":
+    "1 g 12/12h",
+  "2 g 12/12h":
+    "2 g 12/12h",
+  "2 g 8/8h":
+    "2 g 8/8h",
+  "500 mg":
+    "500 mg",
+  "250 mg":
+    "250 mg",
+  "1 g":
+    "1 g",
+  "2 g":
+    "2 g",
+  "24/24h":
+    "24/24h",
+  "48/48h":
+    "48/48h",
   // ── LOTE 1 · CEFAZOLINA — indicação + peso (2026-08-22) ──────────────────
   "500 mg a 1 g (infecção moderada a grave) · 1 a 1,5 g (grave/ameaçadora)":
     "500 mg a 1 g (infección moderada a grave) · 1 a 1,5 g (grave/amenazante)",

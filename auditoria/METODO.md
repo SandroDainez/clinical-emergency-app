@@ -6284,3 +6284,23 @@ precisa. **É o R-101 outra vez, agora entre a fonte e quem a lê.**
 Os setids lidos e **o que cada um trouxe** — no arquivo verbatim, em tabela. Na
 cefazolina foram **cinco**, três deles consultados só para confirmar que "hemodialysis"
 não aparece em nenhum.
+
+### R-104, segunda forma · TABELA SEM LEGENDA NÃO É TABELA
+
+**2026-08-22.** A Tabela 2 da cefepima é uma **matriz**: as linhas são faixas de
+clearance e **as colunas são esquemas basais** — 500 mg 12/12h · 1 g 12/12h ·
+2 g 12/12h · 2 g 8/8h.
+
+⚠️ **O texto que nomeia as colunas está SÓ NO LABEL CLÁSSICO:** o rodapé
+*"[a] Normal recommended dosing schedule"*, ancorado na primeira linha. O label PLR
+traz a mesma matriz **sem esse rodapé**.
+
+> **Tabela sem legenda não é tabela: é palpite com grade.** Antes de modelar
+> qualquer matriz, ache o texto que nomeia os eixos. **Se não achar, ela não entra.**
+
+Sem o rodapé, a matriz vira quatro colunas sem nome — e alguém escolheria uma,
+provavelmente a do meio, com a dose saindo errada **e com aparência de tabela
+oficial**.
+
+⚠️ **É a forma mais grave do R-104:** o que faltava no PLR não era um dado, era **a
+chave de leitura da tabela inteira**.

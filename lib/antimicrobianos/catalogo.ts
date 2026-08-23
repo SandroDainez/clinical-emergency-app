@@ -1,4 +1,4 @@
-import type { Antimicrobiano, ProcedenciaDeFaixa } from "./tipos";
+import type { Antimicrobiano, LinhaRenal, ModalidadeDeTRS, ProcedenciaDeFaixa } from "./tipos";
 
 /**
  * O CATÁLOGO — hoje com os TRÊS que já existiam, migrados sem mudar um número.
@@ -82,6 +82,11 @@ const SEM_FONTE_PROFILAXIA: ProcedenciaDeFaixa = {
     "ALVO NOMEADO: diretriz de profilaxia antimicrobiana cirúrgica (ASHP/IDSA/SIS/SHEA), que o autor decide se adota — outra fonte, outra força. NÃO preencher de memória: é exatamente aqui que a tentação é máxima, porque todo mundo sabe de cor.",
 };
 
+const LABEL_CEFEPIMA: ProcedenciaDeFaixa = {
+  fonte: "Cefepime for injection — US prescribing information, Tabela 2 (ajuste renal no adulto). DailyMed setids 5fd857e5-591f-44ca-80cf-fd903660b03c (PLR) e 1eb8794e-2502-43cc-8a32-dcba78031f15 (clássico), lidos em 2026-08-22",
+  forca: "recomendacao_formal",
+};
+
 const METADE_DE_1G: ProcedenciaDeFaixa = {
   fonte: "Operacionalização NOSSA: metade da dose recomendada, adotando 1 g como dose de referência (dose usual do app)",
   forca: "pratica_aceita",
@@ -99,17 +104,27 @@ const LABEL_MEROPENEM: ProcedenciaDeFaixa = {
 };
 
 /**
- * ⚠️ A FRASE É LITERAL E A MODALIDADE VIAJA À PARTE. Montá-la com template
- * (`... para ${o_que} ...`) produziria uma frase que nunca vira chave de
- * dicionário — o usuário em espanhol a leria em português (D-19/R-82). O texto
- * é um só, e o `sobre` diz de qual modalidade se trata.
+ * ⚠️ A LINHA DE MODALIDADE SEM DADO — declarada, nunca silenciosa.
+ *
+ * Antes da refatoração de 2026-08-22 a diálise era um campo à parte (`dialise{}`)
+ * e **não herdava nada**: nem a trava de fronteira, nem os eixos, nem a
+ * obrigatoriedade de fonte por linha. Agora é LINHA do eixo renal — entra na
+ * varredura, exige fonte, e a ausência é um CAMPO com a razão escrita.
  */
-const SEM_DADOS_DIALISE = (sobre: string) => ({
-  estado: "sem_dados" as const,
-  sobre,
-  pendencia:
-    "⚠️ SEM DADOS NO REPOSITÓRIO para esta modalidade. Isto é ausência DECLARADA, não \"não precisa ajustar\" — e aparece na tela como tal.",
+const SEM_DADOS = (modalidade: ModalidadeDeTRS, razao: string): LinhaRenal => ({
+  modalidade,
+  semDados: razao,
+  metodoDaTFG: "sem_dados",
+  procedencia: {
+    fonte: "⚠️ AUSÊNCIA DECLARADA — a fonte lida não traz dose para esta modalidade",
+    forca: "pendente",
+    pendencia: razao,
+  },
 });
+
+/** ⚠️ CRRT é UM valor, com nota — ver `ModalidadeDeTRS`. */
+const RAZAO_CRRT =
+  "⚠️ CRRT É UM VALOR SÓ, COM NOTA: as doses diferem entre CVVH, CVVHD e CVVHDF, e os labels quase nunca distinguem — fingir a distinção sem fonte seria pior que não tê-la. A fonte lida não traz dose para TRS contínua.";
 
 export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
   {
@@ -127,37 +142,29 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // quê: o consenso 2020 recomenda ALVO (AUC/MIC 400–600) e abandonou o vale
     // isolado; a escada por faixa de clearance é OPERACIONALIZAÇÃO, não texto do
     // documento. Verbatim: `protocols/fontes-verbatim/vancomicina-consenso-2020.md`.
-    faixas: [
+    linhas: [
       { de: 0, ate: 20, dose: "10–15 mg/kg", intervalo: "48/48h ou por nível", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       { de: 20, ate: 40, dose: "10–15 mg/kg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       { de: 40, ate: 60, dose: "10–15 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       // ⚠️ O 90 PERTENCE A ESTA FAIXA: o código dizia `tfg > 90 ? … : tfg >= 60 ? …`.
       { de: 60, ate: 90, ateInclusivo: true, dose: "15–20 mg/kg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
       { de: 90, ate: null, deInclusivo: false, dose: "15–20 mg/kg", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: CONSENSO_VANCO_2020 },
-    ],
-    dialise: {
-      // ⚠️ AS DUAS AFIRMAÇÕES, DECLARADAS — e a conduta NÃO foi rebaixada para o
-      // label. Ele diz "poorly removed by dialysis", e isso reflete membranas de
-      // BAIXA permeabilidade da época em que o texto foi escrito. O consenso 2020
-      // diz o oposto, com a razão: "vancomycin is cleared substantially by
-      // contemporary high-permeability hemodialyzers", e recomenda dose A CADA
-      // sessão. Corrigir para o label deixaria o app atualizado na procedência e
-      // ERRADO na clínica — subdosando quem está em HD.
-      //
-      // ⚠️ E O NÚMERO NÃO FOI TROCADO POR MIM: o consenso tabela 25 mg/kg de
-      // ataque e 10 mg/kg de manutenção (após o fim da sessão, alta
-      // permeabilidade); o app mostra 15–20 mg/kg. Os dois valores estão lado a
-      // lado na D-77, para o autor decidir. Trocar dose a partir de leitura minha
-      // é o que o método não admite (R-5).
-      HD: {
+      // ⚠️ AS DUAS AFIRMAÇÕES DE HD, e a conduta NÃO foi rebaixada para o label:
+      // ele diz "poorly removed by dialysis", frase da era das membranas de baixa
+      // permeabilidade; o consenso 2020 diz o oposto, com a razão, e recomenda
+      // dose A CADA sessão. O número não foi trocado — D-77.
+      {
+        modalidade: "HD",
         dose: "15–20 mg/kg",
         intervalo: "após a sessão",
-        relacaoComASessao: "depois",
+        metodoDaTFG: "sem_dados",
         procedencia: CONSENSO_VANCO_2020,
+        notaDeFaixa: { texto: "Dosar nível PRÉ-diálise. ⚠️ O consenso 2020 tabela 25 mg/kg de ataque e 10 mg/kg de manutenção (após o fim da sessão, dialisador de alta permeabilidade) — ver D-77.", procedencia: CONSENSO_VANCO_2020 },
       },
-      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
-      SLED: SEM_DADOS_DIALISE("SLED"),
-    },
+      SEM_DADOS("DP", "O consenso 2020 lido não traz dose para diálise peritoneal."),
+      SEM_DADOS("CRRT", RAZAO_CRRT),
+      SEM_DADOS("SLED", "O consenso 2020 traz recomendação para terapias híbridas (15 mg/kg após o fim), ainda NÃO transcrita para este catálogo — pendência nomeada, não ausência."),
+    ],
     fonteDoFarmaco: PENDENTE_DA_MIGRACAO,
     observacoes: [
       { texto: "Alvo AUC₂₄/MIC 400–600 mg·h/L (MIC 1: AUC mín 400). Vale 15–20 mcg/mL se AUC indisponível.", procedencia: PENDENTE_DA_MIGRACAO },
@@ -180,34 +187,48 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // documento inteiro, em coluna nenhuma, sem seção de infusão prolongada. Ela
     // saiu; não foi substituída por adivinhação.
     ajusteRenal: "ajusta",
-    faixas: [],
+    linhas: [],
     // ⚠️ AS DUAS COLUNAS DO LABEL, COMO DADO — e não mais uma escolhida e a outra
     // em nota de rodapé. Fecha a D-78: a tela já perguntava a indicação, e o
     // catálogo agora sabe que ela existe.
-    indicacoes: [
+    eixo: {
+      tipo: "indicacao",
+      pergunta: "Qual é a indicação?",
+      naoSei: "Não sei — ver as duas colunas do label",
+      valores: [
       {
         id: "outras",
         rotulo: "Outras indicações",
-        faixas: [
+        linhas: [
           { de: 0, ate: 20, dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
           { de: 20, ate: 40, ateInclusivo: true, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
           { de: 40, ate: null, deInclusivo: false, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          // ⚠️ A HEMODIÁLISE TAMBÉM É POR INDICAÇÃO — e antes da refatoração ela
+          // vivia fora do eixo, num campo único, com UMA dose para as duas colunas.
+          { modalidade: "HD", dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+            notaDeFaixa: { texto: "A hemodiálise remove 30% a 40% da dose — daí os 0,75 g após cada sessão.", procedencia: LABEL_PIPTAZO } },
+          { modalidade: "DP", dose: "2,25 g", intervalo: "12/12h", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+            notaDeFaixa: { texto: "CAPD: sem dose adicional.", procedencia: LABEL_PIPTAZO } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
         ],
       },
       {
         id: "pneumonia",
         rotulo: "Pneumonia nosocomial",
-        faixas: [
+        linhas: [
           { de: 0, ate: 20, dose: "2,25 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
           { de: 20, ate: 40, ateInclusivo: true, dose: "3,375 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
           { de: 40, ate: null, deInclusivo: false, dose: "4,5 g", intervalo: "6/6h", metodoDaTFG: METODO, procedencia: LABEL_PIPTAZO },
+          { modalidade: "HD", dose: "2,25 g", intervalo: "8/8h + 0,75 g após cada sessão", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+            notaDeFaixa: { texto: "A hemodiálise remove 30% a 40% da dose — daí os 0,75 g após cada sessão.", procedencia: LABEL_PIPTAZO } },
+          { modalidade: "DP", dose: "2,25 g", intervalo: "8/8h", metodoDaTFG: "sem_dados", procedencia: LABEL_PIPTAZO,
+            notaDeFaixa: { texto: "CAPD: sem dose adicional.", procedencia: LABEL_PIPTAZO } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
         ],
       },
-    ],
-    dialise: {
-      HD: { dose: "2,25 g", intervalo: "12/12h + 0,75 g após cada sessão", relacaoComASessao: "depois", procedencia: LABEL_PIPTAZO },
-      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
-      SLED: SEM_DADOS_DIALISE("SLED"),
+      ],
     },
     fonteDoFarmaco: LABEL_PIPTAZO,
     observacoes: [
@@ -232,7 +253,7 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     //
     // Verbatim em `protocols/fontes-verbatim/meropenem-label-dailymed.md`.
     ajusteRenal: "ajusta",
-    faixas: [
+    linhas: [
       {
         de: 0, ate: 10,
         dose: "METADE da dose recomendada",
@@ -271,20 +292,26 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         metodoDaTFG: METODO,
         procedencia: LABEL_MEROPENEM,
       },
-    ],
-    dialise: {
-      // ⚠️ "INFORMAÇÃO INADEQUADA" É CONTEÚDO, NÃO LACUNA — e não é "não precisa
-      // ajustar". O label diz textualmente que não há informação suficiente para
-      // hemodiálise e diálise peritoneal.
-      HD: {
-        estado: "sem_dados" as const,
-        sobre: "hemodiálise intermitente",
-        pendencia:
-          "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.",
+      // ⚠️ AS DUAS FRASES DO LABEL, AGORA COMO LINHAS DO MESMO EIXO. "Informação
+      // inadequada" é ausência de dose recomendada — NÃO é "não precisa ajustar";
+      // e "prontamente dialisável" é farmacocinética, que muda a conversa sem dar
+      // dose. Antes viviam num campo à parte, sem trava.
+      {
+        modalidade: "HD",
+        semDados: "⚠️ O LABEL DIZ, TEXTUALMENTE, QUE A INFORMAÇÃO É INADEQUADA para hemodiálise e diálise peritoneal. Isto NÃO é \"não precisa ajustar\": é ausência de dose recomendada, declarada pela própria bula.",
+        metodoDaTFG: "sem_dados",
+        procedencia: LABEL_MEROPENEM,
+        notaDeFaixa: { texto: "É prontamente dialisável e efetivamente removido por hemodiálise (seção de superdosagem) — mas o label NÃO diz qual dose dar após a sessão.", procedencia: LABEL_MEROPENEM },
       },
-      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
-      SLED: SEM_DADOS_DIALISE("SLED"),
-    },
+      {
+        modalidade: "DP",
+        semDados: "⚠️ O label declara informação INADEQUADA também para diálise peritoneal.",
+        metodoDaTFG: "sem_dados",
+        procedencia: LABEL_MEROPENEM,
+      },
+      SEM_DADOS("CRRT", RAZAO_CRRT),
+      SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+    ],
     fonteDoFarmaco: LABEL_MEROPENEM,
     observacoes: [
       {
@@ -294,6 +321,112 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         procedencia: LABEL_MEROPENEM,
       },
       { texto: "MDR: 2 g em 100 mL SF → infundir em 3 h.", procedencia: PENDENTE_DA_MIGRACAO },
+    ],
+  },
+  {
+    id: "cefepima",
+    nome: "Cefepima",
+    classe: "Cefalosporina de 4ª geração",
+    doseUsual: {
+      dose: "1 a 2 g (pneumonia) · 2 g (neutropenia febril, ITU grave, pele, intra-abdominal) · 0,5 a 1 g (ITU leve a moderada)",
+      via: "IV em ~30 min (IM só em ITU leve por E. coli)",
+      intervalo: "8/8h a 12/12h conforme a indicação",
+      procedencia: LABEL_CEFEPIMA,
+    },
+    // ⚠️ A TABELA DO LABEL É MATRICIAL, E A LINHA DE ENTRADA É O ESQUEMA BASAL —
+    // não a indicação, não o peso. As quatro colunas da Tabela 2 são os esquemas
+    // que se usaria com função normal, e o rodapé que diz isso ("[a] Normal
+    // recommended dosing schedule") está SÓ NO LABEL CLÁSSICO.
+    //
+    // ⚠️ SEM ESSE RODAPÉ, a matriz vira quatro colunas sem nome — e alguém
+    // escolheria uma, provavelmente a do meio, com a dose saindo errada e com
+    // aparência de tabela oficial. Tabela sem legenda não é tabela.
+    ajusteRenal: "ajusta",
+    linhas: [],
+    eixo: {
+      tipo: "esquema_habitual",
+      pergunta: "Qual esquema você usaria com função renal NORMAL?",
+      naoSei: "Não sei — escolher pela INDICAÇÃO (o label dá o esquema por tipo de infecção): pneumonia 1–2 g 8/8h–12/12h · neutropenia febril 2 g 8/8h · ITU leve/moderada 0,5–1 g 12/12h · ITU grave, pele ou intra-abdominal 2 g 12/12h · Pseudomonas 2 g 8/8h. Sem saber a indicação, veja as quatro colunas lado a lado.",
+      valores: [
+      {
+        id: "e500",
+        rotulo: "500 mg 12/12h",
+        linhas: [
+          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "500 mg", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "DP", dose: "500 mg", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+      },
+      {
+        id: "e1g12",
+        rotulo: "1 g 12/12h",
+        linhas: [
+          { de: 0, ate: 11, dose: "250 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "1 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "DP", dose: "1 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+      },
+      {
+        id: "e2g12",
+        rotulo: "2 g 12/12h",
+        linhas: [
+          { de: 0, ate: 11, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "HD", dose: "1 g no dia 1, depois 500 mg", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+      },
+      {
+        id: "e2g8",
+        rotulo: "2 g 8/8h",
+        linhas: [
+          { de: 0, ate: 11, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 11, ate: 29, ateInclusivo: true, dose: "2 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 29, ate: 60, deInclusivo: false, ateInclusivo: true, dose: "2 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA },
+          { de: 60, ate: null, deInclusivo: false, dose: "2 g", intervalo: "8/8h", metodoDaTFG: METODO, procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "Acima de 60 mL/min é o esquema NORMAL — a dose inicial não se ajusta; só a manutenção.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "HD", dose: "1 g", intervalo: "após a sessão, no mesmo horário todo dia", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "A hemodiálise de 3 h remove ~68% do que estava no corpo no início da sessão. ⚠️ Aqui a dose INICIAL também muda — é a única situação em que ela muda.", procedencia: LABEL_CEFEPIMA } },
+          { modalidade: "DP", dose: "2 g", intervalo: "48/48h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFEPIMA,
+            notaDeFaixa: { texto: "CAPD é LINHA da mesma tabela do label, ao lado de 30–60 e 11–29.", procedencia: LABEL_CEFEPIMA } },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+        ],
+      },
+      ],
+    },
+    fonteDoFarmaco: LABEL_CEFEPIMA,
+    observacoes: [
+      { texto: "⚠️ A DOSE INICIAL NÃO SE AJUSTA por função renal — só a manutenção. A ÚNICA exceção é a hemodiálise.", procedencia: LABEL_CEFEPIMA },
+      { texto: "O label indica a equação de Cockcroft-Gault para estimar o clearance — é a fonte que diz qual usar.", procedencia: LABEL_CEFEPIMA },
+      { texto: "Hemodiálise: 1 g no dia 1, depois 500 mg 24/24h para todas as infecções, EXCETO neutropenia febril, que é 1 g 24/24h. Dar sempre APÓS a sessão, no mesmo horário todo dia.", procedencia: LABEL_CEFEPIMA },
+      { texto: "⚠️ NEUROTOXICIDADE — suspeite diante de confusão, mioclonia, AFASIA, alucinação, estupor, rebaixamento, crise convulsiva ou estado de mal NÃO CONVULSIVO em paciente com disfunção renal, sobretudo se a dose não foi ajustada. REAVALIE A DROGA: os dois labels divergem entre SUSPENDER (PLR) e CONSIDERAR suspender ou ajustar (clássico). O quadro costuma melhorar após a suspensão e/ou hemodiálise.", procedencia: LABEL_CEFEPIMA },
+      { texto: "A maioria dos casos de neurotoxicidade ocorreu em disfunção renal SEM ajuste apropriado — mas há casos COM ajuste apropriado. Ajustar não isenta de vigiar.", procedencia: LABEL_CEFEPIMA },
+      { texto: "\"Afasia\" aparece na lista do label PLR e não na do clássico. A lista deste app é a UNIÃO das duas: sinal a mais é vigilância, não erro.", procedencia: LABEL_CEFEPIMA },
+      { texto: "Para Pseudomonas aeruginosa, o label manda 2 g IV 8/8h.", procedencia: LABEL_CEFEPIMA },
     ],
   },
   {
@@ -311,18 +444,26 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
     // Escrever isso dentro do campo `dose` seria gambiarra: o número viraria
     // prosa e nenhuma trava conferiria fronteira. O eixo foi criado.
     ajusteRenal: "ajusta",
-    faixas: [],
-    indicacoes: [
+    linhas: [],
+    eixo: {
+      tipo: "indicacao",
+      pergunta: "É tratamento ou profilaxia cirúrgica?",
+      naoSei: "Não sei — ver as duas, com o que muda em cada uma",
+      valores: [
       {
         id: "tratamento",
         rotulo: "Tratamento",
-        faixas: [
+        linhas: [
           { de: 0, ate: 10, ateInclusivo: true, dose: "METADE da dose usual", intervalo: "18/18h a 24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção — a frase está só no label clássico.", procedencia: LABEL_CEFAZOLINA } },
           { de: 10, ate: 35, deInclusivo: false, dose: "METADE da dose usual", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ Toda redução vale APÓS uma dose de ataque apropriada à gravidade da infecção.", procedencia: LABEL_CEFAZOLINA } },
           { de: 35, ate: 55, dose: "dose usual INTEIRA", intervalo: "8/8h ou mais espaçado", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
           { de: 55, ate: null, dose: "dose usual INTEIRA", intervalo: "6/6h a 8/8h", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA },
+          SEM_DADOS("HD", "⚠️ A palavra \"hemodialysis\" NÃO APARECE em nenhum dos CINCO setids de cefazolina lidos no DailyMed. Ausência conferida, não presumida."),
+          { modalidade: "DP", semDados: "O label traz diálise PERITONEAL apenas como farmacocinética (níveis séricos com solução de 50 e 150 mg/L), não como dose recomendada.", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFAZOLINA },
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
         ],
       },
       {
@@ -332,27 +473,20 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
         // dá dose de profilaxia para ClCr < 55. Isso NÃO virou "use a mesma":
         // virou faixa com procedência PENDENTE e alvo nomeado, porque inventar
         // aqui é o caminho do 126 mg/dL.
-        faixas: [
+        linhas: [
           { peso: { de: 0, ate: 120 }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
           { peso: { de: 0, ate: 120 }, de: 55, ate: null, dose: "1 a 2 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "Cirurgia longa (≥ 2 h): 500 mg a 1 g durante o ato. Pós-operatório: 500 mg a 1 g 6/6h–8/8h por 24 h. ⚠️ O label NÃO dá intervalo numérico de redose.", procedencia: LABEL_CEFAZOLINA } },
           { peso: { de: 120, ate: null }, de: 0, ate: 55, deInclusivo: true, dose: "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada", intervalo: "—", metodoDaTFG: METODO, procedencia: SEM_FONTE_PROFILAXIA },
           { peso: { de: 120, ate: null }, de: 55, ate: null, dose: "3 g", intervalo: "dose única, ½ h a 1 h antes da incisão", metodoDaTFG: METODO, procedencia: LABEL_CEFAZOLINA,
             notaDeFaixa: { texto: "⚠️ 120 kg ou mais: 3 g. O label não repete a dose intraoperatória nem a de 24 h para esta faixa de peso.", procedencia: LABEL_CEFAZOLINA } },
+          SEM_DADOS("HD", "O label não traz esquema de profilaxia em hemodiálise."),
+          SEM_DADOS("DP", "O label não traz esquema de profilaxia em diálise peritoneal."),
+          SEM_DADOS("CRRT", RAZAO_CRRT),
+          SEM_DADOS("SLED", "O label não traz esquema de profilaxia em terapias híbridas."),
         ],
       },
-    ],
-    dialise: {
-      // ⚠️ "hemodialysis" NÃO APARECE EM NENHUM DOS CINCO SETIDS LIDOS. Isto é
-      // ausência conferida, com onde se procurou — não ausência presumida.
-      HD: {
-        estado: "sem_dados" as const,
-        sobre: "hemodiálise intermitente",
-        pendencia:
-          "⚠️ A PALAVRA \"hemodialysis\" NÃO APARECE EM NENHUM DOS CINCO SETIDS de cefazolina lidos no DailyMed. Só há diálise PERITONEAL, e como farmacocinética, não como dose. Ausência conferida — não presumida.",
-      },
-      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
-      SLED: SEM_DADOS_DIALISE("SLED"),
+      ],
     },
     fonteDoFarmaco: LABEL_CEFAZOLINA,
     observacoes: [
@@ -385,20 +519,15 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       texto: "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal. ⚠️ EXCEÇÃO: com disfunção HEPÁTICA e renal significativa JUNTAS, não passar de 2 g/dia.",
       procedencia: LABEL_CEFTRIAXONA,
     },
-    faixas: [],
-    dialise: {
-      // ⚠️ NÃO É REMOVIDA — e por isso não há dose suplementar. Isto é conteúdo
-      // positivo do label, e evita a redose "por precaução" que subiria a
-      // exposição sem ganho.
-      HD: {
-        dose: "sem dose suplementar",
-        intervalo: "manter o esquema habitual",
-        relacaoComASessao: "independente",
-        procedencia: LABEL_CEFTRIAXONA,
-      },
-      CRRT: SEM_DADOS_DIALISE("CVVHD/CVVHDF"),
-      SLED: SEM_DADOS_DIALISE("SLED"),
-    },
+linhas: [
+      // ⚠️ NÃO AJUSTA POR CLEARANCE — e mesmo assim as modalidades entram, porque
+      // "não é removida por diálise" é conteúdo positivo do label.
+      { modalidade: "HD", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA,
+        notaDeFaixa: { texto: "Em 6 de 26 pacientes em diálise a eliminação estava muito reduzida: dosar nível se disponível.", procedencia: LABEL_CEFTRIAXONA } },
+      { modalidade: "DP", dose: "sem dose suplementar", intervalo: "manter o esquema habitual", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTRIAXONA },
+      SEM_DADOS("CRRT", RAZAO_CRRT),
+      SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+    ],
     fonteDoFarmaco: LABEL_CEFTRIAXONA,
     observacoes: [
       { texto: "NÃO REQUER AJUSTE por função renal isolada — é excretada por via biliar E renal.", procedencia: LABEL_CEFTRIAXONA },
@@ -423,27 +552,43 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
 ];
 
 /**
- * A faixa que contém um ClCr — respeitando a inclusividade declarada.
+ * A LINHA que vale para um caso — contínua (ClCr) ou categórica (modalidade).
  *
- * ⚠️ QUANDO O FÁRMACO TEM EIXO DE INDICAÇÃO, ELE MANDA: pedir a faixa sem dizer a
- * indicação devolve `undefined`, e não a primeira coluna. Escolher a coluna por
- * omissão é exatamente o defeito que o pip-tazo tinha.
+ * ⚠️ QUANDO O FÁRMACO TEM EIXO DE ENTRADA, ELE MANDA: pedir a linha sem dizer o
+ * valor do eixo devolve `undefined`, e não o primeiro valor. Escolher por omissão
+ * é exatamente o defeito que o pip-tazo tinha — e o rodapé da cefepima mostrou o
+ * mesmo em outra forma: tabela sem legenda vira palpite com grade.
  */
-export function faixaPara(farmaco: Antimicrobiano, clcr: number, indicacao?: string, pesoKg?: number) {
-  const lista = farmaco.indicacoes
-    ? (farmaco.indicacoes.find((i) => i.id === indicacao)?.faixas ?? [])
-    : farmaco.faixas;
-  return lista.find((f) => {
-    // ⚠️ O PESO FILTRA ANTES DO CLEARANCE: sem peso informado, a faixa que exige
-    // peso não é candidata — devolver a do balde errado seria pior que devolver
-    // nada, porque a dose sairia com cara de calculada.
+export function linhasDe(farmaco: Antimicrobiano, valorDoEixo?: string): LinhaRenal[] {
+  if (!farmaco.eixo) return farmaco.linhas;
+  return farmaco.eixo.valores.find((v) => v.id === valorDoEixo)?.linhas ?? [];
+}
+
+export function faixaPara(
+  farmaco: Antimicrobiano,
+  clcr: number,
+  valorDoEixo?: string,
+  pesoKg?: number
+): LinhaRenal | undefined {
+  return linhasDe(farmaco, valorDoEixo).find((f) => {
+    if (f.modalidade) return false; // categórica não responde a clearance
     if (f.peso) {
       if (pesoKg === undefined) return false;
       const dentro = pesoKg >= f.peso.de && (f.peso.ate === null || pesoKg < f.peso.ate);
       if (!dentro) return false;
     }
-    const acimaDoPiso = f.deInclusivo === false ? clcr > f.de : clcr >= f.de;
-    const abaixoDoTeto = f.ate === null ? true : f.ateInclusivo ? clcr <= f.ate : clcr < f.ate;
+    const acimaDoPiso = f.deInclusivo === false ? clcr > (f.de ?? 0) : clcr >= (f.de ?? 0);
+    const abaixoDoTeto =
+      f.ate === null || f.ate === undefined ? true : f.ateInclusivo ? clcr <= f.ate : clcr < f.ate;
     return acimaDoPiso && abaixoDoTeto;
   });
+}
+
+/** A linha de uma modalidade de TRS — HD, DP, CRRT ou SLED. */
+export function linhaDaModalidade(
+  farmaco: Antimicrobiano,
+  modalidade: ModalidadeDeTRS,
+  valorDoEixo?: string
+): LinhaRenal | undefined {
+  return linhasDe(farmaco, valorDoEixo).find((f) => f.modalidade === modalidade);
 }

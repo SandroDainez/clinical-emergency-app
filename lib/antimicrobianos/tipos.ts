@@ -66,72 +66,77 @@ export type MetodoDaTFG = "cockcroft_gault" | "ckd_epi" | "mdrd" | "sem_dados";
  */
 export type FaixaDePeso = { de: number; ate: number | null };
 
-export type FaixaRenal = {
-  /** Quando existe, esta faixa só vale nesta faixa de PESO (kg). */
+/**
+ * ⚠️ AS MODALIDADES DE SUBSTITUIÇÃO RENAL SÃO VALORES DO MESMO EIXO — não uma
+ * seção à parte.
+ *
+ * A cefepima mostrou: **CAPD é uma LINHA da mesma tabela**, lado a lado com
+ * "30 a 60" e "11 a 29", com a mesma lógica. Enquanto a diálise vivia num campo
+ * separado, ela **não herdava nada** — nem a trava de fronteira, nem os eixos,
+ * nem a obrigatoriedade de fonte por linha. E foi por isso que a hemodiálise da
+ * cefepima "precisou" de variação por indicação como caso especial: ela era caso
+ * especial só por estar fora da estrutura.
+ *
+ * ⚠️ CRRT É UM VALOR SÓ, COM NOTA. As doses diferem entre CVVH, CVVHD e CVVHDF,
+ * e os labels quase nunca distinguem — **fingir a distinção sem fonte seria pior
+ * que não tê-la.**
+ */
+export type ModalidadeDeTRS = "HD" | "DP" | "CRRT" | "SLED";
+
+export const MODALIDADES: ModalidadeDeTRS[] = ["HD", "DP", "CRRT", "SLED"];
+
+/**
+ * Uma linha do eixo renal. Ou ela é CONTÍNUA (faixa de clearance) ou é
+ * CATEGÓRICA (modalidade de TRS) — nunca as duas, e nunca nenhuma.
+ */
+export type LinhaRenal = {
+  /** Quando existe, esta linha só vale nesta faixa de PESO (kg). */
   peso?: FaixaDePeso;
-  /** Limite inferior, INCLUSIVO por padrão. */
-  de: number;
-  /** Limite superior, EXCLUSIVO por padrão. `null` = sem teto. */
-  ate: number | null;
+  /** CONTÍNUA: limite inferior, INCLUSIVO por padrão. */
+  de?: number;
+  /** CONTÍNUA: limite superior, EXCLUSIVO por padrão. `null` = sem teto. */
+  ate?: number | null;
   deInclusivo?: boolean;
   ateInclusivo?: boolean;
-  /** Como a FONTE diz — "METADE da dose recomendada", "2,25 g". */
-  dose: string;
-  intervalo: string;
-  /**
-   * ⚠️ O QUE A TELA MOSTRA, quando a fonte fala em fração e o médico precisa do
-   * número. "METADE da dose recomendada" é fiel ao label e inútil com o paciente
-   * na frente; "500 mg" é útil e pressupõe qual é a dose recomendada. As duas
-   * coisas existem, e a segunda tem **procedência própria** — é operacionalização
-   * nossa, não texto da fonte. Regra B, aplicada à mesma faixa.
-   */
+  /** CATEGÓRICA: a modalidade de substituição renal. */
+  modalidade?: ModalidadeDeTRS;
+  /** Como a FONTE diz. Ausente só quando `semDados` estiver preenchido. */
+  dose?: string;
+  intervalo?: string;
+  /** ⚠️ Ausência DECLARADA, com a razão — nunca silêncio. */
+  semDados?: string;
+  /** O que a tela mostra quando a fonte fala em fração. Procedência própria. */
   doseConcreta?: { texto: string; procedencia: ProcedenciaDeFaixa };
-  /**
-   * ⚠️ O QUE VALE SÓ NESTA FAIXA, e não é o texto da fonte — a dose de MDR ou de
-   * meningite, a infusão estendida. Vive aqui, com PROCEDÊNCIA PRÓPRIA, porque a
-   * alternativa seria um `if` no motor testando o mesmo limiar de novo: aí a
-   * FRONTEIRA teria duas cópias, e mudar uma delas faria a nota desaparecer em
-   * silêncio na outra.
-   */
+  /** O que vale só nesta linha — MDR, meningite, relação com a sessão. */
   notaDeFaixa?: { texto: string; procedencia: ProcedenciaDeFaixa };
   metodoDaTFG: MetodoDaTFG;
   procedencia: ProcedenciaDeFaixa;
 };
 
-/**
- * ⚠️ OS QUATRO ESTADOS RENDERIZAM TEXTO — NENHUM RENDERIZA SILÊNCIO.
- *
- * `nao_ajusta` é dos estados mais úteis do catálogo, e o app hoje não sabe
- * dizê-lo: quem procura "ceftriaxona + insuficiência renal" e não acha nada
- * ajusta por conta e SUBDOSA.
- *
- * E ele previne um erro clássico e grave: **polimixina B não se ajusta por
- * função renal; colistina sim.** Trocar as duas é evento adverso. Um catálogo que
- * diz `nao_ajusta` COM FONTE vale mais que uma tabela de faixas.
- */
-export type AjusteRenal = "ajusta" | "nao_ajusta" | "contraindicado" | "sem_dados";
+/** Compatibilidade de nome — uma faixa é uma linha contínua. */
+export type FaixaRenal = LinhaRenal;
 
 /**
- * ⚠️ DIÁLISE ENTRA AGORA, NÃO DEPOIS. Paciente em HD intermitente, CVVHD/CVVHDF
- * ou SLED é rotina de UTI, e a dose muda mais aí do que entre faixas de ClCr. Se
- * o modelo não previsse isso desde o início, seria refeito em três meses.
+ * ⚠️ O EIXO DE ENTRADA — e o TIPO É ENUMERADO, FECHADO.
  *
- * `sem_dados` é resposta VÁLIDA e aparece na tela: é informação clínica
- * verdadeira, e preencher o buraco com o primeiro número plausível é o que o
- * R-97 proíbe.
+ * String livre viraria depósito: em três fármacos ninguém saberia mais o que é
+ * eixo e o que é gambiarra. **Tipo novo só com decisão explícita.**
+ *
+ * ⚠️ E O EIXO CARREGA A PERGUNTA QUE O APP FAZ. Ele não é só estrutura de dado:
+ * se a pergunta morar no componente, o próximo fármaco esquece de fazê-la.
  */
-export type DoseEmDialise = {
-  dose: string;
-  intervalo: string;
-  /** Relação com a sessão — é ela que muda a hora da dose. */
-  relacaoComASessao: "antes" | "depois" | "independente" | "sem_dados";
-  procedencia: ProcedenciaDeFaixa;
-} | {
-  estado: "sem_dados";
-  /** A modalidade sobre a qual não há dado — separada do texto, de propósito. */
-  sobre: string;
-  pendencia: string;
+export type TipoDeEixo = "indicacao" | "esquema_habitual" | "peso";
+
+export type EixoDeEntrada = {
+  tipo: TipoDeEixo;
+  /** A pergunta, literal, que a tela faz antes de mostrar dose. */
+  pergunta: string;
+  /** O texto da saída "não sei" — que NUNCA escolhe por ele. */
+  naoSei: string;
+  valores: { id: string; rotulo: string; linhas: LinhaRenal[] }[];
 };
+
+export type AjusteRenal = "ajusta" | "nao_ajusta" | "contraindicado" | "sem_dados";
 
 export type Antimicrobiano = {
   id: string;
@@ -141,40 +146,21 @@ export type Antimicrobiano = {
   doseMaxima?: { valor: string; procedencia: ProcedenciaDeFaixa };
   ajusteRenal: AjusteRenal;
   /**
-   * ⚠️ O QUE A TELA DIZ QUANDO NÃO HÁ FAIXA — obrigatório em `nao_ajusta`,
+   * ⚠️ O QUE A TELA DIZ QUANDO NÃO HÁ LINHA — obrigatório em `nao_ajusta`,
    * `contraindicado` e `sem_dados`.
    *
    * Nasceu de uma mutação que passou VERDE: apagar a frase "não requer ajuste"
-   * das observações não reprovava nada, e a tela ficava sem a informação que
-   * evita o subajuste por conta própria. Enquanto o texto morava numa lista
-   * solta, ele era opcional na prática — agora é campo, e campo obrigatório se
-   * confere.
+   * das observações não reprovava nada. Texto em lista solta é opcional na
+   * prática; campo obrigatório se confere.
    */
   textoDoEstado?: { texto: string; procedencia: ProcedenciaDeFaixa };
-  /** Vazio quando `ajusteRenal` não é "ajusta" — e aí o texto vem do estado. */
-  faixas: FaixaRenal[];
   /**
-   * ⚠️ A DOSE NEM SEMPRE DEPENDE SÓ DA FUNÇÃO RENAL — e o pip-tazo mostrou.
-   *
-   * A Tabela 1 do label dele tem DUAS colunas de indicação, com doses e
-   * intervalos diferentes na mesma faixa de clearance. Um catálogo com uma dose
-   * por faixa não consegue representar isso: ou escolhe uma coluna (decidindo
-   * clínica pelo usuário), ou perde a outra.
-   *
-   * Quando este campo existe, ele MANDA — `faixas` fica vazio e cada indicação
-   * traz o seu conjunto completo, conferido pela mesma trava.
+   * O EIXO RENAL, quando o fármaco não tem eixo de entrada: faixas de clearance
+   * E modalidades de TRS, no mesmo lugar, sob a mesma trava.
    */
-  indicacoes?: { id: string; rotulo: string; faixas: FaixaRenal[] }[];
-  dialise: { HD: DoseEmDialise; CRRT: DoseEmDialise; SLED: DoseEmDialise };
-  /** Documento que autoriza a dose do fármaco — bula/prescribing information. */
+  linhas: LinhaRenal[];
+  /** Quando existe, `linhas` fica vazio e cada valor traz o seu conjunto. */
+  eixo?: EixoDeEntrada;
   fonteDoFarmaco: ProcedenciaDeFaixa;
-  /**
-   * ⚠️ AFIRMAÇÕES SEPARADAS, COM FORÇA PRÓPRIA — nunca misturadas com a faixa.
-   *
-   * Em paciente crítico, dose de bula frequentemente SUBDOSA: clearance renal
-   * aumentado, volume de distribuição alterado, beta-lactâmico dependente de
-   * tempo acima da CIM. Isso não é a faixa da bula — é outra afirmação, de outra
-   * procedência, e é a regra B outra vez: uma tela, duas afirmações, duas forças.
-   */
   observacoes: { texto: string; procedencia: ProcedenciaDeFaixa }[];
 };

@@ -52,6 +52,8 @@ fs.rmSync(tmp, { recursive: true, force: true });
 const falhas = [];
 const ESTADOS = ["ajusta", "nao_ajusta", "contraindicado", "sem_dados"];
 const METODOS = ["cockcroft_gault", "ckd_epi", "mdrd", "sem_dados"];
+const MODALIDADES = ["HD", "DP", "CRRT", "SLED"];
+const TIPOS_DE_EIXO = ["indicacao", "esquema_habitual", "peso"];
 
 if (!CAT || !CAT.length) {
   console.log("\n❌ catálogo vazio — isto é \"não consegui olhar\", não \"nenhum fármaco com problema\".\n");
@@ -66,7 +68,7 @@ const confereProcedencia = (onde, p) => {
   if (!p.forca) falhas.push(`${onde}: sem \`forca\`.`);
 };
 
-let faixas = 0, dialises = 0;
+let linhasContinuas = 0, linhasCategoricas = 0;
 
 for (const f of CAT) {
   if (!ESTADOS.includes(f.ajusteRenal)) {
@@ -75,176 +77,155 @@ for (const f of CAT) {
   confereProcedencia(`${f.id} · fonteDoFarmaco`, f.fonteDoFarmaco);
   confereProcedencia(`${f.id} · doseUsual`, f.doseUsual?.procedencia);
 
-  // ── as três modalidades existem, nem que seja como ausência declarada ────
-  for (const modo of ["HD", "CRRT", "SLED"]) {
-    const d = f.dialise?.[modo];
-    dialises += 1;
-    if (!d) { falhas.push(`${f.id}: diálise \`${modo}\` ausente — "sem_dados" é resposta válida; silêncio não é.`); continue; }
-    if (d.estado === "sem_dados") {
-      if (!d.pendencia) falhas.push(`${f.id} · ${modo}: "sem_dados" sem pendência escrita.`);
-    } else {
-      confereProcedencia(`${f.id} · diálise ${modo}`, d.procedencia);
-      if (!d.relacaoComASessao) falhas.push(`${f.id} · ${modo}: sem \`relacaoComASessao\` — é ela que muda a HORA da dose.`);
+  // ── ⚠️ O TIPO DE EIXO É ENUMERADO E FECHADO ─────────────────────────────
+  // String livre viraria depósito: em três fármacos ninguém saberia mais o que é
+  // eixo e o que é gambiarra. Tipo novo só com decisão explícita.
+  if (f.eixo) {
+    if (!TIPOS_DE_EIXO.includes(f.eixo.tipo)) {
+      falhas.push(`${f.id}: tipo de eixo "${f.eixo.tipo}" não existe — só ${TIPOS_DE_EIXO.join(" | ")}. Tipo novo é decisão do autor.`);
     }
+    // ⚠️ O EIXO CARREGA A PERGUNTA QUE O APP FAZ. Se ela morar no componente, o
+    // próximo fármaco esquece de fazê-la.
+    if (!f.eixo.pergunta) falhas.push(`${f.id}: eixo sem \`pergunta\` — a pergunta é do eixo, não da tela.`);
+    if (!f.eixo.naoSei) falhas.push(`${f.id}: eixo sem texto de "não sei" — e sem ele a tela vira beco para quem não sabe responder.`);
+    if ((f.linhas ?? []).length) falhas.push(`${f.id}: tem eixo E linhas soltas — duas fontes de verdade sobre a mesma dose.`);
   }
 
   if (f.ajusteRenal !== "ajusta") {
-    if ((f.faixas ?? []).length) falhas.push(`${f.id}: \`ajusteRenal\` é "${f.ajusteRenal}" e mesmo assim declara faixas.`);
-    // ⚠️ OS QUATRO ESTADOS RENDERIZAM TEXTO — NENHUM RENDERIZA SILÊNCIO. Esta
-    // conferência nasceu de uma MUTAÇÃO QUE PASSOU VERDE: apagar a frase "não
-    // requer ajuste" das observações não reprovava nada, e a tela ficava sem a
-    // informação que evita o subajuste por conta própria. Texto em lista solta é
-    // opcional na prática; campo obrigatório se confere.
+    if ((f.eixo?.valores ?? []).length) falhas.push(`${f.id}: "${f.ajusteRenal}" com eixo de entrada.`);
     if (!f.textoDoEstado?.texto) {
       falhas.push(
         `${f.id}: \`ajusteRenal\` é "${f.ajusteRenal}" e não há \`textoDoEstado\`.\n` +
-        `      ⚠️ "Não requer ajuste" é CONTEÚDO: quem procura e não acha ajusta por conta e SUBDOSA.\n` +
-        `      Os quatro estados renderizam texto — nenhum renderiza silêncio.`
+        `      ⚠️ "Não requer ajuste" é CONTEÚDO: quem procura e não acha ajusta por conta e SUBDOSA.`
       );
     } else {
       confereProcedencia(`${f.id} · textoDoEstado`, f.textoDoEstado.procedencia);
     }
-    continue;
   }
 
-  // ⚠️ EIXO DE INDICAÇÃO: quando existe, CADA coluna é conferida inteira, com as
-  // mesmas regras. Um fármaco cuja dose depende do sítio (pip-tazo, e vários
-  // beta-lactâmicos que vêm) tem duas retas para cobrir, não uma — e um buraco na
-  // segunda coluna é tão perigoso quanto na primeira.
-  const conjuntos = f.indicacoes
-    ? f.indicacoes.map((i) => [`${f.id} [${i.id}]`, i.faixas])
-    : [[f.id, f.faixas ?? []]];
+  const conjuntos = f.eixo
+    ? f.eixo.valores.map((v) => [`${f.id} [${v.id}]`, v.linhas])
+    : [[f.id, f.linhas ?? []]];
 
-  if (f.indicacoes && (f.faixas ?? []).length) {
-    falhas.push(`${f.id}: tem eixo de indicação E faixas soltas — duas fontes de verdade sobre a mesma dose.`);
-  }
-  for (const [rotuloBase, listaBase] of conjuntos) {
-  // ── ⚠️ O EIXO DE PESO ────────────────────────────────────────────────────
-  //
-  // Quando as faixas declaram `peso`, cada BALDE DE PESO tem a sua própria reta
-  // de clearance, e cada uma é conferida inteira. Um buraco no balde dos obesos
-  // é tão perigoso quanto no dos demais — e é justamente o balde que ninguém
-  // testa, porque o caso comum passa pelo outro.
-  const baldes = new Map();
-  for (const x of listaBase) {
-    const chave = x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"} kg` : "";
-    if (!baldes.has(chave)) baldes.set(chave, []);
-    baldes.get(chave).push(x);
-  }
-  if (baldes.size > 1) {
-    // As faixas de peso também não podem se sobrepor nem deixar buraco.
-    // ⚠️ DESDUPLICA POR VALOR, NÃO POR REFERÊNCIA. `new Set` de objetos guarda
-    // identidade: dois `{de:0,ate:120}` escritos em faixas diferentes são objetos
-    // diferentes, e a lista vinha com repetição — o que fazia a conferência
-    // acusar sobreposição de uma faixa com ela mesma. Falso positivo, e do tipo
-    // que faria alguém "consertar" o catálogo que estava certo.
-    const pesos = [...new Map(
-      listaBase.filter((x) => x.peso).map((x) => [`${x.peso.de}|${x.peso.ate}`, x.peso])
-    ).values()].sort((a, b) => a.de - b.de);
-    if (pesos[0].de !== 0) falhas.push(`${rotuloBase}: o eixo de PESO começa em ${pesos[0].de} kg, não em 0.`);
-    if (pesos[pesos.length - 1].ate !== null) falhas.push(`${rotuloBase}: o eixo de PESO termina em ${pesos[pesos.length - 1].ate} kg — acima disso não há dose.`);
-    for (let i = 0; i < pesos.length - 1; i += 1) {
-      if (pesos[i].ate !== pesos[i + 1].de) {
-        falhas.push(`${rotuloBase}: eixo de PESO com ${pesos[i].ate > pesos[i + 1].de ? "SOBREPOSIÇÃO" : "BURACO"} entre ${pesos[i].ate} e ${pesos[i + 1].de} kg.`);
+  for (const [rotuloBase, todas] of conjuntos) {
+    if (!todas.length) { falhas.push(`${rotuloBase}: sem linha nenhuma.`); continue; }
+
+    // ── TODA LINHA DECLARA FONTE, MÉTODO E OU DOSE OU AUSÊNCIA ────────────
+    for (const l of todas) {
+      const onde = `${rotuloBase} · ${l.modalidade ?? `faixa ${l.de}–${l.ate ?? "∞"}`}`;
+      confereProcedencia(onde, l.procedencia);
+      if (l.doseConcreta) confereProcedencia(`${onde} · doseConcreta`, l.doseConcreta.procedencia);
+      if (l.notaDeFaixa) confereProcedencia(`${onde} · notaDeFaixa`, l.notaDeFaixa.procedencia);
+      if (!METODOS.includes(l.metodoDaTFG)) {
+        falhas.push(`${onde}: \`metodoDaTFG\` inválido ("${l.metodoDaTFG}") — transpor equação é transpor calibração.`);
+      }
+      // ⚠️ OU DOSE, OU AUSÊNCIA DECLARADA. Linha muda sem as duas é silêncio.
+      const temDose = Boolean(l.dose);
+      if (!temDose && !l.semDados) {
+        falhas.push(`${onde}: sem \`dose\` e sem \`semDados\` — linha muda é silêncio com estrutura.`);
+      }
+      if (temDose && !l.intervalo && !l.modalidade) {
+        falhas.push(`${onde}: tem dose e não tem intervalo.`);
+      }
+      if (l.modalidade && !MODALIDADES.includes(l.modalidade)) {
+        falhas.push(`${onde}: modalidade "${l.modalidade}" não existe — só ${MODALIDADES.join(" | ")}.`);
+      }
+      if (l.modalidade && (l.de !== undefined || l.ate !== undefined)) {
+        falhas.push(`${onde}: linha categórica com limites de clearance — ou é faixa, ou é modalidade.`);
+      }
+      if (!l.modalidade && l.de === undefined) {
+        falhas.push(`${onde}: linha contínua sem \`de\`.`);
       }
     }
-  }
-  for (const [balde, lista] of baldes) {
-  const rotulo = balde ? `${rotuloBase} {${balde}}` : rotuloBase;
-  if (!lista.length) {
-    falhas.push(`${rotulo}: declara "ajusta" e não tem faixa nenhuma.`);
-    continue;
-  }
 
-  const fx = [...lista].sort((a, b) => a.de - b.de);
-  faixas += fx.length;
-  for (const x of fx) {
-    confereProcedencia(`${rotulo} · faixa ${x.de}–${x.ate ?? "∞"}`, x.procedencia);
-    // ⚠️ O NÚMERO CONCRETO TEM PROCEDÊNCIA PRÓPRIA: quando a fonte fala em
-    // fração ("metade da dose") e a tela mostra "500 mg", a aritmética é NOSSA.
-    if (x.doseConcreta) confereProcedencia(`${rotulo} · faixa ${x.de}–${x.ate ?? "∞"} · doseConcreta`, x.doseConcreta.procedencia);
-    // ⚠️ A NOTA DE FAIXA TAMBÉM DECLARA A SUA: dose de MDR e infusão estendida
-    // são prática de paciente crítico, não a tabela da bula — regra B.
-    if (x.notaDeFaixa) confereProcedencia(`${rotulo} · faixa ${x.de}–${x.ate ?? "∞"} · notaDeFaixa`, x.notaDeFaixa.procedencia);
-    if (!METODOS.includes(x.metodoDaTFG)) {
-      falhas.push(
-        `${rotulo} · faixa ${x.de}–${x.ate ?? "∞"}: \`metodoDaTFG\` inválido ("${x.metodoDaTFG}").\n` +
-        `      ⚠️ Bula pressupõe Cockcroft-Gault; corte de diretriz renal pressupõe CKD-EPI. Usar a TFG\n` +
-        `      de uma equação numa faixa calibrada com a outra é TRANSPOSIÇÃO.`
-      );
+    // ── ⚠️ AS QUATRO MODALIDADES EXISTEM, NEM QUE SEJA COMO AUSÊNCIA ──────
+    // Antes da refatoração a diálise vivia fora e não herdava trava nenhuma.
+    for (const m of MODALIDADES) {
+      const linha = todas.find((l) => l.modalidade === m);
+      if (!linha) {
+        falhas.push(
+          `${rotuloBase}: modalidade \`${m}\` AUSENTE.\n` +
+          `      ⚠️ "sem_dados" é resposta válida; silêncio não é. As quatro entram sempre.`
+        );
+      } else linhasCategoricas += 1;
     }
-  }
+    const duplicadas = MODALIDADES.filter((m) => todas.filter((l) => l.modalidade === m).length > 1);
+    if (duplicadas.length) falhas.push(`${rotuloBase}: modalidade repetida (${duplicadas.join(", ")}).`);
 
-  // ── A RETA COMEÇA EM ZERO ────────────────────────────────────────────────
-  if (fx[0].de !== 0) falhas.push(`${rotulo}: a primeira faixa começa em ${fx[0].de}, não em 0 — anúrico cairia fora do catálogo.`);
-  const ultima = fx[fx.length - 1];
-  if (ultima.ate !== null) falhas.push(`${rotulo}: a última faixa termina em ${ultima.ate} — ClCr acima disso não teria dose.`);
+    if (f.ajusteRenal !== "ajusta") continue;
 
-  // ── SOBREPOSIÇÃO E BURACO, fronteira a fronteira ────────────────────────
-  for (let i = 0; i < fx.length - 1; i += 1) {
-    const a = fx[i], b = fx[i + 1];
-    if (a.ate === null) { falhas.push(`${rotulo}: faixa sem teto no meio da lista.`); continue; }
-    if (a.ate > b.de) {
-      falhas.push(
-        `${rotulo}: SOBREPOSIÇÃO — a faixa ${a.de}–${a.ate} invade a ${b.de}–${b.ate ?? "∞"}.\n` +
-        `      ⚠️ Em ternário isto era invisível: a primeira condição verdadeira vencia, e a segunda dose\n` +
-        `      nunca aparecia. Como dado, um ClCr pertence a exatamente UMA faixa.`
-      );
-      continue;
+    // ── AS FAIXAS CONTÍNUAS, POR BALDE DE PESO ───────────────────────────
+    const continuas = todas.filter((l) => !l.modalidade);
+    const baldes = new Map();
+    for (const x of continuas) {
+      const chave = x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"} kg` : "";
+      if (!baldes.has(chave)) baldes.set(chave, []);
+      baldes.get(chave).push(x);
     }
-    if (a.ate < b.de) {
-      falhas.push(
-        `${rotulo}: BURACO — nada cobre ClCr entre ${a.ate} e ${b.de}.\n` +
-        `      ⚠️ No ternário o buraco caía no \`else\`, com a dose do extremo. Aqui ele reprova.`
-      );
-      continue;
+    if (baldes.size > 1) {
+      const pesos = [...new Map(
+        continuas.filter((x) => x.peso).map((x) => [`${x.peso.de}|${x.peso.ate}`, x.peso])
+      ).values()].sort((a, b) => a.de - b.de);
+      if (pesos[0].de !== 0) falhas.push(`${rotuloBase}: o eixo de PESO começa em ${pesos[0].de} kg, não em 0.`);
+      if (pesos[pesos.length - 1].ate !== null) falhas.push(`${rotuloBase}: o eixo de PESO termina em ${pesos[pesos.length - 1].ate} kg.`);
+      for (let i = 0; i < pesos.length - 1; i += 1) {
+        if (pesos[i].ate !== pesos[i + 1].de) {
+          falhas.push(`${rotuloBase}: eixo de PESO com ${pesos[i].ate > pesos[i + 1].de ? "SOBREPOSIÇÃO" : "BURACO"} entre ${pesos[i].ate} e ${pesos[i + 1].de} kg.`);
+        }
+      }
     }
-    // Mesma fronteira: exatamente UM dos dois lados tem de possuí-la.
-    const donoDeBaixo = a.ateInclusivo === true;
-    const donoDeCima = b.deInclusivo !== false;
-    if (donoDeBaixo && donoDeCima) {
-      falhas.push(
-        `${rotulo}: SOBREPOSIÇÃO NO PONTO ${a.ate} — as duas faixas reivindicam a fronteira.\n` +
-        `      ⚠️ Um ponto só da reta, que amostra nenhuma pega: é o erro de \`> 50\` × \`>= 50\`.`
-      );
+
+    for (const [balde, lista] of baldes) {
+      const rotulo = balde ? `${rotuloBase} {${balde}}` : rotuloBase;
+      if (!lista.length) { falhas.push(`${rotulo}: nenhuma faixa de clearance.`); continue; }
+      const fx = [...lista].sort((a, b) => a.de - b.de);
+      linhasContinuas += fx.length;
+      if (fx[0].de !== 0) falhas.push(`${rotulo}: a primeira faixa começa em ${fx[0].de}, não em 0 — anúrico cairia fora.`);
+      if (fx[fx.length - 1].ate !== null) falhas.push(`${rotulo}: a última faixa termina em ${fx[fx.length - 1].ate} — ClCr acima disso não teria dose.`);
+      for (let i = 0; i < fx.length - 1; i += 1) {
+        const a = fx[i], b = fx[i + 1];
+        if (a.ate === null) { falhas.push(`${rotulo}: faixa sem teto no meio da lista.`); continue; }
+        if (a.ate > b.de) { falhas.push(`${rotulo}: SOBREPOSIÇÃO — a faixa ${a.de}–${a.ate} invade a ${b.de}–${b.ate ?? "∞"}.`); continue; }
+        if (a.ate < b.de) { falhas.push(`${rotulo}: BURACO — nada cobre ClCr entre ${a.ate} e ${b.de}.`); continue; }
+        const donoDeBaixo = a.ateInclusivo === true;
+        const donoDeCima = b.deInclusivo !== false;
+        if (donoDeBaixo && donoDeCima) falhas.push(`${rotulo}: SOBREPOSIÇÃO NO PONTO ${a.ate} — as duas faixas reivindicam a fronteira.`);
+        if (!donoDeBaixo && !donoDeCima) falhas.push(`${rotulo}: BURACO NO PONTO ${a.ate} — nenhuma reivindica a fronteira.`);
+      }
     }
-    if (!donoDeBaixo && !donoDeCima) {
-      falhas.push(`${rotulo}: BURACO NO PONTO ${a.ate} — nenhuma das duas faixas reivindica a fronteira.`);
-    }
-  }
-  }
   }
 }
 
 console.log("\nCatálogo de antimicrobianos — sobreposição e buraco reprovam\n");
-console.log(`   universo: ${CAT.length} fármacos · ${faixas} faixas renais · ${dialises} entradas de diálise`);
+console.log(`   universo: ${CAT.length} fármacos · ${linhasContinuas} faixas de clearance · ${linhasCategoricas} linhas de modalidade (HD · DP · CRRT · SLED)`);
 const okF = conferirUniverso("valida-antimicrobianos", "farmacos", CAT.length);
-const okX = conferirUniverso("valida-antimicrobianos", "faixas", faixas);
+const okX = conferirUniverso("valida-antimicrobianos", "faixas", linhasContinuas);
 
 // ── PROVA DE COBERTURA: cada valor cai em exatamente uma faixa ─────────────
-const AMOSTRA = [0, 5, 9, 10, 15, 19, 20, 24, 25, 30, 39, 40, 45, 49, 50, 55, 59, 60, 75, 89, 90, 91, 120, 200];
+const AMOSTRA = [0, 5, 9, 10, 11, 15, 19, 20, 24, 25, 26, 29, 30, 34, 35, 39, 40, 45, 49, 50, 54, 55, 59, 60, 61, 75, 89, 90, 91, 120, 200];
 for (const f of CAT.filter((x) => x.ajusteRenal === "ajusta")) {
-  const listas = f.indicacoes ? f.indicacoes.map((i) => [i.id, i.faixas]) : [["", f.faixas]];
-  for (const [ind, listaToda] of listas) {
-  const chaves = [...new Set(listaToda.map((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "")))];
-  for (const chave of chaves) {
-  const lista = listaToda.filter((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "") === chave);
-  for (const clcr of AMOSTRA) {
-    const achadas = lista.filter((x) => {
-      const piso = x.deInclusivo === false ? clcr > x.de : clcr >= x.de;
-      const teto = x.ate === null ? true : x.ateInclusivo ? clcr <= x.ate : clcr < x.ate;
-      return piso && teto;
-    });
-    if (achadas.length !== 1) {
-      falhas.push(`${f.id}${ind ? ` [${ind}]` : ""}${chave ? ` {${chave} kg}` : ""}: ClCr ${clcr} cai em ${achadas.length} faixa(s) — tem de cair em exatamente 1.`);
+  const conjuntos = f.eixo ? f.eixo.valores.map((v) => [v.id, v.linhas]) : [["", f.linhas]];
+  for (const [eixo, todas] of conjuntos) {
+    const continuas = todas.filter((l) => !l.modalidade);
+    const chaves = [...new Set(continuas.map((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "")))];
+    for (const chave of chaves) {
+      const lista = continuas.filter((x) => (x.peso ? `${x.peso.de}–${x.peso.ate ?? "∞"}` : "") === chave);
+      for (const clcr of AMOSTRA) {
+        const achadas = lista.filter((x) => {
+          const piso = x.deInclusivo === false ? clcr > x.de : clcr >= x.de;
+          const teto = x.ate === null ? true : x.ateInclusivo ? clcr <= x.ate : clcr < x.ate;
+          return piso && teto;
+        });
+        if (achadas.length !== 1) {
+          falhas.push(`${f.id}${eixo ? ` [${eixo}]` : ""}${chave ? ` {${chave} kg}` : ""}: ClCr ${clcr} cai em ${achadas.length} faixa(s) — tem de cair em exatamente 1.`);
+        }
+      }
     }
   }
-  }
-  }
 }
-console.log(`   cobertura conferida em ${AMOSTRA.length} valores de ClCr por fármaco, fronteiras incluídas`);
+console.log(`   cobertura conferida em ${AMOSTRA.length} valores de ClCr por conjunto, fronteiras incluídas`);
 
-const todasAsFaixas = CAT.flatMap((f) => (f.indicacoes ? f.indicacoes.flatMap((i) => i.faixas) : (f.faixas ?? [])));
+const todasAsFaixas = CAT.flatMap((f) => (f.eixo ? f.eixo.valores.flatMap((v) => v.linhas) : (f.linhas ?? [])));
 const pendentes = todasAsFaixas.filter((x) => x.procedencia?.forca === "pendente");
 console.log(`   ⚠️ faixas com procedência PENDENTE: ${pendentes.length} de ${todasAsFaixas.length} — o portão da AM-7 cobra isto antes de qualquer fármaco novo`);
 
