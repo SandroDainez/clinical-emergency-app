@@ -87,6 +87,21 @@ const LABEL_CEFEPIMA: ProcedenciaDeFaixa = {
   forca: "recomendacao_formal",
 };
 
+const LABEL_CEFTAZIDIMA: ProcedenciaDeFaixa = {
+  fonte: "Ceftazidime for injection — US prescribing information, Tabelas 3 e 4. DailyMed setids 78982c98-7866-49f1-989f-a289c4242358 (FORTAZ) e 112c5457-8d71-49f5-b531-9761d7d38c93 (Sagent), lidos em 2026-08-23",
+  forca: "recomendacao_formal",
+};
+
+/**
+ * ⚠️ O BURACO ESTÁ NA PRÓPRIA TABELA DO LABEL: entre "15 to 6" e "less than 5",
+ * o valor 5 a 5,9 não pertence a faixa nenhuma. Este app cobre a reta inteira, e
+ * a escolha se apoia na NOTA do próprio label — "a dose MENOR deve ser usada".
+ */
+const ARREDONDAMENTO_CEFTAZIDIMA: ProcedenciaDeFaixa = {
+  fonte: "Operacionalização NOSSA: a tabela do label é em números inteiros e deixa 5 a 5,9 sem faixa. Seguimos a faixa de MENOR exposição, apoiados na NOTA do label ('the lower dose should be used')",
+  forca: "pratica_aceita",
+};
+
 const METADE_DE_1G: ProcedenciaDeFaixa = {
   fonte: "Operacionalização NOSSA: metade da dose recomendada, adotando 1 g como dose de referência (dose usual do app)",
   forca: "pratica_aceita",
@@ -427,6 +442,52 @@ export const CATALOGO_DE_ANTIMICROBIANOS: Antimicrobiano[] = [
       { texto: "A maioria dos casos de neurotoxicidade ocorreu em disfunção renal SEM ajuste apropriado — mas há casos COM ajuste apropriado. Ajustar não isenta de vigiar.", procedencia: LABEL_CEFEPIMA },
       { texto: "\"Afasia\" aparece na lista do label PLR e não na do clássico. A lista deste app é a UNIÃO das duas: sinal a mais é vigilância, não erro.", procedencia: LABEL_CEFEPIMA },
       { texto: "Para Pseudomonas aeruginosa, o label manda 2 g IV 8/8h.", procedencia: LABEL_CEFEPIMA },
+    ],
+  },
+  {
+    id: "ceftazidima",
+    nome: "Ceftazidima",
+    classe: "Cefalosporina de 3ª geração (antipseudomonas)",
+    doseUsual: {
+      dose: "1 g (usual) · 2 g (meningite, intra-abdominal grave, osso/articulação, infecção muito grave) · 250 mg (ITU não complicada)",
+      via: "IV ou IM",
+      intervalo: "8/8h a 12/12h conforme a indicação",
+      procedencia: LABEL_CEFTAZIDIMA,
+    },
+    // ⚠️ A DOSE DE ATAQUE É EXPLÍCITA NESTE LABEL — e o campo não existia. Ela
+    // não desce com o clearance: depende do volume de distribuição.
+    doseDeAtaque: [
+      { dose: "1 g", quando: "na SUSPEITA de insuficiência renal, antes de estimar a TFG — o label diz \"may be given\"", procedencia: LABEL_CEFTAZIDIMA },
+      { dose: "1 g", quando: "em hemodiálise — aqui o label diz \"is recommended\", e a diferença de redação é da fonte", procedencia: LABEL_CEFTAZIDIMA },
+      { dose: "1 g", quando: "em diálise peritoneal/CAPD — \"may be given\"", procedencia: LABEL_CEFTAZIDIMA },
+    ],
+    // ⚠️ ESCADA SIMPLES, NÃO MATRIZ. A gravidade não é coluna: o label a trata em
+    // PROSA ("pode aumentar a dose unitária em 50%"), e transformar isso em eixo
+    // seria inventar estrutura que a fonte não deu.
+    ajusteRenal: "ajusta",
+    linhas: [
+      { de: 0, ate: 6, dose: "500 mg", intervalo: "48/48h", metodoDaTFG: METODO, procedencia: ARREDONDAMENTO_CEFTAZIDIMA,
+        notaDeFaixa: { texto: "⚠️ O label diz \"menos de 5\" para 500 mg 48/48h e \"15 a 6\" para 500 mg 24/24h — 5 a 5,9 fica sem faixa NA FONTE. Aqui segue a de MENOR exposição, apoiado na NOTA do label de que a dose menor deve ser usada.", procedencia: ARREDONDAMENTO_CEFTAZIDIMA } },
+      { de: 6, ate: 15, ateInclusivo: true, dose: "500 mg", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 15, ate: 30, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "24/24h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 30, ate: 50, deInclusivo: false, ateInclusivo: true, dose: "1 g", intervalo: "12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA },
+      { de: 50, ate: null, deInclusivo: false, dose: "dose da Tabela 3, pela indicação", intervalo: "8/8h a 12/12h", metodoDaTFG: METODO, procedencia: LABEL_CEFTAZIDIMA,
+        notaDeFaixa: { texto: "Acima de 50 mL/min não há redução: vale a dose por indicação (1 g usual · 2 g nas graves · 250 mg em ITU não complicada).", procedencia: LABEL_CEFTAZIDIMA } },
+      { modalidade: "HD", dose: "1 g", intervalo: "após CADA sessão de hemodiálise", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
+        notaDeFaixa: { texto: "Precedida de ataque de 1 g — e aqui o label diz \"is recommended\", não \"may be given\".", procedencia: LABEL_CEFTAZIDIMA } },
+      { modalidade: "DP", dose: "500 mg", intervalo: "24/24h", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA,
+        notaDeFaixa: { texto: "Precedida de ataque de 1 g. Além da via IV, o label permite incorporar 250 mg a cada 2 L do líquido de diálise.", procedencia: LABEL_CEFTAZIDIMA } },
+      { modalidade: "CRRT", semDados: "⚠️ TRS CONTÍNUA NÃO EXISTE NESTE LABEL: as palavras hemofiltration, arteriovenous, venovenous, CAVH, CVVH, CAVHD e CVVHD não aparecem em NENHUM dos nove setids varridos. Ausência conferida, não presumida — e é por isso que a nota genérica de CRRT continua valendo aqui.", metodoDaTFG: "sem_dados", procedencia: LABEL_CEFTAZIDIMA },
+      SEM_DADOS("SLED", "O label não traz dose para terapias híbridas."),
+    ],
+    fonteDoFarmaco: LABEL_CEFTAZIDIMA,
+    observacoes: [
+      { texto: "⚠️ A NOTA DO LABEL, EM CAIXA ALTA: se a dose da tabela por indicação for MENOR que a da tabela renal, use A MENOR.", procedencia: LABEL_CEFTAZIDIMA },
+      { texto: "Infecção grave que receberia 6 g/dia se o rim fosse normal: o label permite AUMENTAR a dose unitária em 50% ou encurtar o intervalo — e depois guiar por monitorização, gravidade e sensibilidade.", procedencia: LABEL_CEFTAZIDIMA },
+      { texto: "⚠️ NEUROTOXICIDADE — níveis elevados em insuficiência renal levam a crise convulsiva, ESTADO DE MAL NÃO CONVULSIVO, encefalopatia, coma, ASTERIXIS, excitabilidade neuromuscular e mioclonia. Os relatos são em pacientes renais tratados com esquema NÃO AJUSTADO. A dose diária total deve ser reduzida na insuficiência renal.", procedencia: LABEL_CEFTAZIDIMA },
+      { texto: "⚠️ ESTE LABEL NÃO AFIRMA que o quadro neurológico seja reversível — ao contrário do da cefepima. A frase da superdosagem fala em remover A DROGA por diálise, não em reverter o quadro. A ausência fica declarada, não preenchida com o texto do outro fármaco.", procedencia: LABEL_CEFTAZIDIMA },
+      { texto: "O label indica a equação de Cockcroft para estimar o clearance.", procedencia: LABEL_CEFTAZIDIMA },
+      { texto: "Não existe linha genérica de Pseudomonas fora da fibrose cística: a cobertura em dose alta cai na linha das infecções muito graves (2 g 8/8h).", procedencia: LABEL_CEFTAZIDIMA },
     ],
   },
   {

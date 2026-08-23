@@ -144,6 +144,21 @@ export type Antimicrobiano = {
   classe: string;
   doseUsual: { dose: string; via: string; intervalo: string; procedencia: ProcedenciaDeFaixa };
   doseMaxima?: { valor: string; procedencia: ProcedenciaDeFaixa };
+  /**
+   * ⚠️ A DOSE DE ATAQUE — CAMPO QUE FALTAVA, e a ceftazidima foi o terceiro
+   * fármaco seguido a pedi-lo (vancomicina, cefepima em HD, e agora esta).
+   *
+   * Ela **não é a dose usual** e **não é a primeira faixa**: depende do volume de
+   * distribuição, não da eliminação, e por isso não desce com o clearance.
+   * Acomodá-la em `doseUsual` faria a tela mostrar dose de manutenção com nome de
+   * ataque — que é exatamente o erro clínico que a vancomicina existe para não
+   * cometer.
+   *
+   * ⚠️ `quando` guarda a REDAÇÃO DA FONTE. O label da ceftazidima distingue
+   * "may be given" (na suspeita de insuficiência renal) de "is recommended" (na
+   * hemodiálise), e a diferença não é estilo.
+   */
+  doseDeAtaque?: { dose: string; quando: string; procedencia: ProcedenciaDeFaixa }[];
   ajusteRenal: AjusteRenal;
   /**
    * ⚠️ O QUE A TELA DIZ QUANDO NÃO HÁ LINHA — obrigatório em `nao_ajusta`,

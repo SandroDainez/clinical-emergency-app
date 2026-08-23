@@ -31,6 +31,45 @@ export const ES_ANTIMICROBIANOS: Record<string, string> = {
     "NO REQUIERE AJUSTE por función renal aislada — se excreta por vía biliar Y renal. ⚠️ EXCEPCIÓN: con disfunción HEPÁTICA y renal significativa JUNTAS, no pasar de 2 g/día.",
   "⚠️ o label não traz esquema de profilaxia para ClCr < 55 — isso NÃO significa que a profilaxia esteja contraindicada":
     "⚠️ el prospecto no trae esquema de profilaxis para ClCr < 55 — esto NO significa que la profilaxis esté contraindicada",
+  // ── LOTE 1 · CEFTAZIDIMA (2026-08-23) ───────────────────────────────────
+  "Ceftazidima":
+    "Ceftazidima",
+  "Cefalosporina de 3ª geração (antipseudomonas)":
+    "Cefalosporina de 3ª generación (antipseudomonas)",
+  "1 g (usual) · 2 g (meningite, intra-abdominal grave, osso/articulação, infecção muito grave) · 250 mg (ITU não complicada)":
+    "1 g (usual) · 2 g (meningitis, intraabdominal grave, hueso/articulación, infección muy grave) · 250 mg (ITU no complicada)",
+  "Acima de 50 mL/min não há redução: vale a dose por indicação (1 g usual · 2 g nas graves · 250 mg em ITU não complicada).":
+    "Por encima de 50 mL/min no hay reducción: vale la dosis por indicación (1 g usual · 2 g en las graves · 250 mg en ITU no complicada).",
+  "Infecção grave que receberia 6 g/dia se o rim fosse normal: o label permite AUMENTAR a dose unitária em 50% ou encurtar o intervalo — e depois guiar por monitorização, gravidade e sensibilidade.":
+    "Infección grave que recibiría 6 g/día si el riñón fuera normal: el prospecto permite AUMENTAR la dosis unitaria en 50% o acortar el intervalo — y después guiar por monitorización, gravedad y sensibilidad.",
+  "Não existe linha genérica de Pseudomonas fora da fibrose cística: a cobertura em dose alta cai na linha das infecções muito graves (2 g 8/8h).":
+    "No existe línea genérica de Pseudomonas fuera de la fibrosis quística: la cobertura en dosis alta cae en la línea de las infecciones muy graves (2 g 8/8h).",
+  "O label indica a equação de Cockcroft para estimar o clearance.":
+    "El prospecto indica la ecuación de Cockcroft para estimar el clearance.",
+  "Precedida de ataque de 1 g. Além da via IV, o label permite incorporar 250 mg a cada 2 L do líquido de diálise.":
+    "Precedida de carga de 1 g. Además de la vía IV, el prospecto permite incorporar 250 mg por cada 2 L del líquido de diálisis.",
+  "após CADA sessão de hemodiálise":
+    "tras CADA sesión de hemodiálisis",
+  "dose da Tabela 3, pela indicação":
+    "dosis de la Tabla 3, por la indicación",
+  "⚠️ A NOTA DO LABEL, EM CAIXA ALTA: se a dose da tabela por indicação for MENOR que a da tabela renal, use A MENOR.":
+    "⚠️ LA NOTA DEL PROSPECTO, EN MAYÚSCULAS: si la dosis de la tabla por indicación es MENOR que la de la tabla renal, use LA MENOR.",
+  "⚠️ ESTE LABEL NÃO AFIRMA que o quadro neurológico seja reversível — ao contrário do da cefepima. A frase da superdosagem fala em remover A DROGA por diálise, não em reverter o quadro. A ausência fica declarada, não preenchida com o texto do outro fármaco.":
+    "⚠️ ESTE PROSPECTO NO AFIRMA que el cuadro neurológico sea reversible — a diferencia del de la cefepima. La frase de la sobredosis habla de remover EL FÁRMACO por diálisis, no de revertir el cuadro. La ausencia queda declarada, no rellenada con el texto del otro fármaco.",
+  "⚠️ NEUROTOXICIDADE — níveis elevados em insuficiência renal levam a crise convulsiva, ESTADO DE MAL NÃO CONVULSIVO, encefalopatia, coma, ASTERIXIS, excitabilidade neuromuscular e mioclonia. Os relatos são em pacientes renais tratados com esquema NÃO AJUSTADO. A dose diária total deve ser reduzida na insuficiência renal.":
+    "⚠️ NEUROTOXICIDAD — niveles elevados en insuficiencia renal llevan a crisis convulsiva, ESTADO DE MAL NO CONVULSIVO, encefalopatía, coma, ASTERIXIS, excitabilidad neuromuscular y mioclonía. Los reportes son en pacientes renales tratados con esquema NO AJUSTADO. La dosis diaria total debe reducirse en la insuficiencia renal.",
+  "⚠️ TRS CONTÍNUA NÃO EXISTE NESTE LABEL: as palavras hemofiltration, arteriovenous, venovenous, CAVH, CVVH, CAVHD e CVVHD não aparecem em NENHUM dos nove setids varridos. Ausência conferida, não presumida — e é por isso que a nota genérica de CRRT continua valendo aqui.":
+    "⚠️ TRS CONTINUA NO EXISTE EN ESTE PROSPECTO: las palabras hemofiltration, arteriovenous, venovenous, CAVH, CVVH, CAVHD y CVVHD no aparecen en NINGUNO de los nueve setids barridos. Ausencia comprobada, no presumida — y por eso la nota genérica de CRRT sigue valiendo aquí.",
+  "Ataque (na suspeita de insuficiência renal)":
+    "Carga (ante sospecha de insuficiencia renal)",
+  "⚠️ O label diz \"menos de 5\" para 500 mg 48/48h e \"15 a 6\" para 500 mg 24/24h — 5 a 5,9 fica sem faixa NA FONTE. Aqui segue a de MENOR exposição, apoiado na NOTA do label de que a dose menor deve ser usada.":
+    "⚠️ El prospecto dice \"menos de 5\" para 500 mg 48/48h y \"15 a 6\" para 500 mg 24/24h — 5 a 5,9 queda sin franja EN LA FUENTE. Aquí sigue la de MENOR exposición, apoyado en la NOTA del prospecto de que la dosis menor debe usarse.",
+  "Precedida de ataque de 1 g — e aqui o label diz \"is recommended\", não \"may be given\".":
+    "Precedida de carga de 1 g — y aquí el prospecto dice \"is recommended\", no \"may be given\".",
+  "12/12h":
+    "12/12h",
+  "8/8h a 12/12h":
+    "8/8h a 12/12h",
   // ── LOTE 1 · CEFEPIMA + refatoração do eixo renal (2026-08-22) ───────────
   "1 g no dia 1, depois 500 mg":
     "1 g el día 1, después 500 mg",

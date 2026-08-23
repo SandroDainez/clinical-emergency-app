@@ -939,7 +939,8 @@ export const CALC_TOOLS: CalcTool[] = [
     inputs: [
       { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
         { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" },
-        { label: "Ceftriaxona", value: "ceftriaxona" }, { label: "Cefepima", value: "cefepima" } ] },
+        { label: "Ceftriaxona", value: "ceftriaxona" }, { label: "Cefepima", value: "cefepima" },
+        { label: "Ceftazidima", value: "ceftazidima" } ] },
       // ⚠️ A INDICAÇÃO NÃO É PARÂMETRO, É DECISÃO — e o app conhecia só metade.
       // A dose de pip-tazo depende de DUAS coisas: função renal e indicação. A
       // tabela do label tem duas colunas, e o app usava a da PNEUMONIA
@@ -1083,6 +1084,30 @@ export const CALC_TOOLS: CalcTool[] = [
           ] }],
         };
       }
+      if (f === "ceftazidima") {
+        const cz = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "ceftazidima")!;
+        const fx = faixaPara(cz, tfg);
+        if (!fx) return null;
+        const hd = linhaDaModalidade(cz, "HD"), dp = linhaDaModalidade(cz, "DP");
+        return {
+          metrics: [
+            // ⚠️ O ATAQUE VEM PRIMEIRO E NÃO DESCE COM O CLEARANCE — campo próprio
+            // do catálogo, não a primeira faixa.
+            { label: "Ataque (na suspeita de insuficiência renal)", value: `${cz.doseDeAtaque?.[0].dose} — o label diz "pode ser dado"`, highlight: true },
+            { label: `Manutenção (ClCr ${r0(tfg)})`, value: `${fx.dose} ${fx.intervalo}`, highlight: true },
+          ],
+          interpret: { tone: (tfg < 16 ? "orange" : "green") as Tone, label: `Ceftazidima — manutenção ${fx.dose} ${fx.intervalo}` },
+          tables: [
+            { title: "Substituição renal", rows: [
+              { k: "Hemodiálise", v: `Ataque 1 g (aqui o label RECOMENDA), depois ${hd?.dose} ${hd?.intervalo}.` },
+              { k: "DP / CAPD", v: `Ataque 1 g, depois ${dp?.dose} ${dp?.intervalo}. O label também permite 250 mg a cada 2 L do líquido de diálise.` },
+              { k: "CRRT", v: linhaDaModalidade(cz, "CRRT")?.semDados ?? "" },
+            ] },
+            { title: "O que o label diz", rows: cz.observacoes.map((o) => ({ k: "•", v: o.texto })) },
+          ],
+        };
+      }
+
       if (f === "cefepima") {
         const cf = CATALOGO_DE_ANTIMICROBIANOS.find((x) => x.id === "cefepima")!;
         const escolhido = v.esquema ?? "nao_sei";

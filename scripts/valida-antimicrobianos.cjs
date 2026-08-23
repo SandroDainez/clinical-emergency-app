@@ -76,6 +76,13 @@ for (const f of CAT) {
   }
   confereProcedencia(`${f.id} · fonteDoFarmaco`, f.fonteDoFarmaco);
   confereProcedencia(`${f.id} · doseUsual`, f.doseUsual?.procedencia);
+  // ⚠️ A DOSE DE ATAQUE TEM FONTE PRÓPRIA — ela não desce com o clearance e não
+  // é a primeira faixa. Sem campo, ela acabaria em `doseUsual`, e a tela
+  // mostraria manutenção com nome de ataque.
+  for (const at of f.doseDeAtaque ?? []) {
+    confereProcedencia(`${f.id} · ataque (${at.quando?.slice(0, 40)}…)`, at.procedencia);
+    if (!at.quando) falhas.push(`${f.id}: dose de ataque sem \`quando\` — ataque sem gatilho é dose solta.`);
+  }
 
   // ── ⚠️ O TIPO DE EIXO É ENUMERADO E FECHADO ─────────────────────────────
   // String livre viraria depósito: em três fármacos ninguém saberia mais o que é
