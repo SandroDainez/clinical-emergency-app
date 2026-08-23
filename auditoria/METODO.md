@@ -6612,3 +6612,53 @@ seria vender falso conforto.
 
 O falso positivo aceito, com nome, vive em `auditoria/EXCECOES-DECLARADAS.md`.
 Ele **não é dívida a resolver**: é o custo aceito do instrumento.
+
+## R-117 — TRAVA QUE BRIGA DURANTE UMA CORREÇÃO É SUSPEITA, NÃO OBSTÁCULO
+
+Consequência direta do R-115, e **é a regra mais importante para a fase dos
+módulos**:
+
+> Quando um módulo for revisado e uma trava reprovar a correção, o primeiro passo
+> **nunca** é ajustar a trava. É perguntar **de onde veio o critério dela**. Se
+> veio do comportamento antigo, ela estava guardando o defeito — e **o conserto é
+> dela, não do conteúdo**.
+
+⚠️ **É assim que a fossilização se acha**, e é o único jeito conhecido: o R-115
+mostrou que ler o cabeçalho não encontra (a única fossilização conhecida sai
+classificada como *fonte clínica*, porque o podre estava num caso de teste no
+meio do corpo). **O detector é a briga.**
+
+### Onde ela vai ser cobrada, e já se sabe quais
+
+As **cinco travas do grupo C** da varredura de origem — `valida-abdome-agudo`,
+`valida-choque`, `valida-tep`, `valida-politrauma`, `valida-ventilacao` —
+nasceram de auditoria de módulo e **guardam conteúdo clínico**, com a fonte
+morando no `procedencia` do conteúdo e não no cabeçalho delas.
+
+**Quando esses cinco módulos forem revisados, elas vão brigar. Cada briga é
+informação** — e a pergunta, a cada uma, é a do R-115: de onde veio o critério.
+
+⚠️ E `valida-politrauma` já sabia disso antes de nós, escrito por quem estava
+fazendo: *"travar um algoritmo que a fonte fixa seria fotografar o que já está
+certo."* Aquela frase é o critério, e vale para as outras quatro.
+
+## R-118 — `ORIGEM DO CRITÉRIO` É PADRÃO PARA TRAVA NOVA
+
+Ao lado de `PROMETE` / `NÃO PROMETE` / `UNIVERSO`, toda trava **nova** declara de
+onde vem o que ela exige:
+
+```
+ * ORIGEM DO CRITÉRIO: fonte clínica nomeada · decisão do autor datada ·
+ *   estrutura (não afirma nada clínico) · ou coerência interna DECLARADA COMO TAL
+```
+
+⚠️ **Sem migração retroativa das 89**, e a razão é o R-115: seria uma rodada
+inteira de preenchimento de campo, e **o campo não teria pego o único caso real**
+— o cabeçalho de `valida-calculadoras` já citava fonte de verdade.
+
+**Trava nova nasce com ele; trava velha ganha quando for tocada.**
+
+E o modelo de como o campo deve soar já existe, escrito por travas que não tinham
+o campo: *"a lista de fármacos vem do que o próprio app já declara — nenhum teto
+é exigido por conhecimento externo"* (`valida-teto-por-kg`). **Coerência interna
+declarada como tal não fossiliza nada, porque não opina sobre clínica.**
