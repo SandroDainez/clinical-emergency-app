@@ -166,3 +166,23 @@ qualquer valor — escapa o **assintomático** nessa faixa.
 **Hipercalcemia, na mesma conta:** o corte de cima praticamente coincide
 (14 mg/dL ≈ 3,49 mmol/L contra 3,5 — diferença dentro do arredondamento). O que
 falta mesmo é a **faixa do meio**, que é a pergunta 7.
+
+## 10 · Ânion gap — os dois cortes e o fator, todos herdados sem fonte
+
+O AG saiu do verde: sem albumina não conclui, o AG baixo ganhou texto próprio, e
+a classificação passou a usar o corrigido. Três números continuam **sem
+procedência**, e nenhum foi escolhido por mim — os três já estavam no app:
+
+| número | onde estava | o que é |
+|---|---|---|
+| **> 12** | `agRef > 12` no código | corte de AG elevado |
+| **< 8** | na linha de referência da própria calculadora (*"Normal 8–12"*) | corte de AG baixo |
+| **2,5** | `ag + 2.5 * (4 - alb)` | fator de correção pela albumina, por 1 g/dL abaixo de 4 |
+
+> **1.** Quais cortes de AG **alto** e **baixo** o senhor adota, e com que fonte?
+> **2.** O fator **2,5** — a referência clássica é **Figge et al.** Confirma? O
+> verbatim precisa ser transcrito antes de a força subir de `pendente`.
+
+⚠️ Nenhum dos três foi alterado. O que mudou foi **deixar de fingir que tinham
+fonte** e **parar de concluir "normal" em verde** quando a albumina não foi
+informada.

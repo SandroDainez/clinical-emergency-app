@@ -31,6 +31,15 @@ import type {
   TimerState,
 } from "./clinical-engine";
 import { baseDe, CATALOGO_DE_ANTIMICROBIANOS, doseUsualDerivada, faixaPara, textoDaDose } from "./lib/antimicrobianos/catalogo";
+import {
+  AG_BAIXO,
+  AG_ELEVADO_CAUSAS,
+  AG_NA_FAIXA,
+  AG_SEM_ALBUMINA,
+  AG_SEM_ALBUMINA_PORQUE,
+  CORTE_AG,
+  FATOR_ALBUMINA,
+} from "./lib/anion-gap";
 import type { DoseEstruturada, LinhaRenal } from "./lib/antimicrobianos/tipos";
 import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
@@ -396,12 +405,15 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "anion-gap",
     name: "Ânion gap",
     subtitle: "AG · correção pela albumina · delta-delta",
-    reference: "AG = Na − (Cl + HCO₃). Normal 8–12 (albumina 4 g/dL).",
+    reference: "AG = Na − (Cl + HCO₃). Faixa de referência 8–12 com albumina 4 g/dL — ⚠️ cortes herdados, sem fonte conferida.",
     inputs: [
       { id: "na", label: "Sódio", unit: "mEq/L", kind: "number", placeholder: "ex: 140" },
       { id: "cl", label: "Cloro", unit: "mEq/L", kind: "number", placeholder: "ex: 104" },
       { id: "hco3", label: "Bicarbonato", unit: "mEq/L", kind: "number", placeholder: "ex: 24" },
-      { id: "alb", label: "Albumina (opcional)", unit: "g/dL", kind: "number", optional: true },
+      // ⚠️ DEIXOU DE SER "OPCIONAL": sem ela o AG não é interpretável, e chamar
+      // de opcional convidava a omitir justamente o dado que evita o falso
+      // "normal" na hipoalbuminemia.
+      { id: "alb", label: "Albumina (necessária para interpretar)", unit: "g/dL", kind: "number", optional: true },
     ],
     compute: (v) => {
       const na = numNaFaixa(v.na, ...FAIXA.sodioMeqL);
@@ -410,17 +422,36 @@ export const CALC_TOOLS: CalcTool[] = [
       const alb = numNaFaixa(v.alb, ...FAIXA.albuminaGDl);
       if (na == null || cl == null || hco3 == null) return null;
       const ag = na - (cl + hco3);
-      const agCorr = alb != null ? ag + 2.5 * (4 - alb) : null;
-      const agRef = agCorr ?? ag;
-      const dd = hco3 < 24 ? (agRef - 12) / (24 - hco3) : null;
+      // ⚠️ O FATOR E OS CORTES VÊM DO DADO, com a procedência declarada — e
+      // ambos são HERDADOS SEM FONTE, o que agora está escrito em vez de
+      // suposto (lib/anion-gap.ts).
+      const agCorr =
+        alb != null ? ag + FATOR_ALBUMINA.valor * (FATOR_ALBUMINA.porGDlAbaixoDe - alb) : null;
+      // ⚠️ SEM ALBUMINA NÃO HÁ `agRef`. A linha anterior era `agCorr ?? ag`, que
+      // interpretava o AG medido COMO SE a albumina fosse 4 — e chamava de
+      // "normal", em verde, o AG de 12 de um paciente com albumina 2,0, cujo AG
+      // corrigido é ~17. Era conclusão por queda no exame mais consequente que
+      // ela tinha (R-111).
+      const agRef = agCorr;
+      const dd = agRef != null && hco3 < 24 ? (agRef - CORTE_AG.elevadoAcimaDe) / (24 - hco3) : null;
       const metrics: ResultMetric[] = [
         { label: "Ânion gap", value: `${f1(ag)} mEq/L`, highlight: true },
       ];
       if (agCorr != null) metrics.push({ label: "AG corrigido (albumina)", value: `${f1(agCorr)} mEq/L` });
       if (dd != null) metrics.push({ label: "Delta-delta", value: f1(dd) });
-      const interp: Interpretation = agRef > 12
-        ? { tone: "orange", label: "Ânion gap ELEVADO — acidose com AG aumentado", lines: ["MUDPILES: Metanol/Metformina, Uremia, Diabética (CAD), Propilenoglicol/Paracetaldeído, Isoniazida, Lactato, Etilenoglicol, Salicilatos."] }
-        : { tone: "green", label: "Ânion gap normal", lines: ["Se acidose: hiperclorêmica (HARDUPS): HCO₃ perdido (diarreia), ATR, reposição de NaCl, fístula pancreática, urostomia, pós-hipocápnia, espironolactona."] };
+      // ⚠️ TRÊS DESTINOS + O "NÃO SEI", e nenhum deles é verde.
+      //
+      // Verde é conclusão: diz "pode seguir". Era o que o defeito fazia de pior —
+      // e nem o AG dentro da faixa volta a ser verde, porque "dentro da faixa"
+      // com albumina corrigida ainda é leitura, não alta.
+      const interp: Interpretation =
+        agRef == null
+          ? { tone: "neutral", label: AG_SEM_ALBUMINA, lines: [AG_SEM_ALBUMINA_PORQUE] }
+          : agRef > CORTE_AG.elevadoAcimaDe
+            ? { tone: "orange", label: "Ânion gap ELEVADO — acidose com AG aumentado", lines: [AG_ELEVADO_CAUSAS] }
+            : agRef < CORTE_AG.baixoAbaixoDe
+              ? { tone: "yellow", label: AG_BAIXO, lines: [] }
+              : { tone: "yellow", label: "Ânion gap corrigido dentro da faixa de referência", lines: [AG_NA_FAIXA] };
       const tables: RefTable[] = [];
       if (dd != null) {
         tables.push({

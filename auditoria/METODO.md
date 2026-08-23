@@ -6531,3 +6531,41 @@ se parecem no relatório. É a mesma família do universo vazio do R-101: o núm
 baixo só significa alguma coisa depois de se saber **quantos itens ele olhou**.
 
 ⚠️ É o argumento mais honesto que temos para **não comemorar número baixo**.
+
+## R-113 — A ANATOMIA DA CONCLUSÃO POR QUEDA, E POR QUE A AUDITORIA DE PROCEDÊNCIA NÃO A PEGA
+
+Da varredura de 2026-08-23, sobre os três achados:
+
+> **Os três afirmam um estado do paciente que ninguém verificou. Nenhum diz "não
+> sei" — todos dizem "está bem".** E os três estavam em código que já passou por
+> auditoria nesta sequência.
+
+⚠️ A última parte é a que importa como método: **auditoria de procedência não
+pega conclusão por queda**, porque não há afirmação de fonte para conferir — **há
+uma ausência de pergunta**. Um selo confere o que foi dito; a queda é o que
+deixou de ser perguntado.
+
+São instrumentos diferentes para defeitos diferentes:
+
+| defeito | quem pega |
+|---|---|
+| afirmação sem fonte | auditoria de procedência (selo, força, verbatim) |
+| duas cópias do mesmo número | R-95 / `test:texto-vs-corte` |
+| instrumento que não roda | censo (R-108) |
+| **caminho que conclui porque nada bateu** | **`medir:queda` (R-111)** |
+
+## R-114 — O NÚMERO DENTRO DA FRASE É A SEGUNDA CÓPIA MAIS TEIMOSA
+
+O corte da hipocalcemia mudou para a unidade da fonte em 2026-08-23 — e **a prosa
+ao lado continuou dizendo `< 7 mg/dL`**, o número velho. Ninguém mente de
+propósito: **o número saiu do lugar onde a trava olha e ficou onde ela não
+olhava.**
+
+> **Literal numérico em texto de tela que corresponda a um corte declarado tem
+> que bater com o corte — ou ser marcado explicitamente como histórico.**
+
+`test:texto-vs-corte` cobra isso. ⚠️ E ela tem **duas janelas**, porque a primeira
+versão acusou três números legítimos: diferença < 0,1 é o mesmo corte com outras
+casas; entre 0,1 e 1,0 é o número que **queria ser o corte e ficou para trás**;
+acima de 1,0 é outro número, com outro propósito clínico. **Trava que grita por
+número legítimo é trava que se desliga.**

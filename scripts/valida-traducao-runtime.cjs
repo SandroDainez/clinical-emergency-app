@@ -137,9 +137,24 @@ function coletar(rel) {
   if (!fs.existsSync(js)) return false;
   let mod;
   try { mod = require(js); } catch { return false; }
+  /**
+   * ⚠️ `alvo` É O ÚNICO CAMPO DISPENSADO, e a dispensa é a mesma que
+   * `varredura-pt.cjs` já dá: ele descreve A PENDÊNCIA DE FONTE para quem vai
+   * conferir ("alvo: Figge et al., verbatim a transcrever"), é lido por quem
+   * mantém o app, cobrado pelas travas de procedência, e **nunca renderizado**.
+   *
+   * ⚠️ E `fonte` NÃO entra nesta dispensa, de propósito: o `fonte` do nó
+   * `k_ecg_normal` É renderizado — esta trava provou isso em 2026-08-23, contra a
+   * suposição de que selo não aparece. Dispensar os dois juntos teria escondido
+   * um selo em português na tela de quem escolheu espanhol.
+   *
+   * Se um dia `alvo` for para a tela, esta linha passa a esconder o defeito — e
+   * é por isso que ela está escrita aqui, e não numa lista silenciosa.
+   */
+  const ehAlvoDePendencia = (nome) => /(?:^|\.)alvo$/.test(nome);
   const anda = (v, nome) => {
     if (typeof v === "string") {
-      if (v.length < 20 || !PT.test(v)) return;
+      if (v.length < 20 || !PT.test(v) || ehAlvoDePendencia(nome)) return;
       emRuntime.push({ rel, nome, t: v });
       return;
     }

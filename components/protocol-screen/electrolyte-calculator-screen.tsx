@@ -15,6 +15,7 @@ import {
   APOIAM_SINTOMATICO,
   corteDoDegrau,
   degrauDeGravidade,
+  GRAVIDADE_POR_DISTURBIO,
   EXIGEM_COMPATIBILIDADE,
   IONIZADO_NOTAS,
   NUCLEO_SINTOMATICO,
@@ -1217,6 +1218,9 @@ function calculateResult(tr: (pt: string) => string, args: {
       };
     }
     case "hypocalcemia": {
+      // ⚠️ O CORTE VEM DO DADO, na hora — nunca escrito na frase (R-95).
+      const corteDaGravidade = corteDoDegrau("hypocalcemia", GRAVIDADE_POR_DISTURBIO.hypocalcemia[0]) ?? "";
+      const leitura = calcioParaClassificar({ tipo: tipoDeCalcio, valor: current, albumina: albumin });
       // ⚠️ O MESMO CÁLCIO DA GRAVIDADE — antes esta linha corrigia por conta
       // própria enquanto a classificação usava o bruto, dentro do mesmo card.
       const correctedCa =
@@ -1265,9 +1269,21 @@ function calculateResult(tr: (pt: string) => string, args: {
               "QUAL DOS DOIS — é escolha por CONTEXTO, não por disponibilidade. CLORETO: preferido na PCR, na hipercalemia com alteração de ECG e na hipocalcemia com instabilidade — entrega mais cálcio elementar mais rápido. Exige acesso CENTRAL de preferência: é muito mais esclerosante e a extravasação causa necrose. GLUCONATO: preferido em acesso periférico e quando não há urgência elétrica, por ser bem menos irritante.",
               trf(tr, "Como preparo prático, essa etapa costuma ser diluída em {0} mL de SF 0,9% ou SG 5%.", [estimatedBagMl]),
               `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
+              // ⚠️ O NÚMERO SAIU DA FRASE. Ele dizia `< 7 mg/dL`, que deixou de
+              // ser o corte quando ele passou a morar na unidade da fonte
+              // (< 1,9 mmol/L ≈ 7,62). A prosa envelheceu ao lado do dado — R-95
+              // na forma em que a segunda cópia está DENTRO DA FRASE. Agora o
+              // valor vem do dado, e `test:texto-vs-corte` impede a volta.
               severe
-                ? "Se Ca corrigido < 7 mg/dL, tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática."
-                : "Se a hipocalcemia é menos intensa e o paciente estável, o contexto e a causa definem o restante da correção.",
+                ? trf(tr, "Se o cálcio estiver abaixo do corte de gravidade ({0}), ou houver tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática.", [corteDaGravidade])
+                // ⚠️ E ESTE RAMO NÃO AFIRMA MAIS ESTADO QUE NINGUÉM VERIFICOU.
+                // Ele dizia "a hipocalcemia é menos intensa e o paciente estável"
+                // — inclusive quando não havia valor ou quando o médico informou
+                // ionizado, que não classifica por número. Conclusão por queda
+                // (R-111): dizia "está bem" onde a resposta era "não sei".
+                : leitura.valor == null
+                  ? "Sem valor classificável, o app NÃO afirma que o quadro é leve: informe o cálcio e o ensaio para que a gravidade seja lida."
+                  : "O cálcio não alcançou o corte de gravidade. Isso não é o mesmo que quadro estável: o contexto, a causa e os sintomas definem o restante da correção.",
               renalDysfunction
                 ? "Em DRC/IRA, pesar melhor a relação com fósforo e evitar tratar só o número fora do contexto."
                 : "Sem disfunção renal importante, a causa imediata costuma direcionar mais do que a limitação de depuração.",
@@ -1654,10 +1670,13 @@ function calculateResult(tr: (pt: string) => string, args: {
             lines: [
               "Fraqueza, insuficiência respiratória, disfunção miocárdica, rabdomiólise e hemólise.",
               severe
-                ? "Se fósforo < 1 mg/dL, tratar como distúrbio grave mesmo antes da falência muscular se a clínica for compatível."
+                ? "Se o fósforo estiver abaixo do corte de gravidade, tratar como distúrbio grave mesmo antes da falência muscular se a clínica for compatível."
                 : moderate
                   ? "Se fósforo entre 1 e 2 mg/dL, a decisão entre via IV e oral depende de sintomas, via enteral e contexto clínico."
-                  : "Se fósforo > 2 mg/dL e quadro estável, geralmente cabe conduta menos agressiva.",
+                  // ⚠️ NÃO AFIRMA MAIS UM VALOR QUE NINGUÉM VERIFICOU. O ramo
+                  // final dizia "fósforo > 2 mg/dL", mas ele é só "nem severe
+                  // nem moderate" — o que inclui não haver valor (R-111).
+                  : "Fora das faixas acima, o app não conclui pelo número: a conduta depende de sintomas, via enteral e contexto clínico.",
             ],
             tone: "danger",
           },

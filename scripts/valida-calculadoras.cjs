@@ -523,18 +523,42 @@ for (const calc of CALC_TOOLS) {
       (r) => r.interpret.label);
   }
 
-  // Ânion gap — a fronteira é 12, sobre o AG corrigido quando há albumina.
+  // ── ÂNION GAP ───────────────────────────────────────────────────────────
+  //
+  // ⚠️ ESTA CONFERÊNCIA MUDOU EM 2026-08-23, e a mudança é o registro de um
+  // defeito clínico: a varredura antiga rodava SEM ALBUMINA e esperava a
+  // calculadora dizer "normal". Ela dizia — e era conclusão por queda (R-111):
+  // o AG de 12 de um paciente com albumina 2,0 tem AG corrigido de ~17, e saía
+  // em VERDE. A trava, ao exigir a faixa sem albumina, ESTAVA CODIFICANDO O
+  // DEFEITO como comportamento esperado.
+  //
+  // Agora ela confere as duas coisas, separadas:
   {
-    const ent = [];
-    for (let cl = 80; cl <= 120; cl += 1) ent.push({ na: "140", cl: String(cl), hco3: "24" });
-    for (let alb = 1; alb <= 5; alb += 0.5) ent.push({ na: "140", cl: "104", hco3: "18", alb: String(alb).replace(".", ",") });
-    limiarPorVarredura("anion-gap", ent,
+    // (a) COM albumina, a fronteira do corrigido continua sendo respeitada.
+    const comAlbumina = [];
+    for (let cl = 80; cl <= 120; cl += 1) comAlbumina.push({ na: "140", cl: String(cl), hco3: "24", alb: "4" });
+    for (let alb = 1; alb <= 5; alb += 0.5) comAlbumina.push({ na: "140", cl: "104", hco3: "18", alb: String(alb).replace(".", ",") });
+    limiarPorVarredura("anion-gap", comAlbumina,
       (r) => {
         const corr = r.metrics.find((m) => /corrigido/.test(m.label));
         return parseFloat(String((corr ?? r.metrics[0]).value).replace(",", "."));
       },
-      (ag) => (ag > 12 ? "ELEVADO" : "normal"),
+      (ag) => (ag > 12 ? "ELEVADO" : ag < 8 ? "BAIXO" : "dentro da faixa de referência"),
       (r) => r.interpret.label);
+  }
+  {
+    // (b) SEM albumina, ela NÃO CLASSIFICA — e não pode voltar a classificar.
+    const calc = CALC_TOOLS.find((c) => c.id === "anion-gap");
+    let semAlbuminaOk = 0;
+    for (let cl = 80; cl <= 120; cl += 5) {
+      const r = calc.compute({ na: "140", cl: String(cl), hco3: "24" });
+      if (!r) continue;
+      const rotulo = String(r.interpret.label);
+      if (/ELEVADO|BAIXO|dentro da faixa/.test(rotulo) || r.interpret.tone === "green")
+        falhas++, linhas.push(`❌ anion-gap SEM albumina classificou « ${rotulo.slice(0, 60)} » (tom ${r.interpret.tone}) — sem a albumina o AG não é interpretável, e concluir ali é o defeito que a albumina baixa mascara`);
+      else { semAlbuminaOk++; ok++; }
+    }
+    linhas.push(`✅ anion-gap    sem albumina NÃO classifica em ${semAlbuminaOk} varredura(s) — e nenhuma sai em verde`);
   }
 
   // Dose de antibiótico — as faixas de ClCr de cada fármaco, nas fronteiras.

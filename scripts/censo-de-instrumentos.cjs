@@ -64,6 +64,13 @@ const erro = (m) => { console.error(`❌ ${m}`); falhas++; };
 // ── 1. UNIVERSO ANTES DO RESULTADO
 console.log(`\n════ CENSO DE INSTRUMENTOS ════\n`);
 console.log(`UNIVERSO: ${todos.length} instrumentos em scripts/`);
+// ⚠️ O QUE ESTE CENSO NÃO COBRE, DITO EM VOZ ALTA: os scripts de MEDIÇÃO
+// (`mede-*`, `compara-*`) não têm código de saída por decisão — medir não é
+// reprovar — e por isso "estar no portão" não se aplica a eles. Deixá-los fora
+// em silêncio seria o censo tendo o próprio buraco de universo que ele existe
+// para achar.
+const MEDICOES = fs.readdirSync(path.join(RAIZ, "scripts")).filter((n) => /^(mede|compara)-/.test(n) && n.endsWith(".cjs"));
+console.log(`  fora do escopo: ${MEDICOES.length} medição(ões) sem código de saída — ${MEDICOES.join(", ")}`);
 
 // ── 2. QUEM ESTÁ NO PORTÃO
 const noPortao = [], fora = [];

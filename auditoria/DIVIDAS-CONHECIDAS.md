@@ -3683,3 +3683,17 @@ teto** — a urgência pode vir de fora dele.
 
 Não corrigidos de propósito: o item 1 esbarra em decisão clínica (o que a tela diz
 quando não há valor) e num corte que mudou. É revisão com o autor.
+
+## D-95 — ÂNION GAP: TRÊS NÚMEROS HERDADOS, AGORA DECLARADOS
+
+`lib/anion-gap.ts`. Os três já estavam no app; nenhum foi escolhido nesta rodada.
+O que mudou foi **deixar de fingir que tinham fonte**.
+
+| número | onde estava | o que é |
+|---|---|---|
+| **> 12** | `agRef > 12` no código | corte de AG elevado |
+| **< 8** | na linha de referência da calculadora (*"Normal 8–12"*) | corte de AG baixo |
+| **2,5** | `ag + 2.5 * (4 - alb)` | fator de correção pela albumina |
+
+Alvo: pergunta 10 ao autor — quais cortes ele adota e com que fonte; e o verbatim
+de **Figge et al.** para o fator, antes de a força subir de `pendente`.

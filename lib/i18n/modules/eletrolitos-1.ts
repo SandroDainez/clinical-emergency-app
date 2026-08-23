@@ -468,4 +468,30 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "Punto de corte de este tramo: {0}",
   "Hipercalcemia significativa; necessidade e urgência do tratamento dependem de sintomas, velocidade de instalação, causa e contexto clínico; em geral requer avaliação e tratamento, mas não constitui emergência automaticamente pelo número isolado.":
     "Hipercalcemia significativa; la necesidad y la urgencia del tratamiento dependen de los síntomas, la velocidad de instauración, la causa y el contexto clínico; en general requiere evaluación y tratamiento, pero no constituye una emergencia automáticamente por el número aislado.",
+
+  // ── ÂNION GAP FORA DO VERDE + R-111 na tela (2026-08-23) ──────────────
+  "Fora das faixas acima, o app não conclui pelo número: a conduta depende de sintomas, via enteral e contexto clínico.":
+    "Fuera de los tramos anteriores, la app no concluye por el número: la conducta depende de los síntomas, la vía enteral y el contexto clínico.",
+  "O cálcio não alcançou o corte de gravidade. Isso não é o mesmo que quadro estável: o contexto, a causa e os sintomas definem o restante da correção.":
+    "El calcio no alcanzó el punto de corte de gravedad. Eso no es lo mismo que un cuadro estable: el contexto, la causa y los síntomas definen el resto de la corrección.",
+  "Se o cálcio estiver abaixo do corte de gravidade ({0}), ou houver tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática.":
+    "Si el calcio está por debajo del punto de corte de gravedad ({0}), o hay tetania, convulsión o QT largo, la reposición IV gana prioridad práctica.",
+  "Se o fósforo estiver abaixo do corte de gravidade, tratar como distúrbio grave mesmo antes da falência muscular se a clínica for compatível.":
+    "Si el fósforo está por debajo del punto de corte de gravedad, tratar como trastorno grave incluso antes del fallo muscular si la clínica es compatible.",
+  "Sem valor classificável, o app NÃO afirma que o quadro é leve: informe o cálcio e o ensaio para que a gravidade seja lida.":
+    "Sin un valor clasificable, la app NO afirma que el cuadro es leve: informe el calcio y el ensayo para que la gravedad pueda leerse.",
+  "Informe a albumina para que o AG seja corrigido e interpretado. Sem ela, o valor medido isolado não separa «não há acidose de AG elevado» de «há, e a albumina baixa a escondeu».":
+    "Informe la albúmina para que el AG sea corregido e interpretado. Sin ella, el valor medido aislado no separa «no hay acidosis con AG elevado» de «la hay, y la albúmina baja la escondió».",
+  "ÂNION GAP BAIXO — não é «normal». Procure hipoalbuminemia (a causa mais comum), paraproteína do mieloma múltiplo e intoxicação por lítio ou brometo.":
+    "ANIÓN GAP BAJO — no es «normal». Busque hipoalbuminemia (la causa más frecuente), paraproteína del mieloma múltiple e intoxicación por litio o bromuro.",
+  "Ânion gap corrigido dentro da faixa de referência. Se há acidose, considere a hiperclorêmica (HARDUPS): HCO₃ perdido (diarreia), ATR, reposição de NaCl, fístula pancreática, urostomia, pós-hipocápnia, espironolactona.":
+    "Anión gap corregido dentro del rango de referencia. Si hay acidosis, considere la hiperclorémica (HARDUPS): HCO₃ perdido (diarrea), ATR, reposición de NaCl, fístula pancreática, urostomía, poshipocapnia, espironolactona.",
+  "⚠️ NÃO É POSSÍVEL INTERPRETAR O ÂNION GAP SEM A ALBUMINA. Ela é o principal ânion não medido: quando cai, o AG cai junto e MASCARA uma acidose de AG elevado que existe. Albumina 2,0 com AG 12 corresponde a um AG corrigido de ~17.":
+    "⚠️ NO ES POSIBLE INTERPRETAR EL ANIÓN GAP SIN LA ALBÚMINA. Es el principal anión no medido: cuando baja, el AG baja con ella y ENMASCARA una acidosis con AG elevado que sí existe. Albúmina 2,0 con AG 12 corresponde a un AG corregido de ~17.",
+  "AG = Na − (Cl + HCO₃). Faixa de referência 8–12 com albumina 4 g/dL — ⚠️ cortes herdados, sem fonte conferida.":
+    "AG = Na − (Cl + HCO₃). Rango de referencia 8–12 con albúmina 4 g/dL — ⚠️ puntos de corte heredados, sin fuente verificada.",
+  "Albumina (necessária para interpretar)":
+    "Albúmina (necesaria para interpretar)",
+  "Ânion gap corrigido dentro da faixa de referência":
+    "Anión gap corregido dentro del rango de referencia",
 };

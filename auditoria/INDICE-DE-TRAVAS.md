@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**60 de 77 travas com declaração completa.**
+**61 de 78 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -89,6 +89,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que os 12 distúrbios eletrolíticos tenham a classificação de gravidade COMO DADO, cada degrau com procedência de ALVO NOMEADO; que nenhum distúrbio fique sem degrau de base; que `getSeveritySummary` não volte a comparar contra o valor do paciente; e que um distúrbio existente SÓ no dado seja classificado sem tocar no componente.
 - **NÃO PROMETE:** que os 12 cortes estejam clínicos certos — nenhum tem fonte ainda, e é exatamente isso que o campo `alvo` declara. Também não cobre o resto da tela: imprime, a cada rodada, quantas comparações contra o valor do paciente continuam no componente (D-84).
 - **UNIVERSO:** `lib/eletrolitos/gravidade.ts`, compilado, com piso no retrato de 2026-08-23 (12 distúrbios, 24 degraus). A GRAVIDADE ELETROLÍTICA CONTINUA SENDO DADO — e o componente continua sem classificar. ⚠️ O QUE ESTA TRAVA IMPEDE: que o próximo corte volte para dentro do JSX. A extração é barata de fazer e barata de desfazer — basta alguém escrever `current < 3` numa condição de tela e o conteúdo clínico volta a morar onde nenhum instrumento o vê. ⚠️ E ELA CONFERE O QUE FOI EXTRAÍDO, não se a extração aconteceu: conta os degraus, exige procedência com ALVO nomeado em cada um, e prova que um distúrbio que existe SÓ no dado é classificado sem ninguém tocar no componente.
+
+## `test:texto-vs-corte` → `scripts/valida-texto-vs-corte.cjs`
+
+- **PROMETE:** que nenhum número escrito na PROSA da tela dos eletrólitos contradiga o corte declarado no dado para o mesmo analito. Se o texto diz "Ca < 7 mg/dL" e o corte é 1,9 mmol/L (≈ 7,62 mg/dL), reprova.
+- **NÃO PROMETE:** que o corte esteja clínico certo, nem que a prosa esteja completa. Ela confere COERÊNCIA entre as duas cópias, não a verdade de nenhuma.
+- **UNIVERSO:** os cortes com unidade declarada em `lib/eletrolitos/gravidade.ts` (impressos antes do resultado) × as strings da tela dos eletrólitos. ── R-95 NA SUA FORMA MAIS TEIMOSA ────────────────────────────────────────── O corte da hipocalcemia mudou de `< 7 mg/dL` para `< 1,9 mmol/L` (≈ 7,62) em 2026-08-23 — e **a prosa ao lado continuou dizendo o número velho**. Ninguém mente de propósito: o número saiu do lugar onde a trava olha e ficou onde ela não olhava. ⚠️ A segunda cópia não está em outro campo. Está NA FRASE.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 

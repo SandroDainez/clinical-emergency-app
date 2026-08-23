@@ -101,3 +101,34 @@ três estão em código que **já passou por auditoria** nesta sequência.
 ⚠️ **Não corrigido de propósito**, e o item 1 mostra por quê: consertar a queda ali
 esbarra numa decisão clínica (o que a tela deve dizer quando não há valor) e num
 corte que mudou. É revisão com o autor, não conserto de ternário.
+
+
+---
+
+# Atualização — 2026-08-23, mesma data
+
+Os três foram corrigidos, na ordem que o autor deu.
+
+| # | estado |
+|---|---|
+| **ânion gap** | ✅ fora do verde. Sem albumina **não conclui**; com albumina classifica pelo corrigido; o AG baixo ganhou texto próprio |
+| **`:1270` hipocalcemia** | ✅ o número saiu da frase (vem do dado) e o ramo final deixou de afirmar "estável" |
+| **`:1660` hipofosfatemia** | ✅ o ramo final deixou de afirmar "fósforo > 2 mg/dL" |
+
+```
+ACHADOS agora: 1 · ramo terminal 1
+   :1286  : "O cálcio não alcançou o corte de gravidade. Isso não é o mesmo que
+             quadro estável: o contexto, a causa e os sintomas definem…"
+```
+
+⚠️ **O único achado restante é FALSO POSITIVO DO PRÓPRIO INSTRUMENTO, e é meu:**
+o texto novo contém a palavra *"estável"* **dentro de uma negação** — ele diz
+exatamente o contrário do que o regex conclui. Deixado como está: refinar o
+instrumento para entender negação é frágil, e a alternativa (reescrever a frase
+para escapar do regex) seria piorar o texto clínico para agradar a ferramenta.
+
+⚠️ **E uma trava estava CODIFICANDO O DEFEITO como comportamento esperado:**
+`valida-calculadoras` rodava a varredura do AG **sem albumina** e exigia que a
+calculadora dissesse "normal". Ela dizia — e a trava aprovava. Agora ela confere
+as duas coisas separadas: com albumina, a fronteira do corrigido; **sem albumina,
+que a calculadora NÃO classifique e não saia em verde**.
