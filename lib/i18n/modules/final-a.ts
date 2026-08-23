@@ -301,8 +301,6 @@ export const ES_FINAL_A: Record<string, string> = {
     "Si la etapa se pasa en 10–20 minutos, la velocidad suele quedar dentro del límite operativo para adultos.",
   "Se houver bolsa pronta de NaCl 3%, usar diretamente esse volume total em bomba de infusão.":
     "Si hay una bolsa preparada de NaCl al 3%, usar directamente ese volumen total en bomba de infusión.",
-  "Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% 500–1000 mL, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.":
-    "Si hay deshidratación, signos de hipovolemia o inestabilidad hemodinámica: priorizar la reposición de volumen con salino al 0,9% 500–1000 mL, repetirla según la perfusión y solo después continuar con la corrección dirigida del sodio.",
 
   // ══ OUTROS MÓDULOS ════════════════════════════════════════════════════════
   "Módulo de fluxo — Pré-eclâmpsia e Eclâmpsia":

@@ -3430,3 +3430,17 @@ conteúdo não decide conteúdo.
 
 ⚠️ Pode ser proposital (os sinais realmente não mudam com a gravidade nesses
 três) ou pode ser texto que ninguém escreveu. Alvo: veredito do autor.
+
+## D-84 (atualizada 2026-08-23) — CAMADA 2 SAIU PARCIAL
+
+Saíram **13 frases** e **12 números** para `lib/eletrolitos/referencias.ts`.
+Dicionário: **13 chaves removidas**, 16 acrescentadas (13 molduras + 3 textos da
+D-85) — e as 13 que saíram eram justamente as que **carregavam número**.
+
+O que continua:
+
+- **~42 números literais** ainda dentro de frases do `calculateResult`, em sua
+  maioria valores por distúrbio que se repetem entre a frase e o cálculo.
+- **30 comparações contra o valor do paciente** no componente, impressas a cada
+  rodada por `test:gravidade-eletrolitica`.
+- `deriveAutomaticTarget` — a meta de correção por distúrbio.

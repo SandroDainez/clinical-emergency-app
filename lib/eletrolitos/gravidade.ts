@@ -33,6 +33,10 @@ export type DisturbioEletrolitico =
 export type ProcedenciaDeGravidade = {
   /** Documento que sustenta o corte. `null` enquanto a pendência estiver aberta. */
   fonte: string | null;
+  /** `definicao` = afirmação do autor sobre o que a clínica é, não corte de diretriz. */
+  forca?: "definicao";
+  /** ⚠️ Quem assina a afirmação. Assinatura não substitui conferência. */
+  declaradoPor?: string;
   /** ⚠️ Alvo NOMEADO da pendência — nunca vazio, nunca "a conferir". */
   alvo: string;
 };
@@ -46,6 +50,31 @@ export type CorteDeGravidade =
   /** Degrau de base: vale quando nenhum corte acima casou. */
   | { tipo: "restante" };
 
+/**
+ * ⚠️ DISTÚRBIO SEM ESCALA DE APRESENTAÇÃO.
+ *
+ * Três distúrbios repetiam o mesmo texto de sinais nos dois degraus, e a leitura
+ * do autor (2026-08-23) foi que isso não era preguiça de quem escreveu — é a
+ * clínica: eles NÃO TÊM apresentação própria que se agrave em degraus.
+ *
+ *   • hipo e hipercloremia são quase sempre MARCADORES, não doenças: o que
+ *     importa é o distúrbio ácido-base e a causa. O paciente não tem "sintoma de
+ *     cloro".
+ *   • hiperfosfatemia aguda manifesta-se pelo que ela CAUSA — hipocalcemia
+ *     sintomática e precipitação — não por si.
+ *
+ * Então o texto igual nos dois degraus estava factualmente certo e A TELA é que
+ * estava errada: dois degraus sugerem uma escala de sintomas que não existe.
+ * Aqui eles passam a ter UM degrau só, que diz isso.
+ *
+ * ⚠️ E NÃO SE INVENTOU SINTOMA PARA PREENCHER O DEGRAU QUE SAIU. É o R-97 outra
+ * vez: buraco pede número, degrau vazio pede sintoma.
+ */
+export const SEM_ESCALA_DE_APRESENTACAO =
+  "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa e a velocidade de instalação";
+export const SEM_ESCALA_HIPERFOSFATEMIA =
+  "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa, a velocidade de instalação e o cálcio associado";
+
 export type DegrauDeGravidade = {
   rotulo: string;
   sinais: string;
@@ -55,6 +84,18 @@ export type DegrauDeGravidade = {
 };
 
 const PENDENTE = (alvo: string): ProcedenciaDeGravidade => ({ fonte: null, alvo });
+
+/**
+ * ⚠️ FORÇA `definicao`, DECLARADA PELO AUTOR — e pendente de conferência dele.
+ * Não é corte de diretriz: é a afirmação de que NÃO EXISTE escala de
+ * apresentação nesses três. Quem afirma assina.
+ */
+const DEFINICAO_DO_AUTOR: ProcedenciaDeGravidade = {
+  fonte: null,
+  forca: "definicao",
+  declaradoPor: "Dr. Sandro Dainez, 2026-08-23",
+  alvo: "afirmação de que não há escala de apresentação nestes três — confirmação do autor pendente, e nenhum sintoma foi inventado para preencher o degrau que saiu",
+};
 
 const P_NA = PENDENTE("limiar de hiponatremia grave — alvo: diretriz europeia de hiponatremia (ESICM/ESE/ERA-EDTA 2014), verbatim em protocols/fontes-verbatim/");
 const P_NA_ALTA = PENDENTE("limiar de hipernatremia grave — alvo: fonte primária a nomear pelo autor");
@@ -110,18 +151,16 @@ export const GRAVIDADE_POR_DISTURBIO: Record<DisturbioEletrolitico, DegrauDeGrav
     { rotulo: "Leve a moderada", sinais: "Fraqueza e queda de performance muscular são os sinais mais prováveis.", cortes: [{ tipo: "restante" }], procedencia: P_P },
   ],
   hyperphosphatemia: [
-    // ⚠️ AQUI OS SINAIS SÃO OS MESMOS NOS DOIS DEGRAUS — era assim no componente,
-    // e continuou. Só o rótulo muda com o corte.
-    { rotulo: "Importante", sinais: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.", cortes: [{ tipo: "acimaDe", valor: 6 }], procedencia: P_P },
-    { rotulo: "Moderada", sinais: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.", cortes: [{ tipo: "restante" }], procedencia: P_P },
+    // ⚠️ UM DEGRAU SÓ, de propósito — ver SEM_ESCALA_DE_APRESENTACAO.
+    { rotulo: "Sem escala de apresentação", sinais: SEM_ESCALA_HIPERFOSFATEMIA, cortes: [{ tipo: "restante" }], procedencia: DEFINICAO_DO_AUTOR },
   ],
   hypochloremia: [
-    { rotulo: "Importante", sinais: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.", cortes: [{ tipo: "abaixoDe", valor: 95 }], procedencia: P_CL },
-    { rotulo: "Moderada", sinais: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.", cortes: [{ tipo: "restante" }], procedencia: P_CL },
+    // ⚠️ UM DEGRAU SÓ, de propósito — ver SEM_ESCALA_DE_APRESENTACAO.
+    { rotulo: "Sem escala de apresentação", sinais: SEM_ESCALA_DE_APRESENTACAO, cortes: [{ tipo: "restante" }], procedencia: DEFINICAO_DO_AUTOR },
   ],
   hyperchloremia: [
-    { rotulo: "Importante", sinais: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.", cortes: [{ tipo: "aPartirDe", valor: 115 }], procedencia: P_CL },
-    { rotulo: "Moderada", sinais: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.", cortes: [{ tipo: "restante" }], procedencia: P_CL },
+    // ⚠️ UM DEGRAU SÓ, de propósito — ver SEM_ESCALA_DE_APRESENTACAO.
+    { rotulo: "Sem escala de apresentação", sinais: SEM_ESCALA_DE_APRESENTACAO, cortes: [{ tipo: "restante" }], procedencia: DEFINICAO_DO_AUTOR },
   ],
 };
 

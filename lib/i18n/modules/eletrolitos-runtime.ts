@@ -20,14 +20,6 @@ export const ES_ELETROLITOS_RUNTIME: Record<string, string> = {
     "Volumen total calculado para la primera meta: {0} mL de NaCl al 3%.",
   "Após o bolus inicial, o restante calculado é {0} mL; infundir em 24 h por bomba contínua a cerca de {1} mL/h.":
     "Tras el bolo inicial, el resto calculado es {0} mL; infundir en 24 h por bomba continua a unos {1} mL/h.",
-  "Velocidade de referência: 0,5–1,0 mL/kg/h quando o quadro é hipovolêmico sem neurogravidade; para {0} kg isso corresponde a ~ {1}–{2} mL/h.":
-    "Velocidad de referencia: 0,5–1,0 mL/kg/h cuando el cuadro es hipovolémico sin gravedad neurológica; para {0} kg eso corresponde a ~ {1}–{2} mL/h.",
-  "Ureia oral: 0,25–0,50 g/kg/dia; para {0} kg isso equivale a ~ {1}–{2} g/dia, divididos em 2–3 tomadas.":
-    "Urea oral: 0,25–0,50 g/kg/día; para {0} kg eso equivale a ~ {1}–{2} g/día, repartidos en 2–3 tomas.",
-  "D5W pode ser usado para repor água livre; referência prática: ~ 3 mL/kg/h, o que para {0} kg corresponde a ~ {1} mL/h.":
-    "La dextrosa al 5% puede usarse para reponer agua libre; referencia práctica: ~ 3 mL/kg/h, lo que para {0} kg corresponde a ~ {1} mL/h.",
-  "Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ {0} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.":
-    "Referencia isotónica: el NaCl al 0,9% tiene 154 mEq/L y eleva ~ {0} mEq/L por litro en este caso; no sustituye el rescate de la gravedad neurológica.",
 
   // ── Hipernatremia: água livre e soluções ───────────────────────────────────
   "Volume total de água livre para a meta inicial: ~ {0} L.":
@@ -40,8 +32,6 @@ export const ES_ELETROLITOS_RUNTIME: Record<string, string> = {
     "Para esta etapa, programar {0} mL de dextrosa al 5% si se elige agua libre IV pura.",
   "Para o volume programado automaticamente desta etapa ({0} L), preparar SF 0,9% {1} mL + água destilada {2} mL.":
     "Para el volumen programado automáticamente de esta etapa ({0} L), preparar solución fisiológica 0,9% {1} mL + agua destilada {2} mL.",
-  "Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ {0} mEq/L por litro neste caso.":
-    "Esa mezcla genera una solución final con ~77 mEq/L de sodio y tiende a reducir ~ {0} mEq/L por litro en este caso.",
   "Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ {0} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.":
     "Si fuera necesario corregir toda la meta inicial solo con esa solución, el volumen teórico sería ~ {0} L; por eso muchas veces se corrige solo una parte ahora y se reevalúa.",
   "Para o volume programado automaticamente desta etapa ({0} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.":
@@ -86,8 +76,6 @@ export const ES_ELETROLITOS_RUNTIME: Record<string, string> = {
     "Como preparación práctica, esa etapa suele diluirse en {0} mL de solución fisiológica 0,9% o de dextrosa al 5%.",
   "Dose total estimada da etapa: {0} g; a redosagem define se será necessário repetir outra etapa depois.":
     "Dosis total estimada de la etapa: {0} g; la nueva medición define si será necesario repetir otra etapa después.",
-  "1 mL contém ~0,465 mEq de cálcio elementar; {0} mL fornecem ~{1} mEq.":
-    "1 mL contiene ~0,465 mEq de calcio elemental; {0} mL aportan ~{1} mEq.",
 
   // ── Magnésio ───────────────────────────────────────────────────────────────
   "Necessidade estimada da etapa inicial: {0} g de sulfato de magnésio 50% ({1} mL da ampola 50% / 500 mg/mL).":

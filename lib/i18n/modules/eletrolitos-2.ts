@@ -139,8 +139,6 @@ export const ES_ELETROLITOS_2: Record<string, string> = {
     "Controles obligatorios: sodio sérico y exploración neurológica 1–2 h después de cada bolo y luego cada 4 h en la fase de mantenimiento.",
   "Controlar sódio sérico e exame neurológico a cada 4 h na manutenção, recalculando a velocidade conforme a resposta.":
     "Controlar el sodio sérico y la exploración neurológica cada 4 h en el mantenimiento, recalculando la velocidad según la respuesta.",
-  "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.":
-    "Evitar superar 8–10 mEq/L en 24 h si la duración es incierta o crónica; si hay alto riesgo de desmielinización, apuntar a menos aún.",
   "Se o sódio estiver subindo além do limite planejado, interromper a estratégia em curso e considerar relowering controlado.":
     "Si el sodio está subiendo por encima del límite planificado, interrumpir la estrategia en curso y considerar un descenso controlado.",
   "Sem neurogravidade, a correção costuma ser mais lenta e guiada pela causa de base.":
@@ -183,8 +181,6 @@ export const ES_ELETROLITOS_2: Record<string, string> = {
     "Fase 1: si hay hipovolemia o choque, estabilizar la perfusión antes de centrarse en el agua libre.",
   "Fase 2: após estabilização, programar a correção ao longo de 24 horas e recalcular com sódio seriado.":
     "Fase 2: tras la estabilización, programar la corrección a lo largo de 24 horas y recalcular con sodio seriado.",
-  "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% 500–1000 mL por etapa e repetir conforme perfusão, antes de focar na água livre.":
-    "Si hay deshidratación, hipovolemia o inestabilidad hemodinámica, reanimar primero con solución fisiológica 0,9% 500–1000 mL por etapa y repetir según la perfusión, antes de centrarse en el agua libre.",
   "Se houver instabilidade hemodinâmica, ressuscitar em etapas com isotônico e reavaliar sódio frequentemente, porque a natremia pode subir rápido após o bloqueio fisiológico de ADH se desfazer.":
     "Si hay inestabilidad hemodinámica, reanimar en etapas con isotónico y reevaluar el sodio con frecuencia, porque la natremia puede subir rápido cuando se deshace el bloqueo fisiológico de la ADH.",
   "Se houver diurese aquosa súbita ou subida mais rápida que a meta, reavaliar imediatamente a taxa e a estratégia.":
@@ -199,8 +195,6 @@ export const ES_ELETROLITOS_2: Record<string, string> = {
     "Cuando el cálculo automático esté disponible, la mezcla fija de solución al 0,45% será siempre mitad solución fisiológica 0,9% y mitad agua destilada.",
   "Se houver bolsa pronta de 0,45% NaCl ou D5 0,45%, ela pode cumprir o mesmo papel prático dessa solução intermediária, conforme o contexto glicêmico e institucional.":
     "Si hay una bolsa preparada de NaCl al 0,45% o de dextrosa al 5% con NaCl al 0,45%, puede cumplir el mismo papel práctico que esta solución intermedia, según el contexto glucémico e institucional.",
-  "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.":
-    "El NaCl al 20% contiene ~3,42 mEq/mL de sodio; prepararlo siempre en un volumen final definido y con verificación de farmacia y enfermería.",
   "Se o sódio final calculado da etapa ficar muito próximo de 0 mEq/L, na prática isso equivale a água livre e não exige acrescentar NaCl 20%.":
     "Si el sodio final calculado de la etapa queda muy cerca de 0 mEq/L, en la práctica equivale a agua libre y no exige añadir NaCl al 20%.",
   "Se entrar agua por sonda/oral, esse valor vira meta total de agua livre e o volume EV precisa ser compensado.":
@@ -215,8 +209,6 @@ export const ES_ELETROLITOS_2: Record<string, string> = {
     "Complete el peso y el sodio para comparar la dextrosa al 5%, una solución tipo NaCl al 0,45% y la mezcla personalizada.",
 
   // ── Cloro ──────────────────────────────────────────────────────────────────
-  "SF 0,9% contém 154 mEq/L de cloreto.":
-    "La solución fisiológica 0,9% contiene 154 mEq/L de cloruro.",
   "A correção verdadeira é fisiológica: menos cloro entrando, mais água livre quando indicado, e tratar a causa da acidose.":
     "La corrección verdadera es fisiológica: menos cloruro entrando, más agua libre cuando esté indicado, y tratar la causa de la acidosis.",
   "Suspender/ reduzir soluções ricas em cloro se já não houver indicação hemodinâmica clara.":

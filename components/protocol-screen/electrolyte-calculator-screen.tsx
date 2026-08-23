@@ -11,6 +11,26 @@ import {
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 import { AGUARDANDO_VALOR, degrauDeGravidade } from "../../lib/eletrolitos/gravidade";
+// ⚠️ O NÚMERO VEM DO DADO, A FRASE É MOLDURA (R-107). Enquanto `154 mEq/L` e
+// `8–10 mEq/L em 24 h` moravam dentro da frase traduzível, cada um tinha uma
+// segunda cópia em espanhol, escrita noutro momento, sem nada entre as duas.
+import {
+  CLORETO_10_CALCIO,
+  D5W_AGUA_LIVRE,
+  GLUCONATO_10_CALCIO,
+  LIMITE_CORRECAO_24H,
+  LIMITE_CORRECAO_HORA,
+  MEIO_A_MEIO_SODIO,
+  NACL_09_CLORETO,
+  NACL_09_SODIO,
+  NACL_20_SODIO,
+  numero as numeroDaRef,
+  RAZAO_CLORETO_GLUCONATO,
+  RESSUSCITACAO_CRISTALOIDE,
+  texto as textoDaRef,
+  UREIA_ORAL_SIADH,
+  VELOCIDADE_HIPOVOLEMICO,
+} from "../../lib/eletrolitos/referencias";
 // ⚠️ LIMIARES E DOSES DA HIPERCALEMIA POR IMPORTAÇÃO, NÃO POR LITERAL.
 // Saíram desta tela para `lib/hipercalemia.ts` quando o módulo renal passou a
 // precisar dos mesmos números. Os valores não mudaram — a fonte é que passou a
@@ -661,7 +681,7 @@ function calculateResult(tr: (pt: string) => string, args: {
               trf(tr, "Alternativa para o mesmo volume final: SF 0,9% {0} mL + NaCl 20% {1} mL.", [fmt(sf09ForTotalMl, 0), fmt(nacl20ForTotalMl, 1)]),
               trf(tr, "Se houver neurogravidade, iniciar {0} mL em {1} e redosar sódio em 1–2 h ou antes se piora clínica.", [fmt(emergencyBolusMl, 0), emergencyBolusMinutes]),
               "Se convulsão, rebaixamento importante ou herniação iminente: repetir bolus após reavaliação clínica e novo sódio.",
-              `Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% 500–1000 mL, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.`,
+              trf(tr, "Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% {0}, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.", [textoDaRef(RESSUSCITACAO_CRISTALOIDE)]),
             ],
             tone: "warning",
           },
@@ -674,14 +694,14 @@ function calculateResult(tr: (pt: string) => string, args: {
                 ? trf(tr, "Após o bolus inicial, o restante calculado é {0} mL; infundir em 24 h por bomba contínua a cerca de {1} mL/h.", [fmt(remainingMaintenanceMl, 0), fmt(maintenanceRateMlH, 1)])
                 : "Após o bolus inicial, reavaliar; pode não ser necessário correr manutenção hipertônica se a meta inicial já foi atingida.",
               "Controlar sódio sérico e exame neurológico a cada 4 h na manutenção, recalculando a velocidade conforme a resposta.",
-              "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.",
+              trf(tr, "Evitar ultrapassar {0} em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.", [textoDaRef(LIMITE_CORRECAO_24H)]),
             ],
           },
           {
             title: "Cenário 3: SF 0,9% ou cristalóide balanceado",
             lines: [
               "Se o contexto for hiponatremia hipovolêmica, a solução de escolha pode ser SF 0,9% ou cristalóide balanceado, desde que o objetivo inicial seja restaurar volume e perfusão.",
-              trf(tr, "Velocidade de referência: 0,5–1,0 mL/kg/h quando o quadro é hipovolêmico sem neurogravidade; para {0} kg isso corresponde a ~ {1}–{2} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 0.5, 0), fmt(weightKg, 0)]),
+              trf(tr, "Velocidade de referência: {3} quando o quadro é hipovolêmico sem neurogravidade; para {0} kg isso corresponde a ~ {1}–{2} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 0.5, 0), fmt(weightKg, 0), textoDaRef(VELOCIDADE_HIPOVOLEMICO)]),
               "Se houver instabilidade hemodinâmica, ressuscitar em etapas com isotônico e reavaliar sódio frequentemente, porque a natremia pode subir rápido após o bloqueio fisiológico de ADH se desfazer.",
               "No módulo, considere SF 0,9% quando quiser maior previsibilidade e cristalóide balanceado quando o contexto clínico favorecer menor carga de cloro.",
             ],
@@ -690,7 +710,7 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Cenário 4: SIADH com restrição hídrica + ureia",
             lines: [
               "Se o perfil clínico for euvolêmico/SIADH sem neurogravidade, a estratégia pode ser reduzir água livre e aumentar soluto, em vez de usar isotônico de rotina.",
-              trf(tr, "Ureia oral: 0,25–0,50 g/kg/dia; para {0} kg isso equivale a ~ {1}–{2} g/dia, divididos em 2–3 tomadas.", [fmt(weightKg, 0), fmt(weightKg * 0.25, 0), fmt(weightKg * 0.5, 0)]),
+              trf(tr, "Ureia oral: {3}; para {0} kg isso equivale a ~ {1}–{2} g/dia, divididos em 2–3 tomadas.", [fmt(weightKg, 0), fmt(weightKg * 0.25, 0), fmt(weightKg * 0.5, 0), textoDaRef(UREIA_ORAL_SIADH)]),
               "A ureia funciona como osmótico renal, favorecendo excreção de água livre; é estratégia de manutenção e não substitui o resgate com NaCl 3% se houver neurogravidade.",
               "Associar restrição hídrica e monitorar sódio seriado; se a resposta estiver excessiva, frear para evitar sobrecorreção.",
             ],
@@ -708,7 +728,7 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Cenário 6: resgate de sobrecorreção com D5W + desmopressina",
             lines: [
               "Se o sódio estiver subindo além do limite planejado, interromper a estratégia em curso e considerar relowering controlado.",
-              trf(tr, "D5W pode ser usado para repor água livre; referência prática: ~ 3 mL/kg/h, o que para {0} kg corresponde a ~ {1} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 3, 0)]),
+              trf(tr, "D5W pode ser usado para repor água livre; referência prática: ~ {2}, o que para {0} kg corresponde a ~ {1} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 3, 0), textoDaRef(D5W_AGUA_LIVRE)]),
               "Desmopressina pode ser associada para travar a diurese aquosa e evitar que a correção siga acelerando.",
               "Esse cenário é de segurança e não de tratamento inicial rotineiro; usar com monitorização laboratorial estreita.",
             ],
@@ -722,7 +742,7 @@ function calculateResult(tr: (pt: string) => string, args: {
               "Controles obrigatórios: sódio sérico e exame neurológico 1–2 h após cada bolus e depois a cada 4 h na fase de manutenção.",
               "Monitorar diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
               "Se houver diurese aquosa súbita ou subida mais rápida que a meta, reavaliar imediatamente a taxa e a estratégia.",
-              trf(tr, "Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ {0} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.", [fmt(deltaPerL09, 2)]),
+              trf(tr, "Referência isotônica: NaCl 0,9% tem {1} e eleva ~ {0} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.", [fmt(deltaPerL09, 2), textoDaRef(NACL_09_SODIO)]),
               "Em hipovolemia, isotônico ou cristalóide balanceado fazem sentido como correção da causa; em SIADH, isotônico puro pode não resolver e às vezes piora a natremia.",
             ],
           },
@@ -795,7 +815,7 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Velocidade de correção",
             tone: "danger" as const,
             lines: [
-              "Não baixar o sódio mais que 8–10 mEq/L em 24 h (≈ 0,5 mEq/L/h). Na hipernatremia CRÔNICA ou de duração incerta, ficar no limite inferior.",
+              trf(tr, "Não baixar o sódio mais que {0} em 24 h (≈ {1}). Na hipernatremia CRÔNICA ou de duração incerta, ficar no limite inferior.", [textoDaRef(LIMITE_CORRECAO_24H), textoDaRef(LIMITE_CORRECAO_HORA)]),
               "O dano da correção rápida é EDEMA CEREBRAL, com convulsão e rebaixamento: o cérebro adaptado à hipertonicidade acumulou osmóis, e quando o plasma cai depressa a água entra na célula. É o espelho da desmielinização da hiponatremia — mesma pressa, dano oposto.",
               "A meta automática desta tela já respeita o teto de 8 mEq/L em 24 h. Reavaliar o sódio a cada 4 h e recalcular: se estiver caindo mais rápido que o previsto, reduzir a velocidade ou trocar por solução com mais sódio.",
               "Hipernatremia AGUDA (instalada em < 48 h, tipicamente iatrogênica ou por perda súbita de água livre) tolera correção mais rápida — o cérebro ainda não se adaptou. A distinção agudo × crônico vem antes da escolha da velocidade.",
@@ -843,7 +863,7 @@ function calculateResult(tr: (pt: string) => string, args: {
               plannedWaterL != null && sf09ForHalfHalfMl != null && waterForHalfHalfMl != null
                 ? trf(tr, "Para o volume programado automaticamente desta etapa ({0} L), preparar SF 0,9% {1} mL + água destilada {2} mL.", [fmt(plannedWaterL, 2), fmt(sf09ForHalfHalfMl, 0), fmt(waterForHalfHalfMl, 0)])
                 : "Quando o cálculo automático estiver disponível, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
-              trf(tr, "Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ {0} mEq/L por litro neste caso.", [fmt(Math.abs(deltaPerLHalfHalf), 2)]),
+              trf(tr, "Essa mistura gera solução final com ~{1} de sódio e tende a reduzir ~ {0} mEq/L por litro neste caso.", [fmt(Math.abs(deltaPerLHalfHalf), 2), textoDaRef(MEIO_A_MEIO_SODIO)]),
               "Se houver bolsa pronta de 0,45% NaCl ou D5 0,45%, ela pode cumprir o mesmo papel prático dessa solução intermediária, conforme o contexto glicêmico e institucional.",
               trf(tr, "Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ {0} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.", [fmt(litersHalfHalf, 2)]),
             ],
@@ -860,7 +880,7 @@ function calculateResult(tr: (pt: string) => string, args: {
                   ? trf(tr, "Para programar {0} L com sódio final alvo de ~ {1} mEq/L, usar água destilada {2} mL + NaCl 20% {3} mL.", [fmt(plannedWaterL, 2), fmt(targetInfusateNaDisplay, 0), fmt(waterWithNaCl20Ml, 0), fmt(nacl20ForPlannedL, 1)])
                   : "Preencha peso e sódio atual para destravar o preparo customizado com água destilada + NaCl 20%.",
               trf(tr, "Em 1 litro, isso corresponde a água destilada {0} mL + NaCl 20% {1} mL.", [fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0), fmt(nacl20mlPerLiter, 1)]),
-              "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
+              trf(tr, "NaCl 20% contém ~{0} de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.", [textoDaRef(NACL_20_SODIO)]),
             ],
           },
           {
@@ -881,7 +901,7 @@ function calculateResult(tr: (pt: string) => string, args: {
                 ? "Se Na >= 160 mEq/L, assumir distúrbio importante e trabalhar com reavaliações mais próximas no início da correção."
                 : "Se Na < 160 mEq/L e paciente estável, manter estratégia conservadora com reavaliação seriada.",
               trf(tr, "Meta usual: cair ~ {0} mEq/L em 24 h; em quadros claramente agudos a queda pode ser um pouco mais rápida, desde que monitorada.", [fmt(Math.min(dropNeeded, 10), 1)]),
-              "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% 500–1000 mL por etapa e repetir conforme perfusão, antes de focar na água livre.",
+              trf(tr, "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% {0} por etapa e repetir conforme perfusão, antes de focar na água livre.", [textoDaRef(RESSUSCITACAO_CRISTALOIDE)]),
               "Repetir sódio a cada 2–4 h no início da correção, recalcular após cada resultado e rever balanço hídrico/diurese.",
               renalDysfunction
                 ? "Se houver disfunção renal, o plano precisa considerar menor capacidade de depurar sódio e água; acompanhar balanço e resposta real, não só o cálculo."
@@ -1212,7 +1232,7 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Resgate IV",
             lines: [
               trf(tr, "Necessidade estimada da etapa inicial: {0} g de gluconato de cálcio 10% ({1} mL da solução 10%) = ~{2} mg de cálcio ELEMENTAR.", [doseG, fmt(volumeMl, 0), fmt(elementalMgGluconato, 0)]),
-              trf(tr, "⚠️ MESMA quantidade de cálcio elementar com CLORETO de cálcio 10%: apenas {0} mL (~{1} mg elementar). 1 mL de cloreto tem 1,36 mEq de Ca contra 0,465 mEq do gluconato — o cloreto é ~3× mais concentrado em cálcio elementar. Trocar um pelo outro na proporção 1:1 erra por 3× em uma das direções.", [fmt(volumeCloretoMl, 1), fmt(elementalMgCloreto, 0)]),
+              trf(tr, "⚠️ MESMA quantidade de cálcio elementar com CLORETO de cálcio 10%: apenas {0} mL (~{1} mg elementar). 1 mL de cloreto tem {2} mEq de Ca contra {3} mEq do gluconato — o cloreto é ~{4}× mais concentrado em cálcio elementar. Trocar um pelo outro na proporção 1:1 erra por {4}× em uma das direções.", [fmt(volumeCloretoMl, 1), fmt(elementalMgCloreto, 0), numeroDaRef(CLORETO_10_CALCIO), numeroDaRef(GLUCONATO_10_CALCIO), String(RAZAO_CLORETO_GLUCONATO).replace(".", ",")]),
               "QUAL DOS DOIS — é escolha por CONTEXTO, não por disponibilidade. CLORETO: preferido na PCR, na hipercalemia com alteração de ECG e na hipocalcemia com instabilidade — entrega mais cálcio elementar mais rápido. Exige acesso CENTRAL de preferência: é muito mais esclerosante e a extravasação causa necrose. GLUCONATO: preferido em acesso periférico e quando não há urgência elétrica, por ser bem menos irritante.",
               trf(tr, "Como preparo prático, essa etapa costuma ser diluída em {0} mL de SF 0,9% ou SG 5%.", [estimatedBagMl]),
               `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
@@ -1241,7 +1261,7 @@ function calculateResult(tr: (pt: string) => string, args: {
               trf(tr, "Dose total estimada da etapa: {0} g; a redosagem define se será necessário repetir outra etapa depois.", [doseG]),
               lineWithVolume("1 g de gluconato de cálcio 10%", 10, "gluconato de cálcio 10%"),
               lineWithVolume("2 g de gluconato de cálcio 10%", 20, "gluconato de cálcio 10%"),
-              trf(tr, "1 mL contém ~0,465 mEq de cálcio elementar; {0} mL fornecem ~{1} mEq.", [fmt(volumeMl, 0), fmt(elementalMeq, 1)]),
+              trf(tr, "1 mL contém ~{2} de cálcio elementar; {0} mL fornecem ~{1} mEq.", [fmt(volumeMl, 0), fmt(elementalMeq, 1), numeroDaRef(GLUCONATO_10_CALCIO) + " mEq"]),
             ],
           },
         ],
@@ -1731,7 +1751,7 @@ function calculateResult(tr: (pt: string) => string, args: {
           {
             title: "Equivalências",
             lines: [
-              "SF 0,9% contém 154 mEq/L de cloreto.",
+              trf(tr, "SF 0,9% contém {0} de cloreto.", [textoDaRef(NACL_09_CLORETO)]),
               lineWithVolume("20 mEq de KCl", 8, "KCl 19,1% / 2,5 mEq/mL"),
               lineWithVolume("40 mEq de KCl", 16, "KCl 19,1% / 2,5 mEq/mL"),
             ],

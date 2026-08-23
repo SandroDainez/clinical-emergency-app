@@ -6394,3 +6394,37 @@ e o que sobra para revisar é texto, onde a revisão humana funciona.
 
 ⚠️ Este é o argumento mais forte a favor do motor, e ele não veio de gosto por
 arquitetura: veio de medir.
+
+## R-108 — VERDE POR AUSÊNCIA
+
+Cinco achados de uma rodada só (2026-08-23), e são o mesmo defeito:
+
+| o que aconteceu | por que passou |
+|---|---|
+| erro classificado, `exit 0` | severidade declarada não amarrada à saída |
+| três instrumentos fora do `test:all` | código de saída que ninguém roda é decoração |
+| `auditoria-doses-criticas` morto desde `a9b16ad` | crashava na compilação, invisível fora do portão |
+| bloco pulado por `typeof === "function"` | relatório saía limpo — pior que crashar |
+| varredura com `timeout` (não existe no macOS) | 53 instrumentos voltaram 127 e "nenhum tinha defeito" |
+
+Todos produzem a mesma mentira: **"está tudo bem" quando o correto era "nada foi
+olhado"**. Os dois últimos são os piores, porque o silêncio é indistinguível do
+sucesso.
+
+A regra que já tínhamos — universo junto com resultado (R-101) — cobre o
+instrumento QUE RODA. Esta cobre o que NÃO roda:
+
+1. **Se um achado importa, ele reprova.** Severidade declarada e não amarrada à
+   saída é mentira sobre a própria severidade.
+2. **Instrumento fora do portão ou entra, ou vira isenção DATADA E JUSTIFICADA.**
+   Ausência silenciosa, não.
+3. **Código de saída fora de {0, 1} é "não rodou", nunca "passou".** 127, 126 e 2
+   são falha de execução.
+4. **Piso no número de instrumentos no portão.** Instrumento não some sozinho.
+5. **Bloco pulado é linha do relatório** — `Blocos PULADOS: 2` em vez de silêncio.
+
+`scripts/censo-de-instrumentos.cjs` é quem cobra os cinco, e está no `test:all`.
+
+⚠️ E a datação, porque o custo importa: os três instrumentos nasceram em
+**2026-07-28** e entraram no portão em **2026-08-23**. **349 commits** foram para
+produção sem eles — incluindo o que levou a exceção da ceftriaxona.

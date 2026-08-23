@@ -38,7 +38,69 @@ const TELA = "components/protocol-screen/electrolyte-calculator-screen.tsx";
 const bruto = lerFonte(path.join(appDir, TELA));
 // R-15 item 1: comentários fora — este arquivo passou a documentar os próprios
 // defeitos, e a documentação cita os números que as regras procuram.
-const src = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+let src = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+
+// ── ⚠️ AS REFERÊNCIAS SÃO RESOLVIDAS ANTES DE PROCURAR O NÚMERO ─────────────
+//
+// Até 2026-08-23 esta trava procurava `8–10 mEq` COMO LITERAL no código da tela.
+// Quando aquele número saiu da frase e virou dado (`lib/eletrolitos/referencias.ts`,
+// R-107), ela reprovou — e estava certa em reprovar, porque o literal sumiu.
+// Mas o que ela PROMETE é que o número CHEGA À TELA, não que ele está escrito no
+// arquivo: procurar o literal era medir o proxy (R-87).
+//
+// Agora ela expande `textoDaRef(X)` e `numeroDaRef(X)` para o valor que o dado
+// tem, e só então procura. Ficou MAIS forte: se alguém trocar o valor no dado, a
+// expansão muda e a regra reprova — coisa que a busca por literal não fazia.
+{
+  const { execFileSync } = require("node:child_process");
+  const os = require("node:os");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "eletro-ref-"));
+  execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+    "--moduleResolution", "node", "--skipLibCheck", "--outDir", tmp,
+    path.join(appDir, "lib", "eletrolitos", "referencias.ts")], { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] });
+  const R = require(path.join(tmp, "referencias.js"));
+  src = src
+    .replace(/textoDaRef\((\w+)\)/g, (m, nome) => (R[nome] ? JSON.stringify(R.texto(R[nome])) : m))
+    .replace(/numeroDaRef\((\w+)\)/g, (m, nome) => (R[nome] ? JSON.stringify(R.numero(R[nome])) : m))
+    .replace(/String\(RAZAO_CLORETO_GLUCONATO\)\.replace\([^)]*\)/g,
+      JSON.stringify(String(R.RAZAO_CLORETO_GLUCONATO).replace(".", ",")));
+
+  // ⚠️ E A MOLDURA É MONTADA, não só o argumento. O texto que o médico lê é
+  // `trf(tr, "…tem {2} mEq…", [.., "1,36"])` já resolvido — procurar "1,36 mEq"
+  // na fonte sem montar a frase é medir o proxy de novo, um nível acima.
+  // Argumento que não é literal (um `fmt(...)` de valor calculado) fica como
+  // `{n}`: ali o número depende do paciente e não pode ser conferido aqui.
+  src = src.replace(/trf\(tr,\s*("(?:[^"\\]|\\.)*")\s*,\s*\[([^\]]*)\]\)/g, (m, moldura, args) => {
+    let texto;
+    try { texto = JSON.parse(moldura); } catch { return m; }
+    // ⚠️ SEPARADOR QUE RESPEITA PARÊNTESE. A primeira versão cortava em toda
+    // vírgula, e `fmt(volumeCloretoMl, 1)` virava DOIS argumentos — o índice de
+    // todos os seguintes andava, e `{2}` recebia o valor errado ou nenhum. Erro
+    // silencioso: a trava não quebrava, só deixava de conferir.
+    const partes = [];
+    {
+      // ⚠️ E RESPEITA ASPAS: em português o número tem VÍRGULA DECIMAL, e
+      // `"1,36"` era cortado ao meio em `"1` e `36"`. O separador ficou com oito
+      // partes onde havia cinco, e nenhuma delas parecia literal — a trava
+      // deixava de conferir sem reclamar de nada.
+      let nivel = 0, atual = "", aspa = false;
+      for (const c of args) {
+        if (c === '"') aspa = !aspa;
+        if (!aspa) {
+          if (c === "(" || c === "[") nivel++;
+          else if (c === ")" || c === "]") nivel--;
+          if (c === "," && nivel === 0) { partes.push(atual.trim()); atual = ""; continue; }
+        }
+        atual += c;
+      }
+      if (atual.trim()) partes.push(atual.trim());
+    }
+    partes.forEach((arg, i) => {
+      if (/^"(?:[^"\\]|\\.)*"$/.test(arg)) texto = texto.split(`{${i}}`).join(JSON.parse(arg));
+    });
+    return JSON.stringify(texto);
+  });
+}
 
 /** Extrai o bloco de um `case` do switch de estratégia. */
 function bloco(nome) {

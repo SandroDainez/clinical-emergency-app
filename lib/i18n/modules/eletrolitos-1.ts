@@ -361,4 +361,41 @@ export const ES_ELETROLITOS_1: Record<string, string> = {
     "Complete el valor actual para clasificar la gravedad y destacar los signos principales.",
   "Preencha pelo menos peso e valor atual para destravar o cálculo.":
     "Complete al menos el peso y el valor actual para habilitar el cálculo.",
+
+  // ── R-107: MOLDURA SEM NÚMERO (2026-08-23) ────────────────────────────
+  // ⚠️ O número saiu daqui e foi para lib/eletrolitos/referencias.ts. Estas
+  // chaves não podem mais divergir do português por número, porque não têm
+  // número — os dois idiomas recebem o mesmo valor do mesmo dado.
+  "Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% {0}, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.":
+    "Si hay deshidratación, signos de hipovolemia o inestabilidad hemodinámica: priorizar la reposición volémica con solución fisiológica al 0,9% {0}, repetir según la perfusión, y solo después seguir la corrección dirigida del sodio.",
+  "Evitar ultrapassar {0} em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.":
+    "Evitar superar {0} en 24 h si la duración es incierta o crónica; si hay alto riesgo de desmielinización, apuntar aún más bajo.",
+  "Velocidade de referência: {3} quando o quadro é hipovolêmico sem neurogravidade; para {0} kg isso corresponde a ~ {1}–{2} mL/h.":
+    "Velocidad de referencia: {3} cuando el cuadro es hipovolémico sin neurogravedad; para {0} kg eso corresponde a ~ {1}–{2} mL/h.",
+  "Ureia oral: {3}; para {0} kg isso equivale a ~ {1}–{2} g/dia, divididos em 2–3 tomadas.":
+    "Urea oral: {3}; para {0} kg eso equivale a ~ {1}–{2} g/día, divididos en 2–3 tomas.",
+  "D5W pode ser usado para repor água livre; referência prática: ~ {2}, o que para {0} kg corresponde a ~ {1} mL/h.":
+    "El suero glucosado al 5% puede usarse para reponer agua libre; referencia práctica: ~ {2}, lo que para {0} kg corresponde a ~ {1} mL/h.",
+  "Referência isotônica: NaCl 0,9% tem {1} e eleva ~ {0} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.":
+    "Referencia isotónica: el NaCl al 0,9% tiene {1} y eleva ~ {0} mEq/L por litro en este caso; no sustituye el rescate de la neurogravedad.",
+  "Não baixar o sódio mais que {0} em 24 h (≈ {1}). Na hipernatremia CRÔNICA ou de duração incerta, ficar no limite inferior.":
+    "No bajar el sodio más de {0} en 24 h (≈ {1}). En la hipernatremia CRÓNICA o de duración incierta, quedarse en el límite inferior.",
+  "Essa mistura gera solução final com ~{1} de sódio e tende a reduzir ~ {0} mEq/L por litro neste caso.":
+    "Esa mezcla genera una solución final con ~{1} de sodio y tiende a reducir ~ {0} mEq/L por litro en este caso.",
+  "NaCl 20% contém ~{0} de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.":
+    "El NaCl al 20% contiene ~{0} de sodio; preparar siempre en un volumen final definido y con doble verificación de farmacia y enfermería.",
+  "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% {0} por etapa e repetir conforme perfusão, antes de focar na água livre.":
+    "Si hay deshidratación, hipovolemia o inestabilidad hemodinámica, reanimar primero con solución fisiológica al 0,9% {0} por etapa y repetir según la perfusión, antes de centrarse en el agua libre.",
+  "1 mL contém ~{2} de cálcio elementar; {0} mL fornecem ~{1} mEq.":
+    "1 mL contiene ~{2} de calcio elemental; {0} mL aportan ~{1} mEq.",
+  "SF 0,9% contém {0} de cloreto.":
+    "La solución fisiológica al 0,9% contiene {0} de cloruro.",
+  "⚠️ MESMA quantidade de cálcio elementar com CLORETO de cálcio 10%: apenas {0} mL (~{1} mg elementar). 1 mL de cloreto tem {2} mEq de Ca contra {3} mEq do gluconato — o cloreto é ~{4}× mais concentrado em cálcio elementar. Trocar um pelo outro na proporção 1:1 erra por {4}× em uma das direções.":
+    "⚠️ MISMA cantidad de calcio elemental con CLORURO de calcio al 10%: solo {0} mL (~{1} mg elemental). 1 mL de cloruro tiene {2} mEq de Ca frente a {3} mEq del gluconato — el cloruro es ~{4}× más concentrado en calcio elemental. Cambiar uno por otro en proporción 1:1 se equivoca por {4}× en alguna de las direcciones.",
+  "Sem escala de apresentação":
+    "Sin escala de presentación",
+  "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa e a velocidade de instalação":
+    "La gravedad aquí no cambia la presentación. Lo que cambia la conducta es la causa y la velocidad de instauración",
+  "A gravidade aqui não muda a apresentação. O que muda a conduta é a causa, a velocidade de instalação e o cálcio associado":
+    "La gravedad aquí no cambia la presentación. Lo que cambia la conducta es la causa, la velocidad de instauración y el calcio asociado",
 };

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**58 de 75 travas com declaração completa.**
+**60 de 77 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -89,6 +89,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que os 12 distúrbios eletrolíticos tenham a classificação de gravidade COMO DADO, cada degrau com procedência de ALVO NOMEADO; que nenhum distúrbio fique sem degrau de base; que `getSeveritySummary` não volte a comparar contra o valor do paciente; e que um distúrbio existente SÓ no dado seja classificado sem tocar no componente.
 - **NÃO PROMETE:** que os 12 cortes estejam clínicos certos — nenhum tem fonte ainda, e é exatamente isso que o campo `alvo` declara. Também não cobre o resto da tela: imprime, a cada rodada, quantas comparações contra o valor do paciente continuam no componente (D-84).
 - **UNIVERSO:** `lib/eletrolitos/gravidade.ts`, compilado, com piso no retrato de 2026-08-23 (12 distúrbios, 24 degraus). A GRAVIDADE ELETROLÍTICA CONTINUA SENDO DADO — e o componente continua sem classificar. ⚠️ O QUE ESTA TRAVA IMPEDE: que o próximo corte volte para dentro do JSX. A extração é barata de fazer e barata de desfazer — basta alguém escrever `current < 3` numa condição de tela e o conteúdo clínico volta a morar onde nenhum instrumento o vê. ⚠️ E ELA CONFERE O QUE FOI EXTRAÍDO, não se a extração aconteceu: conta os degraus, exige procedência com ALVO nomeado em cada um, e prova que um distúrbio que existe SÓ no dado é classificado sem ninguém tocar no componente.
+
+## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
+
+- **PROMETE:** que os números extraídos para `lib/eletrolitos/referencias.ts` não voltem a existir como LITERAL na tela dos eletrólitos nem dentro de qualquer dicionário de tradução; que toda referência declare procedência com alvo nomeado; e que a moldura traduzida não tenha número onde o dado deveria entrar.
+- **NÃO PROMETE:** que o número esteja clínico certo. Cinco das doze são conduta sem fonte, e é o campo `alvo` que diz isso. A trava garante que o número tem UMA DONA — não que a dona esteja certa.
+- **UNIVERSO:** `lib/eletrolitos/referencias.ts` compilado + a tela dos eletrólitos + os 121 dicionários de `lib/i18n/modules`, contados antes do resultado. ── POR QUE ESTA TRAVA EXISTE (R-107) ─────────────────────────────────────── `154 mEq/L` e `8–10 mEq/L em 24 h` moravam DENTRO da frase traduzível. Toda frase dessas tem uma segunda cópia em espanhol, escrita noutro momento — e a medição de 2026-08-23 achou duas linhas em que o espanhol dizia OUTRO critério clínico (D-80). O número no dicionário tem duas donas. ⚠️ E A TRAVA OLHA O DICIONÁRIO, não só a tela: devolver o número ao espanhol é tão fácil quanto devolvê-lo ao componente, e mais difícil de notar.
+
+## `test:censo` → `scripts/censo-de-instrumentos.cjs`
+
+- **PROMETE:** que todo script de instrumento do repositório esteja no `test:all` ou numa isenção DATADA E JUSTIFICADA; que o número de instrumentos no portão não caia (piso registrado); que cada um RODE de fato; e que nenhum termine com código fora de {0,1} — porque 127, 126 e 2 são "não rodou", e "não rodou" saindo como verde é a mentira que este censo existe para matar.
+- **NÃO PROMETE:** que o instrumento meça a coisa certa, nem que o universo dele seja suficiente. Isso é `valida-pipeline` (declaração de cobertura) e `lib/universo.cjs` (piso por instrumento). O censo cobre EXISTÊNCIA e EXECUÇÃO, não qualidade.
+- **UNIVERSO:** `scripts/*.cjs` que casam com o padrão de instrumento, contados e impressos antes do resultado, com piso em auditoria/universo-dos-instrumentos.json. ── A FAMÍLIA QUE ELE NASCEU PARA MATAR (2026-08-23) ──────────────────────── Cinco coisas de uma rodada só, todas a mesma mentira — "está tudo bem" quando o correto era "nada foi olhado": 1. erro classificado saindo com código 0 (severidade não amarrada à saída) 2. três instrumentos FORA do test:all — 349 commits desde que nasceram 3. auditoria-doses-criticas MORTO desde a9b16ad, crashando na compilação 4. bloco pulado por `typeof === "function"`, relatório saindo limpo 5. uma varredura minha com `timeout` (inexistente no macOS): 53 instrumentos voltaram 127, e a saída vazia leu-se como "ninguém tem esse defeito" As duas últimas são as piores: o silêncio é indistinguível do sucesso.
 
 ## `audit:confirmacao` → `scripts/diag-confirmacao-repetida.cjs`
 
