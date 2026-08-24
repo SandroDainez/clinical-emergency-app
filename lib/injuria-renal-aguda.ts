@@ -449,3 +449,33 @@ export const ARMADILHAS_PORQUE = [
   "➜ São TRÊS afirmações, não uma: não prevenir (1B), não tratar a lesão (2C) e, na mesma 3.4.2, CONSIDERAR a alça se houver sobrecarga.",
   "➜ O negativo e a sua exceção andam juntos: sozinho, o negativo vira um falso absoluto e some a única indicação que resta.",
 ];
+
+
+/**
+ * ⚠️ A GLICEMIA É VERIFICAÇÃO DO BLOCO D — NÃO É ACHADO QUE ROTEIA.
+ *
+ * Decisão do autor, 2026-08-24, literal: *"Alteração do nível de consciência,
+ * confusão aguda ou convulsão deve disparar verificação imediata de glicemia
+ * capilar dentro do D do ABCDE. Não como uma nova opção separada, mas como
+ * verificação obrigatória dentro do bloco D."*
+ *
+ * ⚠️ POR ISSO ELA NÃO VIRA UMA QUARTA OPÇÃO: as três do bloco continuam sendo
+ * três, com os três destinos (R-123). Uma quarta opção faria a glicemia ROTEAR —
+ * e ela não roteia, ela acompanha.
+ *
+ * ⚠️ E NÃO PRECEDE A, B NEM C. A ordem do ABCDE já protege isso, mas a frase do
+ * autor está escrita aqui porque alguém vai querer "adiantar o dextro" depois.
+ *
+ * ⚠️ NENHUM NÚMERO. "Se houver hipoglicemia" pressupõe um corte que separa há de
+ * não há — e esse corte NÃO está na decisão do autor. O app pergunta e não
+ * classifica: escrever 70 ou 54 aqui seria o R-97 na forma mais direta, o buraco
+ * convidando o número. A pergunta de qual corte adotar está no arquivo do autor.
+ */
+export const GLICEMIA_NO_D =
+  "⚠️ VERIFIQUE A GLICEMIA CAPILAR AGORA — toda alteração do nível de consciência, confusão aguda ou convulsão pede o dextro imediato.";
+
+export const GLICEMIA_NAO_ATRASA =
+  "A glicemia NÃO atrasa o manejo prioritário de via aérea, ventilação, circulação nem o controle de convulsão em curso: ela acontece JUNTO, não antes.";
+
+export const GLICEMIA_RESULTADO =
+  "Se houver hipoglicemia, trate imediatamente. Se não houver, siga a investigação do estado mental — e sem presumir uremia.";

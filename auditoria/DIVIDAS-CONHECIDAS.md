@@ -3803,3 +3803,55 @@ diagnóstico sindrômico**.
 Isso pede uma **entrada por apresentação clínica no nível do app inteiro** — o
 mesmo teste do R-121 aplicado à porta da frente. Alvo: decisão do autor sobre
 quando abrir essa fase.
+
+## D-101 — PROCEDÊNCIA DE PROCESSO EM TELA, FORA DO RENAL
+
+Medido em 2026-08-23. **Não corrigido** — a limpeza autorizada era do renal.
+
+**Padrão de busca:** `/repositório|não está citad|não tem diretriz|relatório de
+conferência|verbatim|protocols\/fontes|força não inflada/i`, em literais com mais
+de 60 caracteres, lidos **sem comentário**.
+
+**Universo:** 456 arquivos `.ts`/`.tsx`.
+**Achados:** 7 — **2** em campo `alvo` (metadado de pendência, nunca renderizado,
+tudo bem) e **5 em tela**:
+
+| arquivo | o que é |
+|---|---|
+| `lib/anion-gap.ts` | caminho do verbatim de Figge a transcrever |
+| `lib/eletrolitos/gravidade.ts` (×2) | verbatim da Spasovski a transcrever · o caminho do arquivo da UKKA |
+| `components/protocol-screen/acls-post-rosc-screen.tsx` (×2) | "verbatim pendente" nas duas linhas da SSC |
+
+⚠️ **Não é cosmético:** esses 5 são **exatamente o defeito que o autor reprovou
+no celular** — texto sobre o nosso processo aparecendo na tela clínica —, só que
+em módulos que ele ainda não percorreu. Não foram achados por sorte: foram
+achados porque a varredura existiu.
+
+Entra na fila dos 30 módulos restantes.
+
+## D-102 — O APP NÃO TEM FLUXO DE DELIRIUM / ALTERAÇÃO AGUDA DO ESTADO MENTAL
+
+Registrada em 2026-08-23. ⚠️ **Não é dívida do renal — é lacuna do app.**
+
+A confusão aguda isolada, no passo 0 do renal, **não aponta para ramo nenhum**:
+recebe o texto do autor e segue o fluxo (R-123). O destino natural dela seria um
+fluxo de delirium, **que não existe**.
+
+Entra na decisão de ordem dos 30 módulos restantes. **Não começar.**
+
+## D-103 — O CORTE DE HIPOGLICEMIA: DOIS NÚMEROS, NENHUMA PROCEDÊNCIA
+
+Varrido em 2026-08-24 (474 arquivos, 73.723 literais, padrão `/hipoglicemi/i`).
+
+**Existe corte no app — e existem DOIS, diferentes:**
+
+| onde | corte | procedência |
+|---|---|---|
+| `avc-decision-tree.ts` (nó `entry`) | *"tratar se **< 60 mg/dL**"* | ⚠️ **nenhuma** — o nó não tem `procedencia` |
+| ACLS, causas reversíveis | *"Evitar glicemia **< 70** e > 180 mg/dL"* | ⚠️ **nenhuma** |
+
+⚠️ **E não há módulo nem ramo de hipoglicemia**: a varredura de
+`clinical-modules.ts` devolve apenas `cetoacidose-hiperosmolar`, que é o oposto.
+
+Por isso o passo 0 do renal **pergunta e não classifica**: nenhum número foi
+escrito. Alvo: pergunta ao autor sobre qual corte adotar e de qual fonte.

@@ -595,7 +595,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 71/74 (96%) | test:passo-zero, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
+| `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

@@ -34,9 +34,19 @@ let falhas = 0;
 const erro = (m) => { console.error(`❌ ${m}`); falhas++; };
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "p0-"));
-execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-  "--moduleResolution", "node", "--skipLibCheck", "--resolveJsonModule", "--outDir", tmp,
-  path.join(RAIZ, "ira-decision-tree.ts")], { cwd: RAIZ, stdio: ["ignore", "ignore", "inherit"] });
+// ⚠️ FALHA DE COMPILAÇÃO É REPROVAÇÃO COM RAZÃO, NÃO STACK TRACE.
+//
+// Sem o `try`, uma mutação que quebrasse a árvore matava a trava com um stack de
+// `execFileSync` — saía com código 1, então "reprovava", mas sem dizer POR QUÊ.
+// Reprovar sem razão é quase tão ruim quanto passar sem olhar.
+try {
+  execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+    "--moduleResolution", "node", "--skipLibCheck", "--resolveJsonModule", "--outDir", tmp,
+    path.join(RAIZ, "ira-decision-tree.ts")], { cwd: RAIZ, stdio: ["ignore", "ignore", "inherit"] });
+} catch {
+  console.error("❌ `ira-decision-tree.ts` não compila — a conferência do passo 0 não rodou. O erro do compilador está acima.");
+  process.exit(1);
+}
 const { iraDecisionTree: T } = require(path.join(tmp, "ira-decision-tree.js"));
 
 const entrada = T.nodes[T.entryNodeId];
@@ -77,6 +87,47 @@ for (const [nome, destino] of destinoPorAchado) {
   else vistos.set(destino, nome);
 }
 for (const [nome, destino] of destinoPorAchado) console.log(`   ${nome.padEnd(38)} → ${destino}`);
+
+// ── A GLICEMIA É VERIFICAÇÃO DO BLOCO D, NÃO ACHADO QUE ROTEIA
+//
+// ⚠️ Decisão do autor (2026-08-24): *"não como uma nova opção separada, mas como
+// verificação obrigatória dentro do bloco D"*, e *"a glicemia não deve atrasar
+// manejo prioritário de via aérea, ventilação, circulação ou controle de
+// convulsão em curso"*.
+//
+// ⚠️ E NENHUM NÚMERO: "se houver hipoglicemia" pressupõe um corte que a decisão
+// não traz. Escrever 70 ou 54 aqui seria o R-97 na forma mais direta.
+{
+  const D = ["abcde_d_rebaixamento", "abcde_d_confusao", "abcde_d_convulsao"];
+  const ANTES_DE_D = ["abcde_a", "abcde_b", "abcde_c_perfusao", "abcde_c_ritmo"];
+  const textoDe = (no) => JSON.stringify(T.nodes[no] ?? {});
+  const MARCA = /VERIFIQUE A GLICEMIA CAPILAR AGORA/;
+
+  // M97 — a verificação não pode sumir do bloco D.
+  const semGlicemia = D.filter((no) => !MARCA.test(textoDe(no)));
+  if (semGlicemia.length)
+    erro(`o bloco D perdeu a verificação de glicemia em: ${semGlicemia.join(", ")} — ela é verificação OBRIGATÓRIA do bloco (autor, 2026-08-24)`);
+  if (!MARCA.test(textoDe(T.entryNodeId)))
+    erro(`a tela do passo 0 não traz a verificação de glicemia — ela acompanha as três opções do bloco D`);
+
+  // M98 — não pode virar opção que roteia.
+  const comoOpcao = (entrada.options ?? []).filter((o) => /glicemi|dextro/i.test(o.label));
+  if (comoOpcao.length)
+    erro(`a glicemia virou opção do passo 0 (« ${comoOpcao[0].label} ») — a glicemia é VERIFICAÇÃO DO BLOCO, não achado que roteia. Uma quarta opção a faria rotear.`);
+
+  // M99 — não pode preceder A, B nem C.
+  const adiantada = ANTES_DE_D.filter((no) => MARCA.test(textoDe(no)));
+  if (adiantada.length)
+    erro(`a glicemia apareceu em ${adiantada.join(", ")} — ela NÃO precede A, B nem C: "a glicemia não deve atrasar manejo prioritário de via aérea, ventilação, circulação ou controle de convulsão em curso" (autor). Ela acontece JUNTO, não antes.`);
+
+  // ⚠️ E NENHUM NÚMERO DE GLICEMIA ENTROU JUNTO.
+  const comNumero = [...D, T.entryNodeId, "abcde_guiado"]
+    .filter((no) => /glicemi[^"]{0,80}?\d|\d+\s*mg\/dL[^"]{0,40}?glicemi/i.test(textoDe(no)));
+  if (comNumero.length)
+    erro(`número de glicemia apareceu no passo 0 (${comNumero.join(", ")}) — o corte de hipoglicemia NÃO foi decidido, e o buraco convida o número (R-97)`);
+
+  console.log(`   glicemia: verificação presente nos ${D.length} nós do bloco D · 0 opções que roteiam · 0 antes de A/B/C · 0 números`);
+}
 
 // ── R-122 · O ESTADO NÃO CLASSIFICA
 const fonte = lerFonte(path.join(RAIZ, "ira-decision-tree.ts"));

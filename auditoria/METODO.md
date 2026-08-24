@@ -6785,3 +6785,77 @@ conteúdo. **A letra continua agrupando na tela; o roteamento deixou de agrupar.
 ⚠️ Note o que a correção produziu: confusão aguda isolada **não aponta para ramo
 nenhum** — recebe o texto do autor e segue o fluxo. **Não ter destino próprio é
 diferente de compartilhar o destino errado**, e a primeira é a resposta honesta.
+
+## R-124 — RECORTE NÃO PROVA AUSÊNCIA
+
+> **Antes de acusar que algo não foi reportado, peça o bloco inteiro do
+> relatório.**
+
+Três ocorrências do mesmo erro nesta sequência, **todas do lado que revisa, todas
+achadas pelo lado que executa**:
+
+| # | o que se concluiu do recorte | o que existia |
+|---|---|---|
+| 1 | *"o ano do módulo não aparece"* | `head -5` mostrou 5 de 9 itens (R-101) |
+| 2 | *"a faixa `< 10` do meropeném está faltando"* | amostra de 6 valores cortou 3 das 4 faixas (R-102) |
+| 3 | *"o número de blocos não foi reportado"* | estava no §6, antes da frase pela qual o recorte começava |
+
+⚠️ **E o que isso pede de quem executa:** contestar, **com a medição junto**.
+Quem executa tem o repositório na frente; quem revisa tem o recorte. Engolir a
+acusação teria produzido trabalho refeito e um número reportado três vezes.
+
+## Nota ao R-112 — VERDE PODE SIGNIFICAR MORTO
+
+O R-112 diz que **zero defeito pode significar zero trabalho**. A mesma família
+tem uma forma pior, achada em 2026-08-23 no censo:
+
+> **Verde pode significar MORTO.** `status: null` com `signal` não é reprovação
+> nem aprovação — é um processo que o sistema matou. Dois instrumentos que rodam
+> em menos de um segundo isolados voltaram `SIGTERM` dentro do `test:all`, sob
+> pressão de recurso.
+
+A saída foi **uma** repetição, registrada em tela; morto duas vezes reprova.
+
+> **Repetir em silêncio seria trocar portão instável por portão frouxo.**
+
+## Nota ao R-87 — INSTRUMENTO QUE MEDE NAVEGAÇÃO É O MAIS FRÁGIL
+
+O alvo **muda de nome quando a navegação muda**, e o instrumento continua
+procurando o nome antigo — medindo o vazio e imprimindo um número tranquilizador.
+
+Na rodada de 2026-08-23, `mede-blocos-ate-decisao` errou **duas vezes**:
+
+1. procurava o nó `entry: {` **pelo nome**; quando a porta do módulo virou
+   `abcde`, passou a medir o vazio e imprimiu *"0 botões"* sem reclamar. Corrigido
+   para ler `entryNodeId` — **o papel, não o nome**;
+2. media o **shell genérico** em vez da tela do módulo, e continuou dizendo
+   *"3 sempre"* depois de o card de estabilização ter saído do renal.
+
+⚠️ A conclusão prática: **medir navegação exige ler o papel, nunca o rótulo** — e
+o instrumento precisa saber de qual TELA está falando, não de qual componente.
+
+## R-125 — ESTRUTURA SEM CONTEXTO DE USO É REUTILIZADA ERRADO
+
+Decisão do autor, 2026-08-23, ao recusar implementar a D-93 isoladamente:
+
+> **Estrutura criada sem contexto de uso aumenta a chance de ser reutilizada
+> errado.** Campo genérico nascido antes do primeiro uso concreto é preenchido
+> por quem o encontra depois, que **inventa o significado**.
+
+Por isso `MedidaAnterior` entra **junto** da tela do passo 3, onde a creatinina
+anterior é realmente usada — e não antes.
+
+## R-126 — ANCORAGEM DIAGNÓSTICA DENTRO DO MÓDULO
+
+Decisão do autor, ao mandar retirar a sugestão de uremia da confusão aguda
+isolada — e ela vale para os 31:
+
+> Dentro de um módulo, o usuário **já chega enviesado** pela escolha que fez.
+> Oferecer uma hipótese **do próprio órgão** diante de um achado inespecífico
+> **estreita o campo de visão de quem tem menos experiência** — que é a
+> população-alvo.
+>
+> **Reconhecer a limitação é melhor que criar falsa associação.**
+
+⚠️ É o complemento do R-121: lá, a pergunta não pode exigir que a pessoa já saiba;
+aqui, a **resposta** não pode empurrá-la para a hipótese da casa.

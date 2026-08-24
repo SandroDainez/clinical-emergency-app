@@ -1,6 +1,6 @@
 # Perguntas ao autor — 2026-08-23
 
-**Cinco perguntas abertas** e cinco já respondidas, listadas no fim para o
+**Seis perguntas abertas** e cinco já respondidas, listadas no fim para o
 registro.
 
 ⚠️ **Os limiares deste arquivo vêm do dado, não estão digitados aqui.** Ele é
@@ -35,7 +35,7 @@ que o senhor nomeou). Restam **sódio, potássio, magnésio e cloro**:
 | hipocalemia | < 2,5 mEq/L |
 | hipercalemia | ≥ 6,5 mEq/L |
 | hipomagnesemia | < 1,2 mg/dL |
-| hipermagnesemia | ≥ 4,9 mg/dL |
+| hipermagnesemia | — *(degrau único, sem corte numérico)* |
 | hipocloremia | — *(degrau único, sem corte numérico)* |
 | hipercloremia | — *(degrau único, sem corte numérico)* |
 
@@ -117,6 +117,34 @@ Nenhum foi escolhido por mim — os três já estavam no app:
 > **2.** O fator **2,5** — a referência clássica é
 > **Figge et al.** Confirma? O verbatim precisa ser transcrito antes de a força
 > subir de `pendente`.
+
+---
+
+## 6 · Qual corte de hipoglicemia o app adota, e de qual fonte?
+
+**Destrava:** o passo 0 do renal manda verificar a glicemia em toda alteração de
+consciência — e **não diz onde a hipoglicemia começa**, porque o senhor não
+decidiu e eu não escrevo número clínico.
+
+⚠️ **E o app já tem DOIS cortes diferentes, nenhum com procedência** (D-103):
+
+| onde | corte | procedência |
+|---|---|---|
+| `avc-decision-tree.ts` | *"tratar se **< 60 mg/dL**"* | nenhuma |
+| ACLS, causas reversíveis | *"Evitar glicemia **< 70** e > 180 mg/dL"* | nenhuma |
+
+> **Qual corte vira o gatilho de "tratar imediatamente" no passo 0, e de qual
+> documento?** O ADA Standards of Care define níveis (alerta · clinicamente
+> significativa · grave — esta última definida por **comprometimento cognitivo e
+> não por número**). **Qual deles, e a versão do documento?**
+
+⚠️ **E o segundo achado, que é do app inteiro:** os dois números acima estão em
+módulos diferentes, dizendo coisas diferentes sobre o mesmo limiar. Se o senhor
+adotar um, ele passa a valer para os dois — ou a divergência precisa ser
+explicada.
+
+⚠️ **Não há módulo nem ramo de hipoglicemia** no app (D-102 é o irmão disso: não
+há fluxo de delirium). Se o corte disparar, hoje não há para onde apontar.
 
 ---
 

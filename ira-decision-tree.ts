@@ -15,6 +15,9 @@ import {
   IRA_NEFROTOXICO_PORQUE,
   IRA_O_QUE_NAO_CONDUZ_PORQUE,
   ALCA_QUANDO_HA_SOBRECARGA,
+  GLICEMIA_NAO_ATRASA,
+  GLICEMIA_NO_D,
+  GLICEMIA_RESULTADO,
   ARMADILHA_DIURETICO_PARA_O_RIM,
   ARMADILHA_DIURETICO_PARA_PREVENIR,
   ARMADILHA_DOPAMINA_RENAL,
@@ -263,6 +266,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Como está o paciente agora?",
       question: "Olhe o paciente e marque o que você vê. Se houver mais de uma, comece pela primeira da lista.",
+      evidence: [GLICEMIA_NO_D, GLICEMIA_NAO_ATRASA],
       // ⚠️ Esta tela não afirma nada clínico: pergunta o que se vê e roteia.
       // `DecisionNode` não tem `natureza` nem `procedencia` — é a D-69, e ela
       // aparece aqui de novo: o campo que diria "isto não é conduta" não existe
@@ -300,6 +304,8 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "B · A respiração está confortável? Qual a saturação? Há esforço, tiragem, frequência alta?",
         "C · Como está a pressão? A pele está fria, o enchimento capilar lento? Qual o ritmo e a frequência?",
         "D · Está acordado e orientado? Houve convulsão ou queda do nível de consciência?",
+        GLICEMIA_NO_D,
+        GLICEMIA_NAO_ATRASA,
       ],
       options: [
         { id: "a", label: "A · Via aérea ameaçada", next: "abcde_a" },
@@ -369,7 +375,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Rebaixamento — a via aérea primeiro",
       summary: "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá.",
       disposition: "other_module",
-      exitCriteria: ["Via aérea garantida ou o plano de proteção em curso.", "Volte a este módulo depois."],
+      exitCriteria: [
+        GLICEMIA_NO_D,
+        GLICEMIA_RESULTADO,"Via aérea garantida ou o plano de proteção em curso.", "Volte a este módulo depois."],
       targets: [{ moduleId: "isr-rapida", label: "Via aérea / ISR", reason: "Rebaixamento que ameaça a proteção da via aérea" }],
     },
 
@@ -394,6 +402,12 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Confusão aguda isolada",
       summary: "Sem rebaixamento e sem convulsão, a confusão sozinha não define destino.",
       actions: [
+        GLICEMIA_NO_D,
+        // ⚠️ AS DUAS DECISÕES SE APOIAM: "sem hipoglicemia, siga a investigação
+        // do estado mental SEM PRESUMIR UREMIA" diz da glicemia o que a frase
+        // abaixo diz da confusão isolada. O autor as escreveu em dias
+        // diferentes, e elas se sustentam mutuamente.
+        GLICEMIA_RESULTADO,
         "Confusão aguda isolada não define complicação urêmica. Prossiga a avaliação e considere outras causas de alteração do estado mental.",
       ],
       next: "motivo_de_entrada",
@@ -405,7 +419,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Convulsão",
       summary: "A crise vem antes da investigação renal.",
       disposition: "other_module",
-      exitCriteria: ["Crise controlada, com a via aérea vigiada.", "Volte a este módulo depois — a uremia e os distúrbios eletrolíticos podem ser a causa, e os dois são tratados aqui."],
+      exitCriteria: [
+        GLICEMIA_NO_D,
+        GLICEMIA_RESULTADO,"Crise controlada, com a via aérea vigiada.", "Volte a este módulo depois — a uremia e os distúrbios eletrolíticos podem ser a causa, e os dois são tratados aqui."],
       targets: [{ moduleId: "crises-convulsivas", label: "Crises convulsivas", reason: "Convulsão em curso ou recente" }],
     },
 
@@ -512,7 +528,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         // não deixa de existir — "quem já sabe o diagnóstico avança rápido para
         // o ponto correspondente". Aqui ele é o que sempre deveria ter sido:
         // uma SAÍDA dentro da triagem, ao lado das outras, e não o portão dela.
-        { id: "outra", label: "Já sei que é outra das seis — ir direto", next: "atalhos" },
+        // ⚠️ TEXTO DO AUTOR (2026-08-23). "Já sei que é outra das seis"
+        // reintroduzia LINGUAGEM DE CONCLUSÃO — exatamente o que este módulo
+        // está eliminando. Atalho é NAVEGAÇÃO, não julgamento.
+        { id: "outra", label: "Ir direto para uma das seis ameaças", next: "atalhos" },
       ],
     },
 

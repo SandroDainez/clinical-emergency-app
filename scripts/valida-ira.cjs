@@ -581,6 +581,13 @@ if (Object.keys(nos).length < 10) {
       ["BEXIGA CHEIA NÃO É ANÚRIA", "é a mesma armadilha em dois pontos do fluxo, e o segundo é onde se age"],
       ["Presumir base normal é o erro mais seguro dos dois", "as duas saídas do \"não sei\" chegam à mesma decisão"],
       ["a prova de volume que ajudaria um pré-renal congestiona um crônico", "idem — mesma ressalva, dois caminhos"],
+      // ⚠️ A GLICEMIA APARECE NOS DOIS DE PROPÓSITO, e é decisão do autor
+      // (2026-08-24): a verificação vale no bloco D da tela de entrada **e** no
+      // caminho da opção 7 ("Não sei dizer — me ajude a verificar"), quando o
+      // ABCDE é percorrido item a item. Quem entra pelo "não sei" não pode
+      // perder a verificação obrigatória só por ter admitido que não sabe.
+      ["VERIFIQUE A GLICEMIA CAPILAR AGORA", "o autor mandou a verificação valer no bloco D e TAMBÉM no caminho do \"não sei\" (opção 7)"],
+      ["A glicemia NÃO atrasa o manejo prioritário", "idem — a ressalva acompanha a verificação nos dois caminhos"],
     ];
     const mapa = new Map();
     for (const n of Object.values(nos)) {

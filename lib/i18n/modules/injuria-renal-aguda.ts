@@ -1782,4 +1782,14 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "Vuelva a este módulo después — la uremia y los trastornos electrolíticos pueden ser la causa, y ambos se tratan aquí.",
   "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá.":
     "⚠️ El deterioro importante ya entró en A: quien no protege la vía aérea va por ahí.",
+
+  // ── Glicemia no bloco D + atalho como navegação (2026-08-24) ──────────
+  "A glicemia NÃO atrasa o manejo prioritário de via aérea, ventilação, circulação nem o controle de convulsão em curso: ela acontece JUNTO, não antes.":
+    "La glucemia NO retrasa el manejo prioritario de vía aérea, ventilación, circulación ni el control de una convulsión en curso: ocurre JUNTO, no antes.",
+  "Se houver hipoglicemia, trate imediatamente. Se não houver, siga a investigação do estado mental — e sem presumir uremia.":
+    "Si hay hipoglucemia, trátela de inmediato. Si no la hay, siga la investigación del estado mental — y sin presumir uremia.",
+  "⚠️ VERIFIQUE A GLICEMIA CAPILAR AGORA — toda alteração do nível de consciência, confusão aguda ou convulsão pede o dextro imediato.":
+    "⚠️ VERIFIQUE LA GLUCEMIA CAPILAR AHORA — toda alteración del nivel de conciencia, confusión aguda o convulsión exige la glucemia capilar inmediata.",
+  "Ir direto para uma das seis ameaças":
+    "Ir directo a una de las seis amenazas",
 };
