@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**66 de 83 travas com declaração completa.**
+**67 de 84 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -125,6 +125,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o guarda do R-47 esteja de pé — `git checkout` e `git restore` falham dentro de um ciclo de mutação, `git status` e `git diff` continuam funcionando, e o `muta.cjs` RECUSA iniciar com a árvore suja.
 - **NÃO PROMETE:** que ninguém mute à mão, fora do harness. O guarda do PATH só alcança o que o `muta.cjs` dispara — e as quatro violações foram todas fora dele. É a pré-condição de árvore limpa que cobre esse caso, e por isso as duas metades existem.
 - **UNIVERSO:** o shim `scripts/guarda-r47/git` e o `scripts/muta.cjs`. Cada tentativa é executada de verdade, não inspecionada por regex. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-24) — R-118, R-128, R-133. ── ⚠️ POR QUE DUAS METADES ───────────────────────────────────────────────── **O PATH mata o verbo dentro do ciclo; a árvore limpa mata o estrago em qualquer lugar.** `git checkout` só destrói o que não está salvo — se a árvore estava limpa, um checkout perdido não custa nada (R-133).
+
+## `test:faixa-do-stepper` → `scripts/valida-faixa-do-stepper.cjs`
+
+- **PROMETE:** que, em toda faixa numérica real que alimenta `NumericStepper`, `(max - min)` seja múltiplo de `passo` — dentro de tolerância de ponto flutuante. É a condição sob a qual `max` é alcançável pela função `limitar` do componente (ela ancora os degraus em `min` e nunca corrige `max` que caia fora da grade — só o descarta em silêncio).
+- **NÃO PROMETE:** que `passo` seja a granularidade certa, nem que o arredondamento do componente esteja correto. Não altera o `NumericStepper`, não muda granularidade, não cria regra clínica — só confere a aritmética.
+- **UNIVERSO:** as fontes reais de faixa numérica do app, listadas e contadas antes do resultado — não uma amostra. ORIGEM DO CRITÉRIO: instrução direta do usuário, 2026-08-24. ── POR QUE ISTO IMPORTA, MEDIDO ANTES DE CORRIGIR NADA ────────────────────── `NumericStepper.limitar()`: const preso = clamp(n, min, max); const emPassos = round((preso - min) / passo) * passo + min; Os degraus são ancorados em `min`. Se `(max - min)` não for múltiplo de `passo`, `max` nunca é um desses degraus — o botão "+" fica HABILITADO perto do topo (porque `noMaximo = valor >= max` nunca vira verdadeiro) e PARA DE FAZER EFEITO, sem avisar. Medição de 2026-08-24: **hoje não há instância viva do defeito** — 71 de 71 conjuntos conhecidos alcançam min e max. O risco não é o presente, é o futuro: `faixaDaBarra()` (sedoanalgesia) CALCULA o teto em runtime e o arredonda com `toFixed(2)` sem checar se o resultado é múltiplo do passo — a compatibilidade de hoje é CONTINGENTE aos números de dose atuais, não garantida pela função. Um modo novo, ou uma dose alterada, pode quebrar sem que nada avise. Esta trava existe para essa hora.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
