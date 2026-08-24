@@ -69,7 +69,7 @@
   },
   "censo-de-instrumentos": {
     "_nota": "Medido em 2026-08-23, na criação. ⚠️ O piso de no_portao é o que impede instrumento de sumir do test:all sem ninguém ver — foi exatamente o que aconteceu com auditoria-calculos, auditoria-doses e valida-rastreabilidade por 349 commits.",
-    "instrumentos": 89,
-    "no_portao": 84
+    "instrumentos": 90,
+    "no_portao": 85
   }
 }

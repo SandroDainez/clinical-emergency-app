@@ -5,13 +5,13 @@
 
 - Árvores analisadas: **20**
 - Erros estruturais: **0**
-- Avisos: **8**
+- Avisos: **9**
 
 ## Visão por árvore
 
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
-| ira-decision-tree (iraDecisionTree) | 72 | 72 | 7 | 6 |
+| ira-decision-tree (iraDecisionTree) | 74 | 74 | 8 | 7 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | coronary-decision-tree (coronaryDecisionTree) | 27 | 27 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
@@ -36,9 +36,9 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 8 |
+| escolha-sem-efeito | aviso | 9 |
 
-### escolha-sem-efeito (8)
+### escolha-sem-efeito (9)
 
 | árvore | nó | detalhe |
 |---|---|---|
@@ -50,4 +50,5 @@
 | ira-decision-tree (iraDecisionTree) | `obstrucao_check` | opções sim, sonda_nao_drena, rim_unico, nao_sei levam todas a "obstrucao_conduta" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `nefrotoxico_check` | opções exposto, sedimento, rabdo, nada levam todas a "renal_conduta" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `trs_check` | opções sim, nao_sei levam todas a "acionar" — a escolha não muda o fluxo |
+| ira-decision-tree (iraDecisionTree) | `reavaliar` | opções piorou, nova_ameaca levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 

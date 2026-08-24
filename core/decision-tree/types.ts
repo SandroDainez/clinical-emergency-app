@@ -4,6 +4,19 @@ export type DecisionOption = {
   next: string;
   /** Opcional: torna a opção visível apenas se a expressão de guarda for verdadeira. */
   showIf?: (values: TreeValues) => boolean;
+  /**
+   * ⚠️ A RESPOSTA VIAJA — e é por isso que este campo existe (R-122).
+   *
+   * Uma pergunta cujas respostas convergem para o mesmo destino só se justifica
+   * se a resposta for CARREGADA ADIANTE. Se não é carregada, é toque que não
+   * muda nada e não guarda nada — e o app vai reperguntar a mesma coisa três
+   * telas depois.
+   *
+   * ⚠️ E O LIMITE, QUE É A METADE QUE PROTEGE: o que se grava aqui NÃO PODE
+   * INFLUENCIAR CLASSIFICAÇÃO CLÍNICA. Serve para não reperguntar; nunca para
+   * decidir gravidade. `valida-estado-nao-classifica` cobra isso.
+   */
+  grava?: { campo: string; valor: string };
 };
 
 /**

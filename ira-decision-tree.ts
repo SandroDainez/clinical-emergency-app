@@ -272,7 +272,14 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "b_respiracao", label: "B · Dificuldade respiratória importante, hipoxemia ou esforço respiratório", next: "abcde_b" },
         { id: "c_perfusao", label: "C · Hipotensão ou sinais de má perfusão", next: "abcde_c_perfusao" },
         { id: "c_ritmo", label: "C · Bradicardia, taquicardia ou ritmo irregular com repercussão", next: "abcde_c_ritmo" },
-        { id: "d_neuro", label: "D · Rebaixamento do nível de consciência, confusão aguda ou convulsão", next: "abcde_d" },
+        // ⚠️ TRÊS ACHADOS, TRÊS DESTINOS (R-123). Estavam numa opção só, com dois
+        // destinos — e nenhum dos dois servia para o do meio: quem tinha
+        // CONFUSÃO AGUDA ISOLADA recebia ISR e anticonvulsivante, que não é a
+        // conduta dele. O agrupamento visual continua sendo a letra D; o destino
+        // é por achado.
+        { id: "d_rebaixamento", label: "D · Rebaixamento do nível de consciência", next: "abcde_d_rebaixamento" },
+        { id: "d_confusao", label: "D · Confusão aguda", next: "abcde_d_confusao" },
+        { id: "d_convulsao", label: "D · Convulsão", next: "abcde_d_convulsao" },
         { id: "estavel", label: "Nenhuma dessas — paciente aparentemente estável", next: "motivo_de_entrada" },
         { id: "nao_sei", label: "Não sei dizer — me ajude a verificar", next: "abcde_guiado" },
       ],
@@ -299,7 +306,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "b", label: "B · Respiração", next: "abcde_b" },
         { id: "c1", label: "C · Perfusão ou pressão", next: "abcde_c_perfusao" },
         { id: "c2", label: "C · Ritmo com repercussão", next: "abcde_c_ritmo" },
-        { id: "d", label: "D · Neurológico", next: "abcde_d" },
+        { id: "d_reb", label: "D · Rebaixamento do nível de consciência", next: "abcde_d_rebaixamento" },
+        { id: "d_conf", label: "D · Confusão aguda", next: "abcde_d_confusao" },
+        { id: "d_conv", label: "D · Convulsão", next: "abcde_d_convulsao" },
         { id: "nenhuma", label: "Olhei as quatro — nenhuma está presente", next: "motivo_de_entrada" },
       ],
     },
@@ -354,21 +363,52 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { moduleId: "taquicardia-acls", label: "Taquicardia instável", reason: "Frequência alta com repercussão" },
       ],
     },
-    abcde_d: {
-      id: "abcde_d",
+    abcde_d_rebaixamento: {
+      id: "abcde_d_rebaixamento",
       type: "transition",
-      title: "Neurológico",
-      summary: "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá primeiro.",
+      title: "Rebaixamento — a via aérea primeiro",
+      summary: "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá.",
       disposition: "other_module",
-      exitCriteria: [
-        "Convulsão controlada, ou o rebaixamento com a via aérea garantida.",
-        "⚠️ Confusão aguda ISOLADA não tem ramo próprio neste app — se ela for o único achado, siga o fluxo e considere a uremia complicada na triagem das seis.",
-      ],
-      targets: [
-        { moduleId: "crises-convulsivas", label: "Crises convulsivas", reason: "Convulsão em curso ou recente" },
-        { moduleId: "isr-rapida", label: "Via aérea / ISR", reason: "Rebaixamento que ameaça a proteção da via aérea" },
-      ],
+      exitCriteria: ["Via aérea garantida ou o plano de proteção em curso.", "Volte a este módulo depois."],
+      targets: [{ moduleId: "isr-rapida", label: "Via aérea / ISR", reason: "Rebaixamento que ameaça a proteção da via aérea" }],
     },
+
+    /**
+     * ⚠️ CONFUSÃO AGUDA ISOLADA NÃO APONTA PARA RAMO NENHUM — e isso é a conduta,
+     * não a falta dela.
+     *
+     * Ela estava empacotada com rebaixamento e convulsão, recebendo ISR e
+     * anticonvulsivante: dois destinos, nenhum deles o dela.
+     *
+     * ⚠️ O TEXTO É DO AUTOR, LITERAL, e corrige o que eu havia escrito: eu
+     * mandava "considerar a uremia complicada", e ele desfez — confusão isolada
+     * NÃO define complicação urêmica.
+     *
+     * E seguir para o passo 1 não é beco: é o fluxo normal, que é onde o autor
+     * decidiu que quem não sabe é conduzido.
+     */
+    abcde_d_confusao: {
+      id: "abcde_d_confusao",
+      type: "action",
+      natureza: "organizacao_do_atendimento",
+      title: "Confusão aguda isolada",
+      summary: "Sem rebaixamento e sem convulsão, a confusão sozinha não define destino.",
+      actions: [
+        "Confusão aguda isolada não define complicação urêmica. Prossiga a avaliação e considere outras causas de alteração do estado mental.",
+      ],
+      next: "motivo_de_entrada",
+    },
+
+    abcde_d_convulsao: {
+      id: "abcde_d_convulsao",
+      type: "transition",
+      title: "Convulsão",
+      summary: "A crise vem antes da investigação renal.",
+      disposition: "other_module",
+      exitCriteria: ["Crise controlada, com a via aérea vigiada.", "Volte a este módulo depois — a uremia e os distúrbios eletrolíticos podem ser a causa, e os dois são tratados aqui."],
+      targets: [{ moduleId: "crises-convulsivas", label: "Crises convulsivas", reason: "Convulsão em curso ou recente" }],
+    },
+
 
     /**
      * ⚠️ PASSO 1 — MOTIVO DE ENTRADA, e a formulação é do autor.
@@ -411,10 +451,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "O que você tem em mãos?",
       question: "Marque o que existe agora — o app segue a partir daí, sem rotular o diagnóstico antes da hora.",
       options: [
-        { id: "lab", label: "Exames laboratoriais", next: "e1_hipercalemia" },
-        { id: "diurese", label: "Diurese", next: "e1_hipercalemia" },
-        { id: "sinais", label: "Sinais clínicos relevantes", next: "e1_hipercalemia" },
-        { id: "so_paciente", label: "Apenas o paciente, sem exames", next: "e1_hipercalemia" },
+        { id: "lab", label: "Exames laboratoriais", next: "e1_hipercalemia", grava: { campo: "dados_disponiveis", valor: "exames" } },
+        { id: "diurese", label: "Diurese", next: "e1_hipercalemia", grava: { campo: "dados_disponiveis", valor: "diurese" } },
+        { id: "sinais", label: "Sinais clínicos relevantes", next: "e1_hipercalemia", grava: { campo: "dados_disponiveis", valor: "sinais" } },
+        { id: "so_paciente", label: "Apenas o paciente, sem exames", next: "e1_hipercalemia", grava: { campo: "dados_disponiveis", valor: "nenhum" } },
       ],
     },
 
@@ -1950,7 +1990,17 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "melhorou", label: "Melhorou clinicamente", next: "seguimento" },
         { id: "sem_melhora", label: "Permanece sem melhora significativa", next: "volume_check" },
         { id: "piorou", label: "Piorou ou ficou instável", next: "e1_hipercalemia" },
-        { id: "novo_dado", label: "Apareceu nova ameaça ou novo dado importante", next: "motivo_de_entrada" },
+        // ⚠️ A QUARTA SAÍDA BIFURCA, e a diferença é de segurança.
+        //
+        // O autor escreveu "reentrar no PONTO CORRESPONDENTE do fluxo"; eu havia
+        // implementado "reentra no motivo de entrada" — o passo 1, o começo.
+        // Voltar ao passo 1 no meio de um atendimento em curso REINICIA O
+        // PERCURSO EM SILÊNCIO, que é o que a regra de escalonamento proíbe.
+        //
+        // Nova AMEAÇA vai para a triagem das seis; novo DADO vai para onde os
+        // dados vivem.
+        { id: "nova_ameaca", label: "Apareceu nova ameaça à vida", next: "e1_hipercalemia" },
+        { id: "novo_dado", label: "Chegou dado novo importante — exame, diurese que mudou", next: "dados_do_caso" },
       ],
     },
 

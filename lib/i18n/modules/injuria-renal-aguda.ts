@@ -1752,4 +1752,34 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "Después de mirar, ¿alguna de ellas está presente?",
   "Vasopressor com dose e preparo":
     "Vasopresor con dosis y preparación",
+
+  // ── R-123: destino por achado no passo 0 (2026-08-23) ─────────────────
+  "A crise vem antes da investigação renal.":
+    "La crisis viene antes que la investigación renal.",
+  "Apareceu nova ameaça à vida":
+    "Apareció una nueva amenaza para la vida",
+  "Chegou dado novo importante — exame, diurese que mudou":
+    "Llegó un dato nuevo importante — un examen, una diuresis que cambió",
+  "Confusão aguda isolada":
+    "Confusión aguda aislada",
+  "Confusão aguda isolada não define complicação urêmica. Prossiga a avaliação e considere outras causas de alteração do estado mental.":
+    "La confusión aguda aislada no define complicación urémica. Continúe la evaluación y considere otras causas de alteración del estado mental.",
+  "Crise controlada, com a via aérea vigiada.":
+    "Crisis controlada, con la vía aérea vigilada.",
+  "D · Confusão aguda":
+    "D · Confusión aguda",
+  "D · Convulsão":
+    "D · Convulsión",
+  "D · Rebaixamento do nível de consciência":
+    "D · Deterioro del nivel de conciencia",
+  "Rebaixamento — a via aérea primeiro":
+    "Deterioro — la vía aérea primero",
+  "Sem rebaixamento e sem convulsão, a confusão sozinha não define destino.":
+    "Sin deterioro y sin convulsión, la confusión sola no define destino.",
+  "Via aérea garantida ou o plano de proteção em curso.":
+    "Vía aérea garantizada o el plan de protección en curso.",
+  "Volte a este módulo depois — a uremia e os distúrbios eletrolíticos podem ser a causa, e os dois são tratados aqui.":
+    "Vuelva a este módulo después — la uremia y los trastornos electrolíticos pueden ser la causa, y ambos se tratan aquí.",
+  "⚠️ Rebaixamento importante já entrou em A: quem não protege a via aérea vai por lá.":
+    "⚠️ El deterioro importante ya entró en A: quien no protege la vía aérea va por ahí.",
 };

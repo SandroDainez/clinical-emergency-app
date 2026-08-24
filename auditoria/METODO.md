@@ -6743,3 +6743,45 @@ ele ainda não.
 
 ⚠️ É o mesmo defeito de *"qual das seis é?"*, de *"há emergência agora?"* e do
 campo que pedia "cálcio" sem dizer qual — **em escala de módulo inteiro**.
+
+## R-122 — PERGUNTA CUJAS RESPOSTAS CONVERGEM SÓ SE JUSTIFICA SE A RESPOSTA VIAJA
+
+> **Pergunta cujas respostas levam todas ao mesmo destino só se justifica se a
+> resposta for CARREGADA ADIANTE.** Se não é carregada, é toque que não muda nada
+> e não guarda nada — e o app vai reperguntar a mesma coisa três telas depois.
+
+O caso (2026-08-23): o *"ainda não sei"* do motivo de entrada pergunta o que a
+pessoa TEM — exames · diurese · sinais clínicos · só o paciente — e as quatro
+seguem para o mesmo lugar, **de propósito** (quem não sabe segue o fluxo normal,
+que já foi feito para conduzir).
+
+⚠️ Mas a resposta **se perdia**. E o passo 3 ia perguntar de novo se há
+creatinina, se há diurese. `DecisionOption.grava` resolve: a opção escreve o que
+foi respondido.
+
+### ⚠️ A METADE QUE PROTEGE
+
+> **O estado que existe para NÃO REPERGUNTAR nunca pode CLASSIFICAR.**
+
+Disponibilidade de exame não é gravidade. Um paciente sem exames não é mais grave
+nem menos grave por isso — e se o `derive` passar a ler esse campo, o app começa
+a classificar por acesso a laboratório. `test:passo-zero` confere no `derive`
+COMPILADO, e a mutação M96 prova.
+
+## R-123 — O AGRUPAMENTO É VISUAL; O DESTINO É POR ACHADO
+
+> **Opção que agrupa achados com condutas divergentes empurra o usuário para
+> conduta que não é a dele.** O agrupamento pode ser visual; **o destino é por
+> achado**, sempre.
+
+O caso: *"D · Rebaixamento do nível de consciência, confusão aguda ou convulsão"*
+era **uma opção com dois destinos** (`crises-convulsivas` + `isr-rapida`). Quem
+tinha **confusão aguda isolada** recebia ISR e anticonvulsivante — **nenhum dos
+dois é a conduta dele**.
+
+⚠️ E o agrupamento tinha razão de ser: é a letra D do ABCDE, e a ordem ABCDE é
+conteúdo. **A letra continua agrupando na tela; o roteamento deixou de agrupar.**
+
+⚠️ Note o que a correção produziu: confusão aguda isolada **não aponta para ramo
+nenhum** — recebe o texto do autor e segue o fluxo. **Não ter destino próprio é
+diferente de compartilhar o destino errado**, e a primeira é a resposta honesta.

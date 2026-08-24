@@ -396,6 +396,10 @@ export class DecisionTreeEngine {
       throw new Error(`Decision node "${node.id}" does not contain option "${optionId}".`);
     }
 
+    // ⚠️ A RESPOSTA VIAJA (R-122): a opção pode gravar o que foi respondido, para
+    // que o fluxo não repergunte adiante. O que se grava é DISPONIBILIDADE DE
+    // DADO, nunca classificação — ver `DecisionOption.grava`.
+    if (option.grava) this.setValue(option.grava.campo, option.grava.valor);
     this.record("answer", node, option.id, option.label);
     this.currentNodeId = option.next;
     this.history.push(option.next);

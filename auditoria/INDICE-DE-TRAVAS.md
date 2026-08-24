@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**63 de 80 travas com declaração completa.**
+**64 de 81 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -107,6 +107,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que todo campo de entrada numérica declare a unidade NO CAMPO, e que o rótulo exibido seja DERIVADO dela — nunca a fonte dela.
 - **NÃO PROMETE:** que a unidade declarada seja a certa para a grandeza. Ela garante que existe e que a prosa não a contradiz — não que "mEq/L" seja o correto para aquele analito.
 - **UNIVERSO:** os campos `kind: "number"` das calculadoras + as chamadas de `input(...)` da tela dos eletrólitos, contados antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-119. ── ⚠️ UNIDADE EM PROSA É TRADUZÍVEL; UNIDADE EM CAMPO, NÃO ───────────────── O app tem uma segunda cópia de todo texto em espanhol. Uma tradução que escreva "Peso (lb)" — por descuido ou por convenção local — **muda a unidade de entrada de um cálculo, e nenhum instrumento vê**, porque para eles aquilo é só prosa. Não aconteceu. Mas é o MESMO MECANISMO do D-80, em que o critério da hidrocortisona de fato divergiu entre os idiomas. Ali era conduta; aqui seria unidade de dose.
+
+## `test:passo-zero` → `scripts/valida-passo-zero.cjs`
+
+- **PROMETE:** que nenhum achado do passo 0 do módulo renal fique sem destino próprio; e que o estado gravado pelo "ainda não sei" NÃO influencie classificação clínica.
+- **NÃO PROMETE:** que os destinos sejam os clinicamente certos — a escolha de para onde cada achado vai é do autor. Ela confere que CADA UM tem o seu.
+- **UNIVERSO:** o nó de entrada de `ira-decision-tree.ts` (lido por `entryNodeId`), seus achados declarados, e o `derive` da árvore. Números impressos antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-122, R-123. ── R-123 · O AGRUPAMENTO É VISUAL, O DESTINO É POR ACHADO ────────────────── "Rebaixamento do nível de consciência, confusão aguda ou convulsão" era UMA opção com DOIS destinos — e nenhum dos dois servia para o do meio: quem tinha **confusão aguda isolada** recebia ISR e anticonvulsivante. ⚠️ Opção que agrupa achados com condutas divergentes **empurra o usuário para conduta que não é a dele**. ── R-122 · A RESPOSTA VIAJA, MAS NÃO CLASSIFICA ──────────────────────────── O "ainda não sei" grava o que a pessoa TEM (exames · diurese · sinais · nada). Isso serve para não reperguntar. ⚠️ Se um dia alimentar gravidade, vira classificação por disponibilidade de exame — que é o oposto de clínica.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
@@ -589,7 +595,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 70/72 (97%) | test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
+| `ira` | ✅ | — | 71/74 (96%) | test:passo-zero, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

@@ -101,14 +101,31 @@ for (const arq of fora) {
 // Foi 127 que fez 53 instrumentos parecerem sem defeito na varredura de hoje.
 console.log(`\n  executando ${todos.length - 1} instrumento(s)…`);
 const naoRodaram = [];
+const repetidos = [];
 for (const arq of todos) {
   if (arq === "censo-de-instrumentos.cjs") continue;
-  const r = spawnSync(process.execPath, [path.join(RAIZ, "scripts", arq)], { cwd: RAIZ, encoding: "utf8", timeout: 300000 });
+  // ⚠️ SINAL NÃO É CÓDIGO DE SAÍDA, E A DIFERENÇA IMPORTA.
+  //
+  // `status: null` com `signal` significa que o processo foi MORTO — não que
+  // reprovou nem que passou. Dentro do `test:all`, com 89 filhos em série depois
+  // do build e do e2e, o sistema mata por pressão de recurso: dois instrumentos
+  // que rodam em menos de um segundo isolados voltaram SIGTERM ali dentro.
+  //
+  // ⚠️ UMA repetição, e ela é registrada. Morto duas vezes seguidas não é
+  // pressão de recurso — é defeito, e aí reprova. Repetir em silêncio seria
+  // transformar um portão instável em portão frouxo, que é pior.
+  const rodar = () => spawnSync(process.execPath, [path.join(RAIZ, "scripts", arq)], { cwd: RAIZ, encoding: "utf8", timeout: 300000 });
+  let r = rodar();
+  if (r.status === null && r.signal) {
+    repetidos.push(`${arq} (morto por ${r.signal} — repetido)`);
+    r = rodar();
+  }
   const codigo = r.status;
   if (codigo !== 0 && codigo !== 1) {
-    naoRodaram.push(`${arq} (código ${codigo === null ? `sinal ${r.signal}` : codigo})`);
+    naoRodaram.push(`${arq} (código ${codigo === null ? `sinal ${r.signal}, DUAS vezes` : codigo})`);
   }
 }
+if (repetidos.length) console.log(`  ⚠️ ${repetidos.length} instrumento(s) mortos por sinal e repetidos:\n     ${repetidos.join("\n     ")}`);
 if (naoRodaram.length) erro(`instrumento(s) que NÃO RODARAM — código fora de {0,1}:\n     ${naoRodaram.join("\n     ")}`);
 
 console.log(falhas
