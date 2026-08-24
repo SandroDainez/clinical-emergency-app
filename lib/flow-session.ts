@@ -36,6 +36,8 @@
  * seguro, e é o que acontece se ele ignorar a oferta.
  */
 
+import type { EstadoDeEscalonamento } from "./escalonamento";
+
 export type SessaoDeFluxo = {
   /** Nós percorridos, em ordem — o primeiro é a entrada da árvore. */
   caminho: string[];
@@ -45,6 +47,25 @@ export type SessaoDeFluxo = {
   trilha: string[];
   /** `Date.now()` do momento em que a tela saiu de cena. */
   salvoEm: number;
+  /**
+   * ⚠️ O ESTADO DE ESCALONAMENTO MORA AQUI, e o lugar é a resposta à prova 6.
+   *
+   * *"Iniciar novo atendimento zera o estado anterior."* Estado que sobrevive ao
+   * fim do atendimento significa **ameaça identificada no paciente A contando
+   * para o paciente B** — e o contador dispararia escalonamento num paciente que
+   * nunca piorou.
+   *
+   * ⚠️ NÃO FOI PRECISO INVENTAR "novo atendimento": o app já tem DUAS portas, e
+   * as duas já apagam esta sessão inteira —
+   *   · o botão "começar do início" (`descartarSessaoDeFluxo`);
+   *   · a expiração de `VALIDADE_DA_SESSAO_MS`, cujo comentário já dizia a razão
+   *     certa: *"meia hora depois a chance de ser outro paciente já é grande o
+   *     bastante"*.
+   *
+   * Pendurar o contador em qualquer outro lugar teria criado um terceiro
+   * conceito de "atendimento", divergente dos dois que já existem.
+   */
+  escalonamento?: EstadoDeEscalonamento;
 };
 
 /**

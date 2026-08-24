@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**64 de 81 travas com declaração completa.**
+**65 de 82 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -113,6 +113,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que nenhum achado do passo 0 do módulo renal fique sem destino próprio; e que o estado gravado pelo "ainda não sei" NÃO influencie classificação clínica.
 - **NÃO PROMETE:** que os destinos sejam os clinicamente certos — a escolha de para onde cada achado vai é do autor. Ela confere que CADA UM tem o seu.
 - **UNIVERSO:** o nó de entrada de `ira-decision-tree.ts` (lido por `entryNodeId`), seus achados declarados, e o `derive` da árvore. Números impressos antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-122, R-123. ── R-123 · O AGRUPAMENTO É VISUAL, O DESTINO É POR ACHADO ────────────────── "Rebaixamento do nível de consciência, confusão aguda ou convulsão" era UMA opção com DOIS destinos — e nenhum dos dois servia para o do meio: quem tinha **confusão aguda isolada** recebia ISR e anticonvulsivante. ⚠️ Opção que agrupa achados com condutas divergentes **empurra o usuário para conduta que não é a dele**. ── R-122 · A RESPOSTA VIAJA, MAS NÃO CLASSIFICA ──────────────────────────── O "ainda não sei" grava o que a pessoa TEM (exames · diurese · sinais · nada). Isso serve para não reperguntar. ⚠️ Se um dia alimentar gravidade, vira classificação por disponibilidade de exame — que é o oposto de clínica.
+
+## `test:escalonamento` → `scripts/valida-escalonamento.cjs`
+
+- **PROMETE:** que o estado de escalonamento obedeça às seis provas do autor — a primeira piora NÃO dispara, a segunda dispara, a recorrência dispara, o estado não classifica, a terceira volta silenciosa é impossível, e um novo atendimento zera o anterior.
+- **NÃO PROMETE:** que os gatilhos sejam os clinicamente certos. A escolha é do autor e é regra de PRODUTO — a trava confere que o app obedece, não que a regra esteja certa.
+- **UNIVERSO:** `lib/escalonamento.ts` compilado + `lib/flow-session.ts` + a árvore renal, para a prova 4. Contagens impressas antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23 e 2026-08-24) — R-118. ── ⚠️ A PROVA 1 É NEGATIVA, E ISSO É RARO AQUI ───────────────────────────── Quase toda trava deste repositório prova que algo ACONTECE. Esta prova que algo **não acontece**: que o gatilho não é ansioso. **Trava só de disparo transforma qualquer instabilidade em escalonamento — e um app que escalona sempre é um app que ninguém escuta.** Aí ele deixa de escalonar quando importa.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
@@ -595,7 +601,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
+| `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:escalonamento, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

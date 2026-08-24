@@ -1792,4 +1792,28 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "⚠️ VERIFIQUE LA GLUCEMIA CAPILAR AHORA — toda alteración del nivel de conciencia, confusión aguda o convulsión exige la glucemia capilar inmediata.",
   "Ir direto para uma das seis ameaças":
     "Ir directo a una de las seis amenazas",
+
+  // ── Escalonamento: estado do shell, fora da árvore (2026-08-24) ───────
+  "Peça ajuda agora":
+    "Pida ayuda ahora",
+  "⚠️ Este aviso é trava de segurança do app, não critério de diretriz: o atendimento passou duas vezes pelo mesmo ponto, ou uma ameaça que já tinha sido abordada voltou.":
+    "⚠️ Este aviso es un bloqueo de seguridad de la app, no un criterio de guía: la atención pasó dos veces por el mismo punto, o una amenaza que ya había sido abordada volvió.",
+  "Acionar médico sênior, equipe de emergência ou UTI.":
+    "Avisar al médico sénior, al equipo de emergencia o a la UCI.",
+  "Solicitar avaliação nefrológica quando pertinente.":
+    "Solicitar evaluación nefrológica cuando corresponda.",
+  "Avaliar necessidade de terapia de substituição renal conforme os critérios clínicos do fluxo.":
+    "Evaluar la necesidad de terapia de reemplazo renal según los criterios clínicos del flujo.",
+  "Manter a estabilização segundo o ramo específico da ameaça — o app conduz cada um deles.":
+    "Mantener la estabilización según la rama específica de la amenaza — la app conduce cada una de ellas.",
+  "Acionar regulação ou transferência para serviço de maior capacidade.":
+    "Activar la regulación o el traslado a un servicio de mayor capacidad.",
+  "Buscar apoio remoto especializado quando disponível.":
+    "Buscar apoyo remoto especializado cuando esté disponible.",
+  "Manter reavaliação contínua enquanto organiza a transferência ou o suporte.":
+    "Mantener la reevaluación continua mientras organiza el traslado o el soporte.",
+  "Há suporte local disponível":
+    "Hay soporte local disponible",
+  "Não há suporte local imediato":
+    "No hay soporte local inmediato",
 };

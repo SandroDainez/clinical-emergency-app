@@ -3855,3 +3855,14 @@ Varrido em 2026-08-24 (474 arquivos, 73.723 literais, padrão `/hipoglicemi/i`).
 
 Por isso o passo 0 do renal **pergunta e não classifica**: nenhum número foi
 escrito. Alvo: pergunta ao autor sobre qual corte adotar e de qual fonte.
+
+### ⚠️ NOTA DO AUTOR (2026-08-24) — e ela muda a pergunta da próxima auditoria
+
+> **Antes de unificar, verificar qual função o número exerce em cada módulo.** Um
+> limiar de **tratamento** de hipoglicemia no AVC pode não querer dizer o mesmo
+> que uma **meta de evitar** hipoglicemia no pós-PCR/ACLS. **Conferir texto,
+> contexto e fonte de cada um** — e só então decidir se é um corte com três usos
+> ou três cortes com nomes parecidos.
+
+É o **R-127**. A auditoria clínica específica vem **imediatamente depois do
+percurso no celular**, e não antes.

@@ -6859,3 +6859,37 @@ isolada — e ela vale para os 31:
 
 ⚠️ É o complemento do R-121: lá, a pergunta não pode exigir que a pessoa já saiba;
 aqui, a **resposta** não pode empurrá-la para a hipótese da casa.
+
+## R-127 — DOIS NÚMEROS SOB A MESMA PALAVRA PODEM SER DUAS PERGUNTAS
+
+> **Antes de unificar cortes, compare a FUNÇÃO, não o valor.**
+
+Decisão do autor, 2026-08-24, sobre os dois cortes de hipoglicemia (D-103):
+
+> **Antes de unificar, verificar qual função o número exerce em cada módulo.** Um
+> limiar de **tratamento** de hipoglicemia no AVC pode não querer dizer o mesmo
+> que uma **meta de evitar** hipoglicemia no pós-PCR/ACLS.
+
+⚠️ É o avesso do R-95. Lá, duas cópias do mesmo número são o defeito. Aqui, dois
+números **parecidos** podem ser duas coisas **diferentes** — e unificá-los seria
+apagar uma distinção clínica em nome da consistência.
+
+**Conferir texto, contexto e fonte de cada um**, e só então decidir se é um corte
+com três usos ou três cortes com nomes parecidos.
+
+## R-128 — REGRA VIOLADA QUATRO VEZES NÃO É REGRA: É INTENÇÃO
+
+> **O que se repete precisa virar IMPOSSIBILIDADE, não advertência.** Advertência
+> depende de lembrar; impossibilidade, não.
+
+O caso: o **R-47** proíbe `git checkout` e `git restore` dentro de um ciclo de
+mutação. Foi violado **quatro vezes** nesta sequência — a última em 2026-08-24,
+revertendo `lib/injuria-renal-aguda.ts` inteiro e apagando três constantes
+recém-escritas.
+
+⚠️ **E as três primeiras violações já haviam produzido uma "solução": o
+`scripts/muta.cjs`.** Ele existe, funciona, e mesmo assim a quarta aconteceu —
+porque usá-lo continua sendo uma **escolha**. Ferramenta boa que não é obrigatória
+protege quem já se lembraria sozinho.
+
+A forma proposta está em `auditoria/PROPOSTA-GUARDA-DO-R-47.md`.

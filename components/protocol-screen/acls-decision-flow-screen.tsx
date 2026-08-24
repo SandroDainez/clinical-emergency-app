@@ -17,6 +17,17 @@ import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decisi
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
+import {
+  deveEscalonar,
+  ESCALONAR_COM_SUPORTE,
+  ESCALONAR_PORQUE,
+  ESCALONAR_SEM_SUPORTE,
+  ESCALONAR_TITULO,
+  ESTADO_INICIAL,
+  type EstadoDeEscalonamento,
+  marcarDisparado,
+  registrarPassagem,
+} from "../../lib/escalonamento";
 import CalculadoraEmbutida from "./calculadora-embutida";
 import ComparativoDePadroes from "./comparativo-de-padroes";
 import SeloDeForca from "./selo-de-forca";
@@ -215,9 +226,35 @@ export default function AclsDecisionFlowScreen({
     }
   };
 
+  /**
+   * ⚠️ O ESTADO DE ESCALONAMENTO É DE NAVEGAÇÃO, e por isso mora AQUI — no shell,
+   * fora da árvore. A árvore é acíclica e não tem memória: ela não sabe que o
+   * médico já passou por aqui.
+   *
+   * ⚠️ E ele NÃO ENTRA em `valoresRef`, de propósito. `valoresRef` é o que a
+   * árvore lê para classificar — pôr o contador ali seria dar ao número de
+   * toques o poder de mudar gravidade.
+   */
+  const escalonamentoRef = useRef<EstadoDeEscalonamento>(ESTADO_INICIAL);
+
   const handleChoose = (optionId: string) => {
     const next = engine.choose(optionId);
     caminhoRef.current.push(next.id);
+
+    // ⚠️ "piorou" é o id da opção que o autor nomeou; `trata_*` é o prefixo dos
+    // nós em que uma ameaça é ABORDADA. Reaparecer é entrar de novo num que já
+    // foi visitado neste atendimento.
+    if (optionId === "piorou") {
+      escalonamentoRef.current = registrarPassagem(escalonamentoRef.current, { tipo: "piorou" });
+    }
+    if (next.id.startsWith("trata_")) {
+      const jaAbordada = caminhoRef.current.filter((x) => x === next.id).length > 1;
+      escalonamentoRef.current = registrarPassagem(escalonamentoRef.current, {
+        tipo: "ameaca",
+        id: next.id,
+        jaAbordada,
+      });
+    }
     sync(next.title);
   };
 
@@ -376,6 +413,26 @@ export default function AclsDecisionFlowScreen({
           />
         ) : null}
 
+        {/* ⚠️ O ESCALONAMENTO INTERROMPE O CICLO E MOSTRA A SAÍDA — não muda
+            gravidade, não muda conduta, não entra em critério nenhum. É trava de
+            segurança de INTERFACE, e a própria tela diz isso. */}
+        {deveEscalonar(escalonamentoRef.current) ? (
+          // ⚠️ `Card tom="critical"` e os estilos do tema — nenhuma cor crua.
+          // Escrever hexadecimal aqui subiria o teto de cores do arquivo, e o
+          // teto do legado SÓ DESCE.
+          <Card tom="critical" style={styles.introCard}>
+            <Tag label={tr(ESCALONAR_TITULO)} />
+            <Text style={styles.questionSummary}>{tr(ESCALONAR_PORQUE)}</Text>
+            <Text style={styles.actionEyebrow}>{tr("Há suporte local disponível")}</Text>
+            {ESCALONAR_COM_SUPORTE.map((l) => (
+              <Text key={l} style={styles.actionItemText}>• {tr(l)}</Text>
+            ))}
+            <Text style={styles.actionEyebrow}>{tr("Não há suporte local imediato")}</Text>
+            {ESCALONAR_SEM_SUPORTE.map((l) => (
+              <Text key={l} style={styles.actionItemText}>• {tr(l)}</Text>
+            ))}
+          </Card>
+        ) : null}
         {estabilizacaoNoFluxo ? null : (
           <StabilizationFirstCard
             compacto={emV2}
