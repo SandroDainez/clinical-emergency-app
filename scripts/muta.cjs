@@ -66,6 +66,37 @@ if (!fs.existsSync(caminho)) {
 // ── 0 · O ESTADO INICIAL DA ÁRVORE, para comparar no fim ───────────────────
 const statusAntes = execSync("git status --short", { cwd: app }).toString();
 
+// ── 0b · ⚠️ ÁRVORE SUJA RECUSA O CICLO (R-133) ─────────────────────────────
+//
+// **Guarde o estado, não o verbo.** `git checkout` só destrói o que NÃO ESTÁ
+// SALVO — as quatro violações do R-47 destruíram linhas não commitadas. A
+// destrutividade veio do estado da árvore, não do comando.
+//
+// ⚠️ E esta metade é melhor que o guarda do PATH em três coisas: funciona mesmo
+// quando o guarda não está de pé, não depende de ninguém lembrar, e transforma a
+// PIOR CONSEQUÊNCIA EM NENHUMA — com a árvore limpa, um `git checkout` perdido
+// não custa nada.
+const permiteSujo = process.argv.includes("--aceito-arvore-suja");
+if (statusAntes.trim() && !permiteSujo) {
+  console.log(`\n⛔ R-133: a árvore está suja — o ciclo de mutação não começa.\n`);
+  console.log(statusAntes.split("\n").slice(0, 12).map((l) => `   ${l}`).join("\n"));
+  console.log(`\n   Um \`git checkout\` perdido aqui apagaria estas linhas.`);
+  console.log(`   ➜ Commite o que está pronto, ou guarde antes de mutar.\n`);
+  process.exit(1);
+}
+
+// ── 0c · ⚠️ O GUARDA DO PATH (R-128) ───────────────────────────────────────
+//
+// Um `git` que recusa `checkout` e `restore`, no início do PATH dos comandos que
+// este ciclo dispara.
+//
+// ⚠️ ELE NÃO SOBREVIVE AO CICLO, e é por isso que a forma é esta: vive no `env`
+// do processo filho. Se o muta.cjs travar, for interrompido ou cair, o PATH morre
+// junto — não fica nada ligado. Um hook do git ou um arquivo de flag precisariam
+// ser DESLIGADOS, e desligar é o passo que falha quando o processo morre.
+const GUARDA_R47 = path.join(__dirname, "guarda-r47");
+const envDoCiclo = { ...process.env, PATH: `${GUARDA_R47}:${process.env.PATH}` };
+
 // ── 1 · CÓPIA FORA DA ÁRVORE DO GIT ────────────────────────────────────────
 const cofre = fs.mkdtempSync(path.join(os.tmpdir(), "muta-"));
 const backup = path.join(cofre, path.basename(alvo) + ".bak");
@@ -90,7 +121,7 @@ try {
 
   // ── 3 · O INSTRUMENTO ────────────────────────────────────────────────────
   try {
-    resultado.saida = execSync(instrumento, { cwd: app, stdio: "pipe" }).toString();
+    resultado.saida = execSync(instrumento, { cwd: app, stdio: "pipe", env: envDoCiclo }).toString();
     resultado.codigo = 0;
   } catch (e) {
     resultado.saida = `${e.stdout ?? ""}${e.stderr ?? ""}`;

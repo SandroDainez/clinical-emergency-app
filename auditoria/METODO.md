@@ -6893,3 +6893,41 @@ porque usá-lo continua sendo uma **escolha**. Ferramenta boa que não é obriga
 protege quem já se lembraria sozinho.
 
 A forma proposta está em `auditoria/PROPOSTA-GUARDA-DO-R-47.md`.
+
+## R-132 — REUSAR O CONCEITO É CERTO; HERDAR O PRAZO SEM CONFERIR, NÃO
+
+> **Quando um estado passa a servir dois propósitos, os prazos dos dois se
+> conferem separadamente** — o prazo de um vira defeito do outro em silêncio.
+
+O caso (2026-08-24): a expiração de 30 min de `SessaoDeFluxo` foi escrita para
+responder *"provavelmente é outro paciente"* — **higiene de identidade**. Ao
+pendurar o contador de escalonamento na mesma sessão, ela passou a governar
+também uma **trava de segurança**, e os dois prazos puxam para lados opostos:
+
+- **curto** protege contra o paciente A contaminar o B;
+- **longo** protege contra **perder a segunda piora**.
+
+⚠️ E um reset silencioso do contador é da mesma espécie que a *"terceira volta
+silenciosa"* que o autor proibiu: **o ciclo recomeça sem que ninguém tenha
+decidido isso**.
+
+⚠️ **A decisão de manter também precisa ser declarada.** Trava padrão que ninguém
+escolheu não é decisão — é sobra.
+
+## R-133 — GUARDE O ESTADO, NÃO O VERBO
+
+> **`git checkout` só destrói o que NÃO ESTÁ SALVO.** As quatro violações do
+> R-47 destruíram linhas **não commitadas** — a destrutividade veio do estado da
+> árvore, não do comando.
+
+Por isso o `muta.cjs` **recusa iniciar com a árvore suja**, e essa metade é
+melhor que o guarda do PATH em três coisas:
+
+1. **funciona mesmo quando o guarda não está de pé** — inclusive numa mutação
+   feita à mão, que é como as quatro aconteceram;
+2. **não depende de ninguém lembrar**;
+3. **transforma a pior consequência em nenhuma consequência** — com a árvore
+   limpa, um `git checkout` perdido não custa nada.
+
+> **O PATH mata o verbo dentro do ciclo; a árvore limpa mata o estrago em
+> qualquer lugar.**

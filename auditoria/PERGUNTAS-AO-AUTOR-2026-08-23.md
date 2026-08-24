@@ -1,6 +1,6 @@
 # Perguntas ao autor — 2026-08-23
 
-**Seis perguntas abertas** e cinco já respondidas, listadas no fim para o
+**Sete perguntas abertas** e cinco já respondidas, listadas no fim para o
 registro.
 
 ⚠️ **Os limiares deste arquivo vêm do dado, não estão digitados aqui.** Ele é
@@ -145,6 +145,37 @@ explicada.
 
 ⚠️ **Não há módulo nem ramo de hipoglicemia** no app (D-102 é o irmão disso: não
 há fluxo de delirium). Se o corte disparar, hoje não há para onde apontar.
+
+---
+
+## 7 · Quando a sessão expira no meio do atendimento, o contador de segurança zera junto?
+
+**Destrava:** hoje o contador de escalonamento vive dentro da sessão do fluxo — e
+a sessão expira em **30 minutos**. Esse prazo foi escrito para outra coisa.
+
+⚠️ **Os dois propósitos puxam para lados opostos:**
+
+- prazo **curto** protege contra o paciente A contaminar o B (era o propósito
+  original: *"meia hora depois a chance de ser outro paciente já é grande o
+  bastante"*);
+- prazo **longo** protege contra **perder a segunda piora**.
+
+**E um atendimento de IRA grave dura mais de 30 minutos.** Paciente que piora no
+minuto 10 e piora de novo no minuto 45: o contador zerou no meio, e **o
+escalonamento nunca dispara** — falso negativo numa trava de segurança, a espécie
+que não gera queixa porque ninguém percebe o aviso que não veio.
+
+> **Quatro formas, e eu não escolhi nenhuma:**
+>
+> **(a)** prazo maior só para o estado de escalonamento;
+> **(b)** a expiração deixa de ser silenciosa e **pergunta** ("mesmo paciente?")
+> antes de zerar;
+> **(c)** o estado só zera por ação explícita ("começar do início"), e o tempo
+> apenas avisa;
+> **(d)** fica como está, e o senhor declara que aceita o reset.
+
+⚠️ **A (d) é resposta legítima** — mas precisa ser **declarada**, não acontecer
+por omissão. Trava padrão que ninguém escolheu não é decisão, é sobra.
 
 ---
 

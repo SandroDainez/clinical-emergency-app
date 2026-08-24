@@ -1,0 +1,23 @@
+#!/bin/sh
+# ⚠️ GUARDA DO R-47 — o `git` que existe dentro de um ciclo de mutação.
+#
+# O R-47 proíbe `git checkout` e `git restore` durante uma mutação: eles revertem
+# o ARQUIVO INTEIRO, e um arquivo revertido apaga trabalho que não era da
+# mutação. A regra foi violada QUATRO vezes — e o `muta.cjs`, que existia para
+# evitá-la, não impediu a quarta, porque usá-lo continuava sendo uma escolha.
+#
+# R-128: o que se repete precisa virar IMPOSSIBILIDADE, não advertência.
+#
+# ⚠️ SÓ DUAS PALAVRAS SÃO BLOQUEADAS. `git status`, `git diff` e `git log` são
+# exatamente o que a conferência da mutação precisa — bloquear tudo obrigaria a
+# desligar o guarda, e guarda desligado é como um guarda morre.
+case "$1" in
+  checkout|restore)
+    echo "⛔ R-47: \`git $1\` não existe dentro de um ciclo de mutação." >&2
+    echo "   Ele reverte o ARQUIVO INTEIRO e apaga o que não era da mutação." >&2
+    echo "   ➜ Restaure da cópia fora da árvore que o muta.cjs já fez." >&2
+    echo "   ➜ Confira com:  diff -q  e  git status --short" >&2
+    exit 47
+    ;;
+esac
+exec /usr/bin/git "$@"

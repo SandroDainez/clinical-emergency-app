@@ -96,6 +96,16 @@ console.log(`\nUNIVERSO: 6 provas do autor · estado com ${Object.keys(E.ESTADO_
 // faz a ameaça do paciente A contar para o paciente B — e o contador dispararia
 // escalonamento num paciente que nunca piorou.
 {
+  // ⚠️ O COMPORTAMENTO, NÃO O TIPO. A primeira versão desta prova conferia que
+  // o CAMPO existia em `SessaoDeFluxo` — e aprovava um contador que nunca era
+  // gravado: ele vivia só num ref da tela e morria a cada navegação, muito antes
+  // dos 30 minutos. Campo declarado é promessa; valor gravado é o objeto.
+  const tela = lerFonte(path.join(RAIZ, "components", "protocol-screen", "acls-decision-flow-screen.tsx"));
+  if (!/salvarSessaoDeFluxo\([\s\S]{0,400}?escalonamento:/.test(tela))
+    erro(`6 · a tela NÃO grava o estado de escalonamento na sessão — ele morre a cada navegação, e a expiração de 30 min nunca chega a ser o que o zera`);
+  if (!/escalonamentoRef\.current = salva\.escalonamento/.test(tela))
+    erro(`6 · retomar não restaura o contador — retomar viraria uma terceira porta de reinício, silenciosa`);
+
   const sessao = lerFonte(path.join(RAIZ, "lib", "flow-session.ts"));
   if (!/escalonamento\?:\s*EstadoDeEscalonamento/.test(sessao))
     erro(`6 · o estado de escalonamento não vive dentro de SessaoDeFluxo — fora dela, ele não é apagado por "começar do início" nem pela expiração, e sobrevive ao paciente`);

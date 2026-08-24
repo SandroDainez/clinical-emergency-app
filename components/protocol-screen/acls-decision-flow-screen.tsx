@@ -156,6 +156,16 @@ export default function AclsDecisionFlowScreen({
       valores: { ...valoresRef.current },
       trilha: [...trail],
       salvoEm: Date.now(),
+      // ⚠️ O CONTADOR NÃO ESTAVA SENDO SALVO — e o campo já existia no tipo.
+      //
+      // Ele vivia só no `escalonamentoRef`, que morre com a tela: sair do módulo
+      // para o atalho de estabilização e voltar zerava a contagem. Não era o
+      // prazo de 30 minutos que o apagava — era QUALQUER navegação, muito antes.
+      //
+      // ⚠️ E a prova 6 aprovava isso, porque conferia o TIPO ("o campo existe em
+      // SessaoDeFluxo") e não o COMPORTAMENTO ("o valor chega lá"). R-87 dentro
+      // da minha própria trava.
+      escalonamento: { ...escalonamentoRef.current },
     });
   }, [currentModuleSlug, step, trail]);
 
@@ -176,6 +186,7 @@ export default function AclsDecisionFlowScreen({
     setOfertaDeRetomada(undefined);
     descartarSessaoDeFluxo(currentModuleSlug);
   };
+
 
   const retomar = () => {
     const salva = ofertaDeRetomada;
@@ -204,6 +215,8 @@ export default function AclsDecisionFlowScreen({
       engine.reset();
       caminhoRef.current = [engine.getCurrentNode().id];
       valoresRef.current = {};
+      // ⚠️ Recomeçar limpo zera o contador junto — é atendimento novo.
+      escalonamentoRef.current = ESTADO_INICIAL;
       sync(undefined, [engine.toFrontendStep().title]);
       comecarDoInicio();
       return;
@@ -211,6 +224,10 @@ export default function AclsDecisionFlowScreen({
 
     caminhoRef.current = [...salva.caminho];
     valoresRef.current = { ...salva.valores };
+    // ⚠️ RETOMAR É CONTINUAR O MESMO ATENDIMENTO: o contador volta junto. Se ele
+    // não voltasse, retomar seria uma terceira porta de reinício — silenciosa, e
+    // é exatamente o que o autor proibiu.
+    escalonamentoRef.current = salva.escalonamento ?? ESTADO_INICIAL;
     sync(undefined, salva.trilha);
     comecarDoInicio();
   };

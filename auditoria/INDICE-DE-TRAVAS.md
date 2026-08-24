@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**65 de 82 travas com declaração completa.**
+**66 de 83 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -119,6 +119,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o estado de escalonamento obedeça às seis provas do autor — a primeira piora NÃO dispara, a segunda dispara, a recorrência dispara, o estado não classifica, a terceira volta silenciosa é impossível, e um novo atendimento zera o anterior.
 - **NÃO PROMETE:** que os gatilhos sejam os clinicamente certos. A escolha é do autor e é regra de PRODUTO — a trava confere que o app obedece, não que a regra esteja certa.
 - **UNIVERSO:** `lib/escalonamento.ts` compilado + `lib/flow-session.ts` + a árvore renal, para a prova 4. Contagens impressas antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23 e 2026-08-24) — R-118. ── ⚠️ A PROVA 1 É NEGATIVA, E ISSO É RARO AQUI ───────────────────────────── Quase toda trava deste repositório prova que algo ACONTECE. Esta prova que algo **não acontece**: que o gatilho não é ansioso. **Trava só de disparo transforma qualquer instabilidade em escalonamento — e um app que escalona sempre é um app que ninguém escuta.** Aí ele deixa de escalonar quando importa.
+
+## `test:guarda-r47` → `scripts/valida-guarda-r47.cjs`
+
+- **PROMETE:** que o guarda do R-47 esteja de pé — `git checkout` e `git restore` falham dentro de um ciclo de mutação, `git status` e `git diff` continuam funcionando, e o `muta.cjs` RECUSA iniciar com a árvore suja.
+- **NÃO PROMETE:** que ninguém mute à mão, fora do harness. O guarda do PATH só alcança o que o `muta.cjs` dispara — e as quatro violações foram todas fora dele. É a pré-condição de árvore limpa que cobre esse caso, e por isso as duas metades existem.
+- **UNIVERSO:** o shim `scripts/guarda-r47/git` e o `scripts/muta.cjs`. Cada tentativa é executada de verdade, não inspecionada por regex. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-24) — R-118, R-128, R-133. ── ⚠️ POR QUE DUAS METADES ───────────────────────────────────────────────── **O PATH mata o verbo dentro do ciclo; a árvore limpa mata o estrago em qualquer lugar.** `git checkout` só destrói o que não está salvo — se a árvore estava limpa, um checkout perdido não custa nada (R-133).
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
