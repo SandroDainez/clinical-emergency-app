@@ -149,6 +149,129 @@ const SINUSOIDAL: Batimento = {
   ],
 };
 
+// ── PADRÕES DE SÍNDROMES CORONARIANAS (piloto sindromes-coronarianas,
+// 2026-08-24) — MESMA TÉCNICA, MESMA ESCALA DOS CINCO PAINÉIS ACIMA ────────
+//
+// ⚠️ O QUE FALTAVA: os comparativos de ECG do módulo coronariano (`ecg`,
+// `ecg_sem_supra`, `ecg_padroes_wellens`) usavam `figura` ids que NENHUM
+// batimento aqui desenhava — a tela sempre caía em "sem desenho, mostra só
+// texto" (comportamento correto e documentado — ver a doc-string de
+// `tracadoDeEcg` — mas não o alvo do módulo). Pedido explícito do autor: "se
+// uma decisão depende de reconhecer um padrão eletrocardiográfico, deve
+// existir uma imagem de referência no próprio ponto da decisão". Estes onze
+// padrões preenchem esses ids, pela MESMA técnica já usada nos cinco painéis
+// da hipercalemia: gaussianas somadas, mesma escala (6 px = 1 mm · 25 mm/s ·
+// 10 mm/mV), mesmo `viewBox`, cor por parâmetro.
+//
+// ⚠️ SÃO TRAÇADOS SINTÉTICOS — vale aqui a MESMA ressalva do topo do arquivo,
+// com o mesmo peso: não são exame de paciente, não têm papel quadriculado
+// para medir milissegundos, e existem para COMPARAÇÃO DE FORMA. A morfologia
+// de cada um vem dos critérios já sourced neste módulo (`lib/oclusao-sem-
+// supra.ts`, `lib/lbbb-sgarbossa.ts`) — não foi desenhada de memória.
+//
+// ⚠️ DIFERENÇA HONESTA EM RELAÇÃO AOS CINCO PAINÉIS ACIMA: aqueles passaram
+// por revisão médica dedicada da FORMA em 2026-08-19. Estes onze seguem os
+// MESMOS critérios de texto já validados nesta sessão, mas a forma em si
+// ainda não recebeu essa mesma conferência visual — o autor pediu para
+// "preparar/usar os slots" nesta rodada; a validação da forma fica para a
+// checagem física, como o resto do piloto.
+function batimentoBase(): Onda[] {
+  return [
+    { c: 0.13, s: 0.028, a: 7 },
+    { c: 0.30, s: 0.010, a: -6 },
+    { c: 0.33, s: 0.012, a: 46 },
+    { c: 0.37, s: 0.012, a: -13 },
+  ];
+}
+
+/** "Sem padrão de supra evidente" — complexo sem alteração de ST, T normal. */
+const SEM_SUPRA_EVIDENTE: Batimento = { dur: 0.5, ondas: [...batimentoBase(), { c: 0.56, s: 0.055, a: 13 }] };
+
+/**
+ * ST elevado — usado nas TRÊS variantes de STEMI por território (anterior,
+ * inferior, lateral). Um traçado de uma derivação só não distingue
+ * território — isso é decisão de QUAL derivação mostra o supra, não de
+ * FORMA — então as três reaproveitam a mesma morfologia de propósito, como
+ * os painéis da hipercalemia também repetem forma entre estágios quando o
+ * achado desenhado é o mesmo.
+ */
+const ST_ELEVADO: Batimento = {
+  dur: 0.5,
+  ondas: [
+    ...batimentoBase(),
+    { c: 0.46, s: 0.028, a: 16 },  // segmento ST elevado — não uma reta no zero
+    { c: 0.58, s: 0.045, a: 22 },  // T ampla, positiva, fundida ao ST elevado
+  ],
+};
+
+/** BRE novo — QRS alargado, sem Q septal, T DISCORDANTE (oposta ao QRS). */
+const BRE_NOVO: Batimento = {
+  dur: 0.5,
+  ondas: [
+    { c: 0.13, s: 0.028, a: 7 },
+    // Sem Q septal — é isso que o BRE apaga.
+    { c: 0.32, s: 0.026, a: 40 },   // R alargado (QRS ≥ 120 ms)
+    { c: 0.42, s: 0.020, a: -18 },  // S alargado, entalhado
+    { c: 0.60, s: 0.045, a: -16 },  // T discordante — negativa, oposta ao QRS
+  ],
+};
+
+/** De Winter — infra ascendente do ponto J seguido de T alta e simétrica. */
+const DE_WINTER: Batimento = {
+  dur: 0.5,
+  ondas: [
+    ...batimentoBase(),
+    { c: 0.42, s: 0.014, a: -8 },  // infra ascendente do ponto J
+    { c: 0.54, s: 0.030, a: 34 },  // T alta, simétrica, colada no infra
+  ],
+};
+
+/** Posterior isolado — R alta e larga + infra horizontal discreto + T positiva (imagem em espelho). */
+const POSTERIOR: Batimento = {
+  dur: 0.5,
+  ondas: [
+    { c: 0.13, s: 0.028, a: 7 },
+    { c: 0.33, s: 0.016, a: 54 },  // R mais alta e mais larga que o normal
+    { c: 0.39, s: 0.012, a: -8 },  // infra horizontal discreto
+    { c: 0.52, s: 0.032, a: 18 },  // T positiva
+  ],
+};
+
+/** T hiperaguda — LARGA NA BASE, simétrica, desproporcional ao QRS; sem infra/supra ainda. */
+const T_HIPERAGUDA_STEMI: Batimento = {
+  dur: 0.5,
+  // ⚠️ Largura (`s`), não altura isolada, é o que distingue de `T_APICULADA`
+  // (hipercalemia — estreita e pontiaguda). O critério aqui é DESPROPORÇÃO ao
+  // QRS pela BASE larga, não pico.
+  ondas: [...batimentoBase(), { c: 0.58, s: 0.075, a: 40 }],
+};
+
+/** aVR + infra difuso — representado pelo infra difuso companheiro do supra em aVR. */
+const AVR_TRONCO: Batimento = {
+  dur: 0.5,
+  ondas: [
+    ...batimentoBase(),
+    { c: 0.46, s: 0.030, a: -14 }, // infra difuso do segmento ST
+    { c: 0.60, s: 0.035, a: -10 }, // T achatada/pouco invertida
+  ],
+};
+
+/** Wellens tipo A — T BIFÁSICA: positiva seguida de negativa, em V2–V4. */
+const WELLENS_A: Batimento = {
+  dur: 0.5,
+  ondas: [
+    ...batimentoBase(),
+    { c: 0.52, s: 0.022, a: 14 },   // primeira fase — positiva
+    { c: 0.62, s: 0.022, a: -16 },  // segunda fase — negativa
+  ],
+};
+
+/** Wellens tipo B — T profunda e SIMETRICAMENTE invertida em V2–V4. */
+const WELLENS_B: Batimento = {
+  dur: 0.5,
+  ondas: [...batimentoBase(), { c: 0.58, s: 0.038, a: -30 }],
+};
+
 /**
  * Amostra a soma das gaussianas e devolve o `d` do path.
  *
@@ -215,6 +338,18 @@ const BATIMENTO: Record<string, Batimento> = {
   ecg_pr_longo: PR_LONGO,
   ecg_qrs_largo: P_AUSENTE_QRS_LARGO,
   ecg_sinusoidal: SINUSOIDAL,
+  // ── Piloto sindromes-coronarianas (2026-08-24) ──
+  ecg_sca_normal: SEM_SUPRA_EVIDENTE,
+  ecg_supra_anterior: ST_ELEVADO,
+  ecg_supra_inferior: ST_ELEVADO,
+  ecg_supra_lateral: ST_ELEVADO,
+  ecg_bre_novo: BRE_NOVO,
+  ecg_de_winter: DE_WINTER,
+  ecg_posterior: POSTERIOR,
+  ecg_t_hiperaguda: T_HIPERAGUDA_STEMI,
+  ecg_avr_tronco: AVR_TRONCO,
+  ecg_wellens_a: WELLENS_A,
+  ecg_wellens_b: WELLENS_B,
 };
 
 /** Os caminhos são calculados uma vez por id; a cor entra depois. */
