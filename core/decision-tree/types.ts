@@ -17,6 +17,20 @@ export type DecisionOption = {
    * decidir gravidade. `valida-estado-nao-classifica` cobra isso.
    */
   grava?: { campo: string; valor: string };
+  /**
+   * PESO VISUAL NA REAVALIAÇÃO (Design System V2 v3, piloto coronarianas) —
+   * OPCIONAL e só consumido quando a UI v3 está ligada para o módulo.
+   *
+   * ⚠️ NÃO É HIERARQUIA FIXA. O pedido do autor foi explícito: "peso visual
+   * deve refletir gravidade clínica real, não uma hierarquia fixa universal".
+   * Por isso o peso vem do CONTEÚDO de cada opção — quem escreve o nó decide,
+   * caso a caso, se "sem sucesso" pesa mais que "complicação" ali —, nunca de
+   * uma regra de layout que trata todo "não sei" como neutro ou toda falha
+   * como crítica em qualquer contexto.
+   *
+   * Ausente = peso igual entre as opções (comportamento atual, inalterado).
+   */
+  gravidade?: "critica" | "alerta" | "favoravel" | "neutra";
 };
 
 /**
@@ -124,6 +138,288 @@ export type ComparativoVisual = {
   significado: string;
   /** O que fazer diante dele. Sem isto o desenho vira ilustração. */
   conduta: string;
+  /**
+   * O CARD É O PRÓPRIO BOTÃO (Design System V2 v3, segunda correção pós-
+   * validação física, 2026-08-24) — OPCIONAL.
+   *
+   * ⚠️ POR QUE ISTO EXISTE: a v3 renderizava o comparativo como galeria (não
+   * tocável) E, embaixo, a lista de `options` repetia CADA nome de padrão como
+   * uma linha própria — "De Winter" aparecia como card E como botão de texto
+   * logo abaixo. Numa tela com 4 padrões, isso dobra a altura sem dobrar a
+   * informação, e foi exatamente o que estourou o viewport de 375×667
+   * ("6 cards + 8 opções... voltam a transformar a decisão em busca de
+   * informação", relato do autor).
+   *
+   * Quando declarado, `optionId` referencia o `DecisionOption.id` que este
+   * card seleciona ao ser tocado — o renderer usa isso para (a) tornar o
+   * próprio card tocável e (b) OMITIR da lista de opções qualquer opção já
+   * coberta por um card, sem duplicar.
+   *
+   * Ausente = comportamento de sempre: card só ilustra, a lista de opções
+   * mostra todas — nenhum dos outros consumidores (renal, bradicardia,
+   * taquicardia) declara isto, e nenhum muda.
+   */
+  optionId?: string;
+  /**
+   * ID DE FOTO DE REFERÊNCIA REAL — OPCIONAL (Bloco 4, 2026-08-24).
+   *
+   * ⚠️ SUBSTITUI o traçado sintético (`tracadoDeEcg(figura, ...)`) quando
+   * presente — pedido explícito do autor: "não usar os ECGs sintéticos
+   * atuais como referência final; usar as imagens de referência já
+   * fornecidas". É um ID DE STRING, não o `require()` da imagem — o
+   * `require()` fica em `components/protocol-screen/imagens-ecg-referencia.ts`
+   * (só ele passa pelo Metro); este arquivo de árvore continua sendo
+   * `require()`ável por Node puro nos validadores, sem asset transform.
+   * Ausente = comportamento de sempre (traçado sintético desenhado por
+   * `tracadoDeEcg`) — nenhum outro consumidor (renal, bradicardia,
+   * taquicardia, PCR, TEP) declara isto, e nenhum muda.
+   */
+  imagemReal?: string;
+};
+
+/**
+ * AÇÃO PARALELA — o que acontece AO MESMO TEMPO, e por isso NÃO vira nó.
+ *
+ * ── A REGRA ARQUITETURAL DO MOTOR (decisão do autor, 2026-08-25) ────────────
+ *
+ * **Se vira nó, é sequencial. Se é paralelo, não vira nó.**
+ *
+ * A emergência acontece em paralelo — monitor sendo montado enquanto o ECG é
+ * obtido enquanto a história é colhida. Um motor que só tem nós transforma
+ * tudo isso numa FILA DE TELAS, e a fila mente sobre o atendimento: sugere
+ * que o médico espera terminar A para começar B. Foi exatamente o defeito
+ * medido na auditoria da SCA — "peso → 22 ações → decidir reperfusão" fazia
+ * a interface dizer que a reperfusão espera as doses. Não espera.
+ *
+ * ⚠️ POR QUE ENTIDADE E NÃO `string[]` (decisão explícita do autor): texto
+ * livre resolveria hoje e travaria amanhã. Já se sabe o que virá — marcar
+ * "ECG solicitado", registrar peso, abrir calculadora, marcar coleta,
+ * registrar que a hemodinâmica foi acionada, e levar esses dados adiante.
+ * O tipo nasce extensível para que isso não exija reescrever o contrato do
+ * motor universal depois. O que NÃO se faz nesta rodada é construir o
+ * sistema inteiro: `label` é o único campo obrigatório, e os demais entram
+ * quando houver consumidor real.
+ */
+export type ParallelAction = {
+  /** O que está acontecendo em paralelo — a frase que aparece na tela. */
+  label: string;
+  /**
+   * Id estável, para quando esta ação precisar ser referenciada (marcada
+   * como feita, ligada a um campo, consultada por um nó adiante).
+   * Opcional enquanto ninguém referencia.
+   */
+  id?: string;
+  /**
+   * Natureza da ação — orienta a renderização e, no futuro, o que o motor
+   * faz com ela. `informa` é o padrão quando ausente.
+   *
+   *   informa  · só declara que aquilo corre junto (estado de hoje)
+   *   coleta   · deveria capturar um dado (peso, tempo, coleta laboratorial)
+   *   aciona   · dispara algo fora do app (hemodinâmica, equipe, transporte)
+   */
+  tipo?: "informa" | "coleta" | "aciona";
+  /**
+   * Campo de `TreeValues` que esta ação alimenta, quando `tipo: "coleta"`.
+   * Reservado — nenhum consumidor ainda. Existe para que a ligação
+   * ação-paralela → dado não exija mudar o tipo depois.
+   */
+  campo?: string;
+};
+
+
+/**
+ * ── O ESTADO CLÍNICO VIVO ───────────────────────────────────────────────────
+ *
+ * Os tipos abaixo existem porque o app deixou de ser uma sequência de
+ * perguntas e passou a ser uma ficha clínica que ACUMULA. A regra que o autor
+ * fixou em 2026-08-25:
+ *
+ *   TELA recebe dado → MOTOR lembra → PRÓXIMA tela usa → decisão é derivada →
+ *   se houver problema corrigível, trata → remede → retorna → libera ou bloqueia.
+ *
+ * Nunca: a tela 1 pergunta a PA e a tela 6 pergunta de novo se há hipertensão.
+ */
+
+/** Uma medição — com quando e de onde veio. */
+export type Medicao = {
+  valor: string;
+  /** Milissegundos epoch. Injetado, nunca lido do relógio dentro do motor. */
+  em: number;
+  /**
+   * De onde veio o dado. `aferido` × `estimado` muda a confiança de uma dose
+   * calculada por peso; `corrigido` marca a re-medida depois de um tratamento.
+   */
+  origem?: "aferido" | "estimado" | "informado" | "corrigido" | "derivado";
+  /**
+   * O valor que esta medição substituiu. Redundante com a trilha — e de
+   * propósito.
+   *
+   * ⚠️ QUEM LÊ UMA MEDIÇÃO ISOLADA PRECISA DO PAR (2026-08-25). O sumário do
+   * caso mostra linhas, não a trilha inteira: "PA 194/116 → 168/96, após
+   * intervenção, 13:42" é UMA linha, e reconstruí-la obrigaria todo consumidor
+   * a percorrer o array e parear índices — trabalho que cada um faria de um
+   * jeito, alguns errado.
+   */
+  anterior?: string;
+  /**
+   * Por que o valor mudou. `apos_intervencao` é o que distingue "a PA baixou
+   * porque foi tratada" de "a PA baixou sozinha" — e a diferença é clínica.
+   */
+  motivo?: "primeira_medida" | "apos_intervencao" | "reavaliacao" | "correcao_de_registro";
+};
+
+/**
+ * Valor clínico com memória. O que a tela mostra é `atual`; o que a auditoria
+ * (e a própria tela de correção) precisa é a trilha: 194/116 → tratamento →
+ * 168/96.
+ */
+export type ValorClinico = {
+  atual: string;
+  em: number;
+  origem?: Medicao["origem"];
+  /** Da mais antiga para a mais recente, sem a atual. */
+  anteriores: Medicao[];
+};
+
+/** Semáforo de uma ação clínica. */
+export type NivelVeredito = "verde" | "amarelo" | "vermelho";
+
+/**
+ * ⚠️ O MOTIVO É DERIVADO, NÃO ESCRITO À MÃO. "Não administrar nitrato" sem
+ * dizer por quê obriga o médico a procurar o que o app já sabe. O veredito
+ * carrega o achado que o produziu — "PAS 82 mmHg", não "hipotensão".
+ */
+export type Veredito = {
+  /**
+   * O id do `VereditoSpec` que o produziu — INJETADO PELO MOTOR, não escrito
+   * por quem avalia.
+   *
+   * ⚠️ SEM ELE A TELA PRECISARIA DE UM ÍNDICE PARALELO ("o terceiro veredito
+   * é o do betabloqueador"), e índice paralelo quebra em silêncio no dia em
+   * que alguém reordena a lista: o botão de administrar passaria a registrar
+   * o fármaco errado.
+   */
+  id?: string;
+  nivel: NivelVeredito;
+  /** O que está sendo julgado: "Nitrato", "AAS", "Betabloqueador". */
+  titulo: string;
+  /** A frase que aparece na tela, já com o achado concreto. */
+  motivo: string;
+  /**
+   * ⚠️ AMARELO É O ÚNICO QUE OFERECE ESCOLHA (regra do autor, 2026-08-25).
+   * Vermelho bloqueia AQUELA ação — não o fluxo — e não tem "prosseguir
+   * mesmo assim"; o caminho é corrigir o dado ou seguir sem ela. Verde
+   * libera. Só o amarelo (risco × benefício) devolve a decisão ao médico,
+   * e ela fica registrada.
+   */
+  decisao?: DecisaoOferecida;
+  /**
+   * A instrução concreta — dose, via, intervalo — que só faz sentido quando a
+   * ação está liberada.
+   *
+   * ⚠️ POR QUE A DOSE MORA NO VEREDITO E NÃO NA LISTA DE AÇÕES DO NÓ: na
+   * validação visual de 2026-08-25, a tela mostrava "🔴 Nitrato — pressão não
+   * medida" e, três linhas abaixo, "NITROGLICERINA SUBLINGUAL — 0,3–0,4 mg".
+   * A dose de um fármaco contraindicado impressa na mesma tela do bloqueio é
+   * o defeito que os vereditos existem para eliminar; deixá-la aqui garante
+   * que ela apareça apenas com o veredito que a autoriza.
+   */
+  instrucao?: string[];
+};
+
+/**
+ * As saídas possíveis de uma decisão clínica.
+ *
+ * ⚠️ UM BOOLEANO NÃO BASTA (correção do autor, 2026-08-25). Saber que "houve
+ * decisão" não permite reconstruir o atendimento. O sumário precisa poder
+ * dizer "hipotensão identificada → intervenção realizada → PA corrigida →
+ * medicamento liberado", e para isso a decisão tem de dizer QUAL saída ocorreu:
+ * quem corrigiu antes não fez a mesma coisa que quem seguiu sem a medicação, e
+ * quem escalonou não fez nenhuma das duas.
+ */
+export type TipoDeSaida =
+  | "prosseguir"
+  | "nao_prosseguir"
+  | "corrigir_antes"
+  | "contraindicar"
+  | "escalonar";
+
+export type SaidaDeDecisao = {
+  tipo: TipoDeSaida;
+  /** O texto do botão — é tela, e por isso passa por interpolação. */
+  label: string;
+};
+
+/**
+ * A decisão que um veredito amarelo oferece.
+ *
+ * `campo` é onde o `tipo` escolhido fica gravado em `TreeValues`, para que o
+ * roteamento derivado possa lê-lo como qualquer outro valor.
+ */
+export type DecisaoOferecida = {
+  campo: string;
+  saidas: SaidaDeDecisao[];
+};
+
+/**
+ * Uma decisão efetivamente tomada — o registro, não a oferta.
+ */
+export type DecisaoRegistrada = {
+  /** O id do VereditoSpec a que a decisão responde. */
+  vereditoId: string;
+  tipo: TipoDeSaida;
+  /** O nível do veredito no momento da decisão — o contexto em que se decidiu. */
+  nivelNoMomento: NivelVeredito;
+  /** O motivo exibido quando a decisão foi tomada, congelado como estava. */
+  motivoNoMomento: string;
+  em: number;
+};
+
+/**
+ * Estado de execução de uma ação clínica. Separado do veredito de propósito:
+ * "liberada" não é "feita", e "contraindicada" não é "esquecida".
+ */
+export type EstadoDaAcao = "pendente" | "realizada" | "contraindicada" | "nao_indicada";
+
+/**
+ * O caso inteiro, num objeto serializável.
+ *
+ * ⚠️ TUDO QUE É CLÍNICO PRECISA SOBREVIVER À RETOMADA (2026-08-25). Guardar só
+ * `valores` — como a sessão de fluxo fazia — devolve o número atual e joga fora
+ * a trilha, as decisões e o que já foi executado: a tela voltaria mostrando
+ * "168/96 aferido agora", sem o 194/116 nem a evidência do impedimento
+ * corrigido, e uma ação já realizada reapareceria como pendente.
+ */
+export type EstadoSerializado = {
+  noAtual: string;
+  caminho: string[];
+  valores: TreeValues;
+  historico: Record<string, Medicao[]>;
+  /** Id do veredito → instante em que a ação foi executada. */
+  realizadas: Record<string, number>;
+  decisoes: DecisaoRegistrada[];
+};
+
+/** Um veredito declarado por um nó — a função é pura e recebe o estado. */
+export type VereditoSpec = {
+  id: string;
+  avaliar: (values: TreeValues) => Veredito;
+};
+
+/**
+ * CONDIÇÃO CORRIGÍVEL — o laço tratar → remedir → recalcular.
+ *
+ * ⚠️ É a peça que faltava para o app ser assistente e não formulário. A PA de
+ * 194/116 não é um beco: é um impedimento com tratamento conhecido e
+ * re-medida. O nó declara o que medir de novo; o motor recalcula o veredito
+ * com a medição nova e a trilha fica registrada.
+ */
+export type CondicaoCorrigivel = {
+  id: string;
+  /** Campos que a re-medida atualiza (ex.: ["pas", "pad"]). */
+  remedir: string[];
+  /** Verdadeiro enquanto o impedimento persistir. */
+  persiste: (values: TreeValues) => boolean;
 };
 
 export type DecisionNode = BaseNode & {
@@ -138,6 +434,13 @@ export type DecisionNode = BaseNode & {
    * aberto — esconder o desenho devolveria a pergunta ao texto.
    */
   comparativo?: ComparativoVisual[];
+  /**
+   * O que corre AO MESMO TEMPO desta decisão — não consome passo, não
+   * bloqueia. Ver `ParallelAction`.
+   */
+  emParalelo?: ParallelAction[];
+  /** Semáforos derivados do estado. Ver `VereditoSpec`. */
+  vereditos?: VereditoSpec[];
   options: DecisionOption[];
 };
 
@@ -277,6 +580,15 @@ export type DeclaracaoDeAfirmacao = {
 
 export type ActionNode = BaseNode & {
   type: "action";
+  /**
+   * O que corre AO MESMO TEMPO destas ações — não consome passo, não
+   * bloqueia. Ver `ParallelAction`.
+   */
+  emParalelo?: ParallelAction[];
+  /** Semáforos derivados do estado. Ver `VereditoSpec`. */
+  vereditos?: VereditoSpec[];
+  /** Impedimentos com tratamento e re-medida. Ver `CondicaoCorrigivel`. */
+  corrigiveis?: CondicaoCorrigivel[];
   actions: string[];
   /**
    * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
@@ -348,6 +660,20 @@ export type ActionNode = BaseNode & {
    * Ausente = `conduta`, e conduta exige `procedencia`.
    */
   natureza?: "conduta" | "transicao" | "organizacao_do_atendimento";
+  /**
+   * ESTE PASSO É UM RESULTADO DERIVADO, NÃO UMA CONDUTA COMUM (Design System
+   * V2 v3, piloto coronarianas) — OPCIONAL, só consumido quando a UI v3 está
+   * ligada para o módulo.
+   *
+   * Marca os nós de ação que na verdade são "o app concluiu algo a partir dos
+   * dados coletados" (ex.: "Grupo B — oclusão de alto risco"), para que a tela
+   * renderize como card de resultado (título grande + próxima ação), não como
+   * lista numerada de condutas. A variante é semântica, não decorativa — seu
+   * significado é o mesmo do card e não depende da cor escolhida na tela.
+   *
+   * Ausente = renderização de ação comum (comportamento atual, inalterado).
+   */
+  enfase?: "resultado_critico" | "resultado_alerta" | "resultado_neutro" | "resultado_favoravel";
   next: ProximoNo;
 };
 
@@ -388,6 +714,19 @@ export type InputField = {
   /** Campo opcional não bloqueia o "continuar". */
   optional?: boolean;
   /**
+   * Checklist: o campo aceita VÁRIOS presets marcados ao mesmo tempo.
+   *
+   * ⚠️ POR QUE ISTO FALTAVA (2026-08-25): todo preset era mutuamente
+   * exclusivo, e havia perguntas em que isso é clinicamente falso. "Dor
+   * retroesternal + irradiação para o braço + sudorese + náusea" é UM paciente,
+   * não quatro alternativas — obrigar a escolher uma delas descartava o resto
+   * do quadro na entrada do fluxo.
+   *
+   * O valor continua sendo `string` (ver SEP em `estado-clinico.ts`): a leitura
+   * passa por `selecionados()` / `temAlgum()`, e `TreeValues` fica intacto.
+   */
+  multiplo?: boolean;
+  /**
    * ID de um escore de `clinical-calculators-engine` a ser embutido no passo,
    * recolhido, para o usuário calcular ali mesmo em vez de sair do fluxo.
    *
@@ -404,6 +743,8 @@ export type InputNode = BaseNode & {
   /** Instrução curta acima dos campos. */
   intro?: string;
   fields: InputField[];
+  /** Semáforos derivados do estado. Ver `VereditoSpec`. */
+  vereditos?: VereditoSpec[];
   next: ProximoNo;
 };
 
@@ -462,7 +803,12 @@ export type FrontendTreeStep =
       evidence: string[];
       /** Padrões desenhados, já interpolados. Ver `DecisionNode.comparativo`. */
       comparativo: ComparativoVisual[];
-      options: Array<{ id: string; label: string }>;
+      /** O que corre em paralelo, já interpolado. Ver `ParallelAction`. */
+      emParalelo: ParallelAction[];
+      /** Semáforos já avaliados contra o estado atual. */
+      vereditos: Veredito[];
+      /** `gravidade`, já propagada. Ver `DecisionOption.gravidade`. */
+      options: Array<{ id: string; label: string; gravidade?: DecisionOption["gravidade"] }>;
     }
   | {
       id: string;
@@ -470,12 +816,18 @@ export type FrontendTreeStep =
       title: string;
       summary?: string;
       actions: string[];
+      /** O que corre em paralelo, já interpolado. Ver `ParallelAction`. */
+      emParalelo: ParallelAction[];
+      /** Semáforos já avaliados contra o estado atual. */
+      vereditos: Veredito[];
       /** O porquê, recolhido. Ver `ActionNode.porque`. */
       porque: string[];
       /** Força e procedência, já interpoladas. Ver `ProcedenciaDaConduta`. */
       procedencia?: ProcedenciaDaConduta;
       /** Uma declaração por afirmação, já interpoladas. Ver `DeclaracaoDeAfirmacao`. */
       declaracoes: DeclaracaoDeAfirmacao[];
+      /** Ver `ActionNode.enfase`. */
+      enfase?: ActionNode["enfase"];
       canContinue: true;
     }
   | {
@@ -487,6 +839,16 @@ export type FrontendTreeStep =
       fields: InputField[];
       /** Valores atuais por field id. */
       values: TreeValues;
+      /**
+       * A trilha de medições por campo — só os campos que já foram medidos.
+       *
+       * ⚠️ É O QUE SUSTENTA A RE-MEDIDA (2026-08-25): a tela de correção
+       * precisa mostrar "194/116 → 168/96", e não apenas o valor novo. Sem a
+       * trilha, tratar e re-medir apagaria a evidência do impedimento.
+       */
+      historico: Record<string, Medicao[]>;
+      /** Vereditos derivados desta tela — ver `vereditos` na variante decision. */
+      vereditos: Veredito[];
       /** true quando todos os campos obrigatórios têm valor. */
       canContinue: boolean;
     }
