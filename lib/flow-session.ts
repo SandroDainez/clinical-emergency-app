@@ -36,6 +36,7 @@
  * seguro, e é o que acontece se ele ignorar a oferta.
  */
 
+import type { EstadoSerializado } from "../core/decision-tree/types";
 import type { EstadoDeEscalonamento } from "./escalonamento";
 
 export type SessaoDeFluxo = {
@@ -66,6 +67,40 @@ export type SessaoDeFluxo = {
    * conceito de "atendimento", divergente dos dois que já existem.
    */
   escalonamento?: EstadoDeEscalonamento;
+  /**
+   * ⚠️ OS MARCOS TEMPORAIS, COM O INSTANTE ORIGINAL (correção de 2026-08-25).
+   *
+   * A retomada reconstrói o fluxo por REPLAY, e o replay de um campo declarado
+   * em `tree.marcos` faz o motor reancorar o relógio em `Date.now()` — o
+   * instante da RETOMADA. Medido: paciente convulsionando há 12 min, médico
+   * fora do módulo por 8 min, e a crise volta com 12 min de novo. Em estado
+   * epiléptico isso atrasa o escalonamento terapêutico exatamente pelo tempo
+   * que ele gastou consultando outro protocolo.
+   *
+   * Guardar os marcos aqui e recolocá-los DEPOIS do replay preserva o instante
+   * real. Campo OPCIONAL: sessão sem ele continua abrindo pelo caminho de
+   * sempre — o que se perde nesse caso é só a correção, nunca a retomada.
+   */
+  marcos?: Record<string, string>;
+  /**
+   * ⚠️ O CASO INTEIRO — e o que ele conserta (Passo A+B, 2026-08-25).
+   *
+   * Os campos acima nasceram para responder a UMA pergunta: "em que passo eu
+   * estava?". Eles guardam caminho e valores, e a retomada os reconstrói por
+   * REPLAY. Isso bastava enquanto o motor não tinha memória clínica.
+   *
+   * Agora tem — trilha de medições, ações executadas, decisões tomadas — e o
+   * replay não só perde essas três coisas: ele FABRICA uma trilha falsa, com um
+   * ponto por campo carimbado na hora da volta. O médico corrigiria uma PA de
+   * 194/116 para 168/96, sairia para consultar outro protocolo, voltaria, e a
+   * tela mostraria "168/96, aferido agora", sem o 194/116 e sem sinal de que
+   * houve um impedimento corrigido. Pior que esquecer.
+   *
+   * ⚠️ OPCIONAL DE PROPÓSITO, E É O QUE TORNA A MIGRAÇÃO SEGURA: sessão salva
+   * sem `estado` continua abrindo pelo replay de sempre. Nenhum dos 20 módulos
+   * precisa mudar; o que muda é de onde a retomada lê, quando há de onde ler.
+   */
+  estado?: EstadoSerializado;
 };
 
 /**
