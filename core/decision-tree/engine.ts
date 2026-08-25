@@ -943,6 +943,17 @@ function mapTransitionNode(
     summary: node.summary ? interpolate(node.summary) : undefined,
     disposition: node.disposition,
     exitCriteria: node.exitCriteria.map(interpolate),
-    targets: [...node.targets],
+    // ⚠️ `reason` E `label` SÃO TEXTO DE TELA e por isso passam a ser
+    // interpolados (2026-08-25). Antes, `targets` era copiado cru — o que
+    // obrigava o motivo do encaminhamento a ser uma frase FIXA, escrita sem
+    // saber o que de fato disparou. Na SCA isso produziu um card que dizia
+    // "Ritmo irregular + FC alta" para um paciente com ritmo REGULAR: o app
+    // dava um motivo que não era o motivo. `moduleId` continua cru — é
+    // referência, não texto.
+    targets: node.targets.map((t) => ({
+      ...t,
+      label: interpolate(t.label),
+      reason: t.reason ? interpolate(t.reason) : t.reason,
+    })),
   };
 }

@@ -8,6 +8,23 @@ export const coronariasOclusaoEs: Record<string, string> = {
   // Rótulos do semáforo de ação — vivem no shell, mas nascem com a Tela 2.
   "Registrar como administrado": "Registrar como administrado",
   "✓ Registrado como administrado": "✓ Registrado como administrado",
+  // ⚠️ TOKEN PURO: o motivo do encaminhamento é montado em runtime a partir
+  // dos achados do caso, e o texto traduzível vive no rótulo da ameaça.
+  "{ameacaEncontrada}.": "{ameacaEncontrada}.",
+  "FC {fc}/min (bradiarritmia) + comprometimento atribuível à frequência":
+    "FC {fc}/min (bradiarritmia) + compromiso atribuible a la frecuencia",
+  "FC {fc}/min (taquiarritmia) + comprometimento atribuível à frequência":
+    "FC {fc}/min (taquiarritmia) + compromiso atribuible a la frecuencia",
+  "FC {fc}/min com sinais de hipoperfusão — investigar a causa (não é arritmia instável por si)":
+    "FC {fc}/min con signos de hipoperfusión — investigar la causa (no es arritmia inestable por sí)",
+  // Bloco de ritmo — a pergunta passou de "irregular?" para "sinusal ou
+  // arritmia?", que é o achado que de fato decide o roteamento.
+  "Ritmo no monitor": "Ritmo en el monitor",
+  "Sinusal": "Sinusal",
+  "Arritmia (FA, flutter, TV, BAV…)": "Arritmia (FA, aleteo, TV, BAV…)",
+  "Não avaliei / não sei": "No evalué / no sé",
+  "Arritmia ao monitor + sinais de hipoperfusão (pele fria/pálida/sudoreica)":
+    "Arritmia en el monitor + signos de hipoperfusión (piel fría/pálida/sudorosa)",
   "Antes do AAS": "Antes del AAS",
   "Duas perguntas — o resto o app já sabe.": "Dos preguntas — el resto la app ya lo sabe.",
   "Alergia conhecida ao AAS?": "¿Alergia conocida al AAS?",

@@ -885,23 +885,37 @@ if (textoRenderizado.length < 5000) {
         "estab_bloco1", {}, "estab_bloco2"],
       ["consciência aguda (bloco1) → via aérea (risco de perda de proteção), não os 4 blocos restantes",
         "estab_bloco1", { cor_consciencia: "sim" }, "coronariana_via_aerea_ameacada"],
-      ["ritmo irregular ISOLADO (bloco4) NÃO dispara sozinho",
-        "estab_bloco4", { cor_ritmo_irregular: "sim" }, "estab_bloco5"],
-      ["ritmo irregular + perfusão alterada, FC não extrema (achado composto) → choque",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo_irregular: "sim" }, "coronariana_choque"],
-      ["ritmo irregular + perfusão alterada + FC baixa (composto) → arritmia bradicardia",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo_irregular: "sim", fc: "40" }, "coronariana_arritmia_bradi"],
-      ["ritmo irregular + perfusão alterada + FC alta (composto) → arritmia taquicardia",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo_irregular: "sim", fc: "150" }, "coronariana_arritmia_taqui"],
-      // ⚠️ CORREÇÃO 2026-08-25 (auditoria SCA, item C1/A) — FC extrema +
-      // hipoperfusão dispara arritmia MESMO COM RITMO REGULAR (BAV total
-      // clássico, TV monomórfica com pulso). A irregularidade não é mais
-      // pré-requisito nestes dois cenários — só nos dois acima, que testam
-      // o ramo de FC NORMAL com ritmo irregular (esse continua exigindo).
-      ["FC baixa + perfusão alterada, RITMO REGULAR (bradiarritmia clássica, ex.: BAVT) → arritmia bradicardia",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo_irregular: "nao", fc: "40" }, "coronariana_arritmia_bradi"],
-      ["FC alta + perfusão alterada, RITMO REGULAR (ex.: TV monomórfica com pulso) → arritmia taquicardia",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo_irregular: "nao", fc: "150" }, "coronariana_arritmia_taqui"],
+      // ⚠️ A PERGUNTA DO BLOCO 4 MUDOU EM 2026-08-25, e com ela o que estes
+      // cenários medem. Antes era "ritmo irregular?" — e irregular NÃO é
+      // arritmia: taquicardia sinusal é regular, TV monomórfica é regular,
+      // BAV total é regular, FA crônica estável é irregular sem ser ameaça.
+      // Agora o campo é `cor_ritmo` (sinusal / arritmia / não avaliei), que é
+      // o achado que de fato decide o roteamento para bradi/taqui.
+      ["arritmia ISOLADA (bloco4) NÃO dispara sozinha",
+        "estab_bloco4", { cor_ritmo: "arritmia" }, "estab_bloco5"],
+      ["arritmia + perfusão alterada, FC não extrema (achado composto) → choque",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "arritmia" }, "coronariana_choque"],
+      ["arritmia + perfusão alterada + FC < 50 → arritmia bradicardia",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "arritmia", fc: "40" }, "coronariana_arritmia_bradi"],
+      ["arritmia + perfusão alterada + FC >= 150 → arritmia taquicardia",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "arritmia", fc: "160" }, "coronariana_arritmia_taqui"],
+      // ⚠️ REGULARIDADE NÃO É PRÉ-REQUISITO — e agora isso se testa pelo que
+      // importa: BAV total e TV monomórfica são REGULARES, mas são ARRITMIAS,
+      // e é o campo `cor_ritmo` que os identifica.
+      ["BAVT (regular, mas ARRITMIA) + perfusão alterada + FC 40 → arritmia bradicardia",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "arritmia", fc: "40" }, "coronariana_arritmia_bradi"],
+      ["TV monomórfica (regular, mas ARRITMIA) + perfusão + FC 160 → arritmia taquicardia",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "arritmia", fc: "160" }, "coronariana_arritmia_taqui"],
+      // ⚠️ E O CASO QUE O AUTOR ENCONTROU NO CELULAR: ritmo SINUSAL nunca é
+      // arritmia instável, por mais extrema que seja a frequência — a
+      // taquicardia sinusal a 165 com hipotensão é RESPOSTA, e cardiovertê-la
+      // é dano direto.
+      ["FC 165 SINUSAL + perfusão alterada → NÃO é arritmia (segue para choque)",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "165" }, "coronariana_choque"],
+      ["FC 100 SINUSAL + perfusão alterada → NÃO é arritmia (segue para choque)",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "100" }, "coronariana_choque"],
+      ["FC 165 + perfusão, ritmo NÃO AVALIADO → a dúvida não classifica",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "nao_avaliado", fc: "165" }, "coronariana_choque"],
       ["perfusão alterada ISOLADA (bloco3) NÃO dispara sozinha",
         "estab_bloco3", { cor_perfusao: "sim" }, "estab_bloco4"],
       ["PAS < 90 (bloco3) continua suficiente sozinha → choque",

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**73 de 90 travas com declaração completa.**
+**74 de 91 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -49,6 +49,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que os três vereditos da SCA (nitrato, AAS, betabloqueador) apliquem as contraindicações em vez de imprimi-las; que 🔴 bloqueie AQUELE fármaco sem parar o atendimento nem os outros dois; que "liberado" nunca signifique "feito"; que a suspeita de VD venha de CONTEXTO e não da ausência de um exame; e que nenhum veredito seja persistido como verdade clínica.
 - **NÃO PROMETE:** a renderização — isso é `e2e/vereditos-sca.spec.ts`. Nem o conteúdo das doses (test:coronarias, test:farmacos).
 - **UNIVERSO:** lib/vereditos-sca.ts, a árvore compilada e o motor real. ── O QUE MUDA DE FATO ────────────────────────────────────────────────────── Até aqui as ressalvas eram TEXTO: "AAS 300 mg agora, SALVO alergia/ sangramento ativo"; "⛔ NÃO USAR nitrato se…"; "NÃO iniciar se…". O app enunciava a regra e deixava a aplicação para quem lê — com o paciente na frente. Veredito é a mesma regra, aplicada: o app já sabe PAS, FC, perfusão e ausculta, e pode responder "não administre, PAS 82 mmHg".
+
+## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
+
+- **PROMETE:** que "arritmia instável" só seja declarada quando a FREQUÊNCIA é plausivelmente a causa do comprometimento — faixa da AHA 2025 (taquiarritmia ≥150/min, bradiarritmia <50/min) E comprometimento atribuível a ela; que a faixa intermediária não vire arritmia; que ritmo irregular não seja pré-requisito; e que o motivo EXIBIDO descreva o que de fato disparou.
+- **NÃO PROMETE:** a conduta dentro dos módulos de bradi/taquicardia (test:acls), nem os demais gatilhos de ameaça (test:coronarias).
+- **UNIVERSO:** lib/instabilidade-coronariana.ts e os dois nós de transição da SCA. ── O DEFEITO, ENCONTRADO NO CELULAR PELO AUTOR (2026-08-25) ──────────────── A tela dizia "Arritmia instável — frequência alta" para um paciente com FC 100 e ritmo REGULAR, e o motivo impresso era "Ritmo irregular + FC alta + sinais objetivos de hipoperfusão". Dois defeitos num card só: 1. O LIMIAR ERA 100. Dor torácica, ansiedade, vasoconstrição e FC 100 é o quadro mais banal do pronto-socorro — e o app mandava para o módulo de taquicardia, cuja conduta para instabilidade é CARDIOVERSÃO SINCRONIZADA. Cardioverter taquicardia sinusal compensatória é dano. 2. O MOTIVO ERA TEXTO FIXO. Dizia "ritmo irregular" para quem havia informado ritmo REGULAR — o app dava um motivo que não era o motivo, e isso destrói a confiança no "porquê" que o app inteiro promete. ⚠️ E O ERRO DE FUNDO NÃO ERA O NÚMERO: era atribuir o comprometimento à frequência sem prova de que ela é a causa.
 
 ## `test:guiado` → `scripts/test-fluxo-guiado.cjs`
 
@@ -644,7 +650,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |

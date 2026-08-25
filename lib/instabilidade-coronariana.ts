@@ -115,13 +115,25 @@ export function blocoRitmo(): InputField[] {
       presets: ["50", "70", "100", "130", "160"].map((v) => ({ value: v, label: v })),
     },
     {
-      // ⚠️ SOZINHO NÃO BASTA (ajuste pedido, 2026-08-24) — ritmo irregular
-      // isolado (ex.: FA crônica conhecida, estável) não define ameaça
-      // imediata. Só deriva em CONJUNTO com outro sinal objetivo de
-      // hipoperfusão (perfusão alterada) — ver `avaliarAmeacaImediata`.
-      id: "cor_ritmo_irregular",
-      label: "Ritmo irregular ao monitor ou à palpação?",
-      presets: [...SIM_NAO, { value: "nao_avaliado", label: "Não avaliei" }],
+      // ⚠️ A PERGUNTA MUDOU EM 2026-08-25, E O MOTIVO É QUE A ANTIGA NÃO
+      // DECIDIA NADA. Ela perguntava "ritmo irregular?" — e irregular NÃO é
+      // sinônimo de arritmia: taquicardia sinusal é regular, TV monomórfica é
+      // regular, BAV total é regular, e FA crônica estável é irregular sem ser
+      // ameaça. O que decide o roteamento para os módulos de bradi/taqui é
+      // outra coisa: se o ritmo é uma ARRITMIA ou um ritmo sinusal
+      // respondendo ao quadro.
+      //
+      // ⚠️ E ISSO NÃO É PEDIR CONCLUSÃO — é pedir um ACHADO. O médico está
+      // olhando o monitor; "sinusal ou arritmia" é o que ele lê ali. A
+      // conclusão (a arritmia é a causa do comprometimento?) continua sendo
+      // derivada, e só quando este achado a sustenta.
+      id: "cor_ritmo",
+      label: "Ritmo no monitor",
+      presets: [
+        { value: "sinusal", label: "Sinusal" },
+        { value: "arritmia", label: "Arritmia (FA, flutter, TV, BAV…)" },
+        { value: "nao_avaliado", label: "Não avaliei / não sei" },
+      ],
     },
   ];
 }
@@ -270,6 +282,77 @@ export function avaliarAmeacaImediata(v: TreeValues): AmeacaImediata | null {
   if (v.cor_via_aerea_livre === "nao") {
     return { id: "via_aerea", rotulo: "Via aérea não livre (estridor)", destino: "via_aerea" };
   }
+
+  // ⚠️ OS RÓTULOS USAM TOKEN `{fc}`, NÃO TEMPLATE LITERAL. `${v.fc}` geraria
+  // uma string diferente por caso, que jamais casaria com o dicionário PT→ES —
+  // a frase sairia em português na tela em espanhol, e a varredura de tradução
+  // não a pegaria (ela declara não cobrir template literal). O motor interpola
+  // `{fc}` DEPOIS de traduzir.
+  //
+  // ── FREQUÊNCIA EXTREMA COM COMPROMETIMENTO ATRIBUÍVEL A ELA ─────────────
+  //
+  // ⚠️ VEM ANTES DE CONSCIÊNCIA E DE PAS < 90, E A ORDEM É CLÍNICA: um
+  // paciente a 160/min com PAS 78, ou a 42/min com rebaixamento, tem na
+  // FREQUÊNCIA a causa tratável. Roteá-lo para "choque" ou para "via aérea"
+  // trataria a consequência e deixaria a causa correr — quando a conduta certa
+  // é cardioversão ou atropina/marcapasso. Só PCR e obstrução mecânica de via
+  // aérea (estridor) precedem: essas duas não esperam nada.
+  //
+  // ⚠️ DEFEITO CORRIGIDO EM 2026-08-25, ACHADO NO CELULAR PELO AUTOR: os
+  // limiares eram FC ≥ 100 e FC < 60, e qualquer sinal de hipoperfusão
+  // bastava. Com isso, um paciente com dor torácica, ansioso, vasoconstrito e
+  // FC 100 — o quadro mais banal do pronto-socorro — era rotulado "arritmia
+  // instável" e mandado para o módulo de taquicardia, cuja conduta para
+  // instabilidade é CARDIOVERSÃO SINCRONIZADA. Cardioverter taquicardia
+  // sinusal compensatória é dano direto.
+  //
+  // ⚠️ E O ERRO NÃO ERA SÓ O NÚMERO — era atribuir o comprometimento à
+  // frequência sem prova de que ela é a causa (correção do autor). O algoritmo
+  // de taquicardia da AHA 2025 trata de taquiarritmia PERSISTENTE causando
+  // hipotensão, alteração aguda do estado mental, sinais de choque, dor
+  // isquêmica ou IC aguda — não "FC alta + qualquer sinal de má perfusão".
+  //
+  // Referência de faixa (AHA 2025): taquiarritmia tipicamente ≥ 150/min;
+  // bradiarritmia tipicamente < 50/min. Aqui esses números são a FAIXA em que
+  // a frequência é plausivelmente a causa, não gatilho cego.
+  //
+  // ⚠️ RITMO IRREGULAR NÃO É PRÉ-REQUISITO, e isso permanece: TV monomórfica e
+  // flutter com condução fixa são REGULARES e instáveis.
+  // ⚠️ A CAUSALIDADE PRECISA SER SUSTENTADA, NÃO PRESUMIDA (correção do autor,
+  // 2026-08-25). "FC 160 + PAS 78" NÃO prova que a arritmia é a causa: a
+  // taquicardia pode ser compensatória a sepse, hipovolemia ou ao próprio
+  // infarto, e a bradicardia pode coexistir com outra causa de choque ou
+  // rebaixamento. Sem um ritmo que seja de fato ARRITMIA, o app não pode
+  // "roubar" o caso do ramo de choque/via aérea.
+  //
+  // ⚠️ E A DÚVIDA NÃO CLASSIFICA: `nao_avaliado` não vira arritmia instável.
+  // Aqui isso é o lado seguro — o caso segue pelo ramo que investiga a causa,
+  // que continua disponível, em vez de ir direto para cardioversão.
+  const ritmoEhArritmia = v.cor_ritmo === "arritmia";
+  const comprometimento =
+    sim(v.cor_perfusao) ||
+    sim(v.cor_consciencia) ||
+    sim(v.cor_dor_isquemica_atual) ||
+    sim(v.cor_edema_pulmonar) ||
+    (Number.isFinite(pas) && pas > 0 && pas < 90);
+  const comprometimentoAtribuivel = ritmoEhArritmia && comprometimento;
+
+  if (comprometimentoAtribuivel && Number.isFinite(fc) && fc > 0 && fc < 50) {
+    return {
+      id: "arritmia_associada",
+      rotulo: "FC {fc}/min (bradiarritmia) + comprometimento atribuível à frequência",
+      destino: "arritmia_bradi",
+    };
+  }
+  if (comprometimentoAtribuivel && Number.isFinite(fc) && fc >= 150) {
+    return {
+      id: "arritmia_associada",
+      rotulo: "FC {fc}/min (taquiarritmia) + comprometimento atribuível à frequência",
+      destino: "arritmia_taqui",
+    };
+  }
+
+
   // ⚠️ CONSCIÊNCIA AGUDA VAI PARA VIA AÉREA, NÃO PARA UM MÓDULO PRÓPRIO —
   // rebaixamento agudo e importante é, antes de mais nada, risco de perda de
   // proteção de via aérea (mesmo raciocínio de `ira-decision-tree.ts`,
@@ -308,25 +391,25 @@ export function avaliarAmeacaImediata(v: TreeValues): AmeacaImediata | null {
   if (perfusaoAlterada && v.cor_pulso_alterado === "filiforme") {
     return { id: "choque_associado", rotulo: "Pulso filiforme + sinais de hipoperfusão (pele fria/pálida/sudoreica)", destino: "choque" };
   }
-  // ⚠️ CORREÇÃO 2026-08-25 (auditoria SCA, achado C1) — FC EXTREMA + hipoperfusão
-  // dispara arritmia associada MESMO COM RITMO REGULAR. A versão anterior exigia
-  // `cor_ritmo_irregular === "sim"` também para os dois ramos de FC extrema —
-  // isso deixava passar batido um BAV total clássico (regular, lento) ou uma TV
-  // monomórfica com pulso (regular, rápida), ambos instáveis, sempre que PAS
-  // ainda não tivesse caído abaixo de 90 e o pulso não estivesse filiforme. A
-  // irregularidade do ritmo não é pré-requisito clínico para bradi/taquiarritmia
-  // instável — é a combinação FC extrema + hipoperfusão que importa.
-  if (perfusaoAlterada && Number.isFinite(fc) && fc > 0 && fc < 60) {
-    return { id: "arritmia_associada", rotulo: "FC baixa + sinais de hipoperfusão", destino: "arritmia_bradi" };
+  // ⚠️ A FAIXA DO MEIO NÃO É ARRITMIA INSTÁVEL. FC 100–149 ou 50–59 com
+  // hipoperfusão é, muito mais frequentemente, RESPOSTA a outra coisa —
+  // hipovolemia, dor, febre, sepse, o próprio infarto. Mandá-la para o
+  // algoritmo de arritmia trataria o sintoma e deixaria a causa correr solta.
+  // Ela segue pelo ramo de choque/hipoperfusão, que é onde se investiga a
+  // causa; a via de SCA continua disponível.
+  if (perfusaoAlterada && Number.isFinite(fc) && fc > 0 && (fc >= 100 || fc < 60)) {
+    return {
+      id: "choque_associado",
+      rotulo: "FC {fc}/min com sinais de hipoperfusão — investigar a causa (não é arritmia instável por si)",
+      destino: "choque",
+    };
   }
-  if (perfusaoAlterada && Number.isFinite(fc) && fc >= 100) {
-    return { id: "arritmia_associada", rotulo: "FC alta + sinais de hipoperfusão", destino: "arritmia_taqui" };
-  }
-  // Ritmo irregular em faixa de FC NORMAL (60–99) + hipoperfusão: aqui a FC não
-  // é o motor óbvio, mas a irregularidade em si já é achado objetivo suficiente
-  // associado a hipoperfusão → choque (mesmo critério de sempre, inalterado).
-  if (perfusaoAlterada && v.cor_ritmo_irregular === "sim") {
-    return { id: "choque_associado", rotulo: "Ritmo irregular + sinais de hipoperfusão (pele fria/pálida/sudoreica)", destino: "choque" };
+  // ARRITMIA em faixa de FC NORMAL (60–99) + hipoperfusão: aqui a frequência
+  // não é o motor — não há taqui nem bradi —, mas a arritmia associada à
+  // hipoperfusão é achado objetivo que merece o ramo de choque, onde a causa é
+  // investigada. Não é "arritmia instável": é hipoperfusão com arritmia.
+  if (perfusaoAlterada && v.cor_ritmo === "arritmia") {
+    return { id: "choque_associado", rotulo: "Arritmia ao monitor + sinais de hipoperfusão (pele fria/pálida/sudoreica)", destino: "choque" };
   }
   return null;
 }

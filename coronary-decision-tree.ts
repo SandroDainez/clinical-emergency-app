@@ -691,7 +691,13 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Volte a este módulo depois.",
       ],
       targets: [
-        { moduleId: "bradicardia-acls", label: "Bradicardia", reason: "Ritmo irregular + FC baixa + sinais objetivos de hipoperfusão." },
+        // ⚠️ O MOTIVO VEM DO CASO, NÃO DE UM TEXTO FIXO (correção 2026-08-25,
+        // achada pelo autor no celular). A frase anterior dizia "Ritmo
+        // irregular + FC baixa + hipoperfusão" SEMPRE — inclusive para quem
+        // havia informado ritmo REGULAR, e inclusive quando o gatilho não
+        // olhou o ritmo. O app dava um motivo que não era o motivo, e isso
+        // destrói a confiança no "porquê" que o app inteiro promete.
+        { moduleId: "bradicardia-acls", label: "Bradicardia", reason: "{ameacaEncontrada}." },
       ],
     },
 
@@ -706,7 +712,8 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Volte a este módulo depois.",
       ],
       targets: [
-        { moduleId: "taquicardia-acls", label: "Taquicardia", reason: "Ritmo irregular + FC alta + sinais objetivos de hipoperfusão." },
+        // ⚠️ Mesma correção do ramo de bradicardia — ver acima.
+        { moduleId: "taquicardia-acls", label: "Taquicardia", reason: "{ameacaEncontrada}." },
       ],
     },
 
