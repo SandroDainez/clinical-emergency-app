@@ -52,6 +52,36 @@ export type NumericStepperProps = {
    * inverso — campo "informado" por esbarrão, que é pior porque é silencioso.
    */
   onConfirmar?: (valor: number) => void;
+  /**
+   * ⚠️ O NÚMERO AINDA NÃO É UMA MEDIDA — exibe `—` no lugar dele.
+   *
+   * ── O DEFEITO QUE ORIGINOU (medido em 2026-08-25, na Tela 1 da SCA) ──────
+   *
+   * A barra parte do meio da faixa e mostrava esse número em tipo grande antes
+   * de qualquer toque. Num campo OBRIGATÓRIO isso nunca apareceu, porque o
+   * botão de avançar fica travado até o médico tocar. Num campo OPCIONAL — que
+   * a Tela 1 introduziu — a tela dizia "Peso 140 kg" com o motor vazio, e o
+   * médico podia seguir achando que informou.
+   *
+   * ⚠️ E PESO ALIMENTA DOSE: tenecteplase e enoxaparina são calculadas por
+   * quilo. Um número que parece confirmado sem ninguém ter medido é a semente
+   * de uma dose errada três telas adiante.
+   *
+   * A regra que isto implementa: nenhum valor numérico não informado pode
+   * parecer confirmado na interface — a aparência tem de refletir o estado
+   * real do motor. A BARRA continua na posição do meio (ela precisa de um
+   * número para desenhar), mas o VALOR LIDO diz que não há valor.
+   */
+  naoInformado?: boolean;
+  /**
+   * O que aparece no lugar do número quando `naoInformado`.
+   *
+   * ⚠️ VEM DE FORA PORQUE ESTE COMPONENTE NÃO TRADUZ. Ele é `ui-v2` puro, sem
+   * acesso ao `tr()`, e o app é bilíngue: uma frase escrita aqui ficaria em
+   * português na tela em espanhol, e a varredura de tradução a acusaria — com
+   * razão. Quem chama já tem o `tr()`.
+   */
+  textoAusente?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -79,6 +109,8 @@ export function NumericStepper({
   disabled = false,
   ajuda,
   onConfirmar,
+  naoInformado = false,
+  textoAusente = "—",
   style,
   testID,
 }: NumericStepperProps) {
@@ -118,8 +150,12 @@ export function NumericStepper({
             número que se lê em voz alta para conferir é ruído desnecessário, e
             os dois idiomas do app (pt-BR e es-419) usam vírgula. Como todas as
             barras passam por aqui, corrigir no componente corrige em todas. */}
-        <Text style={e.valor}>{valor.toFixed(decimais).replace(".", ",")}</Text>
-        {unidade ? <Text style={e.unidade}>{unidade}</Text> : null}
+        <Text style={naoInformado ? e.valorAusente : e.valor}>
+          {naoInformado ? textoAusente : valor.toFixed(decimais).replace(".", ",")}
+        </Text>
+        {/* A unidade some junto: "— kg" sugere que existe um número em kg em
+            algum lugar. O que existe é a ausência dele. */}
+        {unidade && !naoInformado ? <Text style={e.unidade}>{unidade}</Text> : null}
       </View>
 
       <View style={e.controles}>
@@ -239,6 +275,12 @@ const criarEstilos = (t: Tema) => {
       // tabular-nums: sem isto o número muda de largura ao arrastar o slider e
       // o valor "dança" na tela.
       valor: { ...TIPOGRAFIA.display, ...NUMERO_TABULAR, color: cores.text },
+      // ⚠️ O "—" NÃO PODE USAR A DISPLAY. Na validação visual ele virou uma
+      // barra branca grossa no meio da tela — lia-se como divisória gráfica,
+      // não como "sem valor", e o médico não tinha por que interpretá-lo como
+      // campo por preencher. Em corpo de texto e cor secundária ele volta a
+      // ser o que é: a ausência do número, dita em voz baixa.
+      valorAusente: { ...TIPOGRAFIA.body, color: cores.textSecondary },
       unidade: { ...TIPOGRAFIA.caption, color: cores.textSecondary },
       controles: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
       sliderArea: { flex: 1, justifyContent: "center" },
