@@ -6,13 +6,49 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**67 de 84 travas com declaração completa.**
+**73 de 90 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
 - **PROMETE:** ⚠️ NÃO DECLARADO
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
+
+## `test:nucleo` → `scripts/prova-nucleo.cjs`
+
+- **PROMETE:** que as cinco capacidades novas do NÚCLEO funcionem de verdade, sobre o motor real, numa árvore de prova — seleção múltipla, valor com histórico, veredito derivado que muda de cor ao corrigir o dado, estado de ação, e bloqueio de medicação SEM bloqueio do atendimento.
+- **NÃO PROMETE:** nada sobre a SCA nem sobre qualquer módulo clínico — a árvore aqui é sintética de propósito. O núcleo não conhece doença.
+- **UNIVERSO:** core/decision-tree/{engine,types,estado-clinico}.ts. ── POR QUE UMA ÁRVORE SINTÉTICA E NÃO A SCA ──────────────────────────────── O pedido foi explícito: implementar e testar SÓ o núcleo antes de tocar em qualquer tela. Provar sobre a SCA misturaria dois riscos — "o núcleo funciona?" e "o módulo usa o núcleo direito?" — e uma falha não diria qual dos dois quebrou. A árvore daqui existe só para exercitar as capacidades.
+
+## `test:selecao-encapsulada` → `scripts/valida-encapsulamento-selecao.cjs`
+
+- **PROMETE:** que a representação serializada da seleção múltipla seja detalhe PRIVADO de `core/decision-tree/estado-clinico.ts` — que nenhum outro arquivo do app conheça o separador, faça `split` do valor bruto de um campo múltiplo ou procure substring dentro dele.
+- **NÃO PROMETE:** que os helpers estejam clinicamente certos (test:nucleo) nem que todo campo múltiplo esteja declarado como tal.
+- **UNIVERSO:** todo .ts/.tsx do app fora de node_modules. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── A escolha de guardar seleção múltipla como string com separador foi deliberada: `TreeValues` é `Record<string,string>` e sustenta 30 módulos, todo `escolher` de roteamento e todos os validadores — trocar o tipo obrigaria a revisar cada consumidor, e um esquecido vira rota clínica errada. ⚠️ MAS A ESCOLHA SÓ É SEGURA ENQUANTO FOR INVISÍVEL (exigência do autor, 2026-08-25): "nenhum módulo, componente, validador ou regra clínica deveria fazer `value.includes(...)` ou manipular esse separador diretamente. Caso contrário, daqui a alguns meses aparece um bug clínico impossível de rastrear." O bug que ele descreve é concreto: `values.queixas.includes("dor")` casa também com "dor torácica pleurítica" e com "sem dor" — dois quadros diferentes, um deles o oposto do procurado. `temSelecionado()` compara item inteiro e não tem esse modo de falhar. Por isso a leitura é obrigada a passar pelos helpers, e esta trava é o que obriga.
+
+## `test:marco-retomada` → `scripts/valida-marco-na-retomada.cjs`
+
+- **PROMETE:** que sair de um módulo e retomá-lo NÃO desloque os marcos temporais — que um marco criado às 14:00 continue sendo 14:00 depois de o usuário ficar 8 minutos fora. Mede nas duas árvores que declaram `marcos` (crises convulsivas e pré-eclâmpsia) e confere que o shell recoloca os marcos DEPOIS do replay.
+- **NÃO PROMETE:** que a retomada preserve histórico, ações realizadas ou decisões — isso é `test:retomada-snapshot`. Nem que os limiares de tempo de cada módulo estejam clinicamente certos (test:prazos, test:convulsoes, test:eclampsia).
+- **UNIVERSO:** as duas árvores com `marcos`, o motor, e o `retomar()` do shell. ── O DEFEITO, MEDIDO ANTES DE SER CORRIGIDO ──────────────────────────────── A retomada de fluxo não restaura estado: ela faz REPLAY — `reset()` e depois `setValue` de cada valor salvo. E `setValue` de um campo declarado em `tree.marcos` chama `marcar()`, que ancora o relógio em `agora − decorrido`. No replay, "agora" é o instante da RETOMADA. Sondagem original, na árvore real de crises convulsivas: marco antes  : 16:59:06Z marco depois : 17:07:06Z deslocamento : 8 min PARA A FRENTE Paciente convulsionando há 12 minutos. O médico sai para consultar outro protocolo, gasta 8, volta — e o app volta a achar que a crise tem 12 minutos. ⚠️ EM ESTADO EPILÉPTICO ISSO ATRASA A SEGUNDA E A TERCEIRA LINHA EXATAMENTE PELO TEMPO QUE ELE GASTOU CONSULTANDO. O relógio que deveria empurrar o escalonamento é o que passa a segurá-lo.
+
+## `test:retomada-snapshot` → `scripts/valida-retomada-snapshot.cjs`
+
+- **PROMETE:** que sair de um módulo e voltar preserve o CASO, não só o passo — valores, trilha de medições, ações já executadas, decisões tomadas e marcos; que o veredito seja recalculado (nunca restaurado como verdade congelada); que o vermelho continue bloqueando execução depois da volta; e que uma sessão salva ANTES desta versão continue abrindo, com trilha vazia e sem nenhuma medição inventada.
+- **NÃO PROMETE:** nada sobre `valoresRef`/`caminhoRef`, que continuam existindo (Passo C, não feito). Nem que o conteúdo clínico de cada módulo esteja certo — isso é dos validadores de cada árvore.
+- **UNIVERSO:** o motor, o `retomar()` do shell, e duas árvores reais (crises-convulsivas, síndromes coronarianas) além da árvore de prova. ── O DEFEITO QUE O PASSO A+B FECHA ───────────────────────────────────────── A retomada nasceu para responder "em que passo eu estava?" e guardava caminho e valores, reconstruindo por REPLAY. Bastava enquanto o motor não tinha memória clínica. ⚠️ AGORA TEM — e o replay não apenas PERDE trilha, ações e decisões: ele FABRICA uma trilha, com um ponto por campo carimbado na hora da volta. O médico corrige uma PA de 194/116 para 168/96, sai para consultar outro protocolo, volta, e a tela mostra "168/96, aferido agora" — sem o 194/116 e sem sinal de que houve impedimento corrigido. Uma ação já administrada voltaria como pendente, que é convite direto à dose dobrada.
+
+## `test:valor-informado` → `scripts/valida-valor-nao-informado.cjs`
+
+- **PROMETE:** que a exibição de campo numérico reflita o ESTADO REAL do motor — que o `NumericStepper` saiba dizer "não informado", que o shell marque isso exatamente quando o campo é opcional e o motor está vazio, e que soltar a barra sem mover também grave (via `onConfirmar`).
+- **NÃO PROMETE:** o comportamento renderizado — isso é `e2e/valor-nao-informado.spec.ts`, que exercita o app de verdade. Esta trava é ESTRUTURAL e cobre justamente o caso que o e2e não consegue reproduzir no web (soltar a barra sem movimento).
+- **UNIVERSO:** components/ui-v2/numeric-stepper.tsx e o shell de fluxo. ── O DEFEITO, MEDIDO (2026-08-25) ────────────────────────────────────────── A barra parte do meio da faixa e imprimia esse número em tipo grande antes de qualquer toque. Em campo OBRIGATÓRIO isso nunca apareceu — o botão de avançar trava até informar. Em campo OPCIONAL, que a Tela 1 da SCA introduziu, a tela dizia "Peso 140 kg" com o motor VAZIO. ⚠️ E PESO ALIMENTA DOSE: tenecteplase e enoxaparina são por quilo. Um número que parece confirmado sem ninguém ter medido é a semente de uma dose errada três telas adiante.
+
+## `test:vereditos-sca` → `scripts/valida-vereditos-sca.cjs`
+
+- **PROMETE:** que os três vereditos da SCA (nitrato, AAS, betabloqueador) apliquem as contraindicações em vez de imprimi-las; que 🔴 bloqueie AQUELE fármaco sem parar o atendimento nem os outros dois; que "liberado" nunca signifique "feito"; que a suspeita de VD venha de CONTEXTO e não da ausência de um exame; e que nenhum veredito seja persistido como verdade clínica.
+- **NÃO PROMETE:** a renderização — isso é `e2e/vereditos-sca.spec.ts`. Nem o conteúdo das doses (test:coronarias, test:farmacos).
+- **UNIVERSO:** lib/vereditos-sca.ts, a árvore compilada e o motor real. ── O QUE MUDA DE FATO ────────────────────────────────────────────────────── Até aqui as ressalvas eram TEXTO: "AAS 300 mg agora, SALVO alergia/ sangramento ativo"; "⛔ NÃO USAR nitrato se…"; "NÃO iniciar se…". O app enunciava a regra e deixava a aplicação para quem lê — com o paciente na frente. Veredito é a mesma regra, aplicada: o app já sabe PAS, FC, perfusão e ausculta, e pode responder "não administre, PAS 82 mmHg".
 
 ## `test:guiado` → `scripts/test-fluxo-guiado.cjs`
 
@@ -608,16 +644,16 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 26/27 (96%) | test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
-| `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
+| `eclampsia` | ✅ | — | 15/17 (88%) | test:marco-retomada, test:sulfatacao |
 | `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:escalonamento, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
-| `seizure` | ✅ | — | 9/15 (60%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
+| `seizure` | ✅ | — | 9/15 (60%) | test:marco-retomada, test:retomada-snapshot, test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
 | `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | 13/31 (42%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |

@@ -142,6 +142,16 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
     passo: 1,
     unidade: "",
   },
+  // GRACE 2.0 — o app não calcula o escore (ver `categoriaPorGrace` em
+  // coronary-decision-tree.ts), só recebe o número já calculado alhures e
+  // deriva a categoria de risco. Faixa larga de propósito: os limites exatos
+  // do nomograma não foram confirmados em fonte nesta sessão.
+  grace_score: {
+    min: 0,
+    max: 400,
+    passo: 5,
+    unidade: "",
+  },
   // Relação PaO₂/FiO₂, da SDRA grave ao pulmão normal.
   pf: {
     min: 40,

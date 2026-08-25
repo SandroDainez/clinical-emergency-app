@@ -205,6 +205,31 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
   const { consomeConstante } = require("./lib/consumo.cjs");
 
   const ecg = arv.coronary?.nodes?.ecg;
+  // ⚠️ 2026-08-24 (quarta correção pós-validação física): a saída de dúvida
+  // migrou de rótulo — "Não sei dizer — ver os padrões que NÃO fazem supra"
+  // virou "Não sei — me ajude com exemplos" (pedido explícito: a antiga
+  // "confundia o usuário e não correspondia ao raciocínio real"). O padrão
+  // /não sei/i continua casando com a nova frase — nenhuma mudança de busca.
+  // Alcançabilidade estática a partir de um nó — segue `next` fixo, `possiveis`
+  // do roteamento derivado e as opções de decisão.
+  const alcanca = (de, alvo) => {
+    const vistos = new Set();
+    const pilha = [de];
+    while (pilha.length) {
+      const id = pilha.pop();
+      if (!id || vistos.has(id)) continue;
+      vistos.add(id);
+      if (id === alvo) return true;
+      const no = arv.coronary?.nodes?.[id];
+      if (!no) continue;
+      if (no.type === "decision") (no.options ?? []).forEach((o) => pilha.push(o.next));
+      else if (no.next) {
+        if (typeof no.next === "string") pilha.push(no.next);
+        else (no.next.possiveis ?? []).forEach((d) => pilha.push(d));
+      }
+    }
+    return false;
+  };
   const duvidaEcg = (ecg?.options ?? []).find((o) => /não sei/i.test(o.label ?? ""));
   if (!duvidaEcg) {
     falhas.push(
@@ -212,8 +237,15 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
       "      ⚠️ O default sob dúvida é classificar como \"sem supra\" e seguir pela via do NSTEMI — " +
       "perdendo a sala de hemodinâmica de quem tem oclusão sem elevação."
     );
-  } else if (duvidaEcg.next !== "ecg_sem_supra") {
-    falhas.push(`a saída de dúvida do ECG aponta para "${duvidaEcg.next}".`);
+  } else if (!alcanca(duvidaEcg.next, "ecg_sem_supra")) {
+    // ⚠️ ALCANÇABILIDADE, NÃO DESTINO DIRETO (2026-08-25). A promessa desta
+    // trava é que a DÚVIDA nunca perca os padrões que ocluem sem elevar —
+    // não que ela pule direto para a tela deles. Desde que "não sei" deixou
+    // de ser sinônimo de "não", a dúvida passa por `ecg_ajuda_supra` (ajuda
+    // real, com critérios objetivos) e só então chega aos padrões. Medir o
+    // `next` literal reprovaria justamente a correção que tornou a dúvida
+    // mais segura; medir alcance mantém a promessa intacta.
+    falhas.push(`a saída de dúvida do ECG ("${duvidaEcg.next}") não alcança \`ecg_sem_supra\` — a dúvida perderia os padrões que ocluem sem elevar o ST.`);
   } else ok++;
 
   // Ponteiro de verdade: as MESMAS constantes nas duas superfícies.
@@ -226,7 +258,15 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
   // virou passo próprio: `DERIVACOES_POSTERIORES_COMO` passou de `ecg_sem_supra`
   // para `ecg_derivacoes_extras`. Esta conferência reprovou, e nenhum caractere
   // saiu do app — proxy quebrado, não regressão.
-  const SUBFLUXO_ECG = ["ecg_sem_supra", "ecg_sem_supra_saida", "ecg_derivacoes_extras", "ecg_sem_supra_achei", "ecg_sem_supra_duvida"];
+  // ⚠️ 2026-08-24 (quinta correção pós-validação física): as imagens reais
+  // engordaram os cards e a tela única virou CINCO telas de 2 cards
+  // (`ecg_sem_supra` → `ecg_padroes_t_avr` → `ecg_padroes_wellens`;
+  // `ecg_supra_qual` → `ecg_supra_qual_2`) — lista atualizada para o
+  // sub-fluxo real, mesmo princípio: consumir, nunca reescrever.
+  const SUBFLUXO_ECG = [
+    "ecg_sem_supra", "ecg_padroes_t_avr", "ecg_padroes_wellens", "ecg_avr_conduta",
+    "ecg_supra_qual", "ecg_supra_qual_2", "ecg_sem_supra_duvida",
+  ];
   for (const c of ["OCLUSAO_DE_WINTER", "OCLUSAO_POSTERIOR", "OCLUSAO_T_HIPERAGUDA", "OCLUSAO_AVR_TRONCO", "DERIVACOES_POSTERIORES_COMO"]) {
     const onde = SUBFLUXO_ECG.filter(
       (no) => consomeConstante({ arquivo: path.join(appDir, "coronary-decision-tree.ts"), constante: c, no }).consome

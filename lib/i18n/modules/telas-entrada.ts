@@ -49,8 +49,8 @@ export const ES_TELAS_ENTRADA: Record<string, string> = {
   // ── Síndromes coronarianas ─────────────────────────────────────────────────
   "Fluxo interativo da síndrome coronariana aguda. O app conduz a sequência real do atendimento: medidas imediatas + AAS, ECG ≤10 min, classificação STEMI x sem supra de ST, terapia antitrombótica/anti-isquêmica, reperfusão (ICP x fibrinólise, dose por peso) ou estratégia invasiva por risco e destino.":
     "Flujo interactivo del síndrome coronario agudo. La app conduce la secuencia real de la atención: medidas inmediatas + AAS, ECG en ≤ 10 min, clasificación en IAMCEST vs. sin elevación del ST, tratamiento antitrombótico y antiisquémico, reperfusión (angioplastia vs. fibrinólisis, dosis por peso) o estrategia invasiva según el riesgo, y destino.",
-  "Baseado em AHA/ACC e ESC 2023 (Síndromes Coronarianas Agudas)":
-    "Basado en AHA/ACC y ESC 2023 (síndromes coronarios agudos)",
+  "Baseado em ACC/AHA/ACEP/NAEMSP/SCAI 2025 (Síndromes Coronarianas Agudas)":
+    "Basado en ACC/AHA/ACEP/NAEMSP/SCAI 2025 (síndromes coronarios agudos)",
 
   // ── CAD / EHH ──────────────────────────────────────────────────────────────
   "Fluxo interativo da cetoacidose diabética e do estado hiperosmolar. O app conduz a sequência real: reconhecimento e diagnóstico, hidratação, checagem do potássio (que define o início da insulina), insulina IV (dose por peso), bicarbonato, ajuste ao atingir a meta glicêmica e critérios de resolução.":

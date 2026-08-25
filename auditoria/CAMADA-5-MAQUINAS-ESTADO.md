@@ -5,15 +5,15 @@
 
 - Árvores analisadas: **20**
 - Erros estruturais: **0**
-- Avisos: **9**
+- Avisos: **20**
 
 ## Visão por árvore
 
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
+| coronary-decision-tree (coronaryDecisionTree) | 95 | 95 | 9 | 12 |
 | ira-decision-tree (iraDecisionTree) | 74 | 74 | 8 | 7 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
-| coronary-decision-tree (coronaryDecisionTree) | 27 | 27 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
 | acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 23 | 23 | 2 | 0 |
@@ -36,14 +36,25 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 9 |
+| escolha-sem-efeito | aviso | 20 |
 
-### escolha-sem-efeito (9)
+### escolha-sem-efeito (20)
 
 | árvore | nó | detalhe |
 |---|---|---|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | `severity_grade` | opções grade2, grade3 levam todas a "immediate_im_epinephrine" — a escolha não muda o fluxo |
-| coronary-decision-tree (coronaryDecisionTree) | `nste_risco` | opções alto, intermediario levam todas a "nste_invasiva_precoce" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_a` | opções afasta, incerto levam todas a "portao_grupo_b" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_b` | opções afasta, incerto levam todas a "aas_check" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `bb_ajuda_pr` | opções nao, sim levam todas a "terapia_vereditos" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg` | opções sim, nao levam todas a "portao_grupo_a" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg_ajuda_supra` | opções tem, nao_tem, incerto levam todas a "portao_grupo_a" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg_supra_qual` | opções anterior, inferior, incerto levam todas a "stemi_localizacao" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg_supra_qual_2` | opções lateral, incerto levam todas a "stemi_localizacao" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `stemi_cenario_icp` | opções no_local, transferencia levam todas a "stemi_reperfusao" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg_sem_supra` | opções de_winter, posterior levam todas a "ecg_grupoB_oclusao" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `ecg_padroes_wellens` | opções wellens_a, wellens_b levam todas a "wellens_conduta" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `nste_trop` | opções positivo, negativo_alto_risco levam todas a "nste_risco_criterios" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `nste_risco_manual` | opções alto, intermediario levam todas a "nste_invasiva_precoce" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `motivo_de_entrada` | opções creatinina, eletrolitico, critico, incidental levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `entrada_dados` | opções lab, diurese, sinais, so_paciente levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `atalhos` | opções k, nao_sei levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |

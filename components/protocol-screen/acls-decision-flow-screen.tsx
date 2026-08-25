@@ -13,7 +13,15 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
-import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decision-tree/types";
+import { alternarSelecao, selecionados } from "../../core/decision-tree/estado-clinico";
+import type {
+  DecisionTreeDefinition,
+  EstadoDaAcao,
+  FrontendTreeStep,
+  ParallelAction,
+  TipoDeSaida,
+  Veredito,
+} from "../../core/decision-tree/types";
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
@@ -36,6 +44,7 @@ import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
+import { useUiV3Enabled } from "../../lib/ui-v3-flag";
 import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -106,6 +115,11 @@ export default function AclsDecisionFlowScreen({
   // passam `currentModuleSlug`, então dá para habilitar a UI 2.0 num módulo sem
   // arrastar os outros 18 junto — validação incremental num arquivo compartilhado.
   const emV2 = useUiV2Enabled(currentModuleSlug ?? "");
+  // ⚠️ v3 é ADITIVO sobre o v2, não substituto — ver lib/ui-v3-flag.ts. Módulo
+  // fora do piloto: `emV3` é sempre `false`, e nada abaixo que checa `emV3`
+  // muda o que esse módulo renderiza.
+  const emV3 = useUiV3Enabled(currentModuleSlug ?? "");
+  const v3Shell = useEstilosDoTema(criarEstilosV3);
 
   const engineRef = useRef<DecisionTreeEngine | null>(null);
   if (!engineRef.current) {
@@ -114,6 +128,18 @@ export default function AclsDecisionFlowScreen({
   const engine = engineRef.current;
 
   const [step, setStep] = useState<FrontendTreeStep>(() => engine.toFrontendStep());
+  // ⚠️ CORREÇÃO DE CORRETUDE (2026-08-24, achada durante validação visual da
+  // v3, mas vale para TODOS os módulos — não é migração de design).
+  //
+  // Sem isto, a posição de rolagem do passo ANTERIOR sobrevive para o passo
+  // seguinte: se o usuário rolou até o fim de uma tela longa, a próxima tela
+  // pode abrir já rolada, escondendo exatamente o que a "regra de
+  // visibilidade imediata" promete mostrar sem rolar. É a mesma ScrollView em
+  // todos os passos — trocar `step` não remonta o componente.
+  const scrollRef = useRef<ScrollView>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [step.id]);
   const [canGoBack, setCanGoBack] = useState<boolean>(() => engine.canGoBack());
   const [trail, setTrail] = useState<string[]>(() => [engine.toFrontendStep().title]);
 
@@ -166,6 +192,13 @@ export default function AclsDecisionFlowScreen({
       // SessaoDeFluxo") e não o COMPORTAMENTO ("o valor chega lá"). R-87 dentro
       // da minha própria trava.
       escalonamento: { ...escalonamentoRef.current },
+      // ⚠️ OS MARCOS SÃO SALVOS COMO ESTÃO — ver `marcos` em lib/flow-session.ts.
+      // Sem isto, o replay da retomada reancora o relógio clínico no instante
+      // da volta, e a crise "rejuvenesce" o tempo que o médico passou fora.
+      marcos: engine.exportarMarcos(),
+      // ⚠️ O CASO INTEIRO, a cada etapa. É o que a retomada prefere quando
+      // existe; os campos acima continuam salvos para a via de compatibilidade.
+      estado: engine.exportarEstado(),
     });
   }, [currentModuleSlug, step, trail]);
 
@@ -194,17 +227,37 @@ export default function AclsDecisionFlowScreen({
 
     const destino = salva.caminho[salva.caminho.length - 1];
     let chegou = false;
+    // ⚠️ DUAS VIAS, E A ANTIGA CONTINUA INTEIRA (Passo B, 2026-08-25).
+    //
+    // Com `estado`, a retomada RESTAURA — valores, trilha de medições, ações já
+    // executadas, decisões tomadas e marcos voltam como estavam. Sem `estado`,
+    // cai no REPLAY de sempre, que é o que sessões salvas antes desta versão
+    // trazem. Nenhum dos 20 chamadores muda; o que muda é de onde se lê, quando
+    // há de onde ler.
+    //
+    // ⚠️ O REPLAY NÃO SÓ PERDE A MEMÓRIA CLÍNICA — ELE A FABRICA: cada
+    // `setValue` cria um ponto de trilha carimbado na hora da volta. Por isso a
+    // via nova não é "melhoria de fidelidade": é a diferença entre não ter
+    // trilha e ter uma trilha que mente.
     try {
-      engine.reset();
-      for (const nodeId of salva.caminho.slice(1)) {
-        engine.goToNode(nodeId);
-      }
-      for (const [campo, valor] of Object.entries(salva.valores)) {
-        engine.setValue(campo, valor);
+      if (salva.estado) {
+        engine.restaurarEstado(salva.estado);
+      } else {
+        engine.reset();
+        for (const nodeId of salva.caminho.slice(1)) {
+          engine.goToNode(nodeId);
+        }
+        for (const [campo, valor] of Object.entries(salva.valores)) {
+          // ⚠️ SEM TRILHA: sessão antiga não tem histórico, e reaplicar por
+          // `setValue` criaria uma medição carimbada na hora da volta — que
+          // ninguém fez. A regra é abrir com a trilha vazia, nunca inventá-la.
+          engine.reaplicarValorSemTrilha(campo, valor);
+        }
       }
       chegou = engine.getCurrentNode().id === destino;
     } catch {
       // Árvore mudou entre o salvamento e a volta (deploy novo, nó renomeado).
+      // `restaurarEstado` valida o nó e lança — cai aqui como o replay já caía.
       chegou = false;
     }
 
@@ -221,6 +274,17 @@ export default function AclsDecisionFlowScreen({
       comecarDoInicio();
       return;
     }
+
+    // ⚠️ DEPOIS DO REPLAY, NUNCA ANTES. O replay acabou de regenerar cada marco
+    // com o relógio da volta; recolocar os originais aqui é o que desfaz isso.
+    // Invertê-lo faria a correção não ter efeito nenhum — e em silêncio.
+    //
+    // Pela via do snapshot os marcos já vieram dentro de `values` (eles SÃO
+    // valores, chaveados `__marco_*`) — esta chamada então não tem o que
+    // corrigir e é inofensiva. Mantê-la incondicional evita a pior forma de
+    // erro aqui: uma condição que, mal escrita, pula a correção justamente na
+    // via que precisa dela.
+    engine.restaurarMarcos(salva.marcos);
 
     caminhoRef.current = [...salva.caminho];
     valoresRef.current = { ...salva.valores };
@@ -255,6 +319,19 @@ export default function AclsDecisionFlowScreen({
   const escalonamentoRef = useRef<EstadoDeEscalonamento>(ESTADO_INICIAL);
 
   const handleChoose = (optionId: string) => {
+    // ⚠️ CORREÇÃO DE CORRETUDE (2026-08-24, achada durante a validação do
+    // indicador de estabilidade). `engine.choose()` já aplica `option.grava`
+    // aos VALORES INTERNOS do motor (R-122) — mas `valoresRef`, que é a cópia
+    // do shell usada para retomada de sessão E para o que a TELA lê fora do
+    // fluxo de input (ex.: peso estimado, e agora o indicador de
+    // estabilidade), nunca era atualizada por essa via. Só `handleSetValue`
+    // (campos digitados) escrevia nela. Resultado: um `grava` de opção
+    // gravava no motor e nunca aparecia em nada que o shell lê diretamente.
+    const anterior = engine.getCurrentNode();
+    if (anterior.type === "decision") {
+      const opcao = anterior.options.find((o) => o.id === optionId);
+      if (opcao?.grava) valoresRef.current[opcao.grava.campo] = opcao.grava.valor;
+    }
     const next = engine.choose(optionId);
     caminhoRef.current.push(next.id);
 
@@ -416,7 +493,7 @@ export default function AclsDecisionFlowScreen({
           ))}
         </View>
       ) : null}
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {emV2 ? null : (
           <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
         )}
@@ -450,13 +527,39 @@ export default function AclsDecisionFlowScreen({
             ))}
           </Card>
         ) : null}
-        {estabilizacaoNoFluxo ? null : (
+        {/* ⚠️ v3 SUSPENDE O CARD FIXO SÓ QUANDO A ESTABILIDADE VIROU PASSO DO
+            FLUXO (refinamento v3, 2026-08-24) — não é `estabilizacaoNoFluxo`
+            reescrito, é OR: o prop continua valendo para quem já o usava
+            (IRA), e `emV3` estende a mesma regra ao piloto sem exigir prop
+            nova nem arriscar os outros 30 módulos, que nunca têm `emV3`
+            verdadeiro. Se o piloto for desligado (`ui-v3=off`), o card volta
+            — nenhum caminho de fallback fica sem aviso de estabilização. */}
+        {estabilizacaoNoFluxo || emV3 ? null : (
           <StabilizationFirstCard
             compacto={emV2}
             currentModuleSlug={currentModuleSlug}
             onOpenModule={(slug) => abrirOutroModulo(slug)}
           />
         )}
+        {/* Indicador compacto — substitui o card grande depois que a
+            estabilidade foi avaliada como PASSO do fluxo, não como aviso
+            permanente. Tocável: reabre a pergunta se o quadro mudou. */}
+        {emV3 && (valoresRef.current.estabilidade_avaliada || valoresRef.current.pas) ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              engine.goToNode("avaliar_estabilidade");
+              sync(undefined, [...trail, tr("Estabilidade")]);
+            }}
+            style={v3Shell.estabBadge}
+          >
+            <Text style={v3Shell.estabBadgeTexto}>
+              {valoresRef.current.estabilidade_avaliada === "instavel"
+                ? tr("⚠ Instabilidade identificada — toque para reavaliar")
+                : tr("✓ Estabilidade avaliada — toque para reavaliar")}
+            </Text>
+          </Pressable>
+        ) : null}
 
         {/* ── Peso não aferido ───────────────────────────────────────────────
             Fica no SHELL, e não no texto de cada nó, de propósito. Os nove
@@ -484,7 +587,12 @@ export default function AclsDecisionFlowScreen({
 
         {topContent}
 
-        {intro && stepCount === 1 && emV2 ? (
+        {/* ⚠️ v3 NÃO MOSTRA O PARÁGRAFO DE ABERTURA (refinamento v3,
+            2026-08-24): "o parágrafo... não pertence à navegação clínica".
+            A abertura do piloto (`atalhos_coronarianas`) já orienta por onde
+            começar — o texto descritivo completo continua existindo (em
+            `intro`), só não compete mais pela primeira tela. */}
+        {intro && stepCount === 1 && emV2 && !emV3 ? (
           // Descrição do módulo em 2 linhas, com o texto completo a um toque.
           // São 120 px que ficavam entre o card de estabilização e a decisão
           // clínica — e o texto é orientação de uso, não conduta.
@@ -494,7 +602,7 @@ export default function AclsDecisionFlowScreen({
             tituloCompleto={tr(protocolLabel)}
           />
         ) : null}
-        {intro && stepCount === 1 && !emV2 ? (
+        {intro && stepCount === 1 && !emV2 && !emV3 ? (
           <View style={styles.introCard}>
             <Text style={styles.introText}>{tr(intro)}</Text>
           </View>
@@ -518,9 +626,32 @@ export default function AclsDecisionFlowScreen({
 
         <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>
         {step.kind === "decision" ? (
-          <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
+          <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} emV3={emV3} />
         ) : step.kind === "action" ? (
-          <ActionStep step={step} onAdvance={handleAdvance} emV2={emV2} />
+          <ActionStep
+            step={step}
+            onAdvance={handleAdvance}
+            emV2={emV2}
+            emV3={emV3}
+            estadoDaAcao={(id) => engine.estadoDaAcao(id)}
+            onExecutar={(id) => {
+              try {
+                engine.registrarExecucao(id);
+                sync();
+              } catch {
+                // ⚠️ SILÊNCIO AQUI É CORRETO: o motor recusa execução de ação
+                // bloqueada, e a tela nem oferece o botão nesse caso. Chegar
+                // aqui significa corrida entre render e toque — o estado na
+                // tela já mostra o impedimento.
+              }
+            }}
+            onDecidir={(id, tipo) => {
+              try {
+                engine.registrarDecisao(id, tipo);
+                sync();
+              } catch {}
+            }}
+          />
         ) : step.kind === "input" ? (
           <InputStep
             step={step}
@@ -586,6 +717,7 @@ function ListaDeCriterios({
   rotuloAberto,
   rotuloOculto,
   estilos,
+  sempreRecolhido,
 }: {
   itens: string[];
   /**
@@ -603,9 +735,26 @@ function ListaDeCriterios({
     texto: StyleProp<TextStyle>;
     alternar: StyleProp<TextStyle>;
   };
+  /**
+   * ⚠️ OPCIONAL, DEFAULT `false` — PRESERVA O COMPORTAMENTO DE TODO O RESTO
+   * DO APP (2026-08-24). Sem isto, `curta = itens.length <= 2` fazia a lista
+   * nascer SEMPRE ABERTA, sem nenhum toggle, quando tinha 1 ou 2 itens — e
+   * era exatamente o caso de `porque` com um parágrafo só (`ecg_grupoB_
+   * oclusao`, `ecg_avr_conduta`): o "livro" reaparecia na tela de resultado,
+   * sem toque nenhum para escondê-lo. Pedido explícito do autor: "a
+   * quantidade de itens não pode determinar se o texto fica aberto".
+   *
+   * Escolhido como PROP OPCIONAL, não mudança do default, porque `evidence`
+   * (em qualquer módulo) e o `porque` da v2 (usada por ~30 módulos fora do
+   * piloto) nunca foram apontados como problema — mudar o default ali seria
+   * alterar comportamento não pedido, fora do escopo desta correção. Só os
+   * dois pontos de `porque` da v3 (exclusiva do piloto coronariano) passam
+   * esta prop.
+   */
+  sempreRecolhido?: boolean;
 }) {
   const tr = useTr();
-  const curta = itens.length <= 2;
+  const curta = !sempreRecolhido && itens.length <= 2;
   const [aberto, setAberto] = useState(curta);
 
   if (!itens.length) return null;
@@ -646,17 +795,122 @@ function ListaDeCriterios({
   );
 }
 
+/**
+ * Quais `option.id` já têm um card tocável cobrindo a mesma escolha (ver
+ * `ComparativoVisual.optionId`) — usado só pela v3 para não duplicar a
+ * pergunta como card E como linha de texto. Nós sem `optionId` em nenhum
+ * card (todo módulo além do piloto de coronarianas) devolvem um Set vazio, e
+ * a lista de opções continua mostrando todas, como sempre.
+ */
+function idsCobertosPorCard(comparativo: Extract<FrontendTreeStep, { kind: "decision" }>["comparativo"]): Set<string> {
+  return new Set((comparativo ?? []).map((c) => c.optionId).filter((id): id is string => Boolean(id)));
+}
+
 function DecisionStep({
   step,
   onChoose,
   emV2,
+  emV3,
 }: {
   step: Extract<FrontendTreeStep, { kind: "decision" }>;
   onChoose: (id: string) => void;
   emV2?: boolean;
+  emV3?: boolean;
 }) {
   const tr = useTr();
   const v = useEstilosDoTema(criarEstilosV2);
+  const v3 = useEstilosDoTema(criarEstilosV3);
+
+  if (emV3) {
+    return (
+      <View style={styles.stepStack}>
+        {/* ⚠️ SEM O RÓTULO "Pergunta" (2026-08-24, quinta medição real): a
+            pergunta já vem em negrito grande logo abaixo — o rótulo era
+            redundante e custava uma linha inteira + um gap do stepStack em
+            TODA tela de decisão da v3. Medido por screenshot real: essa
+            linha fazia falta no orçamento de 375×667 da tela de padrões sem
+            supra (4 cards + 3 saídas), que é exatamente a tela que motivou
+            este corte. */}
+        <Text style={v3.questao}>{tr(step.question || step.title)}</Text>
+        {step.summary ? <Text style={v3.resumoV3}>{tr(step.summary)}</Text> : null}
+        {/* ⚠️ CRITÉRIOS CURTOS FICAM ABERTOS, SEM ACORDEÃO (refinamento v3,
+            2026-08-24): "não esconder informação que muda a decisão". Uma
+            lista de até 4 itens CURTOS é exatamente o formato dos critérios
+            observáveis que decidem a pergunta (ex.: triagem de dissecção) —
+            escondê-la atrás de "Ver critérios" custa um toque para ver o que
+            deveria estar visível de cara. Listas mais longas (ex.: 7
+            contraindicações) continuam recolhidas — abri-las todas voltaria
+            a produzir a tela longa que a v3 existe para evitar.
+            ⚠️ "CURTO" TAMBÉM É POR TAMANHO, NÃO SÓ POR CONTAGEM (bug real,
+            2026-08-24, sexta medição): `ecg_padroes_wellens` tem só 2 itens
+            de evidence, mas cada um é um parágrafo de ~400 caracteres
+            (WELLENS_NAO_E_OCLUSAO/WELLENS_NUNCA_ERGOMETRICO) — abertos,
+            eles sozinhos estouraram 375×667 e empurraram os cards e as
+            opções inteiras para fora, em qualquer contagem de item. O limiar
+            de 4 itens só faz sentido para itens do tamanho de um critério
+            observável (~80 caracteres); paragráfos continuam recolhidos
+            mesmo com poucos itens. */}
+        {step.evidence && step.evidence.length > 0 && step.evidence.length <= 4 && step.evidence.every((item) => item.length <= 100) ? (
+          <View style={v3.criteriosCompactos}>
+            {step.evidence.map((item, i) => (
+              <Text key={i} style={v3.criterioCompactoTexto}>• {tr(item)}</Text>
+            ))}
+          </View>
+        ) : (
+          <ListaDeCriterios
+            itens={step.evidence}
+            estilos={{
+              lista: v.lista,
+              linha: v.linha,
+              marcador: v.marcador,
+              texto: v.itemTexto,
+              alternar: v.alternarCriterios,
+            }}
+          />
+        )}
+        {/* Imagem grande, moldura mínima — pedido explícito da v3: "aumentar a
+            presença das miniaturas de ECG... reduzir molduras/bordas que
+            comprimem o traçado". */}
+        {/* ⚠️ O CARD É O PRÓPRIO BOTÃO (2026-08-24, segunda correção pós-
+            validação física) — `onSelect={onChoose}` faz cada card com
+            `optionId` tocável, chamando a MESMA função de escolha da lista
+            abaixo. A lista abaixo, por sua vez, OMITE qualquer opção já
+            coberta por um card (ver `idsCobertosPorCard`) — sem isso, "De
+            Winter" apareceria como card E como linha de texto, dobrando a
+            altura sem dobrar a informação (o defeito medido em screenshot
+            real que estourou 375×667 com 4 cards + 7 opções). */}
+        <AcoesParalelas itens={step.emParalelo} />
+        <ComparativoDePadroes itens={step.comparativo} grande onSelect={onChoose} />
+        <View style={v3.opcoes}>
+          {step.options.filter((o) => !idsCobertosPorCard(step.comparativo).has(o.id)).map((o) => {
+            // ⚠️ PESO VISUAL VEM DO CONTEÚDO, NÃO DE UMA REGRA FIXA — cada nó
+            // declara `gravidade` (ou não) por opção. Sem ela, as opções têm
+            // peso igual, que é o comportamento de sempre.
+            const corGravidade = o.gravidade ? v3.corPorTom[
+              o.gravidade === "critica" ? "critical" : o.gravidade === "alerta" ? "warning" : o.gravidade === "favoravel" ? "success" : "primary"
+            ] : "transparent";
+            const critica = o.gravidade === "critica";
+            return (
+              <Pressable
+                key={o.id}
+                accessibilityRole="button"
+                onPress={() => onChoose(o.id)}
+                style={({ pressed }) => [
+                  v3.opcaoCard,
+                  { borderLeftColor: corGravidade },
+                  critica && v3.opcaoCardLarga,
+                  pressed && v3.opcaoCardPressionado,
+                ]}
+              >
+                <Text style={[v3.opcaoTexto, critica && { fontSize: 17 }]}>{tr(o.label)}</Text>
+                <Text style={v3.opcaoChevron}>›</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
 
   if (emV2) {
     return (
@@ -717,17 +971,260 @@ function DecisionStep({
   );
 }
 
+const ENFASE_COR: Record<string, "critical" | "warning" | "primary" | "success"> = {
+  resultado_critico: "critical",
+  resultado_alerta: "warning",
+  resultado_neutro: "primary",
+  resultado_favoravel: "success",
+};
+
+/**
+ * O QUE CORRE EM PARALELO — e por que tem tratamento visual próprio.
+ *
+ * ⚠️ A REGRA DO MOTOR (2026-08-25): "se vira nó, é sequencial; se é paralelo,
+ * não vira nó". Este bloco é a metade visual dessa regra. Ele aparece DENTRO
+ * da tela da decisão/ação, com rótulo que diz explicitamente que aquilo está
+ * acontecendo AO MESMO TEMPO — não é uma lista de próximos passos, e o
+ * usuário não precisa tocar em nada para "concluir" nenhum item.
+ *
+ * O defeito que ele corrige foi medido na auditoria da SCA: peso e 22 ações
+ * de medicação vinham ANTES da pergunta "tem ICP disponível?", e a fila de
+ * telas ensinava que a reperfusão espera as doses. Não espera.
+ */
+
+/**
+ * SEMÁFORO DE UMA AÇÃO CLÍNICA.
+ *
+ * ⚠️ POR QUE ELE VEM ANTES DA LISTA DE AÇÕES, e não depois: a dose só importa
+ * para quem pode administrar. Um card que abre com "NITROGLICERINA SL 0,3–0,4
+ * mg" e só lá embaixo avisa que a PAS é 82 já entregou a instrução errada — o
+ * olho lê a dose primeiro.
+ *
+ * ⚠️ E O VERMELHO NÃO TEM BOTÃO DE EXECUÇÃO (regra do autor, 2026-08-25). Não
+ * existe "prosseguir mesmo assim": o caminho é corrigir o dado ou seguir sem o
+ * fármaco. O amarelo é o único que devolve a escolha, e ela fica registrada
+ * com o TIPO escolhido — "corrigir antes" não é a mesma conduta que "seguir
+ * sem", e um booleano perderia essa diferença.
+ */
+function CardDeVeredito({
+  veredito,
+  estado,
+  onExecutar,
+  onDecidir,
+  tr,
+  estilos,
+}: {
+  veredito: Veredito;
+  estado: EstadoDaAcao;
+  onExecutar: () => void;
+  onDecidir: (tipo: TipoDeSaida) => void;
+  tr: (t: string) => string;
+  estilos: ReturnType<typeof criarEstilosV3>;
+}) {
+  const cor =
+    veredito.nivel === "vermelho"
+      ? estilos.corPorTom.critical
+      : veredito.nivel === "amarelo"
+        ? estilos.corPorTom.warning
+        : estilos.corPorTom.success;
+  const sinal = veredito.nivel === "vermelho" ? "🔴" : veredito.nivel === "amarelo" ? "🟡" : "🟢";
+
+  return (
+    <View style={[estilos.vereditoCard, { borderLeftColor: cor }]} testID={`veredito-${veredito.titulo}`}>
+      <Text style={[estilos.vereditoTitulo, { color: cor }]}>
+        {sinal} {tr(veredito.titulo)}
+      </Text>
+      <Text style={estilos.vereditoMotivo}>{tr(veredito.motivo)}</Text>
+
+      {/* ⚠️ A INSTRUÇÃO SÓ APARECE COM O VEREDITO QUE A AUTORIZA. Dose de
+          fármaco contraindicado impressa na mesma tela do bloqueio é o
+          defeito que este componente existe para eliminar. */}
+      {(veredito.instrucao ?? []).map((linha, i) => (
+        <Text key={i} style={estilos.vereditoInstrucao}>{tr(linha)}</Text>
+      ))}
+
+      {estado === "realizada" ? (
+        <Text style={estilos.vereditoFeito}>{tr("✓ Registrado como administrado")}</Text>
+      ) : veredito.nivel === "verde" ? (
+        <Pressable onPress={onExecutar} style={({ pressed }) => [estilos.vereditoBotao, pressed && { opacity: 0.85 }]}>
+          <Text style={estilos.vereditoBotaoTexto}>{tr("Registrar como administrado")}</Text>
+        </Pressable>
+      ) : veredito.nivel === "amarelo" && veredito.decisao ? (
+        <View style={estilos.vereditoSaidas}>
+          {veredito.decisao.saidas.map((s) => (
+            <Pressable
+              key={s.tipo}
+              onPress={() => onDecidir(s.tipo)}
+              style={({ pressed }) => [estilos.vereditoSaida, pressed && { opacity: 0.85 }]}>
+              <Text style={estilos.vereditoSaidaTexto}>{tr(s.label)}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function AcoesParalelas({ itens }: { itens: ParallelAction[] }) {
+  const tr = useTr();
+  const v3 = useEstilosDoTema(criarEstilosV3);
+  if (!itens.length) return null;
+  return (
+    <View style={v3.paraleloBloco}>
+      <Text style={v3.paraleloRotulo}>{tr("AO MESMO TEMPO — não atrase o que já foi acionado")}</Text>
+      {itens.map((a, i) => (
+        <View key={a.id ?? i} style={v3.acaoLinhaRow}>
+          <View style={v3.paraleloMarcador} />
+          <Text style={v3.paraleloLinha}>{tr(a.label)}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function ActionStep({
   step,
   onAdvance,
   emV2,
+  emV3,
+  estadoDaAcao,
+  onExecutar,
+  onDecidir,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
   emV2?: boolean;
+  emV3?: boolean;
+  /** Estado de execução de cada veredito — vem do motor, não da tela. */
+  estadoDaAcao?: (id: string) => EstadoDaAcao;
+  onExecutar?: (id: string) => void;
+  onDecidir?: (id: string, tipo: TipoDeSaida) => void;
 }) {
   const tr = useTr();
   const v = useEstilosDoTema(criarEstilosV2);
+  const v3 = useEstilosDoTema(criarEstilosV3);
+
+  if (emV3 && step.enfase) {
+    // ── RESULTADO DERIVADO — não é a mesma tela de conduta comum ───────────
+    // Pedido explícito: "manter componente visualmente diferente de pergunta,
+    // mas não usar âmbar como cor fixa — a estrutura visual é fixa, a cor
+    // depende do significado clínico". A cor vem de `ENFASE_COR`, nunca hard-coded.
+    const tom = ENFASE_COR[step.enfase] ?? "primary";
+    const corBorda = v3.corPorTom[tom];
+    return (
+      <View style={styles.stepStack}>
+        <View style={[v3.resultCard, { borderLeftColor: corBorda }]}>
+          <Text style={[v3.eyebrow, { color: corBorda }]}>{tr("Resultado")}</Text>
+          <Text style={v3.resultTitulo}>{tr(step.title)}</Text>
+          {step.summary ? <Text style={v3.resultSub}>{tr(step.summary)}</Text> : null}
+          {step.actions.length ? (
+            <View style={v3.proximaAcao}>
+              <Text style={v3.proximaAcaoLbl}>{tr("Próxima ação")}</Text>
+              <Text style={v3.proximaAcaoTxt}>{tr(step.actions[0])}</Text>
+            </View>
+          ) : null}
+        </View>
+        {step.actions.length > 1 ? (
+          <ListaDeCriterios
+            itens={step.actions.slice(1)}
+            rotuloAberto="Ver o restante da conduta"
+            rotuloOculto="Ocultar"
+            estilos={{
+              lista: v.lista, linha: v.linha, marcador: v.marcador,
+              texto: v.itemTexto, alternar: v.alternarCriterios,
+            }}
+          />
+        ) : null}
+        <SeloDeForca procedencia={step.procedencia} />
+        {step.declaracoes.map((d, i) => (
+          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
+        ))}
+        <ListaDeCriterios
+          itens={step.porque}
+          rotuloAberto="Por que isto"
+          rotuloOculto="Ocultar o porquê"
+          // ⚠️ SEMPRE RECOLHIDO (2026-08-24) — ver o comentário na definição
+          // de `ListaDeCriterios`. Sem isto, um `porque` com 1 parágrafo só
+          // (ex.: `ecg_grupoB_oclusao`) nascia sempre aberto, e o "livro"
+          // reaparecia na tela de resultado sem nenhum toque.
+          sempreRecolhido
+          estilos={{
+            lista: v.lista, linha: v.linha, marcador: v.marcador,
+            texto: v.itemTexto, alternar: v.alternarCriterios,
+          }}
+        />
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAdvance}
+          style={({ pressed }) => [v3.dockCta, pressed && v.botaoPressionado]}
+        >
+          <Text style={v3.dockCtaTexto}>{tr("Continuar")}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (emV3) {
+    // ── AÇÃO/CONDUTA COMUM, refinada: menos vazio, CTA dominante ───────────
+    return (
+      <View style={styles.stepStack}>
+        <View style={v3.actionCardV3}>
+          <Text style={[v3.eyebrow, { color: v3.corPorTom.critical }]}>{tr("Faça agora")}</Text>
+          <Text style={v3.resultTitulo}>{tr(step.title)}</Text>
+          {step.summary ? <Text style={v3.resultSub}>{tr(step.summary)}</Text> : null}
+          {/* ⚠️ O SEMÁFORO VEM ANTES DA DOSE. Um card que abre com
+              "NITROGLICERINA SL 0,3–0,4 mg" e só embaixo avisa que a PAS é 82
+              já entregou a instrução errada: o olho lê a dose primeiro. */}
+          {step.vereditos.map((vd, i) => (
+            <CardDeVeredito
+              key={i}
+              veredito={vd}
+              estado={estadoDaAcao?.(vd.id ?? "") ?? "pendente"}
+              onExecutar={() => onExecutar?.(vd.id ?? "")}
+              onDecidir={(tipo) => onDecidir?.(vd.id ?? "", tipo)}
+              tr={tr}
+              estilos={v3}
+            />
+          ))}
+          <View style={v3.acoesDensas}>
+            {/* ⚠️ MARCADOR VISUAL POR ITEM (2026-08-24, ajuste do Bloco 1) —
+                pedido explícito: "lista visual curta, facilmente escaneável"
+                em vez de linhas de texto sem marca nenhuma. Mesmo ponto de
+                6px já usado em `ListaDeCriterios` (v.marcador) — não um
+                componente novo, só o mesmo vocabulário visual aplicado aqui. */}
+            {step.actions.map((item, index) => (
+              <View key={index} style={v3.acaoLinhaRow}>
+                <View style={v.marcador} />
+                <Text style={v3.acaoLinha}>{tr(item)}</Text>
+              </View>
+            ))}
+          </View>
+          <AcoesParalelas itens={step.emParalelo} />
+        </View>
+        <SeloDeForca procedencia={step.procedencia} />
+        {step.declaracoes.map((d, i) => (
+          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
+        ))}
+        <ListaDeCriterios
+          itens={step.porque}
+          rotuloAberto="Por que isto"
+          rotuloOculto="Ocultar o porquê"
+          sempreRecolhido
+          estilos={{
+            lista: v.lista, linha: v.linha, marcador: v.marcador,
+            texto: v.itemTexto, alternar: v.alternarCriterios,
+          }}
+        />
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAdvance}
+          style={({ pressed }) => [v3.dockCta, v3.dockCtaCritico, pressed && v.botaoPressionado]}
+        >
+          <Text style={[v3.dockCtaTexto, v3.dockCtaTextoCritico]}>{tr("Confirmar e continuar")}</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   if (emV2) {
     return (
@@ -929,6 +1426,10 @@ function InputStep({
 
         {step.fields.map((field) => {
           const current = step.values[field.id];
+          // ⚠️ CHECKLIST: o valor é um CONJUNTO, e a leitura passa pelos
+          // helpers oficiais — o formato serializado é privado do núcleo
+          // (`estado-clinico.ts`) e nenhum consumidor pode conhecê-lo.
+          const marcados = field.multiplo ? selecionados(step.values, field.id) : [];
           const isPreset = field.presets.some((p) => p.value === current);
           const showingCustom = customOpen[field.id] || (current !== undefined && !isPreset);
           const faixa = faixaNumerica(field);
@@ -940,7 +1441,13 @@ function InputStep({
                   {tr(field.label)}
                   {field.unit ? <Text style={styles.inputUnit}> ({field.unit})</Text> : null}
                 </Text>
-                {current !== undefined ? (
+                {field.multiplo ? (
+                  marcados.length ? (
+                    <Text style={styles.inputFieldValue}>
+                      {marcados.length} {marcados.length === 1 ? tr("marcado") : tr("marcados")}
+                    </Text>
+                  ) : null
+                ) : current !== undefined ? (
                   <Text style={styles.inputFieldValue}>
                     {/* O RÓTULO do preset, não o valor gravado. Num campo Sim/Não
                         o valor é "nao" e era isso que aparecia na tela — dado
@@ -961,7 +1468,40 @@ function InputStep({
                   curados pelo protocolo e continuam sendo o toque mais rápido —
                   o slider é para o que está entre eles. Arrastar com luva é mais
                   rápido e menos sujeito a erro que teclado numérico. */}
-              {faixa ? (
+              {/* CHECKLIST — vários itens ao mesmo tempo.
+                  ⚠️ POR QUE NÃO É O CHIP DE PRESET COM OUTRA COR: num campo de
+                  escolha única, tocar o segundo item desmarca o primeiro. Aqui
+                  "dor retroesternal + irradiação + sudorese" é UM paciente, e
+                  o comportamento de troca descartaria o resto do quadro. A
+                  marca de seleção explícita (✓/○) também é necessária: sem ela,
+                  três chips acesos e um chip aceso são visualmente a mesma
+                  coisa, e o usuário não sabe se está marcando ou trocando. */}
+              {field.multiplo ? (
+                <View style={styles.presetWrap} testID={`checklist-${field.id}`}>
+                  {field.presets.map((preset) => {
+                    const active = marcados.includes(preset.value);
+                    return (
+                      <Pressable
+                        key={preset.value}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: active }}
+                        onPress={() => onSetValue(field.id, alternarSelecao(current, preset.value))}
+                        style={({ pressed }) => [
+                          styles.presetChip,
+                          active && styles.presetChipActive,
+                          pressed && styles.presetChipPressed,
+                        ]}>
+                        <Text style={[styles.presetChipText, active && styles.presetChipTextActive]}>
+                          {active ? "✓ " : "○ "}
+                          {preset.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ) : null}
+
+              {faixa && !field.multiplo ? (
                 <NumericStepper
                   valor={
                     valorNumerico !== undefined && Number.isFinite(valorNumerico)
@@ -972,6 +1512,20 @@ function InputStep({
                         Number(((faixa.min + faixa.max) / 2).toFixed(0))
                   }
                   onChange={(n) => {
+                    onSetValue(field.id, String(n));
+                    setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                  }}
+                  // ⚠️ NADA DE NÚMERO ANTES DO PRIMEIRO TOQUE em campo
+                  // opcional. Em campo obrigatório o comportamento não muda:
+                  // ali o botão de avançar já trava até o médico informar, e a
+                  // ambiguidade nunca existiu.
+                  naoInformado={!!field.optional && current === undefined}
+                  textoAusente={tr("— não informado")}
+                  // Grava também quando ele SOLTA a barra no mesmo número em
+                  // que ela partiu. Sem isto, tocar a barra e parar no meio
+                  // deixaria o campo em "—" para sempre — a tela pareceria
+                  // quebrada, e a correção acima viraria um beco.
+                  onConfirmar={(n) => {
                     onSetValue(field.id, String(n));
                     setCustomOpen((s) => ({ ...s, [field.id]: false }));
                   }}
@@ -1015,7 +1569,7 @@ function InputStep({
 
                   Campo CATEGÓRICO (sexo, janela de tempo, início dos sintomas)
                   continua em botão: não é número, não tem barra possível. */}
-              {faixa ? null : (
+              {faixa || field.multiplo ? null : (
                 <>
                   <View style={styles.presetWrap}>
                     {field.presets.map((preset) => {
@@ -1209,6 +1763,161 @@ const criarEstilosV2 = (t: Tema) => {
     botaoPressionado: { opacity: 0.88, transform: [{ scale: 0.98 }] },
     botaoTexto: { ...TIPOGRAFIA.caption, color: "#ffffff", fontWeight: "800" },
   });
+};
+
+/**
+ * Estilos do Design System Clínico V2 "v3" — piloto de coronarianas.
+ *
+ * ⚠️ SÓ É CONSUMIDO QUANDO `emV3` É VERDADEIRO — nenhum outro módulo importa
+ * ou aplica nada daqui hoje. Ver lib/ui-v3-flag.ts.
+ *
+ * Regras herdadas da aprovação visual (v3 do mockup, 2026-08-24):
+ *  1. um elemento dominante por tela — aqui isso é feito no JSX (pergunta OU
+ *     imagem OU resultado OU ação, nunca os quatro competindo);
+ *  2. cards com UM sinal de estado só — borda de acento, não ícone+borda+
+ *     fundo+sombra ao mesmo tempo;
+ *  3. resultado tem variante semântica (cor vem de `ENFASE_COR`, nunca fixa);
+ *  4. números clínicos em fonte monoespaçada; rótulos e corpo, fonte de
+ *     sistema — sem aparência de terminal.
+ */
+const criarEstilosV3 = (t: Tema) => {
+  const c = t.cores;
+  // ⚠️ NÃO É ESTILO — não pode entrar no `StyleSheet.create` abaixo, que
+  // tipa cada chave como ViewStyle/TextStyle/ImageStyle. É um mapa de cor por
+  // tom, consumido diretamente (`v3.corPorTom.critical`), não aplicado como
+  // `style`.
+  const corPorTom: Record<string, string> = {
+    critical: c.critical,
+    warning: c.warning,
+    primary: c.primary,
+    success: c.success,
+  };
+  const s = StyleSheet.create({
+    eyebrow: { ...TIPOGRAFIA.micro, fontWeight: "800", letterSpacing: 0.5, color: c.textSecondary },
+
+    // ── Semáforo de ação clínica ────────────────────────────────────────
+    //
+    // ⚠️ A BARRA LATERAL CARREGA A COR, não o fundo inteiro: três cards
+    // vermelhos e verdes empilhados com fundo cheio viram um semáforo de
+    // trânsito e cansam a leitura numa tela de 375 px. A barra dá a mesma
+    // leitura periférica com muito menos ruído.
+    vereditoCard: {
+      backgroundColor: c.surface,
+      borderRadius: RAIO.card,
+      borderLeftWidth: 4,
+      paddingVertical: ESPACO.sm,
+      paddingHorizontal: ESPACO.md,
+      gap: 4,
+      marginBottom: ESPACO.sm,
+    },
+    vereditoTitulo: { ...TIPOGRAFIA.body, fontWeight: "800" },
+    vereditoMotivo: { ...TIPOGRAFIA.body, color: c.textSecondary },
+    vereditoFeito: { ...TIPOGRAFIA.caption, color: c.success, fontWeight: "700", marginTop: 4 },
+    vereditoBotao: {
+      marginTop: ESPACO.xs,
+      backgroundColor: c.success,
+      borderRadius: RAIO.botao,
+      paddingVertical: ESPACO.sm,
+      alignItems: "center",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    vereditoBotaoTexto: { ...TIPOGRAFIA.body, color: c.bg, fontWeight: "800" },
+    vereditoInstrucao: { ...TIPOGRAFIA.body, color: c.text, marginTop: 4 },
+    vereditoSaidas: { gap: ESPACO.xs, marginTop: ESPACO.xs },
+    vereditoSaida: {
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: RAIO.botao,
+      paddingVertical: ESPACO.sm,
+      paddingHorizontal: ESPACO.md,
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    vereditoSaidaTexto: { ...TIPOGRAFIA.body, color: c.text, fontWeight: "600" },
+    questao: { ...TIPOGRAFIA.step, color: c.text, marginTop: 2 },
+    resumoV3: { ...TIPOGRAFIA.caption, color: c.textSecondary, marginTop: ESPACO.xs, fontWeight: "500" },
+
+    criteriosCompactos: { gap: 4, marginTop: ESPACO.xs },
+    criterioCompactoTexto: { ...TIPOGRAFIA.caption, color: c.textSecondary, fontWeight: "500" },
+
+    // ⚠️ marginTop reduzido de ESPACO.md para ESPACO.sm (2026-08-24, quinta
+    // medição real) — ainda dentro da grade fixa (4/8/16/24/32), só um degrau
+    // abaixo. Ajuda o orçamento de 375×667 sem sair do sistema de espaçamento.
+    opcoes: { gap: ESPACO.sm, marginTop: ESPACO.sm },
+    opcaoCard: {
+      minHeight: TOQUE.minimo,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 14,
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.card,
+      backgroundColor: c.surface,
+      borderLeftWidth: 3,
+      borderLeftColor: "transparent",
+    },
+    opcaoCardPressionado: { opacity: 0.85 },
+    opcaoCardLarga: { paddingVertical: 18 },
+    opcaoTexto: { ...TIPOGRAFIA.body, fontWeight: "700", color: c.text, flex: 1 },
+    opcaoChevron: { color: c.textSecondary, fontSize: 16, marginLeft: ESPACO.sm },
+
+    resultCard: {
+      borderRadius: RAIO.card,
+      borderLeftWidth: 4,
+      backgroundColor: c.surface,
+      padding: ESPACO.md,
+      gap: 4,
+    },
+    resultTitulo: { ...TIPOGRAFIA.title, color: c.text, marginTop: 2 },
+    resultSub: { ...TIPOGRAFIA.caption, color: c.textSecondary, marginTop: 4, fontWeight: "500" },
+    proximaAcao: { marginTop: ESPACO.sm, paddingTop: ESPACO.sm, borderTopWidth: 1, borderTopColor: c.border },
+    proximaAcaoLbl: { ...TIPOGRAFIA.micro, fontWeight: "800", color: c.textSecondary, letterSpacing: 0.4 },
+    proximaAcaoTxt: { ...TIPOGRAFIA.body, fontWeight: "800", color: c.text, marginTop: 2 },
+
+    actionCardV3: {
+      borderRadius: RAIO.card,
+      backgroundColor: c.surface,
+      borderLeftWidth: 4,
+      borderLeftColor: c.critical,
+      padding: ESPACO.md,
+      gap: 4,
+    },
+    acoesDensas: { marginTop: ESPACO.sm, gap: 6 },
+    // ⚠️ VISUAL DIFERENTE DAS AÇÕES DE PROPÓSITO — paralelo não é próximo
+    // passo. Sem borda de card e com marcador de outra cor, para não ser
+    // lido como mais uma lista de coisas a fazer em sequência.
+    paraleloBloco: { marginTop: ESPACO.sm, gap: 6, paddingTop: ESPACO.sm, borderTopWidth: 1, borderTopColor: c.border },
+    paraleloRotulo: { ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "800", letterSpacing: 0.5 },
+    paraleloMarcador: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.textSecondary, marginTop: 7 },
+    paraleloLinha: { ...TIPOGRAFIA.caption, color: c.textSecondary, lineHeight: 21, flex: 1 },
+    acaoLinhaRow: { flexDirection: "row", alignItems: "baseline", gap: ESPACO.sm },
+    acaoLinha: { ...TIPOGRAFIA.caption, color: c.text, fontWeight: "500", lineHeight: 21, flex: 1 },
+
+    dockCta: {
+      minHeight: TOQUE.critico,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      backgroundColor: c.primary,
+      marginTop: ESPACO.sm,
+    },
+    estabBadge: {
+      alignSelf: "flex-start",
+      paddingVertical: 6,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.badge,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    estabBadgeTexto: { ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "700" },
+
+    dockCtaCritico: { backgroundColor: c.critical },
+    dockCtaTexto: { ...TIPOGRAFIA.body, fontWeight: "800", color: c.onPrimary },
+    dockCtaTextoCritico: { color: c.onCritical },
+  });
+  return { ...s, corPorTom };
 };
 
 /**
