@@ -910,12 +910,19 @@ if (textoRenderizado.length < 5000) {
       // arritmia instável, por mais extrema que seja a frequência — a
       // taquicardia sinusal a 165 com hipotensão é RESPOSTA, e cardiovertê-la
       // é dano direto.
-      ["FC 165 SINUSAL + perfusão alterada → NÃO é arritmia (segue para choque)",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "165" }, "coronariana_choque"],
-      ["FC 100 SINUSAL + perfusão alterada → NÃO é arritmia (segue para choque)",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "100" }, "coronariana_choque"],
-      ["FC 165 + perfusão, ritmo NÃO AVALIADO → a dúvida não classifica",
-        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "nao_avaliado", fc: "165" }, "coronariana_choque"],
+      // ⚠️ E NÃO É CHOQUE TAMPOUCO (segunda correção, 2026-08-25): a primeira
+      // versão mandava a faixa do meio para o ramo de choque, e o autor testou
+      // com PAS 140 — "choque" com pressão de 140 é contradição. Sem
+      // hipotensão, sem pulso filiforme e sem arritmia, o caso simplesmente
+      // SEGUE a via de SCA (bloco 5).
+      ["FC 165 SINUSAL + perfusão alterada, PAS normal → segue o fluxo",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "165", pas: "140" }, "estab_bloco5"],
+      ["FC 100 SINUSAL + perfusão alterada, PAS normal → segue o fluxo",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "100", pas: "140" }, "estab_bloco5"],
+      ["FC 165 + perfusão, ritmo NÃO AVALIADO, PAS normal → a dúvida não classifica",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "nao_avaliado", fc: "165", pas: "140" }, "estab_bloco5"],
+      ["FC 165 SINUSAL + PAS 78 → choque (hipotensão real)",
+        "estab_bloco4", { cor_perfusao: "sim", cor_ritmo: "sinusal", fc: "165", pas: "78" }, "coronariana_choque"],
       ["perfusão alterada ISOLADA (bloco3) NÃO dispara sozinha",
         "estab_bloco3", { cor_perfusao: "sim" }, "estab_bloco4"],
       ["PAS < 90 (bloco3) continua suficiente sozinha → choque",

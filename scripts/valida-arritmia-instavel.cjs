@@ -77,6 +77,28 @@ const CASOS = [
   ["FC 42 + rebaixamento, ritmo SINUSAL", { fc: "42", cor_consciencia: "sim", cor_ritmo: "sinusal", cor_pulso_alterado: "normal" }, "nao-arritmia",
    "bradicardia sinusal com rebaixamento de causa neurológica não é bradiarritmia instável"],
 
+  // ── ⚠️ CHOQUE COM PAS 140 NÃO EXISTE (achado do autor no celular) ───────
+  //
+  // A primeira versão desta correção roteava a faixa do meio (FC 100–149 /
+  // 50–59 com hipoperfusão) para o ramo de CHOQUE. Testado com PAS 140, o app
+  // concluía "choque" — trocar um rótulo errado (arritmia) por outro (choque)
+  // não é correção. Um paciente com IAM, FC 110, sudoreico e PAS 140 é o
+  // quadro adrenérgico banal do infarto: segue a via de SCA.
+  ["PAS 140 + FC 100 + pele fria + sinusal", { pas: "140", fc: "100", cor_perfusao: "sim", cor_ritmo: "sinusal", cor_pulso_alterado: "normal" }, "sem-ameaca",
+   "choque com pressão de 140 é contradição; e não é arritmia porque o ritmo é sinusal"],
+  ["PAS 140 + FC 50 + pele fria + sinusal", { pas: "140", fc: "50", cor_perfusao: "sim", cor_ritmo: "sinusal", cor_pulso_alterado: "normal" }, "sem-ameaca",
+   "mesma coisa do outro lado da frequência"],
+  ["PAS 140 + FC 165 + pele fria + SINUSAL", { pas: "140", fc: "165", cor_perfusao: "sim", cor_ritmo: "sinusal", cor_pulso_alterado: "normal" }, "sem-ameaca",
+   "taquicardia sinusal a 165 com pressão de 140 não é arritmia instável nem choque"],
+
+  // ── Os compostos que MERECEM o ramo de choque continuam funcionando ─────
+  ["Pulso filiforme + pele fria (PAS 120)", { pas: "120", fc: "90", cor_perfusao: "sim", cor_pulso_alterado: "filiforme", cor_ritmo: "sinusal" }, "choque",
+   "esse é específico e sempre foi motivo de choque — a correção não pode tê-lo levado junto"],
+  ["Arritmia + pele fria, FC 90 (PAS 120)", { pas: "120", fc: "90", cor_perfusao: "sim", cor_ritmo: "arritmia", cor_pulso_alterado: "normal" }, "choque",
+   "arritmia em FC normal com hipoperfusão merece investigar a causa, sem virar arritmia instável"],
+  ["PAS 78 — hipotensão real", { pas: "78", fc: "100", cor_perfusao: "sim", cor_ritmo: "sinusal", cor_pulso_alterado: "normal" }, "choque",
+   "hipotensão de verdade continua sendo choque"],
+
   // ── Sem comprometimento não há instabilidade ────────────────────────────
   ["FC 165 ARRITMIA, sem comprometimento", { fc: "165", cor_ritmo: "arritmia", cor_perfusao: "nao", cor_pulso_alterado: "normal" }, "sem-ameaca",
    "taquiarritmia ESTÁVEL não entra no ramo de instabilidade — a conduta é vagal/adenosina, não cardioversão"],

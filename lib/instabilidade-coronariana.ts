@@ -391,28 +391,37 @@ export function avaliarAmeacaImediata(v: TreeValues): AmeacaImediata | null {
   if (perfusaoAlterada && v.cor_pulso_alterado === "filiforme") {
     return { id: "choque_associado", rotulo: "Pulso filiforme + sinais de hipoperfusão (pele fria/pálida/sudoreica)", destino: "choque" };
   }
-  // ⚠️ A FAIXA DO MEIO NÃO É ARRITMIA INSTÁVEL. FC 100–149 ou 50–59 com
-  // hipoperfusão é, muito mais frequentemente, RESPOSTA a outra coisa —
-  // hipovolemia, dor, febre, sepse, o próprio infarto. Mandá-la para o
-  // algoritmo de arritmia trataria o sintoma e deixaria a causa correr solta.
-  // Ela segue pelo ramo de choque/hipoperfusão, que é onde se investiga a
-  // causa; a via de SCA continua disponível.
-  if (perfusaoAlterada && Number.isFinite(fc) && fc > 0 && (fc >= 100 || fc < 60)) {
+  // ⚠️ A FAIXA DO MEIO NÃO É ARRITMIA INSTÁVEL — E TAMBÉM NÃO É CHOQUE.
+  //
+  // A primeira versão desta correção (2026-08-25) roteava FC 100–149 ou 50–59
+  // com hipoperfusão para o ramo de CHOQUE. O autor testou no celular com
+  // PAS 140 e o app concluiu "choque" — contradição direta: choque com
+  // pressão de 140 não existe como conclusão, e o rótulo "investigar a causa"
+  // não salvava o destino errado.
+  //
+  // ⚠️ TROCAR UM ROTULO ERRADO POR OUTRO NÃO É CORREÇÃO. Um paciente com IAM,
+  // FC 110, sudoreico e PAS 140 é o quadro adrenérgico banal do infarto: não é
+  // arritmia instável NEM choque. Ele simplesmente segue a via de SCA.
+  //
+  // Os casos da faixa do meio que MERECEM o ramo de choque continuam cobertos
+  // pelos compostos abaixo, que são específicos: pulso filiforme + perfusão
+  // alterada, ou arritmia + perfusão alterada. Hipoperfusão isolada com
+  // pressão normal não basta — e nunca bastou.
+
+  // ARRITMIA em faixa de FC NORMAL + hipoperfusão: aqui a frequência não é o
+  // motor — não há taqui nem bradi —, mas a arritmia associada à hipoperfusão
+  // é achado objetivo que merece o ramo de choque, onde a causa é investigada.
+  if (perfusaoAlterada && v.cor_ritmo === "arritmia") {
     return {
       id: "choque_associado",
-      rotulo: "FC {fc}/min com sinais de hipoperfusão — investigar a causa (não é arritmia instável por si)",
+      rotulo: "Arritmia ao monitor + sinais de hipoperfusão (pele fria/pálida/sudoreica)",
       destino: "choque",
     };
   }
-  // ARRITMIA em faixa de FC NORMAL (60–99) + hipoperfusão: aqui a frequência
-  // não é o motor — não há taqui nem bradi —, mas a arritmia associada à
-  // hipoperfusão é achado objetivo que merece o ramo de choque, onde a causa é
-  // investigada. Não é "arritmia instável": é hipoperfusão com arritmia.
-  if (perfusaoAlterada && v.cor_ritmo === "arritmia") {
-    return { id: "choque_associado", rotulo: "Arritmia ao monitor + sinais de hipoperfusão (pele fria/pálida/sudoreica)", destino: "choque" };
-  }
   return null;
 }
+
+
 
 /** Classificação final estável/instável — mesma função de ameaça, sem duplicar critério. */
 export function derivarInstabilidadeCoronariana(v: TreeValues): "instavel" | "estavel" {
