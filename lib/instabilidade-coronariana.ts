@@ -78,9 +78,35 @@ export function blocoRespiracao(): InputField[] {
       label: "Usa musculatura acessória ou não completa frases por falta de ar?",
       presets: SIM_NAO,
     },
+    {
+      // ⚠️ A FR ESTAVA NUMA TELA DE "COMPLEMENTO OBJETIVO", cinco passos
+      // adiante, separada da SpO₂ e do esforço respiratório (2026-08-25). Os
+      // três SÃO a mesma avaliação: o médico que olha o paciente respirando lê
+      // os três de uma vez. Perguntá-los em telas diferentes é pedir que ele
+      // volte ao mesmo exame duas vezes.
+      //
+      // OPCIONAL porque não dispara desvio nenhum — obrigá-la travaria o ABCDE
+      // por um dado que não muda o roteamento.
+      id: "fr",
+      label: "Frequência respiratória",
+      unit: "rpm",
+      optional: true,
+      customKeyboard: "numeric",
+      presets: ["12", "16", "20", "28", "36"].map((v) => ({ value: v, label: v })),
+    },
   ];
 }
 
+/**
+ * ⚠️ A FR VOLTOU PARA A RESPIRAÇÃO (2026-08-25). Ela estava numa tela de
+ * "complemento objetivo", separada de SpO₂ e do esforço respiratório — os três
+ * são a MESMA avaliação, e o médico que olha o paciente respirando lê os três
+ * de uma vez. Perguntá-los em telas diferentes é pedir que ele volte ao mesmo
+ * exame duas vezes.
+ *
+ * OPCIONAL: a FR não dispara desvio nenhum. Torná-la obrigatória travaria o
+ * ABCDE por um dado que não muda o roteamento.
+ */
 export function blocoCirculacao(): InputField[] {
   return [
     {
@@ -90,6 +116,24 @@ export function blocoCirculacao(): InputField[] {
       allowCustom: true,
       customKeyboard: "numeric",
       presets: ["70", "80", "90", "100", "120", "140"].map((v) => ({ value: v, label: v })),
+    },
+    {
+      // ⚠️ PA É UMA MEDIDA SÓ, E ESTAVA PARTIDA EM DUAS TELAS (correção do
+      // autor, 2026-08-25). O médico lê "140/90" no monitor de uma vez, e o
+      // app pedia a sistólica aqui e a diastólica CINCO PASSOS adiante, numa
+      // tela de "complemento objetivo". Não havia razão clínica — foi
+      // consequência de a PAD ter nascido noutro lugar.
+      //
+      // ⚠️ OPCIONAL, ENQUANTO A PAS É OBRIGATÓRIA, e a assimetria é
+      // deliberada: PAS < 90 desvia para choque, e por isso trava o passo; a
+      // PAD não dispara desvio nenhum, e exigi-la atrasaria o ABCDE por um
+      // número que não muda o roteamento.
+      id: "pad",
+      label: "Pressão diastólica (o número de baixo)",
+      unit: "mmHg",
+      optional: true,
+      customKeyboard: "numeric",
+      presets: ["50", "60", "70", "80", "90", "100"].map((v) => ({ value: v, label: v })),
     },
     {
       // ⚠️ SOZINHO NÃO BASTA (ajuste pedido, 2026-08-24) — pele fria/pálida/

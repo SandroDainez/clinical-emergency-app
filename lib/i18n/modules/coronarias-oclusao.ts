@@ -42,7 +42,7 @@ export const coronariasOclusaoEs: Record<string, string> = {
   "Complemento objetivo": "Complemento objetivo",
   "O que ainda falta. PAS, FC, SpO₂ e ritmo o app já tem.":
     "Lo que aún falta. PAS, FC, SpO₂ y ritmo la app ya los tiene.",
-  "Pressão diastólica": "Presión diastólica",
+  "Pressão diastólica (o número de baixo)": "Presión diastólica (el número de abajo)",
   "Exame direcionado": "Examen dirigido",
   "Marque o que encontrou. Pode marcar vários.": "Marque lo que encontró. Puede marcar varios.",
   "Ausculta cardíaca": "Auscultación cardíaca",

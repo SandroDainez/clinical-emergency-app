@@ -910,56 +910,23 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       // ⚠️ SEM `actions`: a dose agora mora no veredito e só aparece no verde.
       actions: [],
       vereditos: [{ id: "aas", avaliar: vereditoAas }],
-      next: "exame_complementar",
-    },
-
-    // ── TELA 2a · COMPLEMENTO OBJETIVO ───────────────────────────────────
-    //
-    // ⚠️ SÓ O QUE FALTA. A especificação pedia sliders de PAS, PAD, FC, SpO₂ e
-    // glicemia — mas PAS, FC, SpO₂ e ritmo JÁ foram colhidos nos blocos de
-    // ameaça, e reperguntar é o defeito que este padrão inteiro existe para
-    // eliminar. Restam dois números.
-    //
-    // ⚠️ A GLICEMIA SAIU (decisão do autor, 2026-08-25): ela não é gate de
-    // fibrinólise coronariana — isso é do AVC — e não muda nenhuma decisão
-    // deste módulo neste ponto. Coletar número que não muda conduta é ruído
-    // numa tela de emergência.
-    exame_complementar: {
-      id: "exame_complementar",
-      type: "input",
-      title: "Complemento objetivo",
-      intro: "O que ainda falta. PAS, FC, SpO₂ e ritmo o app já tem.",
-      fields: [
-        {
-          id: "pad",
-          label: "Pressão diastólica",
-          unit: "mmHg",
-          optional: true,
-          customKeyboard: "numeric",
-          presets: [
-            { value: "50", label: "50" }, { value: "60", label: "60" },
-            { value: "70", label: "70" }, { value: "80", label: "80" },
-            { value: "90", label: "90" }, { value: "100", label: "100" },
-          ],
-        },
-        {
-          id: "fr",
-          label: "Frequência respiratória",
-          // ⚠️ "rpm", não "irpm": a faixa central da grandeza já declara essa
-          // unidade e outros módulos a usam. Duas unidades para a mesma
-          // grandeza no mesmo app é como um número passa a ser lido errado.
-          unit: "rpm",
-          optional: true,
-          customKeyboard: "numeric",
-          presets: [
-            { value: "12", label: "12" }, { value: "16", label: "16" },
-            { value: "20", label: "20" }, { value: "28", label: "28" },
-            { value: "36", label: "36" },
-          ],
-        },
-      ],
       next: "exame_direcionado",
     },
+
+    // ⚠️ A TELA 2a ("COMPLEMENTO OBJETIVO") FOI REMOVIDA em 2026-08-25.
+    //
+    // Ela existia para coletar PAD e FR — dois números que a especificação
+    // pedia e que eu pus numa tela própria sem olhar onde os seus pares já
+    // estavam. O autor apontou o absurdo: a PA é UMA medida, lida de uma vez
+    // no monitor, e o app pedia a sistólica no bloco de circulação e a
+    // diastólica CINCO PASSOS adiante.
+    //
+    // Cada número voltou para o exame a que pertence:
+    //   · PAD → bloco de Circulação, ao lado da PAS
+    //   · FR  → bloco de Respiração, ao lado da SpO₂ e do esforço
+    //
+    // ⚠️ E A TELA INTEIRA DEIXOU DE EXISTIR — não foi renomeada nem esvaziada.
+    // Um passo a menos no caminho crítico, sem perder um único dado.
 
     // ── TELA 2b · EXAME DIRECIONADO ──────────────────────────────────────
     //
