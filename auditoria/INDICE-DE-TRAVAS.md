@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**78 de 95 travas com declaração completa.**
+**79 de 96 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -67,6 +67,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o bloqueio do nitrato por inibidor de PDE-5 seja decidido pela JANELA DO FÁRMACO contra o horário da última dose — e que nenhuma forma de "não sei" (qual fármaco, quando, ou se usou) vire liberação.
 - **NÃO PROMETE:** que as janelas em horas estejam certas — elas são a ACC/AHA 2025 e são decisão clínica do autor, não desta trava. Nem o roteamento das telas (`test:dose-governada`) nem a alcançabilidade da pergunta.
 - **UNIVERSO:** `lib/pde5.ts`, `lib/vereditos-sca.ts` e os campos da árvore. ── A MODELAGEM ERRADA QUE ESTA TRAVA IMPEDE DE VOLTAR ────────────────────── Eu havia proposto uma categoria `pde5_cronico` = "contraindicação PERMANENTE enquanto o paciente estiver em uso", tirada do texto do próprio módulo. O autor barrou antes da implementação: "A ACC/AHA 2025 fala em evitar nitratos após uso recente: 12 h avanafil, 24 h sildenafil/vardenafil, 48 h tadalafil. Ela não cria uma categoria separada de uso crônico = contraindicação permanente. A lógica deve continuar baseada em fármaco + horário da última dose." ⚠️ A DIFERENÇA NÃO É DE RÓTULO. "Permanente" era inferência minha promovida a regra — e uma vez escrita no app, viraria fonte para quem lesse. O uso habitual muda a PROBABILIDADE de existir dose dentro da janela; não abole a janela. Quem parou o fármaco há 30 h não tem contraindicação por esta via, e a regra "para sempre" negaria nitrato a esse paciente. ── E O QUE NUNCA PODE VIRAR LIBERAÇÃO ────────────────────────────────────── Sem o fármaco, a janela aplicável é desconhecida: adotar a mais curta liberaria tadalafila às 13 h. Sem o horário, não há o que comparar. Nos dois casos o app não demonstrou segurança — e ausência de prova nunca é prova de ausência. A única afirmação segura sem saber o fármaco é passadas 48 h.
+
+## `test:sca-v2` → `scripts/valida-sca-v2.cjs`
+
+- **PROMETE:** que a SCA V2 nasça AO LADO da V1 sem tocá-la; que reutilize a camada de segurança em vez de reescrevê-la; que as três decisões existam e sejam alcançáveis; que `supra_inferior` seja DERIVADO e não perguntado; e que nenhum estado de dúvida vire conclusão — nem no ECG nem na reperfusão.
+- **NÃO PROMETE:** que o conteúdo clínico da V2 esteja completo — ela implementa só o caminho crítico, e os terminais dizem isso. Nem o comportamento de tela (`test:e2e`), nem as janelas do PDE-5 (`test:pde5-janela`), nem a governança de dose (`test:dose-governada`), que valem para as duas árvores.
+- **UNIVERSO:** `coronary-v2-decision-tree.ts`, o motor e as libs compartilhadas. ── POR QUE UMA V2 EXISTE ─────────────────────────────────────────────────── A V1 ficou segura e estruturalmente errada ao mesmo tempo. Decisão do autor, 2026-08-26: "não quero continuar remodelando a árvore atual nó por nó — o problema é que estávamos tentando transformar a árvore em algo que ela não nasceu para ser". A unidade deixa de ser "Passo 17 de 95" e passa a ser a decisão clínica. Mas a camada de segurança — vereditos, janela do PDE-5, dose governada, marcos temporais, retomada — é herança da V1 e entra INTEIRA, por reutilização. ── O QUE ESTA TRAVA IMPEDE ───────────────────────────────────────────────── 1. Que a V2 duplique lógica clínica em vez de consumir as libs. Duas cópias da mesma regra divergem em silêncio, e a que estiver errada é a que decide. 2. Que a V1 seja tocada enquanto a V2 não estiver aprovada. 3. Que `supra_inferior` volte a ser CAMPO — foi a repergunta que o autor encontrou testando no celular, e a razão de a V2 existir. 4. Que "não sei" no ECG caia no ramo sem supra, ou que "não consegui avaliar" a reperfusão vire falha. Desconhecido ≠ negativo E ≠ positivo.
 
 ## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
 
@@ -674,7 +680,8 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:pde5-janela, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:pde5-janela, test:sca-v2, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary-v2` | ✅ | — | 10/23 (43%) | test:sca-v2 |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |

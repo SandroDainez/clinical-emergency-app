@@ -145,6 +145,14 @@ const PT_BR: Record<string, readonly string[]> = {
     "infarto", "iam", "sca", "síndrome coronariana", "supra de st",
     "angina", "dor torácica", "troponina", "cateterismo", "stemi",
   ],
+  // ⚠️ SINÔNIMOS QUE NÃO REPETEM O TÍTULO. A busca do hub precisa distinguir a
+  // V2 da V1 pelo que ela FAZ de diferente — decisões numeradas, ECG guiado,
+  // caminho crítico —, senão as duas competem pelos mesmos termos e o médico
+  // não sabe qual abriu.
+  "sindromes-coronarianas-v2": [
+    "coronariana v2", "iam v2", "sca v2", "por decisões", "decisão 1",
+    "ecg guiado", "porta-balão", "icp 120 minutos", "caminho crítico", "nova versão",
+  ],
   tep: [
     "tep", "embolia pulmonar", "tromboembolismo", "trombo",
     "d-dímero", "angiotc de tórax", "trombólise pulmonar", "cor pulmonale agudo",
@@ -281,6 +289,10 @@ const ES_419: Record<string, readonly string[]> = {
   "sindromes-coronarianas": [
     "infarto", "iam", "sca", "síndrome coronario", "elevación del st",
     "angina", "dolor torácico", "troponina", "cateterismo", "stemi",
+  ],
+  "sindromes-coronarianas-v2": [
+    "coronario v2", "iam v2", "sca v2", "por decisiones", "decisión 1",
+    "ecg guiado", "puerta-balón", "icp 120 minutos", "camino crítico", "nueva versión",
   ],
   tep: [
     "tep", "embolia pulmonar", "tromboembolismo", "trombo",

@@ -9,6 +9,7 @@ import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculato
 import RsiFlowScreen from "./protocol-screen/rsi-flow-screen";
 import AvcFlowScreen from "./protocol-screen/avc-flow-screen";
 import CoronaryFlowScreen from "./protocol-screen/coronary-flow-screen";
+import CoronaryV2FlowScreen from "./protocol-screen/coronary-v2-flow-screen";
 import SepsisFlowScreen from "./protocol-screen/sepsis-flow-screen";
 import EapFlowScreen from "./protocol-screen/eap-flow-screen";
 import DkaHhsFlowScreen from "./protocol-screen/dka-hhs-flow-screen";
@@ -73,6 +74,7 @@ export default function ClinicalApp({
   const isAnafilaxiaModule = protocolId === "anafilaxia";
   const isAvcModule = protocolId === "acidente_vascular_cerebral";
   const isCoronaryModule = protocolId === "sindromes_coronarianas";
+  const isCoronaryV2Module = protocolId === "sindromes_coronarianas_v2";
   const isTepModule = protocolId === "tromboembolia_pulmonar";
   const isEclampsiaModule = protocolId === "pre_eclampsia_eclampsia";
   const isSedationModule = protocolId === "sedoanalgesia";
@@ -244,6 +246,10 @@ export default function ClinicalApp({
 
   if (isCoronaryModule) {
     return <CoronaryFlowScreen />;
+  }
+
+  if (isCoronaryV2Module) {
+    return <CoronaryV2FlowScreen />;
   }
 
   if (isSepsisModule) {

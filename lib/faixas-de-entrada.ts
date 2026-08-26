@@ -202,6 +202,17 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // errado para quem tomou há cinco dias — e o app estaria mostrando um dado
   // que não foi informado.
   pde5_horas: { min: 0, max: 168, passo: 1, unidade: "h" },
+  // ── SCA V2 ──────────────────────────────────────────────────────────────
+  //
+  // Minutos desde o início dos sintomas. A janela que decide é a de 12 h (720
+  // min); o teto de 48 h existe para o apresentador tardio, cuja conduta é
+  // outra mas cujo tempo continua sendo um dado — e clampar aqui exibiria um
+  // número que ninguém informou.
+  tempo_dor: { min: 0, max: 2880, passo: 5, unidade: "min" },
+  // Minutos desde o bolus do fibrinolítico. A janela é 60–90 min, então o
+  // passo é de 5: com passo maior, 58 e 62 min ficariam indistinguíveis na
+  // borda em que a reavaliação começa a valer.
+  tnk_ha_min: { min: 0, max: 360, passo: 5, unidade: "min" },
   na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
   cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
   k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },

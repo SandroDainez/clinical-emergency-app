@@ -3,9 +3,9 @@
 > Gerado por `node scripts/auditoria-maquinas-estado.cjs`. Nenhum código alterado.
 > Analisa ESTRUTURA do grafo, não conduta clínica.
 
-- Árvores analisadas: **20**
+- Árvores analisadas: **21**
 - Erros estruturais: **0**
-- Avisos: **21**
+- Avisos: **24**
 
 ## Visão por árvore
 
@@ -13,6 +13,7 @@
 |---|---:|---:|---:|---:|
 | coronary-decision-tree (coronaryDecisionTree) | 95 | 95 | 9 | 13 |
 | ira-decision-tree (iraDecisionTree) | 74 | 74 | 8 | 7 |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | 23 | 23 | 1 | 3 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
@@ -36,9 +37,9 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 21 |
+| escolha-sem-efeito | aviso | 24 |
 
-### escolha-sem-efeito (21)
+### escolha-sem-efeito (24)
 
 | árvore | nó | detalhe |
 |---|---|---|
@@ -56,6 +57,9 @@
 | coronary-decision-tree (coronaryDecisionTree) | `ecg_padroes_wellens` | opções wellens_a, wellens_b levam todas a "wellens_conduta" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `nste_trop` | opções positivo, negativo_alto_risco levam todas a "nste_risco_criterios" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `nste_risco_manual` | opções alto, intermediario levam todas a "nste_invasiva_precoce" — a escolha não muda o fluxo |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_territorio` | opções anterior, lateral, posterior, indeterminado levam todas a "v2_decisao2" — a escolha não muda o fluxo |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_vd` | opções sim, nao, nao_registrei levam todas a "v2_decisao2" — a escolha não muda o fluxo |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_d2_ajuda` | opções nao, indeterminado levam todas a "v2_decisao3" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `motivo_de_entrada` | opções creatinina, eletrolitico, critico, incidental levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `entrada_dados` | opções lab, diurese, sinais, so_paciente levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `atalhos` | opções k, nao_sei levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |

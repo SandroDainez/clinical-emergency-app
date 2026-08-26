@@ -46,6 +46,7 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   anafilaxia: "Anafilaxia",
   avc: "AVC",
   "sindromes-coronarianas": "CORONARIANA",
+  "sindromes-coronarianas-v2": "CORONARIANA",
   tep: "TEP",
   "pre-eclampsia": "PE / Eclâmpsia",
   "calculadoras-clinicas": "Calculadoras",

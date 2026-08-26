@@ -120,6 +120,26 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     engine: criarEngineDeRegistro("sindromes_coronarianas", "Síndromes coronarianas")
   },
   {
+    /**
+     * ⚠️ SCA V2 — ROTA PARALELA, NÃO SUBSTITUIÇÃO (2026-08-26).
+     *
+     * A V1 (`sindromes-coronarianas`) continua completa, publicada e intacta.
+     * Esta entrada existe para comparar as duas no telefone e para o rollback
+     * ser trivial: some a linha, some o módulo. Quando a V2 for aprovada, ela
+     * toma o lugar da V1 — e não antes.
+     *
+     * A V2 só implementa o CAMINHO CRÍTICO (entrada → ECG → STEMI → ICP ou
+     * fibrinólise → reavaliação). Ramo sem supra, complicações e alta seguem
+     * apenas na V1, e o próprio fluxo diz isso ao chegar neles.
+     */
+    id: "sindromes-coronarianas-v2",
+    title: "Coronarianas · V2",
+    description:
+      "Caminho crítico por decisões",
+    route: "/modulos/sindromes-coronarianas-v2",
+    engine: criarEngineDeRegistro("sindromes_coronarianas_v2", "Coronarianas · V2")
+  },
+  {
     id: "ritmos-acls",
     title: "Ritmos de Parada",
     description:
