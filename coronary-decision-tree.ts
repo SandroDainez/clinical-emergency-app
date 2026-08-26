@@ -59,8 +59,9 @@ import {
   WELLENS_NUNCA_ERGOMETRICO,
 } from "./lib/oclusao-sem-supra";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_IAM } from "./lib/tenecteplase";
-import { vereditoAas, vereditoBetabloqueador, vereditoNitrato } from "./lib/vereditos-sca";
+import { vereditoAas, vereditoBetabloqueador, vereditoMorfina, vereditoNitrato } from "./lib/vereditos-sca";
 import { alertaDoEcg, FONTE_ECG_10MIN } from "./lib/ecg-tempo";
+import { ROTULO_PDE5 } from "./lib/pde5";
 import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
@@ -648,6 +649,54 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          // ⚠️ SÓ APARECE PARA QUEM USOU. `showIf` nasceu nesta rodada: a
+          // pergunta "qual inibidor?" para quem respondeu "não" é ruído, e
+          // ruído numa tela clínica empurra o que importa para fora da dobra.
+          //
+          // ⚠️ E "NÃO SEI QUAL" NÃO LIBERA. Sem o fármaco, a janela aplicável é
+          // desconhecida; adotar a mais curta liberaria tadalafila às 13 h. Ver
+          // `lib/pde5.ts`.
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          // ⚠️ OPCIONAL, e isso NÃO afrouxa nada. Sem o fármaco `lerPde5`
+          // devolve "indeterminado" e o nitrato continua 🔴 — o que muda é que
+          // a TELA não trava. A Tela 1b vem antes do ABCD: um campo obrigatório
+          // ali seguraria a avaliação de gravidade por causa de um dado de
+          // farmacologia. Ação bloqueada ≠ fluxo bloqueado.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: ROTULO_PDE5.sildenafila },
+            { value: "tadalafila", label: ROTULO_PDE5.tadalafila },
+            { value: "vardenafila", label: ROTULO_PDE5.vardenafila },
+            { value: "avanafila", label: ROTULO_PDE5.avanafila },
+            { value: "nao_sei_qual", label: ROTULO_PDE5.nao_sei_qual },
+          ],
+        },
+        {
+          // A janela é contada daqui. Sem horário não há o que comparar, e o
+          // veredito bloqueia dizendo exatamente isso — nunca "liberado".
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          // Mesma razão do campo acima: sem horário o veredito bloqueia o
+          // nitrato dizendo que a janela não pôde ser aplicada, e o
+          // atendimento segue.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
+          ],
+        },
+        {
           // ⚠️ CHECKLIST, NÃO ESCOLHA ÚNICA. "Dor retroesternal + irradiação
           // para o braço + sudorese + náusea" é UM paciente, não quatro
           // alternativas — obrigar a escolher uma descartaria o resto do
@@ -944,14 +993,22 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Manter monitorização.",
         "Seguir imediatamente para ECG/classificação.",
-        MORFINA_TETO,
+        // ⚠️ A DOSE DA MORFINA SAIU DAQUI (2026-08-26) e vive em
+        // `vereditoMorfina`. Ela era impressa solta em três telas, com as
+        // contraindicações como prosa ao lado — o mesmo arranjo que os
+        // vereditos eliminaram para o nitrato e o betabloqueador na Rodada 1, e
+        // que sobreviveu na morfina porque `test:dose-governada` cobria dois
+        // fármacos e chamava a regra de cumprida.
         "Acelerar a estratégia de reperfusão/invasiva assim que o padrão de ECG for reconhecido.",
       ],
       // ⚠️ A DOSE SAIU DAQUI E FOI PARA O VEREDITO (2026-08-26, achado do
       // autor no celular): este nó imprimia dose de nitrato sem checagem, e é
       // alcançado ANTES da tela que perguntava as contraindicações. O app
       // mandava administrar e só depois perguntava se podia.
-      vereditos: [{ id: "nitrato", avaliar: vereditoNitrato }],
+      vereditos: [
+        { id: "nitrato", avaliar: vereditoNitrato },
+        { id: "morfina", avaliar: vereditoMorfina },
+      ],
       porque: [NITRATO_ALERTAS_SCA, NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, MORFINA_CONTRAINDICACOES],
       next: "ecg",
     },
@@ -1194,6 +1251,54 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
             { value: "nao", label: "Não" },
             { value: "sim", label: "Sim" },
             { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
+          // ⚠️ SÓ APARECE PARA QUEM USOU. `showIf` nasceu nesta rodada: a
+          // pergunta "qual inibidor?" para quem respondeu "não" é ruído, e
+          // ruído numa tela clínica empurra o que importa para fora da dobra.
+          //
+          // ⚠️ E "NÃO SEI QUAL" NÃO LIBERA. Sem o fármaco, a janela aplicável é
+          // desconhecida; adotar a mais curta liberaria tadalafila às 13 h. Ver
+          // `lib/pde5.ts`.
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          // ⚠️ OPCIONAL, e isso NÃO afrouxa nada. Sem o fármaco `lerPde5`
+          // devolve "indeterminado" e o nitrato continua 🔴 — o que muda é que
+          // a TELA não trava. A Tela 1b vem antes do ABCD: um campo obrigatório
+          // ali seguraria a avaliação de gravidade por causa de um dado de
+          // farmacologia. Ação bloqueada ≠ fluxo bloqueado.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: ROTULO_PDE5.sildenafila },
+            { value: "tadalafila", label: ROTULO_PDE5.tadalafila },
+            { value: "vardenafila", label: ROTULO_PDE5.vardenafila },
+            { value: "avanafila", label: ROTULO_PDE5.avanafila },
+            { value: "nao_sei_qual", label: ROTULO_PDE5.nao_sei_qual },
+          ],
+        },
+        {
+          // A janela é contada daqui. Sem horário não há o que comparar, e o
+          // veredito bloqueia dizendo exatamente isso — nunca "liberado".
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          // Mesma razão do campo acima: sem horário o veredito bloqueia o
+          // nitrato dizendo que a janela não pôde ser aplicada, e o
+          // atendimento segue.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
           ],
         },
 
@@ -1756,6 +1861,54 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          // ⚠️ SÓ APARECE PARA QUEM USOU. `showIf` nasceu nesta rodada: a
+          // pergunta "qual inibidor?" para quem respondeu "não" é ruído, e
+          // ruído numa tela clínica empurra o que importa para fora da dobra.
+          //
+          // ⚠️ E "NÃO SEI QUAL" NÃO LIBERA. Sem o fármaco, a janela aplicável é
+          // desconhecida; adotar a mais curta liberaria tadalafila às 13 h. Ver
+          // `lib/pde5.ts`.
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          // ⚠️ OPCIONAL, e isso NÃO afrouxa nada. Sem o fármaco `lerPde5`
+          // devolve "indeterminado" e o nitrato continua 🔴 — o que muda é que
+          // a TELA não trava. A Tela 1b vem antes do ABCD: um campo obrigatório
+          // ali seguraria a avaliação de gravidade por causa de um dado de
+          // farmacologia. Ação bloqueada ≠ fluxo bloqueado.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: ROTULO_PDE5.sildenafila },
+            { value: "tadalafila", label: ROTULO_PDE5.tadalafila },
+            { value: "vardenafila", label: ROTULO_PDE5.vardenafila },
+            { value: "avanafila", label: ROTULO_PDE5.avanafila },
+            { value: "nao_sei_qual", label: ROTULO_PDE5.nao_sei_qual },
+          ],
+        },
+        {
+          // A janela é contada daqui. Sem horário não há o que comparar, e o
+          // veredito bloqueia dizendo exatamente isso — nunca "liberado".
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          // Mesma razão do campo acima: sem horário o veredito bloqueia o
+          // nitrato dizendo que a janela não pôde ser aplicada, e o
+          // atendimento segue.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -1810,6 +1963,54 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          // ⚠️ SÓ APARECE PARA QUEM USOU. `showIf` nasceu nesta rodada: a
+          // pergunta "qual inibidor?" para quem respondeu "não" é ruído, e
+          // ruído numa tela clínica empurra o que importa para fora da dobra.
+          //
+          // ⚠️ E "NÃO SEI QUAL" NÃO LIBERA. Sem o fármaco, a janela aplicável é
+          // desconhecida; adotar a mais curta liberaria tadalafila às 13 h. Ver
+          // `lib/pde5.ts`.
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          // ⚠️ OPCIONAL, e isso NÃO afrouxa nada. Sem o fármaco `lerPde5`
+          // devolve "indeterminado" e o nitrato continua 🔴 — o que muda é que
+          // a TELA não trava. A Tela 1b vem antes do ABCD: um campo obrigatório
+          // ali seguraria a avaliação de gravidade por causa de um dado de
+          // farmacologia. Ação bloqueada ≠ fluxo bloqueado.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: ROTULO_PDE5.sildenafila },
+            { value: "tadalafila", label: ROTULO_PDE5.tadalafila },
+            { value: "vardenafila", label: ROTULO_PDE5.vardenafila },
+            { value: "avanafila", label: ROTULO_PDE5.avanafila },
+            { value: "nao_sei_qual", label: ROTULO_PDE5.nao_sei_qual },
+          ],
+        },
+        {
+          // A janela é contada daqui. Sem horário não há o que comparar, e o
+          // veredito bloqueia dizendo exatamente isso — nunca "liberado".
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          // Mesma razão do campo acima: sem horário o veredito bloqueia o
+          // nitrato dizendo que a janela não pôde ser aplicada, e o
+          // atendimento segue.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -1845,6 +2046,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       vereditos: [
         { id: "nitrato", avaliar: vereditoNitrato },
         { id: "betabloqueador", avaliar: vereditoBetabloqueador },
+        { id: "morfina", avaliar: vereditoMorfina },
       ],
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
@@ -1855,7 +2057,12 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
         "Nitrato e morfina só se necessário — dose abaixo, contraindicações valem para os dois:",
         NITRATO_MONITORIZACAO,
-        MORFINA_TETO,
+        // ⚠️ A DOSE DA MORFINA SAIU DAQUI (2026-08-26) e vive em
+        // `vereditoMorfina`. Ela era impressa solta em três telas, com as
+        // contraindicações como prosa ao lado — o mesmo arranjo que os
+        // vereditos eliminaram para o nitrato e o betabloqueador na Rodada 1, e
+        // que sobreviveu na morfina porque `test:dose-governada` cobria dois
+        // fármacos e chamava a regra de cumprida.
         "Contraindicações do nitrato e da morfina — quando NÃO usar:",
         NITRATO_ALERTAS_SCA,
         VD_CONTRAINDICA_PRE_CARGA,
@@ -2633,6 +2840,54 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          // ⚠️ SÓ APARECE PARA QUEM USOU. `showIf` nasceu nesta rodada: a
+          // pergunta "qual inibidor?" para quem respondeu "não" é ruído, e
+          // ruído numa tela clínica empurra o que importa para fora da dobra.
+          //
+          // ⚠️ E "NÃO SEI QUAL" NÃO LIBERA. Sem o fármaco, a janela aplicável é
+          // desconhecida; adotar a mais curta liberaria tadalafila às 13 h. Ver
+          // `lib/pde5.ts`.
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          // ⚠️ OPCIONAL, e isso NÃO afrouxa nada. Sem o fármaco `lerPde5`
+          // devolve "indeterminado" e o nitrato continua 🔴 — o que muda é que
+          // a TELA não trava. A Tela 1b vem antes do ABCD: um campo obrigatório
+          // ali seguraria a avaliação de gravidade por causa de um dado de
+          // farmacologia. Ação bloqueada ≠ fluxo bloqueado.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: ROTULO_PDE5.sildenafila },
+            { value: "tadalafila", label: ROTULO_PDE5.tadalafila },
+            { value: "vardenafila", label: ROTULO_PDE5.vardenafila },
+            { value: "avanafila", label: ROTULO_PDE5.avanafila },
+            { value: "nao_sei_qual", label: ROTULO_PDE5.nao_sei_qual },
+          ],
+        },
+        {
+          // A janela é contada daqui. Sem horário não há o que comparar, e o
+          // veredito bloqueia dizendo exatamente isso — nunca "liberado".
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          // Mesma razão do campo acima: sem horário o veredito bloqueia o
+          // nitrato dizendo que a janela não pôde ser aplicada, e o
+          // atendimento segue.
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -2659,6 +2914,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       vereditos: [
         { id: "nitrato", avaliar: vereditoNitrato },
         { id: "betabloqueador", avaliar: vereditoBetabloqueador },
+        { id: "morfina", avaliar: vereditoMorfina },
       ],
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
@@ -2680,7 +2936,12 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         BETABLOQUEADOR_CONTRAINDICACAO,
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
         "Morfina só se dor refratária apesar de anti-isquêmico otimizado:",
-        MORFINA_TETO,
+        // ⚠️ A DOSE DA MORFINA SAIU DAQUI (2026-08-26) e vive em
+        // `vereditoMorfina`. Ela era impressa solta em três telas, com as
+        // contraindicações como prosa ao lado — o mesmo arranjo que os
+        // vereditos eliminaram para o nitrato e o betabloqueador na Rodada 1, e
+        // que sobreviveu na morfina porque `test:dose-governada` cobria dois
+        // fármacos e chamava a regra de cumprida.
         MORFINA_CONTRAINDICACOES,
       ],
       next: "reavaliacao_pos_intervencao",

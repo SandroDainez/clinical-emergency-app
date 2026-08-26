@@ -760,6 +760,19 @@ export type InputField = {
   /** Campo opcional não bloqueia o "continuar". */
   optional?: boolean;
   /**
+   * Só mostra o campo quando a condição vale.
+   *
+   * ⚠️ EXISTE PORQUE PERGUNTA IRRELEVANTE É RUÍDO, e ruído numa tela clínica
+   * não é neutro: ele empurra o que importa para fora da dobra e ensina a
+   * passar o olho. "Qual inibidor de PDE-5?" para quem respondeu "não usou" é
+   * o caso que motivou o campo.
+   *
+   * O motor filtra ANTES de calcular `canContinue` e antes de entregar os
+   * campos à tela — campo oculto não cobra resposta. Sem isso o botão diria
+   * "Falta 1 campo" apontando para algo que não está desenhado.
+   */
+  showIf?: (values: TreeValues) => boolean;
+  /**
    * Checklist: o campo aceita VÁRIOS presets marcados ao mesmo tempo.
    *
    * ⚠️ POR QUE ISTO FALTAVA (2026-08-25): todo preset era mutuamente

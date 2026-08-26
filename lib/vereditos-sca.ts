@@ -2,6 +2,8 @@ import type { TreeValues, Veredito } from "../core/decision-tree/types";
 import { BETABLOQUEADOR_AGUDO_DOSE, BETABLOQUEADOR_INDICACAO } from "./betabloqueador-agudo";
 import { NITRATO_DOSE_IV, NITRATO_DOSE_SL, NITRATO_DOSE_SL_ALTERNATIVA } from "./nitrato-dose";
 import { temAlgum } from "../core/decision-tree/estado-clinico";
+import { JANELA_PDE5_DESCONHECIDA_H, lerPde5 } from "./pde5";
+import { MORFINA_TETO } from "./morfina-dispneia";
 
 /**
  * VEREDITOS DA SCA — nitrato, AAS e betabloqueador.
@@ -103,17 +105,38 @@ export function vereditoNitrato(v: TreeValues): Veredito {
   //
   // Tratar ausência de resposta como ausência de contraindicação era o defeito:
   // o app liberava a dose sobre um dado que nunca teve.
-  if (v.pde5_recente === "sim") {
-    return { nivel: "vermelho", titulo, motivo: "Uso recente de inibidor de PDE-5 — risco de hipotensão grave." };
+  //
+  // ⚠️ A JANELA É POR FÁRMACO, NÃO UM "SIM/NÃO" (correção do autor,
+  // 2026-08-26). Eu havia proposto tratar uso habitual como contraindicação
+  // permanente; a ACC/AHA 2025 não cria essa categoria — ela dá janelas
+  // (12 h avanafila · 24 h sildenafila/vardenafila · 48 h tadalafila). Ver
+  // `lib/pde5.ts` para por que "permanente" teria sido inferência minha
+  // promovida a regra.
+  const pde5 = lerPde5(v);
+  if (pde5.estado === "nao_perguntado") {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo: "Uso de inibidor de PDE-5 ainda não verificado — pergunte antes de administrar.",
+    };
   }
-  if (v.pde5_recente === undefined || v.pde5_recente === "nao_sei") {
+  if (pde5.estado === "dentro_da_janela") {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo: `Última dose de inibidor de PDE-5 há ${pde5.desdeUltimaDoseH} h — dentro da janela de ${pde5.janelaH} h.`,
+    };
+  }
+  if (pde5.estado === "indeterminado") {
     return {
       nivel: "vermelho",
       titulo,
       motivo:
-        v.pde5_recente === undefined
-          ? "Uso de inibidor de PDE-5 ainda não verificado — pergunte antes de administrar."
-          : "Uso de inibidor de PDE-5 não afastado.",
+        pde5.falta === "horario"
+          ? "Usou inibidor de PDE-5 e o horário da última dose não foi determinado — a janela não pode ser aplicada."
+          : pde5.falta === "farmaco"
+            ? `Fármaco não identificado e última dose há ${pde5.desdeUltimaDoseH} h — abaixo das ${JANELA_PDE5_DESCONHECIDA_H} h que afastariam qualquer um deles.`
+            : "Uso de inibidor de PDE-5 não afastado.",
     };
   }
   if (suspeitaDeVd(v)) {
@@ -129,7 +152,10 @@ export function vereditoNitrato(v: TreeValues): Veredito {
   return {
     nivel: "verde",
     titulo,
-    motivo: `PAS ${v.pas} mmHg, sem contraindicação identificada.`,
+    motivo:
+      pde5.estado === "fora_da_janela"
+        ? `PAS ${v.pas} mmHg; última dose de PDE-5 há ${pde5.desdeUltimaDoseH} h, fora da janela de ${pde5.janelaH} h.`
+        : `PAS ${v.pas} mmHg, sem contraindicação identificada.`,
     // ⚠️ AS TRÊS LINHAS, NA ORDEM DE QUEM PRESCREVE NO BRASIL: o dinitrato
     // primeiro (é o que está na gaveta), a nitroglicerina SL como alternativa
     // (é o que a guideline nomeia), e a via EV para dor persistente,
@@ -232,5 +258,103 @@ export function vereditoBetabloqueador(v: TreeValues): Veredito {
     titulo,
     motivo: "Estável, sem congestão, bradicardia, BAV/PR longo ou broncoespasmo.",
     instrucao: [BETABLOQUEADOR_INDICACAO, BETABLOQUEADOR_AGUDO_DOSE],
+  };
+}
+
+
+// ── MORFINA ────────────────────────────────────────────────────────────────
+
+/**
+ * ⚠️ ESTE VEREDITO NASCEU DE UM FURO NA PRÓPRIA REGRA DE DOSE GOVERNADA
+ * (achado de 2026-08-26). A Rodada 1 tirou a dose de `actions` para o nitrato e
+ * para o betabloqueador — e a morfina ficou de fora. Em TRÊS telas o app
+ * imprimia "2–4 mg IV lento, repetível a cada 5–15 min, teto 10–15 mg" solto na
+ * lista, com as contraindicações como prosa ao lado, que é exatamente o arranjo
+ * que os vereditos existem para eliminar. `test:dose-governada` cobria dois
+ * fármacos e chamava a regra de cumprida.
+ *
+ * A formulação do autor não menciona nome de fármaco: "nenhuma dose acionável
+ * pode ser apresentada antes de o app ter avaliado e liberado as
+ * contraindicações relevantes para aquele medicamento".
+ *
+ * ── POR QUE NUNCA HÁ VERDE AUTOMÁTICO ──────────────────────────────────────
+ *
+ * O app deriva quatro das cinco contraindicações escritas no módulo —
+ * hipotensão, hipoperfusão, rebaixamento de consciência e VD. A quinta,
+ * INSUFICIÊNCIA RESPIRATÓRIA COM RETENÇÃO DE CO₂ OU DPOC, não é derivável do
+ * que se coletou: não existe campo para ela, e inventar um valor seria o oposto
+ * do que esta camada faz.
+ *
+ * Chamar isso de verde seria o app afirmando "sem contraindicação" sobre uma
+ * contraindicação que ele não olhou. Por isso o melhor caso é AMARELO — decisão
+ * clínica explícita, com o tipo registrado —, e não porque a morfina seja
+ * proibida, mas porque a liberação depende de um dado que só o médico tem.
+ *
+ * Isso também é coerente com o texto que já estava no módulo: morfina "só se
+ * dor refratária apesar de anti-isquêmico otimizado". Nunca foi automática.
+ */
+export function vereditoMorfina(v: TreeValues): Veredito {
+  const titulo = "Morfina";
+  const pas = num(v.pas);
+
+  if (Number.isFinite(pas) && pas < 90) {
+    return { nivel: "vermelho", titulo, motivo: `PAS ${v.pas} mmHg — hipotensão contraindica a morfina.` };
+  }
+  if (v.cor_perfusao === "sim") {
+    return { nivel: "vermelho", titulo, motivo: "Sinais de hipoperfusão — instabilidade hemodinâmica contraindica a morfina." };
+  }
+  if (v.cor_consciencia === "sim") {
+    return { nivel: "vermelho", titulo, motivo: "Rebaixamento do nível de consciência — a depressão respiratória se soma ao que já existe." };
+  }
+  if (suspeitaDeVd(v)) {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo: "Suspeita de infarto de VD — a venodilatação reduz a pré-carga de que o ventrículo direito depende.",
+    };
+  }
+  // ⚠️ A DOSE NÃO PODE VIVER NO AMARELO. Descobri isto conferindo o shell:
+  // `CardDeVeredito` renderiza `instrucao` em QUALQUER nível — o comentário ao
+  // lado afirma que ela "só aparece com o veredito que a autoriza", mas quem
+  // sustenta isso é a disciplina de quem escreve o veredito, não o componente.
+  // Hoje não quebra porque só o verde define `instrucao`; pôr a dose num
+  // amarelo a imprimiria ANTES da decisão, que é o defeito de origem em forma
+  // nova. `test:dose-governada` passou a cobrar isso.
+  //
+  // Então o amarelo PERGUNTA, e só o "prosseguir" registrado produz a dose.
+  if (v.decisao_morfina === "prosseguir") {
+    return {
+      nivel: "verde",
+      titulo,
+      motivo: "Função respiratória avaliada e decisão registrada — dor refratária apesar do anti-isquêmico.",
+      instrucao: [MORFINA_TETO],
+    };
+  }
+  if (v.decisao_morfina === "nao_prosseguir" || v.decisao_morfina === "corrigir_antes") {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo:
+        v.decisao_morfina === "corrigir_antes"
+          ? "Decidido otimizar o anti-isquêmico antes — a morfina não é o próximo passo."
+          : "Decidido não administrar morfina agora.",
+    };
+  }
+  // ⚠️ AMARELO, NÃO VERDE, no melhor caso. Ver o bloco no topo: a retenção de
+  // CO₂ / DPOC não é derivável do que se coletou, e chamar de verde seria o app
+  // afirmando "sem contraindicação" sobre algo que ele não olhou.
+  return {
+    nivel: "amarelo",
+    titulo,
+    motivo:
+      "Sem contraindicação entre as que o app consegue avaliar. Falta a que ele não avalia: insuficiência respiratória grave com retenção de CO₂ ou DPOC. Morfina só se a dor persistir apesar do anti-isquêmico otimizado.",
+    decisao: {
+      campo: "decisao_morfina",
+      saidas: [
+        { tipo: "prosseguir", label: "Sem retenção de CO₂ / DPOC — administrar" },
+        { tipo: "corrigir_antes", label: "Otimizar o anti-isquêmico primeiro" },
+        { tipo: "nao_prosseguir", label: "Não administrar agora" },
+      ],
+    },
   };
 }

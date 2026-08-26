@@ -1246,4 +1246,28 @@ export const coronariasOclusaoEs: Record<string, string> = {
     "Fuente: ACC/AHA 2025 — guía de síndromes coronarios agudos.",
   "1 h ou mais": "1 h o más",
   "~40 min": "~40 min",
+  // ── Morfina governada por veredito e janela do PDE-5 (2026-08-26) ─────
+  "Qual inibidor de PDE-5?": "¿Cuál inhibidor de PDE-5?",
+  "Há quantas horas foi a última dose?": "¿Hace cuántas horas fue la última dosis?",
+  "mais de 48 h": "más de 48 h",
+  "Não sei qual": "No sé cuál",
+  "ACC/AHA 2025 — evitar nitrato após uso recente de inibidor de PDE-5.":
+    "ACC/AHA 2025 — evitar nitrato tras uso reciente de inhibidor de PDE-5.",
+  "Usou inibidor de PDE-5 e o horário da última dose não foi determinado — a janela não pode ser aplicada.":
+    "Usó inhibidor de PDE-5 y no se determinó la hora de la última dosis — no se puede aplicar la ventana.",
+  "Sinais de hipoperfusão — instabilidade hemodinâmica contraindica a morfina.":
+    "Signos de hipoperfusión — la inestabilidad hemodinámica contraindica la morfina.",
+  "Rebaixamento do nível de consciência — a depressão respiratória se soma ao que já existe.":
+    "Deterioro del nivel de conciencia — la depresión respiratoria se suma a la que ya existe.",
+  "Suspeita de infarto de VD — a venodilatação reduz a pré-carga de que o ventrículo direito depende.":
+    "Sospecha de infarto de VD — la venodilatación reduce la precarga de la que depende el ventrículo derecho.",
+  "Sem contraindicação entre as que o app consegue avaliar. Falta a que ele não avalia: insuficiência respiratória grave com retenção de CO₂ ou DPOC. Morfina só se a dor persistir apesar do anti-isquêmico otimizado.":
+    "Sin contraindicación entre las que la app puede evaluar. Falta la que no evalúa: insuficiencia respiratoria grave con retención de CO₂ o EPOC. Morfina solo si el dolor persiste pese al antiisquémico optimizado.",
+  "Sem retenção de CO₂ / DPOC — administrar": "Sin retención de CO₂ / EPOC — administrar",
+  "Otimizar o anti-isquêmico primeiro": "Optimizar primero el antiisquémico",
+  "Decidido não administrar morfina agora.": "Se decidió no administrar morfina ahora.",
+  "Decidido otimizar o anti-isquêmico antes — a morfina não é o próximo passo.":
+    "Se decidió optimizar antes el antiisquémico — la morfina no es el próximo paso.",
+  "Função respiratória avaliada e decisão registrada — dor refratária apesar do anti-isquêmico.":
+    "Función respiratoria evaluada y decisión registrada — dolor refractario pese al antiisquémico.",
 };

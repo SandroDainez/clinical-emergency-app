@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PROMETE: que nenhuma dose acionável de nitrato ou betabloqueador seja
+ * PROMETE: que nenhuma dose acionável de nitrato, betabloqueador ou morfina seja
  *   apresentada num nó que não tenha o veredito correspondente governando; que
  *   os dados necessários para liberar cada fármaco sejam perguntados ANTES da
  *   primeira oferta possível; e que dúvida nunca seja convertida em ausência de
@@ -55,6 +55,14 @@ const arv = Object.values(require(path.join(tmp, ARVORE.replace(/\.ts$/, ".js"))
 const PADROES = {
   nitrato: /(DINITRATO DE ISOSSORBIDA|NITROGLICERINA)[^.]{0,60}\d/i,
   betabloqueador: /Betabloqueador\s+—\s+SÓ EM PACIENTE SELECIONADO|Via ORAL, precoce/i,
+  // ⚠️ A MORFINA ENTROU EM 2026-08-26, e a ausência dela era o furo. Esta trava
+  // cobria dois fármacos e chamava a regra de cumprida — enquanto TRÊS telas
+  // imprimiam "MORFINA — 2–4 mg IV lento, repetível a cada 5–15 min, teto
+  // 10–15 mg" solto em `actions`, com as contraindicações como prosa ao lado.
+  // A formulação do autor não nomeia fármaco: "nenhuma dose acionável pode ser
+  // apresentada antes de o app ter avaliado e liberado as contraindicações
+  // relevantes PARA AQUELE MEDICAMENTO".
+  morfina: /MORFINA[^.]{0,40}\d\s*(–|-|a)\s*\d\s*mg/i,
 };
 
 // ── A. TODA DOSE ESTÁ GOVERNADA ────────────────────────────────────────────
@@ -91,6 +99,7 @@ linhas.push(`  A. nenhuma dose solta em \`actions\` — ${Object.keys(arv.nodes)
     nitrato: ["estabilizacao_ramo", "coronariana_isquemia_em_curso", "terapia_vereditos", "stemi_meds", "nste_meds"],
     betabloqueador: ["terapia_vereditos", "stemi_meds", "nste_meds"],
     aas: ["aas_liberado"],
+    morfina: ["coronariana_isquemia_em_curso", "stemi_meds", "nste_meds"],
   };
   for (const [f, esperados] of Object.entries(ESPERADOS)) {
     const nos = comVeredito(f);
@@ -231,6 +240,66 @@ linhas.push(`  A. nenhuma dose solta em \`actions\` — ${Object.keys(arv.nodes)
 // ── E. Vacuidade ───────────────────────────────────────────────────────────
 if (Object.keys(arv.nodes).length < 50) falhas.push("a árvore veio pequena demais — pode ter rodado sobre nada (R-15 item 9).");
 if (linhas.length < 5) falhas.push(`só ${linhas.length} linhas de evidência (R-15 item 9).`);
+
+// ── F. A INSTRUÇÃO SÓ EXISTE NO VERDE ──────────────────────────────────────
+//
+// ⚠️ ESTA CONFERÊNCIA NASCEU DE UM ACHADO NO SHELL (2026-08-26).
+// `CardDeVeredito` renderiza `veredito.instrucao` em QUALQUER nível — o
+// comentário ao lado dele afirma que ela "só aparece com o veredito que a
+// autoriza", mas quem sustenta isso é a disciplina de quem escreve o veredito,
+// não o componente. Hoje não quebra porque só os ramos verdes definem
+// `instrucao`; um amarelo com dose a imprimiria ANTES da decisão.
+//
+// O risco era concreto: `vereditoMorfina` tem o amarelo como MELHOR caso, e a
+// primeira versão que escrevi punha a dose lá dentro.
+{
+  const { vereditoNitrato, vereditoBetabloqueador, vereditoAas, vereditoMorfina } =
+    require(path.join(tmp, "lib", "vereditos-sca.js"));
+  const AVALIADORES = { nitrato: vereditoNitrato, betabloqueador: vereditoBetabloqueador, aas: vereditoAas, morfina: vereditoMorfina };
+
+  // Estados que produzem cada nível, sem depender da árvore.
+  const ESTADOS = [
+    {},
+    { pas: "130" },
+    { pas: "80" },
+    { pas: "130", pde5_recente: "nao" },
+    { pas: "130", pde5_recente: "sim", pde5_qual: "tadalafila", pde5_horas: "30" },
+    { pas: "130", pde5_recente: "nao_sei" },
+    { pas: "130", cor_perfusao: "sim" },
+    { pas: "130", cor_consciencia: "sim" },
+    { pas: "130", decisao_morfina: "prosseguir" },
+    { pas: "130", decisao_morfina: "nao_prosseguir" },
+    { pas: "130", decisao_aas: "prosseguir" },
+    { pas: "130", supra_inferior: "sim", cor_perfusao: "sim" },
+    { pas: "130", pde5_recente: "sim", pde5_qual: "sildenafila", pde5_horas: "30" },
+    { pas: "130", bb_bav: "nao", bb_broncoespasmo: "nao", pde5_recente: "nao" },
+  ];
+  let combinacoes = 0;
+  let comInstrucao = 0;
+  for (const [nome, avaliar] of Object.entries(AVALIADORES)) {
+    for (const estado of ESTADOS) {
+      const v = avaliar(estado);
+      combinacoes++;
+      if (!v.instrucao || v.instrucao.length === 0) continue;
+      comInstrucao++;
+      if (v.nivel !== "verde") {
+        falhas.push(
+          `\`veredito${nome[0].toUpperCase()}${nome.slice(1)}\` devolve \`instrucao\` no nível "${v.nivel}".\n` +
+          `      ⚠️ O shell imprime \`instrucao\` em QUALQUER nível. Uma dose num amarelo aparece ANTES\n` +
+          `      da decisão clínica; num vermelho, ao lado do próprio bloqueio. A dose só pode nascer\n` +
+          `      do ramo que a autoriza. Estado: ${JSON.stringify(estado)}`
+        );
+      }
+    }
+  }
+  if (comInstrucao === 0) {
+    falhas.push(
+      "nenhum dos estados testados produziu \`instrucao\`.\n" +
+      "      ⚠️ A conferência rodou sobre nada: ela aprovaria mesmo se a dose migrasse para o amarelo (R-15)."
+    );
+  } else ok++;
+  linhas.push(`  F. ${combinacoes} avaliações · ${comInstrucao} com dose, todas em verde`);
+}
 
 console.log("\nDose governada — nada é oferecido antes de o app poder autorizar\n");
 for (const l of linhas) console.log(l);

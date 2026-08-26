@@ -935,7 +935,12 @@ function mapInputNode(
   historico: Record<string, Medicao[]>,
   interpolate: (t: string) => string
 ): FrontendTreeStep {
-  const canContinue = node.fields.every(
+  // ⚠️ CAMPO ESCONDIDO NÃO PODE COBRAR RESPOSTA. `showIf` filtra ANTES de
+  // `canContinue` e antes de a tela desenhar: se um campo oculto entrasse na
+  // conta, o botão diria "Falta 1 campo" apontando para algo que não está na
+  // tela — o beco perfeito, sem nada para tocar.
+  const visiveis = node.fields.filter((f) => !f.showIf || f.showIf(values));
+  const canContinue = visiveis.every(
     (f) => f.optional || (rawValues[f.id] !== undefined && rawValues[f.id] !== "")
   );
   return {
@@ -944,7 +949,7 @@ function mapInputNode(
     title: interpolate(node.title),
     summary: node.summary ? interpolate(node.summary) : undefined,
     intro: node.intro ? interpolate(node.intro) : undefined,
-    fields: node.fields,
+    fields: visiveis,
     values: { ...rawValues },
     historico,
     vereditos: avaliarVereditos(node.vereditos, values, interpolate),

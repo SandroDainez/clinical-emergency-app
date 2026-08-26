@@ -193,6 +193,15 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // médico não conseguiria distinguir 8 de 12.
   fmc_min: { min: 0, max: 720, passo: 1, unidade: "min" },
   ecg_ha_min: { min: 0, max: 720, passo: 1, unidade: "min" },
+  // Horas desde a última dose de inibidor de PDE-5. As janelas são 12, 24 e 48
+  // h, então o passo é de 1 hora: com passo maior, 11 e 13 h ficariam
+  // indistinguíveis — e é exatamente aí que a decisão vira.
+  //
+  // Teto de 7 dias, bem acima da janela mais longa. Poderia ser 72 h sem mudar
+  // veredito nenhum (acima de 48 tudo libera), mas o número EXIBIDO ficaria
+  // errado para quem tomou há cinco dias — e o app estaria mostrando um dado
+  // que não foi informado.
+  pde5_horas: { min: 0, max: 168, passo: 1, unidade: "h" },
   na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
   cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
   k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },

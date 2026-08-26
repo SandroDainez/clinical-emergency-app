@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**77 de 94 travas com declaração completa.**
+**78 de 95 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -52,7 +52,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ## `test:dose-governada` → `scripts/valida-dose-governada.cjs`
 
-- **PROMETE:** que nenhuma dose acionável de nitrato ou betabloqueador seja apresentada num nó que não tenha o veredito correspondente governando; que os dados necessários para liberar cada fármaco sejam perguntados ANTES da primeira oferta possível; e que dúvida nunca seja convertida em ausência de contraindicação — nem pela ajuda.
+- **PROMETE:** que nenhuma dose acionável de nitrato, betabloqueador ou morfina seja apresentada num nó que não tenha o veredito correspondente governando; que os dados necessários para liberar cada fármaco sejam perguntados ANTES da primeira oferta possível; e que dúvida nunca seja convertida em ausência de contraindicação — nem pela ajuda.
 - **NÃO PROMETE:** que as doses estejam clinicamente certas (test:coronarias, test:farmacos) nem que os vereditos avaliem bem (test:vereditos-sca).
 - **UNIVERSO:** a árvore da SCA compilada. ── A REGRA, NA FORMULAÇÃO DO AUTOR (2026-08-26) ──────────────────────────── "Nenhuma dose acionável de medicamento pode ser apresentada antes de o app ter avaliado e liberado as contraindicações relevantes para aquele medicamento." ⚠️ E ELA NÃO É "A PALAVRA DOSE SÓ PODE EXISTIR DENTRO DE UM NÓ VEREDITO" — essa formulação literal congelaria a arquitetura. O que se proíbe é dose SOLTA e não governada; no desenho atual da SCA, `Veredito` é o mecanismo que governa, e é ele que esta trava mede. Se um dia outro mecanismo formal do motor autorizar uma ação, a regra continua valendo e a trava é que muda. ── O DEFEITO QUE ORIGINOU ────────────────────────────────────────────────── O autor percorreu o módulo no celular e viu a tela de contraindicações ("antes de nitrato e betabloqueador") aparecer no PASSO 10 — depois de o app já ter mandado dar nitrato nos passos 4 e 5. E no passo 17 a dose era impressa de novo, sem veredito nenhum. Os vereditos existiam em UM nó. Os outros quatro continuavam imprimindo dose como antes — exatamente o que eles foram feitos para eliminar.
 
@@ -61,6 +61,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o módulo de coronarianas COBRE o ECG de 12 derivações contra a meta de 10 min do primeiro contato médico — que a cobrança alcança todo caminho agudo, que ela nunca afirma um atraso que não mediu, que ela não bloqueia o atendimento e que o relógio conta do contato, não do app.
 - **NÃO PROMETE:** que a meta de 10 min esteja certa (é a ACC/AHA 2025, decisão do autor), nem que a INTERPRETAÇÃO do ECG esteja bem desenhada — isso é o nó `ecg` e a rodada seguinte, explicitamente fora daqui.
 - **UNIVERSO:** `lib/ecg-tempo.ts`, a árvore de coronarianas e o motor. ── O DEFEITO, MEDIDO ANTES DE SER CORRIGIDO ──────────────────────────────── A informação certa já estava no app. O nó `entry` listava: "ECG de 12 derivações em até 10 min da chegada" como ITEM 4 DE UMA LISTA DE 8, entre "2 acessos venosos" e "coletar troponina". Mesmo peso visual de "monitor cardíaco contínuo". Ninguém confirmava, nada registrava a hora, nada voltava a cobrar. ⚠️ E TRÊS DOS CINCO ATALHOS DO MENU PULAVAM O `entry` INTEIRO — "Já tenho o ECG na mão", "STEMI já confirmado" e "Só preciso das doses". Por esses caminhos o lembrete não existia. É o mesmo beco que deixou o PDE-5 escapar, agora no dado mais sensível ao tempo do módulo. ── O QUE ESTA TRAVA IMPEDE DE VOLTAR ─────────────────────────────────────── 1. Que um caminho agudo volte a existir sem passar pela cobrança (dominância, não enumeração: a exceção de "complicações pós-IAM" é nominal, e uma segunda exceção reprova). 2. Que a faixa afirme atraso sem âncora informada — "no prazo" para todo mundo é pior que silêncio. 3. Que a tela vire portão: paciente instável estabiliza primeiro. 4. Que o relógio volte a contar da abertura do módulo.
+
+## `test:pde5-janela` → `scripts/valida-pde5-janela.cjs`
+
+- **PROMETE:** que o bloqueio do nitrato por inibidor de PDE-5 seja decidido pela JANELA DO FÁRMACO contra o horário da última dose — e que nenhuma forma de "não sei" (qual fármaco, quando, ou se usou) vire liberação.
+- **NÃO PROMETE:** que as janelas em horas estejam certas — elas são a ACC/AHA 2025 e são decisão clínica do autor, não desta trava. Nem o roteamento das telas (`test:dose-governada`) nem a alcançabilidade da pergunta.
+- **UNIVERSO:** `lib/pde5.ts`, `lib/vereditos-sca.ts` e os campos da árvore. ── A MODELAGEM ERRADA QUE ESTA TRAVA IMPEDE DE VOLTAR ────────────────────── Eu havia proposto uma categoria `pde5_cronico` = "contraindicação PERMANENTE enquanto o paciente estiver em uso", tirada do texto do próprio módulo. O autor barrou antes da implementação: "A ACC/AHA 2025 fala em evitar nitratos após uso recente: 12 h avanafil, 24 h sildenafil/vardenafil, 48 h tadalafil. Ela não cria uma categoria separada de uso crônico = contraindicação permanente. A lógica deve continuar baseada em fármaco + horário da última dose." ⚠️ A DIFERENÇA NÃO É DE RÓTULO. "Permanente" era inferência minha promovida a regra — e uma vez escrita no app, viraria fonte para quem lesse. O uso habitual muda a PROBABILIDADE de existir dose dentro da janela; não abole a janela. Quem parou o fármaco há 30 h não tem contraindicação por esta via, e a regra "para sempre" negaria nitrato a esse paciente. ── E O QUE NUNCA PODE VIRAR LIBERAÇÃO ────────────────────────────────────── Sem o fármaco, a janela aplicável é desconhecida: adotar a mais curta liberaria tadalafila às 13 h. Sem o horário, não há o que comparar. Nos dois casos o app não demonstrou segurança — e ausência de prova nunca é prova de ausência. A única afirmação segura sem saber o fármaco é passadas 48 h.
 
 ## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
 
@@ -668,7 +674,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:pde5-janela, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
