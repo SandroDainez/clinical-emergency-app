@@ -95,8 +95,26 @@ export function vereditoNitrato(v: TreeValues): Veredito {
   if (Number.isFinite(pas) && pas < 90) {
     return { nivel: "vermelho", titulo, motivo: `PAS ${v.pas} mmHg — abaixo de 90, o limiar da própria dose.` };
   }
+  // ⚠️ DESCONHECIDO NÃO É NEGATIVO (regra do autor, 2026-08-26). `undefined`
+  // aqui significa "ninguém perguntou ainda", e `nao_sei` significa "perguntei
+  // e ele não sabe" — nos dois casos o app NÃO demonstrou que o nitrato é
+  // seguro, e a nitroglicerina com PDE-5 recente causa hipotensão refratária,
+  // que é uma das poucas coisas que a dor torácica pode piorar até a morte.
+  //
+  // Tratar ausência de resposta como ausência de contraindicação era o defeito:
+  // o app liberava a dose sobre um dado que nunca teve.
   if (v.pde5_recente === "sim") {
     return { nivel: "vermelho", titulo, motivo: "Uso recente de inibidor de PDE-5 — risco de hipotensão grave." };
+  }
+  if (v.pde5_recente === undefined || v.pde5_recente === "nao_sei") {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo:
+        v.pde5_recente === undefined
+          ? "Uso de inibidor de PDE-5 ainda não verificado — pergunte antes de administrar."
+          : "Uso de inibidor de PDE-5 não afastado.",
+    };
   }
   if (suspeitaDeVd(v)) {
     return {

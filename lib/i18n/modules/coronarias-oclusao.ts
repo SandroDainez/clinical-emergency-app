@@ -34,6 +34,10 @@ export const coronariasOclusaoEs: Record<string, string> = {
   "NITROGLICERINA IV — iniciar a 10 mcg/min e titular conforme os sintomas e a tolerância hemodinâmica (ACC/AHA 2025). ⚠️ NÃO administrar IV direto: diluir e infundir em bomba. Concentração, diluição e mL/h na calculadora de drogas vasoativas — fonte única.":
     "NITROGLICERINA IV — iniciar a 10 mcg/min y titular según los síntomas y la tolerancia hemodinámica (ACC/AHA 2025). ⚠️ NO administrar IV directo: diluir e infundir en bomba. Concentración, dilución y mL/h en la calculadora de drogas vasoactivas — fuente única.",
   "Abrir calculadora — nitroglicerina EV": "Abrir calculadora — nitroglicerina EV",
+  "Uso de inibidor de PDE-5 ainda não verificado — pergunte antes de administrar.":
+    "Uso de inhibidor de PDE-5 aún no verificado — pregunte antes de administrar.",
+  "Uso de inibidor de PDE-5 não afastado.": "Uso de inhibidor de PDE-5 no descartado.",
+  "Ainda não consegui determinar": "Aún no pude determinar",
   "Antes do AAS": "Antes del AAS",
   "Duas perguntas — o resto o app já sabe.": "Dos preguntas — el resto la app ya lo sabe.",
   "Alergia conhecida ao AAS?": "¿Alergia conocida al AAS?",

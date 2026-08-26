@@ -63,13 +63,7 @@ import { vereditoAas, vereditoBetabloqueador, vereditoNitrato } from "./lib/vere
 import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
-import {
-  NITRATO_DOSE_SL,
-  NITRATO_DOSE_SL_ALTERNATIVA,
-  NITRATO_DOSE_IV,
-  NITRATO_MONITORIZACAO,
-  NITRATO_ALERTAS_SCA,
-} from "./lib/nitrato-dose";
+import { NITRATO_MONITORIZACAO, NITRATO_ALERTAS_SCA } from "./lib/nitrato-dose";
 import {
   derivarJanelaReperfusao,
   derivarEstadoContraindicacao,
@@ -79,7 +73,7 @@ import {
   FARMACOINVASIVA_PRECOCE,
   podeFibrinolisar,
 } from "./lib/reperfusao-stemi";
-import { BETABLOQUEADOR_INDICACAO, BETABLOQUEADOR_AGUDO_DOSE, BETABLOQUEADOR_IV_SEPARADO, BETABLOQUEADOR_CONTRAINDICACAO } from "./lib/betabloqueador-agudo";
+import { BETABLOQUEADOR_IV_SEPARADO, BETABLOQUEADOR_CONTRAINDICACAO } from "./lib/betabloqueador-agudo";
 import { avisoDePeso } from "./lib/peso-estimado";
 import {
   CI_COMUM_HEMORRAGIA_INTRACRANIANA,
@@ -474,6 +468,27 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       intro: "Marque todos os que existem. Pode marcar vários.",
       fields: [
         {
+          // ⚠️ ESTA PERGUNTA SUBIU PARA CÁ EM 2026-08-26, e o motivo é de
+          // segurança: a primeira oferta possível de nitrato é
+          // `estabilizacao_ramo`, alcançável já a partir do bloco 1 do ABCDE.
+          // Ela estava no passo 10 (`terapia_check`) — ou seja, o app mandava
+          // dar nitrato antes de saber isto.
+          //
+          // ⚠️ E NÃO É OPCIONAL POR DESCUIDO: é opcional porque não pode travar
+          // o ABCDE. Mas quem não responder não recebe dose de nitrato — o
+          // veredito trata "não perguntado" como impedimento, com motivo
+          // explícito e corrigível. Ausência de resposta não é ausência de
+          // contraindicação.
+          id: "pde5_recente",
+          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
+          presets: [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+            { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
           // ⚠️ CHECKLIST, NÃO ESCOLHA ÚNICA. "Dor retroesternal + irradiação
           // para o braço + sudorese + náusea" é UM paciente, não quatro
           // alternativas — obrigar a escolher uma descartaria o resto do
@@ -736,11 +751,15 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Ameaça identificada: {ameacaEncontrada}. Ação agora — a via de SCA continua assim que o paciente estiver estabilizado.",
       actions: [
         "Suporte ventilatório conforme necessidade (O₂, VNI se disponível e tolerado).",
-        NITRATO_DOSE_IV,
         NITRATO_MONITORIZACAO,
         "Diurético IV conforme o protocolo do serviço — este app não fixa dose de furosemida nesta tela; ver módulo de Edema Agudo de Pulmão para o protocolo completo de diurético e resistência.",
         "Reavaliar a cada poucos minutos — só prosseguir para o portão de dissecção quando estabilizado.",
       ],
+      // ⚠️ A DOSE SAIU DAQUI E FOI PARA O VEREDITO (2026-08-26, achado do
+      // autor no celular): este nó imprimia dose de nitrato sem checagem, e é
+      // alcançado ANTES da tela que perguntava as contraindicações. O app
+      // mandava administrar e só depois perguntava se podia.
+      vereditos: [{ id: "nitrato", avaliar: vereditoNitrato }],
       porque: [
         NITRATO_ALERTAS_SCA,
         "Edema pulmonar cardiogênico com repercussão real fica neste módulo porque é o próprio assunto da via de SCA — via aérea, respiratório, choque e arritmia têm módulo dedicado, mais completo do que um resumo aqui poderia oferecer. O protocolo COMPLETO de diurético (incluindo resistência) mora no módulo de Edema Agudo de Pulmão, que já cobre isso com mais profundidade do que caberia repetir aqui.",
@@ -766,11 +785,14 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Manter monitorização.",
         "Seguir imediatamente para ECG/classificação.",
-        NITRATO_DOSE_SL,
-        NITRATO_DOSE_SL_ALTERNATIVA,
         MORFINA_TETO,
         "Acelerar a estratégia de reperfusão/invasiva assim que o padrão de ECG for reconhecido.",
       ],
+      // ⚠️ A DOSE SAIU DAQUI E FOI PARA O VEREDITO (2026-08-26, achado do
+      // autor no celular): este nó imprimia dose de nitrato sem checagem, e é
+      // alcançado ANTES da tela que perguntava as contraindicações. O app
+      // mandava administrar e só depois perguntava se podia.
+      vereditos: [{ id: "nitrato", avaliar: vereditoNitrato }],
       porque: [NITRATO_ALERTAS_SCA, NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, MORFINA_CONTRAINDICACOES],
       next: "ecg",
     },
@@ -996,14 +1018,26 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          // ⚠️ REPETIDA AQUI DE PROPÓSITO, E NÃO É REPERGUNTA (2026-08-26). Os
+          // atalhos do menu ("STEMI já confirmado", "só preciso das doses")
+          // pulam a Tela 1 e chegam direto às medicações — por esses caminhos
+          // o PDE-5 nunca teria sido perguntado, e o veredito bloquearia o
+          // nitrato por falta de um dado que o médico não teve chance de dar.
+          // Isso é o beco que a regra proíbe: o app dizendo "não posso" em vez
+          // de perguntar.
+          //
+          // Quem veio pelo fluxo completo encontra o campo JÁ PREENCHIDO — o
+          // motor guarda o valor e a tela o exibe com o aviso de aproveitado.
           id: "pde5_recente",
           label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
           presets: [
             { value: "nao", label: "Não" },
             { value: "sim", label: "Sim" },
             { value: "nao_sei", label: "Não sei" },
           ],
         },
+
         {
           id: "bb_bav",
           label: "BAV de 2º/3º grau sem marcapasso, ou PR > 240 ms no ECG?",
@@ -1041,9 +1075,19 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "BAV de 2º grau: nem toda P conduz — ou o PR alarga progressivamente até falhar (Mobitz I), ou a P falha sem aviso (Mobitz II).",
         "BAV de 3º grau: P e QRS marcham independentes, cada um no seu ritmo.",
       ],
+      // ⚠️ ESTA TELA TRANSFORMAVA DÚVIDA EM NEGAÇÃO (achado do autor,
+      // 2026-08-26). Ela só existe para quem respondeu "não sei" — e oferecia
+      // apenas "Sim" e "Não". Quem continuasse sem conseguir avaliar (PR no
+      // limite, P difícil de ver, artefato no traçado) era obrigado a escolher,
+      // e escolher "Não" LIBERAVA o betabloqueador.
+      //
+      // ⚠️ A AJUDA NÃO PODE SER A PORTA QUE APAGA A DÚVIDA. Enquanto o achado
+      // permanecer indeterminado, `bb_bav` continua `nao_sei` e o veredito
+      // continua bloqueando — que é o comportamento seguro e honesto.
       options: [
         { id: "nao", label: "Não — PR normal e sem BAV", next: "terapia_vereditos", gravidade: "favoravel", grava: { campo: "bb_bav", valor: "nao" } },
         { id: "sim", label: "Sim — há BAV ou PR > 240 ms", next: "terapia_vereditos", gravidade: "critica", grava: { campo: "bb_bav", valor: "sim" } },
+        { id: "indeterminado", label: "Ainda não consegui determinar", next: "terapia_vereditos", gravidade: "neutra", grava: { campo: "bb_bav", valor: "nao_sei" } },
       ],
     },
 
@@ -1533,6 +1577,26 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       // o peso é pré-requisito real: sem ele não há dose de TNK.
       fields: [
         {
+          // ⚠️ REPETIDA AQUI DE PROPÓSITO, E NÃO É REPERGUNTA (2026-08-26). Os
+          // atalhos do menu ("STEMI já confirmado", "só preciso das doses")
+          // pulam a Tela 1 e chegam direto às medicações — por esses caminhos
+          // o PDE-5 nunca teria sido perguntado, e o veredito bloquearia o
+          // nitrato por falta de um dado que o médico não teve chance de dar.
+          // Isso é o beco que a regra proíbe: o app dizendo "não posso" em vez
+          // de perguntar.
+          //
+          // Quem veio pelo fluxo completo encontra o campo JÁ PREENCHIDO — o
+          // motor guarda o valor e a tela o exibe com o aviso de aproveitado.
+          id: "pde5_recente",
+          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
+          presets: [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+            { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -1573,6 +1637,20 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       intro: "Toque no peso (ou adicione). A dose de tenecteplase é escalonada por peso.",
       fields: [
         {
+          // ⚠️ TAMBÉM AQUI: o ramo da fibrinólise tem o SEU próprio nó de peso
+          // (separado de `stemi_dados` por uma razão de segurança antiga — ver
+          // o comentário deste nó), e por ele se alcança `stemi_meds` sem
+          // passar por nenhuma outra pergunta de PDE-5.
+          id: "pde5_recente",
+          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
+          presets: [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+            { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -1598,6 +1676,17 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Tratamento · Antitrombóticos (STEMI)",
       summary: "Iniciar em paralelo à definição da reperfusão (não atrasar a reperfusão).",
+      // ⚠️ AS DOSES DE NITRATO E BETABLOQUEADOR SAÍRAM DAS AÇÕES (2026-08-26).
+      // Este card imprimia as duas sem checagem nenhuma — é o passo 17, e os
+      // vereditos existiam só no passo 11. A mesma tela que lista antiagregante
+      // e anticoagulante mandava dar nitrato sem saber a PA nem o PDE-5.
+      //
+      // Agora quem governa são os vereditos: a dose vive em
+      // `Veredito.instrucao` e só aparece no verde.
+      vereditos: [
+        { id: "nitrato", avaliar: vereditoNitrato },
+        { id: "betabloqueador", avaliar: vereditoBetabloqueador },
+      ],
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
         "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP. Se fibrinólise → clopidogrel; até 75 anos, ataque de 300 mg; 75 anos ou mais, SEM ataque — 75 mg direto.",
@@ -1606,9 +1695,6 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "{avisoPeso}",
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
         "Nitrato e morfina só se necessário — dose abaixo, contraindicações valem para os dois:",
-        NITRATO_DOSE_SL,
-        NITRATO_DOSE_SL_ALTERNATIVA,
-        NITRATO_DOSE_IV,
         NITRATO_MONITORIZACAO,
         MORFINA_TETO,
         "Contraindicações do nitrato e da morfina — quando NÃO usar:",
@@ -1618,8 +1704,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         NITRATO_PDE5_USO_CRONICO,
         NITRATO_OUTRAS_CONTRAINDICACOES,
         MORFINA_CONTRAINDICACOES,
-        BETABLOQUEADOR_INDICACAO,
-        BETABLOQUEADOR_AGUDO_DOSE,
+
         BETABLOQUEADOR_IV_SEPARADO,
         BETABLOQUEADOR_CONTRAINDICACAO,
       ],
@@ -2369,6 +2454,26 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       // peso e antitrombóticos correm em paralelo, não a atrasam.
       fields: [
         {
+          // ⚠️ REPETIDA AQUI DE PROPÓSITO, E NÃO É REPERGUNTA (2026-08-26). Os
+          // atalhos do menu ("STEMI já confirmado", "só preciso das doses")
+          // pulam a Tela 1 e chegam direto às medicações — por esses caminhos
+          // o PDE-5 nunca teria sido perguntado, e o veredito bloquearia o
+          // nitrato por falta de um dado que o médico não teve chance de dar.
+          // Isso é o beco que a regra proíbe: o app dizendo "não posso" em vez
+          // de perguntar.
+          //
+          // Quem veio pelo fluxo completo encontra o campo JÁ PREENCHIDO — o
+          // motor guarda o valor e a tela o exibe com o aviso de aproveitado.
+          id: "pde5_recente",
+          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
+          presets: [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+            { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
           id: "peso",
           label: "Peso estimado (kg)",
           unit: "kg",
@@ -2385,6 +2490,17 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Tratamento · Antitrombóticos (sem supra)",
       summary: "Tratar enquanto se define o tempo da estratégia invasiva.",
+      // ⚠️ AS DOSES DE NITRATO E BETABLOQUEADOR SAÍRAM DAS AÇÕES (2026-08-26).
+      // Este card imprimia as duas sem checagem nenhuma — é o passo 17, e os
+      // vereditos existiam só no passo 11. A mesma tela que lista antiagregante
+      // e anticoagulante mandava dar nitrato sem saber a PA nem o PDE-5.
+      //
+      // Agora quem governa são os vereditos: a dose vive em
+      // `Veredito.instrucao` e só aparece no verde.
+      vereditos: [
+        { id: "nitrato", avaliar: vereditoNitrato },
+        { id: "betabloqueador", avaliar: vereditoBetabloqueador },
+      ],
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
         "2º antiplaquetário: ticagrelor 180 mg (manutenção 90 mg 12/12h) — preferir após definição anatômica; clopidogrel 300–600 mg como alternativa.",
@@ -2393,9 +2509,6 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg; ClCr < 30: 24/24h) OU fondaparinux 2,5 mg SC/dia OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
         "{avisoPeso}",
         "Nitrato, se dor/HAS/IC e sem contraindicação:",
-        NITRATO_DOSE_SL,
-        NITRATO_DOSE_SL_ALTERNATIVA,
-        NITRATO_DOSE_IV,
         NITRATO_MONITORIZACAO,
         "Contraindicações do nitrato — quando NÃO usar:",
         NITRATO_ALERTAS_SCA,
@@ -2403,8 +2516,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         NITRATO_CONTRAINDICACAO_PDE5,
         NITRATO_PDE5_USO_CRONICO,
         NITRATO_OUTRAS_CONTRAINDICACOES,
-        BETABLOQUEADOR_INDICACAO,
-        BETABLOQUEADOR_AGUDO_DOSE,
+
         BETABLOQUEADOR_IV_SEPARADO,
         BETABLOQUEADOR_CONTRAINDICACAO,
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",

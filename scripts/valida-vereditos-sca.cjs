@@ -63,7 +63,7 @@ const marcar = (...itens) => itens.reduce((acc, i) => ec.alternarSelecao(acc, i)
 // ⚠️ É O CENÁRIO QUE A REGRA DO AUTOR DESCREVE: bloqueio de medicação não é
 // bloqueio de atendimento, e um fármaco bloqueado não arrasta os outros.
 {
-  const v = { pas: "82", aas_alergia: "nao", aas_sangramento: "nao", supra_inferior: "nao", bb_bav: "nao", bb_broncoespasmo: "nao" };
+  const v = { pas: "82", aas_alergia: "nao", aas_sangramento: "nao", supra_inferior: "nao", bb_bav: "nao", bb_broncoespasmo: "nao", pde5_recente: "nao" };
   const nit = vereditoNitrato(v);
   const aas = vereditoAas(v);
 
@@ -74,6 +74,25 @@ const marcar = (...itens) => itens.reduce((acc, i) => ec.alternarSelecao(acc, i)
   confere("AAS continua verde com o nitrato bloqueado", aas.nivel === "verde",
     `veio "${aas.nivel}" — um fármaco bloqueado não pode arrastar outro que não tem impedimento nenhum.`);
   linhas.push(`  1. PAS 82 → nitrato 🔴 "${nit.motivo}" · AAS 🟢`);
+
+  // ⚠️ DESCONHECIDO NÃO É NEGATIVO — o caso mais fácil de errar, porque o app
+  // "funciona" sem a pergunta: ele simplesmente libera sobre um dado que nunca
+  // teve. PDE-5 recente + nitrato causa hipotensão refratária.
+  const semPergunta = { pas: "130", aas_alergia: "nao", aas_sangramento: "nao", supra_inferior: "nao" };
+  const nitSemPde5 = vereditoNitrato(semPergunta);
+  confere("PDE-5 NÃO PERGUNTADO bloqueia o nitrato",
+    nitSemPde5.nivel === "vermelho" && /não verificado|pergunte/i.test(nitSemPde5.motivo),
+    `veio "${nitSemPde5.nivel}" / "${nitSemPde5.motivo}" — ausência de resposta não é ausência de ` +
+    `contraindicação, e liberar sobre um dado que nunca se teve é o defeito que esta regra fecha.`);
+  const nitNaoSei = vereditoNitrato({ ...semPergunta, pde5_recente: "nao_sei" });
+  confere("PDE-5 'não sei' também bloqueia",
+    nitNaoSei.nivel === "vermelho",
+    `veio "${nitNaoSei.nivel}" — perguntar e não saber não é melhor que não perguntar.`);
+  const nitOk = vereditoNitrato({ ...semPergunta, pde5_recente: "nao" });
+  confere("com PDE-5 afastado, o nitrato libera",
+    nitOk.nivel === "verde",
+    `veio "${nitOk.nivel}" — a regra não pode bloquear quem respondeu.`);
+  linhas.push(`  1b. PDE-5: não perguntado 🔴 · não sei 🔴 · afastado 🟢`);
 }
 
 // ══ 2/3. A suspeita de VD vem de CONTEXTO, não da falta de V3R–V4R ════════
@@ -83,7 +102,7 @@ const marcar = (...itens) => itens.reduce((acc, i) => ec.alternarSelecao(acc, i)
 // hemodinamicamente relevante, e negar nitrato a todos troca um risco por
 // outro.
 {
-  const base = { aas_alergia: "nao", aas_sangramento: "nao", bb_bav: "nao", bb_broncoespasmo: "nao" };
+  const base = { aas_alergia: "nao", aas_sangramento: "nao", bb_bav: "nao", bb_broncoespasmo: "nao", pde5_recente: "nao" };
 
   const inferiorSemSinais = { ...base, supra_inferior: "sim", pas: "130", cor_perfusao: "nao", ausculta_pulmonar: marcar("Limpa") };
   confere("inferior SEM sinais de VD não bloqueia o nitrato",
@@ -181,6 +200,7 @@ const marcar = (...itens) => itens.reduce((acc, i) => ec.alternarSelecao(acc, i)
   m.setValue("bb_bav", "nao");
   m.setValue("bb_broncoespasmo", "nao");
   m.setValue("ausculta_pulmonar", marcar("Limpa"));
+  m.setValue("pde5_recente", "nao");
 
   confere("no nó real, nitrato 🔴 e betabloqueador 🟢 convivem",
     m.vereditoDe("nitrato").nivel === "vermelho" && m.vereditoDe("betabloqueador").nivel === "verde",

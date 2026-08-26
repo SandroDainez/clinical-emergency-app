@@ -192,6 +192,12 @@ const motor = () => new DecisionTreeEngine(arvore, { agora: () => 1_000 });
   m.setValue("bb_bav", "nao");
   m.setValue("bb_broncoespasmo", "nao");
   m.setValue("supra_inferior", "nao");
+  // ⚠️ SEM ISTO O NITRATO FICA BLOQUEADO — e a trava reprovou aqui quando a
+  // regra "desconhecido ≠ negativo" entrou (2026-08-26). O cenário precisa
+  // informar o PDE-5 porque, sem ele, o veredito bloqueia por falta do dado e
+  // esta conferência passaria a medir o bloqueio por omissão em vez do
+  // recálculo que ela promete medir.
+  m.setValue("pde5_recente", "nao");
   m.registrarExecucao("betabloqueador");
 
   const salvo = JSON.parse(JSON.stringify(m.exportarEstado()));   // sai para a calculadora

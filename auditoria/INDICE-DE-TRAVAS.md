@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**75 de 92 travas com declaração completa.**
+**76 de 93 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -49,6 +49,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que os três vereditos da SCA (nitrato, AAS, betabloqueador) apliquem as contraindicações em vez de imprimi-las; que 🔴 bloqueie AQUELE fármaco sem parar o atendimento nem os outros dois; que "liberado" nunca signifique "feito"; que a suspeita de VD venha de CONTEXTO e não da ausência de um exame; e que nenhum veredito seja persistido como verdade clínica.
 - **NÃO PROMETE:** a renderização — isso é `e2e/vereditos-sca.spec.ts`. Nem o conteúdo das doses (test:coronarias, test:farmacos).
 - **UNIVERSO:** lib/vereditos-sca.ts, a árvore compilada e o motor real. ── O QUE MUDA DE FATO ────────────────────────────────────────────────────── Até aqui as ressalvas eram TEXTO: "AAS 300 mg agora, SALVO alergia/ sangramento ativo"; "⛔ NÃO USAR nitrato se…"; "NÃO iniciar se…". O app enunciava a regra e deixava a aplicação para quem lê — com o paciente na frente. Veredito é a mesma regra, aplicada: o app já sabe PAS, FC, perfusão e ausculta, e pode responder "não administre, PAS 82 mmHg".
+
+## `test:dose-governada` → `scripts/valida-dose-governada.cjs`
+
+- **PROMETE:** que nenhuma dose acionável de nitrato ou betabloqueador seja apresentada num nó que não tenha o veredito correspondente governando; que os dados necessários para liberar cada fármaco sejam perguntados ANTES da primeira oferta possível; e que dúvida nunca seja convertida em ausência de contraindicação — nem pela ajuda.
+- **NÃO PROMETE:** que as doses estejam clinicamente certas (test:coronarias, test:farmacos) nem que os vereditos avaliem bem (test:vereditos-sca).
+- **UNIVERSO:** a árvore da SCA compilada. ── A REGRA, NA FORMULAÇÃO DO AUTOR (2026-08-26) ──────────────────────────── "Nenhuma dose acionável de medicamento pode ser apresentada antes de o app ter avaliado e liberado as contraindicações relevantes para aquele medicamento." ⚠️ E ELA NÃO É "A PALAVRA DOSE SÓ PODE EXISTIR DENTRO DE UM NÓ VEREDITO" — essa formulação literal congelaria a arquitetura. O que se proíbe é dose SOLTA e não governada; no desenho atual da SCA, `Veredito` é o mecanismo que governa, e é ele que esta trava mede. Se um dia outro mecanismo formal do motor autorizar uma ação, a regra continua valendo e a trava é que muda. ── O DEFEITO QUE ORIGINOU ────────────────────────────────────────────────── O autor percorreu o módulo no celular e viu a tela de contraindicações ("antes de nitrato e betabloqueador") aparecer no PASSO 10 — depois de o app já ter mandado dar nitrato nos passos 4 e 5. E no passo 17 a dose era impressa de novo, sem veredito nenhum. Os vereditos existiam em UM nó. Os outros quatro continuavam imprimindo dose como antes — exatamente o que eles foram feitos para eliminar.
 
 ## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
 
@@ -656,7 +662,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 94/94 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 94/94 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |

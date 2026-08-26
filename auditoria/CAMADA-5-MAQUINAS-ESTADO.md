@@ -45,7 +45,7 @@
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | `severity_grade` | opções grade2, grade3 levam todas a "immediate_im_epinephrine" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_a` | opções afasta, incerto levam todas a "portao_grupo_b" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_b` | opções afasta, incerto levam todas a "aas_check" — a escolha não muda o fluxo |
-| coronary-decision-tree (coronaryDecisionTree) | `bb_ajuda_pr` | opções nao, sim levam todas a "terapia_vereditos" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `bb_ajuda_pr` | opções nao, sim, indeterminado levam todas a "terapia_vereditos" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `ecg` | opções sim, nao levam todas a "portao_grupo_a" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `ecg_ajuda_supra` | opções tem, nao_tem, incerto levam todas a "portao_grupo_a" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `ecg_supra_qual` | opções anterior, inferior, incerto levam todas a "stemi_localizacao" — a escolha não muda o fluxo |

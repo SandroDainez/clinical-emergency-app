@@ -1983,10 +1983,18 @@ if (textoRenderizado.length < 5000) {
   }
 
   // E a alternativa tem de estar EM USO, não só declarada.
-  const usos = lerFonte(path.join(appDir, ARVORE)).match(/NITRATO_DOSE_SL_ALTERNATIVA/g) ?? [];
-  if (usos.length < 3) {
+  //
+  // ⚠️ O UNIVERSO MUDOU EM 2026-08-26, e esta trava reprovou por medir o lugar
+  // errado (R-87). As doses saíram das `actions` da árvore e passaram a viver
+  // em `Veredito.instrucao` — porque `actions` é renderizada mesmo no
+  // vermelho, e a dose aparecia ao lado do próprio bloqueio. Continuar
+  // procurando a constante na árvore contaria zero e acusaria uma perda que
+  // não houve.
+  const usos = lerFonte(path.join(appDir, "lib", "vereditos-sca.ts")).match(/NITRATO_DOSE_SL_ALTERNATIVA/g) ?? [];
+  if (usos.length < 2) {
     falhas.push(
-      `a alternativa de nitroglicerina SL aparece em ${usos.length} nós — esperado ao menos 3.\n` +
+      `a alternativa de nitroglicerina SL é consumida ${usos.length}x em \`lib/vereditos-sca.ts\` — ` +
+      `esperado ao menos 2 (import + uso).\n` +
       `      ⚠️ Declarar a constante e não consumi-la deixa a opção existindo só no código.`
     );
   } else ok++;
