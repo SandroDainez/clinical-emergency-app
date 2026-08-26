@@ -55,6 +55,22 @@ export type MarcoDePrazo =
   | "ultimaDose"
   /** O início de uma terapia que muda o critério (anestésico no status). */
   | "inicioDoAnestesico"
+  /**
+   * O PRIMEIRO CONTATO MÉDICO (FMC).
+   *
+   * ⚠️ NÃO É "a chegada". A meta de ≤10 min para o ECG de 12 derivações conta
+   * do primeiro contato médico — e por isso vale igual no pronto-socorro, no
+   * pré-hospitalar e no paciente já internado que passa a ter dor. "Da
+   * chegada" só coincide com o FMC num desses três cenários.
+   *
+   * ⚠️ E NÃO É A ABERTURA DO MÓDULO. O app não tem como saber quando o
+   * atendimento começou; usar a abertura como âncora responderia "há quanto
+   * tempo o app está aberto" e o atraso apareceria sempre como zero — o
+   * cronômetro mentindo a favor, que é o modo de falha que esta camada inteira
+   * existe para evitar. A âncora é INFORMADA, e enquanto não for, `PrazoAtivo`
+   * devolve `semMarco: true` e a tela diz "pendente" sem afirmar atraso.
+   */
+  | "primeiroContatoMedico"
   /** A entrada neste nó. Só para prazos que de fato começam na tela. */
   | "entradaNoNo";
 
@@ -804,6 +820,45 @@ export type DecisionTreeDefinition = {
    * Função pura — não deve ter efeitos colaterais.
    */
   derive?: (values: TreeValues) => Record<string, string>;
+  /**
+   * Faixa de aviso que acompanha o atendimento inteiro, e não um nó só.
+   *
+   * ⚠️ POR QUE NÃO USAR `prazos` PARA ISTO. `Prazo` é declarado NÓ A NÓ e
+   * `getPrazos()` não conhece o estado clínico: um prazo de ECG colado em vinte
+   * telas continuaria cobrando o ECG depois de ele ter sido feito. Cobrança que
+   * não some quando o problema é resolvido ensina o médico a ignorar a faixa —
+   * e aí ela também não serve quando importa.
+   *
+   * Como o veredito, é DERIVADO a cada render e NUNCA gravado: corrigir o dado
+   * muda a faixa na hora, e não existe estado de alerta para dessincronizar.
+   * Opcional — as outras árvores não declaram e nada muda para elas.
+   */
+  alertaPersistente?: (values: TreeValues, agora: number) => AlertaPersistente | null;
+};
+
+/**
+ * O que a faixa de aviso diz. `nivel` só governa a cor; o texto é literal para
+ * poder ser traduzido (D-19).
+ */
+export type AlertaPersistente = {
+  id: string;
+  /**
+   * "info" = lembrete dentro do esperado · "atencao" = meta ultrapassada ou
+   * medida ausente · "critico" reservado para quando houver dano em curso.
+   */
+  nivel: "info" | "atencao" | "critico";
+  texto: string;
+  /** Segunda linha, para a medida — separada para a tela poder abreviar. */
+  detalhe?: string;
+  /**
+   * Substituições `{chave}` aplicadas DEPOIS da tradução.
+   *
+   * ⚠️ NÃO INTERPOLAR ANTES (D-19, defeito medido em 2026-08-25): um texto
+   * montado como `` `Primeiro contato há ${n} min` `` nunca casa com a entrada
+   * do dicionário PT→ES, e a faixa volta ao português no meio do app em
+   * espanhol. O literal vai com o token; o número entra depois.
+   */
+  valores?: Record<string, string>;
 };
 
 export type DecisionTreeLogEntry = {

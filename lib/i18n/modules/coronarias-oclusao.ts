@@ -1222,4 +1222,28 @@ export const coronariasOclusaoEs: Record<string, string> = {
   "O laudo declara explicitamente ausência de dissecção/síndrome aórtica aguda (conclusão do radiologista)?":
     "¿El informe declara explícitamente ausencia de disección/síndrome aórtico agudo (conclusión del radiólogo)?",
   "Não sei localizar isso no laudo": "No sé localizar eso en el informe",
+  // ── ECG de 12 derivações e a meta de 10 min (2026-08-26) ──────────────
+  //
+  // "{min}" fica NO LITERAL: o dicionário casa por string inteira, e um texto
+  // montado com o número já dentro nunca encontraria a entrada — a faixa
+  // voltaria ao português no meio do app em espanhol (D-19).
+  "O ECG de 12 derivações já foi realizado?": "¿Ya se realizó el ECG de 12 derivaciones?",
+  "Há quantos minutos foi o primeiro contato médico?": "¿Hace cuántos minutos fue el primer contacto médico?",
+  "Se já foi feito: há quantos minutos ficou pronto e foi lido?":
+    "Si ya se hizo: ¿hace cuántos minutos quedó listo y fue leído?",
+  "Meta: obter E INTERPRETAR em até 10 min do primeiro contato médico. Um ECG feito no prazo e lido depois não cumpriu a meta — o que muda a conduta é a leitura.":
+    "Meta: obtener E INTERPRETAR en hasta 10 min del primer contacto médico. Un ECG hecho a tiempo y leído después no cumplió la meta — lo que cambia la conducta es la lectura.",
+  "ECG de 12 derivações (repetir se a dor persistir ou mudar de caráter)":
+    "ECG de 12 derivaciones (repetir si el dolor persiste o cambia de carácter)",
+  "ECG de 12 derivações: pendente — meta ≤10 min do primeiro contato médico.":
+    "ECG de 12 derivaciones: pendiente — meta ≤10 min del primer contacto médico.",
+  "ECG atrasado em relação à meta — obtenha e interprete o ECG de 12 derivações agora.":
+    "ECG retrasado respecto a la meta — obtenga e interprete el ECG de 12 derivaciones ahora.",
+  "Primeiro contato médico há {min} min.": "Primer contacto médico hace {min} min.",
+  "Tempo desde o primeiro contato não informado — o atraso não está sendo medido.":
+    "Tiempo desde el primer contacto no informado — el retraso no se está midiendo.",
+  "Fonte: ACC/AHA 2025 — diretriz de síndromes coronarianas agudas.":
+    "Fuente: ACC/AHA 2025 — guía de síndromes coronarios agudos.",
+  "1 h ou mais": "1 h o más",
+  "~40 min": "~40 min",
 };

@@ -184,6 +184,15 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // O repique do Pritchard é 4/4 h; 8 h de teto cobre o atraso que se quer
   // justamente enxergar.
   tempoDaUltimaDose: { min: 0, max: 480, passo: 5, unidade: "min" },
+  // ── ECG de 12 derivações e a meta de 10 min ────────────────────────────
+  //
+  // Teto de 12 h nos dois: quem chega ao módulo tendo tido o primeiro contato
+  // há mais de meio dia não está mais na janela que esta meta governa — e uma
+  // barra que vai a 24 h transforma o passo de 1 min num alvo impossível de
+  // acertar no toque. Passo de 1 min porque a meta é de 10: com passo de 5, o
+  // médico não conseguiria distinguir 8 de 12.
+  fmc_min: { min: 0, max: 720, passo: 1, unidade: "min" },
+  ecg_ha_min: { min: 0, max: 720, passo: 1, unidade: "min" },
   na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
   cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
   k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },

@@ -25,7 +25,14 @@ async function abrirTela1(page: any) {
   await page.waitForTimeout(4000);
   await page.getByText(/Fluxo completo — dor torácica agora/i).first().click();
   await page.waitForTimeout(1200);
-  await page.getByText("Confirmar e continuar").first().click();
+  // ⚠️ TELA NOVA (2026-08-26): a cobrança do ECG de 12 derivações passou a
+  // abrir o módulo, e todo atalho agudo atravessa ela. Só a pergunta binária é
+  // obrigatória — este roteiro responde e segue, como o médico faria.
+  await page.getByText("Ainda não", { exact: true }).first().click();
+  await page.waitForTimeout(500);
+  await page.getByText(/^Confirmar/).first().click();
+  await page.waitForTimeout(1500);
+  await page.getByText(/^Confirmar/).first().click();
   await page.waitForTimeout(1500);
 }
 

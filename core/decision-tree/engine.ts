@@ -1,5 +1,6 @@
 import type {
   ActionNode,
+  AlertaPersistente,
   MarcoDePrazo,
   Prazo,
   PrazoAtivo,
@@ -448,6 +449,20 @@ export class DecisionTreeEngine {
    * de falha que a proposta existe para evitar: relógio que desaparece ensina
    * que o problema acabou.
    */
+  /**
+   * A faixa de aviso que vale para o atendimento inteiro, não para um nó.
+   *
+   * Derivada a cada chamada e nunca gravada — mesma regra do veredito: corrigir
+   * o dado muda a faixa na hora, e não existe estado de alerta para
+   * dessincronizar do estado clínico. Árvore que não declara devolve `null`, e
+   * para ela nada muda.
+   */
+  getAlertaPersistente(agora = Date.now()): AlertaPersistente | null {
+    const calcular = this.tree.alertaPersistente;
+    if (!calcular) return null;
+    return calcular(this.getValues(), agora);
+  }
+
   getPrazos(agora = Date.now()): PrazoAtivo[] {
     const no = this.getCurrentNode();
     const prazos = no.prazos ?? [];

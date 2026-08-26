@@ -40,6 +40,10 @@ async function irAteTerapia(page: any) {
         // o bloco de ritmo não tem "Não" — responde "Sinusal"
         const sinusal = page.getByText("Sinusal", { exact: true });
         if (await sinusal.count()) { try { await sinusal.first().click({ timeout: 500 }); } catch {} }
+        // nem a cobrança do ECG, que responde "Ainda não" (tela nova de
+        // 2026-08-26, atravessada por todo atalho agudo)
+        const semEcg = page.getByText("Ainda não", { exact: true });
+        if (await semEcg.count()) { try { await semEcg.first().click({ timeout: 500 }); } catch {} }
         await page.waitForTimeout(200);
         if (!(await texto(page)).includes("Falta")) break;
         await page.mouse.wheel(0, 320);

@@ -60,6 +60,7 @@ import {
 } from "./lib/oclusao-sem-supra";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_IAM } from "./lib/tenecteplase";
 import { vereditoAas, vereditoBetabloqueador, vereditoNitrato } from "./lib/vereditos-sca";
+import { alertaDoEcg, FONTE_ECG_10MIN } from "./lib/ecg-tempo";
 import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
@@ -293,6 +294,18 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
   label: "Síndromes Coronarianas",
   entryNodeId: "atalhos_coronarianas",
   derive: deriveCoronary,
+  /**
+   * `fmc_min` = há quantos minutos foi o primeiro contato médico. O motor
+   * ancora `__marco_primeiroContatoMedico` em (agora − fmc_min), e não em
+   * "agora": é o mesmo motivo de crises convulsivas e pré-eclâmpsia — contar da
+   * tela responde "há quanto tempo o app está aberto".
+   *
+   * Declarar aqui, e não num `if` do runtime, também faz a âncora sobreviver a
+   * sair e voltar do módulo: `exportarMarcos`/`restaurarMarcos` já tratam
+   * qualquer `__marco_*`, e o replay da retomada não a desloca.
+   */
+  marcos: { fmc_min: "primeiroContatoMedico" },
+  alertaPersistente: alertaDoEcg,
   nodes: {
     // ── 0. Atalhos internos (Etapa 6) ─────────────────────────────────────────
     //
@@ -305,25 +318,155 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       title: "Síndromes Coronarianas",
       question: "Por onde você quer começar?",
       summary: "O fluxo completo é o padrão. Os atalhos pulam etapas já feitas — nenhum deles inventa dado que falta.",
+      // ⚠️ TODO ATALHO AGUDO PASSA POR `ecg_tempo` (2026-08-26). Antes, três
+      // destes cinco caminhos pulavam o `entry` inteiro — e o lembrete do ECG
+      // morava numa linha do `entry`. Por "Já tenho o ECG na mão", "STEMI já
+      // confirmado" e "Só preciso das doses" o lembrete não existia.
+      //
+      // É o mesmo beco que deixou o PDE-5 escapar, agora no dado mais sensível
+      // ao tempo do módulo. A correção não é repetir o texto em cinco lugares:
+      // é fazer os cinco caminhos atravessarem o mesmo nó, e provar por
+      // dominância que não sobrou desvio.
       options: [
-        { id: "completo", label: "Fluxo completo — dor torácica agora", next: "entry" },
+        {
+          id: "completo",
+          label: "Fluxo completo — dor torácica agora",
+          next: "ecg_tempo",
+          grava: { campo: "atalho_escolhido", valor: "completo" },
+        },
         {
           id: "ecg_pronto",
           label: "Já tenho o ECG na mão, ainda não liberei AAS",
-          next: "ecg",
+          next: "ecg_tempo",
+          // ⚠️ DÍVIDA DECLARADA: quem entra por aqui JÁ DISSE que o traçado
+          // existe, e ainda assim a tela seguinte pergunta "o ECG já foi
+          // realizado?". `grava` leva UM campo por opção, então não dá para
+          // gravar `atalho_escolhido` e `ecg_realizado` na mesma escolha — e
+          // derivar `ecg_realizado` colidiria com o campo de entrada de mesmo
+          // nome. O conserto certo é o mecanismo de "campo já respondido não
+          // volta como pergunta", que é a rodada de padronização; até lá, é um
+          // toque a mais num caminho, e não um dado inventado.
+          grava: { campo: "atalho_escolhido", valor: "ecg_pronto" },
         },
         {
           id: "reperfusao",
           label: "STEMI já confirmado — ir direto para reperfusão",
-          next: "stemi_localizacao",
+          next: "ecg_tempo",
+          grava: { campo: "atalho_escolhido", valor: "reperfusao" },
         },
         {
           id: "antitromboticos",
           label: "Só preciso das doses/antitrombóticos",
-          next: "atalho_antitromboticos_tipo",
+          next: "ecg_tempo",
+          grava: { campo: "atalho_escolhido", valor: "antitromboticos" },
         },
-        { id: "complicacoes", label: "Complicações pós-IAM", next: "destino_coronariana" },
+        {
+          // ⚠️ ÚNICA SAÍDA QUE NÃO PASSA PELO TEMPO DO ECG, e a exceção é
+          // declarada de propósito: a meta de ≤10 min conta do primeiro contato
+          // na SUSPEITA de SCA. Quem vem tratar complicação de um infarto já
+          // estabelecido não tem esse relógio correndo — cobrar o ECG inicial
+          // ali seria a tela burocrática que esta rodada existe para evitar.
+          // `test:ecg-tempo` conhece esta exceção pelo nome; se alguém criar
+          // uma segunda, a trava reprova.
+          id: "complicacoes",
+          label: "Complicações pós-IAM",
+          next: "destino_coronariana",
+          grava: { campo: "atalho_escolhido", valor: "complicacoes" },
+        },
       ],
+    },
+
+    // ── 0b. O RELÓGIO DO ECG ────────────────────────────────────────────────
+    //
+    // ECG de 12 derivações obtido E INTERPRETADO em até 10 min do primeiro
+    // contato médico (ACC/AHA 2025). Ver `lib/ecg-tempo.ts` para o porquê de
+    // cada decisão desta tela.
+    //
+    // ⚠️ NADA AQUI É OBRIGATÓRIO ALÉM DE UM TOQUE. Só `ecg_realizado` bloqueia
+    // o "continuar", e ele é uma pergunta binária — é o "registrar" do ciclo
+    // lembrar → registrar → medir. Os dois tempos são OPCIONAIS: quem está no
+    // meio de uma emergência segue sem responder, e o app assume "não medido"
+    // em vez de inventar zero.
+    //
+    // ⚠️ E ELA NÃO SEGURA A ESTABILIZAÇÃO. Paciente instável passa por aqui com
+    // um toque e vai para o `entry`, onde a avaliação de gravidade acontece. A
+    // faixa de aviso continua cobrando o ECG pelo resto do atendimento — que é
+    // o comportamento certo: lembrar sem impedir.
+    ecg_tempo: {
+      id: "ecg_tempo",
+      type: "input",
+      title: "ECG de 12 derivações",
+      summary: FONTE_ECG_10MIN,
+      intro:
+        "Meta: obter E INTERPRETAR em até 10 min do primeiro contato médico. Um ECG feito no prazo e lido depois não cumpriu a meta — o que muda a conduta é a leitura.",
+      fields: [
+        {
+          id: "ecg_realizado",
+          label: "O ECG de 12 derivações já foi realizado?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Ainda não" },
+          ],
+        },
+        {
+          // ⚠️ A ÂNCORA DE TODO O RESTO. Declarada em `marcos` acima: o motor
+          // fixa o marco em (agora − este valor). Opcional de propósito —
+          // sem ela o app diz "pendente" e NÃO afirma atraso, em vez de contar
+          // da abertura da tela e mostrar zero para todo mundo.
+          id: "fmc_min",
+          label: "Há quantos minutos foi o primeiro contato médico?",
+          unit: "min",
+          optional: true,
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "0", label: "Agora" },
+            { value: "5", label: "~5 min" },
+            { value: "10", label: "~10 min" },
+            { value: "20", label: "~20 min" },
+            { value: "40", label: "~40 min" },
+            { value: "60", label: "1 h ou mais" },
+          ],
+        },
+        {
+          // O segundo tempo. Com os dois, o intervalo FMC→ECG sai por
+          // subtração; com um só, `estadoDoEcg` devolve "feito_sem_medida" —
+          // ausência declarada, nunca zero.
+          id: "ecg_ha_min",
+          label: "Se já foi feito: há quantos minutos ficou pronto e foi lido?",
+          unit: "min",
+          optional: true,
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "0", label: "Agora" },
+            { value: "5", label: "~5 min" },
+            { value: "10", label: "~10 min" },
+            { value: "20", label: "~20 min" },
+            { value: "40", label: "~40 min" },
+          ],
+        },
+      ],
+      // Devolve cada atalho ao destino que ele pediu. `possiveis` lista os
+      // destinos reais para a análise estática enxergar o grafo — sem isso, a
+      // alcançabilidade quebraria e as travas de rota passariam a medir nada.
+      next: {
+        possiveis: ["entry", "ecg", "stemi_localizacao", "atalho_antitromboticos_tipo"],
+        escolher: (values) => {
+          switch (values.atalho_escolhido) {
+            case "ecg_pronto":
+              return "ecg";
+            case "reperfusao":
+              return "stemi_localizacao";
+            case "antitromboticos":
+              return "atalho_antitromboticos_tipo";
+            default:
+              return "entry";
+          }
+        },
+      },
     },
 
     atalho_antitromboticos_tipo: {
@@ -359,7 +502,23 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Monitor cardíaco contínuo",
         "PA (bilateral), FC, SpO₂",
         "2 acessos venosos; desfibrilador próximo",
-        "ECG de 12 derivações em até 10 min da chegada (repetir se dor persistir/mudar)",
+        // ⚠️ "DA CHEGADA" SAIU (2026-08-26). A meta conta do PRIMEIRO CONTATO
+    // MÉDICO — as duas coisas só coincidem no pronto-socorro, e no
+    // pré-hospitalar ou no paciente já internado que passa a ter dor "chegada"
+    // não significa nada. O item continua na lista porque é uma medida inicial;
+    // quem cobra o tempo agora é `ecg_tempo` e a faixa persistente, não esta
+    // linha perdida entre outras sete.
+    // ⚠️ A META SAIU DAQUI, MEDIDA NA TELA (2026-08-26). Com a faixa
+    // persistente no topo, "ECG de 12 derivações" passou a aparecer TRÊS vezes
+    // no mesmo Passo 3: a faixa, o chip de trilha e este item. Repetir a mesma
+    // meta em duas delas não reforça — dilui, e ensina a passar o olho.
+    //
+    // O item fica porque "repetir se a dor persistir ou mudar" é instrução
+    // DIFERENTE, que a faixa não cobre: ela mede o primeiro ECG contra os 10
+    // min e some quando ele fica pronto. A cobrança do tempo agora é da faixa e
+    // do nó `ecg_tempo`; esta linha voltou a ser o que sempre deveria ter sido —
+    // um item da lista de medidas iniciais.
+    "ECG de 12 derivações (repetir se a dor persistir ou mudar de caráter)",
         // ⚠️ ALINHADO ACC/AHA 2025 (2026-08-24): se SpO₂ < 90%, O₂ para
         // elevar ≥ 90%; se SpO₂ ≥ 90%, sem uso rotineiro. Sem meta numérica
         // superior fixa — não confirmada em fonte nesta sessão.

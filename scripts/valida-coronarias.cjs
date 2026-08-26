@@ -487,7 +487,16 @@ if (textoRenderizado.length < 5000) {
 {
   for (const [nome, padrao] of [
     ["o marco do porta-balão", /PRIMEIRO CONTATO MÉDICO/],
-    ["o marco do ECG", /10 min da chegada/],
+    // ⚠️ ESTA TRAVA COBRAVA O TEXTO ERRADO ATÉ 2026-08-26. Ela casava com
+    // `/10 min da chegada/` — e a "chegada" não é o marco da meta. A ACC/AHA
+    // 2025 conta do PRIMEIRO CONTATO MÉDICO, que é o mesmo marco que a linha de
+    // cima já exige do porta-balão: o módulo usava duas âncoras diferentes para
+    // dois prazos da mesma cronologia, e esta trava sustentava a divergência.
+    //
+    // No pronto-socorro as duas coincidem. No pré-hospitalar e no paciente já
+    // internado que passa a ter dor, "chegada" não corresponde a evento nenhum
+    // — e são justamente esses os casos em que o atraso não era medido.
+    ["o marco do ECG", /10 min do primeiro contato médico/i],
     ["o marco da agulha", /entre o diagnóstico e a agulha/],
   ]) {
     if (!padrao.test(textoRenderizado)) {

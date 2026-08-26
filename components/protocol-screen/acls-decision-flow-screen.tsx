@@ -98,6 +98,34 @@ const DISPOSITION_META: Record<
   other_module: { label: "Transição de guia", color: "#93c5fd", bg: "#1e3a5f", border: "#2563eb" },
 };
 
+/**
+ * Estilos da faixa de alerta, DERIVADOS DO TEMA.
+ *
+ * ⚠️ NÃO ENTRAM NO `StyleSheet.create` DO TOPO DO ARQUIVO. Aquele roda no
+ * import, FORA do render, e congela a cor do tema que estava ativo quando o
+ * módulo carregou — a armadilha que `design-system/theme.ts` documenta, irmã do
+ * `tr("literal")` que congelava o idioma no build.
+ *
+ * ⚠️ E AS CORES SAEM DOS TOKENS SEMÂNTICOS, não de hexadecimais novos.
+ * `test:paleta` conta as cores cruas deste arquivo e reprovou quando acrescentei
+ * cinco: cor solta escapa da validação de contraste, e é lá que o piso de 4,5:1
+ * do texto pequeno é cobrado. `warning` e `critical` já passaram por ele.
+ */
+const criarEstilosDeAlerta = (t: Tema) =>
+  StyleSheet.create({
+    faixa: {
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm + 2,
+      borderLeftWidth: 4,
+      borderLeftColor: t.cores.primary,
+      backgroundColor: t.cores.surface,
+    },
+    atencao: { borderLeftColor: t.cores.warning },
+    critico: { borderLeftColor: t.cores.critical },
+    texto: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "700" },
+    detalhe: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, marginTop: 3 },
+  });
+
 export default function AclsDecisionFlowScreen({
   tree,
   protocolLabel,
@@ -478,6 +506,14 @@ export default function AclsDecisionFlowScreen({
   }, []);
   const prazos = typeof engine.getPrazos === "function" ? engine.getPrazos(agora) : [];
 
+  // A faixa que vale para o atendimento inteiro (hoje: o ECG de 12 derivações
+  // e a meta de 10 min do primeiro contato médico). Derivada a cada render,
+  // como o veredito — nunca guardada. Árvore que não declara devolve null e
+  // nada aparece, então os outros módulos seguem idênticos.
+  const alerta =
+    typeof engine.getAlertaPersistente === "function" ? engine.getAlertaPersistente(agora) : null;
+  const estilosDeAlerta = useEstilosDoTema(criarEstilosDeAlerta);
+
   const stepCount = trail.length;
 
   // Fase 8: fade de entrada na troca de etapa. O conteúdo já está montado e
@@ -506,6 +542,32 @@ export default function AclsDecisionFlowScreen({
           etapa={`${tr("Passo")} ${stepCount}`}
           onVoltar={() => router.back()}
         />
+      ) : null}
+      {/* ⚠️ ACIMA DO PRAZO E ACIMA DO CONTEÚDO, e fora do ScrollView: uma
+          pendência de tempo que só aparece ao rolar não é lembrete. A regra do
+          autor para 375×667 é que nenhuma decisão clínica fique abaixo da
+          dobra, e a cobrança do ECG é o gatilho de uma. */}
+      {alerta ? (
+        <View
+          style={[
+            estilosDeAlerta.faixa,
+            alerta.nivel === "atencao" ? estilosDeAlerta.atencao : null,
+            alerta.nivel === "critico" ? estilosDeAlerta.critico : null,
+          ]}
+          accessibilityRole="alert"
+        >
+          <Text style={estilosDeAlerta.texto}>{tr(alerta.texto)}</Text>
+          {alerta.detalhe ? (
+            <Text style={estilosDeAlerta.detalhe}>
+              {/* Traduz o LITERAL e só então põe o número: interpolar antes
+                  deixaria a frase fora do dicionário PT→ES (D-19). */}
+              {Object.entries(alerta.valores ?? {}).reduce(
+                (texto, [chave, valor]) => texto.split(`{${chave}}`).join(valor),
+                tr(alerta.detalhe),
+              )}
+            </Text>
+          ) : null}
+        </View>
       ) : null}
       {prazos.length ? (
         <View style={styles.faixaDePrazos}>
