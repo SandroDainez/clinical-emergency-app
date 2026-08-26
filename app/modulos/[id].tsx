@@ -25,9 +25,15 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 
 export default function ClinicalModuleScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string; from_module?: string }>();
+  const params = useLocalSearchParams<{ id?: string; from_module?: string; return_mode?: string }>();
   const moduleId = Array.isArray(params.id) ? params.id[0] : params.id;
   const sourceModuleId = Array.isArray(params.from_module) ? params.from_module[0] : params.from_module;
+  // ⚠️ SÓ A FERRAMENTA AUXILIAR MANDA ESTE MARCADOR, e ele diz apenas COMO
+  // voltar: o módulo de origem deve reapresentar direto, sem a confirmação de
+  // retomada. Para qualquer navegação clínica entre módulos, `from_module`
+  // continua exatamente como sempre foi.
+  const voltaAuxiliar =
+    (Array.isArray(params.return_mode) ? params.return_mode[0] : params.return_mode) === "auxiliary";
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
 
@@ -53,7 +59,10 @@ export default function ClinicalModuleScreen() {
         }
       }
 
-      router.replace(sourceModule.route as Href);
+      const rota = voltaAuxiliar
+        ? `${sourceModule.route}${String(sourceModule.route).includes("?") ? "&" : "?"}return_mode=auxiliary`
+        : sourceModule.route;
+      router.replace(rota as Href);
       return;
     }
     goToHub();

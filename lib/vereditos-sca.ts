@@ -1,6 +1,6 @@
 import type { TreeValues, Veredito } from "../core/decision-tree/types";
 import { BETABLOQUEADOR_AGUDO_DOSE, BETABLOQUEADOR_INDICACAO } from "./betabloqueador-agudo";
-import { NITRATO_DOSE_SL } from "./nitrato-dose";
+import { NITRATO_DOSE_IV, NITRATO_DOSE_SL, NITRATO_DOSE_SL_ALTERNATIVA } from "./nitrato-dose";
 import { temAlgum } from "../core/decision-tree/estado-clinico";
 
 /**
@@ -112,7 +112,12 @@ export function vereditoNitrato(v: TreeValues): Veredito {
     nivel: "verde",
     titulo,
     motivo: `PAS ${v.pas} mmHg, sem contraindicação identificada.`,
-    instrucao: [NITRATO_DOSE_SL],
+    // ⚠️ AS TRÊS LINHAS, NA ORDEM DE QUEM PRESCREVE NO BRASIL: o dinitrato
+    // primeiro (é o que está na gaveta), a nitroglicerina SL como alternativa
+    // (é o que a guideline nomeia), e a via EV para dor persistente,
+    // hipertensão ou congestão — que manda calcular na calculadora, fonte
+    // única de concentração e mL/h.
+    instrucao: [NITRATO_DOSE_SL, NITRATO_DOSE_SL_ALTERNATIVA, NITRATO_DOSE_IV],
   };
 }
 

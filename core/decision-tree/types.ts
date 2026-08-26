@@ -589,6 +589,12 @@ export type ActionNode = BaseNode & {
   vereditos?: VereditoSpec[];
   /** Impedimentos com tratamento e re-medida. Ver `CondicaoCorrigivel`. */
   corrigiveis?: CondicaoCorrigivel[];
+  /**
+   * Ferramenta auxiliar aberta por um toque, sem sair do ponto do protocolo.
+   * OPCIONAL — ausente, nada muda: nenhum dos módulos existentes declara.
+   * Ver `FerramentaAuxiliar`.
+   */
+  ferramenta?: FerramentaAuxiliar;
   actions: string[];
   /**
    * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
@@ -681,6 +687,30 @@ export type TransitionTarget = {
   moduleId: string;
   label: string;
   reason: string;
+};
+
+/**
+ * FERRAMENTA AUXILIAR ABERTA A PARTIR DE UM NÓ DE AÇÃO — e o que ela NÃO é.
+ *
+ * ⚠️ ISTO NÃO É UMA TRANSIÇÃO. `TransitionTarget` encaminha o ATENDIMENTO para
+ * outro módulo: o caso sai daqui e continua lá. Isto abre uma FERRAMENTA e o
+ * médico volta ao mesmo ponto — a calculadora de vasoativos para descobrir
+ * quantos mL/h correspondem a 10 mcg/min, e depois seguir a via de SCA de onde
+ * parou.
+ *
+ * ⚠️ E POR ISSO NÃO MEXE EM NADA (regra do autor, 2026-08-25): abrir a
+ * ferramenta não chama `advance()`, não marca ação como realizada, não resolve
+ * veredito, não registra decisão e não altera o caminho clínico. Um atalho que
+ * mexesse no estado seria uma transição disfarçada, e o médico voltaria para
+ * um protocolo que andou sozinho enquanto ele fazia uma conta.
+ *
+ * Reusa `moduleId` e a mesma navegação com `from_module` que os atalhos já
+ * usam — nenhuma segunda lógica de roteamento.
+ */
+export type FerramentaAuxiliar = {
+  moduleId: string;
+  /** Texto do botão. É tela, e por isso é interpolado e traduzível. */
+  label: string;
 };
 
 export type TransitionNode = BaseNode & {
@@ -828,6 +858,11 @@ export type FrontendTreeStep =
       declaracoes: DeclaracaoDeAfirmacao[];
       /** Ver `ActionNode.enfase`. */
       enfase?: ActionNode["enfase"];
+      /**
+       * Ferramenta auxiliar, já interpolada. Ausente na esmagadora maioria dos
+       * nós — e ausente significa que nada muda. Ver `FerramentaAuxiliar`.
+       */
+      ferramenta?: FerramentaAuxiliar;
       canContinue: true;
     }
   | {

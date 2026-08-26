@@ -26,11 +26,49 @@
  * a mesma — foi exatamente a confusão que esta correção desfez.
  */
 
+/**
+ * ── SUBLINGUAL, NA ORDEM EM QUE O BRASIL PRESCREVE (2026-08-25) ────────────
+ *
+ * ⚠️ A NITROGLICERINA SL NÃO PODE SER A ÚNICA OPÇÃO (decisão do autor): ela é
+ * o que a ACC/AHA 2025 nomeia, mas não é o que está disponível na maior parte
+ * dos serviços brasileiros. Um app que só oferece o que não existe na gaveta
+ * manda o médico procurar outra fonte no meio do atendimento.
+ *
+ * ⚠️ E AS DUAS PROCEDÊNCIAS SÃO DIFERENTES — por isso são constantes
+ * separadas, cada uma dizendo de onde vem. Atribuir o dinitrato à ACC/AHA 2025
+ * seria dar à guideline americana uma recomendação que ela não faz; a fonte do
+ * dinitrato é a diretriz brasileira de SCA, que traz dinitrato 5 mg SL,
+ * mononitrato 5 mg SL ou nitroglicerina 0,4 mg SL, até 3 doses separadas por
+ * 5 minutos.
+ */
 export const NITRATO_DOSE_SL =
-  "NITROGLICERINA SUBLINGUAL — 0,3–0,4 mg SL a cada 5 min, até 3 doses. Só em paciente hemodinamicamente estável e com PAS ≥ 90 mmHg (reavaliar a PA antes de cada dose).";
+  "DINITRATO DE ISOSSORBIDA 5 mg SL — repetir a cada 5 min se necessário, até 3 doses. Só em paciente hemodinamicamente estável e com PAS ≥ 90 mmHg (reavaliar a PA antes de cada dose). Fonte: diretriz brasileira de SCA.";
 
+export const NITRATO_DOSE_SL_ALTERNATIVA =
+  "Alternativa, se disponível: NITROGLICERINA 0,3 ou 0,4 mg SL — repetir a cada 5 min se necessário, até 3 doses (ACC/AHA 2025).";
+
+/**
+ * ── INTRAVENOSA — E POR QUE ESTE CARD NÃO CALCULA NADA ─────────────────────
+ *
+ * ⚠️ A CONTA JÁ EXISTE, E DUPLICÁ-LA SERIA O DEFEITO. `vasoactive-engine.ts`
+ * traz a nitroglicerina com apresentação real (Tridil 5 mg/mL, bula ANVISA),
+ * soluções padrão de 100 e 200 mcg/mL e o cálculo de mL/h. Escrever aqui uma
+ * tabela de mL/h criaria uma segunda verdade sobre a mesma droga — e duas
+ * verdades divergem no primeiro ajuste, que é exatamente o que
+ * `test:lib-consumida` existe para impedir.
+ *
+ * ⚠️ MAS O NÚMERO INICIAL É DAQUI, E É ESPECÍFICO DA SCA (decisão do autor,
+ * 2026-08-25): a ACC/AHA 2025 diz "start at 10 mcg/min" para síndrome
+ * coronariana. A calculadora geral mostra a faixa operacional 5–10 mcg/min,
+ * sustentada pela fonte dela; o card da SCA não pode contradizer a guideline
+ * específica, então ele declara 10 e manda calcular o resto na calculadora.
+ *
+ * Sem teto numérico: a ACC/AHA 2025 não fixa um, e inventá-lo seria atribuir à
+ * diretriz o que ela não diz. O limite prático de titulação vive na
+ * calculadora, com a fonte dela.
+ */
 export const NITRATO_DOSE_IV =
-  "NITROGLICERINA IV — iniciar a 10 mcg/min e titular conforme os sintomas e a tolerância hemodinâmica. ⚠️ Este app não fixa dose máxima: a ACC/AHA 2025 não estabelece um teto numérico, e inventar um seria atribuir à diretriz o que ela não diz.";
+  "NITROGLICERINA IV — iniciar a 10 mcg/min e titular conforme os sintomas e a tolerância hemodinâmica (ACC/AHA 2025). ⚠️ NÃO administrar IV direto: diluir e infundir em bomba. Concentração, diluição e mL/h na calculadora de drogas vasoativas — fonte única.";
 
 export const NITRATO_MONITORIZACAO =
   "Monitorização: PA a cada ajuste de dose e continuamente durante a infusão IV — a queda pode ser abrupta. Interromper/reduzir se a PAS cair abaixo de 90 mmHg ou mais de 30 mmHg do basal; reavaliar a dor a cada ajuste.";

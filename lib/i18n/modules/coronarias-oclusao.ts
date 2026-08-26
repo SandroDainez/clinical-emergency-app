@@ -25,6 +25,15 @@ export const coronariasOclusaoEs: Record<string, string> = {
   "Não avaliei / não sei": "No evalué / no sé",
   "Arritmia ao monitor + sinais de hipoperfusão (pele fria/pálida/sudoreica)":
     "Arritmia en el monitor + signos de hipoperfusión (piel fría/pálida/sudorosa)",
+  // Nitratos — via sublingual na ordem da prática brasileira, via EV
+  // apontando para a calculadora (fonte única de concentração e mL/h).
+  "DINITRATO DE ISOSSORBIDA 5 mg SL — repetir a cada 5 min se necessário, até 3 doses. Só em paciente hemodinamicamente estável e com PAS ≥ 90 mmHg (reavaliar a PA antes de cada dose). Fonte: diretriz brasileira de SCA.":
+    "DINITRATO DE ISOSORBIDA 5 mg SL — repetir cada 5 min si es necesario, hasta 3 dosis. Solo en paciente hemodinámicamente estable y con PAS ≥ 90 mmHg (reevaluar la PA antes de cada dosis). Fuente: directriz brasileña de SCA.",
+  "Alternativa, se disponível: NITROGLICERINA 0,3 ou 0,4 mg SL — repetir a cada 5 min se necessário, até 3 doses (ACC/AHA 2025).":
+    "Alternativa, si está disponible: NITROGLICERINA 0,3 o 0,4 mg SL — repetir cada 5 min si es necesario, hasta 3 dosis (ACC/AHA 2025).",
+  "NITROGLICERINA IV — iniciar a 10 mcg/min e titular conforme os sintomas e a tolerância hemodinâmica (ACC/AHA 2025). ⚠️ NÃO administrar IV direto: diluir e infundir em bomba. Concentração, diluição e mL/h na calculadora de drogas vasoativas — fonte única.":
+    "NITROGLICERINA IV — iniciar a 10 mcg/min y titular según los síntomas y la tolerancia hemodinámica (ACC/AHA 2025). ⚠️ NO administrar IV directo: diluir e infundir en bomba. Concentración, dilución y mL/h en la calculadora de drogas vasoactivas — fuente única.",
+  "Abrir calculadora — nitroglicerina EV": "Abrir calculadora — nitroglicerina EV",
   "Antes do AAS": "Antes del AAS",
   "Duas perguntas — o resto o app já sabe.": "Dos preguntas — el resto la app ya lo sabe.",
   "Alergia conhecida ao AAS?": "¿Alergia conocida al AAS?",

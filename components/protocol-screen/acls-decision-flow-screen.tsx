@@ -11,7 +11,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
 import { alternarSelecao, selecionados } from "../../core/decision-tree/estado-clinico";
 import type {
@@ -154,6 +154,14 @@ export default function AclsDecisionFlowScreen({
 
   const [ofertaDeRetomada, setOfertaDeRetomada] = useState<SessaoDeFluxo | undefined>(undefined);
 
+  // ⚠️ SÓ A NAVEGAÇÃO DE FERRAMENTA PRODUZ ESTE MARCADOR. `from_module`
+  // continua com a semântica que sempre teve — nenhum módulo clínico é
+  // afetado.
+  const paramsDaRota = useLocalSearchParams<{ return_mode?: string | string[] }>();
+  const voltandoDeFerramenta =
+    (Array.isArray(paramsDaRota.return_mode) ? paramsDaRota.return_mode[0] : paramsDaRota.return_mode) ===
+    "auxiliary";
+
   // Leitura em efeito, não no render: o primeiro render do cliente tem de bater
   // com o do build estático. Foi essa disciplina que resolveu o L-001. O ref
   // garante leitura única — o efeito de salvamento roda depois e sobrescreve o
@@ -163,8 +171,27 @@ export default function AclsDecisionFlowScreen({
     if (jaLeuSessao.current) return;
     jaLeuSessao.current = true;
     const salva = lerSessaoDeFluxo(currentModuleSlug, Date.now());
-    if (salva) setOfertaDeRetomada(salva);
-  }, [currentModuleSlug]);
+    if (!salva) return;
+
+    // ⚠️ DUAS VOLTAS DIFERENTES, E SÓ UMA PERGUNTA (2026-08-25).
+    //
+    // Voltar de outro MÓDULO clínico continua exigindo confirmação, e o motivo
+    // é o de sempre: pode ter passado tempo, pode ser outro paciente, e
+    // "retomar sozinho colocaria o médico no meio de um protocolo sem ele
+    // pedir" (lib/flow-session.ts).
+    //
+    // Voltar de uma FERRAMENTA é outra coisa. O médico tocou "abrir
+    // calculadora", passou dez segundos descobrindo quantos mL/h são
+    // 10 mcg/min, e voltou — perguntar se ele quer continuar o que estava
+    // fazendo é fricção sem risco. O marcador `return_mode=auxiliary` viaja
+    // só nessa navegação; nenhuma outra origem o produz, e nenhum outro
+    // módulo muda de comportamento.
+    if (voltandoDeFerramenta) {
+      retomar(salva);
+      return;
+    }
+    setOfertaDeRetomada(salva);
+  }, [currentModuleSlug, voltandoDeFerramenta]);
 
   // Salva a cada etapa, não ao desmontar.
   //
@@ -210,9 +237,13 @@ export default function AclsDecisionFlowScreen({
    * shell empurravam a rota crua, então o destino não tinha como saber que havia
    * um protocolo em andamento atrás dele — metade do defeito relatado.
    */
-  const abrirOutroModulo = (slug: string) => {
+  const abrirOutroModulo = (slug: string, opcoes?: { auxiliar?: boolean }) => {
     const origem = currentModuleSlug ? `?from_module=${currentModuleSlug}` : "";
-    router.push(`/modulos/${slug}${origem}` as never);
+    // ⚠️ O MARCADOR É ADITIVO E ESPECÍFICO: só a ferramenta auxiliar o envia,
+    // e ele só diz COMO voltar — não muda para onde se vai nem o que o módulo
+    // de destino faz.
+    const modo = opcoes?.auxiliar && origem ? "&return_mode=auxiliary" : "";
+    router.push(`/modulos/${slug}${origem}${modo}` as never);
   };
 
   const comecarDoInicio = () => {
@@ -221,8 +252,22 @@ export default function AclsDecisionFlowScreen({
   };
 
 
-  const retomar = () => {
-    const salva = ofertaDeRetomada;
+  /**
+   * ⚠️ O PARÂMETRO PRECISA SER VALIDADO, NÃO SÓ RECEBIDO (bug de 2026-08-25).
+   *
+   * A primeira versão era `(sessao?: SessaoDeFluxo) => { const salva = sessao
+   * ?? ofertaDeRetomada; ... }` — e quebrou a retomada de TODOS os módulos. O
+   * botão "Continuar" liga `onContinuar={retomar}`, então o React entrega o
+   * EVENTO como primeiro argumento: `sessao` chegava truthy, `??` nunca caía
+   * no estado, e a retomada tentava restaurar um objeto de evento.
+   *
+   * Conferir a forma do que chegou é o que separa "aceita a sessão" de "aceita
+   * qualquer coisa".
+   */
+  const retomar = (sessao?: SessaoDeFluxo | unknown) => {
+    const argEhSessao =
+      !!sessao && typeof sessao === "object" && Array.isArray((sessao as SessaoDeFluxo).caminho);
+    const salva = argEhSessao ? (sessao as SessaoDeFluxo) : ofertaDeRetomada;
     if (!salva) return;
 
     const destino = salva.caminho[salva.caminho.length - 1];
@@ -651,6 +696,11 @@ export default function AclsDecisionFlowScreen({
                 sync();
               } catch {}
             }}
+            // ⚠️ SÓ NAVEGA. Reusa `abrirOutroModulo`, que já leva o
+            // `from_module` — a sessão de fluxo guarda o caso a cada etapa, e
+            // a volta cai no mesmo nó com o estado inteiro. Nenhuma segunda
+            // lógica de roteamento, nenhuma chamada ao motor.
+            onAbrirFerramenta={(moduleId) => abrirOutroModulo(moduleId, { auxiliar: true })}
           />
         ) : step.kind === "input" ? (
           <InputStep
@@ -1090,6 +1140,7 @@ function ActionStep({
   estadoDaAcao,
   onExecutar,
   onDecidir,
+  onAbrirFerramenta,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
@@ -1099,6 +1150,8 @@ function ActionStep({
   estadoDaAcao?: (id: string) => EstadoDaAcao;
   onExecutar?: (id: string) => void;
   onDecidir?: (id: string, tipo: TipoDeSaida) => void;
+  /** Abre uma ferramenta auxiliar. NÃO avança, NÃO marca nada. */
+  onAbrirFerramenta?: (moduleId: string) => void;
 }) {
   const tr = useTr();
   const v = useEstilosDoTema(criarEstilosV2);
@@ -1200,6 +1253,20 @@ function ActionStep({
             ))}
           </View>
           <AcoesParalelas itens={step.emParalelo} />
+
+          {/* ⚠️ FERRAMENTA, NÃO TRANSIÇÃO. O toque abre a calculadora e o
+              médico volta a ESTE ponto — não chama `onAdvance`, não marca ação
+              como realizada, não resolve veredito. Um botão daqui que mexesse
+              no estado seria uma transição disfarçada, e o protocolo teria
+              andado sozinho enquanto ele fazia uma conta. */}
+          {step.ferramenta ? (
+            <Pressable
+              onPress={() => onAbrirFerramenta?.(step.ferramenta!.moduleId)}
+              style={({ pressed }) => [v3.ferramentaBotao, pressed && { opacity: 0.85 }]}
+              testID={`ferramenta-${step.ferramenta.moduleId}`}>
+              <Text style={v3.ferramentaTexto}>{tr(step.ferramenta.label)} ›</Text>
+            </Pressable>
+          ) : null}
         </View>
         <SeloDeForca procedencia={step.procedencia} />
         {step.declaracoes.map((d, i) => (
@@ -1824,6 +1891,20 @@ const criarEstilosV3 = (t: Tema) => {
     },
     vereditoBotaoTexto: { ...TIPOGRAFIA.body, color: c.bg, fontWeight: "800" },
     vereditoInstrucao: { ...TIPOGRAFIA.body, color: c.text, marginTop: 4 },
+    // Discreto de propósito: é ferramenta de apoio, não o próximo passo — não
+    // pode competir com o botão que faz o protocolo andar.
+    ferramentaBotao: {
+      marginTop: ESPACO.sm,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: RAIO.botao,
+      paddingVertical: ESPACO.sm,
+      paddingHorizontal: ESPACO.md,
+      alignItems: "center",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    ferramentaTexto: { ...TIPOGRAFIA.body, color: c.primary, fontWeight: "700" },
     vereditoSaidas: { gap: ESPACO.xs, marginTop: ESPACO.xs },
     vereditoSaida: {
       borderWidth: 1,

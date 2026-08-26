@@ -891,6 +891,11 @@ function mapActionNode(
       procedencia: d.procedencia ? interpolarProcedencia(d.procedencia, interpolate) : undefined,
     })),
     enfase: node.enfase,
+    // ⚠️ `label` é texto de tela e por isso é interpolado; `moduleId` é
+    // referência. Ausente no nó = ausente no passo, e a tela não desenha nada.
+    ferramenta: node.ferramenta
+      ? { ...node.ferramenta, label: interpolate(node.ferramenta.label) }
+      : undefined,
     canContinue: true,
   };
 }

@@ -63,7 +63,13 @@ import { vereditoAas, vereditoBetabloqueador, vereditoNitrato } from "./lib/vere
 import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
-import { NITRATO_DOSE_SL, NITRATO_DOSE_IV, NITRATO_MONITORIZACAO, NITRATO_ALERTAS_SCA } from "./lib/nitrato-dose";
+import {
+  NITRATO_DOSE_SL,
+  NITRATO_DOSE_SL_ALTERNATIVA,
+  NITRATO_DOSE_IV,
+  NITRATO_MONITORIZACAO,
+  NITRATO_ALERTAS_SCA,
+} from "./lib/nitrato-dose";
 import {
   derivarJanelaReperfusao,
   derivarEstadoContraindicacao,
@@ -761,6 +767,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Manter monitorização.",
         "Seguir imediatamente para ECG/classificação.",
         NITRATO_DOSE_SL,
+        NITRATO_DOSE_SL_ALTERNATIVA,
         MORFINA_TETO,
         "Acelerar a estratégia de reperfusão/invasiva assim que o padrão de ECG for reconhecido.",
       ],
@@ -1092,6 +1099,11 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         { id: "betabloqueador", avaliar: vereditoBetabloqueador },
       ],
       porque: [NITRATO_MONITORIZACAO, BETABLOQUEADOR_IV_SEPARADO],
+      // ⚠️ A CONTA NÃO MORA AQUI. O card diz "iniciar a 10 mcg/min"; quantos
+      // mL/h isso é depende da concentração da bolsa, e essa conta já existe
+      // com fonte de bula em `vasoactive-engine.ts`. Um toque leva até lá e
+      // traz de volta a este mesmo ponto — sem avançar o protocolo.
+      ferramenta: { moduleId: "drogas-vasoativas", label: "Abrir calculadora — nitroglicerina EV" },
       next: {
         possiveis: ["ecg_supra_qual", "ecg_sem_supra"],
         escolher: (values) => (values.ecg_supra_avaliado === "sei_sim" ? "ecg_supra_qual" : "ecg_sem_supra"),
@@ -1628,6 +1640,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
         "Nitrato e morfina só se necessário — dose abaixo, contraindicações valem para os dois:",
         NITRATO_DOSE_SL,
+        NITRATO_DOSE_SL_ALTERNATIVA,
         NITRATO_DOSE_IV,
         NITRATO_MONITORIZACAO,
         MORFINA_TETO,
@@ -2414,6 +2427,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "{avisoPeso}",
         "Nitrato, se dor/HAS/IC e sem contraindicação:",
         NITRATO_DOSE_SL,
+        NITRATO_DOSE_SL_ALTERNATIVA,
         NITRATO_DOSE_IV,
         NITRATO_MONITORIZACAO,
         "Contraindicações do nitrato — quando NÃO usar:",

@@ -1926,6 +1926,72 @@ if (textoRenderizado.length < 5000) {
   }
 }
 
+
+// ── NITRATOS: DUAS VIAS, DUAS PROCEDÊNCIAS, UMA FONTE DE CÁLCULO ───────────
+//
+// ⚠️ O DEFEITO QUE ISTO IMPEDE (2026-08-25): a versão anterior oferecia SÓ
+// nitroglicerina sublingual — o que a ACC/AHA 2025 nomeia, mas não o que está
+// na gaveta da maior parte dos serviços brasileiros. Um app que só oferece o
+// que não existe manda o médico procurar outra fonte no meio do atendimento.
+//
+// ⚠️ E A TENTAÇÃO SEGUINTE ERA PIOR: escrever no card da SCA uma tabela de
+// mL/h da nitroglicerina EV. `vasoactive-engine.ts` já traz a droga com
+// apresentação real (Tridil, bula ANVISA), soluções de 100 e 200 mcg/mL e o
+// cálculo — duas verdades sobre a mesma droga divergem no primeiro ajuste.
+{
+  const { lerFonte } = require("./lib/fonte.cjs");
+  const fonte = lerFonte(path.join(appDir, "lib", "nitrato-dose.ts"));
+
+  for (const [padrao, nome, porque] of [
+    [/DINITRATO DE ISOSSORBIDA 5 mg SL/, "o dinitrato é a opção sublingual do Brasil",
+     "sem ele o app só oferece o que a maioria dos serviços não tem"],
+    [/diretriz brasileira de SCA/, "o dinitrato declara a fonte BRASILEIRA",
+     "atribuí-lo à ACC/AHA 2025 daria à guideline americana uma recomendação que ela não faz"],
+    [/NITROGLICERINA 0,3 ou 0,4 mg SL/, "a nitroglicerina SL continua como alternativa",
+     "ela é o que a guideline nomeia — tirá-la perderia a referência"],
+    [/iniciar a 10 mcg\/min/, "a EV inicia a 10 mcg/min no card da SCA",
+     "é o valor específico da ACC/AHA 2025 para síndrome coronariana; a calculadora geral mostra 5–10 pela fonte dela, e o card não pode contradizer a guideline específica"],
+    [/N[ÃA]O administrar IV direto/, "o card avisa que não se administra IV direto",
+     "a apresentação brasileira é concentrada e exige diluição — omitir isso é omitir um erro de administração possível"],
+    [/calculadora de drogas vasoativas/, "o card aponta para a calculadora",
+     "é lá que vivem concentração, diluição e mL/h, com fonte de bula"],
+  ]) {
+    if (!padrao.test(fonte)) falhas.push(`${nome}: sumiu — ${porque}.`);
+    else ok++;
+  }
+
+  // ⚠️ NENHUM NÚMERO DE CONCENTRAÇÃO OU mL/h PODE APARECER AQUI. Se aparecer,
+  // existem duas fontes para a mesma droga — e `test:preparos` cobre o resto
+  // do app, mas este arquivo é da SCA e precisa da sua própria guarda.
+  // ⚠️ O QUE SE PROÍBE É O NÚMERO, NÃO A PALAVRA. A primeira versão desta
+  // conferência reprovou a própria frase que APONTA para a calculadora
+  // ("Concentração, diluição e mL/h na calculadora…") — proibir a menção
+  // impediria justamente o ponteiro que resolve a duplicação. O que não pode
+  // existir aqui é um VALOR: "6 mL/h", "100 mcg/mL", "50 mg em 500 mL".
+  for (const [padrao, oque] of [
+    [/\d+\s*mL\s*\/\s*h/, "uma vazão numérica em mL/h"],
+    [/\d+\s*mcg\s*\/\s*mL/, "uma concentração numérica em mcg/mL"],
+    [/\d+\s*mg em \d+\s*mL/, "uma receita de diluição"],
+  ]) {
+    if (padrao.test(fonte)) {
+      falhas.push(
+        `\`lib/nitrato-dose.ts\` escreve ${oque} — isso é da calculadora.\n` +
+        `      ⚠️ Duas fontes para a mesma droga divergem no primeiro ajuste, e a que fica para trás ` +
+        `segue sendo lida como se estivesse certa.`
+      );
+    } else ok++;
+  }
+
+  // E a alternativa tem de estar EM USO, não só declarada.
+  const usos = lerFonte(path.join(appDir, ARVORE)).match(/NITRATO_DOSE_SL_ALTERNATIVA/g) ?? [];
+  if (usos.length < 3) {
+    falhas.push(
+      `a alternativa de nitroglicerina SL aparece em ${usos.length} nós — esperado ao menos 3.\n` +
+      `      ⚠️ Declarar a constante e não consumi-la deixa a opção existindo só no código.`
+    );
+  } else ok++;
+}
+
 console.log("\nSíndromes coronarianas — quatro grupos, quatro condutas, e os prazos com marco\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

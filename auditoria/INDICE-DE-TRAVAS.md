@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**74 de 91 travas com declaração completa.**
+**75 de 92 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -55,6 +55,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que "arritmia instável" só seja declarada quando a FREQUÊNCIA é plausivelmente a causa do comprometimento — faixa da AHA 2025 (taquiarritmia ≥150/min, bradiarritmia <50/min) E comprometimento atribuível a ela; que a faixa intermediária não vire arritmia; que ritmo irregular não seja pré-requisito; e que o motivo EXIBIDO descreva o que de fato disparou.
 - **NÃO PROMETE:** a conduta dentro dos módulos de bradi/taquicardia (test:acls), nem os demais gatilhos de ameaça (test:coronarias).
 - **UNIVERSO:** lib/instabilidade-coronariana.ts e os dois nós de transição da SCA. ── O DEFEITO, ENCONTRADO NO CELULAR PELO AUTOR (2026-08-25) ──────────────── A tela dizia "Arritmia instável — frequência alta" para um paciente com FC 100 e ritmo REGULAR, e o motivo impresso era "Ritmo irregular + FC alta + sinais objetivos de hipoperfusão". Dois defeitos num card só: 1. O LIMIAR ERA 100. Dor torácica, ansiedade, vasoconstrição e FC 100 é o quadro mais banal do pronto-socorro — e o app mandava para o módulo de taquicardia, cuja conduta para instabilidade é CARDIOVERSÃO SINCRONIZADA. Cardioverter taquicardia sinusal compensatória é dano. 2. O MOTIVO ERA TEXTO FIXO. Dizia "ritmo irregular" para quem havia informado ritmo REGULAR — o app dava um motivo que não era o motivo, e isso destrói a confiança no "porquê" que o app inteiro promete. ⚠️ E O ERRO DE FUNDO NÃO ERA O NÚMERO: era atribuir o comprometimento à frequência sem prova de que ela é a causa.
+
+## `test:ferramenta-auxiliar` → `scripts/valida-ferramenta-auxiliar.cjs`
+
+- **PROMETE:** que o botão de ferramenta auxiliar num nó de AÇÃO seja estritamente aditivo — que nó sem o campo continue idêntico; que abrir a ferramenta não avance o fluxo, não marque a ação como realizada, não resolva veredito e não registre decisão; e que a volta caia no mesmo nó com o estado inteiro.
+- **NÃO PROMETE:** o que a calculadora de destino faz (test:vasoativos), nem a renderização do botão — isso é estrutural aqui e visual no e2e.
+- **UNIVERSO:** o motor, a árvore da SCA e o shell de fluxo. ── POR QUE ESTE CAMPO NÃO É UMA TRANSIÇÃO ────────────────────────────────── `TransitionTarget` encaminha o ATENDIMENTO: o caso sai deste módulo e continua em outro. A ferramenta auxiliar faz o oposto — o médico abre a calculadora para descobrir quantos mL/h são 10 mcg/min e VOLTA ao mesmo ponto da via de SCA. ⚠️ E É POR ISSO QUE ELA NÃO PODE MEXER EM NADA (regra do autor, 2026-08-25). Um atalho que avançasse o passo, marcasse a ação como feita ou resolvesse um veredito seria uma transição disfarçada: o médico voltaria para um protocolo que andou sozinho enquanto ele fazia uma conta — e o registro do caso diria que ele fez coisas que não fez.
 
 ## `test:guiado` → `scripts/test-fluxo-guiado.cjs`
 
@@ -650,7 +656,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
