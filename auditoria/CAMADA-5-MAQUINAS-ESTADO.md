@@ -5,13 +5,13 @@
 
 - Árvores analisadas: **20**
 - Erros estruturais: **0**
-- Avisos: **20**
+- Avisos: **21**
 
 ## Visão por árvore
 
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
-| coronary-decision-tree (coronaryDecisionTree) | 94 | 94 | 9 | 12 |
+| coronary-decision-tree (coronaryDecisionTree) | 95 | 95 | 9 | 13 |
 | ira-decision-tree (iraDecisionTree) | 74 | 74 | 8 | 7 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
@@ -36,13 +36,14 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 20 |
+| escolha-sem-efeito | aviso | 21 |
 
-### escolha-sem-efeito (20)
+### escolha-sem-efeito (21)
 
 | árvore | nó | detalhe |
 |---|---|---|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | `severity_grade` | opções grade2, grade3 levam todas a "immediate_im_epinephrine" — a escolha não muda o fluxo |
+| coronary-decision-tree (coronaryDecisionTree) | `atalhos_coronarianas` | opções completo, ecg_pronto, reperfusao, antitromboticos levam todas a "ecg_tempo" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_a` | opções afasta, incerto levam todas a "portao_grupo_b" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `portao_ajuda_grupo_b` | opções afasta, incerto levam todas a "aas_check" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `bb_ajuda_pr` | opções nao, sim, indeterminado levam todas a "terapia_vereditos" — a escolha não muda o fluxo |

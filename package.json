@@ -31,7 +31,7 @@
     "test:valor-informado": "node ./scripts/valida-valor-nao-informado.cjs",
     "test:vereditos-sca": "node ./scripts/valida-vereditos-sca.cjs",
     "test:dose-governada": "node ./scripts/valida-dose-governada.cjs",
-    "test:ecg-tempo": "node scripts/valida-ecg-tempo.cjs",
+    "test:ecg-tempo": "node ./scripts/valida-ecg-tempo.cjs",
     "test:arritmia-instavel": "node ./scripts/valida-arritmia-instavel.cjs",
     "test:ferramenta-auxiliar": "node ./scripts/valida-ferramenta-auxiliar.cjs",
     "test:referencias-eletroliticas": "node ./scripts/valida-referencias-eletroliticas.cjs",
