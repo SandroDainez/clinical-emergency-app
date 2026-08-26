@@ -656,7 +656,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
+| `coronary` | ✅ | — | 94/94 (100%) | test:retomada-snapshot, test:vereditos-sca, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
