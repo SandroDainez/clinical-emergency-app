@@ -37,6 +37,7 @@ const MODULE_ICON: Record<string, string> = {
   "avc":                      "🧠",
   "correcoes-eletroliticas":  "⚗️",
   "sindromes-coronarianas":   "🫀",
+  "sindromes-coronarianas-v2": "🫀",
   "ritmos-acls":              "〜",
   "farmacologia-acls":        "Rx",
   "bradicardia-acls":         "↓♡",
@@ -133,7 +134,7 @@ export default function ModuleHub() {
   // aqui cada card JÁ É o seu próprio cenário.
   const ETIQUETA_ECO = new Set([
     "pcr-gestacao-acls", "pos-pcr-acls", "sepse-adulto", "choque", "avc",
-    "sindromes-coronarianas", "isr-rapida", "politrauma", "tce",
+    "sindromes-coronarianas", "sindromes-coronarianas-v2", "isr-rapida", "politrauma", "tce",
     "intoxicacoes-exogenas", "anafilaxia", "abdome-agudo", "sedoanalgesia",
     "calculadoras-clinicas", "drogas-vasoativas", "tep", "ventilacao-mecanica",
     "edema-agudo-pulmao", "insuficiencia-respiratoria", "crises-convulsivas",

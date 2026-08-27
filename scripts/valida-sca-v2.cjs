@@ -588,10 +588,50 @@ confere(
   linhas.push(`  M. aVR sem diagnóstico de tronco · derivações adicionais condicionais em 2 telas`);
 }
 
+// ── N. A V2 É ALCANÇÁVEL POR TOQUE, NÃO SÓ POR URL ─────────────────────────
+//
+// ⚠️ ACHADO DO AUTOR, 2026-08-27: "não estou vendo a modificação das telas, não
+// sei se estou entrando em link errado". A rota funcionava e o módulo estava
+// registrado em `clinical-modules.ts` — mas o hub monta os cards a partir de
+// `constants/module-groups.ts`, e a V2 não estava em grupo nenhum.
+//
+// Registrar o módulo dá a ROTA. O card é outra coisa, e sem ele o módulo existe
+// e é inalcançável por toque: só chega quem digita a URL. Uma tela que ninguém
+// alcança é uma tela que não existe.
+{
+  const fonteGrupos = lerFonte("constants/module-groups.ts");
+  const fonteModulos = lerFonte("clinical-modules.ts");
+  const fonteHub = lerFonte("components/module-hub.tsx");
+  const SLUG = "sindromes-coronarianas-v2";
+
+  confere(
+    "a V2 está registrada em `clinical-modules.ts` (a rota existe)",
+    fonteModulos.includes(`"${SLUG}"`),
+    `sem registro não há rota — /modulos/${SLUG} devolveria 404.`
+  );
+  confere(
+    "a V2 tem card em `constants/module-groups.ts` (dá para chegar por toque)",
+    fonteGrupos.includes(`"${SLUG}"`),
+    `o módulo existe e não aparece no hub. Só chega quem digita a URL — que foi exatamente o que ` +
+    `aconteceu quando o autor tentou testar.`
+  );
+  confere(
+    "a V1 continua no hub, ao lado da V2",
+    /"sindromes-coronarianas"[^\n]*"sindromes-coronarianas-v2"|"sindromes-coronarianas-v2"[^\n]*"sindromes-coronarianas"/.test(fonteGrupos),
+    `as duas precisam aparecer juntas: o objetivo do preview é comparar uma com a outra no telefone.`
+  );
+  confere(
+    "a V2 tem ícone próprio no hub",
+    fonteHub.includes(`"${SLUG}"`),
+    `sem entrada no mapa de ícones o card nasce sem símbolo.`
+  );
+  linhas.push(`  N. V2 com rota, card no hub e ícone — alcançável por toque`);
+}
+
 confere(
-  "as onze linhas de medição foram produzidas",
-  linhas.length === 11,
-  `só ${linhas.length} de 11 blocos mediram algo.`
+  "as doze linhas de medição foram produzidas",
+  linhas.length === 12,
+  `só ${linhas.length} de 12 blocos mediram algo.`
 );
 
 console.log("\nSCA V2 — navegação por decisões, ao lado da V1 e sobre a mesma segurança\n");
