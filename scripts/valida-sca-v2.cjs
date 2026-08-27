@@ -288,12 +288,34 @@ const { coronaryDecisionTree: V1 } = require(path.join(tmp, "coronary-decision-t
     `dose solta em: ${comDose.join(", ")}. A dose pertence a \`Veredito.instrucao\`, que só aparece no verde.`
   );
 
-  const terapias = V2.nodes.v2_terapias;
-  const ids = (terapias.vereditos ?? []).map((v) => v.id);
+  // ⚠️ OS VEREDITOS SAÍRAM DO NÓ E FORAM PARA O BLOCO EM PARALELO (2026-08-27).
+  // Esta conferência media `v2_terapias.vereditos` e reprovou quando a mudança
+  // entrou — corretamente: ela perdeu o alvo. O teto não mudou; o que mudou foi
+  // ONDE as terapias vivem, e é isso que ela passa a medir.
+  const ids = ((V2.terapiasEmParalelo ?? {}).vereditos ?? []).map((v) => v.id);
   confere(
-    "o nó de terapias governa nitrato e morfina por veredito",
-    ids.includes("nitrato") && ids.includes("morfina"),
-    `vereditos: ${JSON.stringify(ids)}. Sem eles a V2 nasceria sem a camada que custou três rodadas na V1.`
+    "as terapias em paralelo governam AAS, nitrato e morfina por veredito",
+    ["aas", "nitrato", "morfina"].every((f) => ids.includes(f)),
+    `vereditos: ${JSON.stringify(ids)}. Sem eles a V2 ficaria sem a camada que custou três rodadas na V1 — e o ` +
+    `AAS, que não existia na primeira versão da V2, voltaria a sumir.`
+  );
+
+  const comBloco = Object.entries(V2.nodes).filter(([, n]) => n.comTerapias).map(([id]) => id);
+  confere(
+    "o bloco acompanha as decisões, não é uma tela",
+    comBloco.includes("v2_decisao1") && comBloco.includes("v2_decisao2") && comBloco.includes("v2_decisao3"),
+    `nós com bloco: ${comBloco.join(", ")}. As três decisões precisam mostrá-lo — a terapia corre EM PARALELO ` +
+    `à reperfusão, e era a décima tela antes desta rodada.`
+  );
+
+  const campos = ((V2.terapiasEmParalelo ?? {}).campos ?? []).map((c) => c.id);
+  confere(
+    "`dor_persiste` vive no bloco e só aparece depois do nitrato registrado",
+    campos.includes("dor_persiste") &&
+      ((V2.terapiasEmParalelo.campos.find((c) => c.id === "dor_persiste") ?? {}).showIf?.({ __realizada_nitrato: "1" }) === true) &&
+      ((V2.terapiasEmParalelo.campos.find((c) => c.id === "dor_persiste") ?? {}).showIf?.({}) === false),
+    `campos do bloco: ${JSON.stringify(campos)}. Perguntar se a dor persiste antes de o nitrato existir é ` +
+    `perguntar sobre a resposta a um tratamento que não houve.`
   );
 
   confere(

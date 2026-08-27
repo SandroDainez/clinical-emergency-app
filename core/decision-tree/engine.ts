@@ -736,6 +736,22 @@ export class DecisionTreeEngine {
       }
     }
     this.realizadas[vereditoId] = this.agora();
+    // ⚠️ ESPELHADO EM `values`, e é o que torna a execução VISÍVEL aos vereditos.
+    //
+    // `registrarDecisao` já faz isso com `decisao.campo` — sem o espelho, o fato
+    // "o nitrato foi administrado" vive só em `realizadas`, e um veredito, que
+    // recebe apenas `TreeValues`, não tem como saber. Foi essa cegueira que me
+    // levou a propor `vereditoMorfina` CHAMAR `vereditoNitrato`, o que faria a
+    // ordem de avaliação determinar comportamento clínico.
+    //
+    // Com o espelho, a cadeia fica: dados brutos (inclusive o que foi feito) →
+    // estado clínico derivado → vereditos que apenas interpretam.
+    this.values[DecisionTreeEngine.chaveDeExecucao(vereditoId)] = String(this.agora());
+  }
+
+  /** Chave de `values` onde a execução de uma ação fica visível. */
+  static chaveDeExecucao(vereditoId: string): string {
+    return `__realizada_${vereditoId}`;
   }
 
   // ── SNAPSHOT: sair da tela e voltar sem perder o caso ─────────────────────
@@ -783,24 +799,45 @@ export class DecisionTreeEngine {
     this.decisoes = [...estado.decisoes];
   }
 
+  /**
+   * As terapias que acompanham o passo atual, quando o nó pede.
+   *
+   * Derivadas a cada chamada e nunca gravadas — mesma regra do veredito. E os
+   * campos passam pelo mesmo `showIf` dos campos de entrada: "a dor persiste?"
+   * só existe depois de o nitrato ter sido registrado.
+   */
+  private terapiasDoPasso(node: DecisionTreeNode): FrontendTreeStep["terapias"] {
+    const decl = this.tree.terapiasEmParalelo;
+    if (!node.comTerapias || !decl) return undefined;
+    const values = this.getValues();
+    return {
+      vereditos: avaliarVereditos(decl.vereditos, values, (t) => this.interpolate(t)),
+      campos: (decl.campos ?? []).filter((f) => !f.showIf || f.showIf(values)),
+    };
+  }
+
   toFrontendStep(): FrontendTreeStep {
     const node = this.getCurrentNode();
+    const terapias = this.terapiasDoPasso(node);
     if (node.type === "decision") {
-      return mapDecisionNode(node, this.getValues(), (t) => this.interpolate(t));
+      return { ...mapDecisionNode(node, this.getValues(), (t) => this.interpolate(t)), terapias };
     }
     if (node.type === "action") {
-      return mapActionNode(node, this.getValues(), (t) => this.interpolate(t));
+      return { ...mapActionNode(node, this.getValues(), (t) => this.interpolate(t)), terapias };
     }
     if (node.type === "input") {
-      return mapInputNode(
-        node,
-        this.values,
-        this.getValues(),
-        this.getHistoricoCompleto(),
-        (t) => this.interpolate(t)
-      );
+      return {
+        ...mapInputNode(
+          node,
+          this.values,
+          this.getValues(),
+          this.getHistoricoCompleto(),
+          (t) => this.interpolate(t)
+        ),
+        terapias,
+      };
     }
-    return mapTransitionNode(node, (t) => this.interpolate(t));
+    return { ...mapTransitionNode(node, (t) => this.interpolate(t)), terapias };
   }
 
   private record(

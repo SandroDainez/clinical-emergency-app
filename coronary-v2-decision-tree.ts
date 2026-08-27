@@ -8,7 +8,7 @@ import {
   blocoRitmo,
   avaliarAmeacaImediata,
 } from "./lib/instabilidade-coronariana";
-import { suspeitaDeVd, vereditoNitrato, vereditoMorfina } from "./lib/vereditos-sca";
+import { suspeitaDeVd, vereditoAas, vereditoNitrato, vereditoMorfina } from "./lib/vereditos-sca";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_IAM } from "./lib/tenecteplase";
 import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import {
@@ -128,6 +128,31 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     tnk_ha_min: "ultimaDose",
   },
   alertaPersistente: alertaDoEcg,
+  // ⚠️ AS TERAPIAS DEIXAM DE SER A DÉCIMA TELA. Ver `terapiasEmParalelo` em
+  // `types.ts` para o porquê. Os três fármacos acompanham as decisões num bloco
+  // recolhido; `v2_terapias` como etapa tardia deixou de existir.
+  terapiasEmParalelo: {
+    vereditos: [
+      { id: "aas", avaliar: vereditoAas },
+      { id: "nitrato", avaliar: vereditoNitrato },
+      { id: "morfina", avaliar: vereditoMorfina },
+    ],
+    campos: [
+      {
+        // ⚠️ SÓ EXISTE DEPOIS DO NITRATO REGISTRADO, e é o dado que separa
+        // "dor refratária" de "dor que cedeu". Sem ele, `estadoTerapiaAntiIsquemica`
+        // fica no estado conservador e a morfina não é oferecida — que é o
+        // comportamento certo enquanto ninguém respondeu.
+        id: "dor_persiste",
+        label: "A dor persiste apesar do nitrato?",
+        showIf: (v) => Boolean(v.__realizada_nitrato),
+        presets: [
+          { value: "sim", label: "Sim — persiste" },
+          { value: "nao", label: "Não — cedeu" },
+        ],
+      },
+    ],
+  },
 
   nodes: {
     // ── 01 · ENTRADA ─────────────────────────────────────────────────────
@@ -404,6 +429,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // alterado lado a lado, compactos.
     v2_decisao1: {
       id: "v2_decisao1",
+      comTerapias: true,
       type: "decision",
       title: "Decisão 1 de 3 · O ECG",
       // ⚠️ SÓ SUPRA. A V1 pergunta "supra de ST OU BRE novo suspeito" na mesma
@@ -549,6 +575,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // destaque, com a comparação disponível, sem gastar a primeira dobra.
     v2_territorio: {
       id: "v2_territorio",
+      comTerapias: true,
       type: "decision",
       title: "Ramo A · Território",
       question: "Em quais derivações está o supradesnível?",
@@ -606,6 +633,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // o VD infartado depende de pré-carga, e a conduta oposta é VOLUME.
     v2_vd: {
       id: "v2_vd",
+      comTerapias: true,
       type: "decision",
       title: "Ramo A · Ventrículo direito",
       question: "As derivações direitas (V3R–V4R) mostram supradesnível?",
@@ -646,6 +674,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // que o app pode derivar.
     v2_decisao2: {
       id: "v2_decisao2",
+      comTerapias: true,
       type: "decision",
       title: "Decisão 2 de 3 · Reperfusão mecânica",
       question:
@@ -718,6 +747,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ── 10 · ICP PRIMÁRIA ────────────────────────────────────────────────
     v2_icp: {
       id: "v2_icp",
+      comTerapias: true,
       type: "action",
       title: "ICP primária — ativar agora",
       summary: "Abrir a artéria culpada o mais cedo possível.",
@@ -735,6 +765,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // app responde sozinho; ao médico resta a metade que só ele sabe.
     v2_decisao3: {
       id: "v2_decisao3",
+      comTerapias: true,
       type: "decision",
       title: "Decisão 3 de 3 · Fibrinólise",
       question: "Sintomas há menos de 12 horas e sem contraindicação absoluta à fibrinólise?",
@@ -829,6 +860,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // não há como corrigir depois.
     v2_fibrinolise: {
       id: "v2_fibrinolise",
+      comTerapias: true,
       type: "input",
       title: "Fibrinólise — tenecteplase",
       intro:
@@ -862,6 +894,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ── 14 · TRANSFERÊNCIA ───────────────────────────────────────────────
     v2_transferencia: {
       id: "v2_transferencia",
+      comTerapias: true,
       type: "action",
       title: "Não fibrinolisar — transferir agora",
       summary: "Contraindicação absoluta ou janela inadequada.",
@@ -889,6 +922,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ⚠️ E O RELÓGIO CONTA DO BOLUS, não da abertura desta tela.
     v2_reavaliacao: {
       id: "v2_reavaliacao",
+      comTerapias: true,
       type: "decision",
       title: "Ramo A · Reavaliação 60–90 min",
       question: "Houve reperfusão clínica e eletrocardiográfica?",
@@ -970,6 +1004,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ── 17 · ESTRATÉGIA FÁRMACO-INVASIVA ─────────────────────────────────
     v2_farmacoinvasiva: {
       id: "v2_farmacoinvasiva",
+      comTerapias: true,
       type: "action",
       title: "Reperfusão provável — estratégia fármaco-invasiva",
       summary: "Transferir mesmo com reperfusão aparentemente bem-sucedida.",
@@ -984,6 +1019,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ── 18 · ICP DE RESGATE ──────────────────────────────────────────────
     v2_icp_resgate: {
       id: "v2_icp_resgate",
+      comTerapias: true,
       type: "action",
       title: "Falha de reperfusão — ICP de resgate",
       summary: "Angiografia imediata com intenção de intervenção.",
@@ -1004,22 +1040,26 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     //
     // ⚠️ SEM `actions`: dose de fármaco contraindicado impressa ao lado do
     // próprio bloqueio é o defeito que os vereditos existem para eliminar.
+    // ⚠️ `v2_terapias` DEIXOU DE SER TELA (2026-08-27). Ela era a décima do
+    // caminho: o app mandava ativar hemodinâmica, trombolisar e reavaliar em 90
+    // min — e só então oferecia o nitrato. Os três fármacos agora acompanham as
+    // decisões pelo bloco declarado em `terapiasEmParalelo`.
+    //
+    // O nó continua existindo como PASSAGEM porque seis nós apontam para ele; e
+    // ele não repete os vereditos, senão o bloco apareceria duas vezes na mesma
+    // tela.
     v2_terapias: {
       id: "v2_terapias",
       type: "action",
-      title: "Terapia anti-isquêmica",
-      summary: "Cada fármaco responde pelos seus próprios impedimentos.",
-      // ⚠️ SEM CAMPOS, E É O PONTO. A primeira versão desta tela reperguntava o
-      // PDE-5 — que a tela 05 já coletou. Era o mesmo defeito que originou a
-      // V2: o app perguntando de novo o que ele mesmo acabou de receber. Os
-      // vereditos leem `TreeValues`; não precisam de coleta própria.
-      //
-      // ⚠️ E SEM `actions`: dose de fármaco contraindicado impressa ao lado do
-      // próprio bloqueio é o defeito que os vereditos existem para eliminar.
-      actions: [],
-      vereditos: [
-        { id: "nitrato", avaliar: vereditoNitrato },
-        { id: "morfina", avaliar: vereditoMorfina },
+      title: "Antitrombóticos e antiagregação",
+      summary: "O anti-isquêmico acompanha as decisões no bloco em paralelo.",
+      comTerapias: true,
+      actions: [
+        "Segundo antiplaquetário e anticoagulação conforme a estratégia de reperfusão",
+        "Estatina de alta intensidade durante a internação",
+      ],
+      porque: [
+        "⚠️ Morfina e fentanil podem ATRASAR o efeito dos inibidores de P2Y12 orais (ACC/AHA 2025). Não contraindica a analgesia da dor refratária — mas explica uma dupla antiagregação que parece ineficaz nas primeiras horas.",
       ],
       next: "v2_fim_do_caminho",
     },
@@ -1206,6 +1246,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // ── 06f · OCLUSÃO DE ALTO RISCO CONFIRMADA ───────────────────────────
     v2_oclusao_alto_risco: {
       id: "v2_oclusao_alto_risco",
+      comTerapias: true,
       type: "action",
       title: "Oclusão de alto risco — sala agora",
       summary: "Reperfusão com a mesma urgência do STEMI, mesmo sem supra clássico.",
@@ -1224,6 +1265,7 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // roteá-lo pela reperfusão comum o levaria à tela que oferece fibrinólise.
     v2_avr_alto_risco: {
       id: "v2_avr_alto_risco",
+      comTerapias: true,
       type: "action",
       title: "Alto risco — fibrinólise não indicada",
       summary:

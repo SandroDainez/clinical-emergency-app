@@ -47,7 +47,7 @@ import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { useUiV3Enabled } from "../../lib/ui-v3-flag";
 import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
-import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { useFadeDeEtapa } from "../../design-system/motion";
 import {
   descartarSessaoDeFluxo,
@@ -124,6 +124,204 @@ const criarEstilosDeAlerta = (t: Tema) =>
     critico: { borderLeftColor: t.cores.critical },
     texto: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "700" },
     detalhe: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, marginTop: 3 },
+  });
+
+/**
+ * BLOCO DE TERAPIAS EM PARALELO — recolhido, e já dizendo o estado.
+ *
+ * ⚠️ NASCE FECHADO E NUNCA ABRE SOZINHO. Decisão do autor (2026-08-27): "não
+ * quero o bloco inteiro aberto por padrão porque ele compete com a decisão
+ * principal e empurra o que importa para baixo da dobra. Não abrir
+ * automaticamente só porque há vermelho — o vermelho já deve se anunciar no
+ * resumo recolhido."
+ *
+ * Por isso o resumo traz o MOTIVO em uma linha, e não só a bolinha: um chip
+ * mudo obrigaria a abrir para saber o que houve, que é o toque que se queria
+ * evitar. A exceção prevista é chamar atenção pela BORDA quando há ação
+ * pendente — nunca abrir.
+ *
+ * ⚠️ CARDS PRÓPRIOS, e não `CardDeVeredito`: aquele é o card DOMINANTE da tela,
+ * dimensionado para ser a coisa principal. Aqui os vereditos acompanham uma
+ * decisão que continua sendo o assunto — reusar o card grande faria o bloco
+ * competir com ela, que é exatamente o que o recolhimento existe para impedir.
+ */
+function TerapiasEmParalelo({
+  terapias,
+  e,
+  cores,
+  tr,
+  onValor,
+  onDecidir,
+  onExecutar,
+  estadoDe,
+}: {
+  terapias: NonNullable<FrontendTreeStep["terapias"]>;
+  e: ReturnType<typeof criarEstilosDeTerapias>;
+  cores: Tema["cores"];
+  tr: (t: string) => string;
+  onValor: (campo: string, valor: string) => void;
+  onDecidir: (id: string, tipo: TipoDeSaida) => void;
+  onExecutar: (id: string) => void;
+  estadoDe: (v: Veredito) => EstadoDaAcao;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const { vereditos, campos } = terapias;
+  if (!vereditos.length) return null;
+
+  const corDe = (n: Veredito["nivel"]) =>
+    n === "verde" ? cores.success : n === "amarelo" ? cores.warning : cores.critical;
+
+  // ⚠️ A CHAMADA VISUAL É POR AÇÃO PENDENTE, não por vermelho. Vermelho é
+  // estado RESOLVIDO — o app sabe que não pode e disse por quê. Amarelo sem
+  // decisão é o que ainda espera alguém.
+  const pendente = vereditos.some(
+    (v) => v.cobrar || (v.nivel === "amarelo" && estadoDe(v) === "pendente")
+  );
+
+  return (
+    <View style={[e.bloco, pendente ? e.blocoPendente : null]}>
+      <Pressable onPress={() => setAberto((a) => !a)} style={e.cabecalho} accessibilityRole="button">
+        <Text style={e.cabecalhoTitulo}>{tr("Em paralelo")}</Text>
+        <Text style={e.cabecalhoAcao}>{aberto ? tr("fechar ▴") : tr("abrir ▾")}</Text>
+      </Pressable>
+
+      {aberto ? (
+        <View style={e.corpo}>
+          {vereditos.map((vd, i) => {
+            const estado = estadoDe(vd);
+            return (
+              <View key={i} style={[e.card, { borderLeftColor: corDe(vd.nivel) }]}>
+                <Text style={[e.cardTitulo, { color: corDe(vd.nivel) }]}>{tr(vd.titulo)}</Text>
+                <Text style={e.cardMotivo}>{tr(vd.motivo)}</Text>
+                {/* ⚠️ A instrução só existe no verde — a regra é do veredito,
+                    não deste componente, e `test:dose-governada` a cobra lá. */}
+                {(vd.instrucao ?? []).map((linha, k) => (
+                  <Text key={k} style={e.cardInstrucao}>{tr(linha)}</Text>
+                ))}
+                {estado === "realizada" ? (
+                  <Text style={e.cardFeito}>{tr("✓ Registrado como administrado")}</Text>
+                ) : vd.nivel === "verde" ? (
+                  <Pressable onPress={() => onExecutar(vd.id ?? "")} style={e.cardAcao} accessibilityRole="button">
+                    <Text style={e.cardAcaoTexto}>{tr("Registrar como administrado")}</Text>
+                  </Pressable>
+                ) : vd.nivel === "amarelo" && vd.decisao ? (
+                  <View style={e.cardSaidas}>
+                    {vd.decisao.saidas.map((sa) => (
+                      <Pressable
+                        key={sa.tipo}
+                        onPress={() => onDecidir(vd.id ?? "", sa.tipo)}
+                        style={e.cardSaida}
+                        accessibilityRole="button">
+                        <Text style={e.cardSaidaTexto}>{tr(sa.label)}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+          {campos.map((campo) => (
+            <View key={campo.id} style={e.campo}>
+              <Text style={e.campoRotulo}>{tr(campo.label)}</Text>
+              <View style={e.campoOpcoes}>
+                {campo.presets.map((pr) => (
+                  <Pressable
+                    key={pr.value}
+                    onPress={() => onValor(campo.id, pr.value)}
+                    style={e.campoBotao}
+                    accessibilityRole="button">
+                    <Text style={e.campoBotaoTexto}>{tr(pr.label)}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={e.resumo}>
+          {vereditos.map((vd, i) => (
+            <View key={i} style={e.linha}>
+              <View style={[e.ponto, { backgroundColor: corDe(vd.nivel) }]} />
+              <Text style={[e.linhaTitulo, { color: corDe(vd.nivel) }]}>{tr(vd.titulo)}</Text>
+              <Text style={e.linhaMotivo} numberOfLines={2}>{tr(vd.motivo)}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const criarEstilosDeTerapias = (t: Tema) =>
+  StyleSheet.create({
+    bloco: {
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      borderRadius: RAIO.card,
+      overflow: "hidden",
+      marginTop: ESPACO.md,
+    },
+    blocoPendente: { borderColor: t.cores.warning },
+    cabecalho: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm + 2,
+      borderBottomWidth: 1,
+      borderBottomColor: t.cores.border,
+      minHeight: TOQUE.minimo,
+    },
+    cabecalhoTitulo: { ...TIPOGRAFIA.micro, color: t.cores.text, letterSpacing: 1.2, flex: 1 },
+    cabecalhoAcao: { ...TIPOGRAFIA.micro, color: t.cores.primary },
+    resumo: { paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm, gap: 6 },
+    linha: { flexDirection: "row", alignItems: "flex-start", gap: 7 },
+    ponto: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+    linhaTitulo: { ...TIPOGRAFIA.micro, fontWeight: "700" },
+    linhaMotivo: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, flex: 1 },
+    corpo: { paddingHorizontal: ESPACO.md, paddingBottom: ESPACO.md, gap: ESPACO.sm },
+    card: {
+      borderLeftWidth: 3,
+      borderRadius: RAIO.input,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+      gap: 3,
+      backgroundColor: t.cores.surface,
+    },
+    cardTitulo: { ...TIPOGRAFIA.caption, fontWeight: "700" },
+    cardMotivo: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary },
+    cardInstrucao: { ...TIPOGRAFIA.micro, color: t.cores.text },
+    cardFeito: { ...TIPOGRAFIA.micro, color: t.cores.success, marginTop: ESPACO.xs },
+    cardAcao: {
+      marginTop: ESPACO.sm,
+      backgroundColor: t.cores.success,
+      borderRadius: RAIO.botao,
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cardAcaoTexto: { ...TIPOGRAFIA.caption, color: t.cores.onCritical, fontWeight: "700" },
+    cardSaidas: { gap: ESPACO.xs, marginTop: ESPACO.sm },
+    cardSaida: {
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    cardSaidaTexto: { ...TIPOGRAFIA.caption, color: t.cores.text },
+    campo: { gap: ESPACO.xs, paddingTop: ESPACO.sm },
+    campoRotulo: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "600" },
+    campoOpcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
+    campoBotao: {
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    campoBotaoTexto: { ...TIPOGRAFIA.caption, color: t.cores.text },
   });
 
 export default function AclsDecisionFlowScreen({
@@ -513,6 +711,8 @@ export default function AclsDecisionFlowScreen({
   const alerta =
     typeof engine.getAlertaPersistente === "function" ? engine.getAlertaPersistente(agora) : null;
   const estilosDeAlerta = useEstilosDoTema(criarEstilosDeAlerta);
+  const estilosDeTerapias = useEstilosDoTema(criarEstilosDeTerapias);
+  const temaAtual = useTheme();
 
   const stepCount = trail.length;
 
@@ -793,6 +993,31 @@ export default function AclsDecisionFlowScreen({
             <Text style={styles.controlButtonText}>{tr("↺ Recomeçar")}</Text>
           </Pressable>
         </View>
+
+        {/* ⚠️ ABAIXO DO PASSO E ACIMA DOS CONTROLES: a decisão da tela continua
+            sendo o elemento dominante, e o bloco acompanha sem competir. */}
+        {step.terapias ? (
+          <TerapiasEmParalelo
+            terapias={step.terapias}
+            e={estilosDeTerapias}
+            cores={temaAtual.cores}
+            tr={tr}
+            onValor={(campo, valor) => handleSetValue(campo, valor)}
+            onDecidir={(id, tipo) => {
+              try {
+                engine.registrarDecisao(id, tipo);
+                sync();
+              } catch {}
+            }}
+            onExecutar={(id) => {
+              try {
+                engine.registrarExecucao(id);
+                sync();
+              } catch {}
+            }}
+            estadoDe={(vd) => engine.estadoDaAcao(vd.id ?? "")}
+          />
+        ) : null}
 
         {source ? <Text style={styles.sourceText}>{tr(source)}</Text> : null}
         <View style={{ height: 32 }} />

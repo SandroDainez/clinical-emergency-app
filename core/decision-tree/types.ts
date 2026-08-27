@@ -116,6 +116,16 @@ type BaseNode = {
   id: string;
   title: string;
   summary?: string;
+  /**
+   * Mostra o bloco de TERAPIAS EM PARALELO abaixo do conteúdo deste nó.
+   *
+   * ⚠️ OPT-IN EXPLÍCITO, NÃO AUTOMÁTICO. Seria mais curto renderizar o bloco em
+   * todo nó da árvore que o declara — e aí ele apareceria também nas telas em
+   * que a terapia É o assunto principal, duplicando os mesmos cards logo abaixo
+   * deles. Marcar nó a nó custa uma linha e deixa auditável em qual momento do
+   * atendimento o bloco acompanha o médico.
+   */
+  comTerapias?: boolean;
   /** Prazos que este nó declara. Ausente na esmagadora maioria dos nós. */
   prazos?: Prazo[];
 };
@@ -328,6 +338,21 @@ export type Veredito = {
    * libera. Só o amarelo (risco × benefício) devolve a decisão ao médico,
    * e ela fica registrada.
    */
+  /**
+   * ESTA TERAPIA ESTÁ PENDENTE DE RESOLUÇÃO e o bloco em paralelo deve chamar
+   * atenção.
+   *
+   * ⚠️ NÃO É "está vermelho". Vermelho é estado RESOLVIDO — o app sabe que não
+   * pode e disse por quê. `cobrar` é o oposto: ninguém decidiu ainda, e o
+   * fármaco é sensível o bastante para o silêncio ser um risco. Hoje só o AAS
+   * o usa: é o mais sensível ao tempo da SCA e pode ser administrado enquanto
+   * o ECG é obtido.
+   *
+   * ⚠️ E COBRAR NÃO É ABRIR. Regra do autor (2026-08-27): o bloco chama atenção
+   * pela BORDA e o resumo recolhido já diz o motivo — mas nunca se abre
+   * sozinho, porque competiria com a decisão principal da tela.
+   */
+  cobrar?: boolean;
   decisao?: DecisaoOferecida;
   /**
    * A instrução concreta — dose, via, intervalo — que só faz sentido quando a
@@ -847,6 +872,31 @@ export type DecisionTreeDefinition = {
    * Opcional — as outras árvores não declaram e nada muda para elas.
    */
   alertaPersistente?: (values: TreeValues, agora: number) => AlertaPersistente | null;
+  /**
+   * TERAPIAS QUE CORREM EM PARALELO ÀS DECISÕES.
+   *
+   * ── ⚠️ POR QUE ISTO NÃO É UM NÓ ────────────────────────────────────────
+   *
+   * Na primeira versão da V2 as terapias eram a DÉCIMA tela: o app mandava
+   * ativar a hemodinâmica, trombolisar e reavaliar em 90 minutos — e só então
+   * oferecia o nitrato. No atendimento real a terapia anti-isquêmica corre AO
+   * LADO da decisão de reperfusão, e o fluxograma do autor diz isso com todas
+   * as letras: "TERAPIAS EM PARALELO" é caixa lateral da Decisão 2, não etapa
+   * posterior.
+   *
+   * ⚠️ E EM 375 px NÃO É CARD LATERAL. Decisão do autor: bloco compacto
+   * ancorado ABAIXO da decisão, recolhido, mostrando o estado de cada fármaco
+   * em uma linha com o motivo. Ele nunca abre sozinho — nem quando há vermelho,
+   * porque o vermelho já se anuncia no resumo. A decisão da tela continua sendo
+   * o elemento dominante.
+   *
+   * `campos` são os dados que só passam a fazer sentido DENTRO do bloco — hoje
+   * "a dor persiste?", que só existe depois de o nitrato ter sido administrado.
+   */
+  terapiasEmParalelo?: {
+    vereditos: VereditoSpec[];
+    campos?: InputField[];
+  };
 };
 
 /**
@@ -891,7 +941,20 @@ export type DecisionTreeValidationIssue = {
   nodeId?: string;
 };
 
-export type FrontendTreeStep =
+/**
+ * O passo como a tela o recebe. A união discrimina por `kind`; a interseção
+ * acrescenta o que vale para QUALQUER tipo de passo.
+ *
+ * ⚠️ INTERSEÇÃO EM VEZ DE REPETIR O CAMPO NAS QUATRO VARIANTES: repetido, um
+ * dia alguém acrescenta a quinta variante e esquece — e o bloco de terapias
+ * some sem erro de compilação, exatamente no tipo de nó novo.
+ */
+export type FrontendTreeStep = FrontendTreeStepBase & {
+  /** Terapias que acompanham este passo, quando o nó declara `comTerapias`. */
+  terapias?: { vereditos: Veredito[]; campos: InputField[] };
+};
+
+type FrontendTreeStepBase =
   | {
       id: string;
       kind: "decision";

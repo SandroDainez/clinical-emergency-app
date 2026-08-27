@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**79 de 96 travas com declaração completa.**
+**80 de 97 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -73,6 +73,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a SCA V2 nasça AO LADO da V1 sem tocá-la; que reutilize a camada de segurança em vez de reescrevê-la; que as três decisões existam e sejam alcançáveis; que `supra_inferior` seja DERIVADO e não perguntado; e que nenhum estado de dúvida vire conclusão — nem no ECG nem na reperfusão.
 - **NÃO PROMETE:** que o conteúdo clínico da V2 esteja completo — ela implementa só o caminho crítico, e os terminais dizem isso. Nem o comportamento de tela (`test:e2e`), nem as janelas do PDE-5 (`test:pde5-janela`), nem a governança de dose (`test:dose-governada`), que valem para as duas árvores.
 - **UNIVERSO:** `coronary-v2-decision-tree.ts`, o motor e as libs compartilhadas. ── POR QUE UMA V2 EXISTE ─────────────────────────────────────────────────── A V1 ficou segura e estruturalmente errada ao mesmo tempo. Decisão do autor, 2026-08-26: "não quero continuar remodelando a árvore atual nó por nó — o problema é que estávamos tentando transformar a árvore em algo que ela não nasceu para ser". A unidade deixa de ser "Passo 17 de 95" e passa a ser a decisão clínica. Mas a camada de segurança — vereditos, janela do PDE-5, dose governada, marcos temporais, retomada — é herança da V1 e entra INTEIRA, por reutilização. ── O QUE ESTA TRAVA IMPEDE ───────────────────────────────────────────────── 1. Que a V2 duplique lógica clínica em vez de consumir as libs. Duas cópias da mesma regra divergem em silêncio, e a que estiver errada é a que decide. 2. Que a V1 seja tocada enquanto a V2 não estiver aprovada. 3. Que `supra_inferior` volte a ser CAMPO — foi a repergunta que o autor encontrou testando no celular, e a razão de a V2 existir. 4. Que "não sei" no ECG caia no ramo sem supra, ou que "não consegui avaliar" a reperfusão vire falha. Desconhecido ≠ negativo E ≠ positivo.
+
+## `test:anti-isquemica` → `scripts/valida-anti-isquemica.cjs`
+
+- **PROMETE:** que o VD isolado NÃO bloqueie a morfina; que o bloqueio venha do estado hemodinâmico; e que a morfina leia o estado da terapia anti-isquêmica nas quatro situações — não avaliada, contraindicada, realizada com dor resolvida e realizada com dor persistente.
+- **NÃO PROMETE:** que as doses estejam certas (`test:dose-governada`), que a janela do PDE-5 esteja certa (`test:pde5-janela`), nem que a árvore da V2 esteja bem desenhada (`test:sca-v2`).
+- **UNIVERSO:** `lib/vereditos-sca.ts`, `lib/terapia-anti-isquemica.ts` e `lib/nitrato-contraindicacao.ts` — o núcleo clínico COMPARTILHADO pelas duas árvores. ── ⚠️ O BUG QUE ESTA TRAVA NASCE PARA IMPEDIR, E ELE ESTAVA PUBLICADO ────── `vereditoMorfina` tinha `if (suspeitaDeVd(v)) return vermelho`. O texto de onde eu construí o veredito — `MORFINA_CONTRAINDICACOES` — diz "IAM de ventrículo direito COM HIPOTENSÃO", e eu deixei o qualificador para trás ao traduzir a frase em código. O veredito ficou MAIS RESTRITIVO QUE A FONTE. A correção é do autor (2026-08-27): a diretriz separa as duas drogas — o nitrato se evita na suspeita de VD; a morfina se considera para dor refratária à terapia anti-isquêmica maximamente tolerada, com monitorização. VD com PA e perfusão preservadas é CAUTELA, não bloqueio. ⚠️ E O DEFEITO ATINGIA AS DUAS ÁRVORES. `lib/vereditos-sca.ts` é consumida pela V1 (95 nós, em produção no preview) e pela V2. Por isso a trava mede a LIB, não uma árvore: é núcleo clínico compartilhado. ── A ARQUITETURA QUE ELA TAMBÉM PROTEGE ──────────────────────────────────── dados brutos → estado clínico derivado → vários vereditos e não `veredito A → veredito B`. Eu havia proposto a segunda; o autor barrou porque a ordem de avaliação passaria a determinar comportamento clínico.
 
 ## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
 

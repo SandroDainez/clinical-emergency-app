@@ -419,4 +419,42 @@ export const scaV2Es: Record<string, string> = {
     "Si no es posible distinguir el patrón: completar la evaluación del ECG sin asumir ninguno de ellos — repetir el trazado en pocos minutos y comparar, porque la T hiperaguda y De Winter cambian con el tiempo",
   "Se a suspeita for posterior: registrar V7–V9. Se houver supra inferior: registrar V3R–V4R. Um conjunto responde a uma pergunta — pedir os dois sempre é ruído":
     "Si la sospecha es posterior: registrar V7–V9. Si hay elevación inferior: registrar V3R–V4R. Un conjunto responde a una pregunta — pedir ambos siempre es ruido",
+
+  // ── Estado da terapia anti-isquêmica e correção do VD (2026-08-27) ────
+  "A etapa anti-isquêmica ainda não foi resolvida. Avalie o nitrato antes — a morfina é para dor que persiste apesar dele.":
+    "La etapa antiisquémica aún no fue resuelta. Evalúe el nitrato antes — la morfina es para el dolor que persiste pese a él.",
+  "Nitrato administrado e dor resolvida — sem indicação de morfina agora.":
+    "Nitrato administrado y dolor resuelto — sin indicación de morfina ahora.",
+  "Dor persistente apesar do anti-isquêmico.": "Dolor persistente pese al antiisquémico.",
+  "insuficiência respiratória grave com retenção de CO₂ ou DPOC.":
+    "insuficiencia respiratoria grave con retención de CO₂ o EPOC.",
+  " ⚠️ VD acometido: monitorize a PA a cada dose — a venodilatação reduz a pré-carga de que ele depende.":
+    " ⚠️ VD comprometido: monitorice la PA en cada dosis — la venodilatación reduce la precarga de la que depende.",
+  "Supra em V3R–V4R — infarto de ventrículo direito confirmado. O VD depende de pré-carga; a conduta é volume, não vasodilatador.":
+    "Elevación en V3R–V4R — infarto de ventrículo derecho confirmado. El VD depende de la precarga; la conducta es volumen, no vasodilatador.",
+
+  // ── Bloco de terapias em paralelo (2026-08-27) ───────────────────────
+  "Em paralelo": "En paralelo",
+  "abrir ▾": "abrir ▾",
+  "fechar ▴": "cerrar ▴",
+  "A dor persiste apesar do nitrato?": "¿El dolor persiste pese al nitrato?",
+  "Sim — persiste": "Sí — persiste",
+  "Não — cedeu": "No — cedió",
+  "Antitrombóticos e antiagregação": "Antitrombóticos y antiagregación",
+  "O anti-isquêmico acompanha as decisões no bloco em paralelo.":
+    "El antiisquémico acompaña las decisiones en el bloque en paralelo.",
+  "Segundo antiplaquetário e anticoagulação conforme a estratégia de reperfusão":
+    "Segundo antiplaquetario y anticoagulación según la estrategia de reperfusión",
+  "Estatina de alta intensidade durante a internação":
+    "Estatina de alta intensidad durante la internación",
+  "⚠️ Morfina e fentanil podem ATRASAR o efeito dos inibidores de P2Y12 orais (ACC/AHA 2025). Não contraindica a analgesia da dor refratária — mas explica uma dupla antiagregação que parece ineficaz nas primeiras horas.":
+    "⚠️ La morfina y el fentanilo pueden RETRASAR el efecto de los inhibidores de P2Y12 orales (ACC/AHA 2025). No contraindica la analgesia del dolor refractario — pero explica una doble antiagregación que parece ineficaz en las primeras horas.",
+  "Alergia verdadeira ao AAS — anafilaxia prévia.": "Alergia verdadera al AAS — anafilaxia previa.",
+  "ainda não resolvido": "aún no resuelto",
+  "decidido não administrar": "se decidió no administrar",
+  "administrado": "administrado",
+
+  "AAS ainda não resolvido — administrar, ou registrar que não foi administrado.":
+    "AAS aún no resuelto — administrar, o registrar que no fue administrado.",
+  "Decidido não administrar agora — registrado.": "Se decidió no administrar ahora — registrado.",
 };

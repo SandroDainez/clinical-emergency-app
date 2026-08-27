@@ -2,7 +2,10 @@ import type { TreeValues, Veredito } from "../core/decision-tree/types";
 import { BETABLOQUEADOR_AGUDO_DOSE, BETABLOQUEADOR_INDICACAO } from "./betabloqueador-agudo";
 import { NITRATO_DOSE_IV, NITRATO_DOSE_SL, NITRATO_DOSE_SL_ALTERNATIVA } from "./nitrato-dose";
 import { temAlgum } from "../core/decision-tree/estado-clinico";
-import { JANELA_PDE5_DESCONHECIDA_H, lerPde5 } from "./pde5";
+import { lerPde5 } from "./pde5";
+import { contraindicacaoDoNitrato, suspeitaDeVd } from "./nitrato-contraindicacao";
+import { estadoTerapiaAntiIsquemica, porQueNitratoForaDeOpcao } from "./terapia-anti-isquemica";
+import { estadoDoAas, resumoDoAas } from "./aas-estado";
 import { MORFINA_TETO } from "./morfina-dispneia";
 
 /**
@@ -56,31 +59,13 @@ function congestao(v: TreeValues): boolean {
 
 // ── NITRATO ────────────────────────────────────────────────────────────────
 
-/**
- * SUSPEITA DE VD — derivada de CONTEXTO, nunca da ausência de um exame.
- *
- * ⚠️ CORREÇÃO DO AUTOR (2026-08-25). A primeira versão deste desenho bloqueava
- * o nitrato em TODO infarto inferior enquanto V3R–V4R não fosse registrado.
- * Era overblocking: a maioria dos inferiores não tem VD hemodinamicamente
- * relevante, e negar nitrato a todos eles por causa de um exame ainda não
- * feito troca um risco por outro.
- *
- * A suspeita exige o supra inferior E pelo menos um elemento compatível. O
- * mais discriminante está aqui de propósito: HIPOTENSÃO COM PULMÕES LIMPOS é o
- * padrão que separa o VD da falência de ventrículo esquerdo — no VE a mesma
- * hipotensão vem com congestão.
- *
- * Fonte da conduta: `VD_CONTRAINDICA_PRE_CARGA` (lib/oclusao-sem-supra.ts) —
- * "o nitrato sublingual dado por reflexo na dor torácica é o mecanismo mais
- * comum" de hipotensão grave no VD infartado.
- */
-export function suspeitaDeVd(v: TreeValues): boolean {
-  if (v.supra_inferior !== "sim") return false;
-  const pas = num(v.pas);
-  const hipotenso = Number.isFinite(pas) && pas < 100;
-  const pulmoesLimpos = temAlgum(v, "ausculta_pulmonar", ["Limpa"]) && !congestao(v);
-  return hipoperfusao(v) || (hipotenso && pulmoesLimpos) || (Number.isFinite(pas) && pas < 90);
-}
+// ⚠️ `suspeitaDeVd` MUDOU DE CASA (2026-08-27) e é reexportada daqui para os
+// consumidores existentes não quebrarem. Ela agora vive em
+// `nitrato-contraindicacao.ts`, junto das outras condições do nitrato, porque
+// `estadoTerapiaAntiIsquemica` precisa dela sem depender deste arquivo — este
+// importa aquele, e o contrário fecharia um ciclo.
+export { suspeitaDeVd };
+
 
 /**
  * ⚠️ A QUEDA > 30 mmHg DO BASAL NÃO É GATE AQUI (correção do autor,
@@ -92,63 +77,17 @@ export function suspeitaDeVd(v: TreeValues): boolean {
  */
 export function vereditoNitrato(v: TreeValues): Veredito {
   const titulo = "Nitrato";
-  const pas = num(v.pas);
 
-  if (Number.isFinite(pas) && pas < 90) {
-    return { nivel: "vermelho", titulo, motivo: `PAS ${v.pas} mmHg — abaixo de 90, o limiar da própria dose.` };
+  // ⚠️ AS CONDIÇÕES VIVEM EM `nitrato-contraindicacao.ts`, e não aqui, porque
+  // `estadoTerapiaAntiIsquemica` precisa da MESMA resposta. Duas cópias da regra
+  // divergiriam em silêncio; e o estado derivado CHAMAR este veredito faria a
+  // ordem de avaliação determinar comportamento clínico (barrado pelo autor).
+  const ci = contraindicacaoDoNitrato(v);
+  if (ci.presente) {
+    return { nivel: "vermelho", titulo, motivo: ci.texto };
   }
-  // ⚠️ DESCONHECIDO NÃO É NEGATIVO (regra do autor, 2026-08-26). `undefined`
-  // aqui significa "ninguém perguntou ainda", e `nao_sei` significa "perguntei
-  // e ele não sabe" — nos dois casos o app NÃO demonstrou que o nitrato é
-  // seguro, e a nitroglicerina com PDE-5 recente causa hipotensão refratária,
-  // que é uma das poucas coisas que a dor torácica pode piorar até a morte.
-  //
-  // Tratar ausência de resposta como ausência de contraindicação era o defeito:
-  // o app liberava a dose sobre um dado que nunca teve.
-  //
-  // ⚠️ A JANELA É POR FÁRMACO, NÃO UM "SIM/NÃO" (correção do autor,
-  // 2026-08-26). Eu havia proposto tratar uso habitual como contraindicação
-  // permanente; a ACC/AHA 2025 não cria essa categoria — ela dá janelas
-  // (12 h avanafila · 24 h sildenafila/vardenafila · 48 h tadalafila). Ver
-  // `lib/pde5.ts` para por que "permanente" teria sido inferência minha
-  // promovida a regra.
+
   const pde5 = lerPde5(v);
-  if (pde5.estado === "nao_perguntado") {
-    return {
-      nivel: "vermelho",
-      titulo,
-      motivo: "Uso de inibidor de PDE-5 ainda não verificado — pergunte antes de administrar.",
-    };
-  }
-  if (pde5.estado === "dentro_da_janela") {
-    return {
-      nivel: "vermelho",
-      titulo,
-      motivo: `Última dose de inibidor de PDE-5 há ${pde5.desdeUltimaDoseH} h — dentro da janela de ${pde5.janelaH} h.`,
-    };
-  }
-  if (pde5.estado === "indeterminado") {
-    return {
-      nivel: "vermelho",
-      titulo,
-      motivo:
-        pde5.falta === "horario"
-          ? "Usou inibidor de PDE-5 e o horário da última dose não foi determinado — a janela não pode ser aplicada."
-          : pde5.falta === "farmaco"
-            ? `Fármaco não identificado e última dose há ${pde5.desdeUltimaDoseH} h — abaixo das ${JANELA_PDE5_DESCONHECIDA_H} h que afastariam qualquer um deles.`
-            : "Uso de inibidor de PDE-5 não afastado.",
-    };
-  }
-  if (suspeitaDeVd(v)) {
-    return {
-      nivel: "vermelho",
-      titulo,
-      motivo: "Suspeita de infarto de VD — o ventrículo direito infartado depende de pré-carga. Registre V3R–V4R.",
-    };
-  }
-  if (!Number.isFinite(pas)) {
-    return { nivel: "vermelho", titulo, motivo: "Pressão não medida — a dose exige PAS conhecida e ≥ 90 mmHg." };
-  }
   return {
     nivel: "verde",
     titulo,
@@ -200,10 +139,33 @@ export function vereditoAas(v: TreeValues): Veredito {
       },
     };
   }
+  // ⚠️ O VERDE REFLETE O ESTADO DO AAS, e é o que faz a cobrança persistir.
+  //
+  // Regra do autor (2026-08-27): "não quero travar a tela inicial até o médico
+  // clicar em AAS, nem esconder o problema se ele avançar sem administrar. O app
+  // deve permitir continuar e continuar cobrando até o estado ser resolvido."
+  //
+  // Quatro estados, e só um cobra. `nao_avaliado` é o único em que ninguém
+  // decidiu — administrado e "decidido não administrar" são resoluções, e
+  // contraindicado nem chega aqui (sai no vermelho acima).
+  const estado = estadoDoAas(v);
+  const resumo = resumoDoAas(v);
+
+  if (estado === "administrado") {
+    return { nivel: "verde", titulo, motivo: `AAS ${resumo.texto}.` };
+  }
+  if (estado === "nao_administrado") {
+    return { nivel: "verde", titulo, motivo: "Decidido não administrar agora — registrado." };
+  }
+
   return {
     nivel: "verde",
     titulo,
-    motivo: "Sem alergia, sem sangramento ativo e dissecção afastada no portão.",
+    motivo:
+      estado === "nao_avaliado"
+        ? "AAS ainda não resolvido — administrar, ou registrar que não foi administrado."
+        : "Sem alergia, sem sangramento ativo e dissecção afastada no portão.",
+    cobrar: estado === "nao_avaliado",
     instrucao: ["AAS 300 mg mastigável agora (162–325 mg)."],
   };
 }
@@ -297,6 +259,12 @@ export function vereditoMorfina(v: TreeValues): Veredito {
   const titulo = "Morfina";
   const pas = num(v.pas);
 
+  // ── 1. BLOQUEIOS OBJETIVOS — precedência sobre tudo ─────────────────────
+  //
+  // ⚠️ ESTES VÊM DOS DADOS BRUTOS, NÃO DO ESTADO DA TERAPIA ANTI-ISQUÊMICA. A
+  // separação é do autor e é a que impede o defeito de repetir: quando "a etapa
+  // anterior foi resolvida?" e "o fármaco pode?" moram na mesma pergunta, um
+  // achado que deveria ser cautela vira bloqueio.
   if (Number.isFinite(pas) && pas < 90) {
     return { nivel: "vermelho", titulo, motivo: `PAS ${v.pas} mmHg — hipotensão contraindica a morfina.` };
   }
@@ -306,27 +274,35 @@ export function vereditoMorfina(v: TreeValues): Veredito {
   if (v.cor_consciencia === "sim") {
     return { nivel: "vermelho", titulo, motivo: "Rebaixamento do nível de consciência — a depressão respiratória se soma ao que já existe." };
   }
-  if (suspeitaDeVd(v)) {
-    return {
-      nivel: "vermelho",
-      titulo,
-      motivo: "Suspeita de infarto de VD — a venodilatação reduz a pré-carga de que o ventrículo direito depende.",
-    };
-  }
-  // ⚠️ A DOSE NÃO PODE VIVER NO AMARELO. Descobri isto conferindo o shell:
-  // `CardDeVeredito` renderiza `instrucao` em QUALQUER nível — o comentário ao
-  // lado afirma que ela "só aparece com o veredito que a autoriza", mas quem
-  // sustenta isso é a disciplina de quem escreve o veredito, não o componente.
-  // Hoje não quebra porque só o verde define `instrucao`; pôr a dose num
-  // amarelo a imprimiria ANTES da decisão, que é o defeito de origem em forma
-  // nova. `test:dose-governada` passou a cobrar isso.
+
+  // ⚠️ O VD SAIU DAQUI, E ERA UM BUG MEU (correção do autor, 2026-08-27).
   //
-  // Então o amarelo PERGUNTA, e só o "prosseguir" registrado produz a dose.
+  // A versão anterior tinha `if (suspeitaDeVd(v)) return vermelho`. O texto de
+  // onde construí o veredito — `MORFINA_CONTRAINDICACOES` — diz "IAM de
+  // ventrículo direito COM HIPOTENSÃO", e eu deixei o qualificador para trás. O
+  // veredito ficou mais restritivo que a própria fonte de onde saiu.
+  //
+  // A diretriz separa as duas drogas: o nitrato se evita na suspeita de VD; a
+  // morfina se considera para dor refratária à terapia anti-isquêmica
+  // maximamente tolerada, com monitorização. VD com PA e perfusão preservadas
+  // NÃO é contraindicação — é cautela, e a hipotensão que de fato bloqueia já
+  // foi checada acima, com ou sem VD.
+  //
+  // ⚠️ O DEFEITO ATINGIA AS DUAS ÁRVORES: esta função é consumida pela V1 e
+  // pela V2. `test:vd-nao-bloqueia-morfina` existe para isso não voltar.
+  // Evidência direta (V3R–V4R) OU a heurística. A cautela vale nos dois: o que
+  // muda entre eles é o quão cedo se sabe, não o cuidado exigido.
+  const vd = v.vd_confirmado === "sim" || suspeitaDeVd(v);
+  const cautelaVd = vd
+    ? " ⚠️ VD acometido: monitorize a PA a cada dose — a venodilatação reduz a pré-carga de que ele depende."
+    : "";
+
+  // ── 2. A DECISÃO JÁ TOMADA ──────────────────────────────────────────────
   if (v.decisao_morfina === "prosseguir") {
     return {
       nivel: "verde",
       titulo,
-      motivo: "Função respiratória avaliada e decisão registrada — dor refratária apesar do anti-isquêmico.",
+      motivo: "Função respiratória avaliada e decisão registrada — dor refratária apesar do anti-isquêmico." + cautelaVd,
       instrucao: [MORFINA_TETO],
     };
   }
@@ -340,14 +316,44 @@ export function vereditoMorfina(v: TreeValues): Veredito {
           : "Decidido não administrar morfina agora.",
     };
   }
-  // ⚠️ AMARELO, NÃO VERDE, no melhor caso. Ver o bloco no topo: a retenção de
-  // CO₂ / DPOC não é derivável do que se coletou, e chamar de verde seria o app
-  // afirmando "sem contraindicação" sobre algo que ele não olhou.
+
+  // ── 3. O ESTADO DA ETAPA ANTI-ISQUÊMICA ─────────────────────────────────
+  //
+  // Lido de `estadoTerapiaAntiIsquemica`, que deriva dos dados brutos. Este
+  // veredito NÃO chama `vereditoNitrato`: não há ordem de avaliação, e portanto
+  // não há como a ordem virar comportamento clínico.
+  const etapa = estadoTerapiaAntiIsquemica(v);
+
+  if (etapa === "nao_avaliada") {
+    // ⚠️ CINZA CONCEITUAL, EXPRESSO COMO VERMELHO SEM DECISÃO: não é
+    // contraindicação, é ordem. A morfina entra para dor refratária à terapia
+    // anti-isquêmica — e ela ainda não foi resolvida.
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo: "A etapa anti-isquêmica ainda não foi resolvida. Avalie o nitrato antes — a morfina é para dor que persiste apesar dele.",
+    };
+  }
+
+  if (etapa === "nitrato_realizado_dor_resolvida") {
+    return {
+      nivel: "vermelho",
+      titulo,
+      motivo: "Nitrato administrado e dor resolvida — sem indicação de morfina agora.",
+    };
+  }
+
+  const contexto =
+    etapa === "nitrato_contraindicado"
+      ? `O nitrato não é opção neste paciente (${porQueNitratoForaDeOpcao(v) ?? "contraindicado"}), e a dor continua precisando de tratamento.`
+      : "Dor persistente apesar do anti-isquêmico.";
+
   return {
     nivel: "amarelo",
     titulo,
     motivo:
-      "Sem contraindicação entre as que o app consegue avaliar. Falta a que ele não avalia: insuficiência respiratória grave com retenção de CO₂ ou DPOC. Morfina só se a dor persistir apesar do anti-isquêmico otimizado.",
+      `${contexto} Sem contraindicação entre as que o app consegue avaliar. Falta a que ele não avalia: ` +
+      `insuficiência respiratória grave com retenção de CO₂ ou DPOC.` + cautelaVd,
     decisao: {
       campo: "decisao_morfina",
       saidas: [
