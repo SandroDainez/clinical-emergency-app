@@ -292,4 +292,131 @@ export const scaV2Es: Record<string, string> = {
     "Troponina ultrasensible seriada, reevaluación clínica y del ECG, estratificación de riesgo y estrategia invasiva",
   "Enquanto o ramo B da V2 não existe, use o módulo de Síndromes Coronarianas (V1)":
     "Mientras la rama B del V2 no exista, use el módulo de Síndromes Coronarios (V1)",
+
+  // ── Bloco inicial reestruturado (2026-08-27) ─────────────────────────
+  "Dados do paciente": "Datos del paciente",
+  "Coletados uma vez. As decisões seguintes leem daqui — nada será perguntado de novo.":
+    "Recolectados una vez. Las decisiones siguientes leen de aquí — nada se preguntará de nuevo.",
+  "Outra": "Otra",
+  "Medidas iniciais": "Medidas iniciales",
+  "Tudo em paralelo. Nada aqui espera o resultado do anterior.":
+    "Todo en paralelo. Nada aquí espera el resultado de lo anterior.",
+  "Monitorização cardíaca contínua": "Monitorización cardíaca continua",
+  "Oximetria de pulso — O₂ apenas se SpO₂ < 90%": "Oximetría de pulso — O₂ solo si SpO₂ < 90%",
+  "Pressão arterial (aferir nos dois braços)": "Presión arterial (medir en ambos brazos)",
+  "Acesso venoso periférico — dois se o quadro for grave":
+    "Acceso venoso periférico — dos si el cuadro es grave",
+  "Desfibrilador disponível ao lado do paciente": "Desfibrilador disponible junto al paciente",
+  "⏱️ REALIZAR E INTERPRETAR O MAIS RÁPIDO POSSÍVEL — meta de até 10 minutos do primeiro contato médico. Em paralelo: troponina ultrassensível, hemograma, creatinina e eletrólitos. Nenhum exame atrasa a reperfusão.":
+    "⏱️ REALIZAR E INTERPRETAR LO MÁS RÁPIDO POSIBLE — meta de hasta 10 minutos del primer contacto médico. En paralelo: troponina ultrasensible, hemograma, creatinina y electrolitos. Ningún examen retrasa la reperfusión.",
+
+  // ── Decisão 1 · só supra, com traçados reais ─────────────────────────
+  "O ECG mostra supradesnível de ST?": "¿El ECG muestra elevación del ST?",
+  "Compare com o traçado normal ao lado. Apoio visual — o diagnóstico é no ECG do seu paciente.":
+    "Compare con el trazado normal al lado. Apoyo visual — el diagnóstico se hace en el ECG de su paciente.",
+  "Normal — DII": "Normal — DII",
+  "Supra de ST — V3": "Elevación del ST — V3",
+  "Infra de ST — DII": "Infradesnivel del ST — DII",
+  "Ritmo sinusal, segmento ST na linha de base.": "Ritmo sinusal, segmento ST en la línea de base.",
+  "Ritmo sinusal, ST na linha de base, T positiva.":
+    "Ritmo sinusal, ST en la línea de base, T positiva.",
+  "ST elevado e convexo, acima da linha de base antes da onda T.":
+    "ST elevado y convexo, por encima de la línea de base antes de la onda T.",
+  "ST elevado e convexo — lesão transmural.": "ST elevado y convexo — lesión transmural.",
+  "ST deprimido — isquemia subendocárdica.": "ST deprimido — isquemia subendocárdica.",
+  "É supra: siga para o território.": "Es elevación: siga al territorio.",
+  "NÃO é supra. Segue pelo ramo sem supradesnível.":
+    "NO es elevación. Sigue por la rama sin elevación del ST.",
+  "Com estes traçados ao lado, o ECG do seu paciente tem supradesnível de ST?":
+    "Con estos trazados al lado, ¿el ECG de su paciente tiene elevación del ST?",
+  "SUPRA: o segmento ST fica ACIMA da linha de base depois do QRS, e assim PERMANECE até a onda T. Costuma ser convexo (abaulado para cima).":
+    "ELEVACIÓN: el segmento ST queda POR ENCIMA de la línea de base después del QRS, y así PERMANECE hasta la onda T. Suele ser convexo (abombado hacia arriba).",
+  "INFRA: o ST fica ABAIXO da linha de base. Não é supra — mas também não é normal, e as alterações horizontais ou descendentes são as que mais importam.":
+    "INFRADESNIVEL: el ST queda POR DEBAJO de la línea de base. No es elevación — pero tampoco es normal, y las alteraciones horizontales o descendentes son las que más importan.",
+  "A linha de base é o segmento entre o fim da onda T e o início da P seguinte. É contra ela que se mede, não contra o traçado vizinho.":
+    "La línea de base es el segmento entre el fin de la onda T y el inicio de la P siguiente. Es contra ella que se mide, no contra el trazado vecino.",
+  "⚠️ Um ECG inicial normal NÃO exclui síndrome coronariana aguda. Repita o traçado se os sintomas persistirem ou mudarem.":
+    "⚠️ Un ECG inicial normal NO excluye síndrome coronario agudo. Repita el trazado si los síntomas persisten o cambian.",
+
+  // ── Trava: sem supra clássico ≠ NSTE automático (2026-08-27) ─────────
+  "Antes de seguir como sem supra": "Antes de seguir como sin elevación",
+  "Há algum destes padrões de oclusão ou alto risco?":
+    "¿Hay alguno de estos patrones de oclusión o alto riesgo?",
+  "Sem supra no traçado padrão NÃO significa sem oclusão.":
+    "Sin elevación en el trazado estándar NO significa sin oclusión.",
+  "De Winter": "De Winter",
+  "Posterior": "Posterior",
+  "Nenhum destes": "Ninguno de estos",
+  "Supra em aVR com infra difuso": "Elevación en aVR con infradesnivel difuso",
+  "aVR com infra difuso": "aVR con infradesnivel difuso",
+  "Infra ascendente em V1–V6 com T altas e simétricas.":
+    "Infradesnivel ascendente en V1–V6 con T altas y simétricas.",
+  "Infra ascendente no ponto J em V1–V6, seguida de T altas e simétricas.":
+    "Infradesnivel ascendente en el punto J en V1–V6, seguido de T altas y simétricas.",
+  "Oclusão proximal da DA — sala agora.": "Oclusión proximal de la DA — sala ahora.",
+  "Não espere virar supra: pode não virar.":
+    "No espere que se convierta en elevación: puede no hacerlo.",
+  "Confirmar em V7–V9 — o limiar ali é 0,5 mm.":
+    "Confirmar en V7–V9 — el umbral allí es 0,5 mm.",
+  "Supra de 0,5 mm em V7–V9 já fecha.": "Una elevación de 0,5 mm en V7–V9 ya cierra.",
+  "Supra em aVR com infra em ≥ 6 derivações.":
+    "Elevación en aVR con infradesnivel en ≥ 6 derivaciones.",
+  "T altas, largas e simétricas — pode preceder o supra.":
+    "T altas, anchas y simétricas — puede preceder a la elevación.",
+  "Repetir o ECG em minutos.": "Repetir el ECG en minutos.",
+  "De Winter ou T hiperaguda": "De Winter o T hiperaguda",
+  "Reconhecer oclusão sem supra clássico": "Reconocer oclusión sin elevación clásica",
+  "Com estes critérios, algum dos padrões está presente?":
+    "Con estos criterios, ¿alguno de los patrones está presente?",
+  "Padrão ainda não determinado": "Patrón aún no determinado",
+  "Isto não é 'nenhum destes'. É 'ainda não sei'.":
+    "Esto no es 'ninguno de estos'. Es 'aún no lo sé'.",
+  "Registrar V7–V9 (posterior) e V3R–V4R (ventrículo direito) — dois dos padrões só aparecem aí":
+    "Registrar V7–V9 (posterior) y V3R–V4R (ventrículo derecho) — dos de los patrones solo aparecen ahí",
+  "Repetir o ECG em poucos minutos e comparar: T hiperaguda e De Winter mudam com o tempo":
+    "Repetir el ECG en pocos minutos y comparar: la T hiperaguda y De Winter cambian con el tiempo",
+  "Ligar para o serviço de referência antes de classificar como sem supra — a decisão precisa de quem vai assumir o paciente":
+    "Llamar al servicio de referencia antes de clasificar como sin elevación — la decisión necesita a quien va a recibir al paciente",
+  "Enquanto o padrão não for afastado, o paciente não é reclassificado como sem supra — a dúvida não o tira da fila da reperfusão.":
+    "Mientras el patrón no se descarte, el paciente no se reclasifica como sin elevación — la duda no lo saca de la fila de la reperfusión.",
+  "Oclusão de alto risco — sala agora": "Oclusión de alto riesgo — sala ahora",
+  "Reperfusão com a mesma urgência do STEMI, mesmo sem supra clássico.":
+    "Reperfusión con la misma urgencia del STEMI, incluso sin elevación clásica.",
+  "Acionar a hemodinâmica AGORA — o relógio da reperfusão conta a partir deste reconhecimento":
+    "Activar la hemodinamia AHORA — el reloj de la reperfusión cuenta desde este reconocimiento",
+  "Não aguardar troponina para decidir: o padrão do ECG já indica oclusão":
+    "No esperar la troponina para decidir: el patrón del ECG ya indica oclusión",
+  "Seguir pela mesma decisão de reperfusão do STEMI":
+    "Seguir por la misma decisión de reperfusión del STEMI",
+  "Antitrombóticos e anti-isquêmicos conforme os vereditos, sem atrasar a sala":
+    "Antitrombóticos y antiisquémicos según los veredictos, sin retrasar la sala",
+
+  // ── aVR: alto risco sem nomear a anatomia (2026-08-27) ───────────────
+  "Alto risco — fibrinólise não indicada": "Alto riesgo — fibrinólisis no indicada",
+  "Alto risco — avaliação invasiva, não fibrinólise.":
+    "Alto riesgo — evaluación invasiva, no fibrinólisis.",
+  "Padrão de isquemia subendocárdica extensa e de alto risco. A fibrinólise não está indicada por este padrão.":
+    "Patrón de isquemia subendocárdica extensa y de alto riesgo. La fibrinólisis no está indicada por este patrón.",
+  "Avaliação invasiva com urgência — acionar a hemodinâmica":
+    "Evaluación invasiva con urgencia — activar la hemodinamia",
+  "NÃO administrar trombolítico com base neste padrão":
+    "NO administrar trombolítico con base en este patrón",
+  "Considerar anatomia coronariana crítica conforme o contexto clínico — o padrão SUGERE, não fecha diagnóstico":
+    "Considerar anatomía coronaria crítica según el contexto clínico — el patrón SUGIERE, no cierra el diagnóstico",
+  "⚠️ O ECG não nomeia a artéria acometida. O que este padrão estabelece é isquemia extensa de alto risco e que o trombolítico não é o caminho — a anatomia quem define é a angiografia.":
+    "⚠️ El ECG no nombra la arteria comprometida. Lo que este patrón establece es isquemia extensa de alto riesgo y que el trombolítico no es el camino — la anatomía la define la angiografía.",
+  "SUPRA EM aVR COM INFRA DIFUSO (≥ 6 derivações): padrão de isquemia subendocárdica EXTENSA e de alto risco. Não é candidato a trombolítico por este padrão, e a conduta é avaliação invasiva. ⚠️ O ECG não fecha a anatomia — quem define é a angiografia.":
+    "ELEVACIÓN EN aVR CON INFRADESNIVEL DIFUSO (≥ 6 derivaciones): patrón de isquemia subendocárdica EXTENSA y de alto riesgo. No es candidato a trombolítico por este patrón, y la conducta es evaluación invasiva. ⚠️ El ECG no cierra la anatomía — la define la angiografía.",
+
+  // ── Derivações adicionais conforme a suspeita ────────────────────────
+  "Se a suspeita for POSTERIOR (infra horizontal em V1–V3 com R alta e larga): registrar V7–V9 — o limiar ali é 0,5 mm":
+    "Si la sospecha es POSTERIOR (infradesnivel horizontal en V1–V3 con R alta y ancha): registrar V7–V9 — el umbral allí es 0,5 mm",
+  "Se houver supra INFERIOR (II, III, aVF): registrar V3R–V4R para pesquisar ventrículo direito":
+    "Si hay elevación INFERIOR (II, III, aVF): registrar V3R–V4R para investigar ventrículo derecho",
+  "Se não for possível distinguir o padrão: completar a avaliação do ECG sem assumir nenhum deles":
+    "Si no es posible distinguir el patrón: completar la evaluación del ECG sin asumir ninguno de ellos",
+  "Se não for possível distinguir o padrão: completar a avaliação do ECG sem assumir nenhum deles — repetir o traçado em poucos minutos e comparar, porque T hiperaguda e De Winter mudam com o tempo":
+    "Si no es posible distinguir el patrón: completar la evaluación del ECG sin asumir ninguno de ellos — repetir el trazado en pocos minutos y comparar, porque la T hiperaguda y De Winter cambian con el tiempo",
+  "Se a suspeita for posterior: registrar V7–V9. Se houver supra inferior: registrar V3R–V4R. Um conjunto responde a uma pergunta — pedir os dois sempre é ruído":
+    "Si la sospecha es posterior: registrar V7–V9. Si hay elevación inferior: registrar V3R–V4R. Un conjunto responde a una pregunta — pedir ambos siempre es ruido",
 };

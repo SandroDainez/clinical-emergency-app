@@ -19,6 +19,7 @@ import {
   OCLUSAO_POSTERIOR,
   DERIVACOES_POSTERIORES_COMO,
   OCLUSAO_SEM_SUPRA_ABERTURA,
+  OCLUSAO_T_HIPERAGUDA,
 } from "./lib/oclusao-sem-supra";
 
 /**
@@ -148,53 +149,72 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
       porque: [
         "Tempo é músculo. As medidas iniciais correm ao lado do ECG, não antes dele.",
       ],
-      next: "v2_linha_do_tempo",
+      next: "v2_dados_paciente",
     },
 
-    // ── 02 · LINHA DO TEMPO ──────────────────────────────────────────────
+    // ── 02 · DADOS DO PACIENTE ──────────────────────────────────────────
     //
-    // ⚠️ TRÊS DADOS NA MESMA TELA PORQUE SÃO A MESMA IDEIA — a linha do tempo
-    // do evento. Decisão do autor: uma coleta cedo alimenta várias decisões
-    // futuras, e três telas de entrada seriam três telas antes do ECG.
+    // ⚠️ COLETADOS UMA VEZ, CONSUMIDOS POR TODAS AS DECISÕES. Idade, peso e
+    // altura alimentam as doses; o início dos sintomas alimenta a janela de
+    // 12 h da fibrinólise. Nenhum deles é perguntado de novo adiante.
     //
-    // ⚠️ SÓ O ECG COBRA RESPOSTA. Os dois tempos são opcionais de propósito: o
-    // app não pode segurar o ABCDE nem a reperfusão por falta de uma informação
-    // temporal que ainda pode ser obtida depois. Sem eles, as telas seguintes
-    // apenas deixam de mostrar o relógio — nenhuma delas trava.
-    v2_linha_do_tempo: {
-      id: "v2_linha_do_tempo",
+    // ⚠️ E O PRIMEIRO CONTATO MÉDICO ESTÁ AQUI, NÃO NA TELA DO ECG (decisão do
+    // autor, 2026-08-27). Eu havia proposto coletá-lo na tela 5, onde o ECG é
+    // pedido — e ele barrou com a razão certa: o primeiro contato JÁ ACONTECEU
+    // antes de o médico chegar naquela tela. Ancorar ali "rejuvenesceria"
+    // artificialmente o tempo e subestimaria o atraso justamente no dado que a
+    // meta de 10 min existe para medir. A tela 5 apenas CONSOME este marco.
+    v2_dados_paciente: {
+      id: "v2_dados_paciente",
       type: "input",
-      title: "Linha do tempo da SCA",
-      summary: FONTE_ECG_10MIN,
-      intro:
-        "Meta: obter E INTERPRETAR o ECG em até 10 min do primeiro contato médico. Um ECG feito no prazo e lido depois não cumpriu a meta.",
+      title: "Dados do paciente",
+      intro: "Coletados uma vez. As decisões seguintes leem daqui — nada será perguntado de novo.",
       fields: [
         {
-          id: "ecg_realizado",
-          label: "O ECG de 12 derivações já foi realizado?",
+          id: "idade",
+          label: "Idade",
+          unit: "anos",
+          allowCustom: true,
+          customLabel: "Outra",
+          customKeyboard: "numeric",
           presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Ainda não" },
+            { value: "40", label: "40" },
+            { value: "55", label: "55" },
+            { value: "65", label: "65" },
+            { value: "75", label: "75" },
+            { value: "85", label: "85" },
           ],
         },
         {
-          id: "fmc_min",
-          label: "Há quantos minutos foi o primeiro contato médico?",
-          unit: "min",
-          optional: true,
+          id: "peso",
+          label: "Peso",
+          unit: "kg",
           allowCustom: true,
           customLabel: "Outro",
           customKeyboard: "numeric",
+          presets: ["50", "60", "70", "80", "90", "100"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          id: "pesoOrigem",
+          label: "Este peso é",
+          optional: true,
           presets: [
-            { value: "0", label: "Agora" },
-            { value: "10", label: "~10 min" },
-            { value: "30", label: "~30 min" },
-            { value: "60", label: "1 h" },
-            { value: "120", label: "2 h ou mais" },
+            { value: "estimado", label: "Estimado" },
+            { value: "real", label: "Real (pesado)" },
           ],
         },
         {
-          // A janela de 12 h da fibrinólise conta daqui.
+          id: "altura",
+          label: "Altura",
+          unit: "cm",
+          optional: true,
+          allowCustom: true,
+          customLabel: "Outra",
+          customKeyboard: "numeric",
+          presets: ["150", "160", "170", "180", "190"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          // Marco `inicioDoEvento` — a janela de 12 h da fibrinólise conta daqui.
           id: "tempo_dor",
           label: "Há quantos minutos começaram os sintomas?",
           unit: "min",
@@ -209,6 +229,24 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
             { value: "360", label: "6 h" },
             { value: "720", label: "12 h" },
             { value: "1440", label: "mais de 12 h" },
+          ],
+        },
+        {
+          // Marco `primeiroContatoMedico` — a meta de 10 min do ECG e a janela
+          // de 120 min da ICP contam daqui.
+          id: "fmc_min",
+          label: "Há quantos minutos foi o primeiro contato médico?",
+          unit: "min",
+          optional: true,
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "0", label: "Agora" },
+            { value: "10", label: "~10 min" },
+            { value: "30", label: "~30 min" },
+            { value: "60", label: "1 h" },
+            { value: "120", label: "2 h ou mais" },
           ],
         },
       ],
@@ -236,9 +274,9 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
         ...blocoRitmo(),
       ],
       next: {
-        possiveis: ["v2_estabilizar", "v2_decisao1"],
+        possiveis: ["v2_estabilizar", "v2_medidas_iniciais"],
         escolher: (values) =>
-          avaliarAmeacaImediata(values) ? "v2_estabilizar" : "v2_decisao1",
+          avaliarAmeacaImediata(values) ? "v2_estabilizar" : "v2_medidas_iniciais",
       },
     },
 
@@ -259,6 +297,99 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
         moduleId: "pcr-adulto",
         label: "Abrir o módulo da ameaça",
       },
+      next: "v2_medidas_iniciais",
+    },
+
+    // ── 04 · MEDIDAS INICIAIS ────────────────────────────────────────────
+    //
+    // ⚠️ CONDUTA OPERACIONAL, NÃO TEXTO. Cada linha é uma coisa que alguém faz
+    // com as mãos agora. O `entry` da V1 misturava isso com exames, oxigênio e
+    // anamnese em oito itens de peso igual — e foi assim que a meta do ECG virou
+    // a quarta linha de uma lista.
+    v2_medidas_iniciais: {
+      id: "v2_medidas_iniciais",
+      type: "action",
+      title: "Medidas iniciais",
+      summary: "Tudo em paralelo. Nada aqui espera o resultado do anterior.",
+      actions: [
+        "Monitorização cardíaca contínua",
+        "Oximetria de pulso — O₂ apenas se SpO₂ < 90%",
+        "Pressão arterial (aferir nos dois braços)",
+        "Acesso venoso periférico — dois se o quadro for grave",
+        "Desfibrilador disponível ao lado do paciente",
+      ],
+      next: "v2_analgesia_exames",
+    },
+
+    // ── 05 · ANALGESIA E EXAMES · O ECG EM DESTAQUE ──────────────────────
+    //
+    // ⚠️ O ECG NÃO É MAIS UM ITEM DA LISTA. Ele é o título da tela, e a faixa
+    // persistente cobra a meta pelo resto do atendimento. O resto dos exames
+    // aparece como conduta — nenhum deles atrasa a reperfusão.
+    //
+    // ⚠️ ANALGESIA ENTRA GOVERNADA. `vereditoMorfina` avalia hipotensão,
+    // hipoperfusão, rebaixamento e VD; o que ele não consegue avaliar
+    // (retenção de CO₂, DPOC) vira decisão registrada. A dose só nasce do
+    // "prosseguir" — nunca solta na lista de exames.
+    v2_analgesia_exames: {
+      id: "v2_analgesia_exames",
+      type: "input",
+      title: "ECG de 12 derivações",
+      summary: FONTE_ECG_10MIN,
+      intro:
+        "⏱️ REALIZAR E INTERPRETAR O MAIS RÁPIDO POSSÍVEL — meta de até 10 minutos do primeiro contato médico. Em paralelo: troponina ultrassensível, hemograma, creatinina e eletrólitos. Nenhum exame atrasa a reperfusão.",
+      fields: [
+        {
+          id: "ecg_realizado",
+          label: "O ECG de 12 derivações já foi realizado?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Ainda não" },
+          ],
+        },
+        {
+          id: "pde5_recente",
+          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
+          optional: true,
+          presets: [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+            { value: "nao_sei", label: "Não sei" },
+          ],
+        },
+        {
+          id: "pde5_qual",
+          label: "Qual inibidor de PDE-5?",
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          presets: [
+            { value: "sildenafila", label: "Sildenafila (Viagra, Revatio)" },
+            { value: "tadalafila", label: "Tadalafila (Cialis)" },
+            { value: "vardenafila", label: "Vardenafila (Levitra)" },
+            { value: "avanafila", label: "Avanafila (Spedra)" },
+            { value: "nao_sei_qual", label: "Não sei qual" },
+          ],
+        },
+        {
+          id: "pde5_horas",
+          label: "Há quantas horas foi a última dose?",
+          unit: "h",
+          optional: true,
+          showIf: (v) => v.pde5_recente === "sim",
+          allowCustom: true,
+          customLabel: "Outro",
+          customKeyboard: "numeric",
+          presets: [
+            { value: "2", label: "~2 h" },
+            { value: "8", label: "~8 h" },
+            { value: "12", label: "~12 h" },
+            { value: "24", label: "~24 h" },
+            { value: "48", label: "~48 h" },
+            { value: "72", label: "mais de 48 h" },
+          ],
+        },
+      ],
+      vereditos: [{ id: "morfina", avaliar: vereditoMorfina }],
       next: "v2_decisao1",
     },
 
@@ -275,19 +406,25 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
       id: "v2_decisao1",
       type: "decision",
       title: "Decisão 1 de 3 · O ECG",
-      question: "Há supradesnível persistente do segmento ST ou equivalente de oclusão?",
-      summary: "Compare com o traçado normal ao lado.",
+      // ⚠️ SÓ SUPRA. A V1 pergunta "supra de ST OU BRE novo suspeito" na mesma
+      // tela, e o autor separou: a novidade do BRE depende de ECG prévio ou de
+      // contexto, que é outra variável e merece decisão própria. Misturar as
+      // duas obriga a responder por duas coisas com um toque só.
+      question: "O ECG mostra supradesnível de ST?",
+      summary: "Compare com o traçado normal ao lado. Apoio visual — o diagnóstico é no ECG do seu paciente.",
       comparativo: [
         {
           figura: "ecg_normal",
-          rotulo: "Normal",
-          significado: "O segmento ST volta à linha de base depois do QRS.",
+          imagemReal: "ecg-normal",
+          rotulo: "Normal — DII",
+          significado: "Ritmo sinusal, segmento ST na linha de base.",
           conduta: "Referência para comparação.",
         },
         {
           figura: "ecg_supra_anterior",
-          rotulo: "ST elevado",
-          significado: "O ST permanece acima da linha de base antes da onda T.",
+          imagemReal: "ecg-supra-st",
+          rotulo: "Supra de ST — V3",
+          significado: "ST elevado e convexo, acima da linha de base antes da onda T.",
           conduta: "Critério de STEMI — reperfusão.",
           optionId: "sim",
         },
@@ -301,9 +438,14 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
           grava: { campo: "ecg_supra", valor: "sim" },
         },
         {
+          // ⚠️ "NÃO" NÃO É SINÔNIMO DE NSTE (correção do autor, 2026-08-27).
+          // Cinco padrões ocluem a coronária SEM elevar o ST nas 12 derivações
+          // padrão, e três deles são sala de hemodinâmica agora. Mandar o "não"
+          // direto para o ramo sem supra tiraria da fila da reperfusão
+          // exatamente quem mais precisa dela.
           id: "nao",
           label: "Não",
-          next: "v2_sem_supra_parcial",
+          next: "v2_oclusao_sem_supra",
           grava: { campo: "ecg_supra", valor: "nao" },
         },
         {
@@ -330,42 +472,43 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
       id: "v2_d1_ajuda",
       type: "decision",
       title: "Reconhecer supra e equivalentes",
-      question: "Com estes critérios e traçados, o ECG tem supra ou equivalente de oclusão?",
+      // ⚠️ PREDOMINANTEMENTE VISUAL, e os critérios ficam ABERTOS. A tela existe
+      // porque o médico disse que não sabe reconhecer o padrão — ensiná-lo por
+      // texto é transferir de volta a tarefa mais difícil. Três traçados na
+      // mesma grade e na mesma escala: é o contraste que faz reconhecer.
+      question: "Com estes traçados ao lado, o ECG do seu paciente tem supradesnível de ST?",
       evidence: [
-        OCLUSAO_SEM_SUPRA_ABERTURA,
-        OCLUSAO_DE_WINTER,
-        OCLUSAO_POSTERIOR,
-        DERIVACOES_POSTERIORES_COMO,
+        "SUPRA: o segmento ST fica ACIMA da linha de base depois do QRS, e assim PERMANECE até a onda T. Costuma ser convexo (abaulado para cima).",
+        "INFRA: o ST fica ABAIXO da linha de base. Não é supra — mas também não é normal, e as alterações horizontais ou descendentes são as que mais importam.",
+        "A linha de base é o segmento entre o fim da onda T e o início da P seguinte. É contra ela que se mede, não contra o traçado vizinho.",
+        "⚠️ Um ECG inicial normal NÃO exclui síndrome coronariana aguda. Repita o traçado se os sintomas persistirem ou mudarem.",
       ],
       comparativo: [
         {
           figura: "ecg_normal",
-          rotulo: "Normal",
-          significado: "ST na linha de base.",
-          conduta: "Referência.",
+          imagemReal: "ecg-normal",
+          rotulo: "Normal — DII",
+          significado: "Ritmo sinusal, ST na linha de base, T positiva.",
+          conduta: "Referência para comparação.",
         },
         {
           figura: "ecg_supra_anterior",
-          rotulo: "Supra de ST",
-          significado: "ST acima da linha de base, persistente.",
-          conduta: "Reperfusão emergente.",
-        },
-        {
-          figura: "ecg_de_winter",
-          rotulo: "De Winter",
-          significado: "Infra ascendente em V1–V6 com T altas e simétricas — oclusão proximal da DA.",
-          conduta: "Sala de hemodinâmica agora; o padrão pode não virar supra.",
+          imagemReal: "ecg-supra-st",
+          rotulo: "Supra de ST — V3",
+          significado: "ST elevado e convexo — lesão transmural.",
+          conduta: "É supra: siga para o território.",
         },
         {
           figura: "ecg_posterior",
-          rotulo: "Posterior",
-          significado: "V1–V3 com infra horizontal, R alta e larga, T positiva.",
-          conduta: "Confirmar com V7–V9 — o limiar ali é 0,5 mm.",
+          imagemReal: "ecg-infra-st",
+          rotulo: "Infra de ST — DII",
+          significado: "ST deprimido — isquemia subendocárdica.",
+          conduta: "NÃO é supra. Segue pelo ramo sem supradesnível.",
         },
       ],
       options: [
         { id: "sim", label: "Tem supra ou equivalente", next: "v2_territorio", gravidade: "critica", grava: { campo: "ecg_supra", valor: "sim" } },
-        { id: "nao", label: "Não tem", next: "v2_sem_supra_parcial", grava: { campo: "ecg_supra", valor: "nao" } },
+        { id: "nao", label: "Não tem", next: "v2_oclusao_sem_supra", grava: { campo: "ecg_supra", valor: "nao" } },
         {
           id: "indeterminado",
           label: "Continuo sem conseguir determinar",
@@ -388,7 +531,8 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
       summary: "Isto não é 'sem supra'. É 'ainda não sei'.",
       actions: [
         "Repetir o ECG agora e comparar com o traçado anterior, se houver",
-        "Registrar V7–V9 (posterior) e V3R–V4R (ventrículo direito) — dois padrões só aparecem em derivações que ninguém colocou",
+        "Se a suspeita for posterior: registrar V7–V9. Se houver supra inferior: registrar V3R–V4R. Um conjunto responde a uma pergunta — pedir os dois sempre é ruído",
+        "Se não for possível distinguir o padrão: completar a avaliação do ECG sem assumir nenhum deles",
         "Discutir com quem vai assumir o paciente: ligar para o serviço de referência custa minutos",
       ],
       porque: [
@@ -689,32 +833,11 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
       title: "Fibrinólise — tenecteplase",
       intro:
         "Tenecteplase {tnk} mg IV em bolus único. ⚠️ 1 mg = 200 U — confira no frasco antes de aspirar, porque é bolus único e não há como corrigir depois. {avisoPeso}",
+      // ⚠️ NÃO REPERGUNTA O PESO. Ele foi coletado na tela 02 e a dose de TNK é
+      // interpolada de lá — reperguntar aqui seria o app desconfiando do que ele
+      // mesmo guardou, e abriria a porta para dois pesos diferentes no mesmo
+      // atendimento decidindo doses diferentes.
       fields: [
-        {
-          id: "peso",
-          label: "Peso (kg)",
-          unit: "kg",
-          allowCustom: true,
-          customLabel: "Outro",
-          customKeyboard: "numeric",
-          presets: [
-            { value: "50", label: "50" },
-            { value: "60", label: "60" },
-            { value: "70", label: "70" },
-            { value: "80", label: "80" },
-            { value: "90", label: "90" },
-            { value: "100", label: "100" },
-          ],
-        },
-        {
-          id: "pesoOrigem",
-          label: "Este peso é",
-          optional: true,
-          presets: [
-            { value: "estimado", label: "Estimado" },
-            { value: "real", label: "Real (pesado)" },
-          ],
-        },
         {
           // Arma o relógio da reavaliação. Opcional: quem ainda não administrou
           // segue, e a tela seguinte diz que o relógio não está contando.
@@ -883,51 +1006,17 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
     // próprio bloqueio é o defeito que os vereditos existem para eliminar.
     v2_terapias: {
       id: "v2_terapias",
-      type: "input",
+      type: "action",
       title: "Terapia anti-isquêmica",
-      intro: "O que o app não consegue deduzir dos dados que você já deu.",
-      fields: [
-        {
-          id: "pde5_recente",
-          label: "Uso recente de inibidor de PDE-5 (sildenafila, tadalafila)?",
-          presets: [
-            { value: "nao", label: "Não" },
-            { value: "sim", label: "Sim" },
-            { value: "nao_sei", label: "Não sei" },
-          ],
-        },
-        {
-          id: "pde5_qual",
-          label: "Qual inibidor de PDE-5?",
-          optional: true,
-          showIf: (v) => v.pde5_recente === "sim",
-          presets: [
-            { value: "sildenafila", label: "Sildenafila (Viagra, Revatio)" },
-            { value: "tadalafila", label: "Tadalafila (Cialis)" },
-            { value: "vardenafila", label: "Vardenafila (Levitra)" },
-            { value: "avanafila", label: "Avanafila (Spedra)" },
-            { value: "nao_sei_qual", label: "Não sei qual" },
-          ],
-        },
-        {
-          id: "pde5_horas",
-          label: "Há quantas horas foi a última dose?",
-          unit: "h",
-          optional: true,
-          showIf: (v) => v.pde5_recente === "sim",
-          allowCustom: true,
-          customLabel: "Outro",
-          customKeyboard: "numeric",
-          presets: [
-            { value: "2", label: "~2 h" },
-            { value: "8", label: "~8 h" },
-            { value: "12", label: "~12 h" },
-            { value: "24", label: "~24 h" },
-            { value: "48", label: "~48 h" },
-            { value: "72", label: "mais de 48 h" },
-          ],
-        },
-      ],
+      summary: "Cada fármaco responde pelos seus próprios impedimentos.",
+      // ⚠️ SEM CAMPOS, E É O PONTO. A primeira versão desta tela reperguntava o
+      // PDE-5 — que a tela 05 já coletou. Era o mesmo defeito que originou a
+      // V2: o app perguntando de novo o que ele mesmo acabou de receber. Os
+      // vereditos leem `TreeValues`; não precisam de coleta própria.
+      //
+      // ⚠️ E SEM `actions`: dose de fármaco contraindicado impressa ao lado do
+      // próprio bloqueio é o defeito que os vereditos existem para eliminar.
+      actions: [],
       vereditos: [
         { id: "nitrato", avaliar: vereditoNitrato },
         { id: "morfina", avaliar: vereditoMorfina },
@@ -959,6 +1048,196 @@ export const coronaryV2DecisionTree: DecisionTreeDefinition = {
         "Para esses, use o módulo de Síndromes Coronarianas (V1), que segue completo e publicado",
       ],
       targets: [],
+    },
+
+    // ── 06c · OCLUSÃO SEM SUPRA CLÁSSICO ─────────────────────────────────
+    //
+    // ⚠️ A TRAVA QUE IMPEDE `sem supra → NSTE automático`. Achado do autor,
+    // 2026-08-27: a V2 mandava o "não" da Decisão 1 direto para o ramo sem
+    // supra. Cinco padrões ocluem a coronária sem elevar o ST nas derivações
+    // padrão — e dois deles só aparecem em derivações que ninguém colocou.
+    //
+    // ⚠️ CURTA DE PROPÓSITO, não é galeria. Três padrões nomeados, "nenhum
+    // destes" e a dúvida. A varredura completa continua na V1.
+    v2_oclusao_sem_supra: {
+      id: "v2_oclusao_sem_supra",
+      type: "decision",
+      title: "Antes de seguir como sem supra",
+      question: "Há algum destes padrões de oclusão ou alto risco?",
+      summary: "Sem supra no traçado padrão NÃO significa sem oclusão.",
+      comparativo: [
+        {
+          figura: "ecg_de_winter",
+          rotulo: "De Winter",
+          significado: "Infra ascendente em V1–V6 com T altas e simétricas.",
+          conduta: "Oclusão proximal da DA — sala agora.",
+          optionId: "de_winter",
+        },
+        {
+          figura: "ecg_posterior",
+          rotulo: "Posterior",
+          significado: "V1–V3 com infra horizontal, R alta e larga, T positiva.",
+          conduta: "Confirmar em V7–V9 — o limiar ali é 0,5 mm.",
+          optionId: "posterior",
+        },
+        {
+          figura: "ecg_avr_tronco",
+          rotulo: "aVR com infra difuso",
+          significado: "Supra em aVR com infra em ≥ 6 derivações.",
+          conduta: "Alto risco — avaliação invasiva, não fibrinólise.",
+          optionId: "avr",
+        },
+      ],
+      options: [
+        { id: "de_winter", label: "De Winter", next: "v2_oclusao_alto_risco", gravidade: "critica", grava: { campo: "padrao_oclusao", valor: "de_winter" } },
+        { id: "posterior", label: "Posterior", next: "v2_oclusao_alto_risco", gravidade: "critica", grava: { campo: "padrao_oclusao", valor: "posterior" } },
+        {
+          // ⚠️ CAMINHO PRÓPRIO, E ISTO É CLÍNICO. O padrão de tronco NÃO é
+          // candidato a trombolítico — mandá-lo para a Decisão 2 o levaria à
+          // Decisão 3, que oferece fibrinólise. A V1 já separa este ramo
+          // ("Sala urgente — fibrinólise fora") e a V2 mantém a separação.
+          id: "avr",
+          label: "Supra em aVR com infra difuso",
+          next: "v2_avr_alto_risco",
+          gravidade: "critica",
+          grava: { campo: "padrao_oclusao", valor: "avr" },
+        },
+        { id: "nenhum", label: "Nenhum destes", next: "v2_sem_supra_parcial", grava: { campo: "padrao_oclusao", valor: "nenhum" } },
+        {
+          id: "nao_sei",
+          label: "Não sei — me ajude",
+          next: "v2_oclusao_ajuda",
+          gravidade: "neutra",
+          grava: { campo: "padrao_oclusao", valor: "nao_sei" },
+        },
+      ],
+    },
+
+    // ── 06d · AJUDA DOS PADRÕES DE OCLUSÃO ───────────────────────────────
+    //
+    // Critérios abertos e os mesmos traçados. A terceira saída preserva a
+    // dúvida: quem continua sem conseguir determinar NÃO é empurrado para o
+    // ramo sem supra — vai para a orientação de registrar as derivações que
+    // faltam, que é o que de fato resolve dois destes padrões.
+    v2_oclusao_ajuda: {
+      id: "v2_oclusao_ajuda",
+      type: "decision",
+      title: "Reconhecer oclusão sem supra clássico",
+      question: "Com estes critérios, algum dos padrões está presente?",
+      evidence: [
+        OCLUSAO_SEM_SUPRA_ABERTURA,
+        OCLUSAO_DE_WINTER,
+        OCLUSAO_POSTERIOR,
+        DERIVACOES_POSTERIORES_COMO,
+        OCLUSAO_T_HIPERAGUDA,
+        // ⚠️ TEXTO PRÓPRIO DA V2, e não o `OCLUSAO_AVR_TRONCO` da V1. Aquele
+        // diz que o padrão "sugere lesão de tronco", e o autor pediu que a V2
+        // não nomeie a anatomia: o que o ECG estabelece é isquemia extensa de
+        // alto risco e que o trombolítico está fora. A anatomia quem define é a
+        // angiografia. A constante da V1 fica como está — ela está congelada.
+        "SUPRA EM aVR COM INFRA DIFUSO (≥ 6 derivações): padrão de isquemia subendocárdica EXTENSA e de alto risco. Não é candidato a trombolítico por este padrão, e a conduta é avaliação invasiva. ⚠️ O ECG não fecha a anatomia — quem define é a angiografia.",
+      ],
+      comparativo: [
+        {
+          figura: "ecg_de_winter",
+          rotulo: "De Winter",
+          significado: "Infra ascendente no ponto J em V1–V6, seguida de T altas e simétricas.",
+          conduta: "Não espere virar supra: pode não virar.",
+          optionId: "de_winter",
+        },
+        {
+          figura: "ecg_posterior",
+          rotulo: "Posterior",
+          significado: "Imagem em espelho em V1–V3; confirmar nas posteriores.",
+          conduta: "Supra de 0,5 mm em V7–V9 já fecha.",
+          optionId: "posterior",
+        },
+        {
+          figura: "ecg_t_hiperaguda",
+          rotulo: "T hiperaguda",
+          significado: "T altas, largas e simétricas — pode preceder o supra.",
+          conduta: "Repetir o ECG em minutos.",
+          optionId: "de_winter",
+        },
+      ],
+      options: [
+        { id: "de_winter", label: "De Winter ou T hiperaguda", next: "v2_oclusao_alto_risco", gravidade: "critica", grava: { campo: "padrao_oclusao", valor: "de_winter" } },
+        { id: "posterior", label: "Posterior", next: "v2_oclusao_alto_risco", gravidade: "critica", grava: { campo: "padrao_oclusao", valor: "posterior" } },
+        { id: "avr", label: "aVR com infra difuso", next: "v2_avr_alto_risco", gravidade: "critica", grava: { campo: "padrao_oclusao", valor: "avr" } },
+        { id: "nenhum", label: "Nenhum destes", next: "v2_sem_supra_parcial", grava: { campo: "padrao_oclusao", valor: "nenhum" } },
+        {
+          id: "indeterminado",
+          label: "Continuo sem conseguir determinar",
+          next: "v2_oclusao_indeterminado",
+          gravidade: "neutra",
+          grava: { campo: "padrao_oclusao", valor: "nao_sei" },
+        },
+      ],
+    },
+
+    // ── 06e · OCLUSÃO NÃO DETERMINADA ────────────────────────────────────
+    //
+    // ⚠️ MESMA REGRA DO ECG INDETERMINADO: a dúvida não vira "nenhum". Dois
+    // destes padrões só aparecem em derivações que ninguém colocou, e é isso
+    // que a tela manda fazer — não é conselho genérico, é o que resolve.
+    v2_oclusao_indeterminado: {
+      id: "v2_oclusao_indeterminado",
+      type: "action",
+      title: "Padrão ainda não determinado",
+      summary: "Isto não é 'nenhum destes'. É 'ainda não sei'.",
+      // ⚠️ DERIVAÇÃO CONFORME A SUSPEITA, NÃO EM BLOCO (correção do autor,
+      // 2026-08-27). A primeira versão mandava registrar V7–V9 E V3R–V4R em
+      // todo caso indeterminado. Cada conjunto responde a uma pergunta
+      // diferente, e pedir os dois sempre é ruído que treina a ignorar o pedido
+      // — além de sugerir que o app suspeita das duas coisas quando ele não
+      // suspeita de nenhuma.
+      actions: [
+        "Se a suspeita for POSTERIOR (infra horizontal em V1–V3 com R alta e larga): registrar V7–V9 — o limiar ali é 0,5 mm",
+        "Se houver supra INFERIOR (II, III, aVF): registrar V3R–V4R para pesquisar ventrículo direito",
+        "Se não for possível distinguir o padrão: completar a avaliação do ECG sem assumir nenhum deles — repetir o traçado em poucos minutos e comparar, porque T hiperaguda e De Winter mudam com o tempo",
+        "Ligar para o serviço de referência antes de classificar como sem supra — a decisão precisa de quem vai assumir o paciente",
+      ],
+      porque: [
+        "Enquanto o padrão não for afastado, o paciente não é reclassificado como sem supra — a dúvida não o tira da fila da reperfusão.",
+      ],
+      next: "v2_oclusao_sem_supra",
+    },
+
+    // ── 06f · OCLUSÃO DE ALTO RISCO CONFIRMADA ───────────────────────────
+    v2_oclusao_alto_risco: {
+      id: "v2_oclusao_alto_risco",
+      type: "action",
+      title: "Oclusão de alto risco — sala agora",
+      summary: "Reperfusão com a mesma urgência do STEMI, mesmo sem supra clássico.",
+      actions: [
+        "Acionar a hemodinâmica AGORA — o relógio da reperfusão conta a partir deste reconhecimento",
+        "Não aguardar troponina para decidir: o padrão do ECG já indica oclusão",
+        "Seguir pela mesma decisão de reperfusão do STEMI",
+      ],
+      next: "v2_decisao2",
+    },
+
+    // ── 06g · aVR / TRONCO ───────────────────────────────────────────────
+    //
+    // ⚠️ NÃO PASSA PELA DECISÃO 3. Este ramo existe separado justamente porque
+    // o padrão de tronco ou multiarterial NÃO é candidato a trombolítico —
+    // roteá-lo pela reperfusão comum o levaria à tela que oferece fibrinólise.
+    v2_avr_alto_risco: {
+      id: "v2_avr_alto_risco",
+      type: "action",
+      title: "Alto risco — fibrinólise não indicada",
+      summary:
+        "Padrão de isquemia subendocárdica extensa e de alto risco. A fibrinólise não está indicada por este padrão.",
+      actions: [
+        "Avaliação invasiva com urgência — acionar a hemodinâmica",
+        "NÃO administrar trombolítico com base neste padrão",
+        "Considerar anatomia coronariana crítica conforme o contexto clínico — o padrão SUGERE, não fecha diagnóstico",
+        "Antitrombóticos e anti-isquêmicos conforme os vereditos, sem atrasar a sala",
+      ],
+      porque: [
+        "⚠️ O ECG não nomeia a artéria acometida. O que este padrão estabelece é isquemia extensa de alto risco e que o trombolítico não é o caminho — a anatomia quem define é a angiografia.",
+      ],
+      next: "v2_terapias",
     },
 
     // Destino provisório do ramo sem supra: existe para o grafo não ter aresta

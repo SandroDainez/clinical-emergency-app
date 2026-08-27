@@ -83,13 +83,34 @@ const { coronaryDecisionTree: V1 } = require(path.join(tmp, "coronary-decision-t
     `V1="${V1.id}" · V2="${V2.id}". Id repetido colidiria em sessão, log e persistência.`
   );
 
-  const n = Object.keys(V2.nodes).length;
+  // ⚠️ A FAIXA APROVADA É DE NÓS PRINCIPAIS, e a distinção não é contábil.
+  // O acordo com o autor foi explícito: "as telas de ajuda continuam existindo,
+  // mas penduradas na decisão que as pede, não como etapas do fluxo". Contar
+  // ajuda como etapa faria a trava reprovar exatamente quando o app melhora —
+  // acrescentar uma ajuda visual é o oposto de virar a V1 de novo.
+  //
+  // A primeira versão desta conferência contava tudo e reprovou quando a
+  // checagem de oclusão sem supra entrou. O teto não subiu: a contagem é que
+  // passou a medir o que a faixa sempre significou.
+  const AUXILIARES = /ajuda|indeterminad|estabilizar|ci_lista/;
+  const todos = Object.keys(V2.nodes);
+  const principais = todos.filter((id) => !AUXILIARES.test(id));
+  const auxiliares = todos.length - principais.length;
   confere(
     "a V2 fica na ordem de grandeza aprovada (15–25 nós principais)",
-    n >= 15 && n <= 25,
-    `a V2 tem ${n} nós. Acima de 25 ela está virando a V1 de novo; abaixo de 15, faltou caminho crítico.`
+    principais.length >= 15 && principais.length <= 25,
+    `a V2 tem ${principais.length} nós principais (${todos.length} no total, ${auxiliares} de ajuda ou desvio). ` +
+    `Acima de 25 ela está virando a V1 de novo; abaixo de 15, faltou caminho crítico.`
   );
-  linhas.push(`  A. V2 com ${n} nós · V1 intacta com ${Object.keys(V1.nodes).length}`);
+  confere(
+    "os auxiliares não são a maioria da árvore",
+    auxiliares < principais.length,
+    `${auxiliares} auxiliares contra ${principais.length} principais. Se a ajuda passa a pesar mais que o ` +
+    `fluxo, a V2 deixou de ser navegação por decisões.`
+  );
+  linhas.push(
+    `  A. V2 com ${principais.length} principais + ${auxiliares} auxiliares · V1 intacta com ${Object.keys(V1.nodes).length}`
+  );
 }
 
 // ── B. AS TRÊS DECISÕES EXISTEM, NUMERADAS E ALCANÇÁVEIS ───────────────────
@@ -341,10 +362,236 @@ confere(
   `V2 com ${Object.keys(V2.nodes).length} nós e V1 com ${Object.keys(V1.nodes).length} — a trava pode ter ` +
   `medido nada (R-15 item 9).`
 );
+
+// ── I. O BLOCO INICIAL SEGUE A SEQUÊNCIA CLÍNICA DO AUTOR ──────────────────
+//
+// ⚠️ A ORDEM É CLÍNICA, NÃO DE CONVENIÊNCIA (decisão do autor, 2026-08-27,
+// depois de percorrer a V2 no celular): entrada → dados do paciente →
+// estabilidade → medidas iniciais → analgesia e exames com o ECG em destaque →
+// interpretação. Trocar a ordem muda o atendimento, não só a navegação.
+{
+  const ESPERADA = [
+    ["v2_entrada", "action"],
+    ["v2_dados_paciente", "input"],
+    ["v2_ameacas", "input"],
+    ["v2_medidas_iniciais", "action"],
+    ["v2_analgesia_exames", "input"],
+    ["v2_decisao1", "decision"],
+  ];
+  let atual = V2.entryNodeId;
+  const percorrido = [];
+  for (let i = 0; i < ESPERADA.length && atual; i++) {
+    const no = V2.nodes[atual];
+    if (!no) break;
+    percorrido.push([atual, no.type]);
+    if (no.type === "decision") break;
+    const nx = no.next;
+    // No caminho SEM ameaça — que é o que define a sequência do bloco inicial.
+    atual = typeof nx === "string" ? nx : nx && nx.possiveis ? nx.possiveis[1] ?? nx.possiveis[0] : null;
+  }
+  confere(
+    "o bloco inicial segue a sequência clínica aprovada",
+    JSON.stringify(percorrido) === JSON.stringify(ESPERADA),
+    `percorrido: ${percorrido.map(([i, t]) => `${i}(${t})`).join(" → ")}\n` +
+    `      esperado:  ${ESPERADA.map(([i, t]) => `${i}(${t})`).join(" → ")}`
+  );
+  linhas.push(`  I. ${percorrido.length} telas na ordem: ${percorrido.map(([i]) => i.replace("v2_", "")).join(" → ")}`);
+}
+
+// ── J. NENHUM CAMPO É PERGUNTADO DUAS VEZES ────────────────────────────────
+//
+// ⚠️ ESTA É A REGRA QUE ORIGINOU A V2, generalizada. O autor encontrou
+// `supra_inferior` sendo perguntado depois de o ECG já ter sido lido, e o
+// PDE-5 reaparecendo seis passos adiante. Um campo em dois nós é o app
+// desconfiando do que ele mesmo guardou — e abre a porta para dois valores
+// diferentes do mesmo dado decidirem coisas diferentes no mesmo atendimento.
+{
+  const onde = {};
+  for (const [id, n] of Object.entries(V2.nodes)) {
+    for (const f of n.fields ?? []) (onde[f.id] ??= []).push(id);
+  }
+  const duplicados = Object.entries(onde).filter(([, nos]) => nos.length > 1);
+  confere(
+    "nenhum campo da V2 é coletado em mais de um nó",
+    duplicados.length === 0,
+    `${duplicados.map(([c, nos]) => `\`${c}\` em ${nos.join(" e ")}`).join(" · ")}.`
+  );
+
+  const campos = Object.keys(onde).length;
+  confere(
+    "há campos suficientes para a conferência medir algo",
+    campos >= 10,
+    `só ${campos} campos na árvore inteira — a trava pode ter rodado sobre nada (R-15 item 9).`
+  );
+  linhas.push(`  J. ${campos} campos distintos, cada um coletado em um nó só`);
+}
+
+// ── K. A DECISÃO 1 PERGUNTA SÓ SOBRE SUPRA, E MOSTRA O TRAÇADO ─────────────
+{
+  const d1 = V2.nodes.v2_decisao1;
+  confere(
+    "a Decisão 1 não mistura BRE na pergunta do supra",
+    !/BRE|bloqueio de ramo|ramo esquerdo/i.test(d1.question),
+    `a pergunta é "${d1.question}". Decisão do autor: a novidade do BRE depende de ECG prévio ou de contexto ` +
+    `— é outra variável, e merece decisão própria. Misturar obriga a responder por duas coisas com um toque.`
+  );
+
+  for (const [id, minimo] of [["v2_decisao1", 2], ["v2_d1_ajuda", 3]]) {
+    const reais = (V2.nodes[id].comparativo ?? []).filter((c) => c.imagemReal);
+    confere(
+      `\`${id}\` mostra ao menos ${minimo} traçados de referência`,
+      reais.length >= minimo,
+      `tem ${reais.length}. A decisão que bifurca o módulo — e a tela que existe porque o médico disse que ` +
+      `não sabe reconhecer — não podem ensinar padrão de ECG por texto.`
+    );
+  }
+
+  const ajuda = V2.nodes.v2_d1_ajuda.comparativo ?? [];
+  const ids = ajuda.map((c) => c.imagemReal);
+  confere(
+    "a ajuda compara normal, supra E infra",
+    ["ecg-normal", "ecg-supra-st", "ecg-infra-st"].every((i) => ids.includes(i)),
+    `imagens: ${JSON.stringify(ids)}. É o contraste entre os três que faz reconhecer — normal sozinho não ` +
+    `ensina, e supra sem infra não distingue o que NÃO é supra.`
+  );
+  linhas.push(`  K. Decisão 1 sem BRE · ${ajuda.filter((c) => c.imagemReal).length} traçados reais na ajuda`);
+}
+
+// ── L. "SEM SUPRA" NÃO VIRA NSTE AUTOMÁTICO ────────────────────────────────
+//
+// ⚠️ ACHADO DO AUTOR, 2026-08-27: a V2 mandava o "Não" da Decisão 1 direto para
+// o ramo sem supra. Cinco padrões ocluem a coronária SEM elevar o ST nas 12
+// derivações padrão, e dois deles só aparecem em derivações que ninguém
+// colocou — "não vi" pode significar apenas "não olhei". Tirar esses pacientes
+// da fila da reperfusão por ausência de supra clássico é o erro que esta
+// conferência existe para impedir.
+{
+  const d1 = V2.nodes.v2_decisao1;
+  const nao = d1.options.find((o) => o.id === "nao");
+  confere(
+    'o "Não" da Decisão 1 passa pela checagem de oclusão sem supra',
+    nao && nao.next === "v2_oclusao_sem_supra",
+    `"Não" vai direto para "${nao?.next}". Sem a checagem, De Winter e infarto posterior — que são sala de ` +
+    `hemodinâmica agora — seriam classificados como síndrome sem supra e estratificados por troponina.`
+  );
+
+  const ajuda = V2.nodes.v2_d1_ajuda.options.find((o) => o.id === "nao");
+  confere(
+    'o "Não tem" da ajuda do ECG também passa pela checagem',
+    ajuda && ajuda.next === "v2_oclusao_sem_supra",
+    `vai para "${ajuda?.next}". A ajuda não pode ser o atalho que contorna a trava.`
+  );
+
+  const chk = V2.nodes.v2_oclusao_sem_supra;
+  confere(
+    "a checagem nomeia De Winter e posterior",
+    chk && chk.options.some((o) => o.id === "de_winter") && chk.options.some((o) => o.id === "posterior"),
+    `opções: ${(chk?.options ?? []).map((o) => o.id).join(", ")}. São os dois padrões que o autor nomeou.`
+  );
+
+  confere(
+    "a checagem mostra traçado — o reconhecimento é visual",
+    (chk?.comparativo ?? []).length >= 3,
+    `${(chk?.comparativo ?? []).length} traçados. Descrever De Winter em texto transfere ao médico a tradução ` +
+    `mais difícil justamente onde ela decide reperfusão.`
+  );
+
+  confere(
+    "a checagem é curta — não virou galeria",
+    (chk?.options ?? []).length <= 5,
+    `${(chk?.options ?? []).length} opções. Decisão do autor: "não quero uma galeria extensa aqui" — a ` +
+    `varredura completa dos cinco padrões continua na V1.`
+  );
+
+  // ⚠️ E O aVR NÃO PODE CHEGAR À FIBRINÓLISE.
+  const avr = chk?.options.find((o) => o.id === "avr");
+  confere(
+    "o padrão de tronco (aVR) tem caminho próprio, fora da fibrinólise",
+    avr && avr.next === "v2_avr_alto_risco",
+    `aVR vai para "${avr?.next}". A V1 já separa este ramo ("Sala urgente — fibrinólise fora"): tronco ou ` +
+    `doença multiarterial NÃO é candidato a trombolítico, e roteá-lo pela reperfusão comum o levaria à ` +
+    `Decisão 3, que oferece fibrinólise.`
+  );
+
+  // Alcançabilidade: partindo de v2_avr_alto_risco, a Decisão 3 tem de ser inalcançável.
+  const N = V2.nodes;
+  const saidas = (no) => {
+    const out = [];
+    if (no.options) for (const o of no.options) o.next && out.push(o.next);
+    const nx = no.next;
+    if (typeof nx === "string") out.push(nx);
+    else if (nx && Array.isArray(nx.possiveis)) out.push(...nx.possiveis);
+    return out.filter((x) => N[x]);
+  };
+  const daqui = new Set(["v2_avr_alto_risco"]);
+  const fila = ["v2_avr_alto_risco"];
+  while (fila.length) for (const d of saidas(N[fila.shift()])) if (!daqui.has(d)) { daqui.add(d); fila.push(d); }
+  confere(
+    "de `v2_avr_alto_risco` não se alcança a Decisão 3 (fibrinólise)",
+    !daqui.has("v2_decisao3") && !daqui.has("v2_fibrinolise"),
+    `alcançáveis a partir do ramo de tronco: ${[...daqui].join(", ")}. O trombolítico não pode estar entre eles.`
+  );
+
+  const indet = V2.nodes.v2_oclusao_indeterminado;
+  confere(
+    "a dúvida sobre o padrão não vira `nenhum destes`",
+    indet && indet.next === "v2_oclusao_sem_supra" && (indet.actions ?? []).length >= 3,
+    `a tela do indeterminado ${indet ? `volta para "${indet.next}"` : "não existe"}. Dois dos padrões só ` +
+    `aparecem em derivações que ninguém colocou — a dúvida manda registrá-las, não reclassificar.`
+  );
+
+  linhas.push(
+    `  L. "não" → checagem de oclusão (${(chk?.options ?? []).length} opções, ${(chk?.comparativo ?? []).length} traçados) · aVR fora da fibrinólise`
+  );
+}
+
+// ── M. DUAS REDAÇÕES CLÍNICAS QUE O AUTOR CORRIGIU ─────────────────────────
+{
+  // ⚠️ O ECG NÃO DIAGNOSTICA TRONCO. Eu havia escrito que supra em aVR com
+  // infra difuso "sugere tronco ou doença multiarterial" e roteado por isso. O
+  // autor corrigiu: o que o padrão estabelece é isquemia subendocárdica extensa
+  // de alto risco e que o trombolítico está fora. A anatomia quem define é a
+  // angiografia — nomear a artéria a partir do traçado é diagnosticar por
+  // inferência e escrever isso no app como se fosse achado.
+  const avr = V2.nodes.v2_avr_alto_risco;
+  const textoAvr = [avr?.title, avr?.summary, ...(avr?.actions ?? []), ...(avr?.porque ?? [])].join(" ");
+  confere(
+    "o ramo do aVR NÃO afirma lesão de tronco",
+    avr && !/lesão de tronco|tronco da coronária|tronco esquerdo/i.test(textoAvr),
+    `o texto nomeia a anatomia. O ECG sugere alto risco; ele não fecha qual artéria está acometida.`
+  );
+  confere(
+    "o ramo do aVR declara isquemia extensa de alto risco e exclui o trombolítico",
+    /alto risco/i.test(textoAvr) && /(não|nao).{0,40}(trombolítico|fibrinólise)/i.test(textoAvr),
+    `o texto precisa dizer as duas coisas: por que é grave, e por que a fibrinólise está fora.`
+  );
+
+  // ⚠️ DERIVAÇÃO CONFORME A SUSPEITA, NÃO EM BLOCO. V7–V9 responde "é
+  // posterior?"; V3R–V4R responde "o VD está acometido?". Pedir os dois em todo
+  // caso indeterminado é ruído que treina a ignorar o pedido.
+  for (const id of ["v2_oclusao_indeterminado", "v2_ecg_indeterminado"]) {
+    const no = V2.nodes[id];
+    const linhas7 = (no?.actions ?? []).filter((a) => /V7|V9/.test(a));
+    const linhas3r = (no?.actions ?? []).filter((a) => /V3R|V4R/.test(a));
+    confere(
+      `\`${id}\` pede V7–V9 e V3R–V4R de forma CONDICIONAL`,
+      linhas7.every((a) => /\bse\b/i.test(a)) && linhas3r.every((a) => /\bse\b/i.test(a)),
+      `há pedido incondicional de derivação adicional. Cada conjunto responde a uma pergunta diferente — ` +
+      `pedir os dois sempre sugere que o app suspeita das duas coisas quando ele não suspeita de nenhuma.`
+    );
+    confere(
+      `\`${id}\` prevê o caso de não distinguir o padrão`,
+      (no?.actions ?? []).some((a) => /não (for )?possível distinguir|sem assumir/i.test(a)),
+      `falta a saída para quem não consegue distinguir: completar a avaliação SEM assumir nenhum dos padrões.`
+    );
+  }
+  linhas.push(`  M. aVR sem diagnóstico de tronco · derivações adicionais condicionais em 2 telas`);
+}
+
 confere(
-  "as seis linhas de medição foram produzidas",
-  linhas.length === 6,
-  `só ${linhas.length} de 6 blocos mediram algo.`
+  "as onze linhas de medição foram produzidas",
+  linhas.length === 11,
+  `só ${linhas.length} de 11 blocos mediram algo.`
 );
 
 console.log("\nSCA V2 — navegação por decisões, ao lado da V1 e sobre a mesma segurança\n");

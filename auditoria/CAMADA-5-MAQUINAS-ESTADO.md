@@ -5,7 +5,7 @@
 
 - Árvores analisadas: **21**
 - Erros estruturais: **0**
-- Avisos: **24**
+- Avisos: **26**
 
 ## Visão por árvore
 
@@ -13,7 +13,7 @@
 |---|---:|---:|---:|---:|
 | coronary-decision-tree (coronaryDecisionTree) | 95 | 95 | 9 | 13 |
 | ira-decision-tree (iraDecisionTree) | 74 | 74 | 8 | 7 |
-| coronary-v2-decision-tree (coronaryV2DecisionTree) | 23 | 23 | 1 | 3 |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | 30 | 30 | 1 | 5 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
@@ -37,9 +37,9 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 24 |
+| escolha-sem-efeito | aviso | 26 |
 
-### escolha-sem-efeito (24)
+### escolha-sem-efeito (26)
 
 | árvore | nó | detalhe |
 |---|---|---|
@@ -60,6 +60,8 @@
 | coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_territorio` | opções anterior, lateral, posterior, indeterminado levam todas a "v2_decisao2" — a escolha não muda o fluxo |
 | coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_vd` | opções sim, nao, nao_registrei levam todas a "v2_decisao2" — a escolha não muda o fluxo |
 | coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_d2_ajuda` | opções nao, indeterminado levam todas a "v2_decisao3" — a escolha não muda o fluxo |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_oclusao_sem_supra` | opções de_winter, posterior levam todas a "v2_oclusao_alto_risco" — a escolha não muda o fluxo |
+| coronary-v2-decision-tree (coronaryV2DecisionTree) | `v2_oclusao_ajuda` | opções de_winter, posterior levam todas a "v2_oclusao_alto_risco" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `motivo_de_entrada` | opções creatinina, eletrolitico, critico, incidental levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `entrada_dados` | opções lab, diurese, sinais, so_paciente levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |
 | ira-decision-tree (iraDecisionTree) | `atalhos` | opções k, nao_sei levam todas a "e1_hipercalemia" — a escolha não muda o fluxo |

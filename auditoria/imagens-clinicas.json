@@ -11,8 +11,48 @@
       "procedencia",
       "forca"
     ],
-    "estado": "⚠️ VAZIO DE PROPÓSITO — não há nenhuma imagem clínica raster no app hoje. Isto NÃO é conformidade: é ausência. A trava é fechada por padrão e reprova a primeira que entrar sem declaração.",
+    "estado": "3 imagens SINTÉTICAS (geradas por IA para este projeto) registradas em 2026-08-27, usadas como apoio visual didático na Decisão 1 da SCA V2. ⚠️ DÉBITO TÉCNICO ABERTO: as imagens em `assets/ecg-referencias/` anteriores a esta data (de-winter, posterior, t-hiperaguda, avr-infra-difuso) NÃO estão cobertas pela trava — ela varre `assets/clinico/`, e elas estão em outra pasta. Decisão do autor (2026-08-27): registrar como débito separado e não ampliar o escopo da rodada do bloco inicial.",
     "modelo": "⚠️ MODELO GERAL DE CONTEÚDO INCORPORADO (AM-6 · PD-12), o mesmo dos vetores: `autoria` = quem criou o arquivo aqui (propria|terceiro) · `procedencia` = origem do conteúdo visual (propria|terceiro) · `quem` = de quem é esse conteúdo · `licenca` = o direito que autoriza usá-lo. ⚠️ É a PROCEDÊNCIA que obriga `quem` e `licenca` — nunca a autoria do arquivo. Uma imagem clínica é o caso extremo disto: o arquivo costuma ser nosso (recorte, anotação, montagem) e o conteúdo é de terceiro. Um ECG real recortado por nós continua sendo o traçado de outra pessoa. ⚠️ `declarado_por` NÃO entra na conta: assinatura não substitui conformidade."
   },
-  "imagens": []
+  "imagens": [
+    {
+      "arquivo": "ecg-normal.png",
+      "o_que_mostra": "DII — ritmo sinusal com segmento ST isoelétrico. Referência de comparação para a Decisão 1.",
+      "autoria": "propria",
+      "procedencia": "propria",
+      "quem": "equipe/projeto SCA",
+      "licenca": "uso interno/próprio do projeto — sem dependência de banco externo ou conteúdo de terceiro",
+      "sintetica": true,
+      "gerada_por": "inteligência artificial, especificamente para este projeto",
+      "forca": "apoio visual didático",
+      "nao_e": "⚠️ NÃO é traçado de paciente real e não deve ser apresentada como tal. Serve para reconhecer o PADRÃO; o diagnóstico é feito no ECG do paciente.",
+      "fonte": "geração própria do projeto (IA), painéis do quadro 'Alterações isquêmicas no ECG'"
+    },
+    {
+      "arquivo": "ecg-supra-st.png",
+      "o_que_mostra": "V3 — supradesnível de ST convexo, padrão típico de lesão transmural.",
+      "autoria": "propria",
+      "procedencia": "propria",
+      "quem": "equipe/projeto SCA",
+      "licenca": "uso interno/próprio do projeto — sem dependência de banco externo ou conteúdo de terceiro",
+      "sintetica": true,
+      "gerada_por": "inteligência artificial, especificamente para este projeto",
+      "forca": "apoio visual didático",
+      "nao_e": "⚠️ NÃO é traçado de paciente real e não deve ser apresentada como tal. Serve para reconhecer o PADRÃO; o diagnóstico é feito no ECG do paciente.",
+      "fonte": "geração própria do projeto (IA), painéis do quadro 'Alterações isquêmicas no ECG'"
+    },
+    {
+      "arquivo": "ecg-infra-st.png",
+      "o_que_mostra": "DII — infradesnível de ST, padrão típico de isquemia subendocárdica.",
+      "autoria": "propria",
+      "procedencia": "propria",
+      "quem": "equipe/projeto SCA",
+      "licenca": "uso interno/próprio do projeto — sem dependência de banco externo ou conteúdo de terceiro",
+      "sintetica": true,
+      "gerada_por": "inteligência artificial, especificamente para este projeto",
+      "forca": "apoio visual didático",
+      "nao_e": "⚠️ NÃO é traçado de paciente real e não deve ser apresentada como tal. Serve para reconhecer o PADRÃO; o diagnóstico é feito no ECG do paciente.",
+      "fonte": "geração própria do projeto (IA), painéis do quadro 'Alterações isquêmicas no ECG'"
+    }
+  ]
 }

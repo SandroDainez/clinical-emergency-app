@@ -681,7 +681,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
 | `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:pde5-janela, test:sca-v2, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
-| `coronary-v2` | ✅ | — | 10/23 (43%) | test:sca-v2 |
+| `coronary-v2` | ✅ | — | 18/30 (60%) | test:sca-v2 |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |

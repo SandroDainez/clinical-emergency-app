@@ -30,4 +30,21 @@ export const IMAGENS_ECG_REFERENCIA: Record<string, ImageSourcePropType> = {
   // visual explícita do autor.
   "t-hiperaguda": require("../../assets/ecg-referencias/t-hiperaguda.png"),
   "avr-infra-difuso": require("../../assets/ecg-referencias/avr-infra-difuso.png"),
+
+  // ── SCA V2 · os três da Decisão 1 (2026-08-27) ─────────────────────────
+  //
+  // ⚠️ IMAGENS SINTÉTICAS, GERADAS POR IA PARA ESTE PROJETO — não são traçados
+  // de paciente real. A distinção está declarada em
+  // `auditoria/imagens-clinicas.json` e importa: elas servem como APOIO VISUAL
+  // DIDÁTICO para reconhecer o padrão, e a tela diz isso. O critério do autor
+  // para aceitá-las foi o único que vale aqui: serem claramente típicas e
+  // clinicamente fiéis — "se alguma estiver ambígua ou artificial demais,
+  // melhor trocar do que forçar a auditoria a aceitá-la".
+  //
+  // Recortadas dos painéis 1, 3 e 4 do quadro "Alterações isquêmicas no ECG"
+  // fornecido pelo autor. Mesma grade e mesma escala nos três: é o que permite
+  // comparar amplitude entre eles sem que um painel minta sobre o outro.
+  "ecg-normal": require("../../assets/clinico/ecg-normal.png"),
+  "ecg-supra-st": require("../../assets/clinico/ecg-supra-st.png"),
+  "ecg-infra-st": require("../../assets/clinico/ecg-infra-st.png"),
 };
