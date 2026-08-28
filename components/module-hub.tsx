@@ -152,6 +152,26 @@ export default function ModuleHub() {
     .map((m) => montarCard(m.id))
     .filter(Boolean) as ModuloDoCard[];
 
+  // ── MÓDULO AVC (reconstruído) ────────────────────────────────────────────
+  //
+  // ⚠️ ENTRA AQUI, E NÃO EM `clinical-modules.ts`, DE PROPÓSITO. Aquele registro
+  // exige um `ClinicalEngine` — a concha legada que a reestruturação removeu
+  // (D-107). O AVC nasce na arquitetura nova e não tem engine: registrá-lo lá
+  // seria reinstalar o acoplamento que a spec existe para desfazer.
+  //
+  // ⚠️ Por isso ele também não aparece em `MODULE_GROUPS`, que valida a cobertura
+  // do registro legado — e cujo `assertModuleGroupsCoverage` só avisa em __DEV__.
+  const CARD_DO_AVC: ModuloDoCard = {
+    id: "avc",
+    titulo: "AVC isquêmico agudo",
+    descritor: "Adulto com suspeita de AVC isquêmico agudo",
+    area: "AVC",
+    etiqueta: "AVC",
+    rota: "/modulos/avc",
+    bloqueado: false,
+  };
+  cardsDoResto.push(CARD_DO_AVC);
+
   function renderSecaoPcr() {
     // ⚠️ VACUIDADE NA TELA: seção sem card não pode virar bloco vazio silencioso.
     if (cardsDaSecao.length === 0) return null;
