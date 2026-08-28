@@ -660,6 +660,26 @@ meio, o fato clínico do AVC que a obrigou.
 | **E-46** | Em julgamento clínico, a leitura do sistema é **apoio, nunca veredito binário** | a Table 4 é *guidance* com hedge; convertê-la em SIM/NÃO inventaria uma certeza que a fonte não tem | Parte 2 (§2.8) |
 | **E-47** | Ação pode ser **iniciada sob condição resolutiva vinculada**, com regra de interrupção — e não existe "liberado" global | a fonte manda iniciar IVT antes do coagulograma e suspender se vier alterado | Parte 2 (§2.3) |
 | **E-48** | **Classificação visual da fonte não é espécie clínica**; recomendação com COR/LOE prevalece sobre faixa de tabela | a Table 8 é gradiente de opinião, sem COR/LOE, e sua faixa "absoluta" é declarada sem sustentação em evidência | Parte 2 (§2.7) |
+| **E-49** | **Nenhum campo obrigatório novo sem checagem contra o índice de não-exigir** | doze fatos com verbatim explícito de que não podem atrasar a terapia — e cada campo obrigatório é candidato a violá-los | Parte 2 (§2.3) |
+| **E-50** | **Dose, concentração, indicação e preparo pertencem ao PRODUTO/APRESENTAÇÃO, nunca ao princípio ativo** | a bula brasileira acessível de tenecteplase é a do IAM, com faixas de peso idênticas às do AVC e valores até o dobro | Parte 6 (§6.7) |
+| **E-51** | Inconsistência interna bloqueia **a afirmação**, não o **campo** — se outra fonte independente o sustentar explicitamente; e a fonte final é sempre **registrada** | a SBD crítico contradiz a si mesma no preparo de insulina; a SBD perioperatória o publica sem ambiguidade | Parte 6 (§6.6) |
+
+> ### ⚠️ E-50 · TESTE OBRIGATÓRIO — fixado pelo autor em 2026-08-28
+>
+> **No contexto AVC, nenhuma dose de 30, 35, 40, 45 ou 50 mg proveniente do
+> regime de IAM pode ser sugerida, calculada ou apresentada como dose de
+> tenecteplase para reperfusão cerebral.**
+>
+> **O teste FALHA se qualquer regra de IAM puder ALCANÇAR o fluxo de AVC.**
+>
+> ⛔ **Não basta esconder na interface.** A regra errada **não pode ser
+> alcançável pelo motor** — é prova de **natureza C (comportamento)**, não
+> estática, e mede **alcançabilidade**, não visibilidade.
+>
+> ⚠️ Razão: as faixas de peso dos dois regimes são **idênticas**
+> (`<60` · `60–70` · `70–80` · `80–90` · `≥90 kg`) e os valores diferem em
+> **exatamente o dobro** — 30/35/40/45/50 mg no IAM contra 15/17,5/20/22,5/25 mg
+> no AVC.
 
 ---
 
@@ -668,7 +688,7 @@ meio, o fato clínico do AVC que a obrigou.
 | # | o que falta | estado |
 |---|---|---|
 | **F-01** | ~~Qual é a fonte vigente do AVC isquêmico agudo~~ | ✅ **FECHADA** em 2026-08-28 — ver §0.7 |
-| **F-02** | Janela para trombólise IV, contada do último-visto-bem | ✅ **transcrito** 2026-08-28 · ⚠️ **divergência interna de marco em aberto** |
+| **F-02** | Janela para trombólise IV | ✅ **transcrito** · ✅ **resolvido por MÚLTIPLOS RELÓGIOS** (2026-08-28) — divergência documental segue aberta, mas não bloqueia: cada regra usa o marco da sua recomendação |
 | **F-03** | Janela estendida e critérios de imagem avançada (AVC ao acordar) | ✅ **transcrito** 2026-08-28 · ⚠️ **quatro marcos distintos**, um deles novo (*symptom recognition*) |
 | **F-04** | Meta pressórica **antes** da trombólise, e depois dela | ✅ **transcrito** 2026-08-28 · fármacos → **F-19** |
 | **F-05** | Conduta pressórica em quem **não** vai reperfundir | ✅ **transcrito** 2026-08-28 · ⚠️ tensão recomendação × supportive text em aberto |
@@ -686,8 +706,11 @@ meio, o fato clínico do AVC que a obrigou.
 | **F-17** | **Quais dimensões compõem o julgamento de "déficit incapacitante"** — e o trecho que diz que o NIHSS isolado não o determina | ✅ **transcrito** 2026-08-28 (Table 4, e355) · conferência clínica pendente |
 | **F-22** | **Alvo de porta-agulha (DTN)** | ⚪ **FONTE COMPLEMENTAR OPCIONAL — indicador de desempenho.** ⛔ **Não é lacuna clínica bloqueante do V1.** Só será buscada se o autor decidir incorporar métricas institucionais ao produto. A AHA/ASA 2026 traz DTN apenas como desempenho observado, nunca como meta recomendada |
 | **F-20** | **Preparo e administração operacional do trombolítico** — apresentação, concentração, reconstituição, diluente, estabilidade | 🔴 **ABERTO — exige FONTE BRASILEIRA / bula.** A Table 7 dá mg e mL e **não declara concentração** ⇒ **E-18**, **E-31** |
-| **F-19** | **Terapêutica anti-hipertensiva operacional** — fármaco, dose, via, apresentação, concentração, titulação | 🔴 **ABERTO — exige FONTE BRASILEIRA.** A AHA/ASA 2026 dá alvos (F-04, F-05) e **não nomeia nenhum fármaco** ⇒ **E-18**, **E-31** |
-| **F-18** | **Terapêutica operacional da correção glicêmica** — como corrigir hipo e hiperglicemia: fármaco, dose, via, apresentação, concentração | 🔴 **ABERTO — exige FONTE BRASILEIRA.** A AHA/ASA 2026 fecha a regra clínica (F-06) e **não** fornece esquema; sua única orientação é *"with appropriate medications"* ⇒ **E-18**, **E-31** |
+| **F-19** | **Terapêutica anti-hipertensiva operacional** — fármaco, dose, via, apresentação, concentração, titulação | 🟡 **parcial** · Posicionamento Luso-Brasileiro 2020 · ⚠️ disponibilidade **2026 não confirmada** |
+| **F-23** | **Via aérea, ventilação e oxigenação no AVC** | ✅ **transcrito** 2026-08-28 · §4.1, e347 · ⛔ escopo AVC, **não** ISR/VM |
+| **F-24** | **Crise convulsiva no AVC** | ✅ **transcrito** 2026-08-28 · §6.5, e400 · ⛔ escopo AVC, **não** estado de mal · terapêutica → **F-25** |
+| **F-25** | **Terapêutica anticonvulsiva operacional** | ✅ **FECHADO COMO PONTEIRO** — ação + referência a protocolo específico; ⛔ sem dose no V1 |
+| **F-18** | **Terapêutica operacional da correção glicêmica** — como corrigir hipo e hiperglicemia: fármaco, dose, via, apresentação, concentração | 🟡 **parcial** · MS + SBD 2025 · ⚠️ **preparo de insulina BLOQUEADO** por discrepância editorial de 10× na fonte |
 
 > ⚠️ **Nota sobre F-12, registrada porque a informação existiu e foi apagada.** A
 > árvore de AVC removida em `bdf02c8` registrava uma divergência real: os
@@ -830,6 +853,30 @@ existe aqui é um **vínculo** entre uma ação `iniciada` e uma pendência.
 ⛔ **Não existe estado global de "liberado".** A condição pertence **àquela ação**,
 nunca ao atendimento — é **E-25** aplicada ao tempo: uma condição liga-se a **uma**
 ação. ⇒ **E-47**
+
+#### ⚠️ Duas confirmações do autor (2026-08-28), a partir da consolidação clínica
+
+**1 · A pressão arterial é bloqueio corrigível DA AÇÃO, nunca critério de
+candidatura.** A candidatura à reperfusão deriva de tempo + imagem + déficit +
+segurança; a PA entra depois, como bloqueio da administração. ⚠️ Incluí-la na
+candidatura cria **dependência circular** — o alvo `<185/110` só existe para quem
+já é candidato.
+
+**2 · A avaliação detalhada do déficit incapacitante é superfície PULÁVEL** quando
+o déficit já é claramente incapacitante e o atraso puder prejudicar terapia
+tempo-dependente. Sustentado por **COR 1 · LOE A**: *"delaying IVT is potentially
+harmful"*. ⛔ A decomposição de §2.8 **não pode ser caminho obrigatório**.
+
+#### 🚫 As doze marcas de não-exigir — critério operacional de projeto
+
+**Elevado a regra pelo autor em 2026-08-28.**
+
+> ⛔ **Nenhum campo obrigatório novo pode ser criado sem checagem contra o índice
+> de não-exigir** de `auditoria/CONSOLIDACAO-CLINICA-AVC.md`. ⇒ **E-49**
+
+Cada uma das doze marcas tem verbatim que a sustenta, e todas nomeiam um fato que
+⛔ **não pode travar terapia tempo-dependente** — podendo ser coletado, exibido e
+pendente.
 
 **Distingue-se de:** *destino* — a ação se completa; o destino persiste. E de
 *reavaliação* — a ação muda o paciente, a reavaliação mede de novo.
@@ -1968,6 +2015,27 @@ discordarem, **não se escolhe em silêncio**. Registra-se:
 não entra no app enquanto o autor não decidir — e a ausência dela é lacuna
 declarada, não silêncio.
 
+#### ⚠️ Inconsistência DENTRO de uma fonte — o que ela bloqueia, e o que não
+
+**Regra fixada pelo autor em 2026-08-28**, a partir do preparo de insulina (F-18):
+
+> **Uma inconsistência em uma fonte bloqueia o uso daquela AFIRMAÇÃO
+> inconsistente — ⛔ não necessariamente o CAMPO CLÍNICO inteiro, se outra fonte
+> adequada e independente o sustentar explicitamente.** ⇒ **E-51**
+
+| | |
+|---|---|
+| ⛔ **não fazer** | reconciliação **silenciosa** entre fontes |
+| ⛔ **não fazer** | apagar a inconsistência ao encontrar outra fonte |
+| ✅ **sempre fazer** | **registrar qual fonte sustenta o campo final** |
+
+**O caso que originou a regra:** a diretriz SBD do paciente crítico declara
+concentração de `1 U/mL` e, na mesma frase, descreve um preparo aritmeticamente
+incompatível. A diretriz SBD **perioperatória** — independente — publica
+`100 UI em 100 mL de NaCl 0,9%`, explícito e sem ambiguidade.
+✅ O **campo** fecha pela segunda; ⛔ a **afirmação inconsistente** da primeira
+permanece registrada e **não utilizável**.
+
 **Três coisas diferentes que costumam ser chamadas de divergência:**
 
 | | o que é | o que exige |
@@ -2612,7 +2680,7 @@ breakpoints · design system definitivo · engine · tipos.
 
 ## PARTE 8 — COMO SE PROVA CADA REGRA
 
-> Classifica as **48 exigências** por **natureza de prova**, e trata a **trava de
+> Classifica as **51 exigências** por **natureza de prova**, e trata a **trava de
 > universo vazio** como requisito de primeira classe.
 >
 > ⚠️ **Esta parte não escreve trava nenhuma.** Ela diz o que cada regra exige que
@@ -2645,7 +2713,7 @@ isso, **E-01** e **E-21** ficam sem prova — e são duas das regras mais caras.
 módulo a módulo; o defeito que este modelo pode produzir é de **propagação** — um
 fato corrigido que não derrubou a cadeia inteira (§4.4-iii).
 
-### 8.3 As 48 exigências, por natureza de prova
+### 8.3 As 51 exigências, por natureza de prova
 
 | # | natureza | o que se mede |
 |---|---|---|
@@ -2697,6 +2765,9 @@ fato corrigido que não derrubou a cadeia inteira (§4.4-iii).
 | **E-46** | **S** + C | não existe caminho em que a leitura de julgamento produza conclusão binária sem decisão do médico |
 | **E-47** | **I** + C | ação iniciada com vínculo: a chegada do resultado produz continuar, interromper ou reavaliar — e o vínculo é por ação, não global |
 | **E-48** | **S** + **R** | varredura: nenhum item de tabela sem COR/LOE tratado como veredito · revisão: a precedência foi respeitada |
+| **E-49** | **S** | todo campo declarado obrigatório tem registro de checagem contra as doze marcas 🚫 |
+| **E-50** | **S** + **R** + **C** | varredura: nenhuma dose referenciada por princípio ativo sem apresentação declarada · revisão: apresentação corresponde à indicação · ⚠️ **teste obrigatório**: ver quadro |
+| **E-51** | **S** + **R** | varredura: todo campo clínico declara a fonte que o sustenta · revisão: nenhuma reconciliação silenciosa entre fontes divergentes |
 
 **Distribuição:** predominam **S** (forma, barata, e a que mais pega regressão de
 conteúdo) e **C**. Mas as regras que sustentam o modelo — **E-01**, **E-05**,

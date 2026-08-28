@@ -185,15 +185,32 @@ known well* **não coincidem** — e é exatamente essa a população em que a j
 decide conduta. A escolha entre as formulações **restringe ou amplia** quem é
 elegível.
 
-##### 4 · Decisão do autor
+##### 4 · Decisão do autor — ✅ **2026-08-28**
 
-⏳ **PENDENTE.**
+> **Não resolver por harmonização sem fonte. Adotar RELÓGIOS DISTINTOS.**
+
+O modelo carrega, como eventos separados:
+
+`symptom onset` · `symptom recognition` · `last known well` · `last known normal`
+· `midpoint of sleep` · e outras formulações **apenas quando forem realmente
+diferentes**.
+
+⛔ **Proibições:**
+- ⛔ **não criar campo genérico `stroke_time`**;
+- ⛔ **não declarar `LKW = LKN`** sem fonte que o diga explicitamente;
+- ⛔ **não colapsar** duas expressões porque parecem sinônimas.
+
+✅ **Cada regra aponta para o marco EXATAMENTE usado pela recomendação
+correspondente.** O app é computável com múltiplos relógios; o proibido é colapsá-los.
 
 ##### 5 · Regra adotada
 
-⛔ **NENHUMA.** Divergência não resolvida **bloqueia o conteúdo**, não o
-atendimento (§6.6). Nenhuma regra de janela entra no app enquanto isto estiver
-aberto.
+✅ **Modelo de múltiplos relógios.** A **divergência documental permanece ABERTA**
+— porque a fonte segue sem definir a relação —, mas ela **deixa de bloquear o
+conteúdo**: cada regra usa o marco publicado na sua própria recomendação.
+
+⚠️ **O que continua aberto:** se `last known well` e `last known normal` são o
+mesmo evento. A fonte não diz. ⛔ Até que diga, são **dois relógios**.
 
 ---
 
@@ -1042,6 +1059,14 @@ be avoided"*. ⛔ **E-45**: não achatar em "contraindicado".
 > ✅ **Microssangramentos têm três estados distintos com força própria** —
 > desconhecido (COR 1, nem investigar), 1–10 (COR 2a, razoável), >10 (COR 2b,
 > incerto). ⛔ Não é escala contínua nem contraindicação.
+>
+> ⚠️ **CORREÇÃO DE MODELAGEM (autor, 2026-08-28).** O fato a coletar é
+> **"há informação prévia conhecida sobre CMB?"**, ⛔ **nunca** *"CMB presente?"*.
+> A segunda pergunta induz a RM que a rec. 11 (**COR 1**) manda **não** obter.
+>
+> ⛔ **Desconhecido aqui NÃO é pendência que precise ser resolvida antes da IVT.**
+> É o único ponto da spec em que *desconhecido* é **estado terminal aceitável** —
+> por recomendação de classe 1.
 
 #### 5 · ⚠️ Gestação e puerpério — **lacuna declarada do V1**
 
@@ -1057,7 +1082,7 @@ geral** e §6.8 exclui população específica **na origem**.
 | fato informado | regra aplicável | estado derivado | ação afetada | condição de desbloqueio |
 |---|---|---|---|---|
 | antiagregante em uso (simples ou dupla) | §4.6.1 rec. 9 · COR 1 | **não bloqueia** — risco de sICH declarado | IVT segue disponível | — |
-| microssangramentos **não investigados** | rec. 11 · COR 1 | **não bloqueia**, e **não pede RM** | IVT disponível | — |
+| ⚠️ **"há informação PRÉVIA conhecida sobre CMB?"** — e **não** *"CMB presente?"* | rec. 11 · COR 1 | se **não há** informação prévia: **não bloqueia** e ⛔ **não se obtém RM para descobrir** | IVT disponível | ⛔ **nenhuma** — desconhecido aqui **não é pendência a resolver** antes da IVT |
 | RM prévia com 1–10 CMB | rec. 12 · COR 2a | razoável | IVT disponível | — |
 | RM prévia com >10 CMB | rec. 13 · COR 2b | **utilidade incerta** | IVT **não bloqueada**, mas com incerteza declarada | decisão do médico |
 | TC com hemorragia | Table 8, faixa 3 | **bloqueio de classe** (**E-08**) | ⛔ reperfusão | ⛔ **não corrigível** → destino AVCh |
@@ -1728,9 +1753,21 @@ determined."* ✅ É a própria fonte fechando a porta pediátrica — coerente 
 > *"potential for delay in thrombolysis and potential increased thrombotic risk"*.
 > Esperar tem custo declarado.
 
-⚠️ **Horário desconhecido da última dose:** a fonte **não** trata explicitamente
-deste caso. Ele **não** é "exposição excluída" — é **pendência** (**E-23**), e o
-comportamento do app aqui é **decisão do autor**, não inferência.
+##### ✅ Horário desconhecido da última dose — CLASSIFICADO pelo autor em 2026-08-28
+
+> **`dado desconhecido` + `pendência clínica` + `situação individualizada`** — as
+> três coisas ao mesmo tempo.
+
+⛔ **NÃO interpretar como:**
+
+| ⛔ leitura errada | por quê |
+|---|---|
+| exposição recente **confirmada** | inventaria fato que ninguém informou |
+| **ausência** de exposição | é o erro de **E-23** — silêncio lido como negativa |
+| **contraindicação automática** | a fonte não contraindica nem com exposição confirmada |
+
+⚠️ **A fonte não tem regra que resolva este estado.** Ele **permanece dependente de
+decisão médica** — e o app **não** o resolve sozinho.
 
 #### 2 · Warfarina/VKA, heparina/HBPM
 
@@ -2425,3 +2462,118 @@ Nenhum conteúdo pediátrico neste bloco. A recomendação pediátrica de §4.6.
 O módulo removido registrava que os anti-hipertensivos IV citados pela AHA não
 têm apresentação intravenosa comercializada no Brasil. Isso é **ponteiro para
 conferência**, não conteúdo aprovado, e a fonte que o resolve **não é esta**.
+
+---
+
+### F-23 · Via aérea, ventilação e oxigenação no AVC agudo
+
+**Status:** ✅ **TRANSCRITO** em 2026-08-28 · ⏳ **aguarda conferência clínica do autor**
+**Escopo:** ⛔ **apenas o que a fonte diz sobre AVC.** Não é módulo de ISR nem de
+ventilação mecânica — esses permanecem fora do V1 (D-104).
+
+| # | contrato §6.11 | |
+|---|---|---|
+| 2 | localização | §4.1 *Airway, Breathing, and Oxygenation*, recs. 1–6, p. **e347** |
+| 3 | grau e nível | por recomendação, abaixo |
+| 4 | população | *"patients with acute stroke"* / *"patients with AIS"* — adulta no V1 |
+| 5 | espécie | **recomendação** + **meta** (SpO₂) |
+| 9 | adaptação brasileira | não se aplica |
+| 11 | data | 2026-08-28 · conferência clínica pendente |
+
+#### Verbatim
+
+**Rec. 1 · COR 1 · LOE C-LD**
+
+> "In patients with acute stroke and decreased consciousness or bulbar
+> dysfunction, airway support and ventilatory assistance are recommended as needed
+> to provide airway maintenance, protection and adequate ventilation and
+> oxygenation."
+
+**Rec. 2 · COR 1 · LOE C-LD**
+
+> "In patients with AIS with hypoxia, supplemental oxygen should be provided to
+> maintain oxygen saturation (SpO₂) >94%."
+
+**Rec. 5 · COR 3: No benefit · LOE B-R**
+
+> "In patients with AIS without hypoxia who are ineligible for EVT, supplemental
+> oxygen is not recommended to improve functional outcomes."
+
+**Rec. 3 · COR 2b · LOE B-R** — *hiperóxia normobárica, contexto restrito*
+
+> "In patients with AIS within 6 hours from onset, NIHSS score 10 to 20, CT
+> ASPECTS of ≥6, and anterior circulation LVO (M1 or carotid terminus) with planned
+> EVT (with or without IVT) normobaric hyperoxia (NBO) before EVT may be reasonable
+> to improve functional outcomes at 90 days."
+
+**Recs. 4 e 6 · COR 2b B-NR / COR 3: No benefit B-R** — oxigenoterapia hiperbárica
+apenas em **embolia aérea arterial**; fora disso, não recomendada.
+
+#### ⚠️ Achados
+
+- ✅ **Os dois gatilhos de suporte de via aérea são clínicos e nomeados:**
+  *"decreased consciousness"* e *"bulbar dysfunction"*. ⛔ Não há escore nem corte.
+- 🗣️ **`SpO₂ >94%` é META na presença de hipóxia** — ⛔ **não** é indicação de O₂
+  para todos: a rec. 5 (**COR 3: No benefit**) desaconselha O₂ suplementar em
+  **quem não tem hipóxia** e é inelegível a EVT.
+- ⚠️ **A rec. 3 (NBO) é a mais estreita do documento** — exige simultaneamente ≤6 h,
+  NIHSS 10–20, ASPECTS ≥6, LVO anterior (M1 ou terminal de carótida) e EVT
+  planejada. ⛔ Não generalizar.
+- ⛔ **Nenhuma dose, fluxo, dispositivo ou técnica de via aérea** consta da fonte.
+  Suporte ventilatório é dito *"as needed"*. Se o app precisar de conduta
+  operacional, é **fonte complementar** — ⛔ e ⚠️ **não reabrir ISR/VM** por essa
+  porta (D-104).
+
+---
+
+### F-24 · Crise convulsiva no AVC agudo
+
+**Status:** ✅ **TRANSCRITO** em 2026-08-28 · ⏳ **aguarda conferência clínica do autor**
+**Escopo:** ⛔ **apenas crise no contexto do AVC.** Não é módulo de estado de mal
+epiléptico.
+
+| # | contrato §6.11 | |
+|---|---|---|
+| 2 | localização | §6.5 *Seizures*, recs. 1–2 e *Synopsis*, p. **e400** |
+| 3 | grau e nível | rec. 1 **COR 1 · C-LD** · rec. 2 **COR 3: No Benefit · C-LD** |
+| 4 | população | *"adult patients"* — explícito |
+| 5 | espécie | **recomendação** |
+| 9 | adaptação brasileira | 🔴 fármaco e dose **não constam** — ver achados |
+| 11 | data | 2026-08-28 · conferência clínica pendente |
+
+#### Verbatim
+
+**Rec. 1 · COR 1 · LOE C-LD**
+
+> "In adult patients with an unprovoked seizure after AIS, management that includes
+> antiseizure medication is recommended on the basis of specific patient
+> characteristics to reduce the risk of seizure recurrence."
+
+**Rec. 2 · COR 3: No Benefit · LOE C-LD**
+
+> "In adult patients with AIS, prophylactic treatment with antiseizure medication
+> is not recommended to prevent seizures or improve functional outcome."
+
+**Synopsis, p. e400**
+
+> "Ischemic stroke increases the risk of seizure, which can occur early within the
+> first week or later as an unprovoked poststroke seizure. Poststroke seizure is
+> associated with an increased risk of mortality and disability. **There are
+> insufficient data to inform the pharmacological management of early seizures or
+> recommend the routine use of EEG for monitoring during acute hospitalization.**"
+
+#### ⚠️ Achados
+
+- ⚠️ **A recomendação é para crise NÃO PROVOCADA *após* o AVC** — ⛔ não para crise
+  **no início** do quadro, que a fonte trata em outro lugar como **mimetizador**
+  (risco de HT muito baixo, **F-17**) e como **limitação de generalização** na nota
+  `†` de §4.7.2 (**F-08**). ⛔ **Três contextos diferentes de "crise".**
+- ⛔ **Profilaxia é COR 3: No Benefit.** ⛔ O app não sugere anticonvulsivante
+  preventivo.
+- ⛔ **A fonte declara dados insuficientes** para o manejo farmacológico da crise
+  **precoce** e para EEG de rotina. ⛔ Nenhum fármaco, dose ou via consta.
+  ⇒ **Regra fechada · terapêutica operacional ABERTA** → sugere **F-25** (fonte
+  brasileira), no mesmo padrão de F-18/F-19/F-20.
+- ⚠️ **Consequência para a spec:** o campo "houve crise?" agora **tem regra que o
+  consome** — mas apenas para (a) crise não provocada pós-AVC e (b) contexto de
+  mimetizador. ⛔ Crise no início **não** gera conduta anticonvulsiva por esta fonte.
