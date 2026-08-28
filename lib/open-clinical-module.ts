@@ -9,13 +9,23 @@ import { startClinicalSession } from "./clinical";
  * Abre um módulo clínico: inicia sessão ACLS quando aplicável, regista evento e navega.
  */
 export async function openClinicalModule(router: Router, moduleId: string, route: Href): Promise<void> {
-  if (moduleId !== "pcr-adulto" && moduleId !== "avc") {
+  /**
+   * ⚠️ O RAMO DO AVC SAIU EM 2026-08-27, com o módulo. Eram três linhas: o
+   * `moduleId !== "avc"` da guarda, a `moduleKey` `"avc"` e o rótulo
+   * « Guia AVC aberto ». Nenhuma delas era alcançável sem o módulo.
+   *
+   * ⚠️ A CHAVE `"avc"` ERA GRAVADA NO BANCO (`startClinicalSession`), então este
+   * ramo tem lastro em dados históricos: sessões antigas continuam com ela. Ele
+   * volta quando o AVC for reconstruído — e a chave deve ser a MESMA, para que a
+   * série não se parta em duas.
+   */
+  if (moduleId !== "pcr-adulto") {
     router.push(route);
     return;
   }
 
-  const moduleKey = moduleId === "avc" ? "avc" : "acls_adulto";
-  const protocolOpenedLabel = moduleId === "avc" ? "Guia AVC aberto" : "Guia ACLS aberto";
+  const moduleKey = "acls_adulto";
+  const protocolOpenedLabel = "Guia ACLS aberto";
   const { data, error } = await startClinicalSession(moduleKey);
   if (error) {
     console.error("Falha ao iniciar sessão clínica", error);

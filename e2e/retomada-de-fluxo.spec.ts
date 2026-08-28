@@ -49,16 +49,24 @@ async function irAoHub(page: Page) {
   await expect.poll(async () => (await texto(page)).length, { timeout: 30_000 }).toBeGreaterThan(200);
 }
 
-async function abrirAnafilaxiaPeloHub(page: Page) {
-  await pressables(page).filter({ hasText: /Anafilaxia/i }).first().click();
+/**
+ * ⚠️ VEÍCULO TROCADO EM 2026-08-27 — era a anafilaxia, removida com a arquitetura
+ * clínica antiga. O relato que originou este arquivo era sobre ela ("estou em
+ * anafilaxia, vou para ISR, e não tem botão para voltar"), mas o DEFEITO é da
+ * concha: qualquer módulo que abra outro por atalho reproduz o caminho. A
+ * bradicardia é um dos dois que restam, e o atalho de estabilização dela leva às
+ * Vasoativas — que é hoje o único par navegável por dentro do app.
+ */
+async function abrirBradicardiaPeloHub(page: Page) {
+  await pressables(page).filter({ hasText: /Bradicardia/i }).first().click();
   await expect
     .poll(async () => (await texto(page)).includes("Passo"), { timeout: 30_000 })
     .toBe(true);
 }
 
-/** Passo do CABEÇALHO ("Anafilaxia · Passo N") — nunca o da barra de retomada. */
+/** Passo do CABEÇALHO ("Bradicardia ACLS · Passo N") — nunca o da barra de retomada. */
 async function passoNoCabecalho(page: Page): Promise<number> {
-  const achado = (await texto(page)).match(/Anafilaxia\s*·\s*Passo\s+(\d+)/);
+  const achado = (await texto(page)).match(/Bradicardia[^·\n]*·\s*Passo\s+(\d+)/);
   expect(achado, "o cabeçalho deveria exibir o módulo e o passo").not.toBeNull();
   return Number(achado![1]);
 }
@@ -100,7 +108,7 @@ function semABarra(bruto: string): string {
 
 test("reabre o módulo e retoma no ponto onde estava", async ({ page }) => {
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
 
   await avancar(page, 2);
   const passoAntes = await passoNoCabecalho(page);
@@ -108,7 +116,7 @@ test("reabre o módulo e retoma no ponto onde estava", async ({ page }) => {
   const conteudoAntes = semABarra(await texto(page));
 
   await sairParaOHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
 
   // Sem retomar, o fluxo começa do início — comportamento seguro por padrão.
   expect(await passoNoCabecalho(page), "deveria abrir no passo 1").toBe(1);
@@ -137,11 +145,11 @@ test("reabre o módulo e retoma no ponto onde estava", async ({ page }) => {
 
 test("começar do início descarta o progresso e não reaparece", async ({ page }) => {
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   await avancar(page, 2);
 
   await sairParaOHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   expect(await ofereceRetomada(page)).toBe(true);
 
   await pressables(page).filter({ hasText: /^Começar do início$/ }).first().click();
@@ -151,7 +159,7 @@ test("começar do início descarta o progresso e não reaparece", async ({ page 
 
   // Descartar é definitivo: uma segunda ida e volta não ressuscita a oferta.
   await sairParaOHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   expect(await ofereceRetomada(page), "progresso descartado não deveria voltar").toBe(false);
 });
 
@@ -159,11 +167,11 @@ test("no passo 1 não oferece retomada", async ({ page }) => {
   // Sem progresso não há o que retomar, e oferecer seria ruído numa tela que já
   // disputa espaço com o card de estabilização.
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   expect(await passoNoCabecalho(page)).toBe(1);
 
   await sairParaOHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
 
   expect(await ofereceRetomada(page), "passo 1 não deveria oferecer retomada").toBe(false);
 });
@@ -171,14 +179,14 @@ test("no passo 1 não oferece retomada", async ({ page }) => {
 test("reiniciar o fluxo apaga a sessão salva", async ({ page }) => {
   // Tocar em "Recomeçar" é declarar que o caso anterior não interessa mais.
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   await avancar(page, 2);
 
   await pressables(page).filter({ hasText: /Recomeçar/i }).first().click();
   await expect.poll(async () => passoNoCabecalho(page), { timeout: 5_000 }).toBe(1);
 
   await sairParaOHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   expect(await ofereceRetomada(page), "fluxo reiniciado não deveria oferecer retomada").toBe(false);
 });
 
@@ -186,16 +194,16 @@ test("o atalho de estabilização marca o módulo de origem na rota", async ({ p
   // `from_module` é o que permite ao destino oferecer a volta para a origem. Os
   // atalhos deste shell empurravam a rota crua — era metade do defeito.
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   await avancar(page, 1);
 
   await abrirEstabilizacao(page);
-  await pressables(page).filter({ hasText: /Via aérea \/ IOT/i }).first().click();
+  await pressables(page).filter({ hasText: /Choque \/ vasopressor/i }).first().click();
   await expect
     .poll(() => page.url(), { timeout: 15_000, message: "deveria navegar para o outro módulo" })
-    .toContain("isr-rapida");
+    .toContain("drogas-vasoativas");
 
-  expect(page.url(), "o destino deveria receber a origem").toContain("from_module=anafilaxia");
+  expect(page.url(), "o destino deveria receber a origem").toContain("from_module=bradicardia-acls");
 });
 
 test("nunca fica sem caminho de volta ao ponto — por qualquer rota", async ({ page }) => {
@@ -215,13 +223,13 @@ test("nunca fica sem caminho de volta ao ponto — por qualquer rota", async ({ 
    * deixaria de cobrir o que interessa clinicamente.
    */
   await irAoHub(page);
-  await abrirAnafilaxiaPeloHub(page);
+  await abrirBradicardiaPeloHub(page);
   await avancar(page, 2);
   const passoAntes = await passoNoCabecalho(page);
 
   await abrirEstabilizacao(page);
-  await pressables(page).filter({ hasText: /Via aérea \/ IOT/i }).first().click();
-  await expect.poll(() => page.url(), { timeout: 15_000 }).toContain("isr-rapida");
+  await pressables(page).filter({ hasText: /Choque \/ vasopressor/i }).first().click();
+  await expect.poll(() => page.url(), { timeout: 15_000 }).toContain("drogas-vasoativas");
 
   await page.goBack();
   await expect

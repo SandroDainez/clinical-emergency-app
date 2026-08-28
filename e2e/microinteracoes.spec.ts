@@ -39,8 +39,12 @@ function opcaoDeAvanco(page: Page) {
     .first();
 }
 
+// ⚠️ VEÍCULO TROCADO EM 2026-08-27 — era `anafilaxia`, removida com a
+// arquitetura clínica antiga. O que se mede aqui é a MICROINTERAÇÃO da concha
+// (troca de etapa, fade, retorno de toque), não conteúdo clínico: qualquer
+// módulo com fluxo de decisão serve. A bradicardia é um dos dois que restam.
 test("a troca de etapa não atrasa o conteúdo novo", async ({ page }) => {
-  await abrirFluxo(page, "anafilaxia");
+  await abrirFluxo(page, "bradicardia-acls");
 
   const antes = await texto(page);
   await opcaoDeAvanco(page).click();
@@ -53,7 +57,7 @@ test("a troca de etapa não atrasa o conteúdo novo", async ({ page }) => {
 });
 
 test("o conteúdo da etapa nova é tocável de imediato", async ({ page }) => {
-  await abrirFluxo(page, "anafilaxia");
+  await abrirFluxo(page, "bradicardia-acls");
   await opcaoDeAvanco(page).click();
 
   // O fade anima a opacidade de 0,4 para 1 — nunca de 0 — e o conteúdo é montado
@@ -63,7 +67,7 @@ test("o conteúdo da etapa nova é tocável de imediato", async ({ page }) => {
 
 test("com movimento reduzido, nada anima", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await abrirFluxo(page, "anafilaxia");
+  await abrirFluxo(page, "bradicardia-acls");
 
   const antes = await texto(page);
   await opcaoDeAvanco(page).click();

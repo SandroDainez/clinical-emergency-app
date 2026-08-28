@@ -48,6 +48,3 @@ export const NITRATO_CONTRAINDICACAO_PDE5 =
 export const NITRATO_PDE5_USO_CRONICO =
   "⚠️ USO CRÔNICO PARA HIPERTENSÃO PULMONAR (sildenafila 20 mg 3×/dia — Revatio e genéricos): contraindicação PERMANENTE enquanto o paciente estiver em uso, não janela de 24 h. Esse paciente NUNCA sai da janela — e é justamente quem chega com dispneia e congestão.";
 
-/** As demais contraindicações, na mesma linha do número, para não se perderem. */
-export const NITRATO_OUTRAS_CONTRAINDICACOES =
-  "Também contraindicado se PAS < 90 mmHg, estenose aórtica grave, ou IAM de ventrículo direito / parede inferior com hipotensão — nesses o nitrato derruba a pré-carga de que o VD depende. Conduta oposta: VOLUME (cristaloide), não vasodilatador.";

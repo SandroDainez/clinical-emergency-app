@@ -31,7 +31,23 @@ import { abrirModulo, texto } from "./helpers";
  * concha compartilhada: se ele voltar a abrir sozinho, volta em todos.
  */
 
-const MODULOS = ["avc", "sepse-adulto", "bradicardia-acls"];
+// ⚠️ LISTA PODADA EM 2026-08-27. Eram "avc" e "sepse-adulto", removidos com a
+// arquitetura clínica antiga. O card é desenhado por `acls-decision-flow-screen`,
+// e hoje as ÚNICAS telas que passam por essa concha são as duas do
+// LEGACY_ACLS_RUNTIME — por isso a lista tem exatamente elas, e por isso o
+// `test.skip` abaixo deixou de ser rede de segurança e virou risco: se as duas
+// pularem, o arquivo passa sem ter medido nada. A conferência de universo logo
+// depois existe para isso.
+const MODULOS = ["bradicardia-acls", "taquicardia-acls"];
+
+test("as telas medidas realmente desenham o card — senão este arquivo é vazio", async ({ page }) => {
+  let desenharam = 0;
+  for (const modulo of MODULOS) {
+    await abrirModulo(page, modulo);
+    if ((await page.getByTestId("estabilizacao-alternar").count()) > 0) desenharam++;
+  }
+  expect(desenharam, "nenhum módulo desenhou o card — as asserções abaixo pularam todas").toBeGreaterThan(0);
+});
 
 for (const modulo of MODULOS) {
   test(`Estabilização primeiro — nasce recolhida em "${modulo}"`, async ({ page }) => {
@@ -100,46 +116,13 @@ for (const modulo of MODULOS) {
 }
 
 /**
- * Dois dos 19 módulos NÃO devem oferecer o atalho "Choque / vasopressor".
+ * ⚠️ BLOCO REMOVIDO EM 2026-08-27 — media a exceção do atalho "Choque /
+ * vasopressor" em `pre-eclampsia` e `cetoacidose-hiperosmolar`, contra os
+ * positivos `avc`, `choque` e `sepse-adulto`. Os CINCO módulos saíram do app com
+ * a arquitetura clínica antiga, e o mapa `ATALHOS_REMOVIDOS` foi esvaziado junto.
  *
- * Nos dois o atalho fura a ORDEM da conduta do próprio módulo: a pré-eclâmpsia
- * é síndrome hipertensiva (o atalho aponta a classe oposta), e na CAD/EHH o
- * vasopressor é segunda linha, depois da expansão — o módulo já diz isso na
- * sequência certa, e o atalho oferecia o segundo passo antes do primeiro.
- *
- * O teste confere os dois lados: ausente onde não cabe, PRESENTE onde cabe.
- * Só a metade negativa passaria se alguém removesse o atalho de todo mundo.
+ * Não foi trocado por um teste equivalente porque não sobrou par onde a exceção
+ * se aplique: mantê-lo pulando os cinco seria um arquivo que passa sem medir. O
+ * raciocínio clínico das duas exceções continua escrito em
+ * `stabilization-first-card.tsx`, para quando os módulos voltarem.
  */
-const SEM_VASOPRESSOR = ["pre-eclampsia", "cetoacidose-hiperosmolar"];
-const COM_VASOPRESSOR = ["avc", "choque", "sepse-adulto"];
-
-for (const modulo of SEM_VASOPRESSOR) {
-  test(`"Choque / vasopressor" NÃO aparece em "${modulo}"`, async ({ page }) => {
-    await abrirModulo(page, modulo);
-    const alternar = page.getByTestId("estabilizacao-alternar");
-    if ((await alternar.count()) === 0) test.skip(true, "sem card de estabilização");
-    await alternar.first().click();
-    await expect
-      .poll(async () => (await texto(page)).toLowerCase().includes("abrir módulo de estabilização"), { timeout: 5_000 })
-      .toBe(true);
-    expect(
-      (await texto(page)).toLowerCase(),
-      "o atalho de vasopressor fura a ordem da conduta deste módulo",
-    ).not.toContain("choque / vasopressor");
-  });
-}
-
-for (const modulo of COM_VASOPRESSOR) {
-  test(`"Choque / vasopressor" CONTINUA em "${modulo}"`, async ({ page }) => {
-    await abrirModulo(page, modulo);
-    const alternar = page.getByTestId("estabilizacao-alternar");
-    if ((await alternar.count()) === 0) test.skip(true, "sem card de estabilização");
-    await alternar.first().click();
-    await expect
-      .poll(async () => (await texto(page)).toLowerCase().includes("choque / vasopressor"), {
-        timeout: 5_000,
-        message: "a remoção deveria valer só para os dois módulos, não para todos",
-      })
-      .toBe(true);
-  });
-}

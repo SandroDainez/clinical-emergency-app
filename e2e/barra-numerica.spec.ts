@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { pressables, texto, abrirEstabilizacao, fixarIdioma} from "./helpers";
 
 /**
@@ -27,9 +27,21 @@ import { pressables, texto, abrirEstabilizacao, fixarIdioma} from "./helpers";
  *    qualquer medição de arrasto.
  */
 
-async function abrirVentilacaoNoPassoDeDados(page: Page) {
+/**
+ * ⚠️ VEÍCULO TROCADO EM 2026-08-27 — era `ventilacao-mecanica`, removida com a
+ * arquitetura clínica antiga. O que este arquivo mede NÃO é ventilação: é o
+ * comportamento da barra no passo de entrada, desenhado pela concha compartilhada.
+ * Qualquer módulo com campo numérico serve de veículo.
+ *
+ * A bradicardia foi escolhida porque o passo de instabilidade tem exatamente a
+ * forma que estes testes precisam: UM campo numérico (`pas`, presets 70–140 e
+ * faixa de grandeza 40–300 em `lib/faixas-de-entrada.ts` — logo, piso e teto
+ * SEPARADOS dos presets, que é o ponto do terceiro teste) ao lado de campos
+ * categóricos Sim/Não, que provam que barra não nasce onde não deve.
+ */
+async function abrirBradicardiaNoPassoDeDados(page: Page) {
   await fixarIdioma(page, "pt-BR");
-  await page.goto("/modulos/ventilacao-mecanica");
+  await page.goto("/modulos/bradicardia-acls");
   await expect.poll(async () => (await texto(page)).length, { timeout: 30_000 }).toBeGreaterThan(200);
 
   for (let i = 0; i < 4; i += 1) {
@@ -43,7 +55,7 @@ async function abrirVentilacaoNoPassoDeDados(page: Page) {
   }
   expect(
     await cardDeEntrada(page).locator('[role="slider"]').count(),
-    "o passo de dados da ventilação deveria ter barra de arrastar"
+    "o passo de instabilidade da bradicardia deveria ter barra de arrastar"
   ).toBeGreaterThan(0);
 }
 
@@ -53,19 +65,19 @@ function cardDeEntrada(page: Page) {
 }
 
 /** Valor que a barra exibe (o próprio controle mostra número + unidade). */
-async function alturaExibida(page: Page): Promise<number> {
-  const achado = (await cardDeEntrada(page).innerText()).match(/(\d{3})\s*cm/);
-  expect(achado, "a barra deveria exibir a altura em cm").not.toBeNull();
+async function pasExibida(page: Page): Promise<number> {
+  const achado = (await cardDeEntrada(page).innerText()).match(/(\d{2,3})\s*mmHg/);
+  expect(achado, "a barra deveria exibir a PAS em mmHg").not.toBeNull();
   return Number(achado![1]);
 }
 
 test("o passo de dados numéricos tem barra de arrastar", async ({ page }) => {
-  await abrirVentilacaoNoPassoDeDados(page);
+  await abrirBradicardiaNoPassoDeDados(page);
   expect(await page.locator('[role="slider"]').count()).toBeGreaterThan(0);
 });
 
 test("arrastar a barra grava o valor no fluxo", async ({ page }) => {
-  await abrirVentilacaoNoPassoDeDados(page);
+  await abrirBradicardiaNoPassoDeDados(page);
 
   // ESCOPO no card do passo. A tela da ventilação tem DUAS alturas: a do
   // configurador de ventilador (topo, sempre visível) e a do passo do fluxo.
@@ -77,7 +89,7 @@ test("arrastar a barra grava o valor no fluxo", async ({ page }) => {
   const caixa = await barra.boundingBox();
   expect(caixa).not.toBeNull();
 
-  const antes = await alturaExibida(page);
+  const antes = await pasExibida(page);
 
   await page.mouse.click(caixa!.x + caixa!.width * 0.85, caixa!.y + caixa!.height / 2);
 
@@ -85,12 +97,36 @@ test("arrastar a barra grava o valor no fluxo", async ({ page }) => {
   // número na tela mudou, é porque o valor passou por onSetValue e voltou pelo
   // engine — este assert cobre a via inteira, não só o desenho.
   await expect
-    .poll(async () => alturaExibida(page), { timeout: 5_000, message: "o valor deveria mudar" })
+    .poll(async () => pasExibida(page), { timeout: 5_000, message: "o valor deveria mudar" })
     .not.toBe(antes);
 
-  const depois = await alturaExibida(page);
+  const depois = await pasExibida(page);
   expect(depois, "85% da faixa deveria cair na parte alta").toBeGreaterThan(antes);
 });
+
+/**
+ * Leva a barra ao extremo CLICANDO ATÉ O VALOR PARAR DE MUDAR.
+ *
+ * ⚠️ SUBSTITUIU UM NÚMERO FIXO DE CLIQUES EM 2026-08-27, e a razão é a mesma que
+ * este arquivo já registra sobre `waitForTimeout`: "110 cliques" é uma promessa
+ * sobre a máquina, não sobre o app. Com a PAS (faixa 40–300, contra a altura de
+ * 120–220 do veículo anterior) o percurso ficou maior, cliques se perderam entre
+ * re-renders, e o teste parou em 60 — falha que parecia erro de faixa e era
+ * clique engolido. Falha por lentidão é indistinguível de falha por defeito.
+ *
+ * Parar quando o valor ESTABILIZA mede o que interessa — onde a barra trava — e
+ * não depende de quantos cliques chegaram. O teto existe só para não girar para
+ * sempre se a barra nunca travar, e nesse caso a asserção de valor é que acusa.
+ */
+async function levarAoExtremo(page: Page, botao: Locator) {
+  let anterior = await pasExibida(page);
+  for (let rodada = 0; rodada < 40; rodada += 1) {
+    for (let i = 0; i < 20; i += 1) await botao.click({ force: true });
+    const agora = await pasExibida(page);
+    if (agora === anterior) return;
+    anterior = agora;
+  }
+}
 
 test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
   // ── Mudança de regra, registrada de propósito ──────────────────────────────
@@ -106,7 +142,7 @@ test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
   // Os limites agora vêm de lib/faixas-de-entrada.ts, que são limites de
   // ENTRADA e não de normalidade ou gravidade — existem para o médico alcançar
   // o valor que o paciente tem. Altura: 120 a 220 cm.
-  await abrirVentilacaoNoPassoDeDados(page);
+  await abrirBradicardiaNoPassoDeDados(page);
 
   // ── Medido pelos BOTÕES, não por clique em coordenada ─────────────────────
   //
@@ -121,25 +157,25 @@ test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
   //
   // O escopo é o CARD DO PASSO: a tela da ventilação tem duas alturas, a do
   // configurador (topo) e a do passo, e o teste sempre quis a segunda.
-  const menos = cardDeEntrada(page).locator('[data-testid="slider-altura-menos"]');
-  const mais = cardDeEntrada(page).locator('[data-testid="slider-altura-mais"]');
+  const menos = cardDeEntrada(page).locator('[data-testid="slider-pas-menos"]');
+  const mais = cardDeEntrada(page).locator('[data-testid="slider-pas-mais"]');
   await menos.scrollIntoViewIfNeeded();
 
-  for (let i = 0; i < 110; i += 1) await menos.click({ force: true });
+  await levarAoExtremo(page, menos);
   await expect
-    .poll(async () => alturaExibida(page), {
+    .poll(async () => pasExibida(page), {
       timeout: 5_000,
-      message: "o piso da barra deveria ser o da grandeza (120), não o menor preset (150)",
+      message: "o piso da barra deveria ser o da grandeza (40), não o menor preset (70)",
     })
-    .toBe(120);
+    .toBe(40);
 
-  for (let i = 0; i < 110; i += 1) await mais.click({ force: true });
+  await levarAoExtremo(page, mais);
   await expect
-    .poll(async () => alturaExibida(page), {
+    .poll(async () => pasExibida(page), {
       timeout: 5_000,
-      message: "o teto da barra deveria ser o da grandeza (220), não o maior preset (190)",
+      message: "o teto da barra deveria ser o da grandeza (300), não o maior preset (140)",
     })
-    .toBe(220);
+    .toBe(300);
 });
 
 test("campo numérico tem SÓ a barra — sem presets e sem 'Outro…'", async ({ page }) => {
@@ -150,12 +186,12 @@ test("campo numérico tem SÓ a barra — sem presets e sem 'Outro…'", async (
   // app, nada de caixas". Com a barra cobrindo a faixa inteira da grandeza e os
   // botões −/+ dando o ajuste fino, não sobrou valor que só o chip alcançasse —
   // era essa a razão de os chips existirem.
-  await abrirVentilacaoNoPassoDeDados(page);
+  await abrirBradicardiaNoPassoDeDados(page);
 
   const card = cardDeEntrada(page);
   const t = await card.innerText();
 
-  for (const preset of ["150", "165", "190"]) {
+  for (const preset of ["70", "100", "140"]) {
     expect(
       t.includes(`\n${preset}\n`),
       `o chip de preset ${preset} não deveria mais existir no campo numérico`
@@ -169,12 +205,13 @@ test("campo numérico tem SÓ a barra — sem presets e sem 'Outro…'", async (
 });
 
 test("campo não numérico não recebe barra", async ({ page }) => {
-  // "Sexo" tem presets Masculino/Feminino. Barra em campo categórico não é
-  // controle, é ruído — e sugeriria que existe algo contínuo entre as opções.
-  await abrirVentilacaoNoPassoDeDados(page);
+  // Os campos de instabilidade ("está confuso?", "a pele está pálida, fria ou
+  // suada?") são Sim/Não. Barra em campo categórico não é controle, é ruído — e
+  // sugeriria que existe algo contínuo entre as opções.
+  await abrirBradicardiaNoPassoDeDados(page);
 
   const barras = await cardDeEntrada(page).locator('[role="slider"]').count();
-  expect(await texto(page)).toMatch(/Masculino/);
+  expect(await texto(page)).toMatch(/Sim/);
   expect(barras, "só o campo numérico deveria ter barra").toBe(1);
 });
 
@@ -209,49 +246,23 @@ test("os critérios do passo de decisão vêm recolhidos", async ({ page }) => {
     .toBe(true);
 });
 
-test("o app reaproveita o peso entre módulos, e avisa que reaproveitou", async ({ page }) => {
-  // "O app tem que se comunicar com informações que foram dadas anteriormente,
-  // ele já sabe isso, tem que vir automático e não para preencher de novo."
-  //
-  // A navegação aqui é CLIENT-SIDE de propósito. A primeira versão deste teste
-  // usava page.goto() entre os módulos e falhava: goto recarrega a página e zera
-  // a memória do contexto. Em uso real a troca de módulo é router.push, e a
-  // memória sobrevive — o teste com goto media outra coisa, não o app.
-  //
-  // A regra clínica de quem PODE ser reaproveitado (peso e altura sim, sinal
-  // vital nunca) é travada em scripts/test-contexto-paciente.cjs, que é onde ela
-  // pertence. Aqui só se verifica o caminho de ponta a ponta.
-  await page.goto("/modulos/sepse-adulto");
-  await page.getByText(/Feito — continuar/).first().click();
-
-  // TODAS as barras do passo: na sepse o campo de peso é o terceiro (vem depois
-  // de PA e lactato), e a primeira versão deste teste clicava só na primeira —
-  // informava a PA e nunca o peso, então não havia o que herdar.
-  const barras = page.locator('[role="slider"]');
-  for (let i = 0; i < (await barras.count()); i++) {
-    const b = barras.nth(i);
-    await b.scrollIntoViewIfNeeded();
-    const cx = await b.boundingBox();
-    if (cx) await page.mouse.click(cx.x + cx.width * 0.6, cx.y + cx.height / 2);
-  }
-
-  // Troca de módulo POR DENTRO do app, pelo atalho de estabilização.
-  await abrirEstabilizacao(page);
-  await page.locator('div[tabindex="0"]').filter({ hasText: /Via aérea \/ IOT/i }).first().click();
-  await expect.poll(() => page.url(), { timeout: 15_000 }).toContain("isr-rapida");
-
-  await page.getByText(/Feito — continuar/).first().click();
-
-  await expect
-    .poll(
-      async () =>
-        String(await page.evaluate(`document.body.innerText`)).includes(
-          "Aproveitado do que você já informou"
-        ),
-      {
-        timeout: 10_000,
-        message: "o peso informado na sepse deveria vir preenchido na ISR, com aviso",
-      }
-    )
-    .toBe(true);
-});
+/**
+ * ⚠️ TESTE REMOVIDO EM 2026-08-27 — "o app reaproveita o peso entre módulos, e
+ * avisa que reaproveitou". Ele media a travessia sepse-adulto → ISR pelo atalho
+ * de estabilização, informando o peso no primeiro e conferindo o aviso
+ * «Aproveitado do que você já informou» no segundo. Os DOIS módulos saíram com a
+ * arquitetura clínica antiga.
+ *
+ * ⚠️ NÃO FOI REDIRECIONADO, E ISSO É UMA PENDÊNCIA DECLARADA, não um descarte:
+ * nenhum par de módulos sobreviventes coleta peso em árvore de decisão
+ * (bradicardia e taquicardia coletam PAS e sintomas; as calculadoras pedem peso
+ * mas não se alcançam por dentro do fluxo). Escrever a travessia com um par que
+ * não existe seria um teste que passa sem exercitar o caminho.
+ *
+ * A REGRA continua travada onde ela vive: `scripts/test-contexto-paciente.cjs`
+ * mede quem pode ser reaproveitado (peso e altura sim, sinal vital nunca). O que
+ * ficou sem cobertura é o CAMINHO de ponta a ponta — e ele volta a ser medível
+ * quando o primeiro módulo da arquitetura nova coletar peso.
+ *
+ * Registrado como **D-105** em `auditoria/DIVIDAS-CONHECIDAS.md`.
+ */

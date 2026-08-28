@@ -94,11 +94,3 @@ export const DOBUTAMINA_FAIXA_USUAL =
 export const DOBUTAMINA_ATE_20 =
   "ATÉ 20 mcg/kg/min quando necessário — a bula registra que doses até 20 são frequentemente necessárias para melhora hemodinâmica adequada. ⚠️ MAS SUBIR TEM TRÊS CUSTOS: (1) taquiarritmia e aumento do consumo miocárdico de O₂, que é a razão pela qual tetos menores foram escritos por aí; (2) PIORA DA HIPOTENSÃO por vasodilatação beta-2 — na sepse é armadilha real, porque quem sobe a dose por hipoperfusão pode derrubar a PA e agravar exatamente o que quis tratar; (3) a titulação é por MARCADORES DE PERFUSÃO — lactato, débito urinário, perfusão periférica — e NUNCA por atingir um número da faixa. Chegar a 20 não é meta.";
 
-/**
- * A força da recomendação, escrita.
- *
- * Vive junto do regime porque é a mesma conversa: quem lê a dose precisa saber
- * quanta confiança a indicação carrega.
- */
-export const DOBUTAMINA_INDICACAO_SEPSE_FRACA =
-  "⚠️ RECOMENDAÇÃO FRACA. A SSC 2026 sugere INOTRÓPICO versus nenhum inotrópico no choque séptico com disfunção cardíaca e hipoperfusão persistente apesar de volume e PA adequados — e, como sugestão fraca, adicionar dobutamina à noradrenalina OU usar adrenalina isolada. A escolha do agente foi REBAIXADA em relação a 2021, e NÃO LOCALIZAMOS recomendação que decida entre dobutamina e milrinona — a formulação anterior atribuía essa incerteza à SSC 2026, e o texto integral está atrás de assinatura (R-5: não afirmar o que a fonte diz sem conseguir lê-la). Verificação pendente. Não é a resposta certa: é a opção razoável com a evidência que existe.";

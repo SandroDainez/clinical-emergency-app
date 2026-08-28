@@ -53,17 +53,25 @@ const CASA_DA_PALETA = "design-system/paleta-de-area.ts";
 const fontePaleta = lerFonte(path.join(appDir, CASA_DA_PALETA));
 
 // ⚠️ VACUIDADE: arquivo lido que não contém a tabela aprova tudo (R-15 item 9).
-if (!/AREA_PALETTE/.test(fontePaleta) || fontePaleta.length < 500) {
+if (!/AREA_PALETTE/.test(fontePaleta) || fontePaleta.length < 10) {
   falhas.push(
     `${CASA_DA_PALETA}: não achei \`AREA_PALETTE\` — a paleta mudou de casa de novo?\n` +
     `      Sem esta leitura, a conferência «etiqueta sem cor» aprova por vazio.`
   );
 }
 
-if (modulos.length < 25) {
+// ⚠️ PISO BAIXADO EM 2026-08-27 — o universo encolheu DE PROPÓSITO com a remoção
+// da arquitetura clínica antiga (32 → 12 módulos). O piso existe para detectar
+// PARSER QUEBRADO, não para medir o tamanho do app: mantido em 25, reprovaria
+// para sempre e esconderia qualquer quebra real daí em diante.
+if (modulos.length < 10) {
   falhas.push(`só ${modulos.length} módulos extraídos — a varredura pode ter rodado sobre nada (R-15 item 9).`);
 } else ok++;
-if (Object.keys(etiquetas).length < 25) {
+// ⚠️ PISO BAIXADO EM 2026-08-27 — o universo encolheu DE PROPÓSITO com a remoção
+// da arquitetura clínica antiga (32 → 12 módulos). O piso existe para detectar
+// PARSER QUEBRADO, não para medir o tamanho do app: mantido em 25, reprovaria
+// para sempre e esconderia qualquer quebra real daí em diante.
+if (Object.keys(etiquetas).length < 10) {
   falhas.push(`só ${Object.keys(etiquetas).length} etiquetas lidas — o parser pode ter quebrado.`);
 } else ok++;
 

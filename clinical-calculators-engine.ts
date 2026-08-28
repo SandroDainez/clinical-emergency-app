@@ -8,18 +8,31 @@
  * Inclui também o stub ClinicalEngine para registro/roteamento no hub.
  */
 
-import { predictedBodyWeight } from "./ventilation-decision-tree";
+import { predictedBodyWeight } from "./lib/peso-predito";
 // A classificação de gravidade do NIHSS pertence ao módulo AVC, que é quem a
 // usa para decidir. Aqui ela é apenas consumida (R-12).
-import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
+import { faixaNihss } from "./lib/nihss";
 // Glasgow e RASS descrevem gravidade; quem INDICA conduta é o módulo dono
 // (R-19). A frase vive lá e é consumida aqui.
-import { GLASGOW_AVALIAR_VIA_AEREA } from "./rsi-decision-tree";
-import { RASS_AGITACAO_PROCURAR_CAUSA, RASS_NAO_DESPERTA, SEDACAO_ABAIXO_DA_META } from "./sedation-engine";
-import { QSOFA_PAPEL_APOS_SSC_2026, UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65 } from "./lib/escores-limites";
-import { OSM_EFETIVA_EHH, OSM_EFETIVA_NORMAL, OSM_EFETIVA_VS_TOTAL } from "./lib/osmolalidade";
-import { ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART } from "./coronary-decision-tree";
-import { ANGIOTC_QUANDO_NAO_DA } from "./tep-decision-tree";
+
+
+// ⚠️ TODOS OS LIMITES DE ESCORE VÊM DAQUI AGORA (2026-08-27). Antes, cinco
+// deles moravam dentro de árvores clínicas — e este arquivo, que é área
+// preservada, importava de lá. Ver o cabeçalho de `escores-limites.ts`.
+import {
+  ANGIOTC_QUANDO_NAO_DA,
+  ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART,
+  GLASGOW_AVALIAR_VIA_AEREA,
+  NIHSS_SEM_INDICACAO,
+  QSOFA_PAPEL_APOS_SSC_2026,
+  RASS_AGITACAO_PROCURAR_CAUSA,
+  RASS_NAO_DESPERTA,
+  SEDACAO_ABAIXO_DA_META,
+  UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65,
+} from "./lib/escores-limites";
+import { OSM_EFETIVA_EHH, OSM_EFETIVA_NORMAL } from "./lib/osmolalidade";
+
+
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -726,8 +739,8 @@ export const CALC_TOOLS: CalcTool[] = [
     // reperfusão sai de incapacitância + janela + contraindicações, e esta tela
     // não pergunta nenhuma das três. O módulo AVC pergunta as três.
     //
-    // O rótulo vem de `faixaNihss` (avc/nihss.ts), fonte única com o AVC como
-    // dono — antes eram duas classificações divergentes do mesmo escore.
+    // O rótulo vem de `faixaNihss` (lib/nihss.ts), fonte única da escala —
+    // antes eram duas classificações divergentes do mesmo escore.
     interpret: (t) => {
       const f = faixaNihss(t);
       return {

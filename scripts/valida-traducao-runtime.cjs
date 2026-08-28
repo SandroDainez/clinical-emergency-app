@@ -172,14 +172,21 @@ function coletar(rel) {
 const emitidos = [...libs, ...arvores].filter(coletar).length;
 
 // ── Vacuidade: universo vazio PASSA CALADO, e passar calado é o defeito ────
-if (emitidos < 60) {
+// ⚠️ PISOS BAIXADOS EM 2026-08-27 — 60→40 arquivos e 1.500→250 strings. A
+// reestruturação removeu 19 árvores clínicas e as libs que só elas usavam:
+// o universo mediu 46 de 59 arquivos e 321 strings PT, contra 2.500+ antes.
+// A queda é de CONTEÚDO REMOVIDO, não de varredura quebrada — o caminhamento
+// continua o mesmo e continua achando as 321. Os pisos sobem de volta quando
+// o AVC entrar na arquitetura nova; enquanto isso eles ainda separam
+// "olhei e não achei" de "não consegui olhar".
+if (emitidos < 40) {
   falhas.push(
     `só ${emitidos} de ${libs.length + arvores.length} arquivos compilaram e carregaram — a trava pode ter rodado sobre NADA (R-15 item 9).\n` +
     `      ⚠️ Sem artefato, esta conferência não tem universo: ela lê o programa MONTADO, não o fonte.`
   );
 } else ok++;
-if (emRuntime.length < 1500) {
-  falhas.push(`só ${emRuntime.length} strings PT em runtime — esperado 2.500+. O caminhamento pode ter quebrado.`);
+if (emRuntime.length < 250) {
+  falhas.push(`só ${emRuntime.length} strings PT em runtime — esperado 250+. O caminhamento pode ter quebrado.`);
 } else ok++;
 
 // ── 3 · A CONFERÊNCIA ─────────────────────────────────────────────────────

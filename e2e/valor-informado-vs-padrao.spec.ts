@@ -140,38 +140,22 @@ test("o peso das Vasoativas confirma no ponto de partida — 70 kg existe", asyn
 });
 
 /**
- * ⚠️ A TERCEIRA SEVERIDADE — aqui o defeito bloqueava CONDUTA, não um aviso.
+ * ⚠️ TESTE REMOVIDO EM 2026-08-27 — "Sedoanalgesia: peso solto no ponto de
+ * partida PRODUZ dose". Era a TERCEIRA severidade desta série, e a mais grave:
+ * ali o defeito bloqueava CONDUTA, não um aviso. Sem peso confirmado a taxa da
+ * bomba saía como "—", e o paciente de 70 kg ficava sem dose enquanto na tela
+ * parecia apenas "o app não calculou".
  *
- * Na Sedoanalgesia o peso alimenta o CÁLCULO: com `weightMissing`, a taxa da
- * bomba é exibida como "—". Enquanto confirmar 70 kg era impossível, o paciente
- * de 70 kg ficava sem dose — e ninguém reportaria isso como bug de interface,
- * porque na tela parece "o app não calculou".
+ * A Sedoanalgesia saiu com a arquitetura clínica antiga. Nenhum módulo
+ * sobrevivente tem a forma que este teste precisa — peso no ponto de partida
+ * alimentando cálculo na mesma tela —, e escrevê-lo sobre um módulo que não
+ * calcula por peso seria um teste que passa sem exercitar o risco.
+ *
+ * A REGRA continua travada em `scripts/valida-valor-nao-informado.cjs`
+ * (`test:valor-informado`, 8 conferências verdes): a tela não pode imprimir
+ * número que ninguém informou. O que ficou sem prova de ponta a ponta é o elo
+ * VALOR SOLTO → DOSE PRODUZIDA, e ele volta a ser medível no primeiro módulo da
+ * arquitetura nova que dose por quilo.
+ *
+ * Registrado como **D-106** em `auditoria/DIVIDAS-CONHECIDAS.md`.
  */
-test("Sedoanalgesia: peso solto no ponto de partida PRODUZ dose", async ({ page }) => {
-  await abrirModulo(page, "sedoanalgesia");
-
-  const antes = await page.evaluate(() => document.body.innerText);
-  expect(antes, "sem peso confirmado a tela pede o peso").toContain("Informe o peso");
-
-  const barra = page.locator('[role="slider"]').first();
-  await barra.scrollIntoViewIfNeeded();
-  const alvo = await page.evaluate(() => {
-    const el = document.querySelector('[role="slider"]')!;
-    const r = el.getBoundingClientRect();
-    const valor = Number(el.getAttribute("aria-valuenow") ?? "70");
-    const min = Number(el.getAttribute("aria-valuemin") ?? "30");
-    const max = Number(el.getAttribute("aria-valuemax") ?? "250");
-    const fracao = max > min ? (valor - min) / (max - min) : 0.5;
-    return { x: r.x + r.width * fracao, y: r.y + r.height / 2 };
-  });
-  await page.mouse.move(alvo.x, alvo.y);
-  await page.mouse.down();
-  await page.mouse.up();
-
-  const depois = await page.evaluate(() => document.body.innerText);
-  expect(depois, "confirmar o peso tem de destravar o cálculo").not.toContain("Informe o peso");
-  expect(
-    depois,
-    "com o peso confirmado a taxa da bomba não pode continuar como travessão"
-  ).not.toMatch(/\n—\s*mL\/h/);
-});

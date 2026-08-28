@@ -31,6 +31,18 @@
  *
  * Quem confere: `test:etiquetas` (toda etiqueta em uso tem entrada) e
  * `test:paleta` (nenhum hexadecimal novo fora deste diretório).
+
+ * ── ⚠️ PODADO EM 2026-08-27 ─────────────────────────────────────────────
+ *
+ * Saíram de `AREA_PALETTE` as etiquetas cujos módulos foram removidos com a
+ * arquitetura clínica antiga («CAD / EHH», «Convulsões», «Insuf. resp.», «Abdome agudo», «Intoxicações», «PE / Eclâmpsia»), e de
+ * `ICONE_DO_MODULO` os 19 ids correspondentes.
+ *
+ * ⚠️ A ASSIMETRIA DE CHAVE EXPLICADA ACIMA É O QUE TORNA ESTA PODA DELICADA: a
+ * cor é da ETIQUETA e o ícone é do ID, então as duas listas encolhem por
+ * critérios diferentes e nunca vão ter o mesmo tamanho. Cada uma foi conferida
+ * contra a sua própria fonte — `constants/module-area-labels.ts` e
+ * `clinical-modules.ts` —, não uma contra a outra.
  */
 
 export type Paleta = { accent: string; iconBg: string; badgeBg: string; badgeText: string };
@@ -66,16 +78,13 @@ export const AREA_PALETTE: Record<string, Paleta> = {
   Vasoativos:  { accent: "#f87171", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
   ISR:         ROXO_VIA_AEREA,
   EAP:         { accent: "#22d3ee", iconBg: "#164e63", badgeBg: "#164e63", badgeText: "#67e8f9" },
-  "CAD / EHH": { accent: "#fb923c", iconBg: "#431407", badgeBg: "#431407", badgeText: "#fdba74" },
   VM:          { accent: "#818cf8", iconBg: "#1e1b4b", badgeBg: "#1e1b4b", badgeText: "#a5b4fc" },
   Anafilaxia:  { accent: "#f472b6", iconBg: "#500724", badgeBg: "#500724", badgeText: "#f9a8d4" },
   AVC:              { accent: "#c084fc", iconBg: "#3b0764", badgeBg: "#3b0764", badgeText: "#e9d5ff" },
   TCE:              { accent: "#8b5cf6", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" },
-  "Convulsões":     { accent: "#d946ef", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f0abfc" },
   CORONARIANA:      ROSA_CARDIACO,
   TEP:              { accent: "#f43f5e", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fecdd3" },
   Choque:           { accent: "#ef4444", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
-  "Insuf. resp.":   { accent: "#06b6d4", iconBg: "#083344", badgeBg: "#083344", badgeText: "#67e8f9" },
   // O rim é o vizinho retroperitoneal do abdome, e compartilha a cor por isso —
   // o mesmo critério das etiquetas do ACLS (PCR e PÓS-PCR no azul).
   Rim:              AMARELO_ABDOME,
@@ -84,12 +93,9 @@ export const AREA_PALETTE: Record<string, Paleta> = {
   // A trava de paleta pegou a primeira versão: eu havia escrito os quatro
   // hexadecimais de novo para a etiqueta "Rim", e o teto do arquivo subiu de
   // 151 para 155. Reuso informa e não custa (R-78 aplicado à cor).
-  "Abdome agudo":   AMARELO_ABDOME,
-  "Intoxicações":   { accent: "#10b981", iconBg: "#052e16", badgeBg: "#052e16", badgeText: "#6ee7b7" },
   "Eletrólitos":    { accent: "#2dd4bf", iconBg: "#042f2e", badgeBg: "#042f2e", badgeText: "#99f6e4" },
   Calculadoras:     { accent: "#38bdf8", iconBg: "#082f49", badgeBg: "#082f49", badgeText: "#7dd3fc" },
   Sedoanalgesia:    { accent: "#6366f1", iconBg: "#312e81", badgeBg: "#312e81", badgeText: "#a5b4fc" },
-  "PE / Eclâmpsia": { accent: "#e879f9", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f5d0fe" },
   Módulo:      CINZA_NEUTRO,
 };
 
@@ -198,26 +204,7 @@ export const ICONE_DO_MODULO: Record<string, string> = {
   "ritmos-acls": "heart-pulse",
   "farmacologia-acls": "pill",
   "ovace-adulto": "account-alert",
-  "sepse-adulto": "bacteria",
-  "choque": "chart-line-variant",
-  "avc": "brain",
-  "sindromes-coronarianas": "heart",
-  "tep": "lungs",
-  "ventilacao-mecanica": "air-filter",
-  "isr-rapida": "medical-bag",
-  "edema-agudo-pulmao": "water",
-  "insuficiencia-respiratoria": "lungs",
-  "politrauma": "ambulance",
-  "tce": "head-flash",
-  "crises-convulsivas": "flash",
-  "intoxicacoes-exogenas": "skull-crossbones",
-  "cetoacidose-hiperosmolar": "water-percent",
   "correcoes-eletroliticas": "flask",
-  "injuria-renal-aguda": "test-tube",
-  "anafilaxia": "needle",
-  "abdome-agudo": "stomach",
-  "pre-eclampsia": "human-pregnant",
   "drogas-vasoativas": "iv-bag",
-  "sedoanalgesia": "sleep",
   "calculadoras-clinicas": "calculator-variant",
 };

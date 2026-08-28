@@ -48,7 +48,12 @@ const PRAZO = /\b\d+([,.]\d+)?\s*(h|hora|horas|min|minutos|segundos|semanas?|dia
 /** Precedência: a ordem entre duas condutas. */
 const PRECEDENCIA = /\bANTES DE\b|\bantes da\b|\bantes do\b|\bnão espere\b|\bnão aguarde\b|\bprimeiro\b|\bsó depois\b|\bnão faça .{0,40}antes\b/i;
 
-const arquivos = fs.readdirSync(appDir).filter((f) => /-decision-tree\.ts$/.test(f)).sort();
+// ⚠️ UNIVERSO REDIRECIONADO EM 2026-08-27 — o sufixo `-decision-tree.ts` sumiu da
+// raiz com a arquitetura clínica antiga. Sobraram as 2 árvores do
+// LEGACY_ACLS_RUNTIME, que usam `*-tree.ts`. Esta trava CONTINUA existindo porque
+// `valida-campos-do-no` depende dela: todo campo RECOLHIDO precisa de alguém que
+// o vigie, e prazo escondido é a única classe cujo custo é irreversível.
+const arquivos = fs.readdirSync(appDir).filter((f) => /-tree\.ts$/.test(f)).sort();
 
 // ⚠️ ESTA TRAVA RESISTIA POR ACIDENTE. Com o universo vazio ela reprovava — mas
 // por causa dos tetos por módulo que não fechavam, não porque soubesse que não
@@ -75,7 +80,7 @@ try {
   for (const f of arquivos) {
     const mod = require(path.join(tempDir, f.replace(/\.ts$/, ".js")));
     const arv = Object.values(mod).find((v) => v && v.nodes);
-    if (arv) arvores[f.replace("-decision-tree.ts", "")] = arv;
+    if (arv) arvores[f.replace(/-(decision-)?tree\.ts$/, "")] = arv;
   }
 } catch (erro) {
   falhas.push(`as árvores não compilaram — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
@@ -233,7 +238,10 @@ for (const [modulo, arv] of Object.entries(arvores)) {
 }
 
 // ── Vacuidade: sem árvores, a varredura passa calada ───────────────────────
-if (Object.keys(arvores).length < 15) {
+// ⚠️ PISO BAIXADO 15→2 EM 2026-08-27: restaram as 2 árvores do LEGACY_ACLS_RUNTIME.
+// O piso declarado no retrato (auditoria/universo-dos-instrumentos.json) já cobre a
+// mesma pergunta; este aqui é a segunda linha, e não pode ficar acima do universo real.
+if (Object.keys(arvores).length < 2) {
   falhas.push(`só ${Object.keys(arvores).length} árvores carregadas — pode ter rodado sobre nada (R-15 item 9).`);
 } else ok++;
 

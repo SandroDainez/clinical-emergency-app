@@ -10,7 +10,8 @@
  *   ao consenso 2024 (ver ⚠️ abaixo — há divergência aberta), nem que a árvore
  *   do CAD/EHH calcule osmolaridade: ela NÃO calcula, por decisão declarada
  *   (PD-3), e escreve a fórmula para o médico aplicar.
- * UNIVERSO: clinical-calculators-engine.ts e dka-hhs-decision-tree.ts.
+ * UNIVERSO: clinical-calculators-engine.ts. (A árvore da CAD saiu do app em
+ *   2026-08-27, com a remoção da arquitetura clínica antiga.)
  *
  * ── POR QUE ESTA TRAVA MUDOU DE ALVO (14/ago) ───────────────────────────────
  *
@@ -181,43 +182,17 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
     falhas.push("clinical-calculators-engine: a faixa voltou a usar 320 sobre a EFETIVA — subdiagnostica EHH.");
   } else ok++;
 
-  // A árvore consome o texto que explica os dois — não o reescreve.
-  const arv = lerFonte(path.join(appDir, "dka-hhs-decision-tree.ts"));
-  // ⚠️ IMPORT FORA — R-15 item 10. Achado na varredura retroativa: apagar o USO
-  // da constante deixava esta conferência VERDE, porque a linha de import
-  // contém o nome. Provado por mutação (exit 0 sobre uma árvore que já não
-  // mostrava a explicação).
-  const arvSemImport = arv
-    .replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "");
-  if (!/OSM_EFETIVA_VS_TOTAL/.test(arvSemImport)) {
-    falhas.push("dka-hhs-decision-tree: parou de consumir OSM_EFETIVA_VS_TOTAL — a explicação dos dois limiares voltou a ser cópia.");
-  } else ok++;
-  // ⚠️ SÓ EM CÓDIGO, NÃO EM COMENTÁRIO: o comentário que DOCUMENTA o erro
-  // corrigido cita "efetiva > 320" de propósito, e acusá-lo faria a trava
-  // proibir a própria explicação do defeito (R-21/R-15).
-  const arvSemComentario = arv.split("\n").filter((l) => !/^\s*(\/\/|\*)/.test(l)).join("\n");
-  if (/efetiva\s*>\s*320|EFETIVA > 320/i.test(arvSemComentario)) {
-    falhas.push("dka-hhs-decision-tree: reapareceu 'efetiva > 320' — é o limiar da TOTAL.");
-  } else ok++;
+  // ⚠️ BLOCO REMOVIDO EM 2026-08-27 — o universo dele saiu do app.
+  // A cetoacidose/EHH era um módulo clínico da arquitetura antiga e foi removida
+  // nesta limpeza. O que esta trava ainda mede (a calculadora de osmolalidade,
+  // que é área preservada) continua abaixo.
+
 }
 
-// ── E. Os módulos que ENSINAM a fórmula continuam ensinando a certa ─────────
-//
-// Quatro lugares já estavam certos quando o motor estava errado (R-18). Se um
-// deles regredir, some o indício que levou ao achado.
-const ENSINAM = [
-  ["tce-decision-tree.ts", /ureia\/6/, "o gap osmolar do manitol"],
-  ["poisoning-decision-tree.ts", /ureia\/6/, "o gap osmolar do álcool tóxico"],
-  ["dka-hhs-decision-tree.ts", /osmolalidade efetiva = 2 × Na/, "o critério de EHH"],
-];
-for (const [rel, re, oque] of ENSINAM) {
-  const t = limpar(lerFonte(path.join(appDir, rel)));
-  if (!re.test(t)) {
-    falhas.push(`${rel}: ${oque} deixou de ensinar a fórmula correta.`);
-  } else ok++;
-}
+// ⚠️ BLOCO E REMOVIDO EM 2026-08-27 — o universo ficou VAZIO. Os quatro módulos
+// que ensinavam a fórmula (CAD, TCE, intoxicações e o AVC) saíram com a
+// arquitetura clínica antiga. Um laço sobre lista vazia passaria em silêncio, e
+// trava que aprova por não ter o que medir é pior que trava nenhuma (R-15 item 9).
 
 console.log("\nOsmolaridade calculada — divisor da ureia e critério pela efetiva\n");
 if (falhas.length) {

@@ -13,10 +13,10 @@
     "nos_da_arvore": 40
   },
   "auditoria-padroes-ui": {
-    "_nota": "Medido: 20 árvores, 135 nós de decisão, 22 deles no radar da regra de gravidade (regex ESTAB). É o radar que some quando alguém reescreve um título — foi a mutação que passou verde.",
-    "arvores": 15,
-    "nos_de_decisao": 100,
-    "decisoes_no_radar_de_gravidade": 15
+    "_nota": "Medido: 20 árvores, 135 nós de decisão, 22 deles no radar da regra de gravidade (regex ESTAB). É o radar que some quando alguém reescreve um título — foi a mutação que passou verde. ⚠️ QUEDA LEGÍTIMA EM 2026-08-27 (15→2 árvores, 100→6 nós de decisão, 15→3 no radar de gravidade): a reestruturação removeu as 19 árvores clínicas antigas. Sobraram as 2 do LEGACY_ACLS_RUNTIME (bradicardia/taquicardia). Não é filtro quebrado — o filtro acha as 2 que existem. Os pisos sobem quando o AVC entrar na arquitetura nova.",
+    "arvores": 2,
+    "nos_de_decisao": 6,
+    "decisoes_no_radar_de_gravidade": 3
   },
   "mapa-de-fontes": {
     "_nota": "Medido: 46 fontes, todas com módulo declarado.",
@@ -24,8 +24,8 @@
     "fontes_com_modulo": 35
   },
   "valida-prazo-visivel": {
-    "_nota": "Resistia por ACIDENTE — falhava porque os tetos por módulo não fechavam, não porque soubesse que não tinha olhado. Medido: 20 árvores.",
-    "arvores": 15
+    "_nota": "Resistia por ACIDENTE — falhava porque os tetos por módulo não fechavam, não porque soubesse que não tinha olhado. Medido: 20 árvores. ⚠️ QUEDA LEGÍTIMA EM 2026-08-27 (15→2 árvores, 100→6 nós de decisão, 15→3 no radar de gravidade): a reestruturação removeu as 19 árvores clínicas antigas. Sobraram as 2 do LEGACY_ACLS_RUNTIME (bradicardia/taquicardia). Não é filtro quebrado — o filtro acha as 2 que existem. Os pisos sobem quando o AVC entrar na arquitetura nova.",
+    "arvores": 2
   },
   "valida-tamanho-de-item": {
     "_nota": "O piso de nós já estava embutido no próprio script (minimoDeNos). Fica aqui para o retrato ser um só.",
@@ -36,7 +36,8 @@
     "nos_da_arvore": 40
   },
   "valida-aviso-de-auditoria": {
-    "modulos_clinicos": 31
+    "_nota": "⚠️ QUEDA LEGÍTIMA EM 2026-08-27 — a reestruturação removeu a arquitetura clínica antiga (19 árvores, 20 telas). O app ficou com 12 módulos: PCR adulto e seus satélites do ACLS, mais as calculadoras. O piso volta a subir quando o AVC entrar na arquitetura nova.",
+    "modulos_clinicos": 12
   },
   "valida-ira": {
     "nos_da_acidose": 8,
@@ -68,8 +69,8 @@
     "degraus": 22
   },
   "censo-de-instrumentos": {
-    "_nota": "Medido em 2026-08-23, na criação. ⚠️ O piso de no_portao é o que impede instrumento de sumir do test:all sem ninguém ver — foi exatamente o que aconteceu com auditoria-calculos, auditoria-doses e valida-rastreabilidade por 349 commits.",
-    "instrumentos": 93,
-    "no_portao": 88
+    "_nota": "Medido em 2026-08-23, na criação. ⚠️ O piso de no_portao é o que impede instrumento de sumir do test:all sem ninguém ver — foi exatamente o que aconteceu com auditoria-calculos, auditoria-doses e valida-rastreabilidade por 349 commits. ⚠️ QUEDA LEGÍTIMA 93→56 / 88→51 em 2026-08-27: a reestruturação removeu a arquitetura clínica antiga, e com ela os instrumentos cujo UNIVERSO INTEIRO eram as árvores removidas (prazos, retomada, teto por kg, ordem clínica, origem de vetor, doses críticas…). Não foi trava desligada — foi trava que ficou sem objeto. O piso volta a subir com o AVC.",
+    "instrumentos": 56,
+    "no_portao": 51
   }
 }

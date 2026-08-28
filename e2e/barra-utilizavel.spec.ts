@@ -110,12 +110,19 @@ function modulosPublicados(): string[] {
  * trava. Se algum dia uma barra duplicada passar por revisão, esta nota é o
  * registro de que a porta estava conhecida e aberta.
  */
+// ⚠️ PODADO EM 2026-08-27 — `sedoanalgesia` (2 barras) e `ventilacao-mecanica`
+// (1) saíram com a arquitetura clínica antiga. Este mapa é PISO por módulo, não
+// catálogo: o universo continua vindo de `dist/modulos/*.html`, então módulo novo
+// entra sozinho na medição mesmo sem linha aqui.
+//
+// ⚠️ A CONSEQUÊNCIA CLÍNICA CITADA ACIMA saiu junto: era na Sedoanalgesia que a
+// barra de 0 px impedia a taxa da bomba de sair. O defeito de LARGURA
+// RENDERIZADA não saiu — ele é do hospedeiro, não do módulo, e as três telas que
+// restam usam os mesmos padrões de layout que o produziram.
 const MINIMO_DE_BARRAS: Record<string, number> = {
   "calculadoras-clinicas": 1,
   "correcoes-eletroliticas": 3,
   "drogas-vasoativas": 5,
-  "sedoanalgesia": 2,
-  "ventilacao-mecanica": 1,
 };
 
 const LEGADO: Record<string, number> = {

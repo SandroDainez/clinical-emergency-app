@@ -14,15 +14,21 @@ import { abrirEstabilizacao, pressables, texto, fixarIdioma} from "./helpers";
  * os quatro tipos de passo do shell — decisão, ação, entrada e transição —
  * porque uma travessia real passa por eles.
  *
- * Sem isto, migrar o shell seria trocar a apresentação de 19 módulos clínicos
+ * Sem isto, migrar o shell seria trocar a apresentação dos módulos clínicos
  * com prova de que só o primeiro passo continua igual.
  */
 
-/** Módulos representativos: cobrem árvores curtas, longas e com entrada de dados. */
+/**
+ * Módulos representativos: cobrem árvores curtas, longas e com entrada de dados.
+ *
+ * ⚠️ PODADO EM 2026-08-27 — `anafilaxia` e `sepse-adulto` saíram com a arquitetura
+ * clínica antiga. Restaram as duas árvores do LEGACY_ACLS_RUNTIME, que são
+ * também as duas ÚNICAS telas que ainda passam por esta concha — ou seja, o
+ * universo aqui deixou de ser "representativo" e virou EXAUSTIVO.
+ */
 const MODULOS: { id: string; cromado: string[] }[] = [
-  { id: "anafilaxia", cromado: ["Anafilaxia", "ANAFILAXIA", "Anafilaxia · Emergência"] },
-  { id: "sepse-adulto", cromado: ["Sepse / Choque Séptico", "SEPSE / CHOQUE SÉPTICO", "Sepse · Emergência"] },
   { id: "bradicardia-acls", cromado: ["Bradicardia no ACLS", "BRADICARDIA ACLS", "ACLS · Emergência", "Bradicardia ACLS"] },
+  { id: "taquicardia-acls", cromado: ["Taquicardia no ACLS", "TAQUICARDIA ACLS", "ACLS · Emergência", "Taquicardia ACLS"] },
 ];
 
 /** Quantos passos percorrer. Suficiente para atravessar os tipos, sem eternizar. */
@@ -186,7 +192,7 @@ test("o ABCDE continua acessível — nada de conteúdo clínico saiu do app", a
   //
   // Este teste é o que autoriza a exclusão dessas linhas na travessia: prova que
   // o conteúdo continua no app, a um toque.
-  await abrir(page, "anafilaxia", true);
+  await abrir(page, "bradicardia-acls", true);
 
   // O card nasce RECOLHIDO, e este teste passou a abri-lo de propósito.
   //
@@ -238,7 +244,7 @@ test("o cabeçalho compacto mantém o título do módulo", async ({ page }) => {
     const t = await texto(page);
     // O cabeçalho mostra o NOME DO MÓDULO (protocolLabel).
     expect(t, `título ausente no cabeçalho de "${id}"`).toMatch(
-      /Anafilaxia|Sepse \/ Choque Séptico|Bradicardia ACLS/
+      /Bradicardia ACLS|Taquicardia ACLS/
     );
     expect(t, `contador de passo ausente em "${id}"`).toContain("Passo");
   }
@@ -248,7 +254,7 @@ test("todo tocável da árvore respeita o alvo de 44 px", async ({ page }) => {
   // Cobre também os passos de ENTRADA, onde ficam os chips de valor clínico —
   // tocar o chip errado troca peso ou dose do caso. A travessia visita os tipos
   // de passo, então a verificação alcança os quatro.
-  await abrir(page, "sepse-adulto", true);
+  await abrir(page, "taquicardia-acls", true);
 
   const pequenos: string[] = [];
   for (let passo = 0; passo < PASSOS; passo++) {
@@ -289,25 +295,25 @@ test("todo tocável da árvore respeita o alvo de 44 px", async ({ page }) => {
 });
 
 test("o shell recebe o módulo, então a flag pode ser por módulo", async ({ page }) => {
-  // Pré-requisito da estratégia da Fase 7: os 19 chamadores já passam
+  // Pré-requisito da estratégia da Fase 7: todo chamador já passa
   // `currentModuleSlug`, então o shell sabe qual módulo está renderizando e pode
   // consultar a flag individualmente. Sem isso, migrá-lo seria tudo ou nada.
   //
   // Verificação de comportamento: ligar a flag num módulo NÃO pode afetar outro
   // que use o mesmo shell.
-  await abrir(page, "anafilaxia", true);
-  const anafilaxiaLigada = await texto(page);
+  await abrir(page, "bradicardia-acls", true);
+  const bradicardiaLigada = await texto(page);
 
   await page.addInitScript(() => {
-    window.localStorage.setItem("ui-v2", "anafilaxia");
+    window.localStorage.setItem("ui-v2", "bradicardia-acls");
   });
-  await page.goto("/modulos/sepse-adulto");
+  await page.goto("/modulos/taquicardia-acls");
   await expect.poll(async () => (await texto(page)).includes("Passo"), { timeout: 30_000 }).toBe(true);
-  const sepseComFlagDeOutro = await texto(page);
+  const taquicardiaComFlagDeOutro = await texto(page);
 
-  expect(anafilaxiaLigada.length).toBeGreaterThan(100);
+  expect(bradicardiaLigada.length).toBeGreaterThan(100);
   expect(
-    sepseComFlagDeOutro.length,
-    "a sepse deveria renderizar normalmente com a flag de outro módulo"
+    taquicardiaComFlagDeOutro.length,
+    "a taquicardia deveria renderizar normalmente com a flag de outro módulo"
   ).toBeGreaterThan(100);
 });

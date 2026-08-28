@@ -72,7 +72,12 @@ test.describe("Ordem do hub", () => {
     // ⚠️ VACUIDADE: sem esta conferência, um hub que não renderiza card nenhum
     // passaria — a lista de consulta ficaria vazia e "nenhuma antes" seria trivial.
     const esperados = MODULOS.filter((m) => !ehConsulta(m.id)).length;
-    expect(esperados, "deveria haver módulos de cenário para comparar").toBeGreaterThan(20);
+    // ⚠️ PISO BAIXADO 20 → 5 EM 2026-08-27. A reestruturação removeu a arquitetura
+    // clínica antiga e o app ficou com 12 módulos, 9 deles de cenário. A queda é de
+    // conteúdo removido, não de leitura quebrada — o piso continua fazendo o que
+    // existe para fazer: impedir que a lista vazia torne "nenhuma consulta antes de
+    // cenário" uma verdade trivial. Sobe de volta com a arquitetura nova.
+    expect(esperados, "deveria haver módulos de cenário para comparar").toBeGreaterThan(5);
 
     await fixarIdioma(page, "pt-BR");
     await page.goto("/(tabs)");
@@ -112,11 +117,18 @@ test.describe("Ordem do hub", () => {
     }, titulos);
 
     // ⚠️ VACUIDADE: card não encontrado não pode virar aprovação silenciosa.
+    //
+    // ⚠️ 2026-08-27: o piso ABSOLUTO era 25, e o app passou a ter 12 módulos. Em vez
+    // de só baixar o número, a conferência virou RELATIVA — TODO card do catálogo tem
+    // de ser localizado. Isso é mais forte que o piso antigo, não mais fraco: com 30
+    // módulos, `> 25` deixava cinco sumirem em silêncio. O piso absoluto pequeno
+    // continua abaixo apenas para o caso degenerado de o catálogo em si esvaziar.
     expect(
       posicoes.length,
       `só ${posicoes.length} dos ${MODULOS.length} cards foram localizados no hub — ` +
         "a leitura pode ter quebrado, e uma comparação sobre 2 cards passa por acaso"
-    ).toBeGreaterThan(25);
+    ).toBe(MODULOS.length);
+    expect(MODULOS.length, "o catálogo do hub esvaziou").toBeGreaterThan(5);
 
     // ⚠️ A SEÇÃO DO PCR SAI DA PRIMEIRA MEDIDA — e é medida logo abaixo. Ver o
     // cabeçalho: a razão da regra não sobrevive lá dentro, então o escopo é que

@@ -900,9 +900,15 @@ for (const calc of CALC_TOOLS) {
   // monitorar". A trava tem de cobrar TODAS as constantes que o dono empresta,
   // senão ela vigia a origem do texto e não o texto certo em cada faixa.
   const DONOS = [
-    ["glasgow", ["GLASGOW_AVALIAR_VIA_AEREA"], "rsi-decision-tree.ts", "ISR/Via aérea"],
-    ["rass", ["RASS_AGITACAO_PROCURAR_CAUSA", "SEDACAO_ABAIXO_DA_META", "RASS_NAO_DESPERTA"], "sedation-engine.ts", "Sedoanalgesia"],
-    ["nihss", ["NIHSS_SEM_INDICACAO"], "avc/nihss.ts", "AVC"],
+    // ⚠️ OS DONOS MUDARAM EM 2026-08-27, e o invariante NÃO. Estes textos
+    // viviam dentro de árvores clínicas; quando a arquitetura antiga saiu, eles
+    // se mudaram para `lib/escores-limites.ts` — que sempre foi a casa
+    // conceitual deles ("o que este escore NÃO diz"). A trava continua exigindo
+    // constante importada em vez de literal inline; só o endereço do dono é
+    // outro.
+    ["glasgow", ["GLASGOW_AVALIAR_VIA_AEREA"], "lib/escores-limites.ts", "limites de escore"],
+    ["rass", ["RASS_AGITACAO_PROCURAR_CAUSA", "SEDACAO_ABAIXO_DA_META", "RASS_NAO_DESPERTA"], "lib/escores-limites.ts", "limites de escore"],
+    ["nihss", ["NIHSS_SEM_INDICACAO"], "lib/escores-limites.ts", "limites de escore"],
     // Os quatro EXCESSOS PARCIAIS. Aqui a ferramenta MANTÉM o que o desfecho
     // validado dela cobre — sítio de tratamento no CURB-65, disposição no
     // HEART, via diagnóstica no Wells — e o que excede sai para o módulo dono.
@@ -910,8 +916,8 @@ for (const calc of CALC_TOOLS) {
     // as linhas que ficam viraram constantes nomeadas, e não há onde reescrever
     // conduta sem a trava ver.
     ["curb-65", ["UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], "lib/escores-limites.ts", "Sepse"],
-    ["heart", ["ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], "coronary-decision-tree.ts", "Síndromes Coronarianas"],
-    ["wells-tep", ["ANGIOTC_QUANDO_NAO_DA"], "tep-decision-tree.ts", "TEP"],
+    ["heart", ["ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], "lib/escores-limites.ts", "limites de escore"],
+    ["wells-tep", ["ANGIOTC_QUANDO_NAO_DA"], "lib/escores-limites.ts", "limites de escore"],
   ];
 
   for (const [id, constantes, arquivoDono, dono] of DONOS) {
@@ -987,9 +993,9 @@ for (const calc of CALC_TOOLS) {
   };
 
   const ESPERADO = [
-    ["glasgow", "rsi-decision-tree.ts", [[7, "GLASGOW_AVALIAR_VIA_AEREA"], [8, "GLASGOW_AVALIAR_VIA_AEREA"]]],
-    ["nihss", "avc/nihss.ts", [[1, "NIHSS_SEM_INDICACAO"], [16, "NIHSS_SEM_INDICACAO"], [42, "NIHSS_SEM_INDICACAO"]]],
-    ["rass", "sedation-engine.ts", [
+    ["glasgow", "lib/escores-limites.ts", [[7, "GLASGOW_AVALIAR_VIA_AEREA"], [8, "GLASGOW_AVALIAR_VIA_AEREA"]]],
+    ["nihss", "lib/escores-limites.ts", [[1, "NIHSS_SEM_INDICACAO"], [16, "NIHSS_SEM_INDICACAO"], [42, "NIHSS_SEM_INDICACAO"]]],
+    ["rass", "lib/escores-limites.ts", [
       [4, "RASS_AGITACAO_PROCURAR_CAUSA"], [2, "RASS_AGITACAO_PROCURAR_CAUSA"], [1, "RASS_AGITACAO_PROCURAR_CAUSA"],
       [-3, "SEDACAO_ABAIXO_DA_META"], [-4, "SEDACAO_ABAIXO_DA_META"], [-5, "RASS_NAO_DESPERTA"],
     ]],
@@ -997,9 +1003,9 @@ for (const calc of CALC_TOOLS) {
     // em AngioTC quando o D-dímero vem positivo. Exigir a constante só "no
     // arquivo" deixava apagá-la de uma das faixas — a sobrevivente na vizinha
     // fazia a conferência passar (R-15 item 8, terceira vez).
-    ["wells-tep", "tep-decision-tree.ts", [[5, "ANGIOTC_QUANDO_NAO_DA"], [1, "ANGIOTC_QUANDO_NAO_DA"]]],
+    ["wells-tep", "lib/escores-limites.ts", [[5, "ANGIOTC_QUANDO_NAO_DA"], [1, "ANGIOTC_QUANDO_NAO_DA"]]],
     ["curb-65", "lib/escores-limites.ts", [[3, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], [5, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"]]],
-    ["heart", "coronary-decision-tree.ts", [[7, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], [10, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"]]],
+    ["heart", "lib/escores-limites.ts", [[7, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], [10, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"]]],
   ];
 
   for (const [id, arquivoDono, pares] of ESPERADO) {

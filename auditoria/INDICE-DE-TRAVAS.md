@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**80 de 97 travas com declaração completa.**
+**45 de 59 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -26,77 +26,11 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **NÃO PROMETE:** que os helpers estejam clinicamente certos (test:nucleo) nem que todo campo múltiplo esteja declarado como tal.
 - **UNIVERSO:** todo .ts/.tsx do app fora de node_modules. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── A escolha de guardar seleção múltipla como string com separador foi deliberada: `TreeValues` é `Record<string,string>` e sustenta 30 módulos, todo `escolher` de roteamento e todos os validadores — trocar o tipo obrigaria a revisar cada consumidor, e um esquecido vira rota clínica errada. ⚠️ MAS A ESCOLHA SÓ É SEGURA ENQUANTO FOR INVISÍVEL (exigência do autor, 2026-08-25): "nenhum módulo, componente, validador ou regra clínica deveria fazer `value.includes(...)` ou manipular esse separador diretamente. Caso contrário, daqui a alguns meses aparece um bug clínico impossível de rastrear." O bug que ele descreve é concreto: `values.queixas.includes("dor")` casa também com "dor torácica pleurítica" e com "sem dor" — dois quadros diferentes, um deles o oposto do procurado. `temSelecionado()` compara item inteiro e não tem esse modo de falhar. Por isso a leitura é obrigada a passar pelos helpers, e esta trava é o que obriga.
 
-## `test:marco-retomada` → `scripts/valida-marco-na-retomada.cjs`
-
-- **PROMETE:** que sair de um módulo e retomá-lo NÃO desloque os marcos temporais — que um marco criado às 14:00 continue sendo 14:00 depois de o usuário ficar 8 minutos fora. Mede nas duas árvores que declaram `marcos` (crises convulsivas e pré-eclâmpsia) e confere que o shell recoloca os marcos DEPOIS do replay.
-- **NÃO PROMETE:** que a retomada preserve histórico, ações realizadas ou decisões — isso é `test:retomada-snapshot`. Nem que os limiares de tempo de cada módulo estejam clinicamente certos (test:prazos, test:convulsoes, test:eclampsia).
-- **UNIVERSO:** as duas árvores com `marcos`, o motor, e o `retomar()` do shell. ── O DEFEITO, MEDIDO ANTES DE SER CORRIGIDO ──────────────────────────────── A retomada de fluxo não restaura estado: ela faz REPLAY — `reset()` e depois `setValue` de cada valor salvo. E `setValue` de um campo declarado em `tree.marcos` chama `marcar()`, que ancora o relógio em `agora − decorrido`. No replay, "agora" é o instante da RETOMADA. Sondagem original, na árvore real de crises convulsivas: marco antes  : 16:59:06Z marco depois : 17:07:06Z deslocamento : 8 min PARA A FRENTE Paciente convulsionando há 12 minutos. O médico sai para consultar outro protocolo, gasta 8, volta — e o app volta a achar que a crise tem 12 minutos. ⚠️ EM ESTADO EPILÉPTICO ISSO ATRASA A SEGUNDA E A TERCEIRA LINHA EXATAMENTE PELO TEMPO QUE ELE GASTOU CONSULTANDO. O relógio que deveria empurrar o escalonamento é o que passa a segurá-lo.
-
-## `test:retomada-snapshot` → `scripts/valida-retomada-snapshot.cjs`
-
-- **PROMETE:** que sair de um módulo e voltar preserve o CASO, não só o passo — valores, trilha de medições, ações já executadas, decisões tomadas e marcos; que o veredito seja recalculado (nunca restaurado como verdade congelada); que o vermelho continue bloqueando execução depois da volta; e que uma sessão salva ANTES desta versão continue abrindo, com trilha vazia e sem nenhuma medição inventada.
-- **NÃO PROMETE:** nada sobre `valoresRef`/`caminhoRef`, que continuam existindo (Passo C, não feito). Nem que o conteúdo clínico de cada módulo esteja certo — isso é dos validadores de cada árvore.
-- **UNIVERSO:** o motor, o `retomar()` do shell, e duas árvores reais (crises-convulsivas, síndromes coronarianas) além da árvore de prova. ── O DEFEITO QUE O PASSO A+B FECHA ───────────────────────────────────────── A retomada nasceu para responder "em que passo eu estava?" e guardava caminho e valores, reconstruindo por REPLAY. Bastava enquanto o motor não tinha memória clínica. ⚠️ AGORA TEM — e o replay não apenas PERDE trilha, ações e decisões: ele FABRICA uma trilha, com um ponto por campo carimbado na hora da volta. O médico corrige uma PA de 194/116 para 168/96, sai para consultar outro protocolo, volta, e a tela mostra "168/96, aferido agora" — sem o 194/116 e sem sinal de que houve impedimento corrigido. Uma ação já administrada voltaria como pendente, que é convite direto à dose dobrada.
-
 ## `test:valor-informado` → `scripts/valida-valor-nao-informado.cjs`
 
 - **PROMETE:** que a exibição de campo numérico reflita o ESTADO REAL do motor — que o `NumericStepper` saiba dizer "não informado", que o shell marque isso exatamente quando o campo é opcional e o motor está vazio, e que soltar a barra sem mover também grave (via `onConfirmar`).
 - **NÃO PROMETE:** o comportamento renderizado — isso é `e2e/valor-nao-informado.spec.ts`, que exercita o app de verdade. Esta trava é ESTRUTURAL e cobre justamente o caso que o e2e não consegue reproduzir no web (soltar a barra sem movimento).
 - **UNIVERSO:** components/ui-v2/numeric-stepper.tsx e o shell de fluxo. ── O DEFEITO, MEDIDO (2026-08-25) ────────────────────────────────────────── A barra parte do meio da faixa e imprimia esse número em tipo grande antes de qualquer toque. Em campo OBRIGATÓRIO isso nunca apareceu — o botão de avançar trava até informar. Em campo OPCIONAL, que a Tela 1 da SCA introduziu, a tela dizia "Peso 140 kg" com o motor VAZIO. ⚠️ E PESO ALIMENTA DOSE: tenecteplase e enoxaparina são por quilo. Um número que parece confirmado sem ninguém ter medido é a semente de uma dose errada três telas adiante.
-
-## `test:vereditos-sca` → `scripts/valida-vereditos-sca.cjs`
-
-- **PROMETE:** que os três vereditos da SCA (nitrato, AAS, betabloqueador) apliquem as contraindicações em vez de imprimi-las; que 🔴 bloqueie AQUELE fármaco sem parar o atendimento nem os outros dois; que "liberado" nunca signifique "feito"; que a suspeita de VD venha de CONTEXTO e não da ausência de um exame; e que nenhum veredito seja persistido como verdade clínica.
-- **NÃO PROMETE:** a renderização — isso é `e2e/vereditos-sca.spec.ts`. Nem o conteúdo das doses (test:coronarias, test:farmacos).
-- **UNIVERSO:** lib/vereditos-sca.ts, a árvore compilada e o motor real. ── O QUE MUDA DE FATO ────────────────────────────────────────────────────── Até aqui as ressalvas eram TEXTO: "AAS 300 mg agora, SALVO alergia/ sangramento ativo"; "⛔ NÃO USAR nitrato se…"; "NÃO iniciar se…". O app enunciava a regra e deixava a aplicação para quem lê — com o paciente na frente. Veredito é a mesma regra, aplicada: o app já sabe PAS, FC, perfusão e ausculta, e pode responder "não administre, PAS 82 mmHg".
-
-## `test:dose-governada` → `scripts/valida-dose-governada.cjs`
-
-- **PROMETE:** que nenhuma dose acionável de nitrato, betabloqueador ou morfina seja apresentada num nó que não tenha o veredito correspondente governando; que os dados necessários para liberar cada fármaco sejam perguntados ANTES da primeira oferta possível; e que dúvida nunca seja convertida em ausência de contraindicação — nem pela ajuda.
-- **NÃO PROMETE:** que as doses estejam clinicamente certas (test:coronarias, test:farmacos) nem que os vereditos avaliem bem (test:vereditos-sca).
-- **UNIVERSO:** a árvore da SCA compilada. ── A REGRA, NA FORMULAÇÃO DO AUTOR (2026-08-26) ──────────────────────────── "Nenhuma dose acionável de medicamento pode ser apresentada antes de o app ter avaliado e liberado as contraindicações relevantes para aquele medicamento." ⚠️ E ELA NÃO É "A PALAVRA DOSE SÓ PODE EXISTIR DENTRO DE UM NÓ VEREDITO" — essa formulação literal congelaria a arquitetura. O que se proíbe é dose SOLTA e não governada; no desenho atual da SCA, `Veredito` é o mecanismo que governa, e é ele que esta trava mede. Se um dia outro mecanismo formal do motor autorizar uma ação, a regra continua valendo e a trava é que muda. ── O DEFEITO QUE ORIGINOU ────────────────────────────────────────────────── O autor percorreu o módulo no celular e viu a tela de contraindicações ("antes de nitrato e betabloqueador") aparecer no PASSO 10 — depois de o app já ter mandado dar nitrato nos passos 4 e 5. E no passo 17 a dose era impressa de novo, sem veredito nenhum. Os vereditos existiam em UM nó. Os outros quatro continuavam imprimindo dose como antes — exatamente o que eles foram feitos para eliminar.
-
-## `test:ecg-tempo` → `scripts/valida-ecg-tempo.cjs`
-
-- **PROMETE:** que o módulo de coronarianas COBRE o ECG de 12 derivações contra a meta de 10 min do primeiro contato médico — que a cobrança alcança todo caminho agudo, que ela nunca afirma um atraso que não mediu, que ela não bloqueia o atendimento e que o relógio conta do contato, não do app.
-- **NÃO PROMETE:** que a meta de 10 min esteja certa (é a ACC/AHA 2025, decisão do autor), nem que a INTERPRETAÇÃO do ECG esteja bem desenhada — isso é o nó `ecg` e a rodada seguinte, explicitamente fora daqui.
-- **UNIVERSO:** `lib/ecg-tempo.ts`, a árvore de coronarianas e o motor. ── O DEFEITO, MEDIDO ANTES DE SER CORRIGIDO ──────────────────────────────── A informação certa já estava no app. O nó `entry` listava: "ECG de 12 derivações em até 10 min da chegada" como ITEM 4 DE UMA LISTA DE 8, entre "2 acessos venosos" e "coletar troponina". Mesmo peso visual de "monitor cardíaco contínuo". Ninguém confirmava, nada registrava a hora, nada voltava a cobrar. ⚠️ E TRÊS DOS CINCO ATALHOS DO MENU PULAVAM O `entry` INTEIRO — "Já tenho o ECG na mão", "STEMI já confirmado" e "Só preciso das doses". Por esses caminhos o lembrete não existia. É o mesmo beco que deixou o PDE-5 escapar, agora no dado mais sensível ao tempo do módulo. ── O QUE ESTA TRAVA IMPEDE DE VOLTAR ─────────────────────────────────────── 1. Que um caminho agudo volte a existir sem passar pela cobrança (dominância, não enumeração: a exceção de "complicações pós-IAM" é nominal, e uma segunda exceção reprova). 2. Que a faixa afirme atraso sem âncora informada — "no prazo" para todo mundo é pior que silêncio. 3. Que a tela vire portão: paciente instável estabiliza primeiro. 4. Que o relógio volte a contar da abertura do módulo.
-
-## `test:pde5-janela` → `scripts/valida-pde5-janela.cjs`
-
-- **PROMETE:** que o bloqueio do nitrato por inibidor de PDE-5 seja decidido pela JANELA DO FÁRMACO contra o horário da última dose — e que nenhuma forma de "não sei" (qual fármaco, quando, ou se usou) vire liberação.
-- **NÃO PROMETE:** que as janelas em horas estejam certas — elas são a ACC/AHA 2025 e são decisão clínica do autor, não desta trava. Nem o roteamento das telas (`test:dose-governada`) nem a alcançabilidade da pergunta.
-- **UNIVERSO:** `lib/pde5.ts`, `lib/vereditos-sca.ts` e os campos da árvore. ── A MODELAGEM ERRADA QUE ESTA TRAVA IMPEDE DE VOLTAR ────────────────────── Eu havia proposto uma categoria `pde5_cronico` = "contraindicação PERMANENTE enquanto o paciente estiver em uso", tirada do texto do próprio módulo. O autor barrou antes da implementação: "A ACC/AHA 2025 fala em evitar nitratos após uso recente: 12 h avanafil, 24 h sildenafil/vardenafil, 48 h tadalafil. Ela não cria uma categoria separada de uso crônico = contraindicação permanente. A lógica deve continuar baseada em fármaco + horário da última dose." ⚠️ A DIFERENÇA NÃO É DE RÓTULO. "Permanente" era inferência minha promovida a regra — e uma vez escrita no app, viraria fonte para quem lesse. O uso habitual muda a PROBABILIDADE de existir dose dentro da janela; não abole a janela. Quem parou o fármaco há 30 h não tem contraindicação por esta via, e a regra "para sempre" negaria nitrato a esse paciente. ── E O QUE NUNCA PODE VIRAR LIBERAÇÃO ────────────────────────────────────── Sem o fármaco, a janela aplicável é desconhecida: adotar a mais curta liberaria tadalafila às 13 h. Sem o horário, não há o que comparar. Nos dois casos o app não demonstrou segurança — e ausência de prova nunca é prova de ausência. A única afirmação segura sem saber o fármaco é passadas 48 h.
-
-## `test:sca-v2` → `scripts/valida-sca-v2.cjs`
-
-- **PROMETE:** que a SCA V2 nasça AO LADO da V1 sem tocá-la; que reutilize a camada de segurança em vez de reescrevê-la; que as três decisões existam e sejam alcançáveis; que `supra_inferior` seja DERIVADO e não perguntado; e que nenhum estado de dúvida vire conclusão — nem no ECG nem na reperfusão.
-- **NÃO PROMETE:** que o conteúdo clínico da V2 esteja completo — ela implementa só o caminho crítico, e os terminais dizem isso. Nem o comportamento de tela (`test:e2e`), nem as janelas do PDE-5 (`test:pde5-janela`), nem a governança de dose (`test:dose-governada`), que valem para as duas árvores.
-- **UNIVERSO:** `coronary-v2-decision-tree.ts`, o motor e as libs compartilhadas. ── POR QUE UMA V2 EXISTE ─────────────────────────────────────────────────── A V1 ficou segura e estruturalmente errada ao mesmo tempo. Decisão do autor, 2026-08-26: "não quero continuar remodelando a árvore atual nó por nó — o problema é que estávamos tentando transformar a árvore em algo que ela não nasceu para ser". A unidade deixa de ser "Passo 17 de 95" e passa a ser a decisão clínica. Mas a camada de segurança — vereditos, janela do PDE-5, dose governada, marcos temporais, retomada — é herança da V1 e entra INTEIRA, por reutilização. ── O QUE ESTA TRAVA IMPEDE ───────────────────────────────────────────────── 1. Que a V2 duplique lógica clínica em vez de consumir as libs. Duas cópias da mesma regra divergem em silêncio, e a que estiver errada é a que decide. 2. Que a V1 seja tocada enquanto a V2 não estiver aprovada. 3. Que `supra_inferior` volte a ser CAMPO — foi a repergunta que o autor encontrou testando no celular, e a razão de a V2 existir. 4. Que "não sei" no ECG caia no ramo sem supra, ou que "não consegui avaliar" a reperfusão vire falha. Desconhecido ≠ negativo E ≠ positivo.
-
-## `test:anti-isquemica` → `scripts/valida-anti-isquemica.cjs`
-
-- **PROMETE:** que o VD isolado NÃO bloqueie a morfina; que o bloqueio venha do estado hemodinâmico; e que a morfina leia o estado da terapia anti-isquêmica nas quatro situações — não avaliada, contraindicada, realizada com dor resolvida e realizada com dor persistente.
-- **NÃO PROMETE:** que as doses estejam certas (`test:dose-governada`), que a janela do PDE-5 esteja certa (`test:pde5-janela`), nem que a árvore da V2 esteja bem desenhada (`test:sca-v2`).
-- **UNIVERSO:** `lib/vereditos-sca.ts`, `lib/terapia-anti-isquemica.ts` e `lib/nitrato-contraindicacao.ts` — o núcleo clínico COMPARTILHADO pelas duas árvores. ── ⚠️ O BUG QUE ESTA TRAVA NASCE PARA IMPEDIR, E ELE ESTAVA PUBLICADO ────── `vereditoMorfina` tinha `if (suspeitaDeVd(v)) return vermelho`. O texto de onde eu construí o veredito — `MORFINA_CONTRAINDICACOES` — diz "IAM de ventrículo direito COM HIPOTENSÃO", e eu deixei o qualificador para trás ao traduzir a frase em código. O veredito ficou MAIS RESTRITIVO QUE A FONTE. A correção é do autor (2026-08-27): a diretriz separa as duas drogas — o nitrato se evita na suspeita de VD; a morfina se considera para dor refratária à terapia anti-isquêmica maximamente tolerada, com monitorização. VD com PA e perfusão preservadas é CAUTELA, não bloqueio. ⚠️ E O DEFEITO ATINGIA AS DUAS ÁRVORES. `lib/vereditos-sca.ts` é consumida pela V1 (95 nós, em produção no preview) e pela V2. Por isso a trava mede a LIB, não uma árvore: é núcleo clínico compartilhado. ── A ARQUITETURA QUE ELA TAMBÉM PROTEGE ──────────────────────────────────── dados brutos → estado clínico derivado → vários vereditos e não `veredito A → veredito B`. Eu havia proposto a segunda; o autor barrou porque a ordem de avaliação passaria a determinar comportamento clínico.
-
-## `test:arritmia-instavel` → `scripts/valida-arritmia-instavel.cjs`
-
-- **PROMETE:** que "arritmia instável" só seja declarada quando a FREQUÊNCIA é plausivelmente a causa do comprometimento — faixa da AHA 2025 (taquiarritmia ≥150/min, bradiarritmia <50/min) E comprometimento atribuível a ela; que a faixa intermediária não vire arritmia; que ritmo irregular não seja pré-requisito; e que o motivo EXIBIDO descreva o que de fato disparou.
-- **NÃO PROMETE:** a conduta dentro dos módulos de bradi/taquicardia (test:acls), nem os demais gatilhos de ameaça (test:coronarias).
-- **UNIVERSO:** lib/instabilidade-coronariana.ts e os dois nós de transição da SCA. ── O DEFEITO, ENCONTRADO NO CELULAR PELO AUTOR (2026-08-25) ──────────────── A tela dizia "Arritmia instável — frequência alta" para um paciente com FC 100 e ritmo REGULAR, e o motivo impresso era "Ritmo irregular + FC alta + sinais objetivos de hipoperfusão". Dois defeitos num card só: 1. O LIMIAR ERA 100. Dor torácica, ansiedade, vasoconstrição e FC 100 é o quadro mais banal do pronto-socorro — e o app mandava para o módulo de taquicardia, cuja conduta para instabilidade é CARDIOVERSÃO SINCRONIZADA. Cardioverter taquicardia sinusal compensatória é dano. 2. O MOTIVO ERA TEXTO FIXO. Dizia "ritmo irregular" para quem havia informado ritmo REGULAR — o app dava um motivo que não era o motivo, e isso destrói a confiança no "porquê" que o app inteiro promete. ⚠️ E O ERRO DE FUNDO NÃO ERA O NÚMERO: era atribuir o comprometimento à frequência sem prova de que ela é a causa.
-
-## `test:ferramenta-auxiliar` → `scripts/valida-ferramenta-auxiliar.cjs`
-
-- **PROMETE:** que o botão de ferramenta auxiliar num nó de AÇÃO seja estritamente aditivo — que nó sem o campo continue idêntico; que abrir a ferramenta não avance o fluxo, não marque a ação como realizada, não resolva veredito e não registre decisão; e que a volta caia no mesmo nó com o estado inteiro.
-- **NÃO PROMETE:** o que a calculadora de destino faz (test:vasoativos), nem a renderização do botão — isso é estrutural aqui e visual no e2e.
-- **UNIVERSO:** o motor, a árvore da SCA e o shell de fluxo. ── POR QUE ESTE CAMPO NÃO É UMA TRANSIÇÃO ────────────────────────────────── `TransitionTarget` encaminha o ATENDIMENTO: o caso sai deste módulo e continua em outro. A ferramenta auxiliar faz o oposto — o médico abre a calculadora para descobrir quantos mL/h são 10 mcg/min e VOLTA ao mesmo ponto da via de SCA. ⚠️ E É POR ISSO QUE ELA NÃO PODE MEXER EM NADA (regra do autor, 2026-08-25). Um atalho que avançasse o passo, marcasse a ação como feita ou resolvesse um veredito seria uma transição disfarçada: o médico voltaria para um protocolo que andou sozinho enquanto ele fazia uma conta — e o registro do caso diria que ele fez coisas que não fez.
-
-## `test:guiado` → `scripts/test-fluxo-guiado.cjs`
-
-- **PROMETE:** ⚠️ NÃO DECLARADO
-- **NÃO PROMETE:** ⚠️ NÃO DECLARADO
-- **UNIVERSO:** ⚠️ NÃO DECLARADO
 
 ## `test:contexto` → `scripts/test-contexto-paciente.cjs`
 
@@ -127,12 +61,6 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que toda string em português que o app MONTA EM TEMPO DE EXECUÇÃO tenha chave correspondente no dicionário PT→ES. O universo é o ARTEFATO COMPILADO — `lib/*.ts` e as árvores de decisão emitidas por `tsc` —, e as strings comparadas são as que a tela recebe, não as que alguém escreveu.
 - **NÃO PROMETE:** que exista texto novo sem tradução nenhuma. Isso é `npm run test:i18n` (`varredura-pt.cjs`), que lê o FONTE e pega o literal recém-escrito. Também não promete que a tradução esteja CORRETA — nenhuma trava sabe espanhol.
 - **UNIVERSO:** o ARTEFATO COMPILADO — todos os `lib/*.ts` e todas as árvores de decisão da raiz, emitidos por `tsc` num diretório temporário e carregados com `require`. Compara-se cada string de prosa portuguesa alcançável nos objetos exportados contra as chaves de `lib/i18n/**` e `acls/locales/**`. ⚠️ FORA do universo: `acls/reducer.ts` e `acls/presentation.ts` — dívida nomeada, porque o painel de adrenalina depende de teste que avança o cronômetro — e os componentes `.tsx`, cujo texto não vem de objeto exportado. ── A FRONTEIRA COM A VARREDURA DE FONTE (cobertura cruzada declarada) ────── varredura-pt.cjs (fonte)   → TEXTO NOVO sem tradução. Vê o literal no arquivo, no momento em que é escrito. esta trava (runtime)       → FRASE MONTADA cuja chave não corresponde ao que a tela mostra. ⚠️ NENHUMA DAS DUAS COBRE A OUTRA, e as duas condições que a auditoria fixou para aceitar cobertura cruzada estão satisfeitas: cada uma é provada por MUTAÇÃO PRÓPRIA, e as duas chegam ao defeito por CAMINHOS DIFERENTES (uma lê texto de arquivo, a outra objetos compilados). E A FRONTEIRA FOI MEDIDA, não deduzida. A mutação desta trava — acrescentar um pedaço por concatenação a `AMIODARONA_COM_PULSO_CARGA`, que HOJE tem chave — foi levada até o fim nos dois instrumentos: 1. mutação aplicada        → as duas reprovam, mas dizem coisas diferentes: a de fonte aponta o PEDAÇO de 72 caracteres, esta aponta a FRASE de 230 que a tela recebe. 2. obedecendo a de fonte   → gravei a chave do PEDAÇO. `varredura-pt.cjs` ao pé da letra             passou com «SEM TRADUÇÃO: 0». 3. e a tela                → esta trava seguiu reprovando em 3 contagens. O médico continuaria vendo português. ⚠️ É POR ISSO QUE A DE FONTE NÃO SUBSTITUI ESTA: obedecê-la literalmente produz um dicionário que passa e uma tela que não traduz. E o inverso também vale — esta trava não vê literal recém-escrito que ninguém montou ainda. A mutação também mostrou o ALCANCE do mecanismo: UMA concatenação em `lib/` derrubou TRÊS superfícies — a própria constante e dois nós de `acls-tachycardia-tree.ts` que a consomem. Quem edita a constante não vê as telas que ela alimenta. ── O DEFEITO QUE ORIGINOU (2026-08-17) ──────────────────────────────────── O autor viu o app em espanhol mostrando conteúdo clínico em português. A varredura de fonte dizia ZERO pendências — e estava certa do próprio ponto de vista. O caso, medido: lib/causas-na-parada.ts → HIPERCALEMIA_NA_PARADA string em RUNTIME  : 722 caracteres chave no dicionário: 287 caracteres divergem no caractere 287 — onde a concatenação continua export const HIPERCALEMIA_NA_PARADA = "HIPERCALEMIA — a sequência tem TRÊS tempos…" + " " + CALCIO_EQUIVALENCIA + " (2) DESLOCAR o potássio…"; A chave foi gravada quando a frase terminava no primeiro pedaço. Depois a auditoria acrescentou a equivalência dos sais e o segundo tempo: a string cresceu, a chave ficou, e `tr()` devolveu o original — em silêncio. ⚠️ E A VARREDURA DE FONTE NÃO PODIA VER: no arquivo existem TRÊS literais curtos, cada um com a sua chave. Quem monta a frase de 722 caracteres é o programa. R-82.
-
-## `test:ausencias` → `scripts/valida-ausencias-declaradas.cjs`
-
-- **PROMETE:** que toda AUSÊNCIA DECLARADA — lugar onde o app diz que NÃO fixa um número porque a fonte não o dá — continue declarada, e que o número plausível que alguém escreveria "completando" não apareça no lugar dela.
-- **NÃO PROMETE:** que a decisão de não fixar esteja certa. Ela é clínica e está argumentada no arquivo de conteúdo; aqui só se garante que ela não seja desfeita em silêncio. Também não vê declarações escritas de forma que os padrões abaixo não reconheçam — e é por isso que o universo é DERIVADO, não listado: uma declaração nova reprova até ganhar guarda.
-- **UNIVERSO:** os literais de tela de `lib/**.ts` e das árvores, varridos pelos padrões de DECLARAÇÃO. Comentário não conta — o que protege o médico é o que ele lê. ── POR QUE ESTA CLASSE EXISTE (R-88) ────────────────────────────────────── Onde o app declara que não fixa um número, a AUSÊNCIA É CONTEÚDO. E o ataque tem forma própria: alguém lê "este app não fixa o intervalo", enxerga uma OMISSÃO, e a corrige de memória. O resultado parece melhoria — um número onde havia lacuna — e é regressão do R-5: precisão inventada com a autoridade de estar no app. ⚠️ A MUTAÇÃO DESTA TRAVA É ESCREVER O NÚMERO PLAUSÍVEL, não uma quebra artificial. Por isso cada caso declara `proibido`: o número que um revisor competente escreveria de boa-fé. ── A VARREDURA QUE A ORIGINOU (2026-08-17) ──────────────────────────────── Oito ausências declaradas em texto de tela; DUAS tinham guarda. As seis restantes eram D-52 — e as três primeiras são números que todo médico "sabe", que é o que torna o preenchimento provável.
 
 ## `test:rotulo-timer` → `scripts/valida-rotulo-do-timer.cjs`
 
@@ -186,29 +114,11 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que a unidade declarada seja a certa para a grandeza. Ela garante que existe e que a prosa não a contradiz — não que "mEq/L" seja o correto para aquele analito.
 - **UNIVERSO:** os campos `kind: "number"` das calculadoras + as chamadas de `input(...)` da tela dos eletrólitos, contados antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-119. ── ⚠️ UNIDADE EM PROSA É TRADUZÍVEL; UNIDADE EM CAMPO, NÃO ───────────────── O app tem uma segunda cópia de todo texto em espanhol. Uma tradução que escreva "Peso (lb)" — por descuido ou por convenção local — **muda a unidade de entrada de um cálculo, e nenhum instrumento vê**, porque para eles aquilo é só prosa. Não aconteceu. Mas é o MESMO MECANISMO do D-80, em que o critério da hidrocortisona de fato divergiu entre os idiomas. Ali era conduta; aqui seria unidade de dose.
 
-## `test:passo-zero` → `scripts/valida-passo-zero.cjs`
-
-- **PROMETE:** que nenhum achado do passo 0 do módulo renal fique sem destino próprio; e que o estado gravado pelo "ainda não sei" NÃO influencie classificação clínica.
-- **NÃO PROMETE:** que os destinos sejam os clinicamente certos — a escolha de para onde cada achado vai é do autor. Ela confere que CADA UM tem o seu.
-- **UNIVERSO:** o nó de entrada de `ira-decision-tree.ts` (lido por `entryNodeId`), seus achados declarados, e o `derive` da árvore. Números impressos antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23) — R-118, R-122, R-123. ── R-123 · O AGRUPAMENTO É VISUAL, O DESTINO É POR ACHADO ────────────────── "Rebaixamento do nível de consciência, confusão aguda ou convulsão" era UMA opção com DOIS destinos — e nenhum dos dois servia para o do meio: quem tinha **confusão aguda isolada** recebia ISR e anticonvulsivante. ⚠️ Opção que agrupa achados com condutas divergentes **empurra o usuário para conduta que não é a dele**. ── R-122 · A RESPOSTA VIAJA, MAS NÃO CLASSIFICA ──────────────────────────── O "ainda não sei" grava o que a pessoa TEM (exames · diurese · sinais · nada). Isso serve para não reperguntar. ⚠️ Se um dia alimentar gravidade, vira classificação por disponibilidade de exame — que é o oposto de clínica.
-
-## `test:escalonamento` → `scripts/valida-escalonamento.cjs`
-
-- **PROMETE:** que o estado de escalonamento obedeça às seis provas do autor — a primeira piora NÃO dispara, a segunda dispara, a recorrência dispara, o estado não classifica, a terceira volta silenciosa é impossível, e um novo atendimento zera o anterior.
-- **NÃO PROMETE:** que os gatilhos sejam os clinicamente certos. A escolha é do autor e é regra de PRODUTO — a trava confere que o app obedece, não que a regra esteja certa.
-- **UNIVERSO:** `lib/escalonamento.ts` compilado + `lib/flow-session.ts` + a árvore renal, para a prova 4. Contagens impressas antes do resultado. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-23 e 2026-08-24) — R-118. ── ⚠️ A PROVA 1 É NEGATIVA, E ISSO É RARO AQUI ───────────────────────────── Quase toda trava deste repositório prova que algo ACONTECE. Esta prova que algo **não acontece**: que o gatilho não é ansioso. **Trava só de disparo transforma qualquer instabilidade em escalonamento — e um app que escalona sempre é um app que ninguém escuta.** Aí ele deixa de escalonar quando importa.
-
 ## `test:guarda-r47` → `scripts/valida-guarda-r47.cjs`
 
 - **PROMETE:** que o guarda do R-47 esteja de pé — `git checkout` e `git restore` falham dentro de um ciclo de mutação, `git status` e `git diff` continuam funcionando, e o `muta.cjs` RECUSA iniciar com a árvore suja.
 - **NÃO PROMETE:** que ninguém mute à mão, fora do harness. O guarda do PATH só alcança o que o `muta.cjs` dispara — e as quatro violações foram todas fora dele. É a pré-condição de árvore limpa que cobre esse caso, e por isso as duas metades existem.
 - **UNIVERSO:** o shim `scripts/guarda-r47/git` e o `scripts/muta.cjs`. Cada tentativa é executada de verdade, não inspecionada por regex. ORIGEM DO CRITÉRIO: decisão do autor datada (2026-08-24) — R-118, R-128, R-133. ── ⚠️ POR QUE DUAS METADES ───────────────────────────────────────────────── **O PATH mata o verbo dentro do ciclo; a árvore limpa mata o estrago em qualquer lugar.** `git checkout` só destrói o que não está salvo — se a árvore estava limpa, um checkout perdido não custa nada (R-133).
-
-## `test:faixa-do-stepper` → `scripts/valida-faixa-do-stepper.cjs`
-
-- **PROMETE:** que, em toda faixa numérica real que alimenta `NumericStepper`, `(max - min)` seja múltiplo de `passo` — dentro de tolerância de ponto flutuante. É a condição sob a qual `max` é alcançável pela função `limitar` do componente (ela ancora os degraus em `min` e nunca corrige `max` que caia fora da grade — só o descarta em silêncio).
-- **NÃO PROMETE:** que `passo` seja a granularidade certa, nem que o arredondamento do componente esteja correto. Não altera o `NumericStepper`, não muda granularidade, não cria regra clínica — só confere a aritmética.
-- **UNIVERSO:** as fontes reais de faixa numérica do app, listadas e contadas antes do resultado — não uma amostra. ORIGEM DO CRITÉRIO: instrução direta do usuário, 2026-08-24. ── POR QUE ISTO IMPORTA, MEDIDO ANTES DE CORRIGIR NADA ────────────────────── `NumericStepper.limitar()`: const preso = clamp(n, min, max); const emPassos = round((preso - min) / passo) * passo + min; Os degraus são ancorados em `min`. Se `(max - min)` não for múltiplo de `passo`, `max` nunca é um desses degraus — o botão "+" fica HABILITADO perto do topo (porque `noMaximo = valor >= max` nunca vira verdadeiro) e PARA DE FAZER EFEITO, sem avisar. Medição de 2026-08-24: **hoje não há instância viva do defeito** — 71 de 71 conjuntos conhecidos alcançam min e max. O risco não é o presente, é o futuro: `faixaDaBarra()` (sedoanalgesia) CALCULA o teto em runtime e o arredonda com `toFixed(2)` sem checar se o resultado é múltiplo do passo — a compatibilidade de hoje é CONTINGENTE aos números de dose atuais, não garantida pela função. Um modo novo, ou uma dose alterada, pode quebrar sem que nada avise. Esta trava existe para essa hora.
 
 ## `test:referencias-eletroliticas` → `scripts/valida-referencias-eletroliticas.cjs`
 
@@ -233,12 +143,6 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que toda fórmula e todo escore das calculadoras rodem sem exceção e devolvam número finito nos casos varridos; e — desde 2026-08-23 — que qualquer achado que ELE MESMO classifica como "erro" REPROVE o build.
 - **NÃO PROMETE:** que a fórmula seja a fórmula clínica certa. Ele confere que o cálculo não quebra e não devolve absurdo, não que o número seja o correto para o paciente — isso é conferência de fonte, e é do médico.
 - **UNIVERSO:** as ferramentas de `clinical-calculators-engine.ts`, compiladas, com fórmulas e escores contados e impressos antes do resultado. CAMADA 4 — Auditoria de doses, diluições e cálculos. Dirige TODAS as calculadoras do app com valores-limite e observa o que sai. Não confere se a fórmula é a certa segundo a diretriz — confere se ela se comporta: um `NaN`, um `Infinity` ou um número negativo chegando à tela como dose é risco clínico independente de qual fórmula deveria estar ali. Casos exercitados, seguindo a lista do plano: - campo vazio, ausente e só espaço; - zero e negativo; - valores extremos (peso de 1 kg e de 400 kg, altura de 50 cm e 250 cm); - vírgula e ponto decimal (o app é pt-BR: "72,5" precisa valer); - texto onde se espera número; - casas decimais longas; - todos os presets declarados pela própria ferramenta. Para escores: verifica se `interpret` cobre a faixa inteira declarada em `totalRange`, extremos inclusive — faixa com buraco significa paciente sem classificação. Uso: node scripts/auditoria-calculos.cjs
-
-## `audit:doses` → `scripts/auditoria-doses-criticas.cjs`
-
-- **PROMETE:** que as conversões dose ↔ velocidade das vasoativas e da sedação sejam monotônicas, respeitem teto e BLOQUEIEM peso ausente ou inválido; e que achado classificado como "erro" REPROVE o build.
-- **NÃO PROMETE:** cobertura do trombolítico. Os dois arquivos que a continham foram apagados em a9b16ad e ele passou a CRASHAR em silêncio (D-83). Hoje ele imprime `Blocos PULADOS: 2` a cada rodada, em vez de pular calado.
-- **UNIVERSO:** `vasoactive-engine.ts` e `sedation-engine.ts`, compilados; o número de conversões testadas sai impresso junto do resultado. CAMADA 4 (parte 2) — Funções críticas de dose fora do motor de calculadoras. O `clinical-calculators-engine` tem 15 ferramentas. As contas de MAIOR risco não estão lá: conversão dose ↔ velocidade de infusão das drogas vasoativas, bolus e infusão de sedação, dose de trombolítico por peso no AVC e nas síndromes coronarianas. São elas que produzem o número que entra na bomba. ## A propriedade central: IDA E VOLTA `calcFromDose` transforma dose em mL/h; `calcFromRate` faz o caminho inverso. Aplicar as duas em sequência tem de devolver a dose original. Se não devolver, há erro de conversão — e é o tipo de erro que não aparece em revisão de código, porque cada função isolada parece certa. É teste de PROPRIEDADE, não de exemplo: vale para toda combinação de droga, peso, diluição e unidade, não para um caso escolhido a dedo. ## O resto Limites (dose máxima respeitada), monotonicidade (mais peso nunca dá menos dose), peso ausente (tem de BLOQUEAR, não estimar), e valores impossíveis. Uso: node scripts/auditoria-doses-criticas.cjs
 
 ## `audit:rastreabilidade` → `scripts/valida-rastreabilidade.cjs`
 
@@ -288,30 +192,6 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que as 11 pendências atuais sejam aceitáveis — elas são dívida congelada, e são a lista de trabalho do bloco de convergência de UI. Também não diz nada sobre COR: origem é `test:paleta`, legibilidade é o `contraste-renderizado`.
 - **UNIVERSO:** todas as telas sob components/ (derivado do diretório) e todas as árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os módulos de `lib/modulos-canonicos.ts`. Auditoria de PADRÕES DE INTERFACE, módulo a módulo. O autor do app relatou, usando: "ainda tem módulos com padrões diferentes, com caixas para preenchimento onde deveria ter rolagem lateral, ainda tem módulos sem 'não sei me guie'". Padronizar sem medir é apostar. Este script varre TODAS as telas de módulo e responde, por módulo, o que está fora do padrão — para que a padronização seja uma lista finita, e não uma impressão. O QUE ELE MEDE -------------- 1. ENTRADA NUMÉRICA POR CAIXA. Campo de digitação livre onde a decisão foi ter barra deslizante ("só devemos ter as barras para seleção em todo o app, nada de caixas"). Caixa numérica em emergência é teclado abrindo, erro de digitação e um passo a mais com o paciente na frente. 2. FAIXA DE ENTRADA AUSENTE. Campo numérico sem faixa declarada volta a herdar os limites dos presets — o defeito que impedia registrar o paciente real. 3. UI v2. Módulo fora da interface nova tem cabeçalho, cartões e navegação diferentes dos demais. 4. CAMINHO GUIADO. Decisão de estabilidade/gravidade sem "não sei — me guie". Ele NÃO falha o build: é um mapa de trabalho. O que ele garante é que a lista exista por escrito, em vez de depender de alguém reparar tela por tela.
 
-## `test:na-duvida` → `scripts/valida-na-duvida.cjs`
-
-- **PROMETE:** que as 16 regras de "na dúvida" estejam nos nós certos, que cada uma diga a CONSEQUÊNCIA (e não só a direção), e que a regra aponte para o MESMO destino que o critério objetivo do nó — regra que contradiz o ramo é um dos dois errado.
-- **NÃO PROMETE:** que a conduta esteja clinicamente certa (isso é das travas de cada módulo), nem cobre as saídas de dúvida em RAMO, que são outro bloco.
-- **UNIVERSO:** as 17 árvores compiladas; a lista de regras vem de lib/na-duvida.ts lida do próprio arquivo, não redigitada aqui. ── POR QUE ISTO EXISTE ───────────────────────────────────────────────────── O levantamento classificou os 106 pontos de decisão do app e achou 38 de julgamento, dos quais 33 sem saída de dúvida. O critério de entrada é do autor e é mais afiado que "consequência do erro": ⚠️ ENTRA ONDE O DEFAULT SOB DÚVIDA É O LADO PERIGOSO. Quem hesita escolhe o caminho de menor resistência — "não há contraindicação", "a crise cessou", "a via aérea parece fácil" —, e em 16 nós esse caminho é o que machuca. Nesses, a dúvida JÁ DECIDE: não se abre ramo, escreve-se a regra. A regra vai no `summary`, que o app renderiza SEM precisar expandir — em `evidence` ela ficaria atrás do "Ver critérios (N)", que é onde o conteúdo morre (R-50).
-
-## `test:via-aerea` → `scripts/valida-via-aerea-dominios.cjs`
-
-- **PROMETE:** que a avaliação de via aérea difícil da ISR cubra os QUATRO domínios (laringoscopia, ventilação com máscara, extraglótico e acesso frontal do pescoço); que a saída de dúvida exista e leve ao guia; que o eFONA tenha PRECEDÊNCIA com a razão escrita na tela; que cada saída diga em que base concluiu; e que nenhum sinal seja perguntado duas vezes.
-- **NÃO PROMETE:** que os preditores estejam clinicamente completos — os cinco fatores de eFONA vêm de fonte SECUNDÁRIA (SHORT/SMART), o que está dito na própria tela. Também não confere as doses da ISR (test:isr).
-- **UNIVERSO:** a árvore da ISR compilada e lib/via-aerea-quatro-dominios.ts. ── OS DEFEITOS QUE ORIGINARAM ────────────────────────────────────────────── 1. LEMON e MOANS FUNDIDOS numa pergunta só, com duas saídas. O nó escrevia a distinção na evidência e a apagava ao perguntar — e os planos de resgate são diferentes. 2. DEFAULT SOB DÚVIDA NO LADO PERIGOSO: quem hesita responde "não" e induz sem plano de resgate. Caso puro do critério de entrada do bloco. 3. O APP PREPARAVA O RESGATE SEM AVALIAR O RESGATE: mandava abrir o kit de cricotireoidostomia e preparar máscara laríngea, e nunca perguntava se aquele pescoço é abordável nem se o dispositivo é viável.
-
-## `test:ci-trombolise` → `scripts/valida-contraindicacao-trombolise.cjs`
-
-- **PROMETE:** que os três nós de contraindicação (AVC, SCA, TEP) tenham saída de dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não se contaminem entre si; que os dois itens comuns venham da CONSTANTE COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a divergência do TEP nomeie as duas fontes.
-- **NÃO PROMETE:** que as listas estejam completas segundo a diretriz primária — as fontes abertas foram bula, tabela adaptada e revisão (R-52), o que está declarado na tela. Não confere doses (test:coronarias, test:avc, test:tep).
-- **UNIVERSO:** as três árvores compiladas e lib/contraindicacao-trombolise.ts. ── O ACHADO QUE DESENHOU ISTO ────────────────────────────────────────────── A tentação era fonte única com acréscimos: as três listas se parecem. O autor mandou conferir JANELA A JANELA antes, e das quatro que pareciam núcleo, DUAS eram: cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h; 3 (StatPearls) × 6 (ESC) no TEP pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP Fundir teria criado limiar errado em duas das três telas. Esta trava existe para que a fusão não volte por descuido.
-
-## `test:prazo-visivel` → `scripts/valida-prazo-visivel.cjs`
-
-- **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ num campo RECOLHIDO — `evidence` (o "Ver critérios (N)" dos nós de decisão) ou `porque` (o "por quê" dos passos de ação, criado em 2026-08-18). ⚠️ `porque` ENTROU AQUI NO MESMO COMMIT EM QUE NASCEU. Um campo recolhido que nenhuma trava conhece é conteúdo sem guarda desde o primeiro dia — e este nasceu justamente para receber texto que sai da tela, o que o torna o destino mais provável de um prazo em fuga.
-- **NÃO PROMETE:** que todo ⚠️ esteja visível. A maioria não precisa estar, e exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada sobre o conteúdo clínico do alerta.
-- **UNIVERSO:** as 17 árvores compiladas, derivadas do diretório. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── O `coronary/ecg` revelou que `evidence` renderiza RECOLHIDO, e a pergunta seguinte foi: quanto do que esta auditoria produziu está atrás desse toque? Medido: 15% do conteúdo das árvores e 18% dos alertas ⚠️ — 39 itens. A classificação em três colunas mostrou que a maioria está no lugar certo: MUDA CONDUTA AGORA (prazo, precedência, contraindicação) → tem de subir QUALIFICA A CONDUTA (por que a dose é essa)               → fica, e é certo ENSINA (mecanismo, fisiopatologia)                        → fica, e é para isso que serve ⚠️ E A CLASSE DO PRAZO É A ÚNICA COM CUSTO IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois. Por isso a trava é ESTREITA — pega prazo e precedência, e deixa em paz os 25 que estão certos onde estão.
-
 ## `test:sinonimos` → `scripts/valida-sinonimos.cjs`
 
 - **PROMETE:** que o vocabulário de busca nasça COMPLETO e continue completo — todo módulo do hub tem sinônimos, nenhum termo é ambíguo entre módulos, e nenhum módulo se apoia só no próprio título.
@@ -342,6 +222,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que o conteúdo esteja no campo certo. Isso é decisão clínica. Só que nenhum campo exista sem que alguém saiba que ele existe.
 - **UNIVERSO:** o tipo `DecisionTreeNode` em core/decision-tree/types.ts e as árvores compiladas — os campos são derivados dos DOIS, para que um campo declarado e nunca usado, ou usado e nunca declarado, apareça. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────── `porque` nasceu neste dia, para receber o texto que sai da tela dos passos de ação. Antes de escrevê-lo, o levantamento perguntou quais travas leem nós: 17 derivam do objeto (`textosDoNo`) → enxergam campo novo sozinhas 7 leem CAMPO A CAMPO              → cegas para campo novo E entre as sete estava `valida-prazo-visivel` — a trava que existe justamente para impedir que um PRAZO fique atrás de um toque. Um campo novo feito para esconder texto, invisível para a trava que vigia texto escondido: o pior par possível, e ele só apareceu porque o campo foi levantado antes de ser escrito. Esta trava existe para que o PRÓXIMO campo não dependa de alguém lembrar.
 
+## `test:prazo-visivel` → `scripts/valida-prazo-visivel.cjs`
+
+- **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ num campo RECOLHIDO — `evidence` (o "Ver critérios (N)" dos nós de decisão) ou `porque` (o "por quê" dos passos de ação, criado em 2026-08-18). ⚠️ `porque` ENTROU AQUI NO MESMO COMMIT EM QUE NASCEU. Um campo recolhido que nenhuma trava conhece é conteúdo sem guarda desde o primeiro dia — e este nasceu justamente para receber texto que sai da tela, o que o torna o destino mais provável de um prazo em fuga.
+- **NÃO PROMETE:** que todo ⚠️ esteja visível. A maioria não precisa estar, e exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada sobre o conteúdo clínico do alerta.
+- **UNIVERSO:** as 17 árvores compiladas, derivadas do diretório. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── O `coronary/ecg` revelou que `evidence` renderiza RECOLHIDO, e a pergunta seguinte foi: quanto do que esta auditoria produziu está atrás desse toque? Medido: 15% do conteúdo das árvores e 18% dos alertas ⚠️ — 39 itens. A classificação em três colunas mostrou que a maioria está no lugar certo: MUDA CONDUTA AGORA (prazo, precedência, contraindicação) → tem de subir QUALIFICA A CONDUTA (por que a dose é essa)               → fica, e é certo ENSINA (mecanismo, fisiopatologia)                        → fica, e é para isso que serve ⚠️ E A CLASSE DO PRAZO É A ÚNICA COM CUSTO IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois. Por isso a trava é ESTREITA — pega prazo e precedência, e deixa em paz os 25 que estão certos onde estão.
+
 ## `test:timer-badge` → `scripts/valida-timer-badge-largura.cjs`
 
 - **PROMETE:** que `timerTopRow` (rótulo do cronômetro + chips de choque/epinefrina) tenha largura própria dentro do badge — não encolhida ao conteúdo.
@@ -354,53 +240,11 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que a classificação esteja clinicamente certa. Ela é decisão do médico e está escrita em `acls/estado-cursor-e-fato.ts`; aqui só se exige que exista, que cubra o tipo inteiro e que o motor a respeite.
 - **UNIVERSO:** o tipo `ACLSState` (acls/reducer.ts), a classificação (acls/estado-cursor-e-fato.ts) e o motor executado de verdade (engine.ts). ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────── `goBack` restaurava o instantâneo inteiro. Medido no motor real: dose 1 → 0, cronômetro do ciclo 1 → 0 (DESAPARECIA), log 6 → 4, linha do tempo 15 → 9. ⚠️ UM DEFEITO COM TRÊS PORTAS — botão do cabeçalho, etapa da tela e comando de voz chamam o MESMO `goBack`. Esta trava prova o conserto no motor E confere que as portas da tela continuam convergindo para ele; consertar só uma porta criaria duas com resultados diferentes.
 
-## `test:atb-renal` → `scripts/valida-antibiotico-renal.cjs`
-
-- **PROMETE:** que os nove esquemas empíricos de antibiótico digam o que fazer com a função renal — o PISO em todos, o PONTEIRO nos que citam os três fármacos cobertos —, e que o ataque de vancomicina tenha FONTE ÚNICA de cálculo.
-- **NÃO PROMETE:** que os esquemas estejam clinicamente certos, nem que a calculadora cubra os fármacos certos — isso é PD-6, decidido e declarado.
-- **UNIVERSO:** os nós de esquema derivados da árvore da sepse pelo prefixo `atb_`, não uma lista à mão (D-15). Esquema novo entra no radar sozinho. ── OS DOIS DEFEITOS QUE ORIGINARAM (2026-08-17) ──────────────────────────── 1 · Os nove nós prescreviam REGIME COMPLETO (dose E intervalo) e nenhum mencionava função renal. Varrido na árvore: `ClCr`, `TFG`, `ajuste renal`, `creatinina`, `hemodiálise` — nenhum. E a Sepse não sabia que a calculadora existia. 2 · ⚠️ O `{vancoLoad}` DIVERGIA DA CALCULADORA. Aqui era `27.5 * peso` sem teto; lá, 25–30 mg/kg com máximo de 3 g. A partir de 110 kg o lado que PRESCREVE ultrapassava o teto — 3.575 mg contra 3.000 mg a 130 kg. R-12 com cálculo é pior que com texto: dois lugares divergem em silêncio, e um deles prescreve. ⚠️ E O PISO É INVERTIDO PELO TEMPO, NÃO PELA FUNÇÃO RENAL. O texto óbvio ("ajuste se a função renal estiver ruim") contraria a evidência no cenário mais comum deste módulo. As conferências abaixo vigiam a direção certa — e a de nº 3 existe para impedir que alguém "corrija" o piso para a versão intuitiva e errada.
-
-## `test:ira` → `scripts/valida-ira.cjs`
-
-- **PROMETE:** que o módulo de injúria renal aguda mantenha as decisões de ESCOPO e de DESENHO que o autorizaram — os dois eixos do KDIGO com o contraste meta × critério, a obstrução PRIMEIRA na exclusão, as perguntas pelo observável (nunca pela classificação), a saída do "não sei a base" com conteúdo próprio, e a fronteira da diálise COM alternativa.
-- **NÃO PROMETE:** que os números clínicos estejam certos — isso é a fonte (KDIGO 2012, aberta em sessão). Nem que o módulo cubra nefrologia: ele declara três exclusões.
-- **UNIVERSO:** a árvore compilada `ira-decision-tree.ts` e as constantes de `lib/injuria-renal-aguda.ts`, derivadas do próprio arquivo. ── POR QUE ESTA TRAVA É DIFERENTE DAS OUTRAS ─────────────────────────────── ⚠️ NÃO HÁ DEFEITO DE ORIGEM. O módulo é NOVO — foi o primeiro escrito nesta auditoria —, então não existe mutação que "devolva" um defeito histórico. O que ela vigia são as DECISÕES QUE PODERIAM SER DESFEITAS por quem revisar o módulo com boa intenção e sem o contexto: transformar as perguntas em classificação (porque parece mais organizado), tirar o contraste da diurese (porque parece redundante com os 30 nós que já usam o número), mover a obstrução para depois (porque a ordem "pré-renal, renal, pós-renal" é a dos livros), ou apagar a alternativa ao nefrologista (porque "é obvio que se transfere"). Cada uma dessas quatro tem mutação abaixo.
-
-## `test:pressuposicao` → `scripts/valida-pressuposicao.cjs`
-
-- **PROMETE:** que nenhuma tela fale de um achado do paciente — sintoma, sinal, valor ou contexto — como fato estabelecido, NEM descreva um sujeito clínico com achados pendurados nele (vinheta), se existir um caminho do início até ela em que ninguém perguntou aquele achado.
-- **NÃO PROMETE:** reconhecer toda forma de afirmar. A detecção é por FORMA da frase (posse, estado declarado, valor tratado como em mãos), e forma nova passa batido até alguém ler. Também não julga se a pergunta que captura o achado é boa — só que ela existe no caminho.
-- **UNIVERSO:** as árvores listadas em ARVORES, compiladas; hoje, o módulo renal. Cada árvore entra aqui quando migra para o formato novo. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-20) ───────────────────────────────── O médico leu no fluxo uma frase que tratava "falta de ar" como fato — e nada no caminho até ali tinha perguntado isso. O app AFIRMAVA o que devia PERGUNTAR. Não era instância: era classe. ── A MÁQUINA É A MESMA DA TRAVA DA CALCULADORA ──────────────────────────── Alcançabilidade no grafo. Para cada achado, o conjunto de nós que o PERGUNTAM; para cada nó que o MENCIONA, uma busca em largura de `entry` até ele que não passe por nenhum nó de captura. Se esse caminho existe, existe um atendimento real em que a tela fala de algo que ninguém mediu. ── ⚠️ E É A CLASSIFICAÇÃO QUE TORNA A TRAVA UTILIZÁVEL ──────────────────── A primeira varredura achou 58 ocorrências candidatas no renal. Reprovar as 58 seria inútil: 46 não são defeito, e linter que grita lobo é linter que ninguém obedece. As quatro naturezas entram aqui como DEFINIÇÃO: ORDEM     "colha gasometria", "meça a diurese"     → manda fazer, não afirma CRITÉRIO  "conta como evidência de DRC:", "as seis:" → ensina o que contaria GERAL     "a creatinina sobe tarde", "costuma dar"  → fala da doença AFIRMAÇÃO "o edema dele", "com a glicemia baixa"    → ❌ fala DESTE paciente VINHETA   "um paciente lúcido, comendo e sem…"      → ❌ descreve ALGUÉM A quarta e a quinta reprovam. ── ⚠️ POR QUE A VINHETA ENTROU DEPOIS (2026-08-20) ──────────────────────── A primeira versão da trava parava na quarta natureza, e eu mesmo registrei o buraco: a frase que originou tudo — "creatinina de 4 num paciente lúcido, comendo e sem dispneia costuma ser crônica" — NÃO afirma nada sobre ninguém em particular, e passava limpo. O médico fechou o buraco com a distinção que faltava: **enunciado geral fala de VARIÁVEIS e da doença; vinheta descreve ALGUÉM.** "A creatinina sobe tarde" é variável. "Um paciente anúrico há 12 horas já é estágio 3" é gente — e gente inventada, com achados que ninguém colheu, lida como se fosse o paciente que está na maca. É a forma mais fácil de contrabandear pressuposição para dentro de um texto que parece didático. ⚠️ O RISCO DESTE INSTRUMENTO É O INVERSO DO USUAL: ele erra para MENOS. A classificação é por forma da frase, e forma nova de afirmar passa batido. Ele não substitui a leitura — corta o custo dela.
-
-## `test:tamanho-de-item` → `scripts/valida-tamanho-de-item.cjs`
-
-- **PROMETE:** que nenhuma tela de CONDUTA passe de 7 ações visíveis, e que nenhum item de ação passe de 200 caracteres — nas árvores listadas em ARVORES.
-- **NÃO PROMETE:** que o item caiba na tela do aparelho (isso é medição de layout, e o teto de caracteres é proxy dela), nem que o texto seja bom. Também não julga os campos RECOLHIDOS (`porque`, `evidence`): eles são contados e exibidos, sem reprovar — quem lê o porquê já parou para ler.
-- **UNIVERSO:** as árvores de ARVORES, compiladas. Hoje o módulo renal; cada uma entra quando migra para o formato novo. ── ⚠️ POR QUE ESTA TRAVA NASCEU TARDE (2026-08-20) ──────────────────────── A §7.4 define o limite desde que a arquitetura-mãe foi escrita, e **ele nunca existiu como trava**. Os números que eu reportei no bloco das 6 — "0 itens acima de 200, maior 125" — vieram de um crawler que eu escrevi na sessão e que morreu com ela. Número de sessão apresentado ao lado de critério de aceite: quem lê não distingue, e eu não distingui. ── ⚠️ PISO DE UNIVERSO ──────────────────────────────────────────────────── Se o universo vier menor que o esperado, isto NÃO é "não há item grande" — é "não consegui olhar", e reprova. É a lição das três travas que passaram verde com o universo vazio nesta mesma varredura.
-
-## `test:forca-da-afirmacao` → `scripts/valida-forca-da-afirmacao.cjs`
-
-- **PROMETE:** que todo nó de CONDUTA das árvores auditadas declare `procedencia` com `forca`, e que cada força carregue o que ela obriga — classe/grau na recomendação formal, tipo de documento na prática aceita, lacuna de evidência no mecanismo fisiológico. Nó sem procedência só passa se estiver na lista de PENDÊNCIAS DECLARADAS, com motivo.
-- **NÃO PROMETE:** que a força esteja CERTA. Nenhum script julga se uma conduta é recomendação formal ou plausibilidade — isso é leitura de fonte, e é do médico. A trava garante que alguém DECLAROU, e que o que se declara aparece na tela.
-- **UNIVERSO:** os nós de AÇÃO das árvores de ARVORES, compiladas, com piso no retrato. ⚠️ OS NÓS DE DECISÃO ESTÃO FORA — `DecisionNode` não tem `procedencia`, e por isso o "zero pendências" desta trava é verdadeiro para CONDUTAS e silencioso sobre decisões. A linha do relatório diz as duas coisas, sempre: zero sobre um universo que exclui um tipo inteiro de nó é a nossa regra aplicada contra nós mesmos. ── ⚠️ POR QUE A PENDÊNCIA É DECLARADA, E NÃO SILENCIOSA ─────────────────── A ordem do autor foi explícita: "não invente a força de nenhuma conduta; onde não estiver claro, marque como pendência e PARE — preencher por suposição é o mesmo defeito com nome novo". Uma trava que aceitasse nó sem `procedencia` em silêncio deixaria a maior parte do módulo sem classificação e sem ninguém saber. Aqui, o que falta tem nome, motivo e sai no relatório.
-
 ## `test:aviso-auditoria` → `scripts/valida-aviso-de-auditoria.cjs`
 
 - **PROMETE:** que, ENQUANTO houver módulo sem declaração de força por conduta, as duas telas onde o usuário COMPARA módulos (o hub e a página de produto) mostrem o aviso; e que a lista de módulos auditados não possa "adiantar" — ela é conferida contra o instrumento que realmente audita.
 - **NÃO PROMETE:** que o aviso esteja legível, nem que o usuário o leia. Isso é medição de layout e de comportamento, e nenhuma das duas é feita aqui.
 - **UNIVERSO:** os módulos clínicos declarados no app, com piso no retrato. ── ⚠️ POR QUE ISTO É TRAVA E NÃO OBSERVAÇÃO ─────────────────────────────── A assimetria (1 módulo com selo, 30 sem) é do tipo que NINGUÉM NOTA: ela não quebra tela, não falha teste, não aparece em relatório. E ela mente para o lado perigoso — quem compara lê "sem selo" como "recomendação mais fraca", quando o que ela significa é "ainda não auditado". É a mesma regra do piso de universo, agora virada para o usuário: um "não medi" apresentado sem etiqueta é lido como "medi e não achei". ── ⚠️ E POR QUE ELA SE DESARMA SOZINHA ──────────────────────────────────── Quando `MODULOS_COM_FORCA_DECLARADA` cobrir todos os módulos, o aviso deixa de ser exigido — e passa a ser exigida a REMOÇÃO dele, porque aviso que sobrevive ao seu motivo vira ruído e ensina a ignorar avisos.
-
-## `test:imagem-clinica` → `scripts/valida-imagem-clinica.cjs`
-
-- **PROMETE:** que toda imagem em `assets/clinico/` tenha entrada em `auditoria/imagens-clinicas.json` seguindo o MODELO DE CONTEÚDO INCORPORADO (AM-6): autoria do arquivo, procedência do conteúdo, e — quando a procedência for de terceiro — `quem` e `licenca`, INDEPENDENTE da autoria e de `declarado_por`. E que nenhuma entrada aponte para arquivo inexistente.
-- **NÃO PROMETE:** que a imagem seja a certa, nem que a licença seja válida — ler licença é trabalho humano. A trava garante que alguém DECLAROU.
-- **UNIVERSO:** hoje ZERO imagens. E é por isso que ela é FECHADA POR PADRÃO. ── ⚠️ POR QUE ELA NÃO DIZ "TUDO CERTO" ──────────────────────────────────── Um instrumento com universo zero que imprime "✅ nenhuma irregularidade" é o falso verde que este projeto já pagou três vezes (ver `scripts/lib/universo.cjs`). Aqui o universo zero é o estado NORMAL — não há imagem clínica no app — e a trava diz exatamente isso: "nada a conferir", não "está conforme". Ela existe para reprovar a PRIMEIRA imagem que entrar sem declaração. ── ⚠️ E POR QUE ELA NÃO CONVERTE NADA ───────────────────────────────────── A outra metade da AM-5 — nunca vetorizar imagem clínica real — não é verificável por script: nenhum programa distingue um SVG desenhado à mão de um SVG traçado a partir de uma foto. Isso fica como REGRA ESCRITA e revisão humana, declarado aqui para que a ausência não passe por cobertura.
-
-## `test:origem-vetor` → `scripts/valida-origem-de-vetor.cjs`
-
-- **PROMETE:** que todo asset vetorial do repositório — arquivo `.svg` ou SVG embutido em código — tenha entrada em `auditoria/origem-dos-vetores.json` declarando a origem; que `derivado` traga a procedência e a LICENÇA da imagem de base; e que `terceiro` traga quem desenhou e sob que licença.
-- **NÃO PROMETE:** que a declaração seja VERDADEIRA — e isto é o ponto inteiro. Nenhum script distingue um SVG desenhado de um SVG traçado sobre uma fotografia; a diferença está na intenção de quem o produziu, não nos bytes. **A veracidade é do autor.** O que a declaração muda não é a verificabilidade — é o CUSTO DE VIOLAR. Antes, decalcar um ECG real e chamá-lo de ícone era SILÊNCIO: nada no repositório dizia o contrário. Agora exige uma AFIRMAÇÃO FALSA, escrita, assinada e datada num arquivo versionado — e afirmação escrita alguém confere depois. É a mesma conversão do `contextoDaFonte`: o que não se mede, se declara; o que se declara, alguém confere.
-- **UNIVERSO:** `assets/**\/*.svg` mais os arquivos de código com SVG embutido.
 
 ## `test:antimicrobianos` → `scripts/valida-antimicrobianos.cjs`
 
@@ -460,69 +304,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 _não executa script em scripts/ (e2e, playwright)_
 
-## `test:coronarias`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:avc`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:tep`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:choque`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:politrauma`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:tce`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:abdome`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:intoxicacoes`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:cad`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:eclampsia`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:convulsoes`
-
-_não executa script em scripts/ (e2e, playwright)_
-
-## `test:eclampsia-crise` → `scripts/valida-eclampsia-na-crise.cjs`
-
-- **PROMETE:** que os DOIS FATOS QUE MUDAM CONDUTA na crise da gestante e da puérpera estejam presentes nos QUATRO estágios do fluxo de Convulsões — `estabilizacao`, `primeira_linha`, `terceira_linha` e `pos_ictal`: (a) gestante **OU PUÉRPERA**, porque é a puérpera que escapa; (b) o benzodiazepínico ABORTA e o magnésio TRATA A CAUSA.
-- **NÃO PROMETE:** que o TEXTO seja o mesmo nos quatro, nem que seja longo. ⚠️ Esta distinção é o ponto inteiro da trava: ENCURTAR é permitido, ESVAZIAR não é. Também não promete nada sobre o módulo de Pré-eclâmpsia — ele é o dono da conduta (R-12); aqui só se confere que o fluxo de Convulsões não perde o gatilho.
-- **UNIVERSO:** os quatro nós nomeados de `seizure-decision-tree.ts`, compilado por `tsc` e lido do artefato — o texto que a tela recebe, não o literal do fonte (R-82). ── A DECISÃO QUE ELA PROTEGE, NÃO O DEFEITO QUE ELA CORRIGE (R-80) ───────── O aviso da eclâmpsia vivia INTEIRO nos quatro nós: 964 caracteres × 4. Uma varredura de repetição mediu isso e quase propôs cortá-lo — a medição estava certa e a conclusão seria errada, porque não são quatro cópias: **é o mesmo erro possível em quatro estágios**, e o pior deles é o pós-ictal, quando o paciente já não convulsiona e a pessoa já não está grávida. A saída foi o texto completo UMA vez (na estabilização, onde a decisão do magnésio se abre) e o gatilho nos outros três. ⚠️ E gatilho é onde o R-50 mora: encurtar aviso clínico é como se esvazia um aviso sem que ninguém veja. Esta trava é a fronteira — os dois fatos, sempre; o resto, livre. ── POR QUE OS DOIS FATOS, E NÃO OUTROS ──────────────────────────────────── (a) sem "puérpera", o aviso não pega o cenário que mais escapa — a eclâmpsia pós-parto tardia está descrita além das 48 h, até semanas depois do parto. (b) sem os dois papéis, alguém troca o benzodiazepínico pelo magnésio e deixa de abortar uma crise ativa. É o erro que a própria constante foi escrita para impedir, e ele reaparece a cada encurtamento descuidado.
-
-## `test:eap`
-
-_não executa script em scripts/ (e2e, playwright)_
-
 ## `test:traducao-composta`
 
 _não executa script em scripts/ (e2e, playwright)_
-
-## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
-
-- **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria — inclusive quando o nome da droga está no `title:` de um bloco e a dose numa linha adiante (R-10); que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.
-- **NÃO PROMETE:** que as doses estejam clinicamente certas — o lastro é a bula (dose) e a SSC 2026 (indicação), e a trava confere coerência interna e procedência, não julgamento. Também não cobre as demais drogas vasoativas. E não pega nome e dose separados por MAIS de um bloco `title:`/`lines:` — só o bloco imediatamente ativo.
-- **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx), fora scripts, e2e, locales e i18n. ── O DEFEITO ─────────────────────────────────────────────────────────────── Seis afirmações de dose para a mesma droga, com a SEPSE limitando abaixo da própria fonte de três jeitos diferentes (nenhum teto, 5 e 10) enquanto a bula registra que até 20 são frequentemente necessários. ── DUAS FONTES QUE NÃO PODEM SER FUNDIDAS ────────────────────────────────── A DOSE vem da BULA; a INDICAÇÃO vem da SSC 2026, que NÃO especifica dose. Uma citação única cobrindo as duas seria citar diretriz para o que ela não diz — o erro do ART (D-6). A trava confere que as duas atribuições existem e estão separadas.
 
 ## `test:escopo-pediatrico` → `scripts/valida-escopo-pediatrico.cjs`
 
@@ -542,24 +326,6 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que os parâmetros ventilatórios estejam certos para cada cenário.
 - **UNIVERSO:** árvore INTEIRA para a fonte única do PBW; lista fixa de 6 arquivos para os alvos do TCE. Ventilação: peso predito tem UMA fonte, e ela recusa o que não sabe. ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ─────────────────────────────────── 1. DUAS implementações de PBW, discordando onde ninguém olha — no sexo AUSENTE. A árvore assumia HOMEM (`sexo === "feminino" ? 45,5 : 50`); o motor assumia MULHER (`/^m/i` falha em string vazia). Mesmo paciente, mesmo app: a 175 cm, PBW 70,6 × 66,1 kg → Vt 423 × 396 mL. As duas devolviam um número, nenhuma avisava. 2. O `/^m/i` do motor classificava **"Mulher" como masculino**, por testar a INICIAL. Não era hipótese: o campo é `TextInput` de valor livre, com os presets como botões de conveniência abaixo. 3. O portão do plano ventilatório era `!pbw || !scenario`. Com sexo em branco o PBW saía preenchido (pelo default feminino), então o app montava modo, Vt, FR, PEEP e FiO₂ enquanto declarava, na mesma tela, que faltava o sexo. ── POR QUE A TRAVA ÓBVIA PASSARIA VERDE ───────────────────────────────────── Comparar as duas fórmulas com sexo INFORMADO não pega nada: elas sempre concordaram aí. A divergência morava só na ausência. Por isso o caso "sexo ausente" é verificado EXPLICITAMENTE, e o esperado não é concordância de número — é RECUSA nos dois lados. Este script FALHA O BUILD. Vt errado é dose errada.
 
-## `test:peso` → `scripts/valida-peso-origem.cjs`
-
-- **PROMETE:** todo módulo com dose peso-dependente exibe a ressalva quando o peso é estimado, e a ressalva mede EFEITO e não grafia (R-10).
-- **NÃO PROMETE:** que o peso informado esteja certo — só que a incerteza dele seja declarada onde a dose depende dela.
-- **UNIVERSO:** os 9 módulos que recebem peso pelo contexto do paciente. Peso estimado: quem pergunta de onde veio o peso tem de usar a resposta. ── O DEFEITO QUE ORIGINOU ESTE SCRIPT ─────────────────────────────────────── `pesoOrigem` era perguntado em NOVE módulos e lido por NENHUM. Nove perguntas ao médico, em emergência, para um dado que nenhuma linha de código consumia — atrito puro no exato lugar onde o app promete reduzir atrito. E os nove calculam dose por peso: alteplase, tenecteplase, insulina, heparina, manitol, salina hipertônica, cristaloide, sedativos, bloqueadores. O erro do peso passa integralmente para a dose, e em vários há teto absoluto. ── O QUE ESTE SCRIPT COBRA ────────────────────────────────────────────────── A. Árvore que coleta `peso` também coleta `pesoOrigem`. Dose por peso sem saber a procedência do peso é dose sem ressalva possível. B. `pesoOrigem` só oferece valores do domínio fechado (estimado/real). C. O shell renderiza a ressalva — sem isso, os nove voltam a perguntar por nada. D. Os quatro módulos com TETO de dose repetem a ressalva na linha da dose. Este script FALHA O BUILD.
-
-## `test:isr` → `scripts/valida-isr.cjs`
-
-- **PROMETE:** que o derive do ISR, EXECUTADO, devolva as doses da publicação; que nenhum multiplicador esteja escrito à mão nele; que o import de MG_POR_KG não seja decorativo (provado por perturbação da fonte); e que o formatador mgPorKg() nunca seja interpolado dentro de frase traduzível.
-- **NÃO PROMETE:** que a prosa esteja unificada. As linhas que citam dose dentro de frase que o usuário lê CONTINUAM duplicadas e vigiadas por trava — contrato vigiado, não fonte única (R-25). O universo do contrato ENCOLHEU com a D-14, não fechou: o cálculo virou fonte real, a prosa não pode virar.
-- **UNIVERSO:** ISR e Sedoanalgesia para as doses; árvore INTEIRA para o teto da succinilcolina e para o veto do formatador. ISR: a dose do instável tem UMA fonte, e a via acordada é caminho, não menção. ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ─────────────────────────────────── 1. A Sedoanalgesia dizia "ISR (paciente instável): 1,5–2 mg/kg" de cetamina — a faixa CHEIA de indução, rotulada como a do instável. O módulo de ISR, para o MESMO paciente, manda 1 mg/kg (0,5 no choque grave). Um mandava reduzir, o outro mandava dose plena, a um clique de distância. 2. O nó de via aérea difícil dizia "considerar intubação acordada" e seguia DIRETO para a indução: quem escolhesse a técnica acordada não tinha para onde ir. Primeiro achado da auditoria que não é número errado — é uma VIA CLÍNICA que o app não permitia percorrer. Também não existia a saída "não intubar agora". ── O QUE ESTE SCRIPT COBRA ────────────────────────────────────────────────── A. Os multiplicadores do derive da árvore de ISR batem com lib/doses-isr.ts. B. A Sedoanalgesia ensina a REDUÇÃO no instável — nunca a faixa plena rotulada como dose do instável. C. A via acordada e o deferimento são NÓS ALCANÇÁVEIS, oferecidos como opção na decisão de estratégia — não menções em texto. D. As frases literais de doses-isr.ts repetem os números de DOSES_ISR (são literais para a tradução enxergar; o vínculo é esta trava). Este script FALHA O BUILD. Dose de indução errada no chocado é PCR peri-intubação.
-
-## `test:sedacao` → `scripts/valida-sedacao.cjs`
-
-- **PROMETE:** aritmética das diluições, dois eixos declarados (sedação × bloqueio), aviso do BNM com o mesmo peso visual nos três, e nenhum alvo de sedação aposentado escrito em lugar nenhum.
-- **NÃO PROMETE:** que as indicações de sedação estejam certas. A proibição de alvo aposentado cobre grafia, não julgamento clínico.
-- **UNIVERSO:** universo ABERTO para o alvo de RASS (inclui traduções); os módulos de sedação para o resto. Sedoanalgesia & BNM: a bolsa fecha, e os dois eixos não se confundem. ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ─────────────────────────────────── 1. O atracúrio anunciava "5 amp (250 mg) + 200 mL SF → 250 mL · 1 mg/mL". 5 × 5 mL + 200 = 225 mL, não 250, e a concentração real era 1,11 mg/mL. Única das 20 soluções do módulo cuja aritmética não fechava — e só apareceu porque as 20 foram conferidas uma a uma. 2. O midazolam marcava de VERMELHO tudo acima de 0,20 mg/kg/h. O módulo de Convulsões manda 0,05–2 mg/kg/h no status refratário — dez vezes isso, e está certo. São OBJETIVOS diferentes: sedação titulada por RASS (meta de paciente acordado) × anestesia terapêutica com EEG (meta de supressão). Sem declarar os dois eixos, o app pintava de vermelho a dose correta. 3. O cisatracúrio dizia faixa 0,1–0,2 mg/kg/h e, no mesmo fármaco, citava o ACURASYS com 37,5 mg/h — ~0,54 mg/kg/h em 70 kg, quase 3× o topo da própria faixa. Infusão titulada por TOF e protocolo de dose fixa apresentados como a mesma coisa. Este script FALHA O BUILD. ── ESCRITO COM A LISTA DO R-15 ────────────────────────────────────────────── Comentários removidos antes de conferir conteúdo (os comentários acima citam os números proibidos); toda leitura que pode não encontrar FALHA em vez de seguir; e o que se compara é a ARITMÉTICA, não a grafia do rótulo.
-
 ## `test:eletrolitos` → `scripts/valida-eletrolitos.cjs`
 
 - **PROMETE:** as constantes de sódio e cálcio conferem com a massa molar por RECÁLCULO (R-17), a paridade hipo × hiper se mantém, e torsades e fentanil não divergem entre módulos.
@@ -570,43 +336,13 @@ _não executa script em scripts/ (e2e, playwright)_
 
 - **PROMETE:** que a ÚNICA implementação viva do cálculo de osmolaridade — a calculadora `osmolalidade` em clinical-calculators-engine.ts — use o divisor 6 (ureia total) e não 2,8 (BUN); que separe osmolalidade TOTAL de EFETIVA; e que os avisos de texto sobre as duas armadilhas continuem na árvore viva do CAD/EHH.
 - **NÃO PROMETE:** que as FAIXAS de interpretação da calculadora estejam alinhadas ao consenso 2024 (ver ⚠️ abaixo — há divergência aberta), nem que a árvore do CAD/EHH calcule osmolaridade: ela NÃO calcula, por decisão declarada (PD-3), e escreve a fórmula para o médico aplicar.
-- **UNIVERSO:** clinical-calculators-engine.ts e dka-hhs-decision-tree.ts. ── POR QUE ESTA TRAVA MUDOU DE ALVO (14/ago) ─────────────────────────────── Ela travava `dka-hhs-engine.ts` — que é CÓDIGO MORTO desde 07/jun (D-22). Protegia um cálculo que a tela nunca executou, e do lado vivo só conferia que a FRASE da fórmula existia. Terceira trava da auditoria validando código inalcançável, junto com test:avc e test:coronary (D-25). Agora aponta para onde o cálculo vive de verdade: a calculadora clínica. A proteção passa a cobrir código que chega ao usuário — que era o ponto. ⚠️ DIVERGÊNCIA ABERTA, NÃO TRAVADA: as faixas de interpretação da calculadora tratam efetiva ≤ 320 como "hiperosmolalidade leve" e só sugerem EHH acima de 320. O consenso ADA/EASD 2024 (Diabetes Care 47:1257, Fig. 2B) usa efetiva > 300 como critério de EHH — 320 é o limiar da TOTAL. É o mesmo defeito corrigido na árvore em 14/ago, sobrevivendo aqui. Não travado ainda porque mudar faixa de interpretação é mudança de recomendação e precisa de decisão registrada.
+- **UNIVERSO:** clinical-calculators-engine.ts. (A árvore da CAD saiu do app em 2026-08-27, com a remoção da arquitetura clínica antiga.) ── POR QUE ESTA TRAVA MUDOU DE ALVO (14/ago) ─────────────────────────────── Ela travava `dka-hhs-engine.ts` — que é CÓDIGO MORTO desde 07/jun (D-22). Protegia um cálculo que a tela nunca executou, e do lado vivo só conferia que a FRASE da fórmula existia. Terceira trava da auditoria validando código inalcançável, junto com test:avc e test:coronary (D-25). Agora aponta para onde o cálculo vive de verdade: a calculadora clínica. A proteção passa a cobrir código que chega ao usuário — que era o ponto. ⚠️ DIVERGÊNCIA ABERTA, NÃO TRAVADA: as faixas de interpretação da calculadora tratam efetiva ≤ 320 como "hiperosmolalidade leve" e só sugerem EHH acima de 320. O consenso ADA/EASD 2024 (Diabetes Care 47:1257, Fig. 2B) usa efetiva > 300 como critério de EHH — 320 é o limiar da TOTAL. É o mesmo defeito corrigido na árvore em 14/ago, sobrevivendo aqui. Não travado ainda porque mudar faixa de interpretação é mudança de recomendação e precisa de decisão registrada.
 
 ## `test:faixas-invertidas` → `scripts/valida-faixas-invertidas.cjs`
 
 - **PROMETE:** nenhuma faixa numérica "a–b" tem limite inferior maior que o superior, em nenhum texto clínico do app.
 - **NÃO PROMETE:** nada sobre o VALOR das faixas. Uma faixa pode estar coerente consigo mesma e clinicamente errada.
 - **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx), exceto scripts, e2e, locales e i18n. 1633 faixas lidas. valida-faixas-invertidas.cjs — R-22, item 1 ── A CLASSE ──────────────────────────────────────────────────────────────── Verificação que NÃO depende de fonte externa. Toda outra trava desta auditoria compara o app contra algo de fora — bula, publicação, massa molar, fonte única. Esta compara o app contra SI MESMO: uma faixa escrita "a–b" afirma que a é o limite inferior e b o superior. Se a > b, a afirmação se contradiz, e isso é decidível sem sair do repositório. Por isso ela cobre o que a auditoria módulo a módulo não alcança: os módulos sem diretriz citada (D-3) e os números atrás de paywall. ── O QUE NÃO É FAIXA ─────────────────────────────────────────────────────── O travessão em texto clínico é ambíguo, e uma trava que acusa inocente é pior que trava que não existe (R-22). Ficam de fora, NOMEADAMENTE: · relações e proporções — "I:E 1:2", "1:10.000" · intervalos de administração — "12/12h" · sequências decrescentes deliberadas — o degrau do Vt "8–7–6" na SDRA, o desmame de PEEP, a redução escalonada de sedativo · datas, versões, referências bibliográficas ("2016;315(8):762–774") · negativos — "RASS −5 a −4" tem inferior MENOR em valor absoluto e maior em sinal; a comparação é feita com sinal · faixa cujo segundo termo é unidade diferente do primeiro
-
-## `test:antidotos` → `scripts/valida-antidoto-duracao.cjs`
-
-- **PROMETE:** toda prescrição de naloxona ou flumazenil carrega a consequência da duração curta do antídoto (vigilância pós-reversão).
-- **NÃO PROMETE:** que a DOSE do antídoto esteja certa, nem que os outros antídotos do app tenham a mesma cobertura — só estes dois estão na tabela.
-- **UNIVERSO:** toda a árvore de conteúdo, com expansão de identificadores para o texto das constantes de fonte única. valida-antidoto-duracao.cjs — R-22, item 2 ── O EIXO ────────────────────────────────────────────────────────────────── Antídoto cuja duração de ação é MENOR que a do agente que ele reverte tem uma consequência obrigatória: o paciente precisa ser vigiado depois de acordar, porque o efeito do antídoto acaba antes do efeito do tóxico. Não é julgamento farmacológico — é COERÊNCIA INTERNA (R-22). O próprio app afirma isto sobre a naloxona, com todas as letras, em poisoning-decision-tree: "A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado. Vigiar por horas, não por minutos." Se o app afirma isso, então TODO lugar que prescreve naloxona precisa dizer o mesmo. Um lugar que prescreve sem a consequência contradiz o próprio app. ── POR QUE ESTA TRAVA É DIFERENTE DA DE REDOSE ───────────────────────────── O eixo original era mais amplo — "intervalo de reavaliação × duração de ação", nos dois sentidos. Ele não tem corpus neste app: de 34 fármacos varridos, 14 declaram intervalo de redose e apenas 6 declaram duração de ação; a interseção é de 3, e as 3 são coincidência de linha, não par real. A ausência é o achado (R-13): o app quase nunca declara duração de ação, e sem ela o cruzamento não existe. O que sobra com corpus real é este recorte — o antídoto —, que é também onde o erro é mais caro.
-
-## `test:teto` → `scripts/valida-teto-por-kg.cjs`
-
-- **PROMETE:** nenhum teto absoluto satura em peso implausível, e nenhum fármaco cujo teto o APP declara é prescrito por quilo sem ele.
-- **NÃO PROMETE:** que exista teto onde deveria. A lista de fármacos vem do que o próprio app já declara — nenhum teto é exigido por conhecimento externo. Teto decorativo é AVISO, não falha.
-- **UNIVERSO:** toda a árvore de conteúdo. 39 pares dose/kg + teto conferidos. valida-teto-por-kg.cjs — R-22, item 3 ── O EIXO ────────────────────────────────────────────────────────────────── Dose por quilo mais teto absoluto é uma afirmação dupla, e as duas partes precisam ser coerentes ENTRE SI. Três defeitos possíveis, todos decidíveis sem sair do repositório: A · TETO QUE SATURA EM PESO IMPLAUSÍVEL — "0,5 mg/kg, máx 3 mg" satura em 6 kg. Num protocolo adulto, é teto pediátrico esquecido no lugar errado, e todo adulto recebe a mesma dose fixa sem que ninguém perceba. B · TETO QUE NUNCA VINCULA — satura acima de 250 kg. É decorativo: existe no texto, nunca no paciente. Não é perigoso, é ruído que ensina a ler "máx" como enfeite. ⚠️ B É AVISO, NÃO FALHA — e a escolha é DECLARADA, não acidental. O R-3 diz que detectar não é travar, e ele vale para achado que importa: teto decorativo não põe ninguém em risco, e derrubar o build por ele gastaria a autoridade do vermelho onde ela não é necessária. A consequência é que a mutação de B se confere pela SAÍDA, não pelo código de retorno (R-2) — está dito aqui para ninguém confundir com fuga. C · DOSE/kg SEM TETO ONDE O APP JÁ DECLARA UM. Este é o mais forte, porque é R-22 puro: se o app diz em algum lugar que a alteplase tem máximo de 90 mg, então um segundo lugar que prescreve 0,9 mg/kg sem teto CONTRADIZ o próprio app. Não é julgamento farmacológico — é a mesma afirmação feita duas vezes, de formas incompatíveis. ── O QUE NÃO É DEFEITO, E FICA NOMEADO ───────────────────────────────────── A varredura preliminar achou 240 doses por kg sem teto declarado. A esmagadora maioria é legítima: cetamina, propofol, rocurônio, manitol e cristaloide não têm teto absoluto — a dose acompanha o peso e ponto. Exigir teto de todas seria trava que acusa inocente (R-22), e essas 240 viram ruído que faz desligar o verificador. Por isso o caso C é conferido só contra a LISTA DO PRÓPRIO APP: fármaco cujo teto o app já declara em algum lugar. Nada é exigido por conhecimento externo. Também ficam de fora as doses pediátricas com teto adulto — "lorazepam 0,1 mg/kg, máx 4 mg" satura em 40 kg de propósito, e é assim que a literatura escreve. O corte de implausibilidade é bem abaixo disso.
-
-## `test:ordem-clinica-parcial` → `scripts/valida-ordem-clinica-parcial.cjs`
-
-- **PROMETE:** que SEIS pares "A antes de B" nomeados nesta trava sejam respeitados onde o app os expressa — ordem de nó no grafo, índice em array de conduta, ou presença da frase que fixa a ordem.
-- **NÃO PROMETE:** que a ordem clínica do app esteja verificada. São 6 pares de uma lista de 10, e a lista de 10 não pretende cobrir a medicina de emergência. QUATRO pares ficam de fora e são impressos a cada execução com o motivo — dois porque o app não expressa a ordem em lugar nenhum, um porque vive em outra máquina (o reducer do ACLS) e um porque já é coberto por test:sedacao.
-- **UNIVERSO:** as 19 árvores de decisão, os motores, e a tela de correções eletrolíticas — declarada à parte por ser React e não árvore. ── POR QUE "PARCIAL" ESTÁ NO NOME ────────────────────────────────────────── Porque o perigo de uma tabela curta não é a incompletude — é a incompletude que SE APRESENTA COMO COMPLETA. Uma trava chamada "ordem-clinica" que passa verde ensina que a ordem clínica do app foi conferida. Ela não foi: foram seis pares. A palavra no nome e a lista impressa a cada execução existem para que ninguém leia o verde como mais do que ele é. ── DE ONDE VEIO A TABELA, E O QUE ELA CUSTOU (R-26) ──────────────────────── Dos 10 pares propostos: · 1 era fisicamente impossível como escrito ("confirmar o tubo antes de ventilar" — capnografia em onda EXIGE ventilação para gerar onda); · 3 tinham exceção nomeável (PCR para o bloqueador; pré-hospitalar para o antídoto; e a tiamina, que virou regra de PRESENÇA depois de se ver que a formulação original faria a trava acusar texto correto e empurrar para atrasar glicose em hipoglicemia documentada); · 3 não são verificáveis na estrutura de hoje; · 4 sobreviveram intactos.
-
-## `test:prazos` → `scripts/valida-prazos.cjs`
-
-- **PROMETE:** que prazo ACIONÁVEL declarado num módulo tenha mecanismo de medir, que prazo longo nomeie o marco a partir do qual conta, e que o mesmo marco não receba valores diferentes em caminhos distintos do mesmo módulo.
-- **NÃO PROMETE:** que os prazos estejam clinicamente certos, nem que o cronômetro FUNCIONE — ela confere que o mecanismo EXISTE, lendo o fonte. Pôr um `return []` no início do getTimers desliga o relógio e esta trava continua verde, porque a palavra `duration:` segue no corpo, agora inalcançável. Comportamento é conferido executando, em `test:cronometro` (R-10).
-- **UNIVERSO:** as árvores e motores de conteúdo clínico, com os prazos de ELEGIBILIDADE nomeadamente excluídos. ── A DISTINÇÃO QUE FAZ OU QUEBRA ESTA TRAVA ──────────────────────────────── Dois prazos parecem iguais no texto e não são: ACIONÁVEL — manda fazer alguma coisa quando o tempo passar. "reavaliar em 5 min", "repetir a cada 3–5 min", "nova dose em 10 min". Se o app manda cronometrar e não cronometra, o prazo é decorativo — mesma família do teto que nunca vincula. ELEGIBILIDADE — é critério, não contagem. "janela de 4,5 h para trombólise", "sintomas há menos de 12 h". Ninguém espera que o app conte isso: é informação para decidir SE, não alarme para tocar QUANDO. Exigir timer aqui é acusar inocente, e trava que acusa inocente termina desligada (R-22). A separação é feita pelo VERBO, não pelo número: prazo acionável tem imperativo de conduta; prazo de elegibilidade descreve uma janela ou um tempo decorrido.
-
-## `test:cronometro-arvore` → `scripts/test-cronometro-arvore.cjs`
-
-- **PROMETE:** que o relógio das Convulsões conte do INÍCIO DA CRISE e não da abertura do app; que as quatro marcas (5/20/40/60 min) vençam na hora certa; que o "não sei" conte do zero DECLARANDO que subestima; que a troca de marco aos 60 min funcione nos dois sentidos — com e sem anestésico iniciado; e que o repique do benzodiazepínico corra em paralelo, com marco próprio.
-- **NÃO PROMETE:** que os limiares de 5/20/40/60 min estejam clinicamente certos (são da AES 2016, e a conferência é de comportamento, não de fonte), nem que a tela renderize o que o runtime devolve — isto executa o motor.
-- **UNIVERSO:** core/decision-tree (runtime) e seizure-decision-tree.ts, compilados e executados. ── R-30: ESTE TESTE ESPERA DE VERDADE ────────────────────────────────────── Teste de tempo escrito sem tempo decorrido não testa tempo. Onde a diferença entre "armou" e "re-armou" é de segundos, o teste espera segundos — com o relógio do sistema, porque é o que o runtime lê. Onde a diferença é de MINUTOS, esperar seria absurdo: para essas, o marco é fixado no passado (`marcar(marco, decorrido)`), que é exatamente o mecanismo clínico sob teste — o relógio conta do evento, não do app.
 
 ## `test:pipeline` → `scripts/valida-pipeline.cjs`
 
@@ -644,23 +380,11 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
 
-## `test:consistencia` → `scripts/valida-consistencia-clinica.cjs`
-
-- **PROMETE:** ⚠️ NÃO DECLARADO
-- **NÃO PROMETE:** ⚠️ NÃO DECLARADO
-- **UNIVERSO:** ⚠️ NÃO DECLARADO
-
 ## `test:calculadoras` → `scripts/valida-calculadoras.cjs`
 
 - **PROMETE:** cada ferramenta confere com a publicação por RECÁLCULO, as fronteiras de faixa não se deslocam, a interpretação é monotônica na gravidade, e Glasgow/RASS/NIHSS não indicam conduta (R-19).
 - **NÃO PROMETE:** que as ferramentas ausentes deveriam existir, nem que os limiares sem fonte aberta estejam certos — APACHE II segue sem a figura do Knaus.
 - **UNIVERSO:** as 15 ferramentas de clinical-calculators-engine.ts. Validação estrutural das calculadoras clínicas. POR QUE ESTE SCRIPT EXISTE -------------------------- Cada calculadora do app cita, no próprio código, a publicação primária que a define. Nenhuma estava conferida contra ela — a citação existia, a verificação não. Conferir 15 artigos inteiros é caro e, na prática, não acontece. Mas quase toda publicação de escore declara um INVARIANTE verificável: a faixa que o escore pode assumir. E o invariante é sensível — a faixa só fecha se todos os pesos estiverem certos. Exemplo real: o APACHE II vai de 0 a 71 (Knaus 1985). Se a creatinina não dobrasse na insuficiência renal aguda, o máximo daria 67. Se o Glasgow fosse pontuado como as demais variáveis (teto 4 em vez de 12), daria 63. Se a idade parasse em 5 pontos, daria 70. Um único peso errado quebra o teste. O QUE ELE PROVA E O QUE NÃO PROVA --------------------------------- Prova que o conjunto de pesos fecha na faixa publicada. NÃO prova que cada faixa individual de cada variável está no ponto certo — para isso é preciso o texto completo com as tabelas. É bem mais do que "a citação está no comentário", e bem menos do que uma auditoria completa. O relatório diz exatamente qual das duas coisas cada calculadora recebeu. COMO ESTENDER ------------- Acrescente uma entrada em INVARIANTES com a faixa e a fonte. Se a publicação não declarar faixa, registre `faixa: null` com o motivo: o script conta como PENDENTE em vez de fingir cobertura.
-
-## `test:sulfatacao` → `scripts/valida-sulfatacao.cjs`
-
-- **PROMETE:** ⚠️ NÃO DECLARADO
-- **NÃO PROMETE:** ⚠️ NÃO DECLARADO
-- **UNIVERSO:** ⚠️ NÃO DECLARADO
 
 ## `build:web`
 
@@ -678,42 +402,13 @@ _não executa script em scripts/ (e2e, playwright)_
 de cada árvore e `e2e/modulos.spec.ts` abre os 30 módulos. Isso NÃO diz que o
 conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.
 
-**Fora desta tabela, e auditados:** Vasoativas · Sedoanalgesia · Eletrólitos · Calculadoras Clínicas — são telas
+**Fora desta tabela, e auditados:** Vasoativas · Eletrólitos · Calculadoras Clínicas — são telas
 de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 
 | Módulo | Estrutura | Auditado na Fase 1–2 | **Nós interrogados** | Travas que TOCAM o módulo |
 |---|---|---|---|---|
-| `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
-| `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
-| `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 95/95 (100%) | test:retomada-snapshot, test:vereditos-sca, test:dose-governada, test:ecg-tempo, test:pde5-janela, test:sca-v2, test:arritmia-instavel, test:ferramenta-auxiliar, test:ci-trombolise, test:peso, test:calculadoras |
-| `coronary-v2` | ✅ | — | 18/30 (60%) | test:sca-v2 |
-| `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
-| `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
-| `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
-| `eclampsia` | ✅ | — | 15/17 (88%) | test:marco-retomada, test:sulfatacao |
-| `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:escalonamento, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
-| `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
-| `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
-| `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
-| `seizure` | ✅ | — | 9/15 (60%) | test:marco-retomada, test:retomada-snapshot, test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
-| `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
-| `shock` | ✅ | — | 13/31 (42%) | **nenhuma** |
-| `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
-| `tep` | ✅ | — | 23/24 (96%) | test:ci-trombolise, test:dobutamina, test:peso, test:calculadoras |
-| `ventilation` | ✅ | ✅ | 13/25 (52%) | test:sedacao, test:eletrolitos |
 
 ⚠️ **Nós interrogados** é medida de ALCANCE, não de qualidade: conta os nós
 em que ao menos um padrão da trava casa com algum texto. Nó fora da conta
 está dentro do universo da trava e fora de toda asserção dela — uma regressão
 ali passa verde (R-74, D-44). `npm run mapa:cobertura -- --mudos` lista quais.
-
-### ⚠️ 4 módulo(s) sem cobertura de CONTEÚDO
-
-`acute-abdomen`, `dyspnea`, `politrauma`, `shock`
-
-Nenhuma trava toca estes módulos, e nenhum foi auditado. A
-estrutura é vigiada; o conteúdo clínico não. **AVC e Coronárias estão aqui
-por decisão declarada (D-25)**: as travas que existiam validavam os engines
-mortos, e reescrevê-las contra as árvores exige auditar os módulos, o que a
-Fase 1 nunca fez. Cobertura zero DECLARADA é aceitável; silenciosa não.

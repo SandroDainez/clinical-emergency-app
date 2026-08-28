@@ -101,10 +101,6 @@ const PT_BR: Record<string, readonly string[]> = {
     "pós-parada", "pós-pcr", "rosc", "retorno da circulação", "cuidados pós-parada",
     "controle de temperatura", "hipotermia terapêutica", "reanimou",
   ],
-  "sepse-adulto": [
-    "sepse", "choque séptico", "infecção grave", "bundle", "qsofa",
-    "lactato", "antibiótico na primeira hora", "septicemia", "foco infeccioso",
-  ],
   "drogas-vasoativas": [
     "vasoativa", "vasopressor", "noradrenalina", "norepinefrina", "dobutamina",
     "adrenalina em infusão", "vasopressina", "diluição", "bomba de infusão", "gama",
@@ -113,90 +109,13 @@ const PT_BR: Record<string, readonly string[]> = {
     "eletrólito", "sódio", "potássio", "cálcio", "magnésio", "fósforo",
     "hiponatremia", "hipercalemia", "hipocalemia", "distúrbio hidroeletrolítico",
   ],
-  "isr-rapida": [
-    "isr", "intubação", "sequência rápida", "via aérea", "laringoscopia",
-    "tubo", "iot", "via aérea difícil", "cricotireoidostomia", "indução",
-  ],
-  "edema-agudo-pulmao": [
-    "eap", "edema agudo", "edema pulmonar", "congestão", "insuficiência cardíaca",
-    "vni", "cpap", "afogamento em secreção",
-  ],
-  "cetoacidose-hiperosmolar": [
-    "cad", "cetoacidose", "ehh", "estado hiperosmolar", "diabetes",
-    "hiperglicemia", "cetose", "coma diabético", "insulina",
-  ],
-  "ventilacao-mecanica": [
-    "ventilação", "vm", "ventilador", "respirador", "parâmetros",
-    "peep", "volume corrente", "sdra", "desmame", "modo ventilatório",
-  ],
-  sedoanalgesia: [
-    "sedação", "analgesia", "sedoanalgesia", "midazolam", "fentanil",
-    "propofol", "bloqueador neuromuscular", "bnm", "rass", "curarização",
-  ],
-  anafilaxia: [
-    "anafilaxia", "alergia", "reação alérgica", "choque anafilático",
-    "urticária", "angioedema", "adrenalina intramuscular", "picada",
-  ],
-  avc: [
-    "avc", "derrame", "acidente vascular", "trombólise", "trombectomia",
-    "hemiplegia", "afasia", "isquêmico", "hemorrágico", "avci", "déficit neurológico",
-  ],
-  "sindromes-coronarianas": [
-    "infarto", "iam", "sca", "síndrome coronariana", "supra de st",
-    "angina", "dor torácica", "troponina", "cateterismo", "stemi",
-  ],
   // ⚠️ SINÔNIMOS QUE NÃO REPETEM O TÍTULO. A busca do hub precisa distinguir a
   // V2 da V1 pelo que ela FAZ de diferente — decisões numeradas, ECG guiado,
   // caminho crítico —, senão as duas competem pelos mesmos termos e o médico
   // não sabe qual abriu.
-  "sindromes-coronarianas-v2": [
-    "coronariana v2", "iam v2", "sca v2", "por decisões", "decisão 1",
-    "ecg guiado", "porta-balão", "icp 120 minutos", "caminho crítico", "nova versão",
-  ],
-  tep: [
-    "tep", "embolia pulmonar", "tromboembolismo", "trombo",
-    "d-dímero", "angiotc de tórax", "trombólise pulmonar", "cor pulmonale agudo",
-  ],
-  "pre-eclampsia": [
-    "pré-eclâmpsia", "eclâmpsia", "hipertensão na gestação", "sulfato de magnésio",
-    "convulsão na gestante", "hellp", "dheg", "proteinúria",
-  ],
   "calculadoras-clinicas": [
     "calculadora", "escore", "score", "cálculo", "peso predito", "tfg",
     "clearance", "glasgow", "sofa", "wells", "heart", "nihss", "fórmula",
-  ],
-  politrauma: [
-    "trauma", "politrauma", "atls", "acidente", "hemorragia", "xabcde",
-    "transfusão maciça", "ácido tranexâmico", "fast", "torniquete",
-  ],
-  tce: [
-    "tce", "traumatismo craniano", "trauma de crânio",
-    "hipertensão intracraniana", "pic", "pupila", "hematoma", "cabeça",
-  ],
-  "crises-convulsivas": [
-    "convulsão", "crise convulsiva", "estado de mal", "epiléptico",
-    "epilepsia", "benzodiazepínico", "diazepam", "fenitoína", "tremendo",
-  ],
-  "intoxicacoes-exogenas": [
-    "intoxicação", "envenenamento", "overdose", "antídoto", "veneno",
-    "toxíndrome", "carvão ativado", "naloxona", "flumazenil", "tentativa de suicídio",
-  ],
-  "abdome-agudo": [
-    "abdome agudo", "dor abdominal", "barriga", "apendicite", "peritonite",
-    "obstrução intestinal", "abdome cirúrgico", "descompressão dolorosa",
-  ],
-  choque: [
-    "choque", "hipotensão", "pressão baixa", "hipoperfusão", "colapso",
-    "choque cardiogênico", "choque hipovolêmico", "choque distributivo", "rush",
-  ],
-  "injuria-renal-aguda": [
-    "rim", "renal", "creatinina", "creatinina alta", "oligúria", "anúria",
-    "não urina", "parou de urinar", "ira", "lra", "insuficiência renal",
-    "azotemia", "ureia alta", "kdigo", "diálise", "sonda vesical", "bexigoma",
-  ],
-  "insuficiencia-respiratoria": [
-    "insuficiência respiratória", "dispneia", "falta de ar", "hipoxemia",
-    "hipercapnia", "saturação baixa", "cansaço respiratório", "desconforto respiratório",
   ],
 };
 
@@ -246,10 +165,6 @@ const ES_419: Record<string, readonly string[]> = {
     "pos-paro", "pos-pcr", "rosc", "retorno de la circulación", "cuidados pos-paro",
     "control de temperatura", "hipotermia terapéutica", "recuperó pulso",
   ],
-  "sepse-adulto": [
-    "sepsis", "choque séptico", "infección grave", "paquete", "qsofa",
-    "lactato", "antibiótico en la primera hora", "septicemia", "foco infeccioso",
-  ],
   "drogas-vasoativas": [
     "vasoactiva", "vasopresor", "noradrenalina", "norepinefrina", "dobutamina",
     "adrenalina en infusión", "vasopresina", "dilución", "bomba de infusión", "gamma",
@@ -258,86 +173,9 @@ const ES_419: Record<string, readonly string[]> = {
     "electrolito", "sodio", "potasio", "calcio", "magnesio", "fósforo",
     "hiponatremia", "hipercalemia", "hipocalemia", "trastorno hidroelectrolítico",
   ],
-  "isr-rapida": [
-    "isr", "intubación", "secuencia rápida", "vía aérea", "laringoscopia",
-    "tubo", "iot", "vía aérea difícil", "cricotiroidotomía", "inducción",
-  ],
-  "edema-agudo-pulmao": [
-    "epa", "edema agudo", "edema pulmonar", "congestión", "insuficiencia cardíaca",
-    "vni", "cpap", "ahogado en secreciones",
-  ],
-  "cetoacidose-hiperosmolar": [
-    "cad", "cetoacidosis", "ehh", "estado hiperosmolar", "diabetes",
-    "hiperglucemia", "cetosis", "coma diabético", "insulina",
-  ],
-  "ventilacao-mecanica": [
-    "ventilación", "vm", "ventilador", "respirador", "parámetros",
-    "peep", "volumen corriente", "sdra", "destete", "modo ventilatorio",
-  ],
-  sedoanalgesia: [
-    "sedación", "analgesia", "sedoanalgesia", "midazolam", "fentanilo",
-    "propofol", "bloqueante neuromuscular", "bnm", "rass", "relajación muscular",
-  ],
-  anafilaxia: [
-    "anafilaxia", "alergia", "reacción alérgica", "choque anafiláctico",
-    "urticaria", "angioedema", "adrenalina intramuscular", "picadura",
-  ],
-  avc: [
-    "acv", "ictus", "accidente cerebrovascular", "trombólisis", "trombectomía",
-    "hemiplejia", "afasia", "isquémico", "hemorrágico", "evc", "déficit neurológico",
-  ],
-  "sindromes-coronarianas": [
-    "infarto", "iam", "sca", "síndrome coronario", "elevación del st",
-    "angina", "dolor torácico", "troponina", "cateterismo", "stemi",
-  ],
-  "sindromes-coronarianas-v2": [
-    "coronario v2", "iam v2", "sca v2", "por decisiones", "decisión 1",
-    "ecg guiado", "puerta-balón", "icp 120 minutos", "camino crítico", "nueva versión",
-  ],
-  tep: [
-    "tep", "embolia pulmonar", "tromboembolismo", "trombo",
-    "dímero d", "angiotc de tórax", "trombólisis pulmonar", "cor pulmonale agudo",
-  ],
-  "pre-eclampsia": [
-    "preeclampsia", "eclampsia", "hipertensión en el embarazo", "sulfato de magnesio",
-    "convulsión en la embarazada", "hellp", "ehe", "proteinuria",
-  ],
   "calculadoras-clinicas": [
     "calculadora", "puntaje", "score", "cálculo", "peso predicho", "tfg",
     "depuración", "glasgow", "sofa", "wells", "heart", "nihss", "fórmula",
-  ],
-  politrauma: [
-    "trauma", "politraumatismo", "atls", "accidente", "hemorragia", "xabcde",
-    "transfusión masiva", "ácido tranexámico", "fast", "torniquete",
-  ],
-  tce: [
-    "tce", "traumatismo craneal", "trauma de cráneo",
-    "hipertensión intracraneal", "pic", "pupila", "hematoma", "cabeza",
-  ],
-  "crises-convulsivas": [
-    "convulsión", "crisis convulsiva", "estado epiléptico", "epiléptico",
-    "epilepsia", "benzodiacepina", "diazepam", "fenitoína", "convulsionando",
-  ],
-  "intoxicacoes-exogenas": [
-    "intoxicación", "envenenamiento", "sobredosis", "antídoto", "veneno",
-    "toxíndrome", "carbón activado", "naloxona", "flumazenil", "intento de suicidio",
-  ],
-  "abdome-agudo": [
-    "abdomen agudo", "dolor abdominal", "panza", "apendicitis", "peritonitis",
-    "obstrucción intestinal", "abdomen quirúrgico", "descompresión dolorosa",
-  ],
-  choque: [
-    "choque", "hipotensión", "presión baja", "hipoperfusión", "colapso",
-    "choque cardiogénico", "choque hipovolémico", "choque distributivo", "rush",
-  ],
-  "injuria-renal-aguda": [
-    "riñón", "renal", "creatinina", "creatinina alta", "oliguria", "anuria",
-    "no orina", "dejó de orinar", "ira", "lra", "insuficiencia renal",
-    "azotemia", "urea alta", "kdigo", "diálisis", "sonda vesical", "globo vesical",
-  ],
-  "insuficiencia-respiratoria": [
-    "insuficiencia respiratoria", "disnea", "falta de aire", "hipoxemia",
-    "hipercapnia", "saturación baja", "cansancio respiratorio", "dificultad respiratoria",
   ],
 };
 

@@ -29,8 +29,20 @@ import { useEffect, useMemo, useState } from "react";
 const CHAVE_LOCAL = "ui-v3";
 const TUDO = "all";
 const DESLIGADO = "off";
-/** Piloto desta rodada — não "all". Ver cabeçalho do arquivo. */
-const PADRAO = "sindromes-coronarianas";
+/**
+ * ⚠️ 2026-08-27 — O PILOTO ACABOU POR REMOÇÃO, NÃO POR ROLLOUT.
+ *
+ * O padrão era `"sindromes-coronarianas"`, o único módulo do piloto. Ele saiu do
+ * app com a arquitetura clínica antiga, e um padrão que NOMEIA módulo inexistente
+ * é config morta: nenhum módulo sobrevivente casava com ele, logo todos já
+ * recebiam `emV3 = false`.
+ *
+ * Passar o padrão para `DESLIGADO` não muda comportamento nenhum — diz a verdade
+ * sobre o estado. A flag continua inteira e continua ligável por env ou
+ * localStorage; o que ela perdeu foi o piloto, e o próximo módulo a pilotar
+ * entra na arquitetura nova, não aqui.
+ */
+const PADRAO = DESLIGADO;
 
 function preferenciaLocal(): string | null {
   try {

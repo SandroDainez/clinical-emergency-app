@@ -214,7 +214,13 @@ for (const nome of Object.keys(LEGADO)) {
 
 // ── Vacuidade: a trava achou constantes para conferir? ─────────────────────
 const total = libs.reduce((a, arq) => a + constantesDeTexto(fs.readFileSync(path.join(appDir, "lib", arq), "utf8")).length, 0);
-if (total < 200) {
+// ⚠️ PISO BAIXADO DE 200 PARA 60 EM 2026-08-27, e é o único caso em que baixar
+// um piso é correto: o universo encolheu de propósito. A remoção da arquitetura
+// clínica antiga levou junto ~56 arquivos de `lib/` que eram conteúdo dos
+// módulos removidos. O piso existe para detectar EXTRATOR QUEBRADO, não para
+// medir o tamanho do app — e um piso de 200 sobre 79 constantes reprovaria para
+// sempre, escondendo qualquer quebra real do extrator daí em diante.
+if (total < 60) {
   falhas.push(`só ${total} constantes de texto extraídas de ${libs.length} arquivos — o extrator pode ter quebrado.`);
 } else ok++;
 

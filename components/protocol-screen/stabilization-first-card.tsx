@@ -15,10 +15,21 @@ import { BottomSheet } from "../ui-v2";
 
 type StabModule = { slug: string; label: string; icon: string };
 
+/**
+ * ⚠️ PODADO EM 2026-08-27 — `isr-rapida` (Via aérea / IOT) e `ventilacao-mecanica`
+ * saíram do app com a arquitetura clínica antiga, e continuavam OFERECIDOS aqui.
+ * Atalho para módulo inexistente é pior que atalho ausente: o médico toca no
+ * meio de uma estabilização e cai numa rota morta.
+ *
+ * ⚠️ E ISSO É PERDA DE COBERTURA CLÍNICA, não faxina: o "B" do ABCDE continua
+ * escrito no card ("IOT + ventilação se falha ou exaustão") e agora não tem para
+ * onde levar. A via aérea volta a ter atalho quando ISR e ventilação forem
+ * reescritas na arquitetura nova.
+ *
+ * Registrada como **D-104** em `auditoria/DIVIDAS-CONHECIDAS.md`.
+ */
 const STAB_MODULES: StabModule[] = [
   { slug: "pcr-adulto", label: "Parada / RCP (ACLS)", icon: "🫀" },
-  { slug: "isr-rapida", label: "Via aérea / IOT (ISR)", icon: "🫁" },
-  { slug: "ventilacao-mecanica", label: "Ventilação mecânica", icon: "💨" },
   { slug: "drogas-vasoativas", label: "Choque / vasopressor", icon: "💉" },
   { slug: "bradicardia-acls", label: "Bradicardia instável", icon: "🐢" },
   { slug: "taquicardia-acls", label: "Taquicardia instável", icon: "⚡" },
@@ -53,12 +64,18 @@ const STAB_MODULES: StabModule[] = [
  * Na CAD/EHH não existe módulo de "volume" para pôr antes; o que existe é a
  * sequência dentro do próprio fluxo, e ela já está certa.
  *
- * Os outros 17 pares seguem inalterados.
+ * ── ⚠️ MAPA ESVAZIADO EM 2026-08-27, E O PORQUÊ FICA ────────────────────────
+ *
+ * `pre-eclampsia` e `cetoacidose-hiperosmolar` saíram do app com a arquitetura
+ * clínica antiga. As duas ÚNICAS chaves do mapa eram elas: manter a tabela seria
+ * guardar exceção para módulo que não existe, e um mapa chaveado por id antigo é
+ * exatamente o tipo de herança que a reestruturação existiu para cortar.
+ *
+ * O RACIOCÍNIO CLÍNICO ACIMA NÃO SE PERDE — é ele que importa quando esses dois
+ * módulos voltarem na arquitetura nova. A decisão vale de novo no dia em que
+ * voltarem, e continua escrita aqui.
  */
-const ATALHOS_REMOVIDOS: Record<string, string[]> = {
-  "pre-eclampsia": ["drogas-vasoativas"],
-  "cetoacidose-hiperosmolar": ["drogas-vasoativas"],
-};
+const ATALHOS_REMOVIDOS: Record<string, string[]> = {};
 
 const ABCDE: { letter: string; title: string; body: string }[] = [
   { letter: "A", title: "Via aérea", body: "Obstrução, estridor ou rebaixamento → abrir/aspirar, posicionar, considerar via aérea definitiva (IOT)." },

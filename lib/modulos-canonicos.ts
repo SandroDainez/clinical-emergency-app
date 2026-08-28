@@ -28,6 +28,25 @@
  *
  * `clinical-modules.ts` é o que a aplicação usa para rotear. Adotar outra chave
  * criaria uma QUARTA convenção, que é exatamente o problema.
+ *
+ * ── ⚠️ 2026-08-27 · NÃO PODADO, E O MOTIVO É O PONTO DESTE ARQUIVO ─────────
+ *
+ * A reestruturação removeu 19 módulos clínicos do app. As entradas deles FICAM
+ * aqui, de propósito:
+ *
+ *   abdome-agudo, anafilaxia, avc, cetoacidose-hiperosmolar, choque, crises-convulsivas, edema-agudo-pulmao, injuria-renal-aguda, insuficiencia-respiratoria, intoxicacoes-exogenas, isr-rapida, politrauma, pre-eclampsia, sedoanalgesia, sepse-adulto, sindromes-coronarianas, tce, tep, ventilacao-mecanica
+ *
+ * Este mapa não é o catálogo do app — é o RECONCILIADOR DE NOMES entre camadas.
+ * `protocols/guidelines_metadata.json` continua declarando a diretriz, o ano e a
+ * procedência de cada um desses protocolos, e essa é documentação clínica que
+ * não se joga fora porque a tela saiu: ela é o insumo para reconstruir o módulo
+ * na arquitetura nova sem repesquisar a fonte. Sem a entrada aqui, a auditoria
+ * de rastreabilidade (Camada 9) deixaria de casar `sepse` com `sepsis` e o
+ * registro viraria órfão silencioso.
+ *
+ * ⚠️ MAS A CONTAGEM PASSOU A MENTIR POR OMISSÃO: `audit:rastreabilidade` diz
+ * "31 com diretriz declarada", e o app tem 12 módulos. Os outros 19 são
+ * PROTOCOLOS DOCUMENTADOS SEM TELA. Quem ler aquele número precisa saber disto.
  */
 
 export type ModuloCanonico = {

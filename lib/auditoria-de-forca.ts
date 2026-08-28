@@ -30,7 +30,12 @@
  */
 
 /** Módulos cujas condutas declaram `procedencia` (força + fonte). */
-export const MODULOS_COM_FORCA_DECLARADA = ["injuria-renal-aguda"];
+// ⚠️ ESVAZIADA EM 2026-08-27 — o único módulo auditado por força de afirmação era
+// `injuria-renal-aguda`, removido com a arquitetura clínica antiga, junto com o
+// instrumento que o media (`scripts/valida-forca-da-afirmacao.cjs`). Sem quem
+// meça, NADA está auditado: a lista fica vazia e o aviso aparece em todos os
+// módulos. Declarar módulo aqui sem instrumento seria inventar auditoria.
+export const MODULOS_COM_FORCA_DECLARADA: string[] = [];
 
 /**
  * O texto, palavra por palavra como o autor o escreveu. Uma fonte só: o hub e a

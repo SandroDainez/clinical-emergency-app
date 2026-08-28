@@ -3866,3 +3866,167 @@ escrito. Alvo: pergunta ao autor sobre qual corte adotar e de qual fonte.
 
 É o **R-127**. A auditoria clínica específica vem **imediatamente depois do
 percurso no celular**, e não antes.
+
+---
+
+## D-104 — ESTABILIZAÇÃO: O "B" DO ABCDE ORIENTA, MAS NÃO LEVA A LUGAR NENHUM
+
+**Aberta em 2026-08-27**, na reestruturação que removeu a arquitetura clínica
+antiga. **Decisão explícita do autor:** registrar como dívida funcional e **não**
+criar módulo provisório para preservar o link.
+
+**O que se perdeu.** O card "Estabilização primeiro" oferecia seis atalhos. Dois
+apontavam para módulos que saíram do app:
+
+| atalho | destino | estado |
+|---|---|---|
+| Via aérea / IOT (ISR) | `isr-rapida` | removido |
+| Ventilação mecânica | `ventilacao-mecanica` | removido |
+
+Mantê-los seria pior que removê-los: o médico toca no meio de uma estabilização
+e cai numa rota morta. Foram removidos de `STAB_MODULES` em
+`components/protocol-screen/stabilization-first-card.tsx`.
+
+**A consequência clínica, dita sem eufemismo.** O card continua ensinando o "B"
+— *"Insuficiência respiratória / hipoxemia → O₂ alvo, VNI precoce; IOT +
+ventilação se falha ou exaustão"* — e essa orientação **continua correta e
+continua visível**. O que não existe mais é o passo seguinte: **não há navegação
+para módulo operacional de via aérea nem de ventilação**. O médico é orientado a
+intubar e ventilar; a partir daí o app não o acompanha.
+
+Os quatro atalhos restantes (PCR/RCP, Choque/vasopressor, Bradicardia instável,
+Taquicardia instável) seguem funcionando.
+
+**Uma terceira rota morta, da mesma família.** A tela de **PCR na gestação**
+(módulo preservado) tinha, no bloco "Para onde ir daqui", um segundo destino:
+**"Pré-eclâmpsia e eclâmpsia — se houver PULSO: sulfatação, crise hipertensiva,
+HELLP"**, apontando para `/modulos/pre-eclampsia`, também removido. O botão foi
+retirado em `components/protocol-screen/acls-pregnancy-screen.tsx`.
+
+O mesmo diagnóstico vale: a gestante **com pulso** é exatamente quem mais precisa
+que o toque leve a algum lugar, e agora não leva. Nenhum substituto foi posto de
+propósito — mandar a eclâmptica para um fluxo genérico de convulsão inverteria a
+primeira linha (**MgSO₄ antes de benzodiazepínico**), erro que este app já
+documentou uma vez. O destino "PCR no adulto", que é o principal daquele bloco,
+segue funcionando.
+
+**Onde fecha.** Quando **ISR rápida**, **Ventilação mecânica** e
+**Pré-eclâmpsia/eclâmpsia** forem reconstruídas na arquitetura nova. Nesse dia os
+atalhos voltam a `STAB_MODULES` e ao bloco da gestação — e nenhuma solução
+temporária deve ser criada antes disso.
+
+---
+
+## D-105 — REUSO DE PESO ENTRE MÓDULOS: A REGRA ESTÁ VIVA, O CAMINHO NÃO TEM PROVA
+
+**Aberta em 2026-08-27.** A regra de qual dado pode ser reaproveitado entre
+módulos — **peso e altura sim, sinal vital nunca** — continua **inteira e
+travada** em `scripts/test-contexto-paciente.cjs`, junto com `lib/contexto-do-paciente.ts`.
+Nada de conteúdo saiu.
+
+**O que ficou descoberto** é a travessia de ponta a ponta: informar o peso num
+módulo, trocar de módulo por dentro do app, e ver o aviso *"Aproveitado do que
+você já informou"* no destino. O teste que media isso (`e2e/barra-numerica.spec.ts`)
+usava sepse-adulto → ISR; **os dois módulos saíram**.
+
+**Por que não foi redirecionado.** Nenhum par de módulos sobreviventes coleta
+peso em árvore de decisão: bradicardia e taquicardia coletam PAS e sintomas, e as
+calculadoras pedem peso mas não se alcançam por dentro do fluxo. Escrever a
+travessia sobre um par que não existe seria um teste que **passa sem exercitar o
+caminho** — pior que a ausência dele, porque parece cobertura.
+
+**Onde fecha.** No primeiro módulo da arquitetura nova que colete peso em fluxo.
+
+---
+
+## D-106 — DOSE POR QUILO: A REGRA GERAL ESTÁ VIVA, O RISCO ESPECÍFICO NÃO TEM PROVA
+
+**Aberta em 2026-08-27.** A regra de que **a tela não pode imprimir número que
+ninguém informou** continua travada em `scripts/valida-valor-nao-informado.cjs`
+(`test:valor-informado`, 8 conferências verdes). Nada de conteúdo saiu.
+
+**O que ficou descoberto** é o elo mais grave da série: **valor solto no ponto de
+partida → dose produzida**. Na Sedoanalgesia, sem peso confirmado a taxa da bomba
+saía como "—", e o paciente de 70 kg ficava sem dose enquanto na tela parecia
+apenas *"o app não calculou"* — defeito que **bloqueava conduta**, não um aviso.
+
+**Por que não foi redirecionado.** Nenhum módulo sobrevivente dosa por quilo
+dentro do fluxo. O teste dos campos opcionais numéricos (`e2e/valor-nao-informado.spec.ts`)
+também saiu pelo mesmo motivo: peso, altura e idade opcionais não existem em
+nenhum módulo vivo.
+
+**Onde fecha.** Quando voltar a existir um fluxo com **dose por kg**. A cobertura
+daquele risco específico deve ser recriada nesse momento — não antes, e não com
+teste artificial sobre código que não existe.
+
+---
+
+## D-107 — LEGACY_ACLS_RUNTIME: 6.041 LINHAS DE DÍVIDA TRANSITÓRIA ACEITA
+
+**Aberta em 2026-08-27**, com prazo e escopo declarados pelo autor.
+
+A reestruturação removeu a arquitetura clínica antiga. **Bradicardia e Taquicardia
+do ACLS foram preservadas** porque pertencem ao PCR Adulto — e elas dependem do
+motor e da concha antigos. O conjunto foi isolado e carimbado:
+
+> `LEGACY_ACLS_RUNTIME — manter temporariamente apenas para bradicardia e
+> taquicardia. Não utilizar em novos módulos clínicos.`
+
+| arquivo | linhas |
+|---|---|
+| `core/decision-tree/types.ts` | 1.046 |
+| `core/decision-tree/engine.ts` | 1.038 |
+| `core/decision-tree/estado-clinico.ts` | 129 |
+| `components/protocol-screen/acls-decision-flow-screen.tsx` | 2.644 |
+| `components/protocol-screen/stabilization-first-card.tsx` | 332 |
+| `acls-tachycardia-tree.ts` | 460 |
+| `acls-bradycardia-tree.ts` | 394 |
+| `lib/instabilidade-guiada.ts` | 354 |
+| `lib/flow-session.ts` | 163 |
+| **total** | **6.581** |
+
+⚠️ **A conferência de consumidores corrigiu o número.** A contagem inicial era
+6.041, em sete arquivos. A varredura de quem importa o quê mostrou dois
+**satélites exclusivos** que não estavam carimbados: `lib/instabilidade-guiada.ts`
+(consumido SÓ pelas duas árvores — é ele que produz `camposDeInstabilidade()`) e
+`lib/flow-session.ts` (consumido SÓ pela concha e pelo motor). Eles são legado por
+DEPENDÊNCIA, não por conteúdo, e saem junto. O número não cresceu por regressão:
+cresceu porque a medição ficou honesta.
+
+O motor propriamente dito — `core/decision-tree/engine.ts` — tem **um único**
+consumidor: `acls-decision-flow-screen.tsx`. A concha tem **dois**:
+`acls-bradycardia-screen.tsx` e `acls-tachycardia-screen.tsx`. Cada árvore tem
+**um**. O vazamento de `types.ts` para fora dos sete era `import type` nos dois
+satélites — apagado na compilação, zero acoplamento em runtime.
+
+**Isto não é a base do próximo módulo.** O AVC, e tudo que vier depois, nasce na
+arquitetura nova. Acrescentar módulo aqui reinstala o problema que a
+reestruturação existiu para desfazer.
+
+**Onde fecha.** Quando bradicardia e taquicardia forem reescritas.
+
+
+---
+
+## D-108 — DÍVIDA TÉCNICA PRÉ-EXISTENTE, MEDIDA NOS DOIS LADOS DA REESTRUTURAÇÃO
+
+**Registrada em 2026-08-27.** Nenhum dos dois itens foi criado pela remoção dos
+módulos clínicos; ambos foram MEDIDOS antes e depois, para que a distinção entre
+*dívida herdada* e *regressão* não dependa de memória.
+
+**1 · Lint — 324 → 234 problemas.** Medido com a limpeza em `git stash` e sem
+ela. O app nunca teve lint limpo; a reestruturação reduziu a dívida em 90
+problemas ao remover os arquivos que os continham. **Decisão explícita do autor:
+não corrigir agora, não ampliar o escopo desta etapa.**
+
+**2 · Hidratação (React #418) na rota desconhecida.** Visitar `/modulos/<id que
+não existe>` redireciona corretamente para a home e não renderiza tela de módulo
+— mas lança um erro de hidratação no console. **Isto NÃO é dos módulos
+removidos:** `/modulos/xpto-nunca-existiu`, um id que jamais existiu, produz
+exatamente o mesmo erro; e toda rota VIVA hidrata limpa. O que mudou é que os 19
+ids removidos passaram a integrar o conjunto dos desconhecidos.
+
+A causa é o caminho de fallback do servidor estático: sem `<id>.html` publicado,
+serve-se o `index.html` e o cliente redireciona depois de montar. **Onde fecha:**
+quando a rota `[id]` ganhar uma tela de "módulo não encontrado" renderizada no
+build, em vez de redirecionar no cliente.

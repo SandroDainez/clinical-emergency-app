@@ -250,15 +250,23 @@ export default function AclsPregnancyScreen() {
           </View>
           <Text style={s.rotaChevron}>›</Text>
         </Pressable>
-        <Pressable
-          onPress={() => router.push("/modulos/pre-eclampsia?from_module=pcr-gestacao-acls" as Href)}
-          style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.rotaTitulo}>{tr("Pré-eclâmpsia e eclâmpsia")}</Text>
-            <Text style={s.rotaSub}>{tr("Se houver PULSO — sulfatação, crise hipertensiva, HELLP")}</Text>
-          </View>
-          <Text style={s.rotaChevron}>›</Text>
-        </Pressable>
+        {/*
+          ⚠️ ROTA REMOVIDA EM 2026-08-27 — havia aqui um segundo destino,
+          "Pré-eclâmpsia e eclâmpsia" (« Se houver PULSO — sulfatação, crise
+          hipertensiva, HELLP »), apontando para `/modulos/pre-eclampsia`. O
+          módulo saiu do app com a arquitetura clínica antiga, e o botão virou
+          rota morta: a gestante COM pulso é justamente quem mais precisa que o
+          toque leve a algum lugar.
+
+          ⚠️ ISTO É PERDA DE COBERTURA CLÍNICA, não faxina, e é da mesma família
+          da D-104: o app continua sabendo dizer o que fazer e deixou de saber
+          para onde ir. Registrada em auditoria/DIVIDAS-CONHECIDAS.md.
+
+          Nenhum substituto foi posto no lugar de propósito: mandar a eclâmptica
+          para um fluxo genérico inverteria a primeira linha (MgSO₄ antes de
+          benzodiazepínico), erro que este app já documentou uma vez em
+          `stabilization-first-card.tsx`.
+        */}
       </View>
 
       {/* Causas obstétricas */}

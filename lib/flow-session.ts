@@ -1,4 +1,18 @@
 /**
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║  LEGACY_ACLS_RUNTIME — manter temporariamente apenas para bradicardia    ║
+ * ║  e taquicardia. Não utilizar em novos módulos clínicos.                  ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ *
+ * ⚠️ SATÉLITE EXCLUSIVO. Este arquivo não estava na lista original dos sete
+ * carimbados, e a conferência de consumidores de 2026-08-27 mostrou que ele
+ * deveria estar: TODO consumidor seu está dentro do runtime transitório. Ele é
+ * legado por dependência, não por conteúdo.
+ *
+ * Sai do app junto com bradicardia e taquicardia. Registrado como **D-107** em
+ * `auditoria/DIVIDAS-CONHECIDAS.md`.
+ */
+/**
  * Retomada de fluxo entre módulos.
  *
  * ─────────────────────────────────────────────────────────────────────────────

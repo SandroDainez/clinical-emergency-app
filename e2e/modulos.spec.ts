@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { abrirModulo, pressables, texto } from "./helpers";
 
 /**
@@ -15,16 +17,8 @@ const MODULOS: Array<[string, string]> = [
   // O cabeçalho compacto do PCR mostra o rótulo clínico do módulo, não o título
   // do catálogo — "ACLS · Adulto" em vez de "PCR Adulto".
   ["pcr-adulto", "ACLS"],
-  ["sepse-adulto", "Sepse"],
   ["drogas-vasoativas", "Drogas Vasoativas"],
   ["correcoes-eletroliticas", "Correções eletrolíticas"],
-  ["isr-rapida", "ISR"],
-  ["edema-agudo-pulmao", "Edema Agudo de Pulmão"],
-  ["cetoacidose-hiperosmolar", "CAD"],
-  ["ventilacao-mecanica", "Ventilação mecânica"],
-  ["anafilaxia", "Anafilaxia"],
-  ["avc", "AVC"],
-  ["sindromes-coronarianas", "Síndromes Coronarianas"],
   ["ritmos-acls", "Ritmos de Parada"],
   ["farmacologia-acls", "Farmacologia"],
   ["bradicardia-acls", "Bradicardia"],
@@ -33,21 +27,19 @@ const MODULOS: Array<[string, string]> = [
   ["pcr-gestacao-acls", "PCR na Gestação"],
   ["ovace-adulto", "Engasgo"],
   ["pos-pcr-acls", "Pós-PCR"],
-  ["tep", "Tromboembolia Pulmonar"],
-  ["pre-eclampsia", "clâmpsia"],
-  ["sedoanalgesia", "Sedoanalgesia"],
   ["calculadoras-clinicas", "Calculadoras"],
-  ["politrauma", "Politrauma"],
-  ["tce", "TCE"],
-  ["crises-convulsivas", "convulsivas"],
-  ["intoxicacoes-exogenas", "Intoxicações"],
-  ["choque", "Choque"],
-  ["insuficiencia-respiratoria", "Insuficiência respiratória"],
-  ["abdome-agudo", "Abdome agudo"],
 ];
 
-test("o catálogo cobre os 30 módulos clínicos", () => {
-  expect(MODULOS).toHaveLength(30);
+// ⚠️ 30 → 12 EM 2026-08-27. A reestruturação removeu a arquitetura clínica antiga;
+// sobraram o PCR Adulto e seus satélites do ACLS mais as calculadoras. O número é
+// conferido contra `clinical-modules.ts` logo abaixo, para que módulo novo não
+// consiga entrar no app e ficar FORA desta rede — que é a rede mais barata que existe.
+test("o catálogo cobre os 12 módulos clínicos, e não deixa nenhum de fora", () => {
+  expect(MODULOS).toHaveLength(12);
+  const fonte = readFileSync(join(__dirname, "..", "clinical-modules.ts"), "utf8");
+  const idsDoApp = [...fonte.matchAll(/^\s*id: "([a-z0-9-]+)",/gm)].map((m) => m[1]);
+  expect(idsDoApp.length).toBeGreaterThan(5); // vacuidade: leitura quebrada ≠ nada a cobrir
+  expect([...idsDoApp].sort()).toEqual(MODULOS.map(([id]) => id).sort());
 });
 
 for (const [id, titulo] of MODULOS) {

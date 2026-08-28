@@ -205,52 +205,16 @@ export default function ProtocolScreen({
     return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
   }
 
-  function buildAnafilaxiaReferralParams(target: "isr" | "vasoactive" | "ventilation") {
-    const oxygenFallback = getFieldValue("treatmentO2") || getFieldValue("treatmentAirway");
-    return {
-      from_module: "anafilaxia",
-      case_label: "Anafilaxia",
-      reason:
-        target === "isr"
-          ? "Via aérea ameaçada / necessidade de IOT"
-          : target === "vasoactive"
-            ? "Necessidade de droga vasoativa / adrenalina EV"
-            : "Pós-intubação — parametrização de ventilação mecânica",
-      age: getFieldValue("age"),
-      sex: getFieldValue("sex"),
-      weight_kg: getFieldValue("weightKg"),
-      height_cm: getFieldValue("heightCm"),
-      spo2: getFieldValue("spo2"),
-      gcs: getFieldValue("gcs"),
-      pas: getFieldValue("systolicPressure"),
-      pad: getFieldValue("diastolicPressure"),
-      fc: getFieldValue("heartRate"),
-      symptoms: getFieldValue("symptoms"),
-      oxygen: oxygenFallback,
-      drug: target === "vasoactive" ? "adrenalina" : undefined,
-    };
-  }
-
-  function buildAnafilaxiaReferralRoute(target: "isr" | "vasoactive" | "ventilation"): Href {
-    if (target === "isr") {
-      return {
-        pathname: "/modulos/isr-rapida",
-        params: buildAnafilaxiaReferralParams(target),
-      } as unknown as Href;
-    }
-
-    if (target === "vasoactive") {
-      return {
-        pathname: "/modulos/drogas-vasoativas",
-        params: buildAnafilaxiaReferralParams(target),
-      } as unknown as Href;
-    }
-
-    return {
-      pathname: "/modulos/ventilacao-mecanica",
-      params: buildAnafilaxiaReferralParams(target),
-    } as unknown as Href;
-  }
+  /**
+   * ⚠️ REMOVIDO EM 2026-08-27 — `buildAnafilaxiaReferral{Params,Route}` e os três desvios
+   * `open_rsi_module` / `open_ventilation_module` / `open_vasoactive_module` de
+   * `runAuxiliaryAction`. Eram o encaminhamento da ANAFILAXIA para ISR, ventilação
+   * e vasoativas; a anafilaxia saiu com a arquitetura clínica antiga, e nenhum
+   * motor sobrevivente declara esses actionId — os três ramos eram inalcançáveis.
+   *
+   * Dois deles apontavam para `isr-rapida` e `ventilacao-mecanica`, que também não
+   * existem mais: mantê-los era guardar rota morta atrás de um `if`.
+   */
   function debugVoice(event: string, details?: Record<string, unknown>) {
     if (
       typeof globalThis === "undefined" ||
@@ -706,32 +670,6 @@ export default function ProtocolScreen({
   }
 
   function runAuxiliaryAction(actionId: string, requiresConfirmation?: boolean) {
-    if (actionId === "open_rsi_module") {
-      markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "isr-rapida", buildAnafilaxiaReferralRoute("isr"));
-      return;
-    }
-
-    if (actionId === "open_vasoactive_module") {
-      markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(
-        router,
-        "drogas-vasoativas",
-        buildAnafilaxiaReferralRoute("vasoactive")
-      );
-      return;
-    }
-
-    if (actionId === "open_ventilation_module") {
-      markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(
-        router,
-        "ventilacao-mecanica",
-        buildAnafilaxiaReferralRoute("ventilation")
-      );
-      return;
-    }
-
     if (!engine.runAuxiliaryAction) {
       return;
     }

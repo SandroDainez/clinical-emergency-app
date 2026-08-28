@@ -162,9 +162,7 @@ for (const l of linhas) {
   // ("travas que TOCAM o módulo"), e a coluna de auditoria é escrita à mão.
   const AUDITADOS = new Set([
     // Fase 1 — dos seis módulos auditados, só DOIS têm árvore de decisão.
-    "ventilation", "rsi",
     // D-22 — tocados nos Blocos 1–3, com fonte aberta por item
-    "anaphylaxis", "eap", "sepsis", "dka-hhs",
   ]);
 
   // Auditados que NÃO aparecem nesta tabela porque não têm árvore: são telas de
@@ -172,7 +170,7 @@ for (const l of linhas) {
   // Clínicas), com conteúdo em `*-engine.ts` ou na própria tela. A tabela
   // abaixo cobre módulos de ÁRVORE — dizer isso evita que alguém leia a
   // ausência deles como lacuna de auditoria.
-  const AUDITADOS_SEM_ARVORE = ["Vasoativas", "Sedoanalgesia", "Eletrólitos", "Calculadoras Clínicas"];
+  const AUDITADOS_SEM_ARVORE = ["Vasoativas", "Eletrólitos", "Calculadoras Clínicas"];
 
   const modulos = fs.readdirSync(appDir)
     .filter((f) => /-decision-tree\.ts$/.test(f))

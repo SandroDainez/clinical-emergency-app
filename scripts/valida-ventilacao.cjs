@@ -47,15 +47,15 @@ try {
     "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
     "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
     "--outDir", tempDir,
-    path.join(appDir, "ventilation-decision-tree.ts"),
+    path.join(appDir, "lib", "peso-predito.ts"),
   ], { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] });
 } catch {
-  console.error("\n❌ ventilation-decision-tree.ts não compila — a conferência do PBW não rodou.\n");
+  console.error("\n❌ lib/peso-predito.ts não compila — a conferência do PBW não rodou.\n");
   fs.rmSync(tempDir, { recursive: true, force: true });
   process.exit(1);
 }
 
-const { predictedBodyWeight, normalizarSexo } = require(path.join(tempDir, "ventilation-decision-tree.js"));
+const { predictedBodyWeight, normalizarSexo } = require(path.join(tempDir, "peso-predito.js"));
 
 const falhas = [];
 let ok = 0;
@@ -211,7 +211,7 @@ function fontes(dir, saida = []) {
   return saida;
 }
 
-const DONO = "ventilation-decision-tree.ts";
+const DONO = "lib/peso-predito.ts";  // mudou de casa em 2026-08-27
 for (const arquivo of fontes(appDir)) {
   const rel = path.relative(appDir, arquivo);
   if (rel === DONO) continue;
@@ -228,259 +228,11 @@ for (const arquivo of fontes(appDir)) {
   } else ok++;
 }
 
-// ── 6. A tabela PEEP/FiO₂ existe, e quem manda usá-la aponta para ela ──────
-//
-// QUATRO pontos do app instruíam a titular "pela tabela PEEP/FiO₂ ARDSNet" e a
-// tabela não existia em lugar nenhum. Mandar fazer algo impossível dentro do
-// próprio app é pior que omitir: quem procura e não acha conclui que o problema
-// é dele.
-{
-  const tabela = lerFonte(path.join(appDir, "lib/tabela-peep.ts"));
-  const pares = [...tabela.matchAll(/fio2:\s*"([^"]+)",\s*peep:\s*"([^"]+)"/g)];
-  if (pares.length < 8) {
-    falhas.push(`lib/tabela-peep.ts tem ${pares.length} pares FiO₂/PEEP — a low-PEEP do ARDSNet tem 8 degraus.`);
-  } else ok++;
-  // O último degrau é o que separa a low-PEEP do degrau do app: 18–24 em FiO₂
-  // 1,0. Se ele sumir, a tabela deixa de mostrar o referencial mais alto e a
-  // ressalva "o app trabalha abaixo dela" perde o objeto.
-  if (!/1,00[\s\S]{0,40}18–24/.test(tabela)) {
-    falhas.push("lib/tabela-peep.ts não traz FiO₂ 1,00 → PEEP 18–24 — sem o degrau mais alto, a ressalva do app perde referência.");
-  } else ok++;
-
-  const arvoreVm = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
-  if (!/tabela_peep:/.test(arvoreVm) || !/TABELA_LOW_PEEP/.test(arvoreVm)) {
-    falhas.push("a árvore de ventilação não expõe o nó `tabela_peep` alimentado por TABELA_LOW_PEEP.");
-  } else ok++;
-
-  // Quem MANDA usar a tabela tem de dizer ONDE ela está.
-  const citam = {
-    "eap-decision-tree.ts": null,
-    "components/protocol-screen/ventilator-configurator-card.tsx": null,
-  };
-  for (const arq of Object.keys(citam)) {
-    const t = lerFonte(path.join(appDir, arq));
-    // A conferência é POR LINHA, não por arquivo. A primeira versão procurava o
-    // ponteiro em qualquer lugar do arquivo — e o EAP menciona o módulo de
-    // ventilação noutro nó, então uma instrução órfã passava verde de carona
-    // numa frase distante. É o "medir o efeito, não a grafia" do R-10 aplicado
-    // à granularidade: a pergunta é se ESTA instrução diz onde, não se o
-    // arquivo diz onde em algum lugar.
-    let orfas = 0;
-    for (const linha of t.split("\n")) {
-      if (/^\s*\/\//.test(linha) || /^\s*\*/.test(linha)) continue;
-      if (!/tabela[^"']{0,25}(PEEP|FiO)/i.test(linha)) continue;
-      if (/passo "Tabela PEEP\/FiO₂"|tabela no módulo de VM|módulo de Ventilação Mecânica/i.test(linha)) continue;
-      orfas++;
-    }
-    if (orfas) {
-      falhas.push(
-        `${arq}: ${orfas} instrução(ões) mandam usar a tabela PEEP/FiO₂ sem dizer ONDE ela está — ` +
-        `instrução para algo que o leitor procura e não encontra.`
-      );
-    } else ok++;
-  }
-}
-
-/**
- * ── E. ALVOS DO TCE: FONTE ÚNICA, CRIADA ANTES DA DIVERGÊNCIA ───────────────
- *
- * Os alvos do TCE viviam em CINCO lugares com TRÊS valores de PaCO₂:
- *   tce-decision-tree      35–45  (três ocorrências)
- *   ventilation-tree       35–40
- *   rsi-decision-tree      35–40
- *   politrauma             35–38
- *   card de configuração   35–40
- *
- * Nenhum estava "errado" isoladamente — todos plausíveis. É o mesmo mecanismo
- * do peso predito (R-9): o dano nasce do valor atravessando módulos, e nenhuma
- * auditoria módulo a módulo o encontraria.
- *
- * Diferença: aqui a fonte única (lib/alvos-tce.ts) foi criada com a divergência
- * ainda pequena, em vez de depois de ela chegar em produção.
- *
- * O que se vigia é a REESCRITA: nenhum arquivo além da fonte pode escrever um
- * alvo de TCE à mão.
- */
-const ALVOS_TCE_DONO = "lib/alvos-tce.ts";
-const CONSOMEM_ALVOS_TCE = [
-  "tce-decision-tree.ts",
-  "ventilation-decision-tree.ts",
-  "rsi-decision-tree.ts",
-  "politrauma-decision-tree.ts",
-  "components/protocol-screen/ventilator-configurator-card.tsx",
-];
-
-// ⚠️ ATUALIZADO EM 2026-08-16 — R-44, EXPECTATIVA DATADA.
-//
-// A conferência exigia o identificador `ALVOS_TCE` em cada consumidor. A
-// árvore do TCE deixou de usá-lo: as linhas de METAS eram interpoladas
-// (`${ALVOS_TCE.paco2}`) e chegavam em PORTUGUÊS ao usuário em espanhol
-// (D-35), então viraram constantes-frase-inteira exportadas pela MESMA lib —
-// TCE_METAS_NEUROPROTECAO, TCE_VENTILACAO, TCE_METAS_UTI e as outras.
-//
-// O que a trava quer garantir é que o alvo venha da FONTE, não que venha por
-// um identificador específico. Passa a conferir o IMPORT da lib, e o consumo
-// de verdade — o texto produzido carregar os números do objeto — é conferido
-// por execução em `test:tce`.
-for (const rel of CONSOMEM_ALVOS_TCE) {
-  const texto = lerFonte(path.join(appDir, rel));
-  if (!/from "[^"]*lib\/alvos-tce"/.test(texto)) {
-    falhas.push(
-      `${rel} não importa mais de lib/alvos-tce — se ele exibe alvo de TCE, voltou a ` +
-      `escrevê-lo à mão, e é assim que cinco lugares acabam com três PaCO₂ diferentes.`
-    );
-  } else ok++;
-}
-
-// As frases literais do TCE precisam repetir os números do objeto ALVOS_TCE.
-// Elas são literais (e não interpolação) para que a varredura de tradução as
-// enxergue; o vínculo com a fonte, que a interpolação daria de graça, passa a
-// ser cobrado aqui.
-{
-  const fonte = lerFonte(path.join(appDir, "lib/alvos-tce.ts"));
-  // ⚠️ `TCE_VERSUS_POLITRAUMA` SAIU DA LISTA PORQUE SAIU DO APP.
-  //
-  // Ela dizia "prevalece a meta do TCE, PAS ≥ 110 mmHg" — o número LISO, sem a
-  // estratificação por idade da BTF. Quem manda nessa frase agora é
-  // PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA, em lib/pas-no-tce.ts, que é o dono
-  // único da meta desde que a D-1 fechou. Conferir aqui que ela contém "≥ 110"
-  // seria pedir de volta exatamente o defeito.
-  const paresObrigatorios = [
-    ["TCE_HIPERVENTILACAO", "PaCO₂ 30–35 mmHg"],
-    // ⚠️ COM "PaCO₂" E "mmHg" JUNTOS, de propósito. Conferir só "25–34" passava
-    // com o alvo trocado, porque a constante cita o número de novo mais adiante
-    // ("o 25–34 vem do protocolo institucional"). Presença no arquivo não é
-    // declaração do alvo — mesma classe de "import não é consumo".
-    ["TCE_HIPERVENTILACAO_TERCEIRA_LINHA", "PaCO₂ 25–34 mmHg"],
-  ];
-  for (const [nome, numero] of paresObrigatorios) {
-    const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?;`));
-    if (!bloco) {
-      falhas.push(`lib/alvos-tce.ts não exporta ${nome}.`);
-    } else if (!bloco[0].includes(numero)) {
-      falhas.push(
-        `${nome} não contém "${numero}" — a frase literal descolou dos números de ALVOS_TCE. ` +
-        `Ela é literal para poder ser traduzida; o vínculo com a fonte é esta trava.`
-      );
-    } else ok++;
-  }
-  if (!/paco2Resgate: "30–35 mmHg"/.test(fonte)) {
-    falhas.push("ALVOS_TCE.paco2Resgate mudou e a frase de hiperventilação não acompanhou.");
-  } else ok++;
-  // ⚠️ O INVERSO DO QUE ESTAVA AQUI: `pas` NÃO PODE EXISTIR.
-  //
-  // Era `pas: "≥ 110 mmHg"`, liso, e ninguém o consumia — a D-1 conservada em
-  // formol. A meta de PAS no TCE é estratificada por idade e mora em
-  // lib/pas-no-tce.ts.
-  if (/^\s*pas:/m.test(fonte)) {
-    falhas.push(
-      "lib/alvos-tce.ts voltou a declarar `pas`. A meta de PAS no TCE é ESTRATIFICADA POR IDADE e tem um " +
-      "dono só: lib/pas-no-tce.ts. Um valor liso aqui cobra 110 de quem a BTF cobra 100."
-    );
-  } else ok++;
-}
-
-// ── F. TODO PRESET DE CENÁRIO DECLARA O SEU CENÁRIO ────────────────────────
-//
-// Dois dos doze presets caíam no cenário errado por casamento de substring:
-// "…sem SDRA confirmado" virava ARDS (a negação era ignorada) e "fraqueza
-// NEUROmuscular" virava neuro ("neuro" testado antes de "neuromuscular").
-//
-// Agora cada preset declara o seu cenário em CENARIOS, e os presets do campo
-// SAEM dessa tabela. Esta trava garante as duas coisas — a declaração e a
-// origem única —, porque duas listas separadas voltariam a divergir.
-{
-  // D-22 · RETARGET: a tabela CENARIOS vivia no ventilation-engine (deletado).
-  // O intento da trava — roteamento DECLARADO e não inferido por texto — passa
-  // a ser conferido onde ele agora existe: as `options` do nó `patologia` da
-  // árvore, cada uma com `id` e `next` explícitos.
-  //
-  // A árvore torna o defeito do R-8 estruturalmente impossível (não há
-  // casamento de substring), mas a trava continua valendo por outro motivo: ela
-  // garante que os cenários não ENCOLHAM e que o caso "sem SDRA" siga tendo
-  // caminho próprio, que foi o que originou tudo.
-  const arvore = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
-
-  const noPatologia = arvore.match(/patologia: \{[\s\S]*?\n    \},/);
-  if (!noPatologia) {
-    falhas.push("ventilation-decision-tree.ts não tem o nó `patologia` — o roteamento por cenário sumiu.");
-  } else {
-    const entradas = [...noPatologia[0].matchAll(/\{ id: "(\w+)", label: "([^"]+)", next: "(\w+)" \}/g)];
-    if (entradas.length < 9) {
-      falhas.push(`o nó \`patologia\` tem só ${entradas.length} cenário(s) — a leitura cegou ou opções sumiram.`);
-    } else ok++;
-
-    // Nenhum cenário pode ficar sem destino declarado.
-    for (const [, id, label, destino] of entradas) {
-      if (!destino) falhas.push(`o cenário "${label.slice(0, 40)}" está sem \`next\` declarado.`);
-      else ok++;
-    }
-
-    // O caso que originou tudo: hipoxemia sem SDRA confirmada NÃO pode ter ramo
-    // próprio mais brando. A decisão (V1) foi mantê-la DENTRO de `pat_sara`,
-    // por assimetria de dano — SDRA é subdiagnosticada.
-    const ramoBrando = entradas.find(([, , label]) => /sem SDRA/i.test(label));
-    if (ramoBrando) {
-      falhas.push(
-        `existe um cenário "${ramoBrando[2].slice(0, 50)}" como opção irmã de SARA. A decisão do V1 foi ` +
-        `NÃO criar esse ramo: oferecer estratégia mais branda no ponto de maior dúvida diagnóstica dá menos ` +
-        `rigor a quem mais precisa. O conteúdo vive DENTRO de pat_sara.`
-      );
-    } else ok++;
-
-    // E a distinção precisa continuar escrita lá dentro.
-    if (!/hipoxemia difusa ainda em investiga/i.test(arvore)) {
-      falhas.push("pat_sara perdeu a distinção entre SDRA confirmada e hipoxemia em investigação (V1).");
-    } else ok++;
-  }
-}
-
-// O motor precisa ter o cenário TCE — e ele precisa ser TCE, não "neuro".
-// Reaproveitar o cenário neurocrítico para o TCE foi a estrutura que se
-// decidiu NÃO ter: AVC e HSA têm alvos próprios nos módulos deles.
-{
-  // D-22 · RETARGET: o `case "tce"` vivia no engine deletado. O mesmo contrato
-  // vale no nó `pat_tce` da árvore — TCE tem ramo PRÓPRIO (não cai num "neuro"
-  // genérico) e lê ALVOS_TCE em vez de reescrever os números.
-  const arv = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
-  if (!/pat_tce: \{/.test(arv)) {
-    falhas.push(
-      "ventilation-decision-tree.ts não tem o nó `pat_tce` — o TCE voltou a cair num cenário " +
-      "genérico, que não tem alvo de PaCO₂, PPC nem PIC."
-    );
-  } else ok++;
-  const blocoTce = arv.match(/pat_tce: \{[\s\S]*?\n    \},/);
-  if (blocoTce && !/ALVOS_TCE\./.test(blocoTce[0])) {
-    falhas.push(
-      "o nó `pat_tce` não lê ALVOS_TCE — os números voltaram a ser escritos à mão, " +
-      "que é o defeito que a fonte única existe para impedir."
-    );
-  } else ok++;
-}
-
-// Nenhum alvo de PaCO₂ do TCE escrito à mão fora da fonte. O `neuro` NÃO
-// traumático (AVC, HSA) tem alvos próprios e fica de fora de propósito — ver
-// o comentário de lib/alvos-tce.ts.
-for (const rel of CONSOMEM_ALVOS_TCE) {
-  const texto = lerFonte(path.join(appDir, rel))
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "");
-  const mao = texto.match(/PaCO₂\s*3[0-9]\s*[–-]\s*[34][0-9]/g);
-  const ehVentTree = rel === "ventilation-decision-tree.ts";
-  if (mao && !ehVentTree) {
-    falhas.push(
-      `${rel} escreve PaCO₂ à mão (${[...new Set(mao)].join(", ")}) — alvo de TCE vem de ${ALVOS_TCE_DONO}.`
-    );
-  } else ok++;
-}
-
-console.log("\nVentilação — peso predito: fonte única, e recusa o que não sabe\n");
-if (falhas.length) {
-  for (const f of falhas) console.log(`❌ ${f}`);
-  console.log("");
-} else {
-  console.log(`✅ ${ok} verificações — fórmula ARDSNet conferida, sexo indeterminado recusado em todas as formas\n`);
-}
-
-fs.rmSync(tempDir, { recursive: true, force: true });
-process.exit(falhas.length ? 1 : 0);
+// ⚠️ BLOCO REMOVIDO EM 2026-08-27 — a árvore de ventilação saiu do app com a
+// arquitetura clínica antiga. O que esta trava ainda mede é a fórmula do peso
+// predito, que mudou para `lib/peso-predito.ts` e é consumida pela Calculadora
+// Clínica — área preservada.
+// ⚠️ BLOCO REMOVIDO EM 2026-08-27 — media a árvore de ventilação mecânica, que
+// saiu do app com a arquitetura clínica antiga. O que esta trava ainda garante
+// é a implementação ÚNICA do peso predito, hoje em `lib/peso-predito.ts` e
+// consumida pela Calculadora Clínica.

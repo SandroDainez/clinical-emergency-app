@@ -1,3 +1,22 @@
+/**
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║  LEGACY_ACLS_RUNTIME — manter temporariamente apenas para bradicardia    ║
+ * ║  e taquicardia. Não utilizar em novos módulos clínicos.                  ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ *
+ * Em 2026-08-27 a arquitetura clínica antiga foi removida do app: 19 árvores de
+ * decisão e 20 telas de fluxo saíram. Sobraram DOIS módulos que ainda dependem
+ * deste motor — `acls-bradycardia-tree` e `acls-tachycardia-tree` — porque eles
+ * pertencem ao PCR Adulto, que é área preservada.
+ *
+ * ⚠️ ISTO NÃO É A BASE DO PRÓXIMO MÓDULO. O AVC, e tudo que vier depois, nasce
+ * na arquitetura nova. Acrescentar módulo aqui é reinstalar o problema que a
+ * reestruturação existiu para desfazer.
+ *
+ * Este arquivo sai do app quando bradicardia e taquicardia forem reescritas.
+ *
+ * Registrado como **D-107** em `auditoria/DIVIDAS-CONHECIDAS.md`.
+ */
 import type {
   ActionNode,
   AlertaPersistente,

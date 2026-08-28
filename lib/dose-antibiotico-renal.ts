@@ -105,27 +105,6 @@ export function rotuloAtaqueVancomicina(pesoKg: number | undefined): string {
 
 /* ── 2 · O PISO — nos nove esquemas ──────────────────────────────────────── */
 
-export const ATB_PRIMEIRA_DOSE_NAO_AJUSTA =
-  "⚠️ ESTA PRIMEIRA DOSE DE BETALACTÂMICO NÃO SE AJUSTA POR FUNÇÃO RENAL — E NEM DEVE. O MOTIVO É O VOLUME DE DISTRIBUIÇÃO: na sepse ele aumenta (capilar permeável, volume ressuscitado, albumina baixa), e a dose de ataque existe para compensar isso. Volume de distribuição não depende de depuração renal — então a dose de ataque é a mesma com creatinina alta, em anúria e em diálise. ⚠️ E O AJUSTE PRECOCE É O ERRO MAIS DOCUMENTADO AQUI: na coorte que comparou ajustar nas primeiras 24 h contra adiar, quem ADIOU teve MENOR mortalidade hospitalar (HR 0,588; IC 95% 0,355–0,974). Subdosar o séptico mata mais rápido que acumular a droga. ➜ O QUE SE AJUSTA É A MANUTENÇÃO — dose ou intervalo das doses seguintes —, e não antes de 24 a 48 h sem monitorização de nível. Até lá: DOSE A FUNÇÃO RENAL e registre, em vez de reduzir. ⚠️ A VANCOMICINA SEGUE OUTRO REGIME: ataque pelo PESO REAL e manutenção guiada por NÍVEL/AUC, não por calendário.";
 
 /* ── 3 · O TETO — ponteiro para os três cobertos ─────────────────────────── */
 
-/**
- * ⚠️ PONTEIRO TEXTUAL, E A DIFERENÇA ESTÁ DECLARADA DE PROPÓSITO.
- *
- * Verificado no código: navegação entre módulos EXISTE — `targets` com
- * `moduleId`, renderizado como card tocável que chama `abrirOutroModulo` e faz
- * `router.push`. Mas `targets` é campo EXCLUSIVO de `TransitionNode`
- * (`core/decision-tree/types.ts:125`), e os nove esquemas são `action`.
- *
- * Transformá-los em `transition` seria pior: `transition` carrega semântica de
- * DESFECHO (`disposition: discharge | observation | icu | other_module`), e
- * "prescrevi o antibiótico" não é desfecho — o fluxo continua para volume,
- * vasopressor e reavaliação.
- *
- * Então o ponteiro é textual, e o texto NÃO promete toque: diz onde a
- * calculadora está, no vocabulário do hub ("Calculadoras & escores"). Prometer
- * navegação que não existe é a mesma falta do ponteiro para módulo inexistente.
- */
-export const ATB_PONTEIRO_CALCULADORA =
-  "➜ PARA A MANUTENÇÃO, DO SEGUNDO DIA EM DIANTE: o app tem calculadora de dose por função renal em CALCULADORAS & ESCORES › \"Dose de antibiótico (TFG)\", e ela cobre VANCOMICINA, PIP-TAZO e MEROPENÉM — com as faixas de ClCr, a infusão estendida de 4 h do pip-tazo para Pseudomonas, o esquema de hemodiálise e o alvo de AUC/MIC da vancomicina. ⚠️ ELA PEDE O ClCr ABSOLUTO, NÃO A TFG INDEXADA por superfície corporal: no obeso e no muito magro os dois números divergem muito, e é o absoluto que dosa. ⚠️ E OS DEMAIS ANTIBIÓTICOS DESTE APP NÃO TÊM AJUSTE RENAL IMPLEMENTADO — ceftriaxona, cefepima, ertapeném, metronidazol, clindamicina e os outros saem daqui em dose fixa, e o ajuste deles é com a bula ou o farmacêutico clínico.";

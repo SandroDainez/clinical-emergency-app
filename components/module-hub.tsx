@@ -27,17 +27,8 @@ const BOTTOM_PAD = 32;
 
 const MODULE_ICON: Record<string, string> = {
   "pcr-adulto":               "♥",
-  "sepse-adulto":             "🦠",
   "drogas-vasoativas":        "💊",
-  "isr-rapida":               "🫁",
-  "edema-agudo-pulmao":       "💧",
-  "cetoacidose-hiperosmolar": "🧪",
-  "ventilacao-mecanica":      "💨",
-  "anafilaxia":               "⚡",
-  "avc":                      "🧠",
   "correcoes-eletroliticas":  "⚗️",
-  "sindromes-coronarianas":   "🫀",
-  "sindromes-coronarianas-v2": "🫀",
   "ritmos-acls":              "〜",
   "farmacologia-acls":        "Rx",
   "bradicardia-acls":         "↓♡",
@@ -46,18 +37,7 @@ const MODULE_ICON: Record<string, string> = {
   "pcr-gestacao-acls":        "OB",
   "ovace-adulto":             "VA",
   "pos-pcr-acls":             "✓",
-  "tep":                      "🩸",
-  "pre-eclampsia":            "🤰",
-  "sedoanalgesia":            "💉",
   "calculadoras-clinicas":    "🧮",
-  "politrauma":               "🚑",
-  "tce":                      "🤕",
-  "crises-convulsivas":       "🫨",
-  "intoxicacoes-exogenas":    "☠️",
-  "choque":                   "📉",
-  "insuficiencia-respiratoria": "😮‍💨",
-  "abdome-agudo":             "🩻",
-  "injuria-renal-aguda":      "🫘",
 };
 
 export default function ModuleHub() {
@@ -133,14 +113,7 @@ export default function ModuleHub() {
   // lá o título nomeia um sub-assunto e a etiqueta diz de que ele é sub-assunto;
   // aqui cada card JÁ É o seu próprio cenário.
   const ETIQUETA_ECO = new Set([
-    "pcr-gestacao-acls", "pos-pcr-acls", "sepse-adulto", "choque", "avc",
-    "sindromes-coronarianas", "sindromes-coronarianas-v2", "isr-rapida", "politrauma", "tce",
-    "intoxicacoes-exogenas", "anafilaxia", "abdome-agudo", "sedoanalgesia",
-    "calculadoras-clinicas", "drogas-vasoativas", "tep", "ventilacao-mecanica",
-    "edema-agudo-pulmao", "insuficiencia-respiratoria", "crises-convulsivas",
-    "cetoacidose-hiperosmolar", "correcoes-eletroliticas", "injuria-renal-aguda",
-    "pre-eclampsia",
-  ]);
+    "pcr-gestacao-acls", "pos-pcr-acls", "calculadoras-clinicas", "drogas-vasoativas", "correcoes-eletroliticas", ]);
 
   // ── SEÇÃO 1 · DENTRO DO MÓDULO PCR ADULTO — UI 2.0, três colunas ──────────
   //

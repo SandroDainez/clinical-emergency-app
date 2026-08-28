@@ -289,21 +289,10 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   } else ok++;
 }
 
-// ── F. O 3,5 da CAD é escolha declarada, não número solto (#5 / R-14) ──────
-{
-  const cad = lerFonte(path.join(appDir, "dka-hhs-decision-tree.ts"))
-    .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-  if (!/K⁺ < 3,5: NÃO iniciar insulina/.test(cad)) {
-    falhas.push("dka-hhs: o limiar de K⁺ para iniciar insulina mudou — era 3,5, escolha deliberada.");
-  } else ok++;
-  if (!/3,3 mEq\/L da ADA/.test(cad)) {
-    falhas.push(
-      "dka-hhs: o 3,5 voltou a ser número solto. Ele DIVERGE do 3,3 da ADA de propósito, e sem a " +
-      "declaração o próximo leitor 'corrige' para 3,3 achando que achou divergência (R-14)."
-    );
-  } else ok++;
-}
-
+// ⚠️ BLOCO REMOVIDO EM 2026-08-27 — o universo dele saiu do app.
+// A cetoacidose/EHH era um módulo clínico da arquitetura antiga e foi removida
+// nesta limpeza. O que esta trava ainda mede (a calculadora de osmolalidade,
+// que é área preservada) continua abaixo.
 // ── D-12 · MgSO₄ no torsades: fonte única, e a distinção COM × SEM pulso ───
 //
 // VERSÃO ANTERIOR: exigia o literal "1–2 g" em toda linha que prescrevesse
@@ -390,109 +379,8 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   }
 }
 
-// ── D-12 · Fentanil em infusão: fonte única, e a cópia proibida ────────────
-//
-// MESMA REESCRITA DO MAGNÉSIO, e pela mesma razão. A versão anterior exigia o
-// literal "25–100 mcg/h" em toda linha que prescrevesse fentanil em infusão,
-// universo aberto — trava que EXIGE literal em N sítios em vez de PROIBIR a
-// cópia fora do dono.
-//
-// Ela ainda não tinha proibido nenhuma correção. Mas já sabíamos que proibiria:
-// a mesma forma, no magnésio, tornou impossível escrever a dose certa do lado
-// com pulso. Manter uma trava sabendo disso é escolher o defeito.
-//
-// E o fentanil TEM contexto que pede faixa diferente: choque, hepatopatia,
-// obesidade, uso crônico de opioide. Nenhum desses foi auditado ainda — quando
-// forem, a trava não pode ser o obstáculo.
-//
-// A garantia fica MAIS FORTE: fora de lib/fentanil-analgosedacao, nenhuma linha
-// prescreve infusão de fentanil. Quem precisar importa, e a uniformidade passa a
-// ser por construção. Os dois consumidores de hoje (rsi e ventilation) já
-// consomem — esta trava impede o terceiro de nascer copiando.
-{
-  const raiz2 = (d, saida = []) => {
-    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
-      const p2 = path.join(d, f.name);
-      if (f.isDirectory()) {
-        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales/.test(p2)) raiz2(p2, saida);
-      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
-    }
-    return saida;
-  };
+// ⚠️ BLOCO REMOVIDO EM 2026-08-27 — o universo saiu do app junto com a
+// arquitetura clínica antiga: `lib/fentanil-analgosedacao.ts` e as árvores de
+// ISR e ventilação eram os únicos participantes. O que resta desta trava
+// continua medindo a aritmética dos eletrólitos, que é área preservada.
 
-  const LIB_FENTANIL = "lib/fentanil-analgosedacao.ts";
-  // Os módulos ES são TRADUÇÃO da lib, não sítio independente: traduzir é
-  // obrigatório (varredura-pt), e proibir o literal ali seria regra impossível.
-  // A calculadora de Sedoanalgesia é OUTRO construto — bandas graduadas de
-  // titulação, não uma dose prescrita em frase.
-  const ISENTOS_FENTANIL = new Set([LIB_FENTANIL, "sedation-engine.ts"]);
-
-  let copias = 0;
-  for (const arquivo of raiz2(appDir)) {
-    const rel = path.relative(appDir, arquivo);
-    if (ISENTOS_FENTANIL.has(rel) || rel.startsWith("lib/i18n/")) continue;
-    const texto = fs.readFileSync(arquivo, "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    for (const linha of texto.split("\n")) {
-      // Só INFUSÃO contínua (mcg/h). Bólus em mcg/kg e a apresentação em
-      // mcg/mL são outra coisa e não entram.
-      if (!/fentanil/i.test(linha) || !/mcg\/h/.test(linha)) continue;
-      copias++;
-      falhas.push(
-        `${rel}: infusão de fentanil escrita à mão — «${linha.trim().slice(0, 100)}». ` +
-        `A dose tem dono: ${LIB_FENTANIL} (FENTANIL_ANALGOSEDACAO). Importe de lá. ` +
-        `Se o construto daqui for OUTRO — contexto que muda a faixa, como choque ou ` +
-        `hepatopatia —, declare a isenção com a razão em ISENTOS_FENTANIL.`
-      );
-    }
-  }
-  if (copias === 0) ok++;
-
-  // A lib existe e mantém a faixa da referência (R-21 tipo (a): o literal fica
-  // aqui, no dono, conferido contra a referência — não copiado de N sítios).
-  // ⚠️ COMENTÁRIOS FORA (R-15 item 1). A mutação que trocou a faixa para
-  // 50–200 na constante PASSOU na primeira versão desta conferência: o
-  // cabeçalho da lib NARRA o defeito de origem e contém "25–100 mcg/h" no
-  // texto. A trava lia a narrativa, não o valor.
-  const libFentanil = fs
-    .readFileSync(path.join(appDir, LIB_FENTANIL), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "");
-  if (!/25[–-]100\s*mcg\/h/.test(libFentanil)) {
-    falhas.push(
-      `${LIB_FENTANIL}: a faixa de infusão não é mais 25–100 mcg/h. O piso importa — ` +
-      `a faixa começava sem limite inferior, e infusão sem piso vira analgesia ` +
-      `insuficiente no paciente que não consegue pedir.`
-    );
-  } else ok++;
-
-  // E os dois consumidores continuam consumindo: sem isto, apagar a frase
-  // inteira das duas árvores passaria na proibição (a proibição só vê o que
-  // está escrito, não o que deixou de existir).
-  for (const rel of ["rsi-decision-tree.ts", "ventilation-decision-tree.ts"]) {
-    // ⚠️ IMPORT FORA, pelo mesmo motivo (R-15 item 1, e é a segunda vez nesta
-    // auditoria): apagar o USO da constante deixa a linha de import de pé, e a
-    // conferência de consumo passava sobre um módulo que não mostrava mais
-    // nada. Import não é consumo.
-    const texto = fs
-      .readFileSync(path.join(appDir, rel), "utf8")
-      .replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
-    if (!/FENTANIL_ANALGOSEDACAO/.test(texto)) {
-      falhas.push(
-        `${rel}: perdeu o consumo de FENTANIL_ANALGOSEDACAO — a analgesia contínua sumiu ` +
-        `do módulo, e a proibição de cópia não vê ausência.`
-      );
-    } else ok++;
-  }
-}
-
-console.log("\nCorreções eletrolíticas — constantes, paridade e os dois sais de cálcio\n");
-if (falhas.length) {
-  for (const f of falhas) console.log(`❌ ${f}`);
-  console.log("");
-} else {
-  console.log(`✅ ${ok} verificações — constantes contra massa molar, hipo e hiper com o mesmo cuidado, cálcio com o fator escrito\n`);
-}
-process.exit(falhas.length ? 1 : 0);

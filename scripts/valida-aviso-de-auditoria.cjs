@@ -60,7 +60,12 @@ const universoOk = conferirUniverso("valida-aviso-de-auditoria", "modulos_clinic
 // ⚠️ Sem esta conferência, bastaria acrescentar nomes em
 // `MODULOS_COM_FORCA_DECLARADA` para o aviso sumir — auditoria por declaração,
 // que é o oposto de auditoria. O número vem de quem realmente audita.
-const instrumento = lerFonte(path.join(app, "scripts", "valida-forca-da-afirmacao.cjs"));
+// ⚠️ O INSTRUMENTO PODE NÃO EXISTIR. Ele saiu em 2026-08-27 com a arquitetura
+// clínica antiga. Ausente, ele audita ZERO árvores — e a conferência abaixo
+// passa a exigir que a lista declarada também esteja vazia, que é o correto:
+// sem medidor não há auditoria. NÃO tratar ausência como "tudo auditado".
+const caminhoDoInstrumento = path.join(app, "scripts", "valida-forca-da-afirmacao.cjs");
+const instrumento = fs.existsSync(caminhoDoInstrumento) ? lerFonte(caminhoDoInstrumento) : "";
 const arvoresAuditadas = ((instrumento.match(/const ARVORES\s*=\s*\[([^\]]*)\]/) || [])[1] || "")
   .match(/"[^"]+"/g) || [];
 if (auditados !== arvoresAuditadas.length) {

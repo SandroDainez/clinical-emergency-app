@@ -36,11 +36,3 @@ export const OSM_TOTAL_EHH = 320;
 /** Faixa de normalidade da osmolalidade efetiva. */
 export const OSM_EFETIVA_NORMAL = { min: 275, max: 295 } as const;
 
-/**
- * A explicação das duas fórmulas, para quem lê o número na tela.
- *
- * Literal sem interpolação: template com `${}` sai da varredura de tradução
- * (D-19) e o usuário em espanhol leria português.
- */
-export const OSM_EFETIVA_VS_TOTAL =
-  "⚠️ EFETIVA ≠ TOTAL, e os limiares são diferentes: EFETIVA = 2×Na⁺ + glicose/18 (exclui ureia), critério de EHH > 300 mOsm/kg. TOTAL = 2×Na⁺ + glicose/18 + ureia/6, critério de EHH > 320. A ureia é osmol INEFICAZ — atravessa a membrana e não desloca água. Usar o limiar 320 sobre a EFETIVA subdiagnostica EHH; usar 300 sobre a TOTAL superdiagnostica.";

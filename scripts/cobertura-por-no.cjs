@@ -50,9 +50,16 @@ function padroesDe(arquivo) {
 
 const arvores = fs
   .readdirSync(appDir)
-  .filter((f) => /-decision-tree\.ts$/.test(f))
+  // ⚠️ REDIRECIONADO EM 2026-08-27 — `-decision-tree.ts` sumiu da raiz com a
+  // arquitetura clínica antiga, e sem árvore nenhuma o `tsc` abortava com stack
+  // trace em vez de dizer "não há o que cobrir". Restam as 2 do LEGACY_ACLS_RUNTIME.
+  .filter((f) => /-tree\.ts$/.test(f))
   .sort();
 
+if (arvores.length === 0) {
+  console.log("\nNenhuma árvore na raiz — nada a cobrir. (Isto é ausência de UNIVERSO, não de achado.)\n");
+  process.exit(0);
+}
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "cobertura-"));
 execFileSync(
   "npx",

@@ -53,56 +53,12 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Choque & hemodinâmica",
     subtitle: "Sepse e suporte vasoativo",
-    ids: ["sepse-adulto", "drogas-vasoativas", "correcoes-eletroliticas"],
-  },
-  {
-    title: "Via aérea & ventilação",
-    subtitle: "ISR, VM, sedoanalgesia/BNM e edema agudo de pulmão",
-    ids: ["isr-rapida", "ventilacao-mecanica", "sedoanalgesia", "edema-agudo-pulmao"],
-  },
-  {
-    title: "Metabólico & alergia",
-    subtitle: "CAD/EHH e anafilaxia",
-    ids: ["cetoacidose-hiperosmolar", "anafilaxia"],
-  },
-  {
-    title: "Neurologia aguda",
-    subtitle: "AVC, reperfusão e neuroemergência",
-    ids: ["avc"],
-  },
-  {
-    title: "Cardiovascular & respiratório",
-    subtitle: "Síndromes coronarianas e tromboembolia pulmonar",
-    // ⚠️ A V2 APARECE AO LADO DA V1, e é o ponto: as duas convivem no hub para
-    // serem comparadas no telefone. Registrar o módulo em `clinical-modules.ts`
-    // dá a ROTA, não o card — o hub monta a partir daqui, e sem esta linha o
-    // módulo existe e é inalcançável por toque (achado do autor, 2026-08-27:
-    // "não estou vendo a modificação das telas").
-    ids: ["sindromes-coronarianas", "sindromes-coronarianas-v2", "tep"],
-  },
-  {
-    title: "Obstetrícia",
-    subtitle: "Emergências hipertensivas da gestação",
-    ids: ["pre-eclampsia"],
+    ids: ["drogas-vasoativas", "correcoes-eletroliticas"],
   },
   {
     title: "Calculadoras & escores",
     subtitle: "Peso predito, TFG, SOFA, Glasgow, Wells, HEART, NIHSS, RASS e mais",
     ids: ["calculadoras-clinicas"],
-  },
-  {
-    title: "Politrauma & emergências",
-    subtitle: "Trauma, TCE, convulsões, intoxicações, choque, insuficiência respiratória e abdome agudo",
-    ids: [
-      "politrauma",
-      "tce",
-      "crises-convulsivas",
-      "intoxicacoes-exogenas",
-      "choque",
-      "insuficiencia-respiratoria",
-      "abdome-agudo",
-      "injuria-renal-aguda",
-    ],
   },
 ] as const;
 

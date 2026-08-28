@@ -67,6 +67,12 @@ const IDENTICOS_POR_DESENHO = [
   ["Leve 13–15 · Moderado 9–12 · Grave 3–8.", "as três palavras são iguais em espanhol"],
   ["Fonte: ARDSNet (ARMA). N Engl J Med. 2000", "referência bibliográfica — não se traduz"],
   ["Etiologias: LSD, MDMA, quetamina", "lista de nomes de substâncias, iguais nos dois idiomas"],
+  // ⚠️ ENTROU EM 2026-08-27, quando o universo passou a incluir as árvores do
+  // LEGACY_ACLS_RUNTIME (antes o filtro só via `*-decision-tree.ts`). Conferido
+  // termo a termo: TSV, TRNAV, TRAV, flutter e «taquicardia sinusal» têm a mesma
+  // grafia em espanhol — a linha irmã («Irregular: fibrilação atrial…») TEM
+  // tradução própria, o que mostra que o dicionário não está faltando aqui.
+  ["Regular: TSV (TRNAV, TRAV), flutter, taquicardia sinusal.", "siglas e termos idênticos em espanhol"],
 ];
 
 /**
@@ -92,7 +98,11 @@ const DIVIDA_POR_MODULO = {
 };
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "valida-trad-"));
-const arvores = fs.readdirSync(appDir).filter((f) => f.endsWith("-decision-tree.ts"));
+// ⚠️ UNIVERSO REDIRECIONADO EM 2026-08-27 — o filtro procurava `*-decision-tree.ts`,
+// sufixo que sumiu da raiz com a remoção da arquitetura clínica antiga. Sobraram as
+// duas árvores do LEGACY_ACLS_RUNTIME, que usam `*-tree.ts` — e elas compõem texto
+// igual às outras. Sem esta correção a trava rodaria sobre ZERO árvore.
+const arvores = fs.readdirSync(appDir).filter((f) => /-tree\.ts$/.test(f));
 
 try {
   execFileSync(
@@ -145,9 +155,12 @@ if (typeof tr === "function") {
   }
 
   // ⚠️ Conferência de VACUIDADE: trava que não percorreu nada aprova tudo.
-  if (percorridos < 500) {
+  // ⚠️ PISO BAIXADO 500→80 EM 2026-08-27: o universo caiu de 19 árvores para as 2
+  // transitórias de bradicardia/taquicardia. Queda de conteúdo removido, não de
+  // varredura quebrada. Sobe de volta quando o AVC entrar na arquitetura nova.
+  if (percorridos < 80) {
     falhas.push(
-      `só ${percorridos} textos percorridos — esperado mais de 500. As árvores mudaram de forma e esta ` +
+      `só ${percorridos} textos percorridos — esperado mais de 80. As árvores mudaram de forma e esta ` +
       `trava deixou de exercitar o que promete. Reescrever a trava, não removê-la (R-15 item 9).`
     );
   } else ok++;

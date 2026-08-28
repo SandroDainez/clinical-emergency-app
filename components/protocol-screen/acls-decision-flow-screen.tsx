@@ -1,3 +1,22 @@
+/**
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║  LEGACY_ACLS_RUNTIME — manter temporariamente apenas para bradicardia    ║
+ * ║  e taquicardia. Não utilizar em novos módulos clínicos.                  ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ *
+ * Em 2026-08-27 a arquitetura clínica antiga foi removida do app: 19 árvores de
+ * decisão e 20 telas de fluxo saíram. Sobraram DOIS módulos que ainda dependem
+ * deste motor — `acls-bradycardia-tree` e `acls-tachycardia-tree` — porque eles
+ * pertencem ao PCR Adulto, que é área preservada.
+ *
+ * ⚠️ ISTO NÃO É A BASE DO PRÓXIMO MÓDULO. O AVC, e tudo que vier depois, nasce
+ * na arquitetura nova. Acrescentar módulo aqui é reinstalar o problema que a
+ * reestruturação existiu para desfazer.
+ *
+ * Este arquivo sai do app quando bradicardia e taquicardia forem reescritas.
+ *
+ * Registrado como **D-107** em `auditoria/DIVIDAS-CONHECIDAS.md`.
+ */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Animated,
@@ -36,9 +55,6 @@ import {
   marcarDisparado,
   registrarPassagem,
 } from "../../lib/escalonamento";
-import CalculadoraEmbutida from "./calculadora-embutida";
-import ComparativoDePadroes from "./comparativo-de-padroes";
-import SeloDeForca from "./selo-de-forca";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
@@ -1217,7 +1233,6 @@ function DecisionStep({
             altura sem dobrar a informação (o defeito medido em screenshot
             real que estourou 375×667 com 4 cards + 7 opções). */}
         <AcoesParalelas itens={step.emParalelo} />
-        <ComparativoDePadroes itens={step.comparativo} grande onSelect={onChoose} />
         <View style={v3.opcoes}>
           {step.options.filter((o) => !idsCobertosPorCard(step.comparativo).has(o.id)).map((o) => {
             // ⚠️ PESO VISUAL VEM DO CONTEÚDO, NÃO DE UMA REGRA FIXA — cada nó
@@ -1269,7 +1284,6 @@ function DecisionStep({
           />
           {/* Aberto de propósito: o desenho é o instrumento da resposta, não
               explicação. Ver `ComparativoDePadroes`. */}
-          <ComparativoDePadroes itens={step.comparativo} />
         </Card>
         <DecisionGrid
           options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
@@ -1297,7 +1311,6 @@ function DecisionStep({
             alternar: styles.evidenceToggle,
           }}
         />
-        <ComparativoDePadroes itens={step.comparativo} />
       </View>
       <DecisionGrid
         options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
@@ -1475,10 +1488,6 @@ function ActionStep({
             }}
           />
         ) : null}
-        <SeloDeForca procedencia={step.procedencia} />
-        {step.declaracoes.map((d, i) => (
-          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
-        ))}
         <ListaDeCriterios
           itens={step.porque}
           rotuloAberto="Por que isto"
@@ -1555,10 +1564,6 @@ function ActionStep({
             </Pressable>
           ) : null}
         </View>
-        <SeloDeForca procedencia={step.procedencia} />
-        {step.declaracoes.map((d, i) => (
-          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
-        ))}
         <ListaDeCriterios
           itens={step.porque}
           rotuloAberto="Por que isto"
@@ -1597,16 +1602,6 @@ function ActionStep({
               </View>
             ))}
           </View>
-          {/* ⚠️ O SELO DE FORÇA VEM ABERTO, entre a ação e o porquê: é ele que
-              separa "a diretriz recomenda" de "é plausível pela fisiologia". A
-              lacuna de evidência renderiza aqui, não atrás do toque. */}
-          <SeloDeForca procedencia={step.procedencia} />
-          {/* ⚠️ UM SELO POR AFIRMAÇÃO quando a tela afirma mais de uma coisa. As
-              declarações de natureza `transicao` não têm selo — e é assim que
-              deve ser: elas declaram que NÃO afirmam. */}
-          {step.declaracoes.map((d, i) => (
-            <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
-          ))}
           {/* O PORQUÊ, recolhido — ver `ActionNode.porque`. Fica ao LADO da ação
               que ele explica, não numa tela de consulta: quem não tem
               experiência precisa da razão junto do gesto, e longe dele vira
@@ -1652,12 +1647,6 @@ function ActionStep({
             </View>
           ))}
         </View>
-        <SeloDeForca procedencia={step.procedencia} />
-        {/* Os dois renderizadores mostram os MESMOS selos por afirmação: ligar
-            só um faria a força sumir para metade dos usuários. */}
-        {step.declaracoes.map((d, i) => (
-          <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
-        ))}
         {/* O porquê, recolhido — o MESMO conteúdo do caminho v2. Os dois
             renderizadores existem e os dois precisam mostrar: ligar só um
             faria o texto sumir para metade dos usuários. */}
@@ -1904,13 +1893,6 @@ function InputStep({
               {/* Calculadora embutida, quando o campo declara uma. Fica ANTES
                   da barra: quem não sabe o valor calcula aqui e o total cai no
                   campo; quem sabe ignora e arrasta. */}
-              {field.calculadora ? (
-                <CalculadoraEmbutida
-                  calculadoraId={field.calculadora}
-                  valorAtual={current}
-                  onTotal={(n) => onSetValue(field.id, String(n))}
-                />
-              ) : null}
 
               {/* Campo NUMÉRICO: só a barra.
                   Pedido do usuário — "só devemos ter as barras para seleção em

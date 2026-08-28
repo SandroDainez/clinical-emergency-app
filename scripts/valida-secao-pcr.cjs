@@ -48,7 +48,7 @@ const idsDoGrupo = grupoReanimacao
 const idsDoApp = new Set([...fonteModulos.matchAll(/\n\s*id: "([a-z0-9-]+)",/g)].map((m) => m[1]));
 
 // ⚠️ VACUIDADE (R-15 item 9): leitura quebrada não pode virar aprovação.
-if (idsDaSecao.length < 5 || idsDoGrupo.length < 5 || idsDoApp.size < 25 || !heroi) {
+if (idsDaSecao.length < 4 || idsDoGrupo.length < 5 || idsDoApp.size < 10 || !heroi) {
   console.log(
     `\n❌ leitura quebrada — seção ${idsDaSecao.length}, grupo ${idsDoGrupo.length}, ` +
     `app ${idsDoApp.size}, herói ${heroi ?? "não achado"}\n`

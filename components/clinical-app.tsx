@@ -2,30 +2,10 @@ import { useEffect, useState } from "react";
 import * as defaultEngine from "../engine";
 import type { ClinicalEngine } from "../clinical-engine";
 import { preloadWebAudio } from "./audio-session";
-import AnafilaxiaFlowScreen from "./protocol-screen/anafilaxia-flow-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculator-screen";
-import RsiFlowScreen from "./protocol-screen/rsi-flow-screen";
-import AvcFlowScreen from "./protocol-screen/avc-flow-screen";
-import CoronaryFlowScreen from "./protocol-screen/coronary-flow-screen";
-import CoronaryV2FlowScreen from "./protocol-screen/coronary-v2-flow-screen";
-import SepsisFlowScreen from "./protocol-screen/sepsis-flow-screen";
-import EapFlowScreen from "./protocol-screen/eap-flow-screen";
-import DkaHhsFlowScreen from "./protocol-screen/dka-hhs-flow-screen";
-import VentilationFlowScreen from "./protocol-screen/ventilation-flow-screen";
-import TepFlowScreen from "./protocol-screen/tep-flow-screen";
-import EclampsiaFlowScreen from "./protocol-screen/eclampsia-flow-screen";
-import SedationCalculatorScreen from "./protocol-screen/sedation-calculator-screen";
 import ClinicalCalculatorsScreen from "./protocol-screen/clinical-calculators-screen";
-import ShockFlowScreen from "./protocol-screen/shock-flow-screen";
-import DyspneaFlowScreen from "./protocol-screen/dyspnea-flow-screen";
-import PolitraumaFlowScreen from "./protocol-screen/politrauma-flow-screen";
-import TceFlowScreen from "./protocol-screen/tce-flow-screen";
-import SeizureFlowScreen from "./protocol-screen/seizure-flow-screen";
-import PoisoningFlowScreen from "./protocol-screen/poisoning-flow-screen";
-import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen";
-import IraFlowScreen from "./protocol-screen/ira-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsRhythmsScreenV2 from "./protocol-screen/acls-rhythms-screen-v2";
 import AclsPharmacologyScreenV2 from "./protocol-screen/acls-pharmacology-screen-v2";
@@ -64,29 +44,11 @@ export default function ClinicalApp({
   // o próprio resume. Ver lib/module-session-navigation para por que "suspeita"
   // e não "abordada", e por que a redundância com o texto do card é deliberada.
   const [causasPreMarcadas] = useState(() => consumeCausasPreMarcadas(protocolId));
-  const isSepsisModule = protocolId === "sepse_adulto";
   const isVasoactiveModule = protocolId === "drogas_vasoativas";
   const isElectrolyteModule = protocolId === "correcoes_eletroliticas";
   const isRsiModule = protocolId === "isr_rapida";
-  const isEapModule = protocolId === "edema_agudo_pulmao";
-  const isDkaHhsModule = protocolId === "cetoacidose_hiperosmolar";
-  const isVentilationModule = protocolId === "ventilacao_mecanica";
-  const isAnafilaxiaModule = protocolId === "anafilaxia";
-  const isAvcModule = protocolId === "acidente_vascular_cerebral";
-  const isCoronaryModule = protocolId === "sindromes_coronarianas";
-  const isCoronaryV2Module = protocolId === "sindromes_coronarianas_v2";
-  const isTepModule = protocolId === "tromboembolia_pulmonar";
-  const isEclampsiaModule = protocolId === "pre_eclampsia_eclampsia";
-  const isSedationModule = protocolId === "sedoanalgesia";
   const isCalculatorsModule = protocolId === "calculadoras_clinicas";
-  const isShockFlowModule = protocolId === "choque";
-  const isDyspneaFlowModule = protocolId === "insuficiencia_respiratoria";
-  const isPolitraumaModule = protocolId === "politrauma";
-  const isTceModule = protocolId === "tce";
   const isSeizureModule = protocolId === "mal_epileptico";
-  const isPoisoningModule = protocolId === "intoxicacoes_exogenas";
-  const isAcuteAbdomenModule = protocolId === "abdome_agudo";
-  const isIraModule = protocolId === "injuria_renal_aguda";
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
   // Hook: precisa ficar no topo do componente, nunca dentro de condicional.
   const ritmosEmV2 = useUiV2Enabled("ritmos-acls");
@@ -143,32 +105,6 @@ export default function ClinicalApp({
       }
     };
   }, [engine, initialReferralFields, protocolId, resumeSession]);
-
-  // Raciocínio clínico (fluxos de referência) — sem consent gate, sem voz
-  if (isShockFlowModule) {
-    return <ShockFlowScreen />;
-  }
-  if (isDyspneaFlowModule) {
-    return <DyspneaFlowScreen />;
-  }
-  if (isPolitraumaModule) {
-    return <PolitraumaFlowScreen />;
-  }
-  if (isTceModule) {
-    return <TceFlowScreen />;
-  }
-  if (isSeizureModule) {
-    return <SeizureFlowScreen />;
-  }
-  if (isPoisoningModule) {
-    return <PoisoningFlowScreen />;
-  }
-  if (isAcuteAbdomenModule) {
-    return <AcuteAbdomenFlowScreen />;
-  }
-  if (isIraModule) {
-    return <IraFlowScreen />;
-  }
 
   // ACLS Rhythms: static reference screen, no consent gate, no voice.
   //
@@ -232,53 +168,6 @@ export default function ClinicalApp({
     return <ElectrolyteCalculatorScreen onVoltar={onRouteBack} />;
   }
 
-  if (isRsiModule) {
-    return <RsiFlowScreen />;
-  }
-
-  if (isAnafilaxiaModule) {
-    return <AnafilaxiaFlowScreen />;
-  }
-
-  if (isAvcModule) {
-    return <AvcFlowScreen />;
-  }
-
-  if (isCoronaryModule) {
-    return <CoronaryFlowScreen />;
-  }
-
-  if (isCoronaryV2Module) {
-    return <CoronaryV2FlowScreen />;
-  }
-
-  if (isSepsisModule) {
-    return <SepsisFlowScreen />;
-  }
-
-  if (isEapModule) {
-    return <EapFlowScreen />;
-  }
-
-  if (isDkaHhsModule) {
-    return <DkaHhsFlowScreen />;
-  }
-
-  if (isVentilationModule) {
-    return <VentilationFlowScreen />;
-  }
-
-  if (isTepModule) {
-    return <TepFlowScreen />;
-  }
-
-  if (isEclampsiaModule) {
-    return <EclampsiaFlowScreen />;
-  }
-
-  if (isSedationModule) {
-    return <SedationCalculatorScreen onVoltar={onRouteBack} />;
-  }
 
   if (isCalculatorsModule) {
     return <ClinicalCalculatorsScreen onVoltar={onRouteBack} />;

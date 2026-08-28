@@ -134,7 +134,6 @@ function buildInitialStrategy(tr: (pt: string) => string, drugKey: DrugKey, refe
   const strategy: string[] = [];
   const map = parseMap(referral.pas, referral.pad);
   const symptoms = referral.symptoms.toLowerCase();
-  const fromAnaphylaxis = referral.fromModule === "anafilaxia";
 
   if (drugKey === "noradrenalina") {
     strategy.push("Droga de primeira linha na maioria dos choques vasoplégicos; alvo inicial habitual: PAM ≥ 65 mmHg.");
@@ -156,9 +155,21 @@ function buildInitialStrategy(tr: (pt: string) => string, drugKey: DrugKey, refe
     strategy.push("Vasopressina é adjuvante, não vasopressor isolado principal; manter o vasopressor de base.");
   }
 
-  if (fromAnaphylaxis) {
-    strategy.push("Antes de escalar vasopressor, confirmar que a anafilaxia já recebeu adrenalina IM repetida quando indicada, O₂, posicionamento e cristalóide.");
-  }
+  /*
+    ⚠️ RAMO REMOVIDO EM 2026-08-27 — `if (fromAnaphylaxis)`, que acrescentava
+    « Antes de escalar vasopressor, confirmar que a anafilaxia já recebeu
+    adrenalina IM repetida quando indicada, O₂, posicionamento e cristalóide. »
+
+    Ele dependia de `referral.fromModule === "anafilaxia"`, e o ÚNICO lugar que
+    montava esse encaminhamento era a tela da anafilaxia, removida com a
+    arquitetura clínica antiga junto com o `buildAnafilaxiaReferralParams` que o
+    preenchia. Nenhum módulo sobrevivente produz esse parâmetro.
+
+    A frase não se perdeu como conhecimento: ela é conteúdo DO módulo de
+    anafilaxia — "antes de escalar, confirme que o básico foi feito" — e volta com
+    ele. Mantê-la aqui atrás de um `if` que ninguém aciona seria conteúdo clínico
+    inalcançável, que é a forma mais cara de conteúdo.
+  */
 
   if (map != null && map < 65) {
     strategy.push(trf(tr, "PAM estimada no encaminhamento ~ {0} mmHg: quadro ainda sugere hipoperfusão relevante, exigir titulação rápida e reavaliação frequente.", [Math.round(map)]));

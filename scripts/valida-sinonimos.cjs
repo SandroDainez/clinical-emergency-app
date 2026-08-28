@@ -58,10 +58,18 @@ for (const [locale, constante] of Object.entries(IDIOMAS)) {
 // espanhol ambíguo leva à tela errada tanto quanto um português.
 const mapa = porIdioma["pt-BR"] ?? {};
 
-if (modulos.length < 25) {
+// ⚠️ PISO BAIXADO EM 2026-08-27 — o universo encolheu DE PROPÓSITO com a remoção
+// da arquitetura clínica antiga (32 → 12 módulos). O piso existe para detectar
+// PARSER QUEBRADO, não para medir o tamanho do app: mantido em 25, reprovaria
+// para sempre e esconderia qualquer quebra real daí em diante.
+if (modulos.length < 10) {
   falhas.push(`só ${modulos.length} módulos extraídos de clinical-modules.ts — a varredura pode ter rodado sobre nada (R-15 item 9).`);
 } else ok++;
-if (Object.keys(mapa).length < 25) {
+// ⚠️ PISO BAIXADO EM 2026-08-27 — o universo encolheu DE PROPÓSITO com a remoção
+// da arquitetura clínica antiga (32 → 12 módulos). O piso existe para detectar
+// PARSER QUEBRADO, não para medir o tamanho do app: mantido em 25, reprovaria
+// para sempre e esconderia qualquer quebra real daí em diante.
+if (Object.keys(mapa).length < 10) {
   falhas.push(`só ${Object.keys(mapa).length} entradas lidas de sinonimos-de-modulo.ts — o parser pode ter quebrado.`);
 } else ok++;
 
