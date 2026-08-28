@@ -227,7 +227,7 @@ Nenhum deles substitui outro, e o módulo precisa dos cinco ao mesmo tempo:
 |---|---|---|
 | **última vez bem** | último instante em que se sabe que o paciente estava sem déficit | dado observado, com procedência — pode vir de antes da porta |
 | **início observado** | quando o déficit foi visto pela primeira vez | dado observado |
-| **reconhecimento dos sintomas** | quando alguém entendeu aquilo como AVC | dado observado |
+| **reconhecimento dos sintomas** | quando alguém entendeu aquilo como AVC | dado observado · ✅ **confirmado pela fonte como relógio de contagem**: §4.6.3 rec. 1 conta janela *"from symptom recognition"* (F-03) |
 | **t₀ operacional** | chegada / primeiro contato na emergência | referência de "porta" (**F-11**) |
 | **hora de registro** | quando o dado entrou no sistema | automática, nunca informada pelo usuário |
 
@@ -656,6 +656,10 @@ meio, o fato clínico do AVC que a obrigou.
 | **E-42** | Horário copiado de outro evento é **cópia com linhagem**, nunca vínculo vivo | correção silenciosa de horário mudaria janela terapêutica sem ninguém ver | Parte 7 (§7.5) |
 | **E-43** | **Não existe veredito marcável** — contraindicação e elegibilidade são derivadas dos fatos | marcar "contraindicado" grava a interpretação dentro do dado | Parte 7 (§7.15) |
 | **E-44** | Toda trava **declara universo e piso**; universo vazio **reprova** | trava com universo zerado passou verde e escondeu um achado real | Parte 8 (§8.4) |
+| **E-45** | A tradução preserva **intensidade, condição, exceção, população, temporalidade e grau de certeza** | `recommended` · `reasonable` · `may be reasonable` · `not recommended` · `harmful` são cinco forças, não duas | Parte 6 (§6.14) |
+| **E-46** | Em julgamento clínico, a leitura do sistema é **apoio, nunca veredito binário** | a Table 4 é *guidance* com hedge; convertê-la em SIM/NÃO inventaria uma certeza que a fonte não tem | Parte 2 (§2.8) |
+| **E-47** | Ação pode ser **iniciada sob condição resolutiva vinculada**, com regra de interrupção — e não existe "liberado" global | a fonte manda iniciar IVT antes do coagulograma e suspender se vier alterado | Parte 2 (§2.3) |
+| **E-48** | **Classificação visual da fonte não é espécie clínica**; recomendação com COR/LOE prevalece sobre faixa de tabela | a Table 8 é gradiente de opinião, sem COR/LOE, e sua faixa "absoluta" é declarada sem sustentação em evidência | Parte 2 (§2.7) |
 
 ---
 
@@ -664,22 +668,26 @@ meio, o fato clínico do AVC que a obrigou.
 | # | o que falta | estado |
 |---|---|---|
 | **F-01** | ~~Qual é a fonte vigente do AVC isquêmico agudo~~ | ✅ **FECHADA** em 2026-08-28 — ver §0.7 |
-| **F-02** | Janela para trombólise IV, contada do último-visto-bem | ⏳ aguarda verbatim |
-| **F-03** | Janela estendida e critérios de imagem avançada (AVC ao acordar) | ⏳ aguarda verbatim |
-| **F-04** | Meta pressórica **antes** da trombólise, e depois dela | ⏳ aguarda verbatim |
-| **F-05** | Conduta pressórica em quem **não** vai reperfundir | ⏳ aguarda verbatim |
-| **F-06** | Corte de glicemia que caracteriza *mimic* e obriga correção | ⏳ aguarda verbatim |
-| **F-07** | Contraindicações à trombólise IV, **separadas em corrigíveis e não corrigíveis** | ⏳ aguarda verbatim |
-| **F-08** | Critérios de elegibilidade para trombectomia | ⏳ aguarda verbatim |
-| **F-09** | Trombolítico(s) adotado(s) e dose por peso | ⏳ aguarda verbatim |
-| **F-10** | Anticoagulante prévio: o que bloqueia, o que exige exame | ⏳ aguarda verbatim |
-| **F-11** | Tempos-alvo porta-imagem e porta-agulha | ⏳ aguarda verbatim |
-| **F-12** | Anti-hipertensivos **disponíveis no Brasil** | ⚠️ decisão do autor — ver nota |
-| **F-13** | Critério de suspeita **intra-hospitalar** | ⏳ aguarda verbatim · ⚠️ **reduzida por P-03**: com o pré-hospitalar fora do escopo (§0.1), a escala pré-hospitalar deixa de ser instrumento do app e passa a contexto recebido (§1.2a.1) |
-| **F-14** | mRS prévio: critério ou contexto | ⏳ aguarda verbatim · **interino fixado por P-05**: dado/contexto estruturado, **nunca** contraindicação automática (§2.8) |
-| **F-15** | Manejo inicial pós-reperfusão e monitorização | ⏳ aguarda verbatim |
-| **F-16** | Imagem: qual exame, em que ordem, e o que decide | ⏳ aguarda verbatim |
-| **F-17** | **Quais dimensões compõem o julgamento de "déficit incapacitante"** — e o trecho que diz que o NIHSS isolado não o determina | ⏳ aguarda verbatim · sustenta a decomposição de §2.8 ⇒ **E-19** |
+| **F-02** | Janela para trombólise IV, contada do último-visto-bem | ✅ **transcrito** 2026-08-28 · ⚠️ **divergência interna de marco em aberto** |
+| **F-03** | Janela estendida e critérios de imagem avançada (AVC ao acordar) | ✅ **transcrito** 2026-08-28 · ⚠️ **quatro marcos distintos**, um deles novo (*symptom recognition*) |
+| **F-04** | Meta pressórica **antes** da trombólise, e depois dela | ✅ **transcrito** 2026-08-28 · fármacos → **F-19** |
+| **F-05** | Conduta pressórica em quem **não** vai reperfundir | ✅ **transcrito** 2026-08-28 · ⚠️ tensão recomendação × supportive text em aberto |
+| **F-06** | Corte de glicemia que caracteriza *mimic* e obriga correção | ✅ **transcrito** 2026-08-28 · regra fechada; terapêutica operacional → **F-18** |
+| **F-07** | Contraindicações à trombólise IV, **separadas em corrigíveis e não corrigíveis** | ✅ **transcrito** 2026-08-28 · Table 8 lida como IMAGEM; taxonomia da fonte mantida |
+| **F-08** | Critérios de elegibilidade para trombectomia | ✅ **transcrito** 2026-08-28 · elegibilidade é **derivada**, nunca fato armazenado |
+| **F-09** | Trombolítico(s) adotado(s) e dose por peso | ✅ **transcrito** 2026-08-28 · dose e administração fechadas; preparo → **F-20** |
+| **F-10** | Anticoagulante prévio: o que bloqueia, o que exige exame | ✅ **transcrito** 2026-08-28 · DOAC = informação insuficiente; labs A×B sustentados |
+| **F-11** | Tempos-alvo porta-imagem e porta-agulha | ✅ **transcrito** 2026-08-28 · ⚠️ **achado negativo**: a fonte NÃO tem meta numérica de porta-agulha |
+| **F-12** | Anti-hipertensivos **disponíveis no Brasil** | ⚠️ decisão do autor · **premissa corrigida em 2026-08-28**: a edição 2026 **não nomeia** labetalol, nicardipino nem clevidipino — não há escolha da AHA a divergir. Ver **F-19** |
+| **F-13** | Critério de suspeita **intra-hospitalar** | ✅ **transcrito** 2026-08-28 · ⚠️ **achado negativo**: escala de gravidade, não critério de suspeita |
+| **F-14** | mRS prévio: critério ou contexto | ✅ **transcrito** 2026-08-28 · contexto na IVT, gradiente de força na EVT; **nunca contraindicação** |
+| **F-15** | Manejo inicial pós-reperfusão e monitorização | ✅ **transcrito** 2026-08-28 · ⚠️ sem tabela equivalente para pós-EVT |
+| **F-16** | Imagem: qual exame, em que ordem, e o que decide | ✅ **transcrito** 2026-08-28 · conferência clínica pendente |
+| **F-17** | **Quais dimensões compõem o julgamento de "déficit incapacitante"** — e o trecho que diz que o NIHSS isolado não o determina | ✅ **transcrito** 2026-08-28 (Table 4, e355) · conferência clínica pendente |
+| **F-22** | **Alvo de porta-agulha (DTN)** | ⚪ **FONTE COMPLEMENTAR OPCIONAL — indicador de desempenho.** ⛔ **Não é lacuna clínica bloqueante do V1.** Só será buscada se o autor decidir incorporar métricas institucionais ao produto. A AHA/ASA 2026 traz DTN apenas como desempenho observado, nunca como meta recomendada |
+| **F-20** | **Preparo e administração operacional do trombolítico** — apresentação, concentração, reconstituição, diluente, estabilidade | 🔴 **ABERTO — exige FONTE BRASILEIRA / bula.** A Table 7 dá mg e mL e **não declara concentração** ⇒ **E-18**, **E-31** |
+| **F-19** | **Terapêutica anti-hipertensiva operacional** — fármaco, dose, via, apresentação, concentração, titulação | 🔴 **ABERTO — exige FONTE BRASILEIRA.** A AHA/ASA 2026 dá alvos (F-04, F-05) e **não nomeia nenhum fármaco** ⇒ **E-18**, **E-31** |
+| **F-18** | **Terapêutica operacional da correção glicêmica** — como corrigir hipo e hiperglicemia: fármaco, dose, via, apresentação, concentração | 🔴 **ABERTO — exige FONTE BRASILEIRA.** A AHA/ASA 2026 fecha a regra clínica (F-06) e **não** fornece esquema; sua única orientação é *"with appropriate medications"* ⇒ **E-18**, **E-31** |
 
 > ⚠️ **Nota sobre F-12, registrada porque a informação existiu e foi apagada.** A
 > árvore de AVC removida em `bdf02c8` registrava uma divergência real: os
@@ -788,6 +796,41 @@ Sugerida e disponível são **derivadas**; iniciada, realizada e cancelada são
 ⛔ **Avançar, voltar ou mudar de seção não produz ação clínica.** Nenhuma
 navegação move uma ação para *iniciada* ou *realizada*. ⇒ **E-20**
 
+#### Ação iniciada sob CONDIÇÃO RESOLUTIVA — extensão do ciclo, não espécie nova
+
+**Acrescentado pelo autor em 2026-08-28**, a partir do verbatim de **F-10**: a
+fonte permite, em cenário definido, **iniciar uma ação tempo-dependente antes de
+o dado pendente resolver**, com regra explícita de interromper se o resultado vier
+incompatível.
+
+> *"…treatment with IV thrombolysis **can be initiated before availability of
+> coagulation test results** but **should be discontinued if** INR >1.7, PT, or
+> PTT is abnormal by local laboratory standards."* — Table 8, p. e367
+
+**Isto NÃO é:** ação apenas *disponível* · ação *completamente liberada* · ação
+*bloqueada* · nem *pendência* genérica.
+
+**É:** **ação `iniciada` + condição resolutiva vinculada + regra de interrupção.**
+
+⚠️ **Modelado como QUALIFICAÇÃO do estado `iniciada`, não como espécie nova.** A
+ontologia continua com nove espécies (§2.1–§2.9) e cinco estados de ação — o que
+existe aqui é um **vínculo** entre uma ação `iniciada` e uma pendência.
+
+**O mínimo que o vínculo carrega:**
+
+| elemento | |
+|---|---|
+| a **ação iniciada** | qual é, com hora |
+| a **condição resolutiva vinculada** | qual pendência a governa |
+| o **resultado ainda pendente** | e o fato de estar pendente ser visível (**E-07**) |
+| a **regra de chegada** | o que acontece quando o resultado chega |
+| os **desfechos possíveis** | **continuar** · **interromper** · **reavaliar** |
+| o **registro do evento** | o que mudou o estado, com hora e motivo (Parte 3) |
+
+⛔ **Não existe estado global de "liberado".** A condição pertence **àquela ação**,
+nunca ao atendimento — é **E-25** aplicada ao tempo: uma condição liga-se a **uma**
+ação. ⇒ **E-47**
+
 **Distingue-se de:** *destino* — a ação se completa; o destino persiste. E de
 *reavaliação* — a ação muda o paciente, a reavaliação mede de novo.
 
@@ -853,6 +896,39 @@ corrigível e não corrigível na mesma coluna. Onde a AHA/ASA 2026 não separar
 separação é **decisão do autor**, marcada como tal — nunca inferida por quem
 escreve a spec (§0.5).
 
+#### ⚠️ Classificação visual da fonte ≠ espécie clínica do app
+
+**Fixado pelo autor em 2026-08-28, a partir de F-07.** A **Table 8** da AHA/ASA
+2026 é **gradiente de risco e de opinião de especialista** — três faixas
+cromáticas, **sem COR/LOE em nenhuma célula**, e com a faixa "absoluta"
+declarada *"unsupported by clinical evidence"*.
+
+| ⛔ não equivale | |
+|---|---|
+| `item listado na Table 8` | ≠ contraindicação automática |
+| faixa *"absolute contraindications"* | ≠ proibição computável sem julgamento |
+| gradiente cromático da fonte | ≠ semáforo do app (**E-39**, P-07) |
+
+#### ⚠️ `COR 3` não é a espécie *contraindicação*
+
+**Fixado pelo autor em 2026-08-28.** Classe de recomendação descreve **o que se
+faz com uma intervenção**; a espécie §2.7 descreve **uma condição do paciente**.
+
+| | objeto | onde vive |
+|---|---|---|
+| **COR 3: No Benefit / Harm** | **a intervenção ou a estratégia** — recomendação **contra** ela porque risco > benefício | regra sobre a **ação** (§2.3), que a torna indisponível |
+| **contraindicação não corrigível** (§2.7) | **o paciente** — uma condição dele que impede a ação | **estado** derivado dos fatos |
+
+**O caso que obrigou a distinção:** §4.3 rec. 10 (**COR 3: Harm · A**) desaconselha
+a **estratégia** de redução pressórica intensiva (<140 por 72 h) após
+recanalização bem-sucedida. ⛔ Não contraindica o paciente, ⛔ não proíbe tratar a
+PA, ⛔ não retira nada da reperfusão já feita.
+
+> **Regra de precedência:** onde houver **recomendação específica com COR/LOE**,
+> ela **prevalece** sobre a faixa geral da tabela. Onde **não** houver
+> recomendação acionável, o item permanece **situação individualizada** ou **risco
+> contextual** — nunca veredito. ⇒ **E-48**
+
 **Distingue-se de:** *bloqueio corrigível* — ver §2.10.
 
 ### 2.8 Situação individualizada
@@ -872,12 +948,10 @@ proposto/assumido na forma.** O sistema **nem se cala nem decide**.
 - ⛔ o sistema concluir sozinho;
 - ⛔ **usar o NIHSS total como regra substituta** do julgamento.
 
-> ⚠️ **Afirmação do autor sobre a fonte, ainda sem verbatim.** O autor declara que
-> a AHA/ASA 2026 deixa claro que o NIHSS isoladamente não determina se o déficit é
-> incapacitante, e que o impacto funcional individual precisa ser avaliado.
-> Registrado como **declarado pelo autor** — o mesmo tratamento que
-> `fontes-vigentes.json` dá aos dados declarados. Vira afirmação da spec quando o
-> trecho for transcrito (**F-17**).
+> ✅ **SUSTENTADO POR VERBATIM** desde 2026-08-28. **F-17** transcreveu o
+> *Recommendation-Specific Supportive Text* da rec. 1 de §4.6.1 (p. e354):
+> *"Use of the NIHSS score alone does not suffice."* Deixou de ser afirmação
+> declarada pelo autor e passou a afirmação da spec, com fonte.
 
 #### Os sete passos
 
@@ -908,8 +982,67 @@ distintas usando o mesmo par é o primeiro sinal de que ele é geral — anotado
 para a **Parte 9**, e **não** promovido agora. ⇒ **E-15**, **E-16**
 
 ⚠️ **A decomposição não é nossa.** Pergunta que a fonte não sustentar **não
-entra**. Quais dimensões compõem o julgamento é **F-17**, e depende do verbatim.
-⇒ **E-19**
+entra** ⇒ **E-19**. As dimensões vieram de **F-17** — Table 4 (p. e355) e o
+*Supportive Text* da rec. 1 (p. e354).
+
+⛔ **Não inventar categoria funcional adicional por parecer intuitiva.** A
+decomposição usa **apenas** dimensões sustentadas pela Table 4 e pelo texto de
+suporte.
+
+#### O que a fonte sustenta — fixado pelo autor em 2026-08-28, sobre F-17
+
+**1 · NIHSS total.** ⛔ **Não pode ser usado isoladamente** para classificar o
+déficit como incapacitante ou não incapacitante. ✅ **Permanece dado clínico
+relevante** — não é descartado, é insuficiente sozinho.
+
+**2 · Itens do NIHSS.** ✅ **Podem** ser usados como parte da avaliação, porque a
+Table 4 emprega itens específicos e seus escores **como exemplos** (≥2 em
+*vision*, *best language*, *extinction and inattention*, *motor*). ⛔ Isso **não
+autoriza** transformar os itens em **algoritmo automático de elegibilidade**.
+
+**3 · A pergunta funcional central tem PRIORIDADE CONCEITUAL.** É a estrutura
+principal do julgamento — os quadros da Table 4 são ilustração sob ela, não o
+contrário:
+
+> *"Se os déficits observados persistirem, o paciente ainda conseguiria realizar
+> atividades básicas de vida diária e/ou retornar à sua atividade
+> habitual/trabalho?"*
+
+⚠️ **Marcação de fidelidade — a redação "atividade habitual/trabalho".** É
+**redação de apresentação decidida pelo autor**, e:
+
+- ⛔ **não é verbatim** — a fonte diz *"return to work (if applicable)"*;
+- ✅ **amplia operacionalmente** o alcance, para incluir pacientes **sem atividade
+  laboral formal**;
+- ⛔ **não altera o verbatim armazenado** (F-17) **nem a interpretação clínica da
+  fonte**.
+
+
+**4 · Table 4 é *guidance*.** Achados **tipicamente** claramente incapacitantes ×
+achados que **podem não ser** claramente incapacitantes. ⛔ Não converter
+`typically disabling` → "sempre incapacitante", nem `may not be clearly
+disabling` → "não incapacitante". **Preservar a incerteza da fonte.**
+
+**5 · A leitura do sistema não é veredito.** ⛔ O app **não** produz
+automaticamente `Déficit incapacitante = SIM/NÃO` a partir da Table 4. ✅ Produz
+**leitura intermediária**, do tipo:
+
+- *"Há achados tipicamente associados a déficit claramente incapacitante"*;
+- *"Há achados que podem não ser claramente incapacitantes isoladamente"*;
+- *"A avaliação funcional individual permanece necessária"*.
+
+> **É apoio ao julgamento, não decisão.** ⇒ **E-46**
+
+**6 · A decisão final é do médico:** `incapacitante · não incapacitante ·
+incerto`, guardada e **separada** da leitura derivada.
+
+**7 · Divergir não é erro.** Se o médico divergir da leitura do sistema, isso
+**não bloqueia o fluxo** e permanece registrado como **divergência clínica**
+(§4.5, §4.7).
+
+**8 · Tradução preserva as quatro expressões** (**E-45**): `clearly disabling` ·
+`typically considered` · `may not be clearly disabling` · `individual
+circumstances`. ⛔ Não achatar. O verbatim permanece em inglês (§6.14).
 
 #### mRS prévio — papel ainda não fechado
 
@@ -1969,6 +2102,66 @@ preenchido, que é diferente, e é o estado que esta spec existe para impedir.
 | 9 · copiado × derivado | §6.9 ⇒ **E-33** |
 | 10 · atualização futura | §6.10 ⇒ **E-34** |
 
+### 6.14 Idioma da fonte × idioma do app
+
+**Regra acrescentada pelo autor em 2026-08-28, antes da transcrição.** Fonte
+científica e idioma da interface são **camadas diferentes**.
+
+#### 1 · O verbatim permanece no idioma original
+
+Todo trecho armazenado em `protocols/fontes-verbatim/` fica **exatamente no
+idioma da publicação** — aqui, **inglês**. ⛔ **Não traduzir o verbatim:** ele é a
+**evidência auditável**, e evidência traduzida é evidência adulterada.
+
+Registrar junto: **página · seção · tabela/recomendação quando aplicável · COR ·
+LOE · população · observações relevantes**.
+
+#### 2 · A regra clínica é independente do idioma
+
+A regra derivada do verbatim é **semanticamente independente da interface**.
+⛔ Não existe lógica clínica diferente para PT-BR e ES: **a mesma regra alimenta
+os dois idiomas**.
+
+#### 3 · Tudo que o médico vê existe em PT-BR e ES
+
+Nomes de estados · alertas · recomendações · contraindicações · doses · metas ·
+mensagens de pendência · mensagens de bloqueio · racional clínico curto · botões
+e labels · textos auxiliares.
+
+⛔ **Não exibir inglês ao usuário só porque a guideline está em inglês.**
+
+#### 4 · Tradução não vira fonte
+
+A tradução é **conteúdo de apresentação**. Nunca substitui o verbatim. A cadeia
+permanece:
+
+```
+   verbatim original (EN)  →  afirmação clínica  →  regra  →  conteúdo localizado PT-BR / ES
+```
+
+#### 5 · Fidelidade da tradução clínica ⇒ **E-45**
+
+A tradução preserva **intensidade da recomendação · condição · exceção ·
+população · temporalidade · grau de certeza**. ⛔ Não suavizar nem endurecer
+palavra clinicamente relevante.
+
+> **O caso que a regra nomeia:** `recommended` · `reasonable` · `may be
+> reasonable` · `not recommended` · `harmful` são **cinco intensidades
+> diferentes**. Achatá-las em "recomendado" e "não recomendado" destrói a
+> gradação que a fonte construiu — e é a forma mais silenciosa de mudar a
+> medicina sem mudar nenhum número.
+
+Isto liga direto ao **COR** (§6.1): a intensidade verbal e a classe de
+recomendação são duas expressões da mesma força, e nenhuma das duas se perde na
+tradução.
+
+#### 6 · Adulto na origem
+
+O AVC V1 é adulto. A guideline contém recomendações pediátricas — **filtrar
+população durante a transcrição, antes da regra clínica** (**E-17**, §6.8).
+⛔ Não transcrever pediátrico para o universo adulto e tentar escondê-lo na UI
+depois.
+
 ### 6.13 O que a Parte 6 deixa em aberto
 
 - **Onde a camada de conteúdo mora fisicamente** — arquivo, banco, formato.
@@ -1977,9 +2170,9 @@ preenchido, que é diferente, e é o estado que esta spec existe para impedir.
 - **O registro de divergências** — §6.6 define o que se registra; onde isso vive
   segue a convenção da casa (`DIVIDAS-CONHECIDAS.md` é o precedente), e não é
   decidido aqui.
-- **A tradução PT/ES do conteúdo clínico** (**E-12**): se a camada de conteúdo
-  guarda as duas línguas lado a lado, ou se o espanhol é derivado por dicionário
-  como no legado. Nasce na **Parte 7**, junto com a superfície.
+- **O MECANISMO da tradução PT/ES** (**E-12**, **Q-03**): se a camada de conteúdo
+  guarda as duas línguas lado a lado, ou se o espanhol é derivado por dicionário.
+  ⚠️ A **política** de tradução está fechada em §6.14; o mecanismo, não.
 
 ---
 
@@ -2419,7 +2612,7 @@ breakpoints · design system definitivo · engine · tipos.
 
 ## PARTE 8 — COMO SE PROVA CADA REGRA
 
-> Classifica as **44 exigências** por **natureza de prova**, e trata a **trava de
+> Classifica as **48 exigências** por **natureza de prova**, e trata a **trava de
 > universo vazio** como requisito de primeira classe.
 >
 > ⚠️ **Esta parte não escreve trava nenhuma.** Ela diz o que cada regra exige que
@@ -2452,7 +2645,7 @@ isso, **E-01** e **E-21** ficam sem prova — e são duas das regras mais caras.
 módulo a módulo; o defeito que este modelo pode produzir é de **propagação** — um
 fato corrigido que não derrubou a cadeia inteira (§4.4-iii).
 
-### 8.3 As 44 exigências, por natureza de prova
+### 8.3 As 48 exigências, por natureza de prova
 
 | # | natureza | o que se mede |
 |---|---|---|
@@ -2500,6 +2693,10 @@ fato corrigido que não derrubou a cadeia inteira (§4.4-iii).
 | **E-42** | **C** + I | corrigir a origem gera pendência de consistência, e **não** altera o valor copiado |
 | **E-43** | **S** + C | não existe campo que registre veredito de contraindicação ou elegibilidade |
 | **E-44** | **S** | ⚠️ **meta** — mede as próprias travas: cada uma declara universo e piso, e universo vazio reprova (§8.4) |
+| **E-45** | **R** + S | varredura: todo conteúdo tem par PT/ES · **revisão**: a gradação da fonte foi preservada na tradução |
+| **E-46** | **S** + C | não existe caminho em que a leitura de julgamento produza conclusão binária sem decisão do médico |
+| **E-47** | **I** + C | ação iniciada com vínculo: a chegada do resultado produz continuar, interromper ou reavaliar — e o vínculo é por ação, não global |
+| **E-48** | **S** + **R** | varredura: nenhum item de tabela sem COR/LOE tratado como veredito · revisão: a precedência foi respeitada |
 
 **Distribuição:** predominam **S** (forma, barata, e a que mais pega regressão de
 conteúdo) e **C**. Mas as regras que sustentam o modelo — **E-01**, **E-05**,
