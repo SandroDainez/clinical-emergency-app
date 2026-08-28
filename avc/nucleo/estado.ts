@@ -62,6 +62,31 @@ export function valorAtual(estado: EstadoAvc, campo: string): FatoRegistrado | u
   return undefined;
 }
 
+/**
+ * CORRIGIR um registro — ⛔ operação distinta de medir de novo (§3.4, R-03).
+ *
+ * ⚠️ Corrigir **exige motivo**; medir de novo, não. E ⛔ nada é apagado: o valor
+ * errado permanece na trilha, marcado, porque apagá-lo esconderia que houve erro.
+ */
+export function corrigirFato(
+  estado: EstadoAvc,
+  fato: Omit<FatoRegistrado, "horaRegistro" | "tipo"> & { motivo: string },
+  relogio: Relogio
+): EstadoAvc {
+  return {
+    ...estado,
+    fatos: [...estado.fatos, { ...fato, tipo: "correcao", horaRegistro: relogio.agora() }],
+  };
+}
+
+/**
+ * Os registros de um campo, em ordem. ⚠️ A trilha inteira, ⛔ não só o último —
+ * é o que separa "a PA está em 168/96" de "a PA sempre esteve em 168/96".
+ */
+export function historicoDe(estado: EstadoAvc, campo: string): readonly FatoRegistrado[] {
+  return estado.fatos.filter((f) => f.campo === campo);
+}
+
 /** Define um relógio clínico. ⛔ Um marco nunca sobrescreve outro (E-36). */
 export function definirRelogioClinico(
   estado: EstadoAvc,

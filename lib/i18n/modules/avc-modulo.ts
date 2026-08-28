@@ -68,6 +68,93 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Fontes que governam esta superfície": "Fuentes que rigen esta superficie",
   "Voltar": "Volver",
 
+  // ── SUPERFÍCIE A · rótulos e notas de campo ─────────────────────────────
+  "Relógios": "Relojes",
+  "Estabilização": "Estabilización",
+  "Peso": "Peso",
+  "Chegada ao pronto-socorro": "Llegada a urgencias",
+  "Referência de porta. Não substitui nenhum relógio clínico.":
+    "Referencia de puerta. No sustituye ningún reloj clínico.",
+  "Desconhecido é resposta, e tem consequência própria.":
+    "Desconocido es una respuesta, y tiene consecuencia propia.",
+  "Início observado do déficit": "Inicio observado del déficit",
+  "Reconhecimento dos sintomas": "Reconocimiento de los síntomas",
+  "A fonte conta uma janela a partir deste marco, e ele não é o início.":
+    "La fuente cuenta una ventana desde este marco, y no es el inicio.",
+  "Houve sono entre a última vez bem e o achado":
+    "Hubo sueño entre la última vez bien y el hallazgo",
+  "Nível de consciência rebaixado": "Nivel de consciencia disminuido",
+  "Disfunção bulbar": "Disfunción bulbar",
+  "Junto com o rebaixamento, é um dos dois gatilhos que a fonte nomeia.":
+    "Junto con la disminución, es uno de los dos desencadenantes que la fuente nombra.",
+  "A meta de 94% vale para quem tem hipóxia. A fonte não define corte numérico de hipóxia.":
+    "La meta de 94% vale para quien tiene hipoxia. La fuente no define un umbral numérico de hipoxia.",
+  "Há hipóxia": "Hay hipoxia",
+  "É a presença de hipóxia que indica oxigênio — não o número isolado.":
+    "Es la presencia de hipoxia la que indica oxígeno — no el número aislado.",
+  "Pressão sistólica": "Presión sistólica",
+  "Pressão diastólica": "Presión diastólica",
+  "Registrada aqui. A meta depende do contexto de reperfusão, que esta superfície não define.":
+    "Registrada aquí. La meta depende del contexto de reperfusión, que esta superficie no define.",
+  "Glicemia capilar": "Glucemia capilar",
+  "Desconhecida não é normal.": "Desconocida no es normal.",
+  "Crise convulsiva no início do quadro": "Crisis convulsiva al inicio del cuadro",
+  "Contexto e possível mimetizador. Não exclui AVC.":
+    "Contexto y posible imitador. No excluye ACV.",
+  "Origem do peso": "Origen del peso",
+  "Balança": "Báscula",
+  "Informado": "Informado",
+  "Estimado": "Estimado",
+  "Não atrasa terapia tempo-dependente.": "No retrasa terapia tiempo-dependiente.",
+  "Com peso estimado, a fonte diz que a banda fina não é necessariamente mais segura.":
+    "Con peso estimado, la fuente dice que la banda fina no es necesariamente más segura.",
+  "Sim": "Sí",
+  "Não": "No",
+  "Não sei": "No sé",
+  "Registrar horário": "Registrar horario",
+
+  // ── SUPERFÍCIE A · leituras do sistema ──────────────────────────────────
+  // ⚠️ E-45: força verbal preservada — "recomendado", "não é recomendado para
+  // melhorar desfecho funcional", "não exclui", "ainda não informada".
+  "LEITURA DO SISTEMA": "LECTURA DEL SISTEMA",
+  "Apoio ao julgamento clínico. A decisão permanece do médico.":
+    "Apoyo al juicio clínico. La decisión permanece del médico.",
+  "a partir de": "a partir de",
+  "Suporte de via aérea e ventilação recomendados, conforme a necessidade":
+    "Soporte de vía aérea y ventilación recomendados, según la necesidad",
+  "Consciência ou função bulbar ainda não avaliadas":
+    "Consciencia o función bulbar aún no evaluadas",
+  "Sem os dois gatilhos que a fonte nomeia para suporte de via aérea":
+    "Sin los dos desencadenantes que la fuente nombra para soporte de vía aérea",
+  "Oxigênio suplementar recomendado, com meta de SpO₂ maior que 94%":
+    "Oxígeno suplementario recomendado, con meta de SpO₂ mayor que 94%",
+  "Sem hipóxia, oxigênio suplementar não é recomendado para melhorar desfecho funcional":
+    "Sin hipoxia, el oxígeno suplementario no está recomendado para mejorar el desenlace funcional",
+  "Presença de hipóxia ainda não informada": "Presencia de hipoxia aún no informada",
+  "SpO₂ registrada, mas a presença de hipóxia ainda não foi informada":
+    "SpO₂ registrada, pero la presencia de hipoxia aún no fue informada",
+  "SpO₂ não informada": "SpO₂ no informada",
+  "SpO₂ abaixo da meta de 94% que a fonte declara para o paciente com hipóxia":
+    "SpO₂ por debajo de la meta de 94% que la fuente declara para el paciente con hipoxia",
+  "SpO₂ acima da meta de 94%": "SpO₂ por encima de la meta de 94%",
+  "Glicemia não informada — desconhecida não é normal":
+    "Glucemia no informada — desconocida no es normal",
+  "Hipoglicemia: a fonte recomenda tratar para evitar complicações":
+    "Hipoglucemia: la fuente recomienda tratar para evitar complicaciones",
+  "Glicemia acima do limite que a fonte manda tratar":
+    "Glucemia por encima del umbral que la fuente manda tratar",
+  "Pressão arterial não informada": "Presión arterial no informada",
+  "Pressão registrada — o significado depende do contexto de reperfusão, ainda não definido":
+    "Presión registrada — el significado depende del contexto de reperfusión, aún no definido",
+  "Peso não informado — pendência que não atrasa terapia tempo-dependente":
+    "Peso no informado — pendiente que no retrasa terapia tiempo-dependiente",
+  "Peso informado, sem origem declarada": "Peso informado, sin origen declarado",
+  "Ocorrência de crise no início ainda não informada":
+    "Ocurrencia de crisis al inicio aún no informada",
+  "Crise no início entra como contexto e possível mimetizador — não exclui AVC nem indica anticonvulsivante por si":
+    "La crisis al inicio entra como contexto y posible imitador — no excluye ACV ni indica anticonvulsivante por sí misma",
+  "Sem crise no início": "Sin crisis al inicio",
+
   // ── Assuntos dos slots de fonte (avc/conteudo/fontes.ts) ────────────────
   // ⚠️ São EXIBIDOS na superfície, sob "Fontes que governam esta superfície".
   // ⛔ Traduz-se o assunto; ⛔ NUNCA o verbatim, que permanece em inglês (§6.14).

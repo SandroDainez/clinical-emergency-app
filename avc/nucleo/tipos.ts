@@ -42,6 +42,20 @@ export type Procedencia = "paciente" | "acompanhante" | "testemunha" | "pre_hosp
  */
 export type Vazio = "nao_perguntado" | "nao_sei";
 
+/**
+ * Duas operações que produzem valor diferente no mesmo campo, e que ⛔ NÃO são a
+ * mesma coisa (§3.4).
+ *
+ * ⚠️ Confundi-las transforma **erro de entrada em evolução clínica falsa**: uma
+ * PA informada errada e depois "corrigida" apareceria como resposta a um
+ * tratamento que ninguém deu.
+ */
+export type TipoDeRegistro =
+  /** O paciente mudou, ou mediu-se outra vez. Os dois valores valem. */
+  | "medida"
+  /** O valor anterior NUNCA foi verdade. Ele fica invalidado, e visível. */
+  | "correcao";
+
 /** Um fato informado pelo médico. ⛔ Nunca carrega a própria interpretação (§4.1). */
 export type FatoRegistrado = {
   readonly campo: string;
@@ -53,6 +67,8 @@ export type FatoRegistrado = {
   readonly procedencia?: Procedencia;
   /** Por que este registro existe: correção, reavaliação, achado novo. */
   readonly motivo?: string;
+  /** Ausente equivale a `"medida"` — o caso comum. */
+  readonly tipo?: TipoDeRegistro;
 };
 
 /**

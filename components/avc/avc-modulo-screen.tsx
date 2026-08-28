@@ -17,12 +17,18 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { PENDENCIAS_INICIAIS, SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
 import { slot } from "../../avc/conteudo/fontes";
+import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import {
   abrirAtendimento,
   decorridoEmMinutos,
+  definirRelogioClinico,
   pendenciasAbertas,
+  registrarFato,
+  valorAtual,
   verSuperficie,
 } from "../../avc/nucleo/estado";
+import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
+import SuperficieA from "./superficie-a";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
@@ -58,9 +64,57 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     [estado]
   );
 
+  // ⚠️ Quantos campos da Superfície A já foram informados — ⛔ NÃO é barra de
+  // progresso nem meta: nenhum deles é obrigatório (E-49). Serve só para o
+  // médico ver o que falta, sem que a falta trave coisa alguma.
+  const informadosEmA = useMemo(
+    () => TODOS_OS_CAMPOS_A.filter((c) => valorAtual(estado, c.id) !== undefined).length,
+    [estado]
+  );
+
   function abrir(id: SuperficieId) {
     // ⚠️ E-20: mudar de superfície ⛔ NÃO produz ação clínica nem registra nada.
     setEstado((e) => verSuperficie(e, id));
+  }
+
+  // ── Entrada de fatos da Superfície A ──────────────────────────────────────
+  //
+  // ⚠️ Tudo passa por `registrarFato`, que ACRESCENTA à trilha. ⛔ Nada aqui
+  // sobrescreve: uma nova medida convive com a anterior (§3.1).
+
+  function escolher(campo: string, valor: string) {
+    setEstado((e) => registrarFato(e, { campo, valor }, relogio));
+  }
+
+  /**
+   * Ajuste fino de grandeza.
+   *
+   * ⚠️ O primeiro toque é o que transforma o campo de "não informado" em
+   * informado (§0.2) — por isso o passo parte do valor atual, e ⛔ um campo nunca
+   * tocado não tem valor nenhum, em vez de ter zero.
+   */
+  function ajustar(campo: string, delta: number) {
+    setEstado((e) => {
+      const atualDoCampo = valorAtual(e, campo);
+      const base = typeof atualDoCampo?.valor === "number" ? atualDoCampo.valor : 0;
+      return registrarFato(e, { campo, valor: Math.max(0, base + delta) }, relogio);
+    });
+  }
+
+  /**
+   * Registro de horário.
+   *
+   * ⚠️ O controle NOMEIA o relógio que alimenta (E-36), e cada marco vai para o
+   * seu próprio campo — ⛔ nunca para um genérico.
+   */
+  function registrarHora(campo: string, qualRelogio?: string) {
+    setEstado((e) => {
+      const agora = relogio.agora();
+      const comFato = registrarFato(e, { campo, valor: agora, horaClinica: agora }, relogio);
+      return qualRelogio
+        ? definirRelogioClinico(comFato, qualRelogio as RelogioClinicoId, agora)
+        : comFato;
+    });
   }
 
   return (
@@ -85,7 +139,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             {tr("Aberto há")} {abertoHaMin ?? 0} {tr("min")}
           </Text>
           <Text style={s.resumoItem}>
-            {tr("Última vez bem")}: {tr("não informado")}
+            {tr("Última vez bem")}:{" "}
+            {decorridoEmMinutos(estado, "ultima_vez_bem", relogio) === undefined
+              ? tr("não informado")
+              : `${decorridoEmMinutos(estado, "ultima_vez_bem", relogio)} ${tr("min")}`}
+          </Text>
+          <Text style={s.resumoItem} testID="avc-resumo-a">
+            {tr("Estabilização")}: {informadosEmA}/{TODOS_OS_CAMPOS_A.length}
           </Text>
         </View>
       </View>
@@ -151,10 +211,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         </Text>
         <Text style={s.superficieResumo}>{tr(atual.resumo)}</Text>
 
-        <Text style={s.emConstrucao}>{tr("Superfície em construção")}</Text>
-        <Text style={s.emConstrucaoNota}>
-          {tr("O conteúdo clínico desta superfície ainda não foi implementado.")}
-        </Text>
+        {atual.id === "A" ? (
+          <SuperficieA
+            estado={estado}
+            onEscolher={escolher}
+            onAjustar={ajustar}
+            onHora={registrarHora}
+          />
+        ) : (
+          <>
+            <Text style={s.emConstrucao}>{tr("Superfície em construção")}</Text>
+            <Text style={s.emConstrucaoNota}>
+              {tr("O conteúdo clínico desta superfície ainda não foi implementado.")}
+            </Text>
+          </>
+        )}
 
         {/* ⚠️ E-30: a fonte é propriedade da afirmação. Ainda não há afirmação,
             mas o endereço já está ligado — a tela nunca será dona da medicina. */}
