@@ -41,6 +41,23 @@
       "vigente": "diretrizes de SDRA mais recentes e nova definição global — verificar antes de trocar",
       "situacao": "categoria_errada",
       "nota": "⚠️ ARDSNet NÃO é diretriz com ano: é protocolo de ensaio clínico de 2000. O selo estava categoricamente errado."
+    },
+    {
+      "id_no_app": "aha_asa_avc_isquemico_2026",
+      "vigente": "AHA/ASA 2026 — Guideline for the Early Management of Patients With Acute Ischemic Stroke (Prabhakaran et al., Stroke, 2026). DOI 10.1161/STR.0000000000000513",
+      "situacao": "declarada_fonte_mae_2026-08-28",
+      "escopo": "AVC isquemico agudo do ADULTO. Fonte-mae para: avaliacao emergencial; suporte inicial; trombolise IV; elegibilidade e contraindicacoes; trombectomia mecanica; pressao arterial; glicemia; imagem; manejo inicial pos-reperfusao.",
+      "bibliografia_conferida": {
+        "como": "busca web em 2026-08-28 (PubMed PMID 41582814 e paginas oficiais AHA)",
+        "publicado_online": "2026-01-26",
+        "edicao": "Stroke, v.57, n.8 (agosto de 2026)",
+        "substitui": "as Guidelines de 2018 e a atualizacao de 2019",
+        "aviso": "⚠️ Conferi a EXISTENCIA e os dados bibliograficos por busca. NAO tive acesso ao TEXTO INTEGRAL: ahajournals.org e professional.heart.org responderam HTTP 403. Nenhum numero, janela, dose, meta ou contraindicacao foi extraido desta fonte ate agora."
+      },
+      "complementares_permitidas": "ESO, estudos DAWN/DEFUSE-3 e referencias brasileiras podem ser usadas como COMPLEMENTARES. Nunca substituem silenciosamente a AHA/ASA 2026: divergencia ou necessidade de adaptacao a realidade brasileira e marcada explicitamente para decisao do autor.",
+      "regra_de_disponibilidade_brasileira": "⚠️ REGRA PERMANENTE, declarada pelo autor em 2026-08-28: disponibilidade/comercializacao brasileira NAO se infere da guideline americana. Para medicamento e apresentacao usados no Brasil exige-se fonte brasileira ou verificacao especifica de disponibilidade. Vale para todo o app, nao so para o AVC.",
+      "alerta_de_escopo_pediatrico": "⚠️ Esta publicacao traz TAMBEM a primeira orientacao pediatrica de AVC da AHA/ASA. O app e de populacao ADULTA (PD-2) e `npm run test:escopo-pediatrico` reprova o build com dose pediatrica. Na extracao verbatim, conteudo pediatrico e FILTRADO NA ORIGEM — foi exatamente por copia de fonte que cita as duas populacoes que os oito fragmentos pediatricos anteriores entraram no app.",
+      "nota": "Nao havia entrada de AVC neste arquivo. Os ids antigos do modulo removido eram `medcampus_avc_adultos_v14` e `sbdcv_avc_fase_aguda` (protocols/guidelines_metadata.json) — passam a COMPLEMENTARES, e nenhum conteudo deles e reaproveitado sem conferencia contra a fonte-mae."
     }
   ],
   "achados_de_brinde": [
@@ -51,6 +68,7 @@
     }
   ],
   "prioridade_declarada_pelo_autor": [
+    "AVC isquemico (fonte-mae declarada 2026-08-28; aguarda extracao verbatim)",
     "ADA / CAD-EHH",
     "SSC / sepse",
     "anafilaxia",
