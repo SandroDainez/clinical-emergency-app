@@ -54,12 +54,8 @@ export function relogioControlado(inicial: Instante = 0): RelogioControlado {
   return {
     agora: () => t,
     avancar(ms: number) {
-      if (ms < 0) {
-        // ⚠️ Mensagem de invariante, para quem depura — ⛔ nunca chega à tela.
-        throw new Error(
-          "relogioControlado.avancar: o tempo não anda para trás"
-        );
-      }
+      // ⚠️ Mensagem de invariante, para quem depura — ⛔ nunca chega à tela.
+      if (ms < 0) throw new Error("relogioControlado.avancar: o tempo não anda para trás");
       t += ms;
     },
     definir(instante: Instante) {

@@ -116,7 +116,25 @@ const NAO_E_TELA = new Set([
 function isInvariantMessage(lines, lit) {
   for (let i = 0; i < lines.length; i++) {
     if (!lines[i].includes(lit)) continue;
-    for (let j = Math.max(0, i - 8); j < i; j++) {
+    // ⚠️ A PRÓPRIA LINHA CONTA (corrigido em 2026-08-28).
+    //
+    // A varredura olhava só as 8 linhas ANTERIORES ao literal (`j < i`), o que
+    // reconhecia o lançamento quebrado em várias linhas —
+    //
+    //     throw new Error(
+    //       "mensagem"
+    //     );
+    //
+    // — e NÃO reconhecia a forma de uma linha só, que é a mais comum:
+    //
+    //     if (x) throw new Error("mensagem");
+    //
+    // O efeito era pedir tradução de mensagem de exceção, que ninguém traduz:
+    // quem a lê está depurando, e ela precisa casar com o que está no código.
+    // Encontrado ao escrever a guarda de `avc/nucleo/relogio.ts`, que teve de
+    // ser reformatada em três linhas só para escapar da varredura — contornar
+    // a trava mudando o código é o sinal de que a trava é que estava errada.
+    for (let j = Math.max(0, i - 8); j <= i; j++) {
       if (/throwInvariantViolation\(|throw new Error\(/.test(lines[j])) return true;
     }
   }
