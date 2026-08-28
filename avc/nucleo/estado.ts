@@ -33,7 +33,7 @@ export function abrirAtendimento(relogio: Relogio): EstadoAvc {
     // ⚠️ O t₀ operacional é a chegada (§0.1) e nasce com o atendimento.
     // ⛔ Ele NÃO substitui nenhum relógio clínico (E-21).
     relogiosClinicos: { t0_operacional: agora },
-    superficieVista: "A",
+    superficieVista: "estabilizacao",
   };
 }
 

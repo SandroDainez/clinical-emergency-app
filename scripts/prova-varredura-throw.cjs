@@ -1,4 +1,16 @@
 /**
+ * PROMETE: que a varredura de i18n continue enxergando literal em português
+ *   dentro de `throw` de UMA LINHA — o buraco medido em 2026-08-27, em que
+ *   `isInvariantMessage` só olhava as linhas ANTERIORES ao literal e deixava
+ *   passar a mensagem escrita no mesmo `throw new Error("...")`.
+ * NÃO PROMETE: que a varredura esteja completa. Ela cobre UM buraco conhecido,
+ *   ⛔ não a corretude geral do `varredura-pt.cjs` — e ⛔ não diz nada sobre a
+ *   QUALIDADE da tradução em espanhol, que é julgamento clínico (E-45) e ⛔ não
+ *   se automatiza.
+ * UNIVERSO: `scripts/varredura-pt.cjs`, exercitado contra amostras sintéticas
+ *   de throw (uma linha e várias linhas), positivas e negativas.
+ */
+/**
  * PROVA NEGATIVA · a varredura de PT e a mensagem de invariante numa linha só.
  *
  * ── POR QUE ESTA PROVA EXISTE ──────────────────────────────────────────────

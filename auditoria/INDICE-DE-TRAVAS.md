@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**45 de 59 travas com declaração completa.**
+**49 de 63 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -19,6 +19,24 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que as cinco capacidades novas do NÚCLEO funcionem de verdade, sobre o motor real, numa árvore de prova — seleção múltipla, valor com histórico, veredito derivado que muda de cor ao corrigir o dado, estado de ação, e bloqueio de medicação SEM bloqueio do atendimento.
 - **NÃO PROMETE:** nada sobre a SCA nem sobre qualquer módulo clínico — a árvore aqui é sintética de propósito. O núcleo não conhece doença.
 - **UNIVERSO:** core/decision-tree/{engine,types,estado-clinico}.ts. ── POR QUE UMA ÁRVORE SINTÉTICA E NÃO A SCA ──────────────────────────────── O pedido foi explícito: implementar e testar SÓ o núcleo antes de tocar em qualquer tela. Provar sobre a SCA misturaria dois riscos — "o núcleo funciona?" e "o módulo usa o núcleo direito?" — e uma falha não diria qual dos dois quebrou. A árvore daqui existe só para exercitar as capacidades.
+
+## `test:avc-nucleo` → `scripts/prova-avc-nucleo.cjs`
+
+- **PROMETE:** que o núcleo do AVC obedeça às três decisões de Q-01/Q-02/Q-03 — uma porta única de relógio (⛔ nenhum `Date.now()` disperso), trilha APPEND-ONLY em que correção convive com a medida corrigida e exige motivo, e os três vazios (não perguntado / não sei / valor) como estados distintos que ⛔ nunca colapsam.
+- **NÃO PROMETE:** nada sobre MEDICINA. Ele ⛔ não confere corte, dose, janela nem fidelidade à AHA/ASA — isso é `prova-avc-superficie-a` (fidelidade dos campos) e, acima dela, a conferência de fonte, que é do médico. Também ⛔ não diz nada sobre a tela: um núcleo correto renderizado errado passa aqui, e foi exatamente o que aconteceu nos testes visuais de 2026-08-28.
+- **UNIVERSO:** `avc/nucleo/*.ts` compilados — relogio.ts, tipos.ts, estado.ts e derivacoes.ts. ⛔ Fora do universo: `avc/conteudo/`, `components/avc/`.
+
+## `test:avc-superficie-a` → `scripts/prova-avc-superficie-a.cjs`
+
+- **PROMETE:** que os campos da Superfície A sejam FIÉIS à fonte no que se pode medir sem julgamento — que `<60 mg/dL` seja limite e `>94%` seja meta e ⛔ nunca o contrário; que ausência ⛔ nunca vire negativa (E-23); que toda escolha ofereça saída de ausência de conclusão e nenhum rótulo caia cru no estado; que todo campo tenha slot de fonte (E-30) e `bloqueiaTerapia: false` (E-49); e que a faixa de cada barra ALCANCE os limites que a fonte escreve, ⛔ sem obrigar o médico a aproximar.
+- **NÃO PROMETE:** que os números clínicos estejam CERTOS — ele confere que o código diz o que o verbatim transcrito diz, ⛔ não que o verbatim esteja bem transcrito nem que a fonte esteja atualizada. Também ⛔ não mede tela: ordem visual, legibilidade e vazamento de dado interno são `e2e/avc-superficie-a`.
+- **UNIVERSO:** `avc/conteudo/superficie-a.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_A`, contados) e as derivações de `avc/nucleo/derivacoes.ts` exercitadas por estado construído. ⛔ Fora do universo: Superfícies B a G, que ainda não existem.
+
+## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
+
+- **PROMETE:** que a LETRA de uma superfície do AVC seja apresentação e nada mais — que o identificador seja um slug estável, que a letra saia da posição e ⛔ nunca seja digitada, que a ordem de apresentação seja exatamente a aprovada pelo autor, que nenhuma superfície declare vizinho ("próxima"/"anterior") nem pré-requisito de navegação, e que toda pendência e todo slot de fonte citados por uma superfície EXISTAM.
+- **NÃO PROMETE:** que a ordem seja a melhor ordem clínica — isso é julgamento do autor, e a trava só congela a decisão dele para que ela ⛔ não se desfaça por acidente. Também ⛔ não mede tela: que a tela RENDERIZE nesta ordem é `e2e/avc-modulo-navegavel`, e ⛔ não diz nada sobre o conteúdo clínico de nenhuma superfície.
+- **UNIVERSO:** `avc/conteudo/superficies.ts` e `avc/conteudo/fontes.ts` compilados — as sete superfícies e as três pendências iniciais, contadas e impressas. ── O DEFEITO QUE ESTA TRAVA NASCEU PARA MATAR (2026-08-28) ──────────────── `SuperficieId` era `"A" | ... | "G"`: a letra ERA a identidade. Ao inverter E e F, `superficieVista: "E"` mudaria de significado sem que uma linha de estado mudasse, e uma pendência `dono: "E"` passaria a apontar para outra superfície EM SILÊNCIO. Rótulo virando identidade é um defeito que passa em todos os testes — é por isso que ele precisa de trava própria.
 
 ## `test:selecao-encapsulada` → `scripts/valida-encapsulamento-selecao.cjs`
 
@@ -55,6 +73,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** todo literal de texto em português exibido ao usuário tem tradução em espanhol registrada.
 - **NÃO PROMETE:** que a tradução esteja correta, nem cobre texto dentro de template literal com ${} — que é justamente onde a frase escapa da varredura. ⚠️ NÃO PROMETE, sobretudo: que a frase que a TELA RECEBE tenha chave. Este instrumento lê o FONTE. Quando a frase é montada por concatenação, aqui existem vários literais curtos, cada um com a sua chave — e a string de runtime, que é a soma deles, não tem nenhuma. Isso é R-82, e quem cobre é `scripts/valida-traducao-runtime.cjs`, que lê o ARTEFATO COMPILADO.
 - **UNIVERSO:** os arquivos de conteúdo e os módulos de i18n. ── A FRONTEIRA COM A TRAVA DE RUNTIME (cobertura cruzada declarada) ──────── esta varredura (fonte) → TEXTO NOVO sem tradução. Vê o literal no momento em que alguém o escreve. valida-traducao-runtime → FRASE MONTADA cuja chave é de uma versão (artefato compilado)      ANTERIOR da frase. ⚠️ E FOI MEDIDO que obedecer ESTA varredura ao pé da letra NÃO basta: numa mutação em que um pedaço foi acrescentado por concatenação a uma frase que já tinha chave, gravar a chave do PEDAÇO fez esta varredura dizer «SEM TRADUÇÃO: 0» — e a tela continuou em português, com a trava de runtime reprovando. Passar aqui não é evidência de tela traduzida. Varredura exaustiva de texto em português no código VIVO do app. Por que existe: a checagem antiga só perguntava se as chamadas tr() já existentes tinham tradução — e por isso dizia "faltando 0" com o app inteiro em português. Aqui o critério é outro: extrai TODO literal com prosa em português, esteja ele dentro de tr() ou não, e confronta com os dicionários. Uso:  node scripts/varredura-pt.cjs [--json <arquivo>] Saída: por arquivo, as frases sem tradução em es-419; código de saída 1 se houver pendências.
+
+## `test:varredura-throw` → `scripts/prova-varredura-throw.cjs`
+
+- **PROMETE:** que a varredura de i18n continue enxergando literal em português dentro de `throw` de UMA LINHA — o buraco medido em 2026-08-27, em que `isInvariantMessage` só olhava as linhas ANTERIORES ao literal e deixava passar a mensagem escrita no mesmo `throw new Error("...")`.
+- **NÃO PROMETE:** que a varredura esteja completa. Ela cobre UM buraco conhecido, ⛔ não a corretude geral do `varredura-pt.cjs` — e ⛔ não diz nada sobre a QUALIDADE da tradução em espanhol, que é julgamento clínico (E-45) e ⛔ não se automatiza.
+- **UNIVERSO:** `scripts/varredura-pt.cjs`, exercitado contra amostras sintéticas de throw (uma linha e várias linhas), positivas e negativas.
 
 ## `test:traducao-runtime` → `scripts/valida-traducao-runtime.cjs`
 

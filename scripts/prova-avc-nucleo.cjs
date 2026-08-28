@@ -1,4 +1,18 @@
 /**
+ * PROMETE: que o núcleo do AVC obedeça às três decisões de Q-01/Q-02/Q-03 —
+ *   uma porta única de relógio (⛔ nenhum `Date.now()` disperso), trilha
+ *   APPEND-ONLY em que correção convive com a medida corrigida e exige motivo,
+ *   e os três vazios (não perguntado / não sei / valor) como estados distintos
+ *   que ⛔ nunca colapsam.
+ * NÃO PROMETE: nada sobre MEDICINA. Ele ⛔ não confere corte, dose, janela nem
+ *   fidelidade à AHA/ASA — isso é `prova-avc-superficie-a` (fidelidade dos
+ *   campos) e, acima dela, a conferência de fonte, que é do médico. Também ⛔ não
+ *   diz nada sobre a tela: um núcleo correto renderizado errado passa aqui, e
+ *   foi exatamente o que aconteceu nos testes visuais de 2026-08-28.
+ * UNIVERSO: `avc/nucleo/*.ts` compilados — relogio.ts, tipos.ts, estado.ts e
+ *   derivacoes.ts. ⛔ Fora do universo: `avc/conteudo/`, `components/avc/`.
+ */
+/**
  * PROVA DO NÚCLEO DO AVC — Q-01 e Q-02.
  *
  * Mede o que o esqueleto promete e nada além:
@@ -103,9 +117,12 @@ confere("marco clínico ausente não vira zero",
 
 // navegação não altera clínica
 const antesNav = est.fatos.length;
-const navegado = E.verSuperficie(est, "E");
+// ⚠️ Alvo por SLUG, ⛔ não por letra: a letra é rótulo e pode ser reordenada
+// (E e F trocaram em 2026-08-28). Um teste ancorado na letra continuaria verde
+// medindo outra superfície.
+const navegado = E.verSuperficie(est, "reperfusao");
 confere("navegar não registra nada",
-  navegado.fatos.length === antesNav && navegado.superficieVista === "E",
+  navegado.fatos.length === antesNav && navegado.superficieVista === "reperfusao",
   "E-20: nenhuma ação clínica nasce de avanço de tela");
 
 // pendências

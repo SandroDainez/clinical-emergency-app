@@ -179,4 +179,38 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Anti-hipertensivo IV operacional": "Antihipertensivo IV operativo",
   "Preparo do trombolítico": "Preparación del trombolítico",
   "Terapêutica anticonvulsiva": "Terapéutica anticonvulsiva",
+
+  // ── UX clínica da Superfície A (correções visuais de 2026-08-28) ────────
+  //
+  // ⚠️ E-45 em ação nestas linhas: "recomienda" ⛔ não pode virar "debe", e
+  // "no define un punto de corte" ⛔ não pode virar "no hay punto de corte" —
+  // a primeira é o que a fonte escreve, a segunda seria afirmação nossa.
+  "Pressão arterial": "Presión arterial",
+  "Crise no início": "Crisis al inicio",
+  "Disfunção bulbar / dificuldade para proteger a via aérea":
+    "Disfunción bulbar / dificultad para proteger la vía aérea",
+  "Dificuldade importante para engolir, controlar saliva/secreções, tosse ineficaz ou outros sinais de comprometimento bulbar.":
+    "Dificultad importante para deglutir, controlar la saliva/secreciones, tos ineficaz u otros signos de compromiso bulbar.",
+  "Há hipoxemia ou necessidade clínica de oxigênio?":
+    "¿Hay hipoxemia o necesidad clínica de oxígeno?",
+  "Considere avaliação clínica e oximetria. A AHA/ASA recomenda O₂ quando há hipóxia visando SpO₂ >94%, mas não define um corte numérico único para caracterizar hipóxia.":
+    "Considere la evaluación clínica y la oximetría. La AHA/ASA recomienda O₂ cuando hay hipoxia con meta de SpO₂ >94%, pero no define un punto de corte numérico único para caracterizar la hipoxia.",
+
+  // ── Leituras do sistema, forma curta ───────────────────────────────────
+  "Via aérea pode estar ameaçada": "La vía aérea puede estar amenazada",
+  "Via aérea ainda não avaliada": "Vía aérea aún no evaluada",
+  "Sem sinais de via aérea ameaçada": "Sin signos de vía aérea amenazada",
+  "O₂ suplementar — meta SpO₂ acima de 94%": "O₂ suplementario — meta SpO₂ por encima de 94%",
+  "Sem hipoxemia: O₂ suplementar não recomendado":
+    "Sin hipoxemia: O₂ suplementario no recomendado",
+  "Hipoxemia ainda não informada": "Hipoxemia aún no informada",
+  "SpO₂ ainda não informada": "SpO₂ aún no informada",
+  "SpO₂ abaixo da meta de 94%": "SpO₂ por debajo de la meta de 94%",
+  "Glicemia ainda não informada": "Glucemia aún no informada",
+  "Glicemia acima do limite de tratar": "Glucemia por encima del límite para tratar",
+  "Crise no início ainda não informada": "Crisis al inicio aún no informada",
+  "Crise no início: contexto, não exclui AVC": "Crisis al inicio: contexto, no excluye ACV",
+  "Peso ainda não informado — não atrasar terapia tempo-dependente":
+    "Peso aún no informado — no retrasar terapia tiempo-dependiente",
+  "PA ainda não informada": "PA aún no informada",
 };

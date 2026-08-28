@@ -25,6 +25,26 @@ import type { Vazio } from "./tipos";
  */
 export type Leitura = {
   readonly conclusao: "sim" | "nao" | "desconhecido";
+  /**
+   * O que o médico lê de relance — curto e acionável.
+   *
+   * ⚠️ É esta frase que vai para a tela de atendimento. A longa fica atrás do
+   * ⓘ, junto com insumos e fonte: rastreabilidade ⛔ não pode disputar espaço
+   * com conduta na porta do pronto-socorro (§7.3).
+   */
+  readonly curto: string;
+  /**
+   * Quanto esta leitura pede da atenção **agora**.
+   *
+   * ⚠️⚠️ ⛔ NÃO É A POLARIDADE DA CONCLUSÃO, e a diferença é clínica. "SpO₂ acima
+   * da meta" e "SpO₂ abaixo da meta" são ambas `conclusao` definida, e só uma
+   * delas pede alguma coisa. No outro sentido, "peso não informado" é
+   * `desconhecido` e ainda assim merece destaque, porque alimenta dose.
+   *
+   * ⚠️ `atencao` ⛔ NUNCA significa "bloqueia": nenhuma leitura desta superfície
+   * trava terapia tempo-dependente (E-49). Significa "olhe para isto primeiro".
+   */
+  readonly tom: "atencao" | "pendente" | "informativo";
   /** Frase de apoio, em PT. ⛔ Traduzida no render, nunca aqui. */
   readonly texto: string;
   /** Os campos que produziram esta leitura (E-22). */
@@ -63,13 +83,13 @@ export function suporteDeViaAerea(estado: EstadoAvc): Leitura {
   const insumos = ["consciencia_rebaixada", "disfuncao_bulbar"];
   const fonte = "F-23";
   if (consc === true || bulbar === true) {
-    return { conclusao: "sim", texto: "Suporte de via aérea e ventilação recomendados, conforme a necessidade", insumos, fonte };
+    return { conclusao: "sim", tom: "atencao", curto: "Via aérea pode estar ameaçada", texto: "Suporte de via aérea e ventilação recomendados, conforme a necessidade", insumos, fonte };
   }
   if (consc === undefined || bulbar === undefined) {
     // ⚠️ E-23: um dos dois em branco ⛔ não permite concluir que não há indicação.
-    return { conclusao: "desconhecido", texto: "Consciência ou função bulbar ainda não avaliadas", insumos, fonte };
+    return { conclusao: "desconhecido", tom: "pendente", curto: "Via aérea ainda não avaliada", texto: "Consciência ou função bulbar ainda não avaliadas", insumos, fonte };
   }
-  return { conclusao: "nao", texto: "Sem os dois gatilhos que a fonte nomeia para suporte de via aérea", insumos, fonte };
+  return { conclusao: "nao", tom: "informativo", curto: "Sem sinais de via aérea ameaçada", texto: "Sem os dois gatilhos que a fonte nomeia para suporte de via aérea", insumos, fonte };
 }
 
 /**
@@ -94,11 +114,12 @@ export function oxigenio(estado: EstadoAvc): Leitura {
   const fonte = "F-23";
   if (hipoxia === true) {
     const alvo = "Oxigênio suplementar recomendado, com meta de SpO₂ maior que 94%";
-    return { conclusao: "sim", texto: alvo, insumos, fonte };
+    return { conclusao: "sim", tom: "atencao", curto: "O₂ suplementar — meta SpO₂ acima de 94%", texto: alvo, insumos, fonte };
   }
   if (hipoxia === false) {
     return {
       conclusao: "nao",
+      tom: "informativo", curto: "Sem hipoxemia: O₂ suplementar não recomendado",
       texto: "Sem hipóxia, oxigênio suplementar não é recomendado para melhorar desfecho funcional",
       insumos,
       fonte,
@@ -107,7 +128,7 @@ export function oxigenio(estado: EstadoAvc): Leitura {
   const comSpo2 = spo2 !== undefined
     ? "SpO₂ registrada, mas a presença de hipóxia ainda não foi informada"
     : "Presença de hipóxia ainda não informada";
-  return { conclusao: "desconhecido", texto: comSpo2, insumos, fonte };
+  return { conclusao: "desconhecido", tom: "pendente", curto: "Hipoxemia ainda não informada", texto: comSpo2, insumos, fonte };
 }
 
 /**
@@ -121,11 +142,11 @@ export function spo2AbaixoDaMeta(estado: EstadoAvc): Leitura {
   const insumos = ["spo2"];
   const fonte = "F-23";
   if (spo2 === undefined) {
-    return { conclusao: "desconhecido", texto: "SpO₂ não informada", insumos, fonte };
+    return { conclusao: "desconhecido", tom: "pendente", curto: "SpO₂ ainda não informada", texto: "SpO₂ não informada", insumos, fonte };
   }
   return spo2 <= 94
-    ? { conclusao: "sim", texto: "SpO₂ abaixo da meta de 94% que a fonte declara para o paciente com hipóxia", insumos, fonte }
-    : { conclusao: "nao", texto: "SpO₂ acima da meta de 94%", insumos, fonte };
+    ? { conclusao: "sim", tom: "atencao", curto: "SpO₂ abaixo da meta de 94%", texto: "SpO₂ abaixo da meta de 94% que a fonte declara para o paciente com hipóxia", insumos, fonte }
+    : { conclusao: "nao", tom: "informativo", curto: "SpO₂ acima da meta de 94%", texto: "SpO₂ acima da meta de 94%", insumos, fonte };
 }
 
 /**
@@ -144,11 +165,11 @@ export function hipoglicemia(estado: EstadoAvc): Leitura {
   const fonte = "F-06";
   if (g === undefined) {
     // ⚠️ E-23: glicemia desconhecida ⛔ NÃO é glicemia normal.
-    return { conclusao: "desconhecido", texto: "Glicemia não informada — desconhecida não é normal", insumos, fonte };
+    return { conclusao: "desconhecido", tom: "pendente", curto: "Glicemia ainda não informada", texto: "Glicemia não informada — desconhecida não é normal", insumos, fonte };
   }
   return g < 60
-    ? { conclusao: "sim", texto: "Hipoglicemia: a fonte recomenda tratar para evitar complicações", insumos, fonte }
-    : { conclusao: "nao", texto: "Glicemia acima do limite que a fonte manda tratar", insumos, fonte };
+    ? { conclusao: "sim", tom: "atencao", curto: "Hipoglicemia — corrigir", texto: "Hipoglicemia: a fonte recomenda tratar para evitar complicações", insumos, fonte }
+    : { conclusao: "nao", tom: "informativo", curto: "Glicemia acima do limite de tratar", texto: "Glicemia acima do limite que a fonte manda tratar", insumos, fonte };
 }
 
 /**
@@ -166,16 +187,17 @@ export function criseNoInicio(estado: EstadoAvc): Leitura {
   const insumos = ["crise_no_inicio"];
   const fonte = "F-24";
   if (crise === undefined) {
-    return { conclusao: "desconhecido", texto: "Ocorrência de crise no início ainda não informada", insumos, fonte };
+    return { conclusao: "desconhecido", tom: "pendente", curto: "Crise no início ainda não informada", texto: "Ocorrência de crise no início ainda não informada", insumos, fonte };
   }
   return crise
     ? {
         conclusao: "sim",
+        tom: "informativo", curto: "Crise no início: contexto, não exclui AVC",
         texto: "Crise no início entra como contexto e possível mimetizador — não exclui AVC nem indica anticonvulsivante por si",
         insumos,
         fonte,
       }
-    : { conclusao: "nao", texto: "Sem crise no início", insumos, fonte };
+    : { conclusao: "nao", tom: "informativo", curto: "Sem crise no início", texto: "Sem crise no início", insumos, fonte };
 }
 
 /**
@@ -192,6 +214,7 @@ export function peso(estado: EstadoAvc): Leitura {
   if (p === undefined) {
     return {
       conclusao: "desconhecido",
+      tom: "atencao", curto: "Peso ainda não informado — não atrasar terapia tempo-dependente",
       texto: "Peso não informado — pendência que não atrasa terapia tempo-dependente",
       insumos,
       fonte,
@@ -200,6 +223,8 @@ export function peso(estado: EstadoAvc): Leitura {
   const o = origem && !VAZIOS.includes(String(origem.valor)) ? String(origem.valor) : undefined;
   return {
     conclusao: "sim",
+    tom: "informativo",
+    curto: o ? `Peso informado (${o})` : "Peso informado, sem origem declarada",
     texto: o ? `Peso informado, origem: ${o}` : "Peso informado, sem origem declarada",
     insumos,
     fonte,
@@ -212,7 +237,11 @@ export function peso(estado: EstadoAvc): Leitura {
  * ⛔⛔ A Superfície A **não define candidatura à IVT**, e por isso ⛔ não aplica
  * nenhuma meta pressórica. O mesmo valor tem significados opostos conforme o
  * paciente seja ou não candidato a reperfusão (**E-06**), e a candidatura nasce
- * na Superfície E — que ainda não existe.
+ * na superfície de **Reperfusão** — que ainda não existe.
+ *
+ * ⚠️ A superfície é nomeada pelo NOME, ⛔ não pela letra: em 2026-08-28 ela
+ * deixou de ser "E" e passou a ser "F", e um comentário preso à letra passaria
+ * a mandar o leitor à superfície errada.
  *
  * ⚠️ Aplicar aqui o alvo do candidato produziria tratamento que a fonte
  * classifica como **sem benefício, LOE A**, em quem não é candidato.
@@ -223,10 +252,11 @@ export function pressaoArterial(estado: EstadoAvc): Leitura {
   const insumos = ["pas", "pad"];
   const fonte = "F-04";
   if (pas === undefined || pad === undefined) {
-    return { conclusao: "desconhecido", texto: "Pressão arterial não informada", insumos, fonte };
+    return { conclusao: "desconhecido", tom: "pendente", curto: "PA ainda não informada", texto: "Pressão arterial não informada", insumos, fonte };
   }
   return {
     conclusao: "sim",
+    tom: "informativo", curto: "PA registrada",
     texto: "Pressão registrada — o significado depende do contexto de reperfusão, ainda não definido",
     insumos,
     fonte,

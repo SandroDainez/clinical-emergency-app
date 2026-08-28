@@ -1,4 +1,21 @@
 /**
+ * PROMETE: que os campos da Superfície A sejam FIÉIS à fonte no que se pode
+ *   medir sem julgamento — que `<60 mg/dL` seja limite e `>94%` seja meta e ⛔
+ *   nunca o contrário; que ausência ⛔ nunca vire negativa (E-23); que toda
+ *   escolha ofereça saída de ausência de conclusão e nenhum rótulo caia cru no
+ *   estado; que todo campo tenha slot de fonte (E-30) e `bloqueiaTerapia:
+ *   false` (E-49); e que a faixa de cada barra ALCANCE os limites que a fonte
+ *   escreve, ⛔ sem obrigar o médico a aproximar.
+ * NÃO PROMETE: que os números clínicos estejam CERTOS — ele confere que o
+ *   código diz o que o verbatim transcrito diz, ⛔ não que o verbatim esteja bem
+ *   transcrito nem que a fonte esteja atualizada. Também ⛔ não mede tela: ordem
+ *   visual, legibilidade e vazamento de dado interno são `e2e/avc-superficie-a`.
+ * UNIVERSO: `avc/conteudo/superficie-a.ts` inteiro (todos os campos de
+ *   `TODOS_OS_CAMPOS_A`, contados) e as derivações de `avc/nucleo/derivacoes.ts`
+ *   exercitadas por estado construído. ⛔ Fora do universo: Superfícies B a G,
+ *   que ainda não existem.
+ */
+/**
  * PROVA DA SUPERFÍCIE A — comportamento clínico, não campos.
  *
  * As oito conferências que o autor pediu, mais as travas de fidelidade que a
@@ -219,10 +236,50 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
     C.TODOS_OS_CAMPOS_A.every((c) => ["grandeza", "escolha", "hora"].includes(c.tipo)),
     "§0.3: sem texto livre para valor clínico");
 
+  /**
+   * ⚠️ A TRAVA MEDE O VALOR GRAVADO, ⛔ NÃO O RÓTULO.
+   *
+   * A versão anterior procurava a string "não sei" e reprovou quando a saída de
+   * `hipoxia` passou a chamar-se "Incerto" — um achado em exame não se responde
+   * "não sei". O que E-02/E-37 exigem ⛔ nunca foi uma palavra: é que exista uma
+   * opção que grave **ausência de conclusão**. Casar por rótulo também deixava
+   * passar o inverso, que é pior: um rótulo novo qualquer que caísse cru no
+   * estado e fosse lido como "não".
+   */
   confere("toda escolha oferece saída para quem não sabe",
     C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "escolha")
-      .every((c) => c.opcoes.some((o) => /não sei/i.test(o))),
-    "E-02/E-37: 'não sei' é resposta, e precisa existir na tela");
+      .every((c) => c.opcoes.some((o) => C.valorDaOpcao(o) === "nao_sei")),
+    "E-02/E-37: ausência de conclusão é resposta, e precisa existir na tela");
+
+  confere("nenhum rótulo de opção cai cru no estado",
+    C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "escolha")
+      .every((c) => c.opcoes.every((o) => ["sim", "nao", "nao_sei"].includes(C.valorDaOpcao(o))
+        || c.id === "peso_origem")),
+    "E-23: rótulo desconhecido vira valor cru, e ternario() o leria como 'não'");
+
+  confere("toda grandeza declara faixa de controle utilizável",
+    C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").every((c) =>
+      c.faixa && c.faixa.min < c.faixa.max && c.faixa.passo > 0
+      && c.faixa.partida >= c.faixa.min && c.faixa.partida <= c.faixa.max),
+    "§0.3: sem faixa a barra não desenha, e o campo cai para digitação");
+
+  /**
+   * ⚠️ A FAIXA NÃO PODE ESCONDER O LIMITE DA FONTE. `<60 mg/dL` é o limite que
+   * manda tratar (F-06); uma barra que começasse em 70, ou com passo 10, faria
+   * o médico registrar um número do lado errado da recomendação por limitação
+   * de controle. Mesma lógica para a meta de SpO₂ >94% (F-23).
+   */
+  confere("a faixa alcança os limites que a fonte escreve",
+    (() => {
+      const g = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "glicemia").faixa;
+      const s = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "spo2").faixa;
+      return g.min < 60 && g.passo === 1 && s.min < 94 && s.passo === 1;
+    })(),
+    "F-06/F-23: valor real do paciente precisa ser registrável, não aproximável");
+
+  confere("campo de hora não declara faixa",
+    C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora").every((c) => c.faixa === undefined),
+    "§7.5: faixa é da barra, e horário não usa barra");
 
   confere("horário não usa barra deslizante",
     C.TODOS_OS_CAMPOS_A.filter((c) => c.id.startsWith("hora_")).every((c) => c.tipo === "hora"),
@@ -236,7 +293,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   const l = D.pressaoArterial(comPa);
   confere("a PA não define candidatura à IVT nesta superfície",
     !/candidat[oa] a|elegív|trombóli|185|110 mmHg/i.test(l.texto) && /depende do contexto/i.test(l.texto),
-    "E-06: o mesmo valor tem significados opostos, e a candidatura nasce na Superfície E");
+    "E-06: o mesmo valor tem significados opostos, e a candidatura nasce na Reperfusão");
 
   const todas = D.leiturasDaSuperficieA(est);
   confere("toda leitura declara insumos e fonte",

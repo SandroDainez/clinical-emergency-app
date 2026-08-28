@@ -50,8 +50,18 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   // ⚠️ O relógio entra por UMA porta (Q-01). ⛔ Nenhum `Date.now()` nesta árvore.
   const relogio = relogioDoSistema;
   const [estado, setEstado] = useState(() => abrirAtendimento(relogio));
+  const [fontesAbertas, setFontesAbertas] = useState(false);
 
   const atual = superficie(estado.superficieVista);
+
+  /**
+   * ⚠️ "AGORA" É LIDO UMA VEZ POR RENDER, e desce como valor.
+   *
+   * ⛔ Nenhum componente filho chama o relógio: se cada um chamasse o seu, o
+   * seletor de hora e a linha que o exibe poderiam discordar em um minuto — e
+   * um minuto é a diferença entre estar dentro e fora de uma janela.
+   */
+  const agora = relogio.agora();
 
   // ⚠️ DERIVADO A CADA RENDER, nunca guardado (§4.3). O tempo desde a abertura
   // muda sem que nenhum dado mude — é o caso que a Parte 4 nomeia.
@@ -87,32 +97,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   }
 
   /**
-   * Ajuste fino de grandeza.
+   * Uma MEDIDA de grandeza — o valor final do gesto, ⛔ não o caminho dele.
    *
-   * ⚠️ O primeiro toque é o que transforma o campo de "não informado" em
-   * informado (§0.2) — por isso o passo parte do valor atual, e ⛔ um campo nunca
-   * tocado não tem valor nenhum, em vez de ter zero.
+   * ⚠️ A tela manda o número inteiro, ⛔ não um delta. A versão anterior somava
+   * `delta` ao valor atual e tratava campo vazio como `0`, o que fazia um toque
+   * em "+" registrar `1` — um número que ninguém mediu, que ⛔ não é ausência e
+   * ⛔ não é medida. Quem decide quando o campo deixa de ser "não informado" é o
+   * fim do gesto na barra (§0.2), e isso mora na tela.
    */
-  function ajustar(campo: string, delta: number) {
-    setEstado((e) => {
-      const atualDoCampo = valorAtual(e, campo);
-      const base = typeof atualDoCampo?.valor === "number" ? atualDoCampo.valor : 0;
-      return registrarFato(e, { campo, valor: Math.max(0, base + delta) }, relogio);
-    });
+  function medir(campo: string, valor: number) {
+    setEstado((e) => registrarFato(e, { campo, valor }, relogio));
   }
 
   /**
-   * Registro de horário.
+   * Registro de horário — ⚠️ o instante vem do SELETOR, ⛔ não do relógio.
+   *
+   * ⚠️⚠️ ESTA É A CORREÇÃO CLÍNICA MAIS IMPORTANTE DESTA ROTINA. Antes ela
+   * gravava `relogio.agora()`: tocar em "registrar horário" na última vez visto
+   * bem carimbava **agora**, e um paciente de 6 horas de evolução virava um
+   * paciente de zero minuto — janela de trombólise inventada por um toque.
+   * Agora o médico informa o marco, e a rotina só o grava.
    *
    * ⚠️ O controle NOMEIA o relógio que alimenta (E-36), e cada marco vai para o
    * seu próprio campo — ⛔ nunca para um genérico.
    */
-  function registrarHora(campo: string, qualRelogio?: string) {
+  function registrarHora(campo: string, instante: number, qualRelogio?: string) {
     setEstado((e) => {
-      const agora = relogio.agora();
-      const comFato = registrarFato(e, { campo, valor: agora, horaClinica: agora }, relogio);
+      const comFato = registrarFato(e, { campo, valor: instante, horaClinica: instante }, relogio);
       return qualRelogio
-        ? definirRelogioClinico(comFato, qualRelogio as RelogioClinicoId, agora)
+        ? definirRelogioClinico(comFato, qualRelogio as RelogioClinicoId, instante)
         : comFato;
     });
   }
@@ -148,31 +161,6 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             {tr("Estabilização")}: {informadosEmA}/{TODOS_OS_CAMPOS_A.length}
           </Text>
         </View>
-      </View>
-
-      {/* ── PENDÊNCIAS ACIONÁVEIS (§7.9) ───────────────────────────────────
-          ⚠️ Uma linha, acionável DALI — ⛔ sem obrigar a voltar à superfície onde
-          a pendência nasceu (E-07). Aqui o toque leva à superfície dona. */}
-      <View style={s.bloco} testID="avc-pendencias">
-        <Text style={s.blocoTitulo}>{tr("Pendências")}</Text>
-        {pendencias.length === 0 ? (
-          <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>
-        ) : (
-          pendencias.map((p) => (
-            <Pressable
-              key={p.id}
-              style={s.pendencia}
-              accessibilityRole="button"
-              testID={`avc-pendencia-${p.id}`}
-              onPress={() => abrir(p.dono)}
-            >
-              <Text style={s.pendenciaRotulo}>⚑ {tr(p.rotulo)}</Text>
-              {/* ⚠️ E-26: pendência sem condição de resolução é muro, não tarefa. */}
-              <Text style={s.pendenciaResolve}>{tr(p.resolvePor)}</Text>
-              <Text style={s.pendenciaDono}>{p.dono} · {tr("Resolver")}</Text>
-            </Pressable>
-          ))
-        )}
       </View>
 
       {/* ── NAVEGAÇÃO ENTRE SUPERFÍCIES (§7.2, E-11) ───────────────────────
@@ -211,11 +199,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         </Text>
         <Text style={s.superficieResumo}>{tr(atual.resumo)}</Text>
 
-        {atual.id === "A" ? (
+        {atual.id === "estabilizacao" ? (
           <SuperficieA
             estado={estado}
+            agora={agora}
             onEscolher={escolher}
-            onAjustar={ajustar}
+            onMedir={medir}
             onHora={registrarHora}
           />
         ) : (
@@ -229,17 +218,63 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
         {/* ⚠️ E-30: a fonte é propriedade da afirmação. Ainda não há afirmação,
             mas o endereço já está ligado — a tela nunca será dona da medicina. */}
-        <Text style={s.fontesTitulo}>{tr("Fontes que governam esta superfície")}</Text>
-        <View style={s.fontes}>
-          {atual.fontes.map((id) => {
-            const f = slot(id);
-            return (
-              <Text key={id} style={s.fonte}>
-                {id}{f ? ` · ${f.assunto}` : ""}
-              </Text>
-            );
-          })}
-        </View>
+        {/* ⚠️ E-30: a fonte é propriedade da afirmação, e ⛔ isso não mudou.
+            Mudou o LUGAR: a lista de slots é rastreabilidade, e rastreabilidade
+            ⛔ não disputa espaço com conduta — fica a um toque, fechada. */}
+        <Pressable
+          style={s.fontesBotao}
+          accessibilityRole="button"
+          testID="avc-fontes-abrir"
+          onPress={() => setFontesAbertas((v) => !v)}
+        >
+          <Text style={s.fontesTitulo}>
+            ⓘ {tr("Fontes que governam esta superfície")}
+          </Text>
+        </Pressable>
+        {fontesAbertas ? (
+          <View style={s.fontes} testID="avc-fontes-lista">
+            {atual.fontes.map((id) => {
+              const f = slot(id);
+              return (
+                <Text key={id} style={s.fonte}>
+                  {id}{f ? ` · ${f.assunto}` : ""}
+                </Text>
+              );
+            })}
+          </View>
+        ) : null}
+      </View>
+
+      {/* ── PENDÊNCIAS ACIONÁVEIS (§7.9) ───────────────────────────────────
+          ⚠️ DESCERAM PARA O FIM DA TELA nos testes visuais de 2026-08-28. Elas
+          estavam ANTES das superfícies, e o médico batia o olho numa lista de
+          tarefas antes de ver o relógio e a via aérea. Prioridade visual é
+          prioridade clínica (§7.3): pendência ⛔ não trava nada (E-49), então
+          ⛔ não pode ocupar o lugar do que trata.
+
+          ⚠️ O ALCANCE CONTINUA GLOBAL (E-07): elas aparecem qualquer que seja a
+          superfície aberta, e o toque leva à dona. Mudou a posição, ⛔ não a
+          regra. */}
+      <View style={s.bloco} testID="avc-pendencias">
+        <Text style={s.blocoTitulo}>{tr("Pendências")}</Text>
+        {pendencias.length === 0 ? (
+          <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>
+        ) : (
+          pendencias.map((p) => (
+            <Pressable
+              key={p.id}
+              style={s.pendencia}
+              accessibilityRole="button"
+              testID={`avc-pendencia-${p.id}`}
+              onPress={() => abrir(p.dono)}
+            >
+              <Text style={s.pendenciaRotulo}>⚑ {tr(p.rotulo)}</Text>
+              {/* ⚠️ E-26: pendência sem condição de resolução é muro, não tarefa. */}
+              <Text style={s.pendenciaResolve}>{tr(p.resolvePor)}</Text>
+              <Text style={s.pendenciaDono}>{p.dono} · {tr("Resolver")}</Text>
+            </Pressable>
+          ))
+        )}
       </View>
     </ScrollView>
   );
@@ -293,7 +328,8 @@ const criarEstilos = (tema: Tema) =>
     superficieResumo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     emConstrucao: { color: tema.cores.warning, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", marginTop: ESPACO.sm },
     emConstrucaoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
-    fontesTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1, marginTop: ESPACO.md },
+    fontesBotao: { minHeight: TOQUE.minimo, justifyContent: "center", marginTop: ESPACO.md },
+    fontesTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1 },
     fontes: { gap: 2 },
     fonte: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
   });

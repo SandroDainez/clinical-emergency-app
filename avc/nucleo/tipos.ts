@@ -13,8 +13,34 @@
 
 import type { Instante } from "./relogio";
 
-/** As sete superfícies do AVC V1 (§7.15). ⚠️ Não são etapas: são janelas. */
-export type SuperficieId = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+/**
+ * As sete superfícies do AVC V1 (§7.15). ⚠️ Não são etapas: são janelas.
+ *
+ * ⚠️⚠️ O IDENTIFICADOR ⛔ NÃO É A LETRA, e a diferença tem consequência clínica.
+ *
+ * ── O DEFEITO QUE ISTO IMPEDE (2026-08-28) ─────────────────────────────────
+ *
+ * Até aqui `SuperficieId` era `"A" | ... | "G"`: a letra ERA a identidade. Ao
+ * aprovar a inversão de E e F — Correções passa a ser E, Reperfusão passa a ser
+ * F —, uma troca de rótulo reescreveria o SENTIDO do estado compartilhado.
+ * `superficieVista: "E"` deixaria de significar Reperfusão e passaria a
+ * significar Correções sem que uma linha de estado mudasse, e uma pendência
+ * declarada `dono: "E"` apontaria para outra superfície **em silêncio** — um
+ * muro apontando para a parede errada, que é o pior tipo de defeito que existe
+ * aqui: o que passa nos testes.
+ *
+ * ⚠️ A letra é APRESENTAÇÃO e vive em `SUPERFICIES`, derivada da posição. O id é
+ * IDENTIDADE e ⛔ nunca muda ao reordenar. ⛔ Não voltar a usar letra como id,
+ * nem acrescentar uma letra a este tipo: `prova-avc-superficies` reprova.
+ */
+export type SuperficieId =
+  | "estabilizacao"
+  | "neurologico"
+  | "imagem"
+  | "seguranca"
+  | "correcoes"
+  | "reperfusao"
+  | "destino";
 
 /**
  * Os relógios clínicos do módulo (§1.1, E-36).

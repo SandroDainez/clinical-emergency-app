@@ -28,15 +28,62 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
 
-    // ⚠️ Ordem deliberadamente EMBARALHADA: se houvesse árvore linear, abrir G
-    // antes de B falharia. É exatamente isso que a trava mede (§7.2, E-11).
-    const ordem = ["G", "B", "E", "A", "D", "C", "F"] as const;
+    // ⚠️ Ordem deliberadamente EMBARALHADA: se houvesse árvore linear, abrir o
+    // Destino antes do Neurológico falharia. É isso que a trava mede (§7.2, E-11).
+    //
+    // ⚠️ Endereçado por SLUG, ⛔ não por letra: em 2026-08-28 E e F trocaram de
+    // letra, e um teste ancorado em "E" continuaria verde medindo outra
+    // superfície — verde falso é pior que vermelho.
+    const ordem = [
+      "destino", "neurologico", "reperfusao", "estabilizacao",
+      "seguranca", "imagem", "correcoes",
+    ] as const;
     for (const id of ordem) {
       await page.getByTestId(`avc-aba-${id}`).click();
       await expect(page.getByTestId(`avc-superficie-${id}`)).toBeVisible();
     }
 
     expect(SUPERFICIES.length).toBe(7);
+  });
+
+  /**
+   * ⚠️ A ORDEM VISUAL APROVADA PELO AUTOR (2026-08-28), medida na TELA.
+   *
+   * `prova-avc-superficies` já congela a ordem no CONTEÚDO; esta trava mede a
+   * outra ponta — que a tela desenhe nessa ordem e que a letra que ela pinta
+   * seja a da posição. As duas juntas fecham o caminho: conteúdo certo
+   * renderizado fora de ordem passaria na prova e reprovaria aqui.
+   *
+   * ⚠️ E-11 continua valendo: isto é ordem de LEITURA. O teste acima já provou,
+   * abrindo as sete embaralhadas, que ⛔ não existe pré-requisito de navegação.
+   */
+  test("as abas aparecem na ordem aprovada, com a letra da posição", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+
+    const esperado = [
+      ["A", "estabilizacao", "Entrada e estabilização"],
+      ["B", "neurologico", "Neurológico"],
+      ["C", "imagem", "Imagem"],
+      ["D", "seguranca", "Segurança e elegibilidade"],
+      ["E", "correcoes", "Correções"],
+      ["F", "reperfusao", "Reperfusão"],
+      ["G", "destino", "Destino"],
+    ];
+
+    const abas = await page.locator('[data-testid^="avc-aba-"]').allInnerTexts();
+    expect(abas.length).toBe(7);
+    for (let i = 0; i < esperado.length; i += 1) {
+      const [letra, , titulo] = esperado[i];
+      expect(abas[i].replace(/\s+/g, " "), `posição ${i + 1}`).toContain(letra);
+      expect(abas[i].replace(/\s+/g, " "), `posição ${i + 1}`).toContain(titulo);
+    }
+
+    // ⚠️ E o cabeçalho da superfície aberta usa a MESMA letra — Correções é E.
+    await page.getByTestId("avc-aba-correcoes").click();
+    await expect(page.getByTestId("avc-superficie-correcoes")).toContainText("E · Correções");
+    await page.getByTestId("avc-aba-reperfusao").click();
+    await expect(page.getByTestId("avc-superficie-reperfusao")).toContainText("F · Reperfusão");
   });
 
   test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {
@@ -56,23 +103,23 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await page.goto("/modulos/avc");
 
     // Abre uma superfície que NÃO é a dona da pendência...
-    await page.getByTestId("avc-aba-G").click();
-    await expect(page.getByTestId("avc-superficie-G")).toBeVisible();
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-superficie-destino")).toBeVisible();
 
     // ...e a pendência continua visível e acionável dali (E-07).
     const pendencia = page.getByTestId("avc-pendencia-tc_realizada");
     await expect(pendencia).toBeVisible();
     await pendencia.click();
 
-    // A dona de `tc_realizada` é a superfície C.
-    await expect(page.getByTestId("avc-superficie-C")).toBeVisible();
+    // A dona de `tc_realizada` é a Imagem.
+    await expect(page.getByTestId("avc-superficie-imagem")).toBeVisible();
   });
 
   test("o módulo fala espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
     await expect(page.getByText("ACV isquémico agudo").first()).toBeVisible();
-    await page.getByTestId("avc-aba-C").click();
+    await page.getByTestId("avc-aba-imagem").click();
     await expect(page.getByText("Imagen").first()).toBeVisible();
     // ⛔ Nenhum texto clínico visível pode ficar em português com ES ativo.
     await expect(page.getByText("Superfície em construção")).toHaveCount(0);
