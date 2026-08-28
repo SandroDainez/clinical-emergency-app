@@ -126,11 +126,23 @@ confere("navegar não registra nada",
   "E-20: nenhuma ação clínica nasce de avanço de tela");
 
 // pendências
+// ⚠️ `campo` é DECLARADO, ⛔ não deduzido do id — e `dono` usa slug, ⛔ não letra.
+// Esta fixture reprovou quando a resolução deixou de ser por coincidência de
+// nome, que é precisamente o sinal de que a mudança tem efeito.
 const exigidas = [
-  { id: "tc_realizada", rotulo: "TC", dono: "C", resolvePor: "registrar" },
-  { id: "glicemia", rotulo: "Glicemia", dono: "A", resolvePor: "medir" },
+  { id: "tc_realizada", campo: "tc_realizada", rotulo: "TC", dono: "imagem", resolvePor: "registrar" },
+  { id: "glicemia", campo: "glicemia", rotulo: "Glicemia", dono: "estabilizacao", resolvePor: "medir" },
 ];
 const abertas = E.pendenciasAbertas(est, exigidas);
+confere("pendência sem campo declarado é erro, não muro",
+  (() => {
+    try {
+      E.pendenciasAbertas(est, [{ id: "x", rotulo: "X", dono: "estabilizacao", resolvePor: "y" }]);
+      return false;
+    } catch { return true; }
+  })(),
+  "E-26: omitir o campo faria a pendência ficar aberta para sempre, em silêncio");
+
 confere("pendência some quando o dado chega",
   abertas.length === 1 && abertas[0].id === "tc_realizada",
   "§2.5: pendência é ausência qualificada — a glicemia já foi registrada");

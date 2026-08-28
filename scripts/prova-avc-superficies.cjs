@@ -37,10 +37,15 @@ execFileSync("npx", [
   "--moduleResolution", "node", "--skipLibCheck", "--outDir", tmp,
   path.join(appDir, "avc", "conteudo", "superficies.ts"),
   path.join(appDir, "avc", "conteudo", "fontes.ts"),
+  path.join(appDir, "avc", "nucleo", "estado.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 const S = require(path.join(tmp, "conteudo", "superficies.js"));
 const F = require(path.join(tmp, "conteudo", "fontes.js"));
+// ⚠️ O estado entra aqui só para medir COMPORTAMENTO de pendência (I-6/I-7);
+// o conteúdo clínico das superfícies continua sendo o universo declarado.
+const R = require(path.join(tmp, "nucleo", "relogio.js"));
+const E = require(path.join(tmp, "nucleo", "estado.js"));
 
 const sups = S.SUPERFICIES;
 console.log(`universo: ${sups.length} superfície(s) · ${S.PENDENCIAS_INICIAIS.length} pendência(s) inicial(is)`);
@@ -93,6 +98,20 @@ confere("nenhuma superfície declara vizinho ou pré-requisito",
 
 // ── integridade das referências ────────────────────────────────────────────
 const ids = new Set(sups.map((s) => s.id));
+/**
+ * ⚠️⚠️ A PENDÊNCIA PRECISA SER RESOLVÍVEL — E-26: pendência sem condição de
+ * resolução é muro, ⛔ não tarefa. Medido em 2026-08-28: `ultima_vez_bem`
+ * procurava um campo com o próprio nome, o campo chamava-se
+ * `hora_ultima_vez_bem`, e ela ficava aberta para sempre.
+ */
+confere("toda pendência declara o campo que a resolve",
+  S.PENDENCIAS_INICIAIS.every((p) => typeof p.campo === "string" && p.campo.length > 0),
+  "E-26: sem campo declarado, a resolução volta a ser dedução por coincidência de nome");
+
+confere("nenhuma pendência deduz o campo do próprio id",
+  S.PENDENCIAS_INICIAIS.every((p) => p.resolvePor && p.resolvePor.length > 0),
+  "E-26: a condição de resolução é do médico, e precisa estar escrita");
+
 confere("toda pendência aponta para uma superfície existente",
   S.PENDENCIAS_INICIAIS.every((p) => ids.has(p.dono)),
   "E-26: pendência com dono inexistente é muro apontando para a parede errada");
@@ -100,6 +119,40 @@ confere("toda pendência aponta para uma superfície existente",
 confere("todo slot de fonte citado existe",
   sups.every((s) => s.fontes.every((f) => F.slot(f) !== undefined)),
   "E-30: a fonte é propriedade da afirmação, e endereço morto não é endereço");
+
+/**
+ * ⚠️⚠️ I-6 MEDIDA POR COMPORTAMENTO, ⛔ não por presença de campo.
+ *
+ * Declarar `campo` ⛔ não prova que ele é USADO. As duas metades abaixo separam
+ * as duas coisas que antes eram a mesma string por coincidência: uma pendência
+ * cujo `id` casa um campo respondido ⛔ continua aberta se o `campo` dela aponta
+ * para outro lugar; e uma cujo `campo` casa resolve, mesmo com `id` diferente.
+ *
+ * ⚠️ Sem estas duas, voltar a filtrar por `id` passaria despercebido — foi
+ * exatamente assim que a pendência do último-visto-bem ficou aberta para sempre.
+ */
+{
+  const rel = R.relogioControlado(1_000_000);
+  const est = E.registrarFato(E.abrirAtendimento(rel), { campo: "respondido", valor: 1 }, rel);
+  const abertas = (p) => E.pendenciasAbertas(est, [p]).length;
+
+  confere("resolução ignora o id e obedece ao campo",
+    abertas({ id: "respondido", campo: "outro_campo", rotulo: "x", dono: "estabilizacao", resolvePor: "y" }) === 1,
+    "I-6: filtrar por id faria a pendência fechar sem o dado que ela pede");
+
+  confere("campo declarado diferente do id resolve normalmente",
+    abertas({ id: "nome_qualquer", campo: "respondido", rotulo: "x", dono: "estabilizacao", resolvePor: "y" }) === 0,
+    "I-6: identidade e referência são coisas distintas, e a referência é que resolve");
+
+  confere("pendência sem campo falha alto, não fica aberta calada",
+    (() => {
+      try {
+        E.pendenciasAbertas(est, [{ id: "x", rotulo: "x", dono: "estabilizacao", resolvePor: "y" }]);
+        return false;
+      } catch { return true; }
+    })(),
+    "I-7: sem mecanismo de resolução, a pendência tem de reprovar teste — nunca virar muro");
+}
 
 confere("id desconhecido é erro, não piso silencioso",
   (() => {

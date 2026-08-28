@@ -29,16 +29,25 @@ export type TipoDeCampo =
  * o valor real do paciente é pior que uma barra larga: ela obriga o médico a
  * registrar um número falso.
  *
- * `partida` é apenas onde o cursor descansa antes do primeiro toque — e enquanto
- * ninguém tocou, a tela mostra **não informado**, ⛔ nunca este número (§0.2).
+ * ⚠️⚠️ ⛔ NÃO EXISTE "POSIÇÃO DE PARTIDA". Enquanto ninguém tocou, o polegar fica
+ * no `min` e o valor lido é **não informado** (§0.2).
+ *
+ * ── O DEFEITO QUE ISTO CORRIGE (relatado na revisão de 2026-08-28) ──────────
+ *
+ * Havia um campo `partida` que punha o polegar no meio da faixa. O NÚMERO já
+ * dizia "não informado", mas a BARRA dizia outra coisa: um polegar em 96% de
+ * SpO₂ ⛔ não se lê como ausência de escolha — se lê como escolha feita. O
+ * relato do autor foi direto: *"quando abre não pode estar predeterminado, tem
+ * que estar no zero, aí o usuário seleciona."*
+ *
+ * ⚠️ Texto e desenho ⛔ não podem discordar sobre o mesmo campo. Um deles é o
+ * que o médico apressado lê, e ⛔ não há como saber qual.
  */
 export type Faixa = {
   readonly min: number;
   readonly max: number;
   /** Incremento de −/+. ⚠️ Fino de propósito: a barra faz o grosso. */
   readonly passo: number;
-  /** Posição de descanso da barra. ⛔ Não é valor, não é medida, não é padrão. */
-  readonly partida: number;
 };
 
 export type CampoA = {
@@ -59,6 +68,19 @@ export type CampoA = {
    * fonte vai em `nota`, atrás do ⓘ; aqui só entra o que muda a RESPOSTA.
    */
   readonly ajuda?: string;
+  /**
+   * ⚠️ O campo aceita **DESCONHECIDO como RESPOSTA** (§7.5 item 6, **E-02**).
+   *
+   * ⚠️⚠️ ⛔ NÃO É "pode ficar em branco" — todo campo pode. É o contrário: é
+   * declarar que "ninguém sabe dizer" é uma resposta clínica COM CONSEQUÊNCIA
+   * PRÓPRIA, diferente de "ainda não perguntei". No último-visto-bem essa
+   * diferença decide caminho: desconhecido é o cenário de seleção por imagem,
+   * e ⛔ não é o mesmo que a pergunta não ter sido feita.
+   *
+   * ⚠️ ⛔ Não marcar por simetria. Marcar onde a fonte e a spec dão consequência
+   * ao desconhecido — em "chegada ao pronto-socorro", desconhecido não existe.
+   */
+  readonly aceitaDesconhecido?: true;
   /** Qual relógio clínico este campo alimenta — ⛔ nunca um genérico (E-36). */
   readonly relogio?: string;
   /** O slot que sustenta a existência clínica do campo (E-30). */
@@ -143,6 +165,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
     relogio: "ultima_vez_bem",
     fonte: "F-02",
     bloqueiaTerapia: false,
+    aceitaDesconhecido: true,
     nota: "Desconhecido é resposta, e tem consequência própria.",
   },
   {
@@ -151,6 +174,9 @@ export const RELOGIOS_A: readonly CampoA[] = [
     tipo: "hora",
     relogio: "inicio_observado",
     fonte: "F-02",
+    // ⚠️ Também aceita desconhecido: o déficit pode ter sido ACHADO sem ninguém
+    // ter observado o início — e isso ⛔ não é a pergunta não ter sido feita.
+    aceitaDesconhecido: true,
     bloqueiaTerapia: false,
   },
   {
@@ -243,7 +269,7 @@ export const VIA_AEREA_A: readonly CampoA[] = [
     unidade: "%",
     // ⚠️ 50 como piso da barra ⛔ não é "SpO₂ mínima compatível com a vida": é só
     // onde a trilha começa. Partida em 96 = posição de descanso, ⛔ não normal.
-    faixa: { min: 50, max: 100, passo: 1, partida: 96 },
+    faixa: { min: 50, max: 100, passo: 1 },
     fonte: "F-23",
     bloqueiaTerapia: false,
     nota: "A meta de 94% vale para quem tem hipóxia. A fonte não define corte numérico de hipóxia.",
@@ -259,7 +285,7 @@ export const PRESSAO_A: readonly CampoA[] = [
     unidade: "mmHg",
     // ⚠️ Teto 300: emergência hipertensiva passa de 260 com frequência, e barra
     // curta demais obrigaria a registrar um número menor que o real.
-    faixa: { min: 60, max: 300, passo: 1, partida: 140 },
+    faixa: { min: 60, max: 300, passo: 1 },
     fonte: "F-04",
     bloqueiaTerapia: false,
     nota: "Registrada aqui. A meta depende do contexto de reperfusão, que esta superfície não define.",
@@ -269,7 +295,7 @@ export const PRESSAO_A: readonly CampoA[] = [
     rotulo: "Pressão diastólica",
     tipo: "grandeza",
     unidade: "mmHg",
-    faixa: { min: 30, max: 200, passo: 1, partida: 85 },
+    faixa: { min: 30, max: 200, passo: 1 },
     fonte: "F-04",
     bloqueiaTerapia: false,
   },
@@ -285,7 +311,7 @@ export const GLICEMIA_A: readonly CampoA[] = [
     // ⚠️ PASSO 1, ⛔ NÃO 10. O limite de tratar é `<60`: com passo 10 o médico
     // não conseguiria registrar 55, e o valor real viraria 60 — atravessando a
     // fronteira da recomendação por limitação de controle. A barra faz o grosso.
-    faixa: { min: 20, max: 800, passo: 1, partida: 100 },
+    faixa: { min: 20, max: 800, passo: 1 },
     fonte: "F-06",
     bloqueiaTerapia: false,
     nota: "Desconhecida não é normal.",
@@ -299,7 +325,7 @@ export const PESO_A: readonly CampoA[] = [
     rotulo: "Peso",
     tipo: "grandeza",
     unidade: "kg",
-    faixa: { min: 30, max: 250, passo: 1, partida: 70 },
+    faixa: { min: 30, max: 250, passo: 1 },
     fonte: "F-09",
     bloqueiaTerapia: false,
     nota: "Não atrasa terapia tempo-dependente.",

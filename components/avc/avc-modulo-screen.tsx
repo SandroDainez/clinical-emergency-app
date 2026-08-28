@@ -271,7 +271,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               <Text style={s.pendenciaRotulo}>⚑ {tr(p.rotulo)}</Text>
               {/* ⚠️ E-26: pendência sem condição de resolução é muro, não tarefa. */}
               <Text style={s.pendenciaResolve}>{tr(p.resolvePor)}</Text>
-              <Text style={s.pendenciaDono}>{p.dono} · {tr("Resolver")}</Text>
+              {/**
+                * ⚠️⚠️ A LETRA E O TÍTULO, ⛔ NUNCA O SLUG.
+                *
+                * ── A REGRESSÃO QUE ISTO CORRIGE (2026-08-28) ────────────────
+                *
+                * Aqui estava `{p.dono}`. Enquanto o id era a letra, isso
+                * imprimia "A · Resolver" e passava despercebido; ao virar slug
+                * estável, a mesma linha passou a imprimir
+                * "estabilizacao · Resolver" — identificador interno vazando
+                * para a tela clínica, que é o que a correção 6 tirou de lá.
+                *
+                * ⚠️ A LIÇÃO: quando identidade e rótulo eram a mesma string, a
+                * tela podia imprimir a identidade e parecer certa. Separá-los
+                * revelou todos os lugares que dependiam da coincidência — este
+                * era um deles, e só apareceu porque a varredura de texto da
+                * trava visual despejou a tela inteira.
+                */}
+              <Text style={s.pendenciaDono}>
+                {superficie(p.dono).letra} · {tr(superficie(p.dono).titulo)} · {tr("Resolver")}
+              </Text>
             </Pressable>
           ))
         )}

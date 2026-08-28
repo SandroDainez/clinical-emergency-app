@@ -125,5 +125,14 @@ export function pendenciasAbertas(
   estado: EstadoAvc,
   exigidos: readonly Pendencia[]
 ): readonly Pendencia[] {
-  return exigidos.filter((p) => valorAtual(estado, p.id) === undefined);
+  return exigidos.filter((p) => {
+    /**
+     * ⚠️ ⛔ SEM PISO SILENCIOSO. Uma pendência sem `campo` declarado nunca
+     * encontraria valor nenhum e ficaria aberta PARA SEMPRE — que é exatamente
+     * o defeito medido em 2026-08-28, agora reaparecendo por omissão em vez de
+     * por nome trocado. Erro de programação grita; ⛔ não vira muro clínico.
+     */
+    if (!p.campo) throw new Error(`pendenciasAbertas: pendência "${p.id}" sem campo declarado`);
+    return valorAtual(estado, p.campo) === undefined;
+  });
 }

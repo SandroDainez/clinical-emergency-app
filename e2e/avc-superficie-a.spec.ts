@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -26,6 +27,28 @@ async function abrirA(page: Page) {
 async function detalheDaLeitura(page: Page, id: string) {
   await page.getByTestId(`avc-info-leitura-${id}`).click();
   return page.getByTestId(`avc-detalhe-leitura-${id}`);
+}
+
+/**
+ * ⚠️ O react-native-web OMITE `aria-disabled` quando é falso — publica o
+ * atributo só para desabilitar. Afirmar `="false"` daria vermelho eterno, e
+ * afirmar a ausência dele como "habilitado" seria frouxo; por isso a asserção
+ * de habilitado é **não-desabilitado**, e vem sempre acompanhada da prova de
+ * COMPORTAMENTO (o clique faz, ou não faz, o que devia).
+ */
+async function esperaConfirmar(page: Page, desabilitado: boolean) {
+  const b = page.getByTestId("avc-seletor-hora-confirmar");
+  if (desabilitado) await expect(b).toHaveAttribute("aria-disabled", "true");
+  else await expect(b).not.toHaveAttribute("aria-disabled", "true");
+}
+
+/** Informa um horário do jeito que a regra exige: interagir, depois confirmar. */
+async function informarHorario(page: Page, campo: string) {
+  await page.getByTestId(`avc-hora-${campo}`).click();
+  // ⚠️ ⛔ Confirmar sem tocar em hora/minuto ⛔ não é permitido — e ⛔ não é
+  // detalhe de teste: é a regra que impede "agora" de virar default silencioso.
+  await page.getByTestId("avc-seletor-hora-m-menos").click();
+  await page.getByTestId("avc-seletor-hora-confirmar").click();
 }
 
 /** Move a barra de uma grandeza pelo −/+, que grava ao toque. */
@@ -173,8 +196,7 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    await page.getByTestId("avc-hora-hora_chegada").click();
-    await page.getByTestId("avc-seletor-hora-confirmar").click();
+    await informarHorario(page, "hora_chegada");
 
     const tela = (await page.locator("body").innerText()).replace(/\s+/g, " ");
     expect(tela, "época em milissegundos jamais pode chegar ao médico")
@@ -238,7 +260,11 @@ test.describe("Superfície A — UX clínica", () => {
   test("toda grandeza tem barra, valor visível e ajuste fino", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    for (const campo of ["spo2", "pas", "pad", "glicemia", "peso"]) {
+    // ⚠️ DERIVADO DO CONTEÚDO, ⛔ não enumerado: um campo numérico novo nasce
+    // dentro da regra em vez de fora dela, calado.
+    const grandezas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").map((c) => c.id);
+    expect(grandezas.length).toBeGreaterThan(0);
+    for (const campo of grandezas) {
       const bloco = page.getByTestId(`avc-grandeza-${campo}`);
       await expect(bloco, `${campo} deveria ter barra`).toBeVisible();
       expect(await bloco.locator('[role="slider"]').count(), `barra de ${campo}`).toBe(1);
@@ -314,6 +340,234 @@ test.describe("Superfície A — UX clínica", () => {
     const tela = await page.getByTestId("avc-superficie-a-conteudo").innerText();
     expect(tela.indexOf("Via aérea pode estar ameaçada"))
       .toBeLessThan(tela.indexOf("Sem crise no início"));
+  });
+
+  /**
+   * ⚠️⚠️ O polegar da barra ⛔ NÃO pode nascer no meio da faixa. O texto dizia
+   * "não informado" e o desenho dizia 96% — e o médico apressado lê o desenho.
+   */
+  test("barra intocada nasce no mínimo, sem valor predeterminado", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    /**
+     * ⚠️ MEDIDO POR GEOMETRIA, ⛔ não por atributo: o Slider do react-native-web
+     * ⛔ não publica `aria-valuenow`, e travar num detalhe interno dele seria
+     * frágil. A posição do polegar é o que o médico vê — é ela que se mede.
+     */
+    const fracaoDoPolegar = async (campo: string) =>
+      page.getByTestId(`avc-grandeza-${campo}`).locator('[role="slider"]').evaluate((el) => {
+        const trilho = el.getBoundingClientRect();
+        const polegar = (el.children[1] as HTMLElement).getBoundingClientRect();
+        return (polegar.x + polegar.width / 2 - trilho.x) / trilho.width;
+      });
+
+    // ⚠️ DERIVADO DO CONTEÚDO, ⛔ não enumerado: um campo numérico novo nasce
+    // dentro da regra em vez de fora dela, calado.
+    const grandezas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").map((c) => c.id);
+    expect(grandezas.length).toBeGreaterThan(0);
+    for (const campo of grandezas) {
+      expect(await fracaoDoPolegar(campo), `${campo}: polegar deveria nascer na ponta esquerda`)
+        .toBeLessThan(0.12);
+      await expect(page.getByTestId(`avc-grandeza-${campo}`)).toContainText(/não informado/i);
+    }
+
+    // ⚠️ E o controle CONTINUA utilizável: o primeiro toque move e informa.
+    await page.getByTestId("avc-grandeza-spo2-mais").click();
+    await expect(page.getByTestId("avc-grandeza-spo2")).not.toContainText(/não informado/i);
+  });
+
+  /**
+   * ⚠️⚠️ E-02 NA TELA. Sem este botão, "ninguém sabe dizer" e "ainda não
+   * perguntei" caem no mesmo branco — e no último-visto-bem essa diferença
+   * decide caminho, porque desconhecido é o cenário de seleção por imagem.
+   */
+  test("desconhecido é resposta no último-visto-bem, e resolve a pendência", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const botao = page.getByTestId("avc-hora-desconhecido-hora_ultima_vez_bem");
+    await expect(botao).toBeVisible();
+    await expect(botao).toHaveAttribute("aria-checked", "false");
+
+    // ⚠️ A pendência promete por escrito "ou registrar que é desconhecido".
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toBeVisible();
+
+    await botao.click();
+    await expect(botao).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
+
+    // ⛔ E desconhecido ⛔ não pode virar horário nenhum.
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
+      .not.toHaveText(/\d{2}:\d{2}/);
+  });
+
+  /** ⚠️ A outra rota que o `resolvePor` promete: informar o horário. */
+  test("informar o horário também resolve a pendência do último-visto-bem", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toBeVisible();
+    await informarHorario(page, "hora_ultima_vez_bem");
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
+  });
+
+  /** ⛔ Desconhecido ⛔ não existe onde não faz sentido clínico. */
+  test("a chegada ao pronto-socorro não oferece desconhecido", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    await expect(page.getByTestId("avc-hora-desconhecido-hora_chegada")).toHaveCount(0);
+  });
+
+  /**
+   * ⚠️⚠️ A TRAVA VISUAL DO ESTADO INICIAL — a que o autor pediu em 2026-08-28.
+   *
+   * ⛔ NENHUM HORÁRIO REAL PODE APARECER ANTES DE AÇÃO EXPLÍCITA. Vale para as
+   * duas formas de vazamento já vistas: a época crua (`1787922516903`) e o
+   * horário formatado (`05:46`) — este último é o mais perigoso dos dois,
+   * porque ⛔ não parece defeito: parece um dado.
+   *
+   * ⚠️ Varre a TELA INTEIRA, ⛔ não só os relógios: cabeçalho, resumo, pendência
+   * e alertas são caminhos por onde um horário pode escapar sem que ninguém
+   * tenha informado nada.
+   */
+  test("nenhum horário real aparece antes de ação explícita", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const tela = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+    expect(tela, "época em milissegundos jamais pode chegar ao médico")
+      .not.toMatch(/\b1[0-9]{12}\b/);
+    expect(tela, "horário formatado sem ninguém ter informado é dado inventado")
+      .not.toMatch(/\b\d{1,2}:\d{2}\b/);
+
+    // Cada relógio informável convida à ação, e ⛔ nenhum exibe hora.
+    for (const campo of TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora")) {
+      await expect(page.getByTestId(`avc-hora-valor-${campo.id}`), campo.id)
+        .not.toHaveText(/\d{1,2}:\d{2}/);
+    }
+
+    // ⚠️ E o horário só aparece DEPOIS da ação: abrir o seletor e confirmar.
+    await informarHorario(page, "hora_chegada");
+    await expect(page.getByTestId("avc-hora-valor-hora_chegada")).toHaveText(/^\d{2}:\d{2} ✎$/);
+  });
+
+  /**
+   * ⚠️ O SLUG É IDENTIDADE INTERNA e ⛔ não pode aparecer na tela clínica.
+   *
+   * ── A REGRESSÃO QUE ISTO TRAVA ──────────────────────────────────────────
+   *
+   * Enquanto o id era a letra, a pendência imprimia "A · Resolver" e ninguém
+   * notava que estava imprimindo o ID. Ao virar slug, virou
+   * "estabilizacao · Resolver". A trava mede a pendência diretamente porque a
+   * varredura genérica ⛔ não serve aqui: "imagem" e "destino" são palavras
+   * legítimas do texto clínico, e casá-las daria vermelho falso.
+   */
+  test("a pendência mostra letra e título da dona, nunca o slug", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const pend = page.getByTestId("avc-pendencia-ultima_vez_bem");
+    await expect(pend).toContainText("A · Entrada e estabilização");
+    await expect(pend, "identificador interno não é linguagem clínica")
+      .not.toContainText("estabilizacao");
+
+    await expect(page.getByTestId("avc-pendencia-tc_realizada")).toContainText("C · Imagem");
+    await expect(page.getByTestId("avc-pendencia-deficit_focal")).toContainText("B · Neurológico");
+  });
+
+  /**
+   * ⚠️⚠️ "AGORA" ⛔ NÃO É DEFAULT SILENCIOSO DE RELÓGIO CLÍNICO.
+   *
+   * ── O DEFEITO ────────────────────────────────────────────────────────────
+   *
+   * O seletor abria posicionado em agora com Confirmar já válido. Um toque
+   * registrava o horário atual no **última vez visto bem** — a mesma
+   * catástrofe que corrigimos um nível acima, uma camada mais fundo: paciente
+   * de 6 horas de evolução vira paciente de zero minuto, com janela de
+   * trombólise inventada.
+   *
+   * Os seis passos que o autor especificou, na ordem, num teste só — porque é
+   * a SEQUÊNCIA que prova a regra, e cortá-la em pedaços deixaria passar o
+   * caso do meio (clicar no Confirmar desabilitado e nada acontecer).
+   */
+  test("o seletor de relógio clínico não confirma sem interação explícita", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    // 1 · abrir o picker de LKW
+    await page.getByTestId("avc-hora-hora_ultima_vez_bem").click();
+    await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
+
+    // 2 · não tocar em hora/minuto — e o valor ⛔ NÃO se lê como escolhido
+    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(/não informado/i);
+    await expect(page.getByTestId("avc-seletor-hora-valor")).not.toHaveText(/\d{1,2}:\d{2}/);
+
+    // 3 · Confirmar desabilitado
+    const confirmar = page.getByTestId("avc-seletor-hora-confirmar");
+    await esperaConfirmar(page, true);
+
+    // 4 · e nenhum fato temporal entra no estado, nem forçando o clique
+    await confirmar.click({ force: true });
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^registrar$/i);
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem"),
+      "pendência resolvida sem o médico informar nada seria o pior desfecho").toBeVisible();
+
+    // 5 · após interação explícita, Confirmar habilita
+    await page.getByTestId("avc-seletor-hora-h-menos").click();
+    await esperaConfirmar(page, false);
+    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(/^\d{2}:\d{2}$/);
+
+    // 6 · ao confirmar, aí sim o fato entra na trilha
+    await confirmar.click();
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^\d{2}:\d{2} ✎$/);
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
+  });
+
+  /**
+   * ⚠️ "Agora" continua sendo AÇÃO NOMEADA — o que a regra proíbe é agora como
+   * default silencioso, ⛔ não a ergonomia de um atalho rotulado.
+   */
+  test("o atalho Agora é interação explícita e habilita Confirmar", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    await page.getByTestId("avc-hora-hora_inicio_observado").click();
+    await esperaConfirmar(page, true);
+    await page.getByTestId("avc-seletor-hora-agora").click();
+    await esperaConfirmar(page, false);
+    // ⚠️ E habilitado aqui SIGNIFICA algo: o clique grava de verdade.
+    await page.getByTestId("avc-seletor-hora-confirmar").click();
+    await expect(page.getByTestId("avc-hora-valor-hora_inicio_observado"))
+      .toHaveText(/^\d{2}:\d{2} ✎$/);
+  });
+
+  /**
+   * ⚠️ REEDITAR ⛔ NÃO É INFORMAR PELA PRIMEIRA VEZ: um marco já registrado é um
+   * valor escolhido, e obrigar a mexer nele para reconfirmá-lo faria o médico
+   * alterar um horário correto.
+   */
+  test("reabrir um horário já registrado nasce com Confirmar habilitado", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    await informarHorario(page, "hora_reconhecimento");
+
+    await page.getByTestId("avc-hora-hora_reconhecimento").click();
+    await esperaConfirmar(page, false);
+    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(/^\d{2}:\d{2}$/);
+  });
+
+  /** ⚠️ I-3: pré-marcar Sim/Não é responder pelo médico. */
+  test("nenhuma escolha abre selecionada", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const marcadas = await page.locator('[role="radio"][aria-checked="true"]').count();
+    expect(marcadas, "nenhuma opção pode nascer marcada").toBe(0);
+
+    // ⚠️ E há opções de verdade na tela — um zero por ausência de radio seria
+    // verde falso, e é o modo mais fácil de esta trava mentir.
+    const total = await page.locator('[role="radio"]').count();
+    const escolhas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "escolha").length;
+    expect(total, "as opções precisam existir para o zero acima significar algo")
+      .toBeGreaterThanOrEqual(escolhas * 3);
   });
 
   /** ⚠️ A pergunta de hipoxemia ⛔ não pode voltar a ser "Há hipóxia?". */

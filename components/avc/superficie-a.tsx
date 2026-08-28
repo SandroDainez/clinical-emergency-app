@@ -88,8 +88,16 @@ export default function SuperficieA({ estado, agora, onEscolher, onMedir, onHora
    */
   const [rascunho, setRascunho] = useState<Record<string, number>>({});
 
-  /** O horário sendo editado, antes de virar fato. ⛔ Nada é gravado até confirmar. */
-  const [editandoHora, setEditandoHora] = useState<{ campo: string; instante: number } | null>(null);
+  /**
+   * O horário sendo editado, antes de virar fato. ⛔ Nada é gravado até confirmar.
+   *
+   * ⚠️ `selecionado` distingue **posição do controle** de **valor escolhido**.
+   * Sem ele, abrir o seletor já valeria como resposta — e "agora" viraria o
+   * default silencioso de um campo que decide janela terapêutica.
+   */
+  const [editandoHora, setEditandoHora] = useState<
+    { campo: string; instante: number; selecionado: boolean } | null
+  >(null);
 
   /** Quais ⓘ estão abertos. ⚠️ Fechado por padrão: rastreabilidade ⛔ não disputa espaço. */
   const [detalhes, setDetalhes] = useState<readonly string[]>([]);
@@ -113,6 +121,11 @@ export default function SuperficieA({ estado, agora, onEscolher, onMedir, onHora
     return typeof f?.valor === "number" ? f.valor : undefined;
   }
 
+  /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de não ter sido perguntado (E-02). */
+  function marcadoDesconhecido(id: string): boolean {
+    return String(valorAtual(estado, id)?.valor ?? "") === "nao_sei";
+  }
+
   /** ⚠️ O botão ⓘ. Pequeno, mas ⛔ nunca menor que o alvo mínimo de toque. */
   function Info({ id }: { id: string }) {
     return (
@@ -128,66 +141,132 @@ export default function SuperficieA({ estado, agora, onEscolher, onMedir, onHora
     );
   }
 
-  // ── RELÓGIO: uma linha, ⛔ nunca um cartão ────────────────────────────────
+  // ── RELÓGIO: linha compacta, ⛔ nunca um cartão ───────────────────────────
   function LinhaDeRelogio({ campo }: { campo: CampoA }) {
     const gravado = instanteGravado(campo.id);
+    const desconhecido = marcadoDesconhecido(campo.id);
     const editando = editandoHora?.campo === campo.id;
+
+    /**
+     * ⚠️ VALOR E AÇÃO SÃO O MESMO ALVO, e a fusão foi medida, não suposta: com
+     * rótulo + valor + botão + ⓘ disputando 388 px, os quatro nomes de marco
+     * truncavam mesmo em duas linhas. Fundidos, sobra espaço para o rótulo — e
+     * o alvo de toque fica MAIOR, que é o que se quer de um controle usado com
+     * luva.
+     *
+     * ⚠️ ⛔ NUNCA `String(instante)`: era daqui que saía o `1787922516903`.
+     *
+     * ⚠️ Vazio diz "registrar", ⛔ não "não informado": aqui a ausência já é
+     * evidente pela falta do número, e o que falta é o convite à ação. Na
+     * GRANDEZA é o oposto — lá a barra desenha algo mesmo intocada, e por isso
+     * lá a frase "não informado" é obrigatória (§0.2).
+     */
+    const botaoDoValor = (
+      <Pressable
+        style={e.relogioAcao}
+        accessibilityRole="button"
+        accessibilityLabel={`${tr(campo.rotulo)}: ${
+          gravado === undefined ? tr("não informado") : horaDeExibicao(gravado, agora)
+        }`}
+        testID={`avc-hora-${campo.id}`}
+        onPress={() =>
+          setEditandoHora(
+            editando
+              ? null
+              : {
+                  campo: campo.id,
+                  // ⚠️ Posiciona em `agora` por ergonomia quando não há marco —
+                  // ⛔ mas isso NÃO é seleção (ver `selecionado` abaixo).
+                  instante: gravado ?? agora,
+                  /**
+                   * ⚠️ REEDITAR ⛔ NÃO É INFORMAR PELA PRIMEIRA VEZ. Se já existe
+                   * um marco registrado, ele É um valor escolhido, e Confirmar
+                   * nasce habilitado — exigir novo toque ali obrigaria o médico
+                   * a mexer num horário correto só para reconfirmá-lo.
+                   */
+                  selecionado: gravado !== undefined,
+                }
+          )
+        }
+      >
+        <Text
+          style={[e.relogioValor, gravado === undefined && e.vazio]}
+          testID={`avc-hora-valor-${campo.id}`}
+        >
+          {gravado !== undefined
+            ? `${horaDeExibicao(gravado, agora)} ✎`
+            : desconhecido
+              ? tr("informar")
+              : tr("registrar")}
+        </Text>
+      </Pressable>
+    );
+
+    /**
+     * ⚠️⚠️ DESCONHECIDO É RESPOSTA, e precisa de um BOTÃO — §7.5 item 6 e
+     * **E-02**, cujo exemplo canônico é exatamente este campo.
+     *
+     * ── O DEFEITO QUE ISTO FECHA (revisão de 2026-08-28) ────────────────────
+     *
+     * A Superfície A tinha o picker e ⛔ NÃO tinha as opções explícitas que a
+     * spec exige junto dele. Sem elas, "ninguém sabe dizer" e "ainda não
+     * perguntei" caíam no mesmo branco — o colapso que E-23/E-37 proíbem. E a
+     * pendência prometia por escrito *"ou registrar que é desconhecido"*, uma
+     * saída que ⛔ não existia.
+     *
+     * ⚠️ Aqui é clínico: último-visto-bem desconhecido ⛔ não é lacuna de
+     * anamnese, é o cenário de seleção por imagem — ele MUDA caminho.
+     *
+     * ⛔ AINDA NÃO IMPLEMENTADAS: `AO ACORDAR (wake-up)` e `MESMO HORÁRIO DE
+     * OUTRO EVENTO` (esta exige a cópia com linhagem de P-08). Este botão ⛔ não
+     * as substitui.
+     */
+    const botaoDesconhecido = campo.aceitaDesconhecido ? (
+      <Pressable
+        style={[e.relogioAcao, desconhecido && e.relogioAcaoAtiva]}
+        accessibilityRole="radio"
+        aria-checked={desconhecido}
+        accessibilityLabel={`${tr(campo.rotulo)}: ${tr("desconhecido")}`}
+        testID={`avc-hora-desconhecido-${campo.id}`}
+        onPress={() => onEscolher(campo.id, "nao_sei")}
+      >
+        <Text
+          style={[
+            e.relogioValor,
+            !desconhecido && e.vazio,
+            desconhecido && e.relogioAcaoAtivaTexto,
+          ]}
+        >
+          {tr("desconhecido")}
+        </Text>
+      </Pressable>
+    ) : null;
+
     return (
       <View style={e.relogioBloco} testID={`avc-campo-${campo.id}`}>
+        {/**
+         * ⚠️ DUAS AÇÕES ⛔ NÃO CABEM NA MESMA LINHA — medido: ao ganhar o botão
+         * de desconhecido, "Início observado do déficit" voltou a truncar e o ⓘ
+         * foi espremido para fora. Onde há duas saídas, as ações descem para uma
+         * segunda linha; onde há uma, a linha única continua.
+         *
+         * ⛔ Compactar nunca pode custar a identidade do marco: os quatro
+         * relógios existem por serem DIFERENTES, e truncados viram iguais.
+         */}
         <View style={e.relogioLinha}>
-          {/**
-           * ⚠️ ATÉ DUAS LINHAS, ⛔ NUNCA UMA COM RETICÊNCIAS.
-           *
-           * A primeira versão compacta usava `numberOfLines={1}`, e a captura
-           * mostrou o resultado: "Última vez ...", "Início obser...",
-           * "Reconheci...". Os quatro marcos desta superfície ⛔ existem
-           * justamente porque são DIFERENTES ENTRE SI — truncados, viram quatro
-           * linhas indistinguíveis, e o médico carimba o marco errado.
-           *
-           * ⚠️ Compactar ⛔ nunca pode custar a identidade do campo. Duas linhas
-           * curtas continuam sendo linha, ⛔ não cartão.
-           */}
           <Text style={e.relogioRotulo} numberOfLines={2}>
             {tr(campo.rotulo)}
           </Text>
-          {/**
-           * ⚠️ VALOR E AÇÃO SÃO O MESMO ALVO, e a fusão foi medida, não
-           * suposta: com rótulo + valor + botão + ⓘ disputando 388 px, os
-           * quatro nomes de marco truncavam mesmo em duas linhas. Fundidos,
-           * sobram ~240 px para o rótulo — e o alvo de toque fica MAIOR, que é
-           * o que se quer de um controle usado com luva.
-           *
-           * ⚠️ ⛔ NUNCA `String(instante)`: era daqui que saía o
-           * `1787922516903`. Tudo passa por `horaDeExibicao`.
-           *
-           * ⚠️ Vazio diz "registrar", ⛔ não "não informado": aqui a ausência já
-           * é evidente pela falta do número, e o que o médico precisa é do
-           * convite à ação. Na GRANDEZA é o oposto — lá a barra desenha um
-           * número mesmo intocada, e por isso lá a frase "não informado" é
-           * obrigatória (§0.2).
-           */}
-          <Pressable
-            style={e.relogioAcao}
-            accessibilityRole="button"
-            accessibilityLabel={`${tr(campo.rotulo)}: ${
-              gravado === undefined ? tr("não informado") : horaDeExibicao(gravado, agora)
-            }`}
-            testID={`avc-hora-${campo.id}`}
-            onPress={() =>
-              setEditandoHora(
-                editando ? null : { campo: campo.id, instante: gravado ?? agora }
-              )
-            }
-          >
-            <Text
-              style={[e.relogioValor, gravado === undefined && e.vazio]}
-              testID={`avc-hora-valor-${campo.id}`}
-            >
-              {gravado === undefined ? tr("registrar") : `${horaDeExibicao(gravado, agora)} ✎`}
-            </Text>
-          </Pressable>
+          {botaoDesconhecido ? null : botaoDoValor}
           <Info id={campo.id} />
         </View>
+
+        {botaoDesconhecido ? (
+          <View style={e.relogioAcoes}>
+            {botaoDoValor}
+            {botaoDesconhecido}
+          </View>
+        ) : null}
 
         {detalhes.includes(campo.id) ? <Detalhe campo={campo} /> : null}
 
@@ -195,8 +274,11 @@ export default function SuperficieA({ estado, agora, onEscolher, onMedir, onHora
           <SeletorDeHora
             rotulo={campo.rotulo}
             instante={editandoHora.instante}
+            // ⚠️ Qualquer movimento em hora/minuto — e o "Agora" nomeado — é
+            // interação explícita. ⛔ Abrir o seletor não é.
+            selecionado={editandoHora.selecionado}
             agora={agora}
-            onMudar={(i) => setEditandoHora({ campo: campo.id, instante: i })}
+            onMudar={(i) => setEditandoHora({ campo: campo.id, instante: i, selecionado: true })}
             onConfirmar={() => {
               onHora(campo.id, editandoHora.instante, campo.relogio);
               setEditandoHora(null);
@@ -290,7 +372,20 @@ export default function SuperficieA({ estado, agora, onEscolher, onMedir, onHora
      * alimentar dose lá na frente.
      */
     const naoInformado = gravado === undefined && emRascunho === undefined;
-    const valor = emRascunho ?? gravado ?? faixa.partida;
+    /**
+     * ⚠️⚠️ INTOCADO ⇒ POLEGAR NO `min`, ⛔ nunca no meio da faixa.
+     *
+     * A barra precisa de um número para desenhar, e esse número é lido como
+     * escolha. Com o polegar no meio, o campo dizia "não informado" em texto e
+     * "96%" em desenho — e o médico apressado lê o desenho. No `min` a barra
+     * diz a mesma coisa que o texto: ainda não há valor.
+     *
+     * ⚠️ Consequência aceita: o primeiro `+` a partir do intocado cai no `min`,
+     * ⛔ não num valor plausível. É lento de propósito — um atalho para um
+     * "valor razoável" seria de novo um valor predeterminado, agora escondido
+     * dentro do botão.
+     */
+    const valor = emRascunho ?? gravado ?? faixa.min;
 
     return (
       <View style={e.campo} testID={`avc-campo-${campo.id}`}>
@@ -397,6 +492,9 @@ const criarEstilos = (tema: Tema) =>
     // e encurtar o nome do marco, quem cede é o texto genérico.
     relogioValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700", flexShrink: 1 },
     vazio: { color: tema.cores.textSecondary, fontWeight: "400", fontStyle: "italic" },
+    relogioAcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs, marginTop: -ESPACO.xs },
+    relogioAcaoAtiva: { backgroundColor: tema.cores.primary },
+    relogioAcaoAtivaTexto: { color: tema.cores.onPrimary },
     relogioAcao: {
       minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm,
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,

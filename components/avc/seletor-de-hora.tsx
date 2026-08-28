@@ -23,8 +23,31 @@ const MINUTO = 60_000;
 
 type Props = {
   rotulo: string;
-  /** O instante em edição. */
+  /**
+   * Onde os controles estão posicionados.
+   *
+   * ⚠️⚠️ POSIÇÃO ⛔ NÃO É VALOR. Enquanto `selecionado` for falso, este número é
+   * só o ponto de partida ergonômico dos botões — ⛔ não é uma resposta, ⛔ não
+   * aparece como valor, e ⛔ não pode ser confirmado.
+   */
   instante: number;
+  /**
+   * O médico já interagiu com hora/minuto (ou tocou "Agora")?
+   *
+   * ⚠️⚠️ ESTE BOOLEANO É A REGRA CLÍNICA DESTE COMPONENTE.
+   *
+   * ── O DEFEITO QUE ELE FECHA (2026-08-28) ───────────────────────────────
+   *
+   * O seletor abria posicionado em **agora** e o botão Confirmar já valia. Um
+   * toque em Confirmar registrava o horário atual — e no **última vez visto
+   * bem** isso é a catástrofe que já havíamos corrigido um nível acima: um
+   * paciente de 6 horas de evolução vira um paciente de zero minuto, com
+   * janela de trombólise inventada por um toque.
+   *
+   * ⚠️ "Agora" continua existindo como AÇÃO NOMEADA — o que ⛔ não pode existir
+   * é "agora" como **default silencioso**.
+   */
+  selecionado: boolean;
   /** "Agora", lido pelo dono através de `Relogio`. ⚠️ Também é o TETO. */
   agora: number;
   onMudar: (instante: number) => void;
@@ -35,6 +58,7 @@ type Props = {
 export default function SeletorDeHora({
   rotulo,
   instante,
+  selecionado,
   agora,
   onMudar,
   onConfirmar,
@@ -62,8 +86,18 @@ export default function SeletorDeHora({
   return (
     <View style={e.raiz} testID="avc-seletor-hora">
       <Text style={e.rotulo}>{tr(rotulo)}</Text>
-      <Text style={e.valor} testID="avc-seletor-hora-valor">
-        {horaDeExibicao(instante, agora)}
+      {/**
+        * ⚠️ MESMA REGRA DA BARRA (§0.2): o controle precisa estar posicionado em
+        * algum lugar, e esse lugar ⛔ não pode se ler como valor escolhido. A
+        * `NumericStepper` já resolve assim — polegar posicionado, valor lido
+        * como "não informado" — e horário ⛔ não pode ser menos rigoroso que
+        * peso.
+        */}
+      <Text
+        style={selecionado ? e.valor : e.valorAusente}
+        testID="avc-seletor-hora-valor"
+      >
+        {selecionado ? horaDeExibicao(instante, agora) : tr("não informado")}
       </Text>
 
       <Linha
@@ -103,7 +137,24 @@ export default function SeletorDeHora({
         <Pressable style={e.cancelar} accessibilityRole="button" testID="avc-seletor-hora-cancelar" onPress={onCancelar}>
           <Text style={e.cancelarTexto}>{tr("Cancelar")}</Text>
         </Pressable>
-        <Pressable style={e.confirmar} accessibilityRole="button" testID="avc-seletor-hora-confirmar" onPress={onConfirmar}>
+        {/**
+          * ⚠️⚠️ DESABILITADO ATÉ HAVER INTERAÇÃO EXPLÍCITA. ⛔ Não é ergonomia:
+          * é a diferença entre um marco informado e um marco carimbado por um
+          * toque descuidado num campo que decide janela terapêutica.
+          *
+          * ⚠️ `disabled` E `aria-disabled`: o primeiro bloqueia o toque, o
+          * segundo é o que a tecnologia assistiva — e a trava — conseguem ler.
+          * O `Pressable` do react-native-web ⛔ não publica `accessibilityState`,
+          * e confiar nele foi erro já medido neste módulo.
+          */}
+        <Pressable
+          style={[e.confirmar, !selecionado && e.confirmarInativo]}
+          accessibilityRole="button"
+          aria-disabled={!selecionado}
+          disabled={!selecionado}
+          testID="avc-seletor-hora-confirmar"
+          onPress={onConfirmar}
+        >
           <Text style={e.confirmarTexto}>{tr("Confirmar")}</Text>
         </Pressable>
       </View>
@@ -160,6 +211,9 @@ const criarEstilos = (tema: Tema) =>
     },
     rotulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     valor: { color: tema.cores.text, fontSize: TIPOGRAFIA.title.fontSize, fontWeight: "700", textAlign: "center" },
+    // ⚠️ Em corpo de texto e cor secundária, ⛔ não em display: a ausência do
+    // valor é dita em voz baixa, e ⛔ não compete com o número quando ele vier.
+    valorAusente: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize, textAlign: "center" },
     linha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
     linhaRotulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, width: 64 },
     linhaNumero: {
@@ -189,5 +243,6 @@ const criarEstilos = (tema: Tema) =>
       flex: 1, minHeight: TOQUE.minimo, alignItems: "center", justifyContent: "center",
       backgroundColor: tema.cores.primary, borderRadius: RAIO.botao,
     },
+    confirmarInativo: { opacity: 0.35 },
     confirmarTexto: { color: tema.cores.onPrimary, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
   });

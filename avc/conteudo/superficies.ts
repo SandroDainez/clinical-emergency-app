@@ -119,18 +119,23 @@ export const PENDENCIAS_INICIAIS: readonly Pendencia[] = [
     id: "ultima_vez_bem",
     rotulo: "Última vez visto bem",
     dono: "estabilizacao",
+    campo: "hora_ultima_vez_bem",
     resolvePor: "Informar o horário, ou registrar que é desconhecido",
   },
   {
     id: "tc_realizada",
     rotulo: "Tomografia de crânio",
     dono: "imagem",
+    // ⚠️ Campo ainda inexistente: a Superfície de Imagem não foi construída.
+    // A pendência fica aberta — o que é correto, e ⛔ não é o defeito de cima.
+    campo: "tc_realizada",
     resolvePor: "Registrar o resultado da imagem",
   },
   {
     id: "deficit_focal",
     rotulo: "Déficit neurológico",
     dono: "neurologico",
+    campo: "deficit_focal",
     resolvePor: "Registrar o exame neurológico",
   },
 ] as const;

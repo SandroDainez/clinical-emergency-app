@@ -48,6 +48,15 @@ const E = require(path.join(tmp, "nucleo", "estado.js"));
 const D = require(path.join(tmp, "nucleo", "derivacoes.js"));
 const C = require(path.join(tmp, "conteudo", "superficie-a.js"));
 
+// ⚠️ As pendências vivem noutro módulo; compilado à parte para não alargar o
+// universo declarado deste instrumento sem dizer.
+const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), "prova-avc-a-pend-"));
+execFileSync("npx", [
+  "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+  "--moduleResolution", "node", "--skipLibCheck", "--outDir", tmp2,
+  path.join(appDir, "avc", "conteudo", "superficies.ts"),
+], { cwd: appDir, stdio: "pipe" });
+
 const novo = () => {
   const rel = R.relogioControlado(1_000_000);
   return { rel, est: E.abrirAtendimento(rel) };
@@ -259,9 +268,18 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
 
   confere("toda grandeza declara faixa de controle utilizável",
     C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").every((c) =>
-      c.faixa && c.faixa.min < c.faixa.max && c.faixa.passo > 0
-      && c.faixa.partida >= c.faixa.min && c.faixa.partida <= c.faixa.max),
+      c.faixa && c.faixa.min < c.faixa.max && c.faixa.passo > 0),
     "§0.3: sem faixa a barra não desenha, e o campo cai para digitação");
+
+  /**
+   * ⚠️ ⛔ NENHUMA FAIXA PODE VOLTAR A TER POSIÇÃO DE PARTIDA. Ela punha o
+   * polegar no meio enquanto o texto dizia "não informado" — desenho e texto
+   * discordando sobre o mesmo campo (§0.2).
+   */
+  confere("nenhuma grandeza declara valor predeterminado",
+    C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza")
+      .every((c) => !("partida" in c.faixa) && !("padrao" in c.faixa)),
+    "§0.2: campo intocado não pode ter aparência de campo respondido");
 
   /**
    * ⚠️ A FAIXA NÃO PODE ESCONDER O LIMITE DA FONTE. `<60 mg/dL` é o limite que
@@ -302,6 +320,106 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   confere("com o estado vazio, nenhuma leitura conclui 'não'",
     todas.filter((x) => x.conclusao === "nao").length === 0,
     "E-23: sem dado, o sistema não pode negar nada");
+}
+
+// ── 12 · ESTADO INICIAL: nada respondido, nada predeterminado ──────────────
+//
+// ⚠️⚠️ AS INVARIANTES DE ABERTURA (fixadas pelo autor em 2026-08-28). Elas são
+// UNIVERSAIS sobre `TODOS_OS_CAMPOS_A` de propósito: enumerar nomes deixaria o
+// próximo campo nascer fora da regra, em silêncio.
+{
+  const { rel, est: vazio } = novo();
+
+  confere("ao abrir, a trilha está vazia",
+    vazio.fatos.length === 0,
+    "I-2: valor clínico só existe após interação explícita — abrir não é interação");
+
+  // I-1 · toda grandeza abre não informada
+  const grandezas = C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza");
+  confere("nenhuma grandeza abre com valor",
+    grandezas.length > 0 && grandezas.every((c) => E.valorAtual(vazio, c.id) === undefined),
+    "I-1: campo numérico aberto com valor é medida que ninguém mediu");
+
+  /**
+   * ⚠️ O MÍNIMO É O QUE A TELA DESENHA quando não há valor — a barra precisa de
+   * um número, e esse número ⛔ não pode ser o meio da faixa. Aqui trava-se o
+   * CONTRATO (existe `min`, e ⛔ não existe posição de partida); que o polegar
+   * apareça lá é `e2e/avc-superficie-a`.
+   */
+  confere("toda grandeza declara mínimo e nenhum valor de partida",
+    grandezas.every((c) => typeof c.faixa.min === "number" && !("partida" in c.faixa)),
+    "I-1: sem mínimo declarado a tela teria de inventar onde pousar o polegar");
+
+  // I-3 · nenhum Sim/Não abre selecionado
+  const escolhas = C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "escolha");
+  confere("nenhuma escolha abre com opção marcada",
+    escolhas.length > 0 && escolhas.every((c) => E.valorAtual(vazio, c.id) === undefined),
+    "I-3: Sim/Não pré-marcado é resposta que o médico não deu");
+
+  confere("nenhuma escolha declara opção padrão",
+    escolhas.every((c) => !("padrao" in c) && !("valorInicial" in c)),
+    "I-3: padrão declarado no conteúdo reintroduziria a pré-marcação por baixo");
+
+  // I-4 · nenhum relógio abre preenchido
+  const horas = C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora");
+  confere("nenhum campo de horário abre preenchido",
+    horas.length === 4 && horas.every((c) => E.valorAtual(vazio, c.id) === undefined),
+    "I-4: horário automático no último-visto-bem apaga a evolução do paciente");
+
+  /**
+   * ⚠️ O ÚNICO relógio que nasce definido é o `t0_operacional` — é a abertura do
+   * atendimento (§0.1), ⛔ não um marco informado pelo médico, e **E-21** diz
+   * que ele ⛔ não substitui nenhum relógio clínico.
+   */
+  confere("só o t₀ operacional nasce definido",
+    Object.keys(vazio.relogiosClinicos).length === 1
+    && vazio.relogiosClinicos.t0_operacional !== undefined,
+    "E-21: relógio clínico que nasce preenchido é janela terapêutica inventada");
+
+  // I-5 · desconhecido ≠ não perguntado, e os dois ≠ valor
+  const comDesc = reg(vazio, "hora_ultima_vez_bem", "nao_sei", rel);
+  confere("desconhecido é distinguível de não perguntado",
+    E.valorAtual(vazio, "hora_ultima_vez_bem") === undefined
+    && E.valorAtual(comDesc, "hora_ultima_vez_bem").valor === "nao_sei",
+    "I-5/E-02: colapsar os dois faz silêncio parecer resposta");
+}
+
+// ── 13 · desconhecido é resposta, e resolve a pendência ────────────────────
+{
+  const { rel, est: e0 } = novo();
+
+  confere("último-visto-bem aceita desconhecido como resposta",
+    C.TODOS_OS_CAMPOS_A.find((c) => c.id === "hora_ultima_vez_bem").aceitaDesconhecido === true,
+    "E-02: 'ninguém sabe dizer' tem consequência própria, e sem porta ele vira branco");
+
+  confere("chegada ao pronto-socorro NÃO aceita desconhecido",
+    !C.TODOS_OS_CAMPOS_A.find((c) => c.id === "hora_chegada").aceitaDesconhecido,
+    "marcar por simetria inventaria uma resposta que não existe clinicamente");
+
+  /**
+   * ⚠️ AS DUAS ROTAS QUE A PENDÊNCIA PROMETE, medidas uma a uma. A promessa
+   * está escrita em `resolvePor`; sem estas conferências ela seguia falsa.
+   */
+  const P = require(path.join(tmp2, "conteudo", "superficies.js"));
+  const pend = P.PENDENCIAS_INICIAIS.filter((p) => p.id === "ultima_vez_bem");
+  const abertas = (e) => E.pendenciasAbertas(e, pend).length;
+
+  confere("sem resposta, a pendência do último-visto-bem fica aberta",
+    abertas(e0) === 1, "pendência que nasce fechada não é pendência");
+
+  const comHora = reg(e0, "hora_ultima_vez_bem", 900000, rel);
+  confere("informar o horário resolve a pendência",
+    abertas(comHora) === 0,
+    "E-26: a rota escrita em resolvePor precisa existir de fato");
+
+  const comDesconhecido = reg(e0, "hora_ultima_vez_bem", "nao_sei", rel);
+  confere("registrar desconhecido também resolve a pendência",
+    abertas(comDesconhecido) === 0,
+    "E-02: desconhecido é RESPOSTA — deixá-la aberta trataria resposta como silêncio");
+
+  confere("desconhecido não vira horário",
+    E.valorAtual(comDesconhecido, "hora_ultima_vez_bem").valor === "nao_sei",
+    "um marco temporal inventado a partir de 'não sei' produziria janela falsa");
 }
 
 if (falhas.length) {

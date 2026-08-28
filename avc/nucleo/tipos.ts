@@ -107,6 +107,19 @@ export type Pendencia = {
   readonly id: string;
   readonly rotulo: string;
   readonly dono: SuperficieId;
+  /**
+   * O CAMPO cuja resposta resolve esta pendência.
+   *
+   * ⚠️⚠️ EXPLÍCITO, ⛔ NUNCA DEDUZIDO DO `id`. Era deduzido, e o resultado foi
+   * medido em 2026-08-28: a pendência `ultima_vez_bem` procurava um campo com
+   * esse nome, o campo na tela chamava-se `hora_ultima_vez_bem`, e os dois
+   * ⛔ nunca casaram. A pendência ficava aberta PARA SEMPRE, informasse o médico
+   * o horário ou não — E-26 ao pé da letra: muro, ⛔ não tarefa.
+   *
+   * ⚠️ É a mesma lição de `SuperficieId`: quando identidade e referência são a
+   * mesma string por coincidência, uma renomeação quebra a outra em silêncio.
+   */
+  readonly campo: string;
   /** ⚠️ Pendência que não diz o que a resolve é muro, não tarefa (E-26). */
   readonly resolvePor: string;
 };
