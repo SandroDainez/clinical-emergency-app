@@ -35,7 +35,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
 import { CAMPO_DE_ITEM, ITENS_NIHSS } from "../../avc/conteudo/nihss";
-import { comoAvaliarItem } from "../../avc/conteudo/explicacoes";
+import { comoAvaliarItem, oQueAvaliaItem } from "../../avc/conteudo/explicacoes";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
@@ -145,6 +145,16 @@ export default function CampoDeEscala({
                 ) : null}
               </View>
               {/**
+                * ⚠️ O QUE O ITEM AVALIA — vem ANTES da manobra, porque quem ⛔ não
+                * usa a escala todo dia precisa saber o que está medindo antes de
+                * saber como medir.
+                */}
+              {oQueAvaliaItem(item.id) ? (
+                <Text style={e.itemOQueAvalia} testID={`avc-o-que-avalia-${item.id}`}>
+                  {tr(oQueAvaliaItem(item.id) as string)}
+                </Text>
+              ) : null}
+              {/**
                 * ⚠️ COMO SE TESTA, numa linha — das instruções da própria escala.
                 * ⚠️ Fica em texto secundário de propósito: a escala já tem 15
                 * itens, e explicação em corpo grande devolveria a rolagem que a
@@ -252,6 +262,8 @@ const criarEstilos = (tema: Tema) =>
     itemInfoTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     itemAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
     itemComoAvaliar: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    /** ⚠️ Um degrau acima da manobra: é o que destrava quem ⛔ não conhece o item. */
+    itemOQueAvalia: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     opcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
     opcao: {
       paddingVertical: ESPACO.xs, paddingHorizontal: ESPACO.sm,

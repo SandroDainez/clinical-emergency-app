@@ -93,6 +93,49 @@ export const COMO_AVALIAR_ITEM: Readonly<Record<string, string>> = {
   "11": "Estímulo simultâneo bilateral, e avaliação de negligência.",
 };
 
+/**
+ * O QUE O ITEM AVALIA — a linha que vem ANTES da manobra.
+ *
+ * ── O PEDIDO (autor, 2026-08-29) ──────────────────────────────────────────
+ *
+ * *"Frases como 'estímulo simultâneo bilateral e avaliação de negligência'
+ * explicam como testar, mas ⛔ não necessariamente o que está sendo avaliado."*
+ *
+ * ⚠️ Ordem na tela: **nome → o que avalia → como testar → opções**, com a regra
+ * de pontuação atrás do ⓘ. Duas linhas curtas, ⛔ não quinze textos longos.
+ *
+ * ⚠️⚠️ DUAS DELAS FORAM CORRIGIDAS PELO AUTOR, e as correções são de FIDELIDADE
+ * AO INSTRUMENTO, ⛔ não de estilo:
+ *
+ *   · 1b ⛔ não diz *"avalia a orientação"* — o item usa **duas perguntas
+ *     específicas** (mês e idade), e "orientação" sugeriria uma avaliação
+ *     temporal/pessoal mais ampla do que ele faz;
+ *   · 1c ⛔ não diz *"avalia se compreende"* — falha de execução pode vir de
+ *     déficit motor ou de linguagem, ⛔ não só de compreensão. O item mede a
+ *     RESPOSTA ao comando.
+ */
+export const O_QUE_AVALIA_ITEM: Readonly<Record<string, string>> = {
+  "1a": "Avalia o quanto o paciente está desperto e responsivo.",
+  "1b": "Avalia as respostas a duas perguntas simples: o mês atual e a idade.",
+  "1c": "Avalia a resposta a comandos simples, como abrir e fechar os olhos e apertar e soltar a mão.",
+  "2": "Avalia desvio ou limitação do olhar horizontal.",
+  "3": "Avalia perda de parte do campo de visão.",
+  "4": "Avalia assimetria dos movimentos da face.",
+  "5a": "Avalia a capacidade de manter o membro contra a gravidade.",
+  "5b": "Avalia a capacidade de manter o membro contra a gravidade.",
+  "6a": "Avalia a capacidade de manter o membro contra a gravidade.",
+  "6b": "Avalia a capacidade de manter o membro contra a gravidade.",
+  "7": "Avalia incoordenação dos braços e pernas que não é explicada apenas por fraqueza.",
+  "8": "Avalia redução ou perda da percepção sensitiva de um lado.",
+  "9": "Avalia capacidade de compreender e produzir linguagem.",
+  "10": "Avalia dificuldade de articular as palavras por alteração motora da fala.",
+  "11": "Avalia negligência de um lado do corpo ou do espaço, especialmente com estímulos simultâneos.",
+};
+
+export function oQueAvaliaItem(item: string): string | undefined {
+  return O_QUE_AVALIA_ITEM[item];
+}
+
 export function definicaoDoAchado(campo: string): string | undefined {
   return DEFINICAO_DO_ACHADO[campo];
 }

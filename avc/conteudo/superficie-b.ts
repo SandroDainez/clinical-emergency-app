@@ -76,6 +76,21 @@ export type CampoB = Campo;
  * OPERACIONAL de entrada do módulo (R1.1), ⛔ não regra derivada — e por isso
  * ⛔ nenhuma resposta daqui exclui AVC.
  */
+/**
+ * ⚠️ "EVOLUÇÃO DO DÉFICIT DESDE A PRIMEIRA AVALIAÇÃO" FOI REMOVIDO em 2026-08-29,
+ * por decisão do autor — e o argumento é da SEQUÊNCIA, ⛔ não do texto:
+ *
+ * *"Pela sequência do app, esta é a minha primeira avaliação do paciente. ⛔ Não
+ * estou acompanhando a evolução, estou dando atendimento inicial."*
+ *
+ * ⚠️ Um campo que pergunta "desde a primeira avaliação" DENTRO da primeira
+ * avaliação ⛔ não tem resposta possível — ele pressupõe um passado que o
+ * atendimento ainda ⛔ não tem.
+ *
+ * ⚠️ A fonte fala de medida objetiva de mudança no contexto de **reavaliação
+ * após reperfusão** (F-13 §Synopsis → F-15), que é outro momento e outra
+ * superfície. ⛔ Ele ⛔ não volta aqui: volta lá, se voltar.
+ */
 export const EXAME_B: readonly CampoB[] = [
   {
     id: "deficit_focal",
@@ -109,20 +124,6 @@ export const EXAME_B: readonly CampoB[] = [
     fonte: "F-13",
     bloqueiaTerapia: false,
     nota: "Déficits não motores — afasia, hemianopsia, negligência — têm lado e não aparecem nestes itens.",
-  },
-  {
-    id: "evolucao_deficit",
-    rotulo: "Evolução do déficit desde a primeira avaliação",
-    tipo: "escolha",
-    /**
-     * ⚠️ "Flutuante" existe porque o quadro flutuante é real e ⛔ não é nenhuma
-     * das outras três. Sem ela, o médico teria de escolher a menos errada — que
-     * é a mesma família de defeito da barra que não alcança o valor do paciente.
-     */
-    opcoes: ["Melhorando", "Estável", "Piorando", "Flutuante", "Não sei"],
-    fonte: "F-13",
-    bloqueiaTerapia: false,
-    nota: "A fonte atribui à escala a medida objetiva da mudança do estado clínico.",
   },
 ] as const;
 
@@ -583,7 +584,6 @@ export const IDS_ACHADOS_PODEM_NAO = ACHADOS_PODEM_NAO_B.map((c) => c.id);
  */
 export const VOCABULARIO_PROPRIO_B: readonly { id: string; motivo: string }[] = [
   { id: "lateralidade", motivo: "lado do corpo não é resposta binária" },
-  { id: "evolucao_deficit", motivo: "a trajetória tem quatro estados, e nenhum é sim/não" },
   { id: "mrs_previo", motivo: "escala com grau 0 válido (E-10), e o rótulo traz o descritor" },
   { id: "nihss_informado_origem", motivo: "procedência muda a confiança sem mudar o número (E-03)" },
   { id: "incapacitante_assumido", motivo: "as três decisões de §2.8-6, e Incerto é decisão" },

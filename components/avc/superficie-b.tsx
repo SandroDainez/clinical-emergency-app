@@ -23,7 +23,13 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_B, TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
-import { derivadoDaEscala, leiturasDaSuperficieB } from "../../avc/nucleo/derivacoes-b";
+import {
+  derivadoDaEscala,
+  escalaPreenchida,
+  leiturasDaSuperficieB,
+  valorEfetivo,
+  veioDaEscala,
+} from "../../avc/nucleo/derivacoes-b";
 import { CAMPO_DE_ITEM, ITENS_NIHSS } from "../../avc/conteudo/nihss";
 import CampoDeEscala from "./campo-de-escala";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
@@ -36,7 +42,7 @@ import {
   useDetalhes,
 } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
 type Props = {
@@ -62,6 +68,21 @@ export default function SuperficieB({
    * abrir e fechar bloco ⛔ não registra nem apaga nada (E-20).
    */
   const [abertos, setAbertos] = useState<readonly string[]>([]);
+  /**
+   * ⚠️⚠️ O APP ⛔ NÃO REPERGUNTA O QUE JÁ SABE — princípio fixado pelo autor em
+   * 2026-08-29 e registrado como **PD-20**.
+   *
+   * Com a escala preenchida, os quatro achados que a Table 4 define por corte de
+   * item **já estão respondidos**. Mantê-los como quatro cartões de pergunta
+   * obriga o médico a revalidar o que ele acabou de medir — e revalidação
+   * obrigatória é a forma mais educada de fazer alguém marcar no automático.
+   *
+   * ⚠️ O que ⛔ NÃO se perde: `Ajustar` abre os quatro e devolve a divergência
+   * manual, que é a decisão PD-19. Recolher é sobre ⛔ não REPERGUNTAR — ⛔ nunca
+   * sobre tirar do médico a palavra final.
+   */
+  const [ajustando, setAjustando] = useState(false);
+  const derivados = escalaPreenchida(estado);
   const leituras = leiturasDaSuperficieB(estado);
   const detalhes = useDetalhes();
 
@@ -115,7 +136,35 @@ export default function SuperficieB({
               {tr(grupo.nota)}
             </Text>
           ) : null}
-          {fechado ? null : (
+          {/**
+            * ⚠️ O RESUMO SUBSTITUI AS PERGUNTAS, ⛔ não as apaga: `Ajustar` traz os
+            * quatro cartões de volta, com a etiqueta de procedência intacta.
+            */}
+          {grupo.id === "achados-tipicos" && derivados && !ajustando ? (
+            <View style={e.resumo} testID="avc-resumo-derivado">
+              {grupo.campos.map((campo) => {
+                const valor = valorEfetivo(estado, campo.id);
+                const daEscala = veioDaEscala(estado, campo.id);
+                return (
+                  <Text key={campo.id} style={e.resumoLinha} testID={`avc-resumo-${campo.id}`}>
+                    {valor === "sim" ? "✓ " : valor === "nao" ? "— " : "? "}
+                    {tr(campo.rotulo)}
+                    {daEscala ? "" : ` · ${tr("Registro do médico")}`}
+                  </Text>
+                );
+              })}
+              <Pressable
+                style={e.ajustar}
+                accessibilityRole="button"
+                testID="avc-ajustar-derivados"
+                onPress={() => setAjustando(true)}
+              >
+                <Text style={e.ajustarTexto}>{tr("Ajustar")}</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {fechado || (grupo.id === "achados-tipicos" && derivados && !ajustando) ? null : (
           <>
           {grupo.campos.map((campo) =>
             campo.tipo === "escala" ? (
@@ -183,4 +232,19 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "700", letterSpacing: 1, marginTop: ESPACO.xs,
     },
     grupoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    resumo: {
+      backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
+      padding: ESPACO.sm, gap: ESPACO.xs,
+      borderWidth: 1, borderColor: tema.cores.border,
+      borderLeftWidth: 4, borderLeftColor: tema.cores.primary,
+    },
+    /** ⚠️ Símbolo antes do texto: ✓ presente · — ausente · ? sem conclusão (E-39). */
+    resumoLinha: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
+    ajustar: {
+      alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
+      paddingHorizontal: ESPACO.md, marginTop: ESPACO.xs,
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+    },
+    ajustarTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
   });

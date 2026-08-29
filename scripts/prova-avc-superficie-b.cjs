@@ -702,6 +702,19 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
     N.ACHADOS_DERIVAVEIS.every((r) => (X.definicaoDoAchado(r.campo) ?? "").length > 20),
     "quem ⛔ não lembra o termo precisa da definição no momento de responder, ⛔ não a um toque");
 
+  /**
+   * ⚠️⚠️ DUAS LINHAS, DUAS PERGUNTAS DIFERENTES: **o que avalia** vem antes de
+   * **como testar**. Quem ⛔ não usa a escala todo dia precisa saber o que está
+   * medindo antes de saber como medir — e a trava guarda as duas.
+   */
+  confere("TODOS os quinze itens dizem O QUE avaliam",
+    N.ITENS_NIHSS.every((v) => (X.oQueAvaliaItem(v.id) ?? "").length > 15),
+    "'extinção/desatenção' ⛔ não se decodifica sozinho, e o nome ⛔ não é explicação");
+
+  confere("⛔ nenhuma das duas linhas repete a outra",
+    N.ITENS_NIHSS.every((v) => X.oQueAvaliaItem(v.id) !== X.comoAvaliarItem(v.id)),
+    "duas linhas dizendo o mesmo é a duplicação que a revisão de tela já tirou uma vez");
+
   confere("TODOS os quinze itens dizem COMO testar",
     N.ITENS_NIHSS.every((v) => (X.comoAvaliarItem(v.id) ?? "").length > 10),
     "⛔ item sem manobra devolve o médico ao 'sei o nome, ⛔ não sei o que fazer'");
@@ -733,6 +746,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   const frases = [
     ...Object.values(X.DEFINICAO_DO_ACHADO),
     ...Object.values(X.COMO_AVALIAR_ITEM),
+    ...Object.values(X.O_QUE_AVALIA_ITEM),
   ].join(" | ");
   confere("⛔ nenhuma explicação carrega pontuação, corte ou conduta",
     !/≥|escore \d|ponto[s]? \d|trombóli|elegív|contraindic|indicad/i.test(frases),
@@ -747,6 +761,47 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
       return D.achadoDerivado(comAfasia, "t4_afasia_grave") === "sim";
     })(),
     "as frases explicam, e ⛔ a lógica derivada ⛔ não olha para elas");
+}
+
+// ── 15e · O APP ⛔ NÃO REPERGUNTA O QUE JÁ SABE (PD-20) ────────────────────
+//
+// ⚠️⚠️ PRINCÍPIO FIXADO PELO AUTOR (2026-08-29): *"o app deve lembrar o que já
+// sabe e ⛔ não perguntar novamente por padrão"*. Com a escala preenchida, os
+// quatro achados que a Table 4 define por corte de item já estão respondidos.
+//
+// ⚠️ O que a trava guarda é o LIMITE do princípio: recolher a pergunta ⛔ não pode
+// custar a divergência (PD-19) nem o registro de quem ⛔ não preencheu a escala.
+{
+  const { rel, est } = novo();
+  const preencher = (e, pontos) =>
+    N.ITENS_NIHSS.reduce((acc, v) => reg(acc, N.CAMPO_DE_ITEM(v.id), pontos[v.id] ?? 0, rel), e);
+
+  confere("⛔ sem escala preenchida, ⛔ nada é derivado — e a pergunta continua sendo a única via",
+    !D.escalaPreenchida(est)
+    && C.IDS_ACHADOS_TIPICOS.every((id) => D.valorEfetivo(est, id) === undefined),
+    "recolher a pergunta sem ter a resposta apagaria o campo em vez de lembrá-lo");
+
+  const cheia = preencher(est, { "9": 2 });
+  confere("com a escala preenchida, os quatro achados já têm resposta",
+    D.escalaPreenchida(cheia)
+    && C.IDS_ACHADOS_TIPICOS.every((id) => D.valorEfetivo(cheia, id) !== undefined),
+    "é isto que autoriza ⛔ não reperguntar: a resposta EXISTE, e veio de quem examinou");
+
+  confere("e todas vêm etiquetadas como da escala",
+    C.IDS_ACHADOS_TIPICOS.every((id) => D.veioDaEscala(cheia, id)),
+    "resumo sem procedência seria o app afirmando por conta própria");
+
+  /**
+   * ⚠️⚠️ O LIMITE: `Ajustar` existe porque a divergência ⛔ não pode morrer no
+   * resumo. Depois de ajustar, o registro do médico prevalece e a divergência
+   * continua identificável — PD-19 intacta.
+   */
+  const ajustado = reg(cheia, "t4_afasia_grave", "nao", rel);
+  confere("ajustar preserva a divergência e o registro do médico",
+    D.valorEfetivo(ajustado, "t4_afasia_grave") === "nao"
+    && !D.veioDaEscala(ajustado, "t4_afasia_grave")
+    && D.divergenciasComAEscala(ajustado).includes("t4_afasia_grave"),
+    "⛔ um resumo que não pudesse ser contrariado seria decisão automática com outro nome");
 }
 
 // ── 16 · D-5 · A CONSULTA É REGISTRO OPCIONAL, ⛔ NUNCA REQUISITO ──────────

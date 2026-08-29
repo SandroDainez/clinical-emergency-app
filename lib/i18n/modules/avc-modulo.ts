@@ -740,4 +740,32 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Registro guardado con la hora en la traza de la atención. No impide continuar la atención",
   "Registro do médico":
     "Registro del médico",
+  "Ajustar":
+    "Ajustar",
+
+  // ── "O que o item avalia" · NIHSS, 15 itens (2026-08-29) ────────────────
+  "Avalia o quanto o paciente está desperto e responsivo.":
+    "Evalúa cuán despierto y reactivo está el paciente.",
+  "Avalia as respostas a duas perguntas simples: o mês atual e a idade.":
+    "Evalúa las respuestas a dos preguntas simples: el mes actual y la edad.",
+  "Avalia a resposta a comandos simples, como abrir e fechar os olhos e apertar e soltar a mão.":
+    "Evalúa la respuesta a órdenes simples, como abrir y cerrar los ojos y apretar y soltar la mano.",
+  "Avalia desvio ou limitação do olhar horizontal.":
+    "Evalúa desviación o limitación de la mirada horizontal.",
+  "Avalia perda de parte do campo de visão.":
+    "Evalúa pérdida de parte del campo visual.",
+  "Avalia assimetria dos movimentos da face.":
+    "Evalúa asimetría de los movimientos de la cara.",
+  "Avalia a capacidade de manter o membro contra a gravidade.":
+    "Evalúa la capacidad de mantener el miembro contra la gravedad.",
+  "Avalia incoordenação dos braços e pernas que não é explicada apenas por fraqueza.":
+    "Evalúa incoordinación de brazos y piernas que no se explica solo por debilidad.",
+  "Avalia redução ou perda da percepção sensitiva de um lado.":
+    "Evalúa reducción o pérdida de la percepción sensitiva de un lado.",
+  "Avalia capacidade de compreender e produzir linguagem.":
+    "Evalúa la capacidad de comprender y producir lenguaje.",
+  "Avalia dificuldade de articular as palavras por alteração motora da fala.":
+    "Evalúa la dificultad para articular las palabras por alteración motora del habla.",
+  "Avalia negligência de um lado do corpo ou do espaço, especialmente com estímulos simultâneos.":
+    "Evalúa negligencia de un lado del cuerpo o del espacio, especialmente con estímulos simultáneos.",
 };

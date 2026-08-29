@@ -33,6 +33,15 @@ async function preencherEscala(page: Page, pontos: Record<string, number> = {}) 
   await page.getByTestId("avc-escala-confirmar-nihss_calculado").click();
 }
 
+/**
+ * ⚠️ Depois de PD-20, os quatro achados deriváveis ficam sob o resumo. Quem
+ * precisa tocá-los ⛔ não tem outro caminho senão `Ajustar` — e isso é o
+ * comportamento, ⛔ não um contorno de teste.
+ */
+async function ajustarDerivados(page: Page) {
+  await page.getByTestId("avc-ajustar-derivados").click();
+}
+
 async function abrirB(page: Page) {
   await page.goto("/modulos/avc");
   await page.getByTestId("avc-aba-neurologico").click();
@@ -111,6 +120,13 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     // Linguagem 2 → afasia grave; perna direita 3 → fraqueza e lado direito.
     await preencherEscala(page, { "9": 2, "6b": 3 });
 
+    /**
+     * ⚠️ PD-20: com a escala preenchida, o achado aparece no RESUMO e ⛔ não como
+     * pergunta. Quem quer tocá-lo passa por `Ajustar` — e é isso que este teste
+     * exercita, porque é o caminho real do médico que quer divergir.
+     */
+    await expect(page.getByTestId("avc-resumo-t4_afasia_grave")).toContainText(/✓/);
+    await ajustarDerivados(page);
     await expect(page.getByTestId("avc-opcao-t4_afasia_grave-sim"))
       .toHaveAttribute("aria-checked", "true");
     await expect(page.getByTestId("avc-origem-t4_afasia_grave")).toContainText(/Vindo do NIHSS/i);
@@ -192,6 +208,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
      * exatamente o que o teste de D-1 mede logo abaixo.
      */
     await preencherEscala(page, { "5a": 3 });
+    await ajustarDerivados(page);
     await page.getByTestId("avc-opcao-t4_afasia_grave-sim").click();
     const leitura = page.getByTestId("avc-leitura-curto-achados_quadros");
     await expect(leitura).toContainText(/tipicamente considerados claramente incapacitantes/i);
@@ -211,6 +228,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     // ⚠️ Dentro da população da fonte: fora dela ⛔ não há leitura normativa, e
     // portanto ⛔ não há do que divergir (PD-13).
     await preencherEscala(page, { "5a": 3 });
+    await ajustarDerivados(page);
     await page.getByTestId("avc-opcao-t4_afasia_grave-sim").click();
     await page.getByTestId("avc-opcao-incapacitante_assumido-Não incapacitante").click();
 
@@ -286,6 +304,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
 
     // NIHSS 3 · dentro do contexto que a Table 4 escreveu para si.
     await preencherEscala(page, { "5a": 3 });
+    await ajustarDerivados(page);
     await page.getByTestId("avc-opcao-t4_afasia_grave-sim").click();
     await expect(page.getByTestId("avc-leitura-curto-achados_quadros"))
       .toContainText(/tipicamente considerados claramente incapacitantes/i);
@@ -429,6 +448,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
 
     // ⚠️ O exame aqui dá 9 — e os dois passam a conviver.
     await preencherEscala(page, { "9": 2, "5a": 3, "6a": 4 });
+    await ajustarDerivados(page);
     await expect(page.getByTestId("avc-escala-valor-nihss_calculado")).toHaveText("9");
     await expect(page.getByTestId("avc-campo-nihss_informado")).toContainText("12");
     await expect(page.getByTestId("avc-leitura-curto-nihss"))
@@ -488,6 +508,20 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await abrirB(page);
 
     await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
+    /**
+     * ⚠️ DUAS LINHAS, NESTA ORDEM: o que avalia, depois como testar. A primeira
+     * é o que destrava quem ⛔ não usa a escala todo dia.
+     */
+    await expect(page.getByTestId("avc-o-que-avalia-11"))
+      .toContainText(/negligência de um lado/i);
+    await expect(page.getByTestId("avc-o-que-avalia-1b"))
+      .toContainText(/o mês atual e a idade/i);
+    await expect(page.getByTestId("avc-o-que-avalia-1c"))
+      .toContainText(/resposta a comandos simples/i);
+    // ⛔ E ⛔ não atribuem ao item mais do que ele mede (correção do autor).
+    await expect(page.getByTestId("avc-o-que-avalia-1b")).not.toContainText(/orientação/i);
+    await expect(page.getByTestId("avc-o-que-avalia-1c")).not.toContainText(/compreende/i);
+
     await expect(page.getByTestId("avc-como-avaliar-3")).toContainText(/Confrontação/i);
     await expect(page.getByTestId("avc-como-avaliar-5a")).toContainText(/10 segundos/i);
     await expect(page.getByTestId("avc-como-avaliar-6a")).toContainText(/5 segundos/i);
@@ -501,6 +535,35 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await expect(page.getByTestId("avc-como-avaliar-1a")).toContainText(/nível de alerta/i);
     await expect(page.getByTestId("avc-como-avaliar-4")).toContainText(/mostrar os dentes/i);
     await expect(page.getByTestId("avc-como-avaliar-10")).toContainText(/articulação/i);
+  });
+
+  /**
+   * ⚠️⚠️ **PD-20 na tela**: o app ⛔ não repergunta o que já sabe. Com a escala
+   * preenchida, os quatro achados viram RESUMO — e `Ajustar` devolve a
+   * divergência, que ⛔ não pode morrer no resumo.
+   */
+  test("com o NIHSS preenchido, os achados viram resumo — e Ajustar os devolve", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirB(page);
+
+    // ⛔ Sem escala, a pergunta é a única via: os quatro cartões estão lá.
+    await expect(page.getByTestId("avc-resumo-derivado")).toHaveCount(0);
+    await expect(page.getByTestId("avc-opcao-t4_afasia_grave-sim")).toBeVisible();
+
+    await preencherEscala(page, { "9": 2 });
+
+    // ⚠️ Agora é resumo: ⛔ nenhuma das quatro perguntas ocupa a tela.
+    await expect(page.getByTestId("avc-resumo-derivado")).toBeVisible();
+    await expect(page.getByTestId("avc-opcao-t4_afasia_grave-sim")).toHaveCount(0);
+    await expect(page.getByTestId("avc-resumo-t4_afasia_grave")).toContainText(/✓/);
+    await expect(page.getByTestId("avc-resumo-t4_hemianopsia_completa")).toContainText(/—/);
+
+    // ⚠️ E o limite do princípio: Ajustar devolve a divergência (PD-19).
+    await page.getByTestId("avc-ajustar-derivados").click();
+    await page.getByTestId("avc-opcao-t4_afasia_grave-nao").click();
+    await expect(page.getByTestId("avc-divergencia-t4_afasia_grave")).toBeVisible();
+    await expect(page.getByTestId("avc-leitura-curto-divergencia_escala"))
+      .toContainText(/diferente do que a escala deriva/i);
   });
 
   /** ⚠️ E-12: o módulo nasce bilíngue — ⛔ tradução não é etapa posterior. */

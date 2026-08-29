@@ -900,3 +900,55 @@ em critério. ⛔ Travado.
 
 Na interface: **"Não impede continuar o atendimento."** A regra inteira continua
 na spec e nas travas.
+
+---
+
+## PD-20 · O APP LEMBRA O QUE JÁ SABE, E ⛔ NÃO REPERGUNTA — DECIDIDA (2026-08-29)
+
+**Princípio de UX clínica fixado pelo autor**, e ⚠️ ele vale **daqui para frente**,
+⛔ não só no AVC.
+
+> *"O app deve lembrar o que já sabe e ⛔ não perguntar novamente por padrão."*
+
+### O que o originou
+
+Com o NIHSS preenchido item a item, os quatro achados que a **Table 4 define por
+corte de item** já estavam respondidos — e a tela continuava exibindo **quatro
+cartões de pergunta** sobre hemianopsia, afasia, extinção e fraqueza.
+
+⚠️ **Revalidação obrigatória é a forma mais educada de fazer alguém marcar no
+automático.** Quem acabou de examinar o paciente e é obrigado a reconfirmar
+quatro vezes ⛔ não relê: confirma. E o app perde exatamente a atenção que pediu.
+
+### A regra
+
+> - o que o app **já sabe**, ele **mostra**;
+> - o que ele **⛔ não sabe**, ele **pergunta**;
+> - o que ele mostra, o médico **pode contrariar** — sempre.
+
+### O limite, que é a metade que importa
+
+⚠️⚠️ **Recolher a pergunta ⛔ NÃO pode custar a divergência.** No AVC, o resumo
+derivado traz `Ajustar`, que devolve os quatro campos com a etiqueta de
+procedência intacta; depois de ajustar, o **registro do médico prevalece** e a
+divergência continua identificável (**PD-19**).
+
+⛔ Um resumo que ⛔ não pudesse ser contrariado seria **decisão automática com outro
+nome** — e é isso que `test:avc-superficie-b` guarda, ⛔ não a economia de tela.
+
+⚠️ **E ⛔ não se recolhe o que ⛔ não se sabe:** sem a escala preenchida, as quatro
+perguntas voltam a ser a única via de registro. Recolher ali apagaria o campo em
+vez de lembrá-lo.
+
+### Onde já está aplicado
+
+| lugar | o que o app lembra |
+|---|---|
+| achados da Table 4 | os quatro cortes de item, com a escala preenchida |
+| lateralidade motora | os itens motores, quando permitem afirmar o lado |
+| pendências | ⛔ não exibe a que ⛔ não tem porta (PD-15) |
+| blocos de exceção | NIHSS de fora nasce recolhido (PD-17) |
+
+⛔ **O que ⛔ NÃO se recolhe:** os sete achados **qualitativos** da coluna direita
+da Table 4. Eles ⛔ não são deriváveis — a coluna ⛔ não referencia item nenhum —, e
+recolhê-los seria fingir saber. Decisão do autor na mesma sessão.
