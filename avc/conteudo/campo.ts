@@ -135,6 +135,20 @@ export type Campo = {
    * reprovam o arquivo se aparecer um `true` sem passar por lá (E-49).
    */
   readonly bloqueiaTerapia: false;
+  /**
+   * ⚠️ A LISTA DE OPÇÕES NASCE FECHADA, e o VALOR ESCOLHIDO fica visível.
+   *
+   * ⚠️⚠️ ⛔ NÃO É PARA ESCONDER PERGUNTA — §7.3 proíbe conteúdo decisório nascendo
+   * recolhido, e a prova de cada superfície confere isso campo a campo. É para a
+   * lista LONGA de um campo que só importa quando há achado: o sítio da oclusão
+   * tem onze opções e ocupa 682 px num celular de 375, um quarto da superfície
+   * inteira, para uma pergunta que ⛔ não se responde na maioria dos casos.
+   *
+   * ⚠️ O que fica atrás do toque é a LISTA, ⛔ nunca a resposta: a linha fechada
+   * mostra o que foi escolhido — o mesmo comportamento que o `grau` do mRS já
+   * tinha, agora declarado no conteúdo em vez de deduzido do tipo.
+   */
+  readonly recolhivel?: true;
   /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
   readonly nota?: string;
 };

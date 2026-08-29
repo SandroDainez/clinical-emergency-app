@@ -38,6 +38,7 @@ import {
   CabecalhoDeBloco,
   CampoDeEscolha,
   CampoDeGrandeza,
+  CampoDeHora,
   PainelDeLeituras,
   useDetalhes,
 } from "./campos-clinicos";
@@ -47,7 +48,24 @@ import { useTr } from "../../lib/use-tr";
 
 type Props = {
   estado: EstadoAvc;
+  /**
+   * ⚠️⚠️ "AGORA" ENTROU AQUI EM 2026-08-29, e o motivo é um DEFEITO, ⛔ não uma
+   * conveniência.
+   *
+   * O comentário anterior dizia que B ⛔ não recebia `agora` porque *"⛔ não há
+   * relógio clínico no neurológico"*. A premissa estava certa e a conclusão
+   * ⛔ não: **`nihss_informado_hora` é `tipo: "hora"`** desde que o NIHSS externo
+   * foi reaberto — e, sem controle de hora nesta tela, ele caía no ramo de
+   * escolha e renderizava **um cartão sem opção nenhuma**. O médico via a
+   * pergunta e ⛔ não tinha como respondê-la.
+   *
+   * ⚠️ E a premissa continua valendo: aquele campo ⛔ **não declara relógio**, e
+   * por isso ⛔ não define marco nenhum. O horário de um exame feito noutro
+   * serviço ⛔ não é janela terapêutica (**E-21**, **E-36**).
+   */
+  agora: number;
   onEscolher: (campo: string, valor: string) => void;
+  onHora: (campo: string, instante: number, relogio?: string) => void;
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
   /** ⚠️ A escala inteira num gesto: um fato por item, mais o total (§3.1). */
@@ -56,7 +74,9 @@ type Props = {
 
 export default function SuperficieB({
   estado,
+  agora,
   onEscolher,
+  onHora,
   onMedir,
   onDesfazer,
   onEscala,
@@ -180,6 +200,21 @@ export default function SuperficieB({
                 detalheAberto={detalhes.aberto(campo.id)}
                 onAlternarDetalhe={() => detalhes.alternar(campo.id)}
                 onRegistrarEscala={onEscala}
+                onDesfazer={onDesfazer}
+              />
+            ) : campo.tipo === "hora" ? (
+              <CampoDeHora
+                key={campo.id}
+                campo={campo}
+                gravado={numeroGravado(campo.id)}
+                desconhecido={
+                  String(valorAtual(estado, campo.id)?.valor ?? "") === "nao_sei"
+                }
+                agora={agora}
+                detalheAberto={detalhes.aberto(campo.id)}
+                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+                onHora={onHora}
+                onEscolher={onEscolher}
                 onDesfazer={onDesfazer}
               />
             ) : campo.tipo === "grandeza" ? (

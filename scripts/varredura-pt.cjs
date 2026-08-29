@@ -17,6 +17,21 @@
  *   valida-traducao-runtime → FRASE MONTADA cuja chave é de uma versão
  *   (artefato compilado)      ANTERIOR da frase.
  *
+ * ── A SEGUNDA FRONTEIRA (2026-08-29): OPÇÃO CURTA E RÓTULO MONTADO ─────────
+ *
+ * Esta varredura procura **prosa**. Duas coisas passam por baixo disso, e as
+ * duas foram medidas na revisão da Superfície C do AVC:
+ *
+ *   · **"Incerto"** — sete letras, sem acento, ⛔ não parece prosa. Ficou sem par
+ *     desde a Superfície B, em doze campos, com esta varredura dizendo
+ *     «SEM TRADUÇÃO: 0» e a tela espanhola mostrando a palavra portuguesa;
+ *   · **os rótulos do mRS** — `${grau} · ${descritor}`, montados em tempo de
+ *     execução: a string que a tela recebe ⛔ não existe como literal.
+ *
+ * ⚠️ Quem cobre isso é `scripts/prova-i18n-opcoes.cjs` (`test:i18n-opcoes`), que
+ * **carrega o módulo** e enumera as opções de verdade. ⛔ Endurecer a heurística
+ * de prosa aqui ⛔ não resolveria: o segundo caso ⛔ não tem literal para achar.
+ *
  * ⚠️ E FOI MEDIDO que obedecer ESTA varredura ao pé da letra NÃO basta: numa
  * mutação em que um pedaço foi acrescentado por concatenação a uma frase que já
  * tinha chave, gravar a chave do PEDAÇO fez esta varredura dizer

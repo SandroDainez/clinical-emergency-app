@@ -4092,3 +4092,161 @@ layout de todos os módulos sem necessidade.
 **O que fica em aberto:** ⛔ ninguém mediu os OUTROS consumidores em coluna. A
 dívida é a varredura — quais telas põem `NumericStepper` dentro de uma coluna e
 têm o mesmo elemento sobreposto sem que ninguém tenha reparado.
+
+---
+
+## D-111 — ASPECTS ENTRA COMO NÚMERO, SEM O QUE ELE SIGNIFICA
+
+**Registrada em 2026-08-29**, com a Superfície C do AVC
+(`avc/conteudo/superficie-c.ts`, campo `aspects`).
+
+**O que existe:** o escore **0 a 10**, informado por quem leu a imagem, com o
+zero declarado como resposta válida (**E-10** — F-08 rec. 4 tem a faixa
+*"ASPECTS 0 to 2"*).
+
+**O que falta:** o que o escore É, e como se pontua.
+
+**Por que ficou assim:** a **Figure 2**, que a rec. 1 de F-16 referencia para o
+ASPECTS, ⛔ **não foi transcrita** — é figura, e a carga isquêmica pertence a
+F-08. Escrever aqui os territórios, ou como se desconta ponto, seria redação de
+memória (**E-31**) num número que alimenta decisão de trombectomia.
+
+**Consequência aceita:** o campo carrega o **nome** e a instrução de registro
+(*"Registre o escore se disponível no laudo ou na avaliação"*), e a nota diz
+explicitamente que **o app ⛔ não calcula ASPECTS**. Quem ⛔ não tem o escore ⛔ não
+o informa, e ⛔ nada espera por ele.
+
+**Como sai:** abrir **F-28** com a descrição operacional do ASPECTS, de fonte que
+a publique — decisão do autor.
+
+---
+
+## D-112 — PC-ASPECTS E A CIRCULAÇÃO POSTERIOR FICARAM FORA DESTA RODADA
+
+**Registrada em 2026-08-29**, por decisão do autor: *"PC-ASPECTS: ⛔ não incluir
+nesta rodada."*
+
+F-08 nomeia **ASPECTS e PC-ASPECTS** entre os fatos da avaliação endovascular, e
+§4.7.3 traz a circulação posterior com recomendação própria. A Superfície C
+coleta o sítio *"Artéria basilar ou circulação posterior"*, e ⛔ **não** coleta o
+PC-ASPECTS.
+
+**Por que:** o escore posterior só tem leitura contra a recomendação de §4.7.3, e
+ela mora na Reperfusão. Coletado antes da regra, seria mais um número sem quem o
+leia.
+
+**Como sai:** junto com o bloco de circulação posterior da Superfície F.
+
+---
+
+## D-113 — OS ACHADOS DE IMAGEM AVANÇADA ESPERAM A REGRA QUE OS INTERPRETA
+
+**Registrada em 2026-08-29**, por decisão do autor.
+
+A Superfície C registra **quais** exames avançados já foram feitos (TC de
+perfusão · RM difusão/FLAIR · RM perfusão) e ⛔ **não** registra os achados —
+*mismatch* DWI-FLAIR e penumbra salvável.
+
+**Por que:** os dois só significam alguma coisa contra a **janela estendida**
+(F-03, recs. 1–3), com quatro marcos temporais distintos que a fonte ⛔ não
+harmoniza. Trazidos para a imagem antes da regra, fariam a Superfície C parecer
+**porta terapêutica** — que é exatamente o que **R2.3** (COR 1 · B-NR) proíbe.
+
+⚠️ Palavras do autor: *"quando chegarmos à janela estendida em Reperfusão, aí os
+achados ganham significado clínico"*.
+
+---
+
+## D-114 — A DISPONIBILIDADE BRASILEIRA DE IMAGEM É FATO DE CAMPO, E ⛔ NÃO INFERÊNCIA
+
+**Registrada em 2026-08-29.**
+
+F-16 §9 e F-03 §12 declaram a adaptação brasileira como **necessária** (**E-18**):
+a disponibilidade de angiotomografia, perfusão e software de pós-processamento
+varia, e ⛔ **não se infere da fonte americana**.
+
+**O que a Superfície C faz:** oferece *"Não disponível neste serviço"* como
+resposta do campo `angio_realizada` — e essa resposta **fecha** a pendência
+vascular (**E-26**: cobrar para sempre um exame que o serviço ⛔ não tem é muro,
+⛔ não tarefa).
+
+**O que ⛔ ainda ⛔ não existe:** o **destino** que essa resposta deveria alimentar —
+transferência para centro com o recurso. Ele é da Superfície G, e ⛔ não desta.
+
+---
+
+## D-115 — ALERGIA A CONTRASTE: O FATO ENTRA, A CONDUTA ⛔ NÃO EXISTE
+
+**Registrada em 2026-08-29**, junto com **PD-25**.
+
+O campo `alergia_contraste` registra **Sim · Não · Não sei**, escopado à ação de
+imagem com contraste.
+
+**O que falta:** o que fazer quando a resposta é **Sim**. A fonte-mãe do AVC
+⛔ **não define conduta** para alergia a contraste — ⛔ não há pré-medicação,
+⛔ não há alternativa de exame, ⛔ não há prazo.
+
+**Por que fica assim:** escrever qualquer manejo aqui seria conteúdo clínico sem
+fonte (**E-31**), e a trava da Superfície C varre a leitura atrás dessas palavras
+justamente para impedir que apareça depois, com cara de recomendação.
+
+**Consequência aceita:** o app registra o fato, diz que ele **diz respeito apenas
+ao exame com contraste**, e se cala. O manejo é decisão clínica e institucional.
+
+**Como sai:** fonte complementar — diretriz de radiologia ou protocolo
+institucional —, se o autor decidir abrir o slot.
+
+---
+
+## D-116 — ✅ FECHADA em 2026-08-29 · OS DESCRITORES DO mRS EM ESPANHOL
+
+> ### ✅ FECHADA PELO AUTOR NO MESMO DIA EM QUE FOI ABERTA
+>
+> Eu havia registrado esta dívida argumentando que traduzir os descritores
+> produziria "uma escala de Rankin em espanhol sem fonte". ⚠️ **O argumento
+> estava errado**, e o autor o desfez:
+>
+> > *"Isso ⛔ não viola E-31: traduzir fielmente uma fonte ⛔ não é inventar conteúdo
+> > clínico. A fonte continua sendo o Quadro 4 brasileiro; o texto espanhol é
+> > apenas uma tradução de apresentação, com rastreabilidade para a fonte
+> > original."*
+>
+> ⚠️⚠️ **A distinção que isto fixa, e que vale para o app inteiro:** E-31 proíbe
+> **escrever conteúdo clínico sem fonte** — ⛔ não proíbe **exibir, noutro idioma,
+> conteúdo que TEM fonte**. O que continua proibido é apresentar a versão
+> espanhola como **fonte independente**, e traduzir **verbatim auditável**
+> (§6.14), que segue em inglês em `protocols/fontes-verbatim/`.
+>
+> **O que foi feito:** os sete graus ganharam par em ES-419; a tabela PT/ES está
+> em `mrs-br.md` com a procedência declarada; e `test:i18n-opcoes` reprova se um
+> grau perder o par, se um par apontar para a própria string portuguesa sem
+> declaração, ou se a declaração de procedência sair do arquivo de fonte.
+
+### O registro original
+
+
+
+**Registrada em 2026-08-29**, na varredura de opções que a Superfície C
+introduziu — ⚠️ a dívida é da **Superfície B**.
+
+**O que acontece:** os seis graus do `mrs_previo` — *"0 · assintomático"* a
+*"5 · grave"* — aparecem **em português** na tela em espanhol. ⛔ Eles ⛔ não têm
+chave no dicionário, e a varredura de prosa ⛔ não os alcança.
+
+**Por que ⛔ NÃO foram traduzidos junto com o resto:** eles ⛔ não são texto de
+interface. São os descritores do **Quadro 4 da SBACV** (**F-27**), transcritos, com
+conferência clínica **declarada pendente**. Traduzi-los aqui produziria uma
+**escala de Rankin em espanhol sem fonte nenhuma** — E-31 pela porta dos fundos,
+numa escala que a literatura publica em várias versões culturalmente adaptadas
+(é exatamente o ponto de **F-26**, Cincura 2009: adaptação cultural ⛔ não é
+tradução literal).
+
+⚠️ **É decisão do autor**, e ⛔ não de implementação: ou entra uma fonte em
+espanhol com os descritores, ou o campo declara na tela que a escala é
+apresentada na versão brasileira.
+
+**Enquanto isso:** o grau (o número) é o mesmo nos dois idiomas, e o descritor
+aparece em português — visível, ⛔ não silencioso.
+
+⚠️ *(Fim do registro original. O "enquanto isso" acima ⛔ **não descreve mais o
+app**: os descritores têm par em espanhol desde 2026-08-29.)*

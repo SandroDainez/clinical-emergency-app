@@ -64,6 +64,38 @@ inventar procedência — o defeito que E-30 existe para impedir.
 | **5** | grave |
 | **6** | óbito |
 
+### ⚠️ O ESPANHOL DOS DESCRITORES — tradução de apresentação, e ⛔ NÃO fonte independente
+
+**Decisão do autor, 2026-08-29**, que fechou **D-116**:
+
+> *"Traduzir fielmente uma fonte ⛔ não é inventar conteúdo clínico. A fonte
+> continua sendo o Quadro 4 brasileiro; o texto espanhol é apenas uma tradução de
+> apresentação, com rastreabilidade para a fonte original."*
+
+| grau | PT-BR (F-27) | ES-419 (tradução de apresentação) |
+|---|---|---|
+| **0** | assintomático | asintomático |
+| **1** | sem déficit significativo | sin déficit significativo |
+| **2** | leve incapacidade | discapacidad leve |
+| **3** | incapacidade moderada | discapacidad moderada |
+| **4** | moderada a grave | moderada a grave |
+| **5** | grave | grave |
+| **6** | óbito | muerte |
+
+⛔ **O que esta tabela ⛔ NÃO é:** uma versão espanhola validada do mRS. ⛔ Nenhuma
+foi consultada, e o app ⛔ **não afirma** que exista. A **fonte clínica** dos graus
+continua sendo **F-27**, em português — a coluna ES existe para o leitor
+hispanofalante ver o mesmo conteúdo no idioma dele.
+
+⚠️ **A fronteira que isto respeita (§6.14):** o **verbatim auditável** ⛔ não se
+traduz e continua em inglês, em `aha-asa-2026-avc-isquemico.md`. O que se traduz
+é **conteúdo de apresentação com fonte declarada** — que é o caso destes sete.
+
+⚠️ ⛔ A conferência clínica pendente abaixo vale para as DUAS colunas: conferido o
+Quadro 4, confere-se a tradução junto.
+
+---
+
 ⚠️ **CONFERÊNCIA CLÍNICA PENDENTE.** Os descritores acima chegaram por
 transcrição do autor, ⛔ não por leitura direta do Quadro 4 por quem escreveu este
 arquivo. Antes do uso definitivo, ⛔ eles precisam ser conferidos contra o

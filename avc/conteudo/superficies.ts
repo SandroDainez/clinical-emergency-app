@@ -14,6 +14,7 @@
 import type { Pendencia, SuperficieId } from "../nucleo/tipos";
 import { TODOS_OS_CAMPOS_A } from "./superficie-a";
 import { TODOS_OS_CAMPOS_B } from "./superficie-b";
+import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 
 export type Superficie = {
   /** ⚠️ Identidade ESTÁVEL. ⛔ Não muda quando a ordem ou a letra mudam. */
@@ -68,7 +69,14 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
     id: "imagem",
     titulo: "Imagem",
     resumo: "TC, exclusão de hemorragia, imagem vascular.",
-    fontes: ["F-16"],
+    /**
+     * ⚠️ QUATRO SLOTS, e ⛔ não um: a exclusão de hemorragia e a imagem vascular
+     * são **F-16**; os fatos que a frente endovascular usa — sítio, ASPECTS,
+     * efeito de massa — são **F-08**; o horário do exame responde a **F-11**; e o
+     * registro dos exames avançados aponta para **F-03**, onde a regra que os lê
+     * vai morar. Listar só um faria a rastreabilidade da tela mentir por omissão.
+     */
+    fontes: ["F-16", "F-08", "F-11", "F-03"],
   },
   {
     id: "seguranca",
@@ -118,6 +126,21 @@ export function superficie(id: SuperficieId): Superficie {
  * ⚠️ ESQUELETO. ⛔ Nenhuma delas bloqueia coisa alguma ainda, e ⛔ nenhuma está na
  * lista das doze marcas 🚫 (E-49) — foram escolhidas exatamente por isso.
  */
+/**
+ * ⚠️⚠️ A PENDÊNCIA DA TOMOGRAFIA SAIU DAQUI EM 2026-08-29, e a saída é uma
+ * FORMATURA, ⛔ não um esquecimento.
+ *
+ * Ela vivia aqui como declaração invisível — campo inexistente, pendência
+ * filtrada por `pendenciasVigentes()`. Com a Superfície C construída, ela passou
+ * a ser **derivada** (`pendenciasDaImagem`), e a razão é **PD-22**: o filtro
+ * daqui mede *campo vazio*, e *"realizada — resultado ainda ⛔ não disponível"* é
+ * resposta **preenchida** que ⛔ **não** encerra a tarefa. Mantida aqui, ela
+ * fecharia sozinha e a tela diria "resolvido" sobre a coisa mais importante do
+ * atendimento.
+ *
+ * ⚠️ O MECANISMO CONTINUA VIVO para as superfícies que ainda ⛔ não nasceram — é
+ * por isso que `camposQueExistem()` já conhece a C.
+ */
 const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
   {
     id: "ultima_vez_bem",
@@ -125,18 +148,6 @@ const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
     dono: "estabilizacao",
     campo: "hora_ultima_vez_bem",
     resolvePor: "Informar o horário, ou registrar que é desconhecido",
-  },
-  {
-    id: "tc_realizada",
-    rotulo: "Tomografia de crânio",
-    dono: "imagem",
-    /**
-     * ⚠️ Campo ainda inexistente: a Superfície de Imagem ⛔ não foi construída —
-     * e por isso esta pendência ⛔ NÃO É EXIBIDA (ver `PENDENCIAS_INICIAIS`).
-     * Ela fica declarada aqui e volta sozinha no dia em que o campo nascer.
-     */
-    campo: "tc_realizada",
-    resolvePor: "Registrar o resultado da imagem",
   },
   {
     id: "deficit_focal",
@@ -180,7 +191,9 @@ const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
  * um campo errado. Módulo clínico que ⛔ não abre ⛔ não tem como ser conferido.
  */
 function camposQueExistem(): ReadonlySet<string> {
-  return new Set([...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B].map((c) => c.id));
+  return new Set(
+    [...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B, ...TODOS_OS_CAMPOS_C].map((c) => c.id)
+  );
 }
 
 export function pendenciasVigentes(): readonly Pendencia[] {

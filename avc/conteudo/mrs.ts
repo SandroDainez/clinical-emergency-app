@@ -29,6 +29,35 @@ export type GrauMrs = {
 };
 
 /**
+ * ⚠️⚠️ O ESPANHOL DOS DESCRITORES — decisão do autor, 2026-08-29, que **fechou
+ * D-116** e corrigiu a minha leitura de E-31.
+ *
+ * Eu havia deixado os descritores em português na tela espanhola, argumentando
+ * que traduzi-los produziria "uma escala de Rankin em espanhol sem fonte". O
+ * autor desfez o argumento:
+ *
+ * > *"Isso ⛔ não viola E-31: traduzir fielmente uma fonte ⛔ não é inventar
+ * > conteúdo clínico. A fonte continua sendo o Quadro 4 brasileiro; o texto
+ * > espanhol é apenas uma **tradução de apresentação**, com rastreabilidade para
+ * > a fonte original."*
+ *
+ * ⚠️ A distinção que isto fixa, e que vale para o app inteiro: **E-31 proíbe
+ * escrever conteúdo clínico sem fonte** — ⛔ não proíbe exibir, noutro idioma, o
+ * conteúdo que TEM fonte. O que seria proibido é apresentar a versão espanhola
+ * como **fonte independente**, ou traduzir o **verbatim auditável** (§6.14), que
+ * continua em inglês em `protocols/fontes-verbatim/`.
+ *
+ * ⛔ A fonte clínica dos graus continua sendo **F-27** (SBACV, Quadro 4), em
+ * português, e ⛔ nenhuma versão espanhola do mRS foi consultada ou citada.
+ * Registrado em `protocols/fontes-verbatim/mrs-br.md`.
+ *
+ * ⚠️ Vive AQUI, e ⛔ não solto no dicionário, porque o rótulo da tela é **montado**
+ * (`grau · descritor`): a string final ⛔ nunca existe como literal, e por isso
+ * ⛔ nenhuma varredura de texto poderia alcançá-la. Quem a alcança é
+ * `test:i18n-opcoes`, que carrega o módulo e enumera as opções de verdade.
+ */
+
+/**
  * A ESCALA INTEIRA — 0 a 6, como a fonte a publica.
  *
  * ⚠️ Ela é **neutra**: mede função, e ⛔ não sabe se está sendo usada antes ou

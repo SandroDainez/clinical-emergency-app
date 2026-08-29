@@ -17,6 +17,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
 import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
+import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
@@ -33,6 +34,7 @@ import {
 import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
 import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
+import SuperficieC from "./superficie-c";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
@@ -87,6 +89,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * (ausente da lista) quando o registro posterior existe.
        */
       ...pendenciasDerivadas(estado),
+      /**
+       * ⚠️ As pendências da imagem são **derivadas** e ⛔ não passam por
+       * `pendenciasAbertas()`: aquela mede campo vazio, e aqui o campo pode
+       * estar cheio — com *"realizada, resultado ainda ⛔ não disponível"*, que é
+       * resposta válida (**PD-22**) e ⛔ **não** fecha a tarefa.
+       */
+      ...pendenciasDaImagem(estado),
       // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
       // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
       ...pendenciasAbertas(estado, pendenciasVigentes()),
@@ -259,16 +268,27 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           />
         ) : atual.id === "neurologico" ? (
           /**
-           * ⚠️ A Superfície B ⛔ NÃO recebe `agora`: ⛔ não há relógio clínico no
-           * neurológico, e passar o instante por passar convidaria a inventar um
-           * marco temporal onde a fonte não tem nenhum.
+           * ⚠️ A Superfície B recebe `agora` **só** porque o NIHSS trazido de
+           * fora tem horário próprio. ⛔ Nenhum campo dela declara relógio
+           * clínico, e por isso ⛔ nenhum define marco de janela (E-21).
            */
           <SuperficieB
             estado={estado}
+            agora={agora}
             onEscolher={escolher}
+            onHora={registrarHora}
             onMedir={medir}
             onDesfazer={desfazer}
             onEscala={registrarEscala}
+          />
+        ) : atual.id === "imagem" ? (
+          <SuperficieC
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onHora={registrarHora}
+            onMedir={medir}
+            onDesfazer={desfazer}
           />
         ) : (
           <>

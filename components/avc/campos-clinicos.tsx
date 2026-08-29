@@ -22,10 +22,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Campo } from "../../avc/conteudo/campo";
 import { opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
 import { alternarItem, estaSelecionado, itensSelecionados } from "../../avc/nucleo/selecao";
+import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { opcoesQueContam } from "../../avc/conteudo/nihss";
 import { definicaoDoAchado } from "../../avc/conteudo/explicacoes";
 import type { Leitura } from "../../avc/nucleo/leitura";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import SeletorDeHora from "./seletor-de-hora";
 import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -242,7 +244,13 @@ export function CampoDeEscolha({
    * fica atrás do toque é a lista de opções, ⛔ não a resposta.
    */
   const [aberto, setAberto] = useState(false);
-  const recolhivel = campo.tipo === "grau";
+  /**
+   * ⚠️ O `grau` continua recolhível por natureza — descritor de escala ⛔ não se lê
+   * em chip. O resto é DECLARADO no conteúdo (`recolhivel`), e ⛔ não deduzido:
+   * deduzir por número de opções faria a tela mudar de comportamento no dia em
+   * que alguém acrescentasse uma opção.
+   */
+  const recolhivel = campo.tipo === "grau" || campo.recolhivel === true;
   const mostrarOpcoes = !recolhivel || aberto;
 
   /**
@@ -685,6 +693,183 @@ export function CampoDeGrandeza({
 }
 
 /**
+ * O CONTROLE DE HORA — ⚠️ um cartão como os demais, ⛔ nunca uma linha solta.
+ *
+ * ── POR QUE ELE SAIU DA SUPERFÍCIE A (2026-08-29) ──────────────────────────
+ *
+ * Ele morava em `superficie-a.tsx`, com um comentário dizendo *"o relógio ficou:
+ * ele é exclusivo desta superfície"*. ⚠️ Isso deixou de ser verdade em dois
+ * lugares ao mesmo tempo:
+ *
+ *   · a Superfície **B** já declarava `nihss_informado_hora` como `tipo: "hora"`
+ *     — e a tela ⛔ não sabia desenhar hora: o campo caía no ramo de `escolha`,
+ *     renderizava um cartão **sem opção nenhuma**, e o médico ⛔ não tinha como
+ *     responder. ⚠️ **Campo impossível de responder é pior que campo ausente**:
+ *     ele promete um dado que ⛔ nunca vai existir;
+ *   · a Superfície **C** precisa do horário da tomografia.
+ *
+ * ⚠️ Duplicar as lições do seletor — "agora" ⛔ nunca como default silencioso,
+ * desconhecido como resposta com botão visível, ⛔ nunca `String(instante)` na
+ * tela — faria a próxima correção acertar uma das cópias.
+ *
+ * ⚠️⚠️ **E-36 · O CAMPO NOMEIA O RELÓGIO QUE ALIMENTA.** `campo.relogio` desce
+ * para o dono, e um campo **sem** relógio declarado ⛔ não define marco nenhum —
+ * é o caso do horário da tomografia, que é registro operacional e ⛔ jamais pode
+ * virar marco de janela terapêutica (**E-21**).
+ */
+export function CampoDeHora({
+  campo,
+  gravado,
+  desconhecido,
+  agora,
+  detalheAberto,
+  onAlternarDetalhe,
+  onHora,
+  onEscolher,
+  onDesfazer,
+}: {
+  campo: Campo;
+  gravado: number | undefined;
+  desconhecido: boolean;
+  agora: number;
+  detalheAberto: boolean;
+  onAlternarDetalhe: () => void;
+  onHora: (campo: string, instante: number, relogio?: string) => void;
+  onEscolher: (campo: string, valor: string) => void;
+  onDesfazer: (campo: string) => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  /**
+   * O horário sendo editado, antes de virar fato. ⛔ Nada é gravado até confirmar.
+   *
+   * ⚠️ `selecionado` distingue **posição do controle** de **valor escolhido**.
+   * Sem ele, abrir o seletor já valeria como resposta — e "agora" viraria o
+   * default silencioso de um campo que decide janela terapêutica.
+   */
+  const [editando, setEditando] = useState<{ instante: number; selecionado: boolean } | null>(null);
+
+  /**
+   * ⚠️⚠️ O BOTÃO PRECISA PARECER UM BOTÃO — relato do autor usando o app em
+   * 2026-08-28: *"botões ruins de selecionar, não intuitivos, tem que ficar
+   * procurando onde tem que clicar"*.
+   *
+   * ⚠️ ⛔ NUNCA `String(instante)`: era daqui que saía o `1787922516903`.
+   */
+  const botaoDoValor = (
+    <Pressable
+      style={[e.relogioAcao, gravado !== undefined && e.relogioAcaoInformada]}
+      accessibilityRole="button"
+      accessibilityLabel={`${tr(campo.rotulo)}: ${
+        gravado === undefined ? tr("não informado") : horaDeExibicao(gravado, agora)
+      }`}
+      testID={`avc-hora-${campo.id}`}
+      onPress={() =>
+        setEditando(
+          editando
+            ? null
+            : {
+                // ⚠️ Posiciona em `agora` por ergonomia quando não há marco —
+                // ⛔ mas isso NÃO é seleção (ver `selecionado`).
+                instante: gravado ?? agora,
+                /**
+                 * ⚠️ REEDITAR ⛔ NÃO É INFORMAR PELA PRIMEIRA VEZ. Se já existe um
+                 * marco registrado, ele É um valor escolhido, e Confirmar nasce
+                 * habilitado — exigir novo toque ali obrigaria o médico a mexer
+                 * num horário correto só para reconfirmá-lo.
+                 */
+                selecionado: gravado !== undefined,
+              }
+        )
+      }
+    >
+      <Text style={e.relogioValor} testID={`avc-hora-valor-${campo.id}`}>
+        {gravado !== undefined ? `✓ ${horaDeExibicao(gravado, agora)} ✎` : tr("Informar horário")}
+      </Text>
+    </Pressable>
+  );
+
+  /**
+   * ⚠️⚠️ DESCONHECIDO É RESPOSTA, e precisa de um BOTÃO VISÍVEL — §7.5 item 6 e
+   * **E-02**, cujo exemplo canônico é o último-visto-bem.
+   *
+   * ⚠️ Só aparece onde o campo o declara: ⛔ nem todo horário tem "ninguém sabe
+   * dizer" como resposta clínica com consequência própria.
+   */
+  const botaoDesconhecido = campo.aceitaDesconhecido ? (
+    <Pressable
+      style={[e.relogioAcao, desconhecido && e.relogioAcaoAtiva]}
+      accessibilityRole="radio"
+      aria-checked={desconhecido}
+      accessibilityLabel={`${tr(campo.rotulo)}: ${tr("Sem essa informação")}`}
+      testID={`avc-hora-desconhecido-${campo.id}`}
+      /**
+       * ⚠️⚠️ TOCAR DE NOVO DESFAZ — relato do autor, 2026-08-28: *"cliquei em sem
+       * informação e não consigo desmarcar isso"*. ⚠️ Desfazer ⛔ não apaga:
+       * corrige, e a trilha guarda as duas passagens.
+       */
+      onPress={() => (desconhecido ? onDesfazer(campo.id) : onEscolher(campo.id, "nao_sei"))}
+    >
+      <Text style={[e.relogioValor, desconhecido && e.relogioAcaoAtivaTexto]}>
+        {desconhecido ? "✓ " : ""}
+        {tr("Sem essa informação")}
+      </Text>
+    </Pressable>
+  ) : null;
+
+  const respondido = gravado !== undefined || desconhecido;
+  return (
+    <View style={[e.campo, respondido && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
+      {/**
+       * ⚠️ O RÓTULO TEM A LINHA DELE, E AS AÇÕES TÊM A DELAS. Espremidos na mesma
+       * linha, os nomes de marco truncavam — e os marcos existem por serem
+       * DIFERENTES: truncados, viram iguais.
+       */}
+      <View style={e.relogioLinha}>
+        <Text style={[e.marca, respondido && e.marcaAtiva]} accessibilityElementsHidden>
+          {respondido ? "✓" : "○"}
+        </Text>
+        <Text style={e.relogioRotulo} numberOfLines={2}>
+          {tr(campo.rotulo)}
+        </Text>
+        <BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />
+      </View>
+
+      {campo.ajuda ? <Text style={e.campoAjuda}>{tr(campo.ajuda)}</Text> : null}
+
+      <View style={e.relogioAcoes}>
+        {botaoDoValor}
+        {botaoDesconhecido}
+      </View>
+
+      {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
+
+      {editando ? (
+        <SeletorDeHora
+          rotulo={campo.rotulo}
+          instante={editando.instante}
+          // ⚠️ Qualquer movimento em hora/minuto — e o "Agora" nomeado — é
+          // interação explícita. ⛔ Abrir o seletor não é.
+          selecionado={editando.selecionado}
+          agora={agora}
+          onMudar={(i) => setEditando({ instante: i, selecionado: true })}
+          onConfirmar={() => {
+            /**
+             * ⚠️⚠️ `campo.relogio` DESCE COMO ESTÁ, inclusive `undefined`. Um campo
+             * sem relógio declarado ⛔ não define marco nenhum — e forçar um
+             * genérico aqui transformaria horário de exame em janela clínica.
+             */
+            onHora(campo.id, editando.instante, campo.relogio);
+            setEditando(null);
+          }}
+          onCancelar={() => setEditando(null)}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+/**
  * O PAINEL DE LEITURAS — ⚠️ E-46: são APOIO ao julgamento, ⛔ nunca veredito.
  *
  * ⚠️ Na tela vai só a frase curta. Os insumos e o slot de fonte que E-22/E-30
@@ -796,6 +981,23 @@ export const criarEstilos = (tema: Tema) =>
      * quem ⛔ não lembra o termo, e ⛔ não pode ficar do tamanho de rodapé.
      */
     campoDefinicao: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    // ── controle de hora ────────────────────────────────────────────────
+    relogioLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, minHeight: TOQUE.minimo },
+    relogioRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, flex: 1, minWidth: 120 },
+    // ⚠️ `flexShrink` no VALOR e não no rótulo: entre encurtar "não informado"
+    // e encurtar o nome do marco, quem cede é o texto genérico.
+    relogioValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", flexShrink: 1 },
+    relogioAcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
+    relogioAcaoAtiva: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
+    relogioAcaoAtivaTexto: { color: tema.cores.onPrimary, fontWeight: "700" },
+    /** ⚠️ Marco já informado fica com a borda da identidade — ⛔ sem depender só dela. */
+    relogioAcaoInformada: { borderColor: tema.cores.primary },
+    relogioAcao: {
+      minHeight: TOQUE.minimo, justifyContent: "center",
+      paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm,
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+    },
     /** ⚠️ Procedência do valor — ⛔ não é ajuda clínica, é rastreabilidade (E-03). */
     origem: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, fontStyle: "italic" },
 

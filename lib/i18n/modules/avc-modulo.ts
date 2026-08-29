@@ -110,6 +110,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Con peso estimado, la fuente dice que la banda fina no es necesariamente más segura.",
   "Sim": "Sí",
   "Não": "No",
+  /**
+   * ⚠️⚠️ "Incerto" ESTAVA SEM PAR, e o espanhol mostrava a palavra portuguesa —
+   * achado em 2026-08-29, na revisão da Superfície C. Ele é anterior à C: vem de
+   * `SIM_NAO_INCERTO`, que a Superfície B já usava em doze campos.
+   *
+   * ⚠️ A varredura ⛔ não o pegou: ela procura PROSA em português, e uma palavra
+   * de sete letras sem acento ⛔ não parece prosa. É a fronteira declarada de
+   * `varredura-pt.cjs` — e a razão de a prova da C conferir opção a opção.
+   */
+  "Incerto": "Incierto",
   "Não sei": "No sé",
   "Registrar horário": "Registrar horario",
 
@@ -768,4 +778,208 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Evalúa la dificultad para articular las palabras por alteración motora del habla.",
   "Avalia negligência de um lado do corpo ou do espaço, especialmente com estímulos simultâneos.":
     "Evalúa negligencia de un lado del cuerpo o del espacio, especialmente con estímulos simultáneos.",
+
+  // ── Superfície C · Imagem ───────────────────────────────────────────────
+  //
+  // ⚠️ E-45 na tradução desta superfície: "significativo" (efeito de massa),
+  // "o mais rápido possível" e "pode existir mesmo com" são hedge e condição da
+  // fonte — ⛔ não viram afirmação categórica em espanhol.
+  "Tomografia sem contraste": "Tomografía sin contraste",
+  "Sem hemorragia": "Sin hemorragia",
+  "Hemorragia intracraniana": "Hemorragia intracraneal",
+  "Realizada — resultado ainda não disponível": "Realizada — resultado aún no disponible",
+  "Ainda não realizada": "Aún no realizada",
+  "A fonte recomenda imagem cerebral de emergência na avaliação inicial, para excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão.":
+    "La fuente recomienda imagen cerebral de emergencia en la evaluación inicial, para excluir hemorragia intracraneal antes de iniciar intervenciones de reperfusión.",
+  "Suspeita de hemorragia subaracnóidea": "Sospecha de hemorragia subaracnoidea",
+  "Registra a suspeita clínica, que pode existir mesmo com tomografia sem hemorragia.":
+    "Registra la sospecha clínica, que puede existir incluso con tomografía sin hemorragia.",
+  "A saída específica para hemorragia subaracnóidea é uma decisão da especificação deste módulo. A fonte trata da exclusão de hemorragia intracraniana antes da reperfusão, e não define conduta para esta suspeita.":
+    "La salida específica para hemorragia subaracnoidea es una decisión de la especificación de este módulo. La fuente trata de la exclusión de hemorragia intracraneal antes de la reperfusión, y no define conducta para esta sospecha.",
+  "Horário da tomografia": "Horario de la tomografía",
+  "Momento em que o exame foi feito. Não é marco de janela terapêutica.":
+    "Momento en que se hizo el examen. No es marca de ventana terapéutica.",
+  "Registro operacional, para auditoria e qualidade. A fonte recomenda que o serviço organize protocolos para a imagem ser feita o mais rápido possível, e isso é recomendação para o serviço, não meta deste paciente.":
+    "Registro operativo, para auditoría y calidad. La fuente recomienda que el servicio organice protocolos para que la imagen se haga lo más rápido posible, y eso es recomendación para el servicio, no meta de este paciente.",
+
+  "Achados que a frente endovascular usa": "Hallazgos que usa el frente endovascular",
+  "Não atrase a trombólise por exames de imagem adicionais quando ela já estiver indicada pelos critérios aplicáveis. A tomografia necessária para excluir hemorragia não é exame adicional.":
+    "No retrase la trombólisis por exámenes de imagen adicionales cuando ya esté indicada por los criterios aplicables. La tomografía necesaria para excluir hemorragia no es examen adicional.",
+  "ASPECTS informado": "ASPECTS informado",
+  "Registre o escore se disponível no laudo ou na avaliação.":
+    "Registre el puntaje si está disponible en el informe o en la evaluación.",
+  "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia.":
+    "Puntaje informado por quien leyó la imagen. Esta aplicación no calcula ASPECTS, y los puntos de corte que usa la fuente pertenecen a la evaluación para trombectomía.",
+  "Efeito de massa significativo na imagem": "Efecto de masa significativo en la imagen",
+  "A fonte usa a expressão efeito de massa significativo, sem definir medida. A leitura é de quem interpreta a imagem.":
+    "La fuente usa la expresión efecto de masa significativo, sin definir medida. La lectura es de quien interpreta la imagen.",
+  "Suspeita de oclusão de grande vaso": "Sospecha de oclusión de gran vaso",
+  "A fonte recomenda imagem vascular de emergência na suspeita de oclusão de grande vaso, o mais rápido possível, até 24 horas da última vez visto bem.":
+    "La fuente recomienda imagen vascular de emergencia ante sospecha de oclusión de gran vaso, lo más rápido posible, hasta 24 horas desde la última vez visto bien.",
+  "Angiotomografia de vasos cervicais e intracranianos":
+    "Angiotomografía de vasos cervicales e intracraneales",
+  "Não disponível neste serviço": "No disponible en este servicio",
+  "A fonte diz que a imagem vascular de emergência não deve ser atrasada para obter a creatinina sérica.":
+    "La fuente dice que la imagen vascular de emergencia no debe retrasarse para obtener la creatinina sérica.",
+  "Sítio da oclusão descrito no laudo": "Sitio de la oclusión descrito en el informe",
+  "Artéria carótida interna": "Arteria carótida interna",
+  "M1 da artéria cerebral média": "M1 de la arteria cerebral media",
+  "M2 dominante da artéria cerebral média": "M2 dominante de la arteria cerebral media",
+  "M2 não dominante ou codominante": "M2 no dominante o codominante",
+  "Artéria cerebral média distal": "Arteria cerebral media distal",
+  "Artéria cerebral anterior": "Arteria cerebral anterior",
+  "Artéria cerebral posterior": "Arteria cerebral posterior",
+  "Artéria basilar ou circulação posterior": "Arteria basilar o circulación posterior",
+  "Nenhuma oclusão identificada": "Ninguna oclusión identificada",
+  "Não especificado no laudo": "No especificado en el informe",
+  "A fonte separa M2 dominante de M2 não dominante ou codominante, e a força da recomendação muda entre as duas. Registre como o laudo descreve.":
+    "La fuente separa M2 dominante de M2 no dominante o codominante, y la fuerza de la recomendación cambia entre las dos. Registre como lo describe el informe.",
+  "Alergia prévia importante a contraste iodado":
+    "Alergia previa importante a contraste yodado",
+  "Diz respeito apenas ao exame com contraste. Não interfere na trombólise.":
+    "Se refiere solo al examen con contraste. No interfiere en la trombólisis.",
+  "A fonte do AVC não define conduta para alergia a contraste. Este registro fica na trilha do atendimento, e o manejo é decisão clínica e institucional.":
+    "La fuente del ACV no define conducta para alergia a contraste. Este registro queda en la traza de la atención, y el manejo es decisión clínica e institucional.",
+
+  "Imagem avançada": "Imagen avanzada",
+  "Exames avançados já realizados": "Exámenes avanzados ya realizados",
+  "Tomografia de perfusão": "Tomografía de perfusión",
+  "Ressonância com difusão e FLAIR": "Resonancia con difusión y FLAIR",
+  "Ressonância com perfusão": "Resonancia con perfusión",
+  "Registro do que já foi feito. Os achados que dependem da janela estendida entram junto com a regra que os interpreta.":
+    "Registro de lo que ya se hizo. Los hallazgos que dependen de la ventana extendida entran junto con la regla que los interpreta.",
+
+  // ── Destino (E-09) ──────────────────────────────────────────────────────
+  "Saída do fluxo de AVC isquêmico": "Salida del flujo de ACV isquémico",
+  "Este módulo ainda não existe neste aplicativo.":
+    "Este módulo aún no existe en esta aplicación.",
+  "Há também suspeita de hemorragia subaracnóidea.":
+    "Hay también sospecha de hemorragia subaracnoidea.",
+  "Fluxo de hemorragia subaracnóidea": "Flujo de hemorragia subaracnoidea",
+  "Módulo de AVC hemorrágico": "Módulo de ACV hemorrágico",
+  "Hemorragia intracraniana identificada": "Hemorragia intracraneal identificada",
+  /**
+   * ⚠️ DUAS CHAVES PARECIDAS, e as duas são necessárias: o **destino** diz
+   * *identificada* (redação do autor, para separar achado de suspeita); a
+   * **leitura da exclusão** diz *na tomografia*, porque ela descreve de onde o
+   * achado veio. Uma chave só serviu às duas enquanto o texto era o mesmo — e
+   * foi assim que a leitura ficou sem par por um minuto, em 2026-08-29.
+   */
+  "Hemorragia intracraniana na tomografia": "Hemorragia intracraneal en la tomografía",
+  "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua.":
+    "Esta atención sigue por el flujo específico de la hemorragia subaracnoidea. El motivo queda registrado, y la atención continúa.",
+  "A reperfusão não é iniciada sem exclusão de hemorragia. O motivo fica registrado, e o atendimento continua.":
+    "La reperfusión no se inicia sin exclusión de hemorragia. El motivo queda registrado, y la atención continúa.",
+
+  // ── Leituras da Superfície C ────────────────────────────────────────────
+  "Hemorragia intracraniana excluída pela tomografia":
+    "Hemorragia intracraneal excluida por la tomografía",
+  "A fonte recomenda excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão, e essa exclusão está registrada":
+    "La fuente recomienda excluir hemorragia intracraneal antes de iniciar intervenciones de reperfusión, y esa exclusión está registrada",
+  "A reperfusão não é iniciada sem exclusão de hemorragia. O atendimento continua, e o motivo fica registrado":
+    "La reperfusión no se inicia sin exclusión de hemorragia. La atención continúa, y el motivo queda registrado",
+  "Tomografia realizada, resultado ainda não disponível":
+    "Tomografía realizada, resultado aún no disponible",
+  "A exclusão de hemorragia ainda não pode ser afirmada. Isto não é o mesmo que ausência de hemorragia":
+    "La exclusión de hemorragia aún no puede afirmarse. Esto no es lo mismo que ausencia de hemorragia",
+  "Tomografia de crânio ainda não realizada": "Tomografía de cráneo aún no realizada",
+  "Resultado da tomografia ainda não registrado": "Resultado de la tomografía aún no registrado",
+  "Suspeita de hemorragia subaracnóidea registrada":
+    "Sospecha de hemorragia subaracnoidea registrada",
+  "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua":
+    "Esta atención sigue por el flujo específico de la hemorragia subaracnoidea. El motivo queda registrado, y la atención continúa",
+  "Suspeita de hemorragia subaracnóidea em aberto":
+    "Sospecha de hemorragia subaracnoidea abierta",
+  "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento":
+    "Incierto queda registrado como respuesta, no se convierte en ausencia de sospecha, y no retiene nada de la atención",
+  "Sem suspeita de hemorragia subaracnóidea": "Sin sospecha de hemorragia subaracnoidea",
+  "Resposta registrada. A saída específica para hemorragia subaracnóidea não está armada":
+    "Respuesta registrada. La salida específica para hemorragia subaracnoidea no está activada",
+  "Suspeita de hemorragia subaracnóidea ainda não avaliada":
+    "Sospecha de hemorragia subaracnoidea aún no evaluada",
+  "Ainda não perguntado é diferente de sem suspeita, e nada no atendimento espera por esta resposta":
+    "Aún no preguntado es diferente de sin sospecha, y nada en la atención espera por esta respuesta",
+  "Angiotomografia registrada como realizada": "Angiotomografía registrada como realizada",
+  "A fonte diz que a imagem vascular de emergência não deve ser atrasada para obter a creatinina sérica":
+    "La fuente dice que la imagen vascular de emergencia no debe retrasarse para obtener la creatinina sérica",
+  "Angiotomografia não disponível neste serviço": "Angiotomografía no disponible en este servicio",
+  "Registro do que o serviço tem. Nada no atendimento espera por um exame que não está disponível aqui":
+    "Registro de lo que el servicio tiene. Nada en la atención espera por un examen que no está disponible aquí",
+  "Imagem vascular ainda não registrada, com suspeita de oclusão de grande vaso":
+    "Imagen vascular aún no registrada, con sospecha de oclusión de gran vaso",
+  "A fonte recomenda imagem vascular de emergência o mais rápido possível na suspeita de oclusão de grande vaso, até 24 horas da última vez visto bem. Isto não retém a trombólise":
+    "La fuente recomienda imagen vascular de emergencia lo más rápido posible ante sospecha de oclusión de gran vaso, hasta 24 horas desde la última vez visto bien. Esto no retiene la trombólisis",
+  "Imagem vascular ainda não registrada": "Imagen vascular aún no registrada",
+  "Nada no atendimento espera por este registro": "Nada en la atención espera por este registro",
+  "Nenhum dado de imagem registrado para a avaliação endovascular":
+    "Ningún dato de imagen registrado para la evaluación endovascular",
+  "Esta lista diz quais dados já foram registrados. O que ainda não foi registrado não impede o atendimento":
+    "Esta lista dice qué datos ya fueron registrados. Lo que aún no fue registrado no impide la atención",
+  "Alergia importante a contraste iodado registrada":
+    "Alergia importante a contraste yodado registrada",
+  "Diz respeito apenas ao exame com contraste, e não interfere na trombólise. A fonte do AVC não define conduta para este caso":
+    "Se refiere solo al examen con contraste, y no interfiere en la trombólisis. La fuente del ACV no define conducta para este caso",
+  "Sem alergia importante a contraste iodado relatada":
+    "Sin alergia importante a contraste yodado relatada",
+  "Resposta registrada. Diz respeito apenas ao exame com contraste":
+    "Respuesta registrada. Se refiere solo al examen con contraste",
+  "Alergia a contraste iodado desconhecida": "Alergia a contraste yodado desconocida",
+  "Desconhecido fica registrado como resposta. Diz respeito apenas ao exame com contraste, e não interfere na trombólise":
+    "Desconocido queda registrado como respuesta. Se refiere solo al examen con contraste, y no interfiere en la trombólisis",
+  "Alergia a contraste iodado ainda não registrada, e nada espera por ela":
+    "Alergia a contraste yodado aún no registrada, y nada espera por ella",
+  "Diz respeito apenas ao exame com contraste, e não interfere na trombólise":
+    "Se refiere solo al examen con contraste, y no interfiere en la trombólisis",
+
+  // ── Pendências da imagem ────────────────────────────────────────────────
+  "Registrar o resultado da tomografia de crânio": "Registrar el resultado de la tomografía de cráneo",
+  "Registrar o resultado quando o laudo estiver disponível":
+    "Registrar el resultado cuando el informe esté disponible",
+  "Registrar a conclusão sobre a suspeita": "Registrar la conclusión sobre la sospecha",
+  "Imagem vascular": "Imagen vascular",
+  "Registrar a angiotomografia, ou que ela não está disponível neste serviço":
+    "Registrar la angiotomografía, o que no está disponible en este servicio",
+
+  // ── mRS · descritores do Quadro 4 (F-27) ────────────────────────────────
+  //
+  // ⚠️⚠️ **TRADUÇÃO DE APRESENTAÇÃO, ⛔ NÃO FONTE INDEPENDENTE** — decisão do autor
+  // em 2026-08-29, que fechou D-116.
+  //
+  // ⚠️ A fonte clínica continua sendo o **Quadro 4 da SBACV**, em português.
+  // ⛔ Nenhuma versão espanhola do mRS foi consultada, e ⛔ o app ⛔ não afirma que
+  // exista uma: o que está aqui é o texto brasileiro exibido no idioma do leitor.
+  //
+  // ⚠️ A chave é o RÓTULO INTEIRO (`grau · descritor`) porque é ele que a tela
+  // monta e o `tr()` recebe — traduzir só o descritor deixaria a string composta
+  // sem par, que é R-82 e foi exatamente como estes seis escaparam.
+  "0 · assintomático": "0 · asintomático",
+  "1 · sem déficit significativo": "1 · sin déficit significativo",
+  "2 · leve incapacidade": "2 · discapacidad leve",
+  "3 · incapacidade moderada": "3 · discapacidad moderada",
+  "4 · moderada a grave": "4 · moderada a grave",
+  "5 · grave": "5 · grave",
+  "6 · óbito": "6 · muerte",
+
+  // ── Opções cuja forma em espanhol É a mesma ─────────────────────────────
+  //
+  // ⚠️ Entrada explícita, e ⛔ não ausência: sem chave, ⛔ não há como distinguir
+  // "alguém conferiu e é igual" de "ninguém olhou". A prova da Superfície C
+  // exige que TODA opção dela esteja aqui.
+  "Realizada": "Realizada",
+  "Nenhuma": "Ninguna",
+  //
+  // ⚠️ As quatro abaixo são da Superfície B, e entraram na mesma varredura de
+  // 2026-08-29. **"Família" estava saindo com acento português na tela
+  // espanhola** — erro real, ⛔ não identidade.
+  "Bilateral": "Bilateral",
+  "Paciente": "Paciente",
+  "Família": "Familia",
+  "Incapacitante": "Incapacitante",
+
+  // ── Motivos do vocabulário próprio (documentação de campo) ──────────────
+  "quatro respostas do mundo real, e ⛔ nenhuma é sim ou não":
+    "cuatro respuestas del mundo real, y ⛔ ninguna es sí o no",
+  "indisponível no serviço é diferente de ainda não realizada":
+    "no disponible en el servicio es diferente de aún no realizada",
+  "sítio anatômico ⛔ não é resposta binária": "sitio anatómico ⛔ no es respuesta binaria",
 };

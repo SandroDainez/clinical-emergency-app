@@ -952,3 +952,191 @@ vez de lembrá-lo.
 ⛔ **O que ⛔ NÃO se recolhe:** os sete achados **qualitativos** da coluna direita
 da Table 4. Eles ⛔ não são deriváveis — a coluna ⛔ não referencia item nenhum —, e
 recolhê-los seria fingir saber. Decisão do autor na mesma sessão.
+
+---
+
+## PD-21 · A SUSPEITA DE HSA É CAMPO PRÓPRIO, E O DESTINO É UM SÓ — DECIDIDA (2026-08-29)
+
+**Decisão do autor**, sobre a Superfície C · Imagem.
+
+### O que a spec pede, e onde ela é ambígua
+
+§1.8 declara **três saídas** da tomografia: *sem hemorragia* · *hemorragia
+intracraniana* · *suspeita de HSA*. O desenho de três opções mutuamente
+exclusivas de um mesmo campo parece fiel — e ⛔ não é.
+
+⚠️⚠️ **Uma tomografia SEM hemorragia convivendo com suspeita clínica de HSA é
+combinação real.** Colapsada num campo só, ela fica **irrepresentável**: o médico
+marca "sem hemorragia" e a saída de HSA desaparece da tela.
+
+### A decisão, em duas partes que ⛔ não se confundem
+
+> **1 · Os FATOS são independentes.** `tc_resultado` e `suspeita_hsa` são dois
+> campos, e os dois podem estar preenchidos ao mesmo tempo.
+>
+> **2 · Os DESTINOS ⛔ não são.** *"⛔ Não quero uma tela dizendo ao médico: 'vá para
+> AVC hemorrágico' e 'vá para HSA' ao mesmo tempo."*
+
+⚠️ **A distinção que isto exercita:** *destino* é a nona espécie (§2.9) e ⛔ não
+descreve o paciente — ele muda **de quem ele é**. Dois destinos simultâneos ⛔ não
+dão instrução nenhuma: dão duas.
+
+### ⚠️⚠️ A PRIORIDADE — REVISTA PELO AUTOR NO MESMO DIA
+
+A primeira versão desta decisão fazia a **suspeita** de HSA prevalecer sobre a
+hemorragia **identificada**. O autor reviu a própria sugestão depois de ver a
+estrutura montada:
+
+> *"Uma suspeita ⛔ não deveria simplesmente sobrepor um achado de imagem
+> confirmado. […] Isso evita transformar `suspeita_hsa = Sim` numa espécie de
+> **override** de um fato radiológico confirmado."*
+
+⚠️⚠️ **E a razão ⛔ não é gravidade — é ESPÉCIE DE DADO.** Hemorragia na tomografia
+é **dado observado na imagem**; suspeita de HSA é **hipótese clínica**. Deixar a
+hipótese governar o destino inverteria a hierarquia de evidência dentro da
+máquina: o médico veria a tela mandá-lo para um fluxo escolhido pelo que ele
+**suspeita**, sobre o que ele **viu**.
+
+**A regra que ficou:**
+
+| estado | saída visível | o que fica junto |
+|---|---|---|
+| hemorragia identificada | **hemorrágica** | — |
+| hemorragia identificada **+** suspeita de HSA | **hemorrágica** | *"Há também suspeita de hemorragia subaracnóidea."*, com o `id` preservado |
+| suspeita de HSA **sem** hemorragia identificada | **específica de HSA** | — |
+
+⚠️ O fato associado carrega **`id` e frase**: o `id` é o que o subfluxo de HSA vai
+procurar quando existir; a frase é o que o médico lê. Só a frase deixaria o
+subfluxo dependendo de casar texto traduzível; só o `id` deixaria a tela muda.
+
+### O que a trava mede
+
+Hemorragia + suspeita → **exatamente um** destino, e é o **hemorrágico** · a
+suspeita aparece em `associados`, com o id correto · **os dois** fatos continuam
+em `valorAtual` · as duas leituras continuam vivas. Mutações: prioridade
+revertida, `associados` esvaziado, e `id` trocado — **as três reprovam**.
+
+---
+
+## PD-22 · "RESULTADO AINDA NÃO DISPONÍVEL" É RESPOSTA QUE ⛔ NÃO FECHA A TAREFA — DECIDIDA (2026-08-29)
+
+**Decisão do autor:** *"TC realizada com resultado pendente é fato válido e
+mantém a pendência aberta."*
+
+### Por que ela ⛔ não segue a regra geral dos vazios
+
+`pendenciasAbertas()` fecha a pendência quando o campo deixa de estar vazio — e
+está certo na **última vez visto bem**, onde *"ninguém sabe dizer"* é fato
+**permanente** do mundo: a pergunta foi respondida, e ⛔ não há mais o que fazer.
+
+⚠️⚠️ **Aqui o estado é TRANSITÓRIO, com resolução esperada em minutos.** Fechar a
+pendência faria a tela dizer **"resolvido"** sobre o dado que governa a classe
+inteira de reperfusão.
+
+### A regra
+
+> A pendência da tomografia fecha ⛔ **somente** com resultado **conclusivo** —
+> *sem hemorragia* ou *hemorragia intracraniana*. Nos outros três estados
+> (⛔ não perguntado · realizada com laudo pendente · ainda ⛔ não realizada) ela
+> permanece aberta, **e muda de instrução** conforme o estado.
+
+⚠️ Por isso as pendências da imagem são **derivadas** (`pendenciasDaImagem`) e
+⛔ não passam pelo filtro de campo vazio do núcleo.
+
+⚠️ **E a resposta continua sendo um FATO** (E-02): ela entra na trilha com hora, e
+⛔ não é "campo em branco".
+
+---
+
+## PD-23 · O BLOQUEIO DE CLASSE VIVE NA DERIVAÇÃO, ⛔ NUNCA NO CAMPO — DECIDIDA (2026-08-29)
+
+**Decisão do autor**, e é o que mantém `bloqueiaTerapia: false` literal no módulo
+inteiro.
+
+A Superfície C traz o **único bloqueio de classe** do AVC — F-16 rec. 1,
+**COR 1 · LOE A**: *"…exclude intracranial hemorrhage before initiating
+reperfusion interventions"* (**E-08**). A tentação era marcar o campo da
+tomografia como bloqueante.
+
+> ⛔ **Marcar o campo gravaria o veredito dentro do fato** — exatamente o que
+> **E-43** existe para impedir. O fato é *"a tomografia mostrou X"*; o bloqueio é
+> consequência dele contra a regra vigente, e a regra pode mudar.
+
+⚠️ **A distinção que isto obriga na tela:** *a pendência ⛔ NÃO é o bloqueio*. A
+pendência é **tarefa**; o bloqueio é `exclusaoDeHemorragia()`, **estado derivado**
+com autoridade na fonte. Coincidem no tempo, e ⛔ não na natureza.
+
+⚠️ **E ⛔ nada mais em C retém coisa alguma.** A trava perturba a superfície inteira
+— angio, ASPECTS, sítio, efeito de massa, alergia, imagem avançada, suspeita de
+HSA — e exige que a leitura da exclusão seja **idêntica**. Um segundo campo
+capaz de reter a reperfusão seria bloqueio inventado.
+
+---
+
+## PD-24 · O DOSSIÊ ENDOVASCULAR DESCREVE DADOS, ⛔ NUNCA ELEGIBILIDADE — DECIDIDA (2026-08-29)
+
+**Decisão do autor:** *"informação endovascular descreve quais dados existem;
+⛔ nunca decide elegibilidade."*
+
+É a advertência de modelagem de **F-08** aplicada à superfície:
+
+> ⛔ *"`EVT elegível = sim/não` ⛔ NÃO é fato armazenado. Os fatos são: idade ·
+> NIHSS · mRS prévio · sítio da oclusão · ASPECTS · tempo desde o marco · achados
+> de imagem · efeito de massa. Elegibilidade é derivada."*
+
+### A forma
+
+`informacaoParaAFrenteEndovascular()` devolve **três listas** — *registrados* ·
+*respondidos sem conclusão* · *ainda ⛔ não perguntados* — e `conclusao`
+permanente em `desconhecido`, **por construção**.
+
+⚠️ As três listas ⛔ não colapsam (**E-37**): *"perguntei e ninguém sabe"* ⛔ não é
+*"tenho o dado"*, e ⛔ também ⛔ não é *"ainda ⛔ não perguntei"*.
+
+⛔ **O que a lista ⛔ NÃO é:** requisito. Ausência ali ⛔ **nunca** vira
+não-elegibilidade, ⛔ nenhum item gera pendência — cinco tarefas nascendo de uma
+tela só é parede, ⛔ não tarefa —, e a palavra *elegibilidade* ⛔ não aparece na
+tela **⛔ nem negada**: na Superfície B o autor já corrigiu esse tom uma vez
+(*"soa como documentação de arquitetura"*).
+
+### A alergia a contraste ⛔ não entra no dossiê
+
+Ela pertence à **segurança da ação específica** de imagem com contraste. Dentro
+do dossiê, *"ainda ⛔ não registrada"* apareceria como dado que falta para a
+trombectomia — e ⛔ não é.
+
+---
+
+## PD-25 · A ALERGIA A CONTRASTE FICA NO MODELO — DECIDIDA (2026-08-29)
+
+**Decisão do autor, contra a proposta de modelagem que eu havia apresentado**, e
+o registro dela importa mais que o campo.
+
+Eu havia proposto ⛔ **nenhum** campo de contraste na Superfície C, tratando a
+marca 🚫 #5 — *"emergent vascular imaging… should not be delayed to obtain serum
+creatinine concentration"* — como se ela apagasse tudo que toca o contraste.
+
+> *"Não esperar por creatinina é uma coisa; eliminar uma informação relevante à
+> ação contrastada é outra."*
+
+⚠️⚠️ **A regra proíbe o ATRASO, e ⛔ não o registro.** Confundir as duas foi decisão
+arquitetural minha apresentada como se fosse consequência da fonte — e ⛔ não era.
+
+### O campo, e as três travas
+
+`Alergia prévia importante a contraste iodado` · **Sim · Não · Não sei**
+
+> - ⛔ **nunca bloqueia a IVT** — a exclusão de hemorragia ⛔ não a lê, e a trava
+>   confere que a leitura é idêntica com e sem alergia registrada;
+> - ⛔ **nunca cria dependência de creatinina** — ⛔ não existe campo renal ou de
+>   laboratório em C, e a trava reprova se um aparecer;
+> - ⛔ **⛔ não bloqueia a superfície C** — ⛔ não gera pendência, e ⛔ nenhuma outra
+>   leitura muda com ela.
+
+É **E-25** ao pé da letra: condição específica ↔ ação específica, ⛔ nunca
+superfície inteira.
+
+⛔⛔ **E ⛔ nenhuma conduta.** A fonte do AVC ⛔ não diz o que fazer diante de alergia
+a contraste; o app **registra o fato e se cala**. Pré-medicação, alternativa de
+exame ou qualquer manejo seria conteúdo clínico sem fonte (**E-31**) — a trava
+varre a leitura atrás dessas palavras. Dívida declarada: **D-115**.

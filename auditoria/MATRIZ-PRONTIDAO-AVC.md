@@ -63,6 +63,29 @@ camada de conteúdo · **Q-03** mecanismo do espanhol
 
 ## BLOCO 2 · Confirmação por imagem
 
+> ### ✅ ATUALIZAÇÃO DE 2026-08-29 — o bloco inteiro está IMPLEMENTADO
+>
+> A **Superfície C · Imagem** existe, com trava (`test:avc-superficie-c`, 87
+> conferências, 25 mutações reprovando) e e2e (`e2e/avc-superficie-c`, 12).
+>
+> **R2.1** é o único bloqueio de classe do módulo, e vive na **derivação**
+> (`exclusaoDeHemorragia`), ⛔ nunca em `bloqueiaTerapia` de campo — **PD-23**.
+> **R2.2** é garantido por ⛔ **não existir** campo de creatinina, função renal ou
+> laboratório em C. **R2.3** é medido perturbando a imagem avançada e exigindo que
+> ⛔ nenhuma leitura mude. **R2.4** produz pendência ⛔ não bloqueante, que fecha
+> tanto por exame feito quanto por indisponibilidade no serviço (**E-26**,
+> **D-114**). **R2.5** é honrado por ⛔ não existir contagem, meta ou aviso de
+> atraso — o horário da TC é registro, e ⛔ não alimenta relógio clínico nenhum.
+> **R2.6** ganhou forma: as três saídas existem separadas, os FATOS coexistem e o
+> **destino é um só**, com prioridade declarada (**PD-21**).
+>
+> ⚠️ Cinco decisões de produto entraram com este bloco: **PD-21** a **PD-25**.
+> Cinco dívidas foram declaradas: **D-111** a **D-115**.
+>
+> ⚠️ As contagens agregadas ao final deste documento ⛔ NÃO foram refeitas — elas
+> descrevem o marco `cb4ff11`.
+
+
 | ID | descrição | nat. | status | motivo | fonte | dependência | risco |
 |---|---|---|---|---|---|---|---|
 | **R2.1** | excluir hemorragia **antes** de qualquer reperfusão | CLÍN·COMP | ✅ | COR 1 · A — bloqueio de classe (**E-08**) | F-16 §3.2 r1 | — | — |
