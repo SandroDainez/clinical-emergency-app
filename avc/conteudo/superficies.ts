@@ -74,9 +74,12 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
      * são **F-16**; os fatos que a frente endovascular usa — sítio, ASPECTS,
      * efeito de massa — são **F-08**; o horário do exame responde a **F-11**; e o
      * registro dos exames avançados aponta para **F-03**, onde a regra que os lê
-     * vai morar. Listar só um faria a rastreabilidade da tela mentir por omissão.
+     * vai morar; a **hipodensidade clara** é **F-07**, que a define; e **F-28** e
+     * **F-29** estão **abertos** — o médico que abrir a lista vê que o ASPECTS
+     * clicável e o critério de efeito de massa dependem de fonte que ainda ⛔ não
+     * existe. Listar só um faria a rastreabilidade da tela mentir por omissão.
      */
-    fontes: ["F-16", "F-08", "F-11", "F-03"],
+    fontes: ["F-16", "F-08", "F-11", "F-03", "F-07", "F-28", "F-29"],
   },
   {
     id: "seguranca",

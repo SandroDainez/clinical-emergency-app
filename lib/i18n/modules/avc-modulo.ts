@@ -805,11 +805,38 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Achados que a frente endovascular usa": "Hallazgos que usa el frente endovascular",
   "Não atrase a trombólise por exames de imagem adicionais quando ela já estiver indicada pelos critérios aplicáveis. A tomografia necessária para excluir hemorragia não é exame adicional.":
     "No retrase la trombólisis por exámenes de imagen adicionales cuando ya esté indicada por los criterios aplicables. La tomografía necesaria para excluir hemorragia no es examen adicional.",
-  "ASPECTS informado": "ASPECTS informado",
-  "Registre o escore se disponível no laudo ou na avaliação.":
-    "Registre el puntaje si está disponible en el informe o en la evaluación.",
-  "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia.":
-    "Puntaje informado por quien leyó la imagen. Esta aplicación no calcula ASPECTS, y los puntos de corte que usa la fuente pertenecen a la evaluación para trombectomía.",
+  "ASPECTS informado no laudo ou pela equipe": "ASPECTS informado en el informe o por el equipo",
+  "O app ainda não calcula o ASPECTS nesta versão. Registre apenas o valor que vier do laudo ou da equipe, sem estimar.":
+    "La app aún no calcula el ASPECTS en esta versión. Registre solo el valor que venga del informe o del equipo, sin estimar.",
+  "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia. Quando a escala for implementada, o valor calculado aqui e o valor informado vão conviver, como já acontece com o NIHSS.":
+    "Puntaje informado por quien leyó la imagen. Esta aplicación no calcula ASPECTS, y los puntos de corte que usa la fuente pertenecen a la evaluación para trombectomía. Cuando la escala se implemente, el valor calculado aquí y el valor informado van a convivir, como ya ocurre con el NIHSS.",
+
+  // ── Hipodensidade clara (F-07) ──────────────────────────────────────────
+  //
+  // ⚠️ A definição é **tradução de apresentação** do verbatim de F-07, que segue
+  // em inglês no arquivo de fontes (§6.14). A fonte clínica ⛔ não muda de idioma.
+  "Hipodensidade clara na tomografia": "Hipodensidad clara en la tomografía",
+  "A fonte define hipodensidade clara como aquela cuja densidade é maior que a da substância branca contralateral não acometida.":
+    "La fuente define hipodensidad clara como aquella cuya densidad es mayor que la de la sustancia blanca contralateral no afectada.",
+  "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.":
+    "La fuente lista este hallazgo en la franja que ella misma llama contraindicaciones absolutas — y declara esa franja como no sustentada por evidencia clínica, sin clase de recomendación en ninguna celda. Qué hacer con la trombólisis es decisión de la superficie de reperfusión.",
+  "Hipodensidade clara registrada na tomografia": "Hipodensidad clara registrada en la tomografía",
+  "A fonte lista este achado entre as contraindicações que ela mesma chama de absolutas, e declara essa faixa como não sustentada por evidência clínica. A decisão sobre a reperfusão não é tomada nesta superfície":
+    "La fuente lista este hallazgo entre las contraindicaciones que ella misma llama absolutas, y declara esa franja como no sustentada por evidencia clínica. La decisión sobre la reperfusión no se toma en esta superficie",
+  "Sem hipodensidade clara na tomografia": "Sin hipodensidad clara en la tomografía",
+  "Resposta registrada, comparando com a densidade da substância branca contralateral não acometida":
+    "Respuesta registrada, comparando con la densidad de la sustancia blanca contralateral no afectada",
+  "Hipodensidade clara em aberto": "Hipodensidad clara abierta",
+  "Incerto fica registrado como resposta, e não vira ausência do achado":
+    "Incierto queda registrado como respuesta, y no se convierte en ausencia del hallazgo",
+  "Hipodensidade clara ainda não avaliada": "Hipodensidad clara aún no evaluada",
+  "Ainda não perguntado é diferente de ausente, e nada no atendimento espera por esta resposta":
+    "Aún no preguntado es diferente de ausente, y nada en la atención espera por esta respuesta",
+
+  // ── Slots de fonte abertos ──────────────────────────────────────────────
+  "ASPECTS — territórios e pontuação": "ASPECTS — territorios y puntuación",
+  "Efeito de massa significativo — definição operacional":
+    "Efecto de masa significativo — definición operativa",
   "Efeito de massa significativo na imagem": "Efecto de masa significativo en la imagen",
   "A fonte usa a expressão efeito de massa significativo, sem definir medida. A leitura é de quem interpreta a imagem.":
     "La fuente usa la expresión efecto de masa significativo, sin definir medida. La lectura es de quien interpreta la imagen.",

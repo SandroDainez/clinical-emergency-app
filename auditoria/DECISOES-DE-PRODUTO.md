@@ -1140,3 +1140,133 @@ superfície inteira.
 a contraste; o app **registra o fato e se cala**. Pré-medicação, alternativa de
 exame ou qualquer manejo seria conteúdo clínico sem fonte (**E-31**) — a trava
 varre a leitura atrás dessas palavras. Dívida declarada: **D-115**.
+
+---
+
+## PD-26 · O APP DECLARA O QUE ⛔ NÃO SABE CALCULAR — DECIDIDA (2026-08-29)
+
+**Decisão do autor**, a partir do uso da Superfície C:
+
+> *"O usuário ⛔ não sabe classificar isso, tem que ter itens clicáveis para o app
+> classificar."*
+
+### O defeito, e por que ele é maior do que parece
+
+`ASPECTS informado` era um campo numérico de 0 a 10 que o médico ⛔ **não sabe
+calcular** — a escala tem 10 territórios e regra própria, e ⛔ nada disso está na
+tela. Um campo assim produz **branco ou chute**.
+
+⚠️⚠️ **E o chute ⛔ não morre aqui:** o ASPECTS alimenta as faixas de F-08 na
+Superfície F. Um número estimado de memória entraria na decisão de trombectomia
+com a mesma aparência de um número lido por radiologista.
+
+> **Campo que convida a inventar é pior que campo ausente.**
+
+### O que ⛔ NÃO deu para fazer, e por quê
+
+⛔ **A escala clicável ⛔ não pôde ser construída nesta rodada.** Ela precisa dos 10
+territórios e da lógica de pontuação, e a **Figure 2** — que a rec. 1 de §3.2
+referencia — ⛔ **não foi transcrita**. Escrever os territórios de memória seria
+**E-31** no ponto mais caro: território errado ⛔ não parece errado.
+
+⚠️ **Por que o NIHSS pôde e o ASPECTS ⛔ não:** o NIHSS veio de uma **calculadora
+com fonte declarada** (Brott 1989 + adaptação de Pontes-Neto), consumida por
+§10.1. Varridas as **129 entradas** de `clinical-calculators-engine.ts`, ⛔ **⛔ não
+existe calculadora de ASPECTS** no app.
+
+### A decisão — opção (b) do autor
+
+> - o campo **permanece** em C, como valor **informado**;
+> - o rótulo diz **de onde o número vem**: `ASPECTS informado no laudo ou pela equipe`;
+> - a tela declara, **visível e ⛔ não atrás do ⓘ**, que *"o app ainda ⛔ não calcula o
+>   ASPECTS nesta versão"*;
+> - a redação ⛔ **não convida a estimar** — saiu o *"ou na avaliação"*, entrou o
+>   *"sem estimar"*.
+
+⚠️ A confissão fica **permanente**: quem ⛔ não abre o ⓘ é exatamente quem chuta.
+
+### F-28 — aberto, com fonte-base aprovada
+
+> Barber PA, Demchuk AM, Zhang J, Buchan AM. *Validity and reliability of a
+> quantitative computed tomography score in predicting outcome of hyperacute
+> stroke before thrombolytic therapy.* **Lancet. 2000;355(9216):1670–1674.**
+
+⚠️ **Fonte brasileira de apoio fica em aberto** e ⛔ **não trava** a implementação —
+decisão do autor.
+
+### Depois de F-28 — o padrão já está escolhido, e é o de PD-17
+
+| campo | o que é |
+|---|---|
+| `ASPECTS calculado aqui` | escala item a item, consumindo calculadora com fonte |
+| `ASPECTS informado` | o valor que veio do laudo ou da equipe |
+
+> - ⛔ **nenhum sobrescreve o outro**;
+> - ⛔ o informado **⛔ nunca fabrica territórios ⛔ não marcados**.
+
+### A imagem — rota (a), e ela depende do mesmo slot
+
+O autor aprovou o **esquema vetorial próprio** dos territórios, no rito
+**AM-5 §5 · AM-6 · PD-12** (`origem: desenhado`, `procedencia: propria`), e
+recusou figura da AHA/ASA e galeria de TC real para ensino:
+
+> *"Isso realmente mistura registro clínico com conteúdo didático e pode crescer
+> sem controle."*
+
+⛔ **E o esquema está bloqueado pelo mesmo F-28:** ⛔ não se desenha o que ⛔ não se
+sabe descrever.
+
+⚠️ **A fronteira de escopo que ficou fixada:** esquema dos territórios ajuda a
+**pontuar** — é registro, e cabe na C. Galeria de "como é uma hemorragia na TC"
+ajuda a **interpretar** — é ensino, e é outro produto.
+
+---
+
+## PD-27 · HIPODENSIDADE CLARA ENTRA COM A DEFINIÇÃO, E ⛔ NÃO COM O VEREDITO — DECIDIDA (2026-08-29)
+
+**Aprovada pelo autor** depois de eu reportar a omissão:
+
+> *"Eu também aprovo adicionar hipodensidade clara/extensa, porque aí existe
+> critério operacional transcrito e isso é mais seguro do que deixar um achado
+> relevante escondido fora da C. Mas eu manteria a redação fiel ao que a fonte
+> sustenta."*
+
+### Por que este achado é diferente de todos os outros da Table 8
+
+É o **único achado de tomografia em que a fonte dá critério aplicável à beira do
+leito**:
+
+> *"Clear hypodensity is when the degree of hypodensity is greater than the
+> density of contralateral unaffected white matter."* — F-07, p. e367
+
+⚠️ Por isso a definição vai em `ajuda`, **visível**: ela é o que muda a RESPOSTA
+de quem ⛔ não tem o termo na cabeça — critério de §7.3 para texto permanente.
+
+⚠️ **O contraste com o efeito de massa é o que justifica os dois tratamentos:**
+*"significant mass effect"* aparece em recomendação de F-08 e a fonte ⛔ **não
+define medida nenhuma**. Um tem critério transcrito; o outro ⛔ não — e por isso
+**F-29** foi aberto **sem fonte candidata**, e o campo mantém a expressão da
+fonte sem critério inventado.
+
+### ⛔ O que ele ⛔ NÃO é
+
+⛔ **⛔ Não é elegibilidade**, e ⛔ **não é segundo bloqueio de classe.** A Table 8 ⛔ não
+tem COR/LOE em célula nenhuma, e a legenda declara esta faixa
+*"unsupported by clinical evidence"* (**E-48**). O achado é **fato**; o que a
+fonte diz sobre a trombólise é conteúdo da Superfície F.
+
+⛔ **E ⛔ não é ASPECTS.** São duas leituras da mesma tomografia, e ⛔ nenhuma calcula
+a outra.
+
+### O que a trava mede, e por que ela ⛔ não varre a palavra
+
+A primeira versão da conferência varria `contraindicação` — e **reprovou a frase
+que atribui o termo à fonte**. ⚠️ É a terceira vez que a mesma armadilha me pega
+neste módulo, e a correção é sempre a mesma: **medir o que a frase FAZ**.
+
+| metade | o que exige |
+|---|---|
+| ⛔ **forma assertiva proibida** | ⛔ nenhum estado diz *está contraindicado* · *⛔ não trombolisar* · *⛔ não elegível* |
+| ✅ **atribuição obrigatória** | o estado positivo cita **a fonte** e devolve a decisão à reperfusão |
+
+⚠️ Sem a segunda metade, a trava seria satisfeita pelo **silêncio**.

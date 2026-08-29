@@ -50,6 +50,8 @@ execFileSync("npx", [
   path.join(appDir, "avc", "nucleo", "derivacoes-c.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
   path.join(appDir, "avc", "conteudo", "superficies.ts"),
+  // ⚠️ Entra no grafo porque a prova confere o ESTADO dos slots F-28 e F-29.
+  path.join(appDir, "avc", "conteudo", "fontes.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
@@ -58,6 +60,7 @@ const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-c.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
 const K = require(path.join(tmp, "avc", "conteudo", "campo.js"));
 const P = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
+const F = require(path.join(tmp, "avc", "conteudo", "fontes.js"));
 
 const novo = () => {
   const rel = R.relogioControlado(1_000_000);
@@ -212,6 +215,15 @@ const TC = C.RESULTADO_TC;
     ["sitio_oclusao", "M1 da artéria cerebral média"],
     ["aspects", 0], ["aspects", 10],
     ["imagem_avancada", "Tomografia de perfusão"],
+    /**
+     * ⚠️⚠️ A HIPODENSIDADE CLARA É A MAIS PERIGOSA DESTA LISTA, e por isso está
+     * nela: é o único achado de C que a fonte descreve com *"should not be
+     * administered"*. Se algum dia ela entrar em `exclusaoDeHemorragia`, o
+     * módulo ganha um **segundo bloqueio de classe** — construído sobre uma
+     * célula de tabela que a própria fonte declara *"unsupported by clinical
+     * evidence"* (**E-48**).
+     */
+    ["hipodensidade_clara", "sim"], ["hipodensidade_clara", "nao"], ["hipodensidade_clara", "nao_sei"],
   ];
   const mudaram = perturbacoes.filter(([c, v]) => JSON.stringify(D.exclusaoDeHemorragia(reg(base, c, v))) !== referencia);
   confere("⛔ NENHUM outro campo de C muda a exclusão de hemorragia",
@@ -609,7 +621,114 @@ const TC = C.RESULTADO_TC;
     "declaração sobre campo inexistente é trava medindo o nada");
 }
 
-// ── 16 · A PENDÊNCIA DECLARADA SAIU DO ESQUELETO ──────────────────────────
+// ── 16 · HIPODENSIDADE CLARA — FATO COM CRITÉRIO, ⛔ NÃO ELEGIBILIDADE ─────
+{
+  const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "hipodensidade_clara");
+  confere("o campo de hipodensidade clara existe e aponta para F-07",
+    campo !== undefined && campo.fonte === "F-07" && campo.bloqueiaTerapia === false,
+    "é o único achado de TC com critério operacional transcrito, e estava fora da Superfície C até 2026-08-29");
+
+  /**
+   * ⚠️⚠️ A DEFINIÇÃO FICA **VISÍVEL**, e ⛔ não atrás do ⓘ. Ela é o que muda a
+   * RESPOSTA de quem ⛔ não tem o termo na cabeça — critério de §7.3 para texto
+   * permanente. Escondida, o campo vira mais um sim/não adivinhado.
+   */
+  confere("a definição operacional está em `ajuda`, e ⛔ não só na nota",
+    /substância branca contralateral/i.test(campo?.ajuda ?? ""),
+    "F-07: *\"greater than the density of contralateral unaffected white matter\"* — é o único critério aplicável à beira do leito que a fonte dá sobre a TC");
+
+  confere("a nota declara que a faixa ⛔ não é sustentada por evidência",
+    /não sustentada por evidência/i.test(campo?.nota ?? ""),
+    "E-48: a Table 8 ⛔ não tem COR/LOE em célula nenhuma, e a legenda declara a faixa absoluta *\"unsupported by clinical evidence\"*");
+
+  const l = (e) => D.hipodensidadeClara(e);
+  confere("os quatro estados da hipodensidade são distinguíveis",
+    new Set([
+      l(est).curto,
+      l(escolhe(est, "hipodensidade_clara", "Sim")).curto,
+      l(escolhe(est, "hipodensidade_clara", "Não")).curto,
+      l(escolhe(est, "hipodensidade_clara", "Incerto")).curto,
+    ]).size === 4,
+    "E-37: ⛔ não perguntado, presente, ausente e incerto");
+
+  /**
+   * ⚠️⚠️ A CONFERÊNCIA QUE GUARDA A INSTRUÇÃO DO AUTOR — e ela mede a **FORMA DA
+   * AFIRMAÇÃO**, ⛔ não a palavra.
+   *
+   * ── POR QUE ⛔ NÃO VARRE "contraindicação" ───────────────────────────────
+   *
+   * A primeira versão varria o termo, e reprovou a frase que **atribui o termo à
+   * fonte**: *"a fonte lista este achado entre as contraindicações que ela mesma
+   * chama de absolutas"*. ⚠️ Essa frase é **fidelidade**, ⛔ não veredito — é a
+   * mesma armadilha que já me pegou duas vezes neste módulo, e a correção é
+   * sempre a mesma: medir o que a frase FAZ, ⛔ não que palavras ela usa.
+   *
+   * ⚠️ **Duas metades, e as duas precisam valer:**
+   *   · ⛔ **nenhuma forma ASSERTIVA** — o app dizendo o que fazer;
+   *   · ✅ e, no estado positivo, **atribuição explícita à fonte** mais a
+   *     declaração de que a decisão ⛔ não é tomada aqui. Sem a segunda metade, a
+   *     trava seria satisfeita pelo silêncio.
+   */
+  const ASSERTIVO = /está contraindicad|é contraindicaç|não trombolis|não administrar|não pode receber|elegív|proibid|contraindicad[oa] a/i;
+  confere("⛔ NENHUM estado da hipodensidade produz afirmação assertiva sobre a trombólise",
+    ["Sim", "Não", "Incerto"].every((v) => {
+      const x = l(escolhe(est, "hipodensidade_clara", v));
+      return !ASSERTIVO.test(`${x.curto} ${x.texto}`);
+    }),
+    "instrução do autor: *\"⛔ não transformar isso em elegibilidade automática\"* — a decisão é da Superfície F");
+  const positivo = l(escolhe(est, "hipodensidade_clara", "Sim"));
+  confere("e o estado positivo ATRIBUI à fonte e devolve a decisão à reperfusão",
+    /a fonte/i.test(positivo.texto) && /não é tomada nesta superfície/i.test(positivo.texto),
+    "sem a atribuição, o app assume como sua uma classificação que a própria fonte declara ⛔ não sustentada por evidência");
+
+  confere("e ela ⛔ não entra no dossiê endovascular",
+    !C.IDS_DOSSIE_ENDOVASCULAR.includes("hipodensidade_clara"),
+    "é achado de segurança da IVT (Table 8), ⛔ não critério de trombectomia — misturar os dois é o que §7.15 separa");
+}
+
+// ── 17 · ASPECTS · O APP DECLARA QUE ⛔ NÃO CALCULA — F-28 ABERTO ──────────
+{
+  const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "aspects");
+  /**
+   * ⚠️⚠️ O RELATO QUE ORIGINOU ISTO (autor, 2026-08-29): *"o usuário ⛔ não sabe
+   * classificar isso"*. Um campo numérico que o médico ⛔ não sabe calcular produz
+   * **branco ou chute** — e o chute alimenta a trombectomia na Superfície F.
+   */
+  confere("o rótulo do ASPECTS diz DE ONDE o número vem",
+    /laudo|equipe/i.test(campo?.rotulo ?? ""),
+    "\"ASPECTS informado\" ⛔ não dizia informado por quem, e um número sem procedência convida a estimar");
+  confere("e a tela declara, VISÍVEL, que o app ⛔ não calcula",
+    /não calcula o ASPECTS/i.test(campo?.ajuda ?? ""),
+    "a confissão em `ajuda` é permanente; atrás do ⓘ ela ⛔ não impede o chute de quem ⛔ não abre o ⓘ");
+  confere("e a ajuda ⛔ não convida a estimar",
+    /sem estimar/i.test(campo?.ajuda ?? "") && !/na avaliação/i.test(campo?.ajuda ?? ""),
+    "a redação anterior dizia *\"se disponível no laudo ou na avaliação\"* — e \"na avaliação\" é a porta para estimar de memória");
+  confere("o ASPECTS continua GRANDEZA, e ⛔ não escala",
+    campo?.tipo === "grandeza",
+    "escala implica itens; os 10 territórios ⛔ não têm fonte transcrita, e fingir que têm é E-31");
+
+  /**
+   * ⚠️⚠️ ENQUANTO **F-28** ESTIVER ABERTO, ⛔ NENHUM TERRITÓRIO PODE APARECER.
+   *
+   * ⚠️ A varredura usa termos que ⛔ **só** existem no vocabulário do ASPECTS —
+   * ⛔ não "M1", que é sítio de oclusão legítimo nesta mesma superfície. Uma trava
+   * que confundisse os dois acusaria inocente e seria desligada (R-55).
+   */
+  const fonteC = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-c.ts"))
+    + lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes-c.ts"));
+  confere("⛔ nenhum território do ASPECTS foi escrito enquanto F-28 está aberto",
+    !/lentiform|ínsula|insular|caudado|cápsula interna|corona radiata/i.test(fonteC),
+    "E-31: os 10 territórios ⛔ não estão transcritos em fonte nenhuma do repositório — escrevê-los de memória é inventar conteúdo clínico onde ele mais custa");
+
+  confere("F-28 e F-29 estão declarados como ABERTOS",
+    F.slot("F-28")?.estado === "aberto" && F.slot("F-29")?.estado === "aberto",
+    "§0.5: fonte declarada ⛔ não é fonte transcrita — e o estado do slot é o que impede alguém de implementar sobre o vazio");
+  confere("a Superfície C lista os slots abertos entre as suas fontes",
+    ["F-28", "F-29"].every((id) => P.superficie("imagem").fontes.includes(id)),
+    "quem abre a lista de fontes precisa ver que o ASPECTS clicável e o critério de efeito de massa dependem de fonte que ainda ⛔ não existe");
+}
+
+// ── 18 · A PENDÊNCIA DECLARADA SAIU DO ESQUELETO ──────────────────────────
 {
   const vigentes = P.pendenciasVigentes().map((p) => p.id);
   confere("a pendência estática da tomografia ⛔ não existe mais",

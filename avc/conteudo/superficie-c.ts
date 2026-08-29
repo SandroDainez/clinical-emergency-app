@@ -167,6 +167,37 @@ export const TOMOGRAFIA_C: readonly CampoC[] = [
     nota: "A saída específica para hemorragia subaracnóidea é uma decisão da especificação deste módulo. A fonte trata da exclusão de hemorragia intracraniana antes da reperfusão, e não define conduta para esta suspeita.",
   },
   {
+    id: "hipodensidade_clara",
+    /**
+     * ⚠️⚠️ O ÚNICO ACHADO DE TC EM QUE A FONTE DÁ CRITÉRIO APLICÁVEL À BEIRA DO
+     * LEITO — e ele estava fora da Superfície C até 2026-08-29.
+     *
+     * Verbatim (F-07, Table 8, faixa absoluta, p. e367):
+     *
+     *   *"Clear hypodensity is when the degree of hypodensity is greater than
+     *   the density of contralateral unaffected white matter."*
+     *
+     * ⚠️ Por isso a definição vai em `ajuda` — **visível**, e ⛔ não atrás do ⓘ:
+     * ela é o que muda a RESPOSTA de quem ⛔ não tem o termo na cabeça, que é
+     * exatamente o critério de §7.3 para texto permanente.
+     *
+     * ⛔⛔ E ⛔ NÃO É ELEGIBILIDADE (instrução do autor). A Table 8 ⛔ não tem
+     * COR/LOE em célula nenhuma, e a própria legenda declara esta faixa
+     * *"unsupported by clinical evidence"* (**E-48**). O achado é **fato**; o que
+     * a fonte diz sobre a trombólise é conteúdo da Superfície F.
+     *
+     * ⛔ E ⛔ NÃO É ASPECTS. São duas leituras diferentes da mesma tomografia, e
+     * ⛔ nenhuma delas calcula a outra.
+     */
+    rotulo: "Hipodensidade clara na tomografia",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    ajuda: "A fonte define hipodensidade clara como aquela cuja densidade é maior que a da substância branca contralateral não acometida.",
+    fonte: "F-07",
+    bloqueiaTerapia: false,
+    nota: "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.",
+  },
+  {
     id: "hora_tc",
     /**
      * ⚠️⚠️ **E-36 · O CONTROLE NOMEIA O QUE MARCA**, e este ⛔ NÃO alimenta relógio
@@ -216,7 +247,18 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
      * o que é ASPECTS, ou como se pontua, seria redação de memória — **E-31**.
      * O campo carrega o **nome** e ⛔ nada além. Dívida declarada: **D-111**.
      */
-    rotulo: "ASPECTS informado",
+    /**
+     * ⚠️⚠️ O RÓTULO DIZ DE ONDE O NÚMERO VEM — relato do autor, 2026-08-29:
+     * *"o usuário ⛔ não sabe classificar isso"*.
+     *
+     * ── O DEFEITO QUE ISTO FECHA ────────────────────────────────────────────
+     *
+     * "ASPECTS informado" ⛔ não dizia informado **por quem**. Um campo numérico
+     * que o médico ⛔ não sabe calcular produz **branco ou chute** — e o chute
+     * alimenta a decisão de trombectomia na Superfície F. ⚠️ Campo que convida a
+     * inventar é pior que campo ausente.
+     */
+    rotulo: "ASPECTS informado no laudo ou pela equipe",
     tipo: "grandeza",
     faixa: { min: 0, max: 10, passo: 1 },
     /**
@@ -225,10 +267,17 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
      * porta explícita, registrá-lo exigiria passar por um `1` que ninguém mediu.
      */
     zeroValido: true,
-    ajuda: "Registre o escore se disponível no laudo ou na avaliação.",
+    /**
+     * ⚠️⚠️ A CONFISSÃO FICA **VISÍVEL**, e ⛔ não atrás do ⓘ (decisão do autor).
+     *
+     * ⚠️ A versão anterior dizia *"se disponível no laudo ou na avaliação"* — e
+     * "na avaliação" é justamente a porta para estimar de memória. A frase agora
+     * diz o que o app ⛔ NÃO faz, e de onde o número tem de vir.
+     */
+    ajuda: "O app ainda não calcula o ASPECTS nesta versão. Registre apenas o valor que vier do laudo ou da equipe, sem estimar.",
     fonte: "F-08",
     bloqueiaTerapia: false,
-    nota: "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia.",
+    nota: "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia. Quando a escala for implementada, o valor calculado aqui e o valor informado vão conviver, como já acontece com o NIHSS.",
   },
   {
     id: "efeito_de_massa",
@@ -501,6 +550,7 @@ export const IDS_DOSSIE_ENDOVASCULAR: readonly string[] = ENDOVASCULAR_C
 export const SAIDA_SEM_CONCLUSAO: Readonly<Record<string, string>> = {
   tc_resultado: RESULTADO_TC.aguardando,
   suspeita_hsa: "Incerto",
+  hipodensidade_clara: "Incerto",
   efeito_de_massa: "Incerto",
   suspeita_lvo: "Incerto",
   angio_realizada: NAO_SEI,

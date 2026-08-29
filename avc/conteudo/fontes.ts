@@ -33,6 +33,7 @@ const BR_TROMBO = "protocols/fontes-verbatim/bulas-br-tromboliticos.md";
 const BR_PA = "protocols/fontes-verbatim/fontes-br-anti-hipertensivos.md";
 const BR_GLI = "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md";
 const BR_MRS = "protocols/fontes-verbatim/mrs-br.md";
+const IMG_DEF = "protocols/fontes-verbatim/imagem-definicoes-operacionais.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -63,6 +64,20 @@ export const SLOTS: readonly SlotDeFonte[] = [
    */
   { id: "F-26", assunto: "mRS — validação brasileira e entrevista estruturada", estado: "transcrito", arquivo: BR_MRS },
   { id: "F-27", assunto: "mRS — descritores operacionais 0 a 6 em português", estado: "parcial", arquivo: BR_MRS },
+  /**
+   * ⚠️⚠️ DOIS SLOTS **ABERTOS**, e ⛔ não "parciais" — abertos em 2026-08-29 depois
+   * do relato de uso da Superfície C: *"o usuário ⛔ não sabe classificar isso"*.
+   *
+   * ⚠️ `aberto` significa **⛔ nenhum texto transcrito**. Enquanto estiverem assim,
+   * ⛔ nada do que eles sustentariam pode aparecer na tela (§0.5) — nem os 10
+   * territórios do ASPECTS, ⛔ nem o esquema vetorial deles, ⛔ nem qualquer
+   * critério de efeito de massa.
+   *
+   * ⚠️ **F-29 ⛔ não tem fonte candidata**: a lacuna é **da fonte-mãe**, que usa
+   * *"significant mass effect"* em recomendação e ⛔ não define a medida.
+   */
+  { id: "F-28", assunto: "ASPECTS — territórios e pontuação", estado: "aberto", arquivo: IMG_DEF },
+  { id: "F-29", assunto: "Efeito de massa significativo — definição operacional", estado: "aberto", arquivo: IMG_DEF },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

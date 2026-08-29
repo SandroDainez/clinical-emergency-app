@@ -194,6 +194,47 @@ test.describe("AVC · Superfície C — Imagem", () => {
   });
 
   /**
+   * ⚠️⚠️ O RELATO DO AUTOR (2026-08-29): *"o usuário ⛔ não sabe classificar isso"*.
+   * A tela precisa **dizer que o app ⛔ não calcula**, sem abrir ⛔ nada.
+   */
+  test("o ASPECTS declara que é informado, e que o app ⛔ não calcula", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirC(page);
+
+    const campo = page.getByTestId("avc-campo-aspects");
+    await expect(campo).toContainText(/informado no laudo ou pela equipe/i);
+    // ⚠️ VISÍVEL, e ⛔ não atrás do ⓘ: quem ⛔ não abre o ⓘ é justamente quem chuta.
+    await expect(campo).toContainText(/não calcula o ASPECTS/i);
+    await expect(campo).toContainText(/sem estimar/i);
+    // ⛔ E ⛔ nenhum território escrito enquanto F-28 está aberto.
+    await expect(campo).not.toContainText(/ínsula|caudado|lentiform/i);
+  });
+
+  /**
+   * ⚠️⚠️ HIPODENSIDADE CLARA — o único achado de TC com critério transcrito, e a
+   * definição precisa estar **visível**, ⛔ não atrás do ⓘ.
+   */
+  test("a hipodensidade clara traz a definição da fonte, e ⛔ não conclui", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirC(page);
+
+    const campo = page.getByTestId("avc-campo-hipodensidade_clara");
+    await expect(campo).toContainText(/substância branca contralateral/i);
+
+    await page.getByTestId(OPCAO("hipodensidade_clara", "sim")).click();
+    const leitura = page.getByTestId("avc-leitura-curto-hipodensidade_clara");
+    await expect(leitura).toContainText(/Hipodensidade clara registrada/i);
+    // ⛔ E a tela ⛔ NÃO decide sobre trombólise.
+    const conteudo = page.getByTestId("avc-superficie-c-conteudo");
+    await expect(conteudo).not.toContainText(/não elegív|está contraindicad|não trombolis/i);
+
+    // ⛔ E ela ⛔ não retém a reperfusão: a exclusão de hemorragia segue intacta.
+    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)).click();
+    await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
+      .toContainText(/excluída pela tomografia/i);
+  });
+
+  /**
    * ⚠️⚠️ **R2.5 / 🚫 #3 NA TELA:** ⛔ nenhum cronômetro, ⛔ nenhuma meta.
    */
   test("o horário da tomografia se registra, e ⛔ não vira meta nem contagem", async ({ page }) => {

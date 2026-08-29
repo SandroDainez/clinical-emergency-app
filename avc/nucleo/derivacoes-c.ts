@@ -284,6 +284,73 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
   };
 }
 
+/**
+ * A HIPODENSIDADE CLARA — ⚠️ **fato com critério**, e ⛔ nunca elegibilidade.
+ *
+ * ⚠️⚠️ ESTA LEITURA É A QUE MAIS FACILMENTE VIRARIA VEREDITO, e por três razões
+ * que se somam: o achado está na faixa que a fonte chama de **absoluta**, a
+ * expressão dela é *"should not be administered"*, e o médico já chegou aqui
+ * decidindo sobre reperfusão.
+ *
+ * ⛔⛔ E MESMO ASSIM ELA ⛔ NÃO CONCLUI, porque **E-48**: a Table 8 ⛔ não tem
+ * COR/LOE em célula nenhuma, e a própria legenda declara esta faixa
+ * *"unsupported by clinical evidence"*. Item de Table 8 é **situação a
+ * considerar**, ⛔ não regra — e o que se faz com a trombólise é conteúdo da
+ * Superfície F, que ainda ⛔ não existe.
+ *
+ * ⚠️ Por isso a leitura **nomeia o achado e a fonte**, e ⛔ para aí. ⛔ Ela ⛔ não
+ * diz "⛔ não trombolisar", ⛔ não diz "contraindicado", e ⛔ não entra em
+ * `exclusaoDeHemorragia` — a prova varre as duas coisas.
+ *
+ * ⛔ E ⛔ NÃO É ASPECTS. São duas leituras diferentes da mesma tomografia, e
+ * ⛔ nenhuma delas calcula a outra.
+ */
+export function hipodensidadeClara(estado: EstadoAvc): Leitura {
+  const insumos = ["hipodensidade_clara"];
+  const fonte = "F-07";
+  const valor = ternario(estado, "hipodensidade_clara");
+  const incerto = respondeuDesconhecido(estado, "hipodensidade_clara");
+
+  if (valor === true) {
+    return {
+      conclusao: "sim",
+      tom: "atencao",
+      curto: "Hipodensidade clara registrada na tomografia",
+      texto: "A fonte lista este achado entre as contraindicações que ela mesma chama de absolutas, e declara essa faixa como não sustentada por evidência clínica. A decisão sobre a reperfusão não é tomada nesta superfície",
+      insumos,
+      fonte,
+    };
+  }
+  if (valor === false) {
+    return {
+      conclusao: "nao",
+      tom: "informativo",
+      curto: "Sem hipodensidade clara na tomografia",
+      texto: "Resposta registrada, comparando com a densidade da substância branca contralateral não acometida",
+      insumos,
+      fonte,
+    };
+  }
+  if (incerto) {
+    return {
+      conclusao: "desconhecido",
+      tom: "pendente",
+      curto: "Hipodensidade clara em aberto",
+      texto: "Incerto fica registrado como resposta, e não vira ausência do achado",
+      insumos,
+      fonte,
+    };
+  }
+  return {
+    conclusao: "desconhecido",
+    tom: "informativo",
+    curto: "Hipodensidade clara ainda não avaliada",
+    texto: "Ainda não perguntado é diferente de ausente, e nada no atendimento espera por esta resposta",
+    insumos,
+    fonte,
+  };
+}
+
 /** ⚠️ O estado nomeado da imagem vascular — três, e ⛔ nunca um booleano. */
 export type LeituraVascular = Leitura & {
   readonly vascular: "registrada" | "pendente" | "indisponivel" | "sem_informacao";
@@ -587,6 +654,7 @@ export function leiturasDaSuperficieC(estado: EstadoAvc): readonly (Leitura & { 
   return [
     { id: "exclusao_hemorragia", ...exclusaoDeHemorragia(estado) },
     { id: "suspeita_hsa", ...suspeitaDeHsa(estado) },
+    { id: "hipodensidade_clara", ...hipodensidadeClara(estado) },
     { id: "imagem_vascular", ...imagemVascular(estado) },
     { id: "frente_endovascular", ...informacaoParaAFrenteEndovascular(estado) },
     { id: "alergia_contraste", ...alergiaAContraste(estado) },

@@ -4097,6 +4097,24 @@ têm o mesmo elemento sobreposto sem que ninguém tenha reparado.
 
 ## D-111 — ASPECTS ENTRA COMO NÚMERO, SEM O QUE ELE SIGNIFICA
 
+> ### ⚠️ ATUALIZADA em 2026-08-29 — **a dívida continua, e a tela deixou de mentir**
+>
+> O autor usou a Superfície C e apontou o efeito prático desta dívida: *"o usuário
+> ⛔ não sabe classificar isso"*. O que mudou (**PD-26**):
+>
+> - o rótulo passou a dizer **de onde o número vem** — *informado no laudo ou pela
+>   equipe*;
+> - a tela declara, **visível**, que *"o app ainda ⛔ não calcula o ASPECTS nesta
+>   versão"*, e pede o valor **sem estimar**;
+> - **F-28** foi aberto, com fonte-base aprovada — **Barber PA et al., Lancet
+>   2000** — e a escala clicável, mais o **esquema vetorial dos territórios**,
+>   ficam bloqueados até a transcrição;
+> - a trava reprova se qualquer território do ASPECTS for escrito enquanto F-28
+>   estiver aberto.
+>
+> ⚠️ **A dívida ⛔ não foi paga:** o app continua ⛔ não calculando. O que ele deixou
+> de fazer foi **parecer** que o médico deveria saber calcular.
+
 **Registrada em 2026-08-29**, com a Superfície C do AVC
 (`avc/conteudo/superficie-c.ts`, campo `aspects`).
 
@@ -4250,3 +4268,30 @@ aparece em português — visível, ⛔ não silencioso.
 
 ⚠️ *(Fim do registro original. O "enquanto isso" acima ⛔ **não descreve mais o
 app**: os descritores têm par em espanhol desde 2026-08-29.)*
+
+---
+
+## D-117 — "EFEITO DE MASSA SIGNIFICATIVO" ⛔ NÃO TEM DEFINIÇÃO, E A LACUNA É DA FONTE
+
+**Registrada em 2026-08-29**, com **F-29** aberto — ⚠️ e **sem fonte candidata**.
+
+**O que acontece:** a fonte-mãe usa a expressão em recomendações que **mudam a
+força da indicação de trombectomia** — F-08, recs. 3 e 4: *"…and without
+**significant** mass effect on imaging, EVT is recommended…"* — e ⛔ **não define
+medida nenhuma** para *significant*.
+
+⚠️ **Isto ⛔ não é lacuna de transcrição: é lacuna da fonte.** Varrida a seção, ⛔ não
+há critério, ⛔ não há corte, ⛔ não há referência de comparação.
+
+**O contraste que torna a lacuna visível:** a mesma Table 8 **define** o achado
+vizinho — *"Clear hypodensity is when the degree of hypodensity is greater than
+the density of contralateral unaffected white matter"*. Um tem critério
+aplicável; o outro ⛔ não. Foi por isso que a hipodensidade entrou na Superfície C
+com a definição visível (**PD-27**) e o efeito de massa ⛔ não.
+
+**O que o app faz enquanto isso:** mantém a **expressão da fonte** e declara, na
+nota, que ela ⛔ não define medida e que a leitura é de quem interpreta a imagem.
+⛔ **⛔ Nenhum critério inventado**, ⛔ nenhum corte, ⛔ nenhuma lista de sinais.
+
+**Como sai:** fonte complementar que publique definição operacional — decisão do
+autor. O slot **F-29** já está declarado e aberto.
