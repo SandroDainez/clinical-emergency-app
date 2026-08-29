@@ -26,6 +26,8 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+// ⚠️ `lerFonte` e ⛔ NÃO `fs.readFileSync`: comentário ⛔ não executa nada (R-92).
+const { lerFonte } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
 const falhas = [];
@@ -40,6 +42,7 @@ execFileSync("npx", [
   path.join(appDir, "avc", "nucleo", "estado.ts"),
   path.join(appDir, "avc", "nucleo", "derivacoes.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-a.ts"),
+  path.join(appDir, "avc", "nucleo", "selecao.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 // ⚠️ Compilando arquivos de duas pastas, o tsc preserva a estrutura no outDir.
@@ -87,21 +90,21 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
 // ── 2 · glicemia desconhecida ≠ normal ─────────────────────────────────────
 {
   const { rel, est } = novo();
-  const semNada = D.hipoglicemia(est);
+  const semNada = D.glicemia(est);
   confere("glicemia ausente é 'desconhecido', não 'não'",
     semNada.conclusao === "desconhecido",
     "E-23: ausência de dado NUNCA vira dado negativo");
 
   const naoSei = reg(est, "glicemia", "nao_sei", rel);
   confere("glicemia 'não sei' também é desconhecido",
-    D.hipoglicemia(naoSei).conclusao === "desconhecido",
+    D.glicemia(naoSei).conclusao === "desconhecido",
     "'não sei' é RESPOSTA, e não pode virar valor normal");
 
   const baixa = reg(est, "glicemia", 52, rel);
   confere("glicemia abaixo do limite da fonte conclui hipoglicemia",
-    D.hipoglicemia(baixa).conclusao === "sim", "§4.5 rec.1 · COR 1 · C-LD");
+    D.glicemia(baixa).conclusao === "sim", "§4.5 rec.1 · COR 1 · C-LD");
   confere("a derivação de glicemia declara a fonte",
-    D.hipoglicemia(baixa).fonte === "F-06", "E-22/E-30: derivação sem fonte não entra");
+    D.glicemia(baixa).fonte === "F-06", "E-22/E-30: derivação sem fonte não entra");
 }
 
 // ── 3 · peso desconhecido não bloqueia o módulo ────────────────────────────
@@ -109,7 +112,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   const { rel, est } = novo();
   const leituras = D.leiturasDaSuperficieA(est);
   confere("sem peso, as demais leituras continuam existindo",
-    leituras.length === 7,
+    leituras.length === 8,
     "peso ausente não pode suprimir a superfície");
   confere("peso ausente é desconhecido e declara que não atrasa",
     D.peso(est).conclusao === "desconhecido" && /não atrasa/i.test(D.peso(est).texto),
@@ -159,7 +162,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
     /não .*indica anticonvulsivante|não indica/i.test(l.texto),
     "profilaxia é COR 3: No Benefit");
   confere("as demais leituras seguem disponíveis com crise presente",
-    D.leiturasDaSuperficieA(comCrise).length === 7,
+    D.leiturasDaSuperficieA(comCrise).length === 8,
     "crise não pode encerrar a superfície");
 }
 
@@ -242,7 +245,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
     "E-30: a menor unidade auditável é a afirmação, e ela precisa de endereço");
 
   confere("nenhuma grandeza clínica usa caixa de texto",
-    C.TODOS_OS_CAMPOS_A.every((c) => ["grandeza", "escolha", "hora"].includes(c.tipo)),
+    C.TODOS_OS_CAMPOS_A.every((c) => ["grandeza", "escolha", "hora", "multipla"].includes(c.tipo)),
     "§0.3: sem texto livre para valor clínico");
 
   /**
@@ -401,7 +404,7 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
    * está escrita em `resolvePor`; sem estas conferências ela seguia falsa.
    */
   const P = require(path.join(tmp2, "conteudo", "superficies.js"));
-  const pend = P.PENDENCIAS_INICIAIS.filter((p) => p.id === "ultima_vez_bem");
+  const pend = P.pendenciasVigentes().filter((p) => p.id === "ultima_vez_bem");
   const abertas = (e) => E.pendenciasAbertas(e, pend).length;
 
   confere("sem resposta, a pendência do último-visto-bem fica aberta",
@@ -420,6 +423,266 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   confere("desconhecido não vira horário",
     E.valorAtual(comDesconhecido, "hora_ultima_vez_bem").valor === "nao_sei",
     "um marco temporal inventado a partir de 'não sei' produziria janela falsa");
+}
+
+// ── 13b · HIPERGLICEMIA GRAVE · MIMETIZADOR, ⛔ NUNCA CONTRAINDICAÇÃO ───────
+//
+// ⚠️⚠️ REGRA DECIDIDA PELO AUTOR (2026-08-29), sobre F-06: `>400` é hiperglicemia
+// grave e **possível mimetizador**, com correção e REAVALIAÇÃO do déficit
+// depois. ⛔ Não é contraindicação, ⛔ não bloqueia, e ⛔ não se mistura com o
+// `>180`, que é manejo e tem papel clínico diferente.
+{
+  const { rel, est } = novo();
+  const alta = reg(est, "glicemia", 480, rel);
+  const l = D.glicemia(alta);
+
+  confere("acima de 400 a leitura nomeia hiperglicemia grave e o mimetismo",
+    l.conclusao === "sim" && /hiperglicemia grave/i.test(l.curto) && /mimetiz/i.test(l.curto),
+    "§4.5 rec.: 'urgently treat severe hypoglycemia and hyperglycemia, which may mimic acute stroke presentations'");
+
+  confere("a leitura manda corrigir E reavaliar o déficit",
+    /corrigir/i.test(l.texto) && /reavaliar o déficit/i.test(l.texto),
+    "§4.6.1 ST5: 'clinical deficits should be assessed after correction of glucose'");
+
+  /**
+   * ⚠️ O HEDGE DA FONTE: *"typically defined as… >400"*. ⛔ Endurecer para limite
+   * absoluto seria a mesma família de erro que achatar 'typically considered'
+   * na Table 4 (E-45).
+   */
+  confere("o 400 preserva a força de 'tipicamente definido'",
+    /tipicamente/i.test(l.texto),
+    "E-45: sem COR/LOE, o número é rótulo de gravidade — ⛔ não limite absoluto universal");
+
+  // 1 · ⛔ NÃO vira contraindicação · 2 · ⛔ NÃO vira bloqueio global
+  const proibido = /contraindica|não elegív|nao elegív|inelegív|aguardar|obrigatóri|bloquei/i;
+  const textos = D.leiturasDaSuperficieA(alta).flatMap((x) => [x.curto, x.texto]).join(" | ");
+  confere("⛔ nenhuma leitura transforma hiperglicemia em contraindicação ou espera",
+    !proibido.test(textos),
+    `⛔ proibido dizer contraindicação, não elegível ou aguardar normalizar: ${textos.slice(0, 120)}`);
+
+  confere("⛔ o campo de glicemia continua sem bloquear terapia",
+    C.TODOS_OS_CAMPOS_A.find((c) => c.id === "glicemia").bloqueiaTerapia === false,
+    "E-49: hiperglicemia grave ⛔ não pode fechar nenhuma frente do atendimento");
+
+  // 3 · a reavaliação ⛔ não pode sumir depois da correção
+  const l1 = D.reavaliacaoAposCorrecao(alta);
+  confere("com a glicemia alterada, a leitura pede corrigir e reavaliar",
+    l1.tom === "atencao" && /reavaliar o déficit/i.test(l1.curto),
+    "a necessidade nasce da alteração, ⛔ não de um campo em branco");
+
+  rel.avancar(30 * 60_000);
+  const corrigida = reg(alta, "glicemia", 150, rel);
+  const l2 = D.reavaliacaoAposCorrecao(corrigida);
+  confere("corrigida a glicemia, a reavaliação do déficit CONTINUA pendente",
+    l2.tom === "atencao" && /reavaliar o déficit/i.test(l2.curto),
+    "⛔ a necessidade ⛔ não pode sumir com a correção: é DEPOIS dela que a fonte manda avaliar");
+
+  rel.avancar(5 * 60_000);
+  const reavaliado = reg(corrigida, "deficit_focal", "sim", rel);
+  confere("registro neurológico POSTERIOR à correção encerra a reavaliação",
+    D.reavaliacaoAposCorrecao(reavaliado).conclusao === "sim",
+    "é a ORDEM dos fatos na trilha que responde, ⛔ não a existência do registro");
+
+  /**
+   * ⚠️⚠️ ESTA CONFERÊNCIA PRECISA EXERCITAR A **ORDEM**, e a primeira versão ⛔ não
+   * exercitava: ela deixava a última glicemia ALTERADA, e a função respondia na
+   * branch anterior — a mutação que trocava a comparação de tempo passava verde.
+   * Medido em 2026-08-29. A sequência certa é: exame → alteração → CORREÇÃO, e
+   * ⛔ nenhum exame depois.
+   */
+  let sequencia = reg(est, "deficit_focal", "sim", rel);
+  rel.avancar(10 * 60_000);
+  sequencia = reg(sequencia, "glicemia", 480, rel);
+  rel.avancar(20 * 60_000);
+  sequencia = reg(sequencia, "glicemia", 150, rel);
+  confere("⛔ exame ANTERIOR à alteração ⛔ não encerra a reavaliação",
+    D.reavaliacaoAposCorrecao(sequencia).conclusao !== "sim"
+    && /reavaliar o déficit/i.test(D.reavaliacaoAposCorrecao(sequencia).curto),
+    "o exame de antes descreve o paciente que o mimetizador pode ter alterado — é a ORDEM na trilha que responde");
+
+  /**
+   * ⚠️⚠️ A PENDÊNCIA DERIVADA — decisão do autor, 2026-08-29. O estado
+   * "corrigida, sem exame posterior" tem de virar **pendência**, ⛔ não só
+   * alerta: ela aparece nas Pendências do atendimento, com dono e destino.
+   */
+  const pend = (e) => D.pendenciasDerivadas(e).map((p) => p.id);
+
+  confere("⛔ sem alteração glicêmica, ⛔ nenhuma pendência de reavaliação nasce",
+    pend(est).length === 0 && pend(reg(est, "glicemia", 150, rel)).length === 0,
+    "pendência que nasce sem causa vira ruído permanente");
+
+  confere("⛔ com a glicemia ainda alterada, a pendência ⛔ ainda não nasce",
+    pend(alta).length === 0,
+    "ela é sobre o DEPOIS da correção — antes disso o que existe é a correção a fazer");
+
+  confere("corrigida e sem exame posterior, a pendência EXISTE",
+    pend(corrigida).join() === "reavaliar_deficit_pos_glicemia",
+    "é o estado que o autor nomeou: corrigida, e o déficit ainda descrito pelo exame de antes");
+
+  const pDerivada = D.pendenciasDerivadas(corrigida)[0];
+  confere("a pendência aponta para o Neurológico, com rota de resolução",
+    pDerivada.dono === "neurologico" && /exame neurológico/i.test(pDerivada.resolvePor),
+    "E-26: pendência sem destino e sem o que a resolve é muro, ⛔ não tarefa");
+
+  confere("⛔ exame ANTERIOR à correção ⛔ não resolve a pendência",
+    pend(sequencia).join() === "reavaliar_deficit_pos_glicemia",
+    "o exame de antes descreve o paciente que o mimetizador pode ter alterado");
+
+  confere("exame POSTERIOR resolve a pendência",
+    pend(reavaliado).length === 0,
+    "resolvida, ela ⛔ não pode continuar na lista — pendência eterna é muro");
+
+  /**
+   * ⚠️⚠️ ⛔ ELA ⛔ NÃO BLOQUEIA NADA. Com a pendência aberta, ⛔ nenhum campo passa
+   * a bloquear terapia e ⛔ nenhuma leitura ganha linguagem de espera ou de
+   * inelegibilidade — que é como um lembrete vira tranca sem ninguém decidir.
+   */
+  const comPendencia = D.leiturasDaSuperficieA(corrigida)
+    .flatMap((x) => [x.curto, x.texto]).join(" | ");
+  confere("⛔ a pendência ⛔ não bloqueia superfície nem terapia",
+    !proibido.test(comPendencia)
+    && C.TODOS_OS_CAMPOS_A.every((c) => c.bloqueiaTerapia === false),
+    `E-07: pendência é lembrete com endereço, ⛔ não tranca: ${comPendencia.slice(0, 120)}`);
+
+  confere("a leitura e a pendência leem o MESMO estado",
+    (D.estadoDaReavaliacao(corrigida) === "corrigida_sem_exame")
+    && (D.estadoDaReavaliacao(reavaliado) === "reavaliado")
+    && (D.estadoDaReavaliacao(alta) === "alterada_agora"),
+    "I6 aplicada a tempo: duas cópias da lógica divergiriam, e o médico decidiria por uma delas");
+
+  confere("o estado intermediário ⛔ não afirma mais do que as regras aplicam",
+    /critérios aplicados aqui/i.test(D.glicemia(reg(est, "glicemia", 210, rel)).curto),
+    "'sem hipoglicemia nem hiperglicemia grave' soava como veredito glicêmico geral");
+
+  // 4 · ⛔ o 180 ⛔ não pode ser promovido a regra de mimetizador
+  const fonteGlicemia = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes.ts"));
+  confere("⛔ o corte de 180 ⛔ não entra na lógica de mimetizador",
+    !/\b180\b/.test(fonteGlicemia),
+    "o >180 é MANEJO da hiperglicemia no AVC, com momento ideal declarado desconhecido pela fonte — papel clínico diferente do >400");
+
+  const meio = D.glicemia(reg(est, "glicemia", 210, rel));
+  confere("210 mg/dL ⛔ não dispara mimetizador nem correção",
+    meio.conclusao === "nao" && meio.tom === "informativo",
+    "misturar o 180 aqui transformaria conduta de suporte em regra de mimetismo que a fonte ⛔ não escreveu");
+}
+
+// ── 14 · DESFAZER · o campo volta a "ninguém respondeu" ───────────────────
+//
+// ⚠️⚠️ RELATO DO AUTOR (2026-08-28): *"cliquei em sem informação e não consigo
+// desmarcar isso"* · *"se tento voltar ao zero não volta, nenhum deles"*.
+// Os dois eram o mesmo buraco: ⛔ não existia como DESINFORMAR um campo.
+{
+  const { rel, est: e0 } = novo();
+  const comValor = reg(e0, "peso", 82, rel);
+  rel.avancar(2 * 60_000);
+  const desfeito = E.desfazerRegistro(comValor, "peso", rel);
+
+  confere("desfazer devolve o campo a não respondido",
+    E.valorAtual(desfeito, "peso").valor === "nao_perguntado",
+    "voltar a barra ao mínimo ⛔ não desinforma: 30 kg é um peso, e ele alimentaria dose");
+
+  confere("⛔ desfazer NÃO apaga o registro anterior",
+    E.historicoDe(desfeito, "peso").length === 2
+    && E.historicoDe(desfeito, "peso")[0].valor === 82,
+    "§3.1: a trilha é append-only — o valor errado existiu, e esconder que existiu é o que a spec proíbe");
+
+  confere("desfazer é CORREÇÃO, ⛔ não medida",
+    E.valorAtual(desfeito, "peso").tipo === "correcao"
+    && typeof E.valorAtual(desfeito, "peso").motivo === "string",
+    "§3.4: tratá-lo como medida inventaria evolução clínica onde houve engano de toque");
+
+  confere("a leitura volta a 'desconhecido' depois de desfazer",
+    D.peso(desfeito).conclusao === "desconhecido",
+    "§4.3: derivado recalcula — se continuasse 'informado', a tela mentiria sobre o que se sabe");
+
+  /**
+   * ⚠️ A PENDÊNCIA TEM DE REABRIR. Se continuasse fechada, o médico teria
+   * desfeito a resposta e o app continuaria dizendo que aquilo estava resolvido
+   * — a pendência mentindo pelo lado que ninguém confere: o que diz "pronto".
+   */
+  const P = require(path.join(tmp2, "conteudo", "superficies.js"));
+  const pend = P.pendenciasVigentes().filter((p) => p.id === "ultima_vez_bem");
+  const respondido = reg(e0, "hora_ultima_vez_bem", "nao_sei", rel);
+  confere("responder fecha a pendência",
+    E.pendenciasAbertas(respondido, pend).length === 0, "resposta é resposta");
+  confere("desfazer REABRE a pendência",
+    E.pendenciasAbertas(E.desfazerRegistro(respondido, "hora_ultima_vez_bem", rel), pend).length === 1,
+    "E-26: pendência que continua fechada depois do desfazer diz 'pronto' sobre o que ⛔ não está");
+}
+
+// ── 15 · A VIA AÉREA POR ACHADOS · ⛔ sem contagem, ⛔ sem negativa silenciosa ─
+{
+  const { rel, est } = novo();
+  const campo = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "disfuncao_bulbar");
+  const S = require(path.join(tmp, "nucleo", "selecao.js"));
+
+  confere("a dificuldade de via aérea é seleção múltipla",
+    campo.tipo === "multipla" && campo.opcoes.length >= 5,
+    "§7.6: os achados coexistem no mesmo paciente — escolha única obrigaria a eleger um entre os que ele vê");
+
+  confere("o rótulo ⛔ não exige o vocabulário de neurologista",
+    !/bulbar/i.test(campo.rotulo),
+    "I1: quem ⛔ não domina o termo PARA NA PALAVRA e ⛔ não chega aos sinais que vinham depois");
+
+  confere("as duas saídas exclusivas estão declaradas",
+    campo.exclusivas.length === 2 && campo.exclusivas.every((x) => campo.opcoes.includes(x)),
+    "'nenhum desses + tosse ineficaz' ⛔ não é paciente: é médico que tocou duas vezes");
+
+  /**
+   * ⚠️⚠️ UM ACHADO JÁ É GATILHO. A fonte nomeia *"bulbar dysfunction"* e ⛔ não
+   * pede quantidade — exigir dois seria regra minha, num lugar cuja consequência
+   * é aspiração.
+   */
+  const umAchado = reg(est, "disfuncao_bulbar", "Tosse fraca ou ineficaz", rel);
+  confere("UM achado já indica suporte de via aérea",
+    D.suporteDeViaAerea(umAchado).conclusao === "sim",
+    "⛔ não há contagem: exigir dois achados seria uma regra que a fonte ⛔ não escreveu");
+
+  const nenhum = reg(est, "disfuncao_bulbar", "Nenhum desses", rel);
+  confere("'nenhum desses' ⛔ não é achado",
+    D.suporteDeViaAerea(reg(nenhum, "consciencia_rebaixada", "nao", rel)).conclusao === "nao",
+    "se a saída negativa contasse como achado, a resposta 'não há nada' indicaria intubar");
+
+  confere("'não sei' ⛔ não vira 'não'",
+    D.suporteDeViaAerea(reg(reg(est, "disfuncao_bulbar", "Não sei", rel),
+      "consciencia_rebaixada", "nao", rel)).conclusao === "desconhecido",
+    "E-23: incerteza ⛔ não pode liberar via aérea");
+
+  confere("marcar um achado limpa a saída exclusiva",
+    S.itensSelecionados(S.alternarItem("Nenhum desses", "Dificuldade para engolir", campo.exclusivas))
+      .join("|") === "Dificuldade para engolir",
+    "os dois juntos seriam um registro impossível");
+
+  confere("marcar de novo desmarca",
+    S.alternarItem("Dificuldade para engolir", "Dificuldade para engolir", campo.exclusivas) === "",
+    "§7.16: sem desmarcar, um toque errado fica para sempre");
+
+  /**
+   * ⚠️⚠️ A TRAVA QUE GUARDA O DEFEITO MAIS SILENCIOSO: `ternario()` devolveria
+   * `false` para QUALQUER conjunto de achados — cinco sinais presentes lidos
+   * como "não há disfunção", na pergunta que decide via aérea.
+   */
+  const fonte = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes.ts"));
+  confere("⛔ a via aérea ⛔ não é lida por ternario()",
+    !/ternario\(estado,\s*"disfuncao_bulbar"/.test(fonte),
+    "seleção múltipla lida como ternário vira negativa silenciosa — E-23 na pergunta mais cara da superfície");
+}
+
+// ── 16 · O QUE O AUTOR MANDOU TIRAR ───────────────────────────────────────
+{
+  confere("⛔ o campo de sono entre os marcos ⛔ não existe mais",
+    !C.TODOS_OS_CAMPOS_A.some((c) => c.id === "houve_sono"),
+    "removido a pedido do autor em 2026-08-28; o cenário de AVC ao acordar volta com a regra temporal que o justifica, ⛔ ou não volta");
+
+  const origem = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "peso_origem");
+  confere("⛔ a origem do peso ⛔ não oferece balança",
+    !origem.opcoes.some((o) => /balan/i.test(o)),
+    "⛔ ninguém pesa em balança um AVC agudo na porta do PS — opção que ⛔ não acontece ocupa alvo e sugere caminho inexistente");
+
+  confere("⛔ o AVC ⛔ não usa Glasgow",
+    !JSON.stringify(C.TODOS_OS_CAMPOS_A).match(/glasgow/i)
+    || /não usa Glasgow/i.test(JSON.stringify(C.TODOS_OS_CAMPOS_A)),
+    "a fonte ⛔ não menciona Glasgow uma única vez, e o nível de consciência já entra pelo NIHSS (itens 1a-1c)");
 }
 
 if (falhas.length) {

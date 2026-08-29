@@ -12,6 +12,8 @@
  */
 
 import type { Pendencia, SuperficieId } from "../nucleo/tipos";
+import { TODOS_OS_CAMPOS_A } from "./superficie-a";
+import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 
 export type Superficie = {
   /** ⚠️ Identidade ESTÁVEL. ⛔ Não muda quando a ordem ou a letra mudam. */
@@ -94,6 +96,8 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
   },
 ] as const;
 
+
+
 /** ⚠️ A letra sai da POSIÇÃO. ⛔ Nenhuma é digitada. */
 export const SUPERFICIES: readonly Superficie[] = ORDEM_DE_APRESENTACAO.map((s, i) => ({
   ...s,
@@ -114,7 +118,7 @@ export function superficie(id: SuperficieId): Superficie {
  * ⚠️ ESQUELETO. ⛔ Nenhuma delas bloqueia coisa alguma ainda, e ⛔ nenhuma está na
  * lista das doze marcas 🚫 (E-49) — foram escolhidas exatamente por isso.
  */
-export const PENDENCIAS_INICIAIS: readonly Pendencia[] = [
+const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
   {
     id: "ultima_vez_bem",
     rotulo: "Última vez visto bem",
@@ -126,8 +130,11 @@ export const PENDENCIAS_INICIAIS: readonly Pendencia[] = [
     id: "tc_realizada",
     rotulo: "Tomografia de crânio",
     dono: "imagem",
-    // ⚠️ Campo ainda inexistente: a Superfície de Imagem não foi construída.
-    // A pendência fica aberta — o que é correto, e ⛔ não é o defeito de cima.
+    /**
+     * ⚠️ Campo ainda inexistente: a Superfície de Imagem ⛔ não foi construída —
+     * e por isso esta pendência ⛔ NÃO É EXIBIDA (ver `PENDENCIAS_INICIAIS`).
+     * Ela fica declarada aqui e volta sozinha no dia em que o campo nascer.
+     */
     campo: "tc_realizada",
     resolvePor: "Registrar o resultado da imagem",
   },
@@ -139,3 +146,44 @@ export const PENDENCIAS_INICIAIS: readonly Pendencia[] = [
     resolvePor: "Registrar o exame neurológico",
   },
 ] as const;
+
+/**
+ * AS PENDÊNCIAS QUE O MÓDULO REALMENTE MOSTRA.
+ *
+ * ⚠️⚠️ SÓ ENTRA A PENDÊNCIA CUJO CAMPO EXISTE — relato do autor, 2026-08-29:
+ * *"no segundo print aparece como pendência mas não tem isso nessa tela"*.
+ *
+ * ── O DEFEITO QUE ISTO FECHA ──────────────────────────────────────────────
+ *
+ * "Tomografia de crânio" apontava para a Superfície de Imagem, que ⛔ não existe.
+ * Tocar nela abria uma tela que diz "em construção": pendência **sem mecanismo
+ * de resolução** — muro, ⛔ não tarefa (**E-26**, e a invariante I-7 fixada pelo
+ * próprio autor: *"pendência sem mecanismo de resolução REPROVA teste, ⛔ não
+ * fica aberta em silêncio"*).
+ *
+ * ⚠️⚠️ E O FILTRO É DERIVADO DOS CAMPOS QUE EXISTEM, ⛔ NÃO UMA LISTA À MÃO: no
+ * dia em que a Superfície C nascer com o campo `tc_realizada`, a pendência
+ * reaparece **sozinha**. Uma lista manual exigiria que alguém lembrasse — e é
+ * exatamente esse "alguém lembra" que produz conteúdo esquecido no app.
+ */
+/**
+ * ⚠️⚠️ É FUNÇÃO, E ⛔ NÃO CONSTANTE DERIVADA NO TOPO DO MÓDULO — e isso ⛔ não é
+ * estilo: a primeira versão era `const` e QUEBROU O APP no navegador, com
+ * `Cannot access 'TODAS_AS_PENDENCIAS' before initialization`.
+ *
+ * ⚠️ O `tsc` passou, as travas em node passaram e o e2e sobre o `dist` passou —
+ * só o bundle de desenvolvimento reprovou, porque a ordem de inicialização de
+ * módulo depende do bundler e ⛔ não do que está escrito no arquivo. Calculada na
+ * CHAMADA, a ordem deixa de importar.
+ *
+ * ⚠️ E o efeito do defeito era o pior possível: tela branca com um toast, ⛔ não
+ * um campo errado. Módulo clínico que ⛔ não abre ⛔ não tem como ser conferido.
+ */
+function camposQueExistem(): ReadonlySet<string> {
+  return new Set([...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B].map((c) => c.id));
+}
+
+export function pendenciasVigentes(): readonly Pendencia[] {
+  const campos = camposQueExistem();
+  return TODAS_AS_PENDENCIAS.filter((p) => campos.has(p.campo));
+}

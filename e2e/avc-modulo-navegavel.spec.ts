@@ -106,13 +106,24 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await page.getByTestId("avc-aba-destino").click();
     await expect(page.getByTestId("avc-superficie-destino")).toBeVisible();
 
-    // ...e a pendência continua visível e acionável dali (E-07).
-    const pendencia = page.getByTestId("avc-pendencia-tc_realizada");
+    /**
+     * ...e a pendência continua visível e acionável dali (E-07).
+     *
+     * ⚠️ USA `deficit_focal`, e ⛔ não mais `tc_realizada`: desde 2026-08-29 só
+     * é EXIBIDA a pendência cujo campo existe. A da tomografia aponta para a
+     * Superfície de Imagem, ⛔ não construída — e uma pendência que leva a "em
+     * construção" é muro, ⛔ não tarefa (E-26, I-7).
+     */
+    const pendencia = page.getByTestId("avc-pendencia-deficit_focal");
     await expect(pendencia).toBeVisible();
     await pendencia.click();
 
-    // A dona de `tc_realizada` é a Imagem.
-    await expect(page.getByTestId("avc-superficie-imagem")).toBeVisible();
+    // A dona de `deficit_focal` é o Neurológico — e ela tem porta de saída lá.
+    await expect(page.getByTestId("avc-superficie-neurologico")).toBeVisible();
+    await expect(page.getByTestId("avc-campo-deficit_focal")).toBeVisible();
+
+    // ⛔ E a pendência sem porta ⛔ não aparece em lugar nenhum.
+    await expect(page.getByTestId("avc-pendencia-tc_realizada")).toHaveCount(0);
   });
 
   test("o módulo fala espanhol", async ({ page }) => {

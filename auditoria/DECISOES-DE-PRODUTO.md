@@ -651,3 +651,252 @@ declara responde pela declaração; não compra a conformidade dela.
   vazia **passava verde** e agora reprova, nos dois caminhos.
 - ✅ Noto Emoji: arquivo/componente nosso · conteúdo Google/Noto · Apache 2.0.
 - ✅ Desenhos produzidos por nós a partir de descrição: arquivo e conteúdo próprios.
+
+---
+
+## PD-13 · O ESCOPO DA DECOMPOSIÇÃO DO DÉFICIT (D-1) — DECIDIDA (2026-08-28)
+
+**Decisão do autor.** Fecha o **D-1** / **R3.7**, que a `MATRIZ-PRONTIDAO-AVC`
+registrava como 🔴 *decisão médica pendente*.
+
+### A pergunta
+
+A **Table 4** da AHA/ASA 2026 declara a própria população — *"Among patients with
+NIHSS scores 0–5 at presentation"* — e a fonte ⛔ **não diz nada** sobre aplicar
+aqueles quadros acima disso. O app tinha duas saídas ruins: **extrapolar** (usar o
+quadro fora da população, como se valesse) ou **omitir apoio** (esconder a
+decomposição de quem está fora).
+
+### A decisão
+
+> - a decomposição da Table 4 é **suportada apenas no contexto que a fonte
+>   sustenta**;
+> - fora desse contexto, ⛔ **não extrapolar automaticamente**;
+> - o médico **ainda pode registrar o julgamento final**;
+> - o sistema ⛔ **não cria classificação normativa fora do escopo**.
+
+### O que isso significa no produto — e o que ⛔ NÃO significa
+
+⚠️⚠️ **O limite é do SISTEMA, ⛔ não do médico.** Fora da população, os onze
+achados continuam respondíveis, as respostas continuam na trilha e a decisão
+continua disponível. O que muda é **o que o app se autoriza a afirmar**: ele
+registra e se cala, em vez de reutilizar a frase normativa da fonte.
+
+⛔ **Não é filtro, ⛔ não é porta, ⛔ não esconde campo.** Fechar o quadro fora do
+escopo transformaria **limite de evidência** em **limite de registro** — outra
+coisa, e ⛔ não foi decidido.
+
+⚠️ **Contexto desconhecido ⛔ não é contexto favorável.** Sem NIHSS registrado, o
+app ⛔ não presume que o paciente está na população: presumir seria extrapolar por
+omissão. E isso ⛔ **não vira exigência** — ⛔ nada espera pelo NIHSS.
+
+⚠️ **A divergência segue o mesmo limite.** Divergir é divergir *da leitura do
+sistema*; onde ele ⛔ não emite leitura normativa, ⛔ não há do que divergir, e
+acusar divergência aplicaria o quadro fora do escopo com outro nome.
+
+**Onde vive:** `POPULACAO_TABLE4` em `avc/conteudo/superficie-b.ts` (conteúdo, com
+slot de fonte) e `contextoDaTable4()` em `avc/nucleo/derivacoes-b.ts`.
+**Travada por:** `test:avc-superficie-b`, com quatro mutações — desfazer o limite,
+presumir o contexto por omissão, fechar o campo fora do escopo, e reacusar
+divergência fora dele.
+
+---
+
+## PD-14 · A CONSULTA A PACIENTE E FAMÍLIA É REGISTRO, NUNCA REQUISITO (D-5) — DECIDIDA (2026-08-28)
+
+**Decisão do autor.** Fecha o **D-5** / **R3.8**.
+
+### A pergunta
+
+A fonte diz: *"The clinician should make this determination **in consultation with
+the patient and available family**."* Isso vira campo? Vira tarefa? Vira condição
+para decidir?
+
+### A decisão
+
+> - consulta a paciente/família é **ação opcional registrável**;
+> - ⛔ **nunca requisito**;
+> - ⛔ **nunca bloqueia**;
+> - ⛔ **nunca atrasa reperfusão**.
+
+### Por que a forma importa tanto quanto o conteúdo
+
+⚠️ **"Requisito" ⛔ não precisa estar escrito para existir.** Bastam três
+caminhos, e os três estão fechados por trava:
+
+1. **pendência** — teria alcance global (**E-07**) e ficaria aberta o atendimento
+   inteiro, como tarefa que ninguém mandou fazer;
+2. **tom `pendente`** na leitura — vocabulário de coisa que falta, onde ⛔ não
+   falta nada;
+3. **outra leitura reagindo a ela** — a mais silenciosa: a decisão passaria a
+   esperar pela consulta sem que nenhuma frase da tela dissesse isso. A prova
+   varre TODAS as leituras com e sem consulta e exige que ⛔ nenhuma mude.
+
+⚠️ **"Não foi possível" é resposta de primeira classe**, porque a própria fonte
+diz *available* family: afasia grave, rebaixamento e ausência de acompanhante são
+a regra na porta do pronto-socorro, ⛔ não a exceção.
+
+**Onde vive:** campo `consulta_paciente_familia` (registra **com quem** foi a
+conversa) e `consultaAoPacienteEFamilia()`. O registro entra na trilha com hora, é
+**append-only**, e uma segunda conversa ⛔ não apaga a primeira.
+
+---
+
+## PD-15 · PENDÊNCIA TEM ALCANCE GLOBAL, E A TELA DIZ ISSO — DECIDIDA (2026-08-29)
+
+**Decisão do autor**, depois de ver o bloco duas vezes e apontá-lo.
+
+### O que estava acontecendo
+
+O bloco de pendências fica logo abaixo do conteúdo da superfície aberta, sem nada
+dizendo que muda de assunto. Resultado: *"aqui nessa tela não tem exame
+neurológico"* — e ele estava certo **sobre o que via**.
+
+### A decisão
+
+> - **manter o alcance global** (§5.5, **E-07**);
+> - a tela passa a dizer o que o bloco é: **"Pendências do atendimento · De todas
+>   as superfícies. A letra indica onde resolver."**;
+> - o destino vira **verbo**: *"Abrir B · Neurológico"*, ⛔ não *"B · Neurológico ·
+>   Resolver"*;
+> - ⛔ **nenhuma mudança de regra.**
+
+⚠️ **E pendência sem porta ⛔ não é exibida.** A da tomografia apontava para a
+Superfície de Imagem, que ⛔ não existe: tocar levava a "em construção" — muro, ⛔ não
+tarefa (**E-26**, I-7). O filtro é **derivado dos campos que existem**, então ela
+volta sozinha no dia em que a superfície nascer.
+
+---
+
+## PD-16 · HIPERGLICEMIA GRAVE É MIMETIZADOR, ⛔ NUNCA CONTRAINDICAÇÃO — DECIDIDA (2026-08-29)
+
+**Decisão do autor** sobre **F-06**, com os dois extremos separados por FORÇA.
+
+| valor | papel | força da fonte |
+|---|---|---|
+| `<60 mg/dL` | hipoglicemia a tratar | §4.5 rec. 1 · **COR 1 · C-LD** |
+| `>400 mg/dL` | hiperglicemia grave, **possível mimetizador** | *Supportive Text*, ⚠️ **sem COR/LOE**, *"typically defined"* |
+
+> ⛔ **⛔ NÃO escrever:** "contraindicação à trombólise" · "não elegível" ·
+> "aguardar obrigatoriamente normalizar para continuar o fluxo".
+>
+> ✅ **Gera:** correção glicêmica **e reavaliação do déficit depois da correção**.
+> Se o déficit incapacitante persistir após a correção, a diretriz recomenda IVT
+> no paciente de outra forma elegível.
+
+⛔ **O `>180 mg/dL` ⛔ NÃO entra aqui.** Ele pertence ao **manejo** da hiperglicemia
+no AVC — dado observacional, com o momento ideal em relação à reperfusão
+declarado **desconhecido** pela própria fonte. Papel clínico diferente do `>400`
+como mimetizador, e o número ⛔ não existe em nenhum lugar da lógica do módulo.
+
+### A reavaliação virou **pendência derivada**
+
+O estado *"corrigida, e ainda sem exame posterior"* ⛔ não podia ser só um alerta:
+vira **"Reavaliar déficit neurológico após correção da glicemia"**, dona **B ·
+Neurológico**. ⚠️ Ela ⛔ não passa por `pendenciasAbertas()` — ali se mede campo
+vazio, e aqui o campo pode estar cheio, com o exame de ANTES. Quem a fecha é a
+**ordem dos fatos na trilha**.
+
+---
+
+## PD-17 · NIHSS: O CALCULADO AQUI E O TRAZIDO DE FORA SÃO ENTIDADES DIFERENTES — DECIDIDA (2026-08-29)
+
+**Decisão do autor**, depois de a entrada manual do total ter sido removida por
+receio de "duas verdades".
+
+> *"O paciente pode chegar da regulação, SAMU, neurologista ou outro hospital com
+> 'NIHSS 12 às 05:55'. Isso é informação útil. Só não é a mesma entidade que
+> 'NIHSS 12 calculado aqui item a item'."*
+
+| | calculado aqui | trazido de fora |
+|---|---|---|
+| origem | os 15 itens, preenchidos nesta avaliação | total recebido, com **origem e horário** |
+| deriva achado da Table 4? | ✅ sim | ⛔ **nunca** |
+| estabelece o contexto NIHSS 0–5? | ✅ sim | ⛔ **não** |
+| sobrescreve o outro? | ⛔ não | ⛔ não |
+
+⚠️⚠️ **A regra crucial:** um total ⛔ **não diz quais itens pontuaram**. NIHSS
+externo 12 ⛔ não permite concluir hemianopsia, afasia, negligência nem paresia —
+derivar dali seria o app **inventar um exame que ninguém fez aqui**.
+
+⚠️ **E o contexto da Table 4 sai do calculado**, porque a população da fonte é
+*"NIHSS 0–5 **at presentation**"*: o de fora pode ter sido medido antes de melhora,
+piora ou tratamento.
+
+⚠️ **Os dois convivem.** Exame aqui deu 9 e o referido era 12? Guardam-se os dois.
+⛔ Um ⛔ não corrige o outro — são observações de momentos potencialmente diferentes.
+
+---
+
+## PD-18 · LATERALIDADE É **MOTORA**, ⛔ NÃO "LADO PREDOMINANTE" — DECIDIDA (2026-08-29)
+
+**Correção conceitual do autor**, sobre uma derivação que eu havia escrito errado.
+
+Dos itens motores do NIHSS dá para afirmar **lateralidade motora**: esquerda,
+direita, bilateral. ⛔ O que ⛔ **não** dá é concluir o *"lado predominante do
+déficit neurológico"* — afasia, hemianopsia e negligência importantes convivem
+com motor praticamente normal, e a soma dos itens motores ⛔ não sabe disso.
+
+> - deriva por **presença** em cada lado, ⛔ **nunca** por diferença de somas —
+>   3 contra 2 é **bilateral**, ⛔ não "predomínio à esquerda";
+> - com os quatro itens motores zerados, ⛔ **não deriva nada**: a ausência de
+>   déficit MOTOR ⛔ não é ausência de lateralidade.
+
+⚠️ **O rótulo mudou junto com a regra**, e isso é parte da decisão: derivar
+lateralidade motora e continuar chamando de "lado predominante do déficit" seria
+a interpretação voltando pela porta do texto.
+
+---
+
+## PD-19 · A ESCALA EXPLICA, E ⛔ NÃO CLASSIFICA — DECIDIDA (2026-08-29)
+
+**Decisão do autor** sobre como o app ensina o que ele está perguntando.
+
+### O NIHSS é preenchido, ⛔ não digitado
+
+> *"Essa escala o usuário não sabe, tem que ser clicável para abrir e preencher."*
+
+A escala é **consumida da calculadora** (§10.1 — calculadora neutra), com fonte
+própria (Brott 1989 + adaptação brasileira de Pontes-Neto). ⛔ Copiá-la seria a
+**I6 aplicada a escore**: duas cópias funcionando e divergindo no dia da primeira
+correção.
+
+### O que a escala responde, o app ⛔ não repergunta — mas ⛔ não decide
+
+Os quatro achados que a **Table 4 define por corte de item** passam a vir da
+escala, etiquetados **"Vindo do NIHSS"**, editáveis. Ao alterar:
+
+> - o NIHSS ⛔ **não** é modificado;
+> - a alteração é **registro do médico**;
+> - a **divergência fica identificável**;
+> - ⛔ **nada** disso bloqueia, e ⛔ **nada** vira decisão automática de
+>   incapacitância — o julgamento final continua `incapacitante · não
+>   incapacitante · incerto`.
+
+⚠️ **Três procedências, três etiquetas**: *vindo do NIHSS* · *registro do médico* ·
+*registro do médico, diferente do que a escala deriva*. A terceira faltava, e sem
+ela um registro que coincide com a escala ficava anônimo.
+
+### As explicações
+
+⛔ **Nada de memória.** Duas camadas, cada uma com procedência:
+
+- **o que o achado é** — redação condensada das instruções oficiais do NIHSS/AHA,
+  autorizada pelo autor, com conferência declarada **pendente**;
+- **como se testa** — a manobra, nos **15** itens, da mesma origem;
+- **as categorias da escala** que satisfazem o corte — derivadas da calculadora,
+  e por isso as únicas que ⛔ não dependem de autorização.
+
+⚠️⚠️ **A glosa explica o TERMO, e ⛔ nunca classifica.** A Table 4 lista os sete
+achados qualitativos como exemplos que **podem não ser** claramente
+incapacitantes, *"sempre considerando as circunstâncias individuais"*: uma glosa
+dizendo "não incapacitante" achataria o hedge (**E-45**) e transformaria exemplo
+em critério. ⛔ Travado.
+
+### E a tela ⛔ não documenta arquitetura
+
+> *"'Não é requisito para decidir nem para reperfundir' é correto como regra
+> interna, mas para o médico soa como documentação de arquitetura."*
+
+Na interface: **"Não impede continuar o atendimento."** A regra inteira continua
+na spec e nas travas.

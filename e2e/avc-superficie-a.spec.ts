@@ -88,11 +88,77 @@ test.describe("Superfície A — estabilização", () => {
   test("glicemia não informada aparece como desconhecida, não como normal", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    await expect(page.getByTestId("avc-leitura-curto-hipoglicemia"))
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
       .toContainText(/ainda não informada/i);
     // ⚠️ E a frase que nomeia o erro continua existindo, atrás do ⓘ.
-    await expect(await detalheDaLeitura(page, "hipoglicemia"))
+    await expect(await detalheDaLeitura(page, "glicemia"))
       .toContainText(/desconhecida não é normal/i);
+  });
+
+  /**
+   * ⚠️⚠️ HIPERGLICEMIA GRAVE É MIMETIZADOR, ⛔ NUNCA CONTRAINDICAÇÃO — decisão do
+   * autor sobre F-06, 2026-08-29. E a reavaliação do déficit ⛔ não pode sumir
+   * quando a glicemia for corrigida: é DEPOIS da correção que a fonte manda
+   * avaliar.
+   */
+  test("acima de 400 mg/dL a tela pede corrigir e reavaliar, e ⛔ não contraindica", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    // 20 → 470, pelos degraus grandes: ⛔ sem digitação, como todo número do app.
+    for (let i = 0; i < 9; i += 1) await page.getByTestId("avc-degrau-glicemia-mais-50").click();
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
+      .toContainText(/Hiperglicemia grave/i);
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
+      .toContainText(/mimetizar/i);
+
+    const tela = page.getByTestId("avc-superficie-a-conteudo");
+    await expect(tela, "⛔ hiperglicemia ⛔ não contraindica trombólise")
+      .not.toContainText(/contraindica|não elegív|aguardar/i);
+
+    await expect(page.getByTestId("avc-leitura-curto-reavaliacao_glicemia"))
+      .toContainText(/reavaliar o déficit/i);
+
+    // ⚠️ Corrigida a glicemia, a reavaliação CONTINUA pedida — ela é sobre o
+    // depois, ⛔ não sobre o número atual.
+    for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-degrau-glicemia-menos-50").click();
+    /**
+     * ⚠️ MEDE O SENTIDO, ⛔ NÃO A PALAVRA: a frase de "corrigido" é *"Sem
+     * hipoglicemia nem hiperglicemia grave"* — ela CONTÉM o termo, dentro de uma
+     * negação. Uma asserção por substring diria que o alerta continua ligado.
+     */
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
+      .toContainText(/Sem hipoglicemia significativa nem hiperglicemia grave/i);
+    // ⚠️ E a frase ⛔ não afirma mais do que as regras aplicam.
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
+      .toContainText(/critérios aplicados aqui/i);
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
+      .not.toContainText(/mimetizar/i);
+    await expect(page.getByTestId("avc-leitura-curto-reavaliacao_glicemia"))
+      .toContainText(/reavaliar o déficit/i);
+
+    /**
+     * ⚠️⚠️ E A REAVALIAÇÃO VIRA **PENDÊNCIA DO ATENDIMENTO** — decisão do autor,
+     * 2026-08-29: o estado "corrigida, sem exame posterior" ⛔ não pode ser só um
+     * alerta que rola para fora da tela. Ela tem dono e destino, e ⛔ não tranca
+     * nada.
+     */
+    const pendencia = page.getByTestId("avc-pendencia-reavaliar_deficit_pos_glicemia");
+    await expect(pendencia).toBeVisible();
+    await expect(pendencia).toContainText(/Abrir B · Neurológico/i);
+
+    // ⛔ E ⛔ não bloqueia: as superfícies continuam abrindo com ela aberta.
+    for (const id of ["imagem", "reperfusao", "destino"]) {
+      await page.getByTestId(`avc-aba-${id}`).click();
+      await expect(page.getByTestId(`avc-superficie-${id}`)).toBeVisible();
+      await expect(pendencia, "a pendência acompanha o médico (E-07)").toBeVisible();
+    }
+
+    // ⚠️ O toque leva à dona, e o registro POSTERIOR à correção a resolve.
+    await pendencia.click();
+    await expect(page.getByTestId("avc-superficie-neurologico")).toBeVisible();
+    await page.getByTestId("avc-opcao-deficit_focal-sim").click();
+    await expect(pendencia).toHaveCount(0);
   });
 
   test("os três vazios são distinguíveis olhando", async ({ page }) => {
@@ -170,7 +236,7 @@ test.describe("Superfície A — estabilização", () => {
     await page.goto("/modulos/avc");
     await page.getByTestId("avc-aba-estabilizacao").click();
     await expect(page.getByTestId("avc-campo-glicemia")).toContainText(/Glucemia/);
-    await expect(page.getByTestId("avc-leitura-curto-hipoglicemia"))
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"))
       .toContainText(/Glucemia aún no informada/i);
   });
 });
@@ -203,7 +269,7 @@ test.describe("Superfície A — UX clínica", () => {
       .not.toMatch(/\b1[0-9]{12}\b/);
     // E o que aparece no lugar é hora legível.
     await expect(page.getByTestId("avc-hora-valor-hora_chegada"))
-      .toHaveText(/^\d{2}:\d{2} ✎$/);
+      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
   });
 
   /**
@@ -215,9 +281,13 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    // ⚠️ Vazio convida à ação; a ausência já está dita pela falta do número.
+    /**
+     * ⚠️ Vazio convida à AÇÃO, com verbo — "Informar horário", ⛔ não a palavra
+     * solta "registrar" em cinza itálico, que o autor leu como legenda do
+     * estado do campo e ⛔ não como botão (revisão de tela, 2026-08-28).
+     */
     await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
-      .toHaveText(/^registrar$/i);
+      .toHaveText(/^Informar horário$/i);
 
     await page.getByTestId("avc-hora-hora_ultima_vez_bem").click();
     await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
@@ -229,7 +299,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
-      .toHaveText(/^\d{2}:\d{2} ✎$/);
+      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
   });
 
   /** ⛔ O seletor de tempo ⛔ não pode ser barra deslizante (§7.5). */
@@ -250,7 +320,7 @@ test.describe("Superfície A — UX clínica", () => {
     await page.getByTestId("avc-seletor-hora-m-menos").click();
     await page.getByTestId("avc-seletor-hora-cancelar").click();
     await expect(page.getByTestId("avc-hora-valor-hora_inicio_observado"))
-      .toHaveText(/^registrar$/i);
+      .toHaveText(/^Informar horário$/i);
   });
 
   /**
@@ -290,6 +360,127 @@ test.describe("Superfície A — UX clínica", () => {
     await expect(peso).not.toContainText(/não informado/i);
     await expect(peso).toContainText("kg");
     await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
+  });
+
+  /**
+   * ⚠️⚠️ O PASSO DO MINUTO É UM MINUTO — relato do autor, 2026-08-29: *"o de min
+   * quando clico no mais não passa um a um, pula vários minutos"*. Era 5.
+   */
+  test("o minuto anda de um em um, e o teto se anuncia em vez de engolir o toque", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    await page.getByTestId("avc-hora-hora_reconhecimento").click();
+    const minuto = page.getByTestId("avc-seletor-hora-m-numero");
+    const numero = async () =>
+      Number((await minuto.innerText()).replace(/[^0-9]/g, ""));
+
+    // ⚠️ Recua primeiro: o seletor abre posicionado em AGORA, que é o teto.
+    await page.getByTestId("avc-seletor-hora-m-menos").click();
+    const antes = await numero();
+    await page.getByTestId("avc-seletor-hora-m-menos").click();
+    expect(await numero(), "cada toque move UM minuto")
+      .toBe((antes - 1 + 60) % 60);
+
+    await page.getByTestId("avc-seletor-hora-m-mais").click();
+    expect(await numero()).toBe(antes);
+
+    /**
+     * ⚠️⚠️ O TETO: os quatro marcos já aconteceram, e horário futuro produziria
+     * decorrido negativo. A regra ⛔ não mudou — ela passou a ser VISÍVEL.
+     */
+    await page.getByTestId("avc-seletor-hora-m-mais").click();
+    await expect(page.getByTestId("avc-seletor-hora-teto")).toBeVisible();
+    await expect(page.getByTestId("avc-seletor-hora-m-mais"))
+      .toHaveAttribute("aria-disabled", "true");
+  });
+
+  /**
+   * ⚠️ O seletor ⛔ não repete o rótulo do campo — o cartão logo acima já diz de
+   * que marco se trata, e repetido ele produzia informação duplicada na tela.
+   */
+  test("o seletor não repete o nome do marco", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    await page.getByTestId("avc-hora-hora_reconhecimento").click();
+    const seletor = page.getByTestId("avc-seletor-hora");
+    await expect(seletor).toBeVisible();
+    await expect(seletor).not.toContainText("Reconhecimento dos sintomas");
+  });
+
+  /**
+   * ⚠️⚠️ DESFAZER — o relato do autor em 2026-08-28: *"cliquei em sem informação
+   * e não consigo desmarcar isso"*. Era verdade, e valia para tudo: depois do
+   * primeiro toque ⛔ não existia como devolver um campo a "ninguém respondeu".
+   */
+  test("uma resposta pode ser desfeita, e a pendência reabre", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const semInfo = page.getByTestId("avc-hora-desconhecido-hora_ultima_vez_bem");
+    await semInfo.click();
+    await expect(semInfo).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
+
+    // ⚠️ O mesmo botão desfaz — é o gesto que qualquer um tenta primeiro.
+    await semInfo.click();
+    await expect(semInfo).toHaveAttribute("aria-checked", "false");
+    await expect(page.getByTestId("avc-pendencia-ultima_vez_bem"),
+      "desfazer sem reabrir a pendência faria o app dizer 'pronto' sobre o que não está")
+      .toBeVisible();
+  });
+
+  /**
+   * ⚠️⚠️ *"Se tento voltar ao zero não volta, nenhum deles."* A barra VOLTAVA ao
+   * mínimo — e o mínimo é um VALOR: o campo dizia "30 kg", peso que ninguém
+   * mediu, pronto para alimentar dose.
+   */
+  test("uma grandeza informada pode voltar a 'não informado'", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const peso = page.getByTestId("avc-grandeza-peso");
+    await expect(peso).toContainText(/não informado/i);
+    // ⛔ Sem valor, ⛔ não há o que limpar — e o botão ⛔ não existe.
+    await expect(page.getByTestId("avc-limpar-peso")).toHaveCount(0);
+
+    await page.getByTestId("avc-degrau-peso-mais-10").click();
+    await expect(peso).not.toContainText(/não informado/i);
+
+    await page.getByTestId("avc-limpar-peso").click();
+    await expect(peso).toContainText(/não informado/i);
+    await expect(peso, "unidade sem número sugere que existe número").not.toContainText("kg");
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/ainda não informado/i);
+  });
+
+  /**
+   * ⚠️⚠️ A VIA AÉREA POR ACHADOS (pedido do autor): o nome de neurologista saiu
+   * da pergunta, e os sinais que estavam escondidos na ajuda viraram alvo de
+   * toque. ⛔ Sem contagem: **um** achado já é gatilho.
+   */
+  test("a dificuldade de via aérea se responde por achados que coexistem", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    const campo = page.getByTestId("avc-campo-disfuncao_bulbar");
+    await expect(campo).toContainText(/Dificuldade para proteger a via aérea/i);
+    await expect(campo, "termo técnico não pode voltar para a pergunta").not.toContainText(/bulbar/i);
+
+    const engolir = page.getByTestId("avc-item-disfuncao_bulbar-Dificuldade para engolir");
+    const tosse = page.getByTestId("avc-item-disfuncao_bulbar-Tosse fraca ou ineficaz");
+    await engolir.click();
+    await expect(page.getByTestId("avc-leitura-curto-via_aerea")).toContainText(/via aérea/i);
+
+    // ⚠️ COEXISTEM: marcar o segundo ⛔ não desmarca o primeiro.
+    await tosse.click();
+    await expect(engolir).toHaveAttribute("aria-checked", "true");
+    await expect(tosse).toHaveAttribute("aria-checked", "true");
+
+    // ⚠️ E a saída exclusiva limpa os achados — os dois juntos não existem.
+    await page.getByTestId("avc-item-disfuncao_bulbar-Nenhum desses").click();
+    await expect(engolir).toHaveAttribute("aria-checked", "false");
+    await expect(tosse).toHaveAttribute("aria-checked", "false");
   });
 
   /**
@@ -333,13 +524,13 @@ test.describe("Superfície A — UX clínica", () => {
   test("alerta de atenção precede o meramente informativo", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    // Via aérea ameaçada é atenção; "sem crise no início" é informação.
+    // Via aérea ameaçada é atenção; a crise convulsiva ausente é informação.
     await page.getByTestId("avc-opcao-consciencia_rebaixada-sim").click();
     await page.getByTestId("avc-opcao-crise_no_inicio-nao").click();
 
     const tela = await page.getByTestId("avc-superficie-a-conteudo").innerText();
     expect(tela.indexOf("Via aérea pode estar ameaçada"))
-      .toBeLessThan(tela.indexOf("Sem crise no início"));
+      .toBeLessThan(tela.indexOf("Sem crise convulsiva no início do quadro"));
   });
 
   /**
@@ -447,7 +638,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     // ⚠️ E o horário só aparece DEPOIS da ação: abrir o seletor e confirmar.
     await informarHorario(page, "hora_chegada");
-    await expect(page.getByTestId("avc-hora-valor-hora_chegada")).toHaveText(/^\d{2}:\d{2} ✎$/);
+    await expect(page.getByTestId("avc-hora-valor-hora_chegada")).toHaveText(/^✓ \d{2}:\d{2} ✎$/);
   });
 
   /**
@@ -470,8 +661,12 @@ test.describe("Superfície A — UX clínica", () => {
     await expect(pend, "identificador interno não é linguagem clínica")
       .not.toContainText("estabilizacao");
 
-    await expect(page.getByTestId("avc-pendencia-tc_realizada")).toContainText("C · Imagem");
     await expect(page.getByTestId("avc-pendencia-deficit_focal")).toContainText("B · Neurológico");
+    /**
+     * ⛔ E a de imagem ⛔ não aparece: desde 2026-08-29 só é exibida a pendência
+     * cujo campo existe, e a Superfície C ⛔ não foi construída (E-26, I-7).
+     */
+    await expect(page.getByTestId("avc-pendencia-tc_realizada")).toHaveCount(0);
   });
 
   /**
@@ -507,7 +702,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     // 4 · e nenhum fato temporal entra no estado, nem forçando o clique
     await confirmar.click({ force: true });
-    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^registrar$/i);
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^Informar horário$/i);
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem"),
       "pendência resolvida sem o médico informar nada seria o pior desfecho").toBeVisible();
 
@@ -518,7 +713,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     // 6 · ao confirmar, aí sim o fato entra na trilha
     await confirmar.click();
-    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^\d{2}:\d{2} ✎$/);
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^✓ \d{2}:\d{2} ✎$/);
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
   });
 
@@ -536,7 +731,7 @@ test.describe("Superfície A — UX clínica", () => {
     // ⚠️ E habilitado aqui SIGNIFICA algo: o clique grava de verdade.
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await expect(page.getByTestId("avc-hora-valor-hora_inicio_observado"))
-      .toHaveText(/^\d{2}:\d{2} ✎$/);
+      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
   });
 
   /**

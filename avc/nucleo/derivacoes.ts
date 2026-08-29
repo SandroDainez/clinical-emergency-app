@@ -14,62 +14,20 @@
 
 import type { EstadoAvc } from "./estado";
 import { valorAtual } from "./estado";
-import type { Vazio } from "./tipos";
+import { numero, selecaoDe, ternario, VAZIOS } from "./leitura";
+import { NAO_SEI, SEM_ACHADOS } from "../conteudo/campo";
+import type { Leitura } from "./leitura";
+import type { Pendencia, Vazio } from "./tipos";
 
 /**
- * O resultado de uma derivação.
+ * ⚠️ `Leitura`, `numero()` e `ternario()` MORAM EM `./leitura` desde 2026-08-28.
  *
- * ⚠️ `desconhecido` é um valor de PRIMEIRA CLASSE, ⛔ não a ausência de resposta.
- * Sem ele, "não sei" e "não" ocupariam o mesmo lugar — que é exatamente o erro
- * que **E-23** existe para impedir.
+ * Saíram daqui quando a Superfície B nasceu: duas cópias de `ternario()` é a
+ * forma mais direta de um "não sei" virar "não" numa superfície e não na outra.
+ * O reexport mantém o endereço antigo funcionando para quem já importava daqui.
  */
-export type Leitura = {
-  readonly conclusao: "sim" | "nao" | "desconhecido";
-  /**
-   * O que o médico lê de relance — curto e acionável.
-   *
-   * ⚠️ É esta frase que vai para a tela de atendimento. A longa fica atrás do
-   * ⓘ, junto com insumos e fonte: rastreabilidade ⛔ não pode disputar espaço
-   * com conduta na porta do pronto-socorro (§7.3).
-   */
-  readonly curto: string;
-  /**
-   * Quanto esta leitura pede da atenção **agora**.
-   *
-   * ⚠️⚠️ ⛔ NÃO É A POLARIDADE DA CONCLUSÃO, e a diferença é clínica. "SpO₂ acima
-   * da meta" e "SpO₂ abaixo da meta" são ambas `conclusao` definida, e só uma
-   * delas pede alguma coisa. No outro sentido, "peso não informado" é
-   * `desconhecido` e ainda assim merece destaque, porque alimenta dose.
-   *
-   * ⚠️ `atencao` ⛔ NUNCA significa "bloqueia": nenhuma leitura desta superfície
-   * trava terapia tempo-dependente (E-49). Significa "olhe para isto primeiro".
-   */
-  readonly tom: "atencao" | "pendente" | "informativo";
-  /** Frase de apoio, em PT. ⛔ Traduzida no render, nunca aqui. */
-  readonly texto: string;
-  /** Os campos que produziram esta leitura (E-22). */
-  readonly insumos: readonly string[];
-  /** O slot de fonte que a sustenta (E-30). */
-  readonly fonte: string;
-};
-
-const VAZIOS: readonly string[] = ["nao_perguntado", "nao_sei"];
-
-/** O valor numérico de um campo, ou `undefined` quando vazio ou não informado. */
-function numero(estado: EstadoAvc, campo: string): number | undefined {
-  const f = valorAtual(estado, campo);
-  if (!f) return undefined;
-  if (typeof f.valor === "number") return f.valor;
-  return undefined;
-}
-
-/** `true`/`false`/`undefined` para campos de resposta. ⛔ Vazio nunca vira `false`. */
-function ternario(estado: EstadoAvc, campo: string): boolean | undefined {
-  const f = valorAtual(estado, campo);
-  if (!f) return undefined;
-  if (VAZIOS.includes(String(f.valor))) return undefined;
-  return f.valor === "sim";
-}
+export type { Leitura };
+export { numero, ternario };
 
 /**
  * SUPORTE DE VIA AÉREA — §4.1 rec. 1 · **COR 1 · LOE C-LD**
@@ -79,7 +37,22 @@ function ternario(estado: EstadoAvc, campo: string): boolean | undefined {
  */
 export function suporteDeViaAerea(estado: EstadoAvc): Leitura {
   const consc = ternario(estado, "consciencia_rebaixada");
-  const bulbar = ternario(estado, "disfuncao_bulbar");
+  /**
+   * ⚠️⚠️ A DIFICULDADE DE PROTEGER A VIA AÉREA VIROU SELEÇÃO MÚLTIPLA
+   * (2026-08-28), e por isso ⛔ NÃO passa por `ternario()` — que devolveria
+   * `false` para qualquer conjunto de achados, lendo cinco sinais presentes
+   * como "não há".
+   *
+   * ⚠️ ⛔ NÃO HÁ CONTAGEM: **um** achado já é gatilho. A fonte nomeia
+   * *"bulbar dysfunction"* e ⛔ não pede quantidade — exigir dois seria uma
+   * regra minha, num lugar onde a consequência é aspiração.
+   */
+  const achados = selecaoDe(estado, "disfuncao_bulbar");
+  const bulbar = achados.some((a) => a !== SEM_ACHADOS && a !== NAO_SEI)
+    ? true
+    : achados.includes(SEM_ACHADOS)
+      ? false
+      : undefined;
   const insumos = ["consciencia_rebaixada", "disfuncao_bulbar"];
   const fonte = "F-23";
   if (consc === true || bulbar === true) {
@@ -150,26 +123,258 @@ export function spo2AbaixoDaMeta(estado: EstadoAvc): Leitura {
 }
 
 /**
- * HIPOGLICEMIA — §4.5 rec. 1 · **COR 1 · LOE C-LD**
+ * GLICEMIA — os DOIS extremos que a fonte nomeia, com forças diferentes.
  *
- * ⚠️ Aqui `<60 mg/dL` é **limite** de verdade, ⛔ não meta: a fonte diz
- * *"hypoglycemia (blood glucose <60 mg/dL) should be treated"*.
+ * ⚠️⚠️ ⛔ NÃO SÃO A MESMA REGRA, e ⛔ não podem ser achatados num "fora da faixa":
  *
- * ⛔ Os outros dois números do documento ⛔ NÃO são usados aqui: `<50` é rótulo de
- * "grave" em texto de apoio, e `<40` é desfecho de segurança de ensaio. Cada um
- * com a sua finalidade (F-06).
+ * · **`<60 mg/dL`** — §4.5 rec. 1, **COR 1 · LOE C-LD**: *"hypoglycemia (blood
+ *   glucose <60 mg/dL) should be treated"*. É **limite**, com recomendação
+ *   formal atrás dele;
+ * · **`>400 mg/dL`** — §4.6.1, *Supportive Text* 5, ⚠️ **sem COR/LOE**:
+ *   *"Severe hypo- and hyperglycemia is **typically defined** as <50 and >400
+ *   mg/dL, respectively."* É **rótulo de gravidade**, com hedge, e o papel dele
+ *   aqui é de **possível mimetizador** — §4.5 rec.: *"urgently treat severe
+ *   hypoglycemia and hyperglycemia, **which may mimic acute stroke
+ *   presentations**"*.
+ *
+ * ⛔⛔ O QUE ESTA LEITURA ⛔ NUNCA DIZ (instrução do autor, 2026-08-29):
+ * ⛔ "contraindicação à trombólise" · ⛔ "não elegível" · ⛔ "aguardar
+ * obrigatoriamente normalizar para continuar". Hiperglicemia grave ⛔ não
+ * contraindica IVT e ⛔ não bloqueia superfície nenhuma — e, corrigida a
+ * glicemia, se o déficit incapacitante persistir, a própria diretriz recomenda
+ * IVT no paciente de outra forma elegível.
+ *
+ * ⛔⛔ E ⛔ NÃO ENTRA AQUI O `>180 mg/dL`: ele pertence ao **manejo** da
+ * hiperglicemia no AVC — dado observacional, com o momento ideal em relação à
+ * reperfusão declarado desconhecido pela própria fonte. Papel clínico
+ * DIFERENTE do `>400` como mimetizador; misturá-los transformaria uma conduta
+ * de suporte numa regra de mimetismo que a fonte ⛔ não escreveu.
+ *
+ * ⛔ Os outros dois números ⛔ também não entram: `<50` é o rótulo simétrico de
+ * "grave", e `<40` é desfecho de segurança de ensaio (F-06).
  */
-export function hipoglicemia(estado: EstadoAvc): Leitura {
+export function glicemia(estado: EstadoAvc): Leitura {
   const g = numero(estado, "glicemia");
   const insumos = ["glicemia"];
   const fonte = "F-06";
   if (g === undefined) {
     // ⚠️ E-23: glicemia desconhecida ⛔ NÃO é glicemia normal.
-    return { conclusao: "desconhecido", tom: "pendente", curto: "Glicemia ainda não informada", texto: "Glicemia não informada — desconhecida não é normal", insumos, fonte };
+    return {
+      conclusao: "desconhecido",
+      tom: "pendente",
+      curto: "Glicemia ainda não informada",
+      texto: "Glicemia não informada — desconhecida não é normal",
+      insumos,
+      fonte,
+    };
   }
-  return g < 60
-    ? { conclusao: "sim", tom: "atencao", curto: "Hipoglicemia — corrigir", texto: "Hipoglicemia: a fonte recomenda tratar para evitar complicações", insumos, fonte }
-    : { conclusao: "nao", tom: "informativo", curto: "Glicemia acima do limite de tratar", texto: "Glicemia acima do limite que a fonte manda tratar", insumos, fonte };
+  if (g < 60) {
+    return {
+      conclusao: "sim",
+      tom: "atencao",
+      curto: "Hipoglicemia: abaixo de 60 mg/dL, a fonte manda tratar",
+      texto: "A fonte recomenda tratar a hipoglicemia, e reavaliar o déficit depois de normalizada a glicemia",
+      insumos,
+      fonte,
+    };
+  }
+  if (g > 400) {
+    return {
+      conclusao: "sim",
+      tom: "atencao",
+      /**
+       * ⚠️ "GRAVE" CARREGA O HEDGE DA FONTE. O verbatim diz *typically defined*
+       * — ⛔ não é limite absoluto universal, e a leitura ⛔ não pode endurecê-lo.
+       */
+      curto: "Hiperglicemia grave — pode mimetizar déficit neurológico",
+      texto: "A fonte define hiperglicemia grave tipicamente acima de 400 mg/dL e a trata como possível mimetizador. Corrigir a alteração glicêmica e reavaliar o déficit depois da correção",
+      insumos,
+      fonte,
+    };
+  }
+  return {
+    conclusao: "nao",
+    tom: "informativo",
+    /**
+     * ⚠️ A FRASE ⛔ NÃO PODE AFIRMAR MAIS DO QUE AS REGRAS IMPLEMENTADAS —
+     * decisão do autor, 2026-08-29. "Sem hipoglicemia nem hiperglicemia grave"
+     * soava como um veredito glicêmico geral; o que o app conferiu foram os
+     * DOIS cortes que ele aplica, e ⛔ nada além disso.
+     */
+    curto: "Sem hipoglicemia significativa nem hiperglicemia grave pelos critérios aplicados aqui",
+    texto: "Entre os dois extremos que a fonte nomeia para o AVC agudo: acima de 60 mg/dL, que é o limite abaixo do qual ela manda tratar, e abaixo do valor que ela tipicamente define como hiperglicemia grave",
+    insumos,
+    fonte,
+  };
+}
+
+/**
+ * ⚠️ Compatibilidade de nome: a regra do `<60` continua consultável por si.
+ * ⛔ Não é uma segunda implementação — chama a mesma leitura (I6).
+ */
+export function hipoglicemia(estado: EstadoAvc): Leitura {
+  return glicemia(estado);
+}
+
+/**
+ * A REAVALIAÇÃO DO DÉFICIT DEPOIS DA CORREÇÃO GLICÊMICA.
+ *
+ * ⚠️⚠️ ELA EXISTE PORQUE A FONTE MANDA REAVALIAR, ⛔ não porque falta um campo:
+ * *"clinical deficits should be assessed after correction of glucose to
+ * evaluate thrombolytic eligibility"* (§4.6.1, *Supportive Text* 5) e *"clinical
+ * deficits should be assessed after correction of glucose"* na hipoglicemia
+ * como mimetizador (§4.6.1 r6, **COR 1 · C-LD**).
+ *
+ * ⚠️⚠️ É DERIVADA DA TRILHA, ⛔ NÃO DE UM SINALIZADOR GRAVADO: houve glicemia
+ * fora dos extremos nomeados, veio depois uma glicemia dentro deles (a
+ * correção), e ⛔ nenhum registro neurológico é POSTERIOR a essa correção. É a
+ * §3.1 pagando: a trilha guarda a ordem dos fatos, e a ordem é a regra.
+ *
+ * ⛔ ELA ⛔ NÃO BLOQUEIA NADA. Ela lembra — e o que lembra ⛔ não impede: o déficit
+ * que persistir depois da correção ⛔ não deixa de ser elegível por isso.
+ */
+/**
+ * OS CINCO ESTADOS DA REAVALIAÇÃO — ⚠️ **fonte única**.
+ *
+ * ⚠️⚠️ A LEITURA E A PENDÊNCIA LEEM DAQUI, e ⛔ não cada uma da sua conta. Duas
+ * cópias desta lógica é a I6 aplicada a tempo em vez de dose: as duas
+ * "funcionariam", e num dia qualquer a pendência diria que falta reavaliar
+ * enquanto o alerta diria que já foi — com o médico decidindo por uma delas.
+ */
+export type EstadoDaReavaliacao =
+  | "sem_glicemia"
+  | "sem_alteracao"
+  | "alterada_agora"
+  | "corrigida_sem_exame"
+  | "reavaliado";
+
+export function estadoDaReavaliacao(estado: EstadoAvc): EstadoDaReavaliacao {
+  const medidas = estado.fatos.filter(
+    (f) => f.campo === "glicemia" && typeof f.valor === "number"
+  );
+  const foraDosExtremos = (v: number) => v < 60 || v > 400;
+
+  if (medidas.length === 0) return "sem_glicemia";
+  if (!medidas.some((f) => foraDosExtremos(f.valor as number))) return "sem_alteracao";
+
+  const ultima = medidas[medidas.length - 1];
+  if (foraDosExtremos(ultima.valor as number)) return "alterada_agora";
+
+  /**
+   * ⚠️ CORRIGIDA. A pergunta passa a ser de ORDEM: houve exame neurológico
+   * DEPOIS da correção? ⛔ Um exame anterior ⛔ não responde — ele descreve o
+   * paciente de antes, que é justamente o que o mimetizador pode ter alterado.
+   */
+  const neurologicoDepois = estado.fatos.some(
+    (f) =>
+      /**
+       * ⚠️ OS DOIS NIHSS CONTAM COMO EXAME POSTERIOR — o calculado aqui e o
+       * informado por fora —, porque a pergunta é *"houve reavaliação depois da
+       * correção?"*. ⛔ O que o externo ⛔ não pode é DERIVAR achado (isso é
+       * `derivacoes-b`); registrar que alguém reavaliou, ele pode.
+       */
+      (f.campo === "deficit_focal"
+        || f.campo === "nihss_calculado"
+        || f.campo === "nihss_informado") &&
+      f.horaRegistro > ultima.horaRegistro
+  );
+  return neurologicoDepois ? "reavaliado" : "corrigida_sem_exame";
+}
+
+/**
+ * ⚠️⚠️ A PENDÊNCIA DERIVADA — decisão do autor, 2026-08-29: o estado
+ * *"corrigida, e ainda sem exame posterior"* ⛔ não pode ser só um alerta; ele
+ * tem de aparecer nas **Pendências do atendimento**, com dono e destino.
+ *
+ * ⚠️⚠️ ELA ⛔ NÃO É "CAMPO VAZIO", e é por isso que ⛔ não pode passar por
+ * `pendenciasAbertas()`: `deficit_focal` pode já ter valor — de ANTES da
+ * correção — e a pendência tem de continuar aberta mesmo assim. Aqui o que
+ * resolve é a **ordem**, ⛔ não a presença.
+ *
+ * ⛔ E ela ⛔ não bloqueia nada: pendência é lembrete com endereço (E-07), e
+ * ⛔ nenhuma superfície fecha por causa dela. ⛔ Ela também ⛔ não significa
+ * contraindicação nem inelegibilidade — o déficit que persistir depois da
+ * correção ⛔ não deixa de ser elegível por isso.
+ */
+export function pendenciasDerivadas(estado: EstadoAvc): readonly Pendencia[] {
+  if (estadoDaReavaliacao(estado) !== "corrigida_sem_exame") return [];
+  return [
+    {
+      id: "reavaliar_deficit_pos_glicemia",
+      rotulo: "Reavaliar déficit neurológico após correção da glicemia",
+      dono: "neurologico",
+      /**
+       * ⚠️ O campo é o endereço do TOQUE, ⛔ não o critério de fechamento: quem
+       * fecha esta pendência é um registro POSTERIOR à correção, e isso quem
+       * mede é `estadoDaReavaliacao`.
+       */
+      campo: "deficit_focal",
+      resolvePor: "Registrar o exame neurológico depois da correção",
+    },
+  ];
+}
+
+export function reavaliacaoAposCorrecao(estado: EstadoAvc): Leitura {
+  const insumos = ["glicemia", "deficit_focal", "nihss_calculado", "nihss_informado"];
+  const fonte = "F-06";
+  const situacao = estadoDaReavaliacao(estado);
+
+  /**
+   * ⚠️⚠️ SEM GLICEMIA NENHUMA, ⛔ NÃO SE NEGA NADA — a trava pegou isto: a
+   * primeira versão devolvia "sem alteração glicêmica" com o estado VAZIO, que é
+   * afirmar sobre um dado que ninguém informou (**E-23**). Sem medida, o que se
+   * sabe é que ⛔ não se sabe.
+   */
+  if (situacao === "sem_glicemia") {
+    return {
+      conclusao: "desconhecido",
+      tom: "informativo",
+      curto: "Reavaliação após correção depende da glicemia, ainda não informada",
+      texto: "Ela passa a valer quando houver hipoglicemia ou hiperglicemia grave registrada",
+      insumos,
+      fonte,
+    };
+  }
+
+  if (situacao === "sem_alteracao") {
+    return {
+      conclusao: "nao",
+      tom: "informativo",
+      curto: "Sem alteração glicêmica que peça reavaliar o déficit",
+      texto: "A reavaliação do déficit após correção vale quando houve hipoglicemia ou hiperglicemia grave",
+      insumos,
+      fonte,
+    };
+  }
+
+  if (situacao === "alterada_agora") {
+    return {
+      conclusao: "desconhecido",
+      tom: "atencao",
+      curto: "Corrigir a glicemia e reavaliar o déficit depois da correção",
+      texto: "A alteração glicêmica ainda está registrada. Depois de corrigida, o déficit precisa ser reavaliado",
+      insumos,
+      fonte,
+    };
+  }
+
+  return situacao === "reavaliado"
+    ? {
+        conclusao: "sim",
+        tom: "informativo",
+        curto: "Déficit reavaliado depois da correção glicêmica",
+        texto: "Há registro neurológico posterior à correção da glicemia",
+        insumos,
+        fonte,
+      }
+    : {
+        conclusao: "desconhecido",
+        tom: "atencao",
+        curto: "Glicemia corrigida — reavaliar o déficit agora",
+        texto: "A fonte pede avaliar o déficit depois da correção da glicemia. Isto não impede nem atrasa nenhuma terapia",
+        insumos,
+        fonte,
+      };
 }
 
 /**
@@ -187,17 +392,37 @@ export function criseNoInicio(estado: EstadoAvc): Leitura {
   const insumos = ["crise_no_inicio"];
   const fonte = "F-24";
   if (crise === undefined) {
-    return { conclusao: "desconhecido", tom: "pendente", curto: "Crise no início ainda não informada", texto: "Ocorrência de crise no início ainda não informada", insumos, fonte };
+    return {
+      conclusao: "desconhecido",
+      tom: "pendente",
+      curto: "Crise convulsiva no início do quadro ainda não informada",
+      texto: "Ocorrência de crise convulsiva no início do quadro ainda não informada",
+      insumos,
+      fonte,
+    };
   }
   return crise
     ? {
         conclusao: "sim",
-        tom: "informativo", curto: "Crise no início: contexto, não exclui AVC",
+        tom: "informativo", curto: "Houve crise convulsiva no início: é contexto, e não exclui AVC",
         texto: "Crise no início entra como contexto e possível mimetizador — não exclui AVC nem indica anticonvulsivante por si",
         insumos,
         fonte,
       }
-    : { conclusao: "nao", tom: "informativo", curto: "Sem crise no início", texto: "Sem crise no início", insumos, fonte };
+    : {
+        conclusao: "nao",
+        tom: "informativo",
+        /**
+         * ⚠️ "Sem crise no início" ⛔ não dizia QUAL crise — relato do autor,
+         * 2026-08-29. Na lista de alertas, longe do campo, a palavra sozinha
+         * ⛔ não se sustenta: crise hipertensiva? crise de agitação? A frase
+         * nomeia o achado inteiro.
+         */
+        curto: "Sem crise convulsiva no início do quadro",
+        texto: "Sem crise convulsiva no início do quadro",
+        insumos,
+        fonte,
+      };
 }
 
 /**
@@ -256,7 +481,7 @@ export function pressaoArterial(estado: EstadoAvc): Leitura {
   }
   return {
     conclusao: "sim",
-    tom: "informativo", curto: "PA registrada",
+    tom: "informativo", curto: "PA registrada — a meta depende da reperfusão, ainda não definida",
     texto: "Pressão registrada — o significado depende do contexto de reperfusão, ainda não definido",
     insumos,
     fonte,
@@ -269,7 +494,8 @@ export function leiturasDaSuperficieA(estado: EstadoAvc): readonly (Leitura & { 
     { id: "via_aerea", ...suporteDeViaAerea(estado) },
     { id: "oxigenio", ...oxigenio(estado) },
     { id: "spo2_meta", ...spo2AbaixoDaMeta(estado) },
-    { id: "hipoglicemia", ...hipoglicemia(estado) },
+    { id: "glicemia", ...glicemia(estado) },
+    { id: "reavaliacao_glicemia", ...reavaliacaoAposCorrecao(estado) },
     { id: "pressao", ...pressaoArterial(estado) },
     { id: "peso", ...peso(estado) },
     { id: "crise", ...criseNoInicio(estado) },

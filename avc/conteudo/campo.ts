@@ -1,0 +1,201 @@
+/**
+ * O CAMPO CLÍNICO DO AVC — a forma que TODA superfície usa.
+ *
+ * ⛔ Dados puros. ⛔ Nenhum React, ⛔ nenhuma cor, ⛔ nenhuma decisão de tela.
+ *
+ * ── POR QUE ISTO SAIU DE `superficie-a.ts` (2026-08-28) ────────────────────
+ *
+ * Enquanto existia uma superfície só, tipo e conteúdo podiam morar juntos. Com
+ * a Superfície B, `valorDaOpcao` seria escrita DUAS vezes — e o comentário que
+ * ela carrega diz exatamente o que acontece quando as duas divergem: um rótulo
+ * novo cai cru no estado e `ternario()`, que só conhece `sim`/`nao`/`nao_sei`,
+ * o lê como **não**. Duas cópias de um de-para é a mesma família da I6 (cálculo
+ * em dois lugares): as duas "funcionam", e a que decide é a errada.
+ *
+ * ⚠️ Isto ⛔ NÃO é motor genérico do app (§9.1). É o vocabulário de UM módulo, e
+ * ⛔ não sai de `avc/` enquanto um segundo módulo clínico não exigir o mesmo de
+ * forma independente.
+ */
+
+/** Como o campo é preenchido. ⛔ Nunca caixa de texto para valor clínico (§0.3). */
+export type TipoDeCampo =
+  /** Grandeza: barra + ajuste fino. `0` = não informado até a interação (§0.2). */
+  | "grandeza"
+  /** Escolha tocável. `0` não se aplica; ⛔ sem texto livre (§7.6). */
+  | "escolha"
+  /** Hora e minuto. ⛔ Nunca barra deslizante (§7.5). */
+  | "hora"
+  /**
+   * Vários achados que coexistem no mesmo paciente (§7.6).
+   *
+   * ⚠️ ⛔ NÃO é escolha única "por conveniência de implementação": é o contrário
+   * — usar escolha única onde a clínica permite coexistência obrigaria o médico
+   * a eleger UM achado entre os que ele está vendo ao mesmo tempo.
+   */
+  | "multipla"
+  /**
+   * Instrumento com itens próprios, aberto e preenchido item a item.
+   *
+   * ⚠️ A definição dos itens ⛔ NÃO mora no campo: mora na calculadora, com
+   * fonte (ver `avc/conteudo/nihss.ts`). O campo só declara que é escala.
+   */
+  | "escala"
+  /**
+   * Grau de uma escala com DESCRITOR — uma escolha por linha, ⛔ não um chip.
+   *
+   * ⚠️ O número sozinho ⛔ não se responde: "mRS 3" só significa alguma coisa
+   * para quem tem a tabela na cabeça, e o pedido do autor foi exatamente esse —
+   * o descritor tem de estar visível no momento de escolher.
+   */
+  | "grau";
+
+/**
+ * A faixa de uma grandeza — ⚠️ é limite **de controle**, ⛔ NÃO é limite clínico.
+ *
+ * ⚠️⚠️ LEIA ANTES DE MEXER: estes números existem só para a barra ter começo e
+ * fim. ⛔ Nenhum deles significa "normal", "seguro" ou "tratável". As faixas são
+ * deliberadamente MAIS LARGAS que o plausível, porque uma barra que não alcança
+ * o valor real do paciente é pior que uma barra larga: ela obriga o médico a
+ * registrar um número falso.
+ *
+ * ⚠️⚠️ ⛔ NÃO EXISTE "POSIÇÃO DE PARTIDA". Enquanto ninguém tocou, o polegar fica
+ * no `min` e o valor lido é **não informado** (§0.2).
+ */
+export type Faixa = {
+  readonly min: number;
+  readonly max: number;
+  /** Incremento de −/+. ⚠️ Fino de propósito: a barra faz o grosso. */
+  readonly passo: number;
+};
+
+export type Campo = {
+  readonly id: string;
+  readonly rotulo: string;
+  readonly tipo: TipoDeCampo;
+  /** Para `escolha` e `multipla`: as opções, em PT. ⚠️ Sempre com saída para quem não sabe. */
+  readonly opcoes?: readonly string[];
+  /**
+   * Para `multipla`: as opções que ⛔ NÃO coexistem com nenhuma outra.
+   *
+   * ⚠️ "Nenhum desses" e "Não sei" são estados do EXAME INTEIRO, ⛔ não achados
+   * ao lado dos outros. Sem declará-los, "nenhum desses + tosse ineficaz" seria
+   * um registro possível — e ⛔ não existe paciente assim.
+   */
+  readonly exclusivas?: readonly string[];
+  readonly unidade?: string;
+  /** Para `grandeza`: os limites da barra. ⛔ Nunca limites clínicos (ver `Faixa`). */
+  readonly faixa?: Faixa;
+  /**
+   * Frase curta e **permanente** sob o rótulo, quando a pergunta sozinha é
+   * ambígua o bastante para gerar resposta errada.
+   *
+   * ⚠️ USAR COM PARCIMÔNIA. Texto explicativo permanente rouba a leitura de
+   * relance que a porta do pronto-socorro exige (§7.3). O que é fidelidade à
+   * fonte vai em `nota`, atrás do ⓘ; aqui só entra o que muda a RESPOSTA.
+   */
+  readonly ajuda?: string;
+  /**
+   * ⚠️ O campo aceita **DESCONHECIDO como RESPOSTA** (§7.5 item 6, **E-02**).
+   *
+   * ⚠️⚠️ ⛔ NÃO É "pode ficar em branco" — todo campo pode. É o contrário: é
+   * declarar que "ninguém sabe dizer" é uma resposta clínica COM CONSEQUÊNCIA
+   * PRÓPRIA, diferente de "ainda não perguntei".
+   */
+  readonly aceitaDesconhecido?: true;
+  /**
+   * ⚠️⚠️ **E-10 · O ZERO DESTA GRANDEZA É RESPOSTA CLÍNICA**, ⛔ não ausência.
+   *
+   * §0.2 declara duas famílias de campo numérico com semânticas OPOSTAS para o
+   * mesmo dígito: em peso, PAS e glicemia o zero inicial é "ainda não
+   * informado"; em **escala e escore** — NIHSS total, item do NIHSS, mRS — o
+   * zero é **resposta legítima**, e frequentemente a mais importante.
+   *
+   * ⚠️ ISTO TEM CONSEQUÊNCIA DE CONTROLE, e é por isso que é declarado no
+   * conteúdo e ⛔ não deduzido na tela: com o polegar no mínimo, o botão `−` do
+   * `NumericStepper` nasce DESABILITADO (`noMinimo`), e `+` sobe para 1. Sem
+   * uma porta explícita, "NIHSS 0" — o escore do paciente da Table 4, cuja
+   * população é justamente **NIHSS 0–5** — só seria registrável soltando a
+   * barra exatamente onde ela já está, ou passando por um `1` que ninguém
+   * mediu e que ficaria na trilha como medida.
+   *
+   * ⛔ Marcar isto numa grandeza comum reintroduziria o valor predeterminado
+   * que §0.2 proíbe: um toque em "registrar 0" num campo de peso gravaria um
+   * peso de 0 kg. Só escala e escore.
+   */
+  readonly zeroValido?: true;
+  /** Qual relógio clínico este campo alimenta — ⛔ nunca um genérico (E-36). */
+  readonly relogio?: string;
+  /** O slot que sustenta a existência clínica do campo (E-30). */
+  readonly fonte: string;
+  /**
+   * ⚠️ SEMPRE `false` — em TODAS as superfícies.
+   *
+   * Se algum dia alguém puser `true`, o campo tem de ser conferido contra as
+   * doze marcas 🚫 de `CONSOLIDACAO-CLINICA-AVC.md`, e as provas de superfície
+   * reprovam o arquivo se aparecer um `true` sem passar por lá (E-49).
+   */
+  readonly bloqueiaTerapia: false;
+  /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
+  readonly nota?: string;
+};
+
+/**
+ * OS DOIS ROTULOS EXCLUSIVOS DA SELEÇÃO MÚLTIPLA — ⚠️ fonte única.
+ *
+ * ⚠️ Eles são lidos em DOIS lugares: o conteúdo os oferece como opção, e a
+ * derivação precisa saber que "Nenhum desses" ⛔ não é um achado. Escritos duas
+ * vezes, bastaria mudar um deles para a derivação passar a contar "Nenhum
+ * desses" como achado presente — negativa virando positiva em silêncio.
+ */
+export const SEM_ACHADOS = "Nenhum desses";
+export const NAO_SEI = "Não sei";
+export const EXCLUSIVAS_PADRAO = [SEM_ACHADOS, NAO_SEI] as const;
+
+/** ⚠️ As três respostas que nunca colapsam (E-23, §7.7). */
+export const SIM_NAO_NAO_SEI = ["Sim", "Não", "Não sei"] as const;
+
+/**
+ * A mesma tríade, com a saída chamada **Incerto**.
+ *
+ * ⚠️ POR QUE UM SEGUNDO CONJUNTO EM VEZ DE TRADUZIR "Não sei": em achado que o
+ * médico está **examinando agora**, "não sei" soa a falha de anamnese e empurra
+ * para um "Não" apressado. "Incerto" é a resposta honesta de quem olhou e não
+ * concluiu — e é justamente ela que ⛔ não pode virar "Não" (E-23).
+ */
+export const SIM_NAO_INCERTO = ["Sim", "Não", "Incerto"] as const;
+
+/**
+ * Rótulo de opção → valor gravado na trilha.
+ *
+ * ⚠️ MORA AQUI, ⛔ NÃO NA TELA, e ⛔ NÃO EM DUAS CÓPIAS. A tela já fez este
+ * de-para inline uma vez; se alguém acrescentasse uma opção lá, ela cairia crua
+ * no estado e `ternario()` — que só conhece `sim`, `nao_perguntado` e `nao_sei`
+ * — a leria como **não**. Um rótulo novo viraria negativa silenciosa, que é
+ * exatamente o que E-23 proíbe.
+ *
+ * ⚠️ `Incerto` e `Não sei` gravam o MESMO valor de propósito: para o motor as
+ * duas são a ausência de conclusão. A diferença é de linguagem na tela, e é a
+ * tela que a desfaz de volta em `opcaoDoValor`.
+ *
+ * ⚠️ Um rótulo que ⛔ não está aqui volta como ele mesmo — é o caso dos campos de
+ * **vocabulário próprio** (origem do peso, lateralidade, mRS). Eles ⛔ não podem
+ * ser lidos por `ternario()`, e as provas de superfície conferem isso.
+ */
+export function valorDaOpcao(opcao: string): string {
+  switch (opcao) {
+    case "Sim":
+      return "sim";
+    case "Não":
+      return "nao";
+    case "Não sei":
+    case "Incerto":
+      return "nao_sei";
+    default:
+      return opcao;
+  }
+}
+
+/** O rótulo que este campo usa para um valor gravado — ⛔ nunca o valor cru. */
+export function opcaoDoValor(campo: Campo, valor: string): string | undefined {
+  return campo.opcoes?.find((o) => valorDaOpcao(o) === valor);
+}

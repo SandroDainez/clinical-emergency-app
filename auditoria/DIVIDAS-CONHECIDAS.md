@@ -4030,3 +4030,65 @@ A causa é o caminho de fallback do servidor estático: sem `<id>.html` publicad
 serve-se o `index.html` e o cliente redireciona depois de montar. **Onde fecha:**
 quando a rota `[id]` ganhar uma tela de "módulo não encontrado" renderizada no
 build, em vez de redirecionar no cliente.
+
+---
+
+## D-109 — mRS PRÉVIO SEM DESCRITORES: A ESCALA ENTRA POR GRAU, SEM O QUE CADA GRAU SIGNIFICA
+
+**Registrada em 2026-08-28**, com a Superfície B do AVC (`avc/conteudo/superficie-b.ts`,
+campo `mrs_previo`).
+
+**O que existe:** os graus **0 a 5**, tocáveis, mais "Não sei". O papel do valor
+está transcrito e é fiel — **F-14** resolveu o slot: na IVT é **contexto**
+(*"remain uncertain… on an individual basis"*, ⛔ sem COR/LOE), na EVT é critério
+**como gradiente de força**, e ⛔ em nenhum dos dois é contraindicação automática.
+
+**O que falta:** o TEXTO de cada grau — o que distingue 2 de 3, que é onde a
+escala de fato se aplica à beira do leito.
+
+**Por que ficou assim, e ⛔ não é descuido:** os descritores da escala de Rankin
+modificada ⛔ **não estão transcritos em fonte nenhuma deste repositório**. A
+AHA/ASA 2026 usa o mRS o tempo todo e ⛔ não o define; escrevê-los de memória
+seria **E-31** violada no ponto exato em que ela mais custa — um descritor errado
+⛔ não parece errado, e o médico o leria com a autoridade da fonte que sustenta o
+resto da tela.
+
+**Consequência aceita:** quem não tem a escala na cabeça responde "Não sei" — que
+é resposta legítima (**E-02**) e ⛔ não bloqueia nada. ⚠️ É pior que ter os
+descritores, e é **melhor que inventá-los**.
+
+**Como se fecha:** um slot de fonte próprio para o mRS (escala original ou
+adaptação brasileira validada), transcrito no contrato de §6.11, e os descritores
+passam a existir com endereço. ⛔ Enquanto isso, ⛔ não escrever.
+
+---
+
+## D-110 — `flexBasis: "100%"` DO `NumericStepper`: CERTO EM LINHA, ROUBA CLIQUE EM COLUNA
+
+**Registrada em 2026-08-28**, encontrada pelo e2e da Superfície B do AVC — ⛔ não
+por leitura de código.
+
+**O que acontece:** `components/ui-v2/numeric-stepper.tsx` declara
+`wrapper: { flexBasis: "100%", flexGrow: 1, minWidth: 200 }`. Num contêiner em
+LINHA isso é correto e é o motivo de existir: o controle ocupa a largura inteira
+e quebra. Num contêiner em **coluna**, `flexBasis: 100%` passa a valer sobre a
+**altura**.
+
+**Medido no AVC:** o controle inchou para **250 px** dentro de um cartão de campo
+de **268 px** cujo conteúdo ia até **403 px** — o botão seguinte ficava fora da
+caixa do cartão, e o bloco de baixo por cima dele. O Playwright ficou 60 s
+tentando clicar num botão visível e habilitado, com o texto do bloco seguinte
+interceptando o ponteiro.
+
+⚠️ **É a queixa do autor com causa medível:** *"botões ruins de selecionar… tem
+que ficar procurando onde tem que clicar"*. Não era só contraste — havia
+elemento sobreposto comendo o toque.
+
+**O que foi feito:** neutralizado **no consumidor** (`components/avc/campos-clinicos.tsx`,
+`style={e.stepper}` com `flexGrow: 0, flexBasis: "auto"`), e ⛔ **não** no
+componente: lá o valor está certo para quem o usa em linha, e mudá-lo mexeria no
+layout de todos os módulos sem necessidade.
+
+**O que fica em aberto:** ⛔ ninguém mediu os OUTROS consumidores em coluna. A
+dívida é a varredura — quais telas põem `NumericStepper` dentro de uma coluna e
+têm o mesmo elemento sobreposto sem que ninguém tenha reparado.

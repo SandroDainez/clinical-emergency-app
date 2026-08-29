@@ -83,9 +83,28 @@ export default function SeletorDeHora({
     onMudar(Math.min(agora, instante + minutos * MINUTO));
   }
 
+  /**
+   * ⚠️⚠️ O TETO PRECISA SE ANUNCIAR — relato do autor, 2026-08-29: *"quando
+   * chega em 51 min não aumenta quando clico no mais"*. Ele estava certo: eram
+   * 04:51, o teto é `agora`, e o `+` continuava com cara de botão vivo
+   * engolindo toque após toque.
+   *
+   * ⚠️ A REGRA ⛔ NÃO MUDOU e ⛔ não pode mudar: os quatro marcos desta superfície
+   * já aconteceram, e um marco no futuro produz decorrido NEGATIVO — janela
+   * impossível em toda superfície que contar tempo a partir dele. O que muda é
+   * que agora ela é VISÍVEL: botão desabilitado e a razão escrita.
+   */
+  const noTeto = instante >= agora;
+
   return (
-    <View style={e.raiz} testID="avc-seletor-hora">
-      <Text style={e.rotulo}>{tr(rotulo)}</Text>
+    /**
+     * ⚠️ O RÓTULO SAIU DA TELA (2026-08-29): o cartão do campo, logo acima, já
+     * diz de que marco se trata. Repetido dentro do seletor, ele produzia a
+     * duplicação que o autor apontou — "as informações são semelhantes, meio
+     * duplicadas". ⛔ Ele ⛔ não sumiu: virou nome acessível do bloco, para quem
+     * navega por leitor de tela e ⛔ não vê o cartão de cima.
+     */
+    <View style={e.raiz} testID="avc-seletor-hora" accessibilityLabel={tr(rotulo)}>
       {/**
         * ⚠️ MESMA REGRA DA BARRA (§0.2): o controle precisa estar posicionado em
         * algum lugar, e esse lugar ⛔ não pode se ler como valor escolhido. A
@@ -105,33 +124,63 @@ export default function SeletorDeHora({
         numero={String(hora).padStart(2, "0")}
         aoMenos={() => mover(-60)}
         aoMais={() => mover(+60)}
+        maisDesabilitado={noTeto}
         testID="avc-seletor-hora-h"
         e={e}
       />
+      {/**
+        * ⚠️⚠️ O PASSO DO MINUTO É **UM** MINUTO — relato do autor, 2026-08-29:
+        * *"o de min quando clico no mais de minuto não passa um a um, pula
+        * vários minutos"*.
+        *
+        * Ele estava em 5, com o de 1 exilado numa segunda linha. ⛔ Um controle
+        * rotulado "Minuto" com −/+ ao lado promete UM minuto: quem toca espera
+        * 52 e recebe 56, e num campo que decide janela terapêutica a surpresa
+        * ⛔ não é estética. O gesto grosso continua existindo, agora ROTULADO
+        * como o que é (±5 min), embaixo.
+        */}
       <Linha
         rotulo={tr("Minuto")}
         numero={String(minuto).padStart(2, "0")}
-        aoMenos={() => mover(-5)}
-        aoMais={() => mover(+5)}
+        aoMenos={() => mover(-1)}
+        aoMais={() => mover(+1)}
+        maisDesabilitado={noTeto}
         testID="avc-seletor-hora-m"
         e={e}
       />
 
-      {/* ⚠️ Ajuste de 1 minuto separado do de 5: o de 5 é o gesto normal, e este
-          existe porque a diferença de um minuto pode cair dos dois lados de uma
-          janela. ⛔ Não é o mesmo botão com toque longo — gesto escondido em
-          controle de tempo é convite a erro silencioso. */}
+      {/* ⚠️ O salto de 5 min é o atalho, ⛔ não o padrão — e ele diz o tamanho do
+          próprio passo no rótulo. ⛔ Não é o mesmo botão com toque longo: gesto
+          escondido em controle de tempo é convite a erro silencioso. */}
       <View style={e.linhaFina}>
-        <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-menos1" onPress={() => mover(-1)}>
-          <Text style={e.botaoFinoTexto}>−1 {tr("min")}</Text>
+        <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-menos1" onPress={() => mover(-5)}>
+          <Text style={e.botaoFinoTexto}>−5 {tr("min")}</Text>
         </Pressable>
-        <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-mais1" onPress={() => mover(+1)}>
-          <Text style={e.botaoFinoTexto}>+1 {tr("min")}</Text>
+        <Pressable
+          style={[e.botaoFino, noTeto && e.botaoInerte]}
+          accessibilityRole="button"
+          disabled={noTeto}
+          testID="avc-seletor-hora-mais1"
+          onPress={() => mover(+5)}
+        >
+          <Text style={e.botaoFinoTexto}>+5 {tr("min")}</Text>
         </Pressable>
         <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-agora" onPress={() => onMudar(agora)}>
           <Text style={e.botaoFinoTexto}>{tr("Agora")}</Text>
         </Pressable>
       </View>
+
+      {/**
+        * ⚠️ A RAZÃO APARECE SÓ QUANDO O TETO MORDE. Permanente, ela seria mais um
+        * texto explicativo roubando a leitura de relance (§7.3); ausente, o
+        * botão desabilitado vira mistério — e mistério em controle de tempo é o
+        * que faz o médico tocar dez vezes achando que a tela travou.
+        */}
+      {noTeto ? (
+        <Text style={e.teto} testID="avc-seletor-hora-teto">
+          {tr("Este marco já aconteceu — não é possível registrar um horário futuro.")}
+        </Text>
+      ) : null}
 
       <View style={e.acoes}>
         <Pressable style={e.cancelar} accessibilityRole="button" testID="avc-seletor-hora-cancelar" onPress={onCancelar}>
@@ -167,6 +216,7 @@ function Linha({
   numero,
   aoMenos,
   aoMais,
+  maisDesabilitado = false,
   testID,
   e,
 }: {
@@ -174,6 +224,8 @@ function Linha({
   numero: string;
   aoMenos: () => void;
   aoMais: () => void;
+  /** ⚠️ No teto (`agora`), o `+` ⛔ não pode continuar com cara de botão vivo. */
+  maisDesabilitado?: boolean;
   testID: string;
   e: ReturnType<typeof criarEstilos>;
 }) {
@@ -189,10 +241,12 @@ function Linha({
       >
         <Text style={e.passoTexto}>−</Text>
       </Pressable>
-      <Text style={e.linhaNumero}>{numero}</Text>
+      <Text style={e.linhaNumero} testID={`${testID}-numero`}>{numero}</Text>
       <Pressable
-        style={e.passo}
+        style={[e.passo, maisDesabilitado && e.botaoInerte]}
         accessibilityRole="button"
+        aria-disabled={maisDesabilitado}
+        disabled={maisDesabilitado}
         accessibilityLabel={`${rotulo} +`}
         testID={`${testID}-mais`}
         onPress={aoMais}
@@ -233,6 +287,9 @@ const criarEstilos = (tema: Tema) =>
       borderWidth: 1, borderColor: tema.cores.border,
     },
     botaoFinoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    /** ⚠️ Desabilitado se VÊ, ⛔ não some: botão que aparece e some muda o alvo sob o dedo. */
+    botaoInerte: { opacity: 0.35 },
+    teto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
     acoes: { flexDirection: "row", gap: ESPACO.sm },
     cancelar: {
       flex: 1, minHeight: TOQUE.minimo, alignItems: "center", justifyContent: "center",

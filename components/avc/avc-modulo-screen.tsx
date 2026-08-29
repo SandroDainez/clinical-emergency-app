@@ -15,13 +15,16 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { PENDENCIAS_INICIAIS, SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
+import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
+import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
+import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import {
   abrirAtendimento,
   decorridoEmMinutos,
   definirRelogioClinico,
+  desfazerRegistro,
   pendenciasAbertas,
   registrarFato,
   valorAtual,
@@ -29,6 +32,7 @@ import {
 } from "../../avc/nucleo/estado";
 import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
 import SuperficieA from "./superficie-a";
+import SuperficieB from "./superficie-b";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
@@ -70,7 +74,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   // ⚠️ Pendências derivadas: dono numa superfície, ALCANCE GLOBAL (E-07).
   // Elas aparecem aqui independentemente de qual superfície está aberta.
   const pendencias = useMemo(
-    () => pendenciasAbertas(estado, PENDENCIAS_INICIAIS),
+    () => [
+      /**
+       * ⚠️⚠️ AS DERIVADAS VÊM PRIMEIRO, e ⛔ não é ordem alfabética: elas nascem
+       * de algo que ACONTECEU com o paciente — uma glicemia corrigida sem exame
+       * depois —, enquanto as outras nascem de algo que ⛔ nunca foi informado.
+       * O que aconteceu pesa mais na varredura de quem está com pressa.
+       *
+       * ⚠️ E elas ⛔ NÃO passam por `pendenciasAbertas()`: aquilo mede campo
+       * vazio, e aqui o campo pode estar cheio — com o exame de ANTES da
+       * correção. Quem fecha esta é a ORDEM dos fatos, e ela já vem fechada
+       * (ausente da lista) quando o registro posterior existe.
+       */
+      ...pendenciasDerivadas(estado),
+      // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
+      // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
+      ...pendenciasAbertas(estado, pendenciasVigentes()),
+    ],
     [estado]
   );
 
@@ -107,6 +127,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    */
   function medir(campo: string, valor: number) {
     setEstado((e) => registrarFato(e, { campo, valor }, relogio));
+  }
+
+  /**
+   * A ESCALA INTEIRA, NUM GESTO — ⚠️ um fato por item, mais o total.
+   *
+   * ⚠️⚠️ O TOTAL É GRAVADO, e ⛔ não recalculado a cada leitura, por um motivo de
+   * trilha: ele É o valor que o médico confirmou naquele instante. Se um item
+   * for refeito depois, a escala é reconfirmada e o novo total entra como novo
+   * fato — os dois convivem, e a evolução fica legível (§3.1).
+   */
+  function registrarEscala(pontos: Record<string, number>, total: number) {
+    setEstado((e) => {
+      let proximo = e;
+      for (const [item, ponto] of Object.entries(pontos)) {
+        proximo = registrarFato(proximo, { campo: CAMPO_DE_ITEM(item), valor: ponto }, relogio);
+      }
+      return registrarFato(proximo, { campo: "nihss_calculado", valor: total }, relogio);
+    });
+  }
+
+  /**
+   * DESFAZER um registro — ⚠️ a operação que faltava (§7.16).
+   *
+   * ⚠️⚠️ ⛔ NÃO APAGA. Acrescenta uma **correção** à trilha, com motivo, e o valor
+   * atual do campo volta a ser "ninguém respondeu". O registro anterior fica lá,
+   * marcado — porque ele existiu, e esconder que existiu é o que §3.1 proíbe.
+   */
+  function desfazer(campo: string) {
+    setEstado((e) => desfazerRegistro(e, campo, relogio));
   }
 
   /**
@@ -206,6 +255,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onEscolher={escolher}
             onMedir={medir}
             onHora={registrarHora}
+            onDesfazer={desfazer}
+          />
+        ) : atual.id === "neurologico" ? (
+          /**
+           * ⚠️ A Superfície B ⛔ NÃO recebe `agora`: ⛔ não há relógio clínico no
+           * neurológico, e passar o instante por passar convidaria a inventar um
+           * marco temporal onde a fonte não tem nenhum.
+           */
+          <SuperficieB
+            estado={estado}
+            onEscolher={escolher}
+            onMedir={medir}
+            onDesfazer={desfazer}
+            onEscala={registrarEscala}
           />
         ) : (
           <>
@@ -256,7 +319,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           superfície aberta, e o toque leva à dona. Mudou a posição, ⛔ não a
           regra. */}
       <View style={s.bloco} testID="avc-pendencias">
-        <Text style={s.blocoTitulo}>{tr("Pendências")}</Text>
+        <Text style={s.blocoTitulo}>{tr("Pendências do atendimento")}</Text>
+        {/**
+          * ⚠️⚠️ A LINHA EXISTE PORQUE O BLOCO ERA LIDO COMO PARTE DA SUPERFÍCIE
+          * ABERTA — relato do autor, 2026-08-29: *"aqui nessa tela não tem exame
+          * neurológico"*. Ele estava certo sobre o que via: o bloco fica colado
+          * embaixo do conteúdo da superfície, sem nada dizendo que muda de
+          * assunto.
+          *
+          * ⚠️ A REGRA ⛔ NÃO MUDOU: pendência tem dono numa superfície e **alcance
+          * global** (§5.5, E-07), para o médico ⛔ não perder de vista o que falta
+          * enquanto trabalha noutra frente. O que faltava era DIZER isso.
+          */}
+        <Text style={s.blocoNota}>
+          {tr("De todas as superfícies. A letra indica onde resolver.")}
+        </Text>
         {pendencias.length === 0 ? (
           <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>
         ) : (
@@ -288,8 +365,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * era um deles, e só apareceu porque a varredura de texto da
                 * trava visual despejou a tela inteira.
                 */}
+              {/**
+                * ⚠️ VERBO NA FRENTE: "Abrir B · Neurológico" diz o que o toque
+                * FAZ. "B · Neurológico · Resolver" descrevia um lugar e deixava
+                * a ação por último, na tela em que o médico está com pressa.
+                */}
               <Text style={s.pendenciaDono}>
-                {superficie(p.dono).letra} · {tr(superficie(p.dono).titulo)} · {tr("Resolver")}
+                {tr("Abrir")} {superficie(p.dono).letra} · {tr(superficie(p.dono).titulo)}
               </Text>
             </Pressable>
           ))
@@ -313,6 +395,7 @@ const criarEstilos = (tema: Tema) =>
     resumoItem: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     bloco: { gap: ESPACO.sm },
     blocoTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1 },
+    blocoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, marginTop: -ESPACO.xs },
     vazio: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize, fontStyle: "italic" },
     pendencia: {
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao, padding: ESPACO.sm,

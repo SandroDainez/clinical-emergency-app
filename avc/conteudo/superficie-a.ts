@@ -10,136 +10,32 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
-
-/** Como o campo é preenchido. ⛔ Nunca caixa de texto para valor clínico (§0.3). */
-export type TipoDeCampo =
-  /** Grandeza: barra + ajuste fino. `0` = não informado até a interação (§0.2). */
-  | "grandeza"
-  /** Escolha tocável. `0` não se aplica; ⛔ sem texto livre (§7.6). */
-  | "escolha"
-  /** Hora e minuto. ⛔ Nunca barra deslizante (§7.5). */
-  | "hora";
+import type { Campo } from "./campo";
 
 /**
- * A faixa de uma grandeza — ⚠️ é limite **de controle**, ⛔ NÃO é limite clínico.
+ * ⚠️ A FORMA DO CAMPO SAIU DAQUI (2026-08-28) e mora em `./campo`.
  *
- * ⚠️⚠️ LEIA ANTES DE MEXER: estes números existem só para a barra ter começo e
- * fim. ⛔ Nenhum deles significa "normal", "seguro" ou "tratável". As faixas são
- * deliberadamente MAIS LARGAS que o plausível, porque uma barra que não alcança
- * o valor real do paciente é pior que uma barra larga: ela obriga o médico a
- * registrar um número falso.
+ * Enquanto existia uma superfície só, tipo e conteúdo podiam morar juntos. Com
+ * a Superfície B, `valorDaOpcao` nasceria em duas cópias — e o comentário dela
+ * descreve o que acontece quando divergem: rótulo cru no estado, lido como
+ * "não". ⛔ Não trazer de volta.
  *
- * ⚠️⚠️ ⛔ NÃO EXISTE "POSIÇÃO DE PARTIDA". Enquanto ninguém tocou, o polegar fica
- * no `min` e o valor lido é **não informado** (§0.2).
- *
- * ── O DEFEITO QUE ISTO CORRIGE (relatado na revisão de 2026-08-28) ──────────
- *
- * Havia um campo `partida` que punha o polegar no meio da faixa. O NÚMERO já
- * dizia "não informado", mas a BARRA dizia outra coisa: um polegar em 96% de
- * SpO₂ ⛔ não se lê como ausência de escolha — se lê como escolha feita. O
- * relato do autor foi direto: *"quando abre não pode estar predeterminado, tem
- * que estar no zero, aí o usuário seleciona."*
- *
- * ⚠️ Texto e desenho ⛔ não podem discordar sobre o mesmo campo. Um deles é o
- * que o médico apressado lê, e ⛔ não há como saber qual.
+ * ⚠️ O NOME `CampoA` PERMANECE porque é o vocabulário desta superfície e do que
+ * a lê. É apelido do tipo único, ⛔ não um segundo tipo.
  */
-export type Faixa = {
-  readonly min: number;
-  readonly max: number;
-  /** Incremento de −/+. ⚠️ Fino de propósito: a barra faz o grosso. */
-  readonly passo: number;
-};
+export type CampoA = Campo;
+export type { Faixa, TipoDeCampo } from "./campo";
+export {
+  EXCLUSIVAS_PADRAO,
+  NAO_SEI,
+  SEM_ACHADOS,
+  SIM_NAO_INCERTO,
+  SIM_NAO_NAO_SEI,
+  opcaoDoValor,
+  valorDaOpcao,
+} from "./campo";
 
-export type CampoA = {
-  readonly id: string;
-  readonly rotulo: string;
-  readonly tipo: TipoDeCampo;
-  /** Para `escolha`: as opções, em PT. ⚠️ Sempre com saída para quem não sabe. */
-  readonly opcoes?: readonly string[];
-  readonly unidade?: string;
-  /** Para `grandeza`: os limites da barra. ⛔ Nunca limites clínicos (ver `Faixa`). */
-  readonly faixa?: Faixa;
-  /**
-   * Frase curta e **permanente** sob o rótulo, quando a pergunta sozinha é
-   * ambígua o bastante para gerar resposta errada.
-   *
-   * ⚠️ USAR COM PARCIMÔNIA. Texto explicativo permanente rouba a leitura de
-   * relance que a porta do pronto-socorro exige (§7.3). O que é fidelidade à
-   * fonte vai em `nota`, atrás do ⓘ; aqui só entra o que muda a RESPOSTA.
-   */
-  readonly ajuda?: string;
-  /**
-   * ⚠️ O campo aceita **DESCONHECIDO como RESPOSTA** (§7.5 item 6, **E-02**).
-   *
-   * ⚠️⚠️ ⛔ NÃO É "pode ficar em branco" — todo campo pode. É o contrário: é
-   * declarar que "ninguém sabe dizer" é uma resposta clínica COM CONSEQUÊNCIA
-   * PRÓPRIA, diferente de "ainda não perguntei". No último-visto-bem essa
-   * diferença decide caminho: desconhecido é o cenário de seleção por imagem,
-   * e ⛔ não é o mesmo que a pergunta não ter sido feita.
-   *
-   * ⚠️ ⛔ Não marcar por simetria. Marcar onde a fonte e a spec dão consequência
-   * ao desconhecido — em "chegada ao pronto-socorro", desconhecido não existe.
-   */
-  readonly aceitaDesconhecido?: true;
-  /** Qual relógio clínico este campo alimenta — ⛔ nunca um genérico (E-36). */
-  readonly relogio?: string;
-  /** O slot que sustenta a existência clínica do campo (E-30). */
-  readonly fonte: string;
-  /**
-   * ⚠️ SEMPRE `false` nesta superfície.
-   *
-   * Se algum dia alguém puser `true`, o campo tem de ser conferido contra as
-   * doze marcas de `CONSOLIDACAO-CLINICA-AVC.md` — e `prova-avc-superficie-a`
-   * reprova o arquivo se aparecer um `true` sem passar por lá.
-   */
-  readonly bloqueiaTerapia: false;
-  /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
-  readonly nota?: string;
-};
-
-/** ⚠️ As três respostas que nunca colapsam (E-23, §7.7). */
-export const SIM_NAO_NAO_SEI = ["Sim", "Não", "Não sei"] as const;
-
-/**
- * A mesma tríade, com a saída chamada **Incerto**.
- *
- * ⚠️ POR QUE UM SEGUNDO CONJUNTO EM VEZ DE TRADUZIR "Não sei": em achado que o
- * médico está **examinando agora**, "não sei" soa a falha de anamnese e empurra
- * para um "Não" apressado. "Incerto" é a resposta honesta de quem olhou e não
- * concluiu — e é justamente ela que ⛔ não pode virar "Não" (E-23).
- */
-export const SIM_NAO_INCERTO = ["Sim", "Não", "Incerto"] as const;
-
-/**
- * Rótulo de opção → valor gravado na trilha.
- *
- * ⚠️ MORA AQUI, ⛔ NÃO NA TELA. A tela fazia este de-para inline; se alguém
- * acrescentasse uma opção lá, ela cairia crua no estado e `ternario()` — que só
- * conhece `sim`, `nao_perguntado` e `nao_sei` — a leria como **não**. Um rótulo
- * novo viraria negativa silenciosa, que é exatamente o que E-23 proíbe.
- *
- * ⚠️ `Incerto` e `Não sei` gravam o MESMO valor de propósito: para o motor as
- * duas são a ausência de conclusão. A diferença é de linguagem na tela, e é a
- * tela que a desfaz de volta em `opcaoDoValor`.
- */
-export function valorDaOpcao(opcao: string): string {
-  switch (opcao) {
-    case "Sim":
-      return "sim";
-    case "Não":
-      return "nao";
-    case "Não sei":
-    case "Incerto":
-      return "nao_sei";
-    default:
-      return opcao;
-  }
-}
-
-/** O rótulo que este campo usa para um valor gravado — ⛔ nunca o valor cru. */
-export function opcaoDoValor(campo: CampoA, valor: string): string | undefined {
-  return campo.opcoes?.find((o) => valorDaOpcao(o) === valor);
-}
+import { EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NAO_INCERTO, SIM_NAO_NAO_SEI } from "./campo";
 
 /**
  * OS RELÓGIOS — coletados **separadamente**, ⛔ jamais fundidos.
@@ -147,6 +43,15 @@ export function opcaoDoValor(campo: CampoA, valor: string): string | undefined {
  * ⚠️ Decisão do autor em F-02: ⛔ não existe campo genérico de "hora do AVC".
  * A fonte usa seis formulações e conta janelas de quatro marcos distintos; um
  * campo único tornaria as recomendações de janela estendida incomputáveis.
+ */
+/**
+ * ⚠️ "HOUVE SONO ENTRE A ÚLTIMA VEZ BEM E O ACHADO" FOI REMOVIDO em 2026-08-28,
+ * a pedido do autor usando o app. ⛔ Nenhuma derivação o consumia — ele existia
+ * como preparação para o cenário de AVC ao acordar, que ⛔ não está construído.
+ *
+ * ⚠️ A CONSEQUÊNCIA FICA DECLARADA: quando a janela estendida entrar (F-03), o
+ * cenário *wake-up* vai precisar de um marco próprio. ⛔ Ele ⛔ não volta como
+ * este campo — volta com a regra temporal que o justifica, ou ⛔ não volta.
  */
 export const RELOGIOS_A: readonly CampoA[] = [
   {
@@ -188,14 +93,6 @@ export const RELOGIOS_A: readonly CampoA[] = [
     bloqueiaTerapia: false,
     nota: "A fonte conta uma janela a partir deste marco, e ele não é o início.",
   },
-  {
-    id: "houve_sono",
-    rotulo: "Houve sono entre a última vez bem e o achado",
-    tipo: "escolha",
-    opcoes: SIM_NAO_NAO_SEI,
-    fonte: "F-03",
-    bloqueiaTerapia: false,
-  },
 ] as const;
 
 /**
@@ -212,31 +109,76 @@ export const VIA_AEREA_A: readonly CampoA[] = [
     rotulo: "Nível de consciência rebaixado",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
+    /**
+     * ⚠️⚠️ POR QUE ⛔ NÃO É UMA CALCULADORA DE GLASGOW — pergunta do autor,
+     * 2026-08-28.
+     *
+     * 1 · **A fonte ⛔ não menciona Glasgow uma única vez.** Varredura no
+     *     verbatim inteiro da AHA/ASA 2026: zero ocorrências. O instrumento que
+     *     ela recomenda é outro — *"a stroke severity rating scale, preferably
+     *     the NIHSS"* (F-13, COR 1 · B-NR);
+     * 2 · **o nível de consciência já é medido pelo NIHSS**, itens 1a/1b/1c, e
+     *     esses itens são coletados na Superfície B. Uma segunda escala aqui
+     *     mediria a mesma coisa com outro número, e duas medidas do mesmo achado
+     *     divergem — é a I6 aplicada a escore em vez de dose;
+     * 3 · **o que a fonte usa aqui ⛔ não é escore, é gatilho**: §4.1 rec. 1 diz
+     *     *"decreased consciousness or bulbar dysfunction"* e ⛔ **não define
+     *     corte nenhum**. Transformar em número exigiria escolher o ponto de
+     *     corte — que seria meu, ⛔ não da fonte (E-31).
+     *
+     * ⚠️ O Glasgow segue existindo no app para o contexto em que ele é o
+     * instrumento (TCE). ⛔ Trazê-lo para o AVC seria importar a escala errada
+     * para a doença errada.
+     */
+    /**
+     * ⚠️ ⛔ SEM `ajuda` — retirada a pedido do autor em 2026-08-29. A frase
+     * explicava por que ⛔ não há Glasgow aqui, e explicação de PROJETO ⛔ não é
+     * conteúdo de atendimento: `ajuda` existe só para o que muda a RESPOSTA
+     * (§7.3). A pergunta é clara sozinha, e o porquê ficou onde se consulta —
+     * na nota do ⓘ e no comentário acima.
+     */
     fonte: "F-23",
     bloqueiaTerapia: false,
+    nota: "A escala recomendada no AVC é o NIHSS, e o nível de consciência entra nela pelos itens 1a, 1b e 1c. A fonte não define corte e não usa Glasgow no AVC isquêmico.",
   },
   {
     id: "disfuncao_bulbar",
     /**
-     * ⚠️ O RÓTULO DIZ A CONSEQUÊNCIA, não só o nome do achado. "Disfunção
-     * bulbar" sozinha é termo de neurologista; o que a fonte usa o achado para
-     * decidir é **proteger a via aérea**, e é isso que precisa estar visível
-     * para quem responde às 3h da manhã.
+     * ⚠️⚠️ O NOME TÉCNICO SAIU DA PERGUNTA — pedido do autor, 2026-08-28:
+     * *"disfunção bulbar não poderia tirar esse nome e colocar algo de fácil
+     * entendimento e para clicar em disfunções que podem ter?"*.
+     *
+     * "Disfunção bulbar" é termo de neurologista, e I1 já dizia a regra:
+     * **pergunte o que se vê, ⛔ não a classificação**. Quem ⛔ não domina o termo
+     * PARA NA PALAVRA e ⛔ não chega aos sinais que vinham logo depois — que era
+     * exatamente o que estava escondido dentro da `ajuda`.
+     *
+     * ⚠️⚠️ E É SELEÇÃO MÚLTIPLA porque os achados COEXISTEM (§7.6): o mesmo
+     * paciente engasga, acumula saliva e tosse fraco. Escolha única obrigaria a
+     * eleger um entre os que ele está vendo ao mesmo tempo.
+     *
+     * ⛔⛔ ISTO ⛔ NÃO É ALGORITMO DIAGNÓSTICO, e ⛔ não existe contagem: **um
+     * único achado já justifica proteger a via aérea**, e ⛔ nenhum deles exclui
+     * nada. A fonte nomeia o gatilho (*"bulbar dysfunction"*) e ⛔ não lista
+     * sinais nem cortes — a lista é exemplificação para o médico reconhecer do
+     * que se trata, e a conclusão continua sendo dele.
      */
-    rotulo: "Disfunção bulbar / dificuldade para proteger a via aérea",
-    tipo: "escolha",
-    opcoes: SIM_NAO_INCERTO,
-    /**
-     * ⚠️⚠️ ISTO É EXEMPLIFICAÇÃO, ⛔ NÃO É ALGORITMO DIAGNÓSTICO. Nenhum destes
-     * sinais isolados fecha nem exclui disfunção bulbar, e ⛔ não existe contagem
-     * ("dois de quatro"). A frase existe para o médico reconhecer do que se
-     * trata — a conclusão continua sendo dele.
-     */
-    ajuda:
-      "Dificuldade importante para engolir, controlar saliva/secreções, tosse ineficaz ou outros sinais de comprometimento bulbar.",
+    rotulo: "Dificuldade para proteger a via aérea",
+    tipo: "multipla",
+    opcoes: [
+      "Dificuldade para engolir",
+      "Acúmulo de saliva ou secreção",
+      "Tosse fraca ou ineficaz",
+      "Voz ou fala arrastada",
+      "Engasgo com saliva ou água",
+      SEM_ACHADOS,
+      NAO_SEI,
+    ],
+    exclusivas: EXCLUSIVAS_PADRAO,
+    ajuda: "Marque tudo o que estiver presente. Um único achado já pesa, e a lista não é uma pontuação.",
     fonte: "F-23",
     bloqueiaTerapia: false,
-    nota: "Junto com o rebaixamento, é um dos dois gatilhos que a fonte nomeia.",
+    nota: "A fonte nomeia disfunção bulbar como um dos dois gatilhos para suporte de via aérea, junto com o rebaixamento de consciência. Ela não lista sinais nem define corte.",
   },
   {
     id: "hipoxia",
@@ -314,7 +256,7 @@ export const GLICEMIA_A: readonly CampoA[] = [
     faixa: { min: 20, max: 800, passo: 1 },
     fonte: "F-06",
     bloqueiaTerapia: false,
-    nota: "Desconhecida não é normal.",
+    nota: "Desconhecida não é normal. A fonte manda tratar abaixo de 60 mg/dL, e define hiperglicemia grave tipicamente acima de 400 mg/dL, tratada como possível mimetizador.",
   },
 ] as const;
 
@@ -334,7 +276,19 @@ export const PESO_A: readonly CampoA[] = [
     id: "peso_origem",
     rotulo: "Origem do peso",
     tipo: "escolha",
-    opcoes: ["Balança", "Informado", "Estimado", "Não sei"],
+    /**
+     * ⚠️ "Informado" virou "Referido" em 2026-08-28: "informado" era ambíguo —
+     * todo campo desta tela é informado por alguém. O que muda a confiança é
+     * QUEM disse (E-14), e é isso que a `ajuda` agora explicita.
+     */
+    /**
+     * ⚠️ "BALANÇA" SAIU em 2026-08-28, a pedido do autor: *"não faz sentido"*.
+     * E ⛔ não é preciosismo — é o cenário: ⛔ ninguém pesa em balança um paciente
+     * de AVC agudo na porta do pronto-socorro, e uma opção que ⛔ não acontece
+     * ocupa alvo de toque e sugere um caminho que ⛔ não existe.
+     */
+    opcoes: ["Referido", "Estimado", "Não sei"],
+    ajuda: "Referido: dito pelo paciente ou pela família. Estimado: avaliado pela equipe.",
     fonte: "F-09",
     bloqueiaTerapia: false,
     nota: "Com peso estimado, a fonte diz que a banda fina não é necessariamente mais segura.",

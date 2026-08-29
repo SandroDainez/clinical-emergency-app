@@ -80,6 +80,37 @@ export function corrigirFato(
 }
 
 /**
+ * DESFAZER um registro — ⚠️ a quarta operação de §7.16, e a que faltava.
+ *
+ * ── O DEFEITO QUE ISTO FECHA (relato do autor, 2026-08-28) ─────────────────
+ *
+ * *"Cliquei em sem informação e não consigo desmarcar isso"* · *"os outros
+ * botões de deslizar... se tento voltar ao zero não volta, nenhum deles"*.
+ *
+ * Os dois são o mesmo defeito: **depois do primeiro toque, não existia como
+ * DESINFORMAR um campo**. A barra voltava ao mínimo e o campo dizia "30 kg" —
+ * um peso que ninguém mediu, que ⛔ não é ausência, e que alimentaria dose três
+ * telas adiante. O botão de desconhecido, uma vez tocado, ficava tocado.
+ *
+ * ⚠️⚠️ DESFAZER ⛔ NÃO É APAGAR. A trilha é append-only (§3.1): isto ACRESCENTA
+ * um registro de **correção** — o valor anterior fica lá, marcado, porque ele
+ * existiu e alguém precisa poder ver que existiu. O que muda é o valor ATUAL,
+ * que volta a ser `nao_perguntado`.
+ *
+ * ⚠️ E é `correcao`, ⛔ não `medida`: o médico está dizendo que aquele registro
+ * ⛔ nunca deveria ter existido, e ⛔ não que o paciente mudou (§3.4). Tratá-lo
+ * como medida inventaria evolução clínica onde houve engano de toque.
+ */
+export function desfazerRegistro(
+  estado: EstadoAvc,
+  campo: string,
+  relogio: Relogio,
+  motivo = "registro desfeito pelo médico"
+): EstadoAvc {
+  return corrigirFato(estado, { campo, valor: "nao_perguntado", motivo }, relogio);
+}
+
+/**
  * Os registros de um campo, em ordem. ⚠️ A trilha inteira, ⛔ não só o último —
  * é o que separa "a PA está em 168/96" de "a PA sempre esteve em 168/96".
  */
@@ -133,6 +164,15 @@ export function pendenciasAbertas(
      * por nome trocado. Erro de programação grita; ⛔ não vira muro clínico.
      */
     if (!p.campo) throw new Error(`pendenciasAbertas: pendência "${p.id}" sem campo declarado`);
-    return valorAtual(estado, p.campo) === undefined;
+    /**
+     * ⚠️⚠️ `nao_perguntado` REABRE a pendência, e isso ⛔ não é detalhe.
+     *
+     * Desfazer um registro devolve o campo ao estado de não respondido — se a
+     * pendência continuasse fechada, o médico teria desfeito a resposta e o
+     * app continuaria dizendo que aquilo estava resolvido. Seria a pendência
+     * mentindo pelo lado que ninguém confere: o lado que diz "está pronto".
+     */
+    const atual = valorAtual(estado, p.campo);
+    return atual === undefined || atual.valor === "nao_perguntado";
   });
 }

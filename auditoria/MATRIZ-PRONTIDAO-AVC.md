@@ -51,6 +51,16 @@ camada de conteúdo · **Q-03** mecanismo do espanhol
 | **R1.12** | conduta **sem acesso venoso** na hipoglicemia | CLÍN | 🔴 | ⛔ não encontrado em nenhuma fonte | — | fonte complementar | conduta inventada |
 | **R1.13** | crise: três contextos distintos | CLÍN | ✅ | F-24 mapeou os três | F-24 | — | confundir mimetizador com crise pós-AVC |
 
+> ### ⚠️ ATUALIZAÇÃO DE 2026-08-29 — a hiperglicemia grave entrou
+>
+> O `>400 mg/dL` como **hiperglicemia grave e possível mimetizador** (F-06,
+> *Supportive Text*, ⚠️ sem COR/LOE) estava transcrito e ⛔ não implementado. Entrou
+> com correção + **reavaliação do déficit depois dela**, ⛔ sem virar
+> contraindicação e ⛔ sem bloquear nada — `PD-16`.
+>
+> ⛔ O `>180 mg/dL` **continua fora**: é manejo, com o momento ideal em relação à
+> reperfusão declarado desconhecido pela fonte, e ⛔ não é regra de mimetizador.
+
 ## BLOCO 2 · Confirmação por imagem
 
 | ID | descrição | nat. | status | motivo | fonte | dependência | risco |
@@ -64,6 +74,26 @@ camada de conteúdo · **Q-03** mecanismo do espanhol
 
 ## BLOCO 3 · Déficit incapacitante
 
+> ### ⚠️ ATUALIZAÇÃO DE 2026-08-28 — duas linhas deixaram de ser 🔴
+>
+> **R3.7 (D-1)** e **R3.8 (D-5)** eram *decisão médica pendente* no marco
+> documental deste documento (`cb4ff11`). O autor as decidiu, e ambas estão
+> **implementadas com trava e mutação** — ver `DECISOES-DE-PRODUTO.md`, **PD-13**
+> e **PD-14**.
+>
+> ⚠️ **E mais cinco decisões entraram em 2026-08-29**, todas com trava e mutação:
+> **PD-15** (pendência com alcance global, e ⛔ nenhuma pendência sem porta) ·
+> **PD-16** (hiperglicemia grave `>400` como mimetizador, ⛔ nunca contraindicação,
+> com reavaliação derivada da trilha) · **PD-17** (NIHSS calculado aqui × trazido
+> de fora, e o externo ⛔ não deriva item nem contexto) · **PD-18** (lateralidade
+> **motora**, ⛔ não "lado predominante") · **PD-19** (a escala preenche, explica e
+> ⛔ não classifica).
+>
+> ⚠️ **As contagens agregadas ao final deste documento ⛔ NÃO foram refeitas**:
+> elas descrevem o marco `cb4ff11`, e reescrevê-las aqui faria o documento
+> parecer uma medição nova sem que ninguém tenha medido tudo de novo. O que muda
+> é o status DESTAS DUAS LINHAS, e está dito nelas.
+
 | ID | descrição | nat. | status | motivo | fonte | dependência | risco |
 |---|---|---|---|---|---|---|---|
 | **R3.1** | ⛔ NIHSS **total** não classifica isoladamente | CLÍN | ✅ | verbatim e354 | F-17 | — | classificar por escore |
@@ -72,8 +102,8 @@ camada de conteúdo · **Q-03** mecanismo do espanhol
 | **R3.4** | Table 4 é *guidance*, com hedge preservado | CLÍN·TRAD | ✅ | quatro marcas de não-normatividade | F-17 | — | achatar *typically*/*may not* |
 | **R3.5** | leitura **intermediária**, ⛔ nunca SIM/NÃO | COMP | ✅ | **E-46** | decisão + F-17 | — | veredito inventado |
 | **R3.6** | decisão assumida + divergência preservada | COMP·TÉC | 🔧 | exige trilha e autoria | §2.8, §4.5 | **Q-02** | divergência irrecuperável |
-| **R3.7** | escopo da decomposição fora de NIHSS 0–5 | CLÍN | 🔴 | **D-1 aberta** | — | **decisão médica** | extrapolar ou omitir apoio |
-| **R3.8** | consulta a paciente/família como **ação registrada** | COMP | 🔴 | **D-5 aberta** | — | **decisão médica** | — |
+| **R3.7** | escopo da decomposição fora de NIHSS 0–5 | CLÍN | ✅ | **D-1 FECHADA em 2026-08-28** → `PD-13` | F-17 (população da Table 4) | — | extrapolar ou omitir apoio |
+| **R3.8** | consulta a paciente/família como **ação registrada** | COMP | ✅ | **D-5 FECHADA em 2026-08-28** → `PD-14` | F-17 | — | virar requisito por dentro |
 | **R3.9** | déficit leve não incapacitante ≤4,5 h → ⛔ IVT | CLÍN | ✅ | COR 3: No Benefit · B-R | F-17 §4.6.1 r8 | — | — |
 | **R3.10** | decomposição é **superfície pulável** | COMP | ✅ | decidido; *"delaying IVT is potentially harmful"* | decisão + F-17 | — | **atraso da trombólise** |
 

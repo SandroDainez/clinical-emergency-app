@@ -10,7 +10,9 @@
  *   diz nada sobre a tela: um núcleo correto renderizado errado passa aqui, e
  *   foi exatamente o que aconteceu nos testes visuais de 2026-08-28.
  * UNIVERSO: `avc/nucleo/*.ts` compilados — relogio.ts, tipos.ts, estado.ts e
- *   derivacoes.ts. ⛔ Fora do universo: `avc/conteudo/`, `components/avc/`.
+ *   derivacoes.ts —, mais uma varredura de TEXTO sobre todo `.ts`/`.tsx` de
+ *   `avc/` e `components/avc/` para a regra do separador. ⛔ Fora do universo:
+ *   a medicina de `avc/conteudo/` e o desenho de `components/avc/`.
  */
 /**
  * PROVA DO NÚCLEO DO AVC — Q-01 e Q-02.
@@ -28,6 +30,8 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+// ⚠️ `lerFonte` e ⛔ NÃO `fs.readFileSync`: comentário ⛔ não executa nada (R-92).
+const { lerFonte } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
 const falhas = [];
@@ -152,6 +156,59 @@ confere("pendência declara quem a resolve",
   "E-26: pendência sem condição de desbloqueio é muro, não tarefa");
 
 // ── Relatório ──────────────────────────────────────────────────────────────
+// ── O SEPARADOR DA SELEÇÃO MÚLTIPLA É PRIVADO DE `avc/nucleo/selecao.ts` ──
+//
+// ⚠️⚠️ MESMA REGRA QUE O MOTOR LEGADO TEM HÁ MESES (`test:selecao-encapsulada`),
+// aqui para o mundo do AVC — e ela nasceu de um defeito CONCRETO descrito pelo
+// autor: `values.queixas.includes("dor")` casa com "dor torácica" E com "sem
+// dor", dois quadros opostos. Enquanto a leitura passa pelos helpers, esse modo
+// de falhar ⛔ não existe; no dia em que um componente fizer `split`, ele volta.
+//
+// ⚠️ O separador do AVC é DIFERENTE do legado de propósito: dois donos do mesmo
+// formato seriam dois parsers capazes de ler o valor um do outro em silêncio.
+{
+  const casa = path.join("avc", "nucleo", "selecao.ts");
+  const separador = String.fromCharCode(30);
+  const proibidos = [
+    [separador, "o separador literal"],
+    ["\\u001E", "o separador escapado"],
+    ["\\u001e", "o separador escapado em minúscula"],
+    ["fromCharCode(30", "o separador montado em runtime"],
+  ];
+  const raizes = [path.join(appDir, "avc"), path.join(appDir, "components", "avc")];
+  const varridos = [];
+  const violacoes = [];
+  for (const raiz of raizes) {
+    const pilha = [raiz];
+    while (pilha.length) {
+      const atual = pilha.pop();
+      for (const nome of fs.readdirSync(atual)) {
+        const alvo = path.join(atual, nome);
+        if (fs.statSync(alvo).isDirectory()) { pilha.push(alvo); continue; }
+        if (!/\.tsx?$/.test(nome)) continue;
+        varridos.push(alvo);
+        if (alvo.endsWith(casa)) continue;
+        const texto = lerFonte(alvo);
+        for (const [agulha, comoSeChama] of proibidos) {
+          if (texto.includes(agulha)) {
+            violacoes.push(`${path.relative(appDir, alvo)} conhece ${comoSeChama}`);
+          }
+        }
+      }
+    }
+  }
+
+  // ⚠️ Universo derivado do diretório, com piso: uma varredura que roda sobre
+  // nada fica verde sem medir coisa alguma (R-1).
+  confere("a varredura do separador encontrou arquivos para varrer",
+    varridos.length >= 10,
+    `só ${varridos.length} arquivo(s) varrido(s) — a trava pode ter rodado sobre nada`);
+
+  confere("⛔ só `avc/nucleo/selecao.ts` conhece o separador",
+    violacoes.length === 0,
+    `leitura por substring casa "dor" com "sem dor" — dois quadros opostos: ${violacoes.join(" · ")}`);
+}
+
 if (falhas.length) {
   console.error(`\n❌ PROVA DO NÚCLEO DO AVC — ${falhas.length} falha(s), ${ok} conferência(s) ok\n`);
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}`));

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**49 de 63 travas com declaração completa.**
+**50 de 64 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -24,13 +24,19 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 - **PROMETE:** que o núcleo do AVC obedeça às três decisões de Q-01/Q-02/Q-03 — uma porta única de relógio (⛔ nenhum `Date.now()` disperso), trilha APPEND-ONLY em que correção convive com a medida corrigida e exige motivo, e os três vazios (não perguntado / não sei / valor) como estados distintos que ⛔ nunca colapsam.
 - **NÃO PROMETE:** nada sobre MEDICINA. Ele ⛔ não confere corte, dose, janela nem fidelidade à AHA/ASA — isso é `prova-avc-superficie-a` (fidelidade dos campos) e, acima dela, a conferência de fonte, que é do médico. Também ⛔ não diz nada sobre a tela: um núcleo correto renderizado errado passa aqui, e foi exatamente o que aconteceu nos testes visuais de 2026-08-28.
-- **UNIVERSO:** `avc/nucleo/*.ts` compilados — relogio.ts, tipos.ts, estado.ts e derivacoes.ts. ⛔ Fora do universo: `avc/conteudo/`, `components/avc/`.
+- **UNIVERSO:** `avc/nucleo/*.ts` compilados — relogio.ts, tipos.ts, estado.ts e derivacoes.ts —, mais uma varredura de TEXTO sobre todo `.ts`/`.tsx` de `avc/` e `components/avc/` para a regra do separador. ⛔ Fora do universo: a medicina de `avc/conteudo/` e o desenho de `components/avc/`.
 
 ## `test:avc-superficie-a` → `scripts/prova-avc-superficie-a.cjs`
 
 - **PROMETE:** que os campos da Superfície A sejam FIÉIS à fonte no que se pode medir sem julgamento — que `<60 mg/dL` seja limite e `>94%` seja meta e ⛔ nunca o contrário; que ausência ⛔ nunca vire negativa (E-23); que toda escolha ofereça saída de ausência de conclusão e nenhum rótulo caia cru no estado; que todo campo tenha slot de fonte (E-30) e `bloqueiaTerapia: false` (E-49); e que a faixa de cada barra ALCANCE os limites que a fonte escreve, ⛔ sem obrigar o médico a aproximar.
 - **NÃO PROMETE:** que os números clínicos estejam CERTOS — ele confere que o código diz o que o verbatim transcrito diz, ⛔ não que o verbatim esteja bem transcrito nem que a fonte esteja atualizada. Também ⛔ não mede tela: ordem visual, legibilidade e vazamento de dado interno são `e2e/avc-superficie-a`.
 - **UNIVERSO:** `avc/conteudo/superficie-a.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_A`, contados) e as derivações de `avc/nucleo/derivacoes.ts` exercitadas por estado construído. ⛔ Fora do universo: Superfícies B a G, que ainda não existem.
+
+## `test:avc-superficie-b` → `scripts/prova-avc-superficie-b.cjs`
+
+- **PROMETE:** que a Superfície B se comporte como DECOMPOSIÇÃO e ⛔ nunca como veredito — que o sistema ⛔ não conclua "déficit incapacitante"; que o NIHSS **total** ⛔ não classifique nada (a leitura é idêntica de 0 a 42); que os dois quadros da Table 4 preservem o hedge e ⛔ não se cancelem; que a leitura da fonte ⛔ NÃO seja estendida fora da população que ela declara (D-1) sem que isso feche campo nenhum; que a consulta a paciente e família seja registro opcional e ⛔ nunca requisito (D-5); que a divergência tenha UMA direção só e só exista dentro do contexto da fonte; que ⛔ nenhum campo bloqueie terapia (E-49) e que ⛔ nenhuma leitura fale de elegibilidade; que campo de vocabulário próprio ⛔ nunca seja lido por `ternario()`; e que o zero do NIHSS seja resposta, ⛔ não ausência (E-10).
+- **NÃO PROMETE:** que os números clínicos estejam CERTOS — ela confere que o código diz o que o verbatim transcrito diz, ⛔ não que o verbatim esteja bem transcrito. ⛔ Também não mede tela: ordem visual, tamanho de alvo e legibilidade são `e2e/avc-superficie-b`. E ⛔ não diz nada sobre a Superfície A nem sobre elegibilidade, que ainda não existe.
+- **UNIVERSO:** `avc/conteudo/superficie-b.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_B`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-b.ts` exercitadas por estado construído, mais o TEXTO desse arquivo para a trava de `ternario()`. ⛔ Fora do universo: Superfícies A e C a G.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

@@ -32,6 +32,7 @@ const AHA = FONTE_MAE.arquivo;
 const BR_TROMBO = "protocols/fontes-verbatim/bulas-br-tromboliticos.md";
 const BR_PA = "protocols/fontes-verbatim/fontes-br-anti-hipertensivos.md";
 const BR_GLI = "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md";
+const BR_MRS = "protocols/fontes-verbatim/mrs-br.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -55,6 +56,13 @@ export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-19", assunto: "Anti-hipertensivo IV operacional", estado: "parcial", arquivo: BR_PA },
   { id: "F-20", assunto: "Preparo do trombolítico", estado: "parcial", arquivo: BR_TROMBO },
   { id: "F-25", assunto: "Terapêutica anticonvulsiva", estado: "ponteiro", arquivo: AHA },
+  /**
+   * ⚠️ DOIS SLOTS PARA UMA ESCALA, e ⛔ não um: o estudo de validação brasileiro
+   * e a diretriz que publica os descritores respondem por coisas diferentes, e
+   * ⛔ nenhum responde pela do outro (E-30, rastreabilidade por afirmação).
+   */
+  { id: "F-26", assunto: "mRS — validação brasileira e entrevista estruturada", estado: "transcrito", arquivo: BR_MRS },
+  { id: "F-27", assunto: "mRS — descritores operacionais 0 a 6 em português", estado: "parcial", arquivo: BR_MRS },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

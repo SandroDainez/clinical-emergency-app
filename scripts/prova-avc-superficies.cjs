@@ -48,7 +48,7 @@ const R = require(path.join(tmp, "nucleo", "relogio.js"));
 const E = require(path.join(tmp, "nucleo", "estado.js"));
 
 const sups = S.SUPERFICIES;
-console.log(`universo: ${sups.length} superfície(s) · ${S.PENDENCIAS_INICIAIS.length} pendência(s) inicial(is)`);
+console.log(`universo: ${sups.length} superfície(s) · ${S.pendenciasVigentes().length} pendência(s) inicial(is)`);
 
 // ── identidade ≠ rótulo ────────────────────────────────────────────────────
 confere("são sete superfícies", sups.length === 7, "§7.15: o AVC V1 tem sete janelas");
@@ -105,16 +105,46 @@ const ids = new Set(sups.map((s) => s.id));
  * `hora_ultima_vez_bem`, e ela ficava aberta para sempre.
  */
 confere("toda pendência declara o campo que a resolve",
-  S.PENDENCIAS_INICIAIS.every((p) => typeof p.campo === "string" && p.campo.length > 0),
+  S.pendenciasVigentes().every((p) => typeof p.campo === "string" && p.campo.length > 0),
   "E-26: sem campo declarado, a resolução volta a ser dedução por coincidência de nome");
 
 confere("nenhuma pendência deduz o campo do próprio id",
-  S.PENDENCIAS_INICIAIS.every((p) => p.resolvePor && p.resolvePor.length > 0),
+  S.pendenciasVigentes().every((p) => p.resolvePor && p.resolvePor.length > 0),
   "E-26: a condição de resolução é do médico, e precisa estar escrita");
 
 confere("toda pendência aponta para uma superfície existente",
-  S.PENDENCIAS_INICIAIS.every((p) => ids.has(p.dono)),
+  S.pendenciasVigentes().every((p) => ids.has(p.dono)),
   "E-26: pendência com dono inexistente é muro apontando para a parede errada");
+
+/**
+ * ⚠️⚠️ PENDÊNCIA EXIBIDA TEM DE TER CAMPO QUE EXISTE — relato do autor,
+ * 2026-08-29: *"aparece como pendência mas não tem isso nessa tela"*.
+ *
+ * "Tomografia de crânio" apontava para a Superfície de Imagem, ⛔ não construída:
+ * tocar levava a "em construção". É **E-26** ao pé da letra — muro, ⛔ não tarefa
+ * — e a invariante I-7 do próprio autor: pendência sem mecanismo de resolução
+ * REPROVA teste, ⛔ não fica aberta em silêncio.
+ *
+ * ⚠️ O filtro é DERIVADO dos campos que existem: a pendência declarada volta
+ * sozinha quando o campo nascer, e ⛔ não depende de alguém lembrar.
+ */
+{
+  const A = require(path.join(tmp, "conteudo", "superficie-a.js"));
+  const B = require(path.join(tmp, "conteudo", "superficie-b.js"));
+  const campos = new Set([...A.TODOS_OS_CAMPOS_A, ...B.TODOS_OS_CAMPOS_B].map((c) => c.id));
+
+  confere("toda pendência EXIBIDA tem campo que existe",
+    S.pendenciasVigentes().every((p) => campos.has(p.campo)),
+    "pendência que aponta para campo inexistente é muro: o médico toca e cai numa tela em construção");
+
+  confere("a pendência de imagem fica declarada, e ⛔ não exibida",
+    !S.pendenciasVigentes().some((p) => p.id === "tc_realizada"),
+    "a Superfície de Imagem ⛔ não existe — exibi-la seria prometer uma tarefa sem porta");
+
+  confere("⛔ o filtro ⛔ não é lista à mão",
+    S.pendenciasVigentes().length > 0 && S.pendenciasVigentes().length < 3,
+    "filtro derivado dos campos: a pendência volta sozinha quando a superfície dona nascer");
+}
 
 confere("todo slot de fonte citado existe",
   sups.every((s) => s.fontes.every((f) => F.slot(f) !== undefined)),
