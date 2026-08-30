@@ -12,9 +12,17 @@
  * ⛔ NENHUMA MEDICINA NASCE AQUI: ele não sabe que marco está editando, não sabe
  * o que é janela, e ⛔ não decide nada.
  */
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { horaDeExibicao, partesDaHora } from "../../avc/nucleo/formato";
+import {
+  dataCurta,
+  deslocarDias,
+  diasAtras,
+  instanteEmDiaComHora,
+  horaDeExibicao,
+  partesDaHora,
+} from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
@@ -50,7 +58,20 @@ type Props = {
   selecionado: boolean;
   /** "Agora", lido pelo dono através de `Relogio`. ⚠️ Também é o TETO. */
   agora: number;
-  onMudar: (instante: number) => void;
+  /**
+   * ⚠️⚠️ `escolheuValor` DISTINGUE **mexer no dia** de **escolher o horário**.
+   *
+   * ── POR QUE OS DOIS ⛔ NÃO SÃO A MESMA COISA (2026-08-30) ─────────────────
+   *
+   * Tocar em "Ontem" muda o **dia** e deixa a **hora** onde o controle estava
+   * posicionado — que é `agora`, e ⛔ não uma escolha de ninguém. Se isso
+   * habilitasse Confirmar, "última vez bem" viraria *ontem, na hora em que o
+   * médico abriu a tela*: o mesmo defeito de "agora como default silencioso"
+   * que este componente existe para impedir, entrando por uma porta nova.
+   *
+   * ⚠️ Dia muda a posição; **hora, minuto e "Agora" escolhem o valor**.
+   */
+  onMudar: (instante: number, escolheuValor: boolean) => void;
   onConfirmar: () => void;
   onCancelar: () => void;
 };
@@ -80,8 +101,28 @@ export default function SeletorDeHora({
    * inventar um limite que a fonte não escreve.
    */
   function mover(minutos: number) {
-    onMudar(Math.min(agora, instante + minutos * MINUTO));
+    onMudar(Math.min(agora, instante + minutos * MINUTO), true);
   }
+
+  /**
+   * ⚠️ MOVE O DIA, e ⛔ não escolhe o valor. O teto continua sendo `agora`: um
+   * marco no futuro ⛔ não existe, e o controle ⛔ não deixa construí-lo.
+   */
+  function moverDia(dias: number) {
+    onMudar(Math.min(agora, deslocarDias(instante, dias)), false);
+  }
+
+  /** ⚠️ Leva o DIA para N dias atrás, preservando a hora e o minuto atuais. */
+  function irParaDiasAtras(dias: number) {
+    onMudar(Math.min(agora, instanteEmDiaComHora(agora, dias, hora, minuto)), false);
+  }
+
+  const distancia = diasAtras(instante, agora);
+  const ehHoje = distancia === 0;
+  const ehOntem = distancia === 1;
+  /** ⚠️ Fora de hoje e ontem, o passo de dia fica visível: é como se chega a 3 dias. */
+  const [escolhendoData, setEscolhendoData] = useState(false);
+  const mostrarPassoDeDia = escolhendoData || distancia >= 2;
 
   /**
    * ⚠️⚠️ O TETO PRECISA SE ANUNCIAR — relato do autor, 2026-08-29: *"quando
@@ -118,6 +159,63 @@ export default function SeletorDeHora({
       >
         {selecionado ? horaDeExibicao(instante, agora) : tr("não informado")}
       </Text>
+
+      {/**
+        * ⚠️⚠️ A LINHA DE DATA — acrescentada em 2026-08-30 (**D-118**).
+        *
+        * ── O DEFEITO QUE ELA FECHA ────────────────────────────────────────
+        *
+        * O controle tinha hora ±1, minuto ±1 e "Agora", e ⛔ **nenhuma dimensão
+        * de dia**. Uma dose de DOAC de anteontem às 20h exigiria ~40 toques em
+        * "hora −", e um paciente **visto bem anteontem à noite** ⛔ simplesmente
+        * ⛔ não era representável — no relógio que decide janela terapêutica.
+        *
+        * ⚠️ E ⛔ nenhum deles PRÉ-SELECIONA valor clínico: mexer no dia ⛔ não
+        * habilita Confirmar.
+        */}
+      <View style={e.linhaFina} testID="avc-seletor-data">
+        <Pressable
+          style={[e.botaoFino, ehHoje && e.botaoFinoAtivo]}
+          accessibilityRole="button"
+          aria-checked={ehHoje}
+          testID="avc-seletor-data-hoje"
+          onPress={() => { setEscolhendoData(false); irParaDiasAtras(0); }}
+        >
+          <Text style={[e.botaoFinoTexto, ehHoje && e.botaoFinoTextoAtivo]}>{tr("Hoje")}</Text>
+        </Pressable>
+        <Pressable
+          style={[e.botaoFino, ehOntem && e.botaoFinoAtivo]}
+          accessibilityRole="button"
+          aria-checked={ehOntem}
+          testID="avc-seletor-data-ontem"
+          onPress={() => { setEscolhendoData(false); irParaDiasAtras(1); }}
+        >
+          <Text style={[e.botaoFinoTexto, ehOntem && e.botaoFinoTextoAtivo]}>{tr("Ontem")}</Text>
+        </Pressable>
+        <Pressable
+          style={[e.botaoFino, mostrarPassoDeDia && e.botaoFinoAtivo]}
+          accessibilityRole="button"
+          aria-expanded={mostrarPassoDeDia}
+          testID="avc-seletor-data-escolher"
+          onPress={() => setEscolhendoData((v) => !v)}
+        >
+          <Text style={[e.botaoFinoTexto, mostrarPassoDeDia && e.botaoFinoTextoAtivo]}>
+            {tr("Escolher data")}
+          </Text>
+        </Pressable>
+      </View>
+
+      {mostrarPassoDeDia ? (
+        <Linha
+          rotulo={tr("Data")}
+          numero={dataCurta(instante)}
+          aoMenos={() => moverDia(-1)}
+          aoMais={() => moverDia(+1)}
+          maisDesabilitado={ehHoje}
+          testID="avc-seletor-data-passo"
+          e={e}
+        />
+      ) : null}
 
       <Linha
         rotulo={tr("Hora")}
@@ -165,7 +263,7 @@ export default function SeletorDeHora({
         >
           <Text style={e.botaoFinoTexto}>+5 {tr("min")}</Text>
         </Pressable>
-        <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-agora" onPress={() => onMudar(agora)}>
+        <Pressable style={e.botaoFino} accessibilityRole="button" testID="avc-seletor-hora-agora" onPress={() => onMudar(agora, true)}>
           <Text style={e.botaoFinoTexto}>{tr("Agora")}</Text>
         </Pressable>
       </View>
@@ -286,6 +384,8 @@ const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
       borderWidth: 1, borderColor: tema.cores.border,
     },
+    botaoFinoAtivo: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
+    botaoFinoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
     botaoFinoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     /** ⚠️ Desabilitado se VÊ, ⛔ não some: botão que aparece e some muda o alvo sob o dedo. */
     botaoInerte: { opacity: 0.35 },

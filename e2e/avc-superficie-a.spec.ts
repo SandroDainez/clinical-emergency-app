@@ -777,4 +777,28 @@ test.describe("Superfície A — UX clínica", () => {
     // ⛔ E a ajuda diz, na tela, que a fonte não define corte numérico.
     await expect(campo).toContainText(/não define um corte numérico/i);
   });
+
+  /**
+   * ⚠️⚠️ **D-120 NA TELA** — as duas metades de uma aferição, e o gesto que abre
+   * outra. Relato do autor, 2026-08-30: *"PAS + PAD de uma mesma aferição
+   * precisam pertencer à mesma instância de medida."*
+   */
+  test("PA: nova medida é aferição nova, e ⛔ não correção", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    await page.getByTestId("avc-aba-estabilizacao").click();
+
+    // ⚠️ Antes da primeira medida, ⛔ não há o que suceder: o gesto ⛔ não aparece.
+    await expect(page.getByTestId("avc-nova-medida-pressao")).toHaveCount(0);
+
+    await page.getByTestId("avc-degrau-pas-mais-10").click();
+    await page.getByTestId("avc-degrau-pad-mais-10").click();
+    // ⚠️ Com uma medida registrada, o gesto existe.
+    await expect(page.getByTestId("avc-nova-medida-pressao")).toBeVisible();
+
+    await page.getByTestId("avc-nova-medida-pressao").click();
+    // ⛔ A medida nova nasce VAZIA: ela ⛔ não herda a metade da anterior.
+    await expect(page.getByTestId("avc-leitura-curto-pressao"))
+      .toContainText(/ainda não informada/i);
+  });
 });

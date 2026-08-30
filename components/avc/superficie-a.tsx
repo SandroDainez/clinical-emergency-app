@@ -21,23 +21,22 @@
  * precisa do horário da tomografia.
  */
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import {
   CabecalhoDeBloco,
-  CampoDeEscolha,
-  CampoDeGrandeza,
-  CampoDeHora,
-  CampoDeMultipla,
+  CampoDaSuperficie,
   PainelDeLeituras,
   useDetalhes,
 } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO } from "../../design-system/tokens";
+import { useTr } from "../../lib/use-tr";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 
 type Props = {
   estado: EstadoAvc;
@@ -48,6 +47,15 @@ type Props = {
   onHora: (campo: string, instante: number, relogio?: string) => void;
   /** ⚠️ Desfazer é operação de primeira classe (§7.16) — ⛔ não apaga, corrige. */
   onDesfazer: (campo: string) => void;
+  /**
+   * ⚠️⚠️ NOVA AFERIÇÃO — o gesto que abre outra medida (D-120).
+   *
+   * ⚠️ Sem ele, editar a sistólica depois de registrar a PA seria ambíguo entre
+   * **correção** e **nova medida** — e a ambiguidade ⛔ não é de interface: ela
+   * muda o que a trilha AFIRMA sobre o paciente (§3.4). *"Medi a PA"* contado
+   * como *"tratei a PA"* é a fronteira que §2.10 nomeia.
+   */
+  onNovaMedida: (tipo: string) => void;
 };
 
 export default function SuperficieA({
@@ -57,7 +65,9 @@ export default function SuperficieA({
   onMedir,
   onHora,
   onDesfazer,
+  onNovaMedida,
 }: Props) {
+  const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const leituras = leiturasDaSuperficieA(estado);
   const detalhes = useDetalhes();
@@ -79,6 +89,11 @@ export default function SuperficieA({
   }
 
   /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de não ter sido perguntado (E-02). */
+  /** ⚠️ ⛔ Só oferece "nova medida" quando já existe uma medida para suceder. */
+  function haMedidaAberta(grupo: { campos: readonly { id: string }[] }): boolean {
+    return grupo.campos.some((c) => valorAtual(estado, c.id) !== undefined);
+  }
+
   function marcadoDesconhecido(id: string): boolean {
     return String(valorAtual(estado, id)?.valor ?? "") === "nao_sei";
   }
@@ -88,52 +103,39 @@ export default function SuperficieA({
       {GRUPOS_A.map((grupo) => (
         <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
           <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
-          {grupo.campos.map((campo) =>
-            campo.tipo === "hora" ? (
-              <CampoDeHora
-                key={campo.id}
-                campo={campo}
-                gravado={instanteGravado(campo.id)}
-                desconhecido={marcadoDesconhecido(campo.id)}
-                agora={agora}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onHora={onHora}
-                onEscolher={onEscolher}
-                onDesfazer={onDesfazer}
-              />
-            ) : campo.tipo === "grandeza" ? (
-              <CampoDeGrandeza
-                key={campo.id}
-                campo={campo}
-                gravado={numeroGravado(campo.id)}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onMedir={onMedir}
-                onDesfazer={onDesfazer}
-              />
-            ) : campo.tipo === "multipla" ? (
-              <CampoDeMultipla
-                key={campo.id}
-                campo={campo}
-                bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onEscolher={onEscolher}
-                onDesfazer={onDesfazer}
-              />
-            ) : (
-              <CampoDeEscolha
-                key={campo.id}
-                campo={campo}
-                bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onEscolher={onEscolher}
-                onDesfazer={onDesfazer}
-              />
-            )
-          )}
+          {/**
+            * ⚠️⚠️ "NOVA MEDIDA" — o gesto explícito de §3.4, e ⛔ só onde há
+            * aferição composta. Ele ⛔ não aparece por estética: sem um gesto
+            * nomeado, ⛔ não há como distinguir *"o paciente foi medido de novo"*
+            * de *"aquele valor ⛔ nunca foi verdade"*.
+            */}
+          {grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
+            <Pressable
+              style={e.novaMedida}
+              accessibilityRole="button"
+              testID={`avc-nova-medida-${grupo.id}`}
+              onPress={() => onNovaMedida(grupo.campos.find((c) => c.instanciaDe)!.instanciaDe!)}
+            >
+              <Text style={e.novaMedidaTexto}>{tr("Nova medida")}</Text>
+            </Pressable>
+          ) : null}
+          {camposDoGrupo(grupo).map((campo) => (
+            <CampoDaSuperficie
+              key={campo.id}
+              campo={campo}
+              casaAtual="estabilizacao"
+              bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+              numero={numeroGravado(campo.id)}
+              agora={agora}
+              detalheAberto={detalhes.aberto(campo.id)}
+              onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+              onEscolher={onEscolher}
+              onMedir={onMedir}
+              onHora={onHora}
+              onDesfazer={onDesfazer}
+              nomeDaCasa="Paciente"
+            />
+          ))}
         </View>
       ))}
 
@@ -147,8 +149,23 @@ export default function SuperficieA({
   );
 }
 
-const criarEstilos = (_tema: Tema) =>
+const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
+    novaMedida: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+    },
+    novaMedidaTexto: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "600",
+    },
   });

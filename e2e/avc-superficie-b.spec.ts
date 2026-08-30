@@ -359,7 +359,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
    * ⛔ Não há pré-requisito de navegação, e o que foi registrado continua lá na
    * volta — navegação ⛔ não tem efeito clínico (**E-20**).
    */
-  test("sair da B incompleta mantém as sete superfícies acessíveis", async ({ page }) => {
+  test("sair da B incompleta mantém as nove superfícies acessíveis", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
 
@@ -367,8 +367,15 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await page.getByTestId("avc-opcao-deficit_focal-sim").click();
     await page.getByTestId("avc-opcao-t4_afasia_grave-sim").click();
 
-    // ⚠️ UNIVERSO DERIVADO: as sete, na ordem declarada, ⛔ não uma lista à mão.
-    expect(SUPERFICIES.length).toBe(7);
+    /**
+     * ⚠️ UNIVERSO DERIVADO: **as nove**, na ordem declarada, ⛔ não uma lista à
+     * mão — sete clínicas mais os dois painéis acrescentados em 2026-08-29.
+     *
+     * ⚠️⚠️ E este laço passou a provar a condição que o autor impôs à superfície
+     * **Paciente**: com ela **vazia** — ⛔ nada foi respondido lá neste teste —,
+     * ⛔ nenhuma superfície deixa de abrir.
+     */
+    expect(SUPERFICIES.length).toBe(9);
     for (const sup of SUPERFICIES) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       await expect(page.getByTestId(`avc-superficie-${sup.id}`), `${sup.id} não abriu`)

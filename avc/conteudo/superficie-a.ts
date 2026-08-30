@@ -10,7 +10,8 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
-import type { Campo } from "./campo";
+import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
+import { CAMPO_DO_PACIENTE } from "./paciente";
 
 /**
  * ⚠️ A FORMA DO CAMPO SAIU DAQUI (2026-08-28) e mora em `./campo`.
@@ -23,7 +24,11 @@ import type { Campo } from "./campo";
  * ⚠️ O NOME `CampoA` PERMANECE porque é o vocabulário desta superfície e do que
  * a lê. É apelido do tipo único, ⛔ não um segundo tipo.
  */
-export type CampoA = Campo;
+/**
+ * ⚠️ O que se ESCREVE aqui — a **casa** ⛔ não entra: ela é carimbada por
+ * `comCasa()` no fim do arquivo, uma vez, para todos os campos do módulo.
+ */
+export type CampoA = CampoDeclarado;
 export type { Faixa, TipoDeCampo } from "./campo";
 export {
   EXCLUSIVAS_PADRAO,
@@ -35,7 +40,7 @@ export {
   valorDaOpcao,
 } from "./campo";
 
-import { EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NAO_INCERTO, SIM_NAO_NAO_SEI } from "./campo";
+import { camposDoGrupo, comCasa, EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NAO_INCERTO, SIM_NAO_NAO_SEI } from "./campo";
 
 /**
  * OS RELÓGIOS — coletados **separadamente**, ⛔ jamais fundidos.
@@ -56,6 +61,7 @@ import { EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NAO_INCERTO, SIM_NAO_NAO_S
 export const RELOGIOS_A: readonly CampoA[] = [
   {
     id: "hora_chegada",
+    temporalidade: "estavel",
     rotulo: "Chegada ao pronto-socorro",
     tipo: "hora",
     relogio: "t0_operacional",
@@ -65,6 +71,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
   },
   {
     id: "hora_ultima_vez_bem",
+    temporalidade: "estavel",
     rotulo: "Última vez visto bem",
     tipo: "hora",
     relogio: "ultima_vez_bem",
@@ -75,6 +82,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
   },
   {
     id: "hora_inicio_observado",
+    temporalidade: "estavel",
     rotulo: "Início observado do déficit",
     tipo: "hora",
     relogio: "inicio_observado",
@@ -86,6 +94,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
   },
   {
     id: "hora_reconhecimento",
+    temporalidade: "estavel",
     rotulo: "Reconhecimento dos sintomas",
     tipo: "hora",
     relogio: "reconhecimento",
@@ -106,6 +115,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
 export const VIA_AEREA_A: readonly CampoA[] = [
   {
     id: "consciencia_rebaixada",
+    temporalidade: "afericao",
     rotulo: "Nível de consciência rebaixado",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -143,6 +153,7 @@ export const VIA_AEREA_A: readonly CampoA[] = [
   },
   {
     id: "disfuncao_bulbar",
+    temporalidade: "afericao",
     /**
      * ⚠️⚠️ O NOME TÉCNICO SAIU DA PERGUNTA — pedido do autor, 2026-08-28:
      * *"disfunção bulbar não poderia tirar esse nome e colocar algo de fácil
@@ -182,6 +193,7 @@ export const VIA_AEREA_A: readonly CampoA[] = [
   },
   {
     id: "hipoxia",
+    temporalidade: "afericao",
     /**
      * ⚠️⚠️ A PERGUNTA MUDOU, E A MUDANÇA É CLÍNICA. "Há hipóxia?" é vaga: hipóxia
      * tecidual não se responde à beira do leito. O que o médico consegue afirmar
@@ -206,6 +218,7 @@ export const VIA_AEREA_A: readonly CampoA[] = [
   },
   {
     id: "spo2",
+    temporalidade: "afericao",
     rotulo: "SpO₂",
     tipo: "grandeza",
     unidade: "%",
@@ -222,6 +235,14 @@ export const VIA_AEREA_A: readonly CampoA[] = [
 export const PRESSAO_A: readonly CampoA[] = [
   {
     id: "pas",
+    temporalidade: "afericao",
+    /**
+     * ⚠️⚠️ AS DUAS METADES DE **UMA** AFERIÇÃO (D-120). Sem a instância, a
+     * trilha guardava quatro números para duas medidas e ⛔ nenhuma indicação
+     * de quais dois foram medidos juntos — e a leitura podia compor uma PA que
+     * ⛔ nunca existiu.
+     */
+    instanciaDe: "pa",
     rotulo: "Pressão sistólica",
     tipo: "grandeza",
     unidade: "mmHg",
@@ -234,6 +255,14 @@ export const PRESSAO_A: readonly CampoA[] = [
   },
   {
     id: "pad",
+    temporalidade: "afericao",
+    /**
+     * ⚠️⚠️ AS DUAS METADES DE **UMA** AFERIÇÃO (D-120). Sem a instância, a
+     * trilha guardava quatro números para duas medidas e ⛔ nenhuma indicação
+     * de quais dois foram medidos juntos — e a leitura podia compor uma PA que
+     * ⛔ nunca existiu.
+     */
+    instanciaDe: "pa",
     rotulo: "Pressão diastólica",
     tipo: "grandeza",
     unidade: "mmHg",
@@ -247,6 +276,7 @@ export const PRESSAO_A: readonly CampoA[] = [
 export const GLICEMIA_A: readonly CampoA[] = [
   {
     id: "glicemia",
+    temporalidade: "afericao",
     rotulo: "Glicemia capilar",
     tipo: "grandeza",
     unidade: "mg/dL",
@@ -261,44 +291,25 @@ export const GLICEMIA_A: readonly CampoA[] = [
 ] as const;
 
 /** PESO — grandeza com **origem**, porque a origem muda a confiança (E-14). */
-export const PESO_A: readonly CampoA[] = [
-  {
-    id: "peso",
-    rotulo: "Peso",
-    tipo: "grandeza",
-    unidade: "kg",
-    faixa: { min: 30, max: 250, passo: 1 },
-    fonte: "F-09",
-    bloqueiaTerapia: false,
-    nota: "Não atrasa terapia tempo-dependente.",
-  },
-  {
-    id: "peso_origem",
-    rotulo: "Origem do peso",
-    tipo: "escolha",
-    /**
-     * ⚠️ "Informado" virou "Referido" em 2026-08-28: "informado" era ambíguo —
-     * todo campo desta tela é informado por alguém. O que muda a confiança é
-     * QUEM disse (E-14), e é isso que a `ajuda` agora explicita.
-     */
-    /**
-     * ⚠️ "BALANÇA" SAIU em 2026-08-28, a pedido do autor: *"não faz sentido"*.
-     * E ⛔ não é preciosismo — é o cenário: ⛔ ninguém pesa em balança um paciente
-     * de AVC agudo na porta do pronto-socorro, e uma opção que ⛔ não acontece
-     * ocupa alvo de toque e sugere um caminho que ⛔ não existe.
-     */
-    opcoes: ["Referido", "Estimado", "Não sei"],
-    ajuda: "Referido: dito pelo paciente ou pela família. Estimado: avaliado pela equipe.",
-    fonte: "F-09",
-    bloqueiaTerapia: false,
-    nota: "Com peso estimado, a fonte diz que a banda fina não é necessariamente mais segura.",
-  },
-] as const;
+/**
+ * PESO — ⚠️ **MUDOU DE CASA em 2026-08-29**, e ⛔ não saiu da tela.
+ *
+ * ⚠️⚠️ O peso ⛔ não é estado clínico: ele ⛔ não muda entre a chegada e a
+ * trombólise. Ele morava aqui porque a **dose** por peso é do fluxo — que é
+ * exatamente o escorregamento que o autor nomeou: *"o dado pertence à espécie
+ * dele; a decisão apenas o consome."*
+ *
+ * ⚠️ A casa agora é **Paciente** (`avc/conteudo/paciente.ts`), e **A continua
+ * preenchendo o mesmo fato**, com o mesmo id e a mesma trilha. ⛔ Nenhuma segunda
+ * versão.
+ */
+export const PESO_A: readonly CampoA[] = [];
 
 /** CRISE NO INÍCIO — ⚠️ contexto, ⛔ nunca exclusão. */
 export const CRISE_A: readonly CampoA[] = [
   {
     id: "crise_no_inicio",
+    temporalidade: "estavel",
     rotulo: "Crise convulsiva no início do quadro",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -317,20 +328,47 @@ export const CRISE_A: readonly CampoA[] = [
  *
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
-export const GRUPOS_A: readonly {
-  /** Endereço estável do bloco. ⚠️ O título é texto traduzível e ⛔ não serve de chave. */
-  id: string;
-  titulo: string;
-  campos: readonly CampoA[];
-}[] = [
+const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
   { id: "relogios", titulo: "Relógios", campos: RELOGIOS_A },
   { id: "via-aerea", titulo: "Via aérea e oxigenação", campos: VIA_AEREA_A },
   { id: "pressao", titulo: "Pressão arterial", campos: PRESSAO_A },
   { id: "glicemia", titulo: "Glicemia", campos: GLICEMIA_A },
-  { id: "peso", titulo: "Peso", campos: PESO_A },
+  {
+    id: "peso",
+    titulo: "Peso",
+    campos: PESO_A,
+    /**
+     * ⚠️ O peso mora em **Paciente** e é preenchido aqui — porque é aqui que ele
+     * costuma ser sabido, na chegada. Mesmo id, mesma trilha.
+     */
+    emprestados: [CAMPO_DO_PACIENTE("peso"), CAMPO_DO_PACIENTE("peso_origem")],
+  },
   { id: "crise", titulo: "Crise no início", campos: CRISE_A },
-] as const;
+];
 
-export const TODOS_OS_CAMPOS_A: readonly CampoA[] = GRUPOS_A.flatMap((g) => [...g.campos]);
+/**
+ * ⚠️⚠️ A CASA É CARIMBADA AQUI, e ⛔ não escrita campo a campo (2026-08-29).
+ *
+ * ⚠️ Um campo que declarasse a própria casa poderia declarar a casa errada — e
+ * casa errada é a duplicação de fatos voltando com outro nome. Carimbada pelo
+ * módulo, ela ⛔ não tem como discordar do arquivo que a define.
+ */
+export const GRUPOS_A: readonly Grupo[] = comCasa("estabilizacao", GRUPOS_A_DECLARADOS);
+
+export const TODOS_OS_CAMPOS_A: readonly Campo[] = GRUPOS_A.flatMap((g) => [...g.campos]);
+
+/**
+ * ⚠️⚠️ O QUE A TELA DESENHA — os campos **próprios** mais os **emprestados**.
+ *
+ * ⚠️ As duas listas existem porque respondem perguntas diferentes:
+ *   · `TODOS_OS_CAMPOS_A` responde *"de quem é o fato"* — e é ela que as
+ *     travas de fonte, de bloqueio e de propriedade única varrem;
+ *   · `CAMPOS_NA_TELA_A` responde *"o que o médico vê aqui"* — e é ela que
+ *     a tela e o e2e usam.
+ *
+ * ⛔ Confundi-las devolveria a duplicação: um campo emprestado contado como
+ * próprio teria **duas casas**.
+ */
+export const CAMPOS_NA_TELA_A: readonly Campo[] = GRUPOS_A.flatMap((g) => camposDoGrupo(g));
 
 export const SUPERFICIE_A: SuperficieId = "estabilizacao";

@@ -26,15 +26,13 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_C, TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
+import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { destinoDaImagem, leiturasDaSuperficieC } from "../../avc/nucleo/derivacoes-c";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import {
   CabecalhoDeBloco,
-  CampoDeEscolha,
-  CampoDeGrandeza,
-  CampoDeHora,
-  CampoDeMultipla,
+  CampoDaSuperficie,
   PainelDeLeituras,
   useDetalhes,
 } from "./campos-clinicos";
@@ -162,62 +160,29 @@ export default function SuperficieC({
 
             {fechado
               ? null
-              : grupo.campos.map((campo) =>
-                  campo.tipo === "hora" ? (
-                    <CampoDeHora
-                      key={campo.id}
-                      campo={campo}
-                      gravado={numeroGravado(campo.id)}
-                      desconhecido={
-                        String(valorAtual(estado, campo.id)?.valor ?? "") === "nao_sei"
-                      }
-                      agora={agora}
-                      detalheAberto={detalhes.aberto(campo.id)}
-                      onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                      onHora={onHora}
-                      onEscolher={onEscolher}
-                      onDesfazer={onDesfazer}
-                    />
-                  ) : campo.tipo === "grandeza" ? (
-                    <CampoDeGrandeza
-                      key={campo.id}
-                      campo={campo}
-                      gravado={numeroGravado(campo.id)}
-                      detalheAberto={detalhes.aberto(campo.id)}
-                      onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                      onMedir={onMedir}
-                      onDesfazer={onDesfazer}
-                    />
-                  ) : campo.tipo === "multipla" ? (
-                    <CampoDeMultipla
-                      key={campo.id}
-                      campo={campo}
-                      bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                      detalheAberto={detalhes.aberto(campo.id)}
-                      onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                      onEscolher={onEscolher}
-                      onDesfazer={onDesfazer}
-                    />
-                  ) : (
-                    <CampoDeEscolha
-                      key={campo.id}
-                      campo={campo}
-                      bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                      /**
-                       * ⚠️ Opções EMPILHADAS onde a lista é longa e cada rótulo é
-                       * uma frase: o sítio da oclusão em chips vira coluna
-                       * estreita com texto quebrado, e "M2 não dominante ou
-                       * codominante" ⛔ não pode chegar truncado ao olho — é a
-                       * distinção que muda COR 2a para No Benefit.
-                       */
-                      empilhado={campo.id === "sitio_oclusao" || campo.id === "tc_resultado"}
-                      detalheAberto={detalhes.aberto(campo.id)}
-                      onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                      onEscolher={onEscolher}
-                      onDesfazer={onDesfazer}
-                    />
-                  )
-                )}
+              : camposDoGrupo(grupo).map((campo) => (
+                  <CampoDaSuperficie
+                    key={campo.id}
+                    campo={campo}
+                    casaAtual="imagem"
+                    bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+                    numero={numeroGravado(campo.id)}
+                    agora={agora}
+                    detalheAberto={detalhes.aberto(campo.id)}
+                    onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+                    onEscolher={onEscolher}
+                    onMedir={onMedir}
+                    onHora={onHora}
+                    onDesfazer={onDesfazer}
+                    /**
+                     * ⚠️ Empilhado onde a lista é longa e cada rótulo é uma frase:
+                     * "M2 não dominante ou codominante" ⛔ não pode chegar truncada
+                     * ao olho — é a distinção que muda COR 2a para No Benefit.
+                     */
+                    empilhado={campo.id === "sitio_oclusao" || campo.id === "tc_resultado"}
+                    nomeDaCasa="Paciente"
+                  />
+                ))}
           </View>
         );
       })}

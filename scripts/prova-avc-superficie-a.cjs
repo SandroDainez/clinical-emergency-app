@@ -42,6 +42,8 @@ execFileSync("npx", [
   path.join(appDir, "avc", "nucleo", "estado.ts"),
   path.join(appDir, "avc", "nucleo", "derivacoes.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-a.ts"),
+  path.join(appDir, "avc", "conteudo", "campos.ts"),
+  path.join(appDir, "avc", "nucleo", "instancia.ts"),
   path.join(appDir, "avc", "nucleo", "selecao.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
@@ -50,6 +52,7 @@ const R = require(path.join(tmp, "nucleo", "relogio.js"));
 const E = require(path.join(tmp, "nucleo", "estado.js"));
 const D = require(path.join(tmp, "nucleo", "derivacoes.js"));
 const C = require(path.join(tmp, "conteudo", "superficie-a.js"));
+const CAMPOS = require(path.join(tmp, "conteudo", "campos.js"));
 
 // ⚠️ As pendências vivem noutro módulo; compilado à parte para não alargar o
 // universo declarado deste instrumento sem dizer.
@@ -64,7 +67,13 @@ const novo = () => {
   const rel = R.relogioControlado(1_000_000);
   return { rel, est: E.abrirAtendimento(rel) };
 };
-const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, rel);
+/**
+ * ⚠️⚠️ REGISTRA PELA PORTA DO MÓDULO (D-120, 2026-08-30) — a mesma que a tela
+ * usa. Campos que declaram `instanciaDe` — hoje `pas` e `pad` — só formam uma
+ * aferição quando carregam a instância; registrados crus, a derivação os lê
+ * como "⛔ não informados", e a trava mediria um estado que a tela ⛔ não produz.
+ */
+const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { campo, valor }, rel);
 
 // ── 1 · PA 198/114 → 168/96 preserva histórico ─────────────────────────────
 {
@@ -305,6 +314,69 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
   confere("horário não usa barra deslizante",
     C.TODOS_OS_CAMPOS_A.filter((c) => c.id.startsWith("hora_")).every((c) => c.tipo === "hora"),
     "§7.5: horário do AVC usa picker, nunca slider");
+}
+
+// ── D-120 · AS DUAS METADES DE UMA AFERIÇÃO DE PA ─────────────────────────
+{
+  const { rel, est } = novo();
+  const I = require(path.join(tmp, "nucleo", "instancia.js"));
+
+  /**
+   * ⚠️⚠️ O DEFEITO QUE ISTO FECHA, achado pelo autor em 2026-08-30: `pas` e `pad`
+   * eram fatos independentes, e com duas medidas a trilha tinha quatro números e
+   * ⛔ **nenhuma indicação de quais dois foram medidos juntos**. A leitura podia
+   * compor uma PA que ⛔ **nunca existiu**.
+   */
+  const primeira = reg(reg(est, "pas", 198, rel), "pad", 114, rel);
+  const inst1 = I.instanciaAberta(primeira, "pa");
+  confere("PAS e PAD informadas em seguida pertencem à MESMA aferição",
+    inst1 !== undefined
+    && E.valorAtual(primeira, "pas").instancia === inst1
+    && E.valorAtual(primeira, "pad").instancia === inst1,
+    "sem a instância, a sistólica de uma medida se junta à diastólica de outra");
+
+  const m1 = D.pressaoArterial(primeira).medida;
+  confere("e a leitura da PA declara a aferição inteira que usou",
+    m1 !== undefined && m1.pas === 198 && m1.pad === 114 && m1.instancia === inst1,
+    "a leitura por campo lia o último valor de cada um, e ⛔ não uma medida real");
+
+  /** ⚠️ NOVA MEDIDA — gesto explícito, e ⛔ não correção (§3.4). */
+  rel.avancar(30 * 60_000);
+  const abriu = E.registrarFato(primeira, {
+    campo: "pa_nova_medida",
+    valor: I.proximaInstancia(primeira, "pa"),
+    instancia: I.proximaInstancia(primeira, "pa"),
+  }, rel);
+  const segunda = reg(reg(abriu, "pas", 168, rel), "pad", 96, rel);
+  const inst2 = I.instanciaAberta(segunda, "pa");
+
+  confere("a nova medida abre uma instância DIFERENTE",
+    inst2 !== undefined && inst2 !== inst1,
+    "§3.4: nova aferição ⛔ não é correção — os dois valores valem, cada um no seu instante");
+  confere("e as DUAS aferições continuam inteiras na trilha",
+    I.valorNaInstancia(segunda, inst1, "pas").valor === 198
+    && I.valorNaInstancia(segunda, inst1, "pad").valor === 114
+    && I.valorNaInstancia(segunda, inst2, "pas").valor === 168
+    && I.valorNaInstancia(segunda, inst2, "pad").valor === 96,
+    "§3.1: 198/114 → tratamento → 168/96 são dois fatos, e apagar o primeiro esconderia a resposta ao tratamento");
+  const m2 = D.pressaoArterial(segunda).medida;
+  confere("a leitura passa a usar a aferição mais recente, INTEIRA",
+    m2 !== undefined && m2.pas === 168 && m2.pad === 96 && m2.instancia === inst2,
+    "misturar 168 com 114 exibiria uma pressão que ⛔ nunca existiu");
+
+  /**
+   * ⚠️⚠️ A CONFERÊNCIA QUE PROVA QUE O DEFEITO ERA REAL: informar só a sistólica
+   * da segunda medida ⛔ NÃO pode completar-se com a diastólica da primeira.
+   */
+  const soSistolica = reg(abriu, "pas", 168, rel);
+  confere("meia aferição ⛔ NÃO se completa com a metade da medida anterior",
+    D.pressaoArterial(soSistolica).medida === undefined
+    && /não informada/i.test(D.pressaoArterial(soSistolica).curto),
+    "era exatamente isto que a leitura por campo fazia: 168 da medida nova com 114 da antiga");
+
+  confere("⛔ só `pas` e `pad` declaram aferição composta hoje",
+    C.TODOS_OS_CAMPOS_A.filter((c) => c.instanciaDe).map((c) => c.id).join(",") === "pas,pad",
+    "⛔ nenhum motor genérico nasce antes de Laboratório e Imagem o exigirem (§9.1)");
 }
 
 // ── travas de fidelidade adicionais ────────────────────────────────────────
@@ -674,7 +746,12 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
     !C.TODOS_OS_CAMPOS_A.some((c) => c.id === "houve_sono"),
     "removido a pedido do autor em 2026-08-28; o cenário de AVC ao acordar volta com a regra temporal que o justifica, ⛔ ou não volta");
 
-  const origem = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "peso_origem");
+  /**
+   * ⚠️ `CAMPOS_NA_TELA_A` e ⛔ não `TODOS_OS_CAMPOS_A`: desde 2026-08-29 o peso
+   * **mora em Paciente** e é **desenhado aqui**. A pergunta desta conferência é
+   * sobre o que o médico VÊ, e ⛔ não sobre de quem é o fato.
+   */
+  const origem = C.CAMPOS_NA_TELA_A.find((c) => c.id === "peso_origem");
   confere("⛔ a origem do peso ⛔ não oferece balança",
     !origem.opcoes.some((o) => /balan/i.test(o)),
     "⛔ ninguém pesa em balança um AVC agudo na porta do PS — opção que ⛔ não acontece ocupa alvo e sugere caminho inexistente");

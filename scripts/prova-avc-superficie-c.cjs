@@ -419,7 +419,11 @@ const TC = C.RESULTADO_TC;
 
 // ── 11 · A ALERGIA A CONTRASTE — decisão do autor, com três travas ────────
 {
-  const alergia = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "alergia_contraste");
+  /**
+   * ⚠️ A alergia **mora em Paciente** desde 2026-08-29 e continua **desenhada
+   * aqui**, ao lado da angiotomografia — que é onde ela importa.
+   */
+  const alergia = C.CAMPOS_NA_TELA_C.find((c) => c.id === "alergia_contraste");
   confere("o campo de alergia a contraste EXISTE",
     alergia !== undefined && alergia.bloqueiaTerapia === false,
     "decisão do autor, 2026-08-29: ⛔ não esperar por creatinina é uma coisa; apagar informação relevante à ação contrastada é outra");

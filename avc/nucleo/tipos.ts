@@ -34,6 +34,20 @@ import type { Instante } from "./relogio";
  * nem acrescentar uma letra a este tipo: `prova-avc-superficies` reprova.
  */
 export type SuperficieId =
+  /**
+   * ⚠️⚠️ AS DUAS PRIMEIRAS SÃO **PAINÉIS**, e ⛔ não etapas — acrescentadas em
+   * 2026-08-29, com a reabertura de **P-09** decidida pelo autor.
+   *
+   * ⚠️ Elas ⛔ **não têm letra**. A letra carrega a leitura de fluxo clínico
+   * (A → G), e dar letra a um painel transversal sugeriria que ele é passo. O
+   * paciente e os exames do episódio são **contexto**, consultáveis de qualquer
+   * lugar e a qualquer momento.
+   *
+   * ⚠️ E ⛔ nenhuma das duas é porta: `Paciente` incompleto ⛔ não impede abrir
+   * ⛔ nenhuma superfície, ⛔ não esconde ⛔ nenhuma, e ⛔ não cria bloqueio.
+   */
+  | "paciente"
+  | "laboratorio"
   | "estabilizacao"
   | "neurologico"
   | "imagem"
@@ -95,6 +109,28 @@ export type FatoRegistrado = {
   readonly motivo?: string;
   /** Ausente equivale a `"medida"` — o caso comum. */
   readonly tipo?: TipoDeRegistro;
+  /**
+   * ⚠️⚠️ A INSTÂNCIA A QUE ESTE FATO PERTENCE — acrescentada em 2026-08-30.
+   *
+   * ── O DEFEITO QUE ELA FECHA (D-120) ───────────────────────────────────────
+   *
+   * `pas` e `pad` são duas metades de **uma** aferição, e a trilha as guardava
+   * como fatos independentes. Com duas medidas, ela tinha quatro números e
+   * ⛔ **nenhuma indicação de quais dois foram medidos juntos** — PAS 198 às 14h
+   * e PAD 96 às 15h podiam ser lidos como uma PA que ⛔ nunca existiu.
+   *
+   * ⚠️ **É UMA ETIQUETA, e ⛔ não uma segunda estrutura.** A trilha continua plana
+   * e append-only (§3.1); o agrupamento é **leitura**, ⛔ não armazenamento
+   * paralelo. `valorAtual()` continua devolvendo o último.
+   *
+   * ⚠️ **Opcional de propósito:** ⛔ nem todo fato pertence a um evento composto.
+   * Quem exige instância é o campo que declara `instanciaDe` — e a prova reprova
+   * o fato que a esqueça.
+   *
+   * ⏳ Hoje **só a pressão arterial** a usa. Laboratório e Imagem entram depois,
+   * na ordem aprovada pelo autor — e ⛔ nenhum motor genérico nasce antes (§9.1).
+   */
+  readonly instancia?: string;
 };
 
 /**

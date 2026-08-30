@@ -40,6 +40,72 @@ export function horaDeExibicao(instante: number, referencia: number): string {
   return mesmoDia ? horaCurta(instante) : horaComData(instante);
 }
 
+/** ⚠️ Os dois instantes caem no mesmo dia do calendário? */
+export function mesmoDia(a: number, b: number): boolean {
+  const x = new Date(a);
+  const y = new Date(b);
+  return (
+    x.getFullYear() === y.getFullYear() &&
+    x.getMonth() === y.getMonth() &&
+    x.getDate() === y.getDate()
+  );
+}
+
+/**
+ * Desloca o DIA preservando hora e minuto.
+ *
+ * ⚠️⚠️ ⛔ NÃO SOMA 24 h EM MILISSEGUNDOS. Somar `86_400_000` atravessa mudança de
+ * horário de verão trocando a hora do marco — e "última vez bem às 22h" viraria
+ * "às 21h" sem que ninguém tocasse no controle. `setDate` mexe no calendário, e
+ * é o calendário que o médico está informando.
+ */
+export function deslocarDias(instante: number, dias: number): number {
+  const d = new Date(instante);
+  d.setDate(d.getDate() + dias);
+  return d.getTime();
+}
+
+/**
+ * Quantos dias de calendário este instante está ATRÁS da referência.
+ *
+ * ⚠️ Conta **dias de calendário**, ⛔ não períodos de 24 h: às 00:30, um marco de
+ * ontem às 23:40 está a **um** dia, e ⛔ não a zero.
+ */
+export function diasAtras(instante: number, referencia: number): number {
+  const a = new Date(instante);
+  const b = new Date(referencia);
+  a.setHours(0, 0, 0, 0);
+  b.setHours(0, 0, 0, 0);
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+}
+
+/**
+ * O instante de N dias atrás, com a hora e o minuto informados.
+ *
+ * ⚠️⚠️ ⛔ NÃO SE FAZ COM ARITMÉTICA DE EPOCH. A primeira versão usava
+ * `instante % 86_400_000` para extrair "a hora do dia" — e esse resto é a hora
+ * em **UTC**, ⛔ não a do relógio de quem está olhando. Em Brasília o marco sairia
+ * três horas deslocado, e num campo que decide janela terapêutica o erro ⛔ não
+ * apareceria: sairia um número plausível.
+ */
+export function instanteEmDiaComHora(
+  referencia: number,
+  diasAtras: number,
+  hora: number,
+  minuto: number
+): number {
+  const d = new Date(referencia);
+  d.setDate(d.getDate() - diasAtras);
+  d.setHours(hora, minuto, 0, 0);
+  return d.getTime();
+}
+
+/** `DD/MM` — o dia, quando o controle precisa mostrá-lo sozinho. */
+export function dataCurta(instante: number): string {
+  const d = new Date(instante);
+  return `${doisDigitos(d.getDate())}/${doisDigitos(d.getMonth() + 1)}`;
+}
+
 /** Hora e minuto de um instante — para alimentar o seletor. */
 export function partesDaHora(instante: number): { hora: number; minuto: number } {
   const d = new Date(instante);

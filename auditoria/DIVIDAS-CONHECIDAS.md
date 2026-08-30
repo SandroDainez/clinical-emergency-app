@@ -4295,3 +4295,153 @@ nota, que ela ⛔ não define medida e que a leitura é de quem interpreta a ima
 
 **Como sai:** fonte complementar que publique definição operacional — decisão do
 autor. O slot **F-29** já está declarado e aberto.
+
+---
+
+## D-118 — ✅ FECHADA em 2026-08-30 · O CONTROLE DE DATA E HORA
+
+> ### ✅ FECHADA ANTES DO COMMIT, POR DECISÃO DO AUTOR
+>
+> > *"⛔ Não é uma melhoria futura de UX; é uma limitação de representação de um
+> > dado temporal que pode mudar decisão."*
+>
+> **O que entrou:** linha de data com **Hoje · Ontem · Escolher data**, mais o
+> passo de dia que aparece quando se sai de hoje e ontem. "Agora" e
+> *"Sem essa informação"* continuam onde estavam.
+>
+> ⚠️⚠️ **E a regra que ⛔ não podia cair:** mexer no **dia** ⛔ não habilita
+> Confirmar. Tocar em "Ontem" muda a data e deixa a **hora** onde o controle
+> estava posicionado — que é `agora`, e ⛔ não escolha de ninguém. Se isso
+> valesse como resposta, *"última vez bem"* viraria **ontem, na hora em que a
+> tela abriu**: o "agora como default silencioso" voltando por uma porta nova.
+> `onMudar` passou a carregar `escolheuValor`, e ⛔ só hora, minuto e "Agora" o
+> marcam.
+>
+> ⚠️ **Um defeito de fuso foi corrigido no caminho:** a primeira versão extraía
+> "a hora do dia" com `instante % 86_400_000` — que é a hora em **UTC**. Em
+> Brasília o marco sairia três horas deslocado, e ⛔ não pareceria errado.
+> `instanteEmDiaComHora` usa o calendário local.
+>
+> **Provado:** `e2e/avc-controle-de-data` — hoje · ontem · três dias atrás · data
+> escolhida · desconhecido · "Agora" · futuro inalcançável · espanhol. **7/7.**
+
+### O registro original
+
+
+**Registrada em 2026-08-30**, com a superfície Paciente.
+
+**O que existe:** `doac_ultima_dose` é `tipo: "hora"`, e o **fato** já é data e
+hora — um instante epoch, exibido como `DD/MM HH:mm` quando o dia difere.
+
+**O que falta:** o **controle**. `SeletorDeHora` oferece hora ±1, minuto ±1, um
+atalho de −5 min e "Agora" — e ⛔ **nenhuma dimensão de dia**. Marcar uma dose de
+anteontem às 20h exigiria ~40 toques em "hora −".
+
+⚠️ **E o mesmo controle serve `hora_ultima_vez_bem`**: um paciente visto bem
+anteontem à noite ⛔ **não é representável hoje**, e esse é o relógio que decide
+janela.
+
+**O desenho aprovado pelo autor**, ⛔ ainda ⛔ não implementado:
+
+```
+Data:  [ Hoje ] [ Ontem ] [ Escolher data ]
+Hora:  [ HH ] : [ MM ]        [ Agora ]
+```
+
+⚠️ Preserva o teto em "agora", o `selecionado` que ⛔ não nasce verdadeiro, e a
+saída *"Sem essa informação"* onde o campo aceita desconhecido.
+
+⛔ **E ⛔ não autoriza calcular `< 48 h`** — o marco de referência dessa derivação
+é decisão da Superfície D.
+
+---
+
+## D-119 — A INSTÂNCIA DE EXAME ESTÁ CONTRATADA, E ⛔ NÃO IMPLEMENTADA
+
+**Registrada em 2026-08-30.**
+
+O contrato temporal foi fechado com o autor (**PD-30** e o contrato de
+instâncias), e a **implementação entra com Laboratório**:
+
+> - toda **aferição** pertence a uma **instância**;
+> - toda instância de imagem declara **modalidade**;
+> - o **horário** pode ser conhecido, desconhecido ou ⛔ ainda ⛔ não informado —
+>   e ⛔ **nunca fabricado** (**E-52**).
+
+**O que ainda ⛔ não existe:** o campo `instancia` em `FatoRegistrado`, o
+`instanciaDe` no campo, e a divisão de `tc_resultado` em `tc_situacao` (estado) +
+`resultado` (aferição do estudo), aprovada como decisão **j**.
+
+⚠️ **Consequência aceita enquanto isso:** com **duas** tomografias, os achados
+ficam historicamente órfãos — é exatamente o estado que o autor nomeou como
+inaceitável, e é por isso que Laboratório vem antes dos ajustes de C.
+
+---
+
+## D-120 — ✅ FECHADA em 2026-08-30 · A AFERIÇÃO DE PA DEIXOU DE SER ÓRFÃ
+
+> ### ✅ FECHADA ANTES DE ABRIR LABORATÓRIO, POR DECISÃO DO AUTOR
+>
+> > *"Melhor fechar o contrato de instância primeiro e aplicar pelo menos ao caso
+> > mais simples antes de criar uma superfície inteira baseada nisso."*
+>
+> **O que entrou:** `instancia` em `FatoRegistrado` — uma **etiqueta**, e ⛔ não
+> uma segunda estrutura: a trilha continua plana e append-only (§3.1).
+> `instanciaDe` no campo declara que ele é **metade de uma aferição composta**, e
+> hoje ⛔ **só `pas` e `pad`** o declaram.
+>
+> ⚠️⚠️ **O defeito era real e silencioso:** a leitura da PA lia o último valor de
+> **cada campo**, então a sistólica das 14h se juntava à diastólica das 15h e o
+> app exibia uma pressão que ⛔ **nunca existiu** — com a cara de uma medida real,
+> alimentando a decisão de tratar antes de reperfundir. A conferência que prova
+> isso é a que registra **só a sistólica** da segunda medida e exige que ela
+> ⛔ **não** se complete com a diastólica da primeira.
+>
+> ⚠️ **As três operações ficaram distintas** (§3.4, §7.16): *nova aferição* abre
+> instância nova pelo gesto **"Nova medida"** · *correção* fica na mesma
+> instância · *completar* preenche a outra metade da medida já aberta.
+>
+> ⚠️ **E a regra mora em UM lugar:** `registrarComInstancia`, no conteúdo — a
+> primeira versão carimbava na tela, e as **travas**, que registram direto,
+> passaram a construir PAs sem instância que a derivação lia como "⛔ não
+> informada". I6 aplicada a instância.
+>
+> ⛔ **⛔ Nenhum motor genérico** (§9.1): Laboratório e Imagem entram depois, e é
+> quando o contrato será exercitado de verdade.
+>
+> **Provado:** 6 conferências novas em `prova-avc-superficie-a` (99, era 92),
+> **5 mutações reprovando**, e `e2e/avc-superficie-a` com o gesto de nova medida.
+
+### O registro original
+
+
+**Registrada em 2026-08-30**, achada ao declarar a temporalidade dos 51 campos.
+
+`pas` e `pad` são `afericao` e ⛔ **não pertencem a instância nenhuma** — o que
+significa que **PAS 198 e PAD 114 da mesma aferição ⛔ não estão amarrados**. Com
+duas medidas, a trilha guarda quatro números e ⛔ nenhuma indicação de quais dois
+foram medidos juntos.
+
+⚠️ **É o mesmo defeito das duas tomografias**, numa superfície que ⛔ não estava
+no recorte desta rodada. O contrato de instância resolve os dois; a ordem
+aprovada é **Laboratório → C → D**, e a **A** entra depois.
+
+**Enquanto isso:** a leitura de PA usa o valor atual de cada campo, e o par mais
+recente é o par correto no caminho normal de uso.
+
+---
+
+## D-121 — FREQUÊNCIA CARDÍACA E AUSCULTA ⛔ NÃO TÊM FONTE NO MÓDULO
+
+**Registrada em 2026-08-30**, por decisão do autor: *"⛔ não entram ainda sem
+fonte. Abra slots de fonte e registre como prioridade para A."*
+
+O autor descreveu a avaliação inicial como *"exame básico para identificar riscos
+iminentes e tratar caso tenha PA, FC, AP, AC"*. Hoje a Superfície A tem PA, SpO₂,
+via aérea, consciência e glicemia — e ⛔ **não** tem **frequência cardíaca** ⛔ nem
+**ausculta cardíaca ou pulmonar**.
+
+⚠️ ⛔ Nenhum dos três tem verbatim transcrito no módulo. Criá-los agora seria
+**E-19** violada — pergunta que a fonte ⛔ não sustenta.
+
+**Prioridade declarada: alta**, por decisão do autor.

@@ -663,6 +663,45 @@ meio, o fato clínico do AVC que a obrigou.
 | **E-49** | **Nenhum campo obrigatório novo sem checagem contra o índice de não-exigir** | doze fatos com verbatim explícito de que não podem atrasar a terapia — e cada campo obrigatório é candidato a violá-los | Parte 2 (§2.3) |
 | **E-50** | **Dose, concentração, indicação e preparo pertencem ao PRODUTO/APRESENTAÇÃO, nunca ao princípio ativo** | a bula brasileira acessível de tenecteplase é a do IAM, com faixas de peso idênticas às do AVC e valores até o dobro | Parte 6 (§6.7) |
 | **E-51** | Inconsistência interna bloqueia **a afirmação**, não o **campo** — se outra fonte independente o sustentar explicitamente; e a fonte final é sempre **registrada** | a SBD crítico contradiz a si mesma no preparo de insulina; a SBD perioperatória o publica sem ambiguidade | Parte 6 (§6.6) |
+| **E-52** | **Dado desconhecido nunca pode ser substituído por valor fabricado** — e atributo acessório nunca é pré-requisito para registrar um fato principal conhecido | TC externa com resultado conhecido e horário desconhecido: exigir a hora troca uma verdade por um número inventado, e o inventado entra na trilha com a cara de medido | Parte 2 (§2.1) · **acrescentada em 2026-08-29** |
+
+> ### ⚠️⚠️ E-52 · DADO DESCONHECIDO NUNCA VIRA VALOR FABRICADO — acrescentada pelo autor em 2026-08-29
+>
+> **Redação normativa, do autor:**
+>
+> > A ausência ou o desconhecimento de um dado **acessório** ⛔ não pode impedir o
+> > registro de um fato clínico **conhecido**. Quando um fato principal é
+> > conhecido e um atributo associado é desconhecido, **ambos devem ser
+> > representáveis simultaneamente**, preservando explicitamente o
+> > desconhecimento do atributo.
+>
+> **Exemplos normativos** — cada um é um estado que o app tem de conseguir
+> representar:
+>
+> | fato principal conhecido | atributo desconhecido |
+> |---|---|
+> | resultado da TC | horário do estudo |
+> | valor laboratorial | horário da coleta |
+> | uso de DOAC | data e hora da última dose |
+> | — | última vez visto bem, **sem** horário estimado automaticamente |
+>
+> ⚠️⚠️ **O QUE ELA ACRESCENTA A E-02 E E-23, e por que ⛔ não é dedutível delas.**
+> **E-02** diz que *desconhecido é resposta*; **E-23**, que *ausência ⛔ nunca vira
+> negativa*. As duas falam do **campo que ⛔ não foi respondido**. E-52 fala de um
+> terceiro caso: o campo **foi** respondido, com verdade, e um **atributo dele**
+> ⛔ não é sabido — e é aí que o formulário desenhado para completude troca a
+> verdade por um número plausível.
+>
+> ⚠️ **O defeito que ela impede é silencioso por natureza:** um horário fabricado
+> ⛔ não parece fabricado. Ele entra na trilha com o mesmo formato do medido, e três
+> telas adiante alimenta cálculo de janela.
+>
+> ### ⛔ ALCANCE — exigência do AVC, candidata declarada
+>
+> ⛔ **⛔ NÃO PROMOVER a arquitetura universal do app.** §9.1 exige que um **segundo
+> módulo clínico** demande o mesmo, de forma independente, antes da promoção.
+> Ela nasce normativa **dentro do AVC**, e a candidatura fica registrada — ⛔ não
+> exercida.
 
 > ### ⚠️ E-50 · TESTE OBRIGATÓRIO — fixado pelo autor em 2026-08-28
 >
@@ -2670,7 +2709,21 @@ breakpoints · design system definitivo · engine · tipos.
 
 ### 7.21 O que a Parte 7 deixa em aberto
 
-- ~~P-08~~ e ~~P-09~~ — **fechadas em 2026-08-28** (§7.5 e §7.15).
+- ~~P-08~~ — **fechada em 2026-08-28** (§7.5).
+- ⚠️⚠️ **P-09 · REABERTA E REDECIDIDA em 2026-08-29.** §7.15 fixou sete
+  superfícies e disse *"D coleta fatos"*. A revisão ⛔ **não desfaz** a frase —
+  **precisa-a**, na redação do autor:
+
+  > **D é proprietária da INTERPRETAÇÃO de segurança, ⛔ não necessariamente dos
+  > fatos que alimentam essa interpretação.**
+
+  E acrescenta **duas superfícies sem letra**, que ⛔ não são etapas:
+  **Paciente** e **Laboratório**. A regra que as sustenta é **PD-28**:
+  *propriedade do fato ⛔ não é local de preenchimento* — um id, uma casa, e
+  qualquer superfície pode exibir ou preencher, escrevendo no mesmo fato.
+
+  ⚠️ O que motivou: quatro defeitos encontrados **usando o app**, todos o mesmo —
+  fatos sobre **quem é o paciente** em telas organizadas por **decisão**.
 - **Densidade como trava** (§7.14) — os números são princípio agora; se viram
   reprovação de build, e com que medida, fica para depois de existir tela.
 - **Mecanismo do espanhol** (§6.13, §7.17).
@@ -2768,6 +2821,7 @@ fato corrigido que não derrubou a cadeia inteira (§4.4-iii).
 | **E-49** | **S** | todo campo declarado obrigatório tem registro de checagem contra as doze marcas 🚫 |
 | **E-50** | **S** + **R** + **C** | varredura: nenhuma dose referenciada por princípio ativo sem apresentação declarada · revisão: apresentação corresponde à indicação · ⚠️ **teste obrigatório**: ver quadro |
 | **E-51** | **S** + **R** | varredura: todo campo clínico declara a fonte que o sustenta · revisão: nenhuma reconciliação silenciosa entre fontes divergentes |
+| **E-52** | **C** + **S** | ⚠️ **construção**: a prova CONSTRÓI o estado "fato principal conhecido + atributo desconhecido" e exige que ele sobreviva · varredura: nenhum campo acessório declarado como condição de outro |
 
 **Distribuição:** predominam **S** (forma, barata, e a que mais pega regressão de
 conteúdo) e **C**. Mas as regras que sustentam o modelo — **E-01**, **E-05**,

@@ -464,7 +464,12 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
 // ── 15 · mRS · CONTEXTO, ⛔ NUNCA PORTA ────────────────────────────────────
 {
   const { rel, est } = novo();
-  const campo = C.TODOS_OS_CAMPOS_B.find((c) => c.id === "mrs_previo");
+  /**
+   * ⚠️ O mRS prévio **mora em Paciente** desde 2026-08-29 e continua **desenhado
+   * na B**, com o mesmo controle e os mesmos descritores — decisão do autor:
+   * *"muda a propriedade, ⛔ não a experiência que já ficou boa na B."*
+   */
+  const campo = C.CAMPOS_NA_TELA_B.find((c) => c.id === "mrs_previo");
   const M = require(path.join(tmp, "avc", "conteudo", "mrs.js"));
 
   /**

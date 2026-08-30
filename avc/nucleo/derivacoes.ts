@@ -13,6 +13,7 @@
  */
 
 import type { EstadoAvc } from "./estado";
+import { instanciaAberta, valorNaInstancia } from "./instancia";
 import { valorAtual } from "./estado";
 import { numero, selecaoDe, ternario, VAZIOS } from "./leitura";
 import { NAO_SEI, SEM_ACHADOS } from "../conteudo/campo";
@@ -471,9 +472,39 @@ export function peso(estado: EstadoAvc): Leitura {
  * ⚠️ Aplicar aqui o alvo do candidato produziria tratamento que a fonte
  * classifica como **sem benefício, LOE A**, em quem não é candidato.
  */
-export function pressaoArterial(estado: EstadoAvc): Leitura {
-  const pas = numero(estado, "pas");
-  const pad = numero(estado, "pad");
+/**
+ * ⚠️ A leitura da PA declara **qual aferição** usou — e ⛔ não só o veredito.
+ *
+ * ⚠️⚠️ SEM ISSO, ⛔ NÃO HÁ COMO MEDIR O PAREAMENTO. A frase da tela ⛔ não cita os
+ * números (o médico os vê nos campos), e uma trava que lesse texto ⛔ não
+ * distinguiria "168/96 da segunda medida" de "168 da segunda com 114 da
+ * primeira" — que é exatamente o defeito que D-120 fechou.
+ */
+export type LeituraDaPressao = Leitura & {
+  readonly medida?: {
+    readonly instancia: string;
+    readonly pas: number;
+    readonly pad: number;
+  };
+};
+
+export function pressaoArterial(estado: EstadoAvc): LeituraDaPressao {
+  /**
+   * ⚠️⚠️ AS DUAS METADES VÊM DA **MESMA AFERIÇÃO** (D-120), e ⛔ não do último
+   * valor de cada campo.
+   *
+   * ⚠️ Lendo campo a campo, a sistólica das 14h se juntava à diastólica das 15h
+   * e o app exibia uma pressão que ⛔ **nunca existiu** — com a mesma cara de uma
+   * medida real, e alimentando a decisão de tratar antes de reperfundir.
+   */
+  const medida = instanciaAberta(estado, "pa");
+  const naMedida = (campo: string) => {
+    if (medida === undefined) return undefined;
+    const f = valorNaInstancia(estado, medida, campo);
+    return typeof f?.valor === "number" ? f.valor : undefined;
+  };
+  const pas = naMedida("pas");
+  const pad = naMedida("pad");
   const insumos = ["pas", "pad"];
   const fonte = "F-04";
   if (pas === undefined || pad === undefined) {
@@ -485,6 +516,8 @@ export function pressaoArterial(estado: EstadoAvc): Leitura {
     texto: "Pressão registrada — o significado depende do contexto de reperfusão, ainda não definido",
     insumos,
     fonte,
+    /** ⚠️ A aferição inteira, e ⛔ não dois valores soltos que por acaso coexistem. */
+    medida: { instancia: medida as string, pas, pad },
   };
 }
 

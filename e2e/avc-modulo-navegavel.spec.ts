@@ -24,7 +24,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await expect(page.getByRole("button", { name: "Voltar" })).toBeVisible();
   });
 
-  test("as sete superfícies abrem em qualquer ordem", async ({ page }) => {
+  test("as nove superfícies abrem em qualquer ordem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
 
@@ -34,16 +34,21 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     // ⚠️ Endereçado por SLUG, ⛔ não por letra: em 2026-08-28 E e F trocaram de
     // letra, e um teste ancorado em "E" continuaria verde medindo outra
     // superfície — verde falso é pior que vermelho.
+    /**
+     * ⚠️ **Os dois painéis entram embaralhados junto com as sete clínicas** — e
+     * `paciente` vem DEPOIS de quatro superfícies de propósito: é a prova de
+     * que ele ⛔ não é passo 1 (**PD-29**).
+     */
     const ordem = [
       "destino", "neurologico", "reperfusao", "estabilizacao",
-      "seguranca", "imagem", "correcoes",
+      "paciente", "seguranca", "imagem", "laboratorio", "correcoes",
     ] as const;
     for (const id of ordem) {
       await page.getByTestId(`avc-aba-${id}`).click();
       await expect(page.getByTestId(`avc-superficie-${id}`)).toBeVisible();
     }
 
-    expect(SUPERFICIES.length).toBe(7);
+    expect(SUPERFICIES.length).toBe(9);
   });
 
   /**
@@ -61,7 +66,13 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
 
+    /**
+     * ⚠️ Os painéis vêm primeiro na LEITURA e ⛔ não têm letra — a letra carrega
+     * fluxo (A → G), e os dois são contexto transversal (**PD-29**).
+     */
     const esperado = [
+      ["·", "paciente", "Paciente"],
+      ["·", "laboratorio", "Laboratório"],
       ["A", "estabilizacao", "Entrada e estabilização"],
       ["B", "neurologico", "Neurológico"],
       ["C", "imagem", "Imagem"],
@@ -72,7 +83,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     ];
 
     const abas = await page.locator('[data-testid^="avc-aba-"]').allInnerTexts();
-    expect(abas.length).toBe(7);
+    expect(abas.length).toBe(9);
     for (let i = 0; i < esperado.length; i += 1) {
       const [letra, , titulo] = esperado[i];
       expect(abas[i].replace(/\s+/g, " "), `posição ${i + 1}`).toContain(letra);

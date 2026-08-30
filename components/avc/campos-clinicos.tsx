@@ -17,7 +17,7 @@
  */
 import type React from "react";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
 import { opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
@@ -852,7 +852,19 @@ export function CampoDeHora({
           // interação explícita. ⛔ Abrir o seletor não é.
           selecionado={editando.selecionado}
           agora={agora}
-          onMudar={(i) => setEditando({ instante: i, selecionado: true })}
+          /**
+           * ⚠️⚠️ O SEGUNDO ARGUMENTO PRESERVA A SELEÇÃO em vez de forçá-la.
+           *
+           * Mexer no **dia** ⛔ não é escolher o horário: se "Ontem" habilitasse
+           * Confirmar, o marco viraria *ontem, na hora em que a tela abriu* — o
+           * "agora como default silencioso" voltando por uma porta nova.
+           */
+          onMudar={(i, escolheuValor) =>
+            setEditando((atual) => ({
+              instante: i,
+              selecionado: escolheuValor || (atual?.selecionado ?? false),
+            }))
+          }
           onConfirmar={() => {
             /**
              * ⚠️⚠️ `campo.relogio` DESCE COMO ESTÁ, inclusive `undefined`. Um campo
@@ -865,6 +877,175 @@ export function CampoDeHora({
           onCancelar={() => setEditando(null)}
         />
       ) : null}
+    </View>
+  );
+}
+
+
+/**
+ * TEXTO LIVRE — ⚠️ e ele existe para **um** campo do módulo inteiro.
+ *
+ * ⛔⛔ §0.3 PROÍBE CAIXA DE TEXTO PARA VALOR CLÍNICO, e a proibição continua
+ * inteira. O único consumidor é a **identificação do paciente**, que é
+ * `natureza: "administrativo"` — e a prova de cada superfície reprova `texto`
+ * em campo clínico.
+ */
+export function CampoDeTexto({
+  campo,
+  valor,
+  onEscrever,
+  onDesfazer,
+}: {
+  campo: Campo;
+  valor: string;
+  onEscrever: (campo: string, valor: string) => void;
+  onDesfazer: (campo: string) => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  const corDoPlaceholder = useEstilosDoTema((tema) => ({ cor: { color: tema.cores.textSecondary } })).cor
+    .color as string;
+  const respondido = valor.length > 0;
+  return (
+    <View style={[e.campo, respondido && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
+      <View style={e.campoTopo}>
+        <MarcaDeResposta respondido={respondido} />
+        <Text style={e.campoRotulo}>{tr(campo.rotulo)}</Text>
+      </View>
+      {campo.ajuda ? <Text style={e.campoAjuda}>{tr(campo.ajuda)}</Text> : null}
+      <TextInput
+        style={e.entradaDeTexto}
+        value={valor}
+        onChangeText={(t) => (t.length === 0 ? onDesfazer(campo.id) : onEscrever(campo.id, t))}
+        placeholder={tr("não informado")}
+        /**
+         * ⚠️ A COR VEM DO TEMA, e ⛔ não de um hexadecimal — `valida-paleta`
+         * reprovou a primeira versão. Cor escrita à mão ⛔ não é vista pela trava
+         * de contraste, e o placeholder é justamente texto de baixo contraste.
+         */
+        placeholderTextColor={corDoPlaceholder}
+        testID={`avc-texto-${campo.id}`}
+        accessibilityLabel={tr(campo.rotulo)}
+      />
+    </View>
+  );
+}
+
+/**
+ * ⚠️⚠️ O CAMPO DE UMA SUPERFÍCIE — **um** renderizador, para todas.
+ *
+ * ── POR QUE ELE EXISTE (2026-08-29) ────────────────────────────────────────
+ *
+ * A escolha de controle por `campo.tipo` estava escrita **três vezes** — A, B e
+ * C —, e a quarta ia nascer com Paciente. Cada cópia já tinha divergido: só a A
+ * sabia desenhar `hora`, e por isso um campo `tipo: "hora"` da B renderizava um
+ * cartão **sem opção nenhuma**, impossível de responder.
+ *
+ * ⚠️ E é aqui que a **etiqueta de procedência** do campo emprestado vive — uma
+ * vez, e ⛔ não quatro.
+ */
+export function CampoDaSuperficie({
+  campo,
+  casaAtual,
+  bruto,
+  numero,
+  agora,
+  detalheAberto,
+  onAlternarDetalhe,
+  onEscolher,
+  onMedir,
+  onHora,
+  onDesfazer,
+  derivado,
+  empilhado,
+  nomeDaCasa,
+}: {
+  campo: Campo;
+  /** A superfície que está desenhando. ⚠️ Diferente de `campo.casa` = emprestado. */
+  casaAtual: string;
+  bruto: string;
+  numero: number | undefined;
+  agora: number;
+  detalheAberto: boolean;
+  onAlternarDetalhe: () => void;
+  onEscolher: (campo: string, valor: string) => void;
+  onMedir: (campo: string, valor: number) => void;
+  onHora: (campo: string, instante: number, relogio?: string) => void;
+  onDesfazer: (campo: string) => void;
+  derivado?: string;
+  empilhado?: boolean;
+  /** Como se chama a casa do campo, para a etiqueta. ⚠️ Traduzido pelo chamador. */
+  nomeDaCasa?: string;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  const emprestado = campo.casa !== casaAtual;
+
+  const controle =
+    campo.tipo === "hora" ? (
+      <CampoDeHora
+        campo={campo}
+        gravado={numero}
+        desconhecido={bruto === "nao_sei"}
+        agora={agora}
+        detalheAberto={detalheAberto}
+        onAlternarDetalhe={onAlternarDetalhe}
+        onHora={onHora}
+        onEscolher={onEscolher}
+        onDesfazer={onDesfazer}
+      />
+    ) : campo.tipo === "grandeza" ? (
+      <CampoDeGrandeza
+        campo={campo}
+        gravado={numero}
+        detalheAberto={detalheAberto}
+        onAlternarDetalhe={onAlternarDetalhe}
+        onMedir={onMedir}
+        onDesfazer={onDesfazer}
+      />
+    ) : campo.tipo === "multipla" ? (
+      <CampoDeMultipla
+        campo={campo}
+        bruto={bruto}
+        detalheAberto={detalheAberto}
+        onAlternarDetalhe={onAlternarDetalhe}
+        onEscolher={onEscolher}
+        onDesfazer={onDesfazer}
+      />
+    ) : campo.tipo === "texto" ? (
+      <CampoDeTexto
+        campo={campo}
+        valor={bruto === "nao_perguntado" ? "" : bruto}
+        onEscrever={onEscolher}
+        onDesfazer={onDesfazer}
+      />
+    ) : (
+      <CampoDeEscolha
+        campo={campo}
+        bruto={bruto}
+        derivado={derivado}
+        empilhado={empilhado}
+        detalheAberto={detalheAberto}
+        onAlternarDetalhe={onAlternarDetalhe}
+        onEscolher={onEscolher}
+        onDesfazer={onDesfazer}
+      />
+    );
+
+  if (!emprestado) return controle;
+  return (
+    <View testID={`avc-emprestado-${campo.id}`}>
+      {/**
+        * ⚠️⚠️ A ETIQUETA DIZ ONDE O FATO MORA, e ⛔ não que ele é uma cópia.
+        *
+        * ⚠️ Sem ela, o médico que responde o peso aqui e o vê preenchido no painel
+        * Paciente pensa que respondeu duas vezes — e a primeira coisa que faz é
+        * desconfiar da tela. É a mesma lição das três procedências do NIHSS.
+        */}
+      <Text style={e.origem}>
+        {nomeDaCasa ? `${tr("Do painel")} ${tr(nomeDaCasa)}` : tr("De outra superfície")}
+      </Text>
+      {controle}
     </View>
   );
 }
@@ -998,6 +1179,16 @@ export const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
       borderWidth: 2, borderColor: tema.cores.border,
     },
+    entradaDeTexto: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+      paddingHorizontal: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+    },
     /** ⚠️ Procedência do valor — ⛔ não é ajuda clínica, é rastreabilidade (E-03). */
     origem: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, fontStyle: "italic" },
 
@@ -1026,12 +1217,23 @@ export const criarEstilos = (tema: Tema) =>
      * ⚠️ O alvo de toque ⛔ não encolheu: a ALTURA continua em `TOQUE.minimo`, que
      * é o que a regra de 44 px governa. O que cedeu foi largura ociosa.
      */
+    /**
+     * ⚠️⚠️ `maxWidth` E `flexShrink` — achados na revisão visual de 2026-08-30.
+     *
+     * Sem eles, uma opção mais larga que o cartão **transbordava e era cortada**:
+     * *"Varfarina ou outro antagonista da vit…"* e *"Heparina ou heparina de
+     * baixo peso…"* chegavam truncadas ao olho, num campo que governa a regra do
+     * coagulograma. ⚠️ Rótulo cortado ⛔ não é estética: *"antagonista da vitamina
+     * K"* e *"antagonista da vit"* ⛔ não são a mesma informação para quem lê com
+     * pressa.
+     */
     opcao: {
       paddingVertical: ESPACO.sm, paddingHorizontal: ESPACO.sm,
       minHeight: TOQUE.minimo, minWidth: 76,
       justifyContent: "center", alignItems: "center",
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
       borderWidth: 2, borderColor: tema.cores.border,
+      maxWidth: "100%",
     },
     abrirEscolha: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
@@ -1043,7 +1245,13 @@ export const criarEstilos = (tema: Tema) =>
     opcoesEmpilhadas: { flexDirection: "column" },
     opcaoLarga: { alignSelf: "stretch", alignItems: "flex-start" },
     opcaoAtiva: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
-    opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
+    opcaoTexto: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "600",
+      /** ⚠️ Deixa o texto QUEBRAR em vez de estourar o cartão. */
+      flexShrink: 1,
+    },
     opcaoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
 
     /** ⚠️ Neutraliza o `flexBasis: "100%"` do wrapper, que em coluna vira altura. */

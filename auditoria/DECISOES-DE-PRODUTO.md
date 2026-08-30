@@ -1270,3 +1270,126 @@ neste módulo, e a correção é sempre a mesma: **medir o que a frase FAZ**.
 | ✅ **atribuição obrigatória** | o estado positivo cita **a fonte** e devolve a decisão à reperfusão |
 
 ⚠️ Sem a segunda metade, a trava seria satisfeita pelo **silêncio**.
+
+---
+
+## PD-28 · PROPRIEDADE DO FATO ⛔ NÃO É LOCAL DE PREENCHIMENTO — DECIDIDA (2026-08-29)
+
+**Regra central da arquitetura, formulada pelo autor:**
+
+> **Um fato tem um único id e uma única casa semântica. Qualquer superfície que
+> precise dele pode mostrar o valor ou permitir preenchê-lo, sempre escrevendo no
+> mesmo fato e na mesma trilha.**
+
+### O que a originou
+
+Quatro defeitos seguidos, encontrados **usando o app**, e todos o mesmo defeito:
+alergia a contraste perguntada **depois** de já ter oferecido a angiotomografia ·
+hipodensidade num bloco de resultado de TC · imagem avançada **sem leitor** ·
+suspeita de HSA parecendo repetição.
+
+⚠️ Todos eram **fatos sobre quem é o paciente** em telas organizadas por
+**decisão**. Faltava o lugar onde o paciente é descrito **uma vez**.
+
+### A regra que impede o escorregamento
+
+> *"Senão daqui a pouco começamos a mover fatos para a superfície que os utiliza
+> e recriamos o problema: DOAC 'pertence à trombólise', mRS 'pertence à EVT',
+> creatinina 'pertence ao contraste'. ⛔ Não. **O dado pertence à espécie dele; a
+> decisão apenas o consome.**"*
+
+⚠️ Foi por essa regra que a **hipodensidade clara ficou em C** — eu havia
+proposto movê-la para D, e o autor recusou: *"o fato ⛔ não muda de natureza só
+porque uma regra de trombólise o utiliza"*.
+
+### As três espécies que decidem a casa
+
+| espécie | pergunta que a identifica | casa |
+|---|---|---|
+| **quem é o paciente** | isto seria verdade se ele ⛔ não tivesse tido este AVC? | **Paciente** |
+| **estado clínico atual** | isto pode mudar nas próximas duas horas? | **A** |
+| **exame do episódio** | isto tem valor, horário e laudo? | **Laboratório** · **C** |
+
+### Como se implementa, e o que custou
+
+⚠️ **O núcleo ⛔ não mudou.** `estado.ts` já guardava fatos por `campo`, num vetor
+global sem noção de superfície — escrever de qualquer lugar já funcionava. O que
+entrou foi **declaração de conteúdo**:
+
+- `casa` em todo campo, **carimbada pelo módulo** (`comCasa`) e ⛔ nunca escrita
+  campo a campo — escrita à mão, ela poderia discordar do arquivo;
+- `emprestados` no bloco: o **mesmo objeto** da casa de origem, ⛔ nunca uma
+  cópia. A prova confere identidade de referência, e ⛔ não igualdade de id;
+- etiqueta **"Do painel Paciente"** na tela, para o médico ⛔ não achar que
+  respondeu duas vezes.
+
+**Mudaram de casa:** `peso` e `peso_origem` (de A) · `mrs_previo` (de B) ·
+`alergia_contraste` (de C) — e **continuam desenhados onde estavam**, por
+decisão explícita: *"muda a propriedade, ⛔ não a experiência que já ficou boa na
+B."*
+
+---
+
+## PD-29 · A SUPERFÍCIE PACIENTE É PAINEL, E ⛔ NUNCA PORTA — DECIDIDA (2026-08-29)
+
+**Condição que o autor impôs para ela existir:**
+
+> *"Ela pode aparecer primeiro visualmente, mas ⛔ não pode ser uma ficha
+> obrigatória para liberar o AVC. Se chegar um paciente instável, o médico
+> precisa conseguir tocar direto em estabilização, imagem ou qualquer superfície
+> necessária."*
+
+⚠️⚠️ **Por que isto precisa de trava e ⛔ não de boa intenção:** uma tela de
+admissão antes do fluxo é a forma mais natural de reintroduzir o atraso que as
+**doze marcas 🚫** proíbem — e ⛔ nem pareceria bloqueio: pareceria organização.
+
+**O que a prova mede:** com Paciente **inteiramente vazio**, as nove superfícies
+abrem · ⛔ nenhuma pendência nasce dela · ⛔ nenhuma leitura de A, B ou C deixa de
+existir · ⛔ nenhum campo dela bloqueia terapia.
+
+### ⛔ O que ⛔ NÃO entra nela
+
+PA · FC · SpO₂ · glicemia · consciência · via aérea · ausculta · laboratório ·
+imagem. São fatos do **episódio atual**, repetíveis, e continuam em suas casas.
+
+### Duas superfícies **sem letra**
+
+**Paciente** e **Laboratório** são painéis transversais. ⚠️ A letra carrega a
+leitura de fluxo (A → G), e dá-la a um painel sugeriria que existe passo antes
+de A. E a letra passou a ser derivada da posição **entre as superfícies com
+letra** — se o painel consumisse posição, acrescentar um painel renomearia todas
+as superfícies clínicas, e a letra é o que a equipe usa para dizer onde resolver
+uma pendência.
+
+### O único campo administrativo do módulo
+
+`identificacao` é `natureza: "administrativo"` e `tipo: "texto"` — o **único**
+texto livre do app. ⚠️ §0.3 continua proibindo caixa de texto para **valor
+clínico**, e a exceção é declarada, ⛔ não um afrouxamento: sem ela, ou o campo
+inventaria uma fonte, ou a exigência de `F-nn` cairia para os outros 50 campos.
+
+⛔ **⛔ Nenhuma derivação o lê**, e a prova varre os três arquivos de derivação
+para garantir. Limite fixado pelo autor: *"⛔ sem CPF, ⛔ sem obrigatoriedade, e
+⛔ sem qualquer efeito sobre o fluxo."*
+
+---
+
+## PD-30 · TEMPORALIDADE SUBSTITUI `repetivel` — DECIDIDA (2026-08-29)
+
+Eu havia proposto um booleano `repetivel`. O autor o recusou por ⛔ não dar conta
+de três coisas diferentes, e nomeou a terceira:
+
+> *"'Ainda ⛔ não realizada' às 14h e 'realizada' às 15h ⛔ não são contraditórios
+> ⛔ nem correção. Ambos foram verdadeiros em seus momentos."*
+
+| valor | nova entrada é | operação de §7.16 |
+|---|---|---|
+| **`estavel`** | o anterior ⛔ nunca foi verdade | **corrigir** |
+| **`afericao`** | observação de um evento, que convive com as anteriores | **nova aferição** |
+| **`estado`** | estados sucessivos do episódio | **mudança de estado** |
+
+⚠️ Os 51 campos do módulo declaram a sua, e a prova reprova quem ⛔ não declarar.
+
+⏳ **A instância** — que amarra cada aferição ao estudo ou à coleta a que
+pertence — foi **contratada e ⛔ não implementada**: ela entra com **Laboratório**,
+que é a primeira superfície inteiramente de aferições.

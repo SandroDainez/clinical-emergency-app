@@ -23,6 +23,7 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_B, TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
+import { camposDoGrupo } from "../../avc/conteudo/campo";
 import {
   derivadoDaEscala,
   escalaPreenchida,
@@ -36,9 +37,7 @@ import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import {
   CabecalhoDeBloco,
-  CampoDeEscolha,
-  CampoDeGrandeza,
-  CampoDeHora,
+  CampoDaSuperficie,
   PainelDeLeituras,
   useDetalhes,
 } from "./campos-clinicos";
@@ -186,7 +185,7 @@ export default function SuperficieB({
 
           {fechado || (grupo.id === "achados-tipicos" && derivados && !ajustando) ? null : (
           <>
-          {grupo.campos.map((campo) =>
+          {camposDoGrupo(grupo).map((campo) =>
             campo.tipo === "escala" ? (
               <CampoDeEscala
                 key={campo.id}
@@ -202,43 +201,24 @@ export default function SuperficieB({
                 onRegistrarEscala={onEscala}
                 onDesfazer={onDesfazer}
               />
-            ) : campo.tipo === "hora" ? (
-              <CampoDeHora
+            ) : (
+              <CampoDaSuperficie
                 key={campo.id}
                 campo={campo}
-                gravado={numeroGravado(campo.id)}
-                desconhecido={
-                  String(valorAtual(estado, campo.id)?.valor ?? "") === "nao_sei"
-                }
+                casaAtual="neurologico"
+                bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+                numero={numeroGravado(campo.id)}
                 agora={agora}
                 detalheAberto={detalhes.aberto(campo.id)}
                 onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onHora={onHora}
                 onEscolher={onEscolher}
-                onDesfazer={onDesfazer}
-              />
-            ) : campo.tipo === "grandeza" ? (
-              <CampoDeGrandeza
-                key={campo.id}
-                campo={campo}
-                gravado={numeroGravado(campo.id)}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
                 onMedir={onMedir}
+                onHora={onHora}
                 onDesfazer={onDesfazer}
-              />
-            ) : (
-              <CampoDeEscolha
-                key={campo.id}
-                campo={campo}
-                bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
                 derivado={derivadoDaEscala(estado, campo.id)}
-                // ⚠️ Descritor de escala se lê empilhado, ⛔ não em chip.
+                /** ⚠️ Descritor de escala se lê empilhado, ⛔ não em chip. */
                 empilhado={campo.tipo === "grau"}
-                detalheAberto={detalhes.aberto(campo.id)}
-                onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                onEscolher={onEscolher}
-                onDesfazer={onDesfazer}
+                nomeDaCasa="Paciente"
               />
             )
           )}

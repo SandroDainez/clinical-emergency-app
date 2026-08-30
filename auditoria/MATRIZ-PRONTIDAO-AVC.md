@@ -15,6 +15,25 @@ propõe UI. ⛔ Não escreve código. **Apenas classifica o estado real.**
 **Base:** marco documental `cb4ff11` — spec (51 exigências), transcrição da
 AHA/ASA 2026, revisão transversal, consolidação e fontes complementares.
 
+> ### ⚠️⚠️ ATUALIZAÇÃO ESTRUTURAL DE 2026-08-29 — **P-09 reaberta**
+>
+> O módulo passou de **sete** superfícies para **nove**: entraram os painéis
+> **Paciente** e **Laboratório**, sem letra, e ⛔ nenhum deles é etapa.
+>
+> **A regra que governa a mudança (PD-28):** *propriedade do fato ⛔ não é local
+> de preenchimento*. Um fato tem um id e uma **casa semântica**; qualquer
+> superfície que precise dele pode exibi-lo ou preenchê-lo, escrevendo **no mesmo
+> fato e na mesma trilha**.
+>
+> ⚠️ **Consequência para o Bloco 6:** os fatos de segurança — anticoagulante,
+> antiagregante, antecedentes da Table 8, microssangramentos — passam a morar em
+> **Paciente**, e os exames de coagulação em **Laboratório**. A Superfície D
+> continua respondendo por **R6.1 a R6.9**, agora como **interpretação** desses
+> fatos, e ⛔ não como dona deles.
+>
+> ⚠️ Entraram também **E-52** (dado desconhecido ⛔ nunca vira valor fabricado) e as
+> decisões **PD-28**, **PD-29** e **PD-30**.
+
 ## Legenda
 
 | status | significado |

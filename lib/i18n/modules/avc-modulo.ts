@@ -1009,4 +1009,136 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "indisponível no serviço é diferente de ainda não realizada":
     "no disponible en el servicio es diferente de aún no realizada",
   "sítio anatômico ⛔ não é resposta binária": "sitio anatómico ⛔ no es respuesta binaria",
+
+  // ── Superfície Paciente ─────────────────────────────────────────────────
+  //
+  // ⚠️ E-45 aqui é sobretudo de JANELA: "nos últimos 14 dias" e "entre 14 dias e
+  // 3 meses" são faixas diferentes da fonte, com forças diferentes — a tradução
+  // ⛔ não pode aproximá-las.
+  "Laboratório": "Laboratorio",
+  // ── Controle de data (D-118) ────────────────────────────────────────────
+  "Hoje": "Hoy",
+  "Ontem": "Ayer",
+  "Escolher data": "Elegir fecha",
+  "Data": "Fecha",
+  "Nova medida": "Nueva medición",
+  "Nova aferição aberta pelo médico": "Nueva medición abierta por el médico",
+  "Identificação, dados basais, alergias, medicações e antecedentes.":
+    "Identificación, datos basales, alergias, medicaciones y antecedentes.",
+  "Resultados do episódio, com horário e possibilidade de nova coleta.":
+    "Resultados del episodio, con horario y posibilidad de nueva toma.",
+  "Nada aqui é obrigatório para seguir. Todas as superfícies abrem com este painel vazio.":
+    "Nada aquí es obligatorio para seguir. Todas las superficies abren con este panel vacío.",
+  "Do painel": "Del panel",
+  "De outra superfície": "De otra superficie",
+
+  "Identificação": "Identificación",
+  "Nome ou identificador local, para não trocar de paciente. Opcional.":
+    "Nombre o identificador local, para no confundir de paciente. Opcional.",
+  "Fica apenas neste aparelho e não interfere em nenhuma conduta.":
+    "Queda solo en este dispositivo y no interfiere en ninguna conducta.",
+  "Idade": "Edad",
+  "anos": "años",
+  "A fonte usa a idade em critérios de trombectomia. O corte pertence à superfície de reperfusão, e não a este registro.":
+    "La fuente usa la edad en criterios de trombectomía. El punto de corte pertenece a la superficie de reperfusión, y no a este registro.",
+
+  "Dados basais": "Datos basales",
+  "Como o peso foi obtido": "Cómo se obtuvo el peso",
+  "Informado pelo paciente ou família": "Informado por el paciente o la familia",
+  "Estimado pela equipe": "Estimado por el equipo",
+  "A fonte diz para não atrasar a trombólise para obter peso exato. Peso estimado é resposta válida.":
+    "La fuente dice que no se retrase la trombólisis para obtener el peso exacto. Peso estimado es respuesta válida.",
+
+  "Alergias": "Alergias",
+
+  "Medicações em uso": "Medicaciones en uso",
+  "Anticoagulante em uso": "Anticoagulante en uso",
+  "Anticoagulante oral direto (DOAC)": "Anticoagulante oral directo (DOAC)",
+  "Varfarina ou outro antagonista da vitamina K": "Warfarina u otro antagonista de la vitamina K",
+  "Heparina ou heparina de baixo peso molecular": "Heparina o heparina de bajo peso molecular",
+  "Nenhum": "Ninguno",
+  "A fonte separa quem não usa varfarina nem heparina: nesses pacientes a trombólise pode ser iniciada antes do resultado da coagulação, com suspensão se o resultado vier alterado.":
+    "La fuente separa a quienes no usan warfarina ni heparina: en esos pacientes la trombólisis puede iniciarse antes del resultado de la coagulación, con suspensión si el resultado viene alterado.",
+  "Data e hora da última dose do anticoagulante":
+    "Fecha y hora de la última dosis del anticoagulante",
+  "Se ninguém souber informar, registre que é desconhecido. Nada é estimado.":
+    "Si nadie puede informarlo, registre que es desconocido. Nada se estima.",
+  "A fonte considera exposição recente a DOAC como as últimas 48 horas, e diz que a segurança da trombólise nesse cenário é desconhecida. Ela não contraindica, e o horário desconhecido não é exposição confirmada nem ausência de exposição.":
+    "La fuente considera exposición reciente a DOAC como las últimas 48 horas, y dice que la seguridad de la trombólisis en ese escenario es desconocida. No contraindica, y el horario desconocido no es exposición confirmada ni ausencia de exposición.",
+  "Antiagregante em uso": "Antiagregante en uso",
+  "Antiagregante simples": "Antiagregante simple",
+  "Dupla antiagregação": "Doble antiagregación",
+  "A fonte recomenda a trombólise mesmo em uso de antiagregante simples ou duplo, declarando o aumento de risco de hemorragia sintomática em comparação com não usar antiagregante.":
+    "La fuente recomienda la trombólisis incluso en uso de antiagregante simple o doble, declarando el aumento del riesgo de hemorragia sintomática en comparación con no usar antiagregante.",
+
+  "Antecedentes intracranianos": "Antecedentes intracraneales",
+  "Hemorragia intracraniana prévia": "Hemorragia intracraneal previa",
+  "AVC isquêmico nos últimos 3 meses": "ACV isquémico en los últimos 3 meses",
+  "Neoplasia intracraniana extra-axial": "Neoplasia intracraneal extraaxial",
+  "Neoplasia intracraniana intra-axial": "Neoplasia intracraneal intraaxial",
+  "Lesão medular aguda nos últimos 3 meses": "Lesión medular aguda en los últimos 3 meses",
+  "Aneurisma intracraniano não roto": "Aneurisma intracraneal no roto",
+  "Malformação vascular intracraniana não rota": "Malformación vascular intracraneal no rota",
+  "Dissecção arterial cervical extracraniana": "Disección arterial cervical extracraneal",
+  "Dissecção arterial intracraniana": "Disección arterial intracraneal",
+  "AVC durante procedimento angiográfico": "ACV durante procedimiento angiográfico",
+  "Doença de Moya-Moya": "Enfermedad de Moya-Moya",
+  "Imunoterapia amiloide ou ARIA": "Inmunoterapia amiloide o ARIA",
+  "Nenhum destes": "Ninguno de estos",
+  "Lista da Table 8 da fonte. Ela não traz classe de recomendação em nenhuma célula, e declara a própria faixa mais restritiva como não sustentada por evidência clínica. O que cada achado significa é interpretado na superfície de segurança.":
+    "Lista de la Table 8 de la fuente. No trae clase de recomendación en ninguna celda, y declara su propia franja más restrictiva como no sustentada por evidencia clínica. Lo que cada hallazgo significa se interpreta en la superficie de seguridad.",
+
+  "Antecedentes cardíacos e sistêmicos": "Antecedentes cardíacos y sistémicos",
+  "Endocardite infecciosa": "Endocarditis infecciosa",
+  "Dissecção de arco aórtico": "Disección de arco aórtico",
+  "Infarto com supradesnivelamento nos últimos 3 meses":
+    "Infarto con elevación del ST en los últimos 3 meses",
+  "Infarto do miocárdio remoto": "Infarto de miocardio remoto",
+  "Pericardite aguda": "Pericarditis aguda",
+  "Trombo em átrio ou ventrículo esquerdo": "Trombo en aurícula o ventrículo izquierdo",
+  "Neoplasia sistêmica ativa": "Neoplasia sistémica activa",
+  "Uso de droga recreativa": "Uso de droga recreativa",
+  "Lista da Table 8 da fonte, que não traz classe de recomendação em nenhuma célula. O que cada achado significa é interpretado na superfície de segurança.":
+    "Lista de la Table 8 de la fuente, que no trae clase de recomendación en ninguna celda. Lo que cada hallazgo significa se interpreta en la superficie de seguridad.",
+
+  "Procedimentos e sangramentos recentes": "Procedimientos y sangrados recientes",
+  "Procedimentos, traumas e sangramentos recentes": "Procedimientos, traumas y sangrados recientes",
+  "Neurocirurgia nos últimos 14 dias": "Neurocirugía en los últimos 14 días",
+  "Neurocirurgia entre 14 dias e 3 meses": "Neurocirugía entre 14 días y 3 meses",
+  "Traumatismo craniano moderado a grave nos últimos 14 dias":
+    "Traumatismo craneal moderado a grave en los últimos 14 días",
+  "Traumatismo craniano moderado a grave entre 14 dias e 3 meses":
+    "Traumatismo craneal moderado a grave entre 14 días y 3 meses",
+  "Cirurgia de grande porte fora do sistema nervoso nos últimos 10 dias":
+    "Cirugía mayor fuera del sistema nervioso en los últimos 10 días",
+  "Trauma de grande porte fora do sistema nervoso nos últimos 14 dias":
+    "Trauma mayor fuera del sistema nervioso en los últimos 14 días",
+  "Sangramento gastrointestinal ou geniturinário nos últimos 21 dias":
+    "Sangrado gastrointestinal o genitourinario en los últimos 21 días",
+  "Sangramento gastrointestinal ou geniturinário remoto e estável":
+    "Sangrado gastrointestinal o genitourinario remoto y estable",
+  "Punção arterial em vaso não compressível nos últimos 7 dias":
+    "Punción arterial en vaso no compresible en los últimos 7 días",
+  "Punção dural nos últimos 7 dias": "Punción dural en los últimos 7 días",
+  "As janelas são as da própria fonte, e o mesmo antecedente muda de sentido conforme a janela. O que cada um significa é interpretado na superfície de segurança.":
+    "Las ventanas son las de la propia fuente, y el mismo antecedente cambia de sentido según la ventana. Lo que cada uno significa se interpreta en la superficie de seguridad.",
+
+  "Microssangramentos cerebrais": "Microsangrados cerebrales",
+  "Informação prévia sobre microssangramentos cerebrais":
+    "Información previa sobre microsangrados cerebrales",
+  "Não há informação prévia": "No hay información previa",
+  "Ressonância prévia com 1 a 10": "Resonancia previa con 1 a 10",
+  "Ressonância prévia com mais de 10": "Resonancia previa con más de 10",
+  "Só registra o que já se sabe. Não é preciso obter ressonância para responder.":
+    "Solo registra lo que ya se sabe. No es necesario obtener resonancia para responder.",
+  "A fonte recomenda administrar a trombólise sem obter ressonância para excluir microssangramentos. Não haver informação prévia é resposta completa, com recomendação de classe 1, e nada espera por ela.":
+    "La fuente recomienda administrar la trombólisis sin obtener resonancia para excluir microsangrados. No haber información previa es respuesta completa, con recomendación de clase 1, y nada espera por ella.",
+
+  // ── Motivos do vocabulário próprio de Paciente ─────────────────────────
+  "origem muda a confiança sem mudar o número (E-14)":
+    "el origen cambia la confianza sin cambiar el número (E-14)",
+  "simples e dupla são forças diferentes na fonte":
+    "simple y doble son fuerzas diferentes en la fuente",
+  "três estados com classe de recomendação própria":
+    "tres estados con clase de recomendación propia",
 };

@@ -9,7 +9,8 @@
  *   (`varredura-pt.cjs`), que lê o fonte, e `test:traducao-runtime`, que lê o
  *   artefato compilado.
  * UNIVERSO: as opções de TODOS os campos de `TODOS_OS_CAMPOS_A`,
- *   `TODOS_OS_CAMPOS_B` e `TODOS_OS_CAMPOS_C`, contadas com piso, mais os graus
+ *   `TODOS_OS_CAMPOS_B`, `TODOS_OS_CAMPOS_C` e `TODOS_OS_CAMPOS_P`, contadas
+ *   com piso, mais os graus
  *   de `GRAUS_MRS`. ⛔ Fora do universo: qualquer módulo que ⛔ não seja o AVC.
  *
  * ── POR QUE ESTA TRAVA EXISTE (2026-08-29) ─────────────────────────────────
@@ -46,6 +47,7 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficie-a.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-b.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
+  path.join(appDir, "avc", "conteudo", "paciente.ts"),
   path.join(appDir, "avc", "conteudo", "mrs.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
@@ -53,6 +55,7 @@ const A = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
 const B = require(path.join(tmp, "avc", "conteudo", "superficie-b.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
 const M = require(path.join(tmp, "avc", "conteudo", "mrs.js"));
+const P = require(path.join(tmp, "avc", "conteudo", "paciente.js"));
 
 /**
  * ⚠️ O dicionário é lido SEM COMENTÁRIO: uma chave citada dentro de um comentário
@@ -61,16 +64,26 @@ const M = require(path.join(tmp, "avc", "conteudo", "mrs.js"));
 const dicionario = lerFonte(path.join(appDir, "lib", "i18n", "modules", "avc-modulo.ts"));
 const temPar = (s) => dicionario.includes(`"${s}":`);
 
-const campos = [...A.TODOS_OS_CAMPOS_A, ...B.TODOS_OS_CAMPOS_B, ...C.TODOS_OS_CAMPOS_C];
+/**
+ * ⚠️ **Paciente** entrou em 2026-08-29 e traz ~40 opções novas — antecedentes e
+ * medicações. É o maior universo de rótulo curto do módulo, e portanto o de
+ * maior risco para o defeito que esta trava nasceu para pegar.
+ */
+const campos = [
+  ...P.TODOS_OS_CAMPOS_P,
+  ...A.TODOS_OS_CAMPOS_A,
+  ...B.TODOS_OS_CAMPOS_B,
+  ...C.TODOS_OS_CAMPOS_C,
+];
 
 // ── 0 · O UNIVERSO EXISTE ────────────────────────────────────────────────
 {
-  confere("os três conjuntos de campos foram carregados",
-    campos.length >= 40,
+  confere("os quatro conjuntos de campos foram carregados",
+    campos.length >= 55,
     "trava que roda sobre lista vazia fica verde sem medir nada (R-1)");
   const opcoes = campos.flatMap((c) => c.opcoes ?? []);
   confere("há opções a conferir, e ⛔ não uma lista vazia",
-    opcoes.length >= 80,
+    opcoes.length >= 120,
     "se ⛔ nenhum campo declarasse opção, esta trava passaria sem olhar para nada");
 }
 

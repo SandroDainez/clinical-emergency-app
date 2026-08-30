@@ -18,9 +18,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
 import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
 import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
+import { proximaInstancia } from "../../avc/nucleo/instancia";
+import { registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import type { EstadoAvc } from "../../avc/nucleo/estado";
 import {
   abrirAtendimento,
   decorridoEmMinutos,
@@ -35,6 +38,7 @@ import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
 import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
 import SuperficieC from "./superficie-c";
+import SuperficiePaciente from "./superficie-paciente";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
@@ -134,8 +138,29 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ não é medida. Quem decide quando o campo deixa de ser "não informado" é o
    * fim do gesto na barra (§0.2), e isso mora na tela.
    */
+  /**
+   * ⚠️⚠️ PASSA POR `registrarComInstancia` (D-120): campos que declaram
+   * `instanciaDe` são **metades de uma mesma medida**, e informar a diastólica
+   * **completa** a aferição já aberta em vez de criar outra.
+   *
+   * ⚠️ A regra mora no conteúdo, e ⛔ não aqui — escrita na tela, as travas
+   * construíam PAs sem instância e a derivação as lia como "⛔ não informada".
+   */
   function medir(campo: string, valor: number) {
-    setEstado((e) => registrarFato(e, { campo, valor }, relogio));
+    setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio));
+  }
+
+  /**
+   * ⚠️ NOVA AFERIÇÃO — ⛔ **não** é correção. Os dois valores valem, cada um no
+   * seu instante, e a trilha guarda os dois (§3.4).
+   */
+  function novaMedida(tipo: string) {
+    setEstado((e) => registrarFato(e, {
+      campo: `${tipo}_nova_medida`,
+      valor: proximaInstancia(e, tipo),
+      instancia: proximaInstancia(e, tipo),
+      motivo: "Nova aferição aberta pelo médico",
+    }, relogio));
   }
 
   /**
@@ -238,7 +263,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 testID={`avc-aba-${sup.id}`}
                 style={[s.aba, ativa && s.abaAtiva]}
               >
-                <Text style={[s.abaLetra, ativa && s.abaLetraAtiva]}>{sup.letra}</Text>
+                {/**
+                  * ⚠️ Painel ⛔ não tem letra, e o lugar dela ⛔ não fica vazio: um
+                  * espaço em branco onde as outras têm "A" leria como letra que
+                  * sumiu. O símbolo diz "contexto", e ⛔ não posição no fluxo.
+                  */}
+                <Text style={[s.abaLetra, ativa && s.abaLetraAtiva]}>
+                  {sup.letra ?? "·"}
+                </Text>
                 <Text style={[s.abaTitulo, ativa && s.abaTituloAtivo]} numberOfLines={2}>
                   {tr(sup.titulo)}
                 </Text>
@@ -253,11 +285,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           parecer completa e vazia. Vacuidade silenciosa é o que a casa proíbe. */}
       <View style={s.superficie} testID={`avc-superficie-${atual.id}`}>
         <Text style={s.superficieTitulo}>
-          {atual.letra} · {tr(atual.titulo)}
+          {atual.letra ? `${atual.letra} · ` : ""}
+          {tr(atual.titulo)}
         </Text>
         <Text style={s.superficieResumo}>{tr(atual.resumo)}</Text>
 
-        {atual.id === "estabilizacao" ? (
+        {atual.id === "paciente" ? (
+          <SuperficiePaciente
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onMedir={medir}
+            onHora={registrarHora}
+            onDesfazer={desfazer}
+          />
+        ) : atual.id === "estabilizacao" ? (
           <SuperficieA
             estado={estado}
             agora={agora}
@@ -265,6 +307,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onMedir={medir}
             onHora={registrarHora}
             onDesfazer={desfazer}
+            onNovaMedida={novaMedida}
           />
         ) : atual.id === "neurologico" ? (
           /**
@@ -391,7 +434,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * a ação por último, na tela em que o médico está com pressa.
                 */}
               <Text style={s.pendenciaDono}>
-                {tr("Abrir")} {superficie(p.dono).letra} · {tr(superficie(p.dono).titulo)}
+                {tr("Abrir")}{" "}
+                {superficie(p.dono).letra ? `${superficie(p.dono).letra} · ` : ""}
+                {tr(superficie(p.dono).titulo)}
               </Text>
             </Pressable>
           ))

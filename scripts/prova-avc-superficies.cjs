@@ -51,7 +51,22 @@ const sups = S.SUPERFICIES;
 console.log(`universo: ${sups.length} superfície(s) · ${S.pendenciasVigentes().length} pendência(s) inicial(is)`);
 
 // ── identidade ≠ rótulo ────────────────────────────────────────────────────
-confere("são sete superfícies", sups.length === 7, "§7.15: o AVC V1 tem sete janelas");
+/**
+ * ⚠️⚠️ NOVE, e ⛔ não sete — **P-09 reaberta pelo autor em 2026-08-29**.
+ *
+ * As sete clínicas de §7.15 continuam intactas, e entraram **dois painéis
+ * transversais**: `paciente` e `laboratorio`. Eles ⛔ não são etapas, e é por isso
+ * que ⛔ não têm letra.
+ */
+const comLetra = sups.filter((s) => !s.painel);
+const paineis = sups.filter((s) => s.painel);
+confere("são nove superfícies: sete com letra e dois painéis",
+  sups.length === 9 && comLetra.length === 7 && paineis.length === 2,
+  "§7.15 fixou sete janelas clínicas; P-09 acrescentou Paciente e Laboratório como painéis");
+
+confere("⛔ nenhum painel tem letra, e toda superfície clínica tem",
+  paineis.every((s) => s.letra === undefined) && comLetra.every((s) => typeof s.letra === "string"),
+  "letra é leitura de FLUXO; dá-la a um painel sugeriria que existe passo antes de A");
 
 confere("todo id é único",
   new Set(sups.map((s) => s.id)).size === sups.length,
@@ -65,12 +80,21 @@ confere("nenhum id é uma letra de apresentação",
   sups.every((s) => !/^[A-G]$/.test(s.id) && /^[a-z]+$/.test(s.id)),
   "identidade não pode ser rótulo: reordenar reescreveria o sentido do estado");
 
-confere("a letra é derivada da posição",
-  sups.every((s, i) => s.letra === String.fromCharCode(65 + i)),
+/**
+ * ⚠️⚠️ A LETRA SAI DA POSIÇÃO **ENTRE AS COM LETRA** — e a distinção ⛔ não é
+ * detalhe: se o painel consumisse posição, acrescentar um painel renomearia
+ * TODAS as superfícies clínicas. A letra é o que o médico usa para dizer onde
+ * resolver uma pendência ("Abrir C · Imagem"); um painel novo ⛔ não pode
+ * reescrever o vocabulário da equipe.
+ */
+confere("a letra é derivada da posição entre as superfícies com letra",
+  comLetra.every((s, i) => s.letra === String.fromCharCode(65 + i)),
   "letra digitada pode discordar da ordem, e aí a tela e o prontuário divergem");
 
 // ── a ordem aprovada pelo autor (2026-08-28) ───────────────────────────────
 const ORDEM_APROVADA = [
+  [undefined, "paciente", "Paciente"],
+  [undefined, "laboratorio", "Laboratório"],
   ["A", "estabilizacao", "Entrada e estabilização"],
   ["B", "neurologico", "Neurológico"],
   ["C", "imagem", "Imagem"],
@@ -91,7 +115,11 @@ confere("a ordem de apresentação é a aprovada",
  * `anterior`, `requer` ou `depende`, a lista deixa de ser ordem de leitura e
  * vira árvore linear obrigatória, que é exatamente o que o AVC ⛔ não pode ter.
  */
-const CHAVES_PERMITIDAS = ["id", "letra", "titulo", "resumo", "fontes"];
+/**
+ * ⚠️ `painel` entrou em 2026-08-29 e ⛔ **não** é sequência: ela diz que a
+ * superfície ⛔ não é etapa — o oposto de `proxima`/`requer`.
+ */
+const CHAVES_PERMITIDAS = ["id", "letra", "titulo", "resumo", "fontes", "painel"];
 confere("nenhuma superfície declara vizinho ou pré-requisito",
   sups.every((s) => Object.keys(s).every((k) => CHAVES_PERMITIDAS.includes(k))),
   "E-11: campo de sequência transformaria apresentação em fluxo obrigatório");

@@ -15,10 +15,20 @@ import type { Pendencia, SuperficieId } from "../nucleo/tipos";
 import { TODOS_OS_CAMPOS_A } from "./superficie-a";
 import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
+import { TODOS_OS_CAMPOS_P } from "./paciente";
 
 export type Superficie = {
   /** ⚠️ Identidade ESTÁVEL. ⛔ Não muda quando a ordem ou a letra mudam. */
   readonly id: SuperficieId;
+  /**
+   * ⚠️⚠️ PAINEL TRANSVERSAL — ⛔ **sem letra**, e ⛔ não é etapa.
+   *
+   * A letra carrega a leitura de fluxo clínico (A → G). **Paciente** e
+   * **Laboratório** são contexto consultável de qualquer lugar: dar-lhes letra
+   * sugeriria que existe um passo antes de A — e é exatamente isso que o autor
+   * proibiu ao aprovar a superfície Paciente.
+   */
+  readonly painel?: true;
   /**
    * ⚠️ A LETRA É DERIVADA DA POSIÇÃO, ⛔ nunca escrita à mão.
    *
@@ -26,7 +36,7 @@ export type Superficie = {
    * quinto lugar é uma tela em que o médico e o prontuário falam de coisas
    * diferentes. Aqui letra e posição ⛔ não têm como divergir.
    */
-  readonly letra: string;
+  readonly letra?: string;
   readonly titulo: string;
   readonly resumo: string;
   /** Slots de fonte que governam esta superfície. */
@@ -53,6 +63,27 @@ type DeclaracaoDeSuperficie = Omit<Superficie, "letra">;
  * leitura: ⛔ ninguém é obrigado a passar por Correções para chegar a Reperfusão.
  */
 const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
+  /**
+   * ⚠️⚠️ OS DOIS PAINÉIS VÊM PRIMEIRO NA LEITURA, e ⛔ **não** no fluxo.
+   *
+   * ⚠️ Aparecer primeiro ⛔ não é ser passo 1: com Paciente **inteiramente vazio**,
+   * todas as superfícies abrem, ⛔ nenhuma some e ⛔ nenhum bloqueio nasce. É a
+   * condição que o autor impôs ao aprová-la, e a prova a mede.
+   */
+  {
+    id: "paciente",
+    painel: true,
+    titulo: "Paciente",
+    resumo: "Identificação, dados basais, alergias, medicações e antecedentes.",
+    fontes: ["F-07", "F-08", "F-09", "F-10", "F-16", "F-27"],
+  },
+  {
+    id: "laboratorio",
+    painel: true,
+    titulo: "Laboratório",
+    resumo: "Resultados do episódio, com horário e possibilidade de nova coleta.",
+    fontes: ["F-10"],
+  },
   {
     id: "estabilizacao",
     titulo: "Entrada e estabilização",
@@ -109,11 +140,23 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
 
 
 
-/** ⚠️ A letra sai da POSIÇÃO. ⛔ Nenhuma é digitada. */
-export const SUPERFICIES: readonly Superficie[] = ORDEM_DE_APRESENTACAO.map((s, i) => ({
-  ...s,
-  letra: String.fromCharCode("A".charCodeAt(0) + i),
-}));
+/**
+ * ⚠️ A letra sai da POSIÇÃO **entre as superfícies com letra**. ⛔ Nenhuma é
+ * digitada, e os painéis ⛔ não consomem letra.
+ *
+ * ⚠️⚠️ POR QUE CONTAR SÓ AS COM LETRA: se o painel consumisse posição, acrescentar
+ * um painel renomearia **todas** as superfícies clínicas — e a letra é o que o
+ * médico usa para dizer onde resolver uma pendência ("Abrir C · Imagem"). Um
+ * painel novo ⛔ não pode reescrever o vocabulário da equipe.
+ */
+export const SUPERFICIES: readonly Superficie[] = (() => {
+  let proxima = 0;
+  return ORDEM_DE_APRESENTACAO.map((s) =>
+    s.painel
+      ? { ...s }
+      : { ...s, letra: String.fromCharCode("A".charCodeAt(0) + proxima++) }
+  );
+})();
 
 export function superficie(id: SuperficieId): Superficie {
   const achada = SUPERFICIES.find((s) => s.id === id);
@@ -195,7 +238,9 @@ const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
  */
 function camposQueExistem(): ReadonlySet<string> {
   return new Set(
-    [...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B, ...TODOS_OS_CAMPOS_C].map((c) => c.id)
+    [...TODOS_OS_CAMPOS_P, ...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B, ...TODOS_OS_CAMPOS_C].map(
+      (c) => c.id
+    )
   );
 }
 

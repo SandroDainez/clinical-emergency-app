@@ -17,6 +17,8 @@
  * forma independente.
  */
 
+import type { SuperficieId } from "../nucleo/tipos";
+
 /** Como o campo é preenchido. ⛔ Nunca caixa de texto para valor clínico (§0.3). */
 export type TipoDeCampo =
   /** Grandeza: barra + ajuste fino. `0` = não informado até a interação (§0.2). */
@@ -47,7 +49,22 @@ export type TipoDeCampo =
    * para quem tem a tabela na cabeça, e o pedido do autor foi exatamente esse —
    * o descritor tem de estar visível no momento de escolher.
    */
-  | "grau";
+  | "grau"
+  /**
+   * ⚠️⚠️ TEXTO LIVRE — e ele existe para **um** caso, com trava própria.
+   *
+   * ⛔⛔ §0.3 PROÍBE CAIXA DE TEXTO PARA VALOR CLÍNICO, e a proibição continua
+   * inteira: um valor clínico digitado ⛔ não tem opções, ⛔ não tem os três vazios
+   * de E-37, ⛔ não tem faixa e ⛔ não se deriva. É a porta por onde entra conteúdo
+   * sem fonte.
+   *
+   * ⚠️ O único campo que o usa é a **identificação do paciente**, que ⛔ não é
+   * afirmação clínica — é `natureza: "administrativo"`.
+   *
+   * ⚠️ **A prova de cada superfície reprova `texto` em campo clínico.** Sem essa
+   * trava, este tipo seria a maior regressão possível do módulo.
+   */
+  | "texto";
 
 /**
  * A faixa de uma grandeza — ⚠️ é limite **de controle**, ⛔ NÃO é limite clínico.
@@ -68,8 +85,74 @@ export type Faixa = {
   readonly passo: number;
 };
 
+/**
+ * ⚠️⚠️ A TEMPORALIDADE DE UM FATO — decidida pelo autor em 2026-08-29, e ela
+ * SUBSTITUIU um booleano `repetivel` que eu havia proposto.
+ *
+ * ⚠️ O booleano ⛔ não dava conta de três coisas diferentes, e a terceira foi ele
+ * quem nomeou: *"'ainda ⛔ não realizada' às 14h e 'realizada' às 15h ⛔ não são
+ * contraditórios ⛔ nem correção. Ambos foram verdadeiros em seus momentos."*
+ *
+ * ⚠️ É ela que decide **qual operação de §7.16 a tela oferece**.
+ */
+export type Temporalidade =
+  /** Há UMA verdade. Valor novo diz que o anterior ⛔ nunca foi verdade ⇒ **correção**. */
+  | "estavel"
+  /**
+   * Observação **de um evento**, que convive com as anteriores ⇒ **nova aferição**.
+   *
+   * ⚠️⚠️ EXIGE INSTÂNCIA. Um INR sem coleta e um achado sem estudo ficam órfãos:
+   * duas TCs produzem dois resultados, e sem a instância ninguém sabe qual achado
+   * pertence a qual exame.
+   */
+  | "afericao"
+  /** Estados **sucessivos** do episódio, cada um verdadeiro no seu instante. */
+  | "estado";
+
+/**
+ * ⚠️ A NATUREZA DO CAMPO — e ela existe por causa de **um** caso.
+ *
+ * ⚠️⚠️ `identificacao` é o primeiro campo ⛔ NÃO CLÍNICO do módulo, e a regra de
+ * que todo campo aponta para um slot `F-nn` (**E-30**) ⛔ não pode ser afrouxada
+ * para todos só porque um deles ⛔ não é afirmação clínica. Declarar a natureza
+ * é o que mantém a exigência de pé para os outros 50.
+ */
+export type NaturezaDoCampo = "clinico" | "administrativo";
+
 export type Campo = {
   readonly id: string;
+  /**
+   * ⚠️⚠️ A CASA SEMÂNTICA — **onde o fato mora**, que ⛔ NÃO é onde ele é
+   * preenchido (decisão do autor, 2026-08-29).
+   *
+   * > *"Um fato tem um único id e uma única casa semântica. Qualquer superfície
+   * > que precise dele pode mostrar o valor ou permitir preenchê-lo, sempre
+   * > escrevendo no mesmo fato e na mesma trilha."*
+   *
+   * ⚠️ **⛔ NÃO SE ESCREVE CAMPO A CAMPO**: `comCasa()` carimba o módulo inteiro.
+   * Escrita à mão, ela poderia discordar do arquivo — e um campo declarando casa
+   * errada é a duplicação voltando com outro nome.
+   *
+   * ⚠️ E a regra que a protege: **o fato pertence à espécie dele; a decisão
+   * apenas o consome.** ⛔ Sem isso, em três superfícies o DOAC vira "da
+   * trombólise", o mRS vira "da trombectomia" e a creatinina vira "do contraste".
+   */
+  readonly casa: SuperficieId;
+  /** ⚠️ Qual operação de §7.16 este campo aceita. */
+  readonly temporalidade: Temporalidade;
+  /** ⚠️ Ausente equivale a `"clinico"` — o caso comum. */
+  readonly natureza?: NaturezaDoCampo;
+  /**
+   * ⚠️⚠️ ESTE CAMPO PERTENCE A UM **EVENTO COMPOSTO**, e o nome dele é este.
+   *
+   * ⚠️ Campos que compartilham `instanciaDe` são **metades da mesma aferição**:
+   * `pas` e `pad` de uma medida, `inr` e `plaquetas` de uma coleta, os achados
+   * de um estudo. Todo fato desses campos carrega a `instancia` a que pertence,
+   * e a prova reprova o que a esquecer.
+   *
+   * ⚠️ Ausente = o fato se basta sozinho. É o caso da maioria.
+   */
+  readonly instanciaDe?: string;
   readonly rotulo: string;
   readonly tipo: TipoDeCampo;
   /** Para `escolha` e `multipla`: as opções, em PT. ⚠️ Sempre com saída para quem não sabe. */
@@ -125,7 +208,12 @@ export type Campo = {
   readonly zeroValido?: true;
   /** Qual relógio clínico este campo alimenta — ⛔ nunca um genérico (E-36). */
   readonly relogio?: string;
-  /** O slot que sustenta a existência clínica do campo (E-30). */
+  /**
+   * O slot que sustenta a existência clínica do campo (**E-30**).
+   *
+   * ⚠️ Vazio ⛔ **só** é aceitável em campo `natureza: "administrativo"` — e a
+   * prova de cada superfície confere exatamente isso, campo a campo.
+   */
   readonly fonte: string;
   /**
    * ⚠️ SEMPRE `false` — em TODAS as superfícies.
@@ -152,6 +240,60 @@ export type Campo = {
   /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
   readonly nota?: string;
 };
+
+/**
+ * O QUE SE **ESCREVE** num módulo de conteúdo — ⚠️ tudo menos a casa.
+ *
+ * ⚠️⚠️ A CASA ⛔ NÃO SE DIGITA. Ela é carimbada por `comCasa()`, uma vez por
+ * módulo. Escrita campo a campo, ela poderia discordar do arquivo que a declara
+ * — e um campo dizendo morar noutra casa é a duplicação voltando disfarçada.
+ */
+export type CampoDeclarado = Omit<Campo, "casa">;
+
+/** Um bloco de campos, como o módulo o escreve. */
+export type GrupoDeclarado = {
+  readonly id: string;
+  readonly titulo: string;
+  /** Campos que este módulo POSSUI. ⚠️ Recebem a casa dele. */
+  readonly campos: readonly CampoDeclarado[];
+  /**
+   * ⚠️⚠️ CAMPOS DE OUTRA CASA, exibidos e preenchíveis AQUI — a segunda metade da
+   * regra do autor (2026-08-29):
+   *
+   * > *"Propriedade do fato ⛔ não é local de preenchimento. Qualquer superfície
+   * > que precise dele pode mostrar o valor ou permitir preenchê-lo, sempre
+   * > escrevendo no mesmo fato e na mesma trilha."*
+   *
+   * ⚠️ Eles chegam **já carimbados** pela casa deles, e `comCasa()` ⛔ **não** os
+   * toca. É por isso que o emprestado ⛔ não precisa de marcador próprio: a
+   * própria `casa` diferente da superfície já o identifica — e ⛔ não há como um
+   * empréstimo virar declaração por descuido.
+   *
+   * ⛔⛔ E ⛔ NUNCA uma segunda versão do campo: é o **mesmo objeto**, com o mesmo
+   * id, os mesmos rótulos e as mesmas opções. Copiar o campo para cá seria
+   * recriar exatamente a duplicação que esta arquitetura existe para matar.
+   */
+  readonly emprestados?: readonly Campo[];
+  readonly nota?: string;
+  readonly recolhido?: true;
+};
+
+export type Grupo = Omit<GrupoDeclarado, "campos"> & { readonly campos: readonly Campo[] };
+
+/** ⚠️ Tudo que o bloco DESENHA — o que ele possui mais o que ele toma emprestado. */
+export function camposDoGrupo(g: Grupo): readonly Campo[] {
+  return [...g.campos, ...(g.emprestados ?? [])];
+}
+
+/**
+ * CARIMBA A CASA em todos os campos de todos os blocos de um módulo.
+ *
+ * ⚠️ Uma linha por módulo, e ⛔ nenhuma por campo: é o que torna **impossível** um
+ * campo declarar casa errada, em vez de apenas improvável.
+ */
+export function comCasa(casa: SuperficieId, grupos: readonly GrupoDeclarado[]): readonly Grupo[] {
+  return grupos.map((g) => ({ ...g, campos: g.campos.map((c) => ({ ...c, casa })) }));
+}
 
 /**
  * OS DOIS ROTULOS EXCLUSIVOS DA SELEÇÃO MÚLTIPLA — ⚠️ fonte única.

@@ -61,11 +61,15 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
-import type { Campo } from "./campo";
-import { NAO_SEI, SIM_NAO_INCERTO } from "./campo";
-import { GRAUS_MRS_PREVIO, rotuloDoGrau } from "./mrs";
+import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
+import { camposDoGrupo, comCasa, NAO_SEI, SIM_NAO_INCERTO } from "./campo";
+import { CAMPO_DO_PACIENTE } from "./paciente";
 
-export type CampoB = Campo;
+/**
+ * ⚠️ O que se ESCREVE aqui — a **casa** ⛔ não entra: ela é carimbada por
+ * `comCasa()` no fim do arquivo, uma vez, para todos os campos do módulo.
+ */
+export type CampoB = CampoDeclarado;
 
 /**
  * EXAME NEUROLÓGICO — o registro do que se observa.
@@ -94,6 +98,7 @@ export type CampoB = Campo;
 export const EXAME_B: readonly CampoB[] = [
   {
     id: "deficit_focal",
+    temporalidade: "afericao",
     rotulo: "Déficit neurológico focal observado",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -103,6 +108,7 @@ export const EXAME_B: readonly CampoB[] = [
   },
   {
     id: "lateralidade",
+    temporalidade: "afericao",
     /**
      * ⚠️⚠️ ERA "LADO PREDOMINANTE DO DÉFICIT", E ISSO ESTAVA ERRADO — correção
      * conceitual do autor, 2026-08-29.
@@ -159,6 +165,7 @@ export const POPULACAO_TABLE4 = {
 export const NIHSS_B: readonly CampoB[] = [
   {
     id: "nihss_calculado",
+    temporalidade: "afericao",
     rotulo: "NIHSS calculado aqui",
     /**
      * ⚠️⚠️ VIROU ESCALA (2026-08-29), a pedido do autor: *"essa escala o usuário
@@ -180,6 +187,7 @@ export const NIHSS_B: readonly CampoB[] = [
   },
   {
     id: "nihss_informado",
+    temporalidade: "estavel",
     /**
      * ⚠️⚠️ O NIHSS QUE CHEGA DE FORA — reaberto por decisão do autor, 2026-08-29.
      *
@@ -207,6 +215,7 @@ export const NIHSS_B: readonly CampoB[] = [
   },
   {
     id: "nihss_informado_origem",
+    temporalidade: "estavel",
     rotulo: "Quem informou o NIHSS",
     tipo: "escolha",
     /**
@@ -219,6 +228,7 @@ export const NIHSS_B: readonly CampoB[] = [
   },
   {
     id: "nihss_informado_hora",
+    temporalidade: "estavel",
     /** ⚠️ Horário do exame de FORA — ⛔ não é marco temporal do atendimento. */
     rotulo: "Horário do NIHSS informado",
     tipo: "hora",
@@ -241,36 +251,19 @@ export const NIHSS_B: readonly CampoB[] = [
  * de memória (E-31). Por isso as opções são os graus, sem descrição — a
  * alternativa seria inventar texto clínico com cara de fonte.
  */
-export const BASAL_B: readonly CampoB[] = [
-  {
-    id: "mrs_previo",
-    rotulo: "mRS prévio (funcionalidade basal)",
-    /**
-     * ⚠️⚠️ GRAU COM DESCRITOR VISÍVEL — pedido do autor, 2026-08-29. Os números
-     * soltos exigiam a tabela na cabeça de quem responde.
-     *
-     * ⚠️ CADEIA DE FONTES, com papéis distintos: **F-26** (Cincura 2009) sustenta
-     * a versão brasileira adaptada e a entrevista estruturada; **F-27** (SBACV,
-     * Quadro 4) fornece os descritores 0–6. ⛔ Um ⛔ não responde pelo outro
-     * (E-30) — ver `avc/conteudo/mrs.ts`.
-     *
-     * ⚠️ 0–5 e ⛔ nunca 6: o campo pergunta a função **ANTES deste AVC**, e ⛔ não
-     * existe função basal "óbito" em quem está sendo avaliado agora. A escala
-     * neutra segue 0–6, fiel à fonte.
-     */
-    tipo: "grau",
-    /**
-     * ⚠️ A SAÍDA DE "NÃO SEI" É OBRIGATÓRIA (E-02), e aqui ela é o caso comum:
-     * função basal de quem chega inconsciente, sem acompanhante, ⛔ não se sabe —
-     * e forçar um grau produziria um basal inventado que segue o paciente.
-     */
-    opcoes: [...GRAUS_MRS_PREVIO.map(rotuloDoGrau), NAO_SEI],
-    ajuda: "Estado funcional ANTES deste AVC. Não é o mRS que este AVC vai produzir.",
-    fonte: "F-27",
-    bloqueiaTerapia: false,
-    nota: "Descritores do Quadro 4 das diretrizes da SBACV. A versão brasileira do mRS é culturalmente adaptada, e a avaliação estruturada melhora a concordância entre avaliadores (Cincura 2009). A fonte do AVC não nomeia valor de corte.",
-  },
-] as const;
+/**
+ * FUNCIONALIDADE PRÉVIA — ⚠️ **MUDOU DE CASA em 2026-08-29**, e ⛔ não mudou de
+ * experiência.
+ *
+ * ⚠️⚠️ O mRS prévio é função basal **ANTES deste AVC**: antecedente, ⛔ não exame
+ * do episódio. A casa passou a ser **Paciente**.
+ *
+ * ⚠️ Decisão explícita do autor: *"B continua podendo exibi-lo e permitir
+ * preenchê-lo ali. Ou seja, muda a propriedade, ⛔ não necessariamente a
+ * experiência que já ficou boa na B."* — mesmo id, mesmo controle recolhível,
+ * mesmos descritores de F-27, mesma trilha. ⛔ Nenhuma segunda versão.
+ */
+export const BASAL_B: readonly CampoB[] = [];
 
 /**
  * A PERGUNTA FUNCIONAL — ⚠️ **prioridade conceitual** sobre os quadros (§2.8-3).
@@ -287,6 +280,7 @@ export const BASAL_B: readonly CampoB[] = [
 export const FUNCIONAL_B: readonly CampoB[] = [
   {
     id: "funcional_avd_trabalho",
+    temporalidade: "estavel",
     /**
      * ⚠️⚠️ REESCRITA PELO AUTOR (2026-08-29): *"menos protocolo falando com o
      * programador e mais médico perguntando o que precisa saber do paciente"*.
@@ -311,6 +305,7 @@ export const FUNCIONAL_B: readonly CampoB[] = [
   },
   {
     id: "deambulacao_independente",
+    temporalidade: "estavel",
     /** ⚠️ "Caminhar sem ajuda" é o que se pergunta à beira do leito. */
     rotulo: "Consegue caminhar sem ajuda?",
     tipo: "escolha",
@@ -321,6 +316,7 @@ export const FUNCIONAL_B: readonly CampoB[] = [
   },
   {
     id: "degluticao_independente",
+    temporalidade: "estavel",
     rotulo: "Consegue engolir sem ajuda?",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -330,6 +326,7 @@ export const FUNCIONAL_B: readonly CampoB[] = [
   },
   {
     id: "consulta_paciente_familia",
+    temporalidade: "estado",
     /**
      * ⚠️⚠️ "COM QUEM", E ⛔ NÃO "CONVERSOU?" — correção do autor, 2026-08-29: as
      * respostas ⛔ não são Sim/Não, elas dizem **com quem** a conversa aconteceu.
@@ -364,6 +361,7 @@ export const FUNCIONAL_B: readonly CampoB[] = [
 export const ACHADOS_TIPICOS_B: readonly CampoB[] = [
   {
     id: "t4_hemianopsia_completa",
+    temporalidade: "afericao",
     rotulo: "Hemianopsia completa (≥2 na questão de visão do NIHSS)",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -372,6 +370,7 @@ export const ACHADOS_TIPICOS_B: readonly CampoB[] = [
   },
   {
     id: "t4_afasia_grave",
+    temporalidade: "afericao",
     rotulo: "Afasia grave (≥2 na questão de melhor linguagem do NIHSS)",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -380,6 +379,7 @@ export const ACHADOS_TIPICOS_B: readonly CampoB[] = [
   },
   {
     id: "t4_extincao_grave",
+    temporalidade: "afericao",
     rotulo:
       "Hemi-desatenção grave ou extinção em mais de uma modalidade (≥2 na questão de extinção e desatenção do NIHSS)",
     tipo: "escolha",
@@ -389,6 +389,7 @@ export const ACHADOS_TIPICOS_B: readonly CampoB[] = [
   },
   {
     id: "t4_fraqueza_contra_gravidade",
+    temporalidade: "afericao",
     rotulo:
       "Qualquer fraqueza que limite o esforço sustentado contra a gravidade (≥2 nas questões motoras do NIHSS)",
     tipo: "escolha",
@@ -410,6 +411,7 @@ export const ACHADOS_TIPICOS_B: readonly CampoB[] = [
 export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   {
     id: "t4_afasia_leve_isolada",
+    temporalidade: "afericao",
     rotulo: "Afasia leve isolada, ainda com comunicação significativa",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -418,6 +420,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_paralisia_facial_isolada",
+    temporalidade: "afericao",
     rotulo: "Paralisia facial isolada",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -426,6 +429,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_fraqueza_cortical_mao",
+    temporalidade: "afericao",
     rotulo: "Fraqueza cortical leve de mão, especialmente da mão não dominante",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -434,6 +438,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_perda_hemimotora_leve",
+    temporalidade: "afericao",
     rotulo: "Perda hemimotora leve",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -442,6 +447,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_perda_hemissensitiva",
+    temporalidade: "afericao",
     rotulo: "Perda hemissensitiva",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -450,6 +456,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_perda_hemissensitivomotora_leve",
+    temporalidade: "afericao",
     rotulo: "Perda hemissensitivo-motora leve",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -458,6 +465,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
   },
   {
     id: "t4_hemiataxia_leve",
+    temporalidade: "afericao",
     rotulo: "Hemiataxia leve, ainda capaz de deambular",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -478,6 +486,7 @@ export const ACHADOS_PODEM_NAO_B: readonly CampoB[] = [
 export const DECISAO_B: readonly CampoB[] = [
   {
     id: "incapacitante_assumido",
+    temporalidade: "estado",
     rotulo: "Decisão do médico sobre o déficit",
     tipo: "escolha",
     /**
@@ -504,28 +513,7 @@ export const DECISAO_B: readonly CampoB[] = [
  *
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
-export const GRUPOS_B: readonly {
-  /** Endereço estável do bloco. ⚠️ O título é texto traduzível e ⛔ não serve de chave. */
-  id: string;
-  titulo: string;
-  campos: readonly CampoB[];
-  /** Fidelidade que vale para o bloco inteiro. ⛔ Nunca porta, nunca filtro. */
-  nota?: string;
-  /**
-   * ⚠️ O bloco nasce FECHADO — para o que é exceção, ⛔ não para o que é rotina.
-   *
-   * ── O RELATO (autor, 2026-08-29) ────────────────────────────────────────
-   *
-   * Sobre o NIHSS trazido de fora: *"não achei isso adequado, o usuário vai
-   * calcular o NIHSS"*. Ele está certo sobre o fluxo normal — o exame se faz
-   * aqui. O dado de fora continua existindo porque é real, mas ⛔ não pode
-   * ocupar a tela de quem está examinando o paciente agora.
-   *
-   * ⛔ Recolher ⛔ NÃO é esconder conduta (§7.3, E-35): ⛔ nada aqui muda decisão
-   * imediata, e o bloco declara no cabeçalho o que guarda.
-   */
-  recolhido?: true;
-}[] = [
+const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
   { id: "exame", titulo: "Exame neurológico", campos: EXAME_B },
   { id: "nihss", titulo: "NIHSS", campos: [NIHSS_B[0]] },
   {
@@ -535,7 +523,17 @@ export const GRUPOS_B: readonly {
     recolhido: true,
     nota: "Informação recebida da regulação, do SAMU ou de outro serviço. Não preenche nenhum achado.",
   },
-  { id: "basal", titulo: "Funcionalidade prévia", campos: BASAL_B },
+  {
+    id: "basal",
+    titulo: "Funcionalidade prévia",
+    campos: BASAL_B,
+    /**
+     * ⚠️ O mRS prévio mora em **Paciente** desde 2026-08-29 e continua **aqui**,
+     * com o mesmo controle recolhível e os mesmos descritores — decisão do
+     * autor: *"muda a propriedade, ⛔ não a experiência que já ficou boa na B."*
+     */
+    emprestados: [CAMPO_DO_PACIENTE("mrs_previo")],
+  },
   {
     id: "funcional",
     titulo: "Avaliação funcional",
@@ -563,9 +561,32 @@ export const GRUPOS_B: readonly {
     nota: "Podem não ser não significa não são. A fonte preserva a incerteza, e a avaliação individual permanece necessária.",
   },
   { id: "decisao", titulo: "Decisão clínica", campos: DECISAO_B },
-] as const;
+];
 
-export const TODOS_OS_CAMPOS_B: readonly CampoB[] = GRUPOS_B.flatMap((g) => [...g.campos]);
+/**
+ * ⚠️⚠️ A CASA É CARIMBADA AQUI, e ⛔ não escrita campo a campo (2026-08-29).
+ *
+ * ⚠️ Um campo que declarasse a própria casa poderia declarar a casa errada — e
+ * casa errada é a duplicação de fatos voltando com outro nome. Carimbada pelo
+ * módulo, ela ⛔ não tem como discordar do arquivo que a define.
+ */
+export const GRUPOS_B: readonly Grupo[] = comCasa("neurologico", GRUPOS_B_DECLARADOS);
+
+export const TODOS_OS_CAMPOS_B: readonly Campo[] = GRUPOS_B.flatMap((g) => [...g.campos]);
+
+/**
+ * ⚠️⚠️ O QUE A TELA DESENHA — os campos **próprios** mais os **emprestados**.
+ *
+ * ⚠️ As duas listas existem porque respondem perguntas diferentes:
+ *   · `TODOS_OS_CAMPOS_B` responde *"de quem é o fato"* — e é ela que as
+ *     travas de fonte, de bloqueio e de propriedade única varrem;
+ *   · `CAMPOS_NA_TELA_B` responde *"o que o médico vê aqui"* — e é ela que
+ *     a tela e o e2e usam.
+ *
+ * ⛔ Confundi-las devolveria a duplicação: um campo emprestado contado como
+ * próprio teria **duas casas**.
+ */
+export const CAMPOS_NA_TELA_B: readonly Campo[] = GRUPOS_B.flatMap((g) => camposDoGrupo(g));
 
 /** Os ids dos dois quadros — ⚠️ derivados do conteúdo, ⛔ nunca listados à mão. */
 export const IDS_ACHADOS_TIPICOS = ACHADOS_TIPICOS_B.map((c) => c.id);
@@ -584,7 +605,11 @@ export const IDS_ACHADOS_PODEM_NAO = ACHADOS_PODEM_NAO_B.map((c) => c.id);
  */
 export const VOCABULARIO_PROPRIO_B: readonly { id: string; motivo: string }[] = [
   { id: "lateralidade", motivo: "lado do corpo não é resposta binária" },
-  { id: "mrs_previo", motivo: "escala com grau 0 válido (E-10), e o rótulo traz o descritor" },
+  /**
+   * ⚠️ `mrs_previo` SAIU desta lista em 2026-08-29: ele mudou de casa para
+   * **Paciente**, e a declaração de vocabulário próprio mora com o fato, ⛔ não
+   * com a tela que o desenha. Ver `VOCABULARIO_PROPRIO_P`.
+   */
   { id: "nihss_informado_origem", motivo: "procedência muda a confiança sem mudar o número (E-03)" },
   { id: "incapacitante_assumido", motivo: "as três decisões de §2.8-6, e Incerto é decisão" },
   { id: "consulta_paciente_familia", motivo: "registra com quem foi a conversa, e não é sim ou não" },

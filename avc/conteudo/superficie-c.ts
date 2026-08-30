@@ -37,10 +37,15 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
-import type { Campo } from "./campo";
-import { NAO_SEI, SIM_NAO_INCERTO, SIM_NAO_NAO_SEI } from "./campo";
+import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
+import { camposDoGrupo, comCasa, NAO_SEI, SIM_NAO_INCERTO } from "./campo";
+import { CAMPO_DO_PACIENTE } from "./paciente";
 
-export type CampoC = Campo;
+/**
+ * ⚠️ O que se ESCREVE aqui — a **casa** ⛔ não entra: ela é carimbada por
+ * `comCasa()` no fim do arquivo, uma vez, para todos os campos do módulo.
+ */
+export type CampoC = CampoDeclarado;
 
 /**
  * AS QUATRO RESPOSTAS DO RESULTADO DA TOMOGRAFIA — ⚠️ **fonte única**.
@@ -143,6 +148,7 @@ export const OPCOES_SITIO_OCLUSAO: readonly string[] = [
 export const TOMOGRAFIA_C: readonly CampoC[] = [
   {
     id: "tc_resultado",
+    temporalidade: "estado",
     rotulo: "Tomografia sem contraste",
     tipo: "escolha",
     opcoes: OPCOES_RESULTADO_TC,
@@ -152,6 +158,7 @@ export const TOMOGRAFIA_C: readonly CampoC[] = [
   },
   {
     id: "suspeita_hsa",
+    temporalidade: "estado",
     rotulo: "Suspeita de hemorragia subaracnóidea",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -168,6 +175,7 @@ export const TOMOGRAFIA_C: readonly CampoC[] = [
   },
   {
     id: "hipodensidade_clara",
+    temporalidade: "afericao",
     /**
      * ⚠️⚠️ O ÚNICO ACHADO DE TC EM QUE A FONTE DÁ CRITÉRIO APLICÁVEL À BEIRA DO
      * LEITO — e ele estava fora da Superfície C até 2026-08-29.
@@ -199,6 +207,7 @@ export const TOMOGRAFIA_C: readonly CampoC[] = [
   },
   {
     id: "hora_tc",
+    temporalidade: "estavel",
     /**
      * ⚠️⚠️ **E-36 · O CONTROLE NOMEIA O QUE MARCA**, e este ⛔ NÃO alimenta relógio
      * clínico nenhum — ⛔ nem `ultima_vez_bem`, ⛔ nem `reconhecimento`, ⛔ nem
@@ -238,6 +247,7 @@ export const TOMOGRAFIA_C: readonly CampoC[] = [
 export const ENDOVASCULAR_C: readonly CampoC[] = [
   {
     id: "aspects",
+    temporalidade: "afericao",
     /**
      * ⚠️⚠️ **INFORMADO**, e ⛔ não calculado — decisão do autor, 2026-08-29: *"não
      * transformaria C em calculadora ASPECTS sem fonte/figura adequada"*.
@@ -281,6 +291,7 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
   },
   {
     id: "efeito_de_massa",
+    temporalidade: "afericao",
     /** ⚠️ *"without significant mass effect on imaging"* — o **significativo** é da fonte (E-45). */
     rotulo: "Efeito de massa significativo na imagem",
     tipo: "escolha",
@@ -291,6 +302,7 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
   },
   {
     id: "suspeita_lvo",
+    temporalidade: "estado",
     rotulo: "Suspeita de oclusão de grande vaso",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
@@ -300,6 +312,7 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
   },
   {
     id: "angio_realizada",
+    temporalidade: "estado",
     rotulo: "Angiotomografia de vasos cervicais e intracranianos",
     tipo: "escolha",
     opcoes: OPCOES_ANGIO,
@@ -314,6 +327,7 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
   },
   {
     id: "sitio_oclusao",
+    temporalidade: "afericao",
     rotulo: "Sítio da oclusão descrito no laudo",
     tipo: "escolha",
     opcoes: OPCOES_SITIO_OCLUSAO,
@@ -330,44 +344,20 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
     bloqueiaTerapia: false,
     nota: "A fonte separa M2 dominante de M2 não dominante ou codominante, e a força da recomendação muda entre as duas. Registre como o laudo descreve.",
   },
-  {
-    id: "alergia_contraste",
-    /**
-     * ⚠️⚠️ ESTE CAMPO EXISTE POR DECISÃO DO AUTOR (2026-08-29), CONTRA A MINHA
-     * PROPOSTA DE ⛔ NÃO TÊ-LO — e o argumento dele é a razão de o comentário
-     * ser longo:
-     *
-     * *"Não esperar por creatinina é uma coisa; eliminar uma informação
-     * relevante à ação contrastada é outra."*
-     *
-     * ⚠️ Eu havia proposto ⛔ nenhum campo de contraste nesta superfície, tratando
-     * a marca 🚫 #5 como se ela apagasse tudo que toca o contraste. Ela ⛔ não
-     * apaga: o que a fonte proíbe é **atrasar a imagem vascular esperando a
-     * creatinina**, e isso ⛔ não diz nada sobre registrar uma alergia conhecida.
-     *
-     * ⚠️⚠️ AS TRÊS TRAVAS QUE O AUTOR FIXOU, e que as provas medem uma a uma:
-     *   · ⛔ **nunca bloqueia a IVT** — ⛔ nenhuma leitura de exclusão de hemorragia
-     *     olha para este campo;
-     *   · ⛔ **nunca cria dependência de creatinina** — ⛔ não existe campo de
-     *     laboratório nesta superfície, e este ⛔ não abre a porta para um;
-     *   · ⛔ **⛔ não bloqueia a superfície C inteira**, e ⛔ não gera pendência: ele
-     *     pertence à **segurança da ação específica** de imagem com contraste.
-     *
-     * ⚠️ É o princípio de dependência específica de **E-25**: condição
-     * específica ↔ ação específica, ⛔ nunca superfície inteira.
-     *
-     * ⛔⛔ E ⛔ SEM CONDUTA INVENTADA: a fonte do AVC ⛔ não diz o que fazer diante
-     * de alergia a contraste. O app **registra o fato** e se cala — o manejo é
-     * decisão clínica e institucional. Dívida declarada: **D-115**.
-     */
-    rotulo: "Alergia prévia importante a contraste iodado",
-    tipo: "escolha",
-    opcoes: SIM_NAO_NAO_SEI,
-    ajuda: "Diz respeito apenas ao exame com contraste. Não interfere na trombólise.",
-    fonte: "F-16",
-    bloqueiaTerapia: false,
-    nota: "A fonte do AVC não define conduta para alergia a contraste. Este registro fica na trilha do atendimento, e o manejo é decisão clínica e institucional.",
-  },
+  /**
+   * ⚠️⚠️ A ALERGIA A CONTRASTE **MUDOU DE CASA em 2026-08-29** — relato do autor:
+   *
+   * > *"⛔ Não faz sentido aqui, principalmente depois que já sugeriu exames de
+   * > imagem. Isso faz sentido na tela de identificação do paciente."*
+   *
+   * ⚠️ Perguntar alergia **depois** de oferecer o exame com contraste é perguntar
+   * tarde. A casa é **Paciente**; **C continua preenchendo o mesmo fato**, ao
+   * lado da angiotomografia, com o mesmo id e a mesma trilha.
+   *
+   * ⚠️ As três travas de **PD-25** viajaram inteiras: ⛔ nunca bloqueia a IVT,
+   * ⛔ nunca cria dependência de creatinina, ⛔ nunca bloqueia superfície nenhuma.
+   */
+
 ] as const;
 
 /**
@@ -386,6 +376,7 @@ export const ENDOVASCULAR_C: readonly CampoC[] = [
 export const AVANCADA_C: readonly CampoC[] = [
   {
     id: "imagem_avancada",
+    temporalidade: "estado",
     rotulo: "Exames avançados já realizados",
     tipo: "multipla",
     opcoes: [
@@ -421,6 +412,7 @@ export const AVANCADA_C: readonly CampoC[] = [
 export const DESTINOS_DA_IMAGEM = {
   hsa: {
     id: "suspeita_hsa",
+    temporalidade: "estado",
     rotulo: "Suspeita de hemorragia subaracnóidea",
     modulo: "Fluxo de hemorragia subaracnóidea",
     /** ⚠️ ⛔ NÃO EXISTE — e dizer isso na tela é o que E-09 exige. */
@@ -461,6 +453,7 @@ export const DESTINOS_DA_IMAGEM = {
 export const FATO_ASSOCIADO = {
   suspeitaHsa: {
     id: "suspeita_hsa",
+    temporalidade: "estado",
     frase: "Há também suspeita de hemorragia subaracnóidea.",
   },
 } as const;
@@ -474,13 +467,7 @@ export const FATO_ASSOCIADO = {
  *
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
-export const GRUPOS_C: readonly {
-  id: string;
-  titulo: string;
-  campos: readonly CampoC[];
-  nota?: string;
-  recolhido?: true;
-}[] = [
+const GRUPOS_C_DECLARADOS: readonly GrupoDeclarado[] = [
   {
     id: "tomografia",
     titulo: "Tomografia de crânio",
@@ -490,6 +477,11 @@ export const GRUPOS_C: readonly {
     id: "endovascular",
     titulo: "Achados que a frente endovascular usa",
     campos: ENDOVASCULAR_C,
+    /**
+     * ⚠️ A alergia mora em **Paciente** e é preenchível aqui, ao lado da
+     * angiotomografia — que é onde ela importa. Mesmo id, mesma trilha.
+     */
+    emprestados: [CAMPO_DO_PACIENTE("alergia_contraste")],
     /**
      * ⚠️⚠️ A REDAÇÃO É DO AUTOR (2026-08-29), e a segunda frase é a correção que
      * ele fez questão de fixar: *"'estes exames' pode ser lido incluindo a TC
@@ -509,9 +501,32 @@ export const GRUPOS_C: readonly {
     recolhido: true,
     nota: "Registro do que já foi feito. Os achados que dependem da janela estendida entram junto com a regra que os interpreta.",
   },
-] as const;
+];
 
-export const TODOS_OS_CAMPOS_C: readonly CampoC[] = GRUPOS_C.flatMap((g) => [...g.campos]);
+/**
+ * ⚠️⚠️ A CASA É CARIMBADA AQUI, e ⛔ não escrita campo a campo (2026-08-29).
+ *
+ * ⚠️ Um campo que declarasse a própria casa poderia declarar a casa errada — e
+ * casa errada é a duplicação de fatos voltando com outro nome. Carimbada pelo
+ * módulo, ela ⛔ não tem como discordar do arquivo que a define.
+ */
+export const GRUPOS_C: readonly Grupo[] = comCasa("imagem", GRUPOS_C_DECLARADOS);
+
+export const TODOS_OS_CAMPOS_C: readonly Campo[] = GRUPOS_C.flatMap((g) => [...g.campos]);
+
+/**
+ * ⚠️⚠️ O QUE A TELA DESENHA — os campos **próprios** mais os **emprestados**.
+ *
+ * ⚠️ As duas listas existem porque respondem perguntas diferentes:
+ *   · `TODOS_OS_CAMPOS_C` responde *"de quem é o fato"* — e é ela que as
+ *     travas de fonte, de bloqueio e de propriedade única varrem;
+ *   · `CAMPOS_NA_TELA_C` responde *"o que o médico vê aqui"* — e é ela que
+ *     a tela e o e2e usam.
+ *
+ * ⛔ Confundi-las devolveria a duplicação: um campo emprestado contado como
+ * próprio teria **duas casas**.
+ */
+export const CAMPOS_NA_TELA_C: readonly Campo[] = GRUPOS_C.flatMap((g) => camposDoGrupo(g));
 
 /** O campo de C com este id. ⚠️ ⛔ Sem piso silencioso: id inválido é erro de programação. */
 export function campoDeC(id: string): CampoC {
