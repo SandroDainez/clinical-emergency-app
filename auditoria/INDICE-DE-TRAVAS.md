@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**55 de 69 travas com declaração completa.**
+**56 de 70 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -61,6 +61,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o painel **Laboratório** ⛔ nunca escolha o "valor atual" de um analito por *"último digitado"* — que a ordem venha de **regra temporal explícita**, que `sem_ordem` seja estado terminal legítimo quando o horário é genuinamente desconhecido, e que ⛔ **nenhuma** coleta seja chamada de mais recente sem horário conhecido; que **⛔ nenhum resultado exista órfão de instância**; que a **unidade das plaquetas** seja lida da **mesma coleta** do valor, e que **sem unidade declarada ⛔ não haja conversão**; que **plaqueta 0** seja registrável; que a pendência do horário nasça ⛔ **só** quando a ordem passa a ser necessária; e que **nova coleta ⛔ não seja correção**.
 - **NÃO PROMETE:** que os cortes clínicos estejam certos — eles ⛔ não moram aqui: são interpretação da Superfície D. ⛔ Também não mede tela: isso é `e2e/avc-superficie-laboratorio`. E ⛔ não confere tradução — é `test:i18n-opcoes`.
 - **UNIVERSO:** `avc/conteudo/laboratorio.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_L`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-lab.ts`, exercitadas por estado construído. ⛔ Fora do universo: as superfícies A a G. ── ⚠️⚠️ OS TRÊS CASOS-SENTINELA ───────────────────────────────────────── **1 · A ordem** — montado pelo autor: `INR 1,4` numa coleta **externa sem horário**, e `INR 1,1` numa coleta **local às 22h**. Ele existe para impedir que *"último digitado"* volte escondido no sistema. **2 · A unidade** — `plaquetas 80` **sem unidade declarada** ⛔ não pode ser comparada com `100.000`. Converter é transformar; **supor unidade é inventar**. **3 · A correção da unidade** — `plaquetas 80` em `mil/mm³`, e depois o médico percebe que o laudo era `/mm³`. A comparação passa de `80.000` para `80` na **mesma** coleta, a trilha preserva **marcada** a unidade anterior, e as outras coletas ⛔ não são reinterpretadas. ⚠️ É onde *"atributo da medida"* vira bug histórico se ⛔ não estiver amarrado.
+
+## `test:rotas-de-modulo` → `scripts/valida-rotas-de-modulo.cjs`
+
+- **PROMETE:** que o segmento `app/modulos/` ⛔ NUNCA volte a ter uma rota estática irmã de `[id].tsx` — porque uma irmã estática quebra o **voltar do navegador** entre duas telas de módulo, montando a irmã no lugar da rota pedida.
+- **NÃO PROMETE:** que a navegação funcione — isso é `e2e/retomada-de-fluxo`, que mede o comportamento com cliques reais. Esta trava mede a CONDIÇÃO estrutural que o produz, porque o e2e ⛔ só a pegaria no módulo que ele percorre, e o defeito nasce em QUALQUER módulo novo.
+- **UNIVERSO:** os arquivos de rota de `app/modulos/`, listados e contados. ── O DEFEITO QUE ESTA TRAVA NASCEU PARA MATAR (D-122, 2026-08-30) ───────── `app/modulos/avc.tsx` era rota estática irmã de `[id].tsx`. Com ela ali, o médico entrava em **bradicardia**, abria as **vasoativas** pelo atalho de estabilização, tocava em **voltar** — e caía no **módulo de AVC**, com a URL da bradicardia na barra de endereço. Tela de um paciente sobre o fluxo de outro. ⚠️⚠️ E ele passou **quatro rodadas de `test:all`** como *"1 falhou, pré-existente"*. Vermelho tolerado é vermelho que ⛔ não é mais lido. ⚠️ Investigação: renomear o arquivo ⛔ não resolvia (reproduziu como `zoutro.tsx`), declarar `<Stack.Screen>` ⛔ não resolvia, a forma de diretório (`avc/index.tsx`) ⛔ não resolvia. O que resolve é ⛔ **não haver irmã**.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

@@ -81,3 +81,52 @@ implementações de peso predito divergindo no sexo ausente, e `"m"` significand
 
 Quem escreve trava sobre dose peso-dependente precisa saber que **o peso pode
 ter vindo de outro módulo** e que `pesoOrigem` qualifica a dose (D-7).
+
+---
+
+## 6 · ⛔ Rota estática irmã de `[id].tsx` é PROIBIDA em `app/modulos/`
+
+**Decisão arquitetural explícita, tomada pelo autor em 2026-08-30**, ao fechar
+D-122. ⛔ Não é preferência de organização: é **incompatibilidade medida** da
+topologia atual.
+
+> **Enquanto os módulos clínicos forem servidos pelo segmento `app/modulos/`
+> com `[id].tsx` como rota dinâmica, ⛔ nenhum módulo pode criar rota estática
+> irmã dentro desse mesmo segmento.**
+
+### Por quê — e o que foi medido, ⛔ não suposto
+
+O AVC morava em `app/modulos/avc.tsx`. Com essa irmã no segmento, o **`pop` da
+pilha do Expo Router** entre duas telas de `/modulos/*` montava a **irmã** no
+lugar da rota pedida:
+
+⛔⛔ o médico entrava em **bradicardia**, abria as **vasoativas** pelo atalho de
+estabilização, tocava em **voltar** — e recebia a tela do **módulo de AVC**,
+**com a URL da bradicardia na barra de endereço**. ⚠️ URL certa, módulo errado no
+DOM: 148 testIDs `avc-*` e ⛔ nenhum vestígio da bradicardia.
+
+⚠️ Servido pela própria rota dinâmica, o defeito **desaparece** — e a barra
+*"VOCÊ ESTAVA AQUI · Passo 3"* aparece. ⚠️⚠️ A invariante de retomada sempre
+funcionou; ela ⛔ nunca era alcançada.
+
+⚠️ Descartados por experimento, ⛔ um a um: o nome do arquivo (reproduziu como
+`zoutro.tsx`), a query `?id=`, o `goBack()` em si, `<Stack.Screen>` explícito e
+a forma de diretório (`avc/index.tsx`). ⛔ Só a ausência de irmã resolve.
+
+### A saída futura — e ⛔ ela ⛔ não é exceção local
+
+⚠️⚠️ Se algum módulo realmente precisar de rota própria, isso exige **mudança
+deliberada de arquitetura**: segmento separado, ou reavaliação/atualização do
+Expo Router (hoje `6.0.23`). ⛔ **⛔ Não** abrir exceção à trava para um caso.
+
+### Alcance — ⛔ e ⛔ ele ⛔ não é universal
+
+⚠️ Esta é uma restrição **do roteamento atual**, e ⛔ **não** um princípio clínico
+⛔ nem uma regra geral do app. Ela vale enquanto a topologia for esta, e cai
+junto com ela.
+
+⚠️ `test:rotas-de-modulo` impede a regressão silenciosa: o e2e
+`retomada-de-fluxo` ⛔ só pegaria o defeito no módulo que ele percorre, e ele
+nasce em **qualquer** módulo novo. ⚠️⚠️ E, antes de ser achado, ele passou
+**quatro rodadas de `test:all`** como *"1 falhou, pré-existente"* — vermelho
+tolerado é vermelho que ⛔ não é mais lido.

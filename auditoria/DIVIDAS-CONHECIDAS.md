@@ -4448,7 +4448,7 @@ via aérea, consciência e glicemia — e ⛔ **não** tem **frequência cardía
 
 ---
 
-## D-122 — UM E2E DE NAVEGAÇÃO FALHA NA ÁRVORE, FORA DO AVC
+## D-122 — ✅ FECHADA · URL CERTA MONTAVA O MÓDULO ERRADO
 
 **Registrada em 2026-08-30**, ao fechar o Laboratório.
 
@@ -4466,12 +4466,48 @@ teste sequer chega a medir a invariante que ele existe para medir.
 execuções anteriores de `test:all` registradas nesta sequência de trabalho,
 inclusive na do commit `51b642c`, que já está publicado.
 
-### Por que fica como dívida, e ⛔ não como conserto agora
+### FECHADA em 2026-08-30 — era **defeito do produto**, e ⛔ não do teste
 
-⚠️⚠️ É um **teste de navegação vermelho na árvore**, e teste vermelho tolerado é
-teste que para de ser lido. Mas consertá-lo dentro da rodada do Laboratório
-misturaria duas investigações independentes num commit só.
+⚠️⚠️ **A asserção por `"Passo"` estava certa.** ⛔ Não havia "Passo" na tela porque
+⛔ **não era a tela da bradicardia**: depois do `goBack()`, a URL era
+`/modulos/bradicardia-acls?id=bradicardia-acls` e o que montava era o **módulo
+de AVC** — 148 testIDs `avc-*` no DOM, e ⛔ nenhum vestígio da bradicardia.
 
-**Prioridade declarada: alta.** ⚠️ A invariante que ele protege — *"⛔ nunca ficar
-sem caminho de volta ao ponto"* — está **sem medição** enquanto ele falha antes
-de chegar à asserção.
+⛔⛔ Em uso real: o médico entra em **bradicardia**, abre as **vasoativas** pelo
+atalho de estabilização, toca em **voltar** — e recebe a tela de **AVC** com a
+URL da bradicardia. Tela de um paciente sobre o fluxo de outro.
+
+### A causa, isolada por experimento
+
+`app/modulos/avc.tsx` era **rota estática irmã** de `[id].tsx`. Retirada a irmã,
+a volta acertava a bradicardia **e** a barra *"VOCÊ ESTAVA AQUI · Passo 3"*
+aparecia — ⚠️ a invariante do produto sempre funcionou; ela ⛔ nunca era alcançada.
+
+⚠️ O que ⛔ **não** era a causa, cada um descartado por medição:
+- ⛔ ⛔ não é o nome `avc` — reproduziu igual como `zoutro.tsx`;
+- ⛔ ⛔ não é a query `?id=` — carga direta com a mesma URL funciona;
+- ⛔ ⛔ não é `goBack()` em si — entre dois módulos por carga direta, funciona;
+- ⛔ ⛔ não se resolve com `<Stack.Screen>` explícito ⛔ nem com `avc/index.tsx`.
+
+⚠️ O gatilho é o **pop dentro da pilha do expo-router** entre duas telas do
+segmento: havendo irmã estática, ela é montada no lugar da rota pedida.
+
+### O conserto, e o que ele ⛔ não mexeu
+
+O AVC passou a ser servido pela própria `[id].tsx`, com desvio **antes** de
+qualquer `engine` — ⛔ ele continua fora do `ClinicalApp` (D-107). A URL
+`/modulos/avc` ⛔ **não mudou**, e o id entrou em `generateStaticParams` para
+seguir pré-renderizada (React #418). ⛔ Nenhum e2e do AVC precisou mudar.
+
+⚠️ `test:rotas-de-modulo` passou a guardar a condição estrutural: ⛔ nenhuma rota
+estática irmã de `[id].tsx`. O e2e ⛔ só pegaria o defeito no módulo que ele
+percorre, e ele nasce em **qualquer** módulo novo.
+
+⚠️⚠️ A restrição virou **decisão arquitetural explícita** do autor —
+`ARQUITETURA.md §6`, com a saída futura registrada: rota própria para um módulo
+exige mudança deliberada de arquitetura (segmento separado ou revisão do Expo
+Router), e ⛔ **não** exceção local à trava. ⛔ Ela ⛔ não se generaliza para fora do
+roteamento atual.
+
+**`test:all`: 239 passed, 0 failed** — a suíte inteira verde pela primeira vez
+nesta sequência de trabalho.

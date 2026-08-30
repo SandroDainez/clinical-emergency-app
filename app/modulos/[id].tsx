@@ -2,6 +2,7 @@ import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-route
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import AvcModuloScreen from "../../components/avc/avc-modulo-screen";
 import ClinicalApp from "../../components/clinical-app";
 import { getClinicalModuleById, getClinicalModules } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
@@ -20,8 +21,32 @@ import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
  * continua indexável. Não afeta iOS/Android — em nativo não há pré-render.
  */
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  return getClinicalModules().map((clinicalModule) => ({ id: clinicalModule.id }));
+  return [...getClinicalModules().map((m) => ({ id: m.id })), { id: AVC_ID }];
 }
+
+/**
+ * ⚠️⚠️ O AVC ⛔ NÃO PODE TER ARQUIVO DE ROTA PRÓPRIO NESTE SEGMENTO — D-122.
+ *
+ * ── O DEFEITO QUE ISTO FECHA (investigado em 2026-08-30) ───────────────────
+ *
+ * Ele morava em `app/modulos/avc.tsx`, rota estática irmã de `[id].tsx`. Com
+ * uma irmã estática no segmento, **voltar pelo navegador** entre duas telas de
+ * `/modulos/*` montava a **irmã** em vez da rota dinâmica: o médico entrava em
+ * bradicardia, abria as vasoativas pelo atalho, tocava em voltar — e caía no
+ * **módulo de AVC**, com a URL da bradicardia na barra.
+ *
+ * ⚠️⚠️ Trocar o nome do arquivo ⛔ não resolvia (reproduziu como `zoutro.tsx`),
+ * declarar as telas no `Stack` ⛔ não resolvia, e a forma de diretório
+ * (`avc/index.tsx`) ⛔ também ⛔ não resolvia. O que resolve é ⛔ **não haver
+ * irmã estática**: com `[id].tsx` sozinho no segmento, a volta acerta.
+ *
+ * ⚠️ A URL `/modulos/avc` ⛔ NÃO muda — ela passa a ser servida por aqui, e o id
+ * entra em `generateStaticParams` para continuar pré-renderizada (React #418).
+ *
+ * ⛔ E o AVC continua **fora** do `ClinicalApp`: o desvio acontece ANTES de
+ * qualquer `engine`, que é a concha que a reestruturação removeu (D-107).
+ */
+const AVC_ID = "avc";
 
 export default function ClinicalModuleScreen() {
   const router = useRouter();
@@ -34,10 +59,12 @@ export default function ClinicalModuleScreen() {
   // continua exatamente como sempre foi.
   const voltaAuxiliar =
     (Array.isArray(params.return_mode) ? params.return_mode[0] : params.return_mode) === "auxiliary";
-  const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
+  /** ⚠️ Ver `AVC_ID` acima: desvio ANTES do `engine`, e ⛔ nunca dentro dele. */
+  const ehAvc = moduleId === AVC_ID;
+  const clinicalModule = moduleId && !ehAvc ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
 
-  if (!clinicalModule) {
+  if (!ehAvc && !clinicalModule) {
     return <Redirect href="/" />;
   }
 
@@ -89,7 +116,12 @@ export default function ClinicalModuleScreen() {
        * ui-v2 no mesmo commit. `e2e/um-cabecalho-por-tela.spec.ts` mede isso nos
        * 31 e reprova tanto a duplicação quanto a ausência. */}
       <View style={styles.appBody}>
-        <ClinicalApp engine={clinicalModule.engine} onRouteBack={goBackTarget} />
+        {/* ⚠️ I7 continua valendo: a tela do AVC desenha o próprio cabeçalho. */}
+        {ehAvc ? (
+          <AvcModuloScreen onVoltar={goToHub} />
+        ) : (
+          <ClinicalApp engine={clinicalModule!.engine} onRouteBack={goBackTarget} />
+        )}
       </View>
     </SafeAreaView>
   );
