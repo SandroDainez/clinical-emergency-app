@@ -28,7 +28,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Imagem": "Imagen",
   "TC, exclusão de hemorragia, imagem vascular.":
     "TC, exclusión de hemorragia, imagen vascular.",
-  "Segurança e elegibilidade": "Seguridad y elegibilidad",
+  "Segurança para trombólise": "Seguridad para trombólisis",
   "Anticoagulante, sangramento, procedimentos, exames.":
     "Anticoagulante, sangrado, procedimientos, exámenes.",
   "Reperfusão": "Reperfusión",
@@ -785,13 +785,18 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // "o mais rápido possível" e "pode existir mesmo com" são hedge e condição da
   // fonte — ⛔ não viram afirmação categórica em espanhol.
   "Tomografia sem contraste": "Tomografía sin contraste",
-  "Sem hemorragia": "Sin hemorragia",
-  "Hemorragia intracraniana": "Hemorragia intracraneal",
+  "Sem hemorragia intracraniana identificada": "Sin hemorragia intracraneal identificada",
+  "Hemorragia intracraniana identificada": "Hemorragia intracraneal identificada",
+  "Registra o achado deste exame. Não substitui o juízo clínico registrado separadamente, como suspeita clínica de hemorragia subaracnóidea.":
+    "Registra el hallazgo de este estudio. No sustituye el juicio clínico registrado por separado, como la sospecha clínica de hemorragia subaracnoidea.",
   "Realizada — resultado ainda não disponível": "Realizada — resultado aún no disponible",
   "Ainda não realizada": "Aún no realizada",
   "A fonte recomenda imagem cerebral de emergência na avaliação inicial, para excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão.":
     "La fuente recomienda imagen cerebral de emergencia en la evaluación inicial, para excluir hemorragia intracraneal antes de iniciar intervenciones de reperfusión.",
   "Suspeita de hemorragia subaracnóidea": "Sospecha de hemorragia subaracnoidea",
+  "Suspeita clínica de hemorragia subaracnóidea": "Sospecha clínica de hemorragia subaracnoidea",
+  "Juízo clínico sobre o paciente, registrado à parte do que o exame mostrou. Um exame sem hemorragia visível não encerra a suspeita.":
+    "Juicio clínico sobre el paciente, registrado aparte de lo que el estudio mostró. Un estudio sin hemorragia visible no cierra la sospecha.",
   "Registra a suspeita clínica, que pode existir mesmo com tomografia sem hemorragia.":
     "Registra la sospecha clínica, que puede existir incluso con tomografía sin hemorragia.",
   "A saída específica para hemorragia subaracnóidea é uma decisão da especificação deste módulo. A fonte trata da exclusão de hemorragia intracraniana antes da reperfusão, e não define conduta para esta suspeita.":
@@ -884,7 +889,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Hay también sospecha de hemorragia subaracnoidea.",
   "Fluxo de hemorragia subaracnóidea": "Flujo de hemorragia subaracnoidea",
   "Módulo de AVC hemorrágico": "Módulo de ACV hemorrágico",
-  "Hemorragia intracraniana identificada": "Hemorragia intracraneal identificada",
   /**
    * ⚠️ DUAS CHAVES PARECIDAS, e as duas são necessárias: o **destino** diz
    * *identificada* (redação do autor, para separar achado de suspeita); a
@@ -911,18 +915,18 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "La exclusión de hemorragia aún no puede afirmarse. Esto no es lo mismo que ausencia de hemorragia",
   "Tomografia de crânio ainda não realizada": "Tomografía de cráneo aún no realizada",
   "Resultado da tomografia ainda não registrado": "Resultado de la tomografía aún no registrado",
-  "Suspeita de hemorragia subaracnóidea registrada":
+  "Suspeita clínica de hemorragia subaracnóidea registrada":
     "Sospecha de hemorragia subaracnoidea registrada",
   "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua":
     "Esta atención sigue por el flujo específico de la hemorragia subaracnoidea. El motivo queda registrado, y la atención continúa",
-  "Suspeita de hemorragia subaracnóidea em aberto":
+  "Suspeita clínica de hemorragia subaracnóidea em aberto":
     "Sospecha de hemorragia subaracnoidea abierta",
   "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento":
     "Incierto queda registrado como respuesta, no se convierte en ausencia de sospecha, y no retiene nada de la atención",
   "Sem suspeita de hemorragia subaracnóidea": "Sin sospecha de hemorragia subaracnoidea",
   "Resposta registrada. A saída específica para hemorragia subaracnóidea não está armada":
     "Respuesta registrada. La salida específica para hemorragia subaracnoidea no está activada",
-  "Suspeita de hemorragia subaracnóidea ainda não avaliada":
+  "Suspeita clínica de hemorragia subaracnóidea ainda não avaliada":
     "Sospecha de hemorragia subaracnoidea aún no evaluada",
   "Ainda não perguntado é diferente de sem suspeita, e nada no atendimento espera por esta resposta":
     "Aún no preguntado es diferente de sin sospecha, y nada en la atención espera por esta respuesta",
@@ -1147,6 +1151,160 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
   // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
   "Coleta": "Toma",
+  "a fonte diz que não deve ser administrado":
+    "la fuente dice que no debe administrarse",
+  "a segurança é desconhecida":
+    "la seguridad es desconocida",
+  "deve ser considerado, porque o benefício provavelmente supera o risco":
+    "debe considerarse, porque el beneficio probablemente supera al riesgo",
+  "há risco de hemopericárdio":
+    "hay riesgo de hemopericardio",
+  "não parece haver risco aumentado de hemorragia intracraniana":
+    "no parece haber riesgo aumentado de hemorragia intracraneal",
+  "o risco de dano é provavelmente baixo, e o benefício provavelmente supera o risco; a fonte diz que deve ser considerado":
+    "el riesgo de daño es probablemente bajo, y el beneficio probablemente supera al riesgo; la fuente dice que debe considerarse",
+  "o risco de dano é provavelmente baixo; a fonte diz que deve ser considerado":
+    "el riesgo de daño es probablemente bajo; la fuente dice que debe considerarse",
+  "o risco é desconhecido, e a fonte diz que a trombólise deve ser evitada":
+    "el riesgo es desconocido, y la fuente dice que la trombólisis debe evitarse",
+  "pode aumentar o risco de hemorragia sintomática":
+    "puede aumentar el riesgo de hemorragia sintomática",
+  "pode haver risco aumentado de dano":
+    "puede haber riesgo aumentado de daño",
+  "pode haver risco aumentado de dano e de hemorragia sistêmica grave com necessidade de transfusão":
+    "puede haber riesgo aumentado de daño y de hemorragia sistémica grave con necesidad de transfusión",
+  "pode haver risco aumentado de hemorragia intracraniana, a ser ponderado de forma individualizada":
+    "puede haber riesgo aumentado de hemorragia intracraneal, a ponderar de forma individualizada",
+  "pode ser candidato, com consideração caso a caso junto da avaliação especializada":
+    "puede ser candidato, con consideración caso por caso junto con la evaluación especializada",
+  "pode ser considerado caso a caso":
+    "puede considerarse caso por caso",
+  "pode ser considerado em casos individuais":
+    "puede considerarse en casos individuales",
+  "pode ser considerado, com avaliação cuidadosa e em conjunto com neurocirurgia e neurointensivismo":
+    "puede considerarse, con evaluación cuidadosa y en conjunto con neurocirugía y neurointensivismo",
+  "pode ser razoável em casos individuais":
+    "puede ser razonable en casos individuales",
+  "potencialmente danoso, e a fonte diz que não deve ser administrado":
+    "potencialmente dañino, y la fuente dice que no debe administrarse",
+  "provavelmente contraindicado":
+    "probablemente contraindicado",
+  "provavelmente tem mais benefício que risco":
+    "probablemente tiene más beneficio que riesgo",
+  "provavelmente tem mais benefício que risco na maioria dos pacientes, e a fonte diz que deve ser considerado":
+    "probablemente tiene más beneficio que riesgo en la mayoría de los pacientes, y la fuente dice que debe considerarse",
+  "razoavelmente seguro dentro de 4,5 horas, e provavelmente recomendado":
+    "razonablemente seguro dentro de 4,5 horas, y probablemente recomendado",
+  "deve ser considerado":
+    "debe considerarse",
+  "A fonte cita esta condição para o sangramento gastrointestinal ou geniturinário recente.":
+    "La fuente cita esta condición para el sangrado gastrointestinal o genitourinario reciente.",
+  "A fonte declara desconhecimento e mesmo assim manda evitar. As duas coisas convivem na mesma frase.":
+    "La fuente declara desconocimiento y aun así indica evitar. Las dos cosas conviven en la misma frase.",
+  "A fonte diferencia angiopatia amiloide, de risco maior, da hemorragia de causa modificável.":
+    "La fuente diferencia la angiopatía amiloide, de mayor riesgo, de la hemorragia de causa modificable.",
+  "A fonte diz para não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.":
+    "La fuente dice que no se retrase la trombólisis esperando estudios de coagulación cuando no hay razón para sospechar un resultado anormal.",
+  "A fonte diz que, salvo contraindicações absolutas, o risco de dano com a trombólise é baixo na incerteza diagnóstica.":
+    "La fuente dice que, salvo contraindicaciones absolutas, el riesgo de daño con la trombólisis es bajo en la incertidumbre diagnóstica.",
+  "A fonte não traz classe de recomendação em nenhuma célula da tabela de contraindicações, e declara a faixa mais restritiva como não sustentada por evidência clínica. Cada item é apresentado com o verbo da própria fonte.":
+    "La fuente no trae clase de recomendación en ninguna celda de la tabla de contraindicaciones, y declara la franja más restrictiva como no sustentada por evidencia clínica. Cada ítem se presenta con el verbo de la propia fuente.",
+  "A fonte qualifica: mais de 30 minutos de inconsciência e Glasgow abaixo de 13, ou hemorragia, contusão ou fratura de crânio na imagem.":
+    "La fuente califica: más de 30 minutos de inconsciencia y Glasgow menor de 13, o hemorragia, contusión o fractura de cráneo en la imagen.",
+  "Em AVC e infarto com supradesnivelamento concomitantes, a fonte diz que a dose deve ser a apropriada para a isquemia cerebral.":
+    "En ACV e infarto con elevación del ST concomitantes, la fuente dice que la dosis debe ser la apropiada para la isquemia cerebral.",
+  "Gastroenterologia ou urologia":
+    "Gastroenterología o urología",
+  "Há incerteza diagnóstica ou suspeita de simulador de AVC":
+    "Hay incertidumbre diagnóstica o sospecha de simulador de ACV",
+  "Há razão para suspeitar de coagulação alterada":
+    "Hay razón para sospechar coagulación alterada",
+  "Juízo de segurança":
+    "Juicio de seguridad",
+  "Registra a dúvida clínica sobre o diagnóstico. A fonte declara risco baixo de dano com a trombólise nesta situação.":
+    "Registra la duda clínica sobre el diagnóstico. La fuente declara riesgo bajo de daño con la trombólisis en esta situación.",
+  "Registro do que foi acionado. Nada no atendimento espera por uma consulta.":
+    "Registro de lo que se solicitó. Nada en la atención espera por una interconsulta.",
+  "A fonte diz que a segurança da trombólise nesta situação é desconhecida, e que ela pode ser considerada após análise individual de risco e benefício. O aplicativo não classifica a janela de 48 horas, porque a fonte não define o instante de referência":
+    "La fuente dice que la seguridad de la trombólisis en esta situación es desconocida, y que puede considerarse tras un análisis individual de riesgo y beneficio. La aplicación no clasifica la ventana de 48 horas, porque la fuente no define el instante de referencia",
+  "A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b, e a trombólise não fica bloqueada":
+    "La fuente dice que la utilidad de la trombólisis es incierta, y puede asociarse a mayor riesgo de hemorragia sintomática. Recomendación clase 2b, y la trombólisis no queda bloqueada",
+  "A fonte lista o horário entre os fatores da análise individual, e não define o instante de referência da janela de 48 horas. O aplicativo não calcula essa janela":
+    "La fuente lista la hora entre los factores del análisis individual, y no define el instante de referencia de la ventana de 48 horas. La aplicación no calcula esa ventana",
+  "A fonte recomenda a trombólise para melhorar o desfecho funcional, apesar do aumento de risco de hemorragia sintomática comparado a não usar antiagregante":
+    "La fuente recomienda la trombólisis para mejorar el desenlace funcional, pese al aumento de riesgo de hemorragia sintomática comparado con no usar antiagregante",
+  "A fonte recomenda administrar a trombólise sem obter ressonância para excluir microssangramentos. Recomendação classe 1":
+    "La fuente recomienda administrar la trombólisis sin obtener resonancia para excluir microsangrados. Recomendación clase 1",
+  "Antiagregante em uso ainda não registrado":
+    "Antiagregante en uso aún no registrado",
+  "Antiagregante em uso — a fonte recomenda a trombólise mesmo assim":
+    "Antiagregante en uso — la fuente recomienda la trombólisis de todos modos",
+  "Exposição a anticoagulante direto registrada":
+    "Exposición a anticoagulante directo registrada",
+  "Horário da última dose de anticoagulante direto":
+    "Hora de la última dosis de anticoagulante directo",
+  "Horário da última dose de anticoagulante direto desconhecido":
+    "Hora de la última dosis de anticoagulante directo desconocida",
+  "Não haver registro não é o mesmo que não haver exposição":
+    "Que no haya registro no es lo mismo que no haya exposición",
+  "Recomendação classe 2a":
+    "Recomendación clase 2a",
+  "Registrar a unidade do laudo, sem a qual o valor não se compara ao corte":
+    "Registrar la unidad del informe, sin la cual el valor no se compara con el corte",
+  "Registrar o horário é clinicamente útil, e não classifica a janela de 48 horas: a fonte não define o instante de referência, e o aplicativo não calcula":
+    "Registrar la hora es clínicamente útil, y no clasifica la ventana de 48 horas: la fuente no define el instante de referencia, y la aplicación no calcula",
+  "Registrar o resultado dos exames de coagulação":
+    "Registrar el resultado de los estudios de coagulación",
+  "Ressonância prévia com 1 a 10 microssangramentos — a fonte considera razoável":
+    "Resonancia previa con 1 a 10 microsangrados — la fuente lo considera razonable",
+  "Ressonância prévia com mais de 10 microssangramentos — utilidade incerta":
+    "Resonancia previa con más de 10 microsangrados — utilidad incierta",
+  "Sem informação prévia sobre microssangramentos — e nada espera por ela":
+    "Sin información previa sobre microsangrados — y nada espera por ella",
+  "Última dose de anticoagulante direto ainda não registrada":
+    "Última dosis de anticoagulante directo aún no registrada",
+  "A fonte declara segurança desconhecida":
+    "La fuente declara seguridad desconocida",
+  "A fonte diz para não administrar":
+    "La fuente dice que no se administre",
+  "A fonte manda decidir caso a caso":
+    "La fuente indica decidir caso por caso",
+  "A fonte declara risco baixo":
+    "La fuente declara riesgo bajo",
+  "A fonte descreve risco aumentado":
+    "La fuente describe riesgo aumentado",
+  "A tabela de contraindicações da fonte não traz classe de recomendação em nenhuma célula, e a própria fonte declara a faixa mais restritiva como não sustentada por evidência clínica. Cada item aparece com o verbo da fonte.":
+    "La tabla de contraindicaciones de la fuente no trae clase de recomendación en ninguna celda, y la propia fuente declara la franja más restrictiva como no sustentada por evidencia clínica. Cada ítem aparece con el verbo de la fuente.",
+  "Coletas divergem quanto ao corte, e o aplicativo não escolhe entre elas":
+    "Las tomas divergen respecto al corte, y la aplicación no elige entre ellas",
+  "Cortes laboratoriais da fonte":
+    "Cortes de laboratorio de la fuente",
+  "Cruza o corte da fonte":
+    "Cruza el corte de la fuente",
+  "Dentro do corte da fonte":
+    "Dentro del corte de la fuente",
+  "Sem a unidade declarada, o valor não se compara ao corte":
+    "Sin la unidad declarada, el valor no se compara con el corte",
+  "decisão caso a caso":
+    "decisión caso por caso",
+  "Marco temporal da exposição recente a DOAC":
+    "Marco temporal de la exposición reciente a DOAC",
+  "Consultas especializadas acionadas":
+    "Interconsultas especializadas solicitadas",
+  "Consultas especializadas":
+    "Interconsultas especializadas",
+  "O sangramento foi tratado e o risco foi reduzido":
+    "El sangrado fue tratado y el riesgo fue reducido",
+  "Cardiologia":
+    "Cardiología",
+  "Oncologia":
+    "Oncología",
+  "Cirurgia":
+    "Cirugía",
+  "Neurocirurgia":
+    "Neurocirugía",
+  "Neurocirurgia e neurointensivismo":
+    "Neurocirugía y neurointensivismo",
   "Tomografia de crânio sem contraste": "Tomografía de cráneo sin contraste",
   "Angiotomografia": "Angiotomografía",
   "Angiorressonância": "Angiorresonancia",

@@ -115,7 +115,17 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
   },
   {
     id: "seguranca",
-    titulo: "Segurança e elegibilidade",
+    /**
+     * ⚠️⚠️ **⛔ NÃO "elegibilidade"** — renomeada em 2026-08-30, por decisão do autor:
+     *
+     * > *"'Segurança e elegibilidade' promete uma resposta que D deliberadamente
+     * > ⛔ não fornece."*
+     *
+     * ⚠️ E **"para trombólise"**, e ⛔ não "da reperfusão": ⛔ toda a interpretação
+     * desta superfície é da **trombólise intravenosa**. F-08, que é
+     * trombectomia, ⛔ não entra aqui. Se um dia entrar, o nome amplia junto.
+     */
+    titulo: "Segurança para trombólise",
     resumo: "Anticoagulante, sangramento, procedimentos, exames.",
     fontes: ["F-07", "F-10"],
   },

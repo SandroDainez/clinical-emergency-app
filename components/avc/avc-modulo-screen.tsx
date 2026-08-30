@@ -18,9 +18,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
 import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
 import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
+import { pendenciasDaSeguranca } from "../../avc/nucleo/derivacoes-d";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO } from "../../avc/conteudo/superficie-c";
+import SuperficieD from "./superficie-d";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
@@ -104,6 +106,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * resposta válida (**PD-22**) e ⛔ **não** fecha a tarefa.
        */
       ...pendenciasDaImagem(estado),
+      /** ⚠️ D ⛔ não possui fatos, e possui as próprias pendências (E-07). */
+      ...pendenciasDaSeguranca(estado),
       ...pendenciasDoLaboratorio(estado),
       // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
       // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
@@ -405,6 +409,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onCorrigirNoEstudo={corrigirNaInstanciaDaTela}
             onDesfazerNoEstudo={desfazerNaInstancia}
             onNovoEstudo={() => novaMedida(ESTUDO)}
+          />
+        ) : atual.id === "seguranca" ? (
+          <SuperficieD
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onHora={registrarHora}
+            onMedir={medir}
+            onDesfazer={desfazer}
           />
         ) : (
           <>

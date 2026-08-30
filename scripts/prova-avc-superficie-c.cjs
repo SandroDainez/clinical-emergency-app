@@ -121,6 +121,29 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
     "os exames primeiro, porque governam a classe de reperfusão; o juízo clínico depois");
 
   const recolhiveis = C.TODOS_OS_CAMPOS_C.filter((c) => c.recolhivel).map((c) => c.id);
+  /**
+   * ⚠️⚠️ O PAR DO RESULTADO É SIMÉTRICO, e ⛔ nenhum valor profere veredito —
+   * correção do autor, 2026-08-30.
+   *
+   * ⚠️ *"Sem hemorragia"* lia-se como prova de inexistência; *"identificada no
+   * exame"* diz que o registrado é a **interpretação daquele estudo**. E ⛔ nenhum
+   * dos dois pode dizer *"excluída"*: exclusão é **derivação**, e gravá-la no
+   * fato seria **E-43** — pior ainda com dois estudos discordantes, em que o
+   * fato afirmaria o que a derivação recusa.
+   */
+  confere("os dois valores do resultado são SIMÉTRICOS",
+    C.OPCOES_RESULTADO_TC.every((o) => /identificada/i.test(o)),
+    "um lado absoluto e outro relativo faria o par parecer prova × achado");
+  const comVeredito = C.OPCOES_RESULTADO_TC.filter((o) =>
+    C.PALAVRAS_DE_VEREDITO_PROIBIDAS.some((x) => o.toLowerCase().includes(x)));
+  confere("⛔ e ⛔ NENHUM valor grava veredito de exclusão",
+    comVeredito.length === 0,
+    `o médico registra o ACHADO; quem deriva a exclusão é o motor — ${comVeredito.join(", ") || "—"}`);
+  confere("⛔ e ⛔ nenhuma OPÇÃO de C, em campo nenhum, diz 'excluída'",
+    C.TODOS_OS_CAMPOS_C.filter((c) => c.opcoes).every((c) =>
+      c.opcoes.every((o) => !/excluí|descartad/i.test(o))),
+    "a trava vale para a superfície inteira — ⛔ senão o veredito volta por outro campo");
+
   confere("⛔ SÓ o sítio da oclusão é recolhível",
     JSON.stringify(recolhiveis) === JSON.stringify(["sitio_oclusao"]),
     `§7.3: recolher a tomografia ou a suspeita de HSA esconderia a decisão da superfície — ${recolhiveis.join(", ")}`);

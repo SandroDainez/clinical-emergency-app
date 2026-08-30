@@ -394,7 +394,7 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
     return {
       conclusao: "sim",
       tom: "atencao",
-      curto: "Suspeita de hemorragia subaracnóidea registrada",
+      curto: "Suspeita clínica de hemorragia subaracnóidea registrada",
       texto: "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua",
       insumos,
       fonte,
@@ -404,7 +404,7 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
     return {
       conclusao: "desconhecido",
       tom: "pendente",
-      curto: "Suspeita de hemorragia subaracnóidea em aberto",
+      curto: "Suspeita clínica de hemorragia subaracnóidea em aberto",
       texto: "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento",
       insumos,
       fonte,
@@ -423,7 +423,7 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
   return {
     conclusao: "desconhecido",
     tom: "pendente",
-    curto: "Suspeita de hemorragia subaracnóidea ainda não avaliada",
+    curto: "Suspeita clínica de hemorragia subaracnóidea ainda não avaliada",
     texto: "Ainda não perguntado é diferente de sem suspeita, e nada no atendimento espera por esta resposta",
     insumos,
     fonte,
@@ -818,7 +818,7 @@ export function pendenciasDaImagem(estado: EstadoAvc): readonly Pendencia[] {
   if (respondeuDesconhecido(estado, "suspeita_hsa")) {
     abertas.push({
       id: "suspeita_hsa",
-      rotulo: "Suspeita de hemorragia subaracnóidea",
+      rotulo: "Suspeita clínica de hemorragia subaracnóidea",
       dono: "imagem",
       campo: "suspeita_hsa",
       resolvePor: "Registrar a conclusão sobre a suspeita",

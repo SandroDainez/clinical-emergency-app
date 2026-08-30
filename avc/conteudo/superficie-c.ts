@@ -70,9 +70,39 @@ export type CampoC = CampoDeclarado;
  * —, e ⛔ nenhuma delas volta como valor gravável.
  */
 export const RESULTADO_TC = {
-  semHemorragia: "Sem hemorragia",
-  hemorragia: "Hemorragia intracraniana",
+  /**
+   * ⚠️⚠️ **"IDENTIFICADA NO EXAME"**, e ⛔ não "sem hemorragia" — correção do autor,
+   * 2026-08-30:
+   *
+   * > *"evita a leitura absoluta de 'sem hemorragia', como se a TC tivesse
+   * > provado inexistência de qualquer hemorragia. A diretriz fala em usar NCCT
+   * > ou RM para **avaliar e excluir** hemorragia intracraniana antes da
+   * > reperfusão — ⛔ ou seja, estamos falando do que a **imagem demonstra** para
+   * > aquela decisão, ⛔ não de uma afirmação ontológica sobre o paciente."*
+   *
+   * ⚠️ E ⛔ **não** *"visível"*: *"visível para quem?"*. **Identificada no exame**
+   * diz que o que está registrado é a **interpretação daquele estudo**.
+   *
+   * ⚠️⚠️ O par ficou **simétrico**, e é isso que o separa do juízo clínico: os dois
+   * valores descrevem ⛔ **só** o que o exame mostrou, e a *"suspeita clínica de
+   * hemorragia subaracnóidea"* passa a ser visivelmente **outra espécie**.
+   */
+  semHemorragia: "Sem hemorragia intracraniana identificada",
+  hemorragia: "Hemorragia intracraniana identificada",
 } as const;
+
+/**
+ * ⛔⛔ ⛔ NENHUM VALOR DESTE CAMPO PODE DIZER "EXCLUÍDA" — trava do autor:
+ *
+ * > *"O médico registra o **achado**; quem deriva 'exclusão declarada para a
+ * > decisão' é o **motor**, usando os estudos existentes."*
+ *
+ * ⚠️ *"Hemorragia excluída"* seria o **veredito gravado dentro do fato** — E-43 —,
+ * e ⛔ pior: com dois estudos discordantes, o fato afirmaria uma exclusão que a
+ * derivação recusa. A exclusão vive em `exclusaoDeHemorragia()`, e ⛔ em nenhum
+ * outro lugar.
+ */
+export const PALAVRAS_DE_VEREDITO_PROIBIDAS: readonly string[] = ["excluí", "exclui", "descartad", "liberad"];
 
 export const OPCOES_RESULTADO_TC: readonly string[] = [
   RESULTADO_TC.semHemorragia,
@@ -303,6 +333,8 @@ export const ESTUDO_C: readonly CampoC[] = [
     rotulo: "Resultado do exame",
     tipo: "escolha",
     opcoes: OPCOES_RESULTADO_TC,
+    /** ⚠️ Diz que isto é **achado do exame**, e ⛔ não o juízo que corre em paralelo. */
+    ajuda: "Registra o achado deste exame. Não substitui o juízo clínico registrado separadamente, como suspeita clínica de hemorragia subaracnóidea.",
     fonte: "F-16",
     bloqueiaTerapia: false,
     nota: "A fonte recomenda imagem cerebral de emergência na avaliação inicial, para excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão.",
@@ -413,10 +445,26 @@ export const EPISODIO_C: readonly CampoC[] = [
   {
     id: "suspeita_hsa",
     temporalidade: "estado",
-    rotulo: "Suspeita de hemorragia subaracnóidea",
+    /**
+     * ⚠️⚠️ **"CLÍNICA" NO RÓTULO** — relato do autor, 2026-08-30:
+     *
+     * > *"isso ⛔ não combina muito porque hemorragia subaracnóidea é hemorragia e
+     * > em cima fala TC com ou sem hemorragia, isso ficou muito estranho aqui"*
+     *
+     * ⚠️ E ele está certo: lidos em sequência, *"Sem hemorragia"* (resultado do
+     * exame) e *"Suspeita de hemorragia subaracnóidea"* (juízo do médico)
+     * pareciam **a mesma pergunta respondida duas vezes, em contradição**.
+     *
+     * ⚠️⚠️ Os dois ⛔ **não** falam da mesma coisa: um diz **o que o exame mostrou**,
+     * o outro diz **o que o médico suspeita do paciente**. O rótulo agora nomeia
+     * a espécie — *suspeita clínica* —, e a ajuda diz que ela é registrada **à
+     * parte** do exame, ⛔ sem afirmar ⛔ nada sobre sensibilidade de tomografia, que
+     * ⛔ **nenhuma** fonte transcrita aqui sustenta (**E-31**).
+     */
+    rotulo: "Suspeita clínica de hemorragia subaracnóidea",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
-    ajuda: "Registra a suspeita clínica, que pode existir mesmo com tomografia sem hemorragia.",
+    ajuda: "Juízo clínico sobre o paciente, registrado à parte do que o exame mostrou. Um exame sem hemorragia visível não encerra a suspeita.",
     fonte: "F-16",
     bloqueiaTerapia: false,
     /**
@@ -484,7 +532,7 @@ export const DESTINOS_DA_IMAGEM = {
   hsa: {
     id: "suspeita_hsa",
     temporalidade: "estado",
-    rotulo: "Suspeita de hemorragia subaracnóidea",
+    rotulo: "Suspeita clínica de hemorragia subaracnóidea",
     modulo: "Fluxo de hemorragia subaracnóidea",
     /** ⚠️ ⛔ NÃO EXISTE — e dizer isso na tela é o que E-09 exige. */
     moduloExiste: false,

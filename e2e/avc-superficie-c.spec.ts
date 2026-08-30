@@ -166,7 +166,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
       .toContainText(/Hemorragia intracraniana/i);
     await expect(page.getByTestId("avc-leitura-curto-suspeita_hsa"))
-      .toContainText(/Suspeita de hemorragia subaracnóidea registrada/i);
+      .toContainText(/Suspeita clínica de hemorragia subaracnóidea registrada/i);
   });
 
   /**

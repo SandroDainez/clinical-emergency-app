@@ -33,6 +33,7 @@ const BR_TROMBO = "protocols/fontes-verbatim/bulas-br-tromboliticos.md";
 const BR_PA = "protocols/fontes-verbatim/fontes-br-anti-hipertensivos.md";
 const BR_GLI = "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md";
 const BR_MRS = "protocols/fontes-verbatim/mrs-br.md";
+const SEG_DEF = "protocols/fontes-verbatim/seguranca-definicoes-operacionais.md";
 const IMG_DEF = "protocols/fontes-verbatim/imagem-definicoes-operacionais.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
@@ -78,6 +79,16 @@ export const SLOTS: readonly SlotDeFonte[] = [
    */
   { id: "F-28", assunto: "ASPECTS — territórios e pontuação", estado: "aberto", arquivo: IMG_DEF },
   { id: "F-29", assunto: "Efeito de massa significativo — definição operacional", estado: "aberto", arquivo: IMG_DEF },
+  /**
+   * ⚠️⚠️ **F-30 ⛔ NÃO TEM FONTE CANDIDATA**, e a lacuna é da fonte-mãe: ela usa
+   * *"recent DOAC exposure (<48 hours)"* e ⛔ **não declara contra qual instante**
+   * as 48 horas são medidas.
+   *
+   * ⛔ Enquanto aberto: ⛔ não calcular o intervalo, ⛔ não comparar com agora,
+   * chegada, último-visto-bem, início dos sintomas ⛔ nem reconhecimento, e
+   * ⛔ **não** transformar horário conhecido em "<48 h confirmado" (**E-52**).
+   */
+  { id: "F-30", assunto: "Marco temporal da exposição recente a DOAC", estado: "aberto", arquivo: SEG_DEF },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

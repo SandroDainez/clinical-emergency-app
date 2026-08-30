@@ -98,7 +98,7 @@ const ORDEM_APROVADA = [
   ["A", "estabilizacao", "Entrada e estabilização"],
   ["B", "neurologico", "Neurológico"],
   ["C", "imagem", "Imagem"],
-  ["D", "seguranca", "Segurança e elegibilidade"],
+  ["D", "seguranca", "Segurança para trombólise"],
   ["E", "correcoes", "Correções"],
   ["F", "reperfusao", "Reperfusão"],
   ["G", "destino", "Destino"],

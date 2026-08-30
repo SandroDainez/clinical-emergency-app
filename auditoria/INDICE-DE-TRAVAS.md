@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**56 de 70 travas com declaração completa.**
+**57 de 71 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -43,6 +43,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a Superfície C se comporte como o **ponto de decisão da imagem** e ⛔ nunca como portão de tudo — que as **três saídas** de §1.8 existam como representações distintas e ⛔ não colapsem em booleano; que ausência de tomografia ⛔ NUNCA seja lida como ausência de hemorragia (E-23); que *"realizada — resultado ainda não disponível"* seja resposta válida que ⛔ **não** fecha a pendência (PD-22); que a exclusão de hemorragia olhe para UM campo e ⛔ nenhum outro possa retê-la; que fatos coexistam e **destino seja um só**, com prioridade declarada e o outro achado preservado (PD-21); que ⛔ nenhum campo bloqueie terapia (E-49) e o bloqueio de classe viva na derivação (PD-23); que o dossiê endovascular descreva **dados**, ⛔ nunca elegibilidade (PD-24); que a alergia a contraste ⛔ não toque em ⛔ nada além do exame com contraste; que ⛔ não exista campo de creatinina, função renal ou laboratório; que a imagem avançada ⛔ não vire porta; e que o horário da tomografia ⛔ não alimente relógio clínico nem produza meta temporal (R2.5).
 - **NÃO PROMETE:** que os números clínicos estejam CERTOS — confere que o código diz o que o verbatim transcrito diz, ⛔ não que o verbatim esteja bem transcrito. ⛔ Não mede tela: ordem visual, alvo de toque e legibilidade são `e2e/avc-superficie-c`. ⛔ E não diz nada sobre elegibilidade a IVT ou EVT, que vivem na Superfície F e ainda não existem. ⛔ Também ⛔ não confere tradução: o par em espanhol de cada OPÇÃO é `test:i18n-opcoes`, que cobre as três superfícies de uma vez — a regra vive em UM lugar, ⛔ não em três cópias que podem divergir.
 - **UNIVERSO:** `avc/conteudo/superficie-c.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_C`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-c.ts` exercitadas por estado construído, mais o TEXTO desses dois arquivos para as travas de `ternario()` e de laboratório. ⛔ Fora do universo: Superfícies A, B e D a G.
+
+## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
+
+- **PROMETE:** que a Superfície D interprete segurança **sem virar veredito** — que ⛔ não exista estado agregado "contraindicado" ⛔ nem "elegível"; que **todo** item carregue o **verbo da própria fonte**; que a gradação da faixa dita absoluta seja preservada literalmente; que D ⛔ **não declare** ⛔ nenhum fato de Paciente, Laboratório, A ou C; que `unknown` ⛔ nunca vire negativo, ausência ⛔ nunca vire negativo e desconhecido ⛔ nunca vire valor fabricado; que a janela de 48 h do DOAC ⛔ **não seja calculada** enquanto F-30 estiver aberta; e que ⛔ **só** condição realmente resolvível gere pendência.
+- **NÃO PROMETE:** que os cortes clínicos estejam certos — eles são transcrição, e quem os confere é o autor contra o verbatim. ⛔ Também ⛔ não mede tela: isso é `e2e/avc-superficie-d`. E ⛔ não confere tradução — é `test:i18n-opcoes`.
+- **UNIVERSO:** `avc/conteudo/superficie-d.ts` inteiro (todos os itens de `ITENS_DE_SEGURANCA`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-d.ts`, mais os campos de Paciente e Laboratório que D lê. ⛔ Fora do universo: as superfícies E a G. ── ⚠️⚠️ O QUE ESTA TRAVA EXISTE PARA IMPEDIR ──────────────────────────────── > *"O ponto mais delicado continua sendo manter **verbo da fonte + estado > derivado** sem transformar tudo num 'pode/⛔ não pode trombolisar' > simplificado."* — autor, 2026-08-30 ⚠️ Um atalho de linguagem aqui vira **bloqueio clínico mais forte do que a diretriz sustenta** — e ⛔ nenhum teste de comportamento pegaria isso, porque o app continuaria "funcionando".
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

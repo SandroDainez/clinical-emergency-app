@@ -1557,3 +1557,116 @@ ausência de um exame, ela pede — ⛔ sem ressuscitar campo agregado artificia
 ⛔ ⛔ Nenhuma calculadora de ASPECTS (**D-111**, slot **F-28** sem verbatim), ⛔ nenhuma
 definição operacional de efeito de massa (**F-29**, sem fonte candidata), e
 ⛔ **⛔ nenhum** `tc_indisponivel`: sem fonte ⛔ nem consumidor, seria fato sem leitor.
+
+---
+
+## PD-33 · D INTERPRETA SEGURANÇA, E ⛔ NUNCA PROFERE VEREDITO — DECIDIDA (2026-08-30)
+
+> *"O ponto mais delicado continua sendo manter **verbo da fonte + estado
+> derivado** sem transformar tudo num 'pode/⛔ não pode trombolisar'
+> simplificado."*
+
+### D ⛔ não possui fatos
+
+⛔ D ⛔ **não redeclara** ⛔ nada de Paciente, Laboratório, A ou C. Os ~30 antecedentes
+que a Table 8 nomeia **já existiam** em Paciente, em três blocos recolhidos, com
+as janelas temporais **no rótulo da opção** — e é isso que dispensa qualquer
+cálculo: a banda é **declarada**, ⛔ nunca computada de uma data contra uma âncora
+que a fonte ⛔ não define.
+
+⚠️ D declara ⛔ **três** fatos, e os três são **juízo**, ⛔ nunca antecedente:
+
+| fato | ⛔ por que ⛔ não é de Paciente |
+|---|---|
+| `incerteza_diagnostica` | *"só ganha significado porque altera a leitura de segurança. Em B ficaria órfã de interpretação."* |
+| `motivo_para_suspeitar_alteracao_coagulacao` | julgamento de segurança — é o gatilho da rec. 10 |
+| `sangramento_tratado` | **muda durante o atendimento** — ⛔ não é antecedente estável |
+
+### ⛔ ⛔ Não existe agregado
+
+⛔ ⛔ **Nenhuma** função devolve "pode" ⛔ ou "⛔ não pode". Cada item carrega **o verbo da
+própria fonte**, em inglês, ⛔ não traduzido — traduzir o verbo de uma diretriz é
+reescrevê-lo. A gradação dentro da faixa dita absoluta é preservada pelas
+**quatro formas nomeadas**: *should not be administered* · *likely
+contraindicated* · *potentially harmful* · *should be avoided* (**E-45**).
+
+⚠️ A trava mede as quatro **por nome**, e ⛔ não por contagem: com seis itens na
+faixa, contar verbos distintos tolera achatar dois — a mutação provou.
+
+### O oitavo estado — `baixa_preocupacao_declarada`, e ⛔ não "sem restrição"
+
+Os sete enumeram **restrições** e **estados epistêmicos**. A **faixa 1** existe, e
+nela a fonte **declara risco baixo**. ⛔ Chamar isso de `desconhecido` seria falso;
+de `situacao_individualizada`, inventar cautela que a fonte ⛔ não pede.
+O nome foi recusado pelo autor:
+
+> *"'Sem restrição' soa mais forte do que a diretriz permite e pode ser lido
+> como 'liberado'. `baixa_preocupacao_declarada` diz apenas o que sabemos: a
+> fonte colocou aquele cenário no lado de **menor preocupação**."*
+
+⚠️ A Table 8 se descreve como *"general gradient of risk"*, e a legenda diz que a
+faixa favorável ⛔ **não** está ligada a recomendações acionáveis. Chamá-la de "sem
+restrição" promoveria gradiente a liberação.
+
+⛔⛔ **O verbo específico prevalece sobre o agrupamento.** O estado agrupa; o verbo
+decide. ⚠️ E ele ⛔ **nunca** nasce de silêncio: ⛔ não perguntado continua
+`nao_perguntado`.
+
+### O nome da superfície
+
+`D · Segurança e elegibilidade` → **`D · Segurança para trombólise`**.
+
+> *"'Segurança e elegibilidade' promete uma resposta que D deliberadamente ⛔ não
+> fornece."*
+
+⚠️ E **"para trombólise"**, e ⛔ não "da reperfusão": toda a interpretação desta
+superfície é da **trombólise intravenosa**. F-08, que é trombectomia, ⛔ não entra.
+Se um dia entrar, o nome amplia junto.
+
+### A formulação clínica em português
+
+> *"Em emergência, o médico brasileiro ⛔ não deveria precisar traduzir
+> `potentially harmful and should not be administered` sob pressão."*
+
+⚠️ A tela mostra a **frase em português** no corpo, e o **verbatim em inglês logo
+abaixo**, como autoridade. ⛔ A tradução acompanha a fonte, e ⛔ **nunca** a
+substitui.
+
+⚠️⚠️ E ela vem de um **mapa fechado verbo → frase**, ⛔ não de um campo escrito item
+a item: escrita item a item, a tradução **deriva**, e dois itens com o mesmo
+verbo ganhariam frases de força diferente sem ⛔ ninguém perceber. A trava mede a
+**bijeção**, os *hedges* obrigatórios (*likely* → provavelmente, *may* → pode,
+*is unknown* → desconhecid‑) e as **formas de veredito proibidas**.
+
+### F-30 · o `<48 h` do DOAC ⛔ não é calculado
+
+A fonte diz *"recent DOAC exposure (<48 hours)"* e lista o *"timing of the last
+DOAC administration"* entre os fatores — e ⛔ **não declara contra qual instante**.
+⛔ Sem marco, ⛔ não há conta a fazer.
+
+⛔ ⛔ Não se compara com agora, chegada, último-visto-bem, início dos sintomas ⛔ nem
+reconhecimento. ⛔ E ⛔ **nem com horário em mãos** a janela é classificada — a trava
+mede `janelaClassificada === false` e o **código ⛔ não pode conter a aritmética**.
+
+⚠️ A pendência do horário existe, e **declara o que ⛔ não resolve**: registrar é
+clinicamente útil, e ⛔ não classifica a janela. ⛔ Sem essa frase ela seria promessa
+falsa.
+
+### Pendências — três, e ⛔ nenhuma bloqueia
+
+Coagulograma **⛔ só com o juízo** (rec. 10, **COR 2a**: cobrar exame de todo
+paciente é o atraso que a fonte proíbe) · unidade das plaquetas ⛔ não declarada ·
+horário do DOAC. ⛔ Fora: faixa 1, CMB desconhecido (**COR 1**, estado terminal
+aceitável), contraindicações ⛔ não corrigíveis e consultas.
+
+### PA e glicemia — três coisas distintas
+
+| o quê | onde | ⛔ o que ⛔ NÃO é |
+|---|---|---|
+| corrigir valor digitado errado | mesma instância em A, gesto explícito | ⛔ não é medida nova |
+| tratar clinicamente | **E · Correções** | ⛔ não é correção de fato |
+| resposta ao tratamento | **nova aferição** em A | ⛔ ⛔ **não corrige** a medida anterior |
+
+⚠️ PA 190/110 → tratamento → PA 170/95 registra **evolução real**. É a mesma regra
+que a trava da Superfície A impôs quando a inferência por temporalidade tentou
+transformar medida nova em correção.
