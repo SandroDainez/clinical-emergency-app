@@ -22,30 +22,21 @@ export type Superficie = {
   /** ⚠️ Identidade ESTÁVEL. ⛔ Não muda quando a ordem ou a letra mudam. */
   readonly id: SuperficieId;
   /**
-   * ⚠️⚠️ PAINEL TRANSVERSAL — ⛔ **sem letra**, e ⛔ não é etapa.
+   * ⚠️⚠️ PAINEL TRANSVERSAL — ⛔ **não é etapa do fluxo**.
    *
-   * A letra carrega a leitura de fluxo clínico (A → G). **Paciente** e
-   * **Laboratório** são contexto consultável de qualquer lugar: dar-lhes letra
-   * sugeriria que existe um passo antes de A — e é exatamente isso que o autor
-   * proibiu ao aprovar a superfície Paciente.
+   * **Paciente** e **Laboratório** são contexto consultável de qualquer lugar;
+   * as demais são etapas. A distinção sobrevive à remoção das letras, porque ela
+   * ⛔ nunca foi sobre a letra: é sobre **ser ou não ser passo do atendimento**.
    */
   readonly painel?: true;
-  /**
-   * ⚠️ A LETRA É DERIVADA DA POSIÇÃO, ⛔ nunca escrita à mão.
-   *
-   * Escrita à mão, ela pode discordar da ordem — e uma tela que mostra "F" no
-   * quinto lugar é uma tela em que o médico e o prontuário falam de coisas
-   * diferentes. Aqui letra e posição ⛔ não têm como divergir.
-   */
-  readonly letra?: string;
   readonly titulo: string;
   readonly resumo: string;
   /** Slots de fonte que governam esta superfície. */
   readonly fontes: readonly string[];
 };
 
-/** Uma superfície como ela é DECLARADA — ⛔ sem letra: a letra é calculada. */
-type DeclaracaoDeSuperficie = Omit<Superficie, "letra">;
+/** Uma superfície como ela é DECLARADA. */
+type DeclaracaoDeSuperficie = Superficie;
 
 /**
  * As sete superfícies (§7.15), NA ORDEM EM QUE APARECEM.
@@ -152,22 +143,28 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
 
 
 /**
- * ⚠️ A letra sai da POSIÇÃO **entre as superfícies com letra**. ⛔ Nenhuma é
- * digitada, e os painéis ⛔ não consomem letra.
+ * ── ⛔⛔ AS LETRAS SAÍRAM DA APRESENTAÇÃO (autor, 2026-08-30) ─────────────────
  *
- * ⚠️⚠️ POR QUE CONTAR SÓ AS COM LETRA: se o painel consumisse posição, acrescentar
- * um painel renomearia **todas** as superfícies clínicas — e a letra é o que o
- * médico usa para dizer onde resolver uma pendência ("Abrir C · Imagem"). Um
- * painel novo ⛔ não pode reescrever o vocabulário da equipe.
+ * O módulo mostrava `A · Entrada e estabilização` … `G · Destino`, e o app tem
+ * **outro** A–E, com significado oposto: o **ABCDE do atendimento**.
+ *
+ * ⚠️⚠️ O caso que decidiu: **D**. Aqui era *Segurança para trombólise*; no ABCDE é
+ * **Disfunção neurológica** — e o paciente do AVC **tem** disfunção neurológica.
+ * As duas leituras eram plausíveis na mesma tela.
+ *
+ * > *"'D' poder significar tanto Segurança para trombólise quanto Disfunção
+ * > neurológica é um conflito ruim justamente no tipo de paciente em que as duas
+ * > leituras são plausíveis."*
+ *
+ * ⚠️ **E ⛔ não entraram números no lugar**: seria trocar uma convenção arbitrária
+ * por outra. O fluxo ⛔ não tem "próximo obrigatório" — os **nomes bastam**.
+ *
+ * ⛔ **Os slugs ⛔ não mudaram.** A letra sempre foi apresentação (`SUPERFICIE_D ===
+ * "seguranca"`), e é por isso que removê-la ⛔ não tocou fato, derivação ⛔ nem
+ * trilha. A trava que separou identidade de rótulo nasceu justamente para que
+ * este dia fosse barato.
  */
-export const SUPERFICIES: readonly Superficie[] = (() => {
-  let proxima = 0;
-  return ORDEM_DE_APRESENTACAO.map((s) =>
-    s.painel
-      ? { ...s }
-      : { ...s, letra: String.fromCharCode("A".charCodeAt(0) + proxima++) }
-  );
-})();
+export const SUPERFICIES: readonly Superficie[] = ORDEM_DE_APRESENTACAO.map((s) => ({ ...s }));
 
 export function superficie(id: SuperficieId): Superficie {
   const achada = SUPERFICIES.find((s) => s.id === id);

@@ -821,6 +821,63 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     "a fonte ⛔ não menciona Glasgow uma única vez, e o nível de consciência já entra pelo NIHSS (itens 1a-1c)");
 }
 
+const K = require(path.join(tmp, "conteudo", "campo.js"));
+
+// ── 12 · A MOLDURA ABCDE (2026-08-30) ────────────────────────────────────
+{
+  const titulos = C.GRUPOS_A.map((g) => g.titulo);
+  /**
+   * ⚠️⚠️ A LETRA APARECE **SÓ ONDE A CORRESPONDÊNCIA É REAL** — e ⛔ nenhum bloco
+   * foi inventado para "completar a mnemônica".
+   */
+  confere("os quatro blocos com correspondência real carregam a letra",
+    ["A · Via aérea", "B · Respiração e oxigenação", "C · Circulação e pressão arterial", "D · Glicemia"]
+      .every((t) => titulos.includes(t)),
+    `⛔ moldura pela metade, sem dizer, seria pior que ⛔ nenhuma — ${titulos.join(" | ")}`);
+  confere("⛔ e ⛔ NÃO existe bloco 'E · Exposição' inventado",
+    titulos.every((t) => !/^E · /.test(t)),
+    "*\"⛔ não force todo campo a caber em ABCDE\"* — bloco vazio fingiria cobertura");
+  confere("relógios e crise ficam FORA da mnemônica",
+    titulos.includes("Relógios") && titulos.includes("Crise no início"),
+    "⛔ nem tudo em A é ameaça imediata, e forçar a mnemônica esconderia isso");
+
+  /** ⚠️⚠️ VIA AÉREA E RESPIRAÇÃO SÃO PERGUNTAS DIFERENTES — letras diferentes. */
+  const ids = (g) => K.camposDoGrupo(C.GRUPOS_A.find((x) => x.titulo === g)).map((c) => c.id);
+  confere("via aérea e respiração ⛔ NÃO são o mesmo bloco",
+    ids("A · Via aérea").includes("disfuncao_bulbar")
+    && ids("B · Respiração e oxigenação").includes("spo2")
+    && !ids("A · Via aérea").includes("spo2"),
+    "via aérea é se ela está protegida; respiração é se a troca acontece");
+  confere("⛔ e ⛔ NENHUM campo nasceu, sumiu ou trocou de superfície",
+    C.TODOS_OS_CAMPOS_A.length >= 12
+    && ["consciencia_rebaixada", "disfuncao_bulbar", "hipoxia", "spo2", "pas", "pad", "glicemia"]
+      .every((id) => C.TODOS_OS_CAMPOS_A.some((c) => c.id === id)),
+    "a moldura é apresentação: ⛔ nenhum fato pode ter mudado com ela");
+
+  /**
+   * ⛔⛔ O CARD DE PRIORIDADE ⛔ NÃO PODE CONTER CONDUTA — trava do autor:
+   * *"se qualquer texto desse card implicar conduta específica, abrir fonte
+   * antes"*. ⛔ E o card de ACLS, que tem conduta ⛔ não transcrita para o AVC,
+   * ⛔ **não** foi importado.
+   */
+  const cardTexto = `${C.PRIORIDADE_A.titulo} ${C.PRIORIDADE_A.frase} ${C.PRIORIDADE_A.nota}`;
+  confere("o card de prioridade existe e diz ⛔ SÓ a prioridade",
+    /estabilização primeiro/i.test(C.PRIORIDADE_A.titulo)
+    && /antes de avançar/i.test(C.PRIORIDADE_A.frase),
+    "toda emergência parte da estabilização, e a tela precisa dizer isso");
+  const conduta = [
+    /\bIOT\b/i, /intub/i, /PAM\s*≥/i, /vasopressor/i, /\bO₂ alvo\b/i, /\bVNI\b/i,
+    /mg\/dL/i, /mmHg/i, /\bml\b/i, /\bmg\b/i, /cardiovers/i, /marcapasso/i,
+    /\bse\b[^.]*\bentão\b/i, /administr/i, /\bdose\b/i,
+  ].filter((r) => r.test(cardTexto));
+  confere("⛔ e ⛔ NENHUMA conduta, meta, fármaco ou limiar entrou nele",
+    conduta.length === 0,
+    `conduta no card exigiria fonte transcrita (**E-31**) — ${conduta.map(String).join(" ") || "—"}`);
+  confere("⛔ e o card DECLARA que a mnemônica ⛔ não cobre tudo",
+    /onde há correspondência|bloco próprio/i.test(C.PRIORIDADE_A.nota),
+    "⛔ sem isso, a ausência de 'E' leria como esquecimento");
+}
+
 if (falhas.length) {
   console.error(`\n❌ PROVA DA SUPERFÍCIE A — ${falhas.length} falha(s), ${ok} ok\n`);
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}`));

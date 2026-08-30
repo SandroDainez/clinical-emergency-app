@@ -60,13 +60,30 @@ console.log(`universo: ${sups.length} superfície(s) · ${S.pendenciasVigentes()
  */
 const comLetra = sups.filter((s) => !s.painel);
 const paineis = sups.filter((s) => s.painel);
-confere("são nove superfícies: sete com letra e dois painéis",
+confere("são nove superfícies: sete etapas e dois painéis",
   sups.length === 9 && comLetra.length === 7 && paineis.length === 2,
   "§7.15 fixou sete janelas clínicas; P-09 acrescentou Paciente e Laboratório como painéis");
 
-confere("⛔ nenhum painel tem letra, e toda superfície clínica tem",
-  paineis.every((s) => s.letra === undefined) && comLetra.every((s) => typeof s.letra === "string"),
-  "letra é leitura de FLUXO; dá-la a um painel sugeriria que existe passo antes de A");
+/**
+ * ⛔⛔ ⛔ NENHUMA LETRA NA APRESENTAÇÃO — autor, 2026-08-30.
+ *
+ * ⚠️⚠️ O A–G do módulo colidia com o **ABCDE do atendimento**, e o caso que
+ * decidiu foi o **D**: aqui *Segurança para trombólise*, lá **Disfunção
+ * neurológica** — e o paciente do AVC **tem** disfunção neurológica.
+ *
+ * ⚠️ E ⛔ nada entrou no lugar: ⛔ nem números, que seriam outra convenção
+ * arbitrária. O fluxo ⛔ não tem "próximo obrigatório" — os nomes bastam.
+ */
+confere("⛔ NENHUMA superfície carrega letra de apresentação",
+  sups.every((s) => s.letra === undefined),
+  "A–G colidia com o ABCDE do atendimento, e no 'D' as duas leituras eram plausíveis no mesmo paciente");
+confere("⛔ e ⛔ nenhuma carrega número no lugar",
+  sups.every((s) => s.numero === undefined && s.ordem === undefined),
+  "trocar letra por número seria trocar uma convenção arbitrária por outra");
+confere("a distinção painel × etapa SOBREVIVEU à remoção da letra",
+  paineis.length === 2 && paineis.every((s) => s.painel === true)
+  && comLetra.every((s) => s.painel === undefined),
+  "ela ⛔ nunca foi sobre a letra: é sobre ser ou ⛔ não ser passo do atendimento");
 
 confere("todo id é único",
   new Set(sups.map((s) => s.id)).size === sups.length,
@@ -80,34 +97,24 @@ confere("nenhum id é uma letra de apresentação",
   sups.every((s) => !/^[A-G]$/.test(s.id) && /^[a-z]+$/.test(s.id)),
   "identidade não pode ser rótulo: reordenar reescreveria o sentido do estado");
 
-/**
- * ⚠️⚠️ A LETRA SAI DA POSIÇÃO **ENTRE AS COM LETRA** — e a distinção ⛔ não é
- * detalhe: se o painel consumisse posição, acrescentar um painel renomearia
- * TODAS as superfícies clínicas. A letra é o que o médico usa para dizer onde
- * resolver uma pendência ("Abrir C · Imagem"); um painel novo ⛔ não pode
- * reescrever o vocabulário da equipe.
- */
-confere("a letra é derivada da posição entre as superfícies com letra",
-  comLetra.every((s, i) => s.letra === String.fromCharCode(65 + i)),
-  "letra digitada pode discordar da ordem, e aí a tela e o prontuário divergem");
+
 
 // ── a ordem aprovada pelo autor (2026-08-28) ───────────────────────────────
 const ORDEM_APROVADA = [
-  [undefined, "paciente", "Paciente"],
-  [undefined, "laboratorio", "Laboratório"],
-  ["A", "estabilizacao", "Entrada e estabilização"],
-  ["B", "neurologico", "Neurológico"],
-  ["C", "imagem", "Imagem"],
-  ["D", "seguranca", "Segurança para trombólise"],
-  ["E", "correcoes", "Correções"],
-  ["F", "reperfusao", "Reperfusão"],
-  ["G", "destino", "Destino"],
+  ["paciente", "Paciente"],
+  ["laboratorio", "Laboratório"],
+  ["estabilizacao", "Entrada e estabilização"],
+  ["neurologico", "Neurológico"],
+  ["imagem", "Imagem"],
+  ["seguranca", "Segurança para trombólise"],
+  ["correcoes", "Correções"],
+  ["reperfusao", "Reperfusão"],
+  ["destino", "Destino"],
 ];
 confere("a ordem de apresentação é a aprovada",
   sups.length === ORDEM_APROVADA.length
-  && sups.every((s, i) => s.letra === ORDEM_APROVADA[i][0]
-    && s.id === ORDEM_APROVADA[i][1]
-    && s.titulo === ORDEM_APROVADA[i][2]),
+  && sups.every((s, i) => s.id === ORDEM_APROVADA[i][0]
+    && s.titulo === ORDEM_APROVADA[i][1]),
   "a ordem foi decidida pelo autor; mudá-la sem ele é mudar o que o médico vê primeiro");
 
 /**

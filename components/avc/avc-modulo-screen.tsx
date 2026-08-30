@@ -324,14 +324,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 style={[s.aba, ativa && s.abaAtiva]}
               >
                 {/**
-                  * ⚠️ Painel ⛔ não tem letra, e o lugar dela ⛔ não fica vazio: um
-                  * espaço em branco onde as outras têm "A" leria como letra que
-                  * sumiu. O símbolo diz "contexto", e ⛔ não posição no fluxo.
+                  * ⛔⛔ ⛔ SEM LETRA — ver `superficies.ts`: o A–G do módulo colidia
+                  * com o **ABCDE do atendimento**, e no "D" as duas leituras eram
+                  * plausíveis no mesmo paciente. ⛔ E ⛔ nada entrou no lugar: ⛔ nem
+                  * número, que seria outra convenção arbitrária.
+                  *
+                  * ⚠️ O ponto do painel fica: ele diz **contexto**, e ⛔ não etapa.
                   */}
-                <Text style={[s.abaLetra, ativa && s.abaLetraAtiva]}>
-                  {sup.letra ?? "·"}
-                </Text>
-                <Text style={[s.abaTitulo, ativa && s.abaTituloAtivo]} numberOfLines={2}>
+                {sup.painel ? (
+                  <Text style={[s.abaLetra, ativa && s.abaLetraAtiva]}>·</Text>
+                ) : null}
+                {/**
+                  * ⚠️ TRÊS LINHAS — medido em 375×812 depois que a letra saiu:
+                  * *"Segurança para trombólise"* chegava truncada como
+                  * *"Segurança para …"*, e nome truncado ⛔ não identifica a
+                  * superfície que ele existe para nomear.
+                  */}
+                <Text style={[s.abaTitulo, ativa && s.abaTituloAtivo]} numberOfLines={3}>
                   {tr(sup.titulo)}
                 </Text>
               </Pressable>
@@ -344,10 +353,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           ⚠️ Esqueleto declarado: a tela DIZ que não há conteúdo, em vez de
           parecer completa e vazia. Vacuidade silenciosa é o que a casa proíbe. */}
       <View style={s.superficie} testID={`avc-superficie-${atual.id}`}>
-        <Text style={s.superficieTitulo}>
-          {atual.letra ? `${atual.letra} · ` : ""}
-          {tr(atual.titulo)}
-        </Text>
+        <Text style={s.superficieTitulo}>{tr(atual.titulo)}</Text>
         <Text style={s.superficieResumo}>{tr(atual.resumo)}</Text>
 
         {atual.id === "paciente" ? (
@@ -515,14 +521,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * trava visual despejou a tela inteira.
                 */}
               {/**
-                * ⚠️ VERBO NA FRENTE: "Abrir B · Neurológico" diz o que o toque
-                * FAZ. "B · Neurológico · Resolver" descrevia um lugar e deixava
-                * a ação por último, na tela em que o médico está com pressa.
+                * ⚠️ VERBO NA FRENTE: "Abrir Neurológico" diz o que o toque FAZ.
+                * "Neurológico · Resolver" descrevia um lugar e deixava a ação
+                * por último, na tela em que o médico está com pressa.
                 */}
               <Text style={s.pendenciaDono}>
-                {tr("Abrir")}{" "}
-                {superficie(p.dono).letra ? `${superficie(p.dono).letra} · ` : ""}
-                {tr(superficie(p.dono).titulo)}
+                {tr("Abrir")} {tr(superficie(p.dono).titulo)}
               </Text>
             </Pressable>
           ))

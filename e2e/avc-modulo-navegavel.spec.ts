@@ -67,34 +67,54 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await page.goto("/modulos/avc");
 
     /**
-     * ⚠️ Os painéis vêm primeiro na LEITURA e ⛔ não têm letra — a letra carrega
-     * fluxo (A → G), e os dois são contexto transversal (**PD-29**).
+     * ⛔⛔ ⛔ SEM LETRA — 2026-08-30. O A–G colidia com o **ABCDE do atendimento**, e
+     * o "D" era o caso decisivo: aqui *Segurança para trombólise*, lá
+     * **Disfunção neurológica**, num paciente que tem as duas.
+     *
+     * ⚠️ Os painéis continuam marcados com `·` — a distinção painel × etapa
+     * ⛔ nunca foi sobre a letra (**PD-29**).
      */
     const esperado = [
       ["·", "paciente", "Paciente"],
       ["·", "laboratorio", "Laboratório"],
-      ["A", "estabilizacao", "Entrada e estabilização"],
-      ["B", "neurologico", "Neurológico"],
-      ["C", "imagem", "Imagem"],
-      ["D", "seguranca", "Segurança para trombólise"],
-      ["E", "correcoes", "Correções"],
-      ["F", "reperfusao", "Reperfusão"],
-      ["G", "destino", "Destino"],
+      ["", "estabilizacao", "Entrada e estabilização"],
+      ["", "neurologico", "Neurológico"],
+      ["", "imagem", "Imagem"],
+      ["", "seguranca", "Segurança para trombólise"],
+      ["", "correcoes", "Correções"],
+      ["", "reperfusao", "Reperfusão"],
+      ["", "destino", "Destino"],
     ];
 
     const abas = await page.locator('[data-testid^="avc-aba-"]').allInnerTexts();
     expect(abas.length).toBe(9);
     for (let i = 0; i < esperado.length; i += 1) {
-      const [letra, , titulo] = esperado[i];
-      expect(abas[i].replace(/\s+/g, " "), `posição ${i + 1}`).toContain(letra);
-      expect(abas[i].replace(/\s+/g, " "), `posição ${i + 1}`).toContain(titulo);
+      const [marca, , titulo] = esperado[i];
+      const texto = abas[i].replace(/\s+/g, " ");
+      expect(texto, `posição ${i + 1}`).toContain(titulo);
+      if (marca) expect(texto, `posição ${i + 1}`).toContain(marca);
     }
 
-    // ⚠️ E o cabeçalho da superfície aberta usa a MESMA letra — Correções é E.
-    await page.getByTestId("avc-aba-correcoes").click();
-    await expect(page.getByTestId("avc-superficie-correcoes")).toContainText("E · Correções");
+    /**
+     * ⚠️⚠️ E ⛔ NENHUM nome chega TRUNCADO — medido em 2026-08-30: com a letra
+     * fora, *"Segurança para trombólise"* passou a caber, e nome truncado ⛔ não
+     * identifica a superfície que ele existe para nomear.
+     */
+    for (const t of abas) {
+      expect(t, `aba truncada: ${t}`).not.toMatch(/…|\.\.\./);
+    }
+
+    /** ⛔⛔ E ⛔ NENHUMA aba de etapa carrega letra solta — ⛔ nem número. */
+    const etapas = abas.slice(2).map((t) => t.replace(/\s+/g, " ").trim());
+    for (const t of etapas) {
+      expect(t, `aba com letra: ${t}`).not.toMatch(/^[A-G]\s*·/);
+      expect(t, `aba com número: ${t}`).not.toMatch(/^\d+\s*[·.]/);
+    }
+
+    // ⚠️ E o cabeçalho da superfície aberta também vem só pelo nome.
     await page.getByTestId("avc-aba-reperfusao").click();
-    await expect(page.getByTestId("avc-superficie-reperfusao")).toContainText("F · Reperfusão");
+    await expect(page.getByTestId("avc-superficie-reperfusao")).toContainText("Reperfusão");
+    await expect(page.getByTestId("avc-superficie-reperfusao")).not.toContainText("F · Reperfusão");
   });
 
   test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {

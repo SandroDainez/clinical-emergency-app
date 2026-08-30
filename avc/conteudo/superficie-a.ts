@@ -191,6 +191,21 @@ export const VIA_AEREA_A: readonly CampoA[] = [
     bloqueiaTerapia: false,
     nota: "A fonte nomeia disfunção bulbar como um dos dois gatilhos para suporte de via aérea, junto com o rebaixamento de consciência. Ela não lista sinais nem define corte.",
   },
+] as const;
+
+/**
+ * ⚠️⚠️ **B · RESPIRAÇÃO E OXIGENAÇÃO** — separado da via aérea em 2026-08-30, com
+ * a moldura ABCDE.
+ *
+ * ⚠️ Os quatro campos moravam num bloco só, *"Via aérea e oxigenação"*. ⛔ Eles ⛔ não
+ * são a mesma pergunta: **via aérea** é se ela está protegida; **respiração** é
+ * se a troca está acontecendo. ⚠️ Na mnemônica são **letras diferentes**, e é
+ * justamente por isso que ela existe.
+ *
+ * ⛔ ⛔ NENHUM campo foi criado, removido ou reescrito. ⛔ Só mudou o bloco em que
+ * cada um aparece.
+ */
+export const RESPIRACAO_A: readonly CampoA[] = [
   {
     id: "hipoxia",
     temporalidade: "afericao",
@@ -329,10 +344,34 @@ export const CRISE_A: readonly CampoA[] = [
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
 const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
+  /**
+   * ⚠️ Fora da mnemônica **de propósito**: relógio ⛔ não é ameaça imediata, é o
+   * dado que corre sozinho. O autor foi explícito — *"⛔ não force todo campo a
+   * caber em ABCDE"*.
+   */
   { id: "relogios", titulo: "Relógios", campos: RELOGIOS_A },
-  { id: "via-aerea", titulo: "Via aérea e oxigenação", campos: VIA_AEREA_A },
-  { id: "pressao", titulo: "Pressão arterial", campos: PRESSAO_A },
-  { id: "glicemia", titulo: "Glicemia", campos: GLICEMIA_A },
+  /**
+   * ── ⚠️⚠️ A MOLDURA ABCDE (autor, 2026-08-30) ─────────────────────────────
+   *
+   * > *"toda emergência médica tem que partir disso"*
+   *
+   * ⚠️⚠️ **É MOLDURA DE LEITURA, e ⛔ NÃO conteúdo clínico novo.** ⛔ Nenhum campo
+   * nasceu aqui, ⛔ nenhum texto de conduta entrou, e o card de ACLS — que tem
+   * *"IOT se falha ou exaustão"*, *"PAM ≥ 65"* — ⛔ **não** foi importado: aquilo
+   * é conduta ⛔ não transcrita para o AVC, e **E-31** a proíbe.
+   *
+   * ⛔ **E a letra só aparece onde a correspondência é REAL.** ⛔ Não há **E ·
+   * Exposição** neste módulo, e inventar um bloco vazio para "completar a
+   * mnemônica" seria fingir cobertura.
+   *
+   * ⛔⛔ E o **D** aqui é a glicemia, e ⛔ **não** uma segunda avaliação
+   * neurológica: o exame do déficit mora na superfície Neurológico, é muito mais
+   * rico, e duplicá-lo aqui criaria ruído — decisão explícita do autor.
+   */
+  { id: "via-aerea", titulo: "A · Via aérea", campos: VIA_AEREA_A },
+  { id: "respiracao", titulo: "B · Respiração e oxigenação", campos: RESPIRACAO_A },
+  { id: "pressao", titulo: "C · Circulação e pressão arterial", campos: PRESSAO_A },
+  { id: "glicemia", titulo: "D · Glicemia", campos: GLICEMIA_A },
   {
     id: "peso",
     titulo: "Peso",
@@ -343,8 +382,28 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
      */
     emprestados: [CAMPO_DO_PACIENTE("peso"), CAMPO_DO_PACIENTE("peso_origem")],
   },
+  /** ⚠️ Também fora da mnemônica: é contexto, e ⛔ não ameaça imediata. */
   { id: "crise", titulo: "Crise no início", campos: CRISE_A },
 ];
+
+/**
+ * ⚠️⚠️ O CARD DE PRIORIDADE — e ele diz **⛔ só a prioridade**.
+ *
+ * > *"Se qualquer texto desse card implicar conduta específica, abrir fonte
+ * > antes."* — autor, 2026-08-30
+ *
+ * ⛔ Por isso ⛔ nenhuma meta, ⛔ nenhum fármaco, ⛔ nenhum limiar, ⛔ nenhum "se… então".
+ * ⚠️ A frase é conceitual, e é a que o próprio autor escreveu.
+ */
+export const PRIORIDADE_A = {
+  titulo: "Estabilização primeiro",
+  frase: "Avaliar e tratar ameaças imediatas antes de avançar no fluxo.",
+  /**
+   * ⚠️ Diz **por que** os blocos têm letra, e ⛔ que ela ⛔ não cobre tudo — ⛔ senão a
+   * ausência de "E" leria como esquecimento.
+   */
+  nota: "Os blocos abaixo seguem a ordem do ABCDE onde há correspondência com o que esta tela registra. O que não corresponde fica em bloco próprio.",
+} as const;
 
 /**
  * ⚠️⚠️ A CASA É CARIMBADA AQUI, e ⛔ não escrita campo a campo (2026-08-29).

@@ -23,7 +23,7 @@
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import { PRIORIDADE_A, GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
@@ -100,6 +100,19 @@ export default function SuperficieA({
 
   return (
     <View style={e.raiz} testID="avc-superficie-a-conteudo">
+      {/**
+        * ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — moldura de **prioridade**, e ⛔ não conduta.
+        *
+        * ⛔ ⛔ Nenhuma meta, ⛔ nenhum fármaco, ⛔ nenhum limiar, ⛔ nenhum "se… então":
+        * qualquer um deles exigiria fonte transcrita (**E-31**), e o card de ACLS
+        * — que os tem — ⛔ **não** foi importado.
+        */}
+      <View style={e.prioridade} testID="avc-a-prioridade">
+        <Text style={e.prioridadeTitulo}>{tr(PRIORIDADE_A.titulo)}</Text>
+        <Text style={e.prioridadeFrase}>{tr(PRIORIDADE_A.frase)}</Text>
+        <Text style={e.prioridadeNota}>{tr(PRIORIDADE_A.nota)}</Text>
+      </View>
+
       {GRUPOS_A.map((grupo) => (
         <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
           <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
@@ -152,6 +165,22 @@ export default function SuperficieA({
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
+    /**
+     * ⚠️ Card de prioridade: destaque **sem** cor de espécie clínica — ele ⛔ não é
+     * um estado do paciente, é a ordem de leitura da tela (**E-39**).
+     */
+    prioridade: {
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+      padding: ESPACO.md, gap: ESPACO.xs,
+    },
+    prioridadeTitulo: {
+      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "800",
+    },
+    prioridadeFrase: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
+    prioridadeNota: {
+      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
+    },
     grupo: { gap: ESPACO.xs },
     novaMedida: {
       alignSelf: "flex-start",

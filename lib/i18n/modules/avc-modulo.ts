@@ -1151,6 +1151,20 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
   // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
   "Coleta": "Toma",
+  "A · Via aérea":
+    "A · Vía aérea",
+  "B · Respiração e oxigenação":
+    "B · Respiración y oxigenación",
+  "C · Circulação e pressão arterial":
+    "C · Circulación y presión arterial",
+  "D · Glicemia":
+    "D · Glucemia",
+  "Estabilização primeiro":
+    "Estabilización primero",
+  "Avaliar e tratar ameaças imediatas antes de avançar no fluxo.":
+    "Evaluar y tratar amenazas inmediatas antes de avanzar en el flujo.",
+  "Os blocos abaixo seguem a ordem do ABCDE onde há correspondência com o que esta tela registra. O que não corresponde fica em bloco próprio.":
+    "Los bloques siguientes siguen el orden del ABCDE donde hay correspondencia con lo que esta pantalla registra. Lo que no corresponde queda en su propio bloque.",
   "a fonte diz que não deve ser administrado":
     "la fuente dice que no debe administrarse",
   "a segurança é desconhecida":

@@ -145,7 +145,7 @@ test.describe("Superfície A — estabilização", () => {
      */
     const pendencia = page.getByTestId("avc-pendencia-reavaliar_deficit_pos_glicemia");
     await expect(pendencia).toBeVisible();
-    await expect(pendencia).toContainText(/Abrir B · Neurológico/i);
+    await expect(pendencia).toContainText(/Abrir Neurológico/i);
 
     // ⛔ E ⛔ não bloqueia: as superfícies continuam abrindo com ela aberta.
     for (const id of ["imagem", "reperfusao", "destino"]) {
@@ -513,7 +513,12 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
     const tela = await page.getByTestId("avc-superficie-a-conteudo").innerText();
-    const ordem = ["RELÓGIOS", "VIA AÉREA E OXIGENAÇÃO", "PRESSÃO ARTERIAL", "GLICEMIA", "PESO", "CRISE NO INÍCIO", "ALERTAS"];
+    /**
+     * ⚠️ Os quatro blocos do meio ganharam a letra do **ABCDE do atendimento** em
+     * 2026-08-30 — moldura de prioridade, ⛔ não conduta. Relógios e crise ficam
+     * fora dela de propósito.
+     */
+    const ordem = ["ESTABILIZAÇÃO PRIMEIRO", "RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "ALERTAS"];
     const posicoes = ordem.map((t) => tela.toUpperCase().indexOf(t));
     expect(posicoes.every((p) => p >= 0), `faltou bloco: ${ordem.join(" | ")}`).toBe(true);
     expect(posicoes, "prioridade visual é prioridade clínica")
@@ -652,16 +657,16 @@ test.describe("Superfície A — UX clínica", () => {
    * varredura genérica ⛔ não serve aqui: "imagem" e "destino" são palavras
    * legítimas do texto clínico, e casá-las daria vermelho falso.
    */
-  test("a pendência mostra letra e título da dona, nunca o slug", async ({ page }) => {
+  test("a pendência mostra o título da dona, nunca o slug", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
     const pend = page.getByTestId("avc-pendencia-ultima_vez_bem");
-    await expect(pend).toContainText("A · Entrada e estabilização");
+    await expect(pend).toContainText("Entrada e estabilização");
     await expect(pend, "identificador interno não é linguagem clínica")
       .not.toContainText("estabilizacao");
 
-    await expect(page.getByTestId("avc-pendencia-deficit_focal")).toContainText("B · Neurológico");
+    await expect(page.getByTestId("avc-pendencia-deficit_focal")).toContainText("Neurológico");
     /**
      * ⛔ E a de imagem ⛔ não aparece: desde 2026-08-29 só é exibida a pendência
      * cujo campo existe, e a Superfície C ⛔ não foi construída (E-26, I-7).
