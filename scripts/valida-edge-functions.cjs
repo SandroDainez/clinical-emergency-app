@@ -25,7 +25,7 @@ const path = require("node:path");
  * a seguido. ⚠️ Comentário ⛔ não executa: uma guarda que só existisse no texto
  * explicativo satisfaria a busca sem existir no código.
  */
-const { lerFonte } = require("./lib/fonte.cjs");
+const { lerFonte, lerCru } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
 const dir = path.join(appDir, "supabase", "functions");
@@ -51,7 +51,49 @@ const PRIVILEGIO = [
 /** ⚠️ O que caracteriza rejeição por falta de autenticação. */
 const REJEICAO = /return\s+\w+\(\s*\{[^}]*\}\s*,\s*401\s*\)|,\s*401\s*\);/;
 
+/**
+ * ⚠️⚠️ A EXCEÇÃO ⛔ NÃO É SILENCIOSA — e ⛔ não é generosa.
+ *
+ * ⛔ `request-access` é a porta **pública** de solicitação de acesso: exigir
+ * autenticação nela seria exigir que a pessoa já tenha conta para pedir conta.
+ * ⚠️ Ela ⛔ não pode ser medida pela regra "rejeite ⛔ antes de usar privilégio",
+ * porque ⛔ não há quem rejeitar.
+ *
+ * ⚠️⚠️ Mas ela usa **service role**, então ⛔ não fica sem medição ⛔ nenhuma: a
+ * regra troca de forma. Ela precisa **declarar os riscos residuais no próprio
+ * fonte**, e ⛔ não pode alcançar operação privilegiada ⛔ além da criação de
+ * conta pendente — ⛔ nada de apagar, promover ⛔ ou trocar senha.
+ *
+ * ⛔ ⛔ Exceção sem motivo escrito é o defeito que estas travas combatem. Esta
+ * tem motivo, ⛔ tem data, e ⛔ tem uma medição que a substitui.
+ */
+const PUBLICAS_POR_DESENHO = {
+  "request-access": "2026-08-30 · porta pública de cadastro: exigir token aqui exigiria conta para pedir conta",
+};
+
+for (const f of Object.keys(PUBLICAS_POR_DESENHO)) {
+  if (!funcoes.includes(f)) continue;
+  const c = lerFonte(path.join(dir, f, "index.ts"));
+  /**
+   * ⚠️⚠️ `lerCru` AQUI, ⛔ e ⛔ não `lerFonte` — porque nesta conferência **o
+   * comentário É o objeto medido**, ⛔ e ⛔ não um lugar onde um termo poderia me
+   * enganar. ⚠️ A trava caiu primeiro por isto: `lerFonte` apaga comentário
+   * ⛔ por desenho, então a documentação que eu acabara de escrever era invisível.
+   */
+  const cru = lerCru(path.join(dir, f, "index.ts"));
+  confere(`⚠️⚠️ ${f}: declara os riscos residuais NO FONTE`,
+    /RISCOS RESIDUAIS/i.test(cru) && /email_confirm/.test(cru) && /teto de cria|rate limit/i.test(cru),
+    "⛔ função pública com service role que ⛔ não nomeia o próprio risco vira risco esquecido");
+  confere(`⚠️⚠️ ⛔ ${f}: ⛔ ⛔ NÃO alcança operação privilegiada além de criar conta`,
+    !/deleteUser|updateUserById|generateLink|admin\.listUsers/.test(c),
+    "⛔ a exceção cobre criar conta pendente — ⛔ apagar, promover ⛔ ou trocar senha ⛔ sem autenticação ⛔ nenhuma seria outra coisa");
+  confere(`⚠️ ${f}: a conta nasce PENDENTE, ⛔ e ⛔ não ativa`,
+    /pendente/.test(c),
+    "⛔ sem isso, uma porta pública criaria acesso ativo — o `status` é o que contém o dano do `email_confirm: true`");
+}
+
 for (const f of funcoes) {
+  if (PUBLICAS_POR_DESENHO[f]) continue;
   /** ⚠️ Já vem sem comentário — ver o `require` no topo. */
   const codigo = lerFonte(path.join(dir, f, "index.ts"));
 

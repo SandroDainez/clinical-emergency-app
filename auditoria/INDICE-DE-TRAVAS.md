@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**62 de 76 travas com declaração completa.**
+**63 de 77 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -103,6 +103,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhum mecanismo de degradação recrie acesso público; que o modo desligado ⛔ não consulte sessões ⛔ nem finja que elas ⛔ não existem; e que ⛔ nenhum caminho de rollback toque `notes`, `event_data` ou posse.
 - **NÃO PROMETE:** que os SQLs tenham sido aplicados — ⛔ nenhum foi.
 - **UNIVERSO:** `supabase/reversoes/**`, o interruptor e a porta única do histórico. ── ⚠️⚠️ O PRINCÍPIO QUE ISTO DEFENDE ───────────────────────────────────── ⚠️⚠️ **Disponibilidade pode degradar. Confidencialidade, ⛔ não.** ⚠️ Sob pressão, o reflexo é *"reabre o acesso enquanto a gente investiga"*. ⛔ Esta trava existe para que esse reflexo ⛔ não tenha para onde ir: ⛔ nenhum dos caminhos **fáceis** reabre ⛔ nada, e o único que reabre está atrás de fricção.
+
+## `test:duplicatas` → `scripts/valida-duplicatas-de-sync.cjs`
+
+- **PROMETE:** que ⛔ nenhuma cópia de conflito de sincronização sobreviva no repositório — em especial em `supabase/migrations/`, onde uma duplicata seria **aplicada duas vezes**.
+- **NÃO PROMETE:** impedir que o iCloud as crie. Ela mede o resultado, ⛔ não a causa.
+- **UNIVERSO:** a árvore do repositório, menos `node_modules` e `.git`. ── ⚠️⚠️ POR QUE ISTO É UMA TRAVA, E ⛔ NÃO UMA LEMBRANÇA ────────────────── ⚠️ O repositório vive em `~/Documents`, sincronizado pelo iCloud. Rodadas rápidas de escrita — testes de mutação salvam e restauram o mesmo arquivo em sequência — fazem o iCloud criar **cópias de conflito** `arquivo 2.ext`, ⛔ em silêncio e ⛔ sem erro. ⚠️⚠️ E o pior: como o conteúdo é **idêntico**, `git diff` do arquivo original ⛔ não mostra ⛔ nada. ⛔ Só `git status` acusa, como arquivo ⛔ não rastreado — e ⛔ ninguém lê `git status` com atenção no fim de uma rodada longa. ⚠️ Aconteceu **duas vezes** em 2026-08-30, e nas duas havia uma **migration** duplicada. ⛔ Confiar em eu lembrar de rodar o `find` ⛔ não é medição.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

@@ -41,13 +41,14 @@ versionada, implantar o stub **apaga a única cópia existente**.
 | `acls-assistant` | ✅ `supabase/functions/` | ✅ sim |
 | `create-user` | ✅ `supabase/functions/` | ✅ sim |
 | `claim-anonymous-sessions` | ✅ `supabase/functions/` | ✅ sim |
-| `admin-user-ops` | ⛔ **não** | ⛔ **⛔ NÃO** — recuperar a fonte primeiro |
-| `request-access` | ⛔ **não** | ⛔ **⛔ NÃO** — recuperar a fonte primeiro |
+| `admin-user-ops` | ✅ recuperada 2026-08-30 | ✅ sim |
+| `request-access` | ✅ recuperada 2026-08-30 | ✅ sim |
 
-⚠️ As duas últimas são sensíveis (usam service role) e **mereceriam** stub — mas
-o código delas só existe implantado. ⚠️ A recuperação é possível (foi assim que
-`acls-assistant` e `create-user` voltaram a ser versionadas, a partir do bundle
-ESZIP), e é **pré-requisito**, ⛔ não detalhe.
+⚠️⚠️ **O último ponto cego fechou.** As duas últimas eram sensíveis (usam service
+role) e ⛔ não tinham fonte versionada — desligá-las com segurança dependeria de
+uma recuperação **manual, sob pressão**. As fontes foram extraídas do
+`sourcesContent` do sourcemap embutido no bundle ESZIP, verbatim, ⛔ **sem
+⛔ nenhuma correção de comportamento**.
 
 ## ⚠️ Efeito colateral conhecido, e ele é bom
 
