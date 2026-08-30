@@ -61,6 +61,18 @@ const SKIP_DIRS = new Set([
   "__tests__", "coverage", "android", "ios",
   // Testes E2E: texto em português é descrição de teste, não tela do app.
   "e2e", "test-results", "playwright-report",
+  /**
+   * ⚠️⚠️ EDGE FUNCTIONS RODAM NO SERVIDOR, e ⛔ nada delas chega à tela.
+   *
+   * ⚠️ O português que existe ali é de duas espécies, e ⛔ nenhuma se traduz:
+   *   · o **prompt** enviado à OpenAI — traduzi-lo mudaria o comportamento do
+   *     modelo, e ⛔ não o que o médico lê;
+   *   · **mensagens de erro de API**, que o cliente mapeia para texto de tela
+   *     próprio (ver `lib/admin-users.ts`, que casa `42501`, `PGRST116` e afins).
+   *
+   * ⛔ Varrê-las cobraria par em espanhol para string que ⛔ ninguém exibe.
+   */
+  "functions",
 ]);
 // Arquivos que SÃO tradução (não devem ser varridos como origem).
 const isDictFile = (p) =>

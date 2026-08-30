@@ -10,67 +10,31 @@
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- P0-1 · admin_list_users() — SECURITY DEFINER sem qualquer validação,
---        executável por anon, lendo auth.users inteiro.
+-- P0-1 · admin_list_users() — REMOVIDA.
 --
--- EVIDÊNCIA: chamada com a chave publishable (anon) devolveu 46 linhas de
--- auth.users — id, e-mail, created_at, last_sign_in_at, confirmação.
--- Isso é enumeração de e-mail de toda a base por qualquer um que tenha a chave
--- que já viaja no bundle do cliente.
+-- EVIDÊNCIA DA VULNERABILIDADE: SECURITY DEFINER, `search_path = auth, public`,
+-- ⛔ **sem qualquer validação**, com EXECUTE para `anon`. Chamada com a chave
+-- publishable — a que já viaja no bundle do cliente — devolveu **46 linhas** de
+-- `auth.users`: id, e-mail, criação, último login e confirmação. Isso é
+-- enumeração de e-mail de toda a base por qualquer um.
 --
--- CONSUMIDORES: nenhum. Não aparece no app, nem no bundle publicado, nem em
--- nenhuma das cinco Edge Functions implantadas (verificado por busca no corpo
--- de cada uma).
+-- ⚠️⚠️ CONSUMIDORES: **zero**, confirmado em três lugares independentes —
+--   · o repositório;
+--   · os corpos das cinco Edge Functions implantadas;
+--   · o **bundle JavaScript servido pelo preview** (`admin_list_users` = 0,
+--     `admin_list_app_users` = 1).
 --
--- DECISÃO: revogar o EXECUTE e, ainda assim, colocar a guarda interna. A função
--- não é removida nesta migration porque remover é irreversível e ela não tem
--- consumidor conhecido — a remoção vai proposta em separado.
+-- ⚠️ O painel administrativo usa `admin_list_app_users()`, que valida
+-- admin + ativo internamente e ⛔ não é tocada aqui. ⛔ Não há funcionalidade
+-- legítima a preservar nesta RPC.
+--
+-- ⛔⛔ E ⛔ NÃO FICA "PROTEGIDA E VIVA": uma RPC morta que lê `auth.users`
+-- continua sendo superfície de ataque — basta alguém reconceder o grant um dia.
+-- A versão anterior desta migration a mantinha com guarda **e** revogava
+-- `authenticated`, o que deixaria ⛔ nem o admin conseguindo chamá-la: meio
+-- caminho, e o pior dos dois.
 -- ─────────────────────────────────────────────────────────────────────────────
-revoke execute on function public.admin_list_users() from public;
-revoke execute on function public.admin_list_users() from anon;
-revoke execute on function public.admin_list_users() from authenticated;
-
-create or replace function public.admin_list_users()
-returns table (
-  id                uuid,
-  email             text,
-  created_at        timestamptz,
-  last_sign_in_at   timestamptz,
-  is_confirmed      boolean
-)
-language plpgsql
-security definer
--- ⚠️ Mínimo necessário: a função lê auth.users e app_users, e nada mais.
-set search_path = auth, public, pg_catalog
-as $$
-begin
-  -- ⚠️ Exige usuário autenticado. anon tem auth.uid() nulo e cai aqui.
-  if auth.uid() is null then
-    raise exception 'forbidden' using errcode = '42501';
-  end if;
-
-  -- ⚠️ E admin ATIVO — a mesma guarda que admin_list_app_users já usava.
-  if not exists (
-    select 1 from public.app_users au
-    where au.id = auth.uid()
-      and au.role = 'admin'
-      and au.status = 'ativo'
-  ) then
-    raise exception 'forbidden' using errcode = '42501';
-  end if;
-
-  return query
-  select u.id, u.email::text, u.created_at, u.last_sign_in_at,
-         (u.email_confirmed_at is not null)
-  from auth.users u
-  order by u.created_at desc;
-end;
-$$;
-
--- ⚠️ CREATE OR REPLACE restaura o ACL padrão; revogar de novo, depois.
-revoke execute on function public.admin_list_users() from public;
-revoke execute on function public.admin_list_users() from anon;
-revoke execute on function public.admin_list_users() from authenticated;
+drop function if exists public.admin_list_users();
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- P1 · EXECUTE desnecessário para anon nas RPCs administrativas.

@@ -4511,3 +4511,55 @@ roteamento atual.
 
 **`test:all`: 239 passed, 0 failed** — a suíte inteira verde pela primeira vez
 nesta sequência de trabalho.
+
+## D-123 — ⏸️ ABERTA · POSSE DE SESSÕES ANÔNIMAS PRONTA E DESLIGADA
+
+**O que existe, medido:** `lib/troca-de-sessao.ts` (a decisão), `lib/sessao-anonima.ts`
+(a fiação), a Edge Function `claim-anonymous-sessions`, e **duas** migrations.
+Provados por `test:troca-de-sessao` (16 conferências **executadas**),
+`test:posse-de-sessao` (28) e `test:edge-functions` (21).
+
+**O que ⛔ não existe:** a ligação com `app/index.tsx`, suspensa até a Fase 4.
+
+### ⚠️⚠️ A ORDEM DE ATIVAÇÃO — e por que a primeira que escrevi era PROIBIDA
+
+⛔ A versão anterior desta dívida dizia *"habilitar Anonymous Sign-In → migration
+→ claim → cliente"*. ⛔ **Essa ordem quebra o app**, e a prova já estava na
+própria auditoria: sem a guarda no `on_auth_user_created`, o **segundo** usuário
+anônimo colide em `app_users_email_key`, porque os dois inserem `email = ''`.
+⚠️ Eu tinha o fato e escrevi a sequência que o contradiz.
+
+⚠️⚠️ E o erro simétrico é igualmente grave: aplicar a RLS final **antes** de o
+cliente obter identidade anônima retira o acesso público ⛔ sem que exista dono —
+o app não-autenticado para de funcionar por completo.
+
+| Fase | O que entra | Por que ⛔ não pode vir antes |
+|---|---|---|
+| **1 · compatibilidade** | `20260830190000_compatibilidade_identidade_anonima` — guarda de `is_anonymous` no trigger, FK para `auth.users`, coluna+índice, carimbo do dono na escrita | ⚠️ **Inerte** para quem usa o app: ⛔ nenhuma política muda. É pré-requisito de habilitar o login anônimo |
+| **2 · infraestrutura** | implantar `claim-anonymous-sessions`; publicar o cliente com `garantirSessaoAnonima()`, que **falha fechado** (422 ⇒ `false`) enquanto o recurso estiver desligado | ⚠️ ⛔ Sem isto, habilitar o recurso deixaria o app chamando um endpoint inexistente |
+| **3 · habilitar** | ligar Anonymous Sign-In; confirmar que usuário sem login recebe `auth.uid()` válido e passa a criar sessões **já com dono** | ⚠️ ⛔ Antes da Fase 1, quebra no segundo anônimo |
+| **4 · fechar o P0** | `20260830191000_fecha_leitura_publica_de_sessoes`, em **uma transação** | ⚠️ ⛔ Antes da Fase 3 ⛔ não existe dono, e o acesso público some sem substituto |
+
+### ⚠️ O intervalo entre a Fase 3 e a Fase 4
+
+⚠️⚠️ **A Fase 1 já carimba o dono na escrita.** Isso ⛔ não é detalhe: durante toda
+a janela entre 3 e 4, as sessões novas ⛔ já nascem com `user_id` preenchido. Quando
+a Fase 4 rodar, ⛔ não há um lote de linhas órfãs recém-criadas para lamentar —
+⛔ só as legadas, que já eram órfãs antes de tudo isto começar.
+
+⚠️ ⛔ Não há como tornar 3 e 4 atômicas: uma é configuração do GoTrue, a outra é
+DDL. ⛔ Inventar um acoplamento entre as duas criaria a dependência circular que o
+autor proibiu. ⚠️ O que **dá** para fazer, e está feito, é encurtar a janela de
+conserto: a reversão está escrita e pronta em
+`supabase/reversoes/20260830191000_reverte_fechamento.sql`.
+
+### ⚠️⚠️ O que a Fase 4 custa, dito sem rodeio
+
+As **536** sessões com `user_id IS NULL` deixam de ser acessíveis pelo cliente e
+viram **legacy orphaned** — acessíveis ⛔ só ao `service_role`. É a regra dada:
+⛔ `user_id IS NULL` ⛔ não é posse. Recuperá-las para alguém é **decisão de dados**
+separada, ⛔ e ⛔ não efeito colateral de uma migration de segurança.
+
+⚠️ Mudança visível de produto na Fase 4: hoje a tela de histórico lista as
+sessões de **todos**; depois, ⛔ só as suas. Isso ⛔ **é** a correção do P0, ⛔ e ⛔ não
+um dano colateral dela.

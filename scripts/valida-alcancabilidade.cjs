@@ -51,6 +51,26 @@ let ok = 0;
  * também é acusado (abaixo), para a lista não virar cemitério permanente.
  */
 const MORTOS_CONHECIDOS = {
+  // ⚠️⚠️ PRONTO, PROVADO, E **DESLIGADO POR DECISÃO** — D-123.
+  //
+  // `lib/sessao-anonima.ts` implementa a transferência de posse das sessões
+  // anônimas. Ligá-lo em `app/index.tsx` trocaria o caminho de login que
+  // FUNCIONA por um ainda não exercido contra o servidor real — e, com
+  // Anonymous Sign-In **desabilitado** no projeto, `is_anonymous` seria sempre
+  // falso e a troca ⛔ não compraria ⛔ nada hoje.
+  //
+  // ⚠️ A ordem certa está em D-123, em QUATRO fases — e a que eu tinha escrito
+  // antes (habilitar o login anônimo primeiro) era **proibida**: sem a guarda
+  // do trigger, o segundo anônimo colide em `app_users_email_key`. A ligação
+  // com a tela é o último passo da Fase 4.
+  //
+  // ⛔ ⛔ ISTO ⛔ NÃO É ISENÇÃO DE MEDIÇÃO: `test:posse-de-sessao` exerce este
+  // arquivo com 25 conferências e 18 mutações reprovadas. O que está suspenso é
+  // a **ligação com a tela**, ⛔ não a prova.
+  "lib/troca-de-sessao.ts":
+    "D-123 · a DECISÃO da troca, sem imports por decisão — executada por test:troca-de-sessao (16 conferências)",
+  "lib/sessao-anonima.ts":
+    "D-123 · aguarda habilitar Anonymous Sign-In + aplicar migration + implantar claim; medido por test:posse-de-sessao",
   // ⚠️ NÃO É MORTO — É VIVO FORA DO APP. Único órfão que a inclusão de `lib/`
   // revelou (1 em 77). `lib/modulos-canonicos.ts` é a tabela de nomes e
   // apelidos dos módulos, consumida pelos SCRIPTS de auditoria — não pela

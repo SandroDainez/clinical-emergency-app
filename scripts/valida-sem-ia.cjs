@@ -49,8 +49,27 @@ const PROIBIDOS = [
  *  - `scripts/` e `auditoria/`: são as ferramentas de auditoria e os relatórios.
  *    Eles CITAM os termos justamente para vigiá-los.
  *  - `node_modules`, `dist`, `.expo`: não são código do app.
+ *
+ * ── ⚠️⚠️ `supabase/functions/` — AUTORIZADO EM 2026-08-30, COM MOTIVO ─────────
+ *
+ * ⚠️ Esta trava protege o **aplicativo** de voltar a acoplar IA. `acls-assistant`
+ * ⛔ **não é o aplicativo**: é uma Edge Function que roda no servidor, que já
+ * estava **implantada** (versão 6, ACTIVE) antes desta auditoria, e cujo fonte
+ * ⛔ não existia no repositório.
+ *
+ * ⚠️⚠️ **E ela ⛔ não tem consumidor no cliente.** ⛔ Nenhum `functions.invoke
+ * ("acls-assistant")` existe no app — a única invocação do cliente é
+ * `create-user`. ⛔ O acoplamento que a trava proíbe **continua ⛔ não existindo**.
+ *
+ * ⚠️ O fonte entrou no repositório por **exigência da auditoria**: ela estava
+ * aberta ao mundo, consumindo a chave da OpenAI sem autenticação, e ⛔ não dava
+ * para corrigir o que ⛔ não estava versionado.
+ *
+ * ⛔⛔ ISTO ⛔ NÃO AUTORIZA religar IA no app. Se um dia o cliente passar a chamar
+ * a função, o acoplamento volta a ser do aplicativo — e aí a decisão é outra, e
+ * é do autor.
  */
-const IGNORAR = /node_modules|\.expo|dist|^scripts\/|^auditoria\/|\.git/;
+const IGNORAR = /node_modules|\.expo|dist|^scripts\/|^auditoria\/|\.git|^supabase\/functions\//;
 
 function listar(dir, acc = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

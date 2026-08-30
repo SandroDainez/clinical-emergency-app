@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**58 de 72 travas com declaração completa.**
+**61 de 75 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -79,6 +79,24 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o segmento `app/modulos/` ⛔ NUNCA volte a ter uma rota estática irmã de `[id].tsx` — porque uma irmã estática quebra o **voltar do navegador** entre duas telas de módulo, montando a irmã no lugar da rota pedida.
 - **NÃO PROMETE:** que a navegação funcione — isso é `e2e/retomada-de-fluxo`, que mede o comportamento com cliques reais. Esta trava mede a CONDIÇÃO estrutural que o produz, porque o e2e ⛔ só a pegaria no módulo que ele percorre, e o defeito nasce em QUALQUER módulo novo.
 - **UNIVERSO:** os arquivos de rota de `app/modulos/`, listados e contados. ── O DEFEITO QUE ESTA TRAVA NASCEU PARA MATAR (D-122, 2026-08-30) ───────── `app/modulos/avc.tsx` era rota estática irmã de `[id].tsx`. Com ela ali, o médico entrava em **bradicardia**, abria as **vasoativas** pelo atalho de estabilização, tocava em **voltar** — e caía no **módulo de AVC**, com a URL da bradicardia na barra de endereço. Tela de um paciente sobre o fluxo de outro. ⚠️⚠️ E ele passou **quatro rodadas de `test:all`** como *"1 falhou, pré-existente"*. Vermelho tolerado é vermelho que ⛔ não é mais lido. ⚠️ Investigação: renomear o arquivo ⛔ não resolvia (reproduziu como `zoutro.tsx`), declarar `<Stack.Screen>` ⛔ não resolvia, a forma de diretório (`avc/index.tsx`) ⛔ não resolvia. O que resolve é ⛔ **não haver irmã**.
+
+## `test:edge-functions` → `scripts/valida-edge-functions.cjs`
+
+- **PROMETE:** que ⛔ nenhuma Edge Function versionada alcance operação privilegiada — chamada paga ao provedor, ⛔ ou uso do service role — **antes** de rejeitar requisição ⛔ não autenticada; e que ⛔ nenhuma delas confie em `verify_jwt` como se fosse autenticação.
+- **NÃO PROMETE:** que as funções implantadas estejam corrigidas — elas ⛔ **não** foram. Esta trava mede o **fonte versionado**, que é o que será implantado quando o autor aprovar.
+- **UNIVERSO:** todo `supabase/functions/**\/index.ts`, contado, com piso. ── ⚠️⚠️ POR QUE A ORDEM É O QUE SE MEDE ───────────────────────────────────── ⛔ *"Existe uma checagem de token"* ⛔ não basta: em `create-user` existia, e era **opcional** — o `if (token)` calculava se o chamador era admin e seguia para `admin.auth.admin.createUser` **de qualquer forma**. ⚠️ O que importa é **onde** a rejeição acontece: antes, ou depois, do ponto em que a função gasta dinheiro ⛔ ou usa privilégio.
+
+## `test:posse-de-sessao` → `scripts/valida-posse-de-sessao.cjs`
+
+- **PROMETE:** que a posse de sessões clínicas ⛔ nunca dependa de uma **afirmação do cliente**; que a transferência aconteça **antes** de a sessão da conta ser instalada; e que o token anônimo ⛔ nunca vaze para log, analytics, tracing ⛔ ou persistência.
+- **NÃO PROMETE:** que a migration esteja aplicada — ⛔ ela **não** está. Isto mede o fonte versionado, que é o que será aplicado quando o autor aprovar.
+- **UNIVERSO:** `lib/sessao-anonima.ts` + a migration de posse, ambas com piso. ── ⚠️⚠️ POR QUE A **ORDEM** É O INVARIANTE ───────────────────────────────── ⚠️ Se `setSession` rodar **antes** do claim, a sessão anônima deixa de ser a ativa e ⛔ perdemos a prova de posse. O que sobraria seria mandar o `old_user_id` no corpo — ⛔ exatamente o que ⛔ não pode ser autoridade. ⚠️⚠️ Por isso ⛔ não basta medir *"o claim é chamado"*: ele pode ser chamado **tarde**, e aí ⛔ não prova ⛔ nada. Mede-se a **posição relativa**.
+
+## `test:troca-de-sessao` → `scripts/prova-troca-de-sessao.cjs`
+
+- **PROMETE:** que a sessão anônima ⛔ **nunca** seja substituída antes de a posse das sessões clínicas estar transferida — nem quando a autenticação falha, nem quando o claim falha, nem quando o claim explode.
+- **NÃO PROMETE:** que o servidor esteja implantado. Isto EXECUTA a decisão do cliente contra falhas forçadas; a prova do servidor é `test:edge-functions`.
+- **UNIVERSO:** `lib/troca-de-sessao.ts`, executado — ⛔ não varrido. ── ⚠️⚠️ POR QUE ESTA PROVA EXECUTA, EM VEZ DE LER O FONTE ───────────────── ⛔ A versão anterior desta arquitetura afirmava, num comentário, que *"falha no claim ⛔ nunca derruba o login"* — e a afirmação estava **errada**: se a sessão nova é instalada com o claim falho, as sessões continuam do `old_uid` enquanto o cliente vira `new_uid`, e ⛔ o histórico **some naquele instante**. ⚠️⚠️ Uma varredura de fonte teria aprovado as duas versões — a certa e a errada — porque as duas *chamam* o claim. ⛔ O que distingue ⛔ não é quem é chamado, é **o que ⛔ NÃO acontece depois da falha**. Isso só se mede rodando.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

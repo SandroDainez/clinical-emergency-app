@@ -1,4 +1,18 @@
 project_id = "pqoelmktnfvwczbcwqnm"
 
+# ⚠️⚠️ `verify_jwt = true` — auditoria de 2026-08-30.
+#
+# ⛔ A função estava aberta: sem autenticação ⛔ nenhuma, chamando a OpenAI com a
+# chave do servidor. ⚠️ E `verify_jwt` sozinho ⛔ **não** basta — a chave `anon` é
+# um JWT válido que viaja no bundle. A guarda real está no handler
+# (`auth.getUser`), antes de qualquer chamada ao provedor.
+#
+# ⛔ AINDA ⛔ NÃO IMPLANTADO.
 [functions.acls-assistant]
-verify_jwt = false
+verify_jwt = true
+
+# ⚠️ Criação de conta por ADMIN. A porta pública é `request-access`.
+# ⛔ O caminho sem token foi fechado no handler; `verify_jwt` entra como defesa
+# adicional, e ⛔ não como a autenticação em si.
+[functions.create-user]
+verify_jwt = true
