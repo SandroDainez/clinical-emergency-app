@@ -28,6 +28,7 @@ import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
+import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
 import {
   CabecalhoDeBloco,
   CampoDaSuperficie,
@@ -88,6 +89,29 @@ export default function SuperficieA({
     return typeof f?.valor === "number" ? f.valor : undefined;
   }
 
+  /**
+   * ⚠️⚠️ O FATO DO CAMPO **NA AFERIÇÃO ABERTA** — e ⛔ não o último da trilha.
+   *
+   * ── O DEFEITO QUE ISTO FECHA (achado pelo e2e de Correções, 2026-08-30) ────
+   *
+   * A tela lia `valorAtual`, que devolve o **último valor do campo em qualquer
+   * instância**. Depois de tocar em **Nova medida**, a aferição nova ⛔ não tinha
+   * PAS ⛔ nenhuma — e o controle reaparecia mostrando **210**, o valor da medida
+   * anterior, **a um toque de virar uma aferição que ⛔ ninguém fez**.
+   *
+   * ⚠️⚠️ É a família do **E-52**: dado desconhecido apresentado como se fosse
+   * medida. E aqui era pior que fabricar na trilha — a tela **convidava** o
+   * médico a fabricar, com o número já posicionado.
+   *
+   * ⛔ Campo sem instância continua lendo a trilha inteira: é o comportamento
+   * certo para peso, glicemia e afins, que ⛔ não são aferição composta.
+   */
+  function fatoDoCampo(campo: { id: string; instanciaDe?: string }) {
+    if (!campo.instanciaDe) return valorAtual(estado, campo.id);
+    const aberta = instanciaAberta(estado, campo.instanciaDe);
+    return aberta === undefined ? undefined : valorNaInstancia(estado, aberta, campo.id);
+  }
+
   /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de não ter sido perguntado (E-02). */
   /** ⚠️ ⛔ Só oferece "nova medida" quando já existe uma medida para suceder. */
   function haMedidaAberta(grupo: { campos: readonly { id: string }[] }): boolean {
@@ -134,11 +158,30 @@ export default function SuperficieA({
           ) : null}
           {camposDoGrupo(grupo).map((campo) => (
             <CampoDaSuperficie
+              /**
+               * ── ⛔ A `key` POR INSTÂNCIA FOI REMOVIDA (2026-08-30) ──────────
+               *
+               * ⚠️ Ela existia como defesa em profundidade para o **rascunho ⛔ não
+               * confirmado**: mover a barra e, sem soltar, abrir "Nova medida".
+               *
+               * ⛔⛔ **O cenário ⛔ não é alcançável.** O `NumericStepper` confirma em
+               * `onSlidingComplete`, que dispara ao **soltar** — e para tocar em
+               * "Nova medida" o dedo precisa sair da barra antes. Os botões
+               * `−`/`+` confirmam a cada toque. ⛔ Não há caminho em que um
+               * rascunho sobreviva até a troca de aferição.
+               *
+               * ⚠️ E a mutação provou: removê-la ⛔ não quebrava teste ⛔ nenhum. Quem
+               * conserta o defeito é `fatoDoCampo`, lendo a instância aberta.
+               * ⛔ Código defensivo cuja necessidade ⛔ não se consegue medir ⛔ não fica.
+               */
               key={campo.id}
               campo={campo}
               casaAtual="estabilizacao"
-              bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-              numero={numeroGravado(campo.id)}
+              bruto={String(fatoDoCampo(campo)?.valor ?? "")}
+              numero={(() => {
+                const f = fatoDoCampo(campo);
+                return typeof f?.valor === "number" ? f.valor : undefined;
+              })()}
               agora={agora}
               detalheAberto={detalhes.aberto(campo.id)}
               onAlternarDetalhe={() => detalhes.alternar(campo.id)}

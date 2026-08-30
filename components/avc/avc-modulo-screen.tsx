@@ -23,6 +23,9 @@ import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO } from "../../avc/conteudo/superficie-c";
 import SuperficieD from "./superficie-d";
+import SuperficieE from "./superficie-e";
+import { ACAO } from "../../avc/conteudo/superficie-e";
+import { pendenciasOriginadasEmE } from "../../avc/nucleo/derivacoes-e";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
@@ -108,6 +111,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       ...pendenciasDaImagem(estado),
       /** ⚠️ D ⛔ não possui fatos, e possui as próprias pendências (E-07). */
       ...pendenciasDaSeguranca(estado),
+      /** ⚠️ E ORIGINA, mas a dona é B — ver `pendenciasOriginadasEmE`. */
+      ...pendenciasOriginadasEmE(estado),
       ...pendenciasDoLaboratorio(estado),
       // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
       // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
@@ -425,6 +430,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onMedir={medir}
             onDesfazer={desfazer}
           />
+        ) : atual.id === "correcoes" ? (
+          <SuperficieE
+            estado={estado}
+            agora={agora}
+            onEscolherNaAcao={escolherNaInstancia}
+            onDesfazerNaAcao={desfazerNaInstancia}
+            onNovaAcao={(tipo) => {
+              /**
+               * ⚠️⚠️ ABRE A INSTÂNCIA **E** JÁ GRAVA O TIPO — ⛔ senão a ação nasceria
+               * sem saber o que é, e a leitura ⛔ não a ligaria a bloqueio nenhum.
+               */
+              const inst = proximaInstancia(estado, ACAO);
+              setEstado((e) => registrarComInstancia(e, { campo: "acao_tipo", valor: tipo }, relogio, inst));
+            }}
+          />
         ) : (
           <>
             <Text style={s.emConstrucao}>{tr("Superfície em construção")}</Text>
@@ -487,7 +507,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * enquanto trabalha noutra frente. O que faltava era DIZER isso.
           */}
         <Text style={s.blocoNota}>
-          {tr("De todas as superfícies. A letra indica onde resolver.")}
+          {tr("De todas as superfícies. O nome indica onde resolver.")}
         </Text>
         {pendencias.length === 0 ? (
           <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**57 de 71 travas com declaração completa.**
+**58 de 72 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -49,6 +49,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a Superfície D interprete segurança **sem virar veredito** — que ⛔ não exista estado agregado "contraindicado" ⛔ nem "elegível"; que **todo** item carregue o **verbo da própria fonte**; que a gradação da faixa dita absoluta seja preservada literalmente; que D ⛔ **não declare** ⛔ nenhum fato de Paciente, Laboratório, A ou C; que `unknown` ⛔ nunca vire negativo, ausência ⛔ nunca vire negativo e desconhecido ⛔ nunca vire valor fabricado; que a janela de 48 h do DOAC ⛔ **não seja calculada** enquanto F-30 estiver aberta; e que ⛔ **só** condição realmente resolvível gere pendência.
 - **NÃO PROMETE:** que os cortes clínicos estejam certos — eles são transcrição, e quem os confere é o autor contra o verbatim. ⛔ Também ⛔ não mede tela: isso é `e2e/avc-superficie-d`. E ⛔ não confere tradução — é `test:i18n-opcoes`.
 - **UNIVERSO:** `avc/conteudo/superficie-d.ts` inteiro (todos os itens de `ITENS_DE_SEGURANCA`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-d.ts`, mais os campos de Paciente e Laboratório que D lê. ⛔ Fora do universo: as superfícies E a G. ── ⚠️⚠️ O QUE ESTA TRAVA EXISTE PARA IMPEDIR ──────────────────────────────── > *"O ponto mais delicado continua sendo manter **verbo da fonte + estado > derivado** sem transformar tudo num 'pode/⛔ não pode trombolisar' > simplificado."* — autor, 2026-08-30 ⚠️ Um atalho de linguagem aqui vira **bloqueio clínico mais forte do que a diretriz sustenta** — e ⛔ nenhum teste de comportamento pegaria isso, porque o app continuaria "funcionando".
+
+## `test:avc-superficie-e` → `scripts/prova-avc-superficie-e.cjs`
+
+- **PROMETE:** que a Superfície E registre **ações**, e ⛔ nunca conclua correção — que ⛔ nenhum estado de ação derrube bloqueio, que `cancelada` ⛔ nunca produza derivação favorável, que os estados ⛔ **não** formem sequência obrigatória, que cada intervenção seja uma **instância** própria, que E ⛔ não invente causalidade entre ação e aferição, que E ⛔ não declare PA ⛔ nem glicemia, e que ⛔ nenhum fármaco, dose, via ou esquema apareça enquanto F-19 estiver parcial.
+- **NÃO PROMETE:** que os limiares estejam certos — são transcrição, conferida pelo autor contra o verbatim. ⛔ Não mede tela: isso é `e2e/avc-superficie-e`.
+- **UNIVERSO:** `avc/conteudo/superficie-e.ts` inteiro e todas as derivações de `avc/nucleo/derivacoes-e.ts`, mais os bloqueios de `derivacoes-d.ts` e os campos de A que os sustentam. ⛔ Fora: F e G.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

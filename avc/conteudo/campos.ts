@@ -20,6 +20,8 @@ import { TODOS_OS_CAMPOS_P } from "./paciente";
 import { TODOS_OS_CAMPOS_A } from "./superficie-a";
 import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
+import { TODOS_OS_CAMPOS_D } from "./superficie-d";
+import { TODOS_OS_CAMPOS_E } from "./superficie-e";
 
 /**
  * TODOS os campos do módulo, de todas as casas.
@@ -36,6 +38,14 @@ export function todosOsCampos(): readonly Campo[] {
     ...TODOS_OS_CAMPOS_A,
     ...TODOS_OS_CAMPOS_B,
     ...TODOS_OS_CAMPOS_C,
+    /**
+     * ⚠️⚠️ D E E PRECISAM ESTAR AQUI — e a razão apareceu como defeito: os campos
+     * de E declaram `instanciaDe`, e `registrarComInstancia` descobre isso
+     * **consultando este registro**. Fora dele, a ação era gravada **sem
+     * instância**, e a leitura ⛔ não encontrava ação ⛔ nenhuma.
+     */
+    ...TODOS_OS_CAMPOS_D,
+    ...TODOS_OS_CAMPOS_E,
   ];
 }
 

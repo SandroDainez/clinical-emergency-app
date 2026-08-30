@@ -24,6 +24,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { lerFonte } = require("./lib/fonte.cjs");
 const { execFileSync } = require("node:child_process");
 
 const appDir = path.resolve(__dirname, "..");
@@ -77,6 +78,17 @@ confere("são nove superfícies: sete etapas e dois painéis",
 confere("⛔ NENHUMA superfície carrega letra de apresentação",
   sups.every((s) => s.letra === undefined),
   "A–G colidia com o ABCDE do atendimento, e no 'D' as duas leituras eram plausíveis no mesmo paciente");
+/**
+ * ⚠️ E ⛔ nenhum texto da tela pode continuar prometendo a letra — resíduo achado
+ * na revisão visual de Correções.
+ */
+{
+  const tela = lerFonte(path.join(appDir, "components", "avc", "avc-modulo-screen.tsx"));
+  confere("⛔ ⛔ NENHUM texto da tela promete 'a letra'",
+    !/A letra indica|letra da superf/i.test(tela),
+    "frase órfã é pior que letra: ela promete uma pista que ⛔ não existe mais");
+}
+
 confere("⛔ e ⛔ nenhuma carrega número no lugar",
   sups.every((s) => s.numero === undefined && s.ordem === undefined),
   "trocar letra por número seria trocar uma convenção arbitrária por outra");

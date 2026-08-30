@@ -501,7 +501,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "PA registrada — la meta depende de la reperfusión, aún no definida",
   "Pendências do atendimento":
     "Pendientes de la atención",
-  "De todas as superfícies. A letra indica onde resolver.":
+  "De todas as superfícies. O nome indica onde resolver.":
     "De todas las superficies. La letra indica dónde resolver.",
   "Abrir":
     "Abrir",
@@ -1151,6 +1151,44 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
   // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
   "Coleta": "Toma",
+  "Ações de correção":
+    "Acciones de corrección",
+  "Correção glicêmica":
+    "Corrección glucémica",
+  "Tratamento anti-hipertensivo":
+    "Tratamiento antihipertensivo",
+  "Esta tela registra ações. Ela não conclui que a pressão ou a glicemia foram corrigidas: isso é uma nova aferição em Entrada e estabilização.":
+    "Esta pantalla registra acciones. No concluye que la presión o la glucemia hayan sido corregidas: eso es una nueva medición en Entrada y estabilización.",
+  "Registrar a ação não resolve o bloqueio. Quem resolve é uma nova aferição.":
+    "Registrar la acción no resuelve el bloqueo. Quien lo resuelve es una nueva medición.",
+  "Registre em que pé a ação está. Se ela já aconteceu antes desta tela, registre direto.":
+    "Registre en qué punto está la acción. Si ya ocurrió antes de esta pantalla, regístrela directamente.",
+  "Situação da ação":
+    "Situación de la acción",
+  "Ação":
+    "Acción",
+  "Iniciada":
+    "Iniciada",
+  "Cancelada":
+    "Cancelada",
+  "Uma nova aferição de pressão arterial":
+    "Una nueva medición de presión arterial",
+  "Uma nova glicemia":
+    "Una nueva glucemia",
+  "a fonte diz para baixar a pressão antes de iniciar a trombólise, para reduzir complicações hemorrágicas":
+    "la fuente dice que se baje la presión antes de iniciar la trombólisis, para reducir complicaciones hemorrágicas",
+  "a fonte diz que a hipoglicemia abaixo de 60 mg/dL deve ser tratada para evitar complicações":
+    "la fuente dice que la hipoglucemia por debajo de 60 mg/dL debe tratarse para evitar complicaciones",
+  "Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação.":
+    "Ningún bloqueo corregible registrado. Nada en esta pantalla espera por una acción.",
+  "O que faz este bloqueio cair":
+    "Qué hace caer este bloqueo",
+  "Registrar ação":
+    "Registrar acción",
+  "Registrar outra ação":
+    "Registrar otra acción",
+  "registrada em Entrada e estabilização":
+    "registrada en Entrada y estabilización",
   "A · Via aérea":
     "A · Vía aérea",
   "B · Respiração e oxigenação":

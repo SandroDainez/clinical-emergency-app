@@ -505,6 +505,56 @@ test.describe("Superfície A — UX clínica", () => {
   });
 
   /**
+   * ⚠️⚠️ NOVA AFERIÇÃO NASCE **SEM VALOR** — defeito achado pelo e2e de Correções
+   * em 2026-08-30.
+   *
+   * ⛔ A tela lia o último valor do campo em **qualquer** instância, e a medida
+   * nova reaparecia com o número da anterior — **a um toque de virar uma
+   * aferição que ⛔ ninguém fez** (família do **E-52**).
+   */
+  test("Nova medida nasce SEM valor, e ⛔ não cria fato ao abrir", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    // ⚠️ Uma primeira aferição, com valor alto.
+    for (let i = 0; i < 3; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
+    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-pad-mais-50").click();
+    /** ⚠️ O valor vem antes de "mmHg" — `\d+` sozinho casaria com o rótulo do degrau. */
+    const pas1 = (await page.getByTestId("avc-campo-pas").innerText()).match(/(\d+)\s*mmHg/)?.[1];
+    expect(pas1, "a primeira aferição precisa ter valor para a trava provar algo").toBeTruthy();
+    await expect(page.getByTestId("avc-campo-pas")).not.toContainText(/não informado/i);
+
+    await page.getByTestId("avc-nova-medida-pressao").click();
+
+    /** ⛔⛔ OS DOIS CONTROLES VOLTAM VAZIOS — ⛔ nem PAS ⛔ nem PAD herdam. */
+    await expect(page.getByTestId("avc-campo-pas")).toContainText(/não informado/i);
+    await expect(page.getByTestId("avc-campo-pas")).not.toContainText(pas1!);
+    await expect(page.getByTestId("avc-campo-pad")).toContainText(/não informado/i);
+
+    /** ⛔ E abrir a aferição ⛔ NÃO cria fato: a leitura da PA volta a não ter medida. */
+    await expect(page.getByTestId("avc-leitura-curto-pressao"))
+      .not.toContainText(pas1!);
+  });
+
+  /** ⚠️ E o mesmo para a glicemia, que ⛔ não é aferição composta. */
+  test("glicemia ⛔ não é herdada por uma aferição de PA nova", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+    for (let i = 0; i < 3; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
+    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-glicemia-mais-10").click();
+    const glic = (await page.getByTestId("avc-campo-glicemia").innerText()).match(/(\d+)\s*mg/)?.[1];
+    expect(glic).toBeTruthy();
+
+    await page.getByTestId("avc-nova-medida-pressao").click();
+    /**
+     * ⛔ A glicemia ⛔ NÃO tem instância, e ⛔ não pode ser zerada por uma nova
+     * aferição de pressão: são fatos independentes.
+     */
+    await expect(page.getByTestId("avc-campo-glicemia")).toContainText(glic!);
+    await expect(page.getByTestId("avc-campo-glicemia")).not.toContainText(/não informado/i);
+  });
+
+  /**
    * ⚠️ A ORDEM É CLÍNICA (§7.3). Relógio primeiro porque corre sozinho; via
    * aérea logo depois porque mata em minutos; crise por último porque é
    * contexto. ⛔ Não é preferência estética.

@@ -28,6 +28,7 @@ import type { EstadoAvc } from "./estado";
 import { valorAtual } from "./estado";
 import { instanciasDe, valorNaInstancia } from "./instancia";
 import { numero, respondeuDesconhecido, selecaoDe, ternario, type Leitura } from "./leitura";
+import { pressaoArterial } from "./derivacoes";
 import type { Pendencia } from "./tipos";
 import {
   CORTES_LABORATORIAIS,
@@ -320,6 +321,92 @@ export function microssangramentos(estado: EstadoAvc): Leitura & { estado: Estad
   return { ...base, estado: "baixa_preocupacao_declarada", tom: "informativo",
     curto: "Sem informação prévia sobre microssangramentos — e nada espera por ela",
     texto: "A fonte recomenda administrar a trombólise sem obter ressonância para excluir microssangramentos. Recomendação classe 1" };
+}
+
+/**
+ * OS DOIS BLOQUEIOS CORRIGÍVEIS — ⚠️ e D os **lê de A**, ⛔ sem redeclarar ⛔ nada.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE O BLOQUEIO ⛔ NÃO CAI POR BOTÃO ────────────────────────────────
+ *
+ * Ele é **derivado da aferição vigente**. Tratar ⛔ não o derruba; o que o derruba
+ * é **outra medida** entrar em A. É por isso que E ⛔ **não** tem "corrigido", e é a
+ * mesma regra que separa correção documental de tratamento de nova aferição.
+ *
+ * ⛔ E ⛔ nenhum dos dois é contraindicação: são **bloqueios corrigíveis**, a espécie
+ * que existe justamente porque *"corrigir e seguir"* ⛔ não é *"⛔ não vai acontecer"*.
+ */
+export type BloqueioCorrigivel = {
+  readonly id: "pressao_acima_da_meta" | "glicemia_alterada";
+  readonly estado: EstadoDeSeguranca;
+  readonly fonte: string;
+  readonly verbo: string;
+  readonly formulacao: string;
+  /** ⚠️ A aferição que sustenta o bloqueio AGORA — ⛔ não a primeira, ⛔ não a pior. */
+  readonly instancia?: string;
+  /** ⚠️ Qual nova aferição pode fazê-lo cair. ⛔ ⛔ Não é promessa de que vai cair. */
+  readonly resolvePor: string;
+};
+
+/**
+ * ⚠️⚠️ **185/110 é LIMITE DE ELEGIBILIDADE, e ⛔ não meta terapêutica** — F-04
+ * separa quatro números com estatutos diferentes, e ⛔ só este pertence a D hoje:
+ * *"…**before IVT therapy is initiated**"*.
+ *
+ * ⛔ Os outros três (180/105 depois da IVT, <140 desencorajado, <140 por 72 h
+ * **danoso**) pertencem a quem cuida do depois — ⛔ não a esta leitura.
+ */
+export const LIMITE_PA_ANTES_DA_IVT = { pas: 185, pad: 110 } as const;
+
+/**
+ * ⚠️⚠️ **OS TRÊS NÚMEROS DA GLICEMIA ⛔ NÃO COLAPSAM** — e ⛔ só o primeiro é limiar
+ * de tratamento:
+ *
+ *   · **<60 mg/dL** — *"hypoglycemia … **should be treated** to avoid
+ *     complications"* · §4.5 rec. 1 · **COR 1 · C-LD** ⇒ **limiar de tratamento**;
+ *   · **<50 mg/dL** — *"severe hypo- … **typically defined as** <50"* ⇒ rótulo de
+ *     **gravidade**, texto de apoio, ⛔ sem COR/LOE;
+ *   · **>400 mg/dL** — idem, para hiperglicemia grave.
+ *
+ * ⛔⛔ ⚠️ **⛔ NÃO transformar <50 ⛔ nem >400 em cutoff terapêutico.** A fonte ⛔ não os
+ * escreve assim, e promovê-los a limiar seria inventar conduta com aparência de
+ * citação (**E-45**, **E-48**).
+ */
+export const CORTES_GLICEMIA = {
+  tratarAbaixoDe: 60,
+  gravidadeAbaixoDe: 50,
+  gravidadeAcimaDe: 400,
+} as const;
+
+export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrigivel[] {
+  const abertos: BloqueioCorrigivel[] = [];
+
+  /** ⚠️ As duas metades vêm da MESMA aferição — D reusa a leitura de A (I6). */
+  const pa = pressaoArterial(estado).medida;
+  if (pa && (pa.pas >= LIMITE_PA_ANTES_DA_IVT.pas || pa.pad >= LIMITE_PA_ANTES_DA_IVT.pad)) {
+    abertos.push({
+      id: "pressao_acima_da_meta",
+      estado: "bloqueio_corrigivel",
+      fonte: "F-04",
+      verbo: "should have their SBP lowered to <185 mm Hg and diastolic blood pressure (DBP) <110 mm Hg before IVT therapy is initiated to reduce hemorrhagic complications",
+      formulacao: "a fonte diz para baixar a pressão antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
+      instancia: pa.instancia,
+      resolvePor: "Uma nova aferição de pressão arterial",
+    });
+  }
+
+  const g = numero(estado, "glicemia");
+  if (g !== undefined && g < CORTES_GLICEMIA.tratarAbaixoDe) {
+    abertos.push({
+      id: "glicemia_alterada",
+      estado: "bloqueio_corrigivel",
+      fonte: "F-06",
+      verbo: "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
+      formulacao: "a fonte diz que a hipoglicemia abaixo de 60 mg/dL deve ser tratada para evitar complicações",
+      resolvePor: "Uma nova glicemia",
+    });
+  }
+
+  return abertos;
 }
 
 /**
