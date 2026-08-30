@@ -1428,6 +1428,24 @@ Inclusive para `plaquetas_unidade`:
 ⚠️ `atributoDe` continua garantindo que valor e unidade sejam lidos da **mesma**
 instância. Ele ⛔ **não** concede exceção de correção implícita.
 
+### A alergia a contraste ⛔ deixou de ser perguntada em C
+
+> *"⛔ no A já coleta sobre alergias e no C de novo, ⛔ só deixamos no A"* — autor,
+> 2026-08-30.
+
+⚠️ Ela era **emprestada** de Paciente e aparecia nas duas telas. Empréstimo ⛔ não
+duplica o **fato** — a trilha é a mesma —, mas duplica a **pergunta**. ⚠️⚠️ E a
+segunda pergunta é pior que redundante: ela faz o médico **duvidar da resposta
+que já deu**.
+
+⚠️ A **leitura** continua em C: ler ⛔ não é coletar, e quem está diante da
+angiotomografia precisa ver o que já se sabe. ⛔ A decisão de 2026-08-29
+(**PD-25**) sobrevive inteira na leitura — ⛔ nada foi apagado, ⛔ só deixou de ser
+perguntado duas vezes.
+
+⚠️ A trava vale para o **módulo inteiro**, e ⛔ não ⛔ só para C: ⛔ nenhuma superfície
+além de Paciente pode desenhá-la — ⛔ senão ela volta pela próxima.
+
 ### ⛔ O que ⛔ NÃO foi criado, e por quê
 
 ⛔ ⛔ **Nenhuma** terceira operação de *"repetição analítica da mesma amostra"*.
@@ -1451,3 +1469,91 @@ responsabilidade de identidade."*
 ⛔ ⛔ **Não** gravar *"Resultado corrigido pelo médico"*. Isso é o **tipo** da
 operação, dito duas vezes. ⚠️ Motivo ⛔ não perguntado é motivo **ausente** — e o
 app ⛔ não fabrica justificativa.
+
+---
+
+## PD-32 · CADA EXAME É UMA INSTÂNCIA, E A DIVERGÊNCIA ⛔ NÃO ELEGE — DECIDIDA (2026-08-30)
+
+O contrato de instância — provado na pressão arterial e no Laboratório — passou
+a valer para os **estudos de imagem**. ⛔ Nada foi redesenhado do zero.
+
+### O corte que organiza a superfície
+
+- **Achado** é o que o exame produziu: pertence ao **estudo**, e ⛔ sem estudo ⛔ não
+  existe. `estudo_resultado`, `hipodensidade_clara`, `aspects`,
+  `efeito_de_massa`, `sitio_oclusao`.
+- **Juízo do episódio** é o que o médico suspeita olhando o paciente: casa **C**,
+  ⛔ sem instância. `suspeita_hsa`, `suspeita_lvo`, `angio_disponibilidade`.
+
+⚠️ `suspeita_hsa` prova o corte: ela existe **justamente quando a TC ⛔ não mostra
+hemorragia**. Presa ao estudo, viraria achado da tomografia.
+
+⛔ E ⛔ **não** são de Paciente. O critério de Paciente é *"isso continuaria
+verdadeiro se o paciente ⛔ não tivesse este AVC?"* — e ⛔ não continuaria.
+
+### `tc_resultado` dividido
+
+⛔ *"Ainda ⛔ não realizada"* e *"realizada, resultado pendente"* ⛔ **nunca foram
+resultado radiológico**. Misturadas no campo, tornavam-no irrepresentável com
+mais de um estudo: duas TCs, e o app teria de dizer que a mesma tomografia foi e
+⛔ não foi realizada.
+
+- `estudo_resultado` — **duas** opções, na instância;
+- a situação virou **derivação pura**, `situacaoDaTcSemContraste()`.
+
+⚠️⚠️ **E é da TC sem contraste, ⛔ não de "qualquer tomografia"** — correção do
+autor: *"TC de perfusão ⛔ não pode fazer o app concluir que a TC sem contraste
+inicial está feita."* ⛔ Sem essa precisão, a arquitetura ficaria tecnicamente
+correta e responderia à **pergunta clínica errada**.
+
+⛔ E ⛔ nunca *"ainda ⛔ não realizada"*: sem estudo, a frase fala da **trilha**
+(*"⛔ Nenhuma tomografia sem contraste registrada"*), e ⛔ não do mundo (**E-23**).
+
+### A matriz de capacidades — literal, e ⛔ não por categoria
+
+⛔ ⛔ **Não** é `parenquimatosa × vascular`. O autor recusou com o contraexemplo que
+a quebra: *"hipodensidade é linguagem de **TC**, ⛔ não achado genérico de qualquer
+imagem parenquimatosa."*
+
+| modalidade | achados |
+|---|---|
+| TC sem contraste | resultado, hipodensidade clara, ASPECTS, efeito de massa |
+| angio-TC · angio-RM | sítio de oclusão |
+| perfusão · RM | ⛔ nenhum |
+
+⚠️ Modalidade nova ⛔ **não herda ⛔ nada** — entra na tabela, ou ⛔ não oferece achado.
+⛔ A RM ⛔ não ganha hipodensidade; ASPECTS por RM, se admitido, entra **declarado**
+com a fonte que o admita. ⏳ Perfusão abre vazia até F definir o que consome.
+
+### `angio_realizada` dissolvido
+
+A **realização** é derivada da existência de estudo vascular. ⛔ O que ⛔ nenhuma
+instância consegue dizer — *"⛔ não disponível neste serviço"* (**E-18**) —
+sobreviveu como `angio_disponibilidade`. ⛔ **Ausência de estudo ⛔ nunca vira
+indisponibilidade** (**E-23**).
+
+⚠️ Nomeado pela pergunta, e ⛔ não pela negativa: `angio_indisponivel` com opção
+"Disponível" seria campo negativo respondido no positivo.
+
+### A divergência retém nos DOIS sentidos
+
+> *"Fazer o app preferir 'local', 'mais novo', 'mais confiável' ⛔ ou qualquer
+> outro atributo sem regra explícita seria justamente criar uma hierarquia que
+> ⛔ ninguém autorizou."*
+
+⛔ ⛔ Não se prefere: estudo local, externo, último registrado, com horário
+conhecido, ⛔ nem o "aparentemente mais recente" quando a ordem ⛔ não é
+estabelecível. ⚠️ A saída é **adjudicação explícita**: corrigir o
+`estudo_resultado` errado, na mesma instância, com `corrigeFatoId`.
+
+### `imagem_avancada` removido inteiro
+
+⚠️⚠️ **Inclusive "Nenhuma"** — negativa agregada **sem leitor**. Quais exames foram
+feitos passa a ser respondido pelas **instâncias**. Quando F precisar da
+ausência de um exame, ela pede — ⛔ sem ressuscitar campo agregado artificial.
+
+### ⛔ O que ⛔ NÃO foi criado
+
+⛔ ⛔ Nenhuma calculadora de ASPECTS (**D-111**, slot **F-28** sem verbatim), ⛔ nenhuma
+definição operacional de efeito de massa (**F-29**, sem fonte candidata), e
+⛔ **⛔ nenhum** `tc_indisponivel`: sem fonte ⛔ nem consumidor, seria fato sem leitor.

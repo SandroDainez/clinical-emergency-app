@@ -22,6 +22,7 @@
 
 import type { EstadoAvc } from "./estado";
 import { valorAtual } from "./estado";
+import { instanciasDe, valorNaInstancia } from "./instancia";
 import {
   numero,
   respondeuDesconhecido,
@@ -32,7 +33,9 @@ import {
 } from "./leitura";
 import type { Pendencia } from "./tipos";
 import {
-  ANGIO,
+  ESTUDO,
+  MODALIDADE,
+  MODALIDADES_VASCULARES,
   DESTINOS_DA_IMAGEM,
   FATO_ASSOCIADO,
   IDS_DOSSIE_ENDOVASCULAR,
@@ -40,6 +43,107 @@ import {
   SAIDA_SEM_CONCLUSAO,
   campoDeC,
 } from "../conteudo/superficie-c";
+
+/**
+ * ⚠️⚠️ UM ESTUDO, COMO AS LEITURAS O ENXERGAM.
+ *
+ * ⚠️ `modalidade` decide **o que ele pode responder**; `procedencia` e `hora`
+ * qualificam sem mudar o achado; `resultado` é o achado que governa a classe.
+ */
+export type Estudo = {
+  readonly id: string;
+  readonly modalidade?: string;
+  readonly procedencia?: string;
+  readonly hora?: number;
+  readonly horaConhecida: boolean;
+  readonly horaDesconhecida: boolean;
+  readonly resultado?: string;
+};
+
+const rotuloNa = (estado: EstadoAvc, inst: string, campo: string): string | undefined => {
+  const f = valorNaInstancia(estado, inst, campo);
+  if (f === undefined) return undefined;
+  const v = String(f.valor);
+  return v === "nao_perguntado" || v === "nao_sei" ? undefined : v;
+};
+
+/** Todos os estudos registrados, na ordem de REGISTRO — que é sempre conhecida (§3.2). */
+export function estudos(estado: EstadoAvc): readonly Estudo[] {
+  return instanciasDe(estado, ESTUDO).map((id) => {
+    const f = valorNaInstancia(estado, id, "estudo_hora");
+    const hora = typeof f?.valor === "number" ? f.valor : undefined;
+    return {
+      id,
+      modalidade: rotuloNa(estado, id, "estudo_modalidade"),
+      procedencia: rotuloNa(estado, id, "estudo_procedencia"),
+      hora,
+      horaConhecida: hora !== undefined,
+      horaDesconhecida: String(f?.valor ?? "") === "nao_sei",
+      resultado: rotuloNa(estado, id, "estudo_resultado"),
+    };
+  });
+}
+
+/**
+ * ⚠️⚠️ **TC SEM CONTRASTE**, e ⛔ NÃO "qualquer tomografia" — correção do autor
+ * (2026-08-30):
+ *
+ * > *"TC de perfusão ⛔ não pode fazer o app concluir que a TC sem contraste
+ * > inicial está feita."*
+ *
+ * ⚠️ Sem esta precisão, a arquitetura de instâncias ficaria tecnicamente
+ * correta e ainda assim **responderia à pergunta clínica errada**.
+ */
+export function tcsSemContraste(estado: EstadoAvc): readonly Estudo[] {
+  return estudos(estado).filter((e) => e.modalidade === MODALIDADE.tcSemContraste);
+}
+
+export type OrdemEntreEstudos = "nenhuma" | "unica" | "estabelecida" | "nao_estabelecivel";
+
+/**
+ * A ORDEM CLÍNICA ENTRE ESTUDOS — ⚠️ e ela ⛔ **não** olha `horaRegistro`.
+ *
+ * ⚠️⚠️ Ordem de digitação ⛔ não é ordem clínica. Empate também ⛔ não estabelece
+ * ordem: dois exames no mesmo instante ⛔ não se ordenam entre si.
+ */
+export function ordemEntreEstudos(lista: readonly Estudo[]): OrdemEntreEstudos {
+  if (lista.length === 0) return "nenhuma";
+  if (lista.length === 1) return "unica";
+  if (!lista.every((e) => e.horaConhecida)) return "nao_estabelecivel";
+  const horas = lista.map((e) => e.hora as number);
+  return new Set(horas).size === horas.length ? "estabelecida" : "nao_estabelecivel";
+}
+
+export type SituacaoDaTc =
+  | "nenhuma_registrada"
+  | "realizada_resultado_pendente"
+  | "realizada_resultado_registrado";
+
+/**
+ * A SITUAÇÃO DA TC SEM CONTRASTE — ⚠️ **derivada**, e ⛔ nunca gravada (§4.3).
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ⛔ NÃO EXISTE MAIS UM CAMPO `tc_situacao` ─────────────────────
+ *
+ * Ele existia dentro de `tc_resultado`, como duas das quatro opções. Mantê-lo
+ * como campo **e** derivar das instâncias criaria estado contraditório: o médico
+ * responde *"ainda ⛔ não realizada"*, registra um estudo de TC depois, e a trilha
+ * passa a afirmar as duas coisas.
+ *
+ * ⚠️⚠️ E a terceira linha é deliberada: ⛔ **nunca** *"ainda ⛔ não realizada"*, que é
+ * afirmação sobre **o mundo** tirada da ausência de registro — o que **E-23**
+ * proíbe. *"⛔ Nenhuma TC sem contraste registrada"* é afirmação sobre a **trilha**,
+ * e é verdadeira.
+ *
+ * ⛔ E ⛔ não fecha pendência nenhuma (**PD-22**): o resultado pendente continua
+ * sendo a tarefa mais importante do atendimento.
+ */
+export function situacaoDaTcSemContraste(estado: EstadoAvc): SituacaoDaTc {
+  const tcs = tcsSemContraste(estado);
+  if (tcs.length === 0) return "nenhuma_registrada";
+  return tcs.some((e) => e.resultado !== undefined)
+    ? "realizada_resultado_registrado"
+    : "realizada_resultado_pendente";
+}
 
 /** ⚠️ A leitura da imagem declara o ESTADO NOMEADO, para a prova ⛔ não medir texto. */
 export type LeituraDaExclusao = Leitura & {
@@ -51,36 +155,64 @@ export type LeituraDaExclusao = Leitura & {
    * a **frase** distingue cada um. O que ⛔ não pode existir é um estado
    * intermediário lido como exclusão.
    */
-  readonly exclusao: "excluida" | "hemorragia_presente" | "sem_informacao";
+  readonly exclusao:
+    | "excluida"
+    | "hemorragia_presente"
+    | "divergente"
+    | "sem_informacao";
+  /** ⚠️ Os estudos que sustentam a leitura — a tela os nomeia (E-30). */
+  readonly estudos: readonly string[];
 };
 
 const FONTE_EXCLUSAO = "F-16";
-const INSUMOS_EXCLUSAO = ["tc_resultado"];
+const INSUMOS_EXCLUSAO = ["estudo_resultado"];
 
 /**
  * A EXCLUSÃO DE HEMORRAGIA — ⚠️ a leitura mais cara do módulo.
  *
  * ⚠️⚠️ ELA OLHA PARA **UM** CAMPO, e a prova mede isso: se algum dia ela passar a
- * ler `suspeita_hsa`, `angio_realizada` ou qualquer outro, um achado que ⛔ não é
- * hemorragia na tomografia passará a segurar a classe inteira de reperfusão —
- * exatamente o tipo de bloqueio inventado que as doze marcas 🚫 existem para
- * impedir.
+ * ler `suspeita_hsa`, a disponibilidade da angio ou qualquer outro, um achado
+ * que ⛔ não é hemorragia na tomografia passará a segurar a classe inteira de
+ * reperfusão — exatamente o tipo de bloqueio inventado que as doze marcas 🚫
+ * existem para impedir.
+ *
+ * ── ⚠️⚠️ A DIVERGÊNCIA, E ⛔ POR QUE ELA ⛔ NÃO ELEGE (autor, 2026-08-30) ────────
+ *
+ * Dois estudos podem discordar. A resposta do autor é **reter nos dois
+ * sentidos**, e a razão é o que ele proibiu explicitamente:
+ *
+ * > *"fazer o app preferir 'local', 'mais novo', 'mais confiável' ou qualquer
+ * > outro atributo sem regra explícita seria justamente criar uma hierarquia que
+ * > ⛔ ninguém autorizou."*
+ *
+ * ⛔ ⛔ NÃO se prefere: estudo local, estudo externo, último registrado, estudo com
+ * horário conhecido, ⛔ nem o "aparentemente mais recente" quando a ordem ⛔ não é
+ * estabelecível.
+ *
+ * ⚠️ **A saída é adjudicação explícita.** Se o médico conclui que um laudo estava
+ * errado, ele corrige aquele `estudo_resultado` **na mesma instância**, com
+ * `corrigeFatoId`. A trilha guarda as duas declarações; a derivação passa a ler
+ * a vigente. Se as vigentes deixam de divergir, a divergência sai sozinha — ⛔ sem
+ * regra de precedência nenhuma.
  */
 export function exclusaoDeHemorragia(estado: EstadoAvc): LeituraDaExclusao {
-  const resultado = rotuloGravado(estado, "tc_resultado");
-  const base = { insumos: INSUMOS_EXCLUSAO, fonte: FONTE_EXCLUSAO };
+  const comResultado = tcsSemContraste(estado).filter((e) => e.resultado !== undefined);
+  const nomes = comResultado.map((e) => e.id);
+  const base = { insumos: INSUMOS_EXCLUSAO, fonte: FONTE_EXCLUSAO, estudos: nomes };
+  const valores = new Set(comResultado.map((e) => e.resultado));
 
-  if (resultado === RESULTADO_TC.semHemorragia) {
+  if (valores.size > 1) {
     return {
       ...base,
-      exclusao: "excluida",
-      conclusao: "sim",
-      tom: "informativo",
-      curto: "Hemorragia intracraniana excluída pela tomografia",
-      texto: "A fonte recomenda excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão, e essa exclusão está registrada",
+      exclusao: "divergente",
+      conclusao: "desconhecido",
+      tom: "atencao",
+      curto: "Exames de imagem com resultados divergentes",
+      texto:
+        "Um exame descreve hemorragia e outro não. A reperfusão não é liberada enquanto os dois valerem, e o aplicativo não escolhe entre eles por procedência, horário ou ordem de registro. Corrigir o resultado do exame que estiver errado resolve a divergência",
     };
   }
-  if (resultado === RESULTADO_TC.hemorragia) {
+  if (valores.has(RESULTADO_TC.hemorragia)) {
     return {
       ...base,
       exclusao: "hemorragia_presente",
@@ -90,32 +222,32 @@ export function exclusaoDeHemorragia(estado: EstadoAvc): LeituraDaExclusao {
       texto: "A reperfusão não é iniciada sem exclusão de hemorragia. O atendimento continua, e o motivo fica registrado",
     };
   }
-  if (resultado === RESULTADO_TC.aguardando) {
+  if (valores.has(RESULTADO_TC.semHemorragia)) {
     return {
       ...base,
-      exclusao: "sem_informacao",
-      conclusao: "desconhecido",
-      tom: "pendente",
-      curto: "Tomografia realizada, resultado ainda não disponível",
-      texto: "A exclusão de hemorragia ainda não pode ser afirmada. Isto não é o mesmo que ausência de hemorragia",
+      exclusao: "excluida",
+      conclusao: "sim",
+      tom: "informativo",
+      curto: "Hemorragia intracraniana excluída pela tomografia",
+      texto: "A fonte recomenda excluir hemorragia intracraniana antes de iniciar intervenções de reperfusão, e essa exclusão está registrada",
     };
   }
-  if (resultado === RESULTADO_TC.naoRealizada) {
-    return {
-      ...base,
-      exclusao: "sem_informacao",
-      conclusao: "desconhecido",
-      tom: "atencao",
-      curto: "Tomografia de crânio ainda não realizada",
-      texto: "A exclusão de hemorragia ainda não pode ser afirmada. Isto não é o mesmo que ausência de hemorragia",
-    };
-  }
+
+  /**
+   * ⚠️ ⛔ SEM RESULTADO — e a frase fala da **trilha**, ⛔ nunca do mundo (E-23).
+   * ⛔ "⛔ Não registrada" ⛔ não é "⛔ não realizada", e ⛔ nenhuma das duas é "sem
+   * hemorragia".
+   */
+  const situacao = situacaoDaTcSemContraste(estado);
   return {
     ...base,
     exclusao: "sem_informacao",
     conclusao: "desconhecido",
-    tom: "pendente",
-    curto: "Resultado da tomografia ainda não registrado",
+    tom: situacao === "nenhuma_registrada" ? "atencao" : "pendente",
+    curto:
+      situacao === "nenhuma_registrada"
+        ? "Nenhuma tomografia sem contraste registrada"
+        : "Tomografia registrada, resultado ainda não informado",
     texto: "A exclusão de hemorragia ainda não pode ser afirmada. Isto não é o mesmo que ausência de hemorragia",
   };
 }
@@ -129,8 +261,14 @@ export function exclusaoDeHemorragia(estado: EstadoAvc): LeituraDaExclusao {
  * — e a que decide seria a errada.
  *
  * ⚠️ `true` para TUDO que ⛔ não seja exclusão declarada. ⛔ Isso ⛔ não transforma
- * ausência em hemorragia (E-23): a leitura acima continua distinguindo os três
+ * ausência em hemorragia (E-23): a leitura acima continua distinguindo os
  * estados. O que esta função diz é apenas que a **liberação** exige o positivo.
+ *
+ * ⚠️⚠️ **E É POR ISTO QUE A DIVERGÊNCIA RETÉM NOS DOIS SENTIDOS.** Divergente
+ * ⛔ não é exclusão declarada — logo, retém. ⛔ Não há ramo novo, ⛔ nenhuma exceção
+ * escrita: externo-com-hemorragia × local-sem dá **o mesmo** que o inverso,
+ * porque a função ⛔ nunca soube distinguir procedência, e ⛔ não é aqui que ela vai
+ * aprender.
  */
 export function reperfusaoRetidaPelaImagem(estado: EstadoAvc): boolean {
   return exclusaoDeHemorragia(estado).exclusao !== "excluida";
@@ -198,9 +336,17 @@ export type DestinoResolvido = {
 };
 
 export function destinoDaImagem(estado: EstadoAvc): DestinoResolvido | undefined {
-  const insumos = ["tc_resultado", "suspeita_hsa"];
+  const insumos = ["estudo_resultado", "suspeita_hsa"];
   const hsa = ternario(estado, "suspeita_hsa") === true;
-  const hemorragia = rotuloGravado(estado, "tc_resultado") === RESULTADO_TC.hemorragia;
+  /**
+   * ⚠️⚠️ **QUALQUER** estudo que descreva hemorragia manda para a saída
+   * hemorrágica — inclusive na divergência. ⛔ Um achado de hemorragia ⛔ não
+   * desacontece porque outro exame ⛔ não o viu, e escolher entre os dois seria a
+   * hierarquia silenciosa que o autor proibiu.
+   */
+  const hemorragia = tcsSemContraste(estado).some(
+    (e) => e.resultado === RESULTADO_TC.hemorragia
+  );
 
   /**
    * ⚠️⚠️ A HEMORRAGIA IDENTIFICADA VEM PRIMEIRO, e a ordem destes dois `if` É a
@@ -369,23 +515,35 @@ export type LeituraVascular = Leitura & {
  * pode fazer nada a respeito.
  */
 export function imagemVascular(estado: EstadoAvc): LeituraVascular {
-  const insumos = ["suspeita_lvo", "angio_realizada"];
+  const insumos = ["suspeita_lvo", "angio_disponibilidade", "estudo_modalidade"];
   const fonte = "F-16";
-  const angio = rotuloGravado(estado, "angio_realizada");
+  /**
+   * ⚠️⚠️ A REALIZAÇÃO É **DERIVADA**, e ⛔ não perguntada — `angio_realizada`
+   * dissolveu-se em 2026-08-30. Ou existe instância de estudo vascular, ou ⛔ não
+   * existe; repreguntar seria cobrar o que a trilha já sabe.
+   *
+   * ⛔⛔ **E ausência de estudo ⛔ NUNCA significa indisponibilidade** (E-23). O que
+   * ⛔ nenhuma instância consegue dizer — *"⛔ não disponível neste serviço"* —
+   * continua sendo fato perguntado, e é ⛔ só isso que sobrou do campo antigo.
+   */
+  const temEstudoVascular = estudos(estado).some(
+    (e) => e.modalidade !== undefined && MODALIDADES_VASCULARES.includes(e.modalidade)
+  );
+  const disponibilidade = rotuloGravado(estado, "angio_disponibilidade");
   const suspeita = ternario(estado, "suspeita_lvo");
 
-  if (angio === ANGIO.realizada) {
+  if (temEstudoVascular) {
     return {
       vascular: "registrada",
       conclusao: "sim",
       tom: "informativo",
-      curto: "Angiotomografia registrada como realizada",
+      curto: "Estudo vascular registrado",
       texto: "A fonte diz que a imagem vascular de emergência não deve ser atrasada para obter a creatinina sérica",
       insumos,
       fonte,
     };
   }
-  if (angio === ANGIO.indisponivel) {
+  if (disponibilidade === "Não disponível neste serviço") {
     return {
       vascular: "indisponivel",
       conclusao: "nao",
@@ -411,8 +569,8 @@ export function imagemVascular(estado: EstadoAvc): LeituraVascular {
     vascular: "sem_informacao",
     conclusao: "desconhecido",
     tom: "informativo",
-    curto: "Imagem vascular ainda não registrada",
-    texto: "Nada no atendimento espera por este registro",
+    curto: "Nenhum estudo vascular registrado",
+    texto: "Nada no atendimento espera por este registro. Não haver estudo registrado não é o mesmo que o exame não estar disponível",
     insumos,
     fonte,
   };
@@ -429,6 +587,8 @@ export type LeituraDoDossie = Leitura & {
   readonly semConclusao: readonly string[];
   /** ⚠️ Ainda ⛔ não perguntados. ⛔ Isto ⛔ NÃO é lista de requisitos. */
   readonly naoPerguntados: readonly string[];
+  /** ⚠️ Achado → estudo que o produziu. Ver o comentário no laço. */
+  readonly origens: Readonly<Record<string, string>>;
 };
 
 /**
@@ -454,8 +614,27 @@ export function informacaoParaAFrenteEndovascular(estado: EstadoAvc): LeituraDoD
   const semConclusao: string[] = [];
   const naoPerguntados: string[] = [];
 
+  /**
+   * ⚠️⚠️ CADA ITEM DIZ **DE QUAL ESTUDO** VEIO — 2026-08-30.
+   *
+   * ⚠️ Antes a lista dizia *"ASPECTS registrado"* sem dizer em qual exame. Com
+   * dois estudos na tela, isso é informação incompleta na frente que decide
+   * trombectomia.
+   */
+  const origens: Record<string, string> = {};
+  const listaDeEstudos = estudos(estado);
+
   for (const id of IDS_DOSSIE_ENDOVASCULAR) {
-    const fato = valorAtual(estado, id);
+    const naquele = listaDeEstudos.find(
+      (e) => valorNaInstancia(estado, e.id, id)?.valor !== undefined
+        && valorNaInstancia(estado, e.id, id)?.valor !== "nao_perguntado"
+    );
+    if (naquele === undefined) {
+      naoPerguntados.push(id);
+      continue;
+    }
+    origens[id] = naquele.id;
+    const fato = valorNaInstancia(estado, naquele.id, id);
     if (fato === undefined || fato.valor === "nao_perguntado") {
       naoPerguntados.push(id);
       continue;
@@ -474,13 +653,13 @@ export function informacaoParaAFrenteEndovascular(estado: EstadoAvc): LeituraDoD
      * informado, ou ⛔ não foi. **E-10**: zero é resposta, e é a mais grave.
      */
     if (campoDeC(id).tipo === "grandeza") {
-      if (numero(estado, id) !== undefined) registrados.push(id);
+      if (typeof fato.valor === "number") registrados.push(id);
       else semConclusao.push(id);
       continue;
     }
     const saida = SAIDA_SEM_CONCLUSAO[id];
-    const rotulo = rotuloGravado(estado, id);
-    if (respondeuDesconhecido(estado, id) || (saida !== undefined && rotulo === saida)) {
+    const rotulo = String(fato.valor);
+    if (rotulo === "nao_sei" || (saida !== undefined && rotulo === saida)) {
       semConclusao.push(id);
     } else {
       registrados.push(id);
@@ -491,6 +670,7 @@ export function informacaoParaAFrenteEndovascular(estado: EstadoAvc): LeituraDoD
     registrados,
     semConclusao,
     naoPerguntados,
+    origens,
     /** ⚠️⚠️ SEMPRE `desconhecido`. ⛔ Esta leitura ⛔ não conclui, por construção. */
     conclusao: "desconhecido",
     tom: "informativo",
@@ -593,28 +773,46 @@ export function alergiaAContraste(estado: EstadoAvc): Leitura {
  */
 export function pendenciasDaImagem(estado: EstadoAvc): readonly Pendencia[] {
   const abertas: Pendencia[] = [];
-  const resultado = rotuloGravado(estado, "tc_resultado");
+  const situacao = situacaoDaTcSemContraste(estado);
 
   /**
    * ⚠️⚠️ **PD-22** — a pendência fecha com resultado CONCLUSIVO, e ⛔ não com
-   * "alguém respondeu alguma coisa".
-   *
-   * ⚠️ `pendenciasAbertas()` do núcleo mede campo vazio, e por isso ⛔ não serve
-   * aqui: para ela, *"realizada — resultado ainda não disponível"* é resposta e
-   * fecharia a tarefa. Seria a tela dizendo "resolvido" sobre a coisa mais
-   * importante do atendimento, que ⛔ não está resolvida.
+   * "alguém registrou o exame". Um estudo aberto sem resultado ⛔ **não** fecha:
+   * seria a tela dizendo "resolvido" sobre a coisa mais importante do
+   * atendimento, que ⛔ não está resolvida.
    */
-  if (resultado !== RESULTADO_TC.semHemorragia && resultado !== RESULTADO_TC.hemorragia) {
+  if (situacao !== "realizada_resultado_registrado") {
     abertas.push({
       id: "tc_resultado",
       rotulo: "Tomografia de crânio",
       dono: "imagem",
-      campo: "tc_resultado",
+      campo: "estudo_resultado",
       resolvePor:
-        resultado === RESULTADO_TC.aguardando
+        situacao === "realizada_resultado_pendente"
           ? "Registrar o resultado quando o laudo estiver disponível"
-          : "Registrar o resultado da tomografia de crânio",
+          : "Registrar a tomografia de crânio sem contraste e o seu resultado",
     });
+  }
+
+  /**
+   * ⚠️⚠️ A PENDÊNCIA DE HORÁRIO NASCE **TARDE** — mesma disciplina do
+   * Laboratório. Um estudo externo sem horário, sozinho, ⛔ não gera pendência
+   * alguma: ⛔ nada precisa da ordem. Ela só aparece quando **dois** estudos
+   * trazem resultado e a ordem entre eles ⛔ não é estabelecível.
+   */
+  const comResultado = tcsSemContraste(estado).filter((e) => e.resultado !== undefined);
+  if (comResultado.length > 1 && ordemEntreEstudos(comResultado) === "nao_estabelecivel") {
+    comResultado
+      .filter((e) => !e.horaConhecida && !e.horaDesconhecida)
+      .forEach((e) =>
+        abertas.push({
+          id: `estudo_hora_${e.id}`,
+          rotulo: `Horário do exame — ${e.procedencia ?? "procedência não informada"}`,
+          dono: "imagem",
+          campo: "estudo_hora",
+          resolvePor: "Registrar o horário, ou que não foi possível determinar",
+        })
+      );
   }
 
   if (respondeuDesconhecido(estado, "suspeita_hsa")) {
@@ -632,8 +830,8 @@ export function pendenciasDaImagem(estado: EstadoAvc): readonly Pendencia[] {
       id: "imagem_vascular",
       rotulo: "Imagem vascular",
       dono: "imagem",
-      campo: "angio_realizada",
-      resolvePor: "Registrar a angiotomografia, ou que ela não está disponível neste serviço",
+      campo: "angio_disponibilidade",
+      resolvePor: "Registrar o estudo vascular, ou que ele não está disponível neste serviço",
     });
   }
 
@@ -641,12 +839,26 @@ export function pendenciasDaImagem(estado: EstadoAvc): readonly Pendencia[] {
 }
 
 /**
- * ⚠️ Os exames avançados marcados — ⛔ lidos por `selecaoDe`, e ⛔ **nunca** por
- * `ternario()`: o valor gravado é a composição dos rótulos, ⛔ nenhum deles é
- * `"sim"`, e a função devolveria `false` para três exames feitos.
+ * QUAIS EXAMES FORAM REALIZADOS — ⚠️ **as instâncias respondem**, e ⛔ não um
+ * campo agregado.
+ *
+ * ── ⛔ O CAMPO `imagem_avancada` FOI REMOVIDO INTEIRO (autor, 2026-08-30) ─────
+ *
+ * ⚠️⚠️ **Inclusive a opção "Nenhuma".** Ela era uma **negativa agregada sem
+ * leitor**: a regra de janela estendida que a consumiria mora na Reperfusão, que
+ * ⛔ não existe.
+ *
+ * > *"Guardar uma negativa agregada sem leitor é voltar ao mesmo problema que
+ * > iniciou toda essa remodelagem."*
+ *
+ * ⏳ Quando F precisar saber se houve CTP ou RM difusão/FLAIR, consulta as
+ * instâncias. Se a **ausência** de um exame passar a ter significado clínico
+ * próprio, F pede a informação — ⛔ sem ressuscitar campo agregado artificial.
  */
-export function examesAvancados(estado: EstadoAvc): readonly string[] {
-  return selecaoDe(estado, "imagem_avancada");
+export function modalidadesRealizadas(estado: EstadoAvc): readonly string[] {
+  return estudos(estado)
+    .map((e) => e.modalidade)
+    .filter((m): m is string => m !== undefined);
 }
 
 /** Todas as leituras da Superfície C, em ordem de apresentação. */

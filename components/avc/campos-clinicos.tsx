@@ -493,6 +493,7 @@ export function CampoDeGrandeza({
   onAlternarDetalhe,
   onMedir,
   onDesfazer,
+  confirmacaoExplicita,
 }: {
   campo: Campo;
   gravado: number | undefined;
@@ -500,6 +501,15 @@ export function CampoDeGrandeza({
   onAlternarDetalhe: () => void;
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
+  /**
+   * ⚠️⚠️ EM CORREÇÃO, CADA TOQUE ⛔ NÃO GRAVA — defeito achado pelo e2e do
+   * sentinela do ASPECTS (2026-08-30).
+   *
+   * ⚠️ Com o degrau, corrigir 7 → 3 gravaria **quatro correções** na trilha, e a
+   * auditoria leria que o médico corrigiu quatro vezes. ⛔ Ele corrigiu uma. O
+   * gesto move o rascunho; **Confirmar** grava UM fato.
+   */
+  confirmacaoExplicita?: boolean;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -665,11 +675,31 @@ export function CampoDeGrandeza({
         textoAusente={tr("não informado")}
         onChange={(v) => setRascunho(v)}
         onConfirmar={(v) => {
+          /** ⚠️ Ver `confirmacaoExplicita`: em correção o toque ⛔ não grava. */
+          if (confirmacaoExplicita) {
+            setRascunho(v);
+            return;
+          }
           setRascunho(undefined);
           onMedir(campo.id, v);
         }}
         testID={`avc-grandeza-${campo.id}`}
       />
+
+      {confirmacaoExplicita ? (
+        <Pressable
+          style={e.zero}
+          accessibilityRole="button"
+          testID={`avc-confirmar-${campo.id}`}
+          onPress={() => {
+            const v = rascunho ?? gravado;
+            setRascunho(undefined);
+            if (v !== undefined) onMedir(campo.id, v);
+          }}
+        >
+          <Text style={e.zeroTexto}>{tr("Confirmar correção")}</Text>
+        </Pressable>
+      ) : null}
 
       {/**
        * ⚠️⚠️ A PORTA DO ZERO — **E-10**, e só onde o conteúdo a declara.
@@ -1081,6 +1111,7 @@ export function CampoDaSuperficie({
         onAlternarDetalhe={onAlternarDetalhe}
         onMedir={onMedir}
         onDesfazer={onDesfazer}
+        confirmacaoExplicita={emCorrecao}
       />
     ) : campo.tipo === "multipla" ? (
       <CampoDeMultipla
@@ -1474,6 +1505,10 @@ export function PainelDeLeituras({
                     dariam quatro linhas idênticas. */}
                 {l.sujeito ? `${tr(l.sujeito)} — ` : ""}
                 {tr(l.curto)}
+                {/** ⚠️ Ver `estudos` em `leitura.ts`: a leitura nomeia a origem. */}
+                {l.estudos && l.estudos.length > 1
+                  ? `: ${l.estudos.map((i) => rotuloDoCampo[i] ?? i).join(" · ")}`
+                  : ""}
               </Text>
               <BotaoDeInfo id={`leitura-${l.id}`} onPress={() => onAlternarDetalhe(`leitura-${l.id}`)} />
             </View>

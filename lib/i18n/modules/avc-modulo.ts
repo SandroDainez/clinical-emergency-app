@@ -1147,6 +1147,70 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
   // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
   "Coleta": "Toma",
+  "Tomografia de crânio sem contraste": "Tomografía de cráneo sin contraste",
+  "Angiotomografia": "Angiotomografía",
+  "Angiorressonância": "Angiorresonancia",
+  "Disponível": "Disponible",
+  "A fonte diz que a imagem vascular de emergência não deve ser atrasada para obter a creatinina sérica. A disponibilidade local não é inferível da fonte.":
+    "La fuente dice que la imagen vascular de emergencia no debe retrasarse para obtener la creatinina sérica. La disponibilidad local no es inferible de la fuente.",
+  "A fonte usa a expressão efeito de massa significativo, sem definir medida. A leitura é de quem interpreta a imagem. Definição operacional: slot F-29, ainda sem fonte candidata.":
+    "La fuente usa la expresión efecto de masa significativo, sin definir medida. La lectura es de quien interpreta la imagen. Definición operativa: slot F-29, aún sin fuente candidata.",
+  "Angiotomografia neste serviço":
+    "Angiotomografía en este servicio",
+  "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia.":
+    "Puntaje informado por quien leyó la imagen. Esta aplicación no calcula ASPECTS, y los cortes que la fuente usa pertenecen a la evaluación para trombectomía.",
+  "Exames de imagem":
+    "Estudios de imagen",
+  "Horário do exame":
+    "Hora del estudio",
+  "Juízo clínico e disponibilidade":
+    "Juicio clínico y disponibilidad",
+  "Modalidade do exame":
+    "Modalidad del estudio",
+  "Procedência do exame":
+    "Procedencia del estudio",
+  "Ressonância magnética":
+    "Resonancia magnética",
+  "Resultado do exame":
+    "Resultado del estudio",
+  "de onde veio o exame muda a leitura sem mudar o achado (E-03)":
+    "de dónde vino el estudio cambia la lectura sin cambiar el hallazgo (E-03)",
+  "hemorragia identificada ⛔ não é 'sim', e sem hemorragia ⛔ não é 'não'":
+    "hemorragia identificada ⛔ no es 'sí', y sin hemorragia ⛔ no es 'no'",
+  "indisponível no serviço é diferente de ainda não realizado":
+    "no disponible en el servicio es diferente de aún no realizado",
+  "o estado 'resultado ainda não disponível' é derivado de existir estudo sem resultado, e não um valor gravável":
+    "el estado 'resultado aún no disponible' se deriva de existir un estudio sin resultado, y no es un valor grabable",
+  "o nome do exame decide o que ele pode responder, e ⛔ não é binário":
+    "el nombre del estudio decide qué puede responder, y ⛔ no es binario",
+  "resultado ainda não disponível":
+    "resultado aún no disponible",
+  "Exames de imagem com resultados divergentes":
+    "Estudios de imagen con resultados divergentes",
+  "Nada no atendimento espera por este registro. Não haver estudo registrado não é o mesmo que o exame não estar disponível":
+    "Nada en la atención espera por este registro. Que no haya estudio registrado no es lo mismo que el estudio no esté disponible",
+  "Nenhuma tomografia sem contraste registrada":
+    "Ninguna tomografía sin contraste registrada",
+  "Registrar a tomografia de crânio sem contraste e o seu resultado":
+    "Registrar la tomografía de cráneo sin contraste y su resultado",
+  "Registrar o estudo vascular, ou que ele não está disponível neste serviço":
+    "Registrar el estudio vascular, o que no está disponible en este servicio",
+  "Tomografia registrada, resultado ainda não informado":
+    "Tomografía registrada, resultado aún no informado",
+  "Um exame descreve hemorragia e outro não. A reperfusão não é liberada enquanto os dois valerem, e o aplicativo não escolhe entre eles por procedência, horário ou ordem de registro. Corrigir o resultado do exame que estiver errado resolve a divergência":
+    "Un estudio describe hemorragia y otro no. La reperfusión no se libera mientras ambos valgan, y la aplicación no elige entre ellos por procedencia, hora u orden de registro. Corregir el resultado del estudio que esté equivocado resuelve la divergencia",
+  "Nenhum exame de imagem registrado.":
+    "Ningún estudio de imagen registrado.",
+  "modalidade não informada":
+    "modalidad no informada",
+  "Novo exame":
+    "Nuevo estudio",
+  "Exame":
+    "Estudio",
+  "Estudo vascular registrado":
+    "Estudio vascular registrado",
+  "Nenhum estudo vascular registrado":
+    "Ningún estudio vascular registrado",
   "Corrigir resultado": "Corregir resultado",
   "Corrigir unidade": "Corregir unidad",
   "Cancelar correção": "Cancelar corrección",

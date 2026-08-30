@@ -20,6 +20,7 @@ import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
 import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
+import { ESTUDO } from "../../avc/conteudo/superficie-c";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
@@ -155,18 +156,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   }
 
   /**
-   * ⚠️⚠️ REGISTRO **NUMA COLETA ESPECÍFICA** — e ⛔ não na "aberta".
+   * ⚠️⚠️ REGISTRO **NUMA INSTÂNCIA ESPECÍFICA** — e ⛔ não na "aberta".
    *
-   * O Laboratório desenha N coletas ao mesmo tempo, e um toque no INR da
-   * terceira ⛔ não pode cair noutra. É a tela que sabe em qual o médico tocou.
+   * O Laboratório desenha N coletas ao mesmo tempo, e a Imagem N exames: um
+   * toque no INR da terceira coleta ⛔ não pode cair noutra, ⛔ nem o ASPECTS do
+   * segundo exame no primeiro. É a tela que sabe em qual o médico tocou.
+   *
+   * ⚠️ **Servem as duas superfícies** — a regra mora num lugar só (I6).
    */
-  function escolherNaColeta(coleta: string, campo: string, valor: string) {
+  function escolherNaInstancia(coleta: string, campo: string, valor: string) {
     setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio, coleta));
   }
-  function medirNaColeta(coleta: string, campo: string, valor: number) {
+  function medirNaInstancia(coleta: string, campo: string, valor: number) {
     setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio, coleta));
   }
-  function horaNaColeta(coleta: string, campo: string, instante: number) {
+  function horaNaInstancia(coleta: string, campo: string, instante: number) {
     setEstado((e) =>
       registrarComInstancia(e, { campo, valor: instante, horaClinica: instante }, relogio, coleta)
     );
@@ -181,7 +185,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ O `motivo` fabricado saiu junto — *"Registro desfeito pelo médico"* é o
    * **tipo** da operação, e ⛔ não um motivo. ⛔ Ninguém perguntou por quê.
    */
-  function desfazerNaColeta(coleta: string, campo: string) {
+  function desfazerNaInstancia(coleta: string, campo: string) {
     setEstado((e) => corrigirNaInstancia(e, { campo, valor: "nao_perguntado" }, relogio, coleta));
   }
 
@@ -194,7 +198,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ Ele ⛔ **não** abre coleta: a coleta é a mesma amostra. Quem mede de novo
    * usa **Nova coleta**, que é a outra metade do par que a tela oferece.
    */
-  function corrigirNaColeta(coleta: string, campo: string, valor: string | number) {
+  function corrigirNaInstanciaDaTela(coleta: string, campo: string, valor: string | number) {
     setEstado((e) => corrigirNaInstancia(e, { campo, valor }, relogio, coleta));
   }
 
@@ -380,11 +384,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <SuperficieLaboratorio
             estado={estado}
             agora={agora}
-            onEscolherNaColeta={escolherNaColeta}
-            onCorrigirNaColeta={corrigirNaColeta}
-            onMedirNaColeta={medirNaColeta}
-            onHoraNaColeta={horaNaColeta}
-            onDesfazerNaColeta={desfazerNaColeta}
+            onEscolherNaColeta={escolherNaInstancia}
+            onCorrigirNaColeta={corrigirNaInstanciaDaTela}
+            onMedirNaColeta={medirNaInstancia}
+            onHoraNaColeta={horaNaInstancia}
+            onDesfazerNaColeta={desfazerNaInstancia}
             onNovaColeta={() => novaMedida(COLETA)}
           />
         ) : atual.id === "imagem" ? (
@@ -395,6 +399,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onHora={registrarHora}
             onMedir={medir}
             onDesfazer={desfazer}
+            onEscolherNoEstudo={escolherNaInstancia}
+            onMedirNoEstudo={medirNaInstancia}
+            onHoraNoEstudo={horaNaInstancia}
+            onCorrigirNoEstudo={corrigirNaInstanciaDaTela}
+            onDesfazerNoEstudo={desfazerNaInstancia}
+            onNovoEstudo={() => novaMedida(ESTUDO)}
           />
         ) : (
           <>

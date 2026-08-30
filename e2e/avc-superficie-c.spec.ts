@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import {
-  GRUPOS_C,
+  MODALIDADE,
   RESULTADO_TC,
   TODOS_OS_CAMPOS_C,
 } from "../avc/conteudo/superficie-c";
@@ -27,20 +27,55 @@ async function abrirC(page: Page) {
 /** ⚠️ O valor gravado é o RÓTULO nestes campos — vocabulário próprio. */
 const OPCAO = (campo: string, valor: string) => `avc-opcao-${campo}-${valor}`;
 
+/** ⚠️ Abre um exame e declara a modalidade — sem ela, ⛔ nenhum achado aparece. */
+async function novoExame(page: Page, modalidade: string) {
+  await page.getByTestId("avc-novo-estudo").click();
+  await page.getByTestId(OPCAO("estudo_modalidade", modalidade)).click();
+}
+/** ⚠️ Campo preenchido vira leitura: mexer nele exige o gesto de correção. */
+async function corrigir(page: Page, campo: string) {
+  await page.getByTestId(`avc-corrigir-${campo}`).click();
+}
+
 test.describe("AVC · Superfície C — Imagem", () => {
-  test("a superfície abre com os três blocos, e a imagem avançada nasce fechada", async ({ page }) => {
+  test("a superfície abre com os DOIS blocos, e ⛔ sem imagem avançada", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    for (const grupo of GRUPOS_C) {
-      await expect(page.getByTestId(`avc-grupo-${grupo.id}`)).toBeVisible();
-    }
-    // ⚠️ Recolhido: o cabeçalho existe, o campo ⛔ não.
-    await expect(page.getByTestId("avc-bloco-abrir-imagem-avancada"))
-      .toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByTestId("avc-grupo-estudos")).toBeVisible();
+    await expect(page.getByTestId("avc-grupo-episodio")).toBeVisible();
+    /**
+     * ⛔⛔ `imagem_avancada` saiu INTEIRO em 2026-08-30, inclusive a opção
+     * "Nenhuma": negativa agregada sem leitor.
+     */
+    await expect(page.getByTestId("avc-grupo-imagem-avancada")).toHaveCount(0);
     await expect(page.getByTestId("avc-campo-imagem_avancada")).toHaveCount(0);
-    await page.getByTestId("avc-bloco-abrir-imagem-avancada").click();
-    await expect(page.getByTestId("avc-campo-imagem_avancada")).toBeVisible();
+    // ⚠️ E a tela nasce sem exame nenhum, dizendo isso.
+    await expect(page.getByTestId("avc-estudos-vazio")).toBeVisible();
+  });
+
+  /**
+   * ⚠️⚠️ A MATRIZ NA TELA: sem modalidade, ⛔ nenhum achado aparece; e a RM ⛔ não
+   * herda hipodensidade ⛔ só por ser imagem de parênquima.
+   */
+  test("a modalidade decide o que o exame pergunta", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirC(page);
+
+    await page.getByTestId("avc-novo-estudo").click();
+    // ⛔ Sem modalidade declarada, o app ⛔ não sabe o que aquele exame responde.
+    await expect(page.getByTestId("avc-campo-estudo_resultado")).toHaveCount(0);
+    await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toHaveCount(0);
+
+    await page.getByTestId(OPCAO("estudo_modalidade", MODALIDADE.tcSemContraste)).click();
+    await expect(page.getByTestId("avc-campo-estudo_resultado")).toBeVisible();
+    await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toBeVisible();
+    await expect(page.getByTestId("avc-campo-sitio_oclusao")).toHaveCount(0);
+
+    await novoExame(page, MODALIDADE.rm);
+    // ⛔ A RM ⛔ NÃO herda hipodensidade ⛔ nem ASPECTS.
+    await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toHaveCount(0);
+    await expect(page.getByTestId("avc-campo-aspects")).toHaveCount(0);
   });
 
   /**
@@ -51,10 +86,14 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await expect(page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)))
-      .toHaveAttribute("aria-checked", "false");
+    /**
+     * ⚠️⚠️ **E-23**: a frase fala da TRILHA, e ⛔ nunca do mundo. "Ainda ⛔ não
+     * realizada" seria afirmação tirada da ausência de registro.
+     */
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
-      .toContainText(/ainda não registrado/i);
+      .toContainText(/Nenhuma tomografia sem contraste registrada/i);
+    await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
+      .not.toContainText(/não realizada/i);
     // ⛔ E ⛔ nenhum destino armado.
     await expect(page.getByTestId("avc-destino-imagem")).toHaveCount(0);
   });
@@ -67,17 +106,17 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await abrirC(page);
 
     await expect(page.getByTestId("avc-pendencia-tc_resultado")).toBeVisible();
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.aguardando)).click();
+    /**
+     * ⚠️⚠️ O laudo pendente ⛔ deixou de ser VALOR e passou a ser **estado
+     * derivado**: existe o exame, ⛔ não existe o resultado.
+     */
+    await novoExame(page, MODALIDADE.tcSemContraste);
 
-    // ⚠️ A resposta ficou marcada — ela É um fato.
-    await expect(page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.aguardando)))
-      .toHaveAttribute("aria-checked", "true");
-    // ⛔ E a pendência continua lá, com a instrução do estado novo.
     await expect(page.getByTestId("avc-pendencia-tc_resultado"))
       .toContainText(/quando o laudo estiver disponível/i);
 
     // ⚠️ Só o resultado conclusivo a fecha.
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)).click();
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
     await expect(page.getByTestId("avc-pendencia-tc_resultado")).toHaveCount(0);
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
       .toContainText(/excluída pela tomografia/i);
@@ -90,7 +129,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.hemorragia)).click();
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.hemorragia)).click();
 
     const destino = page.getByTestId("avc-destino-imagem");
     await expect(destino).toBeVisible();
@@ -110,7 +150,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.hemorragia)).click();
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.hemorragia)).click();
     await page.getByTestId(OPCAO("suspeita_hsa", "sim")).click();
 
     // ⚠️ UM cartão de destino, e ele é o da hemorragia identificada.
@@ -136,7 +177,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)).click();
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
     await page.getByTestId(OPCAO("suspeita_hsa", "sim")).click();
 
     await expect(page.getByTestId("avc-destino-suspeita_hsa")).toBeVisible();
@@ -168,7 +210,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await page.getByTestId(OPCAO("suspeita_lvo", "sim")).click();
     await expect(page.getByTestId("avc-pendencia-imagem_vascular")).toBeVisible();
 
-    await page.getByTestId(OPCAO("angio_realizada", "Não disponível neste serviço")).click();
+    await page.getByTestId(OPCAO("angio_disponibilidade", "Não disponível neste serviço")).click();
     await expect(page.getByTestId("avc-pendencia-imagem_vascular")).toHaveCount(0);
     await expect(page.getByTestId("avc-leitura-curto-imagem_vascular"))
       .toContainText(/não disponível neste serviço/i);
@@ -177,20 +219,20 @@ test.describe("AVC · Superfície C — Imagem", () => {
   /**
    * ⚠️⚠️ A ALERGIA A CONTRASTE — decisão do autor, com as três travas dele.
    */
-  test("a alergia a contraste é registrada, escopada ao contraste, e ⛔ não cobra nada", async ({ page }) => {
+  /**
+   * ⚠️⚠️ A ALERGIA ⛔ NÃO É PERGUNTADA AQUI — autor, 2026-08-30: *"⛔ no A já coleta
+   * sobre alergias e no C de novo, ⛔ só deixamos no A"*.
+   */
+  test("a alergia a contraste ⛔ não é perguntada em C, ⛔ mas é lida", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)).click();
-    await page.getByTestId(OPCAO("alergia_contraste", "sim")).click();
-
-    await expect(page.getByTestId("avc-leitura-curto-alergia_contraste"))
-      .toContainText(/Alergia importante a contraste/i);
-    // ⛔ Nenhuma pendência nasce dela.
+    // ⛔ A pergunta ⛔ NÃO aparece: ela mora no painel Paciente.
+    await expect(page.getByTestId("avc-campo-alergia_contraste")).toHaveCount(0);
+    // ⚠️ A leitura continua: ler ⛔ não é coletar.
+    await expect(page.getByTestId("avc-leitura-curto-alergia_contraste")).toBeVisible();
+    // ⛔ E ⛔ nenhuma pendência nasce dela.
     await expect(page.getByTestId("avc-pendencia-alergia_contraste")).toHaveCount(0);
-    // ⛔ E a exclusão de hemorragia ⛔ não muda: ela ⛔ não retém a trombólise.
-    await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
-      .toContainText(/excluída pela tomografia/i);
   });
 
   /**
@@ -201,6 +243,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
+    await novoExame(page, MODALIDADE.tcSemContraste);
     const campo = page.getByTestId("avc-campo-aspects");
     await expect(campo).toContainText(/informado no laudo ou pela equipe/i);
     // ⚠️ VISÍVEL, e ⛔ não atrás do ⓘ: quem ⛔ não abre o ⓘ é justamente quem chuta.
@@ -218,6 +261,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
+    await novoExame(page, MODALIDADE.tcSemContraste);
     const campo = page.getByTestId("avc-campo-hipodensidade_clara");
     await expect(campo).toContainText(/substância branca contralateral/i);
 
@@ -229,7 +273,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await expect(conteudo).not.toContainText(/não elegív|está contraindicad|não trombolis/i);
 
     // ⛔ E ela ⛔ não retém a reperfusão: a exclusão de hemorragia segue intacta.
-    await page.getByTestId(OPCAO("tc_resultado", RESULTADO_TC.semHemorragia)).click();
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
       .toContainText(/excluída pela tomografia/i);
   });
@@ -245,7 +289,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await expect(conteudo).not.toContainText(/25 minutos/i);
     await expect(conteudo).not.toContainText(/atrasad/i);
 
-    await page.getByTestId("avc-hora-hora_tc").click();
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId("avc-hora-estudo_hora").click();
     await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
   });
 
@@ -257,9 +302,70 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    const nota = page.getByTestId("avc-grupo-nota-endovascular");
+    const nota = page.getByTestId("avc-grupo-nota-estudos");
     await expect(nota).toContainText(/Não atrase a trombólise por exames de imagem adicionais/i);
     await expect(nota).toContainText(/não é exame adicional/i);
+  });
+
+  /**
+   * ⚠️⚠️ **SENTINELA 1 NA TELA** — duas TCs que discordam, e a tela ⛔ não elege.
+   */
+  test("duas TCs discordantes: as duas aparecem, e ⛔ nenhuma é eleita", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirC(page);
+
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId(OPCAO("estudo_procedencia", "Serviço externo")).click();
+    await page.getByTestId("avc-hora-desconhecido-estudo_hora").click();
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
+
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    await page.getByTestId(OPCAO("estudo_procedencia", "Este serviço")).click();
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.hemorragia)).click();
+
+    const leitura = page.getByTestId("avc-leitura-curto-exclusao_hemorragia");
+    await expect(leitura).toContainText(/resultados divergentes/i);
+    /**
+     * ⚠️⚠️ E ela NOMEIA os dois exames — **E-30**. Com três estudos na tela, "há
+     * divergência" ⛔ não diz onde está o conflito que retém a reperfusão.
+     */
+    await expect(leitura).toContainText(/Exame 1/);
+    await expect(leitura).toContainText(/Exame 2/);
+    const conteudo = page.getByTestId("avc-superficie-c-conteudo");
+    await expect(conteudo).not.toContainText(/mais recente|prevalece/i);
+
+    // ⚠️ E os dois valores continuam legíveis, cada um no seu exame.
+    await page.getByTestId("avc-estudo-abrir-estudo_1").click();
+    await expect(page.getByTestId("avc-valor-estudo_resultado").first())
+      .toContainText(/Sem hemorragia/i);
+  });
+
+  /**
+   * ⚠️⚠️ **SENTINELA 2 NA TELA** — ASPECTS 7 corrigido para 6, mesmo exame.
+   */
+  test("corrigir o ASPECTS fica no mesmo exame, e ⛔ não cria outro", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirC(page);
+
+    await novoExame(page, MODALIDADE.tcSemContraste);
+    // ⚠️ Um toque grava o primeiro valor: 1.
+    await page.getByTestId("avc-grandeza-aspects-mais").click();
+    await expect(page.getByTestId("avc-valor-aspects")).toContainText("1");
+
+    /**
+     * ⚠️⚠️ Preenchido, o campo ⛔ não aceita escrita direta: o gesto é **Corrigir**.
+     *
+     * ⚠️⚠️ E dentro da correção os toques movem o RASCUNHO — seis toques ⛔ não são
+     * seis correções. Só **Confirmar** grava, e grava **um** fato.
+     */
+    await corrigir(page, "aspects");
+    await page.getByTestId("avc-grandeza-aspects-mais").click({ clickCount: 6 });
+    await page.getByTestId("avc-confirmar-aspects").click();
+    await expect(page.getByTestId("avc-valor-aspects")).toContainText("7");
+
+    // ⛔ E ⛔ NENHUM exame novo foi criado por corrigir um achado.
+    await expect(page.getByTestId("avc-estudo-estudo_2")).toHaveCount(0);
+    await expect(page.getByTestId("avc-estudo-estudo_1")).toBeVisible();
   });
 
   /**
@@ -290,7 +396,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await page.getByTestId("avc-aba-imagem").click();
 
     const conteudo = page.getByTestId("avc-superficie-c-conteudo");
-    await expect(conteudo).toContainText("Tomografía sin contraste");
+    /** ⚠️ O cabeçalho vem em caixa alta por CSS; o teste lê o texto do bloco. */
+    await expect(conteudo).toContainText(/estudios de imagen/i);
     await expect(conteudo).toContainText("Sospecha de hemorragia subaracnoidea");
     await expect(conteudo).toContainText(/No retrase la trombólisis/i);
     /**

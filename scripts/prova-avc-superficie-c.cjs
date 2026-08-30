@@ -49,6 +49,8 @@ execFileSync("npx", [
   path.join(appDir, "avc", "nucleo", "estado.ts"),
   path.join(appDir, "avc", "nucleo", "derivacoes-c.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
+  path.join(appDir, "avc", "conteudo", "campos.ts"),
+  path.join(appDir, "avc", "nucleo", "instancia.ts"),
   path.join(appDir, "avc", "conteudo", "superficies.ts"),
   // ⚠️ Entra no grafo porque a prova confere o ESTADO dos slots F-28 e F-29.
   path.join(appDir, "avc", "conteudo", "fontes.ts"),
@@ -61,6 +63,8 @@ const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
 const K = require(path.join(tmp, "avc", "conteudo", "campo.js"));
 const P = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
 const F = require(path.join(tmp, "avc", "conteudo", "fontes.js"));
+const I = require(path.join(tmp, "avc", "nucleo", "instancia.js"));
+const CAMPOS = require(path.join(tmp, "avc", "conteudo", "campos.js"));
 
 const novo = () => {
   const rel = R.relogioControlado(1_000_000);
@@ -73,6 +77,28 @@ const reg = (e, campo, valor) => E.registrarFato(e, { campo, valor }, rel);
 const escolhe = (e, campo, rotulo) => reg(e, campo, K.valorDaOpcao(rotulo));
 
 const TC = C.RESULTADO_TC;
+const MOD = C.MODALIDADE;
+
+/** ⚠️ As duas instâncias de estudo que as conferências usam. */
+const s1 = I.nomeDaInstancia(C.ESTUDO, 1);
+const s2 = I.nomeDaInstancia(C.ESTUDO, 2);
+
+/** ⚠️ Registra NUM ESTUDO explícito — o mesmo caminho que a tela usa. */
+const regE = (e, inst, campo, valor) =>
+  CAMPOS.registrarComInstancia(e, { campo, valor }, rel, inst);
+const escolheE = (e, inst, campo, rotulo) => regE(e, inst, campo, K.valorDaOpcao(rotulo));
+/** ⚠️ O GESTO EXPLÍCITO de correção — a porta que o botão "Corrigir" usa. */
+const corrE = (e, inst, campo, valor) =>
+  CAMPOS.corrigirNaInstancia(e, { campo, valor }, rel, inst);
+
+/** ⚠️ Uma TC sem contraste, com resultado. */
+const tcCom = (e, inst, resultado) =>
+  escolheE(escolheE(e, inst, "estudo_modalidade", MOD.tcSemContraste), inst, "estudo_resultado", resultado);
+/** ⚠️ Uma TC sem contraste **sem** resultado — o antigo "aguardando". */
+const tcSemResultado = (e, inst) =>
+  escolheE(e, inst, "estudo_modalidade", MOD.tcSemContraste);
+/** ⚠️ Um estudo vascular. */
+const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc);
 
 // ── 0 · O UNIVERSO EXISTE, e ⛔ não passou sobre o vazio ────────────────────
 {
@@ -83,20 +109,19 @@ const TC = C.RESULTADO_TC;
   confere("⛔ nenhum id duplicado",
     new Set(ids).size === ids.length,
     "dois campos com o mesmo id gravam um por cima do outro na trilha");
-  confere("os três blocos existem, e a imagem avançada nasce recolhida",
-    C.GRUPOS_C.length === 3
-    && C.GRUPOS_C.find((g) => g.id === "imagem-avancada")?.recolhido === true,
-    "§7.3: recolhido é para exceção; se a imagem avançada nascer aberta, ela disputa a tela com a exclusão de hemorragia");
   /**
-   * ⚠️⚠️ §7.3 · ⛔ CONTEÚDO DECISÓRIO ⛔ NÃO NASCE RECOLHIDO — e a exceção é
-   * declarada, ⛔ não deduzida.
-   *
-   * `recolhivel` existe para lista longa de campo que só importa quando há
-   * achado. ⛔ Ele ⛔ não pode encostar na tomografia ⛔ nem na suspeita de HSA: são
-   * as duas perguntas que governam a saída do módulo.
+   * ⚠️⚠️ **DOIS BLOCOS**, e ⛔ não três — 2026-08-30. `imagem_avancada` saiu
+   * inteiro, **inclusive a opção "Nenhuma"**: negativa agregada sem leitor é o
+   * defeito que originou toda esta remodelagem. Quais exames foram feitos passa
+   * a ser respondido pelas **instâncias**.
    */
+  confere("os dois blocos existem, e ⛔ nenhum se chama imagem avançada",
+    C.GRUPOS_C.length === 2
+    && C.GRUPOS_C.map((g) => g.id).join(",") === "estudos,episodio",
+    "os exames primeiro, porque governam a classe de reperfusão; o juízo clínico depois");
+
   const recolhiveis = C.TODOS_OS_CAMPOS_C.filter((c) => c.recolhivel).map((c) => c.id);
-  confere("⛔ SÓ o sítio da oclusão nasce com a lista recolhida",
+  confere("⛔ SÓ o sítio da oclusão é recolhível",
     JSON.stringify(recolhiveis) === JSON.stringify(["sitio_oclusao"]),
     `§7.3: recolher a tomografia ou a suspeita de HSA esconderia a decisão da superfície — ${recolhiveis.join(", ")}`);
   confere("a superfície declara a identidade estável, ⛔ não a letra",
@@ -122,7 +147,15 @@ const TC = C.RESULTADO_TC;
 
 // ── 2 · E-02 / E-37 · TODA ESCOLHA TEM SAÍDA SEM CONCLUSÃO ────────────────
 {
-  const escolhas = C.TODOS_OS_CAMPOS_C.filter((c) => ["escolha", "multipla"].includes(c.tipo));
+  const excecoes = C.SEM_SAIDA_DECLARADA.map((x) => x.id);
+  const escolhas = C.TODOS_OS_CAMPOS_C
+    .filter((c) => ["escolha", "multipla"].includes(c.tipo))
+    .filter((c) => !excecoes.includes(c.id));
+  confere("a exceção de saída sem conclusão é DECLARADA com motivo",
+    C.SEM_SAIDA_DECLARADA.length > 0
+    && C.SEM_SAIDA_DECLARADA.every((x) => typeof x.motivo === "string" && x.motivo.length > 20)
+    && excecoes.every((id) => C.TODOS_OS_CAMPOS_C.some((c) => c.id === id)),
+    "campo sem saída declarada só pode existir com o motivo escrito — ⛔ senão é esquecimento com cara de decisão");
   const semDeclaracao = escolhas.filter((c) => C.SAIDA_SEM_CONCLUSAO[c.id] === undefined);
   confere("TODA escolha de C declara a sua saída sem conclusão",
     semDeclaracao.length === 0,
@@ -132,16 +165,16 @@ const TC = C.RESULTADO_TC;
     invalidas.length === 0,
     `declarar uma saída que ⛔ não está na lista é pior que ⛔ não declarar: parece coberto — ${invalidas.map((c) => c.id).join(", ")}`);
   confere("a saída do resultado da tomografia ⛔ NÃO se chama 'Não sei'",
-    C.SAIDA_SEM_CONCLUSAO.tc_resultado === TC.aguardando,
+    C.SEM_SAIDA_DECLARADA.some((x) => x.id === "estudo_resultado"),
     "aqui a incerteza tem PROCEDÊNCIA: o exame foi feito e o laudo ⛔ não saiu. Trocar por 'não sei' apagaria o que se sabe");
 }
 
 // ── 3 · AS TRÊS SAÍDAS DA TC EXISTEM, e ⛔ NÃO COLAPSAM ────────────────────
 {
   confere("o resultado da tomografia tem QUATRO respostas distintas",
-    new Set(C.OPCOES_RESULTADO_TC).size === 4,
+    new Set(C.OPCOES_RESULTADO_TC).size === 2,
     "§1.8: três saídas mais o estado de laudo pendente. Colapsar em sim/não apagaria a diferença entre 'sem hemorragia' e 'ainda não sei'");
-  const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "tc_resultado");
+  const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "estudo_resultado");
   confere("as quatro respostas do campo são as quatro constantes",
     JSON.stringify(campo?.opcoes) === JSON.stringify(C.OPCOES_RESULTADO_TC),
     "fonte única: comparar contra literal repetido faz a derivação parar de reconhecer o rótulo quando alguém melhora o texto");
@@ -162,18 +195,18 @@ const TC = C.RESULTADO_TC;
     vazio.exclusao === "sem_informacao" && vazio.conclusao === "desconhecido",
     "E-23: ausência de tomografia ⛔ não é ausência de hemorragia, e ⛔ também ⛔ não é hemorragia");
 
-  const sem = D.exclusaoDeHemorragia(escolhe(est, "tc_resultado", TC.semHemorragia));
+  const sem = D.exclusaoDeHemorragia(tcCom(est, s1, TC.semHemorragia));
   confere("'sem hemorragia' é o ÚNICO estado que exclui",
     sem.exclusao === "excluida" && sem.conclusao === "sim",
     "F-16 rec. 1, COR 1 · A: a exclusão é a condição declarada para toda a classe de reperfusão");
 
-  const com = D.exclusaoDeHemorragia(escolhe(est, "tc_resultado", TC.hemorragia));
+  const com = D.exclusaoDeHemorragia(tcCom(est, s1, TC.hemorragia));
   confere("'hemorragia intracraniana' é estado próprio, e ⛔ não 'sem informação'",
     com.exclusao === "hemorragia_presente" && com.tom === "atencao",
     "E-37: os três estados são distinguíveis — hemorragia presente ⛔ não é o mesmo que dado faltando");
 
-  const agu = D.exclusaoDeHemorragia(escolhe(est, "tc_resultado", TC.aguardando));
-  const nao = D.exclusaoDeHemorragia(escolhe(est, "tc_resultado", TC.naoRealizada));
+  const agu = D.exclusaoDeHemorragia(tcSemResultado(est, s1));
+  const nao = D.exclusaoDeHemorragia(est);
   confere("laudo pendente e exame ⛔ não realizado ⛔ NÃO excluem hemorragia",
     agu.exclusao === "sem_informacao" && nao.exclusao === "sem_informacao",
     "seria a liberação da classe inteira de reperfusão nascendo de um dado que ninguém tem");
@@ -184,7 +217,8 @@ const TC = C.RESULTADO_TC;
   /** ⚠️⚠️ A VARREDURA: ⛔ nenhum valor além de 'sem hemorragia' pode liberar. */
   const todos = [undefined, ...C.OPCOES_RESULTADO_TC, "nao_perguntado", "nao_sei", "qualquer coisa"];
   const liberam = todos.filter((v) => {
-    const e = v === undefined ? est : reg(est, "tc_resultado", v);
+    const comTc = escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste);
+    const e = v === undefined ? comTc : regE(comTc, s1, "estudo_resultado", v);
     return D.exclusaoDeHemorragia(e).exclusao === "excluida";
   });
   confere("⛔ SÓ 'Sem hemorragia' libera — varrido valor a valor",
@@ -193,19 +227,20 @@ const TC = C.RESULTADO_TC;
 
   confere("a retenção da classe é derivada da MESMA função",
     todos.every((v) => {
-      const e = v === undefined ? est : reg(est, "tc_resultado", v);
+      const comTc = escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste);
+    const e = v === undefined ? comTc : regE(comTc, s1, "estudo_resultado", v);
       return D.reperfusaoRetidaPelaImagem(e) === (D.exclusaoDeHemorragia(e).exclusao !== "excluida");
     }),
     "I6: a regra escrita duas vezes diverge, e quem decide passa a ser a cópia errada");
 
   confere("a exclusão declara UM insumo, e é o resultado da tomografia",
-    JSON.stringify(vazio.insumos) === JSON.stringify(["tc_resultado"]) && vazio.fonte === "F-16",
+    JSON.stringify(vazio.insumos) === JSON.stringify(["estudo_resultado"]) && vazio.fonte === "F-16",
     "E-22/E-30: e o insumo único é o que impede outro campo de virar bloqueio de classe por dentro");
 }
 
 // ── 5 · ⛔ NADA MAIS EM C RETÉM A REPERFUSÃO ───────────────────────────────
 {
-  const base = escolhe(est, "tc_resultado", TC.semHemorragia);
+  const base = tcCom(est, s1, TC.semHemorragia);
   const referencia = JSON.stringify(D.exclusaoDeHemorragia(base));
   const perturbacoes = [
     ["suspeita_hsa", "sim"], ["suspeita_hsa", "nao"], ["suspeita_hsa", "nao_sei"],
@@ -243,7 +278,7 @@ const TC = C.RESULTADO_TC;
     D.destinoDaImagem(est) === undefined,
     "destino só existe quando alguma coisa o arma; ausência ⛔ não é afirmação sobre o paciente");
 
-  const soHemorragia = escolhe(est, "tc_resultado", TC.hemorragia);
+  const soHemorragia = tcCom(est, s1, TC.hemorragia);
   const dh = D.destinoDaImagem(soHemorragia);
   confere("hemorragia sozinha → destino do AVC hemorrágico",
     dh?.saida === "hemorragia_intracraniana" && dh?.associados.length === 0,
@@ -255,7 +290,7 @@ const TC = C.RESULTADO_TC;
     ds?.saida === "suspeita_hsa" && ds?.associados.length === 0,
     "PD-21: TC sem hemorragia com suspeita clínica de HSA precisa ser representável, e ela arma a saída própria");
 
-  const ambos = escolhe(escolhe(est, "tc_resultado", TC.hemorragia), "suspeita_hsa", "Sim");
+  const ambos = escolhe(tcCom(est, s1, TC.hemorragia), "suspeita_hsa", "Sim");
   const da = D.destinoDaImagem(ambos);
   /**
    * ⚠️⚠️ A REVISÃO DO AUTOR (2026-08-29): a **suspeita** ⛔ NÃO sobrepõe o achado de
@@ -273,7 +308,7 @@ const TC = C.RESULTADO_TC;
     da?.associados[0].id === C.FATO_ASSOCIADO.suspeitaHsa.id,
     "guardar só a frase deixaria o subfluxo futuro dependendo de casar texto traduzível");
   confere("e os DOIS fatos continuam inteiros na trilha",
-    E.valorAtual(ambos, "tc_resultado").valor === TC.hemorragia
+    I.valorNaInstancia(ambos, s1, "estudo_resultado").valor === TC.hemorragia
     && E.valorAtual(ambos, "suspeita_hsa").valor === "sim"
     && D.exclusaoDeHemorragia(ambos).exclusao === "hemorragia_presente"
     && D.suspeitaDeHsa(ambos).conclusao === "sim",
@@ -310,7 +345,7 @@ const TC = C.RESULTADO_TC;
     "é a tarefa mais importante do atendimento, e ela ⛔ não pode nascer silenciosa");
 
   /** ⚠️⚠️ PD-22 — o coração desta superfície. */
-  const aguardando = escolhe(est, "tc_resultado", TC.aguardando);
+  const aguardando = tcSemResultado(est, s1);
   const pAgu = D.pendenciasDaImagem(aguardando).find((p) => p.id === "tc_resultado");
   confere("'resultado ainda ⛔ não disponível' ⛔ NÃO fecha a pendência",
     pAgu !== undefined,
@@ -325,11 +360,11 @@ const TC = C.RESULTADO_TC;
     "E-26: pendência que ⛔ não diz o que a resolve é muro; e o que resolve ⛔ não é o mesmo nos dois estados");
 
   confere("exame ⛔ não realizado mantém a pendência aberta",
-    ids(escolhe(est, "tc_resultado", TC.naoRealizada)).includes("tc_resultado"),
+    ids(est).includes("tc_resultado"),
     "responder 'ainda ⛔ não foi feita' ⛔ não é resolver a imagem");
   confere("⛔ SÓ resultado conclusivo fecha a pendência da TC",
-    !ids(escolhe(est, "tc_resultado", TC.semHemorragia)).includes("tc_resultado")
-    && !ids(escolhe(est, "tc_resultado", TC.hemorragia)).includes("tc_resultado"),
+    !ids(tcCom(est, s1, TC.semHemorragia)).includes("tc_resultado")
+    && !ids(tcCom(est, s1, TC.hemorragia)).includes("tc_resultado"),
     "pendência que ⛔ não fecha quando o dado chega é ruído permanente, e ruído permanente deixa de ser lido");
 
   confere("'Incerto' na HSA abre pendência própria; 'Sim' e 'Não' ⛔ não",
@@ -343,18 +378,18 @@ const TC = C.RESULTADO_TC;
     ids(comLvo).includes("imagem_vascular"),
     "F-16 rec. 8, COR 1 · A: imagem vascular de emergência na suspeita de LVO");
   confere("angio realizada fecha a pendência vascular",
-    !ids(escolhe(comLvo, "angio_realizada", C.ANGIO.realizada)).includes("imagem_vascular"),
+    !ids(vascular(comLvo, s1)).includes("imagem_vascular"),
     "a tarefa existe para ser cumprida, e cumprida ela some");
   /** ⚠️⚠️ E-26 · O QUE ⛔ NÃO TEM COMO SER RESOLVIDO ⛔ NÃO É TAREFA. */
   confere("'não disponível neste serviço' TAMBÉM fecha a pendência vascular",
-    !ids(escolhe(comLvo, "angio_realizada", C.ANGIO.indisponivel)).includes("imagem_vascular"),
+    !ids(escolhe(comLvo, "angio_disponibilidade", "Não disponível neste serviço")).includes("imagem_vascular"),
     "E-26: cobrar para sempre um exame que o serviço ⛔ não tem é muro, ⛔ não tarefa (E-18)");
   confere("sem suspeita de LVO, ⛔ nenhuma pendência vascular nasce",
     !ids(escolhe(est, "suspeita_lvo", "Não")).includes("imagem_vascular"),
     "a dependência liga ação a condição (E-25), e ⛔ não nasce de superfície aberta");
 
   /** ⚠️ A forma de TODA pendência de C. */
-  const cenario = escolhe(escolhe(escolhe(est, "tc_resultado", TC.aguardando), "suspeita_hsa", "Incerto"), "suspeita_lvo", "Sim");
+  const cenario = escolhe(escolhe(tcSemResultado(est, s1), "suspeita_hsa", "Incerto"), "suspeita_lvo", "Sim");
   const todas = D.pendenciasDaImagem(cenario);
   confere("as três pendências convivem, com ids distintos",
     todas.length === 3 && new Set(todas.map((p) => p.id)).size === 3,
@@ -384,7 +419,7 @@ const TC = C.RESULTADO_TC;
    * dizendo para ⛔ NÃO esperar por ela. A trava mede CAMPO, ⛔ não proibição de
    * palavra: uma varredura de texto reprovaria justamente a frase que protege.
    */
-  const angio = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "angio_realizada");
+  const angio = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "angio_disponibilidade");
   confere("e a nota da angio DIZ que ela ⛔ não espera creatinina",
     /creatinina/i.test(angio?.nota ?? "") && /não deve ser atrasada/i.test(angio?.nota ?? ""),
     "o verbatim COR 1 · B-NR é o que impede alguém de reintroduzir a espera como se fosse cuidado");
@@ -392,7 +427,7 @@ const TC = C.RESULTADO_TC;
 
 // ── 10 · R2.5 · O HORÁRIO DA TC ⛔ NÃO É CRONÔMETRO ────────────────────────
 {
-  const hora = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "hora_tc");
+  const hora = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "estudo_hora");
   confere("o horário da tomografia ⛔ NÃO alimenta relógio clínico nenhum",
     hora !== undefined && hora.relogio === undefined,
     "E-21: porta-imagem se conta do t₀ do serviço; janela se conta dos relógios do paciente. Trocar produz janela errada com cara de precisão");
@@ -408,7 +443,7 @@ const TC = C.RESULTADO_TC;
 
   /** ⚠️ E o registro do horário ⛔ não pode mexer em ⛔ nada clínico. */
   const antes = JSON.stringify(D.leiturasDaSuperficieC(est)) + JSON.stringify(D.pendenciasDaImagem(est));
-  const comHora = E.registrarFato(est, { campo: "hora_tc", valor: 1_500_000, horaClinica: 1_500_000 }, rel);
+  const comHora = CAMPOS.registrarComInstancia(est, { campo: "estudo_hora", valor: 1_500_000, horaClinica: 1_500_000 }, rel, s1);
   confere("registrar o horário da tomografia ⛔ não muda leitura nem pendência",
     JSON.stringify(D.leiturasDaSuperficieC(comHora)) + JSON.stringify(D.pendenciasDaImagem(comHora)) === antes,
     "é registro operacional; se ele mexesse em leitura clínica, teria virado marco sem que ninguém decidisse isso");
@@ -420,16 +455,20 @@ const TC = C.RESULTADO_TC;
 // ── 11 · A ALERGIA A CONTRASTE — decisão do autor, com três travas ────────
 {
   /**
-   * ⚠️ A alergia **mora em Paciente** desde 2026-08-29 e continua **desenhada
-   * aqui**, ao lado da angiotomografia — que é onde ela importa.
+   * ⚠️⚠️ A ALERGIA ⛔ NÃO É MAIS PERGUNTADA AQUI — autor, 2026-08-30:
+   *
+   * > *"⛔ no A já coleta sobre alergias e no C de novo, ⛔ só deixamos no A"*
+   *
+   * ⚠️ Ela era emprestada de Paciente e aparecia nas duas telas. A **leitura**
+   * continua: ler ⛔ não é coletar, e quem está diante da angiotomografia precisa
+   * ver o que já se sabe.
    */
-  const alergia = C.CAMPOS_NA_TELA_C.find((c) => c.id === "alergia_contraste");
-  confere("o campo de alergia a contraste EXISTE",
-    alergia !== undefined && alergia.bloqueiaTerapia === false,
-    "decisão do autor, 2026-08-29: ⛔ não esperar por creatinina é uma coisa; apagar informação relevante à ação contrastada é outra");
-  confere("as três respostas são Sim, Não e Não sei",
-    JSON.stringify(alergia?.opcoes) === JSON.stringify(["Sim", "Não", "Não sei"]),
-    "E-02: desconhecido é resposta, e aqui é o caso comum");
+  confere("⛔ o campo de alergia ⛔ NÃO é desenhado em C",
+    C.CAMPOS_NA_TELA_C.every((c) => c.id !== "alergia_contraste"),
+    "a mesma pergunta em duas telas faz o médico duvidar da resposta que já deu");
+  confere("⛔ mas a LEITURA dela continua na superfície",
+    D.leiturasDaSuperficieC(est).some((l) => l.id === "alergia_contraste"),
+    "*\"⛔ não esperar por creatinina é uma coisa; apagar informação relevante à ação contrastada é outra\"* — a decisão de 2026-08-29 sobrevive na leitura");
 
   const l = (e) => D.alergiaAContraste(e);
   confere("os quatro estados da alergia são distinguíveis",
@@ -455,7 +494,7 @@ const TC = C.RESULTADO_TC;
   /** ⚠️⚠️ A TRAVA QUE REALMENTE GUARDA A DECISÃO: ⛔ nada mais pode reagir. */
   const outras = (e) =>
     JSON.stringify(D.leiturasDaSuperficieC(e).filter((x) => x.id !== "alergia_contraste"));
-  const cenario = escolhe(escolhe(est, "tc_resultado", TC.semHemorragia), "suspeita_lvo", "Sim");
+  const cenario = escolhe(tcCom(est, s1, TC.semHemorragia), "suspeita_lvo", "Sim");
   const valores = ["Sim", "Não", "Não sei"];
   confere("⛔ NENHUMA outra leitura de C muda com a alergia a contraste",
     valores.every((v) => outras(escolhe(cenario, "alergia_contraste", v)) === outras(cenario)),
@@ -483,9 +522,9 @@ const TC = C.RESULTADO_TC;
   const combinacoes = [
     est,
     escolhe(est, "suspeita_lvo", "Sim"),
-    escolhe(escolhe(est, "suspeita_lvo", "Sim"), "angio_realizada", C.ANGIO.realizada),
-    reg(escolhe(escolhe(est, "suspeita_lvo", "Sim"), "angio_realizada", C.ANGIO.realizada), "aspects", 8),
-    escolhe(reg(escolhe(est, "suspeita_lvo", "Sim"), "aspects", 10), "sitio_oclusao", "M1 da artéria cerebral média"),
+    vascular(escolhe(est, "suspeita_lvo", "Sim"), s1),
+    regE(vascular(escolhe(est, "suspeita_lvo", "Sim"), s1), s1, "aspects", 8),
+    escolheE(regE(escolhe(est, "suspeita_lvo", "Sim"), s1, "aspects", 10), s1, "sitio_oclusao", "M1 da artéria cerebral média"),
     /**
      * ⚠️⚠️ O DOSSIÊ **COMPLETO** — e ele faltava, achado por mutação em
      * 2026-08-29: uma versão que concluísse `sim` exatamente quando ⛔ nada mais
@@ -493,13 +532,14 @@ const TC = C.RESULTADO_TC;
      * cinco campos. ⚠️ É o caso mais perigoso, e era o único ⛔ não medido: o
      * veredito ⛔ não aparece na tela vazia, aparece na tela pronta.
      */
+    /** ⚠️ Todos os achados do dossiê, cada um NA SUA instância de estudo. */
     C.IDS_DOSSIE_ENDOVASCULAR.reduce(
       (e, id) =>
         id === "aspects"
-          ? reg(e, id, 7)
-          : escolhe(e, id, id === "angio_realizada" ? C.ANGIO.realizada
-            : id === "sitio_oclusao" ? "M1 da artéria cerebral média" : "Sim"),
-      est
+          ? regE(e, s1, id, 7)
+          : escolheE(e, id === "sitio_oclusao" ? s2 : s1, id,
+            id === "sitio_oclusao" ? "M1 da artéria cerebral média" : "Sim"),
+      vascular(escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste), s2)
     ),
   ];
   confere("o dossiê COMPLETO ⛔ não deixa ⛔ nenhum campo por perguntar",
@@ -523,18 +563,19 @@ const TC = C.RESULTADO_TC;
     }),
     "campo fora das três listas é campo que ninguém vê; campo em duas é contagem dupla");
 
-  const semConclusao = escolhe(est, "angio_realizada", "Não sei");
+  /** ⚠️ Agora o dossiê é `sitio_oclusao`, que vive na instância vascular. */
+  const semConclusao = escolheE(vascular(est, s1), s1, "sitio_oclusao", "Não sei");
   confere("respondido com a saída sem conclusão ⛔ NÃO conta como registrado",
-    d(semConclusao).semConclusao.includes("angio_realizada")
-    && !d(semConclusao).registrados.includes("angio_realizada"),
+    d(semConclusao).semConclusao.includes("sitio_oclusao")
+    && !d(semConclusao).registrados.includes("sitio_oclusao"),
     "E-37: 'perguntei e ninguém sabe' ⛔ não é 'tenho o dado'");
   confere("e ⛔ também ⛔ NÃO conta como ainda ⛔ não perguntado",
-    !d(semConclusao).naoPerguntados.includes("angio_realizada"),
+    !d(semConclusao).naoPerguntados.includes("sitio_oclusao"),
     "E-37 do outro lado: colapsar a resposta no silêncio apaga que alguém já perguntou");
 
   /** ⚠️⚠️ E-10 · ASPECTS 0 é RESPOSTA, e a fonte tem faixa para ele. */
   confere("ASPECTS 0 conta como dado registrado",
-    d(reg(est, "aspects", 0)).registrados.includes("aspects"),
+    d(regE(escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste), s1, "aspects", 0)).registrados.includes("aspects"),
     "E-10: F-08 rec. 4 tem faixa 'ASPECTS 0 to 2' — ler zero como ausência apagaria o escore mais grave");
   /**
    * ⚠️⚠️ O RAMO DA GRANDEZA É ESCOLHIDO PELO TIPO, e ⛔ não por um `else` no fim —
@@ -550,8 +591,8 @@ const TC = C.RESULTADO_TC;
    * dado que ninguém tem.
    */
   confere("valor ⛔ não numérico num campo numérico ⛔ NÃO conta como dado registrado",
-    d(reg(est, "aspects", "mais ou menos 8")).semConclusao.includes("aspects")
-    && !d(reg(est, "aspects", "mais ou menos 8")).registrados.includes("aspects"),
+    d(regE(escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste), s1, "aspects", "mais ou menos 8")).semConclusao.includes("aspects")
+    && !d(regE(escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste), s1, "aspects", "mais ou menos 8")).registrados.includes("aspects"),
     "o ramo do dossiê é escolhido pelo TIPO do campo; um `else` no fim transforma valor inesperado em informação registrada");
 
   const campoAspects = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "aspects");
@@ -567,7 +608,7 @@ const TC = C.RESULTADO_TC;
 // ── 13 · A IMAGEM AVANÇADA ⛔ NÃO É PORTA — R2.3, 🚫 #4 ────────────────────
 {
   const opcoes = ["Tomografia de perfusão", "Ressonância com difusão e FLAIR", "Ressonância com perfusão", "Nenhuma", "Não sei"];
-  const base = escolhe(est, "tc_resultado", TC.semHemorragia);
+  const base = tcCom(est, s1, TC.semHemorragia);
   const referencia = JSON.stringify(D.leiturasDaSuperficieC(base)) + JSON.stringify(D.pendenciasDaImagem(base));
   confere("⛔ NENHUMA leitura ⛔ nem pendência muda com a imagem avançada",
     opcoes.every((o) =>
@@ -578,7 +619,7 @@ const TC = C.RESULTADO_TC;
     JSON.stringify(D.pendenciasDaImagem(base)).includes("imagem_avancada") === false,
     "cobrar perfusão para seguir é exatamente o atraso que a fonte manda evitar");
 
-  const bloco = C.GRUPOS_C.find((g) => g.id === "endovascular");
+  const bloco = C.GRUPOS_C.find((g) => g.id === "estudos");
   confere("a nota do bloco endovascular diz para ⛔ NÃO atrasar a trombólise",
     /Não atrase a trombólise por exames de imagem adicionais/.test(bloco?.nota ?? ""),
     "redação aprovada pelo autor: a regra contra atraso fica VISÍVEL, ⛔ não atrás do ⓘ");
@@ -602,7 +643,7 @@ const TC = C.RESULTADO_TC;
     "E-46 e §7.15: C coleta fatos; o veredito é derivado na Reperfusão, que ainda ⛔ não existe");
 
   /** ⚠️ E o mesmo com a tela cheia, ⛔ não só vazia. */
-  const cheio = escolhe(escolhe(reg(escolhe(escolhe(est, "tc_resultado", TC.semHemorragia),
+  const cheio = escolhe(escolhe(reg(escolhe(tcCom(est, s1, TC.semHemorragia),
     "suspeita_hsa", "Não"), "aspects", 9), "suspeita_lvo", "Sim"), "angio_realizada", C.ANGIO.realizada);
   confere("com tudo preenchido, ⛔ nenhuma leitura vira veredito",
     !/elegív|contraindic|pode trombolisar/i.test(JSON.stringify(D.leiturasDaSuperficieC(cheio))),
@@ -741,6 +782,189 @@ const TC = C.RESULTADO_TC;
   confere("e o mecanismo de campo-que-existe continua vivo",
     P.pendenciasVigentes().every((p) => p.campo.length > 0),
     "as superfícies D a G ainda vão nascer, e a declaração invisível é o que as faz voltar sozinhas");
+}
+
+// ── 12 · O CONTRATO DE INSTÂNCIA APLICADO À IMAGEM (2026-08-30) ───────────
+{
+  /** ⚠️ Todo achado pertence ao estudo que o produziu; ⛔ nenhum é órfão. */
+  const ACHADOS = ["estudo_resultado", "hipodensidade_clara", "aspects", "efeito_de_massa", "sitio_oclusao"];
+  const JUIZOS = ["suspeita_hsa", "suspeita_lvo", "angio_disponibilidade"];
+
+  confere("todo ACHADO de imagem declara instância de estudo",
+    ACHADOS.every((id) => C.campoDeC(id).instanciaDe === C.ESTUDO),
+    "achado sem instância é achado órfão: dois exames, e o app ⛔ não sabe qual produziu qual número");
+  confere("⛔ NENHUM juízo do episódio declara instância",
+    JUIZOS.every((id) => C.campoDeC(id).instanciaDe === undefined),
+    "*\"suspeita de HSA existe justamente quando a TC ⛔ não mostra hemorragia\"* — presa ao estudo, viraria achado dele");
+  confere("e os três juízos têm casa IMAGEM, e ⛔ nunca Paciente",
+    JUIZOS.every((id) => C.campoDeC(id).casa === "imagem"),
+    "*\"são juízos do episódio agudo: podem surgir, desaparecer ou ser revistos durante aquele atendimento\"*");
+  confere("a alergia a contraste continua com casa PACIENTE",
+    C.TODOS_OS_CAMPOS_C.every((c) => c.id !== "alergia_contraste"),
+    "ela é emprestada, e ⛔ não pertence a C — perguntar alergia depois de oferecer o contraste é perguntar tarde");
+
+  /** ⚠️⚠️ A matriz é LITERAL: modalidade nova ⛔ não herda pergunta nenhuma. */
+  confere("a RM ⛔ NÃO herda hipodensidade clara",
+    !C.achadosDaModalidade(MOD.rm).includes("hipodensidade_clara"),
+    "*\"hipodensidade é linguagem de TC, ⛔ não achado genérico de qualquer imagem parenquimatosa\"*");
+  confere("⛔ e ⛔ NÃO herda ASPECTS por ser 'de parênquima'",
+    !C.achadosDaModalidade(MOD.rm).includes("aspects"),
+    "ASPECTS por RM, se admitido, entra DECLARADO com a fonte que o admita — ⛔ nunca por categoria ampla");
+  confere("a perfusão abre SEM variável nova",
+    C.achadosDaModalidade(MOD.perfusaoTc).length === 0,
+    "⛔ nada nasce antes de a Reperfusão definir o que consome — campo sem leitor é o defeito que originou a remodelagem");
+  confere("⛔ modalidade desconhecida ⛔ não oferece achado ⛔ nenhum",
+    C.achadosDaModalidade(undefined).length === 0 && C.achadosDaModalidade("Não sei").length === 0,
+    "sem saber o exame, o app ⛔ não sabe o que ele responde — e ⛔ não inventa");
+  confere("⛔ SÓ a TC sem contraste responde o resultado de hemorragia",
+    JSON.stringify(C.MODALIDADES_COM_RESULTADO) === JSON.stringify([MOD.tcSemContraste]),
+    "é este achado que governa a classe inteira de reperfusão");
+
+  /** ⚠️⚠️ TC de perfusão ⛔ NÃO satisfaz a leitura da TC sem contraste. */
+  const perfusao = escolheE(est, s1, "estudo_modalidade", MOD.perfusaoTc);
+  confere("⛔ TC de perfusão ⛔ NÃO faz a TC sem contraste parecer realizada",
+    D.situacaoDaTcSemContraste(perfusao) === "nenhuma_registrada",
+    "*\"TC de perfusão ⛔ não pode fazer o app concluir que a TC sem contraste inicial está feita\"*");
+  confere("⛔ e ⛔ nem libera a reperfusão",
+    D.reperfusaoRetidaPelaImagem(perfusao) === true,
+    "arquitetura de instâncias bonita respondendo à pergunta clínica errada é pior que ⛔ nenhuma");
+
+  confere("sem estudo, a leitura fala da TRILHA, e ⛔ não do mundo",
+    /nenhuma tomografia/i.test(D.exclusaoDeHemorragia(est).curto)
+    && !/não realizada/i.test(D.exclusaoDeHemorragia(est).curto),
+    "**E-23**: 'ainda ⛔ não realizada' é afirmação sobre o mundo tirada da ausência de registro");
+  confere("estudo aberto sem resultado ⛔ NÃO fecha a pendência da TC",
+    D.pendenciasDaImagem(tcSemResultado(est, s1)).some((p) => p.id === "tc_resultado"),
+    "**PD-22**: o resultado pendente continua sendo a tarefa mais importante do atendimento");
+
+  /** ⚠️⚠️ A realização vascular é DERIVADA, e ausência ⛔ nunca é indisponibilidade. */
+  confere("existir estudo vascular basta — ⛔ ninguém repergunta se foi realizado",
+    D.imagemVascular(vascular(est, s1)).vascular === "registrada",
+    "repreguntar seria cobrar o que a trilha já sabe");
+  confere("⛔ ausência de estudo ⛔ NUNCA vira indisponibilidade",
+    D.imagemVascular(est).vascular === "sem_informacao"
+    && !/disponív/i.test(D.imagemVascular(est).curto),
+    "**E-23** e **E-18**: ⛔ não haver estudo registrado ⛔ não é o exame ⛔ não existir no serviço");
+  confere("e 'não disponível neste serviço' continua respondível SEM estudo",
+    D.imagemVascular(escolhe(est, "angio_disponibilidade", "Não disponível neste serviço")).vascular === "indisponivel",
+    "⛔ nenhuma instância consegue dizer isto — é o que sobrou de `angio_realizada`");
+
+  confere("⛔ `imagem_avancada` ⛔ NÃO existe, ⛔ nem como negativa agregada",
+    C.TODOS_OS_CAMPOS_C.every((c) => c.id !== "imagem_avancada")
+    && typeof D.examesAvancados !== "function",
+    "*\"guardar uma negativa agregada sem leitor é voltar ao mesmo problema que iniciou a remodelagem\"*");
+  confere("e quais exames foram feitos vem das INSTÂNCIAS",
+    JSON.stringify(D.modalidadesRealizadas(vascular(perfusao, s2)))
+      === JSON.stringify([MOD.perfusaoTc, MOD.angioTc]),
+    "a existência das instâncias responde o que o campo agregado respondia");
+}
+
+// ── 13 · SENTINELA 1 · DUAS TCs QUE DISCORDAM ────────────────────────────
+/**
+ * ⚠️⚠️ MONTADO PELO AUTOR: TC **externa sem horário**, sem hemorragia · TC
+ * **local às 18h**, com hemorragia.
+ *
+ * ⛔ E o **espelho** dá o mesmo resultado, que é a decisão dele: *"fazer o app
+ * preferir 'local', 'mais novo', 'mais confiável' ⛔ ou qualquer outro atributo
+ * sem regra explícita seria criar uma hierarquia que ⛔ ninguém autorizou."*
+ */
+{
+  const monta = (rExterna, rLocal) => {
+    let e = escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste);
+    e = escolheE(e, s1, "estudo_procedencia", "Serviço externo");
+    e = escolheE(e, s1, "estudo_hora", "Não sei");
+    e = escolheE(e, s1, "estudo_resultado", rExterna);
+    e = escolheE(e, s2, "estudo_modalidade", MOD.tcSemContraste);
+    e = escolheE(e, s2, "estudo_procedencia", "Este serviço");
+    e = CAMPOS.registrarComInstancia(e, { campo: "estudo_hora", valor: 1_800_000, horaClinica: 1_800_000 }, rel, s2);
+    return escolheE(e, s2, "estudo_resultado", rLocal);
+  };
+  const caso = monta(TC.semHemorragia, TC.hemorragia);
+  const espelho = monta(TC.hemorragia, TC.semHemorragia);
+
+  confere("as DUAS TCs continuam registradas, cada uma com o seu resultado",
+    I.valorNaInstancia(caso, s1, "estudo_resultado").valor === TC.semHemorragia
+    && I.valorNaInstancia(caso, s2, "estudo_resultado").valor === TC.hemorragia,
+    "⛔ nenhuma é apagada, ⛔ nenhuma é escondida");
+  confere("a ordem entre elas ⛔ NÃO é estabelecível",
+    D.ordemEntreEstudos(D.tcsSemContraste(caso)) === "nao_estabelecivel",
+    "uma delas ⛔ não tem horário — e ordem de registro ⛔ não é ordem clínica");
+  /**
+   * ⚠️⚠️ EMPATE ⛔ NÃO ESTABELECE ORDEM — ponto cego achado por mutação (M108).
+   * Dois exames no MESMO instante ⛔ não se ordenam entre si, e "ambos têm
+   * horário" ⛔ não é o mesmo que "dá para dizer qual veio antes".
+   */
+  {
+    let empate = escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste);
+    empate = CAMPOS.registrarComInstancia(empate, { campo: "estudo_hora", valor: 1_800_000, horaClinica: 1_800_000 }, rel, s1);
+    empate = escolheE(empate, s1, "estudo_resultado", TC.semHemorragia);
+    empate = escolheE(empate, s2, "estudo_modalidade", MOD.tcSemContraste);
+    empate = CAMPOS.registrarComInstancia(empate, { campo: "estudo_hora", valor: 1_800_000, horaClinica: 1_800_000 }, rel, s2);
+    empate = escolheE(empate, s2, "estudo_resultado", TC.hemorragia);
+    confere("dois exames no MESMO instante ⛔ não estabelecem ordem",
+      D.ordemEntreEstudos(D.tcsSemContraste(empate)) === "nao_estabelecivel",
+      "ambos com horário ⛔ não é o mesmo que dá para dizer qual veio antes");
+  }
+
+  confere("a leitura declara DIVERGÊNCIA, e ⛔ não elege",
+    D.exclusaoDeHemorragia(caso).exclusao === "divergente"
+    && !/mais recente|prevalece|considera/i.test(D.exclusaoDeHemorragia(caso).curto),
+    "escolher entre os dois seria a hierarquia silenciosa que o autor proibiu");
+  confere("a divergência NOMEIA os dois estudos",
+    JSON.stringify(D.exclusaoDeHemorragia(caso).estudos) === JSON.stringify([s1, s2]),
+    "**E-30**: a leitura diz de onde veio, e ⛔ não fala no ar");
+  confere("⛔ e a reperfusão fica RETIDA",
+    D.reperfusaoRetidaPelaImagem(caso) === true,
+    "divergente ⛔ não é exclusão declarada — logo, retém");
+  confere("⛔ O ESPELHO dá EXATAMENTE o mesmo",
+    D.exclusaoDeHemorragia(espelho).exclusao === "divergente"
+    && D.reperfusaoRetidaPelaImagem(espelho) === true,
+    "externo-com-hemorragia × local-sem ⛔ não pode valer diferente — a função ⛔ nunca soube distinguir procedência");
+  confere("e a saída hemorrágica aparece nos DOIS sentidos",
+    D.destinoDaImagem(caso)?.saida === "hemorragia_intracraniana"
+    && D.destinoDaImagem(espelho)?.saida === "hemorragia_intracraniana",
+    "um achado de hemorragia ⛔ não desacontece porque outro exame ⛔ não o viu");
+
+  /** ⚠️⚠️ ADJUDICAÇÃO EXPLÍCITA — a única saída da divergência. */
+  const adjudicado = corrE(caso, s1, "estudo_resultado", TC.hemorragia);
+  confere("corrigir um resultado DISSOLVE a divergência",
+    D.exclusaoDeHemorragia(adjudicado).exclusao === "hemorragia_presente",
+    "*\"ela ⛔ só desaparece por informação que resolva o conflito ou por correção explícita\"*");
+  confere("e a trilha preserva a declaração corrigida",
+    adjudicado.fatos.filter((f) => f.campo === "estudo_resultado" && f.instancia === s1).length === 2,
+    "§3.1: append-only — a declaração anterior existiu, e esconder isso é o que a spec proíbe");
+  confere("⛔ e a correção ⛔ NÃO cria estudo novo",
+    I.instanciasDe(adjudicado, C.ESTUDO).length === 2,
+    "corrigir é a mesma amostra melhor descrita; medir de novo é outro exame");
+  confere("a pendência de horário nasce SÓ quando a ordem é necessária",
+    D.pendenciasDaImagem(caso).some((p) => p.id === `estudo_hora_${s2}`) === false
+    && D.pendenciasDaImagem(tcCom(est, s1, TC.semHemorragia)).every((p) => !p.id.startsWith("estudo_hora")),
+    "⛔ não perguntar o que ainda ⛔ não tem leitor — uma TC externa sozinha ⛔ não gera pendência de horário");
+}
+
+// ── 14 · SENTINELA 2 · CORREÇÃO DE ACHADO ────────────────────────────────
+{
+  const sete = regE(escolheE(est, s1, "estudo_modalidade", MOD.tcSemContraste), s1, "aspects", 7);
+  const fatoSete = I.valorNaInstancia(sete, s1, "aspects");
+  const seis = corrE(sete, s1, "aspects", 6);
+  const trilha = seis.fatos.filter((f) => f.campo === "aspects" && f.instancia === s1);
+
+  confere("ASPECTS corrigido de 7 para 6 fica na MESMA instância",
+    I.valorNaInstancia(seis, s1, "aspects").valor === 6
+    && I.valorNaInstancia(seis, s1, "aspects").instancia === s1,
+    "erro de transcrição ⛔ não é exame novo");
+  confere("a trilha preserva 7 E 6",
+    trilha.length === 2 && trilha[0].valor === 7 && trilha[1].valor === 6,
+    "§3.1: o valor errado existiu, e apagá-lo esconderia que houve erro");
+  confere("o 6 REFERENCIA o 7 por `corrigeFatoId`",
+    trilha[1].corrigeFatoId === fatoSete.id && trilha[1].tipo === "correcao",
+    "com três valores sucessivos, 'o de trás' deixa de identificar");
+  confere("⛔ e ⛔ NENHUMA TC nova é criada",
+    I.instanciasDe(seis, C.ESTUDO).length === 1,
+    "corrigir achado ⛔ não abre estudo");
+  confere("⛔ e o achado ⛔ NÃO vaza para outro estudo",
+    I.valorNaInstancia(vascular(seis, s2), s2, "aspects") === undefined,
+    "achado de um exame ⛔ não pode aparecer noutro");
 }
 
 if (falhas.length) {

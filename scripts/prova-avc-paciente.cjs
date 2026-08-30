@@ -143,9 +143,9 @@ const TODOS = [
    */
   const emprestados = [...A.GRUPOS_A, ...B.GRUPOS_B, ...C.GRUPOS_C]
     .flatMap((g) => g.emprestados ?? []);
-  confere("as três superfícies tomam campos emprestados",
-    emprestados.length >= 4,
-    "peso, origem do peso, mRS prévio e alergia a contraste mudaram de casa e continuam nas telas onde eram respondidos");
+  confere("as superfícies tomam campos emprestados",
+    emprestados.length >= 3,
+    "peso, origem do peso e mRS prévio mudaram de casa e continuam nas telas onde eram respondidos");
 
   const naoSaoOMesmo = emprestados.filter((c) => P.CAMPO_DO_PACIENTE(c.id) !== c);
   confere("todo campo emprestado é o MESMO objeto da casa dele",
@@ -165,11 +165,31 @@ const TODOS = [
       P.TODOS_OS_CAMPOS_P.some((c) => c.id === id),
       "mudou de casa em 2026-08-29, e a experiência de preenchimento ⛔ não mudou");
   }
-  confere("e os quatro continuam DESENHADOS nas telas de origem",
+  confere("e os que seguem emprestados continuam DESENHADOS nas telas de origem",
     K.camposDoGrupo(A.GRUPOS_A.find((g) => g.id === "peso")).some((c) => c.id === "peso")
-    && K.camposDoGrupo(B.GRUPOS_B.find((g) => g.id === "basal")).some((c) => c.id === "mrs_previo")
-    && K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "endovascular")).some((c) => c.id === "alergia_contraste"),
+    && K.camposDoGrupo(B.GRUPOS_B.find((g) => g.id === "basal")).some((c) => c.id === "mrs_previo"),
     "mudar a propriedade ⛔ não pode custar a experiência: o autor foi explícito sobre o mRS na B");
+
+  /**
+   * ⚠️⚠️ A ALERGIA A CONTRASTE DEIXOU DE SER EMPRESTADA — autor, 2026-08-30:
+   *
+   * > *"⛔ no A já coleta sobre alergias e no C de novo, ⛔ só deixamos no A"*
+   *
+   * ⚠️ Empréstimo ⛔ não duplica o **fato** — a trilha é a mesma —, mas duplica a
+   * **pergunta**. E a segunda pergunta é pior que redundante: ela faz o médico
+   * duvidar da primeira.
+   *
+   * ⚠️ A **leitura** continua em C: ler ⛔ não é coletar.
+   */
+  confere("a alergia a contraste é perguntada em UM lugar só",
+    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "episodio"))
+      .every((c) => c.id !== "alergia_contraste")
+    && P.GRUPOS_P.some((g) => K.camposDoGrupo(g).some((c) => c.id === "alergia_contraste")),
+    "a mesma pergunta em duas telas faz duvidar da resposta que já foi dada");
+  confere("⛔ e ⛔ NENHUMA superfície do módulo a desenha além de Paciente",
+    [A.GRUPOS_A, B.GRUPOS_B, C.GRUPOS_C]
+      .every((gs) => gs.every((g) => K.camposDoGrupo(g).every((c) => c.id !== "alergia_contraste"))),
+    "a trava vale para o módulo inteiro, e ⛔ não ⛔ só para C — ⛔ senão volta pela próxima superfície");
 }
 
 // ── 3 · PACIENTE ⛔ NÃO É PORTA ───────────────────────────────────────────

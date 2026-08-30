@@ -25,17 +25,23 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { GRUPOS_C, TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
-import { camposDoGrupo } from "../../avc/conteudo/campo";
-import { destinoDaImagem, leiturasDaSuperficieC } from "../../avc/nucleo/derivacoes-c";
+import {
+  ESTUDO_C,
+  EPISODIO_C,
+  TODOS_OS_CAMPOS_C,
+  achadosDaModalidade,
+} from "../../avc/conteudo/superficie-c";
+import { destinoDaImagem, estudos, leiturasDaSuperficieC } from "../../avc/nucleo/derivacoes-c";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
+import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import {
   CabecalhoDeBloco,
   CampoDaSuperficie,
   PainelDeLeituras,
   useDetalhes,
 } from "./campos-clinicos";
+import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
@@ -48,6 +54,13 @@ type Props = {
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
+  /** ⚠️ Registro NUM ESTUDO específico — a tela sabe em qual o médico tocou. */
+  onEscolherNoEstudo: (estudo: string, campo: string, valor: string) => void;
+  onMedirNoEstudo: (estudo: string, campo: string, valor: number) => void;
+  onHoraNoEstudo: (estudo: string, campo: string, instante: number) => void;
+  onCorrigirNoEstudo: (estudo: string, campo: string, valor: string | number) => void;
+  onDesfazerNoEstudo: (estudo: string, campo: string) => void;
+  onNovoEstudo: () => void;
 };
 
 export default function SuperficieC({
@@ -57,11 +70,29 @@ export default function SuperficieC({
   onHora,
   onMedir,
   onDesfazer,
+  onEscolherNoEstudo,
+  onMedirNoEstudo,
+  onHoraNoEstudo,
+  onCorrigirNoEstudo,
+  onDesfazerNoEstudo,
+  onNovoEstudo,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   /** ⚠️ Estado de TELA — ⛔ não clínico: abrir bloco ⛔ não registra nada (E-20). */
   const [abertos, setAbertos] = useState<readonly string[]>([]);
+  /** ⚠️ Estado de TELA: recolher estudo antigo ⛔ não apaga ⛔ nem registra nada. */
+  const [estudosAbertos, setEstudosAbertos] = useState<readonly string[]>([]);
+  /** ⚠️ Ver o contrato de correção: entrar ⛔ não grava, **cancelar ⛔ não grava**. */
+  const [corrigindo, setCorrigindo] = useState<readonly string[]>([]);
+  const emCorrecao = (est: string, campo: string) => corrigindo.includes(`${est}-${campo}`);
+  const alternarCorrecao = (est: string, campo: string) =>
+    setCorrigindo((c) =>
+      c.includes(`${est}-${campo}`)
+        ? c.filter((x) => x !== `${est}-${campo}`)
+        : [...c, `${est}-${campo}`]
+    );
+  const lista = estudos(estado);
   const leituras = leiturasDaSuperficieC(estado);
   const destino = destinoDaImagem(estado);
   const detalhes = useDetalhes();
@@ -69,8 +100,10 @@ export default function SuperficieC({
   const rotuloDoCampo = useMemo(() => {
     const m: Record<string, string> = {};
     for (const c of TODOS_OS_CAMPOS_C) m[c.id] = c.rotulo;
+    /** ⚠️ E os estudos, para a divergência poder nomeá-los na tela. */
+    estudos(estado).forEach((s, i) => { m[s.id] = `${tr("Exame")} ${i + 1}`; });
     return m;
-  }, []);
+  }, [estado, tr]);
 
   function numeroGravado(id: string): number | undefined {
     const f = valorAtual(estado, id);
@@ -126,66 +159,152 @@ export default function SuperficieC({
         </View>
       ) : null}
 
-      {GRUPOS_C.map((grupo) => {
-        const fechado = grupo.recolhido === true && !abertos.includes(grupo.id);
-        return (
-          <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
-            {grupo.recolhido ? (
+      {/**
+        * ⚠️⚠️ OS ESTUDOS — cada exame é uma **instância**, e ⛔ nenhum achado existe
+        * fora do estudo que o produziu.
+        */}
+      <View testID="avc-grupo-estudos">
+        <CabecalhoDeBloco titulo="Exames de imagem" testID="avc-bloco-estudos" />
+        <Text style={e.grupoNota} testID="avc-grupo-nota-estudos">
+          {tr("Não atrase a trombólise por exames de imagem adicionais quando ela já estiver indicada pelos critérios aplicáveis. A tomografia necessária para excluir hemorragia não é exame adicional.")}
+        </Text>
+
+        {lista.length === 0 ? (
+          <Text style={e.grupoNota} testID="avc-estudos-vazio">
+            {tr("Nenhum exame de imagem registrado.")}
+          </Text>
+        ) : null}
+
+        {lista.map((estudo, i) => {
+          const fechado = i < lista.length - 1 && !estudosAbertos.includes(estudo.id);
+          /**
+           * ⚠️⚠️ A MATRIZ DECIDE O QUE ESTE ESTUDO PERGUNTA — e ⛔ nada é herdado
+           * por categoria. ⛔ Sem modalidade declarada, ⛔ nenhum achado aparece: o
+           * app ⛔ não sabe o que aquele exame pode responder, e ⛔ não inventa.
+           */
+          const achados = achadosDaModalidade(estudo.modalidade);
+          const campos = ESTUDO_C.filter(
+            (c) => !c.instanciaDe || c.id.startsWith("estudo_") || achados.includes(c.id)
+          ).filter((c) => c.id !== "estudo_resultado" || achados.includes("estudo_resultado"));
+
+          return (
+            <View key={estudo.id} style={e.estudo} testID={`avc-estudo-${estudo.id}`}>
               <Pressable
                 accessibilityRole="button"
                 aria-expanded={!fechado}
-                testID={`avc-bloco-abrir-${grupo.id}`}
+                testID={`avc-estudo-abrir-${estudo.id}`}
                 onPress={() =>
-                  setAbertos((a) =>
-                    a.includes(grupo.id) ? a.filter((x) => x !== grupo.id) : [...a, grupo.id]
+                  setEstudosAbertos((a) =>
+                    a.includes(estudo.id) ? a.filter((x) => x !== estudo.id) : [...a, estudo.id]
                   )
                 }
               >
-                <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
+                <CabecalhoDeBloco
+                  titulo={`${tr("Exame")} ${i + 1}`}
+                  testID={`avc-estudo-cabecalho-${estudo.id}`}
+                  aberto={!fechado}
+                />
               </Pressable>
-            ) : (
-              <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
-            )}
-            {/**
-              * ⚠️ A NOTA DO BLOCO É PERMANENTE, ⛔ não fica atrás do ⓘ. Aqui ela
-              * carrega a regra que impede o atraso — *"não atrase a trombólise
-              * por exames de imagem adicionais"* — e uma regra contra atraso
-              * escondida atrás de um toque ⛔ não impede atraso nenhum.
-              */}
-            {grupo.nota ? (
-              <Text style={e.grupoNota} testID={`avc-grupo-nota-${grupo.id}`}>
-                {tr(grupo.nota)}
-              </Text>
-            ) : null}
 
-            {fechado
-              ? null
-              : camposDoGrupo(grupo).map((campo) => (
-                  <CampoDaSuperficie
-                    key={campo.id}
-                    campo={campo}
-                    casaAtual="imagem"
-                    bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                    numero={numeroGravado(campo.id)}
-                    agora={agora}
-                    detalheAberto={detalhes.aberto(campo.id)}
-                    onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-                    onEscolher={onEscolher}
-                    onMedir={onMedir}
-                    onHora={onHora}
-                    onDesfazer={onDesfazer}
-                    /**
-                     * ⚠️ Empilhado onde a lista é longa e cada rótulo é uma frase:
-                     * "M2 não dominante ou codominante" ⛔ não pode chegar truncada
-                     * ao olho — é a distinção que muda COR 2a para No Benefit.
-                     */
-                    empilhado={campo.id === "sitio_oclusao" || campo.id === "tc_resultado"}
-                    nomeDaCasa="Paciente"
-                  />
-                ))}
-          </View>
-        );
-      })}
+              {/**
+                * ⚠️⚠️ A LINHA DE IDENTIDADE — modalidade, procedência e horário, com
+                * **"horário desconhecido" escrito por extenso** quando é o caso.
+                * ⚠️ Em branco, o desconhecimento pareceria "⛔ ainda ⛔ não preenchi", e
+                * os dois são estados diferentes (**E-37**) com consequências
+                * diferentes para a ordem entre exames.
+                */}
+              <Text style={e.identidade} testID={`avc-estudo-identidade-${estudo.id}`}>
+                {estudo.modalidade ? tr(estudo.modalidade) : tr("modalidade não informada")}
+                {" · "}
+                {estudo.procedencia ? tr(estudo.procedencia) : tr("procedência não informada")}
+                {" · "}
+                {estudo.horaConhecida
+                  ? horaDeExibicao(estudo.hora as number, agora)
+                  : estudo.horaDesconhecida
+                    ? tr("horário desconhecido")
+                    : tr("horário não informado")}
+              </Text>
+
+              {fechado
+                ? null
+                : campos.map((campo) => (
+                    <CampoDaSuperficie
+                      key={`${estudo.id}-${campo.id}`}
+                      campo={{ ...campo, casa: "imagem" }}
+                      casaAtual="imagem"
+                      bruto={String(valorNaInstancia(estado, estudo.id, campo.id)?.valor ?? "")}
+                      numero={(() => {
+                        const f = valorNaInstancia(estado, estudo.id, campo.id);
+                        return typeof f?.valor === "number" ? f.valor : undefined;
+                      })()}
+                      agora={agora}
+                      detalheAberto={detalhes.aberto(`${estudo.id}-${campo.id}`)}
+                      onAlternarDetalhe={() => detalhes.alternar(`${estudo.id}-${campo.id}`)}
+                      emCorrecao={emCorrecao(estudo.id, campo.id)}
+                      onEntrarEmCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
+                      onCancelarCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
+                      onNovaMedida={onNovoEstudo}
+                      rotuloDeNovaMedida="Novo exame"
+                      onEscolher={(c, v) => {
+                        if (emCorrecao(estudo.id, c)) {
+                          onCorrigirNoEstudo(estudo.id, c, v);
+                          alternarCorrecao(estudo.id, c);
+                          return;
+                        }
+                        onEscolherNoEstudo(estudo.id, c, v);
+                      }}
+                      onMedir={(c, v) => {
+                        if (emCorrecao(estudo.id, c)) {
+                          onCorrigirNoEstudo(estudo.id, c, v);
+                          alternarCorrecao(estudo.id, c);
+                          return;
+                        }
+                        onMedirNoEstudo(estudo.id, c, v);
+                      }}
+                      onHora={(c, instante) => onHoraNoEstudo(estudo.id, c, instante)}
+                      onDesfazer={(c) => onDesfazerNoEstudo(estudo.id, c)}
+                      empilhado={campo.id === "sitio_oclusao" || campo.id === "estudo_modalidade"}
+                    />
+                  ))}
+            </View>
+          );
+        })}
+
+        <Pressable
+          style={e.novoEstudo}
+          accessibilityRole="button"
+          testID="avc-novo-estudo"
+          onPress={onNovoEstudo}
+        >
+          <Text style={e.novoEstudoTexto}>{tr("Novo exame")}</Text>
+        </Pressable>
+      </View>
+
+      {/** ⚠️ Os juízos do episódio — casa C, e ⛔ sem instância de estudo. */}
+      <View style={e.grupo} testID="avc-grupo-episodio">
+        <CabecalhoDeBloco titulo="Juízo clínico e disponibilidade" testID="avc-bloco-episodio" />
+        {/**
+          * ⛔ A alergia a contraste ⛔ NÃO entra aqui — ela é perguntada ⛔ só no
+          * painel Paciente. Ver o comentário no grupo `episodio`.
+          */}
+        {EPISODIO_C.map((c) => ({ ...c, casa: "imagem" as const })).map((campo) => (
+          <CampoDaSuperficie
+            key={campo.id}
+            campo={campo}
+            casaAtual="imagem"
+            bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+            numero={numeroGravado(campo.id)}
+            agora={agora}
+            detalheAberto={detalhes.aberto(campo.id)}
+            onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+            onEscolher={onEscolher}
+            onMedir={onMedir}
+            onHora={onHora}
+            onDesfazer={onDesfazer}
+            nomeDaCasa="Paciente"
+          />
+        ))}
+      </View>
 
       <PainelDeLeituras
         leituras={leituras}
@@ -201,6 +320,20 @@ const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
+    estudo: { marginTop: ESPACO.sm },
+    identidade: {
+      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
+      paddingBottom: ESPACO.sm,
+    },
+    novoEstudo: {
+      alignSelf: "flex-start", marginTop: ESPACO.md,
+      paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm,
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+    },
+    novoEstudoTexto: {
+      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700",
+    },
     grupoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
     /**
      * ⚠️ A moldura do destino usa `warning`, e o SÍMBOLO ⛔ não existe sozinho: o

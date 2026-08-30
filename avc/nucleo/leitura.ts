@@ -41,6 +41,14 @@ export type Leitura = {
    */
   readonly sujeito?: string;
   /**
+   * ⚠️⚠️ OS ESTUDOS QUE SUSTENTAM A LEITURA — e a tela os **nomeia**.
+   *
+   * ⚠️ Sem isto, *"Exames de imagem com resultados divergentes"* ⛔ não diz
+   * **quais**: com três exames na tela, o médico ⛔ não sabe onde está o conflito
+   * que retém a reperfusão. **E-30**: a leitura diz de onde veio.
+   */
+  readonly estudos?: readonly string[];
+  /**
    * Quanto esta leitura pede da atenção **agora**.
    *
    * ⚠️⚠️ ⛔ NÃO É A POLARIDADE DA CONCLUSÃO, e a diferença é clínica. "SpO₂ acima
