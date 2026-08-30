@@ -48,6 +48,7 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficie-b.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
   path.join(appDir, "avc", "conteudo", "paciente.ts"),
+  path.join(appDir, "avc", "conteudo", "laboratorio.ts"),
   path.join(appDir, "avc", "conteudo", "mrs.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
@@ -56,6 +57,7 @@ const B = require(path.join(tmp, "avc", "conteudo", "superficie-b.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
 const M = require(path.join(tmp, "avc", "conteudo", "mrs.js"));
 const P = require(path.join(tmp, "avc", "conteudo", "paciente.js"));
+const L = require(path.join(tmp, "avc", "conteudo", "laboratorio.js"));
 
 /**
  * ⚠️ O dicionário é lido SEM COMENTÁRIO: uma chave citada dentro de um comentário
@@ -71,6 +73,7 @@ const temPar = (s) => dicionario.includes(`"${s}":`);
  */
 const campos = [
   ...P.TODOS_OS_CAMPOS_P,
+  ...L.TODOS_OS_CAMPOS_L,
   ...A.TODOS_OS_CAMPOS_A,
   ...B.TODOS_OS_CAMPOS_B,
   ...C.TODOS_OS_CAMPOS_C,
@@ -78,8 +81,8 @@ const campos = [
 
 // ── 0 · O UNIVERSO EXISTE ────────────────────────────────────────────────
 {
-  confere("os quatro conjuntos de campos foram carregados",
-    campos.length >= 55,
+  confere("os cinco conjuntos de campos foram carregados",
+    campos.length >= 60,
     "trava que roda sobre lista vazia fica verde sem medir nada (R-1)");
   const opcoes = campos.flatMap((c) => c.opcoes ?? []);
   confere("há opções a conferir, e ⛔ não uma lista vazia",

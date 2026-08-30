@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**53 de 67 travas com declaração completa.**
+**55 de 69 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -49,6 +49,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a superfície **Paciente** seja **painel e ⛔ nunca porta** — que com ela inteiramente vazia todas as superfícies continuem acessíveis, que ⛔ nenhum bloqueio genérico nasça dela e que ausência ⛔ nunca vire negativa; que a **propriedade do fato** seja única (⛔ nenhum id declarado em duas casas) e que **preenchimento compartilhado ⛔ não seja duplicação** — o campo emprestado é o MESMO objeto, com o mesmo id; que toda derivação do módulo só mude quando muda um fato **declarado como insumo dela**; que todo campo declare **casa** e **temporalidade**; que texto livre ⛔ não exista em campo clínico; e que o campo administrativo ⛔ não afrouxe a exigência de fonte dos demais.
 - **NÃO PROMETE:** que os números clínicos estejam CERTOS — confere que o código diz o que o verbatim transcrito diz. ⛔ Não mede tela: ordem visual, alvo de toque e legibilidade são `e2e/avc-superficie-paciente`. ⛔ Não confere tradução: o par em espanhol é `test:i18n-opcoes`.
 - **UNIVERSO:** `avc/conteudo/paciente.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_P`, contados, com piso) mais as superfícies A, B e C para medir empréstimo e propriedade única, e TODAS as derivações do módulo (A, B e C) para a trava de insumos. ⛔ Fora do universo: Laboratório e D a G.
+
+## `test:grandeza-decimal` → `scripts/prova-grandeza-decimal.cjs`
+
+- **PROMETE:** que uma grandeza com **passo decimal** seja representável sem erro de ponto flutuante — que `1,4` fique `1,4` na trilha, que os degraus ⛔ não saiam com dezesseis casas, e que o número exibido use **vírgula**; e que o **zero** ⛔ nunca seja usado como sinônimo de "⛔ não informado".
+- **NÃO PROMETE:** que as faixas dos campos sejam clinicamente adequadas — elas são **limite técnico de entrada** (ver `Faixa`), e ⛔ não afirmação clínica. ⛔ Também ⛔ não mede tela: o comportamento do controle é `e2e/avc-superficie-a`.
+- **UNIVERSO:** os helpers de `avc/nucleo/formato.ts` exercitados sobre os passos realmente usados no módulo, mais TODOS os campos de grandeza das quatro casas — contados, com piso. ── POR QUE ESTA TRAVA NASCEU (2026-08-30) ───────────────────────────────── Laboratório traz os dois primeiros campos com casa decimal do módulo — INR e TP. Todo o resto (peso, PA, glicemia, ASPECTS, NIHSS) é inteiro, e a camada do AVC assumia isso: `0,1 × 10` saía `1.0000000000000002` no rótulo do degrau, no `testID` **e no valor gravado**. ⚠️⚠️ E o autor fixou a regra que a acompanha: ⛔ **`0` ⛔ nunca é sentinela de ausência**. *"⛔ Não informado é estado; zero é número."* Plaqueta 0 é resultado possível, e um campo que ⛔ não o registra fabrica ausência onde há informação — **E-52** reaparecendo pelo componente numérico.
+
+## `test:avc-laboratorio` → `scripts/prova-avc-laboratorio.cjs`
+
+- **PROMETE:** que o painel **Laboratório** ⛔ nunca escolha o "valor atual" de um analito por *"último digitado"* — que a ordem venha de **regra temporal explícita**, que `sem_ordem` seja estado terminal legítimo quando o horário é genuinamente desconhecido, e que ⛔ **nenhuma** coleta seja chamada de mais recente sem horário conhecido; que **⛔ nenhum resultado exista órfão de instância**; que a **unidade das plaquetas** seja lida da **mesma coleta** do valor, e que **sem unidade declarada ⛔ não haja conversão**; que **plaqueta 0** seja registrável; que a pendência do horário nasça ⛔ **só** quando a ordem passa a ser necessária; e que **nova coleta ⛔ não seja correção**.
+- **NÃO PROMETE:** que os cortes clínicos estejam certos — eles ⛔ não moram aqui: são interpretação da Superfície D. ⛔ Também não mede tela: isso é `e2e/avc-superficie-laboratorio`. E ⛔ não confere tradução — é `test:i18n-opcoes`.
+- **UNIVERSO:** `avc/conteudo/laboratorio.ts` inteiro (todos os campos de `TODOS_OS_CAMPOS_L`, contados, com piso) e todas as derivações de `avc/nucleo/derivacoes-lab.ts`, exercitadas por estado construído. ⛔ Fora do universo: as superfícies A a G. ── ⚠️⚠️ OS TRÊS CASOS-SENTINELA ───────────────────────────────────────── **1 · A ordem** — montado pelo autor: `INR 1,4` numa coleta **externa sem horário**, e `INR 1,1` numa coleta **local às 22h**. Ele existe para impedir que *"último digitado"* volte escondido no sistema. **2 · A unidade** — `plaquetas 80` **sem unidade declarada** ⛔ não pode ser comparada com `100.000`. Converter é transformar; **supor unidade é inventar**. **3 · A correção da unidade** — `plaquetas 80` em `mil/mm³`, e depois o médico percebe que o laudo era `/mm³`. A comparação passa de `80.000` para `80` na **mesma** coleta, a trilha preserva **marcada** a unidade anterior, e as outras coletas ⛔ não são reinterpretadas. ⚠️ É onde *"atributo da medida"* vira bug histórico se ⛔ não estiver amarrado.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

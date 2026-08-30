@@ -32,6 +32,15 @@ export type Leitura = {
    */
   readonly curto: string;
   /**
+   * ⚠️⚠️ DE QUEM A LEITURA FALA, quando a mesma frase serve a vários sujeitos.
+   *
+   * ⚠️ Na maioria das superfícies a frase já se nomeia ("Exclusão de hemorragia
+   * ⛔ não estabelecida"). No Laboratório ⛔ não: `Resultado registrado` cabe em
+   * quatro analitos, e quatro linhas idênticas ⛔ **não dizem nada**. O sujeito é
+   * o rótulo do analito, e a tela o prefixa.
+   */
+  readonly sujeito?: string;
+  /**
    * Quanto esta leitura pede da atenção **agora**.
    *
    * ⚠️⚠️ ⛔ NÃO É A POLARIDADE DA CONCLUSÃO, e a diferença é clínica. "SpO₂ acima

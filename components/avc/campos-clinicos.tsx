@@ -22,7 +22,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Campo } from "../../avc/conteudo/campo";
 import { opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
 import { alternarItem, estaSelecionado, itensSelecionados } from "../../avc/nucleo/selecao";
-import { horaDeExibicao } from "../../avc/nucleo/formato";
+import {
+  arredondaAoPasso,
+  arredondaCasas,
+  horaDeExibicao,
+  numeroCurto,
+} from "../../avc/nucleo/formato";
 import { opcoesQueContam } from "../../avc/conteudo/nihss";
 import { definicaoDoAchado } from "../../avc/conteudo/explicacoes";
 import type { Leitura } from "../../avc/nucleo/leitura";
@@ -86,13 +91,37 @@ export function useDetalhes() {
  * ⚠️ A faixa usa a cor da ÁREA (a mesma do card no hub e do resumo), e o par
  * `badgeBg`/`badgeText` já é medido pela trava de contraste renderizado.
  */
-export function CabecalhoDeBloco({ titulo, testID }: { titulo: string; testID?: string }) {
+export function CabecalhoDeBloco({
+  titulo,
+  testID,
+  aberto,
+}: {
+  titulo: string;
+  testID?: string;
+  /**
+   * ⚠️⚠️ SÓ PARA CABEÇALHO QUE ABRE E FECHA — e aí ele é **obrigatório**.
+   *
+   * ⚠️ Na revisão visual de 2026-08-30 a Coleta 1 recolhia e o cabeçalho ficava
+   * **idêntico** ao de uma coleta aberta. Os valores dela sumiam da tela sem
+   * ⛔ nenhum sinal de que dava para trazê-los de volta — e um resultado que o
+   * médico ⛔ não consegue reencontrar é, na prática, um resultado perdido.
+   *
+   * ⚠️ `aria-expanded` sozinho ⛔ não resolve: ele fala com a tecnologia
+   * assistiva, e ⛔ não com quem está olhando a tela.
+   */
+  aberto?: boolean;
+}) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   return (
     <View style={e.blocoCabecalho} testID={testID}>
       <View style={e.blocoBarra} />
       <Text style={e.blocoTitulo}>{tr(titulo).toUpperCase()}</Text>
+      {aberto === undefined ? null : (
+        <Text style={e.blocoEstado} testID={`${testID ?? "bloco"}-estado`}>
+          {aberto ? `▾ ${tr("aberta")}` : `▸ ${tr("recolhida")}`}
+        </Text>
+      )}
     </View>
   );
 }
@@ -517,10 +546,16 @@ export function CampoDeGrandeza({
    * ⛔ Ele ⛔ não entra em SpO₂ nem no NIHSS: ali 50 é mais que a faixa inteira,
    * e botão que ⛔ nunca move é ruído com cara de opção.
    */
+  /**
+   * ⚠️⚠️ ARREDONDADOS AO PASSO — sem isto, `0,1 × 10` vira `1.0000000000000002`
+   * e o degrau do INR sai com dezesseis casas no rótulo **e no testID**.
+   */
   const degraus = (passos >= 150
     ? [-faixa.passo * 50, -faixa.passo * 10, faixa.passo * 10, faixa.passo * 50]
     : [-faixa.passo * 10, faixa.passo * 10]
-  ).filter((d) => Math.abs(d) < faixa.max - faixa.min);
+  )
+    .map((d) => arredondaAoPasso(d, faixa.passo))
+    .filter((d) => Math.abs(d) < faixa.max - faixa.min);
 
   /**
    * ⚠️⚠️ DEGRAU QUE ⛔ NÃO MOVE ⛔ NÃO REGISTRA — e isto ⛔ não é polimento.
@@ -573,14 +608,23 @@ export function CampoDeGrandeza({
             testID={`avc-degrau-${campo.id}-${d > 0 ? "mais" : "menos"}-${Math.abs(d)}`}
             onPress={() => {
               const base = rascunho ?? gravado ?? faixa.min;
-              const alvo = Math.min(faixa.max, Math.max(faixa.min, base + d));
+              /**
+               * ⚠️⚠️ ARREDONDA AO PASSO ANTES DE GRAVAR. `1,4 + 0,1` em ponto
+               * flutuante é `1.5000000000000002`, e esse número entraria na
+               * trilha como **medida** — um valor que ⛔ ninguém digitou, num
+               * campo que a Superfície D compara com um corte.
+               */
+              const alvo = arredondaAoPasso(
+                Math.min(faixa.max, Math.max(faixa.min, base + d)),
+                faixa.passo
+              );
               setRascunho(undefined);
               onMedir(campo.id, alvo);
             }}
           >
             <Text style={e.degrauTexto}>
               {d > 0 ? "+" : "−"}
-              {Math.abs(d)}
+              {numeroCurto(Math.abs(d), faixa.passo)}
             </Text>
           </Pressable>
         ))}
@@ -1012,6 +1056,15 @@ export function CampoDaSuperficie({
         onEscolher={onEscolher}
         onDesfazer={onDesfazer}
       />
+    ) : campo.tipo === "numerico" ? (
+      <CampoNumerico
+        campo={campo}
+        gravado={numero}
+        detalheAberto={detalheAberto}
+        onAlternarDetalhe={onAlternarDetalhe}
+        onMedir={onMedir}
+        onDesfazer={onDesfazer}
+      />
     ) : campo.tipo === "texto" ? (
       <CampoDeTexto
         campo={campo}
@@ -1050,6 +1103,181 @@ export function CampoDaSuperficie({
   );
 }
 
+
+/**
+ * NÚMERO DIGITADO — ⚠️ **⛔ sem barra**, e com ajuste por ±.
+ *
+ * ── A FRONTEIRA DE §0.3, aprovada pelo autor em 2026-08-30 ────────────────
+ *
+ * > *"Entrada numérica estruturada ⛔ não é texto livre. O que §0.3 precisa
+ * > impedir é um campo em que o médico escreve qualquer coisa sem tipo, sem
+ * > unidade, sem domínio e sem semântica controlada."*
+ *
+ * ⚠️ **Por que ⛔ não é barra:** num analito de laboratório a barra sugere
+ * **contínuo** e **faixa normal** — e a fonte ⛔ não dá faixa de normalidade, dá
+ * **limiar de decisão**. Além disso o gesto real é **transcrever** o número do
+ * laudo, ⛔ não deslizar até ele.
+ *
+ * ⛔⛔ E O `min`/`max` DA FAIXA ⛔ NÃO APARECE. Ele é limite **técnico** do
+ * componente: ⛔ não é mensagem, ⛔ não é "valor máximo permitido", e ⛔ não
+ * alimenta derivação nenhuma.
+ */
+export function CampoNumerico({
+  campo,
+  gravado,
+  detalheAberto,
+  onAlternarDetalhe,
+  onMedir,
+  onDesfazer,
+}: {
+  campo: Campo;
+  gravado: number | undefined;
+  detalheAberto: boolean;
+  onAlternarDetalhe: () => void;
+  onMedir: (campo: string, valor: number) => void;
+  onDesfazer: (campo: string) => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  /**
+   * ⚠️ O rascunho é TEXTO enquanto se digita — `1,` e `1,4` são estados válidos
+   * do teclado que ⛔ não são números. Converter a cada tecla apagaria a vírgula
+   * no instante em que ela é digitada.
+   *
+   * ⚠️ E o hook vem ANTES de qualquer saída: chamada condicional de hook é erro
+   * de React, e ⛔ não detalhe de estilo.
+   */
+  const [rascunho, setRascunho] = useState<string | undefined>(undefined);
+  const corSecundaria = useEstilosDoTema((tema) => ({ c: { color: tema.cores.textSecondary } }))
+    .c.color as string;
+  const faixa = campo.faixa;
+  if (!faixa) return null;
+  const exibido =
+    rascunho ?? (gravado === undefined ? "" : numeroCurto(gravado, faixa.passo));
+
+  /**
+   * ⚠️ Aceita vírgula E ponto: o teclado do aparelho decide qual oferece.
+   *
+   * ⚠️ Arrow declarada DEPOIS da guarda, e ⛔ não `function`: declaração de função
+   * é içada, e o TypeScript ⛔ não estreita `faixa` dentro dela — o que deixaria
+   * `faixa.max` como possivelmente indefinido num cálculo que grava valor
+   * clínico.
+   */
+  const aoTerminar = (texto: string) => {
+    setRascunho(undefined);
+    const limpo = texto.replace(",", ".").trim();
+    if (limpo === "") {
+      onDesfazer(campo.id);
+      return;
+    }
+    const n = Number(limpo);
+    if (!Number.isFinite(n)) return;
+    /**
+     * ⚠️⚠️ PRESO À FAIXA **TÉCNICA**, e arredondado apenas nas **CASAS** — e ⛔ não
+     * na grade do passo.
+     *
+     * ⚠️ A primeira versão usava `arredondaAoPasso`, e em plaquetas (passo
+     * `1000`) digitar **80** virava **0**: o componente apagava um resultado
+     * verdadeiro e mostrava outro no lugar. O passo é o incremento do **ajuste**,
+     * ⛔ não a grade dos valores possíveis.
+     */
+    const preso = Math.min(faixa.max, Math.max(faixa.min, n));
+    onMedir(campo.id, arredondaCasas(preso, faixa.passo));
+  };
+
+  const ajustar = (delta: number) => {
+    const base = gravado ?? 0;
+    const preso = Math.min(faixa.max, Math.max(faixa.min, base + delta));
+    onMedir(campo.id, arredondaAoPasso(preso, faixa.passo));
+  };
+
+  const respondido = gravado !== undefined;
+  return (
+    <View style={[e.campo, respondido && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
+      <View style={e.campoTopo}>
+        <MarcaDeResposta respondido={respondido} />
+        <Text style={e.campoRotulo}>{tr(campo.rotulo)}</Text>
+        <BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />
+      </View>
+      {campo.ajuda ? <Text style={e.campoAjuda}>{tr(campo.ajuda)}</Text> : null}
+      {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
+
+      <View style={e.numericoLinha}>
+        <Pressable
+          style={e.passoNumerico}
+          accessibilityRole="button"
+          accessibilityLabel={`${tr(campo.rotulo)} −`}
+          testID={`avc-numerico-menos-${campo.id}`}
+          onPress={() => ajustar(-faixa.passo)}
+        >
+          <Text style={e.degrauTexto}>−</Text>
+        </Pressable>
+
+        <TextInput
+          /**
+           * ⚠️ VAZIO USA TIPOGRAFIA DE **PROSA**, e ⛔ não de número.
+           *
+           * ⚠️⚠️ "não informado" é um **estado**, e ⛔ não uma medida. Renderizado no
+           * corpo grande e negrito reservado ao número, ele ⛔ **não cabia** na
+           * caixa em 375 px e aparecia cortado — `não informad…`. Um estado
+           * cortado é um estado ilegível, e E-37 exige que os três vazios sejam
+           * distinguíveis **lendo a tela**.
+           */
+          style={[e.entradaNumerica, exibido === "" && e.entradaNumericaVazia]}
+          value={exibido}
+          inputMode="decimal"
+          onChangeText={setRascunho}
+          onBlur={() => aoTerminar(exibido)}
+          onSubmitEditing={() => aoTerminar(exibido)}
+          /** ⚠️ "⛔ não informado" é ESTADO, e ⛔ não um número — E-37, E-52. */
+          placeholder={tr("não informado")}
+          placeholderTextColor={corSecundaria}
+          testID={`avc-numerico-${campo.id}`}
+          accessibilityLabel={tr(campo.rotulo)}
+        />
+        {campo.unidade ? <Text style={e.unidade}>{tr(campo.unidade)}</Text> : null}
+
+        <Pressable
+          style={e.passoNumerico}
+          accessibilityRole="button"
+          accessibilityLabel={`${tr(campo.rotulo)} +`}
+          testID={`avc-numerico-mais-${campo.id}`}
+          onPress={() => ajustar(+faixa.passo)}
+        >
+          <Text style={e.degrauTexto}>+</Text>
+        </Pressable>
+      </View>
+
+      {/**
+        * ⚠️⚠️ A PORTA DO ZERO — **e o critério mudou em 2026-08-30**: ela existe
+        * quando **zero é possível para a grandeza**, e ⛔ nunca por *"na prática
+        * ⛔ não chega a zero"*. Plaqueta 0 é resultado que laboratório reporta.
+        */}
+      {campo.zeroValido && gravado !== 0 ? (
+        <Pressable
+          style={e.zero}
+          accessibilityRole="button"
+          testID={`avc-numerico-zero-${campo.id}`}
+          onPress={() => onMedir(campo.id, 0)}
+        >
+          <Text style={e.zeroTexto}>{tr("Registrar 0")}</Text>
+        </Pressable>
+      ) : null}
+
+      {respondido ? (
+        <Pressable
+          style={e.zero}
+          accessibilityRole="button"
+          testID={`avc-limpar-${campo.id}`}
+          onPress={() => onDesfazer(campo.id)}
+        >
+          <Text style={e.zeroTexto}>{tr("Limpar")}</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
 /**
  * O PAINEL DE LEITURAS — ⚠️ E-46: são APOIO ao julgamento, ⛔ nunca veredito.
  *
@@ -1083,7 +1311,11 @@ export function PainelDeLeituras({
                 style={[e.leituraTexto, l.tom === "informativo" && e.leituraFraca]}
                 testID={`avc-leitura-curto-${l.id}`}
               >
-                {SIMBOLO[l.tom]} {tr(l.curto)}
+                {SIMBOLO[l.tom]}{" "}
+                {/** ⚠️ Ver `sujeito` em `leitura.ts`: sem ele, quatro analitos
+                    dariam quatro linhas idênticas. */}
+                {l.sujeito ? `${tr(l.sujeito)} — ` : ""}
+                {tr(l.curto)}
               </Text>
               <BotaoDeInfo id={`leitura-${l.id}`} onPress={() => onAlternarDetalhe(`leitura-${l.id}`)} />
             </View>
@@ -1125,6 +1357,10 @@ export const criarEstilos = (tema: Tema) =>
     blocoTitulo: {
       color: AREA_AVC.badgeText, fontSize: TIPOGRAFIA.body.fontSize,
       fontWeight: "800", letterSpacing: 1, flex: 1,
+    },
+    /** ⚠️ Palavra + seta: ⛔ nem a forma ⛔ nem a cor carregam o estado sozinhas (E-39). */
+    blocoEstado: {
+      color: AREA_AVC.badgeText, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700",
     },
     grupoTitulo: {
       color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
@@ -1179,6 +1415,26 @@ export const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
       borderWidth: 2, borderColor: tema.cores.border,
     },
+    numericoLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+    passoNumerico: {
+      minWidth: TOQUE.minimo, minHeight: TOQUE.minimo,
+      alignItems: "center", justifyContent: "center",
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+    },
+    entradaNumerica: {
+      flexGrow: 1, minWidth: 90,
+      color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700",
+      textAlign: "center",
+      backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+      minHeight: TOQUE.minimo, paddingHorizontal: ESPACO.sm,
+    },
+    /** ⚠️ Ver o comentário no `TextInput`: prosa, e ⛔ não número. */
+    entradaNumericaVazia: {
+      fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600",
+    },
+    unidade: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     entradaDeTexto: {
       color: tema.cores.text,
       fontSize: TIPOGRAFIA.body.fontSize,

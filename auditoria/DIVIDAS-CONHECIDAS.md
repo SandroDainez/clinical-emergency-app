@@ -4445,3 +4445,33 @@ via aérea, consciência e glicemia — e ⛔ **não** tem **frequência cardía
 **E-19** violada — pergunta que a fonte ⛔ não sustenta.
 
 **Prioridade declarada: alta**, por decisão do autor.
+
+---
+
+## D-122 — UM E2E DE NAVEGAÇÃO FALHA NA ÁRVORE, FORA DO AVC
+
+**Registrada em 2026-08-30**, ao fechar o Laboratório.
+
+`e2e/retomada-de-fluxo.spec.ts:209` — *"nunca fica sem caminho de volta ao ponto
+— por qualquer rota"* — falha na suíte completa e também isolada.
+
+O ponto de falha é a linha 237: depois de `page.goBack()` a partir de
+`drogas-vasoativas`, a tela ⛔ **não** volta a mostrar "Passo" dentro de 15 s, e o
+teste sequer chega a medir a invariante que ele existe para medir.
+
+### Por que ⛔ não é do AVC
+
+⚠️ A rota exercida é **bradicardia-ACLS → estabilização → drogas vasoativas** —
+⛔ nenhum arquivo dela foi tocado. E a falha aparece **idêntica** em todas as
+execuções anteriores de `test:all` registradas nesta sequência de trabalho,
+inclusive na do commit `51b642c`, que já está publicado.
+
+### Por que fica como dívida, e ⛔ não como conserto agora
+
+⚠️⚠️ É um **teste de navegação vermelho na árvore**, e teste vermelho tolerado é
+teste que para de ser lido. Mas consertá-lo dentro da rodada do Laboratório
+misturaria duas investigações independentes num commit só.
+
+**Prioridade declarada: alta.** ⚠️ A invariante que ele protege — *"⛔ nunca ficar
+sem caminho de volta ao ponto"* — está **sem medição** enquanto ele falha antes
+de chegar à asserção.

@@ -64,10 +64,45 @@ export type TipoDeCampo =
    * ⚠️ **A prova de cada superfície reprova `texto` em campo clínico.** Sem essa
    * trava, este tipo seria a maior regressão possível do módulo.
    */
-  | "texto";
+  | "texto"
+  /**
+   * ⚠️⚠️ NÚMERO DIGITADO DIRETAMENTE — ⛔ sem barra, e com ajuste por ±.
+   *
+   * ── A FRONTEIRA DE §0.3, fixada pelo autor em 2026-08-30 ────────────────
+   *
+   * > *"Entrada numérica estruturada ⛔ não é texto livre. Um valor clínico pode
+   * > ser digitado diretamente quando o campo declara tipo numérico, unidade
+   * > quando aplicável, semântica explícita de ⛔ não informado, validação
+   * > determinística e arredondamento compatível com o passo."*
+   *
+   * ⚠️ **Por que ⛔ não é `grandeza`:** a barra sugere **contínuo** e **faixa
+   * normal**. Num analito de laboratório isso é falso — os cortes de F-10 são
+   * **limiares de decisão**, e ⛔ não faixas de normalidade. E o gesto real do
+   * médico é **transcrever** um número do laudo, ⛔ não deslizar até ele.
+   *
+   * ⛔ E o `min`/`max` da faixa aqui é **técnico**: ⛔ não aparece na tela, ⛔ não
+   * vira mensagem de limite e ⛔ não alimenta derivação.
+   */
+  | "numerico";
 
 /**
- * A faixa de uma grandeza — ⚠️ é limite **de controle**, ⛔ NÃO é limite clínico.
+ * A faixa de uma grandeza — ⚠️⚠️ é **LIMITE TÉCNICO DE ENTRADA**, e ⛔ NUNCA
+ * limite clínico.
+ *
+ * ── REFORÇADO PELO AUTOR EM 2026-08-30 ────────────────────────────────────
+ *
+ * > *"Os cortes clínicos da regra e os limites do controle são coisas
+ * > completamente diferentes. O corte pode ser `INR > 1,7`; isso ⛔ não significa
+ * > que o INR máximo registrável seja 8."*
+ *
+ * ⚠️ Eu havia proposto faixas "plausíveis" para os analitos de laboratório —
+ * INR 0,8–8, plaquetas até 1.000.000 — escolhidas por conveniência de barra. Um
+ * laboratório que reporte valor acima do teto deixaria o médico **sem como
+ * registrar um resultado verdadeiro**, e é a mesma família de **E-52**: o
+ * componente numérico fabricando ausência onde há informação.
+ *
+ * ⛔ O teto existe porque o controle precisa de um; ⛔ ele ⛔ não é afirmação
+ * clínica, ⛔ não aparece na tela como faixa, e ⛔ não é fonte de ⛔ nenhuma regra.
  *
  * ⚠️⚠️ LEIA ANTES DE MEXER: estes números existem só para a barra ter começo e
  * fim. ⛔ Nenhum deles significa "normal", "seguro" ou "tratável". As faixas são
@@ -142,6 +177,21 @@ export type Campo = {
   readonly temporalidade: Temporalidade;
   /** ⚠️ Ausente equivale a `"clinico"` — o caso comum. */
   readonly natureza?: NaturezaDoCampo;
+  /**
+   * ⚠️⚠️ ESTE CAMPO **QUALIFICA OUTRO**, e ⛔ não é medida independente.
+   *
+   * ── POR QUE ISTO EXISTE (autor, 2026-08-30) ─────────────────────────────
+   *
+   * > *"`plaquetas_unidade` ⛔ não precisa ser um fato clínico independente no
+   * > mesmo sentido de INR. É metadado da grandeza informada. Separar demais
+   * > cria a possibilidade de a unidade de uma aferição ser acidentalmente
+   * > associada ao valor de outra."*
+   *
+   * ⚠️ `80` **+** `mil/mm³` constituem **uma** medida. A derivação lê a unidade
+   * **da mesma instância** do valor, e ⛔ nunca globalmente — e a prova constrói
+   * duas coletas com unidades diferentes para exigir isso.
+   */
+  readonly atributoDe?: string;
   /**
    * ⚠️⚠️ ESTE CAMPO PERTENCE A UM **EVENTO COMPOSTO**, e o nome dele é este.
    *

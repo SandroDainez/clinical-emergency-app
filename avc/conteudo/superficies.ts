@@ -16,6 +16,7 @@ import { TODOS_OS_CAMPOS_A } from "./superficie-a";
 import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_P } from "./paciente";
+import { TODOS_OS_CAMPOS_L } from "./laboratorio";
 
 export type Superficie = {
   /** ⚠️ Identidade ESTÁVEL. ⛔ Não muda quando a ordem ou a letra mudam. */
@@ -238,7 +239,13 @@ const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
  */
 function camposQueExistem(): ReadonlySet<string> {
   return new Set(
-    [...TODOS_OS_CAMPOS_P, ...TODOS_OS_CAMPOS_A, ...TODOS_OS_CAMPOS_B, ...TODOS_OS_CAMPOS_C].map(
+    [
+      ...TODOS_OS_CAMPOS_P,
+      ...TODOS_OS_CAMPOS_L,
+      ...TODOS_OS_CAMPOS_A,
+      ...TODOS_OS_CAMPOS_B,
+      ...TODOS_OS_CAMPOS_C,
+    ].map(
       (c) => c.id
     )
   );

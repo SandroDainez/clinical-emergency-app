@@ -19,6 +19,8 @@ import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/
 import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
 import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
+import { COLETA } from "../../avc/conteudo/laboratorio";
+import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import { registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
@@ -39,6 +41,7 @@ import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
 import SuperficieC from "./superficie-c";
 import SuperficiePaciente from "./superficie-paciente";
+import SuperficieLaboratorio from "./superficie-laboratorio";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
@@ -100,6 +103,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * resposta válida (**PD-22**) e ⛔ **não** fecha a tarefa.
        */
       ...pendenciasDaImagem(estado),
+      ...pendenciasDoLaboratorio(estado),
       // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
       // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
       ...pendenciasAbertas(estado, pendenciasVigentes()),
@@ -148,6 +152,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    */
   function medir(campo: string, valor: number) {
     setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio));
+  }
+
+  /**
+   * ⚠️⚠️ REGISTRO **NUMA COLETA ESPECÍFICA** — e ⛔ não na "aberta".
+   *
+   * O Laboratório desenha N coletas ao mesmo tempo, e um toque no INR da
+   * terceira ⛔ não pode cair noutra. É a tela que sabe em qual o médico tocou.
+   */
+  function escolherNaColeta(coleta: string, campo: string, valor: string) {
+    setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio, coleta));
+  }
+  function medirNaColeta(coleta: string, campo: string, valor: number) {
+    setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio, coleta));
+  }
+  function horaNaColeta(coleta: string, campo: string, instante: number) {
+    setEstado((e) =>
+      registrarComInstancia(e, { campo, valor: instante, horaClinica: instante }, relogio, coleta)
+    );
+  }
+  /** ⚠️ Desfazer também aponta para a instância: ⛔ não se desfaz o de outra coleta. */
+  function desfazerNaColeta(coleta: string, campo: string) {
+    setEstado((e) =>
+      registrarComInstancia(
+        e,
+        { campo, valor: "nao_perguntado", tipo: "correcao", motivo: "Registro desfeito pelo médico" },
+        relogio,
+        coleta
+      )
+    );
   }
 
   /**
@@ -323,6 +356,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onMedir={medir}
             onDesfazer={desfazer}
             onEscala={registrarEscala}
+          />
+        ) : atual.id === "laboratorio" ? (
+          <SuperficieLaboratorio
+            estado={estado}
+            agora={agora}
+            onEscolherNaColeta={escolherNaColeta}
+            onMedirNaColeta={medirNaColeta}
+            onHoraNaColeta={horaNaColeta}
+            onDesfazerNaColeta={desfazerNaColeta}
+            onNovaColeta={() => novaMedida(COLETA)}
           />
         ) : atual.id === "imagem" ? (
           <SuperficieC

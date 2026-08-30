@@ -1141,4 +1141,67 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "simple y doble son fuerzas diferentes en la fuente",
   "três estados com classe de recomendação própria":
     "tres estados con clase de recomendación propia",
+
+  // ── Painel Laboratório ──────────────────────────────────────────────────
+  //
+  // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
+  // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
+  "Coleta": "Toma",
+  "Redeclarado na mesma aferição; motivo não perguntado":
+    "Redeclarado en la misma medición; motivo no preguntado",
+  "aberta": "abierta",
+  "recolhida": "plegada",
+  "Nova coleta": "Nueva toma",
+  "Nenhuma coleta registrada. Nada no atendimento espera por isto.":
+    "Ninguna toma registrada. Nada en la atención espera por esto.",
+  "Procedência da coleta": "Procedencia de la toma",
+  "Este serviço": "Este servicio",
+  "Serviço externo": "Servicio externo",
+  "Horário da coleta": "Horario de la toma",
+  "Se não for possível determinar, registre que é desconhecido. Nada é estimado.":
+    "Si no es posible determinarlo, registre que es desconocido. Nada se estima.",
+  "horário desconhecido": "horario desconocido",
+  "horário não informado": "horario no informado",
+  "procedência não informada": "procedencia no informada",
+  "Registro desfeito pelo médico": "Registro deshecho por el médico",
+
+  "Resultados": "Resultados",
+  "Os limiares que a fonte usa para decidir pertencem à superfície de segurança. Aqui se registra o que o laudo diz.":
+    "Los umbrales que la fuente usa para decidir pertenecen a la superficie de seguridad. Aquí se registra lo que dice el informe.",
+  "INR": "INR",
+  "A fonte usa o INR entre os limiares de decisão da trombólise. O corte pertence à superfície de segurança, e não a este registro.":
+    "La fuente usa el INR entre los umbrales de decisión de la trombólisis. El punto de corte pertenece a la superficie de seguridad, y no a este registro.",
+  "Plaquetas": "Plaquetas",
+  "Informe a unidade do laudo antes do valor.":
+    "Informe la unidad del informe antes del valor.",
+  "A fonte expressa o limiar em plaquetas por mm³. O valor fica registrado na unidade informada, e a conversão existe apenas para comparação.":
+    "La fuente expresa el umbral en plaquetas por mm³. El valor queda registrado en la unidad informada, y la conversión existe solo para comparación.",
+  "Unidade das plaquetas": "Unidad de las plaquetas",
+  "/mm³": "/mm³",
+  "mil/mm³ (×10³/µL)": "mil/mm³ (×10³/µL)",
+  "aPTT (segundos)": "aPTT (segundos)",
+  "TP (segundos)": "TP (segundos)",
+  "Em segundos. Atividade de protrombina em % e INR não entram aqui.":
+    "En segundos. Actividad de protrombina en % e INR no entran aquí.",
+  "s": "s",
+
+  // ── Leituras do Laboratório ─────────────────────────────────────────────
+  "Resultado ainda não informado": "Resultado aún no informado",
+  "Nenhuma coleta registrada com este resultado":
+    "Ninguna toma registrada con este resultado",
+  "Dois resultados sem ordem estabelecida entre as coletas":
+    "Dos resultados sin orden establecido entre las tomas",
+  "Os dois ficam registrados, e nenhum é tratado como o mais recente. Informar o horário que falta estabelece a ordem, sem apagar nada":
+    "Los dos quedan registrados, y ninguno es tratado como el más reciente. Informar el horario que falta establece el orden, sin borrar nada",
+  "Resultado registrado": "Resultado registrado",
+  "O resultado fica na trilha com a procedência e o horário da coleta":
+    "El resultado queda en la traza con la procedencia y el horario de la toma",
+  "Registrar o horário, ou que não foi possível determinar":
+    "Registrar el horario, o que no fue posible determinarlo",
+
+  // ── Motivos do vocabulário próprio de Laboratório ───────────────────────
+  "de onde veio a coleta muda a leitura sem mudar o valor (E-03)":
+    "de dónde vino la toma cambia la lectura sin cambiar el valor (E-03)",
+  "unidade é apresentação da medida, e não resposta binária":
+    "la unidad es presentación de la medida, y no respuesta binaria",
 };

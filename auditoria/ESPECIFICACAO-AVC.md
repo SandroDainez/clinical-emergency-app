@@ -665,6 +665,32 @@ meio, o fato clínico do AVC que a obrigou.
 | **E-51** | Inconsistência interna bloqueia **a afirmação**, não o **campo** — se outra fonte independente o sustentar explicitamente; e a fonte final é sempre **registrada** | a SBD crítico contradiz a si mesma no preparo de insulina; a SBD perioperatória o publica sem ambiguidade | Parte 6 (§6.6) |
 | **E-52** | **Dado desconhecido nunca pode ser substituído por valor fabricado** — e atributo acessório nunca é pré-requisito para registrar um fato principal conhecido | TC externa com resultado conhecido e horário desconhecido: exigir a hora troca uma verdade por um número inventado, e o inventado entra na trilha com a cara de medido | Parte 2 (§2.1) · **acrescentada em 2026-08-29** |
 
+> ### ⚠️⚠️ §0.3 · A FRONTEIRA DA ENTRADA NUMÉRICA — fixada pelo autor em 2026-08-30
+>
+> **Redação normativa, do autor:**
+>
+> > **Entrada numérica estruturada ⛔ não é texto livre.** Um valor clínico pode
+> > ser digitado diretamente quando o campo declara: **tipo numérico** ·
+> > **unidade**, quando aplicável · **semântica explícita de ⛔ não
+> > informado/desconhecido** · **validação determinística** · **arredondamento
+> > compatível com o passo**.
+> >
+> > ⛔ **Texto livre continua proibido** para valores clínicos estruturáveis.
+>
+> ⚠️ **O que §0.3 sempre quis impedir** — e continua impedindo — é o campo em que
+> o médico escreve qualquer coisa **sem tipo, sem unidade, sem domínio e sem
+> semântica controlada**. É por ali que entra conteúdo clínico sem fonte.
+>
+> ⚠️ **Por que a distinção precisou ser escrita:** o Laboratório transcreve
+> resultado de laudo. Barra deslizante ali ⛔ não é neutra — ela sugere um
+> **contínuo** e uma **faixa normal** que a fonte ⛔ não estabelece: os cortes de
+> F-10 são limiares de decisão, ⛔ não faixas de normalidade. Digitar o número é o
+> gesto real, e ⛔ não uma conveniência.
+>
+> ⛔ **E o limite técnico ⛔ nunca vira clínico:** se o componente precisar de
+> `min`/`max` para se proteger, eles ⛔ **não aparecem na tela**, ⛔ não viram
+> mensagem de "valor máximo permitido" e ⛔ não alimentam derivação nenhuma.
+
 > ### ⚠️⚠️ E-52 · DADO DESCONHECIDO NUNCA VIRA VALOR FABRICADO — acrescentada pelo autor em 2026-08-29
 >
 > **Redação normativa, do autor:**

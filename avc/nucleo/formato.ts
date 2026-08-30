@@ -40,6 +40,62 @@ export function horaDeExibicao(instante: number, referencia: number): string {
   return mesmoDia ? horaCurta(instante) : horaComData(instante);
 }
 
+/**
+ * Quantas casas decimais o passo tem.
+ *
+ * ⚠️ É o passo que define a precisão do campo, e ⛔ não uma constante global:
+ * peso anda de 1 em 1, INR de 0,1 em 0,1, e ⛔ nenhum dos dois deve saber do
+ * outro.
+ */
+export function casasDoPasso(passo: number): number {
+  return Number.isInteger(passo) ? 0 : String(passo).split(".")[1].length;
+}
+
+/**
+ * Prende um valor ao passo, matando o erro de ponto flutuante.
+ *
+ * ⚠️⚠️ ⛔ SEM ISTO, `0.1 * 10` É `1.0000000000000002`. Num rótulo de botão isso é
+ * feio; num **valor clínico gravado na trilha** é um número que ninguém digitou.
+ * O `NumericStepper` já fazia isso internamente — a camada do AVC ⛔ não fazia, e
+ * os degraus saíam com dezesseis casas.
+ */
+export function arredondaAoPasso(valor: number, passo: number): number {
+  const casas = casasDoPasso(passo);
+  return Number((Math.round(valor / passo) * passo).toFixed(casas));
+}
+
+/**
+ * Normaliza as **casas decimais** de um valor digitado — ⚠️ e ⛔ **não** o prende
+ * à grade do passo.
+ *
+ * ── O DEFEITO QUE ISTO FECHA (revisão visual, 2026-08-30) ─────────────────
+ *
+ * ⚠️⚠️ O valor digitado estava passando por `arredondaAoPasso`. Em plaquetas, com
+ * passo `1000`, digitar **80** virava **0** — `Math.round(80/1000)*1000`. O
+ * componente **apagava um resultado verdadeiro** e mostrava outro número no
+ * lugar, com cara de medida.
+ *
+ * ⚠️ **A distinção que faltava:** o passo é o **incremento do ajuste**, e ⛔ não a
+ * **grade dos valores possíveis**. Quem digita 1,45 informou 1,45; quem toca `+`
+ * pediu "mais um passo".
+ *
+ * ⛔ Isto é **E-52** pelo componente numérico: valor fabricado onde havia um
+ * verdadeiro.
+ */
+export function arredondaCasas(valor: number, passo: number): number {
+  return Number(valor.toFixed(casasDoPasso(passo)));
+}
+
+/**
+ * O número como o médico o lê — ⚠️ **vírgula**, e ⛔ não ponto.
+ *
+ * ⚠️ O app inteiro é PT-BR e ES, e `1.4` ⛔ não é como se escreve um INR em
+ * ⛔ nenhum dos dois.
+ */
+export function numeroCurto(valor: number, passo: number): string {
+  return valor.toFixed(casasDoPasso(passo)).replace(".", ",");
+}
+
 /** ⚠️ Os dois instantes caem no mesmo dia do calendário? */
 export function mesmoDia(a: number, b: number): boolean {
   const x = new Date(a);
