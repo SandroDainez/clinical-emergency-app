@@ -1393,3 +1393,61 @@ de três coisas diferentes, e nomeou a terceira:
 ⏳ **A instância** — que amarra cada aferição ao estudo ou à coleta a que
 pertence — foi **contratada e ⛔ não implementada**: ela entra com **Laboratório**,
 que é a primeira superfície inteiramente de aferições.
+
+---
+
+## PD-31 · SUBSTITUIR UM VALOR JÁ INFORMADO EXIGE GESTO — DECIDIDA (2026-08-30)
+
+**A ambiguidade.** Redigitar um analito já registrado na mesma coleta podia ser
+duas coisas clinicamente diferentes:
+
+- *"o INR desta coleta é 1,4 — percebi que digitei errado"* → **correção**;
+- *"o laboratório refez o resultado da mesma amostra"* → **informação nova**.
+
+⚠️ E o app estava **adivinhando**, pela `temporalidade` declarada.
+
+### A decisão do autor
+
+> *"Redigitar um analito já informado na mesma coleta ⛔ não pode ser
+> interpretado silenciosamente ⛔ nem como nova aferição ⛔ nem como correção. O
+> gesto precisa ser explícito."*
+
+- analito **vazio** → `Registrar resultado`;
+- analito **já informado** → ⛔ **não** escrever por cima;
+- alterar o existente → gesto explícito `Corrigir resultado`;
+- **nova medida clínica** → `Nova coleta`.
+
+⚠️⚠️ **A inferência morreu inteira** — ⛔ nem por `estavel`, ⛔ nem por `atributoDe`.
+Inclusive para `plaquetas_unidade`:
+
+> *"Se o médico registrou `80 mil/mm³` e depois muda para `/mm³`, ele ⛔ não está
+> simplesmente alterando como o resultado aparece. Está dizendo que a declaração
+> anterior sobre a unidade estava **errada**. Isso muda a interpretação clínica
+> de `80.000/mm³` para `80/mm³`."*
+
+⚠️ `atributoDe` continua garantindo que valor e unidade sejam lidos da **mesma**
+instância. Ele ⛔ **não** concede exceção de correção implícita.
+
+### ⛔ O que ⛔ NÃO foi criado, e por quê
+
+⛔ ⛔ **Nenhuma** terceira operação de *"repetição analítica da mesma amostra"*.
+⚠️ Ela acrescentaria complexidade sem necessidade demonstrada. Se um segundo
+módulo ou requisito real exigir, ela nasce **conscientemente** — e ⛔ não escondida
+dentro de `afericao` (§9.1).
+
+### A identidade do fato
+
+Para dizer *qual* afirmação está sendo corrigida, `FatoRegistrado` ganhou `id`
+estável e `corrigeFatoId`. ⛔ A chave `(instancia, campo, horaRegistro)` foi
+**recusada** pelo autor: *"transforma três atributos do fato em uma chave
+artificial… timestamps podem coincidir e ⛔ não deveriam carregar a
+responsabilidade de identidade."*
+
+⚠️ A trilha continua **plana e append-only**: ⛔ nenhuma estrutura paralela,
+⛔ nenhum banco de versões.
+
+### O motivo
+
+⛔ ⛔ **Não** gravar *"Resultado corrigido pelo médico"*. Isso é o **tipo** da
+operação, dito duas vezes. ⚠️ Motivo ⛔ não perguntado é motivo **ausente** — e o
+app ⛔ não fabrica justificativa.

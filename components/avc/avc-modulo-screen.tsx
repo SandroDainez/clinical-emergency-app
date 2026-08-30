@@ -21,7 +21,7 @@ import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
-import { registrarComInstancia } from "../../avc/conteudo/campos";
+import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
@@ -171,16 +171,31 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       registrarComInstancia(e, { campo, valor: instante, horaClinica: instante }, relogio, coleta)
     );
   }
-  /** ⚠️ Desfazer também aponta para a instância: ⛔ não se desfaz o de outra coleta. */
+  /**
+   * ⚠️ Desfazer também aponta para a instância: ⛔ não se desfaz o de outra coleta.
+   *
+   * ⚠️⚠️ E vai por `corrigirNaInstancia`, ⛔ não por registro cru com
+   * `tipo: "correcao"` na mão: só assim ele **aponta qual declaração** está
+   * desfazendo, e passa pelas travas de integridade de `corrigeFatoId`.
+   *
+   * ⛔ O `motivo` fabricado saiu junto — *"Registro desfeito pelo médico"* é o
+   * **tipo** da operação, e ⛔ não um motivo. ⛔ Ninguém perguntou por quê.
+   */
   function desfazerNaColeta(coleta: string, campo: string) {
-    setEstado((e) =>
-      registrarComInstancia(
-        e,
-        { campo, valor: "nao_perguntado", tipo: "correcao", motivo: "Registro desfeito pelo médico" },
-        relogio,
-        coleta
-      )
-    );
+    setEstado((e) => corrigirNaInstancia(e, { campo, valor: "nao_perguntado" }, relogio, coleta));
+  }
+
+  /**
+   * ⚠️⚠️ CORRIGIR UM RESULTADO — o gesto explícito, e a razão de ele existir.
+   *
+   * > *"redigitar um analito já informado na mesma coleta ⛔ não pode ter
+   * > semântica implícita."* — autor, 2026-08-30
+   *
+   * ⚠️ Ele ⛔ **não** abre coleta: a coleta é a mesma amostra. Quem mede de novo
+   * usa **Nova coleta**, que é a outra metade do par que a tela oferece.
+   */
+  function corrigirNaColeta(coleta: string, campo: string, valor: string | number) {
+    setEstado((e) => corrigirNaInstancia(e, { campo, valor }, relogio, coleta));
   }
 
   /**
@@ -222,7 +237,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * marcado — porque ele existiu, e esconder que existiu é o que §3.1 proíbe.
    */
   function desfazer(campo: string) {
-    setEstado((e) => desfazerRegistro(e, campo, relogio));
+    /**
+     * ⚠️ Passa por `corrigirNaInstancia` para que campos com `instanciaDe`
+     * desfaçam DENTRO da aferição aberta — a mesma regra, num lugar só (I6).
+     */
+    setEstado((e) => corrigirNaInstancia(e, { campo, valor: "nao_perguntado" }, relogio));
   }
 
   /**
@@ -362,6 +381,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             estado={estado}
             agora={agora}
             onEscolherNaColeta={escolherNaColeta}
+            onCorrigirNaColeta={corrigirNaColeta}
             onMedirNaColeta={medirNaColeta}
             onHoraNaColeta={horaNaColeta}
             onDesfazerNaColeta={desfazerNaColeta}

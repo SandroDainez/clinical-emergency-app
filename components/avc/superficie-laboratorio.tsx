@@ -37,6 +37,8 @@ type Props = {
   estado: EstadoAvc;
   agora: number;
   onEscolherNaColeta: (coleta: string, campo: string, valor: string) => void;
+  /** ⚠️ O gesto explícito — ver `CampoDaSuperficie`, prop `emCorrecao`. */
+  onCorrigirNaColeta: (coleta: string, campo: string, valor: string | number) => void;
   onMedirNaColeta: (coleta: string, campo: string, valor: number) => void;
   onHoraNaColeta: (coleta: string, campo: string, instante: number) => void;
   onDesfazerNaColeta: (coleta: string, campo: string) => void;
@@ -47,6 +49,7 @@ export default function SuperficieLaboratorio({
   estado,
   agora,
   onEscolherNaColeta,
+  onCorrigirNaColeta,
   onMedirNaColeta,
   onHoraNaColeta,
   onDesfazerNaColeta,
@@ -59,6 +62,19 @@ export default function SuperficieLaboratorio({
   const leituras = leiturasDoLaboratorio(estado);
   /** ⚠️ Estado de TELA: abrir coleta ⛔ não registra nem apaga nada (E-20). */
   const [abertas, setAbertas] = useState<readonly string[]>([]);
+  /**
+   * ⚠️⚠️ QUAIS CAMPOS ESTÃO EM MODO DE CORREÇÃO — estado de **tela**, e ⛔ nada
+   * mais. Entrar em correção ⛔ não grava; **cancelar ⛔ não grava**; o que grava é
+   * o valor confirmado, e aí por `onCorrigirNaColeta`.
+   */
+  const [corrigindo, setCorrigindo] = useState<readonly string[]>([]);
+  const emCorrecao = (coleta: string, campo: string) => corrigindo.includes(`${coleta}-${campo}`);
+  const alternarCorrecao = (coleta: string, campo: string) =>
+    setCorrigindo((c) =>
+      c.includes(`${coleta}-${campo}`)
+        ? c.filter((x) => x !== `${coleta}-${campo}`)
+        : [...c, `${coleta}-${campo}`]
+    );
 
   const campos = [...COLETA_L, ...ANALITOS_L];
 
@@ -129,8 +145,33 @@ export default function SuperficieLaboratorio({
                     agora={agora}
                     detalheAberto={detalhes.aberto(`${coleta.id}-${campo.id}`)}
                     onAlternarDetalhe={() => detalhes.alternar(`${coleta.id}-${campo.id}`)}
-                    onEscolher={(c, v) => onEscolherNaColeta(coleta.id, c, v)}
-                    onMedir={(c, v) => onMedirNaColeta(coleta.id, c, v)}
+                    /**
+                     * ⚠️⚠️ AQUI MORA O CONTRATO: preenchido, o campo ⛔ não aceita
+                     * escrita direta. Ou o médico toca em **Corrigir**, ou toca
+                     * em **Nova coleta** — e a tela pergunta qual das duas, em
+                     * vez de adivinhar pelo que foi digitado.
+                     */
+                    emCorrecao={emCorrecao(coleta.id, campo.id)}
+                    onEntrarEmCorrecao={() => alternarCorrecao(coleta.id, campo.id)}
+                    onCancelarCorrecao={() => alternarCorrecao(coleta.id, campo.id)}
+                    onNovaMedida={onNovaColeta}
+                    rotuloDeNovaMedida="Nova coleta"
+                    onEscolher={(c, v) => {
+                      if (emCorrecao(coleta.id, c)) {
+                        onCorrigirNaColeta(coleta.id, c, v);
+                        alternarCorrecao(coleta.id, c);
+                        return;
+                      }
+                      onEscolherNaColeta(coleta.id, c, v);
+                    }}
+                    onMedir={(c, v) => {
+                      if (emCorrecao(coleta.id, c)) {
+                        onCorrigirNaColeta(coleta.id, c, v);
+                        alternarCorrecao(coleta.id, c);
+                        return;
+                      }
+                      onMedirNaColeta(coleta.id, c, v);
+                    }}
                     onHora={(c, instante) => onHoraNaColeta(coleta.id, c, instante)}
                     onDesfazer={(c) => onDesfazerNaColeta(coleta.id, c)}
                   />

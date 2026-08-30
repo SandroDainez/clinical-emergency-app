@@ -79,7 +79,7 @@ test.describe("AVC · Laboratório", () => {
 
     // ⚠️ E os dois valores continuam legíveis, cada um na sua coleta.
     await page.getByTestId("avc-coleta-abrir-coleta_1").click();
-    await expect(page.getByTestId("avc-campo-inr").first()).toBeVisible();
+    await expect(page.getByTestId("avc-valor-inr").first()).toContainText("1,4");
   });
 
   /**
@@ -94,13 +94,16 @@ test.describe("AVC · Laboratório", () => {
     await expect(inr).toHaveAttribute("placeholder", /não informado/i);
     await inr.fill("1,4");
     await inr.blur();
-    await expect(inr).toHaveValue("1,4");
+    // ⚠️ Respondido, o campo vira LEITURA — ver o contrato de correção abaixo.
+    await expect(page.getByTestId("avc-valor-inr")).toContainText("1,4");
 
-    // ⚠️ O passo ajusta em 0,1, e ⛔ não em 1.
+    // ⚠️ O passo ajusta em 0,1, e ⛔ não em 1 — medido dentro da correção.
+    await page.getByTestId("avc-corrigir-inr").click();
     await page.getByTestId("avc-numerico-mais-inr").click();
-    await expect(inr).toHaveValue("1,5");
+    await expect(page.getByTestId("avc-valor-inr")).toContainText("1,5");
+    await page.getByTestId("avc-corrigir-inr").click();
     await page.getByTestId("avc-numerico-menos-inr").click();
-    await expect(inr).toHaveValue("1,4");
+    await expect(page.getByTestId("avc-valor-inr")).toContainText("1,4");
   });
 
   /**
@@ -114,9 +117,8 @@ test.describe("AVC · Laboratório", () => {
     const plaquetas = page.getByTestId("avc-numerico-plaquetas");
     await expect(plaquetas).toHaveValue("");
     await page.getByTestId("avc-numerico-zero-plaquetas").click();
-    await expect(plaquetas).toHaveValue("0");
-    // ⚠️ E o campo passa a se anunciar como respondido.
-    await expect(page.getByTestId("avc-campo-plaquetas")).toContainText("✓");
+    // ⚠️ Zero é RESPOSTA: o campo vira leitura, mostrando 0 — e ⛔ não vazio.
+    await expect(page.getByTestId("avc-valor-plaquetas")).toContainText("0");
 
     // ⛔ INR ⛔ não oferece a porta do zero: zero ⛔ não é valor da grandeza.
     await expect(page.getByTestId("avc-numerico-zero-inr")).toHaveCount(0);
@@ -135,11 +137,12 @@ test.describe("AVC · Laboratório", () => {
     const plaquetas = page.getByTestId("avc-numerico-plaquetas");
     await plaquetas.fill("80");
     await plaquetas.blur();
-    await expect(plaquetas).toHaveValue("80");
+    await expect(page.getByTestId("avc-valor-plaquetas")).toContainText("80");
 
-    await plaquetas.fill("87432");
-    await plaquetas.blur();
-    await expect(plaquetas).toHaveValue("87432");
+    await page.getByTestId("avc-corrigir-plaquetas").click();
+    await page.getByTestId("avc-numerico-plaquetas").fill("87432");
+    await page.getByTestId("avc-confirmar-plaquetas").click();
+    await expect(page.getByTestId("avc-valor-plaquetas")).toContainText("87432");
   });
 
   /**
@@ -160,13 +163,13 @@ test.describe("AVC · Laboratório", () => {
     await criarColeta(page);
     // ⚠️ Recolhida: o VALOR sai da tela — então o cabeçalho precisa dizer isso.
     await expect(page.getByTestId("avc-coleta-cabecalho-coleta_1-estado")).toContainText(/recolhida/i);
-    await expect(page.getByTestId("avc-numerico-inr")).toHaveCount(1);
+    await expect(page.getByTestId("avc-valor-inr")).toHaveCount(0);
     // ⚠️ E a identidade da coleta ⛔ nunca some — ela é o que distingue as duas.
     await expect(page.getByTestId("avc-coleta-identidade-coleta_1")).toBeVisible();
 
     await page.getByTestId("avc-coleta-abrir-coleta_1").click();
     await expect(page.getByTestId("avc-coleta-cabecalho-coleta_1-estado")).toContainText(/aberta/i);
-    await expect(page.getByTestId("avc-numerico-inr").first()).toHaveValue("1,4");
+    await expect(page.getByTestId("avc-valor-inr").first()).toContainText("1,4");
   });
 
   /**
@@ -203,12 +206,84 @@ test.describe("AVC · Laboratório", () => {
     await plaquetas.blur();
     await page.getByTestId("avc-opcao-plaquetas_unidade-mil/mm³ (×10³/µL)").click();
 
-    // ⚠️ O médico percebe que o laudo era /mm³ e corrige a unidade.
+    /**
+     * ⚠️⚠️ A UNIDADE DECLARADA ⛔ NÃO ACEITA TROCA DIRETA: o botão é nomeado
+     * **Corrigir unidade**, porque ⛔ não se corrige um "resultado" aqui.
+     */
+    await expect(page.getByTestId("avc-valor-plaquetas_unidade"))
+      .toContainText(/mil\/mm³/);
+    await expect(page.getByTestId("avc-corrigir-plaquetas_unidade"))
+      .toContainText(/Corrigir unidade/i);
+
+    await page.getByTestId("avc-corrigir-plaquetas_unidade").click();
     await page.getByTestId("avc-opcao-plaquetas_unidade-/mm³").click();
 
-    await expect(plaquetas).toHaveValue("80");
+    await expect(page.getByTestId("avc-valor-plaquetas_unidade")).toContainText("/mm³");
+    await expect(page.getByTestId("avc-valor-plaquetas")).toContainText("80");
     await expect(page.getByTestId("avc-coleta-coleta_2")).toHaveCount(0);
     await expect(page.getByTestId("avc-coleta-identidade-coleta_1")).toBeVisible();
+  });
+
+  /**
+   * ⚠️⚠️ O CONTRATO DE CORREÇÃO NA TELA (autor, 2026-08-30):
+   *
+   * > *"redigitar um analito já informado na mesma coleta ⛔ não pode ter
+   * > semântica implícita. O gesto precisa ser explícito."*
+   */
+  test("preenchido, o analito ⛔ não aceita escrita direta — e oferece as DUAS saídas",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await abrirLab(page);
+      await criarColeta(page);
+
+      // ⚠️ Vazio: entrada direta, como sempre.
+      await expect(page.getByTestId("avc-numerico-inr")).toBeVisible();
+      await page.getByTestId("avc-numerico-inr").fill("1,4");
+      await page.getByTestId("avc-numerico-inr").blur();
+
+      // ⚠️⚠️ Preenchido: a entrada SAI da tela, e os dois gestos aparecem.
+      await expect(page.getByTestId("avc-numerico-inr")).toHaveCount(0);
+      await expect(page.getByTestId("avc-valor-inr")).toContainText("1,4");
+      await expect(page.getByTestId("avc-corrigir-inr")).toContainText(/Corrigir resultado/i);
+      /**
+       * ⚠️ **Nova coleta AQUI**, no ponto onde a ambiguidade nasce — e ⛔ não ⛔ só no
+       * fim do painel. ⛔ Sem ela, quem quis medir de novo é empurrado a
+       * "corrigir" o que ⛔ não era correção.
+       */
+      await expect(page.getByTestId("avc-nova-medida-inr")).toContainText(/Nova coleta/i);
+    });
+
+  test("cancelar a correção ⛔ NÃO grava nada", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirLab(page);
+    await criarColeta(page);
+    await page.getByTestId("avc-numerico-inr").fill("1,4");
+    await page.getByTestId("avc-numerico-inr").blur();
+
+    await page.getByTestId("avc-corrigir-inr").click();
+    await page.getByTestId("avc-numerico-inr").fill("9,9");
+    /**
+     * ⚠️⚠️ Desiste ANTES de confirmar. ⚠️ Em correção o `blur` ⛔ não grava — foi
+     * este teste que achou o contrário, e ele é a razão de `Confirmar` existir.
+     */
+    await page.getByTestId("avc-cancelar-correcao-inr").click();
+
+    await expect(page.getByTestId("avc-valor-inr")).toContainText("1,4");
+    await expect(page.getByTestId("avc-valor-inr")).not.toContainText("9,9");
+  });
+
+  test("`Nova coleta` a partir do campo abre coleta, e ⛔ não corrige", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirLab(page);
+    await criarColeta(page);
+    await page.getByTestId("avc-numerico-inr").fill("1,4");
+    await page.getByTestId("avc-numerico-inr").blur();
+
+    await page.getByTestId("avc-nova-medida-inr").click();
+    await expect(page.getByTestId("avc-coleta-coleta_2")).toBeVisible();
+    // ⚠️ E a coleta 1 guarda o seu valor, intocado.
+    await page.getByTestId("avc-coleta-abrir-coleta_1").click();
+    await expect(page.getByTestId("avc-valor-inr").first()).toContainText("1,4");
   });
 
   test("⛔ nenhum limite técnico aparece como faixa clínica", async ({ page }) => {

@@ -98,6 +98,39 @@ export type TipoDeRegistro =
 
 /** Um fato informado pelo médico. ⛔ Nunca carrega a própria interpretação (§4.1). */
 export type FatoRegistrado = {
+  /**
+   * ⚠️⚠️ A IDENTIDADE IMUTÁVEL DO REGISTRO — acrescentada em 2026-08-30.
+   *
+   * ── A PERGUNTA QUE A TRILHA PASSOU A PRECISAR RESPONDER ────────────────────
+   *
+   * > *"este fato corrige exatamente qual fato anterior?"*
+   *
+   * ⚠️ Enquanto a trilha só precisava dizer **o que foi dito em sequência**, a
+   * posição na lista bastava. O Laboratório trouxe a primeira pergunta que a
+   * posição ⛔ não responde: com três valores sucessivos do mesmo analito, ou
+   * dois analitos corrigidos na mesma coleta, *"o de trás"* deixa de identificar.
+   *
+   * ⛔⛔ E a chave ⛔ **não** é `(instancia, campo, horaRegistro)`, recusada pelo
+   * autor: *"transforma três atributos do fato em uma chave artificial… os
+   * timestamps podem coincidir, podem mudar de representação e ⛔ não deveriam
+   * carregar a responsabilidade de identidade."*
+   *
+   * ⚠️ A trilha continua **plana e append-only**: ⛔ nenhuma estrutura paralela,
+   * ⛔ nenhum banco de versões, ⛔ nenhum motor de versionamento.
+   */
+  readonly id: string;
+  /**
+   * ⚠️⚠️ QUAL AFIRMAÇÃO ANTERIOR ESTE REGISTRO CORRIGE — presente ⛔ **só** em
+   * correção.
+   *
+   * ⛔ O fato apontado ⛔ **não** é apagado ⛔ nem alterado: ele permanece na trilha,
+   * e é justamente por permanecer que a correção significa alguma coisa.
+   *
+   * ⚠️ Integridade (exigida pelo autor): aponta para fato **existente**, do
+   * **mesmo campo**, e da **mesma instância** quando houver instância. Sem isso,
+   * uma correção de INR poderia apontar para plaquetas — ou para outra coleta.
+   */
+  readonly corrigeFatoId?: string;
   readonly campo: string;
   readonly valor: string | number | Vazio;
   /** Quando o fato aconteceu no paciente. */
@@ -105,7 +138,13 @@ export type FatoRegistrado = {
   /** Quando entrou no sistema. Automático, nunca informado (§3.2). */
   readonly horaRegistro: Instante;
   readonly procedencia?: Procedencia;
-  /** Por que este registro existe: correção, reavaliação, achado novo. */
+  /**
+   * ⚠️ Por que este registro existe — e ⛔ **não** o que ele é.
+   *
+   * ⛔⛔ *"⛔ Não grave `Resultado corrigido pelo médico` como motivo. Isso já está
+   * expresso por `tipo: correcao`. Se o motivo ⛔ não foi perguntado, deixe
+   * ausente. ⛔ Não fabricar justificativa."* — autor, 2026-08-30.
+   */
   readonly motivo?: string;
   /** Ausente equivale a `"medida"` — o caso comum. */
   readonly tipo?: TipoDeRegistro;

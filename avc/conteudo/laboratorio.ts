@@ -168,6 +168,8 @@ export const ANALITOS_L: readonly CampoL[] = [
      * **supor unidade é inventar** — distinção fixada pelo autor.
      */
     atributoDe: "plaquetas",
+    /** ⚠️ ⛔ Não é "resultado": o que se corrige aqui é a **unidade** do laudo. */
+    rotuloDeCorrecao: "Corrigir unidade",
     opcoes: ["/mm³", "mil/mm³ (×10³/µL)", NAO_SEI],
     fonte: "F-10",
     bloqueiaTerapia: false,

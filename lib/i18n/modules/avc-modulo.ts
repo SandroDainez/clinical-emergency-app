@@ -1147,8 +1147,12 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45 aqui é de PRECISÃO TEMPORAL: "horário desconhecido" e "horário não
   // informado" são estados diferentes (E-37), e a tradução ⛔ não pode fundi-los.
   "Coleta": "Toma",
-  "Redeclarado na mesma aferição; motivo não perguntado":
-    "Redeclarado en la misma medición; motivo no preguntado",
+  "Corrigir resultado": "Corregir resultado",
+  "Corrigir unidade": "Corregir unidad",
+  "Cancelar correção": "Cancelar corrección",
+  "Confirmar correção": "Confirmar corrección",
+  "Corrigindo o valor desta aferição. O anterior permanece na trilha.":
+    "Corrigiendo el valor de esta medición. El anterior permanece en el registro.",
   "aberta": "abierta",
   "recolhida": "plegada",
   "Nova coleta": "Nueva toma",

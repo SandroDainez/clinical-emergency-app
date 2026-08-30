@@ -213,12 +213,22 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
 // ── 7 · correção de horário invalida derivações dependentes ────────────────
 {
   const { rel, est: e0 } = novo();
-  let e = E.definirRelogioClinico(e0, "ultima_vez_bem", 700_000);
+  /**
+   * ⚠️⚠️ O MARCO PRECISA TER SIDO DECLARADO ANTES DE SER CORRIGIDO.
+   *
+   * ⚠️ Esta trava corrigia um campo que ⛔ **nunca** fora registrado, e passava.
+   * Com a integridade de `corrigeFatoId` (2026-08-30) isso virou erro — e é a
+   * regra certa: ⛔ corrigir o que ⛔ não foi declarado ⛔ não é corrigir, é registrar.
+   */
+  let e = E.registrarFato(e0, { campo: "hora_ultima_vez_bem", valor: 700_000 }, rel);
+  const declarado = E.valorAtual(e, "hora_ultima_vez_bem");
+  e = E.definirRelogioClinico(e, "ultima_vez_bem", 700_000);
   const antes = E.decorridoEmMinutos(e, "ultima_vez_bem", rel);
 
   // A testemunha chega e o marco estava errado — CORREÇÃO, não nova medida.
   e = E.corrigirFato(e, {
     campo: "hora_ultima_vez_bem", valor: 400_000,
+    corrigeFatoId: declarado.id,
     motivo: "Testemunha corrigiu o horário",
   }, rel);
   e = E.definirRelogioClinico(e, "ultima_vez_bem", 400_000);
@@ -659,9 +669,58 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     "§3.1: a trilha é append-only — o valor errado existiu, e esconder que existiu é o que a spec proíbe");
 
   confere("desfazer é CORREÇÃO, ⛔ não medida",
-    E.valorAtual(desfeito, "peso").tipo === "correcao"
-    && typeof E.valorAtual(desfeito, "peso").motivo === "string",
+    E.valorAtual(desfeito, "peso").tipo === "correcao",
     "§3.4: tratá-lo como medida inventaria evolução clínica onde houve engano de toque");
+  /**
+   * ⚠️⚠️ E ⛔ SEM MOTIVO FABRICADO (autor, 2026-08-30). Aqui gravava-se
+   * *"registro desfeito pelo médico"* como **motivo** — ⛔ isso é o **tipo** da
+   * operação dito duas vezes. ⛔ Ninguém perguntou por quê.
+   */
+  confere("e ⛔ SEM motivo inventado — a trilha já diz que houve correção",
+    E.valorAtual(desfeito, "peso").motivo === undefined,
+    "*\"se ⛔ não perguntaram o motivo, ⛔ não inventem ⛔ nem um motivo genérico\"*");
+  /**
+   * ⚠️⚠️ DESFAZER HERDA A INSTÂNCIA DO FATO QUE DESFAZ — achado por mutação.
+   *
+   * ⚠️ `pas` declara `instanciaDe`. Um desfazer que gravasse `instancia:
+   * undefined` seria uma correção **sem dono**: ⛔ não desfaria a aferição, e a
+   * derivação continuaria lendo a PA como informada.
+   */
+  {
+    const { rel: r2, est: z0 } = novo();
+    const comPa = CAMPOS.registrarComInstancia(
+      CAMPOS.registrarComInstancia(z0, { campo: "pas", valor: 198 }, r2),
+      { campo: "pad", valor: 114 }, r2
+    );
+    const semPa = E.desfazerRegistro(comPa, "pas", r2);
+    const ultimo = E.valorAtual(semPa, "pas");
+    confere("desfazer a sistólica desfaz DENTRO da aferição, e ⛔ não solta",
+      ultimo.instancia === E.historicoDe(comPa, "pas")[0].instancia
+      && ultimo.corrigeFatoId === E.historicoDe(comPa, "pas")[0].id,
+      "correção sem instância ⛔ não desfaz a aferição — a derivação seguiria lendo a PA como informada");
+    confere("e a diastólica daquela aferição ⛔ NÃO foi tocada",
+      E.valorAtual(semPa, "pad").valor === 114
+      && E.valorAtual(semPa, "pad").tipo === undefined,
+      "desfazer uma metade ⛔ não pode apagar a outra");
+  }
+
+  confere("desfazer APONTA qual registro está desfazendo",
+    E.valorAtual(desfeito, "peso").corrigeFatoId === E.historicoDe(desfeito, "peso")[0].id,
+    "sem a referência, um `nao_perguntado` solto ⛔ não diz qual declaração ele anula");
+  /**
+   * ⚠️⚠️ E APONTA PARA O **ÚLTIMO**, ⛔ não para o primeiro — achado por mutação.
+   * ⚠️ Com um registro só, "primeiro" e "último" coincidem e a trava fica cega.
+   */
+  {
+    const { rel: r3, est: y0 } = novo();
+    const dois = E.registrarFato(E.registrarFato(y0, { campo: "peso", valor: 82 }, r3),
+      { campo: "peso", valor: 90 }, r3);
+    const semPeso = E.desfazerRegistro(dois, "peso", r3);
+    const hist = E.historicoDe(dois, "peso");
+    confere("com DOIS registros, desfazer anula o último e ⛔ não o primeiro",
+      E.valorAtual(semPeso, "peso").corrigeFatoId === hist[1].id,
+      "apontar para o primeiro diria que o 82 foi desfeito — e o 90 seguiria de pé na leitura");
+  }
 
   confere("a leitura volta a 'desconhecido' depois de desfazer",
     D.peso(desfeito).conclusao === "desconhecido",

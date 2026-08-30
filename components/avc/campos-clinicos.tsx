@@ -1003,6 +1003,11 @@ export function CampoDaSuperficie({
   derivado,
   empilhado,
   nomeDaCasa,
+  emCorrecao,
+  onEntrarEmCorrecao,
+  onCancelarCorrecao,
+  onNovaMedida,
+  rotuloDeNovaMedida,
 }: {
   campo: Campo;
   /** A superfície que está desenhando. ⚠️ Diferente de `campo.casa` = emprestado. */
@@ -1020,10 +1025,40 @@ export function CampoDaSuperficie({
   empilhado?: boolean;
   /** Como se chama a casa do campo, para a etiqueta. ⚠️ Traduzido pelo chamador. */
   nomeDaCasa?: string;
+  /**
+   * ⚠️⚠️ O CONTRATO DE CORREÇÃO — ⛔ ativo **só** onde a superfície o pede.
+   *
+   * > *"redigitar um analito já informado na mesma coleta ⛔ não pode ter
+   * > semântica implícita. O gesto precisa ser explícito."* — autor, 2026-08-30
+   *
+   * ⚠️ Passando `onEntrarEmCorrecao`, o campo **já respondido** deixa de aceitar
+   * escrita direta: ele vira **leitura**, com dois gestos nomeados lado a lado —
+   * *Corrigir* e *Nova medida*. A tela **pergunta qual das duas**, em vez de
+   * deduzir do que foi digitado.
+   *
+   * ⛔ Sem estas props ⛔ nada muda: as outras superfícies seguem exatamente como
+   * estavam, e ⛔ nenhuma regra nova vaza para elas.
+   */
+  emCorrecao?: boolean;
+  onEntrarEmCorrecao?: () => void;
+  onCancelarCorrecao?: () => void;
+  onNovaMedida?: () => void;
+  /** ⚠️ "Nova coleta" no Laboratório. ⚠️ Traduzido aqui dentro. */
+  rotuloDeNovaMedida?: string;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const emprestado = campo.casa !== casaAtual;
+
+  /**
+   * ⚠️⚠️ RESPONDIDO ⛔ NÃO É O MESMO QUE "TEM VALOR".
+   *
+   * ⛔ `nao_perguntado` é a trilha dizendo que o campo foi **desfeito** — ele
+   * voltou a estar vazio, e vazio se preenche direto. Já `nao_sei` **é uma
+   * resposta** (E-02): mudá-la é corrigir uma declaração, e exige o gesto.
+   */
+  const respondido = bruto !== "" && bruto !== "nao_perguntado";
+  const emLeitura = onEntrarEmCorrecao !== undefined && respondido && !emCorrecao;
 
   const controle =
     campo.tipo === "hora" ? (
@@ -1064,6 +1099,15 @@ export function CampoDaSuperficie({
         onAlternarDetalhe={onAlternarDetalhe}
         onMedir={onMedir}
         onDesfazer={onDesfazer}
+        /**
+         * ⚠️⚠️ EM CORREÇÃO, SAIR DO CAMPO ⛔ NÃO GRAVA.
+         *
+         * ⚠️ O e2e *"cancelar ⛔ não grava nada"* achou isto: tocar em **Cancelar**
+         * tira o foco da entrada, e o `blur` gravava **antes** do cancelamento
+         * chegar. O médico desistia e o valor entrava assim mesmo — o oposto
+         * exato do que o gesto promete.
+         */
+        confirmacaoExplicita={emCorrecao}
       />
     ) : campo.tipo === "texto" ? (
       <CampoDeTexto
@@ -1085,7 +1129,101 @@ export function CampoDaSuperficie({
       />
     );
 
-  if (!emprestado) return controle;
+  /**
+   * ⚠️⚠️ O CARTÃO DE LEITURA — o que fecha a ambiguidade.
+   *
+   * ⚠️ Ele mostra o valor **sem** entrada editável e oferece os dois gestos
+   * nomeados. ⛔ Sem diálogo modal: o gesto já é explícito por ser um botão que
+   * diz o que faz, e um modal ⛔ só interromperia.
+   *
+   * ⚠️ **Nova medida aparece AQUI**, no ponto onde a ambiguidade nasce — e ⛔ não
+   * ⛔ só no fim do painel. Quem quis medir de novo precisa achar a alternativa
+   * no instante em que ela é a certa, ⛔ senão é empurrado a "corrigir" o que
+   * ⛔ não era correção.
+   */
+  const leitura = (
+    <View style={e.campo} testID={`avc-leitura-campo-${campo.id}`}>
+      <View style={e.campoTopo}>
+        {/**
+          * ⚠️ O MARCADOR VEM JUNTO — achado na revisão visual de 2026-08-30.
+          *
+          * ⚠️⚠️ O cartão de leitura nascia sem ele, e o campo respondido perdia o
+          * `✓` que todos os outros exibem. Quem varre a coluna lê estado pela
+          * marca; um cartão sem marca no meio de cartões com marca ⛔ não é
+          * "neutro" — parece ⛔ não respondido.
+          */}
+        <MarcaDeResposta respondido />
+        <Text style={e.campoRotulo}>{tr(campo.rotulo)}</Text>
+        <BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />
+      </View>
+      {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
+
+      <Text style={e.valorEmLeitura} testID={`avc-valor-${campo.id}`}>
+        {bruto === "nao_sei"
+          ? tr("Sem essa informação")
+          : campo.tipo === "hora" && numero !== undefined
+            ? horaDeExibicao(numero, agora)
+            : numero !== undefined
+              ? `${numeroCurto(numero, campo.faixa?.passo ?? 1)}`
+                + `${campo.unidade ? ` ${tr(campo.unidade)}` : ""}`
+              : tr(bruto)}
+      </Text>
+
+      {/**
+        * ⚠️ LADO A LADO, e ⛔ não empilhados: as duas são **alternativas** de um
+        * mesmo dilema, e empilhadas viravam quatro botões idênticos rolando pela
+        * coluna — medido em 375 px na revisão visual.
+        */}
+      <View style={e.parDeGestos}>
+        <Pressable
+          style={e.botaoSecundario}
+          accessibilityRole="button"
+          testID={`avc-corrigir-${campo.id}`}
+          onPress={onEntrarEmCorrecao}
+        >
+          <Text style={e.textoSecundario}>
+            {tr(campo.rotuloDeCorrecao ?? "Corrigir resultado")}
+          </Text>
+        </Pressable>
+
+        {onNovaMedida ? (
+          <Pressable
+            style={e.botaoSecundario}
+            accessibilityRole="button"
+            testID={`avc-nova-medida-${campo.id}`}
+            onPress={onNovaMedida}
+          >
+            <Text style={e.textoSecundario}>{tr(rotuloDeNovaMedida ?? "Nova medida")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+
+  /** ⚠️ Em correção: o controle volta, com o aviso do que está acontecendo. */
+  const corpo = emLeitura ? (
+    leitura
+  ) : emCorrecao ? (
+    <View testID={`avc-corrigindo-${campo.id}`}>
+      <Text style={e.avisoDeCorrecao}>
+        {tr("Corrigindo o valor desta aferição. O anterior permanece na trilha.")}
+      </Text>
+      {controle}
+      <Pressable
+        style={e.botaoSecundario}
+        accessibilityRole="button"
+        testID={`avc-cancelar-correcao-${campo.id}`}
+        onPress={onCancelarCorrecao}
+      >
+        {/* ⚠️⚠️ Cancelar ⛔ NÃO grava. Corrigir precisa ser abandonável, ⛔ senão vira armadilha. */}
+        <Text style={e.textoSecundario}>{tr("Cancelar correção")}</Text>
+      </Pressable>
+    </View>
+  ) : (
+    controle
+  );
+
+  if (!emprestado) return corpo;
   return (
     <View testID={`avc-emprestado-${campo.id}`}>
       {/**
@@ -1098,7 +1236,7 @@ export function CampoDaSuperficie({
       <Text style={e.origem}>
         {nomeDaCasa ? `${tr("Do painel")} ${tr(nomeDaCasa)}` : tr("De outra superfície")}
       </Text>
-      {controle}
+      {corpo}
     </View>
   );
 }
@@ -1129,6 +1267,7 @@ export function CampoNumerico({
   onAlternarDetalhe,
   onMedir,
   onDesfazer,
+  confirmacaoExplicita,
 }: {
   campo: Campo;
   gravado: number | undefined;
@@ -1136,6 +1275,8 @@ export function CampoNumerico({
   onAlternarDetalhe: () => void;
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
+  /** ⚠️ Ver o comentário no chamador: em correção, sair do campo ⛔ não grava. */
+  confirmacaoExplicita?: boolean;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -1227,7 +1368,7 @@ export function CampoNumerico({
           value={exibido}
           inputMode="decimal"
           onChangeText={setRascunho}
-          onBlur={() => aoTerminar(exibido)}
+          onBlur={() => { if (!confirmacaoExplicita) aoTerminar(exibido); }}
           onSubmitEditing={() => aoTerminar(exibido)}
           /** ⚠️ "⛔ não informado" é ESTADO, e ⛔ não um número — E-37, E-52. */
           placeholder={tr("não informado")}
@@ -1253,6 +1394,23 @@ export function CampoNumerico({
         * quando **zero é possível para a grandeza**, e ⛔ nunca por *"na prática
         * ⛔ não chega a zero"*. Plaqueta 0 é resultado que laboratório reporta.
         */}
+      {/**
+        * ⚠️⚠️ CONFIRMAR — ⛔ só em correção, porque ⛔ só ali o `blur` deixou de gravar.
+        *
+        * ⚠️ Fora da correção, sair do campo confirma, e um botão a mais seria
+        * atrito em cima do gesto mais comum da tela.
+        */}
+      {confirmacaoExplicita ? (
+        <Pressable
+          style={e.zero}
+          accessibilityRole="button"
+          testID={`avc-confirmar-${campo.id}`}
+          onPress={() => aoTerminar(exibido)}
+        >
+          <Text style={e.zeroTexto}>{tr("Confirmar correção")}</Text>
+        </Pressable>
+      ) : null}
+
       {campo.zeroValido && gravado !== 0 ? (
         <Pressable
           style={e.zero}
@@ -1393,6 +1551,27 @@ export const criarEstilos = (tema: Tema) =>
     },
     marcaAtiva: { color: tema.cores.text, fontWeight: "800" },
     campoAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    /** ⚠️ Tipografia de VALOR: quem lê está conferindo um resultado, ⛔ não escaneando. */
+    valorEmLeitura: {
+      color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700",
+      paddingVertical: ESPACO.sm,
+    },
+    /** ⚠️ Diz o que está acontecendo ANTES de o médico digitar, e ⛔ não depois. */
+    avisoDeCorrecao: {
+      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
+      paddingBottom: ESPACO.sm,
+    },
+    /** ⚠️ Ver o comentário no cartão de leitura: alternativas, ⛔ não uma lista. */
+    parDeGestos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
+    botaoSecundario: {
+      minHeight: TOQUE.minimo, justifyContent: "center", alignSelf: "flex-start",
+      paddingHorizontal: ESPACO.md, marginTop: ESPACO.sm,
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.border,
+    },
+    textoSecundario: {
+      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700",
+    },
     /**
      * ⚠️ Um degrau ACIMA da ajuda: a definição é o que destrava a resposta de
      * quem ⛔ não lembra o termo, e ⛔ não pode ficar do tamanho de rodapé.

@@ -287,6 +287,15 @@ export type Campo = {
    * tinha, agora declarado no conteúdo em vez de deduzido do tipo.
    */
   readonly recolhivel?: true;
+  /**
+   * ⚠️ Como se chama o gesto de correção DESTE campo — ⛔ quando "Corrigir
+   * resultado" ⛔ não descreve o que está sendo corrigido.
+   *
+   * ⚠️⚠️ `plaquetas_unidade` é o caso: o médico ⛔ não corrige um **resultado**, ele
+   * corrige a **unidade** em que o resultado foi lido. Botão que mente sobre o
+   * que faz é botão que ⛔ não vai ser tocado — ou vai ser tocado por engano.
+   */
+  readonly rotuloDeCorrecao?: string;
   /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
   readonly nota?: string;
 };

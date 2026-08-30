@@ -12,7 +12,7 @@
 import type { Campo } from "./campo";
 import type { EstadoAvc } from "../nucleo/estado";
 import { corrigirFato, registrarFato } from "../nucleo/estado";
-import { instanciaParaRegistrar, valorNaInstancia } from "../nucleo/instancia";
+import { instanciaParaRegistrar, proximaInstancia, valorNaInstancia } from "../nucleo/instancia";
 import type { Relogio } from "../nucleo/relogio";
 import type { FatoRegistrado } from "../nucleo/tipos";
 import { TODOS_OS_CAMPOS_L } from "./laboratorio";
@@ -62,7 +62,7 @@ export function campoDoModulo(id: string): Campo | undefined {
  */
 export function registrarComInstancia(
   estado: EstadoAvc,
-  fato: Omit<FatoRegistrado, "horaRegistro" | "instancia">,
+  fato: Omit<FatoRegistrado, "horaRegistro" | "instancia" | "id">,
   relogio: Relogio,
   /**
    * ⚠️ A instância EXPLÍCITA, quando a tela já sabe qual é.
@@ -80,55 +80,60 @@ export function registrarComInstancia(
   const alvo = instancia ?? instanciaParaRegistrar(estado, tipo);
 
   /**
-   * ⚠️⚠️ REDECLARAR UM VALOR **ESTÁVEL** NA MESMA INSTÂNCIA É **CORREÇÃO**.
+   * ── ⛔ A INFERÊNCIA MORREU INTEIRA (autor, 2026-08-30) ─────────────────────
    *
-   * ── O CASO QUE FIXOU ISTO (autor, 2026-08-30) ─────────────────────────────
+   * ⚠️⚠️ Esta função já decidiu sozinha que um segundo valor na mesma instância
+   * era **correção**, deduzindo pela `temporalidade` declarada. O autor a
+   * removeu, e a razão fecha a questão:
    *
-   * > *"coleta 1: `plaquetas = 80`, unidade `mil/mm³`; depois o médico percebe
-   * > que o laudo era `/mm³` e corrige a unidade. A trilha precisa preservar que
-   * > a unidade anterior foi corrigida."*
+   * > *"`afericao` diz o que o fato **é**, mas ⛔ não consegue dizer sozinho **por
+   * > que** o usuário está substituindo aquele valor."*
    *
-   * ⚠️ **Estável** quer dizer: ⛔ não varia com o tempo, por natureza. A unidade em
-   * que um laudo foi impresso ⛔ não "evolui". Logo, um segundo valor estável na
-   * **mesma** aferição ⛔ só pode ser a primeira declaração redescrita — ou o
-   * médico leu a unidade errada, ou digitou errado.
+   * ⚠️ E ⛔ nem para `estavel`, ⛔ nem para `atributoDe`. Trocar `mil/mm³` por
+   * `/mm³` ⛔ **não** é mudar como o resultado aparece: é dizer que a declaração
+   * anterior estava **errada**, e `80.000/mm³` vira `80/mm³` — leitura clínica
+   * diferente. Isso exige gesto.
    *
-   * ⚠️⚠️ Sem a marca, a trilha mostrava **duas declarações lado a lado** e ⛔ não
-   * dizia que a segunda corrige a primeira — e ⚠️ erro de unidade em plaquetas é
-   * justamente o que produz um valor **mil vezes** fora do real.
+   * ⛔ `atributoDe` continua garantindo que valor e unidade sejam lidos da
+   * **mesma** instância. Ele ⛔ **não** concede exceção de correção implícita.
    *
-   * ── ⛔ POR QUE ⛔ NÃO VALE PARA `afericao` ────────────────────────────────────
-   *
-   * ⚠️⚠️ A primeira versão desta regra marcava **qualquer** segundo valor na
-   * instância, e a trava da Superfície A a reprovou — com razão: `PA 198/114`
-   * seguida de `168/96` **25 minutos depois** é **medida nova**, e chamá-la de
-   * correção transformaria evolução clínica real em conserto de digitação.
-   *
-   * ⛔ Onde a aferição pode legitimamente se repetir, a ambiguidade ⛔ **não** se
-   * resolve por inferência — ela precisa do gesto explícito de §3.4. Estável ⛔ não
-   * tem essa ambiguidade: ⛔ não há segunda aferição de algo que ⛔ não varia.
-   *
-   * ⛔ ⛔ NADA é apagado: `corrigirFato` é append-only, e a unidade errada
-   * permanece na trilha, marcada, porque apagá-la esconderia que houve erro.
+   * ⚠️ Quem corrige agora é `corrigirNaInstancia`, e ⛔ só quando a tela disser
+   * que o médico tocou em **Corrigir**.
    */
-  const redeclaraEstavel =
-    campo?.temporalidade === "estavel" && valorNaInstancia(estado, alvo, fato.campo) !== undefined;
-  if (redeclaraEstavel && fato.tipo === undefined) {
-    return corrigirFato(
-      estado,
-      {
-        ...fato,
-        instancia: alvo,
-        /**
-         * ⚠️ O motivo diz **o que aconteceu**, e ⛔ não inventa um porquê: a tela
-         * ⛔ não perguntou, e afirmar uma razão que ninguém deu seria **E-52** —
-         * dado desconhecido substituído por valor fabricado.
-         */
-        motivo: "Redeclarado na mesma aferição; motivo não perguntado",
-      },
-      relogio
-    );
-  }
-
   return registrarFato(estado, { ...fato, instancia: alvo }, relogio);
+}
+
+/**
+ * CORRIGE um fato **dentro da instância**, apontando qual declaração cai.
+ *
+ * ⚠️ A tela ⛔ não escolhe o alvo: ele é o **último fato vigente** daquele campo
+ * naquela instância. Uma segunda correção aponta para a primeira correção, e a
+ * cadeia inteira permanece na trilha (§3.1).
+ *
+ * ⚠️ ⛔ Sem alvo, ⛔ não há correção: corrigir o que ⛔ não foi declarado ⛔ não é
+ * corrigir, é registrar. A tela ⛔ nem oferece o gesto nesse estado, e aqui a
+ * função devolve o estado intacto em vez de inventar uma referência.
+ */
+export function corrigirNaInstancia(
+  estado: EstadoAvc,
+  fato: Omit<FatoRegistrado, "horaRegistro" | "instancia" | "id" | "tipo" | "corrigeFatoId">,
+  relogio: Relogio,
+  instancia?: string
+): EstadoAvc {
+  const campo = campoDoModulo(fato.campo);
+  const tipo = campo?.instanciaDe;
+  const alvo = tipo ? (instancia ?? instanciaParaRegistrar(estado, tipo)) : undefined;
+  /**
+   * ⚠️ Campo sem instância existe (o painel Paciente inteiro): aí o alvo é o
+   * último fato do campo na trilha, e ⛔ não o de uma instância que ⛔ não há.
+   */
+  const anterior = alvo
+    ? valorNaInstancia(estado, alvo, fato.campo)
+    : [...estado.fatos].reverse().find((f) => f.campo === fato.campo && f.instancia === undefined);
+  if (anterior === undefined) return estado;
+  return corrigirFato(
+    estado,
+    { ...fato, instancia: alvo, corrigeFatoId: anterior.id },
+    relogio
+  );
 }

@@ -67,6 +67,9 @@ const vazio = E.abrirAtendimento(rel);
 /** ⚠️ Registra numa coleta EXPLÍCITA — o mesmo caminho que a tela usa. */
 const reg = (e, coleta, campo, valor) =>
   CAMPOS.registrarComInstancia(e, { campo, valor }, rel, coleta);
+/** ⚠️ O GESTO EXPLÍCITO de correção — a porta que o botão "Corrigir" usa. */
+const corr = (e, coleta, campo, valor) =>
+  CAMPOS.corrigirNaInstancia(e, { campo, valor }, rel, coleta);
 const c1 = I.nomeDaInstancia(L.COLETA, 1);
 const c2 = I.nomeDaInstancia(L.COLETA, 2);
 
@@ -323,7 +326,8 @@ const c2 = I.nomeDaInstancia(L.COLETA, 2);
     "o ponto de partida do caso do autor precisa estar montado, ⛔ senão a trava mede outra coisa");
 
   const coletasAntes = I.instanciasDe(e, L.COLETA).length;
-  const corrigido = reg(e, c1, "plaquetas_unidade", L.UNIDADE_PLAQUETAS.porMm3);
+  /** ⚠️ O GESTO EXPLÍCITO — a mesma porta que o botão "Corrigir unidade" usa. */
+  const corrigido = corr(e, c1, "plaquetas_unidade", L.UNIDADE_PLAQUETAS.porMm3);
 
   confere("corrigida para `/mm³`, a comparação passa de 80.000 para 80",
     D.plaquetasComparaveis(corrigido, c1).emMm3 === 80,
@@ -352,34 +356,126 @@ const c2 = I.nomeDaInstancia(L.COLETA, 2);
     && trilha[1].valor === L.UNIDADE_PLAQUETAS.porMm3,
     "§3.1 é append-only: sobrescrever apagaria a evidência de que a unidade estava errada");
   confere("e a correção está MARCADA como correção na trilha",
-    trilha[1].tipo === "correcao" && typeof trilha[1].motivo === "string" && trilha[1].motivo.length > 0,
+    trilha[1].tipo === "correcao",
     "sem marca, a trilha mostra duas declarações e ⛔ não diz que a segunda corrige a primeira (§3.4)");
+  /**
+   * ⚠️⚠️ E ela APONTA EXATAMENTE qual declaração cai — a peça que faltava.
+   * Com três unidades sucessivas, *"a de trás"* deixa de identificar.
+   */
+  confere("a correção referencia o FATO que ela corrige, por id",
+    trilha[1].corrigeFatoId === trilha[0].id,
+    "referência solta é pior que ⛔ nenhuma: ela PARECE rastreabilidade");
+  confere("⛔ e ⛔ SEM motivo fabricado",
+    trilha[1].motivo === undefined,
+    "*\"⛔ não inventem ⛔ nem um motivo genérico — a trilha já sabe pelo `tipo`\"*");
 
   /** ⚠️⚠️ E A OUTRA COLETA ⛔ NÃO FOI TOCADA — ⛔ nenhuma reinterpretação silenciosa. */
   confere("a coleta 2 continua comparando como 90, com a unidade dela",
     D.plaquetasComparaveis(corrigido, c2).emMm3 === 90,
     "*\"⛔ não reinterpretar silenciosamente outras coletas\"* — unidade é por aferição, ⛔ nunca global");
   /**
-   * ⚠️⚠️ A FRONTEIRA DA REGRA, e ⛔ ela ⛔ não pode ficar cega.
+   * ⚠️⚠️ A INFERÊNCIA MORREU INTEIRA (autor, 2026-08-30).
    *
-   * A marca de correção segue a **temporalidade declarada**, e ⛔ não "segundo
-   * valor na instância". A primeira versão marcava qualquer redeclaração e a
-   * trava da Superfície A a reprovou: `PA 198/114` → `168/96` 25 min depois é
-   * **medida nova**, e chamá-la de correção viraria evolução clínica falsa.
+   * ⛔ ⛔ Nem por `estavel`, ⛔ nem por `atributoDe`. Redigitar sem o gesto ⛔ **não**
+   * vira correção: vira um segundo registro, e é isso que a tela impede.
    */
-  const inrRedigitado = reg(reg(vazio, c1, "inr", 1.4), c1, "inr", 1.1);
-  const fatosInr = inrRedigitado.fatos.filter((f) => f.campo === "inr");
-  confere("redigitar uma AFERIÇÃO ⛔ não é marcado por inferência",
-    fatosInr.length === 2 && fatosInr[1].tipo === undefined,
-    "onde a aferição pode se repetir, a ambiguidade ⛔ não se resolve adivinhando — §3.4 pede gesto explícito");
-  confere("⛔ mas a unidade, que é ESTÁVEL, é marcada",
-    trilha[1].tipo === "correcao",
-    "a distinção é a temporalidade declarada, e ⛔ não a contagem de valores na instância");
+  const semGesto = reg(reg(vazio, c1, "inr", 1.4), c1, "inr", 1.1);
+  const fatosInr = semGesto.fatos.filter((f) => f.campo === "inr");
+  confere("registrar por cima, SEM o gesto, ⛔ não é marcado como correção",
+    fatosInr.length === 2 && fatosInr[1].tipo === undefined
+    && fatosInr[1].corrigeFatoId === undefined,
+    "*\"`afericao` diz o que o fato É, mas ⛔ não diz por que o usuário está substituindo\"*");
+  const unidadeSemGesto = reg(
+    reg(reg(vazio, c1, "plaquetas", 80), c1, "plaquetas_unidade", L.UNIDADE_PLAQUETAS.milPorMm3),
+    c1, "plaquetas_unidade", L.UNIDADE_PLAQUETAS.porMm3
+  );
+  confere("⛔ e ⛔ nem para a UNIDADE, que é `estavel` e `atributoDe`",
+    unidadeSemGesto.fatos.filter((f) => f.campo === "plaquetas_unidade")[1].tipo === undefined,
+    "`atributoDe` garante que valor e unidade são da mesma instância — ⛔ não concede exceção de correção");
 
   confere("e a correção ⛔ NÃO transformou uma medida em duas",
     D.ordemEntreColetas(corrigido, "plaquetas") === "nao_estabelecivel"
     && D.coletasComAnalito(corrigido, "plaquetas").length === 2,
     "corrigir atributo ⛔ não pode inflar a contagem de aferições do analito");
+}
+
+// ── 6c · INTEGRIDADE DE `corrigeFatoId` E A CADEIA ───────────────────────
+/**
+ * ⚠️⚠️ Exigido pelo autor: *"`corrigeFatoId` deve apontar para fato existente do
+ * mesmo campo e mesma instância. Assim fica impossível uma correção de INR
+ * apontar para plaquetas ou para outra coleta."*
+ */
+{
+  let e = reg(vazio, c1, "inr", 1.4);
+  e = reg(e, c1, "plaquetas", 200_000);
+  e = reg(e, c2, "inr", 1.1);
+  const inrC1 = I.valorNaInstancia(e, c1, "inr");
+
+  confere("todo fato registrado recebe id",
+    e.fatos.every((f) => typeof f.id === "string" && f.id.length > 0),
+    "fato sem id ⛔ não pode ser referenciado — e é a referência que dá sentido à correção");
+  confere("os ids são únicos",
+    new Set(e.fatos.map((f) => f.id)).size === e.fatos.length,
+    "id repetido faz `corrigeFatoId` apontar para DOIS fatos");
+
+  const erro = (f) => { try { f(); return null; } catch (x) { return String(x.message); } };
+
+  confere("⛔ correção que aponta para fato INEXISTENTE é recusada",
+    /inexistente/i.test(erro(() =>
+      E.corrigirFato(e, { campo: "inr", valor: 1.2, instancia: c1, corrigeFatoId: "f999" }, rel)) ?? ""),
+    "referência morta ⛔ não pode entrar na trilha e ser descoberta na auditoria");
+  confere("⛔ correção de INR que aponta para PLAQUETAS é recusada",
+    /plaquetas/i.test(erro(() => E.corrigirFato(e, {
+      campo: "inr", valor: 1.2, instancia: c1,
+      corrigeFatoId: I.valorNaInstancia(e, c1, "plaquetas").id,
+    }, rel)) ?? ""),
+    "corrigir um exame apontando para outro é cadeia falsa");
+  confere("⛔ correção que atravessa COLETAS é recusada",
+    (erro(() => E.corrigirFato(e, {
+      campo: "inr", valor: 1.2, instancia: c1,
+      corrigeFatoId: I.valorNaInstancia(e, c2, "inr").id,
+    }, rel)) ?? "").length > 0,
+    "a coleta 2 é outra amostra — corrigir através dela reinterpretaria o que ⛔ não foi tocado");
+
+  /** ⚠️⚠️ A CADEIA: corrigir de novo aponta para a correção anterior, e ⛔ nada some. */
+  let cadeia = corr(e, c1, "inr", 1.2);
+  const primeira = I.valorNaInstancia(cadeia, c1, "inr");
+  cadeia = corr(cadeia, c1, "inr", 1.25);
+  const trilhaInr = cadeia.fatos.filter((f) => f.campo === "inr" && f.instancia === c1);
+
+  confere("a segunda correção aponta para a PRIMEIRA CORREÇÃO, e ⛔ não para o original",
+    trilhaInr.length === 3 && trilhaInr[2].corrigeFatoId === primeira.id
+    && trilhaInr[1].corrigeFatoId === inrC1.id,
+    "a cadeia precisa ser seguível de trás para a frente, elo a elo");
+  confere("⛔ e ⛔ NENHUM elo anterior foi apagado ou alterado",
+    trilhaInr[0].valor === 1.4 && trilhaInr[1].valor === 1.2 && trilhaInr[2].valor === 1.25,
+    "§3.1: correção que sobrescreve apaga a evidência de que houve erro");
+  confere("⛔ corrigir o que ⛔ NÃO foi declarado ⛔ não inventa referência",
+    corr(vazio, c1, "aptt", 30).fatos.length === 0,
+    "⛔ sem alvo ⛔ não há correção: corrigir o que ⛔ não existe é registrar, e a tela ⛔ nem oferece o gesto");
+  confere("⛔ corrigir um analito ⛔ NÃO marca o outro da mesma coleta",
+    I.valorNaInstancia(cadeia, c1, "plaquetas").tipo === undefined,
+    "a correção é do fato apontado, e ⛔ não da coleta inteira");
+  /**
+   * ⚠️⚠️ DESFAZER TAMBÉM É POR INSTÂNCIA — ponto cego achado por mutação (M99).
+   *
+   * ⚠️ Sem o filtro de instância, desfazer o INR da coleta 2 apontaria para o
+   * fato da coleta 1: a trilha registraria que a **coleta 1** foi desfeita, e a
+   * coleta 2 seguiria como se ⛔ nada tivesse acontecido.
+   */
+  const desfeito = CAMPOS.corrigirNaInstancia(cadeia, { campo: "inr", valor: "nao_perguntado" }, rel, c2);
+  const inrC2 = cadeia.fatos.filter((f) => f.campo === "inr" && f.instancia === c2);
+  confere("desfazer numa coleta aponta para o fato DAQUELA coleta",
+    I.valorNaInstancia(desfeito, c2, "inr").corrigeFatoId === inrC2[inrC2.length - 1].id,
+    "referência que atravessa coleta faz a trilha registrar que outra amostra foi desfeita");
+  confere("⛔ e o INR da coleta 1 continua vigente",
+    I.valorNaInstancia(desfeito, c1, "inr").valor === 1.25,
+    "desfazer numa coleta ⛔ não pode esvaziar outra");
+
+  confere("⛔ e ⛔ NÃO toca a outra coleta",
+    I.valorNaInstancia(cadeia, c2, "inr").valor === 1.1
+    && I.valorNaInstancia(cadeia, c2, "inr").tipo === undefined,
+    "vazamento entre instâncias é o mesmo perigo que a unidade já guarda");
 }
 
 // ── 7 · A PENDÊNCIA NASCE TARDE, E ⛔ NÃO CEDO ────────────────────────────
