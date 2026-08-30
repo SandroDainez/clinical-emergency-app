@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**61 de 75 travas com declaração completa.**
+**62 de 76 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -97,6 +97,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a sessão anônima ⛔ **nunca** seja substituída antes de a posse das sessões clínicas estar transferida — nem quando a autenticação falha, nem quando o claim falha, nem quando o claim explode.
 - **NÃO PROMETE:** que o servidor esteja implantado. Isto EXECUTA a decisão do cliente contra falhas forçadas; a prova do servidor é `test:edge-functions`.
 - **UNIVERSO:** `lib/troca-de-sessao.ts`, executado — ⛔ não varrido. ── ⚠️⚠️ POR QUE ESTA PROVA EXECUTA, EM VEZ DE LER O FONTE ───────────────── ⛔ A versão anterior desta arquitetura afirmava, num comentário, que *"falha no claim ⛔ nunca derruba o login"* — e a afirmação estava **errada**: se a sessão nova é instalada com o claim falho, as sessões continuam do `old_uid` enquanto o cliente vira `new_uid`, e ⛔ o histórico **some naquele instante**. ⚠️⚠️ Uma varredura de fonte teria aprovado as duas versões — a certa e a errada — porque as duas *chamam* o claim. ⛔ O que distingue ⛔ não é quem é chamado, é **o que ⛔ NÃO acontece depois da falha**. Isso só se mede rodando.
+
+## `test:degradacao-segura` → `scripts/prova-degradacao-segura.cjs`
+
+- **PROMETE:** que ⛔ nenhum mecanismo de degradação recrie acesso público; que o modo desligado ⛔ não consulte sessões ⛔ nem finja que elas ⛔ não existem; e que ⛔ nenhum caminho de rollback toque `notes`, `event_data` ou posse.
+- **NÃO PROMETE:** que os SQLs tenham sido aplicados — ⛔ nenhum foi.
+- **UNIVERSO:** `supabase/reversoes/**`, o interruptor e a porta única do histórico. ── ⚠️⚠️ O PRINCÍPIO QUE ISTO DEFENDE ───────────────────────────────────── ⚠️⚠️ **Disponibilidade pode degradar. Confidencialidade, ⛔ não.** ⚠️ Sob pressão, o reflexo é *"reabre o acesso enquanto a gente investiga"*. ⛔ Esta trava existe para que esse reflexo ⛔ não tenha para onde ir: ⛔ nenhum dos caminhos **fáceis** reabre ⛔ nada, e o único que reabre está atrás de fricção.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 

@@ -38,6 +38,12 @@ export const ES_TELAS_SUPORTE: Record<string, string> = {
     "No se pudo cargar el historial de sesiones",
   "Não foi possível carregar o histórico.": "No se pudo cargar el historial.",
   "Nenhuma sessão registrada ainda.": "Aún no se registró ninguna sesión.",
+  // ⚠️ Degradação declarada (Degrau 2): indisponível ⛔ NÃO é vazio. A segunda
+  // frase é a que importa — o médico precisa saber que ⛔ nada se perdeu.
+  "Histórico temporariamente indisponível. Suas sessões estão preservadas — nada foi apagado.":
+    "Historial temporalmente no disponible. Tus sesiones están preservadas — no se borró nada.",
+  "Histórico temporariamente indisponível. Esta sessão está preservada — nada foi apagado.":
+    "Historial temporalmente no disponible. Esta sesión está preservada — no se borró nada.",
   "Em andamento": "En curso",
   "Encerrado": "Cerrada",
   "Iniciado": "Iniciada",

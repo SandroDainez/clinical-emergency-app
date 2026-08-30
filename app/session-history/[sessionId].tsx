@@ -42,8 +42,17 @@ export default function SessionHistoryDetailScreen() {
     let isMounted = true;
     setStatus("loading");
 
-    loadClinicalSessionById(id).then(({ data, error }) => {
+    loadClinicalSessionById(id).then(({ data, error, indisponivel }) => {
       if (!isMounted) {
+        return;
+      }
+
+      /** ⚠️ Mesma regra da lista: indisponível ⛔ não é "⛔ não existe" (E-37). */
+      if (indisponivel) {
+        setErrorMessage(
+          "Histórico temporariamente indisponível. Esta sessão está preservada — nada foi apagado."
+        );
+        setStatus("error");
         return;
       }
 

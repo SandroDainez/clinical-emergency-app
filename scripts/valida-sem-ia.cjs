@@ -69,7 +69,7 @@ const PROIBIDOS = [
  * a função, o acoplamento volta a ser do aplicativo — e aí a decisão é outra, e
  * é do autor.
  */
-const IGNORAR = /node_modules|\.expo|dist|^scripts\/|^auditoria\/|\.git|^supabase\/functions\//;
+const IGNORAR = /node_modules|\.expo|dist|^scripts\/|^auditoria\/|\.git|^supabase\/functions(-disabled)?\//;
 
 function listar(dir, acc = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

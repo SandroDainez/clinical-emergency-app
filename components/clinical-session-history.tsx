@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { loadClinicalSessions, type ClinicalSessionRecord } from "../lib/clinical-session-history";
+import { TEMAS } from "../design-system/tokens";
 import { useTr } from "../lib/use-tr";
 
 const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
@@ -36,15 +37,26 @@ export default function ClinicalSessionHistory({
 }) {
   const tr = useTr();
   const [sessions, setSessions] = useState<ClinicalSessionRecord[]>([]);
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "indisponivel">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
     setStatus("loading");
-    loadClinicalSessions().then(({ data, error }) => {
+    loadClinicalSessions().then(({ data, error, indisponivel }) => {
       if (!isMounted) {
+        return;
+      }
+      /**
+       * ⚠️⚠️ ESTADO PRÓPRIO — ⛔ e ⛔ NÃO lista vazia.
+       *
+       * ⛔ "Nenhuma sessão registrada ainda" seria uma afirmação **falsa** sobre
+       * o trabalho do médico. Indisponível ⛔ não é vazio, e ⛔ não é erro: é uma
+       * decisão operacional que a tela precisa **declarar**.
+       */
+      if (indisponivel) {
+        setStatus("indisponivel");
         return;
       }
       if (error) {
@@ -68,6 +80,16 @@ export default function ClinicalSessionHistory({
         <View style={styles.rowCentered}>
           <ActivityIndicator color="#22d3ee" />
           <Text style={styles.loadingText}>{tr("Carregando histórico...")}</Text>
+        </View>
+      );
+    }
+
+    if (status === "indisponivel") {
+      return (
+        <View style={styles.rowCentered}>
+          <Text style={styles.indisponivelText}>
+            {tr("Histórico temporariamente indisponível. Suas sessões estão preservadas — nada foi apagado.")}
+          </Text>
         </View>
       );
     }
@@ -178,4 +200,15 @@ const styles = StyleSheet.create({
   rowCentered: { flexDirection: "row", alignItems: "center", gap: 10 },
   loadingText: { fontSize: 13, color: "#aab6c6" },
   errorText: { fontSize: 13, color: "#fca5a5" },
+  /**
+   * ⚠️ Cor de **aviso**, ⛔ e ⛔ não de erro: ⛔ nada quebrou, algo foi desligado.
+   *
+   * ⚠️ Vem do token, ⛔ e ⛔ não de um hex novo — este arquivo é legado de cor, e o
+   * teto dele ⛔ só desce. A trava de paleta me pegou tentando subir para 17.
+   */
+  indisponivelText: {
+    fontSize: 13,
+    color: TEMAS.escuro.cores.warning,
+    lineHeight: 19,
+  },
 });

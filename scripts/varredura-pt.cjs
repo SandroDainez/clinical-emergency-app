@@ -72,7 +72,7 @@ const SKIP_DIRS = new Set([
    *
    * ⛔ Varrê-las cobraria par em espanhol para string que ⛔ ninguém exibe.
    */
-  "functions",
+  "functions", "functions-disabled",
 ]);
 // Arquivos que SÃO tradução (não devem ser varridos como origem).
 const isDictFile = (p) =>
