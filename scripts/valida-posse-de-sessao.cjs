@@ -194,14 +194,36 @@ const migDir = path.join(appDir, "supabase", "migrations");
  * anônimo; `fecha_leitura_publica_de_sessoes` fecha o P0 e ⛔ só pode rodar
  * depois de o cliente ter `auth.uid()`. ⛔ Juntas, ⛔ não havia ordem segura.
  */
-const migCompat = fs.readdirSync(migDir).filter((f) => /compatibilidade_identidade_anonima/.test(f));
-const migFecha = fs.readdirSync(migDir).filter((f) => /fecha_leitura_publica/.test(f));
+/**
+ * ⚠️⚠️ O FECHAMENTO MUDOU DE PASTA — e a trava caiu ⛔ por isso.
+ *
+ * ⚠️ Ela media *"as duas existem, separadas"* procurando ambas em
+ * `migrations/`. Depois do P·0, o fechamento foi movido para
+ * `migrations-pendentes-futuras/`, porque estar na sequência executável o
+ * tornava elegível para o próximo `db push` — o que aplicaria compatibilidade e
+ * fechamento **na mesma rodada**.
+ *
+ * ⚠️⚠️ Isso ⛔ não enfraquece o invariante: estar **fora** da sequência é uma
+ * separação **mais forte** que estar ao lado. O que a trava precisava aprender é
+ * que a separação tem duas formas, ⛔ e ⛔ não que a regra mudou.
+ *
+ * ⚠️ Ela também caiu porque eu movi o arquivo e ⛔ **não rodei `test:all`
+ * depois** — só as travas individuais. A suíte inteira existe ⛔ exatamente para
+ * pegar o que a verificação pontual ⛔ não vê.
+ */
+const futDir = path.join(appDir, "supabase", "migrations-pendentes-futuras");
+const ondeEstao = [migDir, ...(fs.existsSync(futDir) ? [futDir] : [])];
+const acha = (re) =>
+  ondeEstao.flatMap((d) => fs.readdirSync(d).filter((f) => re.test(f)).map((f) => path.join(d, f)));
+
+const migCompat = acha(/compatibilidade_identidade_anonima/);
+const migFecha = acha(/fecha_leitura_publica/);
 confere("as duas migrations do rollout existem, separadas",
   migCompat.length === 1 && migFecha.length === 1,
   "⛔ uma migration só ⛔ não tem ordem de aplicação segura: fechar a RLS antes do cliente ter `auth.uid()` interrompe o app");
 
-const sqlCompat = migCompat.length ? lerFonte(path.join(migDir, migCompat[0])) : "";
-const sqlFecha = migFecha.length ? lerFonte(path.join(migDir, migFecha[0])) : "";
+const sqlCompat = migCompat.length ? lerFonte(migCompat[0]) : "";
+const sqlFecha = migFecha.length ? lerFonte(migFecha[0]) : "";
 
 confere("⚠️⚠️ a migration de compatibilidade ⛔ NÃO mexe em política ⛔ nenhuma",
   !/create policy|drop policy/i.test(sqlCompat.replace(/^\s*--.*$/gm, "")),

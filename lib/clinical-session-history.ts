@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { historicoDisponivel } from "./historico-disponivel";
+import { backendClinicoDisponivel } from "./backend-clinico";
 
 export type ClinicalSessionRecord = {
   id: string;
@@ -21,8 +22,16 @@ export async function loadClinicalSessions() {
   if (!historicoDisponivel()) {
     return { data: [] as ClinicalSessionRecord[], error: null, indisponivel: true };
   }
-  if (!supabase) {
-    return { data: [] as ClinicalSessionRecord[], error: null, indisponivel: false };
+  /**
+   * ⚠️⚠️ MODO LOCAL É **INDISPONÍVEL**, ⛔ e ⛔ NÃO "vazio".
+   *
+   * ⛔ Devolver lista vazia afirmaria *"você ⛔ não tem sessões"* — falso sobre o
+   * trabalho do médico, e da mesma família do E-52. ⚠️ E ⛔ impediria de provar
+   * que este ramo ⛔ não virou porta lateral para persistência: "vazio" e
+   * "⛔ não existe backend" ficariam indistinguíveis.
+   */
+  if (!backendClinicoDisponivel() || !supabase) {
+    return { data: [] as ClinicalSessionRecord[], error: null, indisponivel: true };
   }
 
   const { data, error } = await supabase
@@ -38,8 +47,9 @@ export async function loadClinicalSessionById(sessionId: string) {
   if (!historicoDisponivel()) {
     return { data: null, error: null, indisponivel: true };
   }
-  if (!supabase) {
-    return { data: null, error: null, indisponivel: false };
+  /** ⚠️ Mesma regra da lista: modo local ⛔ não é "⛔ não existe" (E-37). */
+  if (!backendClinicoDisponivel() || !supabase) {
+    return { data: null, error: null, indisponivel: true };
   }
 
   const { data, error } = await supabase

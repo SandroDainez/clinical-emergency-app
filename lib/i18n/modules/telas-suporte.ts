@@ -38,6 +38,13 @@ export const ES_TELAS_SUPORTE: Record<string, string> = {
     "No se pudo cargar el historial de sesiones",
   "Não foi possível carregar o histórico.": "No se pudo cargar el historial.",
   "Nenhuma sessão registrada ainda.": "Aún no se registró ninguna sesión.",
+  // ⚠️ Guarda de acesso: os dois estados de recusa NÃO se confundem — dizer
+  // "aguardando aprovação" a quem foi bloqueado manda esperar por algo que
+  // ⛔ não vai acontecer.
+  "Sua conta está aguardando aprovação do administrador. Você será avisado quando o acesso for liberado.":
+    "Tu cuenta está esperando la aprobación del administrador. Te avisaremos cuando se libere el acceso.",
+  "Esta conta não está disponível para acesso. Fale com o administrador.":
+    "Esta cuenta no está disponible para acceder. Habla con el administrador.",
   // ⚠️ Degradação declarada (Degrau 2): indisponível ⛔ NÃO é vazio. A segunda
   // frase é a que importa — o médico precisa saber que ⛔ nada se perdeu.
   "Histórico temporariamente indisponível. Suas sessões estão preservadas — nada foi apagado.":

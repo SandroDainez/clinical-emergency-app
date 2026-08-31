@@ -26,7 +26,14 @@ const appDir = path.resolve(__dirname, "..");
 const IGNORAR = new Set(["node_modules", ".git", ".expo", "dist", "web-build", "ios", "android"]);
 
 /** ⚠️ Os padrões que iCloud, Dropbox e OneDrive usam para cópia de conflito. */
-const SUSPEITO = /( \d+\.[^.]+$|conflicted copy|\(\d+\)\.[^.]+$|~\$)/i;
+/**
+ * ⚠️⚠️ ARQUIVO **E DIRETÓRIO**.
+ *
+ * ⛔ A primeira versão exigia extensão (` 2.ext`), então uma **pasta** duplicada
+ * — `test-results 4/` — passava batido. ⚠️ E pasta duplicada é pior: ela ⛔ não
+ * casa com o `.gitignore` do nome original, então entra no commit ⛔ inteira.
+ */
+const SUSPEITO = /( \d+(\.[^.]+)?$|conflicted copy|\(\d+\)(\.[^.]+)?$|~\$)/i;
 
 const achados = [];
 let varridos = 0;
@@ -38,9 +45,13 @@ while (pilha.length) {
     const p = path.join(atual, nome);
     let st;
     try { st = fs.statSync(p); } catch { continue; }
-    if (st.isDirectory()) { pilha.push(p); continue; }
     varridos++;
-    if (SUSPEITO.test(nome)) achados.push(path.relative(appDir, p));
+    if (SUSPEITO.test(nome)) {
+      achados.push(path.relative(appDir, p) + (st.isDirectory() ? "/" : ""));
+      /** ⛔ ⛔ ⛔ Não desce numa pasta já acusada: o achado é ela, ⛔ não o conteúdo. */
+      continue;
+    }
+    if (st.isDirectory()) { pilha.push(p); continue; }
   }
 }
 

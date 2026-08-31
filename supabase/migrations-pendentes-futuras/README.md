@@ -27,6 +27,19 @@ autenticado.
 ⚠️ ⛔ Antes disso ⛔ não existe **dono** para as sessões, e a policy de posse
 negaria tudo.
 
+## ⚠️⚠️ SEGUNDO ARQUIVO · `20260831070000_fecha_acesso_clinico_a_conta_ativa.sql`
+
+⚠️ É o fechamento do P0 pelo **caminho curto** — autorização clínica = conta
+`ativo`, ⛔ sem uso anônimo. Ele **substitui** o `20260830191000` enquanto o uso
+clínico anônimo estiver fora do roadmap.
+
+⛔ ⛔ **⛔ Só volta para `migrations/` depois de a guarda de rota estar publicada
+e validada em produção.** Aplicá-lo antes deixaria o cliente pedindo dados que o
+banco nega, ⛔ sem tela preparada para dizer o porquê.
+
+⚠️ Os dois arquivos ⛔ não devem ser aplicados juntos: são **dois desenhos** do
+mesmo fechamento, ⛔ e ⛔ não duas etapas.
+
 ## ⚠️ Integridade
 
 ⛔ ⛔ **⛔ NENHUM byte foi alterado.** Movido com `git mv`, conferido por SHA-256

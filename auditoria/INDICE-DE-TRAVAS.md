@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**63 de 77 travas com declaração completa.**
+**65 de 79 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -109,6 +109,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhuma cópia de conflito de sincronização sobreviva no repositório — em especial em `supabase/migrations/`, onde uma duplicata seria **aplicada duas vezes**.
 - **NÃO PROMETE:** impedir que o iCloud as crie. Ela mede o resultado, ⛔ não a causa.
 - **UNIVERSO:** a árvore do repositório, menos `node_modules` e `.git`. ── ⚠️⚠️ POR QUE ISTO É UMA TRAVA, E ⛔ NÃO UMA LEMBRANÇA ────────────────── ⚠️ O repositório vive em `~/Documents`, sincronizado pelo iCloud. Rodadas rápidas de escrita — testes de mutação salvam e restauram o mesmo arquivo em sequência — fazem o iCloud criar **cópias de conflito** `arquivo 2.ext`, ⛔ em silêncio e ⛔ sem erro. ⚠️⚠️ E o pior: como o conteúdo é **idêntico**, `git diff` do arquivo original ⛔ não mostra ⛔ nada. ⛔ Só `git status` acusa, como arquivo ⛔ não rastreado — e ⛔ ninguém lê `git status` com atenção no fim de uma rodada longa. ⚠️ Aconteceu **duas vezes** em 2026-08-30, e nas duas havia uma **migration** duplicada. ⛔ Confiar em eu lembrar de rodar o `find` ⛔ não é medição.
+
+## `test:guarda-de-acesso` → `scripts/prova-guarda-de-acesso.cjs`
+
+- **PROMETE:** que ⛔ nenhuma rota clínica seja alcançável sem conta **ativa**, que ⛔ nenhum conteúdo clínico apareça em estado desconhecido, e que a lista de rotas públicas seja de **permissão**, com comparação exata.
+- **NÃO PROMETE:** que o banco negue — isso é `valida-fechamento-clinico`. Cliente ⛔ nunca é prova; esta é a **primeira** camada, ⛔ não a única.
+- **UNIVERSO:** `lib/guarda-de-acesso.ts` executado + a fiação da raiz, com piso. ── ⚠️⚠️ O DEFEITO QUE ESTA PROVA NASCEU PARA MATAR ─────────────────────── A aprovação administrativa vivia em **um `if`** na tela de login. Mas o build web publica **uma URL por módulo** — `/modulos/avc`, `/session-history` —, e digitar o endereço pulava a tela inteira. ⚠️ A aprovação existia na **navegação**, ⛔ e ⛔ não na segurança.
+
+## `test:fechamento-clinico` → `scripts/valida-fechamento-clinico.cjs`
+
+- **PROMETE:** que a migration de fechamento negue no BANCO — papel `anon` sem policy, posse por `auth.uid()`, autorização por conta `ativo`, eventos derivados da sessão pai — e que ⛔ não amplie capacidade ⛔ nem toque dado.
+- **NÃO PROMETE:** que esteja aplicada. ⛔ Ela ⛔ **não** está, e ⛔ por decisão: só entra depois da guarda de rota publicada.
+- **UNIVERSO:** `migrations-pendentes-futuras/*fecha_acesso_clinico*`, com piso. ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE SEPARADA DA GUARDA ───────────────────── ⛔ Cliente ⛔ nunca é prova. A guarda de rota impede a **navegação**; quem falar direto com a API, com a chave publicável, passa por cima dela inteira. ⚠️ A fronteira real é a RLS — e ⛔ é ela que esta trava mede.
 
 ## `test:avc-superficies` → `scripts/prova-avc-superficies.cjs`
 
@@ -494,7 +506,7 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que as ferramentas ausentes deveriam existir, nem que os limiares sem fonte aberta estejam certos — APACHE II segue sem a figura do Knaus.
 - **UNIVERSO:** as 15 ferramentas de clinical-calculators-engine.ts. Validação estrutural das calculadoras clínicas. POR QUE ESTE SCRIPT EXISTE -------------------------- Cada calculadora do app cita, no próprio código, a publicação primária que a define. Nenhuma estava conferida contra ela — a citação existia, a verificação não. Conferir 15 artigos inteiros é caro e, na prática, não acontece. Mas quase toda publicação de escore declara um INVARIANTE verificável: a faixa que o escore pode assumir. E o invariante é sensível — a faixa só fecha se todos os pesos estiverem certos. Exemplo real: o APACHE II vai de 0 a 71 (Knaus 1985). Se a creatinina não dobrasse na insuficiência renal aguda, o máximo daria 67. Se o Glasgow fosse pontuado como as demais variáveis (teto 4 em vez de 12), daria 63. Se a idade parasse em 5 pontos, daria 70. Um único peso errado quebra o teste. O QUE ELE PROVA E O QUE NÃO PROVA --------------------------------- Prova que o conjunto de pesos fecha na faixa publicada. NÃO prova que cada faixa individual de cada variável está no ponto certo — para isso é preciso o texto completo com as tabelas. É bem mais do que "a citação está no comentário", e bem menos do que uma auditoria completa. O relatório diz exatamente qual das duas coisas cada calculadora recebeu. COMO ESTENDER ------------- Acrescente uma entrada em INVARIANTES com a faixa e a fonte. Se a publicação não declarar faixa, registre `faixa: null` com o motivo: o script conta como PENDENTE em vez de fingir cobertura.
 
-## `build:web`
+## `build:web:teste`
 
 _não executa script em scripts/ (e2e, playwright)_
 
