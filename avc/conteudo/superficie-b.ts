@@ -500,6 +500,30 @@ export const DECISAO_B: readonly CampoB[] = [
     bloqueiaTerapia: false,
     nota: "Uma vez determinado que o déficit é incapacitante, a fonte diz que atrasar a trombólise é potencialmente prejudicial.",
   },
+  {
+    /**
+     * ⚠️⚠️ "LEVE" É PROPRIEDADE PRÓPRIA — ⛔ e ⛔ não o oposto de incapacitante.
+     *
+     * §4.6.1 rec. 8 delimita a população como *"mild **non-disabling** stroke
+     * deficits"* — **duas** características. ⛔ `Não incapacitante` ⛔ não diz
+     * ⛔ nada sobre gravidade, e sem esta resposta a recomendação COR 3 ⛔ não pode
+     * ser afirmada.
+     *
+     * ⛔ ⛔ **NIHSS ⛔ NÃO é sinônimo de leve.** A mesma seção diz, na rec. 1,
+     * *"disabling deficits, **regardless of NIHSS score**"* — a fonte separa
+     * escore de caráter, e derivar "leve" de um número inventaria o critério que
+     * ela deliberadamente ⛔ não deu.
+     */
+    id: "deficit_leve",
+    temporalidade: "estado",
+    rotulo: "Déficit leve, na avaliação do médico",
+    tipo: "escolha",
+    opcoes: ["Leve", "Não leve", "Incerto"],
+    ajuda: "A fonte não define leve por escore. A leitura é sua.",
+    fonte: "F-17",
+    bloqueiaTerapia: false,
+    nota: "A recomendação de não trombolisar exige déficit leve E não incapacitante. O NIHSS isolado não determina nenhum dos dois.",
+  },
 ] as const;
 
 /**
@@ -612,6 +636,7 @@ export const VOCABULARIO_PROPRIO_B: readonly { id: string; motivo: string }[] = 
    */
   { id: "nihss_informado_origem", motivo: "procedência muda a confiança sem mudar o número (E-03)" },
   { id: "incapacitante_assumido", motivo: "as três decisões de §2.8-6, e Incerto é decisão" },
+  { id: "deficit_leve", motivo: "leve/não leve/incerto é julgamento clínico, e a fonte não define por escore" },
   { id: "consulta_paciente_familia", motivo: "registra com quem foi a conversa, e não é sim ou não" },
 ] as const;
 

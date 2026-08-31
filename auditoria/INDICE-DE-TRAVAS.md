@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**65 de 79 travas com declaração completa.**
+**66 de 80 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -55,6 +55,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a Superfície E registre **ações**, e ⛔ nunca conclua correção — que ⛔ nenhum estado de ação derrube bloqueio, que `cancelada` ⛔ nunca produza derivação favorável, que os estados ⛔ **não** formem sequência obrigatória, que cada intervenção seja uma **instância** própria, que E ⛔ não invente causalidade entre ação e aferição, que E ⛔ não declare PA ⛔ nem glicemia, e que ⛔ nenhum fármaco, dose, via ou esquema apareça enquanto F-19 estiver parcial.
 - **NÃO PROMETE:** que os limiares estejam certos — são transcrição, conferida pelo autor contra o verbatim. ⛔ Não mede tela: isso é `e2e/avc-superficie-e`.
 - **UNIVERSO:** `avc/conteudo/superficie-e.ts` inteiro e todas as derivações de `avc/nucleo/derivacoes-e.ts`, mais os bloqueios de `derivacoes-d.ts` e os campos de A que os sustentam. ⛔ Fora: F e G.
+
+## `test:avc-superficie-f` → `scripts/prova-avc-superficie-f.cjs`
+
+- **PROMETE:** que F leia as recomendações da diretriz **uma a uma**, preservando marco, força e verbo — e que ⛔ nunca produza veredito agregado.
+- **NÃO PROMETE:** que a fiação com A–E exista. Ela ⛔ **não** existe ainda: esta rodada fecha o modelo, e a tela ⛔ não foi desenhada.
+- **UNIVERSO:** `superficie-f.ts` + `derivacoes-f.ts`, executados, com piso. ── ⚠️⚠️ O ERRO QUE ESTA PROVA EXISTE PARA IMPEDIR ──────────────────────── ⛔ Transformar uma diretriz com **populações sobrepostas, cinco relógios e forças graduadas** num algoritmo binário de *"elegível / ⛔ não elegível"*. ⚠️ A fonte adverte disso ⛔ ela mesma, em F-08: *"`EVT elegível = sim/não` ⛔ **NÃO** é fato armazenado"*.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

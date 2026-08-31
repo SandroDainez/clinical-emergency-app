@@ -375,7 +375,7 @@ critério de ensaio **não é** recomendação. ⛔ Não promover.
 |---|---|---|
 | §4.6.3 rec. 1 — início desconhecido, DWI-FLAIR | **2a** | **B-R** |
 | §4.6.3 rec. 2 — *wake-up* 9 h / LKW 4,5–9 h, perfusão | **2a** | **B-R** |
-| §4.6.3 rec. 3 — LVO 4,5–24 h sem acesso a EVT | **2b** | **B-R** |
+| §4.6.3 rec. 3 — LVO 4,5–24 h que *"cannot receive EVT"* ⚠️ (⛔ gloss anterior dizia *"sem acesso a EVT"* — inferência, ⛔ não verbatim · **F-31**) | **2b** | **B-R** |
 | §3.2 rec. 6 — DWI-FLAIR para janela estendida | **2a** | **B-R** |
 | §3.2 rec. 7 — CTP / MR DWI-PWI automatizado | **2a** | **B-R** |
 

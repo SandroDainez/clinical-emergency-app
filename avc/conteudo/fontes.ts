@@ -89,6 +89,12 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * ⛔ **não** transformar horário conhecido em "<48 h confirmado" (**E-52**).
    */
   { id: "F-30", assunto: "Marco temporal da exposição recente a DOAC", estado: "aberto", arquivo: SEG_DEF },
+  {
+    id: "F-31",
+    assunto: "Significado de \"not eligible for EVT\" / \"cannot receive EVT\"",
+    estado: "aberto",
+    arquivo: SEG_DEF,
+  },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

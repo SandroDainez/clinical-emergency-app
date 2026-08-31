@@ -409,6 +409,70 @@ export const ESTUDO_C: readonly CampoC[] = [
     nota: "A fonte usa a expressão efeito de massa significativo, sem definir medida. A leitura é de quem interpreta a imagem. Definição operacional: slot F-29, ainda sem fonte candidata.",
   },
   {
+    /**
+     * ⚠️⚠️ DOIS COMPONENTES, ⛔ e ⛔ não um booleano.
+     *
+     * §4.6.3 rec. 1 exige *"an MRI-DWI lesion **smaller than one-third of the
+     * MCA territory**"* **e** *"**no marked signal change** on FLAIR"*.
+     *
+     * ⛔ Colapsá-los apagaria **qual dos dois** falta — e apagaria que o segundo
+     * é uma **ausência**, que ⛔ não pode ser presumida (E-02).
+     */
+    id: "dwi_menor_que_um_terco",
+    temporalidade: "afericao",
+    instanciaDe: ESTUDO,
+    rotulo: "Lesão em DWI menor que um terço do território da ACM",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "Critério da recomendação de janela estendida por início desconhecido.",
+  },
+  {
+    id: "flair_sem_alteracao_marcada",
+    temporalidade: "afericao",
+    instanciaDe: ESTUDO,
+    /** ⚠️ A pergunta é pela **ausência** — é assim que a fonte a escreve. */
+    rotulo: "Ausência de alteração de sinal marcada no FLAIR",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "A fonte pede ausência de alteração marcada. Não responder não equivale a ausência.",
+  },
+  {
+    /**
+     * ⚠️⚠️ O MÉTODO DIFERE ENTRE AS RECOMENDAÇÕES — e ⛔ isso ⛔ não pode ser
+     * achatado.
+     *
+     * §4.6.3 **rec. 2** exige *"salvageable ischemic penumbra detected on
+     * **automated perfusion imaging**"*. §4.6.3 **rec. 3** diz apenas
+     * *"with salvageable ischemic penumbra"*, ⛔ **sem qualificar o método**.
+     *
+     * ⛔ Um insumo só imporia à rec. 3 uma exigência que a fonte ⛔ não fez.
+     */
+    id: "penumbra_salvavel",
+    temporalidade: "afericao",
+    instanciaDe: ESTUDO,
+    rotulo: "Penumbra isquêmica salvável",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "Ausência de estudo de perfusão não significa ausência de penumbra.",
+  },
+  {
+    id: "penumbra_por_perfusao_automatizada",
+    temporalidade: "afericao",
+    instanciaDe: ESTUDO,
+    rotulo: "Penumbra detectada em perfusão automatizada",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "Exigido pela recomendação de janela estendida em wake-up e 4,5 a 9 horas. A recomendação de 4,5 a 24 horas não qualifica o método.",
+  },
+  {
     id: "sitio_oclusao",
     temporalidade: "afericao",
     instanciaDe: ESTUDO,
@@ -690,6 +754,16 @@ export const SAIDA_SEM_CONCLUSAO: Readonly<Record<string, string>> = {
   hipodensidade_clara: "Incerto",
   efeito_de_massa: "Incerto",
   suspeita_lvo: "Incerto",
+  /**
+   * ⚠️ Os quatro achados da janela estendida. A saída é "Incerto" ⛔ e ⛔ não
+   * `NAO_SEI` porque a pergunta é de **leitura de imagem**: o estudo pode estar
+   * na tela ⛔ e mesmo assim a resposta ⛔ não fechar. E-37 — "olhei e ⛔ não dá
+   * para afirmar" ⛔ não é "⛔ ainda ⛔ não perguntei".
+   */
+  dwi_menor_que_um_terco: "Incerto",
+  flair_sem_alteracao_marcada: "Incerto",
+  penumbra_salvavel: "Incerto",
+  penumbra_por_perfusao_automatizada: "Incerto",
   estudo_procedencia: NAO_SEI,
   estudo_modalidade: NAO_SEI,
   angio_disponibilidade: NAO_SEI,

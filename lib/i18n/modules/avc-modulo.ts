@@ -1482,4 +1482,73 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "de dónde vino la toma cambia la lectura sin cambiar el valor (E-03)",
   "unidade é apresentação da medida, e não resposta binária":
     "la unidad es presentación de la medida, y no respuesta binaria",
+
+  // ── ⚠️ SUPERFÍCIE F · populações das recomendações ────────────────────
+  //
+  // ⚠️ E-45: a tradução preserva **população, força e exceção**. "NÃO
+  // dominante" e "leve NÃO incapacitante" carregam a negação que inverte a
+  // recomendação — ⛔ perder o "não" trocaria COR 3 por COR 2a.
+  "adulto com déficit incapacitante, elegível a IVT":
+    "adulto con déficit incapacitante, elegible para TIV",
+  "adulto elegível a IVT": "adulto elegible para TIV",
+  "déficit leve NÃO incapacitante": "déficit leve NO incapacitante",
+  "adulto elegível a IVT — dose de 0,4 mg/kg de tenecteplase":
+    "adulto elegible para TIV — dosis de 0,4 mg/kg de tenecteplasa",
+  "início desconhecido, com RM-DWI/FLAIR compatível":
+    "inicio desconocido, con RM-DWI/FLAIR compatible",
+  "NÃO elegível a EVT, com penumbra salvável em perfusão automatizada":
+    "NO elegible para TEV, con penumbra salvable en perfusión automatizada",
+  "LVO com penumbra salvável, que \"cannot receive EVT\"":
+    "LVO con penumbra salvable, que \"cannot receive EVT\"",
+  // ⚠️ Classe de recomendação da AHA — **nomenclatura**, ⛔ não frase. Preservada
+  // nos dois idiomas: traduzir "No Benefit" inventaria uma classe que ⛔ não existe.
+  "3: No Benefit": "3: No Benefit",
+  "LVO proximal de ICA ou M1": "LVO proximal de ACI o M1",
+  "selected patients* · LVO de ICA ou M1, idade <80":
+    "selected patients* · LVO de ACI o M1, edad <80",
+  "selected patients† · LVO de ICA ou M1, idade <80":
+    "selected patients† · LVO de ACI o M1, edad <80",
+  "LVO de ICA ou M1 com incapacidade prévia leve (mRS 2)":
+    "LVO de ACI o M1 con discapacidad previa leve (mRS 2)",
+  "LVO de ICA ou M1 com incapacidade prévia moderada (mRS 3–4)":
+    "LVO de ACI o M1 con discapacidad previa moderada (mRS 3–4)",
+  "oclusão da divisão M2 proximal DOMINANTE da ACM":
+    "oclusión de la división M2 proximal DOMINANTE de la ACM",
+  "M2 proximal NÃO dominante ou codominante · ACM distal · ACA · ACP":
+    "M2 proximal NO dominante o codominante · ACM distal · ACA · ACP",
+  "oclusão de artéria basilar": "oclusión de arteria basilar",
+  "oclusão de artéria basilar, NIHSS 6–9": "oclusión de arteria basilar, NIHSS 6–9",
+
+  // ── ⚠️ B · déficit leve · C · imagem da janela estendida · F · agente ──
+  //
+  // ⚠️ E-45: a negação e a conjunção viajam. "leve **E** não incapacitante" e
+  // "**ausência** de alteração marcada" perdem o sentido se a tradução afrouxar.
+  "Déficit leve, na avaliação do médico": "Déficit leve, según la evaluación médica",
+  /** ⚠️ "leve" coincide nos dois idiomas — declarado em `prova-i18n-opcoes`. */
+  "Leve": "Leve",
+  "Não leve": "No leve",
+  "A fonte não define leve por escore. A leitura é sua.":
+    "La fuente no define leve por puntuación. La lectura es suya.",
+  "A recomendação de não trombolisar exige déficit leve E não incapacitante. O NIHSS isolado não determina nenhum dos dois.":
+    "La recomendación de no trombolisar exige déficit leve Y no incapacitante. El NIHSS aislado no determina ninguno de los dos.",
+  "leve/não leve/incerto é julgamento clínico, e a fonte não define por escore":
+    "leve/no leve/incierto es juicio clínico, y la fuente no lo define por puntuación",
+  "Lesão em DWI menor que um terço do território da ACM":
+    "Lesión en DWI menor que un tercio del territorio de la ACM",
+  "Critério da recomendação de janela estendida por início desconhecido.":
+    "Criterio de la recomendación de ventana extendida por inicio desconocido.",
+  "Ausência de alteração de sinal marcada no FLAIR":
+    "Ausencia de alteración de señal marcada en FLAIR",
+  "A fonte pede ausência de alteração marcada. Não responder não equivale a ausência.":
+    "La fuente pide ausencia de alteración marcada. No responder no equivale a ausencia.",
+  "Penumbra isquêmica salvável": "Penumbra isquémica salvable",
+  "Ausência de estudo de perfusão não significa ausência de penumbra.":
+    "La ausencia de estudio de perfusión no significa ausencia de penumbra.",
+  "Penumbra detectada em perfusão automatizada":
+    "Penumbra detectada en perfusión automatizada",
+  "Exigido pela recomendação de janela estendida em wake-up e 4,5 a 9 horas. A recomendação de 4,5 a 24 horas não qualifica o método.":
+    "Exigido por la recomendación de ventana extendida en wake-up y 4,5 a 9 horas. La recomendación de 4,5 a 24 horas no califica el método.",
+  "Agente trombolítico em consideração": "Agente trombolítico en consideración",
+  "A fonte recomenda os dois com a mesma força. Escolher não significa administrar.":
+    "La fuente recomienda ambos con la misma fuerza. Elegir no significa administrar.",
 };

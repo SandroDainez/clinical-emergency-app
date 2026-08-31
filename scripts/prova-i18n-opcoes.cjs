@@ -101,6 +101,48 @@ const campos = [
     `§7.17: o app é PT-BR e ES desde o primeiro commit — ${semPar.map((x) => `${x.opcao} (${x.campo})`).join(" · ")}`);
 }
 
+/**
+ * ⚠️⚠️ SEÇÃO 1b · E O PAR ⛔ NÃO PODE SER A PRÓPRIA PALAVRA PORTUGUESA.
+ *
+ * ⚠️ A seção 1 pergunta se a chave **existe**. `"Leve": "Leve"` satisfaz essa
+ * pergunta ⛔ e ⛔ não traduz nada — é ausência com aparência de presença. A
+ * regra já existia ⛔ e cobria só os seis graus do mRS; um campo novo de B caiu
+ * exatamente no vão. Aqui ela passa a valer para **toda opção tocável**.
+ *
+ * ⚠️ A lista é EXPLÍCITA porque algumas palavras são mesmo iguais nos dois
+ * idiomas. ⛔ Sem ela a trava acusaria inocente e alguém a desligaria (R-55);
+ * implícita, uma tradução esquecida se esconderia atrás de "deve ser igual".
+ */
+{
+  const IGUAIS_EM_ESPANHOL = [
+    "Leve",                      // "leve" tem a mesma forma nos dois idiomas
+    "Incapacitante",             // idem
+    "Bilateral",                 // idem
+    "Paciente",                  // idem
+    "Uso de droga recreativa",   // a frase inteira coincide
+    "4 · moderada a grave",      // descritor do mRS, já declarado na seção 2
+    "5 · grave",                 // idem
+    "SAMU",                      // sigla de serviço, ⛔ não se traduz
+    "/mm³",                      // unidade
+    "mil/mm³ (×10³/µL)",         // unidade
+  ];
+  const opcoes = [...new Set(campos.flatMap((c) => c.opcoes ?? []))];
+  /** ⚠️ R-1: declaração sobre opção que ⛔ não existe mais é desculpa órfã. */
+  const orfas = IGUAIS_EM_ESPANHOL.filter((o) => !opcoes.includes(o));
+  confere("toda declaração de 'é igual em espanhol' aponta para uma opção VIVA",
+    orfas.length === 0,
+    `a lista de exceções envelhece junto com os campos; exceção órfã vira permissão silenciosa para a próxima — ${orfas.join(" · ")}`);
+  const espelhadas = opcoes
+    .filter((o) => dicionario.includes(`"${o}": "${o}"`))
+    .filter((o) => !IGUAIS_EM_ESPANHOL.includes(o));
+  confere("⛔ NENHUMA opção aponta para a própria string portuguesa sem declaração",
+    espelhadas.length === 0,
+    `chave que aponta para si mesma passa a seção 1 e continua mostrando português na tela espanhola — ${espelhadas.join(" · ")}`);
+  confere("e as declaradas como iguais REALMENTE estão no dicionário",
+    IGUAIS_EM_ESPANHOL.every((o) => temPar(o)),
+    "declarar 'é igual' sobre chave que ⛔ não existe é a desculpa cobrindo a ausência");
+}
+
 // ── 2 · TODO RÓTULO DE GRAU DO mRS TEM PAR ───────────────────────────────
 {
   /**
