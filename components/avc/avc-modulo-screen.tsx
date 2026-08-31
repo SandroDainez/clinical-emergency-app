@@ -24,6 +24,7 @@ import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO } from "../../avc/conteudo/superficie-c";
 import SuperficieD from "./superficie-d";
 import SuperficieE from "./superficie-e";
+import SuperficieF from "./superficie-f";
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { pendenciasOriginadasEmE } from "../../avc/nucleo/derivacoes-e";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
@@ -31,6 +32,9 @@ import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/c
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import { TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
+import { TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
+import { TODOS_OS_CAMPOS_P } from "../../avc/conteudo/paciente";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import {
   abrirAtendimento,
@@ -138,6 +142,27 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   //
   // ⚠️ Tudo passa por `registrarFato`, que ACRESCENTA à trilha. ⛔ Nada aqui
   // sobrescreve: uma nova medida convive com a anterior (§3.1).
+
+  /**
+   * ⚠️⚠️ LEVAR ATÉ ONDE O DADO SE RESPONDE — ⛔ e ⛔ não abrir um campo qualquer.
+   *
+   * ⚠️ A Superfície F aponta faltas que se respondem em **outras** superfícies.
+   * O dono é procurado nas listas de campos das próprias superfícies; ⛔ ⛔ não há
+   * segunda tabela para envelhecer em silêncio (D-15).
+   *
+   * ⛔ Campo sem dono ⛔ não navega ⛔ e ⛔ não falha calado — fica onde está, e a
+   * trava `prova-avc-apresentacao-f` garante que todo insumo tem dono.
+   */
+  function irParaCampo(campo: string) {
+    const donos: readonly [SuperficieId, readonly { id: string }[]][] = [
+      ["estabilizacao", TODOS_OS_CAMPOS_A],
+      ["neurologico", TODOS_OS_CAMPOS_B],
+      ["imagem", TODOS_OS_CAMPOS_C],
+      ["paciente", TODOS_OS_CAMPOS_P],
+    ];
+    const achado = donos.find(([, campos]) => campos.some((c) => c.id === campo));
+    if (achado) setEstado((e) => verSuperficie(e, achado[0]));
+  }
 
   function escolher(campo: string, valor: string) {
     setEstado((e) => registrarFato(e, { campo, valor }, relogio));
@@ -429,6 +454,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onHora={registrarHora}
             onMedir={medir}
             onDesfazer={desfazer}
+          />
+        ) : atual.id === "reperfusao" ? (
+          <SuperficieF
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onIrParaCampo={irParaCampo}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE

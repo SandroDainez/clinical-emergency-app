@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**66 de 80 travas com declaração completa.**
+**67 de 81 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -61,6 +61,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que F leia as recomendações da diretriz **uma a uma**, preservando marco, força e verbo — e que ⛔ nunca produza veredito agregado.
 - **NÃO PROMETE:** que a fiação com A–E exista. Ela ⛔ **não** existe ainda: esta rodada fecha o modelo, e a tela ⛔ não foi desenhada.
 - **UNIVERSO:** `superficie-f.ts` + `derivacoes-f.ts`, executados, com piso. ── ⚠️⚠️ O ERRO QUE ESTA PROVA EXISTE PARA IMPEDIR ──────────────────────── ⛔ Transformar uma diretriz com **populações sobrepostas, cinco relógios e forças graduadas** num algoritmo binário de *"elegível / ⛔ não elegível"*. ⚠️ A fonte adverte disso ⛔ ela mesma, em F-08: *"`EVT elegível = sim/não` ⛔ **NÃO** é fato armazenado"*.
+
+## `test:avc-apresentacao-f` → `scripts/prova-avc-apresentacao-f.cjs`
+
+- **PROMETE:** que as CINCO DECISÕES DE UX fechadas pelo autor em 2026-08-31 estão no código, e ⛔ não só no documento que as descreveu. 1 · agrupar pela FALTA, ⛔ não pela recomendação; 2 · as duas raias sempre visíveis, ⛔ sem leitura de sequência; 3 · dívida de fonte visível ⛔ e compacta, distinta de dado faltante; 4 · ⛔ COR ⛔ NÃO governa a ordem — o relógio governa; 5 · frase clínica na frente, contagem atrás.
+- **NÃO PROMETE:** que a tela seja bonita, ⛔ nem que caiba na altura do aparelho. Isso é revisão visual, e ela é humana. ⛔ Também ⛔ não mede se a correspondência clínica está certa — isso é de `prova-avc-superficie-f`.
+- **UNIVERSO:** o módulo puro `avc/nucleo/apresentacao-f.ts`, CARREGADO E EXECUTADO (⛔ não lido como texto), mais a fonte de `components/avc/superficie-f.tsx` e de `avc/conteudo/superficie-f.ts` lidas SEM COMENTÁRIO (R-92) — comentário ⛔ não executa, e uma regra citada em comentário satisfaria a busca ⛔ sem governar ⛔ nada na tela. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── ⚠️ Regra de apresentação é a que mais silenciosamente regride: ⛔ nada quebra quando a ordem muda, ⛔ o tsc passa, e o defeito só aparece com um paciente real na frente. Por isso a ordem ⛔ **não** mora no JSX — mora em `apresentacao-f`, ⛔ e é medida aqui.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

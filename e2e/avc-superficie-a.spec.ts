@@ -685,8 +685,22 @@ test.describe("Superfície A — UX clínica", () => {
     expect(tela, "horário formatado sem ninguém ter informado é dado inventado")
       .not.toMatch(/\b\d{1,2}:\d{2}\b/);
 
-    // Cada relógio informável convida à ação, e ⛔ nenhum exibe hora.
-    for (const campo of TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora")) {
+    /**
+     * ⚠️ Cada relógio informável convida à ação, e ⛔ nenhum exibe hora.
+     *
+     * ⚠️⚠️ O universo segue DERIVADO do conteúdo (D-15) — ⛔ e agora ele tem
+     * campo CONDICIONAL: `hora_meio_do_sono` só existe na tela quando o início
+     * ⛔ não foi observado. Percorrê-lo aqui mediria um locator ausente, ⛔ que
+     * ⛔ não é o mesmo que um campo mostrando hora inventada.
+     */
+    const condicionais = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora" && c.apareceQuando);
+    expect(condicionais.length, "campo condicional novo precisa de conferência própria")
+      .toBe(1);
+    for (const campo of condicionais) {
+      await expect(page.getByTestId(`avc-campo-${campo.id}`), campo.id).toHaveCount(0);
+    }
+
+    for (const campo of TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora" && !c.apareceQuando)) {
       await expect(page.getByTestId(`avc-hora-valor-${campo.id}`), campo.id)
         .not.toHaveText(/\d{1,2}:\d{2}/);
     }

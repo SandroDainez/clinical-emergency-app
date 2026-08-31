@@ -447,9 +447,25 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
 
   // I-4 · nenhum relógio abre preenchido
   const horas = C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora");
+  /**
+   * ⚠️⚠️ QUATRO VIROU CINCO em 2026-08-31, DE PROPÓSITO.
+   *
+   * ⚠️ O número está travado justamente para um relógio novo ⛔ não entrar
+   * despercebido — e foi esta conferência que avisou. Entrou
+   * `hora_meio_do_sono`, marco próprio exigido por §4.6.3 rec. 2, que cita
+   * *midpoint of sleep* ⛔ **e** *last known well* na MESMA recomendação.
+   *
+   * ⛔ Subir o número ⛔ não é ceder à trava: é registrar que a lista mudou por
+   * uma regra da fonte, ⛔ e ⛔ não por descuido.
+   */
   confere("nenhum campo de horário abre preenchido",
-    horas.length === 4 && horas.every((c) => E.valorAtual(vazio, c.id) === undefined),
+    horas.length === 5 && horas.every((c) => E.valorAtual(vazio, c.id) === undefined),
     "I-4: horário automático no último-visto-bem apaga a evolução do paciente");
+
+  /** ⚠️⚠️ ⛔ E ⛔ NENHUM relógio compartilha o nome de outro. */
+  confere("cada campo de horário tem RELÓGIO próprio",
+    new Set(horas.map((c) => c.relogio)).size === horas.length,
+    "dois campos no mesmo relógio fundem duas contagens que a fonte mantém separadas");
 
   /**
    * ⚠️ O ÚNICO relógio que nasce definido é o `t0_operacional` — é a abertura do

@@ -24,7 +24,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { PRIORIDADE_A, GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
-import { camposDoGrupo } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
@@ -156,7 +156,16 @@ export default function SuperficieA({
               <Text style={e.novaMedidaTexto}>{tr("Nova medida")}</Text>
             </Pressable>
           ) : null}
-          {camposDoGrupo(grupo).map((campo) => (
+          {/**
+            * ⚠️⚠️ CAMPO CONDICIONAL — ⛔ esconder ⛔ NÃO é apagar.
+            *
+            * ⚠️ O meio do sono só faz sentido quando o início ⛔ não foi
+            * observado; fora disso seria ruído em quase todo atendimento. ⛔ A
+            * condição é declarada NO CAMPO, ⛔ e ⛔ não escrita aqui.
+            */}
+          {camposDoGrupo(grupo)
+            .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+            .map((campo) => (
             <CampoDaSuperficie
               /**
                * ── ⛔ A `key` POR INSTÂNCIA FOI REMOVIDA (2026-08-30) ──────────

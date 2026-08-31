@@ -1551,4 +1551,78 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Agente trombolítico em consideração": "Agente trombolítico en consideración",
   "A fonte recomenda os dois com a mesma força. Escolher não significa administrar.":
     "La fuente recomienda ambos con la misma fuerza. Elegir no significa administrar.",
+
+  // ── ⚠️ SUPERFÍCIE F · Reperfusão ────────────────────────────────────────
+  //
+  // ⚠️ E-45: a NEGAÇÃO viaja. "não é administração", "não afirma corresponder",
+  // "não estima peso" — afrouxar qualquer uma faz a tela prometer o que o
+  // núcleo foi construído para ⛔ não prometer.
+  "Trombólise e trombectomia correm em paralelo — uma não atrasa a outra.":
+    "Trombólisis y trombectomía corren en paralelo — una no retrasa a la otra.",
+  "Com prazo correndo": "Con plazo corriendo",
+  "Aplicáveis a este paciente": "Aplicables a este paciente",
+  "Falta um dado para fechar": "Falta un dato para cerrar",
+  "Alertas para este contexto": "Alertas para este contexto",
+  "O que falta colher": "Lo que falta recoger",
+  "1 recomendação depende deste dado": "1 recomendación depende de este dato",
+  "recomendações dependem deste dado": "recomendaciones dependen de este dato",
+  "Critério não definido pela fonte": "Criterio no definido por la fuente",
+  "Toque para entender por quê": "Toque para entender por qué",
+  "A diretriz não define este critério, então o app não conclui por você. Isto não é dado faltando do paciente, e não é falha do app.":
+    "La guía no define este criterio, así que la app no concluye por usted. Esto no es un dato faltante del paciente, y no es una falla de la app.",
+  "Cálculo de dose — não é administração": "Cálculo de dosis — no es administración",
+  "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso.":
+    "Sin peso registrado y sin agente elegido, no hay dosis. La app no estima peso.",
+  "Princípio geral": "Principio general",
+  "Não afirma corresponder a este caso.": "No afirma corresponder a este caso.",
+  "recomendação não corresponde a este paciente": "recomendación no corresponde a este paciente",
+  "recomendações não correspondem a este paciente": "recomendaciones no corresponden a este paciente",
+  "sem critério na fonte": "sin criterio en la fuente",
+  "registrar o marco": "registrar el hito",
+  "marco sem campo no app": "hito sin campo en la app",
+  "Início observado ou última vez bem": "Inicio observado o última vez bien",
+  "Meio do sono": "Mitad del sueño",
+  "A diretriz conta uma janela a partir deste marco, e o app ainda não tem campo para registrá-lo. Não é o mesmo que a última vez visto bem.":
+    "La guía cuenta una ventana a partir de este hito, y la app aún no tiene campo para registrarlo. No es lo mismo que la última vez visto bien.",
+
+  // ── ⚠️ Por que cada dado importa — linguagem clínica, ⛔ não de arquitetura
+  "Necessário para definir as opções endovasculares.":
+    "Necesario para definir las opciones endovasculares.",
+  "Necessário para as recomendações que qualificam a gravidade do déficit.":
+    "Necesario para las recomendaciones que califican la gravedad del déficit.",
+  "Necessário para as recomendações que consideram a incapacidade prévia.":
+    "Necesario para las recomendaciones que consideran la discapacidad previa.",
+  "Necessário para as recomendações de circulação anterior.":
+    "Necesario para las recomendaciones de circulación anterior.",
+  "Necessário para as recomendações de oclusão basilar.":
+    "Necesario para las recomendaciones de oclusión basilar.",
+  "Necessário para as recomendações que delimitam faixa etária.":
+    "Necesario para las recomendaciones que delimitan el rango de edad.",
+  "Leitura da imagem exigida por parte das recomendações de janela estendida.":
+    "Lectura de la imagen exigida por parte de las recomendaciones de ventana extendida.",
+  "Distingue a população para quem a rapidez do tratamento foi estudada.":
+    "Distingue la población para quien se estudió la rapidez del tratamiento.",
+  "Duas propriedades juntas — leve e não incapacitante — delimitam a recomendação de não trombolisar.":
+    "Dos propiedades juntas — leve y no incapacitante — delimitan la recomendación de no trombolisar.",
+  "Sem peso não há dose. O app não estima peso.":
+    "Sin peso no hay dosis. La app no estima peso.",
+  "A recomendação de dose de 0,4 mg/kg só alcança quem considera tenecteplase.":
+    "La recomendación de dosis de 0,4 mg/kg solo alcanza a quien considera tenecteplasa.",
+  "Critério de tecido viável para a janela de 4,5 a 24 horas.":
+    "Criterio de tejido viable para la ventana de 4,5 a 24 horas.",
+  "Critério de tecido viável para wake-up e 4,5 a 9 horas, e a fonte exige perfusão automatizada.":
+    "Criterio de tejido viable para wake-up y 4,5 a 9 horas, y la fuente exige perfusión automatizada.",
+  "A fonte não define este critério — ver slot F-31. Não é indisponibilidade de serviço.":
+    "La fuente no define este criterio — ver slot F-31. No es indisponibilidad de servicio.",
+  "Nenhum relógio iniciado": "Ningún reloj iniciado",
+  "Registrar os marcos de tempo em Entrada e estabilização.":
+    "Registrar los hitos de tiempo en Entrada y estabilización.",
+  "Extensão da lesão em DWI, para a trombólise de início desconhecido.":
+    "Extensión de la lesión en DWI, para la trombólisis de inicio desconocido.",
+  "Ausência de alteração marcada no FLAIR — o segundo critério da mesma recomendação.":
+    "Ausencia de alteración marcada en FLAIR — el segundo criterio de la misma recomendación.",
+  "outros dados destravam menos": "otros datos destraban menos",
+  "Recolher os demais dados": "Recoger los demás datos",
+  "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.":
+    "Informado por quien atiende. La app no calcula este instante a partir de ningún otro reloj.",
 };

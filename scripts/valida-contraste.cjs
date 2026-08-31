@@ -77,6 +77,10 @@ const PARES = [
   ["success", "surface", 4.5, "confirmação como texto sobre card"],
   ["warning", "bg", 4.5, "alerta como texto sobre o fundo"],
   ["warning", "surface", 4.5, "alerta como texto sobre card"],
+  // ⚠️ A dívida de fonte é TEXTO PEQUENO (marcador curto + rótulo), então o piso
+  // é 4,5 — o mesmo dos outros acentos, e não os 3:1 de elemento gráfico.
+  ["debt", "bg", 4.5, "dívida de fonte como texto sobre o fundo"],
+  ["debt", "surface", 4.5, "dívida de fonte como texto sobre card"],
   ["border", "bg", 1.2, "borda visível sobre o fundo"],
   ["onPrimary", "primary", 4.5, "texto do botão principal"],
   ["onCritical", "critical", 4.5, "texto do botão crítico"],

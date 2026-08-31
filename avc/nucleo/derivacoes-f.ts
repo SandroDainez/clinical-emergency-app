@@ -152,13 +152,23 @@ export function alertasNegativos(
   );
 }
 
+/** ⚠️ ⛔ Medido, estimado e informado ⛔ não se confundem. */
+export type OrigemDoPeso = "medido" | "estimado" | "informado";
+
 export type DoseDerivada = {
   readonly agente: "alteplase" | "tenecteplase";
   readonly mgPorKg: number;
   readonly maximoMg: number;
   readonly pesoKg: number;
-  /** ⚠️ ⛔ Medido e estimado ⛔ não se confundem — a origem viaja com a dose. */
-  readonly origemDoPeso: "medido" | "estimado";
+  /**
+   * ⚠️⚠️ A ORIGEM VIAJA COM A DOSE, ⛔ e ela tem TRÊS valores ⛔ e ⛔ não dois.
+   *
+   * ⚠️ O campo `peso_origem` oferece *"Informado pelo paciente ou família"* e
+   * *"Estimado pela equipe"*. ⛔ **Informado ⛔ não é medido** — dobrar um no
+   * outro faria a dose declarar uma procedência que ⛔ ninguém deu (PD-17).
+   * ⚠️ Descoberto ao ligar a primeira tela que consome esta função.
+   */
+  readonly origemDoPeso: OrigemDoPeso;
   readonly totalMg: number;
   readonly slot: string;
 };
@@ -177,7 +187,7 @@ export type DoseDerivada = {
 export function doseDerivada(
   agente: "alteplase" | "tenecteplase",
   pesoKg: number | undefined,
-  origemDoPeso: "medido" | "estimado" | undefined
+  origemDoPeso: OrigemDoPeso | undefined
 ): DoseDerivada | undefined {
   if (pesoKg === undefined || origemDoPeso === undefined) return undefined;
   if (!(pesoKg > 0)) return undefined;

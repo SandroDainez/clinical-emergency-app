@@ -88,6 +88,48 @@ export type Insumo =
    */
   | "agente_e_tenecteplase";
 
+/**
+ * ⚠️⚠️ POR QUE CADA DADO IMPORTA — em linguagem clínica, ⛔ não de arquitetura.
+ *
+ * ⚠️ Decisão do autor, 2026-08-31: *"não usar «abre 11» como mensagem
+ * principal"*. **Quantas** recomendações um dado destrava é informação sobre a
+ * estrutura do catálogo; o médico precisa saber **para que** o dado serve.
+ * O número continua na tela, ⛔ e fica em segundo plano.
+ *
+ * ⚠️ Estas frases ⛔ **não** são verbatim ⛔ e ⛔ não afirmam conduta — dizem o
+ * papel do dado na leitura das recomendações, ⛔ e nada além disso.
+ */
+export const MOTIVO_CLINICO: Readonly<Record<Insumo, string>> = {
+  sitio_da_oclusao: "Necessário para definir as opções endovasculares.",
+  nihss: "Necessário para as recomendações que qualificam a gravidade do déficit.",
+  mrs_previo: "Necessário para as recomendações que consideram a incapacidade prévia.",
+  aspects: "Necessário para as recomendações de circulação anterior.",
+  pc_aspects: "Necessário para as recomendações de oclusão basilar.",
+  idade: "Necessário para as recomendações que delimitam faixa etária.",
+  efeito_de_massa_ausente: "Leitura da imagem exigida por parte das recomendações de janela estendida.",
+  deficit_incapacitante: "Distingue a população para quem a rapidez do tratamento foi estudada.",
+  deficit_leve_nao_incapacitante:
+    "Duas propriedades juntas — leve e não incapacitante — delimitam a recomendação de não trombolisar.",
+  peso: "Sem peso não há dose. O app não estima peso.",
+  agente_e_tenecteplase: "A recomendação de dose de 0,4 mg/kg só alcança quem considera tenecteplase.",
+  /**
+   * ⚠️⚠️ AS DUAS FRASES SÃO DIFERENTES, ⛔ e ⛔ NÃO por estilo.
+   *
+   * ⛔ Com o mesmo texto, o agrupamento mostra DUAS linhas idênticas — e o
+   * médico ⛔ não tem como saber que são perguntas distintas, ⛔ nem qual delas
+   * já respondeu. Encontrado na revisão em largura de celular.
+   */
+  dwi_menor_que_um_terco:
+    "Extensão da lesão em DWI, para a trombólise de início desconhecido.",
+  flair_sem_alteracao_marcada:
+    "Ausência de alteração marcada no FLAIR — o segundo critério da mesma recomendação.",
+  penumbra_salvavel: "Critério de tecido viável para a janela de 4,5 a 24 horas.",
+  penumbra_por_perfusao_automatizada:
+    "Critério de tecido viável para wake-up e 4,5 a 9 horas, e a fonte exige perfusão automatizada.",
+  nao_elegivel_a_evt:
+    "A fonte não define este critério — ver slot F-31. Não é indisponibilidade de serviço.",
+};
+
 export type Recomendacao = {
   readonly id: string;
   readonly slot: string;

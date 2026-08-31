@@ -57,7 +57,43 @@ import { camposDoGrupo, comCasa, EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NA
  * ⚠️ A CONSEQUÊNCIA FICA DECLARADA: quando a janela estendida entrar (F-03), o
  * cenário *wake-up* vai precisar de um marco próprio. ⛔ Ele ⛔ não volta como
  * este campo — volta com a regra temporal que o justifica, ou ⛔ não volta.
+ *
+ * ⚠️⚠️ **A REGRA CHEGOU** — 2026-08-31. A Superfície F passou a ler §4.6.3
+ * rec. 2, que conta *"within 9 hours from the **midpoint of sleep**"*. O marco
+ * volta como `hora_meio_do_sono`, ⛔ e ⛔ **não** como o campo removido: ⛔ não é
+ * um sim/não sobre ter havido sono, é **um instante**, com relógio próprio.
  */
+
+/**
+ * ⚠️⚠️ A PROCEDÊNCIA DO MEIO DO SONO É **INFORMADA**, ⛔ e isto é DADO.
+ *
+ * ⛔ Hoje ⛔ não existem `hora_inicio_sono` ⛔ nem `hora_despertar`, ⛔ então
+ * ⛔ nada aqui calcula o ponto médio: o médico informa o instante, ⛔ e a origem
+ * é a resposta dele.
+ *
+ * ⚠️⚠️ SE UM DIA HOUVER CÁLCULO a partir do intervalo de sono, ele será **outro
+ * fato**, com procedência própria — ⛔ e ⛔ **jamais** sobrescreverá em silêncio
+ * o valor informado (PD-17). ⛔ Derivar do último-visto-bem é proibido: a fonte
+ * usa os dois como marcos DISTINTOS, na MESMA recomendação.
+ */
+export const MEIO_DO_SONO_PROCEDENCIA = {
+  campo: "hora_meio_do_sono",
+  origem: "informado",
+  calculadoPor: null,
+  /**
+   * ⚠️ IDENTIFICADORES, ⛔ e ⛔ não prosa: declaração interna ⛔ não é texto de
+   * tela, ⛔ e frase em português dentro de dado entra na fila de tradução
+   * ⛔ sem ⛔ nunca ser lida por ⛔ ninguém.
+   */
+  naoDerivarDe: [
+    "hora_ultima_vez_bem",
+    "hora_inicio_observado",
+    "hora_reconhecimento",
+    "hora_chegada",
+  ],
+  /** ⚠️⚠️ Um cálculo futuro ⛔ NÃO substitui o informado (PD-17). */
+  calculoSubstituiOInformado: false,
+} as const;
 export const RELOGIOS_A: readonly CampoA[] = [
   {
     id: "hora_chegada",
@@ -101,6 +137,33 @@ export const RELOGIOS_A: readonly CampoA[] = [
     fonte: "F-03",
     bloqueiaTerapia: false,
     nota: "A fonte conta uma janela a partir deste marco, e ele não é o início.",
+  },
+  {
+    /**
+     * ⚠️⚠️ O QUINTO MARCO — semanticamente INDEPENDENTE dos outros quatro.
+     *
+     * ⛔ ⛔ Não é a última vez visto bem, ⛔ não é o início observado, ⛔ não é o
+     * reconhecimento ⛔ e ⛔ não é a chegada. §4.6.3 rec. 2 cita *midpoint of
+     * sleep* ⛔ **e** *last known well* na MESMA recomendação, com faixas
+     * diferentes — reaproveitar qualquer um dos outros tornaria as duas
+     * contagens uma só, que é o defeito que a Superfície F existe para impedir.
+     *
+     * ⚠️ APARECE SÓ quando o início ⛔ não foi observado. ⛔ Isto é filtro de
+     * APRESENTAÇÃO — ⛔ não é a afirmação clínica de que início desconhecido
+     * equivale a wake-up. É o recorte em que perguntar pelo sono faz sentido,
+     * ⛔ e fora dele o campo seria ruído em quase todo atendimento.
+     */
+    id: "hora_meio_do_sono",
+    temporalidade: "estavel",
+    rotulo: "Meio do sono",
+    tipo: "hora",
+    relogio: "meio_do_sono",
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    /** ⚠️ E-02: "ninguém sabe dizer" é resposta, ⛔ e ⛔ não ausência. */
+    aceitaDesconhecido: true,
+    apareceQuando: { campo: "hora_inicio_observado", valor: "nao_sei" },
+    nota: "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.",
   },
 ] as const;
 

@@ -45,6 +45,16 @@ export type Cores = {
   success: string;
   /** Alertas. */
   warning: string;
+  /**
+   * ⚠️⚠️ DÍVIDA DE FONTE — a diretriz ⛔ não fecha o critério.
+   *
+   * ⛔ Cor PRÓPRIA, ⛔ e ⛔ não `warning`: "o app ⛔ não consegue avaliar" ⛔ não é
+   * "falta um dado do paciente". Uma é limite da fonte, a outra é trabalho do
+   * médico — se as duas ficarem âmbar, a tela apaga a distinção que a
+   * Superfície F inteira existe para manter. ⛔ Também ⛔ não é `critical`:
+   * ⛔ não há nada de errado acontecendo.
+   */
+  debt: string;
   /** Fundo da tela. */
   bg: string;
   /** Cards e superfícies elevadas. */
@@ -67,6 +77,7 @@ const CORES_CLARO: Cores = {
   // mínimo de 3:1 de elemento gráfico, mas estas cores são usadas em texto.
   success: "#15803D",
   warning: "#B45309",
+  debt: "#6D28D9",
   bg: "#FFFFFF",
   surface: "#F8FAFC",
   border: "#E2E8F0",
@@ -87,6 +98,7 @@ const CORES_ESCURO: Cores = {
   onCritical: "#0B1220",
   success: "#4ADE80",
   warning: "#FBBF24",
+  debt: "#C4B5FD",
   // Três degraus mais claros que o valor original do plano (#121417 / #1C1F24 /
   // #2A2E35), que na tela cheia ficava quase preto e sem separação entre card e
   // fundo.

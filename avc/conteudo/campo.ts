@@ -297,6 +297,16 @@ export type Campo = {
    */
   readonly rotuloDeCorrecao?: string;
   /** Nota de fidelidade quando a fonte exige cuidado de leitura. */
+  /**
+   * ⚠️⚠️ APARECE SÓ QUANDO O CONTEXTO EXISTE — ⛔ e é DADO, ⛔ não função.
+   *
+   * ⚠️ Nasceu do marco de wake-up: ele é necessário à janela estendida ⛔ e
+   * seria ruído na esmagadora maioria dos atendimentos. ⛔ Esconder ⛔ não é
+   * apagar — o campo existe, ⛔ e a condição é legível ⛔ e conferível.
+   *
+   * ⛔ Uma função aqui tornaria o conteúdo impossível de carregar numa trava.
+   */
+  readonly apareceQuando?: { readonly campo: string; readonly valor: string };
   readonly nota?: string;
 };
 
@@ -342,6 +352,16 @@ export type Grupo = Omit<GrupoDeclarado, "campos"> & { readonly campos: readonly
 /** ⚠️ Tudo que o bloco DESENHA — o que ele possui mais o que ele toma emprestado. */
 export function camposDoGrupo(g: Grupo): readonly Campo[] {
   return [...g.campos, ...(g.emprestados ?? [])];
+}
+
+/**
+ * ⚠️ O campo aparece? ⛔ Sem condição declarada, SEMPRE — o padrão ⛔ não é
+ * esconder. ⚠️ A leitura do valor entra por argumento para este módulo seguir
+ * sendo conteúdo puro, carregável em qualquer trava ⛔ sem arrastar o estado.
+ */
+export function campoAparece(c: Campo, valorDe: (campo: string) => unknown): boolean {
+  if (!c.apareceQuando) return true;
+  return valorDe(c.apareceQuando.campo) === c.apareceQuando.valor;
 }
 
 /**
