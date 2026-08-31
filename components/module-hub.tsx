@@ -51,10 +51,12 @@ export default function ModuleHub() {
   const role = getAuthRole();
 
   async function handleLogout() {
-    if (supabase) {
-      await sairDaConta();
-    }
-    clearAuthRole();
+    /**
+     * ⚠️⚠️ SEM CONDIÇÃO. `sairDaConta()` já trata backend ausente por dentro, e
+     * envolvê-la num `if (supabase)` fazia a prova de acesso **sobreviver ao
+     * logout** em modo local — a porta existia, mas dava para contorná-la.
+     */
+    await sairDaConta();
     // On web a full reload is more reliable than router.replace inside a tabs stack
     if (typeof window !== "undefined") {
       window.location.replace("/");

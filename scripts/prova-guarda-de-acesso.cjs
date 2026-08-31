@@ -344,6 +344,36 @@ for (const dir of ["app", "components", "lib"]) {
     }
   }
 }
+/**
+ * ⚠️⚠️ E A PORTA PRECISA SER ATRAVESSADA **INCONDICIONALMENTE**.
+ *
+ * ⛔ `module-hub.tsx` envolvia `sairDaConta()` num `if (supabase)`. A porta
+ * existia, ⛔ mas dava para contorná-la: em modo local a prova **sobrevivia ao
+ * logout**. ⚠️ A trava media que ⛔ ninguém mais chamava `signOut` — ⛔ não que a
+ * saída fosse sempre percorrida.
+ */
+const condicionais = [];
+for (const dir of ["app", "components"]) {
+  const raizD = path.join(appDir, dir);
+  const pilha = fs.existsSync(raizD) ? [raizD] : [];
+  while (pilha.length) {
+    const at = pilha.pop();
+    for (const n of fs.readdirSync(at)) {
+      const f = path.join(at, n);
+      if (fs.statSync(f).isDirectory()) pilha.push(f);
+      else if (/\.tsx?$/.test(n)) {
+        const t = lerFonte(f);
+        if (/if\s*\([^)]*\)\s*\{[^}]{0,200}?sairDaConta\(/.test(t)) {
+          condicionais.push(path.relative(appDir, f));
+        }
+      }
+    }
+  }
+}
+confere("⚠️⚠️ ⛔ a saída ⛔ NÃO é condicional em lugar nenhum",
+  condicionais.length === 0,
+  `⛔ envolver a saída num \`if\` deixa a prova sobreviver ao logout no ramo que ⛔ não passa — encontrado: ${condicionais.join(", ")}`);
+
 confere("⚠️⚠️ ⛔ ⛔ e ⛔ NENHUM outro lugar chama `signOut` direto",
   saidas.length === 0,
   `⛔ com duas saídas, a próxima regra de logout entra numa e ⛔ não na outra — encontrado: ${saidas.join(", ")}`);
