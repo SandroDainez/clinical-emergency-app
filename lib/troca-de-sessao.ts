@@ -34,9 +34,36 @@
  * detectável varrendo fonte sem medir o nome das variáveis.
  */
 
-/** ⚠️ Claim bem-sucedido é **⛔ só** resposta ok. ⛔ Qualquer outra coisa é falha. */
-export function claimBemSucedido(resposta: { ok: boolean } | undefined): boolean {
-  return resposta?.ok === true;
+/**
+ * ⚠️⚠️ OS DESFECHOS DO CLAIM — quatro, ⛔ e ⛔ não dois.
+ *
+ * ⛔ `pendente` e `bloqueada` ⛔ NÃO podem compartilhar mensagem: dizer *"conta
+ * aguardando aprovação"* para quem foi **bloqueado** é falso, e manda a pessoa
+ * esperar por algo que ⛔ não vai acontecer.
+ *
+ * ⚠️ ⛔ Nenhum deles instala a sessão quando há sessão anônima ativa — a ação é a
+ * mesma, a **explicação** é que muda.
+ */
+export type DesfechoDoClaim = "ok" | "conta_pendente" | "conta_indisponivel" | "falha";
+
+/**
+ * ⚠️⚠️ A LEITURA DA RESPOSTA É **REGRA**, ⛔ e ⛔ não entrada e saída.
+ *
+ * ⚠️ Ela mora aqui, junto das outras, porque foi ⛔ exatamente isto que a mutação
+ * pegou da última vez: enquanto vivia junto do `fetch`, tratar um 500 como
+ * sucesso **sobrevivia** à prova.
+ *
+ * ⛔ Falha fechada: ⛔ qualquer coisa que ⛔ não seja explicitamente reconhecida
+ * vira `"falha"`, ⛔ e ⛔ nunca `"ok"`.
+ */
+export function desfechoDoClaim(
+  resposta: { ok: boolean; status?: number } | undefined,
+  corpo?: { error?: string } | null
+): DesfechoDoClaim {
+  if (resposta?.ok === true) return "ok";
+  if (corpo?.error === "conta_pendente") return "conta_pendente";
+  if (corpo?.error === "conta_indisponivel") return "conta_indisponivel";
+  return "falha";
 }
 
 /**
@@ -59,17 +86,30 @@ export type PortasDeTroca = {
     email: string,
     senha: string
   ) => Promise<{ sessao?: unknown; erro?: string }>;
-  /** Transfere a posse. Devolve `ok: false` em ⛔ qualquer falha. */
+  /**
+   * ⚠️⚠️ Transfere a posse — **e é o servidor que descobre se pode**.
+   *
+   * ⛔ O cliente ⛔ NÃO antecipa o `status` da conta destino. Se antecipasse,
+   * voltaria a ser autoridade sobre a própria autorização — o mesmo defeito do
+   * `old_user_id`, com outra roupa. ⚠️ Por isso o claim é **sempre chamado**, e
+   * é a resposta dele que diz se a conta é `pendente`, indisponível ⛔ ou apta.
+   */
   reivindicar: (
     tokenDaConta: unknown,
     tokenAnonimo: string
-  ) => Promise<{ ok: boolean; transferidas: number }>;
+  ) => Promise<{ desfecho: DesfechoDoClaim; transferidas: number }>;
   /** ⚠️⚠️ O ponto de ⛔ não-retorno: a partir daqui a sessão anônima morreu. */
   instalar: (sessao: unknown) => Promise<{ erro?: string }>;
 };
 
 export type ResultadoDaTroca = {
-  erro?: "credenciais_invalidas" | "sem_configuracao" | "falha_de_rede" | "claim_falhou";
+  erro?:
+    | "credenciais_invalidas"
+    | "sem_configuracao"
+    | "falha_de_rede"
+    | "claim_falhou"
+    | "conta_pendente"
+    | "conta_indisponivel";
   transferidas: number;
   /** ⚠️ Para a tela decidir a mensagem — ⛔ e para a prova medir o essencial. */
   sessaoTrocada: boolean;
@@ -134,7 +174,7 @@ export async function trocarDeSessao(
   }
 
   const claim = await tentar(() => portas.reivindicar(autenticado.sessao, tokenAnonimo), {
-    ok: false,
+    desfecho: "falha" as DesfechoDoClaim,
     transferidas: 0,
   });
   /**
@@ -147,8 +187,20 @@ export async function trocarDeSessao(
    * dano: o trabalho da emergência preso numa identidade que o app acabou de
    * abandonar.
    */
-  if (!claim.ok) {
-    return { erro: "claim_falhou", transferidas: 0, sessaoTrocada: false };
+  if (claim.desfecho !== "ok") {
+    /**
+     * ⚠️⚠️ TRÊS RAZÕES, UMA AÇÃO. ⛔ `instalar` ⛔ não é chamada em ⛔ nenhuma delas.
+     *
+     * ⚠️ A distinção existe ⛔ só para a mensagem — e ela **importa**: mandar quem
+     * foi bloqueado esperar aprovação é uma mentira que custa uma espera inteira.
+     */
+    const erro =
+      claim.desfecho === "conta_pendente"
+        ? ("conta_pendente" as const)
+        : claim.desfecho === "conta_indisponivel"
+          ? ("conta_indisponivel" as const)
+          : ("claim_falhou" as const);
+    return { erro, transferidas: 0, sessaoTrocada: false };
   }
 
   /** ⚠️ ⛔ Só agora — posse confirmada — a sessão anônima pode ser substituída. */

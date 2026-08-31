@@ -34,7 +34,7 @@ execFileSync("npx", [
   path.join(appDir, "lib", "troca-de-sessao.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
-const { trocarDeSessao, claimBemSucedido, ehProvaAnonima } = require(
+const { trocarDeSessao, desfechoDoClaim, ehProvaAnonima } = require(
   path.join(tempDir, "troca-de-sessao.js")
 );
 
@@ -43,11 +43,18 @@ const { trocarDeSessao, claimBemSucedido, ehProvaAnonima } = require(
 // ⚠️ Elas viviam junto do `fetch` e ⛔ duas regressões sobreviviam à mutação:
 // claim que respondeu 500 tratado como sucesso, e token de conta cadastrada
 // usado como prova anônima. ⛔ Regra ⛔ não mora junto de entrada e saída (I6).
-confere("⚠️⚠️ ⛔ resposta ⛔ não-ok ⛔ NUNCA conta como claim bem-sucedido",
-  claimBemSucedido({ ok: false }) === false && claimBemSucedido(undefined) === false,
+confere("⚠️⚠️ ⛔ resposta ⛔ não-ok ⛔ NUNCA vira desfecho `ok`",
+  desfechoDoClaim({ ok: false }, null) === "falha" && desfechoDoClaim(undefined, null) === "falha",
   "⛔ um 500 do servidor tratado como sucesso instalaria a sessão nova e perderia o histórico");
-confere("resposta ok conta como sucesso", claimBemSucedido({ ok: true }) === true,
+confere("resposta ok vira `ok`", desfechoDoClaim({ ok: true }, null) === "ok",
   "⛔ uma regra que ⛔ só sabe recusar tornaria o login impossível");
+confere("⚠️⚠️ `pendente` e bloqueada ⛔ NÃO se confundem",
+  desfechoDoClaim({ ok: false }, { error: "conta_pendente" }) === "conta_pendente" &&
+    desfechoDoClaim({ ok: false }, { error: "conta_indisponivel" }) === "conta_indisponivel",
+  "dizer \"aguardando aprovação\" a quem foi BLOQUEADO manda a pessoa esperar por algo que ⛔ não vai acontecer");
+confere("⛔ desfecho desconhecido falha FECHADO",
+  desfechoDoClaim({ ok: false }, { error: "qualquer_coisa_nova" }) === "falha",
+  "⛔ estado ⛔ não reconhecido virando sucesso é como um erro de servidor instalaria a sessão");
 confere("⚠️⚠️ ⛔ ⛔ ⛔ SÓ sessão marcada como anônima vira prova de posse",
   ehProvaAnonima({ is_anonymous: true }) === true &&
     ehProvaAnonima({ is_anonymous: false }) === false &&
@@ -60,7 +67,7 @@ confere("⚠️⚠️ ⛔ ⛔ ⛔ SÓ sessão marcada como anônima vira prova d
  * ⚠️ O MUNDO FALSO. `instalar` ⛔ não instala ⛔ nada: ela **registra que foi
  * chamada** — e é esse registro que carrega toda a prova.
  */
-function mundo({ anonima = true, autentica = true, claimOk = true, claimExplode = false } = {}) {
+function mundo({ anonima = true, autentica = true, desfecho = "ok", claimExplode = false } = {}) {
   const chamadas = [];
   /** ⚠️ A sessão instalada AGORA. Começa anônima, como no consultório real. */
   let instalada = anonima ? "anon-A" : "nenhuma";
@@ -76,7 +83,7 @@ function mundo({ anonima = true, autentica = true, claimOk = true, claimExplode 
       reivindicar: async () => {
         chamadas.push("reivindicar");
         if (claimExplode) throw new Error("rede caiu");
-        return { ok: claimOk, transferidas: claimOk ? 3 : 0 };
+        return { desfecho, transferidas: desfecho === "ok" ? 3 : 0 };
       },
       instalar: async (s) => {
         chamadas.push("instalar");
@@ -91,7 +98,7 @@ async function principal() {
 
 // ── ⚠️⚠️ 1 · O CENÁRIO EXIGIDO: claim falha, sessão anônima PERMANECE ──────
 {
-  const m = mundo({ claimOk: false });
+  const m = mundo({ desfecho: "falha" });
   const r = await trocarDeSessao(m.portas, "medico@exemplo.com", "senha");
   confere("claim falho ⇒ a autenticação da conta chegou a acontecer",
     m.chamadas.includes("autenticar"),
@@ -162,6 +169,81 @@ async function principal() {
   confere("⚠️ e o login comum instala normalmente",
     m.sessaoInstalada() === "conta-X" && r.sessaoTrocada === true,
     "⛔ quebrar o login de quem ⛔ nunca usou o app anônimo seria regressão pura");
+}
+
+
+// ── ⚠️⚠️ 6 · O CICLO COMPLETO: anônimo → pendente → aprovação ──────────────
+//
+// ⚠️⚠️ A CORREÇÃO QUE ESTE CENÁRIO CARREGA: o claim **É CHAMADO** para a conta
+// pendente. ⛔ A versão anterior desta prova dizia *"claim ⛔ não chamado"* — e
+// isso contradizia a arquitetura, porque ⛔ só o servidor conhece o `status`.
+//
+// ⛔ Se o cliente pudesse antecipar, ele voltaria a ser autoridade sobre a
+// própria autorização — ⛔ exatamente o defeito do `old_user_id`.
+{
+  const chamadas = [];
+  let instalada = "anon-A";
+  let statusDeX = "pendente";
+  const portas = {
+    sessaoAtual: async () => ({ token: "tok-anon-A", anonima: true }),
+    autenticar: async () => {
+      chamadas.push("autenticar");
+      return { sessao: { access_token: "tok-X" } };
+    },
+    /** ⚠️ O servidor decide: é ele que enxerga o `status`. */
+    reivindicar: async () => {
+      chamadas.push("reivindicar");
+      if (statusDeX !== "ativo") return { desfecho: "conta_pendente", transferidas: 0 };
+      return { desfecho: "ok", transferidas: 4 };
+    },
+    instalar: async (sess) => {
+      chamadas.push("instalar");
+      instalada = sess.access_token === "tok-X" ? "conta-X" : "?";
+      return {};
+    },
+  };
+
+  const r1 = await trocarDeSessao(portas, "medico@exemplo.com", "senha");
+
+  confere("⚠️⚠️ conta pendente: o claim FOI chamado",
+    chamadas.filter((c) => c === "reivindicar").length === 1,
+    "⛔ o cliente ⛔ não pode antecipar o `status` — se pudesse, seria autoridade sobre a própria autorização");
+  confere("⚠️⚠️ ⛔ conta pendente: ⛔ NENHUMA sessão foi transferida",
+    r1.transferidas === 0,
+    "posse ⛔ só muda quando a nova identidade está autorizada a exercê-la");
+  confere("⚠️⚠️ ⛔ conta pendente: `instalar` ⛔ NÃO foi chamada",
+    !chamadas.includes("instalar"),
+    "⛔ trocar para uma conta que ⛔ não pode ler é indistinguível de perder o histórico");
+  confere("⚠️ a sessão instalada continua sendo anon A",
+    instalada === "anon-A", "o médico continua vendo o que registrou");
+  confere("⚠️⚠️ e a razão é `conta_pendente`, ⛔ não falha técnica",
+    r1.erro === "conta_pendente" && r1.sessaoTrocada === false,
+    "⛔ \"tente novamente\" mandaria o médico repetir para sempre algo que depende de um administrador");
+
+  /** ⚠️ O administrador aprova. ⛔ Nada mais muda no cliente. */
+  statusDeX = "ativo";
+  const r2 = await trocarDeSessao(portas, "medico@exemplo.com", "senha");
+
+  confere("⚠️⚠️ depois da aprovação: a transferência acontece",
+    r2.transferidas === 4, "é o primeiro login em que a conta pode exercer a posse");
+  confere("⚠️⚠️ e ⛔ SÓ ENTÃO a sessão é instalada",
+    instalada === "conta-X" && r2.sessaoTrocada === true,
+    "instalar antes do claim bem-sucedido destruiria a prova de posse");
+  confere("⚠️ a instalação veio DEPOIS do claim bem-sucedido",
+    chamadas.lastIndexOf("reivindicar") < chamadas.lastIndexOf("instalar"),
+    "a ordem é o invariante — ⛔ não a presença das chamadas");
+}
+
+// ── ⚠️ 7 · CONTA BLOQUEADA ⛔ nunca recebe claim bem-sucedido ──────────────
+{
+  const m = mundo({ desfecho: "conta_indisponivel" });
+  const r = await trocarDeSessao(m.portas, "medico@exemplo.com", "senha");
+  confere("⚠️ conta bloqueada: o claim é chamado, e ⛔ nada transfere",
+    m.chamadas.includes("reivindicar") && r.transferidas === 0,
+    "mesma autoridade, mesmo caminho — muda ⛔ só o desfecho");
+  confere("⚠️⚠️ ⛔ conta bloqueada: ⛔ NÃO instala, e ⛔ NÃO diz \"aguardando aprovação\"",
+    !m.chamadas.includes("instalar") && r.erro === "conta_indisponivel",
+    "⛔ mandar quem foi bloqueado esperar aprovação é uma mentira que custa uma espera inteira");
 }
 
 }

@@ -63,9 +63,9 @@ confere("⚠️ a fiação usa `ehProvaAnonima`, ⛔ e ⛔ não uma cópia da re
   /ehProvaAnonima\(/.test(codigo) && !/is_anonymous\s*===/.test(codigo),
   "mandar o access_token de uma conta **cadastrada** como prova anônima exporia a credencial e faria ⛔ todo login comum falhar o claim");
 
-confere("⚠️ a fiação usa `claimBemSucedido`, ⛔ e ⛔ não uma cópia da regra",
-  /claimBemSucedido\(/.test(codigo) && !/!r\.ok/.test(codigo),
-  "⛔ um 500 do servidor tratado como sucesso instalaria a sessão nova e perderia o histórico");
+confere("⚠️ a fiação usa `desfechoDoClaim`, ⛔ e ⛔ não uma cópia da regra",
+  /desfechoDoClaim\(/.test(codigo) && !/!r\.ok/.test(codigo) && !/error\s*===\s*["']conta_/.test(codigo),
+  "⛔ ler a resposta é REGRA: enquanto morava junto do `fetch`, tratar um 500 como sucesso sobrevivia à mutação");
 
 confere("⚠️⚠️ a fiação ⛔ NÃO decide sozinha quando trocar a sessão",
   /trocarDeSessao\(/.test(codigo),
@@ -161,6 +161,22 @@ confere("⚠️⚠️ valida a identidade ANÔNIMA de forma independente",
 confere("⚠️⚠️ exige que a origem seja MESMO anônima",
   /is_anonymous\s*!==\s*true|!==\s*true[\s\S]{0,40}is_anonymous/.test(claim),
   "⛔ sem isto, um token roubado de conta **cadastrada** drenaria as sessões dela para outra conta");
+
+confere("⚠️⚠️ o servidor exige que a conta destino esteja ATIVA",
+  /app_users[\s\S]{0,200}?status[\s\S]{0,200}?!==\s*["']ativo["']/.test(claim),
+  "⛔ transferir para conta pendente move o trabalho para onde ⛔ ninguém lê — o mesmo sumiço que a regra do claim existe para evitar");
+
+confere("⚠️⚠️ `pendente` e bloqueada recebem respostas DISTINTAS",
+  /conta_pendente/.test(claim) && /conta_indisponivel/.test(claim),
+  "dizer \"aguardando aprovação\" a quem foi BLOQUEADO manda esperar por algo que ⛔ não vai acontecer");
+
+confere("⛔ a checagem de status falha FECHADA",
+  /destinoPerfil\?\.status\s*!==\s*["']ativo["']/.test(claim),
+  "⛔ sem linha em `app_users`, ⛔ ou com erro na consulta, o desfecho tem de ser recusa — ⛔ nunca transferência");
+
+confere("⛔ ⛔ a recusa ⛔ não revela detalhe administrativo",
+  !/role|bloqueado_por|motivo_do_bloqueio/.test(claim),
+  "o cliente precisa saber que ⛔ não pode entrar — ⛔ não o histórico administrativo da conta");
 
 confere("⚠️ a cláusula é a autoridade — ⛔ não uma lista do cliente",
   /\.eq\(\s*["']user_id["']\s*,\s*oldUid\s*\)/.test(claim) && !/session_ids|in\(/.test(claim),

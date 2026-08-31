@@ -96,6 +96,49 @@ Deno.serve(async (req) => {
   if (oldUid === newUid) return json({ ok: true, transferred: 0 }, 200);
 
   /**
+   * ⚠️⚠️ VALIDAÇÃO 5 · A CONTA DESTINO PRECISA ESTAR **ATIVA**.
+   *
+   * ── ⚠️⚠️ POR QUE ISTO MORA AQUI, ⛔ E ⛔ NÃO NO CLIENTE ────────────────────
+   *
+   * ⛔ Se o cliente consultasse o `status` e decidisse ⛔ não chamar o claim, ele
+   * voltaria a ser **autoridade sobre a própria autorização** — ⛔ exatamente o
+   * defeito do `old_user_id`, com outra roupa. ⚠️ Por isso o claim é **sempre
+   * chamado**, e é ele quem descobre.
+   *
+   * ── ⚠️⚠️ POR QUE ⛔ NÃO BASTA A RLS ───────────────────────────────────────
+   *
+   * ⚠️ Transferir para uma conta `pendente` ⛔ não perde dado — mas `pode_usar_clinico()`
+   * ⛔ impede a conta de ler o que acabou de receber, ⛔ enquanto a identidade
+   * anônima, que lia, deixa de ser a sessão ativa. ⚠️⚠️ Para o médico isso é
+   * **indistinguível de perda**, e é ⛔ a mesma experiência que a regra
+   * *"claim falho ⛔ não troca a sessão"* existe para evitar.
+   *
+   * ⚠️⚠️ A semântica que se preserva: **posse ⛔ só muda quando a nova identidade
+   * está autorizada a exercê-la.**
+   *
+   * ⛔ Falha fechada: ⛔ sem linha em `app_users`, ⛔ ou com erro na consulta, o
+   * desfecho é `conta_indisponivel` — ⛔ nunca transferência.
+   */
+  const { data: destinoPerfil } = await admin
+    .from("app_users")
+    .select("status")
+    .eq("id", newUid)
+    .maybeSingle();
+
+  if (destinoPerfil?.status !== "ativo") {
+    /**
+     * ⚠️⚠️ `pendente` e bloqueada ⛔ NÃO compartilham resposta. Dizer *"aguardando
+     * aprovação"* a quem foi **bloqueado** é falso, e manda a pessoa esperar por
+     * algo que ⛔ não vai acontecer.
+     *
+     * ⛔ E ⛔ nada além disso é revelado: o cliente ⛔ não recebe papel, ⛔ nem
+     * histórico administrativo, ⛔ nem o motivo do bloqueio.
+     */
+    const motivo = destinoPerfil?.status === "pendente" ? "conta_pendente" : "conta_indisponivel";
+    return json({ error: motivo }, 403);
+  }
+
+  /**
    * ⚠️⚠️ A TRANSFERÊNCIA — e a **cláusula é a autoridade**.
    *
    * ⛔ ⛔ NENHUMA lista de session IDs é aceita: o cliente ⛔ não escolhe o que

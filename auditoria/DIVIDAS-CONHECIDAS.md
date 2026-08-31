@@ -4521,6 +4521,53 @@ Provados por `test:troca-de-sessao` (16 conferências **executadas**),
 
 **O que ⛔ não existe:** a ligação com `app/index.tsx`, suspensa até a Fase 4.
 
+### ⚠️⚠️ AUTORIZAÇÃO ⛔ NÃO É POSSE — decidido em 2026-08-30
+
+⚠️ Eu tinha provado **isolamento de posse** (`user_id = auth.uid()`) e
+**⛔ não-autopromoção** (`app_users_update_admin` exige admin+ativo no banco), e
+apresentei isso como se fosse **autorização de uso**. ⛔ São propriedades
+diferentes: `app/index.tsx` recusa a navegação, mas ⛔ não é fronteira de servidor.
+
+⚠️ A fronteira que falta é `pode_usar_clinico()` — `stable`, `security invoker`,
+`search_path` fixo, ⛔ sem tocar `auth.users`:
+
+| Caso | `is_anonymous` (claim do JWT) | `app_users` | Resultado |
+|---|---|---|---|
+| anônimo legítimo | `true` | ⛔ nenhuma linha | ✅ ⛔ só os próprios |
+| permanente `pendente` | `false` | `pendente` | ⛔ **negado** |
+| permanente `ativo` | `false` | `ativo` | ✅ ⛔ só os próprios |
+| bloqueado / claim ausente | — | — | ⛔ **negado** (falha fechada) |
+
+⚠️ Nas policies como `(select pode_usar_clinico())` — ⛔ sem o `(select …)` seria
+chamada **por linha** em vez de uma vez por consulta (initplan).
+
+### ⚠️⚠️ O CLAIM ⛔ SÓ TRANSFERE PARA CONTA `ativo`
+
+⚠️⚠️ Transferir para conta `pendente` ⛔ não perde dado — mas a conta ⛔ não lê o
+que recebeu, e a identidade anônima, que lia, deixa de ser a ativa. ⛔ Para o
+médico é **indistinguível de perda**, e é a mesma experiência que a regra
+*"claim falho ⛔ não troca a sessão"* existe para evitar.
+
+⚠️ **Posse ⛔ só muda quando a nova identidade está autorizada a exercê-la.**
+
+⚠️⚠️ E a verificação mora **no servidor** (5ª validação do claim). ⛔ Se o cliente
+consultasse o `status` e decidisse ⛔ não chamar o claim, voltaria a ser autoridade
+sobre a própria autorização — ⛔ o defeito do `old_user_id` com outra roupa. ⚠️ Por
+isso o claim é **sempre chamado**; ⛔ o que ⛔ não acontece é a transferência.
+
+⚠️ `conta_pendente` e `conta_indisponivel` são desfechos **distintos**: dizer
+*"aguardando aprovação"* a quem foi bloqueado manda esperar por algo que ⛔ não
+vai acontecer.
+
+⚠️ **Sem sessão anônima o comportamento ⛔ não muda** — conta `pendente` instala
+sessão e é barrada na UI, porque ⛔ não há posse anônima a preservar e o JWT dela
+⛔ não lê ⛔ nada pela `pode_usar_clinico()`.
+
+⚠️ **Risco residual assumido:** `sessions_timebox` e `sessions_inactivity_timeout`
+são **0**, então a sessão anônima ⛔ não expira por tempo. O que resta é perder o
+aparelho ⛔ ou limpar o storage antes da aprovação — e por isso a superfície
+anônima **deve dizer** que o histórico está preso àquele aparelho até transferir.
+
 ### ⚠️⚠️ A ORDEM DE ATIVAÇÃO — e por que a primeira que escrevi era PROIBIDA
 
 ⛔ A versão anterior desta dívida dizia *"habilitar Anonymous Sign-In → migration

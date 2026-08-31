@@ -36,7 +36,7 @@
 import { supabase } from "./supabase";
 import {
   trocarDeSessao,
-  claimBemSucedido,
+  desfechoDoClaim,
   ehProvaAnonima,
   type ResultadoDaTroca,
 } from "./troca-de-sessao";
@@ -142,10 +142,12 @@ export async function entrarNaConta(
               "X-Anon-Token": anonToken,
             },
           });
-          if (!claimBemSucedido(r)) return { ok: false, transferidas: 0 };
-          return { ok: true, transferidas: (await r.json())?.transferred ?? 0 };
+          /** ⚠️ O corpo é lido ⛔ uma vez só — `Response` ⛔ não se lê duas vezes. */
+          const corpo = await r.json().catch(() => null);
+          const desfecho = desfechoDoClaim(r, corpo);
+          return { desfecho, transferidas: desfecho === "ok" ? (corpo?.transferred ?? 0) : 0 };
         } catch {
-          return { ok: false, transferidas: 0 };
+          return { desfecho: "falha" as const, transferidas: 0 };
         }
       },
 
