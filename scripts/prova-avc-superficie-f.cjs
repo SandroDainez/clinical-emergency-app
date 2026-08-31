@@ -269,11 +269,34 @@ const E = (() => {
   return require(path.join(t, "estado.js"));
 })();
 
-/** ⚠️ Estado mínimo com os fatos que interessam. */
+/** ⚠️ A MESMA função que a tela usa para gravar — ⛔ nunca uma cópia. */
+const CAMPO = (() => {
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), "prova-f-campo-"));
+  execFileSync("npx", [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+    "--rootDir", path.join(appDir, "avc"),
+    "--moduleResolution", "node", "--skipLibCheck", "--outDir", t,
+    path.join(appDir, "avc", "conteudo", "campo.ts"),
+  ], { cwd: appDir, stdio: "pipe" });
+  return require(path.join(t, "conteudo", "campo.js"));
+})();
+
+/**
+ * ⚠️⚠️ ESTADO MÍNIMO — GRAVADO COMO A TELA GRAVA, ⛔ e ⛔ não como eu escrevo.
+ *
+ * ⚠️⚠️ ESTA FUNÇÃO JÁ FOI O DEFEITO. Ela inseria o RÓTULO (`"Sim"`) direto no
+ * estado, ⛔ e a tela grava `valorDaOpcao("Sim")`, que é `"sim"`. As derivações
+ * comparavam com o rótulo ⛔ e ficavam eternamente `undefined` no app real —
+ * ⛔ enquanto TODA conferência daqui passava verde.
+ *
+ * ⚠️ Trava que fabrica o próprio estado ⛔ não mede o app: mede a si mesma.
+ * Passar por `valorDaOpcao` faz o vazio da prova ser o vazio de verdade.
+ */
 function com(fatos) {
   let e = E.estadoInicial ? E.estadoInicial() : { fatos: [] };
   for (const [campo, valor] of fatos) {
-    e = { ...e, fatos: [...e.fatos, { id: String(e.fatos.length + 1), campo, valor }] };
+    const gravado = typeof valor === "string" ? CAMPO.valorDaOpcao(valor) : valor;
+    e = { ...e, fatos: [...e.fatos, { id: String(e.fatos.length + 1), campo, valor: gravado }] };
   }
   return e;
 }
@@ -368,6 +391,31 @@ confere("⚠️⚠️ RM: os DOIS componentes, separados",
   C.RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido").exige.sort().join() ===
     ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"].sort().join(),
   "⛔ um booleano apagaria **qual** dos dois falta — e que o segundo é uma **ausência**");
+
+/**
+ * ⚠️⚠️ RESPONDER "SIM" TEM QUE SATISFAZER — a conferência que faltava.
+ *
+ * ⛔ A prova tinha só os casos NEGATIVOS (vazio ⛔ não satisfaz, um ⛔ não
+ * responde o outro). Com eles, uma derivação que ⛔ NUNCA satisfizesse passava
+ * verde — que foi exatamente o que aconteceu: `simNaoIncerto` comparava com o
+ * rótulo `"Sim"`, o estado guardava `"sim"`, ⛔ e os quatro insumos ficavam
+ * `undefined` para sempre no app real.
+ *
+ * ⚠️ Trava só com o lado negativo mede que ⛔ nada acontece — ⛔ e ⛔ não que a
+ * coisa certa acontece.
+ */
+for (const campo of ["penumbra_salvavel", "penumbra_por_perfusao_automatizada",
+                     "dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"]) {
+  confere(`⚠️⚠️ "Sim" em ${campo} SATISFAZ`,
+    vi([[campo, "Sim"]], campo) === "satisfaz",
+    "⛔ se responder ⛔ não muda ⛔ nada, o campo ⛔ não serve para ⛔ nada");
+  confere(`⚠️⚠️ "Não" em ${campo} CONTRADIZ`,
+    vi([[campo, "Não"]], campo) === "contradiz",
+    "⛔ negar ⛔ não é o mesmo que ⛔ não responder — E-02");
+  confere(`⚠️ "Incerto" em ${campo} ⛔ NÃO decide`,
+    vi([[campo, "Incerto"]], campo) === undefined,
+    "⛔ E-37: perguntei e ⛔ ninguém sabe ⛔ não é ⛔ nem sim ⛔ nem não");
+}
 
 confere("⚠️ ⛔ ausência no FLAIR ⛔ não é presumida",
   vi([["dwi_menor_que_um_terco", "Sim"]], "flair_sem_alteracao_marcada") === undefined,

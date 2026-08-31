@@ -18,6 +18,7 @@
  * recomendação, e colapsá-los faria o app afirmar exclusão que ⛔ ninguém disse.
  */
 import { valorAtual, type EstadoAvc } from "./estado";
+import { ternario } from "./leitura";
 import {
   DOSES,
   RECOMENDACOES,
@@ -234,11 +235,22 @@ function escolha(estado: EstadoAvc, campo: string): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
 }
 
-/** ⚠️ Sim/Não/Incerto → satisfaz/contradiz/undefined. ⛔ Vazio ⛔ nunca é "não". */
+/**
+ * ⚠️⚠️ Sim/Não/Incerto → satisfaz/contradiz/undefined. ⛔ Vazio ⛔ nunca é "não".
+ *
+ * ⚠️⚠️ USA `ternario()`, ⛔ e ⛔ NÃO comparação com o rótulo. A primeira versão
+ * comparava `v === "Sim"` — ⛔ e o estado ⛔ nunca guarda `"Sim"`: a tela grava o
+ * valor de `valorDaOpcao()`, que é `"sim"`. Os quatro insumos de imagem ficavam
+ * `undefined` para sempre no app real, ⛔ e as travas passavam porque
+ * **injetavam o rótulo direto no estado** — mediam o meu vazio, ⛔ não o do app.
+ *
+ * ⚠️ A leitura de Sim/Não/Incerto já existia em `leitura.ts`; escrever outra
+ * aqui foi a duplicação que a I6 proíbe, ⛔ e o defeito veio dela.
+ */
 function simNaoIncerto(estado: EstadoAvc, campo: string): ValorDoInsumo {
-  const v = escolha(estado, campo);
-  if (v === "Sim") return "satisfaz";
-  if (v === "Não") return "contradiz";
+  const v = ternario(estado, campo);
+  if (v === true) return "satisfaz";
+  if (v === false) return "contradiz";
   return undefined;
 }
 
@@ -288,10 +300,17 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
      *
      * ⚠️ `"Incerto"` e vazio permanecem `undefined`.
      */
+    /**
+     * ⚠️⚠️ ASSIMETRIA PRESERVADA — ⛔ e agora lida pelo `ternario()`.
+     *
+     * ⛔ A fonte pede *"without significant mass effect"*: **ausência** satisfaz,
+     * ⛔ e presença contradiz. ⛔ O insumo é a ausência; o campo pergunta a
+     * presença — por isso os dois lados vêm invertidos, de propósito.
+     */
     case "efeito_de_massa_ausente": {
-      const em = escolha(estado, "efeito_de_massa");
-      if (em === "Não") return "satisfaz";
-      if (em === "Sim") return "contradiz";
+      const em = ternario(estado, "efeito_de_massa");
+      if (em === false) return "satisfaz";
+      if (em === true) return "contradiz";
       return undefined;
     }
 

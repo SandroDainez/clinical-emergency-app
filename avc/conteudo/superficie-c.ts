@@ -182,8 +182,25 @@ export const CAPACIDADES_DA_MODALIDADE: Readonly<Record<string, readonly string[
   ],
   [MODALIDADE.angioTc]: ["sitio_oclusao"],
   [MODALIDADE.angioRm]: ["sitio_oclusao"],
-  [MODALIDADE.perfusaoTc]: [],
-  [MODALIDADE.rm]: [],
+  /**
+   * ⚠️⚠️ PERFUSÃO E RM DEIXARAM DE SER VAZIAS — 2026-08-31.
+   *
+   * ⛔ Os quatro achados de janela estendida entraram em C ⛔ e ⛔ NÃO foram
+   * registrados aqui: existiam no conteúdo, nas derivações e nas provas, ⛔ e
+   * ⛔ **nenhuma modalidade os oferecia** — inalcançáveis na tela. Achado pelo
+   * e2e que responde um critério e confere que a falta some em F.
+   *
+   * ⚠️ A atribuição segue a fonte: DWI e FLAIR são sequências de **RM**;
+   * penumbra se lê em estudo de **perfusão**.
+   */
+  [MODALIDADE.perfusaoTc]: [
+    "penumbra_por_perfusao_automatizada",
+    "penumbra_salvavel",
+  ],
+  [MODALIDADE.rm]: [
+    "dwi_menor_que_um_terco",
+    "flair_sem_alteracao_marcada",
+  ],
 };
 
 /** ⚠️ Os achados que ESTA modalidade pode responder. ⛔ Desconhecida ⛔ não oferece nada. */

@@ -833,9 +833,46 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
   confere("⛔ e ⛔ NÃO herda ASPECTS por ser 'de parênquima'",
     !C.achadosDaModalidade(MOD.rm).includes("aspects"),
     "ASPECTS por RM, se admitido, entra DECLARADO com a fonte que o admita — ⛔ nunca por categoria ampla");
-  confere("a perfusão abre SEM variável nova",
-    C.achadosDaModalidade(MOD.perfusaoTc).length === 0,
-    "⛔ nada nasce antes de a Reperfusão definir o que consome — campo sem leitor é o defeito que originou a remodelagem");
+  /**
+   * ⚠️⚠️ A CONDIÇÃO DESTA TRAVA FOI SATISFEITA — 2026-08-31.
+   *
+   * ⚠️ Ela dizia *"nada nasce antes de a Reperfusão definir o que consome"*. A
+   * Superfície F entrou ⛔ e consome os quatro: penumbra (rec. 2 e 3) e os dois
+   * componentes de RM (rec. 1 de §4.6.3). ⛔ Abrir agora ⛔ não é ceder — é a
+   * condição que a própria trava exigia.
+   *
+   * ⚠️⚠️ ⛔ E ELA SÓ MUDOU DEPOIS DE UM DEFEITO REAL: os quatro campos entraram
+   * em C ⛔ sem serem registrados aqui, ⛔ e ficaram **inalcançáveis na tela** —
+   * existiam no conteúdo, na derivação e nas provas, ⛔ e ⛔ ninguém podia
+   * respondê-los. A lista literal abaixo é o que impede isso de voltar calado.
+   */
+  confere("a perfusão oferece EXATAMENTE os achados que F consome",
+    JSON.stringify([...C.achadosDaModalidade(MOD.perfusaoTc)].sort()) ===
+      JSON.stringify(["penumbra_por_perfusao_automatizada", "penumbra_salvavel"]),
+    "⛔ achado a mais é campo sem leitor; achado a menos é critério que ⛔ ninguém pode responder");
+
+  confere("a RM oferece EXATAMENTE os dois componentes que a fonte separa",
+    JSON.stringify([...C.achadosDaModalidade(MOD.rm)].sort()) ===
+      JSON.stringify(["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"]),
+    "⛔ §4.6.3 rec. 1 pede os dois, ⛔ e o segundo é uma AUSÊNCIA — colapsar apagaria qual falta");
+
+  /**
+   * ⚠️⚠️ ⛔ NENHUM CAMPO DE C FICA INALCANÇÁVEL — a trava que faltava.
+   *
+   * ⛔ Campo de estudo que ⛔ nenhuma modalidade oferece ⛔ não pode ser
+   * respondido por ⛔ ninguém, ⛔ e a prova de conteúdo ⛔ não vê isso.
+   */
+  {
+    const oferecidos = new Set(Object.values(C.CAPACIDADES_DA_MODALIDADE).flat());
+    const orfaos = C.TODOS_OS_CAMPOS_C
+      .filter((c) => c.instanciaDe === C.ESTUDO && c.id !== "estudo_modalidade"
+        && c.id !== "estudo_procedencia" && c.id !== "estudo_hora")
+      .map((c) => c.id)
+      .filter((id) => !oferecidos.has(id));
+    confere("⚠️⚠️ ⛔ NENHUM achado de estudo fica sem modalidade que o ofereça",
+      orfaos.length === 0,
+      `⛔ campo que ⛔ nenhuma modalidade oferece é inalcançável na tela — ${orfaos.join(", ")}`);
+  }
   confere("⛔ modalidade desconhecida ⛔ não oferece achado ⛔ nenhum",
     C.achadosDaModalidade(undefined).length === 0 && C.achadosDaModalidade("Não sei").length === 0,
     "sem saber o exame, o app ⛔ não sabe o que ele responde — e ⛔ não inventa");

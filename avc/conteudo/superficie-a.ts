@@ -140,6 +140,32 @@ export const RELOGIOS_A: readonly CampoA[] = [
   },
   {
     /**
+     * ⚠️⚠️ O CONTEXTO DE WAKE-UP — e ele VOLTA com a regra que o justifica.
+     *
+     * ⚠️ "Houve sono entre a última vez bem e o achado" foi removido em
+     * 2026-08-28 porque ⛔ nenhuma derivação o consumia, ⛔ e a nota daquela
+     * remoção fixou a condição de retorno: *"volta com a regra temporal que o
+     * justifica, ou ⛔ não volta"*. §4.6.3 rec. 2 chegou, e ela o consome.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ NÃO VOLTA COM A FORMA ANTIGA. A fonte ⛔ não pergunta se houve
+     * sono — ela diz *"(a) **awake with stroke symptoms** within 9 hours from
+     * the midpoint of sleep"*. ⛔ Ter dormido ⛔ não é acordar com o déficit:
+     * quem dormiu ⛔ e teve o início testemunhado acordado ⛔ não é wake-up.
+     *
+     * ⚠️ Só o "Sim" abre o meio do sono. "Incerto" ⛔ não abre — ⛔ e isso ⛔ não
+     * esconde nada: a pergunta continua na tela, ⛔ e é ela que abre a seguinte.
+     */
+    id: "acordou_com_deficit",
+    temporalidade: "estavel",
+    rotulo: "Acordou com o déficit",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.",
+  },
+  {
+    /**
      * ⚠️⚠️ O QUINTO MARCO — semanticamente INDEPENDENTE dos outros quatro.
      *
      * ⛔ ⛔ Não é a última vez visto bem, ⛔ não é o início observado, ⛔ não é o
@@ -148,10 +174,17 @@ export const RELOGIOS_A: readonly CampoA[] = [
      * diferentes — reaproveitar qualquer um dos outros tornaria as duas
      * contagens uma só, que é o defeito que a Superfície F existe para impedir.
      *
-     * ⚠️ APARECE SÓ quando o início ⛔ não foi observado. ⛔ Isto é filtro de
-     * APRESENTAÇÃO — ⛔ não é a afirmação clínica de que início desconhecido
-     * equivale a wake-up. É o recorte em que perguntar pelo sono faz sentido,
-     * ⛔ e fora dele o campo seria ruído em quase todo atendimento.
+     * ⚠️⚠️ APARECE SÓ NO CONTEXTO DE WAKE-UP — ⛔ e ⛔ NÃO por início desconhecido.
+     *
+     * ⛔ A condição era `hora_inicio_observado = nao_sei`, ⛔ e era ampla demais:
+     * início ⛔ não testemunhado inclui paciente que estava **acordado**, para
+     * quem perguntar "meio do sono" ⛔ não faz sentido ⛔ nenhum. ⚠️ Corrigido
+     * a pedido do autor, 2026-08-31.
+     *
+     * ⛔ ⛔ NÃO se infere wake-up de início desconhecido. O fato é perguntado.
+     *
+     * ⚠️ Isto segue sendo filtro de APRESENTAÇÃO: ⛔ não deriva critério clínico
+     * ⛔ nem decide recomendação — só escolhe quando a pergunta faz sentido.
      */
     id: "hora_meio_do_sono",
     temporalidade: "estavel",
@@ -162,7 +195,7 @@ export const RELOGIOS_A: readonly CampoA[] = [
     bloqueiaTerapia: false,
     /** ⚠️ E-02: "ninguém sabe dizer" é resposta, ⛔ e ⛔ não ausência. */
     aceitaDesconhecido: true,
-    apareceQuando: { campo: "hora_inicio_observado", valor: "nao_sei" },
+    apareceQuando: { campo: "acordou_com_deficit", valor: "Sim" },
     nota: "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.",
   },
 ] as const;

@@ -144,11 +144,27 @@ test.describe("AVC · Reperfusão", () => {
   /**
    * ⚠️⚠️ O QUINTO MARCO APARECE SÓ NO CONTEXTO — ⛔ e ⛔ não polui A.
    */
-  test("⛔ o meio do sono ⛔ NÃO aparece em A com o início observado conhecido",
+  test("⛔ o meio do sono ⛔ NÃO aparece sem contexto de wake-up",
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
       await page.getByTestId("avc-aba-estabilizacao").click();
+      await expect(page.getByTestId("avc-campo-acordou_com_deficit")).toBeVisible();
+      await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
+    });
+
+  /**
+   * ⚠️⚠️ ⛔ INÍCIO DESCONHECIDO SOZINHO ⛔ NÃO É WAKE-UP — o paciente pode ter
+   * estado acordado com início ⛔ não testemunhado, ⛔ e aí a pergunta sobre
+   * sono ⛔ não faz sentido ⛔ nenhum.
+   */
+  test("⛔ início desconhecido SEM sono ⛔ NÃO revela o meio do sono",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-hora-desconhecido-hora_inicio_observado").click();
+      await page.getByTestId("avc-opcao-acordou_com_deficit-nao").click();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
     });
 
@@ -156,13 +172,23 @@ test.describe("AVC · Reperfusão", () => {
    * ⚠️⚠️ ⛔ E APARECE quando o início ⛔ NÃO foi observado — que é o recorte em
    * que perguntar pelo sono faz sentido.
    */
-  test("marcar o início como desconhecido revela o meio do sono em A",
+  test("acordar COM O DÉFICIT revela o meio do sono em A", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    await page.getByTestId("avc-aba-estabilizacao").click();
+    await page.getByTestId("avc-opcao-acordou_com_deficit-sim").click();
+    await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toBeVisible();
+  });
+
+  /** ⚠️ E-02: incerteza ⛔ não abre o marco, ⛔ e a pergunta continua na tela. */
+  test("⛔ 'Incerto' ⛔ NÃO abre o marco, ⛔ e ⛔ não esconde a pergunta",
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
       await page.getByTestId("avc-aba-estabilizacao").click();
-      await page.getByTestId("avc-hora-desconhecido-hora_inicio_observado").click();
-      await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toBeVisible();
+      await page.getByTestId("avc-opcao-acordou_com_deficit-nao_sei").click();
+      await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
+      await expect(page.getByTestId("avc-campo-acordou_com_deficit")).toBeVisible();
     });
 
   /**
@@ -182,6 +208,50 @@ test.describe("AVC · Reperfusão", () => {
       await expect(lkw).toContainText("4,5–9 h");
       /** ⚠️ E cada um leva ao SEU campo, ⛔ não ao do outro. */
       await expect(page.getByTestId("avc-f-relogio-registrar-midpoint_of_sleep")).toBeVisible();
+    });
+
+  /**
+   * ⚠️⚠️ RESPONDER MUDA A TELA — o teste que faltava.
+   *
+   * ⛔ Todos os outros mediam o paciente VAZIO. Com isso, uma derivação que
+   * ⛔ nunca reconhecesse resposta ⛔ nenhuma passaria verde — e foi o que
+   * aconteceu: as comparações usavam o rótulo, ⛔ e a tela grava o slug.
+   *
+   * ⚠️ Este percorre o caminho inteiro: responder em C → a falta some da lista
+   * de F. É a prova de que o dado ATRAVESSA.
+   */
+  test("responder um critério de imagem em C tira a falta da lista em F",
+    async ({ page }) => {
+      await abrirF(page);
+      /** ⚠️ O critério de RM vive na cauda recolhida — abre-se para vê-lo. */
+      await page.getByTestId("avc-f-faltas-resto").click();
+      await expect(page.getByTestId("avc-f-falta-dwi_menor_que_um_terco")).toHaveCount(1);
+
+      await page.getByTestId("avc-aba-imagem").click();
+      /** ⚠️ Achado vive DENTRO de um estudo — sem a modalidade, ⛔ nada aparece. */
+      await page.getByTestId("avc-novo-estudo").click();
+      await page.getByTestId("avc-opcao-estudo_modalidade-Ressonância magnética").click();
+      await page.getByTestId("avc-opcao-dwi_menor_que_um_terco-sim").click();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await page.getByTestId("avc-f-faltas-resto").click();
+      await expect(page.getByTestId("avc-f-falta-dwi_menor_que_um_terco")).toHaveCount(0);
+    });
+
+  /**
+   * ⚠️⚠️ E RESPONDER "NÃO" ⛔ NÃO É O MESMO QUE ⛔ NÃO RESPONDER (E-02).
+   */
+  test("negar o critério tira a recomendação da população, ⛔ e ⛔ não a deixa pendente",
+    async ({ page }) => {
+      await abrirF(page);
+      await page.getByTestId("avc-aba-imagem").click();
+      await page.getByTestId("avc-novo-estudo").click();
+      /** ⚠️ Efeito de massa é achado de TC sem contraste — ⛔ não de RM. */
+      await page.getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste").click();
+      await page.getByTestId("avc-opcao-efeito_de_massa-sim").click();
+      await page.getByTestId("avc-aba-reperfusao").click();
+      /** ⚠️ Efeito de massa PRESENTE contradiz a população que pede ausência. */
+      await expect(page.getByTestId("avc-f-fora-abrir")).toBeVisible();
     });
 
   /**

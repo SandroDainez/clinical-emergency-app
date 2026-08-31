@@ -379,9 +379,38 @@ confere("há recomendações e insumos a arrumar",
   /** ⚠️⚠️ APARECE SÓ NO CONTEXTO — ⛔ e a condição é DADO, ⛔ não código na tela. */
   confere("⚠️⚠️ aparece condicionalmente, ⛔ e a condição está DECLARADA no campo",
     campo.apareceQuando !== undefined
-    && campo.apareceQuando.campo === "hora_inicio_observado"
-    && campo.apareceQuando.valor === "nao_sei",
+    && typeof campo.apareceQuando.campo === "string"
+    && typeof campo.apareceQuando.valor === "string",
     "⛔ condição escrita no componente ⛔ não se prova, ⛔ e vira ruído em A quando alguém a esquecer");
+
+  /**
+   * ⚠️⚠️ A CONDIÇÃO É O CONTEXTO DE WAKE-UP — ⛔ e ⛔ NÃO início desconhecido.
+   *
+   * ⛔ `hora_inicio_observado = nao_sei` era amplo demais: início ⛔ não
+   * testemunhado inclui paciente que estava **acordado**, para quem a pergunta
+   * "meio do sono" ⛔ não faz sentido. A fonte diz *"awake with stroke
+   * symptoms"* — ⛔ e ⛔ ter dormido ⛔ não é acordar com o déficit.
+   */
+  {
+    const gatilho = SA.TODOS_OS_CAMPOS_A.find((c) => c.id === campo.apareceQuando.campo);
+    confere("⚠️⚠️ o gatilho é o FATO de wake-up, ⛔ e ⛔ não um relógio",
+      campo.apareceQuando.campo === "acordou_com_deficit"
+      && campo.apareceQuando.valor === "Sim",
+      "⛔ inferir wake-up de início desconhecido inclui paciente que estava acordado");
+
+    confere("⚠️⚠️ ⛔ e o gatilho ⛔ NÃO é ⛔ nenhum campo de hora",
+      gatilho !== undefined && gatilho.tipo === "escolha" && gatilho.relogio === undefined,
+      "⛔ derivar contexto clínico de um relógio é inferência que a fonte ⛔ não autoriza");
+
+    confere("⚠️⚠️ ⛔ ter dormido ⛔ NÃO é a pergunta — acordar COM O DÉFICIT é",
+      /déficit/i.test(gatilho.rotulo) && /acord/i.test(gatilho.rotulo),
+      "⛔ quem dormiu ⛔ e teve o início testemunhado acordado ⛔ não é wake-up");
+
+    /** ⚠️ E-02: incerteza ⛔ não abre o campo ⛔ e ⛔ não some da tela. */
+    confere("⚠️ só o SIM abre o marco — ⛔ 'Incerto' ⛔ não",
+      gatilho.opcoes.includes("Incerto") && campo.apareceQuando.valor === "Sim",
+      "⛔ abrir no incerto pediria um instante que talvez ⛔ nem exista");
+  }
 
   /**
    * ⚠️⚠️ DECLARAR ⛔ NÃO É OBEDECER — a mutação N28 apagava o filtro da tela de A

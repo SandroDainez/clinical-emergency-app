@@ -361,7 +361,14 @@ export function camposDoGrupo(g: Grupo): readonly Campo[] {
  */
 export function campoAparece(c: Campo, valorDe: (campo: string) => unknown): boolean {
   if (!c.apareceQuando) return true;
-  return valorDe(c.apareceQuando.campo) === c.apareceQuando.valor;
+  /**
+   * ⚠️⚠️ A CONDIÇÃO É DECLARADA COM O RÓTULO, ⛔ e comparada com o GRAVADO.
+   *
+   * ⛔ O estado ⛔ nunca guarda `"Sim"`: guarda o que `valorDaOpcao()` devolve,
+   * que é `"sim"`. Comparar com o rótulo cru deixaria a condição eternamente
+   * falsa, ⛔ e o campo ⛔ nunca apareceria — ⛔ sem erro ⛔ nenhum na tela.
+   */
+  return valorDe(c.apareceQuando.campo) === valorDaOpcao(c.apareceQuando.valor);
 }
 
 /**

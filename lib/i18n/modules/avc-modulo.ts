@@ -1625,4 +1625,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Recolher os demais dados": "Recoger los demás datos",
   "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.":
     "Informado por quien atiende. La app no calcula este instante a partir de ningún otro reloj.",
+  "Acordou com o déficit": "Despertó con el déficit",
+  "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.":
+    "La fuente cuenta una ventana desde la mitad del sueño para quien despierta con los síntomas. Haber dormido no basta: el déficit debe estar presente al despertar.",
 };
