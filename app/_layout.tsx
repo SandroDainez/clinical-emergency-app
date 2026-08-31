@@ -177,6 +177,22 @@ const guarda = StyleSheet.create({
     backgroundColor: CORES.bg,
   },
   /** ⚠️ Cor de aviso, ⛔ e ⛔ não de erro: ⛔ nada quebrou, algo está degradado. */
+  /**
+   * ⚠️⚠️ Opaca e em tela cheia. ⛔ Sem `backgroundColor` sólido ⛔ ou com
+   * `zIndex` menor, o conteúdo clínico apareceria por baixo — e a cobertura
+   * deixaria de cumprir o que a substituição cumpria.
+   */
+  cobertura: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: CORES.bg,
+  },
   faixa: {
     backgroundColor: CORES.surface,
     borderBottomWidth: 2,
@@ -204,17 +220,32 @@ export default function RootLayout() {
    * desenhar por um quadro antes de sair. ⚠️⚠️ **Um quadro é vazamento** — e no
    * reload por URL direta é ⛔ exatamente onde ele apareceria.
    */
-  if (destino === 'carregando') {
-    return (
-      <LanguageProvider>
-        <ThemeProvider value={TEMA_NAVEGACAO}>
-          <Aviso carregando />
-          <StatusBar style="light" />
-        </ThemeProvider>
-      </LanguageProvider>
-    );
-  }
-
+  /**
+   * ⚠️⚠️ EM `carregando`, O `Stack` CONTINUA MONTADO — e a cobertura é que esconde.
+   *
+   * ── ⚠️⚠️ O DEFEITO QUE ISTO FECHA (achado em uso real, 2026-08-31) ────────
+   *
+   * ⛔ A versão anterior **substituía** o `<Stack>` por uma tela de carregamento.
+   * ⚠️ Só que o login faz `router.replace("/(tabs)")` logo depois de autenticar —
+   * e nesse instante `onAuthStateChange` já tinha posto `carregando: true`.
+   *
+   * ⚠️⚠️ Os segmentos viravam `["(tabs)"]`, a rota deixava de ser pública, o
+   * destino virava `carregando`, **o navegador desmontava — e a navegação sumia
+   * junto**. O `Stack` remontava na rota inicial, e o médico voltava para o
+   * login. ⛔ Na segunda tentativa a sessão já estava em cache e a janela fechava
+   * rápido demais para desmontar: **entrava**.
+   *
+   * ⚠️ Login que só funciona na segunda tentativa, ⛔ de forma reproduzível.
+   *
+   * ── ⚠️ POR QUE COBRIR, ⛔ E ⛔ NÃO SUBSTITUIR ──────────────────────────────
+   *
+   * ⚠️ A propriedade que importa é *"⛔ nenhum quadro de conteúdo clínico antes da
+   * decisão"* — e uma cobertura **opaca em tela cheia** entrega isso igual.
+   * ⛔ O que ela ⛔ não faz é destruir o navegador no meio de uma navegação.
+   *
+   * ⚠️ Os estados **terminais** — `pendente`, `bloqueado`, `login` — seguem com
+   * retorno antecipado: neles ⛔ não há navegação em curso para perder.
+   */
   if (destino === 'login') return <Redirect href="/" />;
 
   /** ⚠️ Modo local abre os motores clínicos — e ⛔ nada remoto existe para vazar. */
@@ -252,11 +283,18 @@ export default function RootLayout() {
    * descobre depois, procurando um registro que ⛔ nunca existiu.
    */
   const degradado = destino === 'liberado_local_degradado';
+  /** ⚠️ Cobre sem desmontar: o navegador continua vivo por baixo. */
+  const cobrindo = destino === 'carregando';
 
   return (
     <LanguageProvider>
     <SubscriptionProvider>
       <ThemeProvider value={TEMA_NAVEGACAO}>
+        {cobrindo ? (
+          <View style={guarda.cobertura} testID="guarda-cobertura">
+            <ActivityIndicator color={CORES.primary} />
+          </View>
+        ) : null}
         {degradado ? (
           <View style={guarda.faixa} testID="guarda-modo-degradado">
             <FaixaDegradada />

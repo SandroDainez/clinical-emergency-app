@@ -161,11 +161,29 @@ confere("⚠️⚠️ a guarda está na RAIZ, ⛔ e ⛔ não só em (tabs)",
   /destinoDaGuarda|useAcessoClinico/.test(raiz),
   "⛔ `modulos/[id]` e `session-history` estão FORA de (tabs) — guardar as abas deixaria todo módulo clínico aberto");
 
-const iStack = raiz.indexOf("<Stack>");
-const iGuarda = raiz.indexOf("destino === 'carregando'");
-confere("⚠️⚠️ ⛔ o `Stack` ⛔ NÃO é renderizado antes da decisão",
-  iGuarda >= 0 && iStack >= 0 && iGuarda < iStack,
-  "redirecionar em efeito ⛔ não basta: a tela desenha por um quadro antes de sair");
+/**
+ * ⚠️⚠️ EM `carregando`, O NAVEGADOR CONTINUA MONTADO — e a cobertura esconde.
+ *
+ * ⛔ Substituir o `<Stack>` por uma tela de carregamento **destruía a navegação
+ * em curso**: o login fazia `router.replace("/(tabs)")`, a rota deixava de ser
+ * pública, o destino virava `carregando`, o navegador desmontava e a navegação
+ * sumia. ⚠️ O médico voltava ao login, e ⛔ só entrava na segunda tentativa.
+ *
+ * ⚠️ A propriedade — ⛔ nenhum quadro de conteúdo clínico — é cumprida por uma
+ * cobertura **opaca em tela cheia**, ⛔ e ⛔ não por desmontar o navegador.
+ */
+confere("⚠️⚠️ `carregando` COBRE, ⛔ e ⛔ não substitui o `Stack`",
+  /const cobrindo = destino === 'carregando'/.test(raiz) &&
+    !/if \(destino === 'carregando'\)\s*\{?\s*return/.test(raiz),
+  "⛔ retorno antecipado em `carregando` desmonta o navegador no meio da navegação do login — e a navegação some junto");
+
+confere("⚠️⚠️ e a cobertura é OPACA e em tela cheia",
+  /cobertura:\s*\{[\s\S]{0,260}?position: 'absolute'[\s\S]{0,260}?backgroundColor: CORES\.bg/.test(raiz),
+  "⛔ sem fundo sólido, o conteúdo clínico apareceria por baixo — a cobertura deixaria de cumprir o que a substituição cumpria");
+
+confere("⚠️ os estados TERMINAIS seguem com retorno antecipado",
+  /destino === 'aguardando_aprovacao' \|\| destino === 'conta_indisponivel'\)\s*\{[\s\S]{0,80}?return/.test(raiz),
+  "⛔ neles ⛔ não há navegação em curso para perder, e manter o navegador montado deixaria a tela clínica montar atrás da recusa");
 
 confere("⚠️ os três desfechos de recusa têm tela própria",
   /aguardando_aprovacao/.test(raiz) && /conta_indisponivel/.test(raiz) && /Redirect/.test(raiz),
