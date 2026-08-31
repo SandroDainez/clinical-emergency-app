@@ -19,6 +19,7 @@ import { trf } from "../lib/i18n/trf";
 import { isModuleFree } from "../lib/subscription";
 import { useSubscription } from "../lib/subscription-context";
 import { supabase } from "../lib/supabase";
+import { sairDaConta } from "../lib/auth-session";
 import { useLanguage } from "../lib/language-context";
 import { tr as trBase } from "../lib/i18n";
 import LanguageSelector from "./language-selector";
@@ -51,7 +52,7 @@ export default function ModuleHub() {
 
   async function handleLogout() {
     if (supabase) {
-      await supabase.auth.signOut();
+      await sairDaConta();
     }
     clearAuthRole();
     // On web a full reload is more reliable than router.replace inside a tabs stack

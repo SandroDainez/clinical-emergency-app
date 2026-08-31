@@ -38,6 +38,10 @@ export const ES_TELAS_SUPORTE: Record<string, string> = {
     "No se pudo cargar el historial de sesiones",
   "Não foi possível carregar o histórico.": "No se pudo cargar el historial.",
   "Nenhuma sessão registrada ainda.": "Aún no se registró ninguna sesión.",
+  // ⚠️ Modo degradado: o médico precisa saber que o motor funciona MAS que
+  // ⛔ nada está sendo persistido. As duas metades da frase importam.
+  "Modo local — histórico indisponível. O que você registrar aqui não será salvo no servidor.":
+    "Modo local — historial no disponible. Lo que registres aquí no se guardará en el servidor.",
   // ⚠️ Guarda de acesso: os dois estados de recusa NÃO se confundem — dizer
   // "aguardando aprovação" a quem foi bloqueado manda esperar por algo que
   // ⛔ não vai acontecer.

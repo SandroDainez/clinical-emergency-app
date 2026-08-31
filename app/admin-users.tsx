@@ -17,7 +17,7 @@ import {
   updateAdminUserStatus,
   type AdminUserRecord,
 } from "../lib/admin-users";
-import { clearAuthRole, getAuthRole } from "../lib/auth-session";
+import { getAuthRole, sairDaConta } from "../lib/auth-session";
 import { supabase } from "../lib/supabase";
 import { useTr } from "../lib/use-tr";
 
@@ -100,8 +100,7 @@ export default function AdminUsersScreen() {
 
   // ── logout ──
   function handleLogout() {
-    void supabase?.auth.signOut();
-    clearAuthRole();
+    void sairDaConta();
     router.replace("/");
   }
 

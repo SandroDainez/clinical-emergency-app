@@ -11,6 +11,22 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
+  /**
+   * ⚠️⚠️ ARTEFATOS FORA DO REPOSITÓRIO — e ⛔ não é arrumação.
+   *
+   * ⛔ O repositório vive em `~/Documents`, sincronizado pelo iCloud. O
+   * Playwright escrevia em `test-results/` a cada execução, e o iCloud criava
+   * **cópias de conflito** — `test-results 2/`, ` 3/`, ` 4/`, ` 5/` — durante a
+   * própria suíte.
+   *
+   * ⚠️⚠️ E pasta duplicada é pior que arquivo: `/test-results/` está no
+   * `.gitignore`, ⛔ mas `test-results 5/` ⛔ **não casa com esse padrão** — então
+   * entraria no commit ⛔ inteira, com os artefatos dentro.
+   *
+   * ⚠️ Escrever fora da árvore sincronizada corta o problema na origem, em vez
+   * de apagar a cópia depois de cada rodada.
+   */
+  outputDir: "/tmp/playwright-clinical-emergency",
   // Estado clínico é sequencial (timers, máquina de estados): sem paralelismo
   // dentro do arquivo para o teste ler o que ele mesmo produziu.
   fullyParallel: false,

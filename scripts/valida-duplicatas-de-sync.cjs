@@ -61,6 +61,26 @@ if (varridos < 300) {
   process.exit(1);
 }
 
+/**
+ * ⚠️⚠️ E A ORIGEM TEM DE ESTAR FECHADA, ⛔ não só o sintoma limpo.
+ *
+ * ⛔ O Playwright escrevia em `test-results/` dentro da árvore sincronizada, e o
+ * iCloud fabricava uma cópia de conflito **a cada execução** — inclusive
+ * durante a própria suíte. ⚠️ Apagar depois é enxugar gelo.
+ */
+const pw = path.join(appDir, "playwright.config.ts");
+if (fs.existsSync(pw)) {
+  const cfg = fs.readFileSync(pw, "utf8");
+  const fora = /outputDir:\s*["'](?!\.)[^"']+["']/.test(cfg);
+  if (!fora) {
+    console.log("\n❌ DUPLICATAS — o Playwright escreve DENTRO da árvore sincronizada\n");
+    console.log("   ⚠️ `outputDir` precisa apontar para fora do repositório: o iCloud");
+    console.log("      cria cópia de conflito a cada execução, e pasta duplicada ⛔ não");
+    console.log("      casa com o `.gitignore` do nome original.\n");
+    process.exit(1);
+  }
+}
+
 if (achados.length) {
   const migrations = achados.filter((a) => a.includes("supabase/migrations/"));
   console.log(`\n❌ DUPLICATAS DE SINCRONIZAÇÃO — ${achados.length} arquivo(s)\n`);

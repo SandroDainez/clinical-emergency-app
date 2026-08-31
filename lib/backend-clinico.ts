@@ -34,3 +34,26 @@ import { supabase } from "./supabase";
 export function backendClinicoDisponivel(): boolean {
   return supabase !== null;
 }
+
+/**
+ * ⚠️⚠️ A SEGUNDA CAPACIDADE — e ela é **mais estreita** que a primeira.
+ *
+ * ⛔ Ter backend configurado ⛔ NÃO basta para tocar em dado remoto: a
+ * autorização precisa estar **confirmada pelo servidor agora**. ⚠️ Em modo
+ * degradado há backend, ⛔ mas ⛔ não há confirmação — e prova local ⛔ nunca vira
+ * credencial (ver `prova-de-acesso.ts`).
+ *
+ * ⛔ ⛔ ⛔ UM ÚNICO ESCRITOR: a guarda de acesso, ao resolver o destino.
+ * ⚠️ Muitos leitores. ⛔ Espalhar a escrita criaria duas verdades sobre a mesma
+ * autorização, e a que ⛔ ninguém revisasse seria a que fica errada.
+ */
+let remotaConfirmada = false;
+
+/** ⚠️ Chamado ⛔ SOMENTE pela guarda. */
+export function definirPersistenciaRemota(confirmada: boolean): void {
+  remotaConfirmada = confirmada;
+}
+
+export function persistenciaRemotaAutorizada(): boolean {
+  return backendClinicoDisponivel() && remotaConfirmada;
+}

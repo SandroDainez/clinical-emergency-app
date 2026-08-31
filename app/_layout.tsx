@@ -6,12 +6,17 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { supabase } from '../lib/supabase';
-import { backendClinicoDisponivel } from '../lib/backend-clinico';
+import {
+  backendClinicoDisponivel,
+  definirPersistenciaRemota,
+} from '../lib/backend-clinico';
+import { gravarProva, invalidarProva, lerProva } from '../lib/prova-de-acesso';
 import { useTr } from '../lib/use-tr';
 import { loadCurrentAppUser } from '../lib/app-user';
 import {
   destinoDaGuarda,
   ehRotaPublica,
+  provaValida,
   type DestinoDaGuarda,
 } from '../lib/guarda-de-acesso';
 
@@ -67,6 +72,8 @@ function useAcessoClinico(): DestinoDaGuarda {
     carregando: boolean;
     autenticado: boolean;
     status?: 'pendente' | 'ativo' | 'bloqueado';
+    rpcFalhou?: boolean;
+    provaLocalValida?: boolean;
   }>({ backendDisponivel: backendClinicoDisponivel(), carregando: true, autenticado: false });
 
   useEffect(() => {
@@ -87,9 +94,28 @@ function useAcessoClinico(): DestinoDaGuarda {
         setEstado({ backendDisponivel: true, carregando: false, autenticado: false });
         return;
       }
-      const { data: perfil } = await loadCurrentAppUser();
+      const uid = data.session.user?.id;
+      const { data: perfil, errorMessage } = await loadCurrentAppUser();
       if (!vivo) return;
-      setEstado({ backendDisponivel: true, carregando: false, autenticado: true, status: perfil?.status });
+
+      /**
+       * ⚠️⚠️ A PROVA SÓ NASCE DE UM `ativo` CONFIRMADO — e morre em ⛔ qualquer
+       * recusa confirmada. ⛔ Gravá-la noutro estado transformaria a degradação
+       * numa porta: bastaria uma conta pendente ser vista uma vez.
+       */
+      if (perfil?.status === 'ativo' && uid) gravarProva(uid, Date.now());
+      if (perfil?.status === 'pendente' || perfil?.status === 'bloqueado') invalidarProva();
+
+      /** ⚠️ Ausência de resposta ⛔ não é conta inválida — são estados distintos. */
+      const rpcFalhou = !perfil && !!errorMessage;
+      setEstado({
+        backendDisponivel: true,
+        carregando: false,
+        autenticado: true,
+        status: perfil?.status,
+        rpcFalhou,
+        provaLocalValida: provaValida(lerProva(), uid, Date.now()),
+      });
     }
 
     resolver();
@@ -107,8 +133,27 @@ function useAcessoClinico(): DestinoDaGuarda {
     };
   }, []);
 
-  if (ehRotaPublica(segmentos)) return 'liberado';
-  return destinoDaGuarda(estado);
+  const destino = ehRotaPublica(segmentos) ? 'liberado_online' : destinoDaGuarda(estado);
+
+  /**
+   * ⚠️⚠️ A persistência remota segue o destino, ⛔ e ⛔ só ela o escreve.
+   *
+   * ⛔ Em `liberado_local_degradado` há backend configurado, ⛔ mas ⛔ nenhuma
+   * confirmação — então dado remoto fica indisponível, ⛔ e ⛔ não "vazio".
+   */
+  definirPersistenciaRemota(destino === 'liberado_online' && estado.backendDisponivel);
+
+  return destino;
+}
+
+/** ⚠️ A faixa passa por `tr()` como o resto da interface. */
+function FaixaDegradada() {
+  const tr = useTr();
+  return (
+    <Text style={guarda.faixaTexto}>
+      {tr('Modo local — histórico indisponível. O que você registrar aqui não será salvo no servidor.')}
+    </Text>
+  );
 }
 
 /** ⚠️ Tela neutra: ⛔ nenhum conteúdo clínico, ⛔ nem por um quadro. */
@@ -131,6 +176,15 @@ const guarda = StyleSheet.create({
     gap: 16,
     backgroundColor: CORES.bg,
   },
+  /** ⚠️ Cor de aviso, ⛔ e ⛔ não de erro: ⛔ nada quebrou, algo está degradado. */
+  faixa: {
+    backgroundColor: CORES.surface,
+    borderBottomWidth: 2,
+    borderBottomColor: CORES.warning,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  faixaTexto: { color: CORES.warning, fontSize: 12, lineHeight: 17 },
   texto: {
     color: CORES.text,
     fontSize: 15,
@@ -165,6 +219,13 @@ export default function RootLayout() {
 
   /** ⚠️ Modo local abre os motores clínicos — e ⛔ nada remoto existe para vazar. */
 
+  /**
+   * ⚠️⚠️ MODO DEGRADADO ENTRA DIRETO NO MÓDULO — ⛔ sem spinner, ⛔ sem parede.
+   *
+   * ⛔ Um médico já autorizado ⛔ não pode perder o algoritmo clínico porque o
+   * Supabase caiu. ⚠️ O aviso de que o histórico está indisponível é
+   * responsabilidade das telas que o consomem, ⛔ e ⛔ não desta guarda.
+   */
   if (destino === 'aguardando_aprovacao' || destino === 'conta_indisponivel') {
     return (
       <LanguageProvider>
@@ -182,10 +243,25 @@ export default function RootLayout() {
     );
   }
 
+  /**
+   * ⚠️⚠️ O MODO DEGRADADO PRECISA SER **VISÍVEL**, ⛔ e ⛔ não bloqueante.
+   *
+   * ⛔ Modal ⛔ ou spinner aqui seria o oposto do desenho: o médico entrou
+   * ⛔ justamente porque o motor clínico funciona ⛔ sem o servidor. ⚠️ Mas ele
+   * precisa **saber** que o que fizer ⛔ não está sendo persistido — senão
+   * descobre depois, procurando um registro que ⛔ nunca existiu.
+   */
+  const degradado = destino === 'liberado_local_degradado';
+
   return (
     <LanguageProvider>
     <SubscriptionProvider>
       <ThemeProvider value={TEMA_NAVEGACAO}>
+        {degradado ? (
+          <View style={guarda.faixa} testID="guarda-modo-degradado">
+            <FaixaDegradada />
+          </View>
+        ) : null}
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

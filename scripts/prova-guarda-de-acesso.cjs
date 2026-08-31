@@ -31,6 +31,7 @@ execFileSync("npx", [
   path.join(appDir, "lib", "guarda-de-acesso.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 const G = require(path.join(tempDir, "guarda-de-acesso.js"));
+const P = G;
 
 // ── ⚠️⚠️ 1 · O DESTINO EM CADA ESTADO ─────────────────────────────────────
 const COM = (e) => ({ backendDisponivel: true, ...e });
@@ -38,7 +39,7 @@ const casos = [
   ["carregando", COM({ carregando: true, autenticado: false }), "carregando"],
   ["carregando mesmo já autenticado", COM({ carregando: true, autenticado: true, status: "ativo" }), "carregando"],
   ["sem sessão", COM({ carregando: false, autenticado: false }), "login"],
-  ["ativo", COM({ carregando: false, autenticado: true, status: "ativo" }), "liberado"],
+  ["ativo", COM({ carregando: false, autenticado: true, status: "ativo" }), "liberado_online"],
   ["pendente", COM({ carregando: false, autenticado: true, status: "pendente" }), "aguardando_aprovacao"],
   ["bloqueado", COM({ carregando: false, autenticado: true, status: "bloqueado" }), "conta_indisponivel"],
   ["autenticado SEM perfil", COM({ carregando: false, autenticado: true }), "conta_indisponivel"],
@@ -73,8 +74,60 @@ confere("⚠️ e o modo local ⛔ não depende de sessão ⛔ nem de status",
 
 confere("⚠️⚠️ ⛔ ⛔ COM backend, a exigência de sessão é OBRIGATÓRIA",
   G.destinoDaGuarda(COM({ carregando: false, autenticado: false })) === "login" &&
-    G.destinoDaGuarda(COM({ carregando: false, autenticado: true, status: "pendente" })) !== "liberado",
+    G.destinoDaGuarda(COM({ carregando: false, autenticado: true, status: "pendente" })) !== "liberado_online",
   "⛔ backend presente ⛔ e ⛔ sem sessão ⛔ não pode abrir — é o buraco que a guarda existe para fechar");
+
+// ── ⚠️⚠️ 1c · DEGRADAÇÃO LOCAL SEGURA ─────────────────────────────────────
+//
+// ⚠️⚠️ A linha inteira do desenho: **prova local autoriza o motor, ⛔ NUNCA o
+// dado remoto**. E ausência de resposta ⛔ não é autorização ⛔ nem recusa
+// automática — degrada ⛔ só quem já provou ser ativo neste aparelho.
+const AGORA = 1_800_000_000_000;
+const DIA = 24 * 60 * 60 * 1000;
+
+confere("⚠️⚠️ ativo previamente validado + backend indisponível ⇒ SÓ local",
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, rpcFalhou: true, provaLocalValida: true }))
+    === "liberado_local_degradado",
+  "⛔ tirar o motor de PCR da mão de quem foi autorizado ontem, porque o Supabase caiu, é o pior momento possível");
+
+confere("⚠️⚠️ ⛔ ⛔ RPC falhou SEM prova ⇒ FECHA",
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, rpcFalhou: true, provaLocalValida: false }))
+    === "conta_indisponivel",
+  "⛔ 'RPC falhou → libera' daria acesso a uma conta pendente que apenas derrubasse a internet");
+
+confere("⚠️⚠️ ⛔ primeira instalação offline ⛔ NÃO abre",
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, rpcFalhou: true })) === "conta_indisponivel",
+  "⛔ sem prova prévia neste aparelho ⛔ não há o que degradar");
+
+confere("⚠️⚠️ ⛔ ⛔ recusa CONFIRMADA vence prova local válida",
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, status: "bloqueado", rpcFalhou: true, provaLocalValida: true }))
+    === "conta_indisponivel" &&
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, status: "pendente", provaLocalValida: true }))
+    === "aguardando_aprovacao",
+  "⛔ assim que o servidor responde, ele é a autoridade — a prova ⛔ não sobrevive a um bloqueio confirmado");
+
+confere("⚠️⚠️ e `liberado_local_degradado` ⛔ NÃO é `liberado_online`",
+  G.destinoDaGuarda(COM({ carregando: false, autenticado: true, rpcFalhou: true, provaLocalValida: true }))
+    !== "liberado_online",
+  "⛔ se fossem o mesmo destino, 'degradado' e 'autorizado' ficariam indistinguíveis — no código e na tela");
+
+// ── ⚠️⚠️ 1d · A VALIDADE DA PROVA, EXECUTADA ──────────────────────────────
+confere("⚠️ prova do próprio usuário, dentro do prazo, vale",
+  P.provaValida({ userId: "A", em: AGORA - 1000 }, "A", AGORA) === true,
+  "⛔ sem isto ⛔ não há degradação ⛔ nenhuma");
+confere("⚠️⚠️ ⛔ ⛔ prova de A ⛔ NÃO autoriza B",
+  P.provaValida({ userId: "A", em: AGORA }, "B", AGORA) === false,
+  "⛔ reaproveitar prova entre identidades é dar a autorização de um médico a outro");
+confere("⚠️⚠️ ⛔ prova vencida ⛔ não abre",
+  P.provaValida({ userId: "A", em: AGORA - DIA - 1 }, "A", AGORA) === false,
+  "⛔ 24 h é a decisão de produto; sem o corte, a prova viraria permanente");
+confere("⚠️ prova ausente ⛔ ou identidade ausente ⇒ inválida",
+  P.provaValida(null, "A", AGORA) === false &&
+    P.provaValida({ userId: "A", em: AGORA }, undefined, AGORA) === false,
+  "⛔ falha fechada em todo caminho de ausência");
+confere("⚠️ a validade padrão é de 24 horas",
+  P.VALIDADE_DA_PROVA_MS === DIA,
+  "⛔ minutos ⛔ não cobrem plantão com Wi-Fi ruim — foi decisão explícita");
 
 // ── ⚠️⚠️ 2 · A LISTA É DE PERMISSÃO, E EXATA ──────────────────────────────
 const PUBLICAS = [[], ["privacidade"], ["+not-found"]];
@@ -154,7 +207,7 @@ confere("⚠️⚠️ ⛔ ⛔ nenhuma porta do histórico ignora a capacidade",
   !/if \(!supabase\)/.test(hist),
   "⛔ um `if (!supabase)` cru é ⛔ exatamente o ramo que transforma configuração ausente em comportamento silencioso");
 confere("⚠️⚠️ as DUAS portas declaram indisponibilidade em modo local",
-  (hist.match(/backendClinicoDisponivel\(\)/g) || []).length >= 2 &&
+  (hist.match(/persistenciaRemotaAutorizada\(\)/g) || []).length >= 2 &&
     (hist.match(/indisponivel: true/g) || []).length >= 2,
   "⛔ devolver lista vazia tornaria 'sem backend' indistinguível de 'você ⛔ não tem sessões' — e esconderia se o ramo virou porta lateral");
 
@@ -234,6 +287,87 @@ if (fs.existsSync(distDir)) {
       "⛔ o bundle carregava `createClient(\"https://<ref>.supabase.co\", \"sb_publishable_…\")` — chave publicável inlined num artefato de teste");
   }
 }
+
+// ── ⚠️⚠️ 6 · A PROVA ⛔ NUNCA VIRA CREDENCIAL ──────────────────────────────
+const pv = lerFonte(path.join(appDir, "lib", "prova-de-acesso.ts"));
+confere("o módulo da prova existe e tem corpo", pv.length > 800, "piso R-1");
+
+confere("⚠️⚠️ ⛔ ⛔ ⛔ a prova ⛔ NÃO é enviada a lugar nenhum",
+  !/fetch\(|supabase|Authorization|rpc\(/i.test(pv),
+  "⛔ prova local que viaja vira credencial — e credencial que o próprio aparelho fabrica ⛔ não é autorização");
+
+confere("⚠️⚠️ a prova carrega identidade E instante",
+  /userId: string/.test(fonteGuarda) && /em: number/.test(fonteGuarda),
+  "⛔ sem `userId` a prova de A vale para B; sem instante, vale para sempre");
+
+const lay = raiz;
+confere("⚠️⚠️ a prova só é GRAVADA para `ativo` confirmado",
+  /status === 'ativo'[^\n]*gravarProva|gravarProva\(uid[\s\S]{0,40}\)/.test(lay) &&
+    /perfil\?\.status === 'ativo' && uid\) gravarProva/.test(lay),
+  "⛔ gravar noutro estado faria uma conta pendente virar prova ao ser vista uma vez");
+
+confere("⚠️⚠️ e é INVALIDADA em recusa confirmada",
+  /pendente'[\s\S]{0,60}bloqueado'\) invalidarProva\(\)/.test(lay),
+  "⛔ prova que sobrevive a um bloqueio confirmado é autorização revogada que continua valendo");
+
+const cap2 = lerFonte(path.join(appDir, "lib", "backend-clinico.ts"));
+confere("⚠️⚠️ dado remoto exige confirmação ATUAL, ⛔ não prova local",
+  /persistenciaRemotaAutorizada/.test(cap2) && /remotaConfirmada/.test(cap2),
+  "⛔ prova local autoriza o MOTOR; dado remoto exige o servidor — misturar os dois é o defeito que o desenho existe para evitar");
+
+confere("⚠️⚠️ ⛔ e há UM ÚNICO escritor da persistência remota",
+  (lerFonte(path.join(appDir, "app", "_layout.tsx")).match(/definirPersistenciaRemota\(/g) || []).length === 1 &&
+    !/definirPersistenciaRemota/.test(lerFonte(path.join(appDir, "lib", "clinical-session-history.ts"))),
+  "⛔ dois escritores criariam duas verdades sobre a mesma autorização");
+
+confere("⚠️ o histórico remoto exige a capacidade ESTREITA",
+  /persistenciaRemotaAutorizada\(\)/.test(hist) && !/backendClinicoDisponivel\(\)/.test(hist),
+  "⛔ em modo degradado há backend, ⛔ mas ⛔ não há confirmação — histórico fica indisponível");
+
+// ── ⚠️⚠️ 7 · SAÍDA E VISIBILIDADE DA DEGRADAÇÃO ───────────────────────────
+const auth = lerFonte(path.join(appDir, "lib", "auth-session.ts"));
+confere("⚠️⚠️ existe UMA porta de saída, e ela destrói a prova",
+  /export async function sairDaConta/.test(auth) && /invalidarProva\(\)/.test(auth),
+  "⛔ estado residual de autorização ⛔ não pode sobreviver a uma saída explícita");
+
+const saidas = [];
+for (const dir of ["app", "components", "lib"]) {
+  const raizD = path.join(appDir, dir);
+  const pilha = fs.existsSync(raizD) ? [raizD] : [];
+  while (pilha.length) {
+    const at = pilha.pop();
+    for (const n of fs.readdirSync(at)) {
+      const f = path.join(at, n);
+      if (fs.statSync(f).isDirectory()) pilha.push(f);
+      else if (/\.tsx?$/.test(n) && f !== path.join(appDir, "lib", "auth-session.ts")
+               && /auth\.signOut\(/.test(lerFonte(f))) saidas.push(path.relative(appDir, f));
+    }
+  }
+}
+confere("⚠️⚠️ ⛔ ⛔ e ⛔ NENHUM outro lugar chama `signOut` direto",
+  saidas.length === 0,
+  `⛔ com duas saídas, a próxima regra de logout entra numa e ⛔ não na outra — encontrado: ${saidas.join(", ")}`);
+
+/**
+ * ⚠️⚠️ MEDE QUE A FAIXA É **RENDERIZADA**, ⛔ e ⛔ não que existe.
+ *
+ * ⛔ A primeira versão se satisfazia com o `testID` do contêiner e com a
+ * **definição** do componente — remover o `<FaixaDegradada />` do JSX deixava a
+ * faixa vazia e a trava verde. ⚠️ Componente definido e ⛔ não usado é ⛔ nada na
+ * tela.
+ */
+confere("⚠️⚠️ o modo degradado é VISÍVEL na tela",
+  /degradado \? \([\s\S]{0,300}?<FaixaDegradada\s*\/>/.test(raiz) && /Modo local/.test(raiz),
+  "⛔ o médico precisa saber que o que registrar ⛔ não está sendo persistido — senão descobre depois, procurando um registro que ⛔ nunca existiu");
+
+/**
+ * ⚠️ Mede a **ausência de retorno antecipado** para o destino degradado — ⛔ e
+ * ⛔ não a proximidade textual, que casava `const degradado = …` com o `return`
+ * final do componente.
+ */
+confere("⚠️⚠️ ⛔ e a faixa ⛔ NÃO bloqueia o uso",
+  !/if \(destino === 'liberado_local_degradado'\)\s*\{?\s*return/.test(raiz),
+  "⛔ modal ⛔ ou spinner aqui seria o oposto do desenho: ele entrou porque o motor funciona sem servidor");
 
 if (falhas.length) {
   console.log(`\n❌ GUARDA DE ACESSO — ${falhas.length} falha(s), ${ok} ok\n`);

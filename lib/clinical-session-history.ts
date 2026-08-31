@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import { historicoDisponivel } from "./historico-disponivel";
-import { backendClinicoDisponivel } from "./backend-clinico";
+import { persistenciaRemotaAutorizada } from "./backend-clinico";
 
 export type ClinicalSessionRecord = {
   id: string;
@@ -30,7 +30,7 @@ export async function loadClinicalSessions() {
    * que este ramo ⛔ não virou porta lateral para persistência: "vazio" e
    * "⛔ não existe backend" ficariam indistinguíveis.
    */
-  if (!backendClinicoDisponivel() || !supabase) {
+  if (!persistenciaRemotaAutorizada() || !supabase) {
     return { data: [] as ClinicalSessionRecord[], error: null, indisponivel: true };
   }
 
@@ -48,7 +48,7 @@ export async function loadClinicalSessionById(sessionId: string) {
     return { data: null, error: null, indisponivel: true };
   }
   /** ⚠️ Mesma regra da lista: modo local ⛔ não é "⛔ não existe" (E-37). */
-  if (!backendClinicoDisponivel() || !supabase) {
+  if (!persistenciaRemotaAutorizada() || !supabase) {
     return { data: null, error: null, indisponivel: true };
   }
 

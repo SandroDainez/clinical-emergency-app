@@ -25,6 +25,37 @@
  * nega. ⚠️ Cliente ⛔ nunca é prova.
  */
 
+/** ⚠️ 24 h ⛔ por decisão: minutos ⛔ não cobrem plantão com Wi-Fi ruim. */
+export const VALIDADE_DA_PROVA_MS = 24 * 60 * 60 * 1000;
+
+const CHAVE = "cea_prova_de_acesso";
+
+export type ProvaLocal = {
+  /** ⚠️⚠️ A identidade. ⛔ Sem ela, a prova de A autorizaria B. */
+  userId: string;
+  /** Instante da confirmação. */
+  em: number;
+};
+
+/**
+ * ⚠️⚠️ A REGRA DE VALIDADE — pura, ⛔ e por isso **executável** contra cada caso.
+ *
+ * ⛔ Três formas de invalidar, e ⛔ nenhuma delas é opcional:
+ *   · ⛔ prova ausente;
+ *   · ⛔ **identidade diferente** — a prova de A ⛔ não vale para B;
+ *   · ⛔ vencida.
+ */
+export function provaValida(
+  prova: ProvaLocal | null,
+  userId: string | undefined,
+  agora: number,
+  validadeMs: number = VALIDADE_DA_PROVA_MS
+): boolean {
+  if (!prova || !userId) return false;
+  if (prova.userId !== userId) return false;
+  return agora - prova.em < validadeMs;
+}
+
 /** ⚠️ Os estados que a tela precisa distinguir — ⛔ e são cinco, ⛔ não dois. */
 export type DestinoDaGuarda =
   | "modo_local"
@@ -32,7 +63,16 @@ export type DestinoDaGuarda =
   | "login"
   | "aguardando_aprovacao"
   | "conta_indisponivel"
-  | "liberado";
+  /** ⚠️ Estado confirmado pelo servidor **agora**: tudo liberado. */
+  | "liberado_online"
+  /**
+   * ⚠️⚠️ Servidor inalcançável, ⛔ mas há prova local válida desta identidade.
+   *
+   * ⛔ O motor clínico abre; ⛔ **dado remoto ⛔ NÃO**. É um destino próprio
+   * ⛔ justamente para que "degradado" ⛔ nunca se confunda com "autorizado" —
+   * ⛔ nem no código, ⛔ nem na tela.
+   */
+  | "liberado_local_degradado";
 
 export type EstadoDeAcesso = {
   /**
@@ -46,6 +86,17 @@ export type EstadoDeAcesso = {
   autenticado: boolean;
   /** `status` do `app_users`. ⛔ `undefined` quando ⛔ não há perfil. */
   status?: "pendente" | "ativo" | "bloqueado";
+  /**
+   * ⚠️ A RPC de autorização ⛔ não respondeu — rede, servidor fora, timeout.
+   * ⛔ Isto ⛔ NÃO é "conta inválida": é **ausência de resposta**, e confundir as
+   * duas é o que tira o motor de PCR da mão de quem foi autorizado ontem.
+   */
+  rpcFalhou?: boolean;
+  /**
+   * ⚠️⚠️ Há prova local válida **para esta mesma identidade**, dentro do prazo.
+   * ⛔ Ver `prova-de-acesso.ts` — ela autoriza ⛔ SOMENTE o motor local.
+   */
+  provaLocalValida?: boolean;
 };
 
 /**
@@ -106,7 +157,23 @@ export function destinoDaGuarda(estado: EstadoDeAcesso): DestinoDaGuarda {
   if (!estado.backendDisponivel) return "modo_local";
   if (estado.carregando) return "carregando";
   if (!estado.autenticado) return "login";
-  if (estado.status === "ativo") return "liberado";
+
+  /** ⚠️ Confirmado pelo servidor tem precedência sobre ⛔ qualquer prova local. */
+  if (estado.status === "ativo") return "liberado_online";
   if (estado.status === "pendente") return "aguardando_aprovacao";
+  if (estado.status === "bloqueado") return "conta_indisponivel";
+
+  /**
+   * ⚠️⚠️ AUSÊNCIA DE RESPOSTA ⛔ NÃO É AUTORIZAÇÃO — e ⛔ nem é recusa automática.
+   *
+   * ⛔ Só degrada quem **já provou** ser ativo neste aparelho, nesta identidade,
+   * dentro do prazo. ⚠️ Sem prova, falha **fechada**: uma conta pendente ⛔ não
+   * ganha acesso derrubando a internet, e primeira instalação offline ⛔ não abre.
+   *
+   * ⚠️ Note a ordem: `pendente` e `bloqueado` são tratados **acima**, então uma
+   * recusa confirmada ⛔ nunca cai aqui, ⛔ nem com prova válida no aparelho.
+   */
+  if (estado.rpcFalhou && estado.provaLocalValida) return "liberado_local_degradado";
+
   return "conta_indisponivel";
 }
