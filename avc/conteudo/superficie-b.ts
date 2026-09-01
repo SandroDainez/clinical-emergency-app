@@ -566,6 +566,25 @@ const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
   },
   {
     id: "achados-tipicos",
+    /**
+     * ⚠️⚠️ DÍVIDA VISUAL REGISTRADA (autor, 2026-09-01) — ⛔ NÃO bloqueante:
+     * o **rótulo de interface** pode encurtar ("Achados tipicamente
+     * incapacitantes" / "Achados potencialmente ⛔ não incapacitantes"), com o
+     * título completo no detalhe. ⚠️ **CONDIÇÃO:** o hedge da fonte continua
+     * logo abaixo ⛔ e o quadro ⛔ não pode parecer classificação automática —
+     * ⛔ é por isso que ⛔ ninguém encurtou por conta própria até aqui.
+     */
+    /**
+     * ⚠️⚠️ RECOLHIDO POR DECLARAÇÃO, ⛔ e ⛔ não por lista no JSX.
+     *
+     * ⛔ A decisão vivia no componente — ⛔ e a trava de cobertura, que DERIVA
+     * do conteúdo (D-15), ⛔ não a enxergava: ela abria só o que o conteúdo
+     * declarava ⛔ e media a decisão de layout em vez da alcançabilidade.
+     *
+     * ⚠️ Recolher aqui ⛔ não esconde o hedge da fonte: a nota do bloco fica
+     * visível com o grupo fechado.
+     */
+    recolhido: true,
     titulo: "Achados tipicamente considerados claramente incapacitantes",
     campos: ACHADOS_TIPICOS_B,
     /**
@@ -580,6 +599,17 @@ const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
   },
   {
     id: "achados-podem-nao",
+    /**
+     * ⚠️⚠️ RECOLHIDO POR DECLARAÇÃO, ⛔ e ⛔ não por lista no JSX.
+     *
+     * ⛔ A decisão vivia no componente — ⛔ e a trava de cobertura, que DERIVA
+     * do conteúdo (D-15), ⛔ não a enxergava: ela abria só o que o conteúdo
+     * declarava ⛔ e media a decisão de layout em vez da alcançabilidade.
+     *
+     * ⚠️ Recolher aqui ⛔ não esconde o hedge da fonte: a nota do bloco fica
+     * visível com o grupo fechado.
+     */
+    recolhido: true,
     titulo: "Achados que podem não ser claramente incapacitantes neste paciente",
     campos: ACHADOS_PODEM_NAO_B,
     nota: "Podem não ser não significa não são. A fonte preserva a incerteza, e a avaliação individual permanece necessária.",

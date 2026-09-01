@@ -1707,4 +1707,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Ver critério": "Ver criterio",
   "Atendimento há": "Atención hace",
   "saída": "salida",
+  "Preenchido pela escala NIHSS": "Rellenado por la escala NIHSS",
+  "O seu registro difere do que a escala derivou. Os dois ficam na trilha.":
+    "Su registro difiere de lo que la escala derivó. Ambos quedan en la traza.",
+  "Derivado do NIHSS": "Derivado del NIHSS",
+  "Avaliar": "Evaluar",
 };

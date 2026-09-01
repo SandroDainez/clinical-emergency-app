@@ -119,12 +119,25 @@ export function Segmentado({
   valor,
   onEscolher,
   onDesfazer,
+  daEscala,
+  divergente,
 }: {
   campo: string;
   opcoes: readonly string[];
+  /** ⚠️ O valor EFETIVO — quem resolve manual × derivado é o núcleo. */
   valor: string;
   onEscolher: (campo: string, valor: string) => void;
   onDesfazer: (campo: string) => void;
+  /**
+   * ⚠️⚠️ PROCEDÊNCIA: o valor veio da escala, ⛔ e ⛔ não do dedo do médico.
+   *
+   * ⛔ Sem a marca, um achado preenchido pelo NIHSS parece resposta dele — ⛔ e
+   * a primeira coisa que ele faz é desconfiar da tela. ⚠️ A **regra** de quem
+   * vence vive em `valorEfetivo`, no núcleo: aqui ⛔ só se mostra de onde veio.
+   */
+  daEscala?: boolean;
+  /** ⚠️ O médico respondeu diferente do que a escala derivou. ⛔ Nenhum apaga o outro. */
+  divergente?: boolean;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -173,12 +186,75 @@ export function Segmentado({
             /** ⚠️ Tocar na marcada DESFAZ — o gesto que todo mundo já tenta (§7.16). */
             onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
           >
-            <Text style={[e.segTexto, marcada ? e.segTextoAtivo : null]}>{tr(op)}</Text>
+            {/**
+              * ⚠️⚠️ O ✓ ANUNCIA A ESCOLHA **SEM DEPENDER DE COR**.
+              *
+              * ⛔ Fundo colorido sozinho ⛔ não serve: quem ⛔ não distingue a cor
+              * ⛔ não sabe o que está marcado. ⚠️ Defeito que eu introduzi na
+              * migração ⛔ e que a suíte de B pegou — ⛔ e ele valia para A também.
+              */}
+            <Text style={[e.segTexto, marcada ? e.segTextoAtivo : null]}>
+              {marcada ? "✓ " : ""}
+              {tr(op)}
+            </Text>
           </Pressable>
         );
       })}
     </View>
   );
+}
+
+/**
+ * ⚠️ A etiqueta de procedência — ⛔ uma linha, ⛔ e ⛔ nunca um cartão.
+ *
+ * ⚠️⚠️ OS TRÊS `testID` SÃO OS ORIGINAIS, ⛔ e os textos também: eles são a
+ * superfície onde a suíte afirma **de onde veio o valor**. ⛔ Renomeá-los na
+ * migração desligaria a prova da procedência — que é o contrato que mais
+ * importa aqui, porque um achado derivado com cara de resposta do médico é
+ * exatamente o que faz ⛔ ele desconfiar da tela.
+ */
+export function Procedencia({ campo, daEscala, divergente, manual }: {
+  campo: string;
+  daEscala?: boolean;
+  divergente?: boolean;
+  /** ⚠️ Respondido pelo médico, ⛔ e ⛔ sem derivação a contradizer. */
+  manual?: boolean;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  if (divergente) {
+    return (
+      <Text
+        style={[e.procedencia, e.procedenciaDivergente]}
+        testID={`avc-divergencia-${campo}`}
+      >
+        {tr("Registro do médico, diferente do que a escala deriva")}
+      </Text>
+    );
+  }
+  if (daEscala) {
+    return (
+      <Text style={e.procedencia} testID={`avc-origem-${campo}`}>
+        {tr("Vindo do NIHSS")}
+      </Text>
+    );
+  }
+  /**
+   * ⚠️⚠️ REGISTRO DO MÉDICO QUE **COINCIDE** COM A ESCALA ⛔ NÃO FICA SEM
+   * ETIQUETA — ⛔ senão vira resposta manual anônima.
+   *
+   * ⛔ A primeira versão só marcava manual quando ⛔ não havia derivação. ⚠️ As
+   * três procedências precisam se distinguir SEMPRE: vindo da escala, registro
+   * do médico, ⛔ e registro do médico divergente.
+   */
+  if (manual) {
+    return (
+      <Text style={e.procedencia} testID={`avc-origem-manual-${campo}`}>
+        {tr("Registro do médico")}
+      </Text>
+    );
+  }
+  return null;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -305,6 +381,127 @@ export function Numero({
           </Pressable>
         </View>
       </View>
+    </View>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * 3b · LINHA DE ACHADO — três estados, ⛔ e ⛔ NÃO uma caixa de seleção
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ ⛔ CHECKBOX ⛔ NÃO SERVE AQUI, ⛔ e a razão é clínica.
+ *
+ * ⛔ Numa caixa de seleção, **⛔ não marcado vira "Não"** — ⛔ e a diferença entre
+ * *"o paciente ⛔ não tem"* ⛔ e *"⛔ ainda ⛔ não avaliei"* desaparece. ⚠️ É o E-02,
+ * ⛔ e é justamente o que este módulo inteiro existe para proteger.
+ *
+ * ⚠️⚠️ DÍVIDA VISUAL REGISTRADA (autor, 2026-09-01) — ⛔ NÃO bloqueante:
+ * a **definição longa** pode migrar para o ⓘ, deixando ⛔ só uma frase curta na
+ * primeira camada. ⛔ Algumas linhas ainda ficam altas por causa dela. ⚠️ É
+ * redução de rolagem, ⛔ e ⛔ nada clínico muda.
+ *
+ * ⚠️ Por isso a linha carrega um segmented **estreito** com os três estados,
+ * ⛔ em vez do controle de largura cheia: onze achados de 90 px seriam 990 px
+ * de rolagem.
+ *
+ * ⚠️⚠️ ⛔ NENHUMA REGRA CLÍNICA AQUI. Quem decide o valor efetivo, a procedência
+ * ⛔ e a divergência é o núcleo — este componente ⛔ só desenha o que recebe.
+ */
+export function LinhaDeAchado({
+  campo,
+  rotulo,
+  definicao,
+  opcoes,
+  valor,
+  daEscala,
+  divergente,
+  manual,
+  opcoesDaEscala,
+  detalheAberto,
+  onAlternarDetalhe,
+  onEscolher,
+  onDesfazer,
+  children,
+}: {
+  campo: string;
+  rotulo: string;
+  /** ⚠️ A definição curta fica VISÍVEL; categorias e teste vão para o ⓘ. */
+  definicao?: string;
+  opcoes: readonly string[];
+  valor: string;
+  daEscala?: boolean;
+  divergente?: boolean;
+  manual?: boolean;
+  /** ⚠️ O que a escala chama assim — vem do conteúdo, ⛔ não escrito de memória. */
+  opcoesDaEscala?: readonly string[];
+  detalheAberto: boolean;
+  onAlternarDetalhe: () => void;
+  onEscolher: (campo: string, valor: string) => void;
+  onDesfazer: (campo: string) => void;
+  children?: ReactNode;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  return (
+    <View style={e.achadoBloco} testID={`avc-campo-${campo}`}>
+      <View style={e.achadoTopo}>
+        <View style={e.achadoNome}>
+          <Text style={e.achadoRotulo}>{tr(rotulo)}</Text>
+          {definicao ? (
+            <Text style={e.achadoDefinicao} testID={`avc-definicao-${campo}`}>
+              {tr(definicao)}
+            </Text>
+          ) : null}
+        </View>
+        <View style={e.segEstreito}>
+          {opcoes.map((op, i) => {
+            const gravado = valorDaOpcao(op);
+            const marcada = valor === gravado;
+            return (
+              <Pressable
+                key={op}
+                style={[e.segItemEstreito, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: marcada }}
+                aria-checked={marcada}
+                testID={`avc-opcao-${campo}-${gravado}`}
+                onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+              >
+                <Text style={[e.segTextoEstreito, marcada ? e.segTextoAtivo : null]}>
+                  {marcada ? "✓ " : ""}
+                  {tr(op)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Pressable
+          style={e.info}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Ver critério")}
+          testID={`avc-info-${campo}`}
+          onPress={onAlternarDetalhe}
+        >
+          <Icone nome="informacao" tamanho={13} />
+        </Pressable>
+      </View>
+      <Procedencia campo={campo} daEscala={daEscala} divergente={divergente} manual={manual} />
+      {/**
+        * ⚠️⚠️ ⛔ RECOLHER ⛔ NÃO APAGA CONTEÚDO DA FONTE. As categorias que a
+        * escala conta ficam atrás do ⓘ — ⛔ e ⛔ não desaparecem.
+        */}
+      {detalheAberto ? (
+        <View testID={`avc-info-texto-${campo}`}>
+          {children}
+          {opcoesDaEscala && opcoesDaEscala.length > 0 ? (
+            <Text style={e.achadoDefinicao} testID={`avc-glossario-${campo}`}>
+              {tr("Na escala do NIHSS conta como isto")}:{" "}
+              {opcoesDaEscala.map((o) => tr(o)).join(" · ")}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -575,11 +772,46 @@ const criarEstilos = (tema: Tema) =>
       borderRadius: RAIO.botao,
       overflow: "hidden",
     },
-    segItem: { flex: 1, alignItems: "center", paddingVertical: ESPACO.sm },
+    /** ⚠️ Alvo de DEDO, ⛔ e ⛔ não de mouse: 44 px é o piso. */
+    segItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 44 },
     segDivisor: { borderLeftWidth: 1, borderLeftColor: tema.cores.border },
     segAtivo: { backgroundColor: tema.cores.primary },
     segTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     segTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+
+    achadoBloco: { paddingVertical: ESPACO.xs },
+    achadoTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    achadoNome: { flex: 1, minWidth: 0 },
+    achadoRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    achadoDefinicao: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+    },
+    /** ⚠️ Estreito: onze achados de largura cheia seriam 990 px de rolagem. */
+    segEstreito: {
+      flexDirection: "row",
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      borderRadius: RAIO.botao,
+      overflow: "hidden",
+      flexShrink: 0,
+    },
+    /** ⚠️ Estreito na LARGURA, ⛔ e ⛔ nunca na altura — o dedo ⛔ não encolhe. */
+    segItemEstreito: {
+      paddingHorizontal: ESPACO.xs,
+      minWidth: 46,
+      minHeight: 44,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    segTextoEstreito: { color: tema.cores.text, fontSize: TIPOGRAFIA.micro.fontSize },
+
+    procedencia: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      paddingTop: 2,
+    },
+    procedenciaDivergente: { color: tema.cores.warning },
 
     achados: { gap: 1 },
     achadoLinha: {

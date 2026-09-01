@@ -48,6 +48,20 @@ async function abrirB(page: Page) {
   await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
 }
 
+/**
+ * ⚠️⚠️ OS GRUPOS DE ACHADO NASCEM RECOLHIDOS — decisão do autor, 2026-09-01.
+ *
+ * ⛔ Onze achados abertos por padrão eram ~990 px de rolagem antes de qualquer
+ * decisão. ⚠️ Recolher ⛔ não apaga resposta ⛔ nenhuma ⛔ e ⛔ não esconde o hedge
+ * da fonte — ⛔ ele fica visível com o grupo fechado. ⚠️ Estes testes avaliam os
+ * achados, ⛔ então abrem o grupo, que é o que o médico faz.
+ */
+async function abrirAchados(page: Page, grupo: "achados-tipicos" | "achados-podem-nao") {
+  const gatilho = page.getByTestId(`avc-avaliar-${grupo}`);
+  if (await gatilho.count()) await gatilho.click();
+  else await page.getByTestId(`avc-bloco-abrir-${grupo}`).click();
+}
+
 test.describe("AVC · Superfície B — Neurológico", () => {
   /**
    * ⚠️⚠️ A QUEIXA QUE ORIGINOU ESTE TESTE (autor, 2026-08-28): *"botões ruins de
@@ -116,6 +130,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("a escala preenche os achados da Table 4, e o médico pode divergir", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-podem-nao");
+    await abrirAchados(page, "achados-tipicos");
 
     // Linguagem 2 → afasia grave; perna direita 3 → fraqueza e lado direito.
     await preencherEscala(page, { "9": 2, "6b": 3 });
@@ -197,6 +213,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("achado típico muda a leitura, e a leitura ⛔ não vira veredito", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-tipicos");
 
     await expect(page.getByTestId("avc-leitura-curto-achados_quadros"))
       .toContainText(/ainda não informados/i);
@@ -224,6 +241,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("divergir da leitura fica registrado e ⛔ não bloqueia a superfície", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-tipicos");
 
     // ⚠️ Dentro da população da fonte: fora dela ⛔ não há leitura normativa, e
     // portanto ⛔ não há do que divergir (PD-13).
@@ -301,6 +319,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("fora da população da fonte, a leitura não se estende — e nada fecha", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-podem-nao");
+    await abrirAchados(page, "achados-tipicos");
 
     // NIHSS 3 · dentro do contexto que a Table 4 escreveu para si.
     await preencherEscala(page, { "5a": 3 });
@@ -362,6 +382,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("sair da B incompleta mantém as nove superfícies acessíveis", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-tipicos");
 
     // Duas respostas, e a superfície fica deliberadamente incompleta.
     await page.getByTestId("avc-opcao-deficit_focal-sim").click();
@@ -386,6 +407,22 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await page.getByTestId("avc-aba-neurologico").click();
     await expect(page.getByTestId("avc-opcao-deficit_focal-sim"))
       .toHaveAttribute("aria-checked", "true");
+    /**
+     * ⚠️⚠️ O CONTRATO É **E-20: a volta preserva o registro** — ⛔ e ⛔ não a
+     * forma como ele aparece.
+     *
+     * ⚠️ Com o grupo de achados recolhido por padrão, o registro se mostra no
+     * **resumo do grupo fechado**, com a procedência junto. ⛔ Provar só pela
+     * opção marcada mediria a decisão de layout; ⚠️ aqui se prova o fato — ⛔ e
+     * depois, abrindo, que o controle também o reflete.
+     */
+    await expect(page.getByTestId("avc-resumo-t4_afasia_grave"))
+      .toContainText(/✓/);
+    await expect(page.getByTestId("avc-resumo-t4_afasia_grave"),
+      "registro do médico ⛔ não pode virar achado anônimo ao recolher")
+      .toContainText(/Registro do médico/i);
+
+    await abrirAchados(page, "achados-tipicos");
     await expect(page.getByTestId("avc-opcao-t4_afasia_grave-sim"))
       .toHaveAttribute("aria-checked", "true");
   });
@@ -434,6 +471,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("NIHSS informado por fora convive com o daqui, e ⛔ não deriva achado", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-tipicos");
 
     /**
      * ⚠️ O BLOCO DE FORA NASCE FECHADO — *"o usuário vai calcular o NIHSS"*. O
@@ -477,6 +515,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("cada achado explica o que é, e as categorias ficam no ⓘ", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-podem-nao");
+    await abrirAchados(page, "achados-tipicos");
 
     /**
      * ⚠️⚠️ A DEFINIÇÃO É VISÍVEL, as CATEGORIAS ficam a um toque — decisão visual
@@ -552,6 +592,7 @@ test.describe("AVC · Superfície B — Neurológico", () => {
   test("com o NIHSS preenchido, os achados viram resumo — e Ajustar os devolve", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirB(page);
+    await abrirAchados(page, "achados-tipicos");
 
     // ⛔ Sem escala, a pergunta é a única via: os quatro cartões estão lá.
     await expect(page.getByTestId("avc-resumo-derivado")).toHaveCount(0);
