@@ -1676,4 +1676,32 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Início da administração": "Inicio de la administración",
   "A monitorização da Table 7 é contada a partir daqui. Sem este horário, a fase não é calculada.":
     "La monitorización de la Table 7 se cuenta a partir de aquí. Sin este horario, la fase no se calcula.",
+  // ── ⚠️ SUPERFÍCIE G · a tela ────────────────────────────────────────────
+  "Recomendação da diretriz": "Recomendación de la guía",
+  "Conduta operacional da tabela": "Conducta operativa de la tabla",
+  "a fonte não atribui COR/LOE": "la fuente no atribuye COR/LOE",
+  "Monitorização pós-trombólise": "Monitorización postrombólisis",
+  "Contexto pós-trombólise": "Contexto postrombólisis",
+  "Trombólise iniciada": "Trombólisis iniciada",
+  "Trombólise realizada": "Trombólisis realizada",
+  "falta o horário de início — toque para registrar":
+    "falta el horario de inicio — toque para registrar",
+  /** ⚠️ A tabela acaba; a pertinência ⛔ não — a frase tem que dizer isso. */
+  "fora da janela da tabela": "fuera de la ventana de la tabla",
+  "Sinais de deterioração": "Signos de deterioro",
+  "Interromper a infusão de alteplase, se estiver em curso.":
+    "Interrumpir la infusión de alteplasa, si está en curso.",
+  "Obter tomografia de crânio de emergência.":
+    "Obtener tomografía de cráneo de emergencia.",
+  "Imagem de controle": "Imagen de control",
+  "Acima de": "Por encima de",
+  "Saída de fluxo": "Salida de flujo",
+  "produzido em Imagem": "producido en Imagen",
+  "o módulo ainda não existe": "el módulo aún no existe",
+  "Capacidade deste serviço": "Capacidad de este servicio",
+  "Contexto operacional. Não altera indicação clínica nem elegibilidade a nenhuma terapia.":
+    "Contexto operativo. No altera la indicación clínica ni la elegibilidad a ninguna terapia.",
+  "Trombólise administrada": "Trombólisis administrada",
+  "Administração": "Administración",
+  "Registrar administração": "Registrar administración",
 };

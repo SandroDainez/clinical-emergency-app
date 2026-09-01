@@ -170,7 +170,20 @@ export const MONITORIZACAO_POS_IVT = {
       "Vômito",
       "Piora do exame neurológico",
     ],
-    conduta: "Interromper a infusão, se for alteplase, e obter tomografia de crânio de emergência.",
+    /**
+     * ⚠️⚠️ DUAS AÇÕES, ⛔ e ⛔ não uma frase — decisão do autor, 2026-08-31.
+     *
+     * ⛔ A fonte encadeia *"discontinue the infusion (if alteplase) **and** obtain
+     * emergency head CT"*: são **dois** atos. ⚠️ Numa frase só, o olho passa por
+     * cima do segundo — ⛔ e ⛔ este é conteúdo de resposta rápida.
+     *
+     * ⚠️ A condicional *"se for alteplase"* viaja com o ato a que pertence, ⛔ e
+     * ⛔ não com o outro: a tomografia ⛔ não depende do agente.
+     */
+    condutas: [
+      "Interromper a infusão de alteplase, se estiver em curso.",
+      "Obter tomografia de crânio de emergência.",
+    ],
   },
   /**
    * ⚠️ Gatilho pressórico — ⛔ a frequência AUMENTA; ⛔ ela ⛔ não muda de fase.

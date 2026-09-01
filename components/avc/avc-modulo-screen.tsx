@@ -25,6 +25,8 @@ import { ESTUDO } from "../../avc/conteudo/superficie-c";
 import SuperficieD from "./superficie-d";
 import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
+import SuperficieG from "./superficie-g";
+import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { pendenciasOriginadasEmE } from "../../avc/nucleo/derivacoes-e";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
@@ -159,6 +161,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       ["neurologico", TODOS_OS_CAMPOS_B],
       ["imagem", TODOS_OS_CAMPOS_C],
       ["paciente", TODOS_OS_CAMPOS_P],
+      /**
+       * ⚠️ A ação de trombólise mora em **Reperfusão**. ⛔ Sem ela aqui, tocar a
+       * pendência do horário de início em Destino ⛔ não levaria a lugar ⛔ nenhum
+       * — gesto que ⛔ não faz nada, ⛔ e ⛔ sem erro visível.
+       */
+      ["reperfusao", ACAO_DE_TROMBOLISE],
     ];
     const achado = donos.find(([, campos]) => campos.some((c) => c.id === campo));
     if (achado) setEstado((e) => verSuperficie(e, achado[0]));
@@ -457,6 +465,17 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           />
         ) : atual.id === "reperfusao" ? (
           <SuperficieF
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onIrParaCampo={irParaCampo}
+            onNovaTrombolise={() => novaMedida(TROMBOLISE_IV)}
+            onEscolherNaInstancia={escolherNaInstancia}
+            onHoraNaInstancia={medirNaInstancia}
+            onDesfazerNaInstancia={desfazerNaInstancia}
+          />
+        ) : atual.id === "destino" ? (
+          <SuperficieG
             estado={estado}
             agora={agora}
             onEscolher={escolher}

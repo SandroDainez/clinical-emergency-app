@@ -23,7 +23,9 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  ACAO_DE_TROMBOLISE,
   CAMPO_AGENTE,
+  TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
   PRINCIPIOS_GERAIS,
 } from "../../avc/conteudo/superficie-f";
@@ -42,20 +44,34 @@ import {
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
-import { CabecalhoDeBloco } from "./campos-clinicos";
+import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 
 type Props = {
   estado: EstadoAvc;
   agora: number;
   onEscolher: (campo: string, valor: string) => void;
   onIrParaCampo: (campo: string) => void;
+  onNovaTrombolise: () => void;
+  onEscolherNaInstancia: (instancia: string, campo: string, valor: string) => void;
+  onHoraNaInstancia: (instancia: string, campo: string, valor: number) => void;
+  onDesfazerNaInstancia: (instancia: string, campo: string) => void;
 };
 
-export default function SuperficieF({ estado, agora, onEscolher, onIrParaCampo }: Props) {
+export default function SuperficieF({
+  estado,
+  agora,
+  onEscolher,
+  onIrParaCampo,
+  onNovaTrombolise,
+  onEscolherNaInstancia,
+  onHoraNaInstancia,
+  onDesfazerNaInstancia,
+}: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const [abertos, setAbertos] = useState<readonly string[]>([]);
@@ -352,6 +368,55 @@ export default function SuperficieF({ estado, agora, onEscolher, onIrParaCampo }
             </Text>
           )}
         </View>
+      </View>
+
+      {/**
+        * ⚠️⚠️ A AÇÃO DE TROMBÓLISE — ⛔ DECIDIR ⛔ NÃO É ADMINISTRAR.
+        *
+        * ⚠️ A cadeia é: recomendação → decisão do agente → **ação** → monitorização
+        * (Superfície G). ⛔ Sem esta ação registrada, a Table 7 ⛔ nunca aparece —
+        * ⛔ e o app ⛔ não presume trombólise porque um critério ficou aplicável.
+        *
+        * ⚠️⚠️ O agente aqui é o **efetivamente utilizado**, ⛔ e ⛔ não corrige o
+        * agente em consideração: os dois podem divergir, ⛔ e a trilha guarda os dois.
+        */}
+      <View style={e.grupo} testID="avc-f-acao-trombolise">
+        <CabecalhoDeBloco titulo={tr("Trombólise administrada")} testID="avc-f-bloco-acao-ivt" />
+        {instanciasDe(estado, TROMBOLISE_IV).map((inst, i) => (
+          <View key={inst} style={e.cartao} testID={`avc-f-trombolise-${inst}`}>
+            <Text style={e.grau}>
+              {tr("Administração")} {i + 1}
+            </Text>
+            {ACAO_DE_TROMBOLISE.map((campo) => (
+              <CampoDaSuperficie
+                key={`${inst}-${campo.id}`}
+                campo={{ ...campo, casa: "reperfusao" }}
+                casaAtual="reperfusao"
+                bruto={String(valorNaInstancia(estado, inst, campo.id)?.valor ?? "")}
+                numero={
+                  typeof valorNaInstancia(estado, inst, campo.id)?.valor === "number"
+                    ? (valorNaInstancia(estado, inst, campo.id)?.valor as number)
+                    : undefined
+                }
+                agora={agora}
+                detalheAberto={false}
+                onAlternarDetalhe={() => undefined}
+                onEscolher={(c, v) => onEscolherNaInstancia(inst, c, v)}
+                onMedir={() => undefined}
+                onHora={(c, v) => onHoraNaInstancia(inst, c, v)}
+                onDesfazer={(c) => onDesfazerNaInstancia(inst, c)}
+              />
+            ))}
+          </View>
+        ))}
+        <Pressable
+          style={e.opcao}
+          accessibilityRole="button"
+          testID="avc-nova-trombolise"
+          onPress={onNovaTrombolise}
+        >
+          <Text style={e.opcaoTexto}>{tr("Registrar administração")}</Text>
+        </Pressable>
       </View>
 
       {/**

@@ -54,6 +54,7 @@ const TROMB = SF.TROMBOLISE_IV;
 const fonteF = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"));
 const fonteAF = lerFonte(path.join(appDir, "avc", "nucleo", "apresentacao-f.ts"));
 const fonteG = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes-g.ts"));
+const fonteTela = lerFonte(path.join(appDir, "components", "avc", "superficie-g.tsx"));
 
 /** ⚠️ Estado gravado como a TELA grava — ⛔ o rótulo ⛔ nunca chega ao estado. */
 function com(fatos) {
@@ -506,6 +507,79 @@ confere("há catálogo, regras e fatos operacionais a conferir",
     && G.DIVIDA_DOCUMENTAL.citadaEm.length >= 2
     && G.DIVIDA_DOCUMENTAL.construidaApenasDeFontesAuditadas === true,
     "⛔ reconstruir a lista de memória seria inventar destino com cara de decisão antiga");
+}
+
+// ══ ⚠️⚠️ 9 · AS QUATRO DECISÕES DE UI ═════════════════════════════════════
+{
+  /** ⚠️⚠️ 1 · A ORDEM DOS BLOCOS — o operacional por último, ⛔ sempre. */
+  const ordem = ["avc-g-recomendados", "avc-g-operacionais", "avc-g-monitorizacao",
+    "avc-g-lacuna-pos-evt", "avc-g-saida", "avc-g-contexto-operacional"];
+  const posicoes = ordem.map((id) => fonteTela.indexOf(`testID="${id}"`));
+  confere("⚠️⚠️ os seis blocos aparecem NA ORDEM aprovada",
+    posicoes.every((p, i) => p > 0 && (i === 0 || p > posicoes[i - 1])),
+    "⛔ o contexto operacional por último é deliberado: é o menos clínico da tela");
+
+  /**
+   * ⚠️⚠️ 2 · O SELO DA TABELA, REPETIDO NOS DOIS BLOCOS.
+   *
+   * ⛔ A repetição ⛔ não é ruído: os dois enunciados vêm da MESMA tabela
+   * operacional, ⛔ e o médico ⛔ não pode inferir que um ganhou grau por estar
+   * mais destacado.
+   */
+  confere("⚠️⚠️ o selo TABLE 7 é usado na regra E na monitorização",
+    (fonteTela.match(/<SeloDaTabela \/>/g) ?? []).length === 2,
+    "⛔ um selo só deixaria o outro enunciado parecendo graduado");
+
+  confere("⚠️⚠️ ⛔ e o selo DIZ a ausência, ⛔ não a sugere com estilo",
+    /a fonte não atribui COR\/LOE/.test(fonteTela),
+    "⛔ estilo mais fraco lê como recomendação menor; texto lê como categoria diferente");
+
+  confere("⚠️⚠️ ⛔ NENHUM COR/LOE é fabricado para a tabela",
+    !/cor:\s*"|loe:\s*"/.test(fonteTela)
+    && !/n\/a|—\s*·\s*LOE|sem grau atribuído/i.test(fonteTela),
+    "⛔ preencher grau ausente — ⛔ nem com traço ⛔ nem com 'n/a' — falsifica a fonte");
+
+  /** ⚠️⚠️ 3 · AS TRÊS FASES SEMPRE VISÍVEIS. */
+  confere("⚠️⚠️ as três fases são renderizadas SEM condicional",
+    /tabela\.fases\.map/.test(fonteTela) && !/fases\.filter/.test(fonteTela),
+    "⛔ ver 15 → 30 → 60 ajuda a antecipar o que vem — filtrar esconderia o futuro");
+
+  confere("⚠️ ⛔ e ⛔ sem horário ⛔ NENHUMA fica ativa",
+    /const ativa = fase\?\.tipo === "fase" && fase\.deHoras === f\.deHoras;/.test(fonteTela),
+    "⛔ marcar uma fase sem horário conhecido inventaria onde o paciente está");
+
+  /** ⚠️⚠️ 4 · GATILHOS EM LISTA, ⛔ e ⛔ não em parágrafo. */
+  confere("⚠️⚠️ os sinais de deterioração são LISTA, ⛔ e ⛔ não parágrafo",
+    /deterioracao\.sinais\.map/.test(fonteTela)
+    && !/sinais\.join/.test(fonteTela),
+    "⛔ em texto corrido o olho passa por cima, ⛔ e isto é conteúdo de resposta rápida");
+
+  confere("⚠️⚠️ a consequência fica SEPARADA dos sinais",
+    /condutas\.map/.test(fonteTela)
+    && fonteTela.indexOf("condutas") > fonteTela.indexOf("sinais.map"),
+    "⛔ misturar sinal e ação faz o médico ler cinco itens ⛔ sem saber quais são conduta");
+
+  confere("⚠️ ⛔ e o alerta ⛔ NÃO é permanente",
+    /pertinencia\.pertinente && tabela \?/.test(fonteTela),
+    "⛔ ⛔ sem contexto pós-IVT ⛔ não há o que alertar — a Table 7 ⛔ não é conduta geral do AVC");
+
+  /** ⚠️⚠️ E A FRONTEIRA, NA TELA. */
+  confere("⚠️⚠️ a frase da fronteira fica NO TOPO do bloco operacional",
+    /Não altera indicação clínica nem elegibilidade a nenhuma terapia/.test(fonteTela),
+    "⛔ escondê-la numa nota deixaria o bloco parecendo critério clínico");
+
+  confere("⚠️⚠️ ⛔ e a tela ⛔ NÃO produz veredito de elegibilidade",
+    !/inelegív|contraindicad|não indicad/i.test(
+      fonteTela.replace(/nota=\{[^}]*\}/g, "")),
+    "⛔ ausência de recurso ⛔ não é veredito clínico");
+
+  confere("⚠️⚠️ a tela ⛔ NÃO escreve cor em hexadecimal",
+    !/#[0-9a-fA-F]{3,8}\b/.test(fonteTela),
+    "⛔ cor fora do design system é a duplicação que a trava de paleta impede");
+
+  confere("⚠️⚠️ ⛔ e a tela ⛔ NÃO decide correspondência ⛔ nem grava fase",
+    !/correspondenciaDe|valorDoInsumo|recomendacoesDoEstado/.test(fonteTela),
+    "⛔ destino que depende da indicação confunde 'deveria receber' com 'recebeu'");
 }
 
 // ── relatório ────────────────────────────────────────────────────────────

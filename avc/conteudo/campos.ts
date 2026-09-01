@@ -22,6 +22,7 @@ import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_D } from "./superficie-d";
 import { TODOS_OS_CAMPOS_E } from "./superficie-e";
+import { ACAO_DE_TROMBOLISE } from "./superficie-f";
 
 /**
  * TODOS os campos do módulo, de todas as casas.
@@ -46,6 +47,16 @@ export function todosOsCampos(): readonly Campo[] {
      */
     ...TODOS_OS_CAMPOS_D,
     ...TODOS_OS_CAMPOS_E,
+    /**
+     * ⚠️⚠️ E F CAIU NO MESMO VÃO — 2026-08-31.
+     *
+     * ⛔ A ação de trombólise declara `instanciaDe`, ⛔ e ficava fora daqui: o
+     * fato era gravado **sem instância**, `valorNaInstancia` ⛔ não encontrava
+     * ⛔ nada, ⛔ e a monitorização da Superfície G ⛔ nunca aparecia. ⚠️ O
+     * comentário acima já descrevia o defeito — ⛔ e ele voltou porque o
+     * registro é uma **lista à mão**, ⛔ e lista à mão se esquece.
+     */
+    ...ACAO_DE_TROMBOLISE.map((c) => ({ ...c, casa: "reperfusao" as const })),
   ];
 }
 
