@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA } from "./helpers";
 
 /**
  * PROMETE: que a Superfície A tenha COMPORTAMENTO, não apenas campos.
@@ -269,7 +269,7 @@ test.describe("Superfície A — UX clínica", () => {
       .not.toMatch(/\b1[0-9]{12}\b/);
     // E o que aparece no lugar é hora legível.
     await expect(page.getByTestId("avc-hora-valor-hora_chegada"))
-      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
+      .toHaveText(HORA_EXIBIDA_MARCADA);
   });
 
   /**
@@ -299,7 +299,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
-      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
+      .toHaveText(HORA_EXIBIDA_MARCADA);
   });
 
   /** ⛔ O seletor de tempo ⛔ não pode ser barra deslizante (§7.5). */
@@ -707,7 +707,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     // ⚠️ E o horário só aparece DEPOIS da ação: abrir o seletor e confirmar.
     await informarHorario(page, "hora_chegada");
-    await expect(page.getByTestId("avc-hora-valor-hora_chegada")).toHaveText(/^✓ \d{2}:\d{2} ✎$/);
+    await expect(page.getByTestId("avc-hora-valor-hora_chegada")).toHaveText(HORA_EXIBIDA_MARCADA);
   });
 
   /**
@@ -778,11 +778,11 @@ test.describe("Superfície A — UX clínica", () => {
     // 5 · após interação explícita, Confirmar habilita
     await page.getByTestId("avc-seletor-hora-h-menos").click();
     await esperaConfirmar(page, false);
-    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(/^\d{2}:\d{2}$/);
+    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(HORA_EXIBIDA);
 
     // 6 · ao confirmar, aí sim o fato entra na trilha
     await confirmar.click();
-    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(/^✓ \d{2}:\d{2} ✎$/);
+    await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem")).toHaveText(HORA_EXIBIDA_MARCADA);
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
   });
 
@@ -800,7 +800,7 @@ test.describe("Superfície A — UX clínica", () => {
     // ⚠️ E habilitado aqui SIGNIFICA algo: o clique grava de verdade.
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await expect(page.getByTestId("avc-hora-valor-hora_inicio_observado"))
-      .toHaveText(/^✓ \d{2}:\d{2} ✎$/);
+      .toHaveText(HORA_EXIBIDA_MARCADA);
   });
 
   /**
@@ -815,7 +815,7 @@ test.describe("Superfície A — UX clínica", () => {
 
     await page.getByTestId("avc-hora-hora_reconhecimento").click();
     await esperaConfirmar(page, false);
-    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(/^\d{2}:\d{2}$/);
+    await expect(page.getByTestId("avc-seletor-hora-valor")).toHaveText(HORA_EXIBIDA);
   });
 
   /** ⚠️ I-3: pré-marcar Sim/Não é responder pelo médico. */

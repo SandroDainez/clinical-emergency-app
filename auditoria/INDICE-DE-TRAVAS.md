@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**69 de 83 travas com declaração completa.**
+**70 de 84 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -79,6 +79,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o módulo AVC funcione como **uma máquina só** — que todo fato consumido por uma derivação tenha casa, tenha forma real de ser registrado, seja gravado no formato que a derivação lê, e chegue à superfície que o usa.
 - **NÃO PROMETE:** que a medicina esteja certa. ⛔ Isso é das provas de superfície. ⛔ Também ⛔ não prova que a tela seja legível — isso é revisão humana.
 - **UNIVERSO:** *derivado do artefato** (D-15) — os campos de TODAS as superfícies, o registro do módulo, e as fontes de `avc/nucleo/derivacoes-*.ts` e `components/avc/*.tsx` lidas SEM COMENTÁRIO (R-92). ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ────────────────────────────────────────── ⚠️ **O MESMO DEFEITO MORDEU TRÊS VEZES**, sempre no vão entre duas camadas, ⛔ e ⛔ nunca dentro de uma: 1 · os quatro achados de janela estendida entraram na Superfície C ⛔ e ⛔ nenhuma modalidade os oferecia — **inalcançáveis na tela**; 2 · a ação de trombólise existia no conteúdo ⛔ e na derivação, ⛔ e ⛔ tela ⛔ nenhuma a renderizava; 3 · renderizada, ela ficava **fora do registro do módulo** — o fato era gravado ⛔ sem instância, ⛔ e a leitura ⛔ não encontrava ⛔ nada. ⚠️⚠️ Os três passaram por provas de superfície verdes. ⛔ Prova de camada ⛔ não vê o vão entre camadas — ⛔ e é exatamente ali que o defeito mora.
+
+## `test:mutacoes` → `scripts/prova-mutacoes.cjs`
+
+- **PROMETE:** que as travas do módulo AVC **reprovem** quando o código para de cumprir a promessa — ⛔ e ⛔ não apenas passem quando ele cumpre.
+- **NÃO PROMETE:** cobertura completa. ⛔ Mutação prova as propriedades que alguém ANTECIPOU; revisão humana continua necessária para caminhos semanticamente equivalentes que ⛔ ninguém modelou. ⚠️ ⛔ Não é falha do método, é o limite dele.
+- **UNIVERSO:** os conjuntos em `scripts/mutacoes/*.cjs`, DERIVADOS do diretório (D-15) — ⛔ não há lista à mão para esquecer de atualizar. ── ⚠️⚠️ POR QUE ISTO EXISTE ──────────────────────────────────────────────── ⛔ Estes conjuntos viviam em `/tmp` ⛔ e sumiram quando o diretório foi limpo. ⚠️ A suíte seguiu reproduzível; a evidência mais forte, ⛔ não. ⚠️⚠️ Uma trava verde ⛔ não distingue *"o código está certo"* de *"⛔ ninguém está medindo"* — ⛔ e só a mutação separa as duas coisas.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

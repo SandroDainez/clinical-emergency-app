@@ -48,6 +48,8 @@ const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
 const CAMPO = require(path.join(tmp, "avc", "conteudo", "campo.js"));
 const SF = require(path.join(tmp, "avc", "conteudo", "superficie-f.js"));
 const SA = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
+const SC = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
+const DC = require(path.join(tmp, "avc", "nucleo", "derivacoes-c.js"));
 /** ⚠️ O tipo de instância vem do CONTEÚDO — ⛔ e ⛔ não escrito à mão aqui. */
 const TROMB = SF.TROMBOLISE_IV;
 
@@ -440,7 +442,31 @@ confere("há catálogo, regras e fatos operacionais a conferir",
 
 // ══ ⚠️⚠️ 6 · G LÊ, ⛔ E ⛔ NÃO REDECLARA ═══════════════════════════════════
 {
-  confere("⚠️⚠️ a saída de fluxo REUSA `destinoDaImagem` de C",
+  /**
+   * ⚠️⚠️ REUSO É **EFEITO**, ⛔ e ⛔ não a presença do nome no arquivo.
+   *
+   * ⛔ A primeira versão conferia `/destinoDaImagem/` na fonte — ⛔ e a linha de
+   * `import` sozinha já satisfazia. A mutação que trocava o corpo por
+   * `return undefined` **sobreviveu**. ⚠️ Achada pela suíte de mutação; ⛔ é o
+   * defeito de "presença sem efeito" que já mordeu neste módulo.
+   */
+  {
+    const comHemorragia = com([
+      ["estudo_modalidade", SC.MODALIDADE.tcSemContraste, "estudo_1"],
+      ["estudo_resultado", SC.RESULTADO_TC.hemorragia, "estudo_1"],
+    ]);
+    const deC = DC.destinoDaImagem(comHemorragia);
+    const deG = DG.saidaDeFluxo(comHemorragia);
+    confere("⚠️⚠️ a saída de fluxo de G É a de C — comparadas de fato",
+      deC !== undefined && deG !== undefined && deG.saida === deC.saida,
+      "⛔ G ⛔ não decide se há hemorragia: quem lê imagem é C. Duas respostas para a mesma pergunta divergem na primeira mudança (I6)");
+
+    confere("⚠️ ⛔ e ⛔ sem imagem G ⛔ NÃO inventa saída",
+      DG.saidaDeFluxo(com([])) === undefined,
+      "⛔ destino sem laudo seria veredito sobre exame que ⛔ ninguém fez");
+  }
+
+  confere("⚠️ o reuso está escrito, ⛔ e ⛔ não reimplementado",
     /destinoDaImagem/.test(fonteG),
     "⛔ reimplementar daria duas respostas para a mesma pergunta, ⛔ e elas divergiriam (I6)");
 

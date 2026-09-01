@@ -59,8 +59,20 @@ test.describe("AVC · controle de data e hora", () => {
     await abrirSeletor(page, "hora_ultima_vez_bem", "estabilizacao");
 
     // ── hoje ────────────────────────────────────────────────────────────
-    await page.getByTestId("avc-seletor-data-hoje").click();
+    /**
+     * ⚠️⚠️ SEMEAR PRIMEIRO, "HOJE" DEPOIS — e a ordem é o conserto.
+     *
+     * ⚠️ O seletor abre **sem valor** ("não informado"), de propósito: "agora"
+     * ⛔ nunca vira default silencioso. É o `h-menos` que materializa o instante.
+     *
+     * ⛔ Com `hoje` ANTES do passo, rodando entre 00:00 e 01:00 o recuo de uma
+     * hora levava para **ontem** ⛔ e a tela mostrava a data — corretamente. ⚠️ O
+     * próprio passo do teste quebrava a premissa dele, ⛔ e a suíte ficava
+     * vermelha uma hora por dia ⛔ sem defeito ⛔ nenhum. Com `hoje` DEPOIS, a
+     * data é forçada de volta ⛔ e a asserção mede o que ela sempre quis medir.
+     */
     await page.getByTestId("avc-seletor-hora-h-menos").click();
+    await page.getByTestId("avc-seletor-data-hoje").click();
     // ⚠️ Hoje ⛔ não mostra data: `horaDeExibicao` só a acrescenta quando o dia muda.
     await expect(valor(page)).toHaveText(/^\d{2}:\d{2}$/);
 

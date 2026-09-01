@@ -181,3 +181,19 @@ export async function esperarEstadoDiferenteDe(page: Page, anterior: string | nu
 }
 
 const escapar = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * ⚠️⚠️ COMO UM INSTANTE APARECE — `HH:MM` hoje, `DD/MM HH:MM` fora de hoje.
+ *
+ * ⚠️ `horaDeExibicao` acrescenta a data quando o dia difere do de referência —
+ * ⛔ e isso é proteção contra ambiguidade, ⛔ não anomalia.
+ *
+ * ⚠️⚠️ POR QUE ISTO É UMA CONSTANTE, ⛔ E ⛔ NÃO `\d{2}:\d{2}` EM CADA TESTE:
+ * um teste que recua uma hora **cruza a meia-noite** quando roda entre 00:00 e
+ * 01:00 — ⛔ e três testes ficavam vermelhos por uma hora todo dia, ⛔ sem
+ * ⛔ nenhum defeito no app. ⛔ Vermelho que ⛔ não é defeito ensina a ignorar
+ * vermelho. ⚠️ Onde a distinção hoje × ⛔ não-hoje **é** o objeto do teste, ⛔ ela
+ * ⛔ não usa esta constante: usa a forma exata (ver `avc-controle-de-data`).
+ */
+export const HORA_EXIBIDA = /^(\d{2}\/\d{2} )?\d{2}:\d{2}$/;
+export const HORA_EXIBIDA_MARCADA = /^✓ (\d{2}\/\d{2} )?\d{2}:\d{2} ✎$/;
