@@ -18,6 +18,7 @@
  * recomendação, e colapsá-los faria o app afirmar exclusão que ⛔ ninguém disse.
  */
 import { valorAtual, type EstadoAvc } from "./estado";
+import { nihssCalculado, nihssInformado } from "./derivacoes-b";
 import { ternario } from "./leitura";
 import { instanciasDe, valorNaInstancia } from "./instancia";
 import {
@@ -336,8 +337,24 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
       return typeof v === "number" ? "satisfaz" : undefined;
     }
 
+    /**
+     * ⚠️⚠️ ⛔ ⛔ ⛔ **⛔ NÃO EXISTE CAMPO `nihss`.**
+     *
+     * ⛔ `nihss` é id de **grupo** na Superfície B; os campos são
+     * `nihss_calculado` e `nihss_informado`. ⚠️ `valorAtual(estado, "nihss")`
+     * devolvia `undefined` **para sempre** — ⛔ e as NOVE recomendações de EVT
+     * que dependem do NIHSS ⛔ nunca fechavam no app real.
+     *
+     * ⚠️⚠️ Achado pela varredura de alcançabilidade, ⛔ e ⛔ por ⛔ nenhuma prova
+     * de superfície: ler id inexistente ⛔ não quebra ⛔ nada — devolve ausência,
+     * ⛔ que é uma resposta legítima. ⛔ O defeito é mudo por construção.
+     *
+     * ⚠️ F pergunta **se há NIHSS registrado**, ⛔ e ⛔ não qual valor: calculado
+     * e informado convivem ⛔ e ⛔ nenhum corrige o outro (PD-17). Qualquer um
+     * dos dois satisfaz o critério de haver escore.
+     */
     case "nihss": {
-      const v = valorAtual(estado, "nihss")?.valor;
+      const v = nihssCalculado(estado) ?? nihssInformado(estado);
       return typeof v === "number" ? "satisfaz" : undefined;
     }
 

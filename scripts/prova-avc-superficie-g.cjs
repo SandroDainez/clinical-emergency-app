@@ -33,7 +33,7 @@ const confere = (d, c, p) => (c ? ok++ : falhas.push(`${d}\n      ⚠️ ${p}`))
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prova-g-"));
 execFileSync("npx", [
   "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-  "--rootDir", path.join(appDir, "avc"), "--moduleResolution", "node",
+  "--rootDir", appDir, "--moduleResolution", "node",
   "--skipLibCheck", "--outDir", tmp,
   path.join(appDir, "avc", "nucleo", "derivacoes-g.ts"),
   path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"),
@@ -41,13 +41,13 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficie-a.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
-const G = require(path.join(tmp, "conteudo", "superficie-g.js"));
-const DG = require(path.join(tmp, "nucleo", "derivacoes-g.js"));
-const DF = require(path.join(tmp, "nucleo", "derivacoes-f.js"));
-const E = require(path.join(tmp, "nucleo", "estado.js"));
-const CAMPO = require(path.join(tmp, "conteudo", "campo.js"));
-const SF = require(path.join(tmp, "conteudo", "superficie-f.js"));
-const SA = require(path.join(tmp, "conteudo", "superficie-a.js"));
+const G = require(path.join(tmp, "avc", "conteudo", "superficie-g.js"));
+const DG = require(path.join(tmp, "avc", "nucleo", "derivacoes-g.js"));
+const DF = require(path.join(tmp, "avc", "nucleo", "derivacoes-f.js"));
+const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
+const CAMPO = require(path.join(tmp, "avc", "conteudo", "campo.js"));
+const SF = require(path.join(tmp, "avc", "conteudo", "superficie-f.js"));
+const SA = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
 /** ⚠️ O tipo de instância vem do CONTEÚDO — ⛔ e ⛔ não escrito à mão aqui. */
 const TROMB = SF.TROMBOLISE_IV;
 

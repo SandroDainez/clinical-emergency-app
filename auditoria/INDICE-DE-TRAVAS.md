@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**68 de 82 travas com declaração completa.**
+**69 de 83 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -73,6 +73,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a Superfície G traga **⛔ só o que a fonte sustenta**, que autoridade de recomendação ⛔ não seja fabricada, e — acima de tudo — que **⛔ NENHUM fato operacional de G alcance a avaliação clínica da F**.
 - **NÃO PROMETE:** que os destinos sejam clinicamente completos. ⛔ Eles ⛔ não são: a fonte auditada traz **um** destino graduado ⛔ e **uma** linha de tabela. Transferência e regulação ⛔ não existem aqui de propósito.
 - **UNIVERSO:** `avc/conteudo/superficie-g.ts` e `avc/nucleo/derivacoes-g.ts`, CARREGADOS E EXECUTADOS; mais `avc/nucleo/derivacoes-f.ts` — lido SEM COMENTÁRIO (R-92) **e executado** com estado real, porque a barreira G → F é comportamento, ⛔ e ⛔ não texto. ── ⚠️⚠️ A PONTE QUE ESTA TRAVA EXISTE PARA IMPEDIR ───────────────────────── ⛔ *"⛔ Não há centro EVT aqui"* satisfazendo *"cannot receive EVT"* faria o app **recomendar trombólise estendida por geografia**. F-31 permanece aberta, ⛔ e ⛔ nada em G a fecha.
+
+## `test:avc-alcancabilidade` → `scripts/prova-alcancabilidade-avc.cjs`
+
+- **PROMETE:** que o módulo AVC funcione como **uma máquina só** — que todo fato consumido por uma derivação tenha casa, tenha forma real de ser registrado, seja gravado no formato que a derivação lê, e chegue à superfície que o usa.
+- **NÃO PROMETE:** que a medicina esteja certa. ⛔ Isso é das provas de superfície. ⛔ Também ⛔ não prova que a tela seja legível — isso é revisão humana.
+- **UNIVERSO:** *derivado do artefato** (D-15) — os campos de TODAS as superfícies, o registro do módulo, e as fontes de `avc/nucleo/derivacoes-*.ts` e `components/avc/*.tsx` lidas SEM COMENTÁRIO (R-92). ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ────────────────────────────────────────── ⚠️ **O MESMO DEFEITO MORDEU TRÊS VEZES**, sempre no vão entre duas camadas, ⛔ e ⛔ nunca dentro de uma: 1 · os quatro achados de janela estendida entraram na Superfície C ⛔ e ⛔ nenhuma modalidade os oferecia — **inalcançáveis na tela**; 2 · a ação de trombólise existia no conteúdo ⛔ e na derivação, ⛔ e ⛔ tela ⛔ nenhuma a renderizava; 3 · renderizada, ela ficava **fora do registro do módulo** — o fato era gravado ⛔ sem instância, ⛔ e a leitura ⛔ não encontrava ⛔ nada. ⚠️⚠️ Os três passaram por provas de superfície verdes. ⛔ Prova de camada ⛔ não vê o vão entre camadas — ⛔ e é exatamente ali que o defeito mora.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

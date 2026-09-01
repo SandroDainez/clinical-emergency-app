@@ -40,16 +40,16 @@ const confere = (d, c, p) => (c ? ok++ : falhas.push(`${d}\n      ⚠️ ${p}`))
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prova-apres-f-"));
 execFileSync("npx", [
   "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-  "--rootDir", path.join(appDir, "avc"), "--moduleResolution", "node",
+  "--rootDir", appDir, "--moduleResolution", "node",
   "--skipLibCheck", "--outDir", tmp,
   path.join(appDir, "avc", "nucleo", "apresentacao-f.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-a.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
-const A = require(path.join(tmp, "nucleo", "apresentacao-f.js"));
-const C = require(path.join(tmp, "conteudo", "superficie-f.js"));
-const D = require(path.join(tmp, "nucleo", "derivacoes-f.js"));
-const SA = require(path.join(tmp, "conteudo", "superficie-a.js"));
+const A = require(path.join(tmp, "avc", "nucleo", "apresentacao-f.js"));
+const C = require(path.join(tmp, "avc", "conteudo", "superficie-f.js"));
+const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-f.js"));
+const SA = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
 
 const fonteTelaA = lerFonte(path.join(appDir, "components", "avc", "superficie-a.tsx"));
 const fonteSupA = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-a.ts"));

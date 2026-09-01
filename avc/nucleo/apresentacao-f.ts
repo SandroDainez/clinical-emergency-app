@@ -304,7 +304,8 @@ export function itensDaTela(
  */
 export const CAMPOS_DO_INSUMO: Readonly<Record<Insumo, readonly string[]>> = {
   sitio_da_oclusao: ["sitio_oclusao"],
-  nihss: ["nihss"],
+  /** ⚠️ Dois campos, ⛔ e ⛔ nenhum corrige o outro — a escala e o escore de fora. */
+  nihss: ["nihss_calculado", "nihss_informado"],
   mrs_previo: ["mrs_previo"],
   aspects: ["aspects"],
   pc_aspects: ["pc_aspects"],

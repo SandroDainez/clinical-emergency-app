@@ -31,12 +31,18 @@ const confere = (d, c, p) => (c ? ok++ : falhas.push(`${d}\n      ⚠️ ${p}`))
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prova-f-"));
 execFileSync("npx", [
   "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+  /**
+   * ⚠️ A raiz é FIXA. Era inferida da lista de entrada, ⛔ e a cadeia de imports
+   * de `derivacoes-f` cresceu — a raiz comum subiu, ⛔ e o caminho de saída
+   * mudou debaixo da trava.
+   */
+  "--rootDir", appDir,
   "--moduleResolution", "node", "--skipLibCheck", "--outDir", tempDir,
   path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-f.ts"),
 ], { cwd: appDir, stdio: "pipe" });
-const C = require(path.join(tempDir, "conteudo", "superficie-f.js"));
-const D = require(path.join(tempDir, "nucleo", "derivacoes-f.js"));
+const C = require(path.join(tempDir, "avc", "conteudo", "superficie-f.js"));
+const D = require(path.join(tempDir, "avc", "nucleo", "derivacoes-f.js"));
 
 // ── ⚠️ R-1 · piso ─────────────────────────────────────────────────────────
 confere("o catálogo tem recomendações", C.RECOMENDACOES.length >= 15,
@@ -287,11 +293,11 @@ const CAMPO = (() => {
   const t = fs.mkdtempSync(path.join(os.tmpdir(), "prova-f-campo-"));
   execFileSync("npx", [
     "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-    "--rootDir", path.join(appDir, "avc"),
+    "--rootDir", appDir,
     "--moduleResolution", "node", "--skipLibCheck", "--outDir", t,
     path.join(appDir, "avc", "conteudo", "campo.ts"),
   ], { cwd: appDir, stdio: "pipe" });
-  return require(path.join(t, "conteudo", "campo.js"));
+  return require(path.join(t, "avc", "conteudo", "campo.js"));
 })();
 
 /**
