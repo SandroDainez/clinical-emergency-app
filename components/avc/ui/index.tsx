@@ -121,9 +121,21 @@ export function Segmentado({
   onDesfazer,
   daEscala,
   divergente,
+  rotuloDeInterface,
 }: {
   campo: string;
   opcoes: readonly string[];
+  /**
+   * ⚠️⚠️ ENCURTA ⛔ SÓ O QUE SE DESENHA — ⛔ e ⛔ nada mais.
+   *
+   * ⚠️ O `testID` continua sendo o **valor gravado**, o `onEscolher` continua
+   * mandando o **slug**, ⛔ e o `accessibilityLabel` carrega a opção **inteira**:
+   * quem usa leitor de tela ouve *"Não disponível neste serviço"*, ⛔ e ⛔ não
+   * uma abreviação que ⛔ ninguém combinou com ele.
+   *
+   * ⛔ Ausente, ⛔ nada muda — ⛔ e é assim que A e B seguem intocadas.
+   */
+  rotuloDeInterface?: Readonly<Record<string, string>>;
   /** ⚠️ O valor EFETIVO — quem resolve manual × derivado é o núcleo. */
   valor: string;
   onEscolher: (campo: string, valor: string) => void;
@@ -183,6 +195,8 @@ export function Segmentado({
             accessibilityState={{ checked: marcada }}
             aria-checked={marcada}
             testID={`avc-opcao-${campo}-${gravado}`}
+            /** ⚠️ O leitor de tela ouve a opção INTEIRA, ⛔ nunca a abreviação. */
+            accessibilityLabel={tr(op)}
             /** ⚠️ Tocar na marcada DESFAZ — o gesto que todo mundo já tenta (§7.16). */
             onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
           >
@@ -195,7 +209,7 @@ export function Segmentado({
               */}
             <Text style={[e.segTexto, marcada ? e.segTextoAtivo : null]}>
               {marcada ? "✓ " : ""}
-              {tr(op)}
+              {tr(rotuloDeInterface?.[op] ?? op)}
             </Text>
           </Pressable>
         );
@@ -507,6 +521,64 @@ export function LinhaDeAchado({
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
+ * 3b · EMPILHADO — escolha ÚNICA com muitas opções
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ ⛔ NÃO É O `Achados`, ⛔ e a diferença ⛔ não é estética.
+ *
+ * ⚠️ `Achados` é seleção **múltipla** e desenha caixas; aqui a escolha é
+ * **única** e o papel é `radio`. ⛔ Desenhar caixa de seleção numa escolha única
+ * ensina o gesto errado — e, pior, `⛔ não marcado` passaria a parecer uma
+ * resposta negativa, que é exatamente o que o autor proibiu.
+ *
+ * ⚠️ Existe porque `Segmentado` é uma **fileira**: com cinco modalidades ou
+ * onze sítios anatômicos, cada alvo cairia para ⛔ menos de 35 px de largura.
+ */
+export function Empilhado({
+  campo,
+  opcoes,
+  valor,
+  onEscolher,
+  onDesfazer,
+}: {
+  campo: string;
+  opcoes: readonly string[];
+  valor: string;
+  onEscolher: (campo: string, valor: string) => void;
+  onDesfazer: (campo: string) => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  return (
+    <View style={e.empilhado} testID={`avc-campo-${campo}-opcoes`}>
+      {opcoes.map((op) => {
+        /** ⚠️ O SLUG, ⛔ e ⛔ nunca o rótulo — o mesmo contrato do `Segmentado`. */
+        const gravado = valorDaOpcao(op);
+        const marcada = valor === gravado;
+        return (
+          <Pressable
+            key={op}
+            style={[e.empilhadoItem, marcada ? e.empilhadoAtivo : null]}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: marcada }}
+            aria-checked={marcada}
+            testID={`avc-opcao-${campo}-${gravado}`}
+            /** ⚠️ Tocar na marcada DESFAZ — ⛔ não apaga, corrige (§7.16). */
+            onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+          >
+            <Text style={[e.empilhadoTexto, marcada ? e.empilhadoTextoAtivo : null]}>
+              {marcada ? "✓ " : ""}
+              {tr(op)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
  * 4b · ACHADOS — linhas compactas, ⛔ e ⛔ NÃO um cartão por opção
  * ────────────────────────────────────────────────────────────────────────── */
 
@@ -812,6 +884,24 @@ const criarEstilos = (tema: Tema) =>
       paddingTop: 2,
     },
     procedenciaDivergente: { color: tema.cores.warning },
+
+    /** ⚠️ Uma linha por opção — alvo de dedo inteiro, ⛔ e ⛔ não um sexto de fileira. */
+    empilhado: {
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+      borderRadius: RAIO.botao,
+      overflow: "hidden",
+    },
+    empilhadoItem: {
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderTopWidth: 1,
+      borderTopColor: tema.cores.border,
+    },
+    empilhadoAtivo: { backgroundColor: tema.cores.primary },
+    empilhadoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    empilhadoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
 
     achados: { gap: 1 },
     achadoLinha: {

@@ -182,7 +182,7 @@ const TODOS = [
    * ⚠️ A **leitura** continua em C: ler ⛔ não é coletar.
    */
   confere("a alergia a contraste é perguntada em UM lugar só",
-    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "episodio"))
+    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "juizo"))
       .every((c) => c.id !== "alergia_contraste")
     && P.GRUPOS_P.some((g) => K.camposDoGrupo(g).some((c) => c.id === "alergia_contraste")),
     "a mesma pergunta em duas telas faz duvidar da resposta que já foi dada");

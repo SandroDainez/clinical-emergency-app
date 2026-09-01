@@ -1712,4 +1712,24 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Su registro difiere de lo que la escala derivó. Ambos quedan en la traza.",
   "Derivado do NIHSS": "Derivado del NIHSS",
   "Avaliar": "Evaluar",
+
+  // ── Superfície C · migração visual, 2026-09-01 ────────────────────────────
+  "Juízo clínico": "Juicio clínico",
+  "Modalidade não informada": "Modalidad no informada",
+  "Nada respondido além da identificação.": "Nada respondido más allá de la identificación.",
+  "O número identifica o exame nesta lista. Não indica ordem cronológica: um exame feito antes pode ter sido registrado depois.":
+    "El número identifica el estudio en esta lista. No indica orden cronológico: un estudio hecho antes puede haber sido registrado después.",
+  "Disponibilidade do recurso não altera indicação clínica nem equivale a contraindicação.":
+    "La disponibilidad del recurso no altera la indicación clínica ni equivale a una contraindicación.",
+  "estudo": "estudio",
+  "por responder": "por responder",
+  // ⚠️ Rótulos CURTOS do resumo — cada um é subconjunto do rótulo completo.
+  "Resultado": "Resultado",
+  "Hipodensidade clara": "Hipodensidad clara",
+  "ASPECTS": "ASPECTS",
+  "Efeito de massa": "Efecto de masa",
+  "Lesão em DWI menor que um terço": "Lesión en DWI menor que un tercio",
+  "Sítio da oclusão": "Sitio de la oclusión",
+  // ⚠️ Rótulo de INTERFACE — o valor gravado continua sendo a opção inteira.
+  "Indisponível": "No disponible",
 };

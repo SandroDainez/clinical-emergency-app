@@ -41,6 +41,7 @@ const ARQ = {
   apresF: "avc/nucleo/apresentacao-f.ts",
   telaF: "components/avc/superficie-f.tsx",
   telaG: "components/avc/superficie-g.tsx",
+  telaC: "components/avc/superficie-c.tsx",
 };
 
 /**

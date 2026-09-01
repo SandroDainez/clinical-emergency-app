@@ -115,10 +115,158 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
    * defeito que originou toda esta remodelagem. Quais exames foram feitos passa
    * a ser respondido pelas **instâncias**.
    */
-  confere("os dois blocos existem, e ⛔ nenhum se chama imagem avançada",
-    C.GRUPOS_C.length === 2
-    && C.GRUPOS_C.map((g) => g.id).join(",") === "estudos,episodio",
-    "os exames primeiro, porque governam a classe de reperfusão; o juízo clínico depois");
+  /**
+   * ⚠️⚠️ **TRÊS BLOCOS** desde 2026-09-01, e o terceiro nasceu de uma MISTURA.
+   *
+   * ⛔ O bloco antigo se chamava *"Juízo clínico e disponibilidade"* e punha sob
+   * um cabeçalho só o que o médico **suspeita do paciente** e o que o **serviço
+   * tem**. ⚠️ São espécies diferentes, e a contaminação tem direção conhecida:
+   * *"⛔ não temos angioTC"* passa a ser lido como *"⛔ não há indicação de imagem
+   * vascular"* — que é exatamente a fronteira que a Superfície G existe para
+   * ⛔ não atravessar.
+   *
+   * ⚠️ A ORDEM É PARTE DA TRAVA: o operacional vem **por último**. Posto antes,
+   * ele vira filtro de entrada.
+   */
+  confere("os três blocos existem, na ordem, e ⛔ nenhum se chama imagem avançada",
+    C.GRUPOS_C.length === 3
+    && C.GRUPOS_C.map((g) => g.id).join(",") === "estudos,juizo,capacidade",
+    "os exames primeiro, porque governam a classe de reperfusão; o juízo depois; o operacional por último");
+
+  confere("o bloco operacional carrega ⛔ SÓ o fato operacional",
+    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "capacidade")).map((c) => c.id)
+      .join(",") === "angio_disponibilidade",
+    "um juízo clínico dentro do bloco de capacidade voltaria a misturar as duas espécies");
+
+  confere("⛔ e ⛔ NENHUM fato operacional sobrou no bloco de juízo clínico",
+    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "juizo"))
+      .every((c) => c.id !== "angio_disponibilidade"),
+    "separar o bloco sem mover o campo teria deixado a mistura intacta com nome novo");
+
+  /**
+   * ⚠️⚠️ A FRONTEIRA É **ESCRITA**, e ⛔ não presumida do desenho.
+   *
+   * ⛔ Separar em dois blocos ⛔ não basta: quem lê "Angiotomografia: ⛔ não
+   * disponível" precisa ler, ali, que isso ⛔ não é contraindicação. ⚠️ Sem a
+   * frase, a separação é ⛔ só arrumação de layout.
+   */
+  confere("o bloco operacional DECLARA a fronteira, com as duas negativas",
+    C.GRUPOS_C.find((g) => g.id === "capacidade").nota === C.FRONTEIRA_OPERACIONAL_C
+    && /não altera indicação clínica/.test(C.FRONTEIRA_OPERACIONAL_C)
+    && /nem equivale a contraindicação/.test(C.FRONTEIRA_OPERACIONAL_C),
+    "indisponibilidade sem a fronteira escrita é lida como ausência de indicação");
+
+  /**
+   * ⚠️⚠️ A MESMA BARREIRA DE G, AGORA COBRINDO O FATO OPERACIONAL DE **C**.
+   *
+   * ⛔ `IDS_OPERACIONAIS` protege os três fatos que moram na Superfície G. ⚠️ A
+   * disponibilidade de angioTC mora em **C** — e por isso ⛔ nenhuma trava a
+   * cobria. ⛔ Ela ⛔ não pode alcançar a correspondência clínica da F: um fato
+   * do serviço ⛔ jamais satisfaz ⛔ nem contradiz um critério da fonte.
+   */
+  {
+    const fonteF = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"));
+    confere("a disponibilidade de angioTC ⛔ NÃO alcança a correspondência da F",
+      !/angio_disponibilidade/.test(fonteF),
+      "disponibilidade que vira critério clínico transforma 'o serviço ⛔ não tem' em 'o paciente ⛔ não pode'");
+  }
+
+  /**
+   * ⚠️⚠️ O RESUMO DO EXAME RECOLHIDO PRECISA DE NOME CURTO PARA **TODO** ACHADO
+   * QUE ALGUMA MODALIDADE OFERECE — ⛔ e a lista é derivada da matriz (D-15).
+   *
+   * ⛔ Um achado sem rótulo curto ⛔ não é resumido, e some do exame fechado:
+   * ⛔ exatamente o defeito da Superfície B, em que o grupo recolhido parecia
+   * vazio com o fato já na trilha.
+   */
+  {
+    const oferecidos = [...new Set(Object.values(C.CAPACIDADES_DA_MODALIDADE).flat())];
+    confere("⛔ nenhuma modalidade oferece achado sem rótulo curto declarado",
+      oferecidos.length > 0 && oferecidos.every((id) => typeof C.ROTULO_CURTO[id] === "string"),
+      "achado sem nome curto some do resumo, e o exame fechado passa a parecer vazio");
+
+    /**
+     * ⚠️⚠️ O RÓTULO CURTO É **RECORTE**, ⛔ e ⛔ nunca redação nova.
+     *
+     * ⛔ Se ele pudesse ser reescrito, a tela ganharia um lugar onde nomear
+     * achado clínico ⛔ sem fonte — que é medicina nascendo na apresentação
+     * (**E-29**). ⚠️ Exigir subcadeia literal torna isso impossível.
+     */
+    confere("cada rótulo curto é SUBCADEIA literal do rótulo completo",
+      oferecidos.every((id) => {
+        const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === id);
+        return campo !== undefined && campo.rotulo.includes(C.ROTULO_CURTO[id]);
+      }),
+      "rótulo curto reescrito é nome clínico inventado na camada de apresentação");
+  }
+
+  /**
+   * ⚠️⚠️ O RÓTULO DE INTERFACE ENCURTA O **DESENHO**, ⛔ e ⛔ nunca o FATO.
+   *
+   * ⛔ Se ele pudesse virar o valor gravado, a trilha passaria a guardar
+   * *"Indisponível"* onde toda derivação espera *"Não disponível neste
+   * serviço"* — ⛔ e a leitura de indisponibilidade pararia de funcionar
+   * **em silêncio**. ⚠️ É o defeito rótulo × valor que já mordeu este módulo.
+   */
+  {
+    const curtos = Object.entries(C.ROTULO_DE_INTERFACE);
+    confere("todo rótulo de interface aponta para uma OPÇÃO existente do campo",
+      curtos.length > 0 && curtos.every(([id, mapa]) => {
+        const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === id);
+        return campo !== undefined
+          && Object.keys(mapa).every((op) => (campo.opcoes ?? []).includes(op));
+      }),
+      "rótulo de interface para opção inexistente ⛔ não encurta ⛔ nada — some da tela");
+
+    /**
+     * ⚠️⚠️ ⛔ NUNCA SOBRE ACHADO CLÍNICO.
+     *
+     * ⛔ Encurtar *"Hemorragia intracraniana identificada"* mudaria o que o
+     * médico lê no instante da decisão. ⚠️ Geometria justifica encurtar um fato
+     * **operacional**; ⛔ ela ⛔ não justifica encurtar medicina.
+     */
+    confere("⛔ e ⛔ NENHUM achado clínico tem rótulo de interface encurtado",
+      Object.keys(C.ROTULO_DE_INTERFACE).every(
+        (id) => !Object.values(C.CAPACIDADES_DA_MODALIDADE).flat().includes(id)
+      ),
+      "encurtar achado clínico muda o que o médico lê para decidir");
+
+    /**
+     * ⚠️⚠️ ⛔ E O RÓTULO CURTO ⛔ NÃO PODE COINCIDIR COM OUTRA OPÇÃO DO CAMPO.
+     *
+     * ⛔ Se *"Indisponível"* fosse também uma opção real, a tela mostraria duas
+     * colunas com o mesmo texto ⛔ e valores diferentes.
+     */
+    confere("⛔ nenhum rótulo de interface colide com outra opção do mesmo campo",
+      curtos.every(([id, mapa]) => {
+        const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === id);
+        return Object.values(mapa).every((curto) => !(campo.opcoes ?? []).includes(curto));
+      }),
+      "duas colunas com o mesmo texto ⛔ e valores diferentes ⛔ não são escolha, são armadilha");
+  }
+
+  /**
+   * ⚠️⚠️ EXAME SEM RESPOSTA ⛔ NÃO PODE DIZER "SEM ACHADOS".
+   *
+   * ⛔ *"Sem achados"* é veredito sobre o paciente (**E-43**); o que existe é
+   * ausência de **resposta**. ⚠️ A frase fala do registro.
+   */
+  confere("o exame sem resposta fala do REGISTRO, e ⛔ não profere veredito",
+    /respondido/.test(C.IDENTIDADE_DO_ESTUDO.semRespostas)
+    && !/sem achados|normal|negativ|sem alteraç/i.test(C.IDENTIDADE_DO_ESTUDO.semRespostas),
+    "'sem achados' num exame que ⛔ ninguém respondeu é laudo escrito pela tela");
+
+  /**
+   * ⚠️⚠️ O ORDINAL ⛔ NÃO É CRONOLOGIA — e a tela **diz isso em palavras**.
+   *
+   * ⛔ Um exame de outro serviço, feito antes e registrado depois, recebe o
+   * número maior. ⚠️ Sem a declaração, o médico leria a numeração como ordem
+   * temporal — e ordem entre estudos é `ordemEntreEstudos`, que ⛔ não olha
+   * ordem de digitação.
+   */
+  confere("a identidade da instância DECLARA que o número ⛔ não é cronologia",
+    /não indica ordem cronológica/i.test(C.IDENTIDADE_DO_ESTUDO.nota),
+    "numeração lida como cronologia inverte a ordem entre dois exames quando o antigo é digitado depois");
 
   const recolhiveis = C.TODOS_OS_CAMPOS_C.filter((c) => c.recolhivel).map((c) => c.id);
   /**

@@ -38,12 +38,49 @@ async function corrigir(page: Page, campo: string) {
 }
 
 test.describe("AVC · Superfície C — Imagem", () => {
-  test("a superfície abre com os DOIS blocos, e ⛔ sem imagem avançada", async ({ page }) => {
+  /**
+   * ⚠️⚠️ CONTRATO CLÍNICO: **juízo sobre o paciente e capacidade do serviço são
+   * espécies diferentes**, e a tela ⛔ não pode juntá-las sob um cabeçalho só.
+   *
+   * ⚠️ Antes de 2026-09-01 este teste conferia *"os DOIS blocos"*, com
+   * `suspeita_hsa`, `suspeita_lvo` e `angio_disponibilidade` sob o título
+   * *"Juízo clínico e disponibilidade"*. ⛔ A asserção ⛔ não foi removida — ela
+   * ficou **mais forte**: agora exige a separação, a ordem (o operacional por
+   * último) ⛔ e a fronteira escrita, que é o que impede *"⛔ não temos angioTC"*
+   * de ser lido como *"⛔ não há indicação de imagem vascular"*.
+   */
+  test("a superfície separa juízo clínico de capacidade, e ⛔ sem imagem avançada", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
     await expect(page.getByTestId("avc-grupo-estudos")).toBeVisible();
-    await expect(page.getByTestId("avc-grupo-episodio")).toBeVisible();
+    await expect(page.getByTestId("avc-grupo-juizo")).toBeVisible();
+    await expect(page.getByTestId("avc-grupo-capacidade")).toBeVisible();
+
+    // ⚠️ A suspeita clínica mora no juízo; a disponibilidade, ⛔ na capacidade.
+    await expect(page.getByTestId("avc-grupo-juizo"))
+      .toContainText(/Suspeita clínica de hemorragia subaracnóidea/i);
+    await expect(page.getByTestId("avc-grupo-juizo")).not.toContainText(/Angiotomografia neste serviço/i);
+    await expect(page.getByTestId("avc-grupo-capacidade")).toContainText(/Angiotomografia neste serviço/i);
+
+    /**
+     * ⚠️⚠️ E A FRONTEIRA ESTÁ **ESCRITA**, ⛔ não presumida do desenho: separar em
+     * dois blocos sem dizer o que a separação significa é ⛔ só arrumação.
+     */
+    await expect(page.getByTestId("avc-fronteira-operacional"))
+      .toContainText(/não altera indicação clínica nem equivale a contraindicação/i);
+
+    /** ⚠️ O operacional é o ÚLTIMO — posto antes, vira filtro de entrada. */
+    const ordem = await page.getByTestId("avc-superficie-c-conteudo").evaluate((raiz) => {
+      const ids = ["avc-grupo-estudos", "avc-grupo-juizo", "avc-grupo-capacidade"];
+      return ids.map((id) =>
+        Array.from(raiz.querySelectorAll("[data-testid]")).findIndex(
+          (n) => n.getAttribute("data-testid") === id
+        )
+      );
+    });
+    expect(ordem[0]).toBeLessThan(ordem[1]);
+    expect(ordem[1]).toBeLessThan(ordem[2]);
     /**
      * ⛔⛔ `imagem_avancada` saiu INTEIRO em 2026-08-30, inclusive a opção
      * "Nenhuma": negativa agregada sem leitor.
@@ -329,15 +366,39 @@ test.describe("AVC · Superfície C — Imagem", () => {
      * ⚠️⚠️ E ela NOMEIA os dois exames — **E-30**. Com três estudos na tela, "há
      * divergência" ⛔ não diz onde está o conflito que retém a reperfusão.
      */
-    await expect(leitura).toContainText(/Exame 1/);
-    await expect(leitura).toContainText(/Exame 2/);
+    /**
+     * ⚠️⚠️ E ELA NOMEIA OS DOIS EXAMES — **E-30**, ⛔ e o contrato ⛔ não mudou
+     * com a migração visual: continua sendo *"a leitura precisa dizer de QUAIS
+     * dois exames está falando"*.
+     *
+     * ⚠️ O que mudou é **como** um exame se chama. *"Exame 1"* saiu porque ⛔ não
+     * diz o que o exame é ⛔ e sugere cronologia que o estado ⛔ não garante. Mas
+     * ⛔ só a modalidade ⛔ não serviria **justamente aqui**: as duas são TC sem
+     * contraste, ⛔ e a frase ficaria falando de dois exames idênticos. ⚠️ Por
+     * isso a trava exige **os dois pedaços**: modalidade ⛔ e ordinal.
+     */
+    await expect(leitura).toContainText(/Tomografia de crânio sem contraste \(estudo 1\)/i);
+    await expect(leitura).toContainText(/Tomografia de crânio sem contraste \(estudo 2\)/i);
     const conteudo = page.getByTestId("avc-superficie-c-conteudo");
     await expect(conteudo).not.toContainText(/mais recente|prevalece/i);
 
+    /**
+     * ⚠️⚠️ E O ORDINAL ⛔ NÃO SE APRESENTA COMO CRONOLOGIA — ⛔ nem na leitura,
+     * ⛔ nem no cabeçalho da instância. ⚠️ O exame 1 é o de **serviço externo com
+     * horário desconhecido**: se a tela ordenasse por relógio, ⛔ ele ⛔ não
+     * poderia ser o primeiro.
+     */
+    await expect(page.getByTestId("avc-estudo-identidade-estudo_1"))
+      .toContainText(/Serviço externo · horário desconhecido · estudo 1/i);
+
     // ⚠️ E os dois valores continuam legíveis, cada um no seu exame.
     await page.getByTestId("avc-estudo-abrir-estudo_1").click();
-    await expect(page.getByTestId("avc-valor-estudo_resultado").first())
-      .toContainText(/Sem hemorragia/i);
+    await expect(
+      page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).first()
+    ).toHaveAttribute("aria-checked", "true");
+    await expect(
+      page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.hemorragia)).first()
+    ).toHaveAttribute("aria-checked", "false");
   });
 
   /**

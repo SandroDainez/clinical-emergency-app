@@ -522,7 +522,7 @@ export const ESTUDO_C: readonly CampoC[] = [
  * ⛔ não mostra hemorragia**. Presa ao estudo, ela viraria achado da tomografia —
  * o oposto do que ela é.
  */
-export const EPISODIO_C: readonly CampoC[] = [
+export const JUIZO_C: readonly CampoC[] = [
   {
     id: "suspeita_hsa",
     temporalidade: "estado",
@@ -566,6 +566,24 @@ export const EPISODIO_C: readonly CampoC[] = [
     bloqueiaTerapia: false,
     nota: "A fonte recomenda imagem vascular de emergência na suspeita de oclusão de grande vaso, o mais rápido possível, até 24 horas da última vez visto bem.",
   },
+] as const;
+
+/**
+ * ⚠️⚠️ A CAPACIDADE DO SERVIÇO — ⛔ **outra natureza**, e por isso ⛔ **outro bloco**.
+ *
+ * ── ⚠️⚠️ POR QUE SE SEPAROU DO JUÍZO CLÍNICO (autor, 2026-09-01) ─────────────
+ *
+ * ⚠️ O bloco antigo se chamava *"Juízo clínico e disponibilidade"* e juntava
+ * **duas espécies num cabeçalho só**: o que o médico **suspeita do paciente** e
+ * o que o **serviço tem**. ⛔ Lidas juntas, elas se contaminam — e a
+ * contaminação tem direção conhecida: *"⛔ não temos angioTC"* começa a ser lido
+ * como *"⛔ não há indicação de imagem vascular"*.
+ *
+ * ⚠️ É a **mesma fronteira** que a Superfície G existe para ⛔ não atravessar
+ * (`FATOS_OPERACIONAIS`), e ela ⛔ não muda de regra por mudar de tela: a regra
+ * vive em UM lugar conceitual, ⛔ e ⛔ não em duas versões que podem divergir.
+ */
+export const CAPACIDADE_C: readonly CampoC[] = [
   {
     id: "angio_disponibilidade",
     temporalidade: "estado",
@@ -659,6 +677,92 @@ export const FATO_ASSOCIADO = {
 } as const;
 
 /**
+ * ⚠️⚠️ A FRONTEIRA, ESCRITA UMA VEZ — e ⛔ não parafraseada na tela.
+ *
+ * ⚠️ Ela é a versão em uma linha do que `FATOS_OPERACIONAIS` da Superfície G
+ * declara por extenso. ⛔ Deixá-la nascer no JSX faria a mesma regra existir em
+ * duas redações que podem divergir com o tempo (**I6**).
+ */
+export const FRONTEIRA_OPERACIONAL_C =
+  "Disponibilidade do recurso não altera indicação clínica nem equivale a contraindicação.";
+
+/**
+ * ⚠️⚠️ O IDENTIFICADOR DA INSTÂNCIA ⛔ NÃO É CRONOLOGIA — decisão do autor,
+ * 2026-09-01.
+ *
+ * ⚠️ A versão anterior usava *"Exame 1"* / *"Exame 2"* como **título**, e ele
+ * era ruim por duas razões distintas: ⛔ não diz **o que o exame é**, e sugere
+ * uma **ordem temporal que o estado ⛔ não garante** — um exame de outro serviço,
+ * feito antes, registrado depois, receberia o número maior.
+ *
+ * ⚠️ A modalidade passou a ser o título; o ordinal continua existindo porque
+ * **duas TCs sem contraste podem coexistir** e precisam de referência estável.
+ * ⛔ Ele ⛔ não é reordenado por horário: reordenar para "fazer o número
+ * combinar" trocaria identidade por aparência de coerência.
+ */
+export const IDENTIDADE_DO_ESTUDO = {
+  /** ⚠️ O que o número É — dito na tela, e ⛔ não presumido do desenho. */
+  nota: "O número identifica o exame nesta lista. Não indica ordem cronológica: um exame feito antes pode ter sido registrado depois.",
+  /** ⚠️ Título quando a modalidade ainda ⛔ não foi declarada (**E-37**). */
+  semModalidade: "Modalidade não informada",
+  /**
+   * ⚠️⚠️ ⛔ NÃO É "SEM ACHADOS" — a frase fala do **registro**, ⛔ não do paciente.
+   *
+   * ⛔ *"Sem achados"* seria um veredito clínico sobre um exame que ⛔ ninguém
+   * respondeu (**E-43**). ⚠️ O que existe é ausência de resposta, e é isso que
+   * a tela diz.
+   */
+  semRespostas: "Nada respondido além da identificação.",
+} as const;
+
+/**
+ * ⚠️⚠️ RÓTULO **DE INTERFACE** — encurta o que a tela DESENHA, ⛔ e ⛔ mais nada.
+ *
+ * ── ⚠️⚠️ O QUE ELE ⛔ NÃO TOCA (autor, 2026-09-01) ───────────────────────────
+ *
+ * ⛔ ⛔ **Não** muda o valor gravado: a trilha continua guardando
+ * *"Não disponível neste serviço"*. ⛔ ⛔ **Não** muda o `testID`, que é o valor.
+ * ⛔ ⛔ **Não** muda o que o leitor de tela anuncia — o `accessibilityLabel`
+ * carrega a opção **inteira**.
+ *
+ * ⚠️ O que ele resolve é geometria: três frases longas em colunas de 114 px
+ * quebravam em três linhas cada. ⚠️ E *"neste serviço"* ⛔ não se perde — a
+ * pergunta acima **e** a frase da fronteira já dizem de quem é a capacidade.
+ *
+ * ⛔⛔ ⛔ NUNCA usar isto para encurtar um **achado clínico**: encurtar
+ * *"Hemorragia intracraniana identificada"* mudaria o que o médico lê ao
+ * decidir. ⚠️ A trava confere que ⛔ só campos operacionais aparecem aqui.
+ */
+export const ROTULO_DE_INTERFACE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  angio_disponibilidade: {
+    "Não disponível neste serviço": "Indisponível",
+  },
+};
+
+/**
+ * ⚠️⚠️ RÓTULO CURTO — decisão de **apresentação** do autor, ⛔ e ⛔ não medicina.
+ *
+ * ⚠️ Ele existe ⛔ só para o resumo do exame recolhido, onde o rótulo inteiro
+ * ⛔ não cabe. ⛔ Cada um é **subconjunto literal** do rótulo completo: ⛔ nada é
+ * reescrito, ⛔ nada é abreviado por sigla nova, e o **valor registrado ⛔ nunca
+ * é encurtado** — o que encolhe é a pergunta, ⛔ nunca a resposta.
+ *
+ * ⚠️ Mora no conteúdo, ⛔ e ⛔ não na tela, porque a tela ⛔ não pode inventar como
+ * um achado clínico se chama (**E-29**).
+ */
+export const ROTULO_CURTO: Readonly<Record<string, string>> = {
+  estudo_resultado: "Resultado",
+  hipodensidade_clara: "Hipodensidade clara",
+  aspects: "ASPECTS",
+  efeito_de_massa: "Efeito de massa",
+  dwi_menor_que_um_terco: "Lesão em DWI menor que um terço",
+  flair_sem_alteracao_marcada: "Ausência de alteração de sinal marcada no FLAIR",
+  penumbra_salvavel: "Penumbra isquêmica salvável",
+  penumbra_por_perfusao_automatizada: "Penumbra detectada em perfusão automatizada",
+  sitio_oclusao: "Sítio da oclusão",
+};
+
+/**
  * ⚠️ A ORDEM DESTE ARRANJO É A ORDEM DA TELA, e é clínica (§7.3).
  *
  * A tomografia primeiro, porque é ela que governa a classe inteira de reperfusão;
@@ -684,9 +788,9 @@ const GRUPOS_C_DECLARADOS: readonly GrupoDeclarado[] = [
     nota: "Não atrase a trombólise por exames de imagem adicionais quando ela já estiver indicada pelos critérios aplicáveis. A tomografia necessária para excluir hemorragia não é exame adicional.",
   },
   {
-    id: "episodio",
-    titulo: "Juízo clínico e disponibilidade",
-    campos: EPISODIO_C,
+    id: "juizo",
+    titulo: "Juízo clínico",
+    campos: JUIZO_C,
     /**
      * ⛔⛔ A ALERGIA A CONTRASTE ⛔ NÃO É DESENHADA AQUI — autor, 2026-08-30:
      *
@@ -700,6 +804,20 @@ const GRUPOS_C_DECLARADOS: readonly GrupoDeclarado[] = [
      * ⚠️ A **leitura** continua em C (`alergiaAContraste`), porque ler ⛔ não é
      * coletar: quem está diante da angiotomografia precisa ver o que já se sabe.
      */
+  },
+  /**
+   * ⚠️⚠️ **POR ÚLTIMO**, e ⛔ não por menos importante — por ser de outra espécie.
+   *
+   * ⚠️ Decisão do autor (2026-09-01): o operacional vem **depois** dos dados
+   * clínicos, ⛔ e declara a própria fronteira no cabeçalho. ⛔ Posto antes, ele
+   * seria lido como filtro de entrada: *"o serviço ⛔ não tem, então ⛔ nem
+   * pergunto o resto"*.
+   */
+  {
+    id: "capacidade",
+    titulo: "Capacidade deste serviço",
+    campos: CAPACIDADE_C,
+    nota: FRONTEIRA_OPERACIONAL_C,
   },
 ];
 
