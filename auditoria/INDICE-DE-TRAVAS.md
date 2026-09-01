@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**67 de 81 travas com declaração completa.**
+**68 de 82 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -67,6 +67,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que as CINCO DECISÕES DE UX fechadas pelo autor em 2026-08-31 estão no código, e ⛔ não só no documento que as descreveu. 1 · agrupar pela FALTA, ⛔ não pela recomendação; 2 · as duas raias sempre visíveis, ⛔ sem leitura de sequência; 3 · dívida de fonte visível ⛔ e compacta, distinta de dado faltante; 4 · ⛔ COR ⛔ NÃO governa a ordem — o relógio governa; 5 · frase clínica na frente, contagem atrás.
 - **NÃO PROMETE:** que a tela seja bonita, ⛔ nem que caiba na altura do aparelho. Isso é revisão visual, e ela é humana. ⛔ Também ⛔ não mede se a correspondência clínica está certa — isso é de `prova-avc-superficie-f`.
 - **UNIVERSO:** o módulo puro `avc/nucleo/apresentacao-f.ts`, CARREGADO E EXECUTADO (⛔ não lido como texto), mais a fonte de `components/avc/superficie-f.tsx` e de `avc/conteudo/superficie-f.ts` lidas SEM COMENTÁRIO (R-92) — comentário ⛔ não executa, e uma regra citada em comentário satisfaria a busca ⛔ sem governar ⛔ nada na tela. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── ⚠️ Regra de apresentação é a que mais silenciosamente regride: ⛔ nada quebra quando a ordem muda, ⛔ o tsc passa, e o defeito só aparece com um paciente real na frente. Por isso a ordem ⛔ **não** mora no JSX — mora em `apresentacao-f`, ⛔ e é medida aqui.
+
+## `test:avc-superficie-g` → `scripts/prova-avc-superficie-g.cjs`
+
+- **PROMETE:** que a Superfície G traga **⛔ só o que a fonte sustenta**, que autoridade de recomendação ⛔ não seja fabricada, e — acima de tudo — que **⛔ NENHUM fato operacional de G alcance a avaliação clínica da F**.
+- **NÃO PROMETE:** que os destinos sejam clinicamente completos. ⛔ Eles ⛔ não são: a fonte auditada traz **um** destino graduado ⛔ e **uma** linha de tabela. Transferência e regulação ⛔ não existem aqui de propósito.
+- **UNIVERSO:** `avc/conteudo/superficie-g.ts` e `avc/nucleo/derivacoes-g.ts`, CARREGADOS E EXECUTADOS; mais `avc/nucleo/derivacoes-f.ts` — lido SEM COMENTÁRIO (R-92) **e executado** com estado real, porque a barreira G → F é comportamento, ⛔ e ⛔ não texto. ── ⚠️⚠️ A PONTE QUE ESTA TRAVA EXISTE PARA IMPEDIR ───────────────────────── ⛔ *"⛔ Não há centro EVT aqui"* satisfazendo *"cannot receive EVT"* faria o app **recomendar trombólise estendida por geografia**. F-31 permanece aberta, ⛔ e ⛔ nada em G a fecha.
 
 ## `test:avc-paciente` → `scripts/prova-avc-paciente.cjs`
 

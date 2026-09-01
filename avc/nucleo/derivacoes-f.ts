@@ -19,9 +19,11 @@
  */
 import { valorAtual, type EstadoAvc } from "./estado";
 import { ternario } from "./leitura";
+import { instanciasDe, valorNaInstancia } from "./instancia";
 import {
   DOSES,
   RECOMENDACOES,
+  TROMBOLISE_IV,
   type Insumo,
   type Recomendacao,
 } from "../conteudo/superficie-f";
@@ -205,19 +207,20 @@ export function doseDerivada(
 }
 
 /**
- * ⚠️ Fatos operacionais — ⛔ **fora** da avaliação clínica.
+ * ⚠️⚠️ OS FATOS OPERACIONAIS SAÍRAM DAQUI — 2026-08-31.
  *
- * ⛔ ⛔ ⛔ **⛔ NENHUM deles satisfaz `not eligible for EVT` ⛔ nem
- * `cannot receive EVT`** (**F-31**). F-03 §12 é a norma: disponibilidade é
- * *"DISPONIBILIDADE / LOCALIZAÇÃO, ⛔ nunca contraindicação clínica"*, e ausência
- * gera **destino**, ⛔ não veredito de exclusão.
+ * ⚠️ `ContextoOperacional` morava neste arquivo, ⛔ sem campo ⛔ e ⛔ sem
+ * consumidor. Mudou para `conteudo/superficie-g`, que é a casa deles.
+ *
+ * ⚠️⚠️ E a mudança ⛔ **não é organizacional**: enquanto o tipo vivia aqui, a
+ * ponte entre disponibilidade e elegibilidade era um `import` de distância. ⛔ A
+ * vizinhança é o primeiro convite — ⛔ e F-31 é exatamente a dívida que essa
+ * ponte fecharia por inferência.
+ *
+ * ⛔ ⛔ ⛔ **⛔ NENHUM fato operacional entra em `valorDoInsumo`.** Disponibilidade
+ * é *"DISPONIBILIDADE / LOCALIZAÇÃO, ⛔ nunca contraindicação clínica"* (F-03
+ * §12), ⛔ e ausência gera **destino**, ⛔ não veredito de exclusão.
  */
-export type ContextoOperacional = {
-  readonly centroEvtDisponivel?: "sim" | "nao" | "desconhecido";
-  readonly transferenciaPossivel?: "sim" | "nao" | "desconhecido";
-  readonly perfusaoAutomatizadaDisponivel?: "sim" | "nao" | "desconhecido";
-  readonly ressonanciaDisponivel?: "sim" | "nao" | "desconhecido";
-};
 
 /**
  * ⚠️⚠️ A FIAÇÃO COM A–E — F **lê**, ⛔ e ⛔ não redeclara.
@@ -401,4 +404,55 @@ export function recomendacoesDoEstado(
   estado: EstadoAvc
 ): readonly LeituraDaRecomendacao[] {
   return leiturasDasRecomendacoes((_r, i) => valorDoInsumo(estado, i));
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * A AÇÃO DE TROMBÓLISE — F EXPÕE O FATO; ⛔ QUEM DECIDE O QUE FAZER COM ELE
+ * É QUEM CONSOME
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type EstadoDaTrombolise = "iniciada" | "realizada" | "cancelada";
+
+export type AcaoDeTrombolise = {
+  readonly instancia: string;
+  /** ⚠️ O agente **efetivamente utilizado** — ⛔ e ⛔ não o em consideração. */
+  readonly agente: string | undefined;
+  readonly estado: EstadoDaTrombolise | undefined;
+  /**
+   * ⚠️⚠️ `undefined` quando ⛔ ninguém anotou a hora — ⛔ e ⛔ NUNCA "agora".
+   * ⛔ Preencher com o instante da leitura deslocaria a fase da Table 7 para uma
+   * hora que ⛔ ninguém observou (E-52).
+   */
+  readonly inicioMs: number | undefined;
+};
+
+/** ⚠️ Rótulo gravado → estado. ⛔ Qualquer outra coisa é `undefined`. */
+function estadoDaAcao(v: unknown): EstadoDaTrombolise | undefined {
+  if (v === "Iniciada") return "iniciada";
+  if (v === "Realizada") return "realizada";
+  if (v === "Cancelada") return "cancelada";
+  return undefined;
+}
+
+/**
+ * ⚠️⚠️ AS AÇÕES REGISTRADAS — uma por instância, ⛔ e ⛔ nenhuma inferida.
+ *
+ * ⛔ ⛔ **⛔ NÃO** existe caminho daqui até a escolha do agente ⛔ nem até a
+ * correspondência das recomendações: decidir ⛔ não é agir, ⛔ e uma recomendação
+ * aplicável ⛔ não é uma infusão correndo.
+ */
+export function acoesDeTrombolise(estado: EstadoAvc): readonly AcaoDeTrombolise[] {
+  return instanciasDe(estado, TROMBOLISE_IV).map((instancia) => {
+    const hora = valorNaInstancia(estado, instancia, "ivt_inicio")?.valor;
+    return {
+      instancia,
+      agente: (() => {
+        const a = valorNaInstancia(estado, instancia, "ivt_agente_administrado")?.valor;
+        return typeof a === "string" && a.length > 0 ? a : undefined;
+      })(),
+      estado: estadoDaAcao(valorNaInstancia(estado, instancia, "ivt_estado")?.valor),
+      inicioMs: typeof hora === "number" && Number.isFinite(hora) ? hora : undefined,
+    };
+  });
 }

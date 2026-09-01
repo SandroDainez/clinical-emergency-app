@@ -237,9 +237,22 @@ confere("⚠️⚠️ ⛔ disponibilidade ⛔ NÃO entra na correspondência",
   !/centroEvt[\s\S]{0,200}?correspondencia|correspondencia[\s\S]{0,200}?centroEvt/.test(fonteD),
   '⛔ F-03 §12: disponibilidade é *"DISPONIBILIDADE / LOCALIZAÇÃO, ⛔ nunca contraindicação clínica"* — usá-la transformaria **geografia em critério clínico**');
 
-confere("⚠️ e `desconhecido` é valor de primeira classe no contexto operacional",
-  /desconhecido/.test(fonteD),
-  "⛔ ausência de informação operacional ⛔ não é 'não disponível'");
+/**
+ * ⚠️⚠️ O CONTEXTO OPERACIONAL MUDOU DE CASA — 2026-08-31.
+ *
+ * ⚠️ O tipo morava aqui ⛔ sem campo ⛔ e ⛔ sem consumidor; foi para a Superfície
+ * G, que é a casa dele. ⛔ A conferência de "desconhecido é valor de primeira
+ * classe" foi **junto com o assunto**, ⛔ e ⛔ não apagada: ela vive em
+ * `prova-avc-superficie-g`, onde o fato agora existe de verdade — com estado
+ * inicial ⛔ não informado, `incerto` distinto de ⛔ não perguntado, ⛔ e a
+ * barreira G → F provada por EXECUÇÃO.
+ *
+ * ⚠️ O que fica aqui é o lado da F: ⛔ nenhum vocabulário operacional nesta
+ * derivação, ⛔ por caminho ⛔ nenhum.
+ */
+confere("⚠️⚠️ ⛔ NENHUM vocabulário operacional sobrou na derivação da F",
+  !/centroEvt|centro_evt|transferencia_possivel|transferenciaPossivel|perfusao_automatizada_disponivel/.test(fonteD),
+  "⛔ o tipo saiu daqui de propósito: enquanto ele morava neste arquivo, a ponte entre disponibilidade e elegibilidade era um import de distância");
 
 // ── ⚠️⚠️ 9 · IVT e EVT ⛔ NÃO SÃO EXCLUSIVAS ──────────────────────────────
 const fonteC = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-f.ts"));

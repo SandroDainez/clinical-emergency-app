@@ -29,6 +29,14 @@
  * `onset` enquanto a imagem que a sustenta conta de `last known well`.
  */
 
+/**
+ * ⚠️ F importa de E **apenas o vocabulário de estado da ação** — ⛔ e ⛔ nenhuma
+ * regra clínica. Reescrevê-lo aqui daria duas listas que divergem (I6).
+ */
+import type { CampoDeclarado } from "./campo";
+import { OPCOES_ESTADO_DA_ACAO } from "./superficie-e";
+
+
 /** ⚠️ Os cinco relógios. ⛔ `onset_ou_lkw` ⛔ NÃO é a soma dos dois primeiros. */
 export type Marco =
   | "symptom_onset"
@@ -129,6 +137,90 @@ export const MOTIVO_CLINICO: Readonly<Record<Insumo, string>> = {
   nao_elegivel_a_evt:
     "A fonte não define este critério — ver slot F-31. Não é indisponibilidade de serviço.",
 };
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * A AÇÃO DE TROMBÓLISE — ⛔ DECISÃO ⛔ NÃO É AÇÃO
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ A CADEIA INTEIRA, ⛔ E ⛔ NENHUM ELO SUBSTITUI O OUTRO:
+ *
+ *   recomendação → **decisão do agente** → **ação iniciada** → **realizada**
+ *   → monitorização (Superfície G)
+ *
+ * ⛔ ⛔ `agente_trombolitico = Tenecteplase` ⛔ **NÃO** significa
+ * `trombolise_iv = iniciada`, ⛔ e muito menos `realizada`.
+ *
+ * ⚠️⚠️ **DOIS CAMPOS DE AGENTE, ⛔ E ⛔ NÃO É REDUNDÂNCIA.**
+ *
+ * ⛔ `agente_trombolitico` é o agente **em consideração** — decisão. O agente da
+ * **ação** é o que foi **efetivamente utilizado**. Eles divergem legitimamente:
+ * decide-se TNK, ⛔ e por disponibilidade inicia-se alteplase. ⚠️ Com um campo
+ * só, o app teria de **sobrescrever a decisão anterior** — ⛔ e a trilha perderia
+ * que houve uma decisão diferente antes (PD-17).
+ */
+export const TROMBOLISE_IV = "trombolise_iv";
+
+/**
+ * ⚠️⚠️ O VOCABULÁRIO DE ESTADO É **UM SÓ** NO MÓDULO.
+ *
+ * ⛔ Importado da Superfície E em vez de reescrito: duas listas de estados de
+ * ação divergiriam na primeira mudança (I6). ⚠️ E a regra de E vale aqui
+ * inteira — `cancelada` ⛔ **nunca** é desfecho favorável ⛔ e ⛔ **não** conta
+ * como tratamento realizado.
+ */
+export const ACAO_DE_TROMBOLISE: readonly CampoDeclarado[] = [
+  {
+    /**
+     * ⚠️⚠️ O AGENTE **EFETIVAMENTE UTILIZADO** — ⛔ e ⛔ não o considerado.
+     *
+     * ⛔ *"Indefinido"* ⛔ não é opção aqui: quem iniciou a infusão iniciou com
+     * **algum** agente. ⚠️ ⛔ Não saber qual é ausência de resposta, ⛔ e ⛔ não
+     * um terceiro agente.
+     */
+    id: "ivt_agente_administrado",
+    temporalidade: "estavel",
+    instanciaDe: TROMBOLISE_IV,
+    rotulo: "Agente efetivamente utilizado",
+    tipo: "escolha",
+    opcoes: ["Alteplase", "Tenecteplase"],
+    fonte: "F-09",
+    bloqueiaTerapia: false,
+    nota: "Pode ser diferente do agente que estava em consideração. A decisão anterior não é corrigida por este registro.",
+  },
+  {
+    id: "ivt_estado",
+    temporalidade: "estado",
+    instanciaDe: TROMBOLISE_IV,
+    rotulo: "Situação da trombólise",
+    tipo: "escolha",
+    opcoes: OPCOES_ESTADO_DA_ACAO,
+    fonte: "F-15",
+    bloqueiaTerapia: false,
+    nota: "Registre em que pé a administração está. Se ela começou antes desta tela, registre direto.",
+  },
+  {
+    /**
+     * ⚠️⚠️ O RELÓGIO DA TABLE 7 — ⛔ e ⛔ NENHUM OUTRO SERVE.
+     *
+     * ⛔ A monitorização começa *"during and after the IVT"*. ⛔ A hora da
+     * **escolha do agente**, a hora em que a recomendação ficou aplicável, a
+     * chegada ⛔ e o "agora" ⛔ **não** substituem este marco: cada um deles
+     * deslocaria a fase da tabela para uma hora que ⛔ ninguém observou (E-52).
+     */
+    id: "ivt_inicio",
+    temporalidade: "estavel",
+    instanciaDe: TROMBOLISE_IV,
+    rotulo: "Início da administração",
+    tipo: "hora",
+    relogio: "inicio_ivt",
+    fonte: "F-15",
+    bloqueiaTerapia: false,
+    /** ⚠️ E-02: ⛔ ninguém anotou a hora é resposta, ⛔ e ⛔ não ausência de ação. */
+    aceitaDesconhecido: true,
+    nota: "A monitorização da Table 7 é contada a partir daqui. Sem este horário, a fase não é calculada.",
+  },
+];
 
 export type Recomendacao = {
   readonly id: string;

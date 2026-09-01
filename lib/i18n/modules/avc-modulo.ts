@@ -1628,4 +1628,52 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Acordou com o déficit": "Despertó con el déficit",
   "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.":
     "La fuente cuenta una ventana desde la mitad del sueño para quien despierta con los síntomas. Haber dormido no basta: el déficit debe estar presente al despertar.",
+
+  // ── ⚠️ SUPERFÍCIE G · Destino ───────────────────────────────────────────
+  //
+  // ⚠️ E-45: as NEGAÇÕES são o conteúdo aqui. "Não torna o paciente inelegível"
+  // é a frase que impede geografia de virar critério clínico — afrouxá-la em
+  // espanhol desfaria a fronteira inteira.
+  "Unidade de AVC organizada, com equipe interdisciplinar treinada":
+    "Unidad de ACV organizada, con equipo interdisciplinario entrenado",
+  "A fonte descreve unidades de AVC agudo, de reabilitação, abrangentes e mistas, com conjuntos de ordens e protocolos padronizados.":
+    "La fuente describe unidades de ACV agudo, de rehabilitación, integrales y mixtas, con conjuntos de órdenes y protocolos estandarizados.",
+  "adulto com AVC isquêmico agudo": "adulto con ACV isquémico agudo",
+  "Internar em unidade de terapia intensiva OU em unidade de AVC, para monitorização.":
+    "Internar en unidad de cuidados intensivos O en unidad de ACV, para monitorización.",
+  "após trombólise intravenosa": "después de trombólisis intravenosa",
+  "A fonte atual não publica tabela de monitorização pós-trombectomia equivalente à Table 7 pós-trombólise.":
+    "La fuente actual no publica una tabla de monitorización postrombectomía equivalente a la Table 7 postrombólisis.",
+  "Este serviço realiza trombectomia": "Este servicio realiza trombectomía",
+  "Não realizar trombectomia aqui é indisponibilidade operacional. Não torna o paciente inelegível, e não satisfaz nenhum critério clínico.":
+    "No realizar trombectomía aquí es indisponibilidad operativa. No vuelve al paciente inelegible, y no satisface ningún criterio clínico.",
+  "Transferência é viável neste momento": "La transferencia es viable en este momento",
+  "A fonte auditada não traz recomendação de transferência. Este fato é contexto do serviço, e não decisão de encaminhamento.":
+    "La fuente auditada no trae recomendación de transferencia. Este hecho es contexto del servicio, y no decisión de derivación.",
+  "Perfusão automatizada disponível neste serviço":
+    "Perfusión automatizada disponible en este servicio",
+  "Ausência de perfusão automatizada torna aquela via de seleção indisponível aqui. Não torna o paciente inelegível.":
+    "La ausencia de perfusión automatizada vuelve indisponible esa vía de selección aquí. No vuelve al paciente inelegible.",
+  "Hipertensão aguda": "Hipertensión aguda",
+  "Piora do exame neurológico": "Empeoramiento del examen neurológico",
+  "Interromper a infusão, se for alteplase, e obter tomografia de crânio de emergência.":
+    "Interrumpir la infusión, si es alteplasa, y obtener tomografía de cráneo de emergencia.",
+  "Aumentar a frequência das medidas e tratar para manter em ou abaixo desses níveis.":
+    "Aumentar la frecuencia de las mediciones y tratar para mantener en o por debajo de esos niveles.",
+  "Se o paciente puder ser manejado com segurança sem eles.":
+    "Si el paciente puede ser manejado con seguridad sin ellos.",
+  "Tomografia ou ressonância de controle em 24 horas após a trombólise, ANTES de iniciar anticoagulante ou antiagregante.":
+    "Tomografía o resonancia de control a las 24 horas de la trombólisis, ANTES de iniciar anticoagulante o antiagregante.",
+  "A administração da trombólise ainda não tem campo no app. Escolher o agente não é administrar, e a monitorização da Table 7 começa na administração.":
+    "La administración de la trombólisis aún no tiene campo en la app. Elegir el agente no es administrar, y la monitorización de la Table 7 comienza en la administración.",
+  // ── ⚠️ F · a ação de trombólise ─────────────────────────────────────────
+  "Agente efetivamente utilizado": "Agente efectivamente utilizado",
+  "Pode ser diferente do agente que estava em consideração. A decisão anterior não é corrigida por este registro.":
+    "Puede ser diferente del agente que estaba en consideración. La decisión anterior no se corrige con este registro.",
+  "Situação da trombólise": "Situación de la trombólisis",
+  "Registre em que pé a administração está. Se ela começou antes desta tela, registre direto.":
+    "Registre en qué punto está la administración. Si comenzó antes de esta pantalla, regístrela directamente.",
+  "Início da administração": "Inicio de la administración",
+  "A monitorização da Table 7 é contada a partir daqui. Sem este horário, a fase não é calculada.":
+    "La monitorización de la Table 7 se cuenta a partir de aquí. Sin este horario, la fase no se calcula.",
 };
