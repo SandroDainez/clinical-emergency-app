@@ -146,10 +146,20 @@ export default function SuperficieA({
         *
         * ⛔ ⛔ Nenhuma meta, ⛔ nenhum fármaco, ⛔ nenhum limiar, ⛔ nenhum "se… então".
         */}
+      {/**
+        * ⚠️⚠️ LINHA, ⛔ e ⛔ NÃO CARD — decisão do autor, 2026-09-01.
+        *
+        * ⛔ O card ocupava ~120 px no topo de **toda** entrada, com a mesma
+        * frase sempre. ⚠️ Ela continua inteira ⛔ e continua sendo a primeira
+        * coisa que se lê; ⛔ o que sai é a moldura, ⛔ não o conteúdo.
+        *
+        * ⚠️ O título "Estabilização primeiro" saiu porque o nome da superfície
+        * já está na faixa do cockpit ⛔ e aceso na barra: era o terceiro lugar
+        * a dizer a mesma coisa.
+        */}
       <View style={e.prioridade} testID="avc-a-prioridade">
         <View style={e.prioridadeLinha}>
           <View style={e.prioridadeTexto}>
-            <Text style={e.prioridadeTitulo}>{tr(PRIORIDADE_A.titulo)}</Text>
             <Text style={e.prioridadeFrase}>{tr(PRIORIDADE_A.frase)}</Text>
           </View>
           {/**
@@ -533,22 +543,19 @@ const criarEstilos = (tema: Tema) =>
      * ⚠️ Card de prioridade: destaque **sem** cor de espécie clínica — ele ⛔ não é
      * um estado do paciente, é a ordem de leitura da tela (**E-39**).
      */
-    prioridade: {
-      backgroundColor: tema.cores.surface,
-      borderRadius: RAIO.botao,
-      borderWidth: 2,
-      borderColor: tema.cores.border,
-      padding: ESPACO.md,
-      gap: ESPACO.xs,
-    },
-    prioridadeLinha: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
-    prioridadeTexto: { flex: 1, gap: 2 },
-    prioridadeTitulo: {
+    prioridade: { paddingVertical: ESPACO.xs },
+    /**
+     * ⚠️ O ⓘ vem NO FIM DA FRASE, ⛔ e ⛔ não numa coluna à direita: ali ele
+     * ficava alinhado com o ⓘ do resumo da superfície, dois ⓘ empilhados na
+     * mesma coluna — ⛔ e ⛔ nada dizia que eram conteúdos diferentes.
+     */
+    prioridadeLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    prioridadeTexto: { flexShrink: 1 },
+    prioridadeFrase: {
       color: tema.cores.text,
-      fontSize: TIPOGRAFIA.body.fontSize,
-      fontWeight: "800",
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontWeight: "600",
     },
-    prioridadeFrase: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     prioridadeNota: {
       color: tema.cores.textSecondary,
       fontSize: TIPOGRAFIA.caption.fontSize,

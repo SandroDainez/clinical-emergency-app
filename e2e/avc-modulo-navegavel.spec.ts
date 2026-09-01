@@ -118,10 +118,21 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * ⛔ Antes a distinção era o `·`; agora é a faixa auxiliar. ⛔ A prova mudou
      * de forma, ⛔ e ⛔ não de objeto: painel ⛔ continua ⛔ não sendo etapa.
      */
-    const ultimaPrincipal = Math.max(...principais.map((id) => ordem.indexOf(id)));
-    const primeiroSecundario = Math.min(...secundarios.map((id) => ordem.indexOf(id)));
-    expect(primeiroSecundario, "acesso secundário ⛔ não se mistura às etapas principais")
-      .toBeGreaterThan(ultimaPrincipal);
+    /**
+     * ⚠️⚠️ A PROVA É POR **CONTAINER**, ⛔ e ⛔ não por ordem no DOM.
+     *
+     * ⛔ A ordem era um proxy frágil: com a barra inferior fixa, os auxiliares
+     * passaram a vir ANTES no DOM ⛔ e depois na tela. ⚠️ O contrato ⛔ nunca foi
+     * a posição no documento — é que **as seis clínicas são um grupo**, ⛔ e os
+     * acessos secundários ⛔ não se misturam a ele.
+     */
+    const naBarra = await page.locator('[data-testid="avc-barra"] [data-testid^="avc-aba-"]')
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("avc-aba-", "")));
+    expect(naBarra.sort(), "a barra inferior tem exatamente as seis clínicas")
+      .toEqual([...principais].sort());
+    for (const id of secundarios) {
+      expect(naBarra, `${id} ⛔ não pertence à navegação clínica`).not.toContain(id);
+    }
 
     /** ⚠️⚠️ E PD-29 CONTINUA NO MODELO: ⛔ só dois são painel. */
     expect(SUPERFICIES.filter((s) => s.painel).map((s) => s.id).sort())
@@ -217,5 +228,63 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     }
     const depois = await page.getByTestId("avc-pendencias").innerText();
     expect(depois).toBe(antes);
+  });
+
+  /**
+   * ⚠️⚠️ A BARRA FIXA ⛔ NÃO PODE COBRIR CONTEÚDO CLÍNICO.
+   *
+   * ⛔ Barra fixa sem `paddingBottom` no conteúdo esconde **o último campo, o
+   * último alerta ⛔ e a última ação** — ⛔ e conteúdo clínico coberto ⛔ não é
+   * detalhe de layout. ⚠️ O padding é `altura da barra + safe area`, ⛔ e as
+   * duas medidas vivem numa constante só justamente para ⛔ não divergirem.
+   */
+  test("⛔ a barra inferior ⛔ NÃO cobre o fim de ⛔ nenhuma superfície",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      for (const [aba, letra] of Object.entries({
+        estabilizacao: "a", neurologico: "b", reperfusao: "f", destino: "g",
+      })) {
+        await page.getByTestId(`avc-aba-${aba}`).click();
+        const medida = await page.evaluate((l) => {
+          const sc = document.querySelector(`[data-testid="avc-superficie-${l}-conteudo"]`);
+          if (!sc) return null;
+          sc.scrollIntoView(false);
+          const ultimo = sc.lastElementChild?.getBoundingClientRect();
+          const barra = document
+            .querySelector('[data-testid="avc-barra"]')!
+            .getBoundingClientRect();
+          return ultimo ? { fim: ultimo.bottom, topoDaBarra: barra.top } : null;
+        }, letra);
+        expect(medida, `${aba}: superfície ⛔ não renderizou`).not.toBeNull();
+        expect(medida!.fim, `${aba}: o fim do conteúdo ficou DEBAIXO da barra`)
+          .toBeLessThanOrEqual(medida!.topoDaBarra + 1);
+      }
+    });
+
+  /** ⚠️⚠️ ⛔ A BARRA ⛔ NÃO É PAINEL DE ALERTA — ⛔ nenhum badge com número. */
+  test("⛔ a barra ⛔ NÃO carrega contagem", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    const texto = await page.getByTestId("avc-barra").innerText();
+    expect(texto, "badge numérico na navegação vira painel de alerta")
+      .not.toMatch(/\d/);
+  });
+
+  /** ⚠️ ALCANCE: qualquer clínica abre a partir de qualquer outra, em UM toque. */
+  test("as seis são alcançáveis de qualquer uma delas", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    const seis = ["estabilizacao", "neurologico", "imagem", "seguranca", "reperfusao", "destino"];
+    for (const de of seis) {
+      await page.getByTestId(`avc-aba-${de}`).click();
+      for (const para of seis) {
+        await expect(
+          page.getByTestId(`avc-aba-${para}`),
+          `de ${de} ⛔ não se alcança ${para} em um toque`
+        ).toBeVisible();
+      }
+    }
   });
 });

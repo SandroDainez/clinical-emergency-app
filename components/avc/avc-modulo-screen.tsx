@@ -14,6 +14,7 @@
  */
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
 import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
@@ -30,7 +31,14 @@ import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
 import { destinoDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
-import { Icone, type NomeDeIcone } from "./ui";
+import { Icone, Recolhido, type NomeDeIcone } from "./ui";
+
+/**
+ * ⚠️ A ALTURA DA BARRA É UMA CONSTANTE PORQUE **DUAS COISAS** dependem dela:
+ * a própria barra ⛔ e o `paddingBottom` do conteúdo. ⛔ Escrita duas vezes,
+ * elas divergem ⛔ e a barra passa a cobrir o último campo.
+ */
+const ALTURA_DA_BARRA = 62;
 
 /**
  * ⚠️⚠️ NOME CURTO ⛔ NÃO É ABREVIAÇÃO — é o nome que cabe numa linha.
@@ -103,6 +111,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const s = useEstilosDoTema(criarEstilos);
   /** ⚠️ Cor do ícone vem do TEMA — ⛔ nenhum hex no componente. */
   const tema = useTheme();
+  /** ⚠️ O home indicator do iPhone come a barra se ⛔ ninguém o medir. */
+  const insets = useSafeAreaInsets();
   // ⚠️ O relógio entra por UMA porta (Q-01). ⛔ Nenhum `Date.now()` nesta árvore.
   const relogio = relogioDoSistema;
   const [estado, setEstado] = useState(() => abrirAtendimento(relogio));
@@ -132,6 +142,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ ⛔ Nada some: é a mesma informação, noutra densidade.
    */
   const [cockpitAberto, setCockpitAberto] = useState(false);
+  const [escopoAberto, setEscopoAberto] = useState(false);
+  const [resumoAberto, setResumoAberto] = useState(false);
 
   /**
    * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
@@ -409,14 +421,36 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   }
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.conteudo}>
-      {/* ⚠️ I7: a tela desenha o PRÓPRIO cabeçalho, com saída. A rota não põe. */}
+    <View style={s.moldura}>
+    <ScrollView
+      style={s.root}
+      /**
+       * ⚠️⚠️ O PADDING INFERIOR É A BARRA + A SAFE AREA.
+       *
+       * ⛔ Sem ele o último campo, o último alerta ⛔ e a última ação ficam
+       * **debaixo da barra** — ⛔ e conteúdo clínico coberto ⛔ não é detalhe de
+       * layout. ⚠️ Medido, ⛔ e ⛔ não chutado: altura da barra + `insets.bottom`.
+       */
+      contentContainerStyle={[s.conteudo, { paddingBottom: ALTURA_DA_BARRA + insets.bottom + ESPACO.lg }]}
+    >
+      {/**
+        * ⚠️ I7: a tela desenha o PRÓPRIO cabeçalho, com saída. A rota ⛔ não põe.
+        *
+        * ⚠️⚠️ UMA LINHA. ⛔ O subtítulo de escopo — *"adulto com suspeita de AVC
+        * isquêmico agudo"* — descreve **o módulo**, ⛔ e ⛔ não o paciente: ⛔ ele
+        * ⛔ não muda durante o atendimento ⛔ e custava 120 px em toda superfície.
+        */}
       <View style={s.cabecalho}>
         <Pressable onPress={onVoltar} accessibilityRole="button" accessibilityLabel={tr("Voltar")}>
-          <Text style={s.voltar}>‹ {tr("Voltar")}</Text>
+          <Text style={s.voltar}>‹</Text>
         </Pressable>
-        <Text style={s.titulo}>{tr("AVC isquêmico agudo")}</Text>
-        <Text style={s.subtitulo}>{tr("Adulto com suspeita de AVC isquêmico agudo")}</Text>
+        <Text style={s.titulo} numberOfLines={1}>{tr("AVC isquêmico agudo")}</Text>
+        <Recolhido
+          id="escopo-do-modulo"
+          texto="Adulto com suspeita de AVC isquêmico agudo"
+          aberto={escopoAberto}
+          onAlternar={() => setEscopoAberto((v) => !v)}
+        />
       </View>
 
       {/**
@@ -485,6 +519,45 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           </Pressable>
         ))}
 
+        {/**
+          * ⚠️⚠️ AUXILIARES A **UM** TOQUE — ⛔ e ⛔ não dentro de um "Mais".
+          *
+          * ⛔ Peso, alergia, anticoagulante ⛔ e exames são acesso frequente
+          * demais para virarem navegação de segundo nível (autor, 2026-09-01).
+          * ⚠️ Correções entra aqui como acesso discreto; quando há bloqueio
+          * corrigível, ela também aparece **contextual**, acima.
+          */}
+        <View style={s.auxiliares}>
+          {SUPERFICIES.filter((sup) => sup.painel || sup.id === "correcoes").map((sup) => {
+            const c = CURTO[sup.id];
+            const ativa = sup.id === estado.superficieVista;
+            return (
+              <Pressable
+                key={sup.id}
+                onPress={() => abrir(sup.id)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: ativa }}
+                accessibilityLabel={tr(sup.titulo)}
+                testID={`avc-aba-${sup.id}`}
+                style={[s.auxItem, ativa && s.auxItemAtivo]}
+              >
+                <Icone
+                  nome={c?.icone ?? "adiante"}
+                  tamanho={13}
+                  cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
+                />
+                <Text
+                  style={[s.auxNome, ativa && s.barraNomeAtivo]}
+                  numberOfLines={1}
+                  testID={`avc-rotulo-aba-${sup.id}`}
+                >
+                  {tr(c?.nome ?? sup.titulo)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         {cockpitAberto ? (
           <View style={s.cockpitCompleto} testID="avc-cockpit-completo">
             <View style={s.cockpitTopo}>
@@ -529,87 +602,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         ) : null}
       </View>
 
-      {/**
-        * ── ⚠️ NAVEGAÇÃO CLÍNICA (§7.2, E-11) ──────────────────────────────
-        *
-        * ⚠️⚠️ ⛔ SEM ÁRVORE, ⛔ e a Home ⛔ NÃO é etapa: as superfícies estão
-        * sempre disponíveis, em qualquer ordem. ⛔ Ela orienta, ⛔ e ⛔ não
-        * intermedeia.
-        *
-        * ⚠️ Paciente e Laboratório saem da jornada clínica ⛔ e continuam **a um
-        * toque** — ⛔ eles ⛔ nunca foram etapa, ⛔ e na grade competiam com
-        * Estabilizar por atenção que ⛔ não lhes cabe.
-        */}
-      <View style={s.navBloco}>
-        <View style={s.nav}>
-          {/**
-            * ⚠️⚠️ SEIS ETAPAS, ⛔ e ⛔ NÃO SETE — decisão do autor, 2026-09-01.
-            *
-            * ⛔ **Correções ⛔ não sumiu.** Ela deixou de competir como etapa
-            * equivalente: aparece como **ação contextual** no cockpit quando há
-            * bloqueio corrigível ("Corrigir PA"), ⛔ e como acesso auxiliar
-            * sempre. ⚠️ Sete etapas iguais ⛔ não são hierarquia — ⛔ e deixavam
-            * `Destino` sozinho numa terceira linha.
-            *
-            * ⛔ ⛔ A superfície ⛔ não foi removida ⛔ nem alterada.
-            */}
-          {SUPERFICIES.filter((sup) => !sup.painel && sup.id !== "correcoes").map((sup) => {
-            const ativa = sup.id === estado.superficieVista;
-            const c = CURTO[sup.id];
-            return (
-              <Pressable
-                key={sup.id}
-                onPress={() => abrir(sup.id)}
-                accessibilityRole="button"
-                accessibilityLabel={tr(sup.titulo)}
-                testID={`avc-aba-${sup.id}`}
-                style={[s.navItem, ativa && s.navItemAtivo]}
-              >
-                <Icone
-                  nome={c?.icone ?? "adiante"}
-                  tamanho={18}
-                  cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
-                />
-                {/** ⚠️ UMA LINHA — nome que quebra ⛔ não identifica ⛔ nada. */}
-                <Text
-                  style={[s.navNome, ativa && s.navNomeAtivo]}
-                  numberOfLines={1}
-                  testID={`avc-rotulo-aba-${sup.id}`}
-                >
-                  {tr(c?.nome ?? sup.titulo)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <View style={s.aux}>
-          {SUPERFICIES.filter((sup) => sup.painel || sup.id === "correcoes").map((sup) => {
-            const c = CURTO[sup.id];
-            return (
-              <Pressable
-                key={sup.id}
-                onPress={() => abrir(sup.id)}
-                accessibilityRole="button"
-                accessibilityLabel={tr(sup.titulo)}
-                testID={`avc-aba-${sup.id}`}
-                style={[s.auxItem, sup.id === estado.superficieVista && s.auxItemAtivo]}
-              >
-                <Icone nome={c?.icone ?? "adiante"} tamanho={14} />
-                <Text style={s.auxNome} numberOfLines={1} testID={`avc-rotulo-aba-${sup.id}`}>
-                  {tr(c?.nome ?? sup.titulo)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
       {/* ── SUPERFÍCIE ABERTA ──────────────────────────────────────────────
           ⚠️ Esqueleto declarado: a tela DIZ que não há conteúdo, em vez de
           parecer completa e vazia. Vacuidade silenciosa é o que a casa proíbe. */}
       <View style={s.superficie} testID={`avc-superficie-${atual.id}`}>
-        <Text style={s.superficieTitulo}>{tr(atual.titulo)}</Text>
-        <Text style={s.superficieResumo}>{tr(atual.resumo)}</Text>
+        {/**
+          * ⚠️⚠️ TÍTULO GRANDE + RESUMO SAÍRAM — 70 px por superfície.
+          *
+          * ⛔ O nome da superfície já está na faixa do cockpit ⛔ e aceso na
+          * barra inferior: dizê-lo uma terceira vez, em corpo grande, era
+          * repetição. ⚠️ O resumo descreve **o que vem logo abaixo**, ⛔ e o
+          * médico está vendo — ⛔ ele vai para o ⓘ, ⛔ e ⛔ não some.
+          */}
+        <View style={s.superficieLinha}>
+          {/**
+            * ⚠️ O nome CURTO, o mesmo da barra inferior. ⛔ "Entrada e
+            * estabilização" aqui ⛔ e "Estabilizar" ali eram dois nomes para a
+            * mesma coisa, a 60 px de distância.
+            */}
+          <Text style={s.superficieNome} numberOfLines={1}>
+            {tr(CURTO[atual.id]?.nome ?? atual.titulo)}
+          </Text>
+          <Recolhido
+            id={`resumo-${atual.id}`}
+            texto={atual.resumo}
+            aberto={resumoAberto}
+            onAlternar={() => setResumoAberto((v) => !v)}
+          />
+        </View>
 
         {atual.id === "paciente" ? (
           <SuperficiePaciente
@@ -821,26 +841,108 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         )}
       </View>
     </ScrollView>
+
+    {/**
+      * ── ⚠️⚠️ BARRA INFERIOR FIXA ──────────────────────────────────────────
+      *
+      * ⚠️ A navegação custava **204 px em toda superfície** para repetir os
+      * mesmos seis destinos. ⛔ Fora do fluxo, ela custa zero de altura — ⛔ e
+      * fica onde o polegar já está.
+      *
+      * ⚠️⚠️ ⛔ ELA ⛔ NÃO É UMA ÁRVORE. Qualquer uma das seis abre a partir de
+      * qualquer outra, em um toque, em qualquer ordem (§7.2, E-11).
+      *
+      * ⛔ ⛔ E ⛔ NÃO É PAINEL DE ALERTA: ⛔ nenhum badge com número. Um ponto
+      * discreto no destino que tem bloqueio corrigível, ⛔ e nada além.
+      */}
+    <View style={[s.barra, { paddingBottom: insets.bottom }]} testID="avc-barra">
+      {SUPERFICIES.filter((sup) => !sup.painel && sup.id !== "correcoes").map((sup) => {
+        const ativa = sup.id === estado.superficieVista;
+        const c = CURTO[sup.id];
+        return (
+          <Pressable
+            key={sup.id}
+            onPress={() => abrir(sup.id)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: ativa }}
+            accessibilityLabel={tr(sup.titulo)}
+            testID={`avc-aba-${sup.id}`}
+            style={s.barraItem}
+          >
+            <Icone
+              nome={c?.icone ?? "adiante"}
+              tamanho={19}
+              cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
+            />
+            <Text
+              style={[s.barraNome, ativa && s.barraNomeAtivo]}
+              numberOfLines={1}
+              testID={`avc-rotulo-aba-${sup.id}`}
+            >
+              {tr(c?.nome ?? sup.titulo)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+    </View>
   );
 }
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     /* ── cockpit ─────────────────────────────────────────────────────── */
+    /**
+     * ⚠️⚠️ FAIXA, ⛔ e ⛔ NÃO CARD.
+     *
+     * ⛔ Com borda de 2 px ⛔ e padding de card, o cockpit lia como um bloco
+     * *dentro* do shell — ⛔ e competia com o conteúdo clínico logo abaixo.
+     * ⚠️ Uma toolbar ⛔ não precisa de moldura: o filete inferior já a separa.
+     */
     cockpit: {
-      backgroundColor: tema.cores.surface,
-      borderRadius: RAIO.botao,
-      borderWidth: 2,
-      borderColor: tema.cores.border,
-      padding: ESPACO.sm,
-      gap: ESPACO.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: tema.cores.border,
+      paddingBottom: ESPACO.xs,
+      gap: ESPACO.xs,
     },
+    /** ⚠️ A moldura existe para a barra ficar FORA do fluxo rolável. */
+    moldura: { flex: 1, backgroundColor: tema.cores.bg },
+
+    /* ── barra inferior fixa ──────────────────────────────────────────── */
+    barra: {
+      flexDirection: "row",
+      backgroundColor: tema.cores.surface,
+      borderTopWidth: 1,
+      borderTopColor: tema.cores.border,
+    },
+    barraItem: {
+      flex: 1,
+      /** ⚠️ ⛔ Sem `minWidth: 0`, um nome longo empurra os vizinhos ⛔ e trunca. */
+      minWidth: 0,
+      paddingHorizontal: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 2,
+      /** ⚠️ Alvo confortável: a barra inteira tem 62 px de altura útil. */
+      height: ALTURA_DA_BARRA,
+    },
+    barraNome: {
+      color: tema.cores.textSecondary,
+      /** ⚠️ 10 px: "Reperfusão" ⛔ não cabia em 6 colunas de 412 pt ⛔ e truncava. */
+      /** ⚠️ 10 px é o PISO — ⛔ abaixo disso ⛔ não se lê num plantão. */
+      fontSize: 10,
+      fontWeight: "600",
+      letterSpacing: -0.3,
+    },
+    /** ⚠️ O ativo se distingue por COR **e** peso — ⛔ cor sozinha é frágil. */
+    barraNomeAtivo: { color: tema.cores.primary, fontWeight: "800" },
+
     /* ── faixa compacta: o que fica em TODA superfície ────────────────── */
     faixa: {
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.xs,
-      minHeight: TOQUE.minimo,
+      minHeight: 38,
     },
     faixaItem: { flexDirection: "row", alignItems: "baseline", gap: 3 },
     faixaSep: { color: tema.cores.border, fontSize: TIPOGRAFIA.caption.fontSize },
@@ -952,7 +1054,6 @@ const criarEstilos = (tema: Tema) =>
     navNomeAtivo: { color: tema.cores.primary },
     aux: { flexDirection: "row", gap: ESPACO.xs },
     auxItem: {
-      flex: 1,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
@@ -960,17 +1061,19 @@ const criarEstilos = (tema: Tema) =>
       borderRadius: RAIO.botao,
       borderWidth: 1,
       borderColor: tema.cores.border,
-      paddingVertical: ESPACO.xs,
-      minHeight: TOQUE.minimo,
+      paddingVertical: 1,
+      paddingHorizontal: ESPACO.xs,
+      minHeight: 30,
     },
     auxItemAtivo: { borderColor: tema.cores.primary },
     auxNome: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
     root: { flex: 1, backgroundColor: tema.cores.bg },
     conteudo: { padding: ESPACO.md, paddingBottom: ESPACO.xl, gap: ESPACO.md },
-    cabecalho: { gap: ESPACO.xs },
-    voltar: { color: AREA_AVC.accent, fontSize: TIPOGRAFIA.body.fontSize, marginBottom: ESPACO.sm },
-    titulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.title.fontSize, fontWeight: "700" },
+    /** ⚠️ Uma linha: voltar · nome · ⓘ do escopo. Eram 120 px; agora ~44. */
+    cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm, minHeight: 44 },
+    voltar: { color: AREA_AVC.accent, fontSize: TIPOGRAFIA.title.fontSize },
+    titulo: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     subtitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     resumo: { backgroundColor: AREA_AVC.badgeBg, borderRadius: RAIO.card, padding: ESPACO.sm, gap: ESPACO.xs },
     resumoTitulo: { color: AREA_AVC.badgeText, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1 },
@@ -1009,6 +1112,15 @@ const criarEstilos = (tema: Tema) =>
     abaTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     abaTituloAtivo: { color: tema.cores.text },
     superficie: { backgroundColor: tema.cores.surface, borderRadius: RAIO.card, padding: ESPACO.md, gap: ESPACO.sm },
+    superficieLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+    superficieNome: {
+      flex: 1,
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "700",
+    },
+    /** ⚠️ Linha auxiliar MUITO compacta — ⛔ e ainda a um toque. */
+    auxiliares: { flexDirection: "row", gap: ESPACO.xs },
     superficieTitulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     superficieResumo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     emConstrucao: { color: tema.cores.warning, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", marginTop: ESPACO.sm },

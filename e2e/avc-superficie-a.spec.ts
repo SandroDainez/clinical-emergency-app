@@ -653,7 +653,17 @@ test.describe("Superfície A — UX clínica", () => {
      * era o nome — é que a leitura do sistema vem **por último**, depois de
      * todos os blocos clínicos.
      */
-    const ordem = ["ESTABILIZAÇÃO PRIMEIRO", "RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "FALTA RESPONDER"];
+    /**
+     * ⚠️ "ESTABILIZAÇÃO PRIMEIRO" saiu como CABEÇALHO — o card virou linha, ⛔ e
+     * o nome da superfície já está na faixa do cockpit ⛔ e aceso na barra.
+     * ⚠️⚠️ O contrato ⛔ nunca foi o cabeçalho: é que a **moldura de prioridade
+     * vem antes de tudo**, ⛔ e ela continua vindo — pela frase, logo abaixo.
+     */
+    expect(tela.toUpperCase().indexOf("AMEAÇAS IMEDIATAS"),
+      "a prioridade precisa vir antes do primeiro bloco clínico")
+      .toBeLessThan(tela.toUpperCase().indexOf("RELÓGIOS"));
+
+    const ordem = ["RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "FALTA RESPONDER"];
     const posicoes = ordem.map((t) => tela.toUpperCase().indexOf(t));
     expect(posicoes.every((p) => p >= 0), `faltou bloco: ${ordem.join(" | ")}`).toBe(true);
     expect(posicoes, "prioridade visual é prioridade clínica")
