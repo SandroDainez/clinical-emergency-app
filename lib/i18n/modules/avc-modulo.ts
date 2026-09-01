@@ -1704,4 +1704,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Trombólise administrada": "Trombólisis administrada",
   "Administração": "Administración",
   "Registrar administração": "Registrar administración",
+  "Ver critério": "Ver criterio",
+  "Atendimento há": "Atención hace",
+  "saída": "salida",
 };

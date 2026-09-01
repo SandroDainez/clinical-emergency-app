@@ -19,8 +19,12 @@ const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click(
 /** ⚠️ PA alta pelos degraus — ⛔ sem digitação, como todo número do app. */
 async function paAlta(page: Page) {
   await aba(page, "estabilizacao");
-  for (let i = 0; i < 3; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
-  for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-pad-mais-50").click();
+  /**
+   * ⚠️ A PA entra pelo controle NOVO da Superfície A — caixa digitável.
+   * ⛔ O contrato que esta spec protege é de **Correções**; a A é só o meio.
+   */
+  await page.getByTestId("avc-num-caixa-pas").fill("198");
+  await page.getByTestId("avc-num-caixa-pad").fill("112");
 }
 
 test.describe("AVC · Correções", () => {
@@ -69,9 +73,11 @@ test.describe("AVC · Correções", () => {
        * defeito oposto, e a correção entrou em A na mesma rodada. Daqui ela sobe
        * até ficar **abaixo de 185/110**, o limite da fonte antes da trombólise.
        */
-      await expect(page.getByTestId("avc-campo-pas")).toContainText(/não informado/i);
-      for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
-      await page.getByTestId("avc-degrau-pad-mais-50").click();
+      /** ⚠️ Vazio se lê no VALOR da caixa — `innerText` ⛔ não vê `<input>`. */
+      await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue("");
+      /** ⚠️ Daqui ela sobe até ficar ABAIXO de 185/110, o limite da fonte. */
+      await page.getByTestId("avc-num-caixa-pas").fill("150");
+      await page.getByTestId("avc-num-caixa-pad").fill("90");
       await aba(page, "correcoes");
       await expect(page.getByTestId("avc-e-bloqueio-pressao_acima_da_meta")).toHaveCount(0);
       // ⚠️ E a ação registrada ⛔ não some da trilha por o bloqueio ter caído.

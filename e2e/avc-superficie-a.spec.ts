@@ -51,11 +51,26 @@ async function informarHorario(page: Page, campo: string) {
   await page.getByTestId("avc-seletor-hora-confirmar").click();
 }
 
-/** Move a barra de uma grandeza pelo −/+, que grava ao toque. */
-async function ajustar(page: Page, campo: string, vezes: number) {
-  for (let i = 0; i < vezes; i += 1) {
-    await page.getByTestId(`avc-grandeza-${campo}-mais`).click();
-  }
+/**
+ * ⚠️⚠️ INFORMA UMA GRANDEZA PELO CONTROLE NOVO — caixa digitável.
+ *
+ * ⚠️ A barra e os degraus saíram por decisão do autor (2026-09-01): o valor
+ * passou a ser digitado com o teclado do sistema. ⛔ Nos testes abaixo o
+ * controle era só o **meio**; o contrato que eles protegem é a **leitura** que
+ * resulta. Trocar o meio preserva o que eles afirmam.
+ */
+async function informar(page: Page, campo: string, valor: number) {
+  await page.getByTestId(`avc-num-caixa-${campo}`).fill(String(valor));
+}
+
+/** ⚠️ O ajuste fino do controle novo — secundário, ⛔ e ⛔ não a via principal. */
+async function ajusteFino(page: Page, campo: string, vezes: number) {
+  for (let i = 0; i < vezes; i += 1) await page.getByTestId(`avc-num-mais-${campo}`).click();
+}
+
+/** ⚠️ Vazio se lê no VALOR da caixa — `innerText` ⛔ não enxerga `<input>`. */
+async function vazia(page: Page, campo: string) {
+  await expect(page.getByTestId(`avc-num-caixa-${campo}`)).toHaveValue("");
 }
 
 test.describe("Superfície A — estabilização", () => {
@@ -77,8 +92,12 @@ test.describe("Superfície A — estabilização", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    // Sobe a SpO₂ com o ajuste fino — sem tocar em hipoxemia.
-    await ajustar(page, "spo2", 3);
+    /**
+     * CONTRATO: registrar SpO₂ ⛔ NÃO responde à pergunta de hipoxemia.
+     * ⚠️ 53% é hipoxemia grave — e ainda assim a leitura ⛔ não conclui, porque
+     * a **pergunta** ⛔ não foi respondida. É esse o ponto do teste.
+     */
+    await informar(page, "spo2", 53);
 
     // ⚠️ 94% é META na presença de hipóxia, ⛔ não corte diagnóstico.
     await expect(page.getByTestId("avc-leitura-curto-oxigenio"))
@@ -105,8 +124,8 @@ test.describe("Superfície A — estabilização", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    // 20 → 470, pelos degraus grandes: ⛔ sem digitação, como todo número do app.
-    for (let i = 0; i < 9; i += 1) await page.getByTestId("avc-degrau-glicemia-mais-50").click();
+    /** CONTRATO: hiperglicemia grave é MIMETIZADOR, ⛔ e ⛔ nunca contraindicação. */
+    await informar(page, "glicemia", 470);
     await expect(page.getByTestId("avc-leitura-curto-glicemia"))
       .toContainText(/Hiperglicemia grave/i);
     await expect(page.getByTestId("avc-leitura-curto-glicemia"))
@@ -121,7 +140,8 @@ test.describe("Superfície A — estabilização", () => {
 
     // ⚠️ Corrigida a glicemia, a reavaliação CONTINUA pedida — ela é sobre o
     // depois, ⛔ não sobre o número atual.
-    for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-degrau-glicemia-menos-50").click();
+    /** CONTRATO: corrigida a glicemia, a reavaliação CONTINUA pedida. */
+    await informar(page, "glicemia", 170);
     /**
      * ⚠️ MEDE O SENTIDO, ⛔ NÃO A PALAVRA: a frase de "corrigido" é *"Sem
      * hipoglicemia nem hiperglicemia grave"* — ela CONTÉM o termo, dentro de uma
@@ -208,8 +228,9 @@ test.describe("Superfície A — estabilização", () => {
   test("a pressão é registrada sem definir candidatura", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    await ajustar(page, "pas", 2);
-    await ajustar(page, "pad", 2);
+    /** CONTRATO: a PA é registrada ⛔ sem que esta superfície defina candidatura. */
+    await informar(page, "pas", 178);
+    await informar(page, "pad", 96);
     await expect(page.getByTestId("avc-leitura-curto-pressao")).toContainText(/PA registrada/i);
 
     // ⛔ Nenhuma meta pressórica de candidato pode aparecer nesta superfície —
@@ -324,10 +345,15 @@ test.describe("Superfície A — UX clínica", () => {
   });
 
   /**
-   * ⚠️ Cinco grandezas, cinco barras. Só −/+ obrigava ~140 toques para chegar a
-   * uma glicemia de 240 — na prática, o campo não seria preenchido.
+   * ⚠️⚠️ CONTRATO ANTIGO **OBSOLETO** — ⛔ e substituído, ⛔ não removido.
+   *
+   * ⛔ "Toda grandeza tem barra" era contrato de **apresentação**, ⛔ e a barra
+   * saiu por decisão do autor (2026-09-01): ~140 toques para uma glicemia de
+   * 240 ⛔ e arrastar num plantão ⛔ não é controle preciso. ⚠️ O contrato novo
+   * afirma o mesmo em substância — **todo número é alcançável e visível** —
+   * pelo controle que existe agora.
    */
-  test("toda grandeza tem barra, valor visível e ajuste fino", async ({ page }) => {
+  test("toda grandeza é digitável, com teclado numérico e ajuste fino", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
     // ⚠️ DERIVADO DO CONTEÚDO, ⛔ não enumerado: um campo numérico novo nasce
@@ -335,11 +361,17 @@ test.describe("Superfície A — UX clínica", () => {
     const grandezas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").map((c) => c.id);
     expect(grandezas.length).toBeGreaterThan(0);
     for (const campo of grandezas) {
-      const bloco = page.getByTestId(`avc-grandeza-${campo}`);
-      await expect(bloco, `${campo} deveria ter barra`).toBeVisible();
-      expect(await bloco.locator('[role="slider"]').count(), `barra de ${campo}`).toBe(1);
-      await expect(page.getByTestId(`avc-grandeza-${campo}-menos`)).toBeVisible();
-      await expect(page.getByTestId(`avc-grandeza-${campo}-mais`)).toBeVisible();
+      const caixa = page.getByTestId(`avc-num-caixa-${campo}`);
+      await expect(caixa, `${campo} deveria ser digitável`).toBeVisible();
+      await expect(caixa, `${campo} deveria ser editável`).toBeEditable();
+      /** ⚠️⚠️ TECLADO DO SISTEMA — decisão 3: ⛔ nenhum teclado próprio. */
+      await expect(caixa, `${campo} deveria pedir teclado numérico`)
+        .toHaveAttribute("inputmode", "numeric");
+      /** ⚠️ O ajuste fino continua existindo — secundário, ⛔ e ⛔ não ausente. */
+      await expect(page.getByTestId(`avc-num-mais-${campo}`)).toBeVisible();
+      await expect(page.getByTestId(`avc-num-menos-${campo}`)).toBeVisible();
+      /** ⚠️⚠️ §0.2: ⛔ nasce SEM valor — ⛔ nenhum número predeterminado. */
+      await vazia(page, campo);
     }
   });
 
@@ -352,13 +384,45 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    const peso = page.getByTestId("avc-grandeza-peso");
-    await expect(peso).toContainText(/não informado/i);
-    await expect(peso, "unidade sem número sugere que existe número").not.toContainText("kg");
+    /**
+     * CONTRATO (ainda válido): campo intocado é **⛔ não informado**, ⛔ e ⛔ nenhum
+     * número nasce na tela. ⚠️ Peso alimenta dose de tenecteplase — "70 kg" que
+     * ⛔ ninguém pesou é a semente de uma dose errada.
+     */
+    await vazia(page, "peso");
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
 
-    await page.getByTestId("avc-grandeza-peso-mais").click();
-    await expect(peso).not.toContainText(/não informado/i);
-    await expect(peso).toContainText("kg");
+    /**
+     * ⚠️⚠️ E O GESTO QUE INFORMA MUDOU: era o primeiro toque no `+`; agora é
+     * **digitar**. ⛔ O `+` ficou INERTE ⛔ enquanto ⛔ não houver valor — ⛔ senão
+     * ele partiria do piso da faixa e gravaria 30 kg como se alguém tivesse
+     * pesado (§0.2, o mesmo motivo do "degrau que ⛔ não move ⛔ não registra").
+     */
+    await expect(page.getByTestId("avc-num-mais-peso")).toBeDisabled();
+
+    await informar(page, "peso", 78);
+    await expect(page.getByTestId("avc-num-caixa-peso")).toHaveValue("78");
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
+    /** ⚠️ Com valor, o ajuste fino passa a existir de verdade. */
+    await expect(page.getByTestId("avc-num-mais-peso")).toBeEnabled();
+  });
+
+  /**
+   * ⚠️⚠️ CONTRATO NOVO, ⛔ e ⛔ não migrado: **dígito intermediário inválido ⛔ NÃO
+   * REGISTRA**. ⛔ Digitando 78, o estado passa por "7" — e 7 kg na trilha
+   * clínica é um valor que ⛔ ninguém mediu. ⚠️ ⛔ Não existia antes porque ⛔ não
+   * havia digitação; nasce com o controle.
+   */
+  test("dígito intermediário fora da faixa ⛔ não vira medida", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    await page.getByTestId("avc-num-caixa-peso").fill("7");
+    await expect(page.getByTestId("avc-leitura-curto-peso"),
+      "7 está fora da faixa: ⛔ não pode ser registrado")
+      .toContainText(/não informado/i);
+
+    await page.getByTestId("avc-num-caixa-peso").fill("78");
     await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
   });
 
@@ -440,17 +504,27 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    const peso = page.getByTestId("avc-grandeza-peso");
-    await expect(peso).toContainText(/não informado/i);
-    // ⛔ Sem valor, ⛔ não há o que limpar — e o botão ⛔ não existe.
-    await expect(page.getByTestId("avc-limpar-peso")).toHaveCount(0);
+    /**
+     * CONTRATO (ainda válido): um valor informado pode **voltar** a ⛔ não
+     * informado. ⚠️ O MECANISMO mudou — era um botão "limpar" ao lado da barra,
+     * ⛔ e agora é apagar a caixa. ⛔ Apagar é **desfazer**, ⛔ e ⛔ não gravar 0:
+     * uma glicemia de 0 mg/dL na trilha porque alguém limpou o campo seria a
+     * família do E-52.
+     */
+    await vazia(page, "peso");
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
 
-    await page.getByTestId("avc-degrau-peso-mais-10").click();
-    await expect(peso).not.toContainText(/não informado/i);
+    await informar(page, "peso", 78);
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
 
-    await page.getByTestId("avc-limpar-peso").click();
-    await expect(peso).toContainText(/não informado/i);
-    await expect(peso, "unidade sem número sugere que existe número").not.toContainText("kg");
+    await page.getByTestId("avc-num-caixa-peso").fill("");
+    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
+    await vazia(page, "peso");
+    /**
+     * ⚠️ A UNIDADE SEM NÚMERO sugeria que existe número. ⛔ No controle novo a
+     * caixa fica vazia com marcador "—", ⛔ e a unidade fica FORA dela — quem
+     * afirma ausência é a leitura, ⛔ e ⛔ não a ausência de "kg" no texto.
+     */
     await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/ainda não informado/i);
   });
 
@@ -516,42 +590,47 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    // ⚠️ Uma primeira aferição, com valor alto.
-    for (let i = 0; i < 3; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
-    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-pad-mais-50").click();
-    /** ⚠️ O valor vem antes de "mmHg" — `\d+` sozinho casaria com o rótulo do degrau. */
-    const pas1 = (await page.getByTestId("avc-campo-pas").innerText()).match(/(\d+)\s*mmHg/)?.[1];
-    expect(pas1, "a primeira aferição precisa ter valor para a trava provar algo").toBeTruthy();
-    await expect(page.getByTestId("avc-campo-pas")).not.toContainText(/não informado/i);
+    /**
+     * CONTRATO (ainda válido): a aferição nova nasce SEM valor, ⛔ e abrir ⛔ não
+     * cria fato. ⚠️ O valor agora se lê no `value` da caixa — `innerText` ⛔ não
+     * enxerga `<input>`, ⛔ e asserção que ⛔ não enxerga o valor ⛔ não prova
+     * ⛔ nada.
+     */
+    const pas1 = 198;
+    await informar(page, "pas", pas1);
+    await informar(page, "pad", 112);
+    await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue(String(pas1));
 
     await page.getByTestId("avc-nova-medida-pressao").click();
 
     /** ⛔⛔ OS DOIS CONTROLES VOLTAM VAZIOS — ⛔ nem PAS ⛔ nem PAD herdam. */
-    await expect(page.getByTestId("avc-campo-pas")).toContainText(/não informado/i);
-    await expect(page.getByTestId("avc-campo-pas")).not.toContainText(pas1!);
-    await expect(page.getByTestId("avc-campo-pad")).toContainText(/não informado/i);
+    await vazia(page, "pas");
+    await vazia(page, "pad");
 
-    /** ⛔ E abrir a aferição ⛔ NÃO cria fato: a leitura da PA volta a não ter medida. */
+    /** ⛔ E abrir a aferição ⛔ NÃO cria fato: a leitura da PA volta a ⛔ não ter medida. */
     await expect(page.getByTestId("avc-leitura-curto-pressao"))
-      .not.toContainText(pas1!);
+      .not.toContainText(String(pas1));
   });
 
   /** ⚠️ E o mesmo para a glicemia, que ⛔ não é aferição composta. */
   test("glicemia ⛔ não é herdada por uma aferição de PA nova", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    for (let i = 0; i < 3; i += 1) await page.getByTestId("avc-degrau-pas-mais-50").click();
-    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-degrau-glicemia-mais-10").click();
-    const glic = (await page.getByTestId("avc-campo-glicemia").innerText()).match(/(\d+)\s*mg/)?.[1];
-    expect(glic).toBeTruthy();
+    /**
+     * CONTRATO (ainda válido): a glicemia ⛔ NÃO tem instância, ⛔ e ⛔ não pode
+     * ser zerada por uma nova aferição de **pressão** — são fatos independentes.
+     */
+    await informar(page, "pas", 198);
+    const glic = 112;
+    await informar(page, "glicemia", glic);
 
     await page.getByTestId("avc-nova-medida-pressao").click();
     /**
      * ⛔ A glicemia ⛔ NÃO tem instância, e ⛔ não pode ser zerada por uma nova
      * aferição de pressão: são fatos independentes.
      */
-    await expect(page.getByTestId("avc-campo-glicemia")).toContainText(glic!);
-    await expect(page.getByTestId("avc-campo-glicemia")).not.toContainText(/não informado/i);
+    await expect(page.getByTestId("avc-num-caixa-glicemia")).toHaveValue(String(glic));
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).not.toContainText(/não informada/i);
   });
 
   /**
@@ -568,7 +647,13 @@ test.describe("Superfície A — UX clínica", () => {
      * 2026-08-30 — moldura de prioridade, ⛔ não conduta. Relógios e crise ficam
      * fora dela de propósito.
      */
-    const ordem = ["ESTABILIZAÇÃO PRIMEIRO", "RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "ALERTAS"];
+    /**
+     * ⚠️ O bloco final deixou de se chamar "ALERTAS": ele virou **três** blocos
+     * por tom (atenção · falta responder · registrado), ⛔ e o contrato ⛔ não
+     * era o nome — é que a leitura do sistema vem **por último**, depois de
+     * todos os blocos clínicos.
+     */
+    const ordem = ["ESTABILIZAÇÃO PRIMEIRO", "RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "FALTA RESPONDER"];
     const posicoes = ordem.map((t) => tela.toUpperCase().indexOf(t));
     expect(posicoes.every((p) => p >= 0), `faltou bloco: ${ordem.join(" | ")}`).toBe(true);
     expect(posicoes, "prioridade visual é prioridade clínica")
@@ -589,38 +674,45 @@ test.describe("Superfície A — UX clínica", () => {
   });
 
   /**
-   * ⚠️⚠️ O polegar da barra ⛔ NÃO pode nascer no meio da faixa. O texto dizia
-   * "não informado" e o desenho dizia 96% — e o médico apressado lê o desenho.
+   * ⚠️⚠️ CONTRATO ANTIGO **OBSOLETO**, ⛔ e substituído por prova equivalente.
+   *
+   * ⛔ "O polegar da barra ⛔ não pode nascer no meio da faixa" media §0.2 pela
+   * **geometria** do slider: o texto dizia "⛔ não informado" ⛔ e o desenho dizia
+   * 96%, ⛔ e o médico apressado lê o desenho. ⚠️ ⛔ Sem barra, ⛔ não há polegar
+   * — ⛔ mas a regra que ela protegia é a mesma ⛔ e continua sendo medida:
+   * **⛔ nenhum número predeterminado aparece na tela**.
+   *
+   * ⚠️⚠️ E o controle novo é **mais forte** aqui: ⛔ não há desenho a discordar do
+   * texto. A caixa vazia ⛔ não sugere valor ⛔ nenhum, ⛔ e o `+` ⛔ nem parte.
    */
-  test("barra intocada nasce no mínimo, sem valor predeterminado", async ({ page }) => {
-    await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
-    /**
-     * ⚠️ MEDIDO POR GEOMETRIA, ⛔ não por atributo: o Slider do react-native-web
-     * ⛔ não publica `aria-valuenow`, e travar num detalhe interno dele seria
-     * frágil. A posição do polegar é o que o médico vê — é ela que se mede.
-     */
-    const fracaoDoPolegar = async (campo: string) =>
-      page.getByTestId(`avc-grandeza-${campo}`).locator('[role="slider"]').evaluate((el) => {
-        const trilho = el.getBoundingClientRect();
-        const polegar = (el.children[1] as HTMLElement).getBoundingClientRect();
-        return (polegar.x + polegar.width / 2 - trilho.x) / trilho.width;
-      });
+  test("⛔ nenhuma grandeza nasce com valor, e o ajuste ⛔ não parte do nada",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await abrirA(page);
 
-    // ⚠️ DERIVADO DO CONTEÚDO, ⛔ não enumerado: um campo numérico novo nasce
-    // dentro da regra em vez de fora dela, calado.
-    const grandezas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").map((c) => c.id);
-    expect(grandezas.length).toBeGreaterThan(0);
-    for (const campo of grandezas) {
-      expect(await fracaoDoPolegar(campo), `${campo}: polegar deveria nascer na ponta esquerda`)
-        .toBeLessThan(0.12);
-      await expect(page.getByTestId(`avc-grandeza-${campo}`)).toContainText(/não informado/i);
-    }
+      // ⚠️ DERIVADO DO CONTEÚDO, ⛔ não enumerado: um campo numérico novo nasce
+      // dentro da regra em vez de fora dela, calado.
+      const grandezas = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "grandeza").map((c) => c.id);
+      expect(grandezas.length).toBeGreaterThan(0);
 
-    // ⚠️ E o controle CONTINUA utilizável: o primeiro toque move e informa.
-    await page.getByTestId("avc-grandeza-spo2-mais").click();
-    await expect(page.getByTestId("avc-grandeza-spo2")).not.toContainText(/não informado/i);
-  });
+      for (const campo of grandezas) {
+        await vazia(page, campo);
+        /**
+         * ⚠️⚠️ O `+` INERTE É O QUE SUBSTITUI "o polegar no mínimo".
+         *
+         * ⛔ Um `+` que partisse do piso da faixa gravaria peso 30 kg ⛔ ou
+         * glicemia 20 como se alguém tivesse medido — ⛔ é o mesmo defeito que o
+         * "degrau que ⛔ não move ⛔ não registra" impedia na barra.
+         */
+        await expect(page.getByTestId(`avc-num-mais-${campo}`),
+          `${campo}: o ajuste ⛔ não pode partir do nada`).toBeDisabled();
+        await expect(page.getByTestId(`avc-num-menos-${campo}`)).toBeDisabled();
+      }
+
+      /** ⚠️ E o controle CONTINUA utilizável: digitar informa. */
+      await informar(page, "peso", 78);
+      await expect(page.getByTestId("avc-num-caixa-peso")).toHaveValue("78");
+    });
 
   /**
    * ⚠️⚠️ E-02 NA TELA. Sem este botão, "ninguém sabe dizer" e "ainda não
@@ -843,8 +935,22 @@ test.describe("Superfície A — UX clínica", () => {
     // ⚠️ A saída se chama "Incerto": em achado que se examina agora, "não sei"
     // empurra para um "Não" apressado.
     await expect(campo).toContainText("Incerto");
-    // ⛔ E a ajuda diz, na tela, que a fonte não define corte numérico.
-    await expect(campo).toContainText(/não define um corte numérico/i);
+    /**
+     * ⚠️⚠️ TESTE MISTO — separado em 2026-09-01.
+     *
+     * ⛔ A parte clínica (o texto da pergunta ⛔ e a saída "Incerto") **continua
+     * valendo**. ⛔ A parte de apresentação — *"a ajuda fica visível na tela"* —
+     * ficou obsoleta: por decisão do autor, texto de apoio recolhe atrás do ⓘ.
+     *
+     * ⚠️⚠️ ⛔ RECOLHER ⛔ NÃO É APAGAR, ⛔ e é isso que se prova aqui: a frase
+     * continua **alcançável**, a um toque. ⛔ Remover a asserção teria trocado
+     * um contrato por ⛔ nada.
+     */
+    await expect(campo, "recolhido ⛔ não é visível de saída")
+      .not.toContainText(/não define um corte numérico/i);
+    await page.getByTestId("avc-info-hipoxia").click();
+    await expect(campo, "⛔ e ⛔ não desapareceu: está a um toque")
+      .toContainText(/não define um corte numérico/i);
   });
 
   /**
@@ -860,8 +966,9 @@ test.describe("Superfície A — UX clínica", () => {
     // ⚠️ Antes da primeira medida, ⛔ não há o que suceder: o gesto ⛔ não aparece.
     await expect(page.getByTestId("avc-nova-medida-pressao")).toHaveCount(0);
 
-    await page.getByTestId("avc-degrau-pas-mais-10").click();
-    await page.getByTestId("avc-degrau-pad-mais-10").click();
+    /** CONTRATO (ainda válido): as duas metades pertencem à MESMA aferição. */
+    await informar(page, "pas", 178);
+    await informar(page, "pad", 96);
     // ⚠️ Com uma medida registrada, o gesto existe.
     await expect(page.getByTestId("avc-nova-medida-pressao")).toBeVisible();
 

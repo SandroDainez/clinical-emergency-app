@@ -137,6 +137,11 @@ test.describe("AVC · fluxos clínicos completos", () => {
       await aba(page, "neurologico");
       /** ⚠️ O bloco do NIHSS de fora nasce RECOLHIDO — o médico o abre. */
       await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
+      /**
+       * ⚠️ O NIHSS mora na Superfície **B**, que ⛔ NÃO foi reescrita — lá o
+       * controle antigo continua. ⛔ Migrar esta linha teria sido tratar B como
+       * se ela tivesse mudado.
+       */
       for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
 
       await aba(page, "reperfusao");

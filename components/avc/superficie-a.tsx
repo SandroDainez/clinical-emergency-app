@@ -1,43 +1,60 @@
 /**
- * SUPERFÍCIE A · Entrada e estabilização — a tela.
+ * SUPERFÍCIE A · Entrada e estabilização — a tela, na linguagem nova.
  *
- * ⛔ NENHUMA medicina nasce aqui. Campos vêm de `avc/conteudo/superficie-a.ts`,
- * leituras vêm de `avc/nucleo/derivacoes.ts`, e esta camada só desenha (E-29).
+ * ⚠️⚠️ O QUE MUDOU: **⛔ SÓ A APRESENTAÇÃO.**
  *
- * ⚠️ O que a tela precisa mostrar sem inventar:
- *   · os três estados de resposta distinguíveis (E-37);
- *   · toda leitura com os insumos e a fonte que a produziram (E-22, E-30);
- *   · ⛔ nenhum campo obrigatório (E-49) — a superfície não trava nada.
+ * ⛔ ⛔ Nenhum fato, ⛔ nenhuma derivação, ⛔ nenhum contrato de ausência. Os
+ * `testID` são **os mesmos** de propósito: eles são a superfície onde os
+ * contratos clínicos estão amarrados, ⛔ e trocá-los faria a suíte parar de
+ * verificar a reescrita exatamente quando ela mais precisa ser verificada.
  *
- * ⚠️ OS CONTROLES SAÍRAM DAQUI (2026-08-28) e moram em `campos-clinicos.tsx`,
- * partilhados com as demais superfícies. As sete lições que a revisão de tela
- * produziu — barra em vez de só −/+, ARIA de rádio, rascunho, "não informado"
- * que ⛔ não parece número — passariam a existir em duas versões, e a próxima
- * correção acertaria uma delas.
+ * ── ⚠️⚠️ O QUE ESTA TELA ⛔ NÃO PODE FAZER ───────────────────────────────────
  *
- * ⚠️ O **controle de hora** foi o último a sair (2026-08-29). Ele ficou aqui
- * enquanto era exclusivo desta superfície — e deixou de ser: a Superfície B já
- * declarava um campo `tipo: "hora"` que a tela ⛔ não sabia desenhar, e a C
- * precisa do horário da tomografia.
+ *   ⛔ **partir de um valor.** Campo intocado é **⛔ não informado** — ⛔ e ⛔ não
+ *      o piso da faixa. §0.2.
+ *   ⛔ **confundir apagar com zero.** Limpar o número **desfaz**; ⛔ ele ⛔ não
+ *      grava 0 (E-52).
+ *   ⛔ **transformar vazio em alerta.** Ausência é estado, ⛔ e ⛔ não achado.
+ *   ⛔ **fabricar "agora".** O horário só existe depois de interação explícita —
+ *      quem garante isso é `SeletorDeHora`, reaproveitado inteiro.
+ *
+ * ⚠️ O seletor de hora e a seleção múltipla continuam nos componentes antigos:
+ * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
+ * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
-import { useMemo } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { PRIORIDADE_A, GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
-import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo, valorDaOpcao } from "../../avc/conteudo/campo";
+import { GRUPOS_A, PRIORIDADE_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
-import type { EstadoAvc } from "../../avc/nucleo/estado";
-import { valorAtual } from "../../avc/nucleo/estado";
 import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
-import {
-  CabecalhoDeBloco,
-  CampoDaSuperficie,
-  PainelDeLeituras,
-  useDetalhes,
-} from "./campos-clinicos";
+import { horaDeExibicao } from "../../avc/nucleo/formato";
+import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
+import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { useTr } from "../../lib/use-tr";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { useTr } from "../../lib/use-tr";
+import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
+
+/** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
+const SIMBOLO_DO_TOM: Readonly<Record<string, string>> = {
+  atencao: "⚠",
+  pendente: "?",
+  informativo: "·",
+};
+import SeletorDeHora from "./seletor-de-hora";
+import {
+  Achados,
+  Icone,
+  LeiturasEmBlocos,
+  LinhaDeRelogio,
+  Numero,
+  Recolhido,
+  Secao,
+  Segmentado,
+  type NomeDeIcone,
+} from "./ui";
 
 type Props = {
   estado: EstadoAvc;
@@ -48,15 +65,31 @@ type Props = {
   onHora: (campo: string, instante: number, relogio?: string) => void;
   /** ⚠️ Desfazer é operação de primeira classe (§7.16) — ⛔ não apaga, corrige. */
   onDesfazer: (campo: string) => void;
-  /**
-   * ⚠️⚠️ NOVA AFERIÇÃO — o gesto que abre outra medida (D-120).
-   *
-   * ⚠️ Sem ele, editar a sistólica depois de registrar a PA seria ambíguo entre
-   * **correção** e **nova medida** — e a ambiguidade ⛔ não é de interface: ela
-   * muda o que a trilha AFIRMA sobre o paciente (§3.4). *"Medi a PA"* contado
-   * como *"tratei a PA"* é a fronteira que §2.10 nomeia.
-   */
   onNovaMedida: (tipo: string) => void;
+};
+
+/**
+ * ⚠️ O ícone de cada bloco é DECLARADO, ⛔ e ⛔ não escolhido no meio do JSX.
+ * ⛔ Bloco sem ícone declarado simplesmente ⛔ não ganha um — ⛔ nada de
+ * improvisar símbolo para um grupo novo.
+ */
+const ICONE_DO_GRUPO: Readonly<Record<string, NomeDeIcone>> = {
+  relogios: "chegada",
+  "via-aerea": "viaAerea",
+  respiracao: "respiracao",
+  pressao: "circulacao",
+  glicemia: "glicemia",
+  peso: "peso",
+  crise: "crise",
+};
+
+/** ⚠️ Ícone por relógio — cada marco tem o seu, ⛔ e ⛔ nenhum divide símbolo. */
+const ICONE_DO_RELOGIO: Readonly<Record<string, NomeDeIcone>> = {
+  hora_chegada: "chegada",
+  hora_ultima_vez_bem: "ultimaVezBem",
+  hora_inicio_observado: "inicioObservado",
+  hora_reconhecimento: "reconhecimento",
+  hora_meio_do_sono: "meioDoSono",
 };
 
 export default function SuperficieA({
@@ -70,41 +103,25 @@ export default function SuperficieA({
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
-  const leituras = leiturasDaSuperficieA(estado);
   const detalhes = useDetalhes();
+  const leituras = leiturasDaSuperficieA(estado);
 
+  /** ⚠️ Rótulo por id — o painel de leituras nomeia os insumos que citou. */
   const rotuloDoCampo = useMemo(() => {
     const m: Record<string, string> = {};
     for (const c of TODOS_OS_CAMPOS_A) m[c.id] = c.rotulo;
     return m;
   }, []);
 
-  function numeroGravado(id: string): number | undefined {
-    const f = valorAtual(estado, id);
-    return typeof f?.valor === "number" ? f.valor : undefined;
-  }
-
-  function instanteGravado(id: string): number | undefined {
-    const f = valorAtual(estado, id);
-    return typeof f?.valor === "number" ? f.valor : undefined;
-  }
+  /** ⚠️ Qual relógio está aberto para edição — ⛔ e o seletor é o antigo. */
+  const [editando, setEditando] = useState<
+    { campo: string; relogio?: string; instante: number; selecionado: boolean } | undefined
+  >(undefined);
 
   /**
-   * ⚠️⚠️ O FATO DO CAMPO **NA AFERIÇÃO ABERTA** — e ⛔ não o último da trilha.
-   *
-   * ── O DEFEITO QUE ISTO FECHA (achado pelo e2e de Correções, 2026-08-30) ────
-   *
-   * A tela lia `valorAtual`, que devolve o **último valor do campo em qualquer
-   * instância**. Depois de tocar em **Nova medida**, a aferição nova ⛔ não tinha
-   * PAS ⛔ nenhuma — e o controle reaparecia mostrando **210**, o valor da medida
-   * anterior, **a um toque de virar uma aferição que ⛔ ninguém fez**.
-   *
-   * ⚠️⚠️ É a família do **E-52**: dado desconhecido apresentado como se fosse
-   * medida. E aqui era pior que fabricar na trilha — a tela **convidava** o
-   * médico a fabricar, com o número já posicionado.
-   *
-   * ⛔ Campo sem instância continua lendo a trilha inteira: é o comportamento
-   * certo para peso, glicemia e afins, que ⛔ não são aferição composta.
+   * ⚠️⚠️ CAMPO COM INSTÂNCIA LÊ A **AFERIÇÃO ABERTA**, ⛔ e ⛔ não a trilha
+   * inteira — ⛔ senão a sistólica da medida anterior apareceria na nova, a um
+   * toque de virar uma aferição que ⛔ ninguém fez (E-52).
    */
   function fatoDoCampo(campo: { id: string; instanciaDe?: string }) {
     if (!campo.instanciaDe) return valorAtual(estado, campo.id);
@@ -112,12 +129,12 @@ export default function SuperficieA({
     return aberta === undefined ? undefined : valorNaInstancia(estado, aberta, campo.id);
   }
 
-  /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de não ter sido perguntado (E-02). */
   /** ⚠️ ⛔ Só oferece "nova medida" quando já existe uma medida para suceder. */
   function haMedidaAberta(grupo: { campos: readonly { id: string }[] }): boolean {
     return grupo.campos.some((c) => valorAtual(estado, c.id) !== undefined);
   }
 
+  /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de ⛔ não ter sido perguntado (E-02). */
   function marcadoDesconhecido(id: string): boolean {
     return String(valorAtual(estado, id)?.valor ?? "") === "nao_sei";
   }
@@ -125,90 +142,385 @@ export default function SuperficieA({
   return (
     <View style={e.raiz} testID="avc-superficie-a-conteudo">
       {/**
-        * ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — moldura de **prioridade**, e ⛔ não conduta.
+        * ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — moldura de **prioridade**, ⛔ e ⛔ não conduta.
         *
-        * ⛔ ⛔ Nenhuma meta, ⛔ nenhum fármaco, ⛔ nenhum limiar, ⛔ nenhum "se… então":
-        * qualquer um deles exigiria fonte transcrita (**E-31**), e o card de ACLS
-        * — que os tem — ⛔ **não** foi importado.
+        * ⛔ ⛔ Nenhuma meta, ⛔ nenhum fármaco, ⛔ nenhum limiar, ⛔ nenhum "se… então".
         */}
       <View style={e.prioridade} testID="avc-a-prioridade">
-        <Text style={e.prioridadeTitulo}>{tr(PRIORIDADE_A.titulo)}</Text>
-        <Text style={e.prioridadeFrase}>{tr(PRIORIDADE_A.frase)}</Text>
-        <Text style={e.prioridadeNota}>{tr(PRIORIDADE_A.nota)}</Text>
+        <View style={e.prioridadeLinha}>
+          <View style={e.prioridadeTexto}>
+            <Text style={e.prioridadeTitulo}>{tr(PRIORIDADE_A.titulo)}</Text>
+            <Text style={e.prioridadeFrase}>{tr(PRIORIDADE_A.frase)}</Text>
+          </View>
+          {/**
+            * ⚠️⚠️ O PARÁGRAFO DO ABCDE SAI DA PRIMEIRA CAMADA.
+            *
+            * ⛔ Ele explicava a **ordem dos blocos** — informação sobre a tela,
+            * ⛔ e ⛔ não sobre o paciente — ⛔ e abria a superfície com quatro
+            * linhas de prosa. ⚠️ ⛔ Recolher ⛔ não é apagar: continua a um toque.
+            */}
+          <Recolhido
+            id="a-prioridade"
+            texto={PRIORIDADE_A.nota}
+            aberto={detalhes.aberto("a-prioridade")}
+            onAlternar={() => detalhes.alternar("a-prioridade")}
+          />
+        </View>
       </View>
 
-      {GRUPOS_A.map((grupo) => (
-        <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
-          <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
-          {/**
-            * ⚠️⚠️ "NOVA MEDIDA" — o gesto explícito de §3.4, e ⛔ só onde há
-            * aferição composta. Ele ⛔ não aparece por estética: sem um gesto
-            * nomeado, ⛔ não há como distinguir *"o paciente foi medido de novo"*
-            * de *"aquele valor ⛔ nunca foi verdade"*.
-            */}
-          {grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
-            <Pressable
-              style={e.novaMedida}
-              accessibilityRole="button"
-              testID={`avc-nova-medida-${grupo.id}`}
-              onPress={() => onNovaMedida(grupo.campos.find((c) => c.instanciaDe)!.instanciaDe!)}
-            >
-              <Text style={e.novaMedidaTexto}>{tr("Nova medida")}</Text>
-            </Pressable>
-          ) : null}
-          {/**
-            * ⚠️⚠️ CAMPO CONDICIONAL — ⛔ esconder ⛔ NÃO é apagar.
-            *
-            * ⚠️ O meio do sono só faz sentido quando o início ⛔ não foi
-            * observado; fora disso seria ruído em quase todo atendimento. ⛔ A
-            * condição é declarada NO CAMPO, ⛔ e ⛔ não escrita aqui.
-            */}
-          {camposDoGrupo(grupo)
-            .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
-            .map((campo) => (
-            <CampoDaSuperficie
-              /**
-               * ── ⛔ A `key` POR INSTÂNCIA FOI REMOVIDA (2026-08-30) ──────────
-               *
-               * ⚠️ Ela existia como defesa em profundidade para o **rascunho ⛔ não
-               * confirmado**: mover a barra e, sem soltar, abrir "Nova medida".
-               *
-               * ⛔⛔ **O cenário ⛔ não é alcançável.** O `NumericStepper` confirma em
-               * `onSlidingComplete`, que dispara ao **soltar** — e para tocar em
-               * "Nova medida" o dedo precisa sair da barra antes. Os botões
-               * `−`/`+` confirmam a cada toque. ⛔ Não há caminho em que um
-               * rascunho sobreviva até a troca de aferição.
-               *
-               * ⚠️ E a mutação provou: removê-la ⛔ não quebrava teste ⛔ nenhum. Quem
-               * conserta o defeito é `fatoDoCampo`, lendo a instância aberta.
-               * ⛔ Código defensivo cuja necessidade ⛔ não se consegue medir ⛔ não fica.
-               */
-              key={campo.id}
-              campo={campo}
-              casaAtual="estabilizacao"
-              bruto={String(fatoDoCampo(campo)?.valor ?? "")}
-              numero={(() => {
-                const f = fatoDoCampo(campo);
-                return typeof f?.valor === "number" ? f.valor : undefined;
-              })()}
-              agora={agora}
-              detalheAberto={detalhes.aberto(campo.id)}
-              onAlternarDetalhe={() => detalhes.alternar(campo.id)}
-              onEscolher={onEscolher}
-              onMedir={onMedir}
-              onHora={onHora}
-              onDesfazer={onDesfazer}
-              nomeDaCasa="Paciente"
-            />
-          ))}
-        </View>
-      ))}
+      {GRUPOS_A.map((grupo) => {
+        const visiveis = camposDoGrupo(grupo).filter((campo) =>
+          campoAparece(campo, (c) => valorAtual(estado, c)?.valor)
+        );
+        return (
+          <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
+            {/**
+              * ⚠️⚠️ FILETE NO LUGAR DA BARRA CHEIA. ⛔ Com seis blocos de barra
+              * preenchida, ⛔ nenhum era hierarquia — eram seis pesos iguais.
+              */}
+            <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
+              {ICONE_DO_GRUPO[grupo.id] ? (
+                <Icone nome={ICONE_DO_GRUPO[grupo.id]} tamanho={14} />
+              ) : null}
+              <Secao titulo={grupo.titulo} />
+            </View>
 
-      <PainelDeLeituras
+            {/**
+              * ⚠️⚠️ "NOVA MEDIDA" — o gesto explícito de §3.4. ⛔ Sem ele ⛔ não há
+              * como distinguir *"o paciente foi medido de novo"* de *"aquele
+              * valor ⛔ nunca foi verdade"*.
+              */}
+            {grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
+              <Pressable
+                style={e.novaMedida}
+                accessibilityRole="button"
+                testID={`avc-nova-medida-${grupo.id}`}
+                onPress={() => onNovaMedida(grupo.campos.find((c) => c.instanciaDe)!.instanciaDe!)}
+              >
+                <Text style={e.novaMedidaTexto}>{tr("Nova medida")}</Text>
+              </Pressable>
+            ) : null}
+
+            {visiveis.map((campo) => {
+              const fato = fatoDoCampo(campo);
+              const bruto = String(fato?.valor ?? "");
+
+              /**
+               * ⚠️⚠️ A ETIQUETA DIZ ONDE O FATO MORA — ⛔ e ⛔ não que é cópia.
+               *
+               * ⛔ O peso mora em **Paciente** ⛔ e é preenchido aqui. ⚠️ Sem a
+               * etiqueta, quem responde aqui ⛔ e vê preenchido lá pensa que
+               * respondeu duas vezes — ⛔ e a primeira coisa que faz é desconfiar
+               * da tela. ⛔ A reescrita a tinha perdido.
+               */
+              const comEtiqueta = (conteudo: ReactNode) =>
+                campo.casa === "estabilizacao" ? (
+                  conteudo
+                ) : (
+                  <View key={campo.id} testID={`avc-emprestado-${campo.id}`}>
+                    <Text style={e.origem}>
+                      {tr("Do painel")} {tr("Paciente")}
+                    </Text>
+                    {conteudo}
+                  </View>
+                );
+
+              /* ── relógios ──────────────────────────────────────────────── */
+              if (campo.tipo === "hora") {
+                const desconhecido = marcadoDesconhecido(campo.id);
+                const instante = typeof fato?.valor === "number" ? fato.valor : undefined;
+                return comEtiqueta(
+                  <View key={campo.id} testID={`avc-campo-${campo.id}`}>
+                    <LinhaDeRelogio
+                      campo={campo.id}
+                      icone={ICONE_DO_RELOGIO[campo.id] ?? "chegada"}
+                      rotulo={campo.rotulo}
+                      /**
+                       * ⚠️ O MESMO texto de antes — `✓ HH:MM ✎` e "Informar
+                       * horário" —, porque é sobre ele que a suíte afirma.
+                       */
+                      valor={
+                        instante !== undefined
+                          ? `✓ ${horaDeExibicao(instante, agora)} ✎`
+                          : desconhecido
+                            ? "Sem essa informação"
+                            : "Informar horário"
+                      }
+                      estado={
+                        instante !== undefined
+                          ? "registrado"
+                          : desconhecido
+                            ? "desconhecido"
+                            : "vazio"
+                      }
+                      /** ⚠️ Realce ⛔ só enquanto o campo revelado segue vazio. */
+                      destaque={campo.apareceQuando !== undefined && instante === undefined}
+                      onPress={() =>
+                        setEditando({
+                          campo: campo.id,
+                          relogio: campo.relogio,
+                          instante: instante ?? agora,
+                          /** ⚠️⚠️ Abrir ⛔ NÃO é escolher — o gate de §0.2. */
+                          selecionado: instante !== undefined,
+                        })
+                      }
+                    />
+                    {/**
+                      * ⚠️⚠️ A SUB-LINHA PERTENCE AO RELÓGIO ACIMA.
+                      *
+                      * ⛔ Soltas, "Sem essa informação" e o ⓘ flutuavam entre
+                      * dois relógios ⛔ e pareciam pertencer ao **de baixo** —
+                      * ⛔ e num campo de horário isso troca o marco.
+                      */}
+                    <View style={e.subLinha}>
+                    {campo.aceitaDesconhecido ? (
+                      <Pressable
+                        style={e.desconhecidoCompacto}
+                        accessibilityRole="radio"
+                        /** ⚠️ `aria-checked` — ⛔ `selected` ⛔ não anuncia rádio. */
+                        accessibilityState={{ checked: desconhecido }}
+                        aria-checked={desconhecido}
+                        accessibilityLabel={`${tr(campo.rotulo)}: ${tr("Sem essa informação")}`}
+                        testID={`avc-hora-desconhecido-${campo.id}`}
+                        /** ⚠️ Tocar de novo DESFAZ — corrige, ⛔ e ⛔ não apaga. */
+                        onPress={() =>
+                          desconhecido ? onDesfazer(campo.id) : onEscolher(campo.id, "nao_sei")
+                        }
+                      >
+                        <Text style={[e.desconhecidoTexto, desconhecido ? e.desconhecidoOn : null]}>
+                          {desconhecido ? "✓ " : ""}
+                          {tr("Sem essa informação")}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                    <Recolhido
+                      id={campo.id}
+                      texto={campo.ajuda}
+                      aberto={detalhes.aberto(campo.id)}
+                      onAlternar={() => detalhes.alternar(campo.id)}
+                    >
+                      <DetalheDoCampo campo={campo} />
+                    </Recolhido>
+                    </View>
+                  </View>
+                );
+              }
+
+              /* ── escolhas ─────────────────────────────────────────────── */
+              if (campo.tipo === "escolha" && campo.opcoes) {
+                return comEtiqueta(
+                  <View key={campo.id} style={e.pergunta} testID={`avc-campo-${campo.id}`}>
+                    <View style={e.perguntaTopo}>
+                      <Text style={e.perguntaTexto}>{tr(campo.rotulo)}</Text>
+                      {/**
+                        * ⚠️⚠️ O ⓘ CARREGA **TUDO** — ajuda, nota ⛔ e a FONTE.
+                        *
+                        * ⛔ Escolher entre `nota` e `ajuda` apagava uma delas, ⛔ e
+                        * deixar de renderizar `DetalheDoCampo` apagava a
+                        * procedência da afirmação (E-30).
+                        */}
+                      <Recolhido
+                        id={campo.id}
+                        texto={campo.ajuda}
+                        aberto={detalhes.aberto(campo.id)}
+                        onAlternar={() => detalhes.alternar(campo.id)}
+                      >
+                        <DetalheDoCampo campo={campo} />
+                      </Recolhido>
+                    </View>
+                    <Segmentado
+                      campo={campo.id}
+                      opcoes={campo.opcoes}
+                      valor={bruto}
+                      onEscolher={onEscolher}
+                      onDesfazer={onDesfazer}
+                    />
+                  </View>
+                );
+              }
+
+              /* ── números ──────────────────────────────────────────────── */
+              if (campo.tipo === "grandeza" && campo.faixa) {
+                return comEtiqueta(
+                  <View key={campo.id} testID={`avc-campo-${campo.id}`} style={e.linhaNumero}>
+                    <Numero
+                      campo={campo.id}
+                      rotulo={campo.rotulo}
+                      unidade={campo.unidade}
+                      faixa={campo.faixa}
+                      gravado={typeof fato?.valor === "number" ? fato.valor : undefined}
+                      onMedir={onMedir}
+                      onDesfazer={onDesfazer}
+                    />
+                    <Recolhido
+                      id={campo.id}
+                      texto={campo.ajuda}
+                      aberto={detalhes.aberto(campo.id)}
+                      onAlternar={() => detalhes.alternar(campo.id)}
+                    >
+                      <DetalheDoCampo campo={campo} />
+                    </Recolhido>
+                  </View>
+                );
+              }
+
+              /* ── achados (seleção múltipla) ───────────────────────────── */
+              if (campo.tipo === "multipla" && campo.opcoes) {
+                return comEtiqueta(
+                  <View key={campo.id} style={e.pergunta} testID={`avc-campo-${campo.id}`}>
+                    <View style={e.perguntaTopo}>
+                      <Text style={e.perguntaTexto}>{tr(campo.rotulo)}</Text>
+                      <Recolhido
+                        id={campo.id}
+                        texto={campo.ajuda}
+                        aberto={detalhes.aberto(campo.id)}
+                        onAlternar={() => detalhes.alternar(campo.id)}
+                      >
+                        <DetalheDoCampo campo={campo} />
+                      </Recolhido>
+                    </View>
+                    <Achados
+                      campo={campo.id}
+                      opcoes={campo.opcoes}
+                      selecionados={itensSelecionados(bruto)}
+                      onAlternar={(op) => {
+                        /**
+                         * ⚠️⚠️ A REGRA É `alternarItem` — ⛔ e ⛔ não esta tela.
+                         * ⛔ Desmarcar o último ⛔ não grava vazio: devolve o
+                         * campo a "⛔ ninguém respondeu" (§7.16).
+                         */
+                        const novo = alternarItem(bruto, op, campo.exclusivas ?? []);
+                        if (novo === "") onDesfazer(campo.id);
+                        else onEscolher(campo.id, novo);
+                      }}
+                    />
+                  </View>
+                );
+              }
+
+              /**
+               * ⚠️ Qualquer tipo ⛔ não previsto continua no componente antigo.
+               *
+               * ⛔ As regras de exclusividade ("Nenhum desses", "Não sei") são
+               * encapsuladas ⛔ e foram conquistadas com defeito real. ⛔ Reescrevê-las
+               * ⛔ não era o pedido, ⛔ e refazê-las de memória seria o jeito mais
+               * rápido de perdê-las.
+               */
+              return (
+                <CampoDaSuperficie
+                  key={campo.id}
+                  campo={campo}
+                  casaAtual="estabilizacao"
+                  bruto={bruto}
+                  numero={typeof fato?.valor === "number" ? fato.valor : undefined}
+                  agora={agora}
+                  detalheAberto={detalhes.aberto(campo.id)}
+                  onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+                  onEscolher={onEscolher}
+                  onMedir={onMedir}
+                  onHora={onHora}
+                  onDesfazer={onDesfazer}
+                  nomeDaCasa="Paciente"
+                />
+              );
+            })}
+          </View>
+        );
+      })}
+
+      {/**
+        * ⚠️⚠️ O SELETOR DE HORA É O MESMO — ⛔ e ⛔ não uma reimplementação.
+        *
+        * ⚠️ Ele carrega o teto em `agora`, o controle de data ⛔ e o gate que
+        * impede "agora" de virar default silencioso. ⛔ Refazê-lo com aparência
+        * nova seria trocar regra provada por pixel.
+        */}
+      {editando ? (
+        <SeletorDeHora
+          rotulo={TODOS_OS_CAMPOS_A.find((c) => c.id === editando.campo)?.rotulo ?? editando.campo}
+          instante={editando.instante}
+          selecionado={editando.selecionado}
+          agora={agora}
+          onMudar={(i, escolheuValor) =>
+            setEditando((atual) =>
+              atual === undefined
+                ? atual
+                : {
+                    ...atual,
+                    instante: i,
+                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
+                    selecionado: escolheuValor || atual.selecionado,
+                  }
+            )
+          }
+          onConfirmar={() => {
+            onHora(editando.campo, editando.instante, editando.relogio);
+            setEditando(undefined);
+          }}
+          onCancelar={() => setEditando(undefined)}
+        />
+      ) : null}
+
+      {/**
+        * ⚠️⚠️ TRÊS BLOCOS NO LUGAR DA PAREDE — decisão do autor, 2026-09-01.
+        *
+        * ⛔ `PainelDeLeituras` é compartilhado por B, C, D ⛔ e Laboratório:
+        * mudá-lo mudaria B–G. ⚠️ A renderização aqui é **apresentação pura** —
+        * o texto, o tom ⛔ e a fonte vêm da leitura, ⛔ e ⛔ nada é recalculado.
+        */}
+      <LeiturasEmBlocos
         leituras={leituras}
-        rotuloDoCampo={rotuloDoCampo}
-        detalheAberto={detalhes.aberto}
-        onAlternarDetalhe={detalhes.alternar}
+        /**
+         * ⚠️⚠️ ABERTO POR PADRÃO — ⛔ e a primeira versão o fechava.
+         *
+         * ⛔ O bloco "Registrado" é onde o médico **vê a consequência do que
+         * acabou de responder**. Fechado, o feedback do registro sumia no
+         * instante em que ele acontecia — ⛔ isso ⛔ não é reduzir parede, é
+         * apagar retorno. ⚠️ A parede que incomodava era a de **alertas**, ⛔ e
+         * ela se resolve pela hierarquia dos três blocos, ⛔ não por esconder.
+         */
+        aberto={!detalhes.aberto("__registrado__")}
+        onAlternar={() => detalhes.alternar("__registrado__")}
+        renderItem={(id) => {
+          const l = leituras.find((x) => x.id === id);
+          if (!l) return null;
+          return (
+            <View key={id} testID={`avc-leitura-${id}`}>
+              <View style={e.leituraLinha}>
+                <Text style={e.leituraTexto} testID={`avc-leitura-curto-${id}`}>
+                  {SIMBOLO_DO_TOM[l.tom]}{" "}
+                  {/** ⚠️ Sem o sujeito, quatro analitos dariam linhas idênticas. */}
+                  {l.sujeito ? `${tr(l.sujeito)} — ` : ""}
+                  {tr(l.curto)}
+                </Text>
+                <Recolhido
+                  id={`leitura-${id}`}
+                  texto={l.texto}
+                  aberto={detalhes.aberto(`leitura-${id}`)}
+                  onAlternar={() => detalhes.alternar(`leitura-${id}`)}
+                />
+              </View>
+              {detalhes.aberto(`leitura-${id}`) ? (
+                <View testID={`avc-detalhe-leitura-${id}`}>
+                  <Text style={e.leituraDetalhe}>{tr(l.texto)}</Text>
+                  {/** ⚠️ E-30: a fonte é propriedade da afirmação. */}
+                  <Text style={e.leituraFonte}>
+                    {tr("Insumos")}: {l.insumos.map((i) => tr(rotuloDoCampo[i] ?? i)).join(", ")} ·{" "}
+                    {tr("slot")} {l.fonte}
+                  </Text>
+                  {/**
+                    * ⚠️⚠️ A FRASE QUE DIZ DE QUEM É A DECISÃO — ⛔ e ela ⛔ não é
+                    * decorativa: o painel compartilhado a carrega em TODA
+                    * leitura, ⛔ e omiti-la faria a tela parecer que conclui.
+                    */}
+                  <Text style={e.leituraFonte}>
+                    {tr("Apoio ao julgamento clínico. A decisão permanece do médico.")}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          );
+        }}
       />
     </View>
   );
@@ -222,18 +534,74 @@ const criarEstilos = (tema: Tema) =>
      * um estado do paciente, é a ordem de leitura da tela (**E-39**).
      */
     prioridade: {
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
-      padding: ESPACO.md, gap: ESPACO.xs,
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+      padding: ESPACO.md,
+      gap: ESPACO.xs,
     },
+    prioridadeLinha: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
+    prioridadeTexto: { flex: 1, gap: 2 },
     prioridadeTitulo: {
-      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "800",
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "800",
     },
     prioridadeFrase: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     prioridadeNota: {
-      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.caption.fontSize,
     },
     grupo: { gap: ESPACO.xs },
+    cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /**
+     * ⚠️ O ⓘ fica NA LINHA do campo. ⛔ Abaixo, ele ocupava uma faixa inteira
+     * ⛔ e parecia um controle solto, ⛔ sem dono.
+     */
+    linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
+    subLinha: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      paddingLeft: ESPACO.md,
+      marginTop: -ESPACO.xs,
+      marginBottom: ESPACO.sm,
+    },
+    leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    leituraTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    leituraDetalhe: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      marginTop: ESPACO.xs,
+    },
+    leituraFonte: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      marginTop: 2,
+    },
+    origem: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "700",
+    },
+
+    pergunta: { gap: ESPACO.xs, paddingVertical: ESPACO.xs },
+    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    perguntaTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+
+    desconhecidoCompacto: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingRight: ESPACO.sm,
+    },
+    desconhecidoTexto: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+    },
+    desconhecidoOn: { color: tema.cores.text, fontWeight: "700" },
+
     novaMedida: {
       alignSelf: "flex-start",
       minHeight: TOQUE.minimo,

@@ -27,6 +27,35 @@ import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
 import SuperficieG from "./superficie-g";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
+import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
+import { destinoDaImagem } from "../../avc/nucleo/derivacoes-c";
+import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
+import { Icone, type NomeDeIcone } from "./ui";
+
+/**
+ * ⚠️⚠️ NOME CURTO ⛔ NÃO É ABREVIAÇÃO — é o nome que cabe numa linha.
+ *
+ * ⛔ *"Segurança para trombólise"* truncava como *"Segurança para …"*, ⛔ e nome
+ * truncado ⛔ não identifica a superfície que ele existe para nomear. ⚠️ O nome
+ * completo continua no cabeçalho da superfície aberta: ⛔ nada se perde.
+ */
+const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
+  estabilizacao: { nome: "Estabilizar", icone: "estabilizar" },
+  neurologico: { nome: "Neuro", icone: "neuro" },
+  imagem: { nome: "Imagem", icone: "imagem" },
+  seguranca: { nome: "Segurança", icone: "seguranca" },
+  /**
+   * ⚠️⚠️ CORREÇÕES ⛔ NÃO ESTAVA NA LISTA DE SEIS DO AUTOR — ⛔ e ⛔ não foi
+   * removida por isso. ⛔ Tirá-la da navegação a tornaria **inalcançável**, que
+   * é a classe de defeito que a varredura existe para impedir. ⚠️ Fica na
+   * jornada clínica, ⛔ e a divergência está reportada.
+   */
+  correcoes: { nome: "Correções", icone: "crise" },
+  reperfusao: { nome: "Reperfusão", icone: "reperfusao" },
+  destino: { nome: "Destino", icone: "destino" },
+  paciente: { nome: "Paciente", icone: "paciente" },
+  laboratorio: { nome: "Laboratório", icone: "laboratorio" },
+};
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { pendenciasOriginadasEmE } from "../../avc/nucleo/derivacoes-e";
 import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
@@ -57,7 +86,7 @@ import SuperficieLaboratorio from "./superficie-laboratorio";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
-import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
@@ -72,6 +101,8 @@ const AREA_AVC = getPalette("AVC");
 export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) {
   const tr = useTr();
   const s = useEstilosDoTema(criarEstilos);
+  /** ⚠️ Cor do ícone vem do TEMA — ⛔ nenhum hex no componente. */
+  const tema = useTheme();
   // ⚠️ O relógio entra por UMA porta (Q-01). ⛔ Nenhum `Date.now()` nesta árvore.
   const relogio = relogioDoSistema;
   const [estado, setEstado] = useState(() => abrirAtendimento(relogio));
@@ -91,6 +122,72 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   // ⚠️ DERIVADO A CADA RENDER, nunca guardado (§4.3). O tempo desde a abertura
   // muda sem que nenhum dado mude — é o caso que a Parte 4 nomeia.
   const abertoHaMin = decorridoEmMinutos(estado, "t0_operacional", relogio);
+  const lkwMin = decorridoEmMinutos(estado, "ultima_vez_bem", relogio);
+
+  /**
+   * ⚠️⚠️ O COCKPIT TEM DOIS MODOS — decisão do autor, 2026-09-01.
+   *
+   * ⛔ Completo, ele consumia quase um viewport antes do conteúdo clínico em
+   * **toda** superfície. ⚠️ Compacto por padrão; o completo abre ao toque.
+   * ⛔ ⛔ Nada some: é a mesma informação, noutra densidade.
+   */
+  const [cockpitAberto, setCockpitAberto] = useState(false);
+
+  /**
+   * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
+   *
+   * ⛔ `PAS > 185` escrito aqui seria a tela inventando limiar clínico. ⚠️ Quem
+   * sabe que 185/110 é limite antes da trombólise é `bloqueiosCorrigiveis` —
+   * com fonte, verbatim ⛔ e o que resolve.
+   */
+  const bloqueios = useMemo(() => bloqueiosCorrigiveis(estado), [estado]);
+
+  /**
+   * ⚠️⚠️ O COCKPIT **LÊ**, ⛔ e ⛔ NÃO DERIVA. Cada número vem de quem já sabe
+   * calculá-lo — ⛔ nenhuma regra clínica nasce aqui.
+   *
+   * ⚠️ `campo` é para onde o toque leva: ausente **tocável** é o que transforma
+   * o cockpit de painel em atalho.
+   */
+  const VITAIS = useMemo(() => {
+    const pas = valorAtual(estado, "pas")?.valor;
+    const pad = valorAtual(estado, "pad")?.valor;
+    const glic = valorAtual(estado, "glicemia")?.valor;
+    const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
+    const img = destinoDaImagem(estado);
+    return [
+      {
+        id: "pa",
+        rotulo: "PA",
+        unidade: "mmHg",
+        campo: "pas",
+        valor:
+          typeof pas === "number" && typeof pad === "number" ? `${pas}/${pad}` : undefined,
+      },
+      {
+        id: "glicemia",
+        rotulo: "Glicemia",
+        unidade: "mg/dL",
+        campo: "glicemia",
+        valor: typeof glic === "number" ? String(glic) : undefined,
+      },
+      {
+        id: "nihss",
+        rotulo: "NIHSS",
+        unidade: "0–42",
+        campo: "nihss_informado",
+        valor: typeof nihss === "number" ? String(nihss) : undefined,
+      },
+      {
+        /** ⚠️ Estado da imagem — ⛔ e ⛔ não um veredito sobre reperfusão. */
+        id: "imagem",
+        rotulo: "Imagem",
+        unidade: "exame",
+        campo: "estudo_modalidade",
+        valor: img === undefined ? undefined : tr("saída"),
+      },
+    ];
+  }, [estado, tr]);
 
   // ⚠️ Pendências derivadas: dono numa superfície, ALCANCE GLOBAL (E-07).
   // Elas aparecem aqui independentemente de qual superfície está aberta.
@@ -322,36 +419,143 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         <Text style={s.subtitulo}>{tr("Adulto com suspeita de AVC isquêmico agudo")}</Text>
       </View>
 
-      {/* ── RESUMO PERSISTENTE (§7.8) ──────────────────────────────────────
-          ⚠️ Compacto de propósito. O argumento mais forte para ele existir é o
-          RELÓGIO: é o único valor que muda sozinho, e se só existisse dentro de
-          uma superfície, o médico trabalharia em outra sem vê-lo correr. */}
-      <View style={s.resumo} testID="avc-resumo">
-        <Text style={s.resumoTitulo}>{tr("Estado atual")}</Text>
-        <View style={s.resumoLinha}>
-          <Text style={s.resumoItem}>
-            {tr("Aberto há")} {abertoHaMin ?? 0} {tr("min")}
-          </Text>
-          <Text style={s.resumoItem}>
-            {tr("Última vez bem")}:{" "}
-            {decorridoEmMinutos(estado, "ultima_vez_bem", relogio) === undefined
-              ? tr("não informado")
-              : `${decorridoEmMinutos(estado, "ultima_vez_bem", relogio)} ${tr("min")}`}
-          </Text>
-          <Text style={s.resumoItem} testID="avc-resumo-a">
-            {tr("Estabilização")}: {informadosEmA}/{TODOS_OS_CAMPOS_A.length}
-          </Text>
-        </View>
+      {/**
+        * ── ⚠️⚠️ COCKPIT (§7.8) ────────────────────────────────────────────
+        *
+        * ⚠️ O argumento mais forte para ele existir continua sendo o RELÓGIO: é
+        * o único valor que muda sozinho, ⛔ e se só existisse dentro de uma
+        * superfície o médico trabalharia em outra sem vê-lo correr.
+        *
+        * ⚠️⚠️ ⛔ MAS O TEMPO DE ATENDIMENTO ⛔ NÃO ENCABEÇA A TELA. Decisão do
+        * autor: contador grande correndo vira ruído ansiogênico numa sala já
+        * tensa. ⛔ Quem manda visualmente é o **relógio clínico** — a última vez
+        * visto bem —, ⛔ e o tempo desde a abertura fica discreto ao lado.
+        *
+        * ⚠️⚠️ E AUSÊNCIA É **NEUTRA**, ⛔ nunca âmbar: campo vazio ⛔ não é achado.
+        * ⛔ Tocar num ausente leva a onde ele se registra.
+        */}
+      <View style={s.cockpit} testID="avc-resumo">
+        {/**
+          * ⚠️⚠️ A FAIXA COMPACTA — quatro dados numa linha, sempre.
+          *
+          * ⛔ É ela que fica em toda superfície. ⚠️ Tocar abre o cockpit
+          * completo; ⛔ e ⛔ nada some no compacto — só muda a densidade.
+          */}
+        <Pressable
+          style={s.faixa}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: cockpitAberto }}
+          testID="avc-cockpit-faixa"
+          onPress={() => setCockpitAberto((v) => !v)}
+        >
+          {[
+            { k: "LKW", v: lkwMin === undefined ? undefined
+                : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}` },
+            ...VITAIS.slice(0, 3).map((x) => ({ k: tr(x.rotulo), v: x.valor })),
+          ].map((x, n) => (
+            <View key={x.k} style={s.faixaItem}>
+              {n > 0 ? <Text style={s.faixaSep}>·</Text> : null}
+              <Text style={s.faixaChave}>{x.k}</Text>
+              <Text style={[s.faixaValor, x.v === undefined && s.faixaAusente]}>{x.v ?? "—"}</Text>
+            </View>
+          ))}
+          <Icone nome={cockpitAberto ? "informacao" : "adiante"} tamanho={13} />
+        </Pressable>
+
+        {/**
+          * ⚠️⚠️ O BLOQUEIO CORRIGÍVEL VEM DE **D**, com a frase DELA.
+          *
+          * ⛔ A Superfície A registra a medida ⛔ e ⛔ não a interpreta: o
+          * significado pré-IVT é de D. ⚠️ Aqui o cockpit **cita** D — ⛔ e ⛔ não
+          * repete o limiar por conta própria.
+          */}
+        {bloqueios.map((b) => (
+          <Pressable
+            key={b.id}
+            style={s.bloqueio}
+            accessibilityRole="button"
+            testID={`avc-cockpit-bloqueio-${b.id}`}
+            onPress={() => abrir("correcoes")}
+          >
+            <Icone nome="seguranca" tamanho={15} cor={tema.cores.warning} />
+            <Text style={s.bloqueioTexto} numberOfLines={2}>{tr(b.formulacao)}</Text>
+            <Text style={s.bloqueioAcao}>
+              {b.id === "pressao_acima_da_meta" ? tr("Corrigir PA") : tr("Corrigir glicemia")}
+            </Text>
+          </Pressable>
+        ))}
+
+        {cockpitAberto ? (
+          <View style={s.cockpitCompleto} testID="avc-cockpit-completo">
+            <View style={s.cockpitTopo}>
+              <Pressable
+                style={s.relogioClinico}
+                accessibilityRole="button"
+                testID="avc-cockpit-lkw"
+                onPress={() => irParaCampo("hora_ultima_vez_bem")}
+              >
+                <Text style={s.cockpitRotulo}>{tr("Última vez bem")}</Text>
+                {lkwMin === undefined ? (
+                  <Text style={s.cockpitAusente}>{tr("não informado")}</Text>
+                ) : (
+                  <Text style={s.cockpitRelogio}>
+                    {Math.floor(lkwMin / 60)}h{String(lkwMin % 60).padStart(2, "0")}
+                  </Text>
+                )}
+              </Pressable>
+              <Text style={s.cockpitAtendimento} testID="avc-cockpit-atendimento">
+                {tr("Atendimento há")} {abertoHaMin ?? 0} {tr("min")}
+              </Text>
+            </View>
+            <View style={s.vitais}>
+              {VITAIS.map((v) => (
+                <Pressable
+                  key={v.id}
+                  style={s.vital}
+                  accessibilityRole="button"
+                  accessibilityLabel={tr(v.rotulo)}
+                  testID={`avc-cockpit-${v.id}`}
+                  onPress={() => irParaCampo(v.campo)}
+                >
+                  <Text style={s.vitalChave}>{tr(v.rotulo)}</Text>
+                  <Text style={[s.vitalValor, v.valor === undefined && s.vitalAusente]}>
+                    {v.valor ?? "—"}
+                  </Text>
+                  <Text style={s.vitalUnidade}>{tr(v.unidade)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </View>
 
-      {/* ── NAVEGAÇÃO ENTRE SUPERFÍCIES (§7.2, E-11) ───────────────────────
-          ⚠️ SEM ÁRVORE LINEAR: as sete estão sempre disponíveis, em qualquer
-          ordem, a qualquer momento. ⛔ Não há "próximo passo". */}
-      <View style={s.bloco}>
-        <Text style={s.blocoTitulo}>{tr("Superfícies")}</Text>
-        <View style={s.abas}>
-          {SUPERFICIES.map((sup) => {
+      {/**
+        * ── ⚠️ NAVEGAÇÃO CLÍNICA (§7.2, E-11) ──────────────────────────────
+        *
+        * ⚠️⚠️ ⛔ SEM ÁRVORE, ⛔ e a Home ⛔ NÃO é etapa: as superfícies estão
+        * sempre disponíveis, em qualquer ordem. ⛔ Ela orienta, ⛔ e ⛔ não
+        * intermedeia.
+        *
+        * ⚠️ Paciente e Laboratório saem da jornada clínica ⛔ e continuam **a um
+        * toque** — ⛔ eles ⛔ nunca foram etapa, ⛔ e na grade competiam com
+        * Estabilizar por atenção que ⛔ não lhes cabe.
+        */}
+      <View style={s.navBloco}>
+        <View style={s.nav}>
+          {/**
+            * ⚠️⚠️ SEIS ETAPAS, ⛔ e ⛔ NÃO SETE — decisão do autor, 2026-09-01.
+            *
+            * ⛔ **Correções ⛔ não sumiu.** Ela deixou de competir como etapa
+            * equivalente: aparece como **ação contextual** no cockpit quando há
+            * bloqueio corrigível ("Corrigir PA"), ⛔ e como acesso auxiliar
+            * sempre. ⚠️ Sete etapas iguais ⛔ não são hierarquia — ⛔ e deixavam
+            * `Destino` sozinho numa terceira linha.
+            *
+            * ⛔ ⛔ A superfície ⛔ não foi removida ⛔ nem alterada.
+            */}
+          {SUPERFICIES.filter((sup) => !sup.painel && sup.id !== "correcoes").map((sup) => {
             const ativa = sup.id === estado.superficieVista;
+            const c = CURTO[sup.id];
             return (
               <Pressable
                 key={sup.id}
@@ -359,27 +563,40 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 accessibilityRole="button"
                 accessibilityLabel={tr(sup.titulo)}
                 testID={`avc-aba-${sup.id}`}
-                style={[s.aba, ativa && s.abaAtiva]}
+                style={[s.navItem, ativa && s.navItemAtivo]}
               >
-                {/**
-                  * ⛔⛔ ⛔ SEM LETRA — ver `superficies.ts`: o A–G do módulo colidia
-                  * com o **ABCDE do atendimento**, e no "D" as duas leituras eram
-                  * plausíveis no mesmo paciente. ⛔ E ⛔ nada entrou no lugar: ⛔ nem
-                  * número, que seria outra convenção arbitrária.
-                  *
-                  * ⚠️ O ponto do painel fica: ele diz **contexto**, e ⛔ não etapa.
-                  */}
-                {sup.painel ? (
-                  <Text style={[s.abaLetra, ativa && s.abaLetraAtiva]}>·</Text>
-                ) : null}
-                {/**
-                  * ⚠️ TRÊS LINHAS — medido em 375×812 depois que a letra saiu:
-                  * *"Segurança para trombólise"* chegava truncada como
-                  * *"Segurança para …"*, e nome truncado ⛔ não identifica a
-                  * superfície que ele existe para nomear.
-                  */}
-                <Text style={[s.abaTitulo, ativa && s.abaTituloAtivo]} numberOfLines={3}>
-                  {tr(sup.titulo)}
+                <Icone
+                  nome={c?.icone ?? "adiante"}
+                  tamanho={18}
+                  cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
+                />
+                {/** ⚠️ UMA LINHA — nome que quebra ⛔ não identifica ⛔ nada. */}
+                <Text
+                  style={[s.navNome, ativa && s.navNomeAtivo]}
+                  numberOfLines={1}
+                  testID={`avc-rotulo-aba-${sup.id}`}
+                >
+                  {tr(c?.nome ?? sup.titulo)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={s.aux}>
+          {SUPERFICIES.filter((sup) => sup.painel || sup.id === "correcoes").map((sup) => {
+            const c = CURTO[sup.id];
+            return (
+              <Pressable
+                key={sup.id}
+                onPress={() => abrir(sup.id)}
+                accessibilityRole="button"
+                accessibilityLabel={tr(sup.titulo)}
+                testID={`avc-aba-${sup.id}`}
+                style={[s.auxItem, sup.id === estado.superficieVista && s.auxItemAtivo]}
+              >
+                <Icone nome={c?.icone ?? "adiante"} tamanho={14} />
+                <Text style={s.auxNome} numberOfLines={1} testID={`avc-rotulo-aba-${sup.id}`}>
+                  {tr(c?.nome ?? sup.titulo)}
                 </Text>
               </Pressable>
             );
@@ -609,6 +826,146 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    /* ── cockpit ─────────────────────────────────────────────────────── */
+    cockpit: {
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+      padding: ESPACO.sm,
+      gap: ESPACO.sm,
+    },
+    /* ── faixa compacta: o que fica em TODA superfície ────────────────── */
+    faixa: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+    },
+    faixaItem: { flexDirection: "row", alignItems: "baseline", gap: 3 },
+    faixaSep: { color: tema.cores.border, fontSize: TIPOGRAFIA.caption.fontSize },
+    faixaChave: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+    },
+    faixaValor: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontWeight: "700",
+    },
+    /** ⚠️⚠️ AUSÊNCIA NEUTRA — ⛔ campo vazio ⛔ não é achado. */
+    faixaAusente: { color: tema.cores.textSecondary, fontWeight: "400" },
+    cockpitCompleto: { gap: ESPACO.sm, paddingTop: ESPACO.xs },
+
+    /* ── bloqueio corrigível, citando D ──────────────────────────────── */
+    bloqueio: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      backgroundColor: tema.cores.bg,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.warning,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+    },
+    bloqueioTexto: {
+      flex: 1,
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+    },
+    bloqueioAcao: {
+      color: tema.cores.warning,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontWeight: "700",
+    },
+
+    cockpitTopo: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: ESPACO.sm },
+    relogioClinico: { flex: 1, gap: 2 },
+    cockpitRotulo: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "700",
+    },
+    /** ⚠️ O relógio CLÍNICO é o número grande — ⛔ e ⛔ não o tempo de abertura. */
+    cockpitRelogio: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.title.fontSize,
+      fontWeight: "800",
+    },
+    /** ⚠️⚠️ AUSÊNCIA É NEUTRA — ⛔ cinza, ⛔ nunca âmbar. */
+    cockpitAusente: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+    },
+    /** ⚠️ Discreto de propósito: contador grande correndo vira ruído. */
+    cockpitAtendimento: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+    },
+    vitais: { flexDirection: "row", gap: ESPACO.xs },
+    vital: {
+      flex: 1,
+      alignItems: "center",
+      backgroundColor: tema.cores.bg,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      paddingVertical: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    vitalChave: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+    },
+    vitalValor: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "700",
+    },
+    vitalAusente: { color: tema.cores.textSecondary, fontWeight: "400" },
+    vitalUnidade: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+
+    /* ── navegação clínica ───────────────────────────────────────────── */
+    navBloco: { gap: ESPACO.xs },
+    nav: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
+    navItem: {
+      width: "31.5%",
+      alignItems: "center",
+      gap: 2,
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.border,
+      paddingVertical: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+    },
+    navItemAtivo: { borderColor: tema.cores.primary },
+    navNome: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontWeight: "600",
+    },
+    navNomeAtivo: { color: tema.cores.primary },
+    aux: { flexDirection: "row", gap: ESPACO.xs },
+    auxItem: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      paddingVertical: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+    },
+    auxItemAtivo: { borderColor: tema.cores.primary },
+    auxNome: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+
     root: { flex: 1, backgroundColor: tema.cores.bg },
     conteudo: { padding: ESPACO.md, paddingBottom: ESPACO.xl, gap: ESPACO.md },
     cabecalho: { gap: ESPACO.xs },

@@ -186,8 +186,18 @@ test.describe("AVC · Superfície D — Segurança", () => {
     await page.getByTestId("avc-aba-seguranca").click();
     const conteudo = page.getByTestId("avc-superficie-d-conteudo");
     await expect(conteudo).toContainText(/juicio de seguridad/i);
-    /** ⚠️ O nome da superfície mudou: ⛔ nada de "elegibilidade". */
-    await expect(page.getByTestId("avc-aba-seguranca")).toContainText(/trombólisis/i);
+    /**
+     * ⚠️ O nome da superfície ⛔ não tem "elegibilidade" — o contrato é esse, ⛔ e
+     * ⛔ ele ⛔ não mudou.
+     *
+     * ⚠️⚠️ MUDOU O LUGAR: com o cockpit, a navegação passou a usar **nome curto**
+     * de uma linha ("Seguridad"), ⛔ e o nome completo vive no cabeçalho da
+     * superfície aberta. ⛔ Asserção no lugar errado ⛔ não prova a tradução —
+     * prova onde o texto **estava**.
+     */
+    await expect(page.getByTestId("avc-aba-seguranca")).toContainText(/seguridad/i);
+    await expect(page.getByTestId("avc-superficie-seguranca")).toContainText(/trombólisis/i);
+    await expect(page.getByTestId("avc-superficie-seguranca")).not.toContainText(/elegibilidad/i);
     await expect(conteudo).toContainText("Incierto");
     await expect(conteudo).not.toContainText("Incerto");
   });

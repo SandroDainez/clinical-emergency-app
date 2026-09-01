@@ -74,41 +74,79 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * ⚠️ Os painéis continuam marcados com `·` — a distinção painel × etapa
      * ⛔ nunca foi sobre a letra (**PD-29**).
      */
-    const esperado = [
-      ["·", "paciente", "Paciente"],
-      ["·", "laboratorio", "Laboratório"],
-      ["", "estabilizacao", "Entrada e estabilização"],
-      ["", "neurologico", "Neurológico"],
-      ["", "imagem", "Imagem"],
-      ["", "seguranca", "Segurança para trombólise"],
-      ["", "correcoes", "Correções"],
-      ["", "reperfusao", "Reperfusão"],
-      ["", "destino", "Destino"],
-    ];
+    /**
+     * ⚠️⚠️ TESTE MISTO — separado em 2026-09-01, na reescrita do cockpit.
+     *
+     * ⛔ **CONTINUA VALENDO:** ⛔ nenhuma letra (o A–G colidia com o ABCDE do
+     * atendimento), as NOVE superfícies existem ⛔ e todas são alcançáveis, ⛔ e a
+     * distinção **painel × etapa** (PD-29) sobrevive.
+     *
+     * ⛔ **FICOU OBSOLETO:** a lista única com `·` ⛔ e o título por extenso. Por
+     * decisão do autor, os painéis saíram da jornada clínica para uma faixa
+     * auxiliar, ⛔ e os nomes viraram curtos para caber em UMA linha — nome que
+     * quebra ⛔ não identifica a superfície que ele existe para nomear.
+     *
+     * ⚠️⚠️ A distinção agora se prova por **posição**, ⛔ e ⛔ não por marcador: os
+     * painéis vêm DEPOIS de todas as etapas. ⛔ Trocar a prova por ⛔ nada teria
+     * sido perder PD-29 numa mudança de layout.
+     */
+    const principais = ["estabilizacao", "neurologico", "imagem", "seguranca",
+      "reperfusao", "destino"];
+    /**
+     * ⚠️⚠️ **CORREÇÕES É ETAPA NO MODELO**, ⛔ e acesso SECUNDÁRIO na tela.
+     *
+     * ⚠️ Decisão do autor, 2026-09-01: sete etapas visualmente equivalentes
+     * ⛔ não são hierarquia. ⛔ Ela ⛔ não virou painel — `painel` continua
+     * marcado ⛔ só em Paciente e Laboratório, ⛔ e é isso que PD-29 afirma.
+     * ⚠️ A posição na tela é **apresentação**; a espécie é do modelo.
+     */
+    const secundarios = ["correcoes", "paciente", "laboratorio"];
+    const etapas = [...principais, "correcoes"];
+    const paineis = ["paciente", "laboratorio"];
 
-    const abas = await page.locator('[data-testid^="avc-aba-"]').allInnerTexts();
-    expect(abas.length).toBe(9);
-    for (let i = 0; i < esperado.length; i += 1) {
-      const [marca, , titulo] = esperado[i];
-      const texto = abas[i].replace(/\s+/g, " ");
-      expect(texto, `posição ${i + 1}`).toContain(titulo);
-      if (marca) expect(texto, `posição ${i + 1}`).toContain(marca);
+    /** ⚠️ AS NOVE EXISTEM ⛔ e todas são alcançáveis — ⛔ nenhuma sumiu no layout. */
+    const ordem = await page.locator('[data-testid^="avc-aba-"]')
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("avc-aba-", "")));
+    expect(ordem.length).toBe(9);
+    for (const id of [...etapas, ...paineis]) {
+      expect(ordem, `superfície inalcançável: ${id}`).toContain(id);
     }
 
     /**
-     * ⚠️⚠️ E ⛔ NENHUM nome chega TRUNCADO — medido em 2026-08-30: com a letra
-     * fora, *"Segurança para trombólise"* passou a caber, e nome truncado ⛔ não
-     * identifica a superfície que ele existe para nomear.
+     * ⚠️⚠️ PD-29 POR POSIÇÃO: os painéis vêm DEPOIS de todas as etapas.
+     *
+     * ⛔ Antes a distinção era o `·`; agora é a faixa auxiliar. ⛔ A prova mudou
+     * de forma, ⛔ e ⛔ não de objeto: painel ⛔ continua ⛔ não sendo etapa.
      */
-    for (const t of abas) {
-      expect(t, `aba truncada: ${t}`).not.toMatch(/…|\.\.\./);
+    const ultimaPrincipal = Math.max(...principais.map((id) => ordem.indexOf(id)));
+    const primeiroSecundario = Math.min(...secundarios.map((id) => ordem.indexOf(id)));
+    expect(primeiroSecundario, "acesso secundário ⛔ não se mistura às etapas principais")
+      .toBeGreaterThan(ultimaPrincipal);
+
+    /** ⚠️⚠️ E PD-29 CONTINUA NO MODELO: ⛔ só dois são painel. */
+    expect(SUPERFICIES.filter((s) => s.painel).map((s) => s.id).sort())
+      .toEqual(["laboratorio", "paciente"]);
+
+    /**
+     * ⚠️⚠️ ⛔ NENHUM nome chega TRUNCADO ⛔ nem QUEBRADO — o contrato de 2026-08-30
+     * sobrevive à mudança para nome curto, ⛔ e ganha a exigência de UMA linha.
+     */
+    /**
+     * ⚠️ Mede o NOME, ⛔ e ⛔ não o item: o item contém ícone **e** nome em
+     * coluna, ⛔ e a quebra entre os dois ⛔ não é o nome quebrando.
+     */
+    const nomes = await page.locator('[data-testid^="avc-rotulo-aba-"]').allInnerTexts();
+    expect(nomes.length).toBe(9);
+    for (const t of nomes) {
+      expect(t, `nome truncado: ${t}`).not.toMatch(/…|\.\.\./);
+      expect(t.trim(), `nome em duas linhas: ${t}`).not.toMatch(/\n/);
     }
 
-    /** ⛔⛔ E ⛔ NENHUMA aba de etapa carrega letra solta — ⛔ nem número. */
-    const etapas = abas.slice(2).map((t) => t.replace(/\s+/g, " ").trim());
-    for (const t of etapas) {
-      expect(t, `aba com letra: ${t}`).not.toMatch(/^[A-G]\s*·/);
-      expect(t, `aba com número: ${t}`).not.toMatch(/^\d+\s*[·.]/);
+    /** ⛔⛔ E ⛔ NENHUMA aba carrega letra solta — ⛔ nem número. */
+    for (const t of nomes) {
+      const limpo = t.replace(/\s+/g, " ").trim();
+      expect(limpo, `aba com letra: ${t}`).not.toMatch(/^[A-G]\s*·/);
+      expect(limpo, `aba com número: ${t}`).not.toMatch(/^\d+\s*[·.]/);
     }
 
     // ⚠️ E o cabeçalho da superfície aberta também vem só pelo nome.

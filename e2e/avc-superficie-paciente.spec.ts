@@ -73,7 +73,7 @@ test.describe("AVC · Paciente — painel de contexto", () => {
 
     // ⚠️ Na A ele aparece EMPRESTADO, com a etiqueta de onde mora.
     await expect(page.getByTestId("avc-emprestado-peso")).toContainText(/Do painel Paciente/i);
-    await page.getByTestId("avc-degrau-peso-mais-10").click();
+    await page.getByTestId("avc-num-caixa-peso").fill("78");
 
     await page.getByTestId("avc-aba-paciente").click();
     // ⛔ E lá ele ⛔ não é emprestado: é a casa dele.
