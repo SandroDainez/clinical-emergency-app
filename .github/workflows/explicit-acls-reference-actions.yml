@@ -1,0 +1,45 @@
+name: Explicit ACLS reference actions
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - '.github/workflows/explicit-acls-reference-actions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/explicita-acoes-referencia-acls.cjs
+      - name: TypeScript compile gate
+        run: npx tsc --noEmit --pretty false
+      - name: Clinical step parity
+        run: node scripts/valida-paridade-clinical-steps.cjs
+      - run: npm run build:web
+      - name: Validate scope
+        shell: bash
+        run: |
+          git diff --check
+          files="$(git diff --name-only)"
+          echo "$files"
+          test "$files" = "components/protocol-screen/acls-protocol-screen.tsx"
+      - name: Commit explicit ACLS actions
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/acls-protocol-screen.tsx
+          git commit -m "fix(ui): make ACLS reference actions explicit"
+          git push origin HEAD:emergencias-2-ui-core
