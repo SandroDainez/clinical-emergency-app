@@ -28,6 +28,13 @@ function getPcrContract(source: "tachycardia" | "bradycardia"): PcrTerminalHando
   return contract;
 }
 
+function expectedFactIds(contract: PcrTerminalHandoffContextContract): readonly string[] {
+  return [
+    ...contract.requiredFacts,
+    ...(contract.optionalFacts ?? []).filter((id) => !contract.requiredFacts.includes(id)),
+  ];
+}
+
 export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHandoffCase[] = [
   {
     id: "tachy-pulseless-handoff-complete-consume-once",
@@ -46,12 +53,16 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
       if (result.status !== "complete") issues.push(`esperado complete, recebido ${result.status}`);
-      if (listPendingClinicalHandoffs().length !== 1) issues.push("handoff completo não foi publicado exatamente uma vez");
+      if (listPendingClinicalHandoffs().length !== 1) issues.push("handoff com contexto disponível não foi publicado exatamente uma vez");
 
       const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
       if (!consumed) issues.push("PCR não consumiu o payload publicado");
       else {
-        if (consumed.facts.length !== contract.requiredFacts.length) issues.push("payload consumido perdeu fatos obrigatórios");
+        const expectedIds = expectedFactIds(contract);
+        if (consumed.facts.length !== expectedIds.length) issues.push("payload consumido perdeu fatos preserváveis disponíveis");
+        for (const factId of expectedIds) {
+          if (!consumed.facts.some((fact) => fact.id === factId)) issues.push(`payload perdeu ${factId}`);
+        }
         const rhythm = consumed.facts.find((fact) => fact.id === "ritmo_pre_parada");
         if (rhythm?.value !== "TV monomórfica") issues.push("ritmo pré-parada não foi preservado");
         if (rhythm?.recordedAt !== now - 30_000) issues.push("timestamp do ritmo não foi preservado");
@@ -61,7 +72,7 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
     },
   },
   {
-    id: "brady-pulseless-handoff-incomplete-not-published",
+    id: "brady-pulseless-partial-context-published-with-missing-optional",
     run: () => {
       resetHandoffState();
       const contract = getPcrContract("bradycardia");
@@ -73,13 +84,31 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
 
       const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
-      if (result.status !== "incomplete") {
-        issues.push(`esperado incomplete, recebido ${result.status}`);
-      } else {
-        if (result.missingFacts.length === 0) issues.push("handoff incompleto não declarou fatos faltantes");
-        if (!result.missingFacts.includes("marcapasso_em_uso")) issues.push("falta de marcapasso_em_uso não foi declarada");
+      if (result.status !== "complete") {
+        issues.push(`contexto parcial PCR deve ser publicável; recebido ${result.status}`);
+        return issues;
       }
-      if (listPendingClinicalHandoffs().length !== 0) issues.push("handoff incompleto foi publicado indevidamente");
+      if (!result.missingOptionalFacts.includes("marcapasso_em_uso")) {
+        issues.push("falta de marcapasso_em_uso não permaneceu explícita como opcional ausente");
+      }
+      if (result.missingFacts.length !== 0) {
+        issues.push("PCR não deve transformar fatos preserváveis opcionais em obrigatórios");
+      }
+      if (listPendingClinicalHandoffs().length !== 1) {
+        issues.push("contexto parcial verdadeiro não foi publicado para PCR");
+      }
+
+      const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
+      if (!consumed) return [...issues, "PCR não consumiu contexto parcial publicado"];
+      if (!consumed.facts.some((fact) => fact.id === "ritmo_pre_parada" && fact.value === "BAV total")) {
+        issues.push("ritmo disponível não atravessou no contexto parcial");
+      }
+      if (!consumed.facts.some((fact) => fact.id === "atropina_administrada" && fact.value === true)) {
+        issues.push("atropina disponível não atravessou no contexto parcial");
+      }
+      if (consumed.facts.some((fact) => fact.id === "marcapasso_em_uso")) {
+        issues.push("fato ausente foi fabricado no payload parcial");
+      }
       return issues;
     },
   },
@@ -89,8 +118,9 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       resetHandoffState();
       const contract = getPcrContract("tachycardia");
       const now = 1_800_000_200_000;
+      const factIds = expectedFactIds(contract);
 
-      for (const factId of contract.requiredFacts) {
+      for (const factId of factIds) {
         recordClinicalObservation({ id: factId, value: `obs:${factId}`, recordedAt: now - 10_000, source: "manual", originModule: contract.fromModule });
         appendClinicalEvent({ id: `evt:${factId}`, type: "observation_recorded", occurredAt: now - 1_000, module: contract.fromModule, label: factId, data: { [factId]: `event:${factId}` } });
       }
@@ -100,6 +130,7 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       if (result.status !== "complete") return [`esperado complete, recebido ${result.status}`];
       const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
       if (!consumed) return ["payload não disponível para consumo"];
+      if (consumed.facts.length !== factIds.length) issues.push("payload não preservou todos os fatos disponíveis do contrato");
       for (const fact of consumed.facts) {
         if (fact.value !== `obs:${fact.id}`) issues.push(`observação não teve prioridade para ${fact.id}`);
       }
