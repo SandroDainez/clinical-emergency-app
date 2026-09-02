@@ -42,7 +42,18 @@ const LABELS: Record<string, string> = {
   glicemia: "Glicemia",
   glasgow: "Glasgow",
   temperatura: "Temp",
+  peso: "Peso",
+  altura: "Altura",
 };
+
+/**
+ * Dados do paciente que continuam fazendo sentido quando o atendimento entra
+ * temporariamente em outro módulo. Variáveis específicas de um protocolo —
+ * janela do AVC, classificação local, escores próprios etc. — continuam no
+ * runtime para o retorno, mas não são apresentadas como métricas do módulo de
+ * intercorrência.
+ */
+const CROSS_MODULE_OBSERVATION_IDS = new Set(Object.keys(LABELS));
 
 const SOURCE_LABELS: Record<ClinicalObservation["source"], string> = {
   manual: "medido aqui",
@@ -84,7 +95,16 @@ export function buildClinicalShellSnapshot(input: {
   now?: number;
 }): ClinicalShellSnapshot {
   const now = input.now ?? Date.now();
+  const interruption = peekClinicalInterruption();
+  const isInterruptionDestination = Boolean(
+    interruption && interruption.toModule === input.moduleSlug
+  );
+
   const metrics = getAllClinicalObservations()
+    .filter((observation) =>
+      !isInterruptionDestination ||
+      CROSS_MODULE_OBSERVATION_IDS.has(observation.id.toLowerCase())
+    )
     .slice(0, 4)
     .map((observation) => ({
       id: observation.id,
@@ -94,7 +114,6 @@ export function buildClinicalShellSnapshot(input: {
       origin: formatObservationOrigin(observation),
     }));
 
-  const interruption = peekClinicalInterruption();
   const returnContext =
     interruption && interruption.toModule === input.moduleSlug && interruption.returnModule
       ? interruption.returnLabel || interruption.returnModule
