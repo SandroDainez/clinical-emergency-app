@@ -16,25 +16,32 @@ function findTransitionContract(transitionId: string): ClinicalTransitionContrac
 /**
  * Deriva o contrato de preservação a partir da aresta clínica canônica.
  *
- * `ClinicalTransitionContract.preserves` é a fonte de verdade dos fatos que
- * atravessam a troca de módulo. Este adapter evita manter uma segunda lista em
- * `ClinicalHandoffPreservationContract.requiredFacts`, que poderia divergir.
- *
- * A política de transferência continua explícita no consumidor: derivar fatos
- * não autoriza atrasar um destino urgente nem decide se contexto incompleto
- * pode bloquear a navegação.
+ * `ClinicalTransitionContract.preserves` é a fonte de verdade do conjunto de
+ * fatos que pode atravessar a troca de módulo. O consumidor escolhe, dentro
+ * desse conjunto, quais são realmente obrigatórios. Os demais permanecem
+ * opcionais: viajam se já estiverem documentados, sem inferência e sem valor
+ * inventado.
  */
 export function handoffPreservationFromTransition(input: {
   id: string;
   transitionId: string;
+  requiredFacts?: readonly string[];
   transferPolicy?: ClinicalHandoffTransferPolicy;
 }): ClinicalHandoffPreservationContract {
   const transition = findTransitionContract(input.transitionId);
-  const requiredFacts = [...(transition.preserves ?? [])];
+  const preservedFacts = [...(transition.preserves ?? [])];
 
-  if (!requiredFacts.length) {
+  if (!preservedFacts.length) {
     throw new Error(
       `Transição ${transition.id} não declara preserves[] para construir handoff`
+    );
+  }
+
+  const requiredFacts = [...(input.requiredFacts ?? [])];
+  const invalidRequired = requiredFacts.filter((id) => !preservedFacts.includes(id));
+  if (invalidRequired.length) {
+    throw new Error(
+      `Handoff ${input.id} exige fatos fora de preserves[]: ${invalidRequired.join(", ")}`
     );
   }
 
@@ -44,6 +51,7 @@ export function handoffPreservationFromTransition(input: {
     fromModule: transition.from,
     toModule: transition.to,
     requiredFacts,
+    optionalFacts: preservedFacts.filter((id) => !requiredFacts.includes(id)),
     transferPolicy: input.transferPolicy,
   };
 }
