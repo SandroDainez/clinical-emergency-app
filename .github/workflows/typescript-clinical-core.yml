@@ -89,9 +89,11 @@ jobs:
           node scripts/valida-contagem-transition-contracts.cjs
           node scripts/valida-cobertura-other-module-registry.cjs
           node scripts/valida-handoff-prioridade-pcr.cjs
+          node scripts/valida-terminal-handoff-navigation-shell.cjs
 
       - name: Run executable clinical handoff regressions
         run: |
+          node scripts/valida-handoff-executaveis-emergencias-2.cjs
           node scripts/test-clinical-handoffs-emergencias-2.cjs
           node scripts/test-tree-to-handoff-emergencias-2.cjs
 
