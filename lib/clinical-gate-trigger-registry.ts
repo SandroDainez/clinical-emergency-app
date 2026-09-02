@@ -19,7 +19,7 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
   {
     id: "sca-commit-reperfusion-without-pci-time",
     gateId: "sca-tempo-icp-nao-confirmado",
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     nodeId: "stemi_reperfusao",
     actionId: "definir_estrategia_reperfusao",
     when: { fact: "tempo_operacional_icp", operator: "equals", value: "desconhecido" },
