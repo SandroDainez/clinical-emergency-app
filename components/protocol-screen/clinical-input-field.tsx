@@ -1,0 +1,261 @@
+import { useState, type ReactNode } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
+import type { InputField } from "../../core/decision-tree/types";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { CategoricalSelector } from "../ui-v2/categorical-selector";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
+
+export type ClinicalInputRange = {
+  min: number;
+  max: number;
+  passo: number;
+};
+
+export type ClinicalInputFieldProps = {
+  field: InputField;
+  value?: string;
+  inherited?: boolean;
+  numericRange?: ClinicalInputRange;
+  onChange: (value: string) => void;
+  renderCalculator?: ReactNode;
+  tr?: (text: string) => string;
+  testID?: string;
+};
+
+/**
+ * Apresentação isolada de UM campo clínico do nó de entrada.
+ *
+ * Não decide se um campo é numérico, não inventa faixa, não valida normalidade,
+ * não interpreta presets e não conhece o motor. A faixa numérica chega pronta
+ * do chamador; sem faixa, os presets são tratados como domínio categórico.
+ */
+export function ClinicalInputField({
+  field,
+  value,
+  inherited = false,
+  numericRange,
+  onChange,
+  renderCalculator,
+  tr = (text) => text,
+  testID,
+}: ClinicalInputFieldProps) {
+  const e = useEstilosDoTema(criarEstilos);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customText, setCustomText] = useState("");
+
+  const preset = field.presets.find((item) => item.value === value);
+  const isPreset = Boolean(preset);
+  const showingCustom = customOpen || (value !== undefined && !isPreset && !numericRange);
+  const numericValue = value !== undefined ? Number(value.replace(",", ".")) : undefined;
+
+  const currentLabel = preset?.label ?? value;
+
+  return (
+    <View style={e.wrapper} testID={testID}>
+      <View style={e.header}>
+        <Text style={e.label}>
+          {tr(field.label)}
+          {field.unit ? <Text style={e.unit}> ({field.unit})</Text> : null}
+        </Text>
+        {value !== undefined ? (
+          <Text style={e.currentValue} numberOfLines={1}>
+            {currentLabel}{field.unit ? ` ${field.unit}` : ""}
+          </Text>
+        ) : null}
+      </View>
+
+      {inherited ? (
+        <View style={e.inherited} accessibilityRole="summary">
+          <Text style={e.inheritedEyebrow}>{tr("DADO HERDADO")}</Text>
+          <Text style={e.inheritedText}>
+            {tr("Aproveitado do que você já informou neste atendimento — confira e ajuste se mudou.")}
+          </Text>
+        </View>
+      ) : null}
+
+      {renderCalculator}
+
+      {numericRange ? (
+        <NumericStepper
+          valor={
+            numericValue !== undefined && Number.isFinite(numericValue)
+              ? numericValue
+              : Number(((numericRange.min + numericRange.max) / 2).toFixed(0))
+          }
+          onChange={(next) => onChange(String(next))}
+          min={numericRange.min}
+          max={numericRange.max}
+          passo={numericRange.passo}
+          unidade={field.unit}
+          rotulo={tr(field.label)}
+          testID={testID ? `${testID}-numeric` : undefined}
+        />
+      ) : (
+        <>
+          <CategoricalSelector
+            value={isPreset ? value : undefined}
+            options={field.presets.map((item) => ({
+              value: item.value,
+              label: tr(item.label),
+            }))}
+            onChange={(next) => {
+              onChange(next);
+              setCustomOpen(false);
+            }}
+            testID={testID ? `${testID}-categorical` : undefined}
+          />
+
+          {field.allowCustom ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showingCustom }}
+                onPress={() => setCustomOpen((open) => !open)}
+                style={({ pressed }) => [e.otherButton, showingCustom && e.otherButtonActive, pressed && e.pressed]}
+              >
+                <Text style={[e.otherText, showingCustom && e.otherTextActive]}>{tr("Outro…")}</Text>
+              </Pressable>
+
+              {showingCustom ? (
+                <View style={e.customRow}>
+                  <TextInput
+                    value={customText || (isPreset ? "" : value ?? "")}
+                    onChangeText={setCustomText}
+                    placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
+                    keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                      const next = customText.trim();
+                      if (next) onChange(next);
+                    }}
+                    style={e.customInput}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={tr("Confirmar valor")}
+                    onPress={() => {
+                      const next = customText.trim();
+                      if (next) onChange(next);
+                    }}
+                    style={({ pressed }) => [e.customConfirm, pressed && e.pressed]}
+                  >
+                    <Text style={e.customConfirmText}>OK</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </>
+          ) : null}
+        </>
+      )}
+    </View>
+  );
+}
+
+const criarEstilos = (t: Tema) =>
+  StyleSheet.create({
+    wrapper: {
+      gap: ESPACO.sm,
+      borderTopWidth: 1,
+      borderTopColor: t.cores.border,
+      paddingTop: ESPACO.md,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+    },
+    label: {
+      flex: 1,
+      ...TIPOGRAFIA.caption,
+      color: t.cores.text,
+      fontWeight: "800",
+    },
+    unit: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "600",
+    },
+    currentValue: {
+      maxWidth: "42%",
+      ...TIPOGRAFIA.caption,
+      color: t.cores.primary,
+      fontWeight: "900",
+      textAlign: "right",
+    },
+    inherited: {
+      borderLeftWidth: 3,
+      borderLeftColor: t.cores.primary,
+      paddingLeft: ESPACO.sm,
+      gap: 2,
+    },
+    inheritedEyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.4,
+    },
+    inheritedText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "500",
+    },
+    otherButton: {
+      minHeight: TOQUE.minimo,
+      alignSelf: "flex-start",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: t.cores.border,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      backgroundColor: t.cores.bg,
+    },
+    otherButtonActive: {
+      borderStyle: "solid",
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.surface,
+    },
+    otherText: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.textSecondary,
+      fontWeight: "700",
+    },
+    otherTextActive: {
+      color: t.cores.primary,
+      fontWeight: "900",
+    },
+    customRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+    },
+    customInput: {
+      flex: 1,
+      minHeight: TOQUE.minimo,
+      borderRadius: RAIO.input,
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      backgroundColor: t.cores.surface,
+      color: t.cores.text,
+      paddingHorizontal: ESPACO.md,
+      ...TIPOGRAFIA.caption,
+    },
+    customConfirm: {
+      minWidth: TOQUE.critico,
+      minHeight: TOQUE.critico,
+      borderRadius: RAIO.botao,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: t.cores.primary,
+      paddingHorizontal: ESPACO.md,
+    },
+    customConfirmText: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.onPrimary,
+      fontWeight: "900",
+    },
+    pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
+  });
