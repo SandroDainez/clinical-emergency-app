@@ -38,6 +38,10 @@ exigir(
   /onChange=\{\(next\)\s*=>\s*onChange\(String\(next\)\)\}/.test(field),
   "Valor numérico deixou de voltar ao chamador como string, contrato do TreeValues."
 );
+exigir(
+  /onConfirmar=\{\(next\)\s*=>\s*onChange\(String\(next\)\)\}/.test(field),
+  "Campo numérico deixou de confirmar o valor atual quando o usuário conclui o gesto sem alterar o número."
+);
 
 // O número inicial visível não pode ser gravado por conta própria.
 exigir(
@@ -105,7 +109,7 @@ if (falhas.length) {
 console.log("✅ Paridade estrutural do InputStep preservada.");
 console.log("   • ranges continuam externos à apresentação");
 console.log("   • canContinue continua vindo do engine");
-console.log("   • numéricos preservam min/max/passo e não gravam o valor visual sozinhos");
+console.log("   • numéricos preservam min/max/passo, confirmam o valor atual e não gravam o valor visual sozinhos");
 console.log("   • categorias preservam value/label da árvore");
 console.log("   • Outro…, herdados e calculadoras continuam representados");
 console.log("   • field.id e callbacks seguem sem reinterpretação");
