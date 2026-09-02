@@ -25,6 +25,10 @@ export {
   type ClinicalObservationChipProps,
 } from "./clinical-observation-chip";
 export {
+  ClinicalShellChrome,
+  type ClinicalShellChromeProps,
+} from "./clinical-shell-chrome";
+export {
   CrisisActionBar,
   type CrisisAction,
   type CrisisActionBarProps,
