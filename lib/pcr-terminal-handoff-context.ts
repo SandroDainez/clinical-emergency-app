@@ -13,9 +13,9 @@ export type PcrTerminalHandoffContextContract = ClinicalHandoffPreservationContr
 /**
  * Contexto mínimo que deve atravessar a passagem terminal para PCR.
  *
- * O destino recebe um `ClinicalHandoffPayload` genérico; ele não precisa importar
- * nem conhecer a árvore que originou a parada. Estes contratos apenas selecionam
- * quais fatos da origem devem compor esse payload.
+ * A ausência de parte desse contexto NUNCA pode atrasar a entrada no algoritmo
+ * de parada. Por isso ambos os contratos usam `do_not_delay_destination`:
+ * o déficit permanece explícito para auditoria, mas compressões/PCR têm prioridade.
  */
 export const PCR_TERMINAL_HANDOFF_CONTEXTS: readonly PcrTerminalHandoffContextContract[] = [
   {
@@ -27,6 +27,7 @@ export const PCR_TERMINAL_HANDOFF_CONTEXTS: readonly PcrTerminalHandoffContextCo
     fromModule: "acls_tachycardia_2025",
     toModule: "pcr-adulto",
     targetModuleId: "pcr-adulto",
+    transferPolicy: "do_not_delay_destination",
     requiredFacts: [
       "ritmo_pre_parada",
       "energia_ultima_cardioversao",
@@ -47,6 +48,7 @@ export const PCR_TERMINAL_HANDOFF_CONTEXTS: readonly PcrTerminalHandoffContextCo
     fromModule: "acls_bradycardia_2025",
     toModule: "pcr-adulto",
     targetModuleId: "pcr-adulto",
+    transferPolicy: "do_not_delay_destination",
     requiredFacts: [
       "ritmo_pre_parada",
       "atropina_administrada",
