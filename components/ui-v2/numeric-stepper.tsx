@@ -59,13 +59,9 @@ export type NumericStepperProps = {
 /**
  * Controle numérico único do app — peso, idade, tempo, volume, PEEP, dose.
  *
- * O plano pede um só componente parametrizado em vez de um campo diferente por
- * grandeza, e slider + botões grandes em vez de digitação: no plantão, acertar
- * um número num teclado com luva é mais lento e mais sujeito a erro do que
- * arrastar e ajustar.
- *
- * Os botões −/+ respeitam o alvo mínimo de 44 px e continuam operáveis mesmo
- * quando o slider é pequeno demais para a precisão desejada.
+ * O slider serve para aproximação rápida. Os botões −/+ ficam visualmente mais
+ * fortes porque são o mecanismo de ajuste fino e respeitam o passo canônico do
+ * campo. Nenhuma parte deste componente escolhe um valor clínico pelo usuário.
  */
 export function NumericStepper({
   valor,
@@ -88,8 +84,6 @@ export function NumericStepper({
   const limitar = useCallback(
     (n: number) => {
       const preso = Math.min(max, Math.max(min, n));
-      // Arredonda para o passo para não acumular erro de ponto flutuante ao
-      // somar 0.1 várias vezes.
       const emPassos = Math.round((preso - min) / passo) * passo + min;
       return Number(emPassos.toFixed(decimais));
     },
@@ -99,27 +93,25 @@ export function NumericStepper({
   const ajustar = (delta: number) => {
     const novo = limitar(valor + delta);
     onChange(novo);
-    // Tocar −/+ é confirmação tanto quanto soltar a barra, e no extremo da
-    // faixa o valor não muda — sem isto, o campo no mínimo ficaria "não
-    // informado" para sempre.
     onConfirmar?.(novo);
   };
 
   const noMinimo = valor <= min;
   const noMaximo = valor >= max;
+  const valorAcessivel = `${valor.toFixed(decimais).replace(".", ",")}${unidade ? ` ${unidade}` : ""}`;
 
   return (
     <View style={[e.wrapper, style]} testID={testID}>
       {rotulo ? <Text style={e.rotulo}>{rotulo}</Text> : null}
 
-      <View style={e.valorLinha}>
-        {/* VÍRGULA, não ponto. `toFixed` devolve "0.13" e o app inteiro — texto
-            clínico, presets, doses — escreve "0,13". Um separador diferente no
-            número que se lê em voz alta para conferir é ruído desnecessário, e
-            os dois idiomas do app (pt-BR e es-419) usam vírgula. Como todas as
-            barras passam por aqui, corrigir no componente corrige em todas. */}
+      <View style={e.valorLinha} accessibilityRole="summary" accessibilityLabel={`${rotulo ?? "Valor"}: ${valorAcessivel}`}>
         <Text style={e.valor}>{valor.toFixed(decimais).replace(".", ",")}</Text>
         {unidade ? <Text style={e.unidade}>{unidade}</Text> : null}
+      </View>
+
+      <View style={e.precisionHintRow}>
+        <Text style={e.precisionHint}>APROXIME NA BARRA</Text>
+        <Text style={e.precisionStep}>AJUSTE FINO · ± {passo.toFixed(decimais).replace(".", ",")}</Text>
       </View>
 
       <View style={e.controles}>
@@ -127,7 +119,7 @@ export function NumericStepper({
           simbolo="−"
           onPress={() => ajustar(-passo)}
           disabled={disabled || noMinimo}
-          accessibilityLabel={`Diminuir ${rotulo ?? "valor"}`}
+          accessibilityLabel={`Diminuir ${rotulo ?? "valor"} em ${passo}`}
           estilos={e}
           testID={testID ? `${testID}-menos` : undefined}
         />
@@ -145,15 +137,20 @@ export function NumericStepper({
             maximumTrackTintColor={e.coresSlider.trilho}
             thumbTintColor={e.coresSlider.ativo}
             accessibilityLabel={rotulo}
+            accessibilityValue={{ min, max, now: valor, text: valorAcessivel }}
             style={e.slider}
           />
+          <View style={e.rangeRow}>
+            <Text style={e.rangeText}>{min.toFixed(decimais).replace(".", ",")}</Text>
+            <Text style={e.rangeText}>{max.toFixed(decimais).replace(".", ",")}</Text>
+          </View>
         </View>
 
         <BotaoPasso
           simbolo="+"
           onPress={() => ajustar(passo)}
           disabled={disabled || noMaximo}
-          accessibilityLabel={`Aumentar ${rotulo ?? "valor"}`}
+          accessibilityLabel={`Aumentar ${rotulo ?? "valor"} em ${passo}`}
           estilos={e}
           testID={testID ? `${testID}-mais` : undefined}
         />
@@ -202,47 +199,50 @@ const criarEstilos = (t: Tema) => {
   const cores = t.cores;
   return {
     ...StyleSheet.create({
-      /**
-       * ⚠️ O CONTROLE GARANTE A PRÓPRIA LARGURA — quatro telas provaram que ele
-       * não pode depender do hospedeiro.
-       *
-       * A varredura de barras renderizadas (e2e/barra-utilizavel.spec.ts) achou
-       * SEIS barras inutilizáveis em quatro módulos, todas pela mesma causa: o
-       * stepper posto dentro de um contêiner `flexDirection: "row"` sem largura
-       * garantida — ao lado de um rótulo em `flex: 1`, dentro de uma linha de
-       * chips com wrap, ou numa coluna de 48%. Os botões −/+ (44 px cada, alvo
-       * mínimo de toque) consomem o que sobra e a trilha fica com 0 a 40 px.
-       *
-       * `flexBasis: "100%"` + `flexGrow: 1` fazem o controle ocupar a linha
-       * inteira do pai; `minWidth` impede que um pai estreito o esmague. Como
-       * TODAS as barras passam por aqui, corrigir no componente corrige em
-       * todas — e a quinta tela nasce protegida, que é o ponto.
-       *
-       * ⚠️ O PISO É 200, NÃO 260, e o número saiu de medição: com 260 o
-       * controle estourava o cartão de dose das Vasoativas (que tem
-       * `overflow: hidden`) e o botão "+" saía cortado — a proteção criando um
-       * defeito novo. 200 = 44 + 44 dos botões + ~112 de trilha, acima do piso
-       * de usabilidade de 120 que a trava exige.
-       *
-       * Onde a largura ainda fica curta, a causa é OUTRA e tem dono: o rail
-       * lateral permanente de 86 a 96 px das três calculadoras, que está sendo
-       * convergido para o componente comum.
-       */
       wrapper: { gap: ESPACO.sm, flexBasis: "100%", flexGrow: 1, minWidth: 200 },
-      rotulo: { ...TIPOGRAFIA.micro, color: cores.textSecondary },
+      rotulo: { ...TIPOGRAFIA.micro, color: cores.textSecondary, fontWeight: "700" },
       valorLinha: {
         flexDirection: "row",
         alignItems: "baseline",
         justifyContent: "center",
         gap: ESPACO.xs,
       },
-      // tabular-nums: sem isto o número muda de largura ao arrastar o slider e
-      // o valor "dança" na tela.
       valor: { ...TIPOGRAFIA.display, ...NUMERO_TABULAR, color: cores.text },
-      unidade: { ...TIPOGRAFIA.caption, color: cores.textSecondary },
+      unidade: { ...TIPOGRAFIA.caption, color: cores.textSecondary, fontWeight: "700" },
+      precisionHintRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: ESPACO.sm,
+      },
+      precisionHint: {
+        ...TIPOGRAFIA.micro,
+        color: cores.textSecondary,
+        fontWeight: "600",
+        letterSpacing: 0.35,
+      },
+      precisionStep: {
+        ...TIPOGRAFIA.micro,
+        color: cores.primary,
+        fontWeight: "900",
+        letterSpacing: 0.35,
+        textAlign: "right",
+      },
       controles: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
-      sliderArea: { flex: 1, justifyContent: "center" },
+      sliderArea: { flex: 1, justifyContent: "center", gap: 1 },
       slider: { width: "100%", height: TOQUE.minimo },
+      rangeRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 2,
+        marginTop: -4,
+      },
+      rangeText: {
+        fontSize: 9,
+        lineHeight: 11,
+        color: cores.textSecondary,
+        fontWeight: "600",
+      },
       botaoPasso: {
         width: TOQUE.critico,
         height: TOQUE.critico,
@@ -250,12 +250,12 @@ const criarEstilos = (t: Tema) => {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: cores.surface,
-        borderWidth: 1,
-        borderColor: cores.border,
+        borderWidth: 1.5,
+        borderColor: cores.primary,
       },
       botaoPressionado: { opacity: 0.85, transform: [{ scale: 0.96 }] },
-      botaoInativo: { opacity: 0.35 },
-      simbolo: { ...TIPOGRAFIA.title, color: cores.text, lineHeight: 30 },
+      botaoInativo: { opacity: 0.35, borderColor: cores.border },
+      simbolo: { ...TIPOGRAFIA.title, color: cores.primary, lineHeight: 30, fontWeight: "800" },
       ajuda: { ...TIPOGRAFIA.micro, color: cores.textSecondary, fontWeight: "400" },
     }),
     coresSlider: { ativo: cores.primary, trilho: cores.border },
