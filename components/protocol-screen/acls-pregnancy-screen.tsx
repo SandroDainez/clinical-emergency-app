@@ -114,7 +114,7 @@ export const CAUSAS_OBSTETRICAS: CausaObstetrica[] = [
   { letra: "H", rotulo: "Hipertensão", exemplos: "Pré-eclâmpsia, eclâmpsia, HELLP, AVC hemorrágico" },
 ];
 
-// ── Componentes ───────────────────────────────────────────────────────────────
+// ── Componentes ────────────────────────────────────────────────────────────────
 
 function CardAcao({ acao }: { acao: AcaoImediata }) {
   const tr = useTr();
@@ -248,7 +248,10 @@ export default function AclsPregnancyScreen() {
             <Text style={s.rotaTitulo}>{tr("PCR no adulto")}</Text>
             <Text style={s.rotaSub}>{tr("O algoritmo que conduz esta parada — ritmos, fármacos e ciclos")}</Text>
           </View>
-          <Text style={s.rotaChevron}>›</Text>
+          <View style={s.rotaCta}>
+            <Text style={s.rotaCtaTexto}>{tr("ABRIR MÓDULO")}</Text>
+            <Text style={s.rotaCtaSeta}>›</Text>
+          </View>
         </Pressable>
         <Pressable
           onPress={() => router.push("/modulos/pre-eclampsia?from_module=pcr-gestacao-acls" as Href)}
@@ -257,7 +260,10 @@ export default function AclsPregnancyScreen() {
             <Text style={s.rotaTitulo}>{tr("Pré-eclâmpsia e eclâmpsia")}</Text>
             <Text style={s.rotaSub}>{tr("Se houver PULSO — sulfatação, crise hipertensiva, HELLP")}</Text>
           </View>
-          <Text style={s.rotaChevron}>›</Text>
+          <View style={s.rotaCta}>
+            <Text style={s.rotaCtaTexto}>{tr("ABRIR MÓDULO")}</Text>
+            <Text style={s.rotaCtaSeta}>›</Text>
+          </View>
         </Pressable>
       </View>
 
@@ -391,10 +397,7 @@ const ca = StyleSheet.create({
 // ── Estilos principais ────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: "#292e38",
-  },
+  scroll: { flex: 1, backgroundColor: "#292e38" },
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
@@ -405,7 +408,6 @@ const s = StyleSheet.create({
     gap: 14,
   },
 
-  // ── Intro ──
   introCard: {
     backgroundColor: "#383e4a",
     borderRadius: 24,
@@ -573,16 +575,28 @@ const s = StyleSheet.create({
     gap: 10,
     backgroundColor: "#2f3540",
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#565e6c",
+    borderWidth: 1.5,
+    borderColor: "#7fb3ff",
     paddingHorizontal: 14,
     paddingVertical: 12,
-    minHeight: 44,
+    minHeight: 56,
   },
   rotaBotaoPressed: { opacity: 0.85 },
   rotaTitulo: { fontSize: 14, fontWeight: "800", color: "#f1f5f9" },
   rotaSub: { fontSize: 12, lineHeight: 17, color: "#aab6c6", fontWeight: "500" },
-  rotaChevron: { fontSize: 18, fontWeight: "800", color: "#7fb3ff" },
+  rotaCta: {
+    minHeight: 34,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    borderRadius: 9,
+    backgroundColor: "#7fb3ff",
+    paddingHorizontal: 10,
+    flexShrink: 0,
+  },
+  rotaCtaTexto: { fontSize: 9, fontWeight: "900", color: "#1d2939", letterSpacing: 0.4 },
+  rotaCtaSeta: { fontSize: 15, fontWeight: "900", color: "#1d2939" },
 
   causasCard: {
     backgroundColor: "#383e4a",
@@ -648,31 +662,14 @@ const s = StyleSheet.create({
   // ── Rodapé ──
   footerCard: {
     backgroundColor: "#383e4a",
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: "#565e6c",
-    gap: 10,
+    gap: 7,
   },
-  footerTitle: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#7fb3ff",
-  },
-  footerBody: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: "#aab6c6",
-    fontWeight: "500",
-  },
-  footerRule: {
-    height: 1,
-    backgroundColor: "#565e6c",
-  },
-  footerSource: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#aab6c6",
-    letterSpacing: 0.2,
-  },
+  footerTitle: { fontSize: 13, fontWeight: "800", color: "#aab6c6" },
+  footerBody: { fontSize: 12, lineHeight: 18, color: "#aab6c6", fontWeight: "500" },
+  footerRule: { height: 1, backgroundColor: "#565e6c", marginVertical: 2 },
+  footerSource: { fontSize: 10, lineHeight: 15, color: "#aab6c6", fontWeight: "500" },
 });
