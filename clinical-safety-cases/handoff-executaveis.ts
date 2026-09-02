@@ -40,7 +40,7 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       appendClinicalEvent({ id: "evt-pulso", type: "decision_made", occurredAt: now - 5_000, module: contract.fromModule, label: "Perda de pulso", data: { tempo_perda_pulso: now - 5_000 } });
       appendClinicalEvent({ id: "evt-causa", type: "decision_made", occurredAt: now - 4_000, module: contract.fromModule, label: "Causa reversível suspeita", data: { suspeita_causa_reversivel: "isquemia" } });
 
-      const result = prepareAndPublishClinicalHandoff(contract, now);
+      const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
       if (result.status !== "complete") issues.push(`esperado complete, recebido ${result.status}`);
       if (listPendingClinicalHandoffs().length !== 1) issues.push("handoff completo não foi publicado exatamente uma vez");
@@ -68,7 +68,7 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       appendClinicalEvent({ id: "evt-atropina", type: "medication_given", occurredAt: now - 20_000, module: contract.fromModule, label: "Atropina", data: { atropina_administrada: true } });
       appendClinicalEvent({ id: "evt-pulso-bradi", type: "decision_made", occurredAt: now - 5_000, module: contract.fromModule, label: "Perda de pulso", data: { tempo_perda_pulso: now - 5_000 } });
 
-      const result = prepareAndPublishClinicalHandoff(contract, now);
+      const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
       if (result.status !== "incomplete") issues.push(`esperado incomplete, recebido ${result.status}`);
       if (result.missingFacts.length === 0) issues.push("handoff incompleto não declarou fatos faltantes");
@@ -89,7 +89,7 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
         appendClinicalEvent({ id: `evt:${factId}`, type: "observation_recorded", occurredAt: now - 1_000, module: contract.fromModule, label: factId, data: { [factId]: `event:${factId}` } });
       }
 
-      const result = prepareAndPublishClinicalHandoff(contract, now);
+      const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
       if (result.status !== "complete") return [`esperado complete, recebido ${result.status}`];
       const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
