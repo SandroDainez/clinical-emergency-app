@@ -129,9 +129,14 @@ export function TrackingPanel({ tempo, itens, style, testID }: TrackingPanelProp
             Numa linha própria ela custava uma faixa inteira de altura para
             mostrar dois caracteres — e altura aqui é o que empurra a ação para
             baixo da dobra. */}
-        <Text style={e.chevron}>
-          {aberto ? "▴" : escondidos > 0 ? `+${escondidos} ▾` : "▾"}
-        </Text>
+        <View style={[e.toggleCta, aberto && e.toggleCtaAberto]}>
+          <Text style={[e.toggleCtaText, aberto && e.toggleCtaTextAberto]}>
+            {aberto ? "FECHAR" : "ABRIR"}
+          </Text>
+          <Text style={[e.toggleMeta, aberto && e.toggleCtaTextAberto]}>
+            {aberto ? "▴" : escondidos > 0 ? `+${escondidos} ▾` : "▾"}
+          </Text>
+        </View>
       </Pressable>
 
       {aberto ? (
@@ -233,7 +238,24 @@ const criarEstilos = (t: Tema) => {
         letterSpacing: 0.6,
       },
       pastilhaValor: { ...TIPOGRAFIA.step, ...NUMERO_TABULAR, color: c.text },
-      chevron: { ...TIPOGRAFIA.caption, color: c.textSecondary, flexShrink: 0 },
+      toggleCta: {
+        minWidth: 82,
+        minHeight: 34,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        flexShrink: 0,
+        borderRadius: RAIO.botao,
+        borderWidth: 1,
+        borderColor: c.primary,
+        backgroundColor: c.primary,
+        paddingHorizontal: ESPACO.sm,
+      },
+      toggleCtaAberto: { backgroundColor: "transparent" },
+      toggleCtaText: { ...TIPOGRAFIA.micro, color: c.onPrimary, fontWeight: "900", letterSpacing: 0.45 },
+      toggleCtaTextAberto: { color: c.primary },
+      toggleMeta: { ...TIPOGRAFIA.micro, color: c.onPrimary, fontWeight: "900" },
       // tabular-nums: sem isto os dígitos mudam de largura a cada segundo e o
       // número treme — justamente no elemento que se olha de relance.
       // Era `display`. Na faixa fechada o cronômetro divide a linha com as
