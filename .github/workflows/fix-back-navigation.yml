@@ -5,6 +5,9 @@ on:
     branches: [emergencias-2-ui-core]
     paths:
       - scripts/corrige-voltar-e-inputs-v2.cjs
+      - scripts/valida-seguranca-input-voltar-nihss.cjs
+      - components/protocol-screen/clinical-input-field.tsx
+      - components/protocol-screen/calculadora-embutida.tsx
       - .github/workflows/fix-back-navigation.yml
 
 permissions:
@@ -28,6 +31,7 @@ jobs:
       - run: npm ci
       - run: node scripts/corrige-voltar-e-inputs-v2.cjs
       - run: node scripts/valida-paridade-clinical-steps-v2.cjs
+      - run: node scripts/valida-seguranca-input-voltar-nihss.cjs
       - run: npm run build:web
 
       - name: Validate scope
@@ -42,4 +46,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add components/protocol-screen/acls-decision-flow-screen.tsx
           git commit -m "fix(shell): make back return to previous clinical step"
+          git pull --rebase origin emergencias-2-ui-core
           git push origin HEAD:emergencias-2-ui-core
