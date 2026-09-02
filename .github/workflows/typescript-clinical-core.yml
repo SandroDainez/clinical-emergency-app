@@ -53,6 +53,9 @@ jobs:
       - name: Guard safety gate candidate debts
         run: node scripts/valida-safety-gate-candidate-debts.cjs
 
+      - name: Validate toxic alcohol evidence-reviewed copy
+        run: node scripts/valida-toxic-alcohol-decontamination-copy.cjs
+
       - name: Validate decision observation bindings
         run: node scripts/valida-decision-observation-bindings.cjs
 
