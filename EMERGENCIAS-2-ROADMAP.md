@@ -27,8 +27,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] DecisionGrid migrado para tokens semânticos.
 - [x] Ramo “não sei” visualmente destacado quando já existe na árvore.
 - [x] Showcase `/dev/ui-v2` atualizado para validar o conjunto.
+- [x] Registro canônico das portas de crise criado.
 - [ ] Integrar cockpit ao shell compartilhado sem duplicar headers.
-- [ ] Integrar barra de crise às portas já existentes por módulo.
+- [ ] Integrar barra de crise ao shell usando o registro canônico.
 
 ## Bloco B — Patient State 2.0
 
@@ -42,6 +43,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 ## Bloco C — Clinical Orchestrator
 
 - [x] Contrato explícito de transições entre módulos.
+- [x] Registro canônico das portas de crise e exceções existentes.
 - [ ] Inventariar todas as arestas `from_module` atuais.
 - [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta.
 - [ ] Substituir navegações improvisadas progressivamente.
@@ -55,22 +57,25 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 ## Bloco E — Segurança do fluxo
 
+- [x] Contrato central mínimo das regras de segurança criado.
 - [ ] Mapear decisões sem `nao_sei` no universo completo.
-- [ ] Diferenciar hard stop de soft stop.
+- [ ] Diferenciar hard stop de soft stop por tipo de risco.
 - [ ] Registrar motivo de override.
 - [ ] Tornar reavaliação obrigatória para terapias críticas definidas no contrato.
 - [ ] Garantir destino alcançável em todos os módulos.
 
 ## Bloco F — Drug Knowledge Base
 
-- [ ] Consolidar fonte única de medicamentos.
-- [ ] Separar fármaco de indicação clínica.
-- [ ] Dose, via, concentração, diluição, velocidade, máximo, apresentação e fonte.
+- [x] Contratos canônicos de fármaco, apresentação, indicação e fonte definidos.
+- [x] Separação estrutural entre apresentação comercial e recomendação clínica definida.
+- [ ] Migrar primeiro fármaco com comparação antigo × novo.
 - [ ] Validar apresentações comercializadas no Brasil.
 - [ ] Bloquear duplicação de dose crítica entre módulos.
 
 ## Bloco G — Clinical Safety Test Suite
 
+- [x] Validador estrutural inicial do Emergências 2 core criado.
+- [ ] Ligar o validador ao `test:all` após execução local/CI verde.
 - [ ] Casos clínicos completos por módulo.
 - [ ] Caminhos obrigatórios e proibidos.
 - [ ] Testes de deterioração e interrupção.
@@ -79,10 +84,11 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 ## Bloco H — Evidence Governance
 
-- [ ] Fonte por recomendação acionável.
-- [ ] Versão clínica e `revisadoEm`.
-- [ ] Data de revisão programada.
-- [ ] Atendimentos preservam a versão do protocolo em que começaram.
+- [x] Contrato de evidência por recomendação acionável criado.
+- [x] Contrato de versão clínica criado.
+- [x] Regra de preservar a versão em que o atendimento começou definida.
+- [ ] Migrar recomendações reais para fonte por nó/ação.
+- [ ] Data de revisão programada e responsável por revisão.
 
 ## Regra de migração
 
