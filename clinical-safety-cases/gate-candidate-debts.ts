@@ -1,5 +1,9 @@
 export type ClinicalGateCandidateLevel = "hard_stop" | "soft_stop" | "advisory" | "needs_level_review";
-export type ClinicalGateCandidateStatus = "needs_evidence_review" | "needs_fact_model" | "needs_action_surface";
+export type ClinicalGateCandidateStatus =
+  | "needs_evidence_review"
+  | "needs_fact_model"
+  | "needs_action_surface"
+  | "needs_tree_content_review";
 
 export type ClinicalGateCandidateDebt = {
   id: string;
@@ -58,12 +62,21 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
     id: "tox-toxic-alcohol-decontamination",
     protocolId: "intoxicacoes_exogenas",
     nodeId: "tox_alcool_toxico",
-    candidateLevel: "hard_stop",
-    status: ["needs_evidence_review", "needs_action_surface"],
-    riskStatement: "A árvore declara que carvão ativado e lavagem não devem ser realizados no ramo de metanol/etilenoglicol.",
+    candidateLevel: "needs_level_review",
+    status: ["needs_action_surface", "needs_tree_content_review"],
+    riskStatement: "Carvão ativado não tem papel em metanol/etilenoglicol; já a proibição absoluta de lavagem gástrica precisa ser reescrita para refletir que a técnica não é rotineira e raramente é indicada, em vez de afirmar impossibilidade universal.",
     currentTreeEvidence: "O summary de tox_alcool_toxico contém literalmente 'NÃO fazer carvão nem lavagem'.",
-    requiredFacts: ["agente_suspeito_metanol_ou_etilenoglicol"],
-    activationRuleDraft: "Somente avaliar se houver tentativa explícita de descontaminação gastrointestinal nesse ramo; não bloquear outras medidas de suporte.",
+    requiredFacts: ["agente_suspeito_metanol_ou_etilenoglicol", "tentativa_descontaminacao_gastrointestinal"],
+    activationRuleDraft: "Não promover enquanto o texto da árvore não separar carvão ativado (sem papel para esses álcoois) de lavagem gástrica (não rotineira, benefício não demonstrado e apenas raramente considerada em intoxicações selecionadas).",
+    evidenceReview: {
+      reviewedAt: "2026-09-02",
+      sources: [
+        "Clinical Toxicology Recommendations Collaborative 2026 — activated charcoal in acute oral overdose",
+        "AACT/EAPCCT 2013 Position Paper Update — gastric lavage",
+        "AACT/EAPCCT Position Statement — gastric lavage",
+      ],
+      conclusion: "A recomendação atual sustenta ausência de papel do carvão ativado em metanol e etilenoglicol. Para lavagem gástrica, a literatura sustenta não uso rotineiro e benefício não comprovado, mas não uma proibição universal; o conteúdo da árvore deve ser revisado antes de qualquer SafetyGate.",
+    },
   },
   {
     id: "tep-high-risk-deep-sedation-ventilation",
