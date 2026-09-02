@@ -46,15 +46,22 @@ export function findReassessmentNodes(tree: DecisionTreeDefinition): string[] {
   });
 }
 
+/**
+ * Destino assistencial real. `other_module` é handoff/interrupção clínica e não
+ * encerra o atendimento, portanto não conta como DISPOSITION do protocolo.
+ */
 export function findDispositionNodes(tree: DecisionTreeDefinition): string[] {
-  const pattern = /(alta|uti|observa|transfer|intern|destino|disposition|hemodin|centro cir)/i;
-  return findReachableNodes(tree, (node) => {
-    if (node.type !== "transition") return false;
-    const text = [node.id, node.title, node.summary, ...node.targets.map((target) => target.label)]
-      .filter(Boolean)
-      .join(" ");
-    return pattern.test(text);
-  });
+  return findReachableNodes(
+    tree,
+    (node) => node.type === "transition" && node.disposition !== "other_module"
+  );
+}
+
+export function findOtherModuleTransitions(tree: DecisionTreeDefinition): string[] {
+  return findReachableNodes(
+    tree,
+    (node) => node.type === "transition" && node.disposition === "other_module"
+  );
 }
 
 export function auditReassessmentAndDisposition(tree: DecisionTreeDefinition): string[] {
@@ -63,7 +70,7 @@ export function auditReassessmentAndDisposition(tree: DecisionTreeDefinition): s
     issues.push(`${tree.id}: nenhum nó alcançável de reavaliação foi detectado`);
   }
   if (!findDispositionNodes(tree).length) {
-    issues.push(`${tree.id}: nenhum nó alcançável de destino foi detectado`);
+    issues.push(`${tree.id}: nenhum destino assistencial alcançável foi detectado`);
   }
   return issues;
 }
