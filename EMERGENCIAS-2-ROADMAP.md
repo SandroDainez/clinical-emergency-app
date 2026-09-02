@@ -35,6 +35,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Adapter deriva o contexto de retorno diretamente da pilha de interrupções.
 - [x] ClinicalShellHost plugável criado para reduzir a integração no shell legado a poucas props/callbacks.
 - [x] Trava estrutural do ClinicalShellHost criada.
+- [x] Reavaliações pendentes aparecem no chrome com sinais a verificar, tempo decorrido e atraso quando aplicável.
+- [x] Cockpit trata idade "agora" sem renderizar "há agora".
 - [ ] Integrar ClinicalShellHost ao shell compartilhado sem duplicar headers.
 
 ## Bloco B — Patient State 2.0
@@ -92,9 +94,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Cardioversão instável ligada a `unstable_reavaliar` no módulo de taquicardia ACLS.
 - [x] Vasopressor usa obrigação orientada a evento, sem inventar nó de árvore inexistente.
 - [x] Estado de reavaliação de vasopressor é limpo ao iniciar novo paciente.
+- [x] Reavaliações pendentes ficam visíveis no Clinical Cockpit e priorizam a obrigação mais antiga.
 - [ ] Classificar os achados reais do inventário em `unknown_required` / `binary_observable` / `guided_elsewhere`.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
-- [ ] Tornar reavaliações pendentes visíveis no cockpit.
 - [ ] Garantir destino alcançável em todos os módulos.
 
 ## Bloco F — Drug Knowledge Base
@@ -138,6 +140,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava confirma adjacência terapia crítica → reavaliação nos pilotos.
 - [x] Trajetória executável de taquicardia instável prova cardioversão → reavaliação antes de destino.
 - [x] Trava do runtime de vasopressor exige obrigação de reavaliação orientada a evento.
+- [x] Trava estrutural protege a visibilidade da reavaliação pendente no cockpit.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
