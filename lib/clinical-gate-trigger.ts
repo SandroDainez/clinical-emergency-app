@@ -34,7 +34,9 @@ export function conditionMatches(
   context: ClinicalGateContext
 ): boolean {
   const actual = context[condition.fact];
-  if (condition.operator === "missing") return actual === undefined || actual === null;
+  const missing = actual === undefined || actual === null;
+  if (condition.operator === "missing") return missing;
+  if (missing) return false;
   if (condition.operator === "equals") return actual === condition.value;
   return actual !== condition.value;
 }
