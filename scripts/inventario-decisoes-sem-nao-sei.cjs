@@ -22,11 +22,18 @@ for (const file of files) {
   const text = fs.readFileSync(file, "utf8");
   // Inventário deliberadamente conservador: procura blocos textuais de decisão
   // e marca os que não contêm nenhum id/rótulo reconhecível de incerteza.
+  //
+  // `guiado` é uma saída de incerteza válida quando a terceira opção leva a um
+  // nó que decompõe a decisão em observações objetivas. Antes o inventário não
+  // reconhecia isso e gerava falsos positivos justamente em nós já corrigidos
+  // (choque, taquicardia, TEP etc.). A existência de `guiado` aqui NÃO prova que
+  // o caminho é bom — isso continua sendo validado separadamente pela política
+  // e pelos bindings; apenas evita classificar o nó como "sem saída".
   const blocks = text.split(/\n\s*(?=[A-Za-z0-9_]+:\s*\{)/g);
   for (const block of blocks) {
     if (!/type:\s*["']decision["']/.test(block)) continue;
     const id = (block.match(/^\s*([A-Za-z0-9_]+):\s*\{/) || [])[1] || "(id não extraído)";
-    const hasUnknown = /(nao_sei|não sei|nao sei|incerto|indeterminado|não consigo avaliar|nao consigo avaliar)/i.test(block);
+    const hasUnknown = /(nao_sei|não sei|nao sei|incerto|indeterminado|não consigo avaliar|nao consigo avaliar|id:\s*["']guiado["']|OPCAO_GUIADA)/i.test(block);
     if (!hasUnknown) {
       findings.push({
         file: path.relative(root, file),
