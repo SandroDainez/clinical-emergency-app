@@ -1,0 +1,79 @@
+name: PCR handoff migration simulation
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - "acls-tachycardia-tree.ts"
+      - "acls-bradycardia-tree.ts"
+      - "lib/clinical-handoff-*.ts"
+      - "lib/pcr-*.ts"
+      - "lib/clinical-transition*.ts"
+      - "clinical-safety-cases/handoff-*.ts"
+      - "clinical-safety-cases/target-promotion-debts.ts"
+      - "scripts/migra-pcr-handoffs-terminais.cjs"
+      - "scripts/test-*handoff*.cjs"
+      - "scripts/valida-*handoff*.cjs"
+      - "scripts/valida-*transition*.cjs"
+      - ".github/workflows/pcr-handoff-migration-simulation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulate-pcr-terminal-handoffs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate current pre-migration state
+        run: |
+          node scripts/valida-migracao-pcr-handoffs-terminais.cjs
+          node scripts/valida-contagem-transition-contracts.cjs
+          node scripts/valida-cobertura-other-module-registry.cjs
+          node scripts/valida-handoff-prioridade-pcr.cjs
+          node scripts/valida-handoff-executaveis-emergencias-2.cjs
+          node scripts/valida-tree-to-handoff-emergencias-2.cjs
+
+      - name: Run executable handoff tests before migration
+        run: |
+          node scripts/test-clinical-handoffs-emergencias-2.cjs
+          node scripts/test-tree-to-handoff-emergencias-2.cjs
+
+      - name: Simulate terminal PCR migration in workspace
+        run: node scripts/migra-pcr-handoffs-terminais.cjs
+
+      - name: Validate post-migration semantics
+        run: |
+          node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
+          node scripts/valida-contagem-transition-contracts.cjs
+          node scripts/valida-cobertura-other-module-registry.cjs
+          node scripts/valida-handoff-prioridade-pcr.cjs
+
+      - name: Run executable handoff tests after migration
+        run: |
+          node scripts/test-clinical-handoffs-emergencias-2.cjs
+          node scripts/test-tree-to-handoff-emergencias-2.cjs
+
+      - name: TypeScript check of migrated transition registry
+        run: npx tsc --noEmit --pretty false
+
+      - name: Confirm simulation did not create commits
+        run: |
+          git status --short
+          test -n "$(git status --short)"
+          test -z "$(git log -1 --pretty=%B | grep -F 'simulate terminal PCR migration' || true)"
