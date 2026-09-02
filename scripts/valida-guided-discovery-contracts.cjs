@@ -4,7 +4,8 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const contract = fs.readFileSync(path.join(root, "lib/guided-discovery-contract.ts"), "utf8");
-const registry = fs.readFileSync(path.join(root, "clinical-safety-cases/guided-discovery.ts"), "utf8");
+const registry = fs.readFileSync(path.join(root, "lib/guided-discovery-registry.ts"), "utf8");
+const reexport = fs.readFileSync(path.join(root, "clinical-safety-cases/guided-discovery.ts"), "utf8");
 const policy = fs.readFileSync(path.join(root, "clinical-safety-cases/uncertainty-classification.ts"), "utf8");
 const avc = fs.readFileSync(path.join(root, "avc-decision-tree.ts"), "utf8");
 const sca = fs.readFileSync(path.join(root, "coronary-decision-tree.ts"), "utf8");
@@ -20,6 +21,10 @@ for (const token of [
   "steps.length < 1 || entry.steps.length > 3",
 ]) {
   if (!contract.includes(token)) throw new Error(`Contrato de descoberta incompleto: ${token}`);
+}
+
+if (!reexport.includes('from "../lib/guided-discovery-registry"')) {
+  throw new Error("Safety case deve reexportar o registry canônico de lib/.");
 }
 
 const expected = [
@@ -51,14 +56,12 @@ for (const [text, id] of [
   if (!text.includes(`id: "${id}"`)) throw new Error(`Nó real ausente: ${id}`);
 }
 
-// prepared_plan não pode fingir que um nó já existe.
 for (const plannedId of ["hic_anticoag_descoberta", "stemi_reperfusao_tempo_real"]) {
   if (registry.includes(`guidedNodeId: "${plannedId}"`)) {
     throw new Error(`Plano preparado não deve apontar para nó inexistente: ${plannedId}`);
   }
 }
 
-// existing_node precisa preservar as arestas reais já existentes.
 if (!tachy.includes('{ id: "guiado", label: OPCAO_GUIADA, next: "tqi_dados" }')) {
   throw new Error("Aresta guiada da taquicardia foi perdida.");
 }
@@ -69,4 +72,4 @@ if (!tep.includes('{ id: "guiado", label: OPCAO_GUIADA, next: "tep_instab_dados"
   throw new Error("Aresta guiada do TEP foi perdida.");
 }
 
-console.log("Contratos de descoberta guiada coerentes com política e árvores reais.");
+console.log("Contratos de descoberta guiada coerentes com política, registry canônico e árvores reais.");
