@@ -34,6 +34,13 @@ export const CLINICAL_REASSESSMENT_BINDINGS: readonly ClinicalReassessmentBindin
     therapyId: "fibrinolysis",
     label: "Reavaliar estratégia de reperfusão após trombólise",
   },
+  {
+    moduleId: "taquicardia-acls",
+    therapyNodeId: "unstable_cardioversion",
+    reassessmentNodeId: "unstable_reavaliar",
+    therapyId: "cardioversion",
+    label: "Reavaliar ritmo, pulso e estabilidade após cardioversão",
+  },
 ] as const;
 
 export function reassessmentBindingForNode(moduleId: string, nodeId: string):
