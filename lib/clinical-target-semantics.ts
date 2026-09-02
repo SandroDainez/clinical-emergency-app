@@ -130,7 +130,46 @@ export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
     semantic: "adjunctive_module",
     rationale: "Ventilação protetora e pronação são suporte especializado em paralelo ao destino UTI já declarado.",
   },
-
+  {
+    id: "convulsao-nao-convulsivo-isr",
+    fromProtocolId: "mal_epileptico",
+    fromNodeId: "nao_convulsivo",
+    targetModuleId: "isr-rapida",
+    semantic: "adjunctive_module",
+    rationale: "A via aérea definitiva só é necessária quando o rebaixamento traz risco de aspiração ou incapacidade de proteção; o nó continua definindo UTI para o mal epiléptico não convulsivo.",
+  },
+  {
+    id: "convulsao-nao-convulsivo-eclampsia",
+    fromProtocolId: "mal_epileptico",
+    fromNodeId: "nao_convulsivo",
+    targetModuleId: "pre-eclampsia",
+    semantic: "reference",
+    rationale: "Gestação ou puerpério isoladamente não prova eclâmpsia; o alvo consulta o protocolo obstétrico quando o contexto hipertensivo/eclâmptico for plausível, sem transferir controle automaticamente.",
+  },
+  {
+    id: "convulsao-uti-isr",
+    fromProtocolId: "mal_epileptico",
+    fromNodeId: "uti",
+    targetModuleId: "isr-rapida",
+    semantic: "adjunctive_module",
+    rationale: "No mal epiléptico refratário, a intubação é uma etapa de suporte dentro de um cuidado que já tem destino UTI definido.",
+  },
+  {
+    id: "convulsao-uti-sedoanalgesia",
+    fromProtocolId: "mal_epileptico",
+    fromNodeId: "uti",
+    targetModuleId: "sedoanalgesia",
+    semantic: "adjunctive_module",
+    rationale: "Sedoanalgesia e bloqueio neuromuscular são suporte especializado em paralelo ao manejo do estado de mal; não substituem o protocolo de origem nem seu destino.",
+  },
+  {
+    id: "convulsao-uti-vm",
+    fromProtocolId: "mal_epileptico",
+    fromNodeId: "uti",
+    targetModuleId: "ventilacao-mecanica",
+    semantic: "adjunctive_module",
+    rationale: "A ventilação mecânica parametriza o suporte pós-intubação, enquanto o estado de mal continua responsável pelo tratamento etiológico e destino UTI.",
+  },
   {
     id: "taquicardia-uti-pcr-contingencia",
     fromProtocolId: "acls_tachycardia_2025",
@@ -147,5 +186,4 @@ export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
     semantic: "contingency",
     rationale: "É uma porta de deterioração futura: só deve assumir controle se o paciente perder o pulso.",
   },
-
 ] as const;
