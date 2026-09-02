@@ -1,18 +1,14 @@
 import type { CanonicalDrug } from "./types";
 
 /**
- * Primeiro fármaco migrado para a Drug Knowledge Base do Emergências 2.0.
+ * Tenecteplase (TNK) — fonte canônica por INDICAÇÃO.
  *
  * REGRA DE GOVERNANÇA:
  * - apresentação comercial e preparo: fonte do produto/bula brasileira;
- * - indicação e dose no AVC: fonte clínica específica da indicação.
- *
- * Isto é deliberado: a existência de uma apresentação no Brasil não transforma
- * automaticamente toda indicação de guideline em indicação de bula, e a bula
- * da apresentação não deve ser usada como substituto de uma diretriz de AVC.
- *
- * A fonte legada (`lib/tenecteplase.ts`) permanece ativa durante a migração.
- * Este objeto ainda não altera cálculo nem conduta em nenhuma tela.
+ * - cada indicação clínica: fonte específica da indicação;
+ * - a redução de dose em idosos no STEMI NÃO é armazenada como regra universal.
+ *   O legado atual já restringe essa redução a um contexto farmacoinvasivo
+ *   específico; essa condição precisa de governança própria antes de migrar.
  */
 export const TENECTEPLASE_CANONICAL: CanonicalDrug = {
   id: "tenecteplase",
@@ -50,6 +46,19 @@ export const TENECTEPLASE_CANONICAL: CanonicalDrug = {
         version: "2026",
         reviewedAt: "2026-09-01",
       },
+    },
+    {
+      indicationId: "stemi_fibrinolise_padrao",
+      indicationLabel: "STEMI — fibrinólise com tenecteplase quando indicada",
+      dose: "<60 kg: 30 mg; 60–69 kg: 35 mg; 70–79 kg: 40 mg; 80–89 kg: 45 mg; ≥90 kg: 50 mg",
+      route: "IV em bolus único",
+      maximum: "50 mg no regime padrão",
+      source: {
+        reference: "2025 ACC/AHA/ACEP/NAEMSP/SCAI Guideline for Acute Coronary Syndromes — fibrinolytic agents for STEMI",
+        version: "2025",
+        reviewedAt: "2026-09-01",
+      },
+      reassessmentId: "stemi_reavaliar_reperfusao_60_90min",
     },
   ],
 };
