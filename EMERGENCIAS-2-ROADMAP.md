@@ -29,8 +29,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ramo “não sei” visualmente destacado quando já existe na árvore.
 - [x] Showcase `/dev/ui-v2` atualizado para validar o conjunto.
 - [x] Registro canônico das portas de crise criado.
-- [ ] Integrar cockpit ao shell compartilhado sem duplicar headers.
-- [ ] Integrar barra de crise ao shell usando o registro canônico.
+- [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
+- [x] Adapter do shell criado sem dependência de engine ou roteador.
+- [ ] Integrar ClinicalShellChrome ao shell compartilhado sem duplicar headers.
 
 ## Bloco B — Patient State 2.0
 
@@ -39,8 +40,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Formatação da idade da observação.
 - [x] Ponte de runtime capaz de registrar observações sem alterar decisão clínica.
 - [x] Componente visual que obriga mostrar a idade do dado.
+- [x] Adapter do cockpit inclui idade do dado em observações reutilizadas.
+- [x] Reset central do novo atendimento limpa contexto, observações e event log.
 - [ ] Ligar observações progressivamente aos inputs existentes.
-- [ ] Exibir “informado há X min” ao reutilizar dado volátil.
 - [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
 
 ## Bloco C — Clinical Orchestrator
@@ -49,6 +51,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Registro canônico das portas de crise e exceções existentes.
 - [x] Inventário derivado do código para localizar transições `from_module`.
 - [x] Ponte de runtime para registrar interrupções sem assumir controle da navegação.
+- [x] Roteamento canônico de crise preservando `from_module`.
 - [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta.
 - [ ] Substituir navegações improvisadas progressivamente.
 
@@ -64,7 +67,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 ## Bloco E — Segurança do fluxo
 
 - [x] Contrato central mínimo das regras de segurança criado.
-- [ ] Mapear decisões sem `nao_sei` no universo completo.
+- [x] Inventário automático de decisões potencialmente sem ramo de incerteza criado.
+- [ ] Classificar achados do inventário em: precisa `nao_sei` / binário legítimo / já possui descoberta guiada.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
 - [ ] Registrar motivo de override.
 - [ ] Tornar reavaliação obrigatória para terapias críticas definidas no contrato.
@@ -84,6 +88,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Contrato de casos clínicos de regressão criado.
 - [x] Catálogo piloto criado para AVC, Anafilaxia e ISR.
 - [x] Validador de forma dos casos-piloto criado.
+- [x] Travas estruturais do runtime bridge, session reset, shell adapter e crisis routing criadas.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Criar runner que percorra as árvores reais.
 - [ ] Caminhos obrigatórios e proibidos.
