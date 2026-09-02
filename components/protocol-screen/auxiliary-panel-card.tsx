@@ -46,71 +46,91 @@ function AuxiliaryPanelCard({
         <View key={sectionTitle} style={styles.auxiliarySectionCard}>
           <Text style={styles.auxiliarySectionTitle}>{tr(sectionTitle)}</Text>
           <View style={styles.auxiliaryFields}>
-            {fields.map((field) => (
-              <View
-                key={field.id}
-                style={[
-                  styles.auxiliaryFieldGroup,
-                  field.fullWidth ? styles.auxiliaryFieldGroupFullWidth : null,
-                ]}>
-                <Text style={styles.auxiliaryFieldLabel}>{tr(field.label)}</Text>
-                <TextInput
-                  value={field.value}
-                  placeholder={field.placeholder ? tr(field.placeholder) : undefined}
-                  keyboardType={resolveKeyboardType(field.keyboardType)}
-                  onChangeText={(text) => onFieldChange(field.id, text)}
-                  style={styles.auxiliaryInput}
-                  placeholderTextColor="#94a3b8"
-                />
-                {field.unitOptions && field.unitOptions.length > 0 ? (
-                  <CategoricalSelector
-                    value={field.unit}
-                    options={field.unitOptions.map((unitOption) => ({
-                      value: unitOption.value,
-                      label: tr(unitOption.label),
-                    }))}
-                    onChange={(value) => onUnitChange(field.id, value)}
-                    testID={`unidade-${field.id}`}
-                  />
-                ) : null}
-                {field.helperText ? (
-                  <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
-                ) : null}
-                {field.presets && field.presets.length > 0 ? (
-                  <View style={styles.auxiliaryPresetRow} accessibilityRole="radiogroup">
-                    {field.presets.map((preset) => {
-                      const isSelected = hasSelectedPresetValue(
-                        field.value,
-                        preset.value,
-                        field.presetMode
-                      );
+            {fields.map((field) => {
+              const selectedPreset = field.presets?.find((preset) =>
+                hasSelectedPresetValue(field.value, preset.value, field.presetMode)
+              );
 
-                      return (
-                        <Pressable
-                          key={`${field.id}-${preset.value}`}
-                          accessibilityRole="radio"
-                          accessibilityLabel={tr(preset.label)}
-                          accessibilityState={{ selected: isSelected }}
-                          accessibilityHint={isSelected ? tr("Opção selecionada") : tr("Selecionar esta opção")}
-                          style={[
-                            styles.auxiliaryPresetButton,
-                            isSelected && styles.auxiliaryPresetButtonActive,
-                          ]}
-                          onPress={() => onPresetApply(field.id, preset.value)}>
-                          <Text
-                            style={[
-                              styles.auxiliaryPresetButtonText,
-                              isSelected && styles.auxiliaryPresetButtonTextActive,
-                            ]}>
-                            {isSelected ? "✓ " : ""}{tr(preset.label)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                ) : null}
-              </View>
-            ))}
+              return (
+                <View
+                  key={field.id}
+                  style={[
+                    styles.auxiliaryFieldGroup,
+                    field.fullWidth ? styles.auxiliaryFieldGroupFullWidth : null,
+                  ]}>
+                  <Text style={styles.auxiliaryFieldLabel}>{tr(field.label)}</Text>
+                  <TextInput
+                    value={field.value}
+                    placeholder={field.placeholder ? tr(field.placeholder) : undefined}
+                    keyboardType={resolveKeyboardType(field.keyboardType)}
+                    onChangeText={(text) => onFieldChange(field.id, text)}
+                    style={styles.auxiliaryInput}
+                    placeholderTextColor="#94a3b8"
+                  />
+                  {field.unitOptions && field.unitOptions.length > 0 ? (
+                    <CategoricalSelector
+                      value={field.unit}
+                      options={field.unitOptions.map((unitOption) => ({
+                        value: unitOption.value,
+                        label: tr(unitOption.label),
+                      }))}
+                      onChange={(value) => onUnitChange(field.id, value)}
+                      testID={`unidade-${field.id}`}
+                    />
+                  ) : null}
+                  {field.helperText ? (
+                    <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
+                  ) : null}
+                  {field.presets && field.presets.length > 0 ? (
+                    field.presetMode === "toggle_token" ? (
+                      <View style={styles.auxiliaryPresetRow} accessibilityLabel={tr(field.label)}>
+                        {field.presets.map((preset) => {
+                          const isSelected = hasSelectedPresetValue(
+                            field.value,
+                            preset.value,
+                            field.presetMode
+                          );
+
+                          return (
+                            <Pressable
+                              key={`${field.id}-${preset.value}`}
+                              accessibilityRole="checkbox"
+                              accessibilityLabel={tr(preset.label)}
+                              accessibilityState={{ checked: isSelected }}
+                              accessibilityHint={
+                                isSelected ? tr("Remover esta opção") : tr("Adicionar esta opção")
+                              }
+                              style={[
+                                styles.auxiliaryPresetButton,
+                                isSelected && styles.auxiliaryPresetButtonActive,
+                              ]}
+                              onPress={() => onPresetApply(field.id, preset.value)}>
+                              <Text
+                                style={[
+                                  styles.auxiliaryPresetButtonText,
+                                  isSelected && styles.auxiliaryPresetButtonTextActive,
+                                ]}>
+                                {isSelected ? "✓ " : ""}{tr(preset.label)}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      <CategoricalSelector
+                        value={selectedPreset?.value}
+                        options={field.presets.map((preset) => ({
+                          value: preset.value,
+                          label: tr(preset.label),
+                        }))}
+                        onChange={(value) => onPresetApply(field.id, value)}
+                        testID={`preset-${field.id}`}
+                      />
+                    )
+                  ) : null}
+                </View>
+              );
+            })}
           </View>
         </View>
       ))}
