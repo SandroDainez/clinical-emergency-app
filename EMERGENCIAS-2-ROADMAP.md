@@ -89,9 +89,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Bindings reais terapia → reavaliação criados para Anafilaxia, ISR e AVC.
 - [x] Runtime observa visita aos nós e abre/fecha a obrigação sem alterar a DecisionTreeEngine.
 - [x] Adjacência terapia → reavaliação protegida por trava estrutural nos três pilotos.
+- [x] Cardioversão instável ligada a `unstable_reavaliar` no módulo de taquicardia ACLS.
+- [x] Vasopressor usa obrigação orientada a evento, sem inventar nó de árvore inexistente.
+- [x] Estado de reavaliação de vasopressor é limpo ao iniciar novo paciente.
 - [ ] Classificar os achados reais do inventário em `unknown_required` / `binary_observable` / `guided_elsewhere`.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
-- [ ] Expandir bindings para cardioversão e vasopressor.
+- [ ] Tornar reavaliações pendentes visíveis no cockpit.
 - [ ] Garantir destino alcançável em todos os módulos.
 
 ## Bloco F — Drug Knowledge Base
@@ -133,6 +136,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Travas estruturais da política de incerteza, override e runtime de reavaliação criadas.
 - [x] Trava confirma que bindings de reavaliação apontam para nós reais nos pilotos.
 - [x] Trava confirma adjacência terapia crítica → reavaliação nos pilotos.
+- [x] Trajetória executável de taquicardia instável prova cardioversão → reavaliação antes de destino.
+- [x] Trava do runtime de vasopressor exige obrigação de reavaliação orientada a evento.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
