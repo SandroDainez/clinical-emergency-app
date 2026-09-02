@@ -25,6 +25,22 @@ function formatUiElapsed(startedAt: number, now: number): string {
   return `${hours}:${String(remainder).padStart(2, "0")}`;
 }
 
+function presentationPhase(moduleSlug: string | undefined, phase: string | undefined): string {
+  const base = phase ?? "";
+  if (moduleSlug !== "avc") return base;
+
+  // Superfície A do AVC: reforço puramente apresentacional da pergunta que já
+  // existe na árvore. Não cria timestamp, não calcula janela e não muda nenhuma
+  // transição. O objetivo é deixar explícito no cockpit qual marco temporal o
+  // médico está tentando obter antes de escolher uma das cinco categorias já
+  // definidas pelo protocolo.
+  if (base.startsWith("Tempo desde o início")) {
+    return "Último momento visto bem (LKW)";
+  }
+
+  return base;
+}
+
 /**
  * Host de integração entre o shell legado e o novo cromado clínico.
  *
@@ -67,7 +83,7 @@ export function ClinicalShellHost({
 
   const snapshot = buildClinicalShellSnapshot({
     protocol,
-    phase: phase ?? "",
+    phase: presentationPhase(moduleSlug, phase),
     step,
     moduleSlug,
   });
