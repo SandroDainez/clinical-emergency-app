@@ -1,31 +1,33 @@
+import type { ClinicalHandoffPreservationContract } from "./clinical-handoff-contract";
+
 export type PcrTerminalHandoffSource = "tachycardia" | "bradycardia";
 
-export type PcrTerminalHandoffContextContract = {
-  id: string;
+export type PcrTerminalHandoffContextContract = ClinicalHandoffPreservationContract & {
   source: PcrTerminalHandoffSource;
   fromProtocolId: string;
   fromNodeId: string;
   targetModuleId: "pcr-adulto";
-  preserves: readonly string[];
   rationale: string;
 };
 
 /**
  * Contexto mínimo que deve atravessar a passagem terminal para PCR.
  *
- * Este contrato é declarativo e ainda não altera navegação. Ele existe para
- * impedir que a futura promoção dos targets abra o algoritmo de parada como um
- * caso novo, apagando intervenções e achados imediatamente anteriores à perda
- * do pulso.
+ * O destino recebe um `ClinicalHandoffPayload` genérico; ele não precisa importar
+ * nem conhecer a árvore que originou a parada. Estes contratos apenas selecionam
+ * quais fatos da origem devem compor esse payload.
  */
 export const PCR_TERMINAL_HANDOFF_CONTEXTS: readonly PcrTerminalHandoffContextContract[] = [
   {
     id: "tachy-pulseless-context",
+    transitionId: "taquicardia-sem-pulso-pcr-terminal",
     source: "tachycardia",
     fromProtocolId: "acls_tachycardia_2025",
     fromNodeId: "unstable_sem_pulso",
+    fromModule: "acls_tachycardia_2025",
+    toModule: "pcr-adulto",
     targetModuleId: "pcr-adulto",
-    preserves: [
+    requiredFacts: [
       "ritmo_pre_parada",
       "energia_ultima_cardioversao",
       "numero_cardioversoes",
@@ -38,11 +40,14 @@ export const PCR_TERMINAL_HANDOFF_CONTEXTS: readonly PcrTerminalHandoffContextCo
   },
   {
     id: "brady-pulseless-context",
+    transitionId: "bradicardia-sem-pulso-pcr-terminal",
     source: "bradycardia",
     fromProtocolId: "acls_bradycardia_2025",
     fromNodeId: "bradi_sem_pulso",
+    fromModule: "acls_bradycardia_2025",
+    toModule: "pcr-adulto",
     targetModuleId: "pcr-adulto",
-    preserves: [
+    requiredFacts: [
       "ritmo_pre_parada",
       "atropina_administrada",
       "marcapasso_em_uso",
