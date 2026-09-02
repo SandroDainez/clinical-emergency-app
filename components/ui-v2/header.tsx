@@ -31,11 +31,13 @@ export function Header({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={labelVoltar}
+          accessibilityHint="Navegar para a tela anterior"
           onPress={onVoltar}
           hitSlop={ESPACO.sm}
           style={({ pressed }) => [e.voltar, pressed && e.pressionado]}
         >
           <Text style={e.seta}>‹</Text>
+          <Text style={e.voltarTexto} numberOfLines={1}>{labelVoltar}</Text>
         </Pressable>
       ) : null}
 
@@ -43,7 +45,12 @@ export function Header({
         <Text style={e.titulo} numberOfLines={1}>
           {titulo}
         </Text>
-        {etapa ? <Text style={e.etapa} numberOfLines={1}>{etapa}</Text> : null}
+        {etapa ? (
+          <View style={e.etapaLinha}>
+            <Text style={e.etapaRotulo}>ETAPA ATUAL</Text>
+            <Text style={e.etapa} numberOfLines={1}>{etapa}</Text>
+          </View>
+        ) : null}
       </View>
 
       {direita ? <View style={e.direita}>{direita}</View> : null}
@@ -67,17 +74,35 @@ const criarEstilos = (t: Tema) =>
       shadowOpacity: 0.04,
     },
     voltar: {
-      width: TOQUE.minimo,
-      height: TOQUE.minimo,
-      borderRadius: TOQUE.minimo / 2,
+      minHeight: TOQUE.minimo,
+      minWidth: TOQUE.minimo,
+      maxWidth: 92,
+      flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
+      gap: 2,
+      borderRadius: TOQUE.minimo / 2,
+      paddingHorizontal: ESPACO.xs,
       marginLeft: -ESPACO.xs,
     },
     pressionado: { opacity: 0.55, transform: [{ scale: 0.96 }] },
-    seta: { fontSize: 36, lineHeight: 38, color: t.cores.text, fontWeight: "400" },
-    identidade: { flex: 1, minWidth: 0, justifyContent: "center", gap: 1 },
+    seta: { fontSize: 30, lineHeight: 32, color: t.cores.textSecondary, fontWeight: "400" },
+    voltarTexto: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "700" },
+    identidade: { flex: 1, minWidth: 0, justifyContent: "center", gap: 3 },
     titulo: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
-    etapa: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "500" },
+    etapaLinha: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      minWidth: 0,
+    },
+    etapaRotulo: {
+      fontSize: 9,
+      lineHeight: 11,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.6,
+    },
+    etapa: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "600", flexShrink: 1 },
     direita: { justifyContent: "center", alignItems: "flex-end" },
   });
