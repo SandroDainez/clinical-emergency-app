@@ -17,15 +17,20 @@ if (!errors.length) {
 
   for (const token of [
     'id: "tachy-pulseless-handoff-complete-consume-once"',
-    'id: "brady-pulseless-handoff-incomplete-not-published"',
+    'id: "brady-pulseless-partial-context-published-with-missing-optional"',
     'id: "tachy-handoff-observation-wins-over-event"',
     "prepareAndPublishClinicalHandoff",
     "consumeClinicalHandoff",
     "listPendingClinicalHandoffs",
     "recordClinicalObservation",
     "appendClinicalEvent",
+    "missingOptionalFacts",
   ]) {
     if (!cases.includes(token)) errors.push(`casos executáveis sem ${token}`);
+  }
+
+  if (cases.includes('id: "brady-pulseless-handoff-incomplete-not-published"')) {
+    errors.push("caso legado ainda exige bloquear publicação de contexto PCR parcial");
   }
 
   for (const token of [
@@ -50,4 +55,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("\n✅ casos e runner executáveis de handoff estão estruturalmente completos.\n");
+console.log("\n✅ casos e runner executáveis de handoff cobrem contexto completo, parcial e prioridade observacional.\n");
