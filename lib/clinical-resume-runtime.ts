@@ -28,7 +28,7 @@ export function resolveClinicalResume(
   recordProtocolResume({
     from: currentModuleSlug,
     to: completed.returnModule,
-    trigger: completed.trigger,
+    transitionId: completed.transitionId,
     now,
   });
 
