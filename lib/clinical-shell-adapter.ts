@@ -1,5 +1,5 @@
 import { getAllClinicalObservations, formatObservationAge } from "./clinical-observations";
-import { getCrisisActionsForModule, type CrisisActionDefinition } from "./crisis-actions";
+import { crisisActionsForModule, type CrisisActionDefinition } from "./crisis-actions";
 
 export type ClinicalShellMetric = {
   id: string;
@@ -58,6 +58,6 @@ export function buildClinicalShellSnapshot(input: {
     phase: input.phase,
     step: input.step,
     metrics,
-    crisisActions: getCrisisActionsForModule(input.moduleSlug),
+    crisisActions: crisisActionsForModule(input.moduleSlug),
   };
 }
