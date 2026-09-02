@@ -64,6 +64,66 @@ export function runExecutableDecisionObservationBindingCases(): string[] {
   });
   expect(attempt.hardStops.length === 1, "Binding TC HIC: decisão→observação→contexto deve ativar hard stop no nó real de trombólise", issues);
 
+  // STEMI: declarar "não sei" cria estado operacional desconhecido. Tentar fechar
+  // estratégia enquanto este estado permanece deve ativar o soft stop.
+  clearClinicalObservations();
+  clearClinicalEventLog();
+  recordFlowDecision({
+    module: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    optionId: "nao_sei",
+    now,
+  });
+  expect(
+    getClinicalObservation("tempo_operacional_icp")?.value === "desconhecido",
+    "STEMI: opção não sei deve registrar tempo operacional da ICP como desconhecido",
+    issues
+  );
+  const stemiUnknownContext = assembleClinicalGateContextFromObservations([
+    {
+      fact: "tempo_operacional_icp",
+      observationId: "tempo_operacional_icp",
+      values: { desconhecido: "desconhecido", confirmado: "confirmado" },
+    },
+  ], now);
+  const stemiUnknownAttempt = evaluateClinicalActionAttempt({
+    protocolId: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    actionId: "definir_estrategia_reperfusao",
+    context: stemiUnknownContext.context,
+  });
+  expect(stemiUnknownAttempt.softStops.length === 1, "STEMI: incerteza declarada deve ativar soft stop ao tentar definir estratégia", issues);
+  expect(stemiUnknownAttempt.canProceedWithoutOverride === false, "STEMI: incerteza declarada não pode prosseguir silenciosamente", issues);
+
+  // Uma escolha posteriormente assumida como confirmada substitui a observação
+  // desconhecida por confirmado e resolve o gate para a próxima avaliação.
+  recordFlowDecision({
+    module: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    optionId: "icp",
+    now: now + 1,
+  });
+  expect(
+    getClinicalObservation("tempo_operacional_icp")?.value === "confirmado",
+    "STEMI: escolha ICP deve registrar tempo operacional como confirmado",
+    issues
+  );
+  const stemiConfirmedContext = assembleClinicalGateContextFromObservations([
+    {
+      fact: "tempo_operacional_icp",
+      observationId: "tempo_operacional_icp",
+      values: { desconhecido: "desconhecido", confirmado: "confirmado" },
+    },
+  ], now + 1);
+  const stemiConfirmedAttempt = evaluateClinicalActionAttempt({
+    protocolId: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    actionId: "definir_estrategia_reperfusao",
+    context: stemiConfirmedContext.context,
+  });
+  expect(stemiConfirmedAttempt.softStops.length === 0, "STEMI: dado confirmado deve resolver soft stop", issues);
+  expect(stemiConfirmedAttempt.canProceedWithoutOverride === true, "STEMI: dado confirmado deve permitir estratégia sem override", issues);
+
   clearClinicalObservations();
   clearClinicalEventLog();
   return issues;
