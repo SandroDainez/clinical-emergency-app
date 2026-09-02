@@ -559,7 +559,7 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       id: "tox_alcool_toxico",
       type: "action",
       title: "Álcool tóxico — metanol / etilenoglicol",
-      summary: "Acidose com ânion gap alto + gap osmolar alto. NÃO fazer carvão nem lavagem.",
+      summary: "Acidose com ânion gap alto + gap osmolar alto. Carvão ativado não tem papel em metanol/etilenoglicol. Lavagem gástrica não é recomendada rotineiramente; benefício não demonstrado.",
       actions: [
         "Suspeitar após ingestão de bebida de procedência duvidosa, álcool combustível, solvente ou fluido de limpador de para-brisa — e nas tentativas de suicídio.",
         "Janela dos sintomas no metanol — até 6 h: sonolência, ataxia, tontura, dor abdominal, náuseas, vômitos, cefaleia, confusão, taquicardia e hipotensão. Entre 6 e 24 h: visão turva, fotofobia, escotomas, midríase, perda da visão de cores, convulsões, coma e acidose grave.",

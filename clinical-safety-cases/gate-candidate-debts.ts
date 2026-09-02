@@ -63,9 +63,9 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
     protocolId: "intoxicacoes_exogenas",
     nodeId: "tox_alcool_toxico",
     candidateLevel: "needs_level_review",
-    status: ["needs_action_surface", "needs_tree_content_review"],
-    riskStatement: "Carvão ativado não tem papel em metanol/etilenoglicol; já a proibição absoluta de lavagem gástrica precisa ser reescrita para refletir que a técnica não é rotineira e raramente é indicada, em vez de afirmar impossibilidade universal.",
-    currentTreeEvidence: "O summary de tox_alcool_toxico contém literalmente 'NÃO fazer carvão nem lavagem'.",
+    status: ["needs_action_surface"],
+    riskStatement: "Carvão ativado não tem papel em metanol/etilenoglicol; lavagem gástrica não é recomendada rotineiramente e seu benefício não foi demonstrado, portanto ainda é preciso decidir se algum desses pontos merece uma superfície de SafetyGate.",
+    currentTreeEvidence: "O summary de tox_alcool_toxico separa carvão ativado (sem papel em metanol/etilenoglicol) de lavagem gástrica (não rotineira; benefício não demonstrado).",
     requiredFacts: ["agente_suspeito_metanol_ou_etilenoglicol", "tentativa_descontaminacao_gastrointestinal"],
     activationRuleDraft: "Não promover enquanto o texto da árvore não separar carvão ativado (sem papel para esses álcoois) de lavagem gástrica (não rotineira, benefício não demonstrado e apenas raramente considerada em intoxicações selecionadas).",
     evidenceReview: {
