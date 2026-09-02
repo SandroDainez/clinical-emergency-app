@@ -37,7 +37,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural do ClinicalShellHost criada.
 - [x] Reavaliações pendentes aparecem no chrome com sinais a verificar, tempo decorrido e atraso quando aplicável.
 - [x] Cockpit trata idade "agora" sem renderizar "há agora".
-- [ ] Integrar ClinicalShellHost ao shell compartilhado sem duplicar headers.
+- [x] Migração idempotente do ClinicalShellHost preparada: substitui apenas o header V2 e preserva StepHeaderBar/engine/timers como fallback/legado.
+- [x] Trava da migração confirma export do host, callbacks de navegação e invariantes antes de escrever o shell.
+- [ ] Executar a migração no shell compartilhado e validar build/CI antes de marcar integração concluída.
 
 ## Bloco B — Patient State 2.0
 
