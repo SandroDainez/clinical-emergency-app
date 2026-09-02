@@ -3,8 +3,9 @@ import type { ClinicalTransitionContract } from "./clinical-transitions";
 /**
  * Primeiras arestas reais classificadas a partir das árvores atuais.
  *
- * Cada entrada corresponde a um alvo navegável de `disposition: other_module`.
- * Não transforma a navegação ainda; apenas declara se a passagem precisa voltar.
+ * `module` descreve passagens navegáveis entre protocolos do app.
+ * `external_service` descreve handoff definitivo para recurso assistencial que
+ * não é um módulo, como centro cirúrgico/angioembolização.
  */
 export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[] = [
   {
@@ -13,6 +14,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "isr-rapida",
     trigger: "Via aérea ameaçada ou não protegida na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação da injúria renal após proteger a via aérea",
   },
   {
@@ -21,6 +23,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "ventilacao-mecanica",
     trigger: "Hipoxemia ou esforço respiratório importante na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após sustentar oxigenação e ventilação",
   },
   {
@@ -29,6 +32,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "edema-agudo-pulmao",
     trigger: "Congestão como causa da insuficiência respiratória na IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após estabilizar a congestão",
   },
   {
@@ -37,6 +41,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "choque",
     trigger: "Hipotensão ou má perfusão na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após sustentar perfusão e pressão",
   },
   {
@@ -45,6 +50,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "drogas-vasoativas",
     trigger: "Necessidade de suporte vasoativo na instabilidade associada à IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após iniciar/titular o suporte hemodinâmico",
   },
   {
@@ -53,6 +59,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "bradicardia-acls",
     trigger: "Bradicardia com repercussão na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após tratar o ritmo",
   },
   {
@@ -61,6 +68,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "taquicardia-acls",
     trigger: "Taquicardia com repercussão na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após tratar o ritmo",
   },
   {
@@ -69,6 +77,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "isr-rapida",
     trigger: "Rebaixamento que ameaça proteção da via aérea",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após garantir a via aérea",
   },
   {
@@ -77,6 +86,7 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "crises-convulsivas",
     trigger: "Convulsão em curso ou recente na triagem da IRA",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar à avaliação renal após controlar a crise",
   },
   {
@@ -85,6 +95,17 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     to: "tce",
     trigger: "Alteração neurológica ou trauma cranioencefálico significativo durante avaliação do politrauma",
     mode: "returnable",
+    destinationKind: "module",
     returnLabel: "Voltar ao politrauma após estabilização e definição da conduta neurotraumática",
+  },
+  {
+    id: "politrauma-damage-control",
+    from: "politrauma",
+    to: "centro-cirurgico-ou-angioembolizacao",
+    trigger: "Sangramento ativo não controlado com ausência de resposta sustentada à reanimação inicial",
+    mode: "terminal",
+    destinationKind: "external_service",
+    externalLabel: "Centro cirúrgico / angioembolização para controle definitivo da hemorragia",
+    preserves: ["horario_txa", "hemocomponentes", "resposta_reanimacao", "suspeita_fonte_hemorragica"],
   },
 ] as const;
