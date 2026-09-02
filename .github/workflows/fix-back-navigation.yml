@@ -1,0 +1,45 @@
+name: Fix shell back navigation
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/corrige-voltar-e-inputs-v2.cjs
+      - .github/workflows/fix-back-navigation.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: node scripts/corrige-voltar-e-inputs-v2.cjs
+      - run: node scripts/valida-paridade-clinical-steps-v2.cjs
+      - run: npm run build:web
+
+      - name: Validate scope
+        run: |
+          CHANGED=$(git diff --name-only)
+          echo "$CHANGED"
+          test "$CHANGED" = "components/protocol-screen/acls-decision-flow-screen.tsx"
+
+      - name: Commit shell fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/acls-decision-flow-screen.tsx
+          git commit -m "fix(shell): make back return to previous clinical step"
+          git push origin HEAD:emergencias-2-ui-core
