@@ -27,6 +27,16 @@ export const AVC_EVIDENCE_REGISTRY: ProtocolEvidenceRegistry = {
         },
       },
       {
+        id: "avc_alteplase_09_max90",
+        statement: "Quando trombólise IV com alteplase estiver indicada, usar 0,9 mg/kg, máximo 90 mg; 10% em bolus por 1 minuto e o restante em infusão por 60 minutos.",
+        evidence: {
+          reference: "AHA/ASA Guideline for the Early Management of Patients With Acute Ischemic Stroke",
+          version: "2026",
+          year: 2026,
+          reviewedAt: "2026-09-01",
+        },
+      },
+      {
         id: "avc_tempo_ultimo_visto_bem",
         statement: "Registrar o tempo a partir do último momento conhecido sem déficit / último visto bem para decisões de reperfusão.",
         evidence: {
@@ -41,6 +51,9 @@ export const AVC_EVIDENCE_REGISTRY: ProtocolEvidenceRegistry = {
   bindings: [
     { nodeId: "tempo", recommendationIds: ["avc_tempo_ultimo_visto_bem"] },
     { nodeId: "tc", recommendationIds: ["avc_imagem_inicial_urgente"] },
-    { nodeId: "isq_janela", recommendationIds: ["avc_tenecteplase_025_max25"] },
+    {
+      nodeId: "isq_janela",
+      recommendationIds: ["avc_tenecteplase_025_max25", "avc_alteplase_09_max90"],
+    },
   ],
 };
