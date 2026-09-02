@@ -47,6 +47,9 @@ jobs:
       - name: Validate safety gate interaction surfaces
         run: node scripts/valida-safety-gate-interaction-surfaces.cjs
 
+      - name: Inventory declared safety gate interactions
+        run: node scripts/inventario-safety-gate-interactions.cjs
+
       - name: Validate decision observation bindings
         run: node scripts/valida-decision-observation-bindings.cjs
 
