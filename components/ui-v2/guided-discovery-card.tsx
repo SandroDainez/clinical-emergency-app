@@ -42,6 +42,7 @@ export function GuidedDiscoveryCard({
       </View>
 
       <Text style={e.title}>{title}</Text>
+      <Text style={e.instructions}>COMO DESCOBRIR AGORA</Text>
 
       <View style={e.steps}>
         {steps.slice(0, 3).map((step, index) => (
@@ -57,8 +58,8 @@ export function GuidedDiscoveryCard({
         ))}
       </View>
 
-      <View style={e.sufficientBox}>
-        <Text style={e.sufficientEyebrow}>QUANDO JÁ É SUFICIENTE</Text>
+      <View style={e.sufficientBox} accessibilityRole="summary">
+        <Text style={e.sufficientEyebrow}>CRITÉRIO PARA VOLTAR À DECISÃO</Text>
         <Text style={e.sufficientText}>{sufficientWhen}</Text>
       </View>
 
@@ -69,7 +70,10 @@ export function GuidedDiscoveryCard({
           onPress={onReturn}
           style={({ pressed }) => [e.returnButton, pressed && e.pressed]}
         >
-          <Text style={e.returnButtonText}>{returnLabel}</Text>
+          <View style={e.returnCopy}>
+            <Text style={e.returnButtonEyebrow}>INFORMAÇÃO SUFICIENTE</Text>
+            <Text style={e.returnButtonText}>{returnLabel} ›</Text>
+          </View>
         </Pressable>
       ) : null}
     </View>
@@ -82,7 +86,8 @@ const criarEstilos = (t: Tema) =>
       backgroundColor: t.cores.surface,
       borderRadius: RAIO.card,
       borderWidth: 1,
-      borderColor: t.cores.border,
+      borderLeftWidth: 5,
+      borderColor: t.cores.primary,
       padding: ESPACO.lg,
       gap: ESPACO.md,
     },
@@ -92,44 +97,71 @@ const criarEstilos = (t: Tema) =>
       justifyContent: "space-between",
       gap: ESPACO.sm,
     },
-    eyebrow: { ...TIPOGRAFIA.micro, color: t.cores.primary, fontWeight: "900", flex: 1 },
+    eyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+      flex: 1,
+    },
     source: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "700" },
     title: { ...TIPOGRAFIA.step, color: t.cores.text, fontWeight: "800" },
+    instructions: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "800",
+      letterSpacing: 0.6,
+      marginTop: ESPACO.xs,
+    },
     steps: { gap: ESPACO.md },
     step: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.md },
     numberBadge: {
-      minWidth: 30,
-      height: 30,
-      borderRadius: 15,
+      minWidth: 32,
+      height: 32,
+      borderRadius: 16,
       backgroundColor: t.cores.bg,
       borderWidth: 1,
-      borderColor: t.cores.border,
+      borderColor: t.cores.primary,
       alignItems: "center",
       justifyContent: "center",
     },
     numberText: { ...TIPOGRAFIA.caption, color: t.cores.primary, fontWeight: "900" },
-    stepBody: { flex: 1, gap: ESPACO.xs },
+    stepBody: { flex: 1, gap: 3 },
     stepLabel: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
     stepDetail: { ...TIPOGRAFIA.caption, color: t.cores.textSecondary, fontWeight: "500" },
     sufficientBox: {
       backgroundColor: t.cores.bg,
       borderRadius: RAIO.botao,
       borderWidth: 1,
-      borderColor: t.cores.border,
+      borderLeftWidth: 4,
+      borderColor: t.cores.success,
       padding: ESPACO.md,
       gap: ESPACO.xs,
     },
-    sufficientEyebrow: { ...TIPOGRAFIA.micro, color: t.cores.success, fontWeight: "900" },
-    sufficientText: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "600" },
+    sufficientEyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.success,
+      fontWeight: "900",
+      letterSpacing: 0.4,
+    },
+    sufficientText: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "700" },
     returnButton: {
-      minHeight: TOQUE.minimo,
+      minHeight: TOQUE.critico,
       borderRadius: RAIO.botao,
       backgroundColor: t.cores.primary,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
+      paddingVertical: ESPACO.md,
     },
-    returnButtonText: { ...TIPOGRAFIA.caption, color: t.cores.onPrimary, fontWeight: "900" },
+    returnCopy: { alignItems: "center", gap: 2 },
+    returnButtonEyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.onPrimary,
+      fontWeight: "700",
+      opacity: 0.85,
+      letterSpacing: 0.5,
+    },
+    returnButtonText: { ...TIPOGRAFIA.body, color: t.cores.onPrimary, fontWeight: "900" },
     pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
   });
