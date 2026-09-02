@@ -16,6 +16,7 @@ if (!fs.existsSync(tsc)) {
 
 const include = [
   "clinical-safety-cases/gate-action-triggers.ts",
+  "lib/clinical-action-gate.ts",
   "lib/clinical-gate-policy.ts",
   "lib/clinical-gate-registry.ts",
   "lib/clinical-gate-trigger.ts",
@@ -61,7 +62,7 @@ try {
     process.exit(1);
   }
 
-  console.log("\n✅ gates acionados por ação passaram: hard stop AVC, soft stop STEMI e advisory de cardioversão sem falsos positivos por nó.\n");
+  console.log("\n✅ gates acionados por ação passaram: hard stop AVC, soft stop STEMI e advisory de cardioversão com autorização/override coerentes.\n");
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
