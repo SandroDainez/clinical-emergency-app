@@ -752,7 +752,7 @@ function AclsProtocolScreen({
                   </Text>
                 </View>
               </View>
-              <Text style={aclsScreenStyles.referenceShortcutChevron}>›</Text>
+              <Text style={aclsScreenStyles.referenceShortcutChevron}>{tr("ABRIR REFERÊNCIA")} ›</Text>
             </Pressable>
           </View>
         ) : null}
@@ -1035,7 +1035,7 @@ function AclsProtocolScreen({
                 {tr("Metas de oxigenação, PAM, temperatura e neurologia — abrir agora")}
               </Text>
             </View>
-            <Text style={aclsScreenStyles.resourceChevron}>›</Text>
+            <Text style={aclsScreenStyles.resourceChevron}>{tr("ABRIR MÓDULO")} ›</Text>
           </Pressable>
         ) : null}
 
@@ -1168,9 +1168,14 @@ function AclsProtocolScreen({
                 <Text style={[aclsScreenStyles.resourcesToggleText, showRefModules && aclsScreenStyles.resourcesToggleTextOpen]}>
                   {tr("RECURSOS ADICIONAIS")}
                 </Text>
-                <Text style={[aclsScreenStyles.resourcesToggleChevron, showRefModules && aclsScreenStyles.resourcesToggleChevronOpen]}>
-                  {showRefModules ? "▲" : "▼"}
-                </Text>
+                <View style={[aclsScreenStyles.resourcesToggleAction, showRefModules && aclsScreenStyles.resourcesToggleActionOpen]}>
+                  <Text style={[aclsScreenStyles.resourcesToggleActionText, showRefModules && aclsScreenStyles.resourcesToggleActionTextOpen]}>
+                    {showRefModules ? tr("FECHAR") : tr("ABRIR")}
+                  </Text>
+                  <Text style={[aclsScreenStyles.resourcesToggleChevron, showRefModules && aclsScreenStyles.resourcesToggleChevronOpen]}>
+                    {showRefModules ? "▲" : "▼"}
+                  </Text>
+                </View>
               </Pressable>
               <View style={aclsScreenStyles.resourcesDividerLine} />
             </View>
@@ -1199,7 +1204,7 @@ function AclsProtocolScreen({
                           {mod.sublabel}
                         </Text>
                       </View>
-                      <Text style={aclsScreenStyles.resourceChevron}>›</Text>
+                      <Text style={aclsScreenStyles.resourceChevron}>{tr("ABRIR MÓDULO")} ›</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -1292,9 +1297,17 @@ const aclsScreenStyles = StyleSheet.create({
     lineHeight: 15,
   },
   referenceShortcutChevron: {
-    fontSize: 14,
-    color: "#d97706",
-    fontWeight: "700",
+    fontSize: 9,
+    color: "#92400e",
+    fontWeight: "800",
+    letterSpacing: 0.25,
+    borderWidth: 1,
+    borderColor: "#f59e0b",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    overflow: "hidden",
+    backgroundColor: "#fffbeb",
   },
   phaseNoteCard: {
     borderRadius: 22,
@@ -1423,9 +1436,33 @@ const aclsScreenStyles = StyleSheet.create({
   resourcesToggleTextOpen: {
     color: "#0369a1",
   },
+  resourcesToggleAction: {
+    minHeight: 32,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: "#7dd3fc",
+    backgroundColor: "#f0f9ff",
+  },
+  resourcesToggleActionOpen: {
+    backgroundColor: "transparent",
+  },
+  resourcesToggleActionText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#0369a1",
+    letterSpacing: 0.4,
+  },
+  resourcesToggleActionTextOpen: {
+    color: "#0369a1",
+  },
   resourcesToggleChevron: {
     fontSize: 10,
-    color: "#aab6c6",
+    color: "#0369a1",
   },
   resourcesToggleChevronOpen: {
     color: "#0369a1",
@@ -1546,8 +1583,17 @@ const aclsScreenStyles = StyleSheet.create({
     lineHeight: 13,
   },
   resourceChevron: {
-    fontSize: 12,
-    color: "#7dd3fc",
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#0369a1",
+    letterSpacing: 0.25,
+    borderWidth: 1,
+    borderColor: "#7dd3fc",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    overflow: "hidden",
+    backgroundColor: "#f0f9ff",
   },
   resourcesFootnote: {
     fontSize: 9,
