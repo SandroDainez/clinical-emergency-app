@@ -9,19 +9,31 @@ const registry = fs.readFileSync(registryPath, "utf8");
 const esperadoPorArvore = new Map();
 const arquivosPorId = new Map();
 
+// Estes nós já foram classificados por contrato específico como handoff terminal
+// para serviço externo. `targets` adicionais dentro deles são apoio contextual e
+// não criam arestas de transferência extras.
+const EXTERNAL_TERMINAL_NODE_IDS = new Set(["damage_control", "neurocirurgia"]);
+
 function countOtherModuleEdges(texto) {
   const starts = [...texto.matchAll(/^    ([A-Za-z0-9_]+):\s*\{/gm)];
   let edges = 0;
 
   for (let i = 0; i < starts.length; i += 1) {
+    const nodeId = starts[i][1];
     const start = starts[i].index;
     const end = i + 1 < starts.length ? starts[i + 1].index : texto.length;
     const node = texto.slice(start, end);
     if (!/disposition\s*:\s*["']other_module["']/.test(node)) continue;
 
-    const moduleTargets = [...node.matchAll(/\bmoduleId\s*:\s*["'][^"']+["']/g)].length;
-    // Handoff externo terminal pode não ter moduleId porque não existe módulo no app.
-    edges += moduleTargets > 0 ? moduleTargets : 1;
+    if (EXTERNAL_TERMINAL_NODE_IDS.has(nodeId)) {
+      edges += 1;
+      continue;
+    }
+
+    const moduleIds = new Set(
+      [...node.matchAll(/\bmoduleId\s*:\s*["']([^"']+)["']/g)].map((match) => match[1]),
+    );
+    edges += moduleIds.size > 0 ? moduleIds.size : 1;
   }
 
   return edges;
