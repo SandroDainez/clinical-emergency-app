@@ -7,7 +7,7 @@ export default function AvcFlowScreen() {
       tree={avcDecisionTree}
       protocolLabel="AVC Agudo"
       headerTitle="AVC · Emergência"
-      intro="Fluxo interativo do AVC agudo. Responda a cada passo — o app conduz a sequência: tempo de início, TC, NIHSS, elegibilidade para trombólise (dose calculada por peso) e trombectomia."
+      intro="Siga uma decisão por vez. O app preserva o contexto do atendimento e conduz do reconhecimento ao diagnóstico, reperfusão e destino."
       source="Baseado em AHA/ASA 2019 (Manejo Precoce do AVC Isquêmico Agudo)"
       currentModuleSlug="avc"
     />
