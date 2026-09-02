@@ -51,6 +51,10 @@ import {
   salvarSessaoDeFluxo,
   type SessaoDeFluxo,
 } from "../../lib/flow-session";
+import { ClinicalDecisionStepAdapter } from "./clinical-decision-step-adapter";
+import { ClinicalActionStepAdapter } from "./clinical-action-step-adapter";
+import { ClinicalInputStepAdapter } from "./clinical-input-step-adapter";
+import { ClinicalTransitionStepAdapter } from "./clinical-transition-step-adapter";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -633,7 +637,11 @@ export default function AclsDecisionFlowScreen({
               </Pressable>
             </View>
           ) : (
-            <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
+            emV2 ? (
+            <ClinicalDecisionStepAdapter step={step} onChoose={handleChoose} />
+          ) : (
+            <DecisionStep step={step} onChoose={handleChoose} emV2={false} />
+          )
           )
         ) : step.kind === "action" ? (
           <ActionStep
@@ -644,11 +652,31 @@ export default function AclsDecisionFlowScreen({
             protocolId={currentModuleSlug}
           />
         ) : step.kind === "input" ? (
+          emV2 ? (
+          <ClinicalInputStepAdapter
+            step={step}
+            onSetValue={handleSetValue}
+            onAdvance={handleAdvance}
+            inheritedFieldIds={herdadosRef.current}
+          />
+        ) : (
           <InputStep
             step={step}
             onSetValue={handleSetValue}
             onAdvance={handleAdvance}
             herdados={herdadosRef.current}
+          />
+        )
+        ) : (
+          emV2 ? (
+          <ClinicalTransitionStepAdapter
+            step={step}
+            onOpenModule={(moduleId) =>
+              abrirOutroModulo(moduleId.replace(/_/g, "-"), {
+                fromNodeId: step.id,
+                targetModuleId: moduleId,
+              })
+            }
           />
         ) : (
           <TransitionStep
@@ -660,6 +688,7 @@ export default function AclsDecisionFlowScreen({
               })
             }
           />
+        )
         )}
         </Animated.View>
 
@@ -927,55 +956,32 @@ function ActionStep({
             severity="warning"
           />
         ) : null}
-        <Card tom="critical" style={v.cartao}>
-          <Tag label={tr("Conduta — fazer agora")} />
-          <Text style={v.titulo}>{tr(step.title)}</Text>
-          {step.summary ? <Text style={v.resumo}>{tr(step.summary)}</Text> : null}
-          <View style={v.lista}>
-            {step.actions.map((item, index) => (
-              <View key={index} style={v.linhaNumerada}>
-                <View style={v.numero}>
-                  <Text style={v.numeroTexto}>{index + 1}</Text>
-                </View>
-                <Text style={v.itemTexto}>{tr(item)}</Text>
-              </View>
-            ))}
-          </View>
-          {/* ⚠️ O SELO DE FORÇA VEM ABERTO, entre a ação e o porquê: é ele que
-              separa "a diretriz recomenda" de "é plausível pela fisiologia". A
-              lacuna de evidência renderiza aqui, não atrás do toque. */}
-          <SeloDeForca procedencia={step.procedencia} />
-          {/* ⚠️ UM SELO POR AFIRMAÇÃO quando a tela afirma mais de uma coisa. As
-              declarações de natureza `transicao` não têm selo — e é assim que
-              deve ser: elas declaram que NÃO afirmam. */}
-          {step.declaracoes.map((d, i) => (
-            <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
-          ))}
-          {/* O PORQUÊ, recolhido — ver `ActionNode.porque`. Fica ao LADO da ação
-              que ele explica, não numa tela de consulta: quem não tem
-              experiência precisa da razão junto do gesto, e longe dele vira
-              livro. Prazo e precedência NÃO podem morar aqui — `test:prazo-visivel`
-              vigia este campo pelo mesmo motivo que vigia `evidence`. */}
-          <ListaDeCriterios
-            itens={step.porque}
-            rotuloAberto="Por que isto"
-            rotuloOculto="Ocultar o porquê"
-            estilos={{
-              lista: v.lista,
-              linha: v.linha,
-              marcador: v.marcador,
-              texto: v.itemTexto,
-              alternar: v.alternarCriterios,
-            }}
-          />
-        </Card>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onAdvance}
-          style={({ pressed }) => [v.botaoAvancar, pressed && v.botaoPressionado]}
-        >
-          <Text style={v.botaoTexto}>{tr("Feito — continuar ›")}</Text>
-        </Pressable>
+        <ClinicalActionStepAdapter
+          step={step}
+          evidence={
+            <>
+              <SeloDeForca procedencia={step.procedencia} />
+              {step.declaracoes.map((d, i) => (
+                <SeloDeForca key={i} procedencia={d.procedencia} afirmacao={d.afirmacao} />
+              ))}
+            </>
+          }
+          rationale={
+            <ListaDeCriterios
+              itens={step.porque}
+              rotuloAberto="Por que isto"
+              rotuloOculto="Ocultar o porquê"
+              estilos={{
+                lista: v.lista,
+                linha: v.linha,
+                marcador: v.marcador,
+                texto: v.itemTexto,
+                alternar: v.alternarCriterios,
+              }}
+            />
+          }
+          onAdvance={onAdvance}
+        />
       </View>
     );
   }
