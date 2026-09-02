@@ -30,11 +30,14 @@ for (const token of [
   '<PcrInheritedContextCard model={inheritedContext} />',
 ]) requireToken(screen, token, `AclsProtocolScreen sem integração: ${token}`);
 
+if (!/Não atrasar a reanimação para completar informações ausentes\./.test(card)) {
+  errors.push("card herdado perdeu aviso explícito para não atrasar reanimação por dado ausente");
+}
 for (const token of [
-  'A reanimação não deve ser atrasada para completar dados ausentes.',
   'accessibilityRole="summary"',
   '{item.value}',
-  'item.missing ? styles.missingValue : styles.value',
+  'item.missing ? e.missingValue : e.value',
+  'formatAge(item.recordedAt, now)',
 ]) requireToken(card, token, `card herdado perdeu segurança/apresentação: ${token}`);
 
 for (const token of [
