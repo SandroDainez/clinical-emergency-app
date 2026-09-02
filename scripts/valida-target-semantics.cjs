@@ -27,18 +27,26 @@ const casos = [
   ["tce-decision-tree.ts", "tce", "uti", "drogas-vasoativas", "adjunctive_module"],
 ];
 
-function trechoNo(texto, nodeId) {
-  const inicio = texto.indexOf(`${nodeId}: {`);
-  if (inicio < 0) return null;
-  const proximo = texto.indexOf("\n    ", inicio + nodeId.length + 4);
-  return texto.slice(inicio, proximo > inicio ? proximo : texto.length);
+function nodeMap(texto) {
+  const starts = [...texto.matchAll(/^    ([A-Za-z0-9_]+):\s*\{/gm)];
+  const map = new Map();
+  for (let i = 0; i < starts.length; i += 1) {
+    const start = starts[i].index;
+    const end = i + 1 < starts.length ? starts[i + 1].index : texto.length;
+    map.set(starts[i][1], texto.slice(start, end));
+  }
+  return map;
 }
 
 const erros = [];
+const cache = new Map();
 for (const [arquivo, protocolId, nodeId, target, semantic] of casos) {
-  const texto = fs.readFileSync(path.join(raiz, arquivo), "utf8");
+  const texto = cache.get(arquivo)?.texto ?? fs.readFileSync(path.join(raiz, arquivo), "utf8");
+  const nodes = cache.get(arquivo)?.nodes ?? nodeMap(texto);
+  cache.set(arquivo, { texto, nodes });
+
   if (!texto.includes(`id: \"${protocolId}\"`)) erros.push(`${arquivo}: protocolId ${protocolId} não encontrado`);
-  const no = trechoNo(texto, nodeId);
+  const no = nodes.get(nodeId);
   if (!no) {
     erros.push(`${arquivo}: nó ${nodeId} não encontrado`);
     continue;
@@ -49,7 +57,13 @@ for (const [arquivo, protocolId, nodeId, target, semantic] of casos) {
   if (!no.includes(`moduleId: \"${target}\"`)) {
     erros.push(`${arquivo}:${nodeId} não aponta para ${target}`);
   }
-  if (!registry.includes(`fromNodeId: \"${nodeId}\"`) || !registry.includes(`targetModuleId: \"${target}\"`) || !registry.includes(`semantic: \"${semantic}\"`)) {
+
+  const expected = `fromProtocolId: \"${protocolId}\"`;
+  const nodeExpected = `fromNodeId: \"${nodeId}\"`;
+  const targetExpected = `targetModuleId: \"${target}\"`;
+  const semanticExpected = `semantic: \"${semantic}\"`;
+  const blocks = [...registry.matchAll(/\{[\s\S]*?\}/g)].map((m) => m[0]);
+  if (!blocks.some((block) => block.includes(expected) && block.includes(nodeExpected) && block.includes(targetExpected) && block.includes(semanticExpected))) {
     erros.push(`registry sem contrato esperado ${protocolId}/${nodeId} -> ${target} (${semantic})`);
   }
 }
