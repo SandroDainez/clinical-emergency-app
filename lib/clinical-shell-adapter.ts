@@ -1,4 +1,4 @@
-import { getAllClinicalObservations, formatObservationAge } from "./clinical-observations";
+import { getAllClinicalObservations, formatObservationAge, type ClinicalObservation } from "./clinical-observations";
 import { peekClinicalInterruption } from "./clinical-interruption-session";
 import { getCriticalTherapyReassessmentRule } from "./clinical-reassessment-policy";
 import { listPendingClinicalReassessments } from "./clinical-reassessment-runtime";
@@ -9,6 +9,7 @@ export type ClinicalShellMetric = {
   label: string;
   value: string;
   age?: string;
+  origin?: string;
   attention?: boolean;
 };
 
@@ -43,6 +44,19 @@ const LABELS: Record<string, string> = {
   temperatura: "Temp",
 };
 
+const SOURCE_LABELS: Record<ClinicalObservation["source"], string> = {
+  manual: "medido aqui",
+  device: "dispositivo",
+  derived: "derivado",
+  imported: "importado",
+};
+
+function formatObservationOrigin(observation: ClinicalObservation): string {
+  const source = SOURCE_LABELS[observation.source];
+  if (!observation.originModule) return source;
+  return `${source} · ${observation.originModule}`;
+}
+
 function formatElapsed(startedAt: number, now: number): string {
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1000));
   if (seconds < 60) return "agora";
@@ -58,9 +72,9 @@ function formatElapsed(startedAt: number, now: number): string {
  *
  * Não navega, não decide e não classifica elegibilidade. A única seleção feita
  * aqui é de apresentação: mantém no cockpit no máximo quatro observações mais
- * recentes, sempre acompanhadas da idade do dado, revela a origem de uma
- * interrupção ativa e mostra a obrigação de reavaliação mais antiga ainda
- * pendente. O adapter não conclui se a resposta clínica foi adequada.
+ * recentes, sempre acompanhadas da idade e da procedência do dado, revela a
+ * origem de uma interrupção ativa e mostra a obrigação de reavaliação mais
+ * antiga ainda pendente. O adapter não conclui se a resposta clínica foi adequada.
  */
 export function buildClinicalShellSnapshot(input: {
   protocol: string;
@@ -77,6 +91,7 @@ export function buildClinicalShellSnapshot(input: {
       label: LABELS[observation.id.toLowerCase()] ?? observation.id,
       value: observation.unit ? `${observation.value} ${observation.unit}` : String(observation.value),
       age: formatObservationAge(observation, now),
+      origin: formatObservationOrigin(observation),
     }));
 
   const interruption = peekClinicalInterruption();
