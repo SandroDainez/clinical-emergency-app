@@ -89,9 +89,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Catálogo piloto criado para AVC, Anafilaxia e ISR.
 - [x] Validador de forma dos casos-piloto criado.
 - [x] Travas estruturais do runtime bridge, session reset, shell adapter e crisis routing criadas.
+- [x] Runner determinístico criado sobre a DecisionTreeEngine real.
+- [x] Primeiras trajetórias executáveis reais: AVC, Anafilaxia e ISR.
+- [x] Casos iniciais já verificam nós obrigatórios, proibidos e nó final esperado.
+- [x] Trava estrutural dos casos executáveis criada.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
-- [ ] Criar runner que percorra as árvores reais.
-- [ ] Caminhos obrigatórios e proibidos.
+- [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Testes de deterioração e interrupção.
 - [ ] Testes de retomada de protocolo.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.
