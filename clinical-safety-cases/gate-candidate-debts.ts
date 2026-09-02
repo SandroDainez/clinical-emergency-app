@@ -11,6 +11,11 @@ export type ClinicalGateCandidateDebt = {
   currentTreeEvidence: string;
   requiredFacts: readonly string[];
   activationRuleDraft: string;
+  evidenceReview?: {
+    reviewedAt: string;
+    sources: readonly string[];
+    conclusion: string;
+  };
 };
 
 /**
@@ -26,18 +31,28 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
     id: "tox-flumazenil-high-risk-context",
     protocolId: "intoxicacoes_exogenas",
     nodeId: "tox_sedativo",
-    candidateLevel: "hard_stop",
-    status: ["needs_evidence_review", "needs_fact_model", "needs_action_surface"],
-    riskStatement: "Flumazenil pode ser perigoso em cenários que a própria árvore descreve como de alto risco de convulsão ou descompensação.",
+    candidateLevel: "needs_level_review",
+    status: ["needs_fact_model", "needs_action_surface"],
+    riskStatement: "Flumazenil pode causar dano em pacientes com risco aumentado de convulsão ou arritmia; o benefício se concentra em intoxicação benzodiazepínica pura e de baixo risco.",
     currentTreeEvidence: "FLUMAZENIL_NAO_USAR declara não usar em uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico, convulsão e alguns usos terapêuticos vitais de benzodiazepínico.",
     requiredFacts: [
-      "uso_cronico_benzodiazepinico",
-      "epilepsia",
-      "coingestao_triciclico",
-      "convulsao_atual_ou_recente",
+      "dependencia_ou_tolerancia_benzodiazepinico",
+      "transtorno_convulsivo",
+      "coingestao_proconvulsivante_ou_cardiotoxica",
+      "sinais_de_superdose_ciclica_antidepressiva",
       "benzodiazepinico_controlando_condicao_potencialmente_fatal",
+      "intoxicacao_benzodiazepinica_pura_confirmada",
     ],
-    activationRuleDraft: "Somente avaliar ao tentar administrar flumazenil e apenas com um dos fatos de alto risco explicitamente registrado.",
+    activationRuleDraft: "Somente avaliar ao tentar administrar flumazenil. O nível final deve distinguir contraindicação/alto risco bem documentado de situações que exigem cautela, sem transformar qualquer história de epilepsia em hard stop automático.",
+    evidenceReview: {
+      reviewedAt: "2026-09-02",
+      sources: [
+        "AHA 2025 CPR/ECC — Part 10, Benzodiazepine Poisoning",
+        "AHA 2023 Focused Update on Life-Threatening Toxicity Due to Poisoning",
+        "FDA labeling — flumazenil warnings/contraindications and cyclic antidepressant overdose risk",
+      ],
+      conclusion: "Evidência confirma benefício apenas em pacientes selecionados de baixo risco e associação com dano em pacientes com maior risco de convulsão/arrítmia. Ainda falta modelar fatos e resolver o nível por subcenário antes de ativar gate.",
+    },
   },
   {
     id: "tox-toxic-alcohol-decontamination",
