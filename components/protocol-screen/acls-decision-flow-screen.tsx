@@ -35,6 +35,7 @@ import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
+import { prepareRegisteredTargetHandoff } from "../../lib/clinical-target-handoff-runtime";
 import { recordClinicalSafetyOverride } from "../../lib/clinical-safety-override";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
@@ -183,7 +184,19 @@ export default function AclsDecisionFlowScreen({
    * shell empurravam a rota crua, então o destino não tinha como saber que havia
    * um protocolo em andamento atrás dele — metade do defeito relatado.
    */
-  const abrirOutroModulo = (slug: string) => {
+  const abrirOutroModulo = (
+    slug: string,
+    handoff?: { fromNodeId: string; targetModuleId: string }
+  ) => {
+    if (handoff) {
+      const attempt = prepareRegisteredTargetHandoff({
+        fromProtocolId: tree.id,
+        fromNodeId: handoff.fromNodeId,
+        targetModuleId: handoff.targetModuleId,
+      });
+      if (!attempt.canProceedToDestination) return;
+    }
+
     const origem = currentModuleSlug ? `?from_module=${currentModuleSlug}` : "";
     router.push(`/modulos/${slug}${origem}` as never);
   };
@@ -269,7 +282,8 @@ export default function AclsDecisionFlowScreen({
         : undefined;
     const next = engine.choose(optionId);
     recordFlowDecision({
-      module: currentModuleSlug,
+      module: tree.id,
+      bindingProtocolId: currentModuleSlug,
       nodeId: currentNodeId,
       optionId,
       optionLabel,
@@ -327,7 +341,7 @@ export default function AclsDecisionFlowScreen({
 
     if (currentNode.type === "action") {
       recordFlowAdvance({
-        module: currentModuleSlug,
+        module: tree.id,
         nodeId: currentNode.id,
         title: currentNode.title,
       });
@@ -336,7 +350,7 @@ export default function AclsDecisionFlowScreen({
         const value = currentValues[field.id];
         if (value === undefined) continue;
         recordFlowObservation({
-          module: currentModuleSlug,
+          module: tree.id,
           fieldId: field.id,
           value,
           unit: field.unit,
@@ -639,7 +653,12 @@ export default function AclsDecisionFlowScreen({
         ) : (
           <TransitionStep
             step={step}
-            onOpenModule={(moduleId) => abrirOutroModulo(moduleId.replace(/_/g, "-"))}
+            onOpenModule={(moduleId) =>
+              abrirOutroModulo(moduleId.replace(/_/g, "-"), {
+                fromNodeId: step.id,
+                targetModuleId: moduleId,
+              })
+            }
           />
         )}
         </Animated.View>
