@@ -489,20 +489,26 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
             <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
             <View style={s.row}>
               <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
-              <NumericStepper
-                valor={Number(calc.weightKg.replace(",", ".")) || 70}
-                onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
-                // ⚠️ MESMO BURACO DOS ELETRÓLITOS, e este é o precedente: o
-                // aviso "peso ainda NÃO confirmado" só saía quando o número
-                // mudava, então confirmar 70 kg — a barra parte de 70 — era
-                // impossível. Paciente de 70 kg existe.
-                onConfirmar={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
-                min={FAIXA_DE_ENTRADA.peso.min}
-                max={FAIXA_DE_ENTRADA.peso.max}
-                passo={FAIXA_DE_ENTRADA.peso.passo}
-                unidade="kg"
-                testID="slider-peso"
+              <TextInput
+                style={s.modalInput}
+                value={calc.weightKg}
+                onChangeText={(texto) => setCalc((c) => ({ ...c, weightKg: texto }))}
+                keyboardType="numeric"
+                placeholder={tr("Informe o peso")}
+                placeholderTextColor="#94a3b8"
+                accessibilityLabel={tr("Peso em quilogramas")}
               />
+              {wt > 0 ? (
+                <NumericStepper
+                  valor={wt}
+                  onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                  min={FAIXA_DE_ENTRADA.peso.min}
+                  max={FAIXA_DE_ENTRADA.peso.max}
+                  passo={FAIXA_DE_ENTRADA.peso.passo}
+                  unidade="kg"
+                  testID="slider-peso"
+                />
+              ) : null}
             </View>
             {/* A condição era `=== "mcg/min"`, o que cobria SÓ a nitroglicerina.
                 A vasopressina é U/min — caía no ramo de baixo e a tela exibia
@@ -517,7 +523,7 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
             ) : wt > 0 ? (
               <Text style={s.hint}>Paciente: {fmt(wt, 0)} kg</Text>
             ) : (
-              <Text style={s.hintWarn}>{tr("⚠️ Peso ainda NÃO confirmado — a barra parte de 70 kg, que é ponto de partida, não medida. Ajuste ou toque para confirmar.")}</Text>
+              <Text style={s.hintWarn}>{tr("⚠️ Informe o peso para calcular esta dose.")}</Text>
             )}
             <Text style={s.hint}>
               {tr("Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.")}

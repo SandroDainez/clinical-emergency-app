@@ -74,6 +74,11 @@ export default function VentilatorConfiguratorCard() {
   const [patId, setPatId] = useState<string>("padrao");
 
   const pat = PATOLOGIAS.find((p) => p.id === patId) ?? PATOLOGIAS[0];
+  const alturaNumerica = Number(String(altura).replace(",", "."));
+  const alturaValida =
+    Number.isFinite(alturaNumerica) &&
+    alturaNumerica >= FAIXA_DE_ENTRADA.altura.min &&
+    alturaNumerica <= FAIXA_DE_ENTRADA.altura.max;
 
   const calc = useMemo(() => {
     const h = parseFloat((altura || "").replace(",", "."));
@@ -122,15 +127,26 @@ export default function VentilatorConfiguratorCard() {
                 valores comuns. O que sai é a caixa "Outro", que obrigava a
                 abrir teclado para uma altura fora da lista. A barra alcança
                 qualquer valor da faixa e não erra de ordem de grandeza. */}
-            <NumericStepper
-              valor={Number(String(altura).replace(",", ".")) || 170}
-              onChange={(n) => { setCustomAltura(String(n)); setAltura(String(n)); }}
-              min={FAIXA_DE_ENTRADA.altura.min}
-              max={FAIXA_DE_ENTRADA.altura.max}
-              passo={FAIXA_DE_ENTRADA.altura.passo}
-              unidade="cm"
-              testID="slider-altura"
+            <TextInput
+              style={s.customInput}
+              value={customAltura}
+              onChangeText={(texto) => { setCustomAltura(texto); setAltura(texto); }}
+              keyboardType="numeric"
+              placeholder={tr("Informe a altura")}
+              placeholderTextColor="#94a3b8"
+              accessibilityLabel={tr("Altura em centímetros")}
             />
+            {alturaValida ? (
+              <NumericStepper
+                valor={alturaNumerica}
+                onChange={(n) => { setCustomAltura(String(n)); setAltura(String(n)); }}
+                min={FAIXA_DE_ENTRADA.altura.min}
+                max={FAIXA_DE_ENTRADA.altura.max}
+                passo={FAIXA_DE_ENTRADA.altura.passo}
+                unidade="cm"
+                testID="slider-altura"
+              />
+            ) : null}
           </View>
 
           {/* Sexo */}

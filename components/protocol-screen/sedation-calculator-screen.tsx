@@ -342,21 +342,26 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
             <View style={s.row}>
               <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
-              <NumericStepper
-                valor={Number(calc.weightKg.replace(",", ".")) || 70}
-                onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
-                // ⚠️ TERCEIRA OCORRÊNCIA DO MESMO BURACO, e a de maior
-                // consequência: aqui `weightMissing` BLOQUEIA O CÁLCULO — a
-                // dose vira "—". O paciente de 70 kg que soltasse a barra no
-                // ponto de partida (70) ficava sem dose, porque o valor não
-                // "mudou" e nada era gravado.
-                onConfirmar={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
-                min={FAIXA_DE_ENTRADA.peso.min}
-                max={FAIXA_DE_ENTRADA.peso.max}
-                passo={FAIXA_DE_ENTRADA.peso.passo}
-                unidade="kg"
-                testID="slider-peso"
+              <TextInput
+                style={s.modalInput}
+                value={calc.weightKg}
+                onChangeText={(texto) => setCalc((c) => ({ ...c, weightKg: texto }))}
+                keyboardType="numeric"
+                placeholder={tr("Informe o peso")}
+                placeholderTextColor="#94a3b8"
+                accessibilityLabel={tr("Peso em quilogramas")}
               />
+              {parsePt(calc.weightKg) !== null ? (
+                <NumericStepper
+                  valor={Number(calc.weightKg.replace(",", "."))}
+                  onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                  min={FAIXA_DE_ENTRADA.peso.min}
+                  max={FAIXA_DE_ENTRADA.peso.max}
+                  passo={FAIXA_DE_ENTRADA.peso.passo}
+                  unidade="kg"
+                  testID="slider-peso"
+                />
+              ) : null}
             </View>
             {weightMissing
               ? <Text style={s.hintWarn}>{tr("⚠️ Informe o peso para calcular esta dose.")}</Text>
