@@ -71,16 +71,16 @@ export function ClinicalShellHost({
   const startedAtRef = useRef(Date.now());
   const [now, setNow] = useState(() => Date.now());
 
-  // Piloto visual da Superfície A do AVC: o cronômetro mede somente o tempo
-  // desde que este shell foi aberto. Ele NÃO participa de janela terapêutica,
-  // elegibilidade, deadline ou qualquer derivação clínica. Mantemos o piloto
-  // restrito ao AVC para não mudar silenciosamente os demais módulos enquanto
-  // a nova superfície ainda está sendo validada.
+  // O relógio abaixo serve somente à apresentação: mantém idade de observações,
+  // reavaliações e, no piloto do AVC, o cronômetro visual atualizados. Não muda
+  // elegibilidade, janela terapêutica, deadline ou qualquer derivação clínica.
   useEffect(() => {
     startedAtRef.current = Date.now();
     setNow(startedAtRef.current);
-    if (moduleSlug !== "avc" || elapsed) return;
-    const timer = setInterval(() => setNow(Date.now()), 1000);
+
+    const needsSecondTick = moduleSlug === "avc" && !elapsed;
+    const intervalMs = needsSecondTick ? 1000 : 60_000;
+    const timer = setInterval(() => setNow(Date.now()), intervalMs);
     return () => clearInterval(timer);
   }, [moduleSlug, elapsed]);
 
@@ -93,6 +93,7 @@ export function ClinicalShellHost({
     phase: presentationPhase(moduleSlug, phase),
     step,
     moduleSlug,
+    now,
   });
 
   const crisisActions = buildCrisisRoutes(moduleSlug).map((route) => ({
