@@ -35,4 +35,4 @@ jobs:
         run: npm run build:web
 
       - name: Smoke E2E do shell integrado
-        run: npx playwright test e2e/fluxo-decisao-paridade.spec.ts --project=chromium
+        run: npx playwright test e2e/fluxo-decisao-paridade.spec.ts
