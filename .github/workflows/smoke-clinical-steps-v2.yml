@@ -1,0 +1,38 @@
+name: Smoke clinical steps UI v2
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - .github/workflows/smoke-clinical-steps-v2.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout da branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web
+        run: npm run build:web
+
+      - name: Smoke E2E do shell integrado
+        run: npx playwright test e2e/fluxo-decisao-paridade.spec.ts --project=chromium
