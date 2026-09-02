@@ -1,6 +1,7 @@
 import { clearClinicalEventLog } from "./clinical-event-log";
 import { clearClinicalInterruptions } from "./clinical-interruption-session";
 import { clearClinicalObservations } from "./clinical-observations";
+import { clearClinicalReassessmentNodeRuntime } from "./clinical-reassessment-node-runtime";
 import { clearPendingClinicalReassessments } from "./clinical-reassessment-runtime";
 import { limparContextoDoPaciente } from "./contexto-do-paciente";
 
@@ -25,6 +26,7 @@ export function startClinicalCase(caseId: string, now: number = Date.now()): Cli
   clearClinicalEventLog();
   clearClinicalInterruptions();
   clearClinicalObservations();
+  clearClinicalReassessmentNodeRuntime();
   clearPendingClinicalReassessments();
   limparContextoDoPaciente();
 
