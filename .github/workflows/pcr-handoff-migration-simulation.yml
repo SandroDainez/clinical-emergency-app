@@ -16,6 +16,7 @@ on:
       - "scripts/test-*handoff*.cjs"
       - "scripts/valida-*handoff*.cjs"
       - "scripts/valida-*transition*.cjs"
+      - "scripts/valida-cobertura-other-module-registry.cjs"
       - ".github/workflows/pcr-handoff-migration-simulation.yml"
   workflow_dispatch:
 
