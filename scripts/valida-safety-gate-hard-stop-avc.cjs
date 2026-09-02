@@ -35,9 +35,16 @@ expect(shell.includes("onResolveGate(resolutionNodeId)"), "Shell: saída segura 
 expect(shell.includes("onResolveGate={handleGateResolution}"), "Shell: ActionStep não recebe handler de resolução");
 expect(shell.includes("engine.goToNode(nodeId)"), "Shell: resolução não usa navegação explícita do engine");
 
-const hardStopIndex = shell.indexOf("if (hardStop)");
-const actionCardIndex = shell.indexOf('<Card tom="critical" style={v.cartao}>', hardStopIndex);
-expect(hardStopIndex >= 0 && actionCardIndex > hardStopIndex, "Shell: hard stop precisa ser avaliado antes do card de conduta/dose");
+// A apresentação da conduta foi extraída para ClinicalActionStepAdapter. O contrato
+// de segurança permanece o mesmo: o hard stop precisa retornar antes de qualquer
+// renderização da conduta liberada.
+const actionStep = shell.match(/function ActionStep\([\s\S]*?\n}\n\n\/\*\*/)?.[0] ?? shell;
+const hardStopIndex = actionStep.indexOf("if (hardStop)");
+const adapterIndex = actionStep.indexOf("<ClinicalActionStepAdapter", hardStopIndex);
+expect(
+  hardStopIndex >= 0 && adapterIndex > hardStopIndex,
+  "Shell: hard stop precisa ser avaliado antes do adapter de conduta/dose"
+);
 
 if (issues.length) {
   for (const issue of issues) console.error(`❌ ${issue}`);
