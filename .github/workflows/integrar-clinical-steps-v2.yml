@@ -1,0 +1,64 @@
+name: Integrar clinical steps UI v2
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - scripts/aplica-integracao-clinical-steps-v2.cjs
+      - .github/workflows/integrar-clinical-steps-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout da branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Aplicar patch deterministico
+        run: node scripts/aplica-integracao-clinical-steps-v2.cjs
+
+      - name: Validar paridade dos quatro passos
+        run: node scripts/valida-paridade-clinical-steps.cjs
+
+      - name: Validar build web
+        run: npm run build:web
+
+      - name: Confirmar escopo do diff
+        shell: bash
+        run: |
+          git diff --exit-code -- . ':!components/protocol-screen/acls-decision-flow-screen.tsx' || {
+            echo 'O patch alterou arquivos fora do shell permitido.'
+            exit 1
+          }
+          git diff --check
+          git diff --stat
+
+      - name: Commitar integracao validada
+        shell: bash
+        run: |
+          if git diff --quiet -- components/protocol-screen/acls-decision-flow-screen.tsx; then
+            echo 'Nenhuma alteracao para commitar.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/protocol-screen/acls-decision-flow-screen.tsx
+          git commit -m 'refactor(ui-v2): integrate clinical step adapters into shell'
+          git push origin HEAD:emergencias-2-ui-core
