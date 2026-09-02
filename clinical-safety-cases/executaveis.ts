@@ -1,3 +1,4 @@
+import { tachycardiaDecisionTree } from "../acls-tachycardia-tree";
 import { anaphylaxisDecisionTree } from "../anaphylaxis-decision-tree";
 import { avcDecisionTree } from "../avc-decision-tree";
 import { rsiDecisionTree } from "../rsi-decision-tree";
@@ -32,6 +33,12 @@ const isrSemPreditorDificuldade: readonly ClinicalRunnerInstruction[] = [
   { type: "set", field: "pas", value: "110" },
   { type: "advance" }, // dados -> via_dificil
   { type: "choose", optionId: "nao" }, // via_dificil -> preoxigenacao
+];
+
+const taquicardiaInstavelCardioversao: readonly ClinicalRunnerInstruction[] = [
+  { type: "advance" }, // entry -> assess_stability
+  { type: "choose", optionId: "instavel" }, // -> unstable_cardioversion
+  { type: "advance" }, // -> unstable_reavaliar
 ];
 
 /**
@@ -74,6 +81,18 @@ export const EXECUTABLE_CLINICAL_SAFETY_CASES: readonly ExecutableClinicalSafety
       return assertClinicalTrajectory(result, {
         mustVisit: ["dados", "via_dificil", "preoxigenacao"],
         finalNodeId: "preoxigenacao",
+      });
+    },
+  },
+  {
+    id: "taquicardia-instavel-cardioversao-reavaliacao",
+    title: "Taquicardia instável: cardioversão deve ser seguida de reavaliação antes de qualquer destino",
+    run: () => {
+      const result = runClinicalTrajectory(tachycardiaDecisionTree, taquicardiaInstavelCardioversao);
+      return assertClinicalTrajectory(result, {
+        mustVisit: ["assess_stability", "unstable_cardioversion", "unstable_reavaliar"],
+        mustNotVisit: ["stable_reassess"],
+        finalNodeId: "unstable_reavaliar",
       });
     },
   },
