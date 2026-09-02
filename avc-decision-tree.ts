@@ -404,6 +404,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
     trombolise: {
       id: "trombolise",
       type: "action",
+      clinicalActionId: "administrar_trombolise_iv",
       title: "Trombólise IV — dose calculada",
       summary: "Iniciar o quanto antes (meta porta-agulha ≤ 60 min).",
       actions: [

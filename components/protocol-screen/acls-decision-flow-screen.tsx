@@ -318,6 +318,12 @@ export default function AclsDecisionFlowScreen({
     sync(next.title);
   };
 
+  const handleGateResolution = (nodeId: string) => {
+    const next = engine.goToNode(nodeId);
+    caminhoRef.current.push(next.id);
+    sync(next.title);
+  };
+
   const handleSetValue = (fieldId: string, value: string) => {
     engine.setValue(fieldId, value);
     valoresRef.current[fieldId] = value;
@@ -557,6 +563,7 @@ export default function AclsDecisionFlowScreen({
           <ActionStep
             step={step}
             onAdvance={handleAdvance}
+            onResolveGate={handleGateResolution}
             emV2={emV2}
             protocolId={currentModuleSlug}
           />
@@ -759,11 +766,13 @@ function DecisionStep({
 function ActionStep({
   step,
   onAdvance,
+  onResolveGate,
   emV2,
   protocolId,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
+  onResolveGate: (nodeId: string) => void;
   emV2?: boolean;
   protocolId?: string;
 }) {
@@ -782,6 +791,7 @@ function ActionStep({
   const advisory = actionGate?.decision.advisories.find(
     (item) => item.policy.id !== dismissedAdvisoryId
   );
+  const hardStop = actionGate?.decision.hardStops[0];
   const discovery =
     step.guidedDiscoveryOrigin && protocolId
       ? guidedDiscoveryViewModel(protocolId, step.guidedDiscoveryOrigin)
@@ -802,6 +812,23 @@ function ActionStep({
           sufficientWhen={tr(discovery.sufficientWhen)}
           returnLabel={tr("Voltar à decisão")}
           onReturn={onAdvance}
+        />
+      </View>
+    );
+  }
+
+  if (hardStop) {
+    const resolutionNodeId = hardStop.policy.resolutionNodeId;
+    return (
+      <View style={styles.stepStack}>
+        <SafetyGate
+          title={tr(hardStop.policy.title)}
+          message={tr(hardStop.policy.message)}
+          primaryLabel={tr(hardStop.policy.resolution)}
+          onPrimary={() => {
+            if (resolutionNodeId) onResolveGate(resolutionNodeId);
+          }}
+          severity="critical"
         />
       </View>
     );
