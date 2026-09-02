@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
+
 import type { PcrInheritedContextViewModel } from "../../lib/pcr-handoff-context-adapter";
+import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
 export type PcrInheritedContextCardProps = {
   model: PcrInheritedContextViewModel;
@@ -7,39 +10,60 @@ export type PcrInheritedContextCardProps = {
 };
 
 function formatAge(recordedAt: number | undefined, now: number): string {
-  if (!recordedAt) return "não registrado";
+  if (!recordedAt) return "horário não registrado";
   const seconds = Math.max(0, Math.floor((now - recordedAt) / 1000));
-  if (seconds < 60) return "agora";
+  if (seconds < 60) return "registrado agora";
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min atrás`;
+  if (minutes < 60) return `há ${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  return `${hours} h atrás`;
+  const remainder = minutes % 60;
+  return remainder ? `há ${hours} h ${remainder} min` : `há ${hours} h`;
 }
 
 /**
- * Contexto herdado é informativo. Este card não executa ação, não cria botão e
- * não interfere no algoritmo/temporizadores da PCR.
+ * Contexto herdado é histórico e informativo. Este card não executa ação,
+ * não cria botão e não interfere no algoritmo/temporizadores da PCR.
+ *
+ * O objetivo visual é impedir que um fato pré-PCR seja confundido com o estado
+ * atual durante a ressuscitação: origem e idade permanecem visíveis em cada linha.
  */
 export default function PcrInheritedContextCard({
   model,
   now = Date.now(),
 }: PcrInheritedContextCardProps) {
+  const e = useEstilosDoTema(criarEstilos);
+
   return (
-    <View style={styles.card} accessibilityRole="summary">
-      <Text style={styles.eyebrow}>CONTEXTO HERDADO · {model.sourceLabel}</Text>
-      <Text style={styles.title}>{model.title}</Text>
-      <Text style={styles.note}>
-        Use como contexto do que ocorreu antes da perda do pulso. A reanimação não deve ser atrasada para completar dados ausentes.
+    <View style={e.card} accessibilityRole="summary">
+      <View style={e.heading}>
+        <Text style={e.eyebrow}>CONTEXTO PRÉ-PCR · {model.sourceLabel}</Text>
+        <Text style={e.title}>{model.title}</Text>
+      </View>
+
+      <View style={e.historyNotice}>
+        <Text style={e.historyEyebrow}>INFORMAÇÃO HISTÓRICA</Text>
+        <Text style={e.historyText}>
+          Use estes dados apenas para entender o que ocorreu antes da perda do pulso. O estado atual deve ser reavaliado durante a PCR.
+        </Text>
+      </View>
+
+      <Text style={e.noDelayNote}>
+        Não atrasar a reanimação para completar informações ausentes.
       </Text>
 
-      <View style={styles.list}>
+      <View style={e.list}>
         {model.items.map((item) => (
-          <View key={item.id} style={styles.row}>
-            <View style={styles.main}>
-              <Text style={styles.label}>{item.label}</Text>
-              <Text style={item.missing ? styles.missingValue : styles.value}>{item.value}</Text>
+          <View key={item.id} style={e.row}>
+            <View style={e.main}>
+              <Text style={e.label}>{item.label}</Text>
+              <Text style={item.missing ? e.missingValue : e.value}>{item.value}</Text>
+              <View style={e.metaRow}>
+                <Text style={e.preArrestLabel}>ANTES DA PCR</Text>
+                <Text style={[e.age, item.missing && e.ageMissing]}>
+                  {formatAge(item.recordedAt, now)}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.age}>{formatAge(item.recordedAt, now)}</Text>
           </View>
         ))}
       </View>
@@ -47,68 +71,103 @@ export default function PcrInheritedContextCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#D8E0EA",
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    gap: 8,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.6,
-    color: "#53657A",
-  },
-  title: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: "800",
-    color: "#10233F",
-  },
-  note: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#53657A",
-  },
-  list: {
-    gap: 8,
-    marginTop: 4,
-  },
-  row: {
-    minHeight: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#EEF2F6",
-  },
-  main: {
-    flex: 1,
-    gap: 2,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#53657A",
-  },
-  value: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#10233F",
-  },
-  missingValue: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#9A5B13",
-  },
-  age: {
-    fontSize: 12,
-    color: "#53657A",
-    textAlign: "right",
-  },
-});
+const criarEstilos = (t: Tema) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderLeftWidth: 5,
+      borderColor: t.cores.border,
+      borderLeftColor: t.cores.primary,
+      borderRadius: RAIO.card,
+      backgroundColor: t.cores.surface,
+      padding: ESPACO.md,
+      gap: ESPACO.md,
+    },
+    heading: {
+      gap: 3,
+    },
+    eyebrow: {
+      ...TIPOGRAFIA.micro,
+      fontWeight: "900",
+      letterSpacing: 0.7,
+      color: t.cores.primary,
+    },
+    title: {
+      ...TIPOGRAFIA.step,
+      fontWeight: "800",
+      color: t.cores.text,
+    },
+    historyNotice: {
+      borderRadius: RAIO.input,
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      backgroundColor: t.cores.bg,
+      padding: ESPACO.sm,
+      gap: 3,
+    },
+    historyEyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+    },
+    historyText: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.text,
+      fontWeight: "600",
+    },
+    noDelayNote: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.warning,
+      fontWeight: "800",
+    },
+    list: {
+      gap: ESPACO.sm,
+    },
+    row: {
+      minHeight: 58,
+      paddingTop: ESPACO.sm,
+      borderTopWidth: 1,
+      borderTopColor: t.cores.border,
+    },
+    main: {
+      gap: 3,
+    },
+    label: {
+      ...TIPOGRAFIA.micro,
+      fontWeight: "700",
+      color: t.cores.textSecondary,
+    },
+    value: {
+      ...TIPOGRAFIA.caption,
+      fontWeight: "800",
+      color: t.cores.text,
+    },
+    missingValue: {
+      ...TIPOGRAFIA.caption,
+      fontWeight: "800",
+      color: t.cores.warning,
+    },
+    metaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: ESPACO.xs,
+    },
+    preArrestLabel: {
+      fontSize: 9,
+      lineHeight: 11,
+      color: t.cores.textSecondary,
+      fontWeight: "900",
+      letterSpacing: 0.6,
+    },
+    age: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "600",
+    },
+    ageMissing: {
+      color: t.cores.warning,
+      fontWeight: "700",
+    },
+  });
