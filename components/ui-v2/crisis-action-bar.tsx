@@ -28,23 +28,30 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
 
   return (
     <View style={e.wrapper} accessibilityLabel="Ações de emergência">
-      {visible.map((action) => (
-        <Pressable
-          key={action.id}
-          accessibilityRole="button"
-          accessibilityLabel={action.label}
-          onPress={action.onPress}
-          style={({ pressed }) => [
-            e.action,
-            action.critical && e.critical,
-            pressed && e.pressed,
-          ]}
-        >
-          <Text style={[e.label, action.critical && e.criticalLabel]} numberOfLines={2}>
-            {action.label}
-          </Text>
-        </Pressable>
-      ))}
+      <View style={e.headingRow}>
+        <Text style={e.eyebrow}>INTERCORRÊNCIA / PIORA SÚBITA</Text>
+        <Text style={e.hint}>Acesso imediato sem perder o fluxo atual</Text>
+      </View>
+
+      <View style={e.actionsRow}>
+        {visible.map((action) => (
+          <Pressable
+            key={action.id}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            onPress={action.onPress}
+            style={({ pressed }) => [
+              e.action,
+              action.critical && e.critical,
+              pressed && e.pressed,
+            ]}
+          >
+            <Text style={[e.label, action.critical && e.criticalLabel]} numberOfLines={2}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }
@@ -52,7 +59,6 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
 const criarEstilos = (t: Tema) =>
   StyleSheet.create({
     wrapper: {
-      flexDirection: "row",
       gap: ESPACO.sm,
       paddingHorizontal: ESPACO.sm,
       paddingTop: ESPACO.sm,
@@ -60,6 +66,30 @@ const criarEstilos = (t: Tema) =>
       borderTopWidth: 1,
       borderTopColor: t.cores.border,
       backgroundColor: t.cores.surface,
+    },
+    headingRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+    },
+    eyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+      flexShrink: 0,
+    },
+    hint: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "500",
+      textAlign: "right",
+      flex: 1,
+    },
+    actionsRow: {
+      flexDirection: "row",
+      gap: ESPACO.sm,
     },
     action: {
       flex: 1,
