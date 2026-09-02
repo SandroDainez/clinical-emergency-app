@@ -80,8 +80,8 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   return (
     <View style={e.card} accessibilityRole="summary">
       <View style={e.heading}>
-        <Text style={e.eyebrow}>{tr("Decisão clínica")}</Text>
-        <Text style={e.title}>{title ? tr(title) : tr("Toque para avançar")}</Text>
+        <Text style={e.eyebrow}>{tr("Escolha agora")}</Text>
+        <Text style={e.title}>{title ? tr(title) : tr("Toque na resposta")}</Text>
       </View>
 
       <View style={e.options}>
@@ -111,7 +111,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
                 </Text>
                 {sublabel ? <Text style={e.sublabel}>{tr(sublabel)}</Text> : null}
               </View>
-              {dontKnow ? <Text style={e.helpMark}>?</Text> : null}
+              <Text style={[e.chevron, dontKnow && e.chevronHelp]}>{dontKnow ? "?" : "›"}</Text>
             </Pressable>
           );
         })}
@@ -130,18 +130,25 @@ const criarEstilos = (t: Tema) => ({
       padding: ESPACO.md,
       gap: ESPACO.md,
     },
-    heading: { gap: ESPACO.xs },
+    heading: {
+      gap: 2,
+      paddingBottom: ESPACO.xs,
+    },
     eyebrow: {
       ...TIPOGRAFIA.micro,
       color: t.cores.primary,
-      fontWeight: "800",
+      fontWeight: "900",
       textTransform: "uppercase",
-      letterSpacing: 0.6,
+      letterSpacing: 0.8,
     },
-    title: { ...TIPOGRAFIA.body, color: t.cores.text, fontWeight: "800" },
+    title: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.textSecondary,
+      fontWeight: "700",
+    },
     options: { gap: ESPACO.sm },
     option: {
-      minHeight: TOQUE.critico,
+      minHeight: TOQUE.critico + 8,
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.md,
@@ -150,24 +157,26 @@ const criarEstilos = (t: Tema) => ({
       borderColor: t.cores.border,
       backgroundColor: t.cores.bg,
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
+      paddingVertical: ESPACO.md,
     },
     dontKnow: {
       borderWidth: 1.5,
-      minHeight: TOQUE.critico + 4,
     },
     pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
     dot: { width: 10, height: 10, borderRadius: 999, backgroundColor: t.cores.border },
-    copy: { flex: 1, gap: 2 },
-    label: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "700" },
-    labelStrong: { fontWeight: "800" },
-    sublabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "400" },
-    helpMark: {
-      ...TIPOGRAFIA.caption,
-      color: t.cores.primary,
+    copy: { flex: 1, gap: 3 },
+    label: { ...TIPOGRAFIA.body, color: t.cores.text, fontWeight: "750" },
+    labelStrong: { fontWeight: "850" },
+    sublabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "500" },
+    chevron: {
+      ...TIPOGRAFIA.body,
+      color: t.cores.textSecondary,
       fontWeight: "900",
       width: TOQUE.minimo,
       textAlign: "center",
+    },
+    chevronHelp: {
+      color: t.cores.primary,
     },
   }),
   optionTone: StyleSheet.create({
