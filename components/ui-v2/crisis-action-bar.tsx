@@ -18,13 +18,10 @@ export type CrisisActionBarProps = {
 /**
  * Porta persistente para deterioração clínica.
  *
- * Mantém acesso imediato às intercorrências sem ocupar o espaço da decisão
- * principal quando o paciente está estável. Ao abrir, revela exatamente as
- * mesmas ações/rotas fornecidas pelo shell; não diagnostica nem muda fluxo.
- *
- * A barra é a única porta de crise da UI v2. Por isso não pode truncar a fonte
- * canônica: PCR, via aérea, ventilação, choque, bradicardia e taquicardia ficam
- * disponíveis aqui (respeitando as exceções já filtradas pelo shell).
+ * Regra visual deliberada: tudo que executa uma ação precisa PARECER botão.
+ * Informação clínica permanece texto/status; ação recebe superfície própria,
+ * borda forte e um CTA explícito. O médico não deve precisar "testar" a tela
+ * para descobrir onde é clicável.
  */
 export function CrisisActionBar({ actions }: CrisisActionBarProps) {
   const e = useEstilosDoTema(criarEstilos);
@@ -46,10 +43,17 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
           <View style={e.urgentDot} />
           <View style={e.triggerCopy}>
             <Text style={e.triggerLabel}>PACIENTE PIOROU?</Text>
-            <Text style={e.triggerHint}>Abrir intercorrências sem perder o fluxo atual</Text>
+            <Text style={e.triggerHint}>Intercorrências sem perder o fluxo atual</Text>
           </View>
         </View>
-        <Text style={e.triggerChevron}>{expanded ? "⌃" : "⌄"}</Text>
+        <View style={[e.triggerCta, expanded && e.triggerCtaExpanded]}>
+          <Text style={[e.triggerCtaText, expanded && e.triggerCtaTextExpanded]}>
+            {expanded ? "FECHAR" : "ABRIR"}
+          </Text>
+          <Text style={[e.triggerCtaArrow, expanded && e.triggerCtaTextExpanded]}>
+            {expanded ? "▲" : "▼"}
+          </Text>
+        </View>
       </Pressable>
 
       {expanded ? (
@@ -60,7 +64,7 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
               <Pressable
                 key={action.id}
                 accessibilityRole="button"
-                accessibilityLabel={action.label}
+                accessibilityLabel={`Abrir módulo ${action.label}`}
                 onPress={action.onPress}
                 style={({ pressed }) => [
                   e.action,
@@ -71,6 +75,12 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
                 <Text style={[e.label, action.critical && e.criticalLabel]} numberOfLines={2}>
                   {action.label}
                 </Text>
+                <View style={[e.actionCta, action.critical && e.actionCtaCritical]}>
+                  <Text style={[e.actionCtaText, action.critical && e.actionCtaTextCritical]}>
+                    ABRIR MÓDULO
+                  </Text>
+                  <Text style={[e.actionCtaArrow, action.critical && e.actionCtaTextCritical]}>›</Text>
+                </View>
               </Pressable>
             ))}
           </View>
@@ -92,20 +102,20 @@ const criarEstilos = (t: Tema) =>
       gap: ESPACO.sm,
     },
     trigger: {
-      minHeight: TOQUE.minimo,
+      minHeight: TOQUE.critico,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: ESPACO.sm,
       borderRadius: RAIO.botao,
-      borderWidth: 1,
-      borderColor: t.cores.border,
+      borderWidth: 2,
+      borderColor: t.cores.critical,
       backgroundColor: t.cores.bg,
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.xs,
+      paddingVertical: ESPACO.sm,
     },
     triggerExpanded: {
-      borderColor: t.cores.critical,
+      backgroundColor: t.cores.surface,
     },
     triggerLead: {
       flex: 1,
@@ -115,33 +125,56 @@ const criarEstilos = (t: Tema) =>
       gap: ESPACO.sm,
     },
     urgentDot: {
-      width: 9,
-      height: 9,
+      width: 10,
+      height: 10,
       borderRadius: 999,
       backgroundColor: t.cores.critical,
     },
     triggerCopy: {
       flex: 1,
       minWidth: 0,
-      gap: 1,
+      gap: 2,
     },
     triggerLabel: {
-      ...TIPOGRAFIA.micro,
+      ...TIPOGRAFIA.caption,
       color: t.cores.text,
       fontWeight: "900",
-      letterSpacing: 0.5,
+      letterSpacing: 0.3,
     },
     triggerHint: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
-      fontWeight: "500",
+      fontWeight: "600",
     },
-    triggerChevron: {
-      ...TIPOGRAFIA.body,
-      color: t.cores.textSecondary,
+    triggerCta: {
+      minHeight: 36,
+      minWidth: 88,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      borderRadius: RAIO.pill,
+      backgroundColor: t.cores.critical,
+      borderWidth: 1,
+      borderColor: t.cores.critical,
+      paddingHorizontal: ESPACO.sm,
+    },
+    triggerCtaExpanded: {
+      backgroundColor: "transparent",
+    },
+    triggerCtaText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.onCritical,
       fontWeight: "900",
-      width: 24,
-      textAlign: "center",
+      letterSpacing: 0.6,
+    },
+    triggerCtaTextExpanded: {
+      color: t.cores.critical,
+    },
+    triggerCtaArrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.onCritical,
+      fontWeight: "900",
     },
     expandedBlock: {
       gap: ESPACO.sm,
@@ -160,16 +193,17 @@ const criarEstilos = (t: Tema) =>
     action: {
       flexGrow: 1,
       flexShrink: 1,
-      flexBasis: 150,
-      minHeight: TOQUE.critico,
+      flexBasis: 180,
+      minHeight: TOQUE.critico + 16,
       minWidth: TOQUE.minimo,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: ESPACO.sm,
-      paddingVertical: ESPACO.sm,
+      alignItems: "stretch",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.md,
       borderRadius: RAIO.botao,
-      borderWidth: 1,
-      borderColor: t.cores.border,
+      borderWidth: 2,
+      borderColor: t.cores.primary,
       backgroundColor: t.cores.bg,
     },
     critical: {
@@ -177,11 +211,39 @@ const criarEstilos = (t: Tema) =>
       borderColor: t.cores.critical,
     },
     label: {
-      ...TIPOGRAFIA.micro,
+      ...TIPOGRAFIA.caption,
       color: t.cores.text,
-      fontWeight: "800",
-      textAlign: "center",
+      fontWeight: "900",
+      textAlign: "left",
     },
     criticalLabel: { color: t.cores.onCritical },
-    pressed: { opacity: 0.86, transform: [{ scale: 0.98 }] },
+    actionCta: {
+      alignSelf: "flex-start",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      borderRadius: RAIO.pill,
+      backgroundColor: t.cores.primary,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: 5,
+    },
+    actionCtaCritical: {
+      backgroundColor: t.cores.onCritical,
+    },
+    actionCtaText: {
+      fontSize: 9,
+      lineHeight: 11,
+      color: t.cores.onPrimary,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+    },
+    actionCtaTextCritical: {
+      color: t.cores.critical,
+    },
+    actionCtaArrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.onPrimary,
+      fontWeight: "900",
+    },
+    pressed: { opacity: 0.84, transform: [{ scale: 0.985 }] },
   });
