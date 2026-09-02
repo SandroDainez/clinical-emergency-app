@@ -130,15 +130,7 @@ export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
     semantic: "adjunctive_module",
     rationale: "Ventilação protetora e pronação são suporte especializado em paralelo ao destino UTI já declarado.",
   },
-  {
-    id: "taquicardia-sem-pulso-pcr",
-    fromProtocolId: "acls_tachycardia_2025",
-    fromNodeId: "unstable_sem_pulso",
-    targetModuleId: "pcr-adulto",
-    semantic: "handoff_candidate",
-    candidateMode: "terminal",
-    rationale: "O paciente já está sem pulso; o próprio nó determina seguir PCR e não retornar ao algoritmo de taquicardia.",
-  },
+
   {
     id: "taquicardia-uti-pcr-contingencia",
     fromProtocolId: "acls_tachycardia_2025",
@@ -155,13 +147,5 @@ export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
     semantic: "contingency",
     rationale: "É uma porta de deterioração futura: só deve assumir controle se o paciente perder o pulso.",
   },
-  {
-    id: "bradicardia-sem-pulso-pcr",
-    fromProtocolId: "acls_bradycardia_2025",
-    fromNodeId: "bradi_sem_pulso",
-    targetModuleId: "pcr-adulto",
-    semantic: "handoff_candidate",
-    candidateMode: "terminal",
-    rationale: "O paciente já perdeu o pulso; o algoritmo de PCR passa a dominar e não há retorno clínico à bradicardia enquanto a parada estiver em curso.",
-  },
+
 ] as const;

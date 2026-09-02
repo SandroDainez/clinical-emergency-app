@@ -232,7 +232,7 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       type: "transition",
       title: "Sem pulso — isto é PCR",
       summary: "Iniciar RCP imediatamente e seguir o algoritmo de parada.",
-      disposition: "icu",
+      disposition: "other_module",
       exitCriteria: [
         "Iniciar compressões AGORA. Bradicardia extrema sem pulso é PCR — o ritmo lento no monitor não muda isso.",
         "Ritmo NÃO chocável (assistolia ou AESP): adrenalina 1 mg IV/IO o quanto antes, a cada 3–5 min. Não desfibrilar.",

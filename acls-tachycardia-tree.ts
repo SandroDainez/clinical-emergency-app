@@ -257,7 +257,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       type: "transition",
       title: "Sem pulso — isto é PCR",
       summary: "Iniciar RCP imediatamente e seguir o algoritmo de parada.",
-      disposition: "icu",
+      disposition: "other_module",
       exitCriteria: [
         "Iniciar compressões AGORA — não repetir cardioversão sincronizada em paciente sem pulso.",
         "Ritmo chocável sem pulso (FV/TV) → desfibrilação NÃO sincronizada em alta energia.",
