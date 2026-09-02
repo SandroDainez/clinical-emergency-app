@@ -8,10 +8,16 @@ export type ClinicalHandoffPreservationContract = {
   transitionId: string;
   fromModule: string;
   toModule: string;
+  /** Fatos cuja ausência torna o contexto insuficiente para este contrato. */
   requiredFacts: readonly string[];
   /**
-   * Define apenas se a AUSÊNCIA de contexto pode segurar a transferência.
-   * Não muda a obrigatoriedade documental dos fatos nem inventa valores.
+   * Fatos úteis que devem atravessar a transição quando já estiverem registrados,
+   * mas cuja ausência não autoriza inventar valores nem bloquear o destino.
+   */
+  optionalFacts?: readonly string[];
+  /**
+   * Define apenas se a AUSÊNCIA de fatos obrigatórios pode segurar a transferência.
+   * Não transforma fatos opcionais em obrigatórios e nunca inventa valores.
    */
   transferPolicy?: ClinicalHandoffTransferPolicy;
 };
@@ -22,12 +28,22 @@ export function buildClinicalHandoffPayload(
   now: number = Date.now()
 ): ClinicalHandoffPayload {
   const byId = new Map(facts.map((fact) => [fact.id, fact] as const));
-  const missing = contract.requiredFacts.filter((id) => !byId.has(id));
-  if (missing.length) {
-    throw new Error(`Handoff ${contract.id} sem fatos obrigatórios: ${missing.join(", ")}`);
+  const missingRequired = contract.requiredFacts.filter((id) => !byId.has(id));
+  if (missingRequired.length) {
+    throw new Error(
+      `Handoff ${contract.id} sem fatos obrigatórios: ${missingRequired.join(", ")}`
+    );
   }
 
-  const selected = contract.requiredFacts.map((id) => ({ ...byId.get(id)! }));
+  const requestedIds = [
+    ...contract.requiredFacts,
+    ...(contract.optionalFacts ?? []).filter((id) => !contract.requiredFacts.includes(id)),
+  ];
+  const selected = requestedIds
+    .map((id) => byId.get(id))
+    .filter((fact): fact is ClinicalHandoffFact => Boolean(fact))
+    .map((fact) => ({ ...fact }));
+
   return createClinicalHandoffPayload({
     id: `${contract.id}:${now}`,
     transitionId: contract.transitionId,
