@@ -66,7 +66,7 @@ export const FONTE = {
 export const TIPOGRAFIA = {
   display: { fontSize: 34, lineHeight: 40, fontWeight: "800", letterSpacing: -0.5 } satisfies TextStyle,
   title: { fontSize: 27, lineHeight: 33, fontWeight: "800", letterSpacing: -0.3 } satisfies TextStyle,
-  step: { fontSize: 23, lineHeight: 29, fontWeight: "750" } satisfies TextStyle,
+  step: { fontSize: 23, lineHeight: 29, fontWeight: "700" } satisfies TextStyle,
   body: { fontSize: 18, lineHeight: 26, fontWeight: "400" } satisfies TextStyle,
   caption: { fontSize: 15, lineHeight: 20, fontWeight: "600" } satisfies TextStyle,
   micro: { fontSize: 13, lineHeight: 18, fontWeight: "600" } satisfies TextStyle,
