@@ -83,14 +83,18 @@ export default function SeloDeForca({
 
   return (
     <View
+      accessibilityRole="summary"
       style={[
         e.caixa,
         {
           borderColor: corDaMarca,
-          // Só o nível mais fraco ganha fundo: é o que precisa ser notado sem ser lido.
-          backgroundColor: forca === "mecanismo_fisiologico" ? cores.surface : "transparent",
+          borderLeftColor: corDaMarca,
+          backgroundColor: cores.surface,
         },
       ]}>
+      <Text style={[e.eyebrow, { color: cores.textSecondary }]}>
+        {tr("Base da conduta")}
+      </Text>
       {afirmacao ? (
         <Text style={[e.afirmacao, { color: cores.textSecondary }]} numberOfLines={2}>
           {tr(afirmacao)}
@@ -116,15 +120,23 @@ export default function SeloDeForca({
 const e = StyleSheet.create({
   caixa: {
     borderWidth: 1,
+    borderLeftWidth: 3,
     borderRadius: RAIO.input,
     paddingHorizontal: ESPACO.sm,
-    paddingVertical: 6,
-    gap: 2,
-    marginTop: ESPACO.xs,
+    paddingVertical: ESPACO.sm,
+    gap: 3,
+    marginTop: ESPACO.sm,
+  },
+  eyebrow: {
+    ...TIPOGRAFIA.micro,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    opacity: 0.8,
   },
   afirmacao: { ...TIPOGRAFIA.micro, fontStyle: "italic", marginBottom: 2 },
   linha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, flexWrap: "wrap" },
-  rotulo: { ...TIPOGRAFIA.micro, letterSpacing: 0.6 },
+  rotulo: { ...TIPOGRAFIA.micro, letterSpacing: 0.6, fontWeight: "800" },
   detalhe: { ...TIPOGRAFIA.micro, fontWeight: "600" },
   fonte: { ...TIPOGRAFIA.micro, fontWeight: "500" },
   lacuna: { ...TIPOGRAFIA.micro, fontWeight: "700" },
