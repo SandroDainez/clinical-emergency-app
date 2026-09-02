@@ -6,6 +6,7 @@ const ler = (relativo) => fs.readFileSync(path.join(raiz, relativo), "utf8");
 
 const principal = ler("components/protocol-screen/acls-decision-flow-screen.tsx");
 const card = ler("components/protocol-screen/clinical-action-step-card.tsx");
+const adapter = ler("components/protocol-screen/clinical-action-step-adapter.tsx");
 
 const falhas = [];
 const exigir = (condicao, mensagem) => {
@@ -50,6 +51,23 @@ exigir(/EXECUTE AGORA/.test(card), "Card perdeu o bloco visual dominante de exec
 exigir(/ETAPA CONCLUÍDA/.test(card), "Card perdeu a separação visual da conclusão da etapa.");
 exigir(/Feito — continuar/.test(card), "Card perdeu o rótulo de continuidade existente.");
 
+// O adaptador só pode encaminhar um ActionStep já liberado pelo shell.
+exigir(
+  /step:\s*Extract<FrontendTreeStep,\s*\{ kind: "action" \}>/.test(adapter),
+  "ClinicalActionStepAdapter deixou de receber o ActionStep diretamente."
+);
+exigir(/title=\{step\.title\}/.test(adapter), "Adapter deixou de encaminhar o título do step diretamente.");
+exigir(/summary=\{step\.summary\}/.test(adapter), "Adapter deixou de encaminhar o resumo do step diretamente.");
+exigir(/actions=\{step\.actions\}/.test(adapter), "Adapter deixou de encaminhar as ações do step diretamente.");
+exigir(/evidence=\{evidence\}/.test(adapter), "Adapter deixou de encaminhar a evidência pronta.");
+exigir(/rationale=\{rationale\}/.test(adapter), "Adapter deixou de encaminhar a justificativa pronta.");
+exigir(/onAdvance=\{onAdvance\}/.test(adapter), "Adapter deixou de encaminhar onAdvance diretamente.");
+exigir(!/protocolId/.test(adapter), "Adapter passou a receber protocolId e está invadindo a autoridade do shell.");
+exigir(!/clinicalActionId/.test(adapter), "Adapter passou a conhecer clinicalActionId e está invadindo a autoridade do shell.");
+exigir(!/evaluateClinicalActionAttemptFromPatientState/.test(adapter), "Adapter passou a avaliar gate clínico.");
+exigir(!/guidedDiscoveryViewModel/.test(adapter), "Adapter passou a resolver guided discovery.");
+exigir(!/SafetyGate/.test(adapter), "Adapter passou a renderizar SafetyGate.");
+
 // O shell atual continua sendo a autoridade para gates, discovery, selos e porquê até a integração controlada.
 exigir(/evaluateClinicalActionAttemptFromPatientState/.test(principal), "Shell perdeu a avaliação de gate antes da integração controlada.");
 exigir(/guidedDiscoveryViewModel/.test(principal), "Shell perdeu guided discovery antes da integração controlada.");
@@ -67,5 +85,6 @@ console.log("✅ Paridade estrutural do ActionStep preservada.");
 console.log("   • gates e guided discovery continuam no shell");
 console.log("   • ações permanecem na mesma ordem e sem reinterpretação");
 console.log("   • evidência e justificativa continuam compostas externamente");
+console.log("   • adapter não conhece protocolId, clinicalActionId nem SafetyGate");
 console.log("   • onAdvance permanece explícito e externo");
 console.log("   • execução clínica e navegação continuam visualmente separadas");
