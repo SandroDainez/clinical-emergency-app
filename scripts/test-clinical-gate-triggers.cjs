@@ -17,13 +17,16 @@ if (!fs.existsSync(tsc)) {
 const include = [
   "clinical-safety-cases/gate-action-triggers.ts",
   "clinical-safety-cases/gate-context-observations.ts",
+  "clinical-safety-cases/decision-observation-bindings.ts",
   "lib/clinical-action-gate.ts",
+  "lib/clinical-decision-observation-bindings.ts",
   "lib/clinical-gate-context-adapter.ts",
   "lib/clinical-gate-policy.ts",
   "lib/clinical-gate-registry.ts",
   "lib/clinical-gate-trigger.ts",
   "lib/clinical-gate-trigger-registry.ts",
   "lib/clinical-gate-runtime.ts",
+  "lib/clinical-runtime-bridge.ts",
   "lib/clinical-safety-override.ts",
   "lib/clinical-event-log.ts",
   "lib/clinical-observations.ts",
@@ -54,18 +57,24 @@ try {
 
   const triggerCompiled = path.join(outDir, "clinical-safety-cases", "gate-action-triggers.js");
   const contextCompiled = path.join(outDir, "clinical-safety-cases", "gate-context-observations.js");
+  const bindingCompiled = path.join(outDir, "clinical-safety-cases", "decision-observation-bindings.js");
   const { runExecutableClinicalGateTriggerCases } = require(triggerCompiled);
   const { runExecutableClinicalGateContextCases } = require(contextCompiled);
+  const { runExecutableDecisionObservationBindingCases } = require(bindingCompiled);
   if (typeof runExecutableClinicalGateTriggerCases !== "function") {
     throw new Error("runner compilado não exporta runExecutableClinicalGateTriggerCases");
   }
   if (typeof runExecutableClinicalGateContextCases !== "function") {
     throw new Error("runner compilado não exporta runExecutableClinicalGateContextCases");
   }
+  if (typeof runExecutableDecisionObservationBindingCases !== "function") {
+    throw new Error("runner compilado não exporta runExecutableDecisionObservationBindingCases");
+  }
 
   const issues = [
     ...runExecutableClinicalGateTriggerCases(),
     ...runExecutableClinicalGateContextCases(),
+    ...runExecutableDecisionObservationBindingCases(),
   ];
   if (issues.length) {
     console.error("\n❌ casos executáveis de safety gate falharam\n");
@@ -73,7 +82,7 @@ try {
     process.exit(1);
   }
 
-  console.log("\n✅ safety gates passaram: ativação por ação, autorização/override e contexto temporal sem inferência de dado ausente/stale.\n");
+  console.log("\n✅ safety gates passaram: ação, autorização/override, contexto temporal e decisão→observação sem inferência implícita.\n");
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
