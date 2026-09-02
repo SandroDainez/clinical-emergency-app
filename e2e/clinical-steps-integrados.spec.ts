@@ -119,8 +119,11 @@ test("InputStep integrado aparece na sepse com campos clínicos", async ({ page 
 });
 
 test("ActionStep integrado mantém gesto explícito de conclusão", async ({ page }) => {
-  await abrirV2(page, "anafilaxia");
-  const conduta = await avancarAte(page, "passo-de-conduta");
+  // Bradicardia entra diretamente em uma ActionStep canônica de reconhecimento
+  // e monitorização. Assim o smoke valida o gesto de conclusão sem fabricar
+  // valores clínicos nem depender de uma decisão diagnóstica prévia.
+  await abrirV2(page, "bradicardia-acls");
+  const conduta = page.getByTestId("passo-de-conduta");
   await expect(conduta).toBeVisible();
 
   const concluir = pressables(page)
@@ -129,4 +132,5 @@ test("ActionStep integrado mantém gesto explícito de conclusão", async ({ pag
   await expect(concluir).toBeVisible();
   await concluir.click();
   await expect(conduta).not.toBeVisible();
+  await expect(page.getByTestId("passo-de-decisao")).toBeVisible();
 });
