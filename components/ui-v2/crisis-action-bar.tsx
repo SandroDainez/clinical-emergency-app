@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -13,6 +13,8 @@ export type CrisisAction = {
 
 export type CrisisActionBarProps = {
   actions: CrisisAction[];
+  /** Mudou a etapa clínica: a porta volta recolhida para a tela nascer previsível. */
+  resetKey?: string | number;
 };
 
 /**
@@ -23,10 +25,14 @@ export type CrisisActionBarProps = {
  * borda forte e um CTA explícito. O médico não deve precisar "testar" a tela
  * para descobrir onde é clicável.
  */
-export function CrisisActionBar({ actions }: CrisisActionBarProps) {
+export function CrisisActionBar({ actions, resetKey }: CrisisActionBarProps) {
   const e = useEstilosDoTema(criarEstilos);
   const [expanded, setExpanded] = useState(false);
   const visible = actions;
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [resetKey]);
 
   if (!visible.length) return null;
 
