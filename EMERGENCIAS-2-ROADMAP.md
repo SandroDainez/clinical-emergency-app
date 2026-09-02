@@ -68,7 +68,13 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Retorno LIFO modelado para trajetórias AVC -> ISR -> PCR -> ISR -> AVC.
 - [x] Rotas de crise podem ser instrumentadas mantendo o `router.push(href)` legado intacto.
 - [x] Runtime de retomada resolve o retorno correto sem controlar o router.
-- [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta real.
+- [x] Contrato terminal de módulo distingue `care_pathway`, `procedural_subflow` e `embedded_care_pathway`.
+- [x] ISR classificada como `embedded_care_pathway`: destino próprio quando aberta diretamente e retorno quando chamada por outro protocolo.
+- [x] Primeiras 10 arestas reais retornáveis declaradas para IRA e Politrauma, com `returnLabel` explícito.
+- [x] Contrato de transição distingue destino `module` de `external_service`.
+- [x] Handoffs terminais externos iniciais classificados: Politrauma -> centro cirúrgico/angioembolização e TCE -> neurocirurgia.
+- [x] Travas estruturais protegem arestas retornáveis e handoffs externos contra divergência com as árvores reais.
+- [ ] Declarar retorno, terminalidade e contexto preservado das demais arestas reais.
 - [ ] Substituir navegações improvisadas progressivamente.
 
 ## Bloco D — Event Log e auditoria
@@ -109,9 +115,11 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Reavaliações pendentes ficam visíveis no Clinical Cockpit e priorizam a obrigação mais antiga.
 - [x] Primeira classificação real de incerteza cobre AVC, ISR, taquicardia, choque, TEP e SCA.
 - [x] HIC com anticoagulante desconhecido e tempo incerto até ICP no STEMI estão classificados como `unknown_required`, com migrações guiadas preparadas.
+- [x] Política de gates diferencia `hard_stop`, `soft_stop` e `advisory`; hard stop não admite override e soft stop exige motivo auditável.
+- [x] Auditoria terminal distingue destino assistencial de `other_module` e classifica módulos pelo papel real.
+- [x] Politrauma e IRA confirmados na branch com destinos assistenciais explícitos; dívidas falsas derivadas do `main` foram removidas.
 - [ ] Continuar classificando os demais achados reais do inventário.
-- [ ] Diferenciar hard stop de soft stop por tipo de risco.
-- [ ] Garantir destino alcançável em todos os módulos.
+- [ ] Garantir cobertura terminal/retorno para todos os módulos e arestas reais.
 
 ## Bloco F — Drug Knowledge Base
 
@@ -158,6 +166,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Travas estruturais protegem as migrações guiadas de HIC/anticoagulante desconhecido e STEMI/tempo de ICP desconhecido.
 - [x] Trava estrutural protege registry canônico e contratos de descoberta guiada.
 - [x] Trava estrutural protege a fronteira registry → adapter → GuidedDiscoveryCard e impede regra clínica duplicada na UI.
+- [x] Travas estruturais protegem classificação terminal de módulos, transições retornáveis e handoffs externos definitivos.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
