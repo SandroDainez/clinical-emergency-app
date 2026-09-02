@@ -21,6 +21,10 @@ export {
   type CockpitMetric,
 } from "./clinical-cockpit-bar";
 export {
+  ClinicalObservationChip,
+  type ClinicalObservationChipProps,
+} from "./clinical-observation-chip";
+export {
   CrisisActionBar,
   type CrisisAction,
   type CrisisActionBarProps,
