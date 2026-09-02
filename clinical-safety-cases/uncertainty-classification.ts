@@ -31,6 +31,12 @@ export const INITIAL_UNCERTAINTY_CLASSIFICATION: readonly DecisionUncertaintyPol
     reviewedAt: "2026-09-02",
   },
   {
+    protocolId: "sca",
+    nodeId: "stemi_reperfusao",
+    classification: "unknown_required",
+    reviewedAt: "2026-09-02",
+  },
+  {
     protocolId: "taquicardia-acls",
     nodeId: "assess_stability",
     classification: "guided_elsewhere",
@@ -46,6 +52,15 @@ export const INITIAL_UNCERTAINTY_CLASSIFICATION: readonly DecisionUncertaintyPol
     rationale:
       "O próprio nó oferece caminho guiado para decompor hipoperfusão em achados observáveis; não é necessário duplicar um botão `nao_sei` quando a descoberta já é a terceira opção explícita.",
     guidedNodeId: "choque_dados",
+    reviewedAt: "2026-09-02",
+  },
+  {
+    protocolId: "tep",
+    nodeId: "estabilidade",
+    classification: "guided_elsewhere",
+    rationale:
+      "A decisão já oferece caminho guiado para decompor choque/hipoperfusão em achados observáveis antes de definir alto risco; a opção `guiado` é a saída explícita para incerteza.",
+    guidedNodeId: "tep_instab_dados",
     reviewedAt: "2026-09-02",
   },
 ] as const;
