@@ -20,6 +20,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Nova direção de paleta e superfícies.
 - [x] Botões, cards e header compartilhados refinados.
 - [x] ClinicalCockpitBar.
+- [x] ClinicalObservationChip com idade do dado obrigatória.
 - [x] CrisisActionBar.
 - [x] DecisionPrompt.
 - [x] SafetyGate.
@@ -36,6 +37,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Estrutura de observações clínicas com timestamp.
 - [x] Classificação de freshness do dado.
 - [x] Formatação da idade da observação.
+- [x] Ponte de runtime capaz de registrar observações sem alterar decisão clínica.
+- [x] Componente visual que obriga mostrar a idade do dado.
 - [ ] Ligar observações progressivamente aos inputs existentes.
 - [ ] Exibir “informado há X min” ao reutilizar dado volátil.
 - [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
@@ -44,15 +47,18 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 - [x] Contrato explícito de transições entre módulos.
 - [x] Registro canônico das portas de crise e exceções existentes.
-- [ ] Inventariar todas as arestas `from_module` atuais.
+- [x] Inventário derivado do código para localizar transições `from_module`.
+- [x] Ponte de runtime para registrar interrupções sem assumir controle da navegação.
 - [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta.
 - [ ] Substituir navegações improvisadas progressivamente.
 
 ## Bloco D — Event Log e auditoria
 
 - [x] Event log append-only em memória.
-- [ ] Integrar decisões, ações, medicações, overrides, reavaliações e destino.
-- [ ] Gerar timeline clínica do atendimento.
+- [x] Timeline derivada do event log com cálculo de intervalos.
+- [x] Ponte de runtime para registrar decisão, ação, observação e transição.
+- [ ] Integrar bridge ao shell compartilhado.
+- [ ] Integrar medicações, overrides, reavaliações e destino.
 - [ ] Gerar debrief automático por metas temporais.
 
 ## Bloco E — Segurança do fluxo
@@ -75,8 +81,11 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 ## Bloco G — Clinical Safety Test Suite
 
 - [x] Validador estrutural inicial do Emergências 2 core criado.
-- [ ] Ligar o validador ao `test:all` após execução local/CI verde.
-- [ ] Casos clínicos completos por módulo.
+- [x] Contrato de casos clínicos de regressão criado.
+- [x] Catálogo piloto criado para AVC, Anafilaxia e ISR.
+- [x] Validador de forma dos casos-piloto criado.
+- [ ] Ligar validadores ao `test:all` após execução local/CI verde.
+- [ ] Criar runner que percorra as árvores reais.
 - [ ] Caminhos obrigatórios e proibidos.
 - [ ] Testes de deterioração e interrupção.
 - [ ] Testes de retomada de protocolo.
