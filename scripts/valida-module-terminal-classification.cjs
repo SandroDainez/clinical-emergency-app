@@ -8,7 +8,7 @@ const contract = fs.readFileSync(path.join(root, "lib/clinical-module-terminal-c
 const graphAudit = fs.readFileSync(path.join(root, "lib/clinical-graph-audit.ts"), "utf8");
 
 for (const token of [
-  '"care_pathway" | "procedural_subflow"',
+  '"embedded_care_pathway"',
   "requiresClinicalDisposition",
   "requiresReturnToOrigin",
 ]) {
@@ -24,7 +24,7 @@ const expected = [
   ["tce-decision-tree.ts", "tce", "care_pathway"],
   ["seizure-decision-tree.ts", "mal_epileptico", "care_pathway"],
   ["eap-decision-tree.ts", "eap_2024", "care_pathway"],
-  ["rsi-decision-tree.ts", "isr_rsi_adulto", "procedural_subflow"],
+  ["rsi-decision-tree.ts", "isr_rsi_adulto", "embedded_care_pathway"],
 ];
 
 for (const [file, protocolId, mode] of expected) {
@@ -35,8 +35,11 @@ for (const [file, protocolId, mode] of expected) {
   const entryEnd = classification.indexOf("reviewedAt", entryStart);
   const entry = classification.slice(entryStart, entryEnd);
   if (!entry.includes(`mode: "${mode}"`)) throw new Error(`modo terminal incorreto: ${protocolId}`);
-  if (mode === "care_pathway" && !/disposition:\s*"(discharge|observation|icu)"/.test(text)) {
-    throw new Error(`Care pathway sem disposition assistencial explícita: ${protocolId}`);
+  if ((mode === "care_pathway" || mode === "embedded_care_pathway") && !/disposition:\s*"(discharge|observation|icu)"/.test(text)) {
+    throw new Error(`Linha de cuidado sem disposition assistencial explícita: ${protocolId}`);
+  }
+  if (mode === "embedded_care_pathway" && (!entry.includes("requiresClinicalDisposition: true") || !entry.includes("requiresReturnToOrigin: true"))) {
+    throw new Error(`${protocolId}: embedded_care_pathway precisa de destino próprio e retorno à origem.`);
   }
 }
 
@@ -47,4 +50,4 @@ if (!graphAudit.includes('node.disposition === "other_module"')) {
   throw new Error("Auditor perdeu inventário separado de handoffs para outros módulos.");
 }
 
-console.log("Classificação terminal ampliada coerente com árvores reais e auditor de grafo.");
+console.log("Classificação terminal ampliada coerente com árvores reais e módulos embutíveis.");
