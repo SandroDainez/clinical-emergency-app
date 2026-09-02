@@ -97,7 +97,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Vasopressor usa obrigação orientada a evento, sem inventar nó de árvore inexistente.
 - [x] Estado de reavaliação de vasopressor é limpo ao iniciar novo paciente.
 - [x] Reavaliações pendentes ficam visíveis no Clinical Cockpit e priorizam a obrigação mais antiga.
-- [ ] Classificar os achados reais do inventário em `unknown_required` / `binary_observable` / `guided_elsewhere`.
+- [x] Primeira classificação real de incerteza cobre AVC, ISR, taquicardia, choque, TEP e SCA.
+- [x] HIC com anticoagulante desconhecido e tempo incerto até ICP no STEMI estão classificados como `unknown_required`, com migrações guiadas preparadas.
+- [ ] Continuar classificando os demais achados reais do inventário.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
 - [ ] Garantir destino alcançável em todos os módulos.
 
@@ -143,6 +145,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trajetória executável de taquicardia instável prova cardioversão → reavaliação antes de destino.
 - [x] Trava do runtime de vasopressor exige obrigação de reavaliação orientada a evento.
 - [x] Trava estrutural protege a visibilidade da reavaliação pendente no cockpit.
+- [x] Travas estruturais protegem as migrações guiadas de HIC/anticoagulante desconhecido e STEMI/tempo de ICP desconhecido.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
@@ -154,9 +157,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Contrato de versão clínica criado.
 - [x] Regra de preservar a versão em que o atendimento começou definida.
 - [x] Registry de evidência por nó criado.
-- [x] AVC já possui bindings iniciais para tempo, neuroimagem e trombólise.
+- [x] AVC já possui bindings iniciais para tempo, neuroimagem, trombólise e avaliação de anticoagulação na HIC.
 - [x] TEP possui bindings iniciais para classificação 2026 e trombólise sistêmica.
-- [x] SCA possui bindings iniciais para ECG precoce e fibrinólise no STEMI.
+- [x] SCA possui bindings iniciais para ECG precoce, estratégia de reperfusão e fibrinólise no STEMI.
 - [x] Tenecteplase e alteplase do AVC registradas com fonte AHA/ASA 2026 e data de revisão.
 - [x] Índice único de evidências por protocolo criado com consulta por protocolId + nodeId.
 - [x] Inventário de cobertura de evidência por nó acionável criado.
