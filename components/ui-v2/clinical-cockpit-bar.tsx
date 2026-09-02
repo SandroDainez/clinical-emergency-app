@@ -40,9 +40,18 @@ export function ClinicalCockpitBar({
       <View style={e.topRow}>
         <View style={e.titleBlock}>
           <Text style={e.protocol} numberOfLines={1}>{protocol}</Text>
-          {phase ? <Text style={e.phase} numberOfLines={1}>{phase}</Text> : null}
+          {phase ? (
+            <View style={e.phasePill}>
+              <Text style={e.phase} numberOfLines={1}>{phase}</Text>
+            </View>
+          ) : null}
         </View>
-        {elapsed ? <Text style={e.elapsed}>{elapsed}</Text> : null}
+        {elapsed ? (
+          <View style={e.elapsedPill} accessibilityLabel={`Tempo de atendimento ${elapsed}`}>
+            <Text style={e.elapsedLabel}>TEMPO</Text>
+            <Text style={e.elapsed}>{elapsed}</Text>
+          </View>
+        ) : null}
       </View>
 
       {visibleMetrics.length ? (
@@ -84,13 +93,55 @@ const criarEstilos = (t: Tema) =>
       justifyContent: "space-between",
       gap: ESPACO.md,
     },
-    titleBlock: { flex: 1, minWidth: 0 },
-    protocol: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
-    phase: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, marginTop: 2 },
+    titleBlock: {
+      flex: 1,
+      minWidth: 0,
+      gap: 5,
+    },
+    protocol: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.text,
+      fontWeight: "900",
+      letterSpacing: 0.1,
+    },
+    phasePill: {
+      alignSelf: "flex-start",
+      maxWidth: "100%",
+      borderRadius: RAIO.pill,
+      backgroundColor: t.cores.bg,
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: 3,
+    },
+    phase: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "700",
+    },
+    elapsedPill: {
+      minWidth: 72,
+      alignItems: "flex-end",
+      justifyContent: "center",
+      borderRadius: RAIO.input,
+      borderWidth: 1,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.bg,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      gap: 1,
+    },
+    elapsedLabel: {
+      fontSize: 9,
+      lineHeight: 11,
+      color: t.cores.textSecondary,
+      fontWeight: "800",
+      letterSpacing: 0.7,
+    },
     elapsed: {
       ...TIPOGRAFIA.caption,
       color: t.cores.primary,
-      fontWeight: "800",
+      fontWeight: "900",
       fontVariant: ["tabular-nums"],
     },
     metricsRow: {
