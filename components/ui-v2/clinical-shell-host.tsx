@@ -29,13 +29,20 @@ function presentationPhase(moduleSlug: string | undefined, phase: string | undef
   const base = phase ?? "";
   if (moduleSlug !== "avc") return base;
 
-  // Superfície A do AVC: reforço puramente apresentacional da pergunta que já
-  // existe na árvore. Não cria timestamp, não calcula janela e não muda nenhuma
-  // transição. O objetivo é deixar explícito no cockpit qual marco temporal o
-  // médico está tentando obter antes de escolher uma das cinco categorias já
-  // definidas pelo protocolo.
+  // Superfície A do AVC: estes rótulos são somente uma tradução visual dos
+  // títulos que já existem na árvore. Não criam dados, não classificam janela,
+  // não mudam transição e não promovem nenhuma opção clínica.
+  if (base.startsWith("Reconhecimento — suspeita de AVC")) {
+    return "Reconhecimento inicial · FAST / Código AVC";
+  }
   if (base.startsWith("Tempo desde o início")) {
     return "Último momento visto bem (LKW)";
+  }
+  if (base.startsWith("TC de crânio SEM contraste")) {
+    return "Neuroimagem urgente · TC sem contraste";
+  }
+  if (base.startsWith("Resultado da TC de crânio")) {
+    return "Classificar pela neuroimagem";
   }
 
   return base;
