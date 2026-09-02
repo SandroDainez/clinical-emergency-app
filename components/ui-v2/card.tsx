@@ -26,6 +26,10 @@ export type CardProps = {
  *
  * A hierarquia vem de espaço, borda e uma faixa semântica estreita. Vermelho,
  * verde e âmbar não são decoração: só aparecem quando carregam significado.
+ *
+ * Na UI 2.0 a faixa tem presença suficiente para marcar a natureza do card sem
+ * competir com título, ações numeradas ou botões. O tom crítico continua sendo
+ * semântico; não significa que cada item interno tenha prioridade clínica própria.
  */
 export function Card({
   children,
@@ -90,7 +94,7 @@ const criarEstilos = (t: Tema) => {
         overflow: "hidden",
       },
       comFaixa: {
-        borderLeftWidth: 5,
+        borderLeftWidth: 6,
         paddingLeft: ESPACO.md,
       },
       pressionado: {
