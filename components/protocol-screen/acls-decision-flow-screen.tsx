@@ -542,9 +542,9 @@ export default function AclsDecisionFlowScreen({
             ))}
           </Card>
         ) : null}
-        {estabilizacaoNoFluxo ? null : (
+        {estabilizacaoNoFluxo || emV2 ? null : (
           <StabilizationFirstCard
-            compacto={emV2}
+            compacto={false}
             currentModuleSlug={currentModuleSlug}
             onOpenModule={(slug) => abrirOutroModulo(slug)}
           />
