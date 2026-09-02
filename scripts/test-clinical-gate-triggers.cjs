@@ -16,7 +16,9 @@ if (!fs.existsSync(tsc)) {
 
 const include = [
   "clinical-safety-cases/gate-action-triggers.ts",
+  "clinical-safety-cases/gate-context-observations.ts",
   "lib/clinical-action-gate.ts",
+  "lib/clinical-gate-context-adapter.ts",
   "lib/clinical-gate-policy.ts",
   "lib/clinical-gate-registry.ts",
   "lib/clinical-gate-trigger.ts",
@@ -24,6 +26,7 @@ const include = [
   "lib/clinical-gate-runtime.ts",
   "lib/clinical-safety-override.ts",
   "lib/clinical-event-log.ts",
+  "lib/clinical-observations.ts",
 ];
 
 const tsconfig = {
@@ -49,20 +52,28 @@ try {
     stdio: "inherit",
   });
 
-  const compiled = path.join(outDir, "clinical-safety-cases", "gate-action-triggers.js");
-  const { runExecutableClinicalGateTriggerCases } = require(compiled);
+  const triggerCompiled = path.join(outDir, "clinical-safety-cases", "gate-action-triggers.js");
+  const contextCompiled = path.join(outDir, "clinical-safety-cases", "gate-context-observations.js");
+  const { runExecutableClinicalGateTriggerCases } = require(triggerCompiled);
+  const { runExecutableClinicalGateContextCases } = require(contextCompiled);
   if (typeof runExecutableClinicalGateTriggerCases !== "function") {
     throw new Error("runner compilado não exporta runExecutableClinicalGateTriggerCases");
   }
+  if (typeof runExecutableClinicalGateContextCases !== "function") {
+    throw new Error("runner compilado não exporta runExecutableClinicalGateContextCases");
+  }
 
-  const issues = runExecutableClinicalGateTriggerCases();
+  const issues = [
+    ...runExecutableClinicalGateTriggerCases(),
+    ...runExecutableClinicalGateContextCases(),
+  ];
   if (issues.length) {
-    console.error("\n❌ casos executáveis de ativação de safety gate falharam\n");
+    console.error("\n❌ casos executáveis de safety gate falharam\n");
     for (const issue of issues) console.error(`- ${issue}`);
     process.exit(1);
   }
 
-  console.log("\n✅ gates acionados por ação passaram: hard stop AVC, soft stop STEMI e advisory de cardioversão com autorização/override coerentes.\n");
+  console.log("\n✅ safety gates passaram: ativação por ação, autorização/override e contexto temporal sem inferência de dado ausente/stale.\n");
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
