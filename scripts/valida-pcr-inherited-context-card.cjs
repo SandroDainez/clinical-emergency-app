@@ -33,10 +33,15 @@ if (runtime.includes('expectedFacts: contract.requiredFacts')) {
   errors.push("runtime ainda limita apresentação aos fatos obrigatórios e esconde opcionais ausentes");
 }
 
+// O card pode evoluir a redação/nomes locais de estilo, mas precisa preservar
+// estas garantias: não atrasar PCR, distinguir ausente, mostrar idade e ser
+// estritamente informativo.
+if (!/Não atrasar a reanimação para completar informações ausentes\./.test(card)) {
+  errors.push("card sem aviso explícito para não atrasar reanimação por dado ausente");
+}
 for (const token of [
-  'A reanimação não deve ser atrasada para completar dados ausentes.',
   'accessibilityRole="summary"',
-  'item.missing ? styles.missingValue : styles.value',
+  'item.missing ? e.missingValue : e.value',
   'formatAge(item.recordedAt, now)',
 ]) {
   if (!card.includes(token)) errors.push(`card sem ${token}`);
