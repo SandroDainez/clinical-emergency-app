@@ -2,6 +2,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { tr } from "../../lib/i18n";
 import { useLanguage } from "../../lib/language-context";
 import type { AuxiliaryPanel } from "../../clinical-engine";
+import { CategoricalSelector } from "../ui-v2/categorical-selector";
 import { styles } from "./protocol-screen-styles";
 import { hasSelectedPresetValue } from "./protocol-screen-utils";
 
@@ -62,31 +63,15 @@ function AuxiliaryPanelCard({
                   placeholderTextColor="#94a3b8"
                 />
                 {field.unitOptions && field.unitOptions.length > 0 ? (
-                  <View style={styles.auxiliaryUnitRow} accessibilityRole="radiogroup">
-                    {field.unitOptions.map((unitOption) => {
-                      const isSelected = field.unit === unitOption.value;
-                      return (
-                        <Pressable
-                          key={`${field.id}-${unitOption.value}`}
-                          accessibilityRole="radio"
-                          accessibilityLabel={tr(unitOption.label)}
-                          accessibilityState={{ selected: isSelected }}
-                          style={[
-                            styles.auxiliaryUnitButton,
-                            isSelected && styles.auxiliaryUnitButtonActive,
-                          ]}
-                          onPress={() => onUnitChange(field.id, unitOption.value)}>
-                          <Text
-                            style={[
-                              styles.auxiliaryUnitButtonText,
-                              isSelected && styles.auxiliaryUnitButtonTextActive,
-                            ]}>
-                            {isSelected ? "✓ " : ""}{tr(unitOption.label)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <CategoricalSelector
+                    value={field.unit}
+                    options={field.unitOptions.map((unitOption) => ({
+                      value: unitOption.value,
+                      label: tr(unitOption.label),
+                    }))}
+                    onChange={(value) => onUnitChange(field.id, value)}
+                    testID={`unidade-${field.id}`}
+                  />
                 ) : null}
                 {field.helperText ? (
                   <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
