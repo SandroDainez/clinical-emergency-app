@@ -25,6 +25,11 @@ export {
   type CrisisAction,
   type CrisisActionBarProps,
 } from "./crisis-action-bar";
+export {
+  DecisionPrompt,
+  type DecisionPromptOption,
+  type DecisionPromptProps,
+} from "./decision-prompt";
 export { FloatingButton, type FloatingButtonProps } from "./floating-button";
 export { Header, type HeaderProps } from "./header";
 export { Input, type InputProps } from "./input";
