@@ -74,7 +74,7 @@ export function ClinicalTransitionStepCard({
             <Pressable
               key={target.moduleId}
               accessibilityRole="button"
-              accessibilityLabel={`${tr(target.label)} — ${tr(target.reason)}`}
+              accessibilityLabel={`${tr("Abrir módulo")} ${tr(target.label)} — ${tr(target.reason)}`}
               onPress={() => onOpenModule(target.moduleId)}
               style={({ pressed }) => [e.targetButton, pressed && e.pressed]}
             >
@@ -82,7 +82,10 @@ export function ClinicalTransitionStepCard({
                 <Text style={e.targetLabel}>{tr(target.label)}</Text>
                 <Text style={e.targetReason}>{tr(target.reason)}</Text>
               </View>
-              <Text style={e.chevron}>›</Text>
+              <View style={e.targetCta}>
+                <Text style={e.targetCtaText}>{tr("ABRIR MÓDULO")}</Text>
+                <Text style={e.targetCtaArrow}>›</Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -152,8 +155,8 @@ const criarEstilos = (t: Tema) =>
       alignItems: "center",
       gap: ESPACO.sm,
       borderRadius: RAIO.botao,
-      borderWidth: 1,
-      borderColor: t.cores.border,
+      borderWidth: 1.5,
+      borderColor: t.cores.primary,
       backgroundColor: t.cores.surface,
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
@@ -161,7 +164,7 @@ const criarEstilos = (t: Tema) =>
     targetCopy: { flex: 1, gap: 2 },
     targetLabel: {
       ...TIPOGRAFIA.caption,
-      color: t.cores.primary,
+      color: t.cores.text,
       fontWeight: "900",
     },
     targetReason: {
@@ -169,8 +172,26 @@ const criarEstilos = (t: Tema) =>
       color: t.cores.textSecondary,
       fontWeight: "500",
     },
-    chevron: {
-      ...TIPOGRAFIA.step,
+    targetCta: {
+      minHeight: 36,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5,
+      borderRadius: RAIO.pill,
+      borderWidth: 1,
+      borderColor: t.cores.primary,
+      paddingHorizontal: ESPACO.sm,
+      flexShrink: 0,
+    },
+    targetCtaText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.45,
+    },
+    targetCtaArrow: {
+      ...TIPOGRAFIA.caption,
       color: t.cores.primary,
       fontWeight: "900",
     },
