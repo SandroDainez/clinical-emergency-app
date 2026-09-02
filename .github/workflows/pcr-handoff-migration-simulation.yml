@@ -1,4 +1,4 @@
-name: PCR handoff migration simulation
+name: PCR terminal handoff validation
 
 on:
   push:
@@ -12,7 +12,6 @@ on:
       - "lib/clinical-transition*.ts"
       - "clinical-safety-cases/handoff-*.ts"
       - "clinical-safety-cases/target-promotion-debts.ts"
-      - "scripts/migra-pcr-handoffs-terminais.cjs"
       - "scripts/test-*handoff*.cjs"
       - "scripts/valida-*handoff*.cjs"
       - "scripts/valida-*transition*.cjs"
@@ -24,7 +23,7 @@ permissions:
   contents: read
 
 jobs:
-  simulate-pcr-terminal-handoffs:
+  validate-pcr-terminal-handoffs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -41,63 +40,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate current pre-migration state
+      - name: Validate migrated terminal handoff state
         run: |
-          node scripts/valida-migracao-pcr-handoffs-terminais.cjs
+          node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
           node scripts/valida-contagem-transition-contracts.cjs
           node scripts/valida-cobertura-other-module-registry.cjs
           node scripts/valida-handoff-prioridade-pcr.cjs
           node scripts/valida-handoff-executaveis-emergencias-2.cjs
           node scripts/valida-tree-to-handoff-emergencias-2.cjs
 
-      - name: Run executable handoff tests before migration
+      - name: Run executable handoff tests
         run: |
           node scripts/test-clinical-handoffs-emergencias-2.cjs
           node scripts/test-tree-to-handoff-emergencias-2.cjs
-
-      - name: Capture TypeScript baseline before migration
-        run: |
-          set +e
-          npx tsc --noEmit --pretty false > /tmp/tsc-before.txt 2>&1
-          echo $? > /tmp/tsc-before-status.txt
-          set -e
-          cat /tmp/tsc-before.txt
-
-      - name: Simulate terminal PCR migration in workspace
-        run: node scripts/migra-pcr-handoffs-terminais.cjs
-
-      - name: Validate post-migration semantics
-        run: |
-          node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
-          node scripts/valida-contagem-transition-contracts.cjs
-          node scripts/valida-cobertura-other-module-registry.cjs
-          node scripts/valida-handoff-prioridade-pcr.cjs
-
-      - name: Run executable handoff tests after migration
-        run: |
-          node scripts/test-clinical-handoffs-emergencias-2.cjs
-          node scripts/test-tree-to-handoff-emergencias-2.cjs
-
-      - name: Require unchanged TypeScript baseline after migration
-        run: |
-          set +e
-          npx tsc --noEmit --pretty false > /tmp/tsc-after.txt 2>&1
-          after_status=$?
-          set -e
-          before_status="$(cat /tmp/tsc-before-status.txt)"
-          cat /tmp/tsc-after.txt
-          if [ "$before_status" != "$after_status" ]; then
-            echo "TypeScript exit status changed across migration: before=$before_status after=$after_status"
-            exit 1
-          fi
-          if ! diff -u /tmp/tsc-before.txt /tmp/tsc-after.txt; then
-            echo "PCR migration changed the TypeScript diagnostic baseline."
-            exit 1
-          fi
-          echo "TypeScript diagnostic baseline unchanged by PCR migration."
-
-      - name: Confirm simulation did not create commits
-        run: |
-          git status --short
-          test -n "$(git status --short)"
-          test -z "$(git log -1 --pretty=%B | grep -F 'simulate terminal PCR migration' || true)"
