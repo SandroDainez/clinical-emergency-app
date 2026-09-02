@@ -34,6 +34,7 @@ import SeloDeForca from "./selo-de-forca";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
+import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, ClinicalShellHost, GuidedDiscoveryCard, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
@@ -256,7 +257,19 @@ export default function AclsDecisionFlowScreen({
   const escalonamentoRef = useRef<EstadoDeEscalonamento>(ESTADO_INICIAL);
 
   const handleChoose = (optionId: string) => {
+    const currentStep = engine.toFrontendStep();
+    const currentNodeId = engine.getCurrentNode().id;
+    const optionLabel =
+      currentStep.kind === "decision"
+        ? currentStep.options.find((option) => option.id === optionId)?.label
+        : undefined;
     const next = engine.choose(optionId);
+    recordFlowDecision({
+      module: currentModuleSlug,
+      nodeId: currentNodeId,
+      optionId,
+      optionLabel,
+    });
     caminhoRef.current.push(next.id);
 
     // ⚠️ "piorou" é o id da opção que o autor nomeou; `trata_*` é o prefixo dos
@@ -277,7 +290,29 @@ export default function AclsDecisionFlowScreen({
   };
 
   const handleAdvance = () => {
+    const currentNode = engine.getCurrentNode();
+    const currentValues = engine.getValues();
     const next = engine.advance();
+
+    if (currentNode.type === "action") {
+      recordFlowAdvance({
+        module: currentModuleSlug,
+        nodeId: currentNode.id,
+        title: currentNode.title,
+      });
+    } else if (currentNode.type === "input") {
+      for (const field of currentNode.fields) {
+        const value = currentValues[field.id];
+        if (value === undefined) continue;
+        recordFlowObservation({
+          module: currentModuleSlug,
+          fieldId: field.id,
+          value,
+          unit: field.unit,
+        });
+      }
+    }
+
     caminhoRef.current.push(next.id);
     sync(next.title);
   };
