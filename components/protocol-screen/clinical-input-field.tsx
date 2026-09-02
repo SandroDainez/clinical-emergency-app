@@ -51,6 +51,13 @@ export function ClinicalInputField({
   const numericValue = value !== undefined ? Number(value.replace(",", ".")) : undefined;
 
   const currentLabel = preset?.label ?? value;
+  const fallbackNumericValue = numericRange
+    ? Number(((numericRange.min + numericRange.max) / 2).toFixed(0))
+    : undefined;
+  const displayedNumericValue =
+    numericValue !== undefined && Number.isFinite(numericValue)
+      ? numericValue
+      : fallbackNumericValue;
 
   return (
     <View style={e.wrapper} testID={testID}>
@@ -77,14 +84,11 @@ export function ClinicalInputField({
 
       {renderCalculator}
 
-      {numericRange ? (
+      {numericRange && displayedNumericValue !== undefined ? (
         <NumericStepper
-          valor={
-            numericValue !== undefined && Number.isFinite(numericValue)
-              ? numericValue
-              : Number(((numericRange.min + numericRange.max) / 2).toFixed(0))
-          }
+          valor={displayedNumericValue}
           onChange={(next) => onChange(String(next))}
+          onConfirmar={(next) => onChange(String(next))}
           min={numericRange.min}
           max={numericRange.max}
           passo={numericRange.passo}
@@ -113,7 +117,11 @@ export function ClinicalInputField({
                 accessibilityRole="button"
                 accessibilityState={{ expanded: showingCustom }}
                 onPress={() => setCustomOpen((open) => !open)}
-                style={({ pressed }) => [e.otherButton, showingCustom && e.otherButtonActive, pressed && e.pressed]}
+                style={({ pressed }) => [
+                  e.otherButton,
+                  showingCustom && e.otherButtonActive,
+                  pressed && e.pressed,
+                ]}
               >
                 <Text style={[e.otherText, showingCustom && e.otherTextActive]}>{tr("Outro…")}</Text>
               </Pressable>
