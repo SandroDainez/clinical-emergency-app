@@ -58,11 +58,11 @@ export function runExecutableDecisionObservationBindingCases(): string[] {
   ], now);
   const attempt = evaluateClinicalActionAttempt({
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     context: gateContext.context,
   });
-  expect(attempt.hardStops.length === 1, "Binding TC HIC: decisão→observação→contexto deve ativar hard stop da trombólise", issues);
+  expect(attempt.hardStops.length === 1, "Binding TC HIC: decisão→observação→contexto deve ativar hard stop no nó real de trombólise", issues);
 
   clearClinicalObservations();
   clearClinicalEventLog();
