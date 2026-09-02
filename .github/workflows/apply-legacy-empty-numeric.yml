@@ -1,0 +1,47 @@
+name: Apply legacy empty numeric fix
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/corrige-input-numerico-legado.cjs
+      - .github/workflows/apply-legacy-empty-numeric.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: node scripts/corrige-input-numerico-legado.cjs
+      - run: node scripts/valida-paridade-clinical-steps.cjs
+      - run: node scripts/valida-seguranca-input-voltar-nihss.cjs
+      - run: npm run build:web
+
+      - name: Validate scope
+        run: |
+          CHANGED=$(git diff --name-only)
+          echo "$CHANGED"
+          test "$CHANGED" = "components/protocol-screen/acls-decision-flow-screen.tsx"
+
+      - name: Commit legacy input fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/acls-decision-flow-screen.tsx
+          git commit -m "fix(input): keep legacy numeric fields empty until informed"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
