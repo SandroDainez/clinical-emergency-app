@@ -45,7 +45,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ponte de runtime capaz de registrar observações sem alterar decisão clínica.
 - [x] Componente visual que obriga mostrar a idade do dado.
 - [x] Adapter do cockpit inclui idade do dado em observações reutilizadas.
-- [x] Reset central do novo atendimento limpa contexto, observações, event log e pilha de interrupções.
+- [x] Reset central do novo atendimento limpa contexto, observações, event log, pilha de interrupções e reavaliações pendentes.
 - [ ] Ligar observações progressivamente aos inputs existentes.
 - [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
 
@@ -70,18 +70,25 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ponte de runtime para registrar decisão, ação, observação e transição.
 - [x] Evento de retomada de protocolo incorporado à bridge.
 - [x] Ida e retorno das portas de crise podem ser espelhados no event log sem alterar a navegação legada.
+- [x] Override de segurança gera evento com motivo e gravidade.
+- [x] Conclusão de reavaliação gera evento com tempo decorrido e resumo.
 - [ ] Integrar bridge ao shell compartilhado.
-- [ ] Integrar medicações, overrides, reavaliações e destino.
+- [ ] Integrar medicações e destino.
 - [ ] Gerar debrief automático por metas temporais.
 
 ## Bloco E — Segurança do fluxo
 
 - [x] Contrato central mínimo das regras de segurança criado.
 - [x] Inventário automático de decisões potencialmente sem ramo de incerteza criado.
-- [ ] Classificar achados do inventário em: precisa `nao_sei` / binário legítimo / já possui descoberta guiada.
+- [x] Política formal de incerteza criada: `unknown_required` / `binary_observable` / `guided_elsewhere`.
+- [x] Dispensa de ramo “não sei” exige justificativa explícita e data de revisão.
+- [x] Inventário de terapias críticas com sinal de reavaliação criado.
+- [x] Runtime de override exige motivo não vazio e registra evento auditável.
+- [x] Política de reavaliação definida para fibrinólise, cardioversão, intubação, vasopressor e adrenalina na anafilaxia.
+- [x] Ledger de reavaliações pendentes criado; terapia crítica pode abrir obrigação explícita até a reavaliação ser concluída.
+- [ ] Classificar os achados reais do inventário em `unknown_required` / `binary_observable` / `guided_elsewhere`.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
-- [ ] Registrar motivo de override.
-- [ ] Tornar reavaliação obrigatória para terapias críticas definidas no contrato.
+- [ ] Ligar o ledger de reavaliação aos nós reais de terapias críticas.
 - [ ] Garantir destino alcançável em todos os módulos.
 
 ## Bloco F — Drug Knowledge Base
@@ -120,6 +127,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Travas de paridade das primeiras entradas canônicas de medicamentos criadas.
 - [x] Trava estrutural do registry único de medicamentos criada.
 - [x] Travas de evidência e isolamento de indicação criadas para TEP e SCA.
+- [x] Travas estruturais da política de incerteza, override e runtime de reavaliação criadas.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
