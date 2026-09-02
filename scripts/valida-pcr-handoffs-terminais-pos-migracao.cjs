@@ -11,19 +11,21 @@ const debts = fs.readFileSync(path.join(raiz, "clinical-safety-cases/target-prom
 const context = fs.readFileSync(path.join(raiz, "lib/pcr-terminal-handoff-context.ts"), "utf8");
 
 const erros = [];
-function node(source, nodeId) {
+function trechoNo(source, nodeId) {
   const marker = `    ${nodeId}: {`;
   const start = source.indexOf(marker);
   if (start < 0) return "";
-  const end = source.indexOf("\n    ", start + marker.length);
-  return source.slice(start, end > start ? end : source.length);
+  const tail = source.slice(start + marker.length);
+  const sibling = tail.match(/\n    [A-Za-z0-9_]+:\s*\{/);
+  const end = sibling ? start + marker.length + sibling.index : source.length;
+  return source.slice(start, end);
 }
 function exige(source, token, message) {
   if (!source.includes(token)) erros.push(message);
 }
 
-exige(node(tachy, "unstable_sem_pulso"), 'disposition: "other_module"', "taquicardia sem pulso não é handoff other_module");
-exige(node(brady, "bradi_sem_pulso"), 'disposition: "other_module"', "bradicardia sem pulso não é handoff other_module");
+exige(trechoNo(tachy, "unstable_sem_pulso"), 'disposition: "other_module"', "taquicardia sem pulso não é handoff other_module");
+exige(trechoNo(brady, "bradi_sem_pulso"), 'disposition: "other_module"', "bradicardia sem pulso não é handoff other_module");
 
 for (const id of ["taquicardia-sem-pulso-pcr-terminal", "bradicardia-sem-pulso-pcr-terminal"]) {
   exige(transitions, `id: "${id}"`, `registry sem ${id}`);
