@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
-import { ESPACO, SOMBRA, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESPACO, RAIO, SOMBRA, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
 export type HeaderProps = {
@@ -33,7 +33,6 @@ export function Header({
           accessibilityLabel={labelVoltar}
           accessibilityHint="Navegar para a tela anterior"
           onPress={onVoltar}
-          hitSlop={ESPACO.sm}
           style={({ pressed }) => [e.voltar, pressed && e.pressionado]}
         >
           <Text style={e.seta}>‹</Text>
@@ -75,19 +74,21 @@ const criarEstilos = (t: Tema) =>
     },
     voltar: {
       minHeight: TOQUE.minimo,
-      minWidth: TOQUE.minimo,
-      maxWidth: 92,
+      minWidth: 88,
+      maxWidth: 112,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: 2,
-      borderRadius: TOQUE.minimo / 2,
-      paddingHorizontal: ESPACO.xs,
-      marginLeft: -ESPACO.xs,
+      gap: 4,
+      borderRadius: RAIO.botao,
+      borderWidth: 1.5,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.bg,
+      paddingHorizontal: ESPACO.sm,
     },
-    pressionado: { opacity: 0.55, transform: [{ scale: 0.96 }] },
-    seta: { fontSize: 30, lineHeight: 32, color: t.cores.textSecondary, fontWeight: "400" },
-    voltarTexto: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "700" },
+    pressionado: { opacity: 0.78, transform: [{ scale: 0.97 }] },
+    seta: { fontSize: 26, lineHeight: 28, color: t.cores.primary, fontWeight: "700" },
+    voltarTexto: { ...TIPOGRAFIA.micro, color: t.cores.primary, fontWeight: "900", letterSpacing: 0.15 },
     identidade: { flex: 1, minWidth: 0, justifyContent: "center", gap: 3 },
     titulo: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
     etapaLinha: {
