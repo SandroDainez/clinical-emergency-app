@@ -103,7 +103,7 @@ export function ClinicalShellChrome({
         </View>
       ) : null}
 
-      <CrisisActionBar actions={crisisActions} />
+      <CrisisActionBar actions={crisisActions} resetKey={stepLabel} />
     </View>
   );
 }
