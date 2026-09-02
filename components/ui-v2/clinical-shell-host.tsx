@@ -25,9 +25,17 @@ function formatUiElapsed(startedAt: number, now: number): string {
   return `${hours}:${String(remainder).padStart(2, "0")}`;
 }
 
+/**
+ * O corpo do passo já exibe `step.title`. O cockpit só deve repetir uma fase
+ * quando ela acrescenta contexto diferente do título do card; caso contrário,
+ * a mesma frase aparece duas vezes em sequência e compete com a ação clínica.
+ *
+ * No piloto do AVC existem alguns rótulos complementares deliberados. Fora
+ * deles, devolvemos string vazia para manter uma única hierarquia visual.
+ */
 function presentationPhase(moduleSlug: string | undefined, phase: string | undefined): string {
   const base = phase ?? "";
-  if (moduleSlug !== "avc") return base;
+  if (!base || moduleSlug !== "avc") return "";
 
   // Superfície A do AVC: estes rótulos são somente uma tradução visual dos
   // títulos que já existem na árvore. Não criam dados, não classificam janela,
@@ -45,7 +53,7 @@ function presentationPhase(moduleSlug: string | undefined, phase: string | undef
     return "Classificar pela neuroimagem";
   }
 
-  return base;
+  return "";
 }
 
 /**
