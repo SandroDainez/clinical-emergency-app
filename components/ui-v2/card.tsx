@@ -13,19 +13,20 @@ import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 export type CardProps = {
   children?: React.ReactNode;
   titulo?: string;
-  /** Linha de apoio abaixo do título. */
   descricao?: string;
-  /** Faixa colorida à esquerda — usar para gravidade, não para decoração. */
   tom?: "neutro" | "primary" | "critical" | "success" | "warning";
-  /** Card inteiro tocável. Ganha retorno de toque e papel de botão. */
   onPress?: () => void;
-  /** Sombra só quando o card precisa se destacar do fundo. Padrão: sem. */
   elevado?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-/** Superfície padrão da UI 2.0. */
+/**
+ * Superfície clínica padrão.
+ *
+ * A hierarquia vem de espaço, borda e uma faixa semântica estreita. Vermelho,
+ * verde e âmbar não são decoração: só aparecem quando carregam significado.
+ */
 export function Card({
   children,
   titulo,
@@ -83,13 +84,30 @@ const criarEstilos = (t: Tema) => {
         borderRadius: RAIO.card,
         borderWidth: 1,
         borderColor: cores.border,
-        padding: ESPACO.md,
+        paddingHorizontal: ESPACO.md,
+        paddingVertical: ESPACO.md,
         gap: ESPACO.sm,
+        overflow: "hidden",
       },
-      comFaixa: { borderLeftWidth: 4 },
-      pressionado: { opacity: 0.9, transform: [{ scale: 0.995 }] },
-      titulo: { ...TIPOGRAFIA.caption, color: cores.text, fontWeight: "700" },
-      descricao: { ...TIPOGRAFIA.micro, color: cores.textSecondary, fontWeight: "400" },
+      comFaixa: {
+        borderLeftWidth: 5,
+        paddingLeft: ESPACO.md,
+      },
+      pressionado: {
+        opacity: 0.94,
+        transform: [{ scale: 0.992 }],
+      },
+      titulo: {
+        ...TIPOGRAFIA.caption,
+        color: cores.text,
+        fontWeight: "800",
+        letterSpacing: 0.1,
+      },
+      descricao: {
+        ...TIPOGRAFIA.micro,
+        color: cores.textSecondary,
+        fontWeight: "500",
+      },
     }),
     faixa: StyleSheet.create({
       primary: { borderLeftColor: cores.primary },
