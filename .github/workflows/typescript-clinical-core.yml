@@ -50,6 +50,9 @@ jobs:
       - name: Validate tachycardia SafetyGate advisory
         run: node scripts/valida-safety-gate-advisory-taquicardia.cjs
 
+      - name: Validate AVC SafetyGate hard stop
+        run: node scripts/valida-safety-gate-hard-stop-avc.cjs
+
       - name: Validate runtime bridge instrumentation
         run: |
           node scripts/valida-clinical-runtime-bridge.cjs
