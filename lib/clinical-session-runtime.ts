@@ -1,4 +1,5 @@
 import { clearClinicalEventLog } from "./clinical-event-log";
+import { clearClinicalHandoffs } from "./clinical-handoff-runtime";
 import { clearClinicalInterruptions } from "./clinical-interruption-session";
 import { clearClinicalObservations } from "./clinical-observations";
 import { clearClinicalReassessmentNodeRuntime } from "./clinical-reassessment-node-runtime";
@@ -25,6 +26,7 @@ export function startClinicalCase(caseId: string, now: number = Date.now()): Cli
   if (!id) throw new Error("Não é possível iniciar atendimento sem caseId");
 
   clearClinicalEventLog();
+  clearClinicalHandoffs();
   clearClinicalInterruptions();
   clearClinicalObservations();
   clearClinicalReassessmentNodeRuntime();
