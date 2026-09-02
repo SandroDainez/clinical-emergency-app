@@ -36,7 +36,8 @@ import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, ClinicalShellHost, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
+import { Card, ClinicalShellHost, GuidedDiscoveryCard, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
+import { guidedDiscoveryViewModel } from "../../lib/guided-discovery-adapter";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useFadeDeEtapa } from "../../design-system/motion";
@@ -517,7 +518,12 @@ export default function AclsDecisionFlowScreen({
         {step.kind === "decision" ? (
           <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
         ) : step.kind === "action" ? (
-          <ActionStep step={step} onAdvance={handleAdvance} emV2={emV2} />
+          <ActionStep
+            step={step}
+            onAdvance={handleAdvance}
+            emV2={emV2}
+            protocolId={currentModuleSlug}
+          />
         ) : step.kind === "input" ? (
           <InputStep
             step={step}
@@ -718,13 +724,39 @@ function ActionStep({
   step,
   onAdvance,
   emV2,
+  protocolId,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
   emV2?: boolean;
+  protocolId?: string;
 }) {
   const tr = useTr();
   const v = useEstilosDoTema(criarEstilosV2);
+  const discovery =
+    step.guidedDiscoveryOrigin && protocolId
+      ? guidedDiscoveryViewModel(protocolId, step.guidedDiscoveryOrigin)
+      : undefined;
+
+  if (discovery) {
+    return (
+      <View style={styles.stepStack}>
+        <GuidedDiscoveryCard
+          eyebrow={tr(discovery.eyebrow)}
+          title={tr(discovery.title)}
+          sourceLabel={tr(discovery.sourceLabel)}
+          steps={discovery.steps.map((item) => ({
+            ...item,
+            label: tr(item.label),
+            detail: tr(item.detail),
+          }))}
+          sufficientWhen={tr(discovery.sufficientWhen)}
+          returnLabel={tr("Voltar à decisão")}
+          onReturn={onAdvance}
+        />
+      </View>
+    );
+  }
 
   if (emV2) {
     return (

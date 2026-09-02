@@ -277,6 +277,8 @@ export type DeclaracaoDeAfirmacao = {
 
 export type ActionNode = BaseNode & {
   type: "action";
+  /** Decisão de origem quando este nó materializa uma descoberta guiada canônica. */
+  guidedDiscoveryOrigin?: string;
   actions: string[];
   /**
    * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
@@ -469,6 +471,8 @@ export type FrontendTreeStep =
       kind: "action";
       title: string;
       summary?: string;
+      /** Decisão para a qual a descoberta guiada deve retornar. */
+      guidedDiscoveryOrigin?: string;
       actions: string[];
       /** O porquê, recolhido. Ver `ActionNode.porque`. */
       porque: string[];

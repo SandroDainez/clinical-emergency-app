@@ -6,7 +6,8 @@ export const GUIDED_DISCOVERY_REGISTRY: readonly GuidedDiscoveryContract[] = [
     protocolId: "avc",
     decisionNodeId: "hic_anticoag",
     source: "missing_history",
-    mode: "prepared_plan",
+    mode: "existing_node",
+    guidedNodeId: "hic_anticoag_descoberta",
     missingInformation: "Uso de anticoagulante, agente, dose e última tomada.",
     steps: [
       {
@@ -31,10 +32,11 @@ export const GUIDED_DISCOVERY_REGISTRY: readonly GuidedDiscoveryContract[] = [
   },
   {
     id: "sca-stemi-tempo-icp-desconhecido",
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     decisionNodeId: "stemi_reperfusao",
     source: "external_operational_data",
-    mode: "prepared_plan",
+    mode: "existing_node",
+    guidedNodeId: "stemi_reperfusao_descoberta",
     missingInformation: "Tempo real estimado do primeiro contato médico ao primeiro dispositivo na ICP primária.",
     steps: [
       {

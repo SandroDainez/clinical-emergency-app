@@ -280,7 +280,19 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "icp", label: "Sim — ICP primária em ≤ 120 min", next: "stemi_icp" },
         { id: "fibrino", label: "Não — ICP indisponível em tempo", next: "stemi_fibrino_check" },
+        { id: "nao_sei", label: "Não sei — me ajude", next: "stemi_reperfusao_descoberta" },
       ],
+    },
+
+    stemi_reperfusao_descoberta: {
+      id: "stemi_reperfusao_descoberta",
+      type: "action",
+      title: "Descobrir tempo real até a ICP",
+      summary: "Obter a informação operacional que falta e retornar à decisão de reperfusão.",
+      guidedDiscoveryOrigin: "stemi_reperfusao",
+      actions: [],
+      natureza: "organizacao_do_atendimento",
+      next: "stemi_reperfusao",
     },
 
     stemi_icp: {

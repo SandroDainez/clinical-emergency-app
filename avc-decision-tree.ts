@@ -534,7 +534,19 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — em anticoagulante", next: "hic_reversao" },
         { id: "nao", label: "Não anticoagulado", next: "hic_pic" },
+        { id: "nao_sei", label: "Não sei — me ajude", next: "hic_anticoag_descoberta" },
       ],
+    },
+
+    hic_anticoag_descoberta: {
+      id: "hic_anticoag_descoberta",
+      type: "action",
+      title: "Descobrir anticoagulação",
+      summary: "Obter a informação que falta e retornar à decisão de reversão.",
+      guidedDiscoveryOrigin: "hic_anticoag",
+      actions: [],
+      natureza: "organizacao_do_atendimento",
+      next: "hic_anticoag",
     },
 
     hic_reversao: {
