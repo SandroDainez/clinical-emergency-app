@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, "..");
 const parent = fs.readFileSync(path.join(root, "components/protocol-screen.tsx"), "utf8");
 const screen = fs.readFileSync(path.join(root, "components/protocol-screen/acls-protocol-screen.tsx"), "utf8");
 const card = fs.readFileSync(path.join(root, "components/protocol-screen/pcr-inherited-context-card.tsx"), "utf8");
+const adapter = fs.readFileSync(path.join(root, "lib/pcr-handoff-context-adapter.ts"), "utf8");
 const runtime = fs.readFileSync(path.join(root, "lib/pcr-inherited-context-runtime.ts"), "utf8");
 
 const errors = [];
@@ -32,8 +33,15 @@ for (const token of [
 for (const token of [
   'A reanimação não deve ser atrasada para completar dados ausentes.',
   'accessibilityRole="summary"',
-  'Não registrado',
+  '{item.value}',
+  'item.missing ? styles.missingValue : styles.value',
 ]) requireToken(card, token, `card herdado perdeu segurança/apresentação: ${token}`);
+
+for (const token of [
+  'value: fact ? formatValue(fact.value) : "Não registrado"',
+  'missing: !fact',
+  'recordedAt: fact?.recordedAt',
+]) requireToken(adapter, token, `adapter não representa ausência/tempo corretamente: ${token}`);
 
 for (const forbidden of ["Pressable", "onPress=", "router", "DecisionTreeEngine", "engine."]) {
   if (card.includes(forbidden)) errors.push(`card herdado ganhou comportamento clínico proibido: ${forbidden}`);
