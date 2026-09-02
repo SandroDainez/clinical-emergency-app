@@ -7,13 +7,52 @@ import {
 import type { ClinicalHandoffPreservationContract } from "./clinical-handoff-contract";
 import { publishClinicalHandoff } from "./clinical-handoff-runtime";
 
+export type ClinicalHandoffTransferReadiness = {
+  assembly: ClinicalHandoffAssemblyResult;
+  canProceedToDestination: boolean;
+  contextPublished: boolean;
+  missingFacts: readonly string[];
+};
+
 /**
- * Prepara e publica um handoff somente quando todos os fatos obrigatórios já
- * existem no estado clínico/event log.
+ * Prepara contexto para uma transferência clínica sem confundir documentação
+ * com prioridade assistencial.
  *
- * Resultado incompleto nunca é publicado silenciosamente. A camada de UI pode
- * usar `missingFacts` para pedir os dados faltantes ou registrar explicitamente
- * que eles são desconhecidos antes de tentar novamente.
+ * - contexto completo: publica payload e libera destino;
+ * - contexto incompleto + require_complete_context: não libera destino;
+ * - contexto incompleto + do_not_delay_destination: libera destino imediatamente,
+ *   mas mantém `missingFacts` explícitos e não publica um payload fingidamente completo.
+ */
+export function prepareClinicalHandoffTransfer(input: {
+  contract: ClinicalHandoffPreservationContract;
+  observations?: readonly ClinicalObservation[];
+  events?: readonly ClinicalEvent[];
+  now?: number;
+}): ClinicalHandoffTransferReadiness {
+  const assembly = assembleClinicalHandoff(input);
+  if (assembly.status === "complete") {
+    publishClinicalHandoff(assembly.payload);
+    return {
+      assembly,
+      canProceedToDestination: true,
+      contextPublished: true,
+      missingFacts: [],
+    };
+  }
+
+  const doNotDelay = input.contract.transferPolicy === "do_not_delay_destination";
+  return {
+    assembly,
+    canProceedToDestination: doNotDelay,
+    contextPublished: false,
+    missingFacts: [...assembly.missingFacts],
+  };
+}
+
+/**
+ * Compatibilidade: prepara e publica somente quando todos os fatos obrigatórios
+ * existem. Use `prepareClinicalHandoffTransfer` quando a decisão de prosseguir
+ * para o destino também precisar ser conhecida.
  */
 export function prepareAndPublishClinicalHandoff(input: {
   contract: ClinicalHandoffPreservationContract;
@@ -21,9 +60,5 @@ export function prepareAndPublishClinicalHandoff(input: {
   events?: readonly ClinicalEvent[];
   now?: number;
 }): ClinicalHandoffAssemblyResult {
-  const result = assembleClinicalHandoff(input);
-  if (result.status === "complete") {
-    publishClinicalHandoff(result.payload);
-  }
-  return result;
+  return prepareClinicalHandoffTransfer(input).assembly;
 }
