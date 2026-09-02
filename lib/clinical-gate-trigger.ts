@@ -2,6 +2,7 @@ import type { ClinicalGatePolicy } from "./clinical-gate-policy";
 
 export type ClinicalGateFactValue = string | number | boolean | null | undefined;
 export type ClinicalGateContext = Readonly<Record<string, ClinicalGateFactValue>>;
+export type ClinicalGateInteractionKind = "action" | "decision";
 
 export type ClinicalGateCondition =
   | { fact: string; operator: "equals"; value: Exclude<ClinicalGateFactValue, undefined> }
@@ -9,17 +10,20 @@ export type ClinicalGateCondition =
   | { fact: string; operator: "missing" };
 
 /**
- * Liga uma política de segurança a uma AÇÃO tentada.
+ * Liga uma política de segurança a uma interação clínica tentada.
  *
- * O nodeId sozinho nunca ativa gate: ele só restringe onde aquela ação pode ser
- * reconhecida. A condição é avaliada sobre fatos explícitos do caso; ausência de
- * fato não pode ser transformada silenciosamente em presença/ausência clínica.
+ * `interactionKind` declara a superfície real interceptada pela UI: ActionNode
+ * ou opção de DecisionNode. O `nodeId` sozinho nunca ativa gate; ele só restringe
+ * onde aquela interação pode ser reconhecida. A condição é avaliada sobre fatos
+ * explícitos do caso; ausência de fato não pode ser transformada silenciosamente
+ * em presença/ausência clínica.
  */
 export type ClinicalGateTrigger = {
   id: string;
   gateId: string;
   protocolId: string;
   nodeId?: string;
+  interactionKind: ClinicalGateInteractionKind;
   actionId: string;
   when: ClinicalGateCondition;
 };
@@ -55,6 +59,9 @@ export function validateClinicalGateTriggers(
     triggerIds.add(trigger.id);
     if (!trigger.gateId.trim()) issues.push(`${trigger.id}: gateId ausente`);
     if (!trigger.protocolId.trim()) issues.push(`${trigger.id}: protocolId ausente`);
+    if (trigger.interactionKind !== "action" && trigger.interactionKind !== "decision") {
+      issues.push(`${trigger.id}: interactionKind inválido`);
+    }
     if (!trigger.actionId.trim()) issues.push(`${trigger.id}: actionId ausente`);
     if (!trigger.when.fact.trim()) issues.push(`${trigger.id}: fato de ativação ausente`);
 
