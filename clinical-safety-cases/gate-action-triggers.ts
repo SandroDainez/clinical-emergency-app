@@ -14,7 +14,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
 
   const avcBlocked = evaluateClinicalActionGates({
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     context: { hemorragia_intracraniana_aguda: true },
   });
@@ -22,15 +22,24 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(avcBlocked[0]?.policy.level === "hard_stop", "AVC: gate deve ser hard_stop", issues);
   expect(avcBlocked[0]?.blocks === true, "AVC: hard stop deve bloquear a ação", issues);
   expect(avcBlocked[0]?.overrideAllowed === false, "AVC: hard stop não pode permitir override", issues);
+  expect(avcBlocked[0]?.policy.resolutionNodeId === "tc_resultado", "AVC: hard stop deve declarar retorno seguro ao resultado da TC", issues);
 
   const avcAttempt = evaluateClinicalActionAttempt({
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     context: { hemorragia_intracraniana_aguda: true },
   });
   expect(avcAttempt.canProceedWithoutOverride === false, "AVC: hard stop deve impedir prosseguir sem override", issues);
   expect(canProceedAfterRecordedOverrides(avcAttempt, new Set(["avc-ivt-hemorragia-aguda"])) === false, "AVC: hard stop não pode ser liberado nem se gateId aparecer como overridden", issues);
+
+  const avcWrongNode = evaluateClinicalActionGates({
+    protocolId: "avc",
+    nodeId: "tc_resultado",
+    actionId: "administrar_trombolise_iv",
+    context: { hemorragia_intracraniana_aguda: true },
+  });
+  expect(avcWrongNode.length === 0, "AVC: estar no resultado da TC não pode ativar hard stop antes da tentativa de trombólise", issues);
 
   const avcCorrectBranch = evaluateClinicalActionGates({
     protocolId: "avc",
@@ -42,7 +51,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
 
   const avcNoHemorrhage = evaluateClinicalActionGates({
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     context: { hemorragia_intracraniana_aguda: false },
   });
