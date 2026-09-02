@@ -19,7 +19,10 @@ if (!errors.length) {
     'id: "tachy-pulseless-handoff-complete-consume-once"',
     'id: "brady-pulseless-partial-context-published-with-missing-optional"',
     'id: "tachy-handoff-observation-wins-over-event"',
+    'id: "target-contingency-does-not-promote-to-handoff"',
+    'id: "terminal-target-resolves-and-publishes-before-navigation"',
     "prepareAndPublishClinicalHandoff",
+    "prepareRegisteredTargetHandoff",
     "consumeClinicalHandoff",
     "listPendingClinicalHandoffs",
     "recordClinicalObservation",
@@ -55,4 +58,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("\n✅ casos e runner executáveis de handoff cobrem contexto completo, parcial e prioridade observacional.\n");
+console.log("\n✅ casos de handoff cobrem completo, parcial, precedência e fronteira target comum vs handoff terminal.\n");
