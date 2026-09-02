@@ -49,7 +49,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(avcNoHemorrhage.length === 0, "AVC: sem hemorragia o gate específico não deve ativar", issues);
 
   const stemiUnknown = evaluateClinicalActionAttempt({
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     nodeId: "stemi_reperfusao",
     actionId: "definir_estrategia_reperfusao",
     context: { tempo_operacional_icp: "desconhecido" },
@@ -61,7 +61,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(canProceedAfterRecordedOverrides(stemiUnknown, new Set(["sca-tempo-icp-nao-confirmado"])) === true, "STEMI: soft stop pode ser liberado depois de override registrado", issues);
 
   const stemiKnown = evaluateClinicalActionAttempt({
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     nodeId: "stemi_reperfusao",
     actionId: "definir_estrategia_reperfusao",
     context: { tempo_operacional_icp: "confirmado" },
