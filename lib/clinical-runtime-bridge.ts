@@ -17,7 +17,14 @@ function nextEventId(prefix: string, now: number): string {
  * sem acoplar o shell ao formato interno do event log.
  */
 export function recordFlowDecision(input: {
+  /** ID canônico do protocolo usado no Event Log e na proveniência clínica. */
   module?: string;
+  /**
+   * Identificador usado apenas para localizar bindings de decisão já existentes
+   * na superfície atual (normalmente o slug de rota). Quando omitido, usa
+   * `module` para manter compatibilidade com os chamadores anteriores.
+   */
+  bindingProtocolId?: string;
   nodeId: string;
   optionId: string;
   optionLabel?: string;
@@ -37,7 +44,7 @@ export function recordFlowDecision(input: {
   });
 
   const boundObservation = decisionObservationFor({
-    protocolId: input.module,
+    protocolId: input.bindingProtocolId ?? input.module,
     nodeId: input.nodeId,
     optionId: input.optionId,
   });
