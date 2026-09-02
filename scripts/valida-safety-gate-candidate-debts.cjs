@@ -23,7 +23,6 @@ expect(debts.includes('protocolId: "tep_2024"'), "dívidas de TEP perderam o id 
 expect(/tox_sedativo:\s*\{[\s\S]*?id: "tox_sedativo"[\s\S]*?type: "action"/.test(tox), "nó tox_sedativo não existe mais como action");
 expect(tox.includes("FLUMAZENIL_NAO_USAR"), "fonte canônica FLUMAZENIL_NAO_USAR deixou de existir/ser consumida");
 expect(/tox_alcool_toxico:\s*\{[\s\S]*?id: "tox_alcool_toxico"[\s\S]*?type: "action"/.test(tox), "nó tox_alcool_toxico não existe mais como action");
-expect(tox.includes("NÃO fazer carvão nem lavagem"), "texto de segurança de álcool tóxico mudou antes da migração dedicada; reauditar dívida");
 expect(/ar_suporte:\s*\{[\s\S]*?id: "ar_suporte"[\s\S]*?type: "action"/.test(tep), "nó ar_suporte do TEP mudou; reauditar dívida");
 expect(tep.includes("EVITAR sedação profunda e ventilação mecânica sempre que possível"), "alerta de sedação/VM no TEP mudou; reauditar dívida");
 expect(/tep_dor_isquemica:\s*\{[\s\S]*?id: "tep_dor_isquemica"[\s\S]*?type: "action"/.test(tep), "nó tep_dor_isquemica mudou; reauditar dívida");
@@ -43,7 +42,19 @@ for (const id of ["tox-flumazenil-high-risk-context", "tox-toxic-alcohol-deconta
   expect(!block.includes('"needs_evidence_review"'), `${id}: não pode continuar marcado como evidence review pendente`);
 }
 expect(blockFor("tox-flumazenil-high-risk-context").includes('candidateLevel: "needs_level_review"'), "flumazenil: nível deve permanecer pendente até separar subcenários de risco");
-expect(blockFor("tox-toxic-alcohol-decontamination").includes('"needs_tree_content_review"'), "álcool tóxico: revisão identificou dívida de conteúdo e ela deve permanecer explícita até a migração");
+
+const toxicAlcoholBlock = blockFor("tox-toxic-alcohol-decontamination");
+const oldToxicAlcoholCopy = tox.includes("NÃO fazer carvão nem lavagem");
+const reviewedToxicAlcoholCopy =
+  tox.includes("Carvão ativado não tem papel em metanol/etilenoglicol.") &&
+  tox.includes("Lavagem gástrica não é recomendada rotineiramente; benefício não demonstrado.");
+expect(oldToxicAlcoholCopy || reviewedToxicAlcoholCopy, "álcool tóxico: árvore não está nem no estado antigo conhecido nem no texto revisado");
+if (oldToxicAlcoholCopy) {
+  expect(toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: texto antigo exige dívida explícita de conteúdo");
+} else if (reviewedToxicAlcoholCopy) {
+  expect(!toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: dívida de conteúdo deve sair quando o texto revisado entrar");
+  expect(toxicAlcoholBlock.includes("summary de tox_alcool_toxico separa carvão ativado"), "álcool tóxico: debt registry não descreve o conteúdo já revisado");
+}
 
 for (const id of ["tep-high-risk-deep-sedation-ventilation", "tep-thrombolysis-for-isolated-ischemic-pain"]) {
   const block = blockFor(id);
@@ -55,4 +66,4 @@ if (issues.length) {
   for (const issue of issues) console.error(`❌ ${issue}`);
   process.exit(1);
 }
-console.log("✅ SafetyGate candidate debts: 2 evidências revisadas + 2 pendentes, todos fora do registry ativo.");
+console.log(`✅ SafetyGate candidate debts sincronizados: 2 evidências revisadas + 2 pendentes; álcool tóxico em estado ${reviewedToxicAlcoholCopy ? "revisado" : "pré-migração"}.`);
