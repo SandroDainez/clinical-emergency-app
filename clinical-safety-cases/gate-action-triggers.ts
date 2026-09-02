@@ -63,6 +63,15 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(tachyNoSedation[0]?.policy.level === "advisory", "Taquicardia: gate deve ser advisory", issues);
   expect(tachyNoSedation[0]?.blocks === false, "Taquicardia: advisory não pode bloquear cardioversão", issues);
 
+  const tachySedationMissing = evaluateClinicalActionGates({
+    protocolId: "taquicardia-acls",
+    nodeId: "unstable_cardioversion",
+    actionId: "cardioversao_sincronizada",
+    context: {},
+  });
+  expect(tachySedationMissing.length === 1, "Taquicardia: sedação não registrada deve ativar advisory por trigger missing explícito", issues);
+  expect(tachySedationMissing[0]?.blocks === false, "Taquicardia: sedação ausente não pode bloquear cardioversão", issues);
+
   const tachySedated = evaluateClinicalActionGates({
     protocolId: "taquicardia-acls",
     nodeId: "unstable_cardioversion",
