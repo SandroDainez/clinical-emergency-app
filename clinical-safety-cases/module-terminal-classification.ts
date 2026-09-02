@@ -20,7 +20,7 @@ export const PILOT_MODULE_TERMINAL_CLASSIFICATION: readonly ClinicalModuleTermin
     reviewedAt: "2026-09-02",
   },
   {
-    protocolId: "rsi_v1",
+    protocolId: "isr_rsi_adulto",
     mode: "procedural_subflow",
     requiresClinicalDisposition: false,
     requiresReturnToOrigin: true,
