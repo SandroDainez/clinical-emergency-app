@@ -21,11 +21,15 @@ export type CrisisActionBarProps = {
  * Mantém acesso imediato às intercorrências sem ocupar o espaço da decisão
  * principal quando o paciente está estável. Ao abrir, revela exatamente as
  * mesmas ações/rotas fornecidas pelo shell; não diagnostica nem muda fluxo.
+ *
+ * A barra é a única porta de crise da UI v2. Por isso não pode truncar a fonte
+ * canônica: PCR, via aérea, ventilação, choque, bradicardia e taquicardia ficam
+ * disponíveis aqui (respeitando as exceções já filtradas pelo shell).
  */
 export function CrisisActionBar({ actions }: CrisisActionBarProps) {
   const e = useEstilosDoTema(criarEstilos);
   const [expanded, setExpanded] = useState(false);
-  const visible = actions.slice(0, 4);
+  const visible = actions;
 
   if (!visible.length) return null;
 
@@ -150,10 +154,13 @@ const criarEstilos = (t: Tema) =>
     },
     actionsRow: {
       flexDirection: "row",
+      flexWrap: "wrap",
       gap: ESPACO.sm,
     },
     action: {
-      flex: 1,
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 150,
       minHeight: TOQUE.critico,
       minWidth: TOQUE.minimo,
       alignItems: "center",
