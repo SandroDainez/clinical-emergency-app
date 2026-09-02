@@ -5,6 +5,7 @@ const raiz = path.resolve(__dirname, "..");
 const ler = (relativo) => fs.readFileSync(path.join(raiz, relativo), "utf8");
 
 const principal = ler("components/protocol-screen/acls-decision-flow-screen.tsx");
+const adapter = ler("components/protocol-screen/clinical-transition-step-adapter.tsx");
 const card = ler("components/protocol-screen/clinical-transition-step-card.tsx");
 
 const falhas = [];
@@ -16,6 +17,12 @@ const exigir = (condicao, mensagem) => {
 exigir(!/prepareRegisteredTargetHandoff/.test(card), "ClinicalTransitionStepCard passou a executar handoff; isso deve permanecer no shell.");
 exigir(!/router\.(push|replace)/.test(card), "ClinicalTransitionStepCard passou a navegar diretamente.");
 exigir(!/currentModuleSlug/.test(card), "ClinicalTransitionStepCard passou a conhecer o módulo de origem.");
+
+// O adaptador também é apenas pass-through: não pode absorver navegação ou handoff.
+exigir(!/prepareRegisteredTargetHandoff/.test(adapter), "ClinicalTransitionStepAdapter passou a executar handoff; isso deve permanecer no shell.");
+exigir(!/router\.(push|replace)/.test(adapter), "ClinicalTransitionStepAdapter passou a navegar diretamente.");
+exigir(!/currentModuleSlug/.test(adapter), "ClinicalTransitionStepAdapter passou a conhecer o módulo de origem.");
+exigir(!/targetModuleId/.test(adapter), "ClinicalTransitionStepAdapter passou a reinterpretar o destino do handoff.");
 
 // Contrato recebido do FrontendTreeStep de transição.
 exigir(/disposition:\s*TransitionStep\["disposition"\]/.test(card), "Card perdeu o disposition recebido do step.");
@@ -34,6 +41,14 @@ exigir(/tr\(target\.label\)/.test(card), "Rótulo do destino deixou de vir do ta
 exigir(/tr\(target\.reason\)/.test(card), "Motivo do destino deixou de vir do target.");
 exigir(/onPress=\{\(\) => onOpenModule\(target\.moduleId\)\}/.test(card), "Card deixou de devolver exatamente o moduleId escolhido ao chamador.");
 
+// O adaptador deve encaminhar o step literalmente ao card.
+exigir(/title=\{step\.title\}/.test(adapter), "Adapter deixou de encaminhar title diretamente do step.");
+exigir(/summary=\{step\.summary\}/.test(adapter), "Adapter deixou de encaminhar summary diretamente do step.");
+exigir(/disposition=\{step\.disposition\}/.test(adapter), "Adapter deixou de encaminhar disposition diretamente do step.");
+exigir(/exitCriteria=\{step\.exitCriteria\}/.test(adapter), "Adapter deixou de encaminhar exitCriteria diretamente do step.");
+exigir(/targets=\{step\.targets\}/.test(adapter), "Adapter deixou de encaminhar targets diretamente do step.");
+exigir(/onOpenModule=\{onOpenModule\}/.test(adapter), "Adapter deixou de encaminhar o callback externo sem transformação.");
+
 // O shell continua sendo dono do handoff/roteamento até a integração controlada.
 exigir(/prepareRegisteredTargetHandoff/.test(principal), "Shell perdeu a preparação do handoff antes da integração controlada.");
 exigir(/abrirOutroModulo/.test(principal), "Shell perdeu a função de navegação entre módulos.");
@@ -47,5 +62,6 @@ if (falhas.length) {
 
 console.log("✅ Paridade estrutural do TransitionStep preservada.");
 console.log("   • destino e critérios continuam vindo do step");
+console.log("   • adapter permanece pass-through");
 console.log("   • moduleId, label e reason permanecem intactos");
-console.log("   • navegação e handoff continuam fora do componente visual");
+console.log("   • navegação e handoff continuam fora da apresentação");
