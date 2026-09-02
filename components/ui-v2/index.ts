@@ -29,6 +29,10 @@ export {
   type ClinicalShellChromeProps,
 } from "./clinical-shell-chrome";
 export {
+  ClinicalShellHost,
+  type ClinicalShellHostProps,
+} from "./clinical-shell-host";
+export {
   CrisisActionBar,
   type CrisisAction,
   type CrisisActionBarProps,
