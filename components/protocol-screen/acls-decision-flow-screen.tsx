@@ -592,21 +592,22 @@ export default function AclsDecisionFlowScreen({
           </View>
         ) : null}
 
-        {/* Trilha de progresso */}
-        <View style={styles.trailRow}>
-          <View style={styles.trailBadge}>
-            <Text style={styles.trailBadgeText}>{tr("Passo")} {stepCount}</Text>
+        {/* Trilha de progresso — somente no legado. Na UI v2, o Header já
+            mostra a etapa atual; repetir "Passo N" e o título anterior no corpo
+            criava duas hierarquias de navegação para a mesma informação. */}
+        {!emV2 ? (
+          <View style={styles.trailRow}>
+            <View style={styles.trailBadge}>
+              <Text style={styles.trailBadgeText}>{tr("Passo")} {stepCount}</Text>
+            </View>
+            {/* ⚠️ A TRILHA MOSTRA DE ONDE SE VEIO, NÃO ONDE SE ESTÁ. */}
+            {trail.length > 1 ? (
+              <Text style={styles.trailText} numberOfLines={1}>
+                {tr(trail[trail.length - 2])}
+              </Text>
+            ) : null}
           </View>
-          {/* ⚠️ A TRILHA MOSTRA DE ONDE SE VEIO, NÃO ONDE SE ESTÁ.
-              Ela mostrava `trail[último]`, que é o título do nó ATUAL — o mesmo
-              texto do card logo abaixo. A pergunta aparecia duas vezes na mesma
-              tela, e no primeiro passo a trilha não tinha o que dizer de novo. */}
-          {trail.length > 1 ? (
-            <Text style={styles.trailText} numberOfLines={1}>
-              {tr(trail[trail.length - 2])}
-            </Text>
-          ) : null}
-        </View>
+        ) : null}
 
         <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>
         {step.kind === "decision" ? (
