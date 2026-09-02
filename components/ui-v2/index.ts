@@ -14,6 +14,11 @@ export { BottomNavigation, type BottomNavigationProps, type ItemNavegacao } from
 export { BottomSheet, type BottomSheetProps } from "./bottom-sheet";
 export { Button, type ButtonProps, type ButtonVariant } from "./button";
 export { Card, type CardProps } from "./card";
+export {
+  CategoricalSelector,
+  type CategoricalSelectorOption,
+  type CategoricalSelectorProps,
+} from "./categorical-selector";
 export { Chip, type ChipProps } from "./chip";
 export {
   ClinicalCockpitBar,
