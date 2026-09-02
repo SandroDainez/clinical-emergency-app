@@ -1,4 +1,5 @@
 import { listClinicalEvents, type ClinicalEvent } from "./clinical-event-log";
+import { deriveClinicalHandoffFact } from "./clinical-handoff-fact-derivations";
 import { getAllClinicalObservations, type ClinicalObservation } from "./clinical-observations";
 import {
   buildClinicalHandoffPayload,
@@ -55,7 +56,11 @@ function resolveFact(input: {
     };
   }
 
-  return undefined;
+  return deriveClinicalHandoffFact({
+    factId: input.factId,
+    events: input.eventsNewestFirst,
+    fromModule: input.fromModule,
+  });
 }
 
 /**
@@ -63,7 +68,8 @@ function resolveFact(input: {
  *
  * Ordem de resolução por fato:
  * 1. observação clínica com id exato;
- * 2. dado homônimo no evento clínico mais recente.
+ * 2. dado homônimo no evento clínico mais recente;
+ * 3. derivação estrutural explícita a partir de eventos já registrados.
  *
  * Fatos obrigatórios controlam a suficiência do contexto. Fatos opcionais
  * viajam quando existem e permanecem explicitamente ausentes quando não foram
