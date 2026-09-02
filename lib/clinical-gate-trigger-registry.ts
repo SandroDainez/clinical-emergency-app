@@ -12,7 +12,7 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
     id: "avc-ivt-when-acute-hemorrhage",
     gateId: "avc-ivt-hemorragia-aguda",
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     when: { fact: "hemorragia_intracraniana_aguda", operator: "equals", value: true },
   },
