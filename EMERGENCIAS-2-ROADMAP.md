@@ -41,7 +41,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ponte de runtime capaz de registrar observações sem alterar decisão clínica.
 - [x] Componente visual que obriga mostrar a idade do dado.
 - [x] Adapter do cockpit inclui idade do dado em observações reutilizadas.
-- [x] Reset central do novo atendimento limpa contexto, observações e event log.
+- [x] Reset central do novo atendimento limpa contexto, observações, event log e pilha de interrupções.
 - [ ] Ligar observações progressivamente aos inputs existentes.
 - [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
 
@@ -52,7 +52,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Inventário derivado do código para localizar transições `from_module`.
 - [x] Ponte de runtime para registrar interrupções sem assumir controle da navegação.
 - [x] Roteamento canônico de crise preservando `from_module`.
-- [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta.
+- [x] Pilha explícita de interrupções aninhadas criada.
+- [x] Retorno LIFO modelado para trajetórias AVC -> ISR -> PCR -> ISR -> AVC.
+- [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta real.
 - [ ] Substituir navegações improvisadas progressivamente.
 
 ## Bloco D — Event Log e auditoria
@@ -60,6 +62,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Event log append-only em memória.
 - [x] Timeline derivada do event log com cálculo de intervalos.
 - [x] Ponte de runtime para registrar decisão, ação, observação e transição.
+- [x] Evento de retomada de protocolo incorporado à bridge.
 - [ ] Integrar bridge ao shell compartilhado.
 - [ ] Integrar medicações, overrides, reavaliações e destino.
 - [ ] Gerar debrief automático por metas temporais.
@@ -93,10 +96,11 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Primeiras trajetórias executáveis reais: AVC, Anafilaxia e ISR.
 - [x] Casos iniciais já verificam nós obrigatórios, proibidos e nó final esperado.
 - [x] Trava estrutural dos casos executáveis criada.
+- [x] Auditoria de grafo para reavaliação/destino criada.
+- [x] Cenário estrutural de interrupção aninhada e retorno LIFO criado.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
-- [ ] Testes de deterioração e interrupção.
-- [ ] Testes de retomada de protocolo.
+- [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.
 
 ## Bloco H — Evidence Governance
