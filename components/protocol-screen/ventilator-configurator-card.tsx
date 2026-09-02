@@ -104,7 +104,14 @@ export default function VentilatorConfiguratorCard() {
           <Text style={s.headerTitle}>{tr("Configurador da VM")}</Text>
           <Text style={s.headerSub}>{tr("Peso predito → VC, PEEP e FR iniciais")}</Text>
         </View>
-        <Text style={s.chev}>{expanded ? "▲" : "▼"}</Text>
+        <View style={[s.headerCta, expanded && s.headerCtaOpen]}>
+          <Text style={[s.headerCtaText, expanded && s.headerCtaTextOpen]}>
+            {expanded ? tr("FECHAR") : tr("ABRIR")}
+          </Text>
+          <Text style={[s.headerCtaArrow, expanded && s.headerCtaTextOpen]}>
+            {expanded ? "▲" : "▼"}
+          </Text>
+        </View>
       </Pressable>
 
       {expanded ? (
@@ -225,7 +232,11 @@ const s = StyleSheet.create({
   headerIcon: { fontSize: 20 },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#a5f3fc", letterSpacing: -0.2 },
   headerSub: { fontSize: 11.5, fontWeight: "600", color: "#67e8f9", marginTop: 1 },
-  chev: { fontSize: 12, color: "#67e8f9", fontWeight: "800" },
+  headerCta: { minWidth: 78, minHeight: 36, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 10, backgroundColor: "#67e8f9", borderWidth: 1, borderColor: "#67e8f9", paddingHorizontal: 10 },
+  headerCtaOpen: { backgroundColor: "transparent" },
+  headerCtaText: { fontSize: 10, fontWeight: "900", color: "#06222b", letterSpacing: 0.5 },
+  headerCtaTextOpen: { color: "#67e8f9" },
+  headerCtaArrow: { fontSize: 10, fontWeight: "900", color: "#06222b" },
 
   body: { padding: 14, gap: 8 },
   label: { fontSize: 11, fontWeight: "800", color: "#aab6c6", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 },

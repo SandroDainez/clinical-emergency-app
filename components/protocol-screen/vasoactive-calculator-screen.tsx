@@ -802,7 +802,10 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
           {/* ── Reference (collapsible) ───────────────────────────────────────── */}
           <Pressable style={s.collapsible} onPress={() => setShowRefPanel((v) => !v)}>
             <Text style={s.collapseTitle}>{tr("ℹ️ Referência clínica")}</Text>
-            <Text style={s.collapseChev}>{showRefPanel ? "▲" : "▼"}</Text>
+            <View style={[s.collapseCta, showRefPanel && s.collapseCtaOpen]}>
+              <Text style={[s.collapseCtaText, showRefPanel && s.collapseCtaTextOpen]}>{showRefPanel ? tr("FECHAR") : tr("ABRIR")}</Text>
+              <Text style={[s.collapseCtaArrow, showRefPanel && s.collapseCtaTextOpen]}>{showRefPanel ? "▲" : "▼"}</Text>
+            </View>
           </Pressable>
           {showRefPanel && (
             <View style={s.collapseBody}>
@@ -853,7 +856,10 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
             <>
               <Pressable style={s.collapsible} onPress={() => setShowAssocPanel((v) => !v)}>
                 <Text style={s.collapseTitle}>{tr("🔗 Associações indicadas")}</Text>
-                <Text style={s.collapseChev}>{showAssocPanel ? "▲" : "▼"}</Text>
+                <View style={[s.collapseCta, showAssocPanel && s.collapseCtaOpen]}>
+                  <Text style={[s.collapseCtaText, showAssocPanel && s.collapseCtaTextOpen]}>{showAssocPanel ? tr("FECHAR") : tr("ABRIR")}</Text>
+                  <Text style={[s.collapseCtaArrow, showAssocPanel && s.collapseCtaTextOpen]}>{showAssocPanel ? "▲" : "▼"}</Text>
+                </View>
               </Pressable>
               {showAssocPanel && (
                 <View style={s.collapseBody}>
@@ -1048,7 +1054,11 @@ const s = StyleSheet.create({
                       backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
                       shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   collapseTitle:    { fontSize: 13, fontWeight: "700", color: "#f1f5f9" },
-  collapseChev:     { fontSize: 12, color: "#aab6c6" },
+  collapseCta:      { minWidth: 78, minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 10, borderRadius: 9, backgroundColor: "#7fb3ff", borderWidth: 1, borderColor: "#7fb3ff" },
+  collapseCtaOpen:  { backgroundColor: "transparent" },
+  collapseCtaText:  { fontSize: 9, fontWeight: "900", color: "#1d2939", letterSpacing: 0.45 },
+  collapseCtaTextOpen:{ color: "#7fb3ff" },
+  collapseCtaArrow: { fontSize: 9, fontWeight: "900", color: "#1d2939" },
   collapseBody:     { backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
   refRow:           { gap: 2 },
   refNote:          { paddingLeft: 4 },

@@ -580,7 +580,10 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           {/* Info clínica (collapsible) */}
           <Pressable style={s.collapsible} onPress={() => setShowInfo((v) => !v)}>
             <Text style={s.collapseTitle}>{tr("ℹ️ Informações clínicas")}</Text>
-            <Text style={s.collapseChev}>{showInfo ? "▲" : "▼"}</Text>
+            <View style={[s.collapseCta, showInfo && s.collapseCtaOpen]}>
+              <Text style={[s.collapseCtaText, showInfo && s.collapseCtaTextOpen]}>{showInfo ? tr("FECHAR") : tr("ABRIR")}</Text>
+              <Text style={[s.collapseCtaArrow, showInfo && s.collapseCtaTextOpen]}>{showInfo ? "▲" : "▼"}</Text>
+            </View>
           </Pressable>
           {showInfo && (
             <View style={s.collapseBody}>
@@ -591,7 +594,10 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           {/* Referência (collapsible) */}
           <Pressable style={s.collapsible} onPress={() => setShowRef((v) => !v)}>
             <Text style={s.collapseTitle}>{tr("📚 Referência")}</Text>
-            <Text style={s.collapseChev}>{showRef ? "▲" : "▼"}</Text>
+            <View style={[s.collapseCta, showRef && s.collapseCtaOpen]}>
+              <Text style={[s.collapseCtaText, showRef && s.collapseCtaTextOpen]}>{showRef ? tr("FECHAR") : tr("ABRIR")}</Text>
+              <Text style={[s.collapseCtaArrow, showRef && s.collapseCtaTextOpen]}>{showRef ? "▲" : "▼"}</Text>
+            </View>
           </Pressable>
           {showRef && (
             <View style={s.collapseBody}>
@@ -733,7 +739,11 @@ const s = StyleSheet.create({
 
   collapsible: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, borderWidth: 1, borderColor: "#565e6c" },
   collapseTitle: { fontSize: 13, fontWeight: "700", color: "#f1f5f9" },
-  collapseChev: { fontSize: 12, color: "#aab6c6" },
+  collapseCta: { minWidth: 78, minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 10, borderRadius: 9, backgroundColor: "#818cf8", borderWidth: 1, borderColor: "#818cf8" },
+  collapseCtaOpen: { backgroundColor: "transparent" },
+  collapseCtaText: { fontSize: 9, fontWeight: "900", color: "#ffffff", letterSpacing: 0.45 },
+  collapseCtaTextOpen: { color: "#c7d2fe" },
+  collapseCtaArrow: { fontSize: 9, fontWeight: "900", color: "#ffffff" },
   collapseBody: { backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, gap: 6, marginTop: -6, borderWidth: 1, borderColor: "#565e6c" },
   refLine: { fontSize: 12.5, color: "#aab6c6", lineHeight: 19 },
 
