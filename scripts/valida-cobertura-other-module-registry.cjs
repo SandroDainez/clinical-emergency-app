@@ -40,9 +40,14 @@ function countOtherModuleEdges(texto) {
 }
 
 for (const entrada of fs.readdirSync(raiz, { withFileTypes: true })) {
-  if (!entrada.isFile() || !/-decision-tree\.ts$/.test(entrada.name)) continue;
+  // As árvores clínicas não seguem um único sufixo: a maioria é
+  // *-decision-tree.ts, mas ACLS usa acls-tachycardia-tree.ts e
+  // acls-bradycardia-tree.ts. O filtro correto é estrutural, não pelo nome.
+  if (!entrada.isFile() || !/-tree\.ts$/.test(entrada.name)) continue;
 
   const texto = fs.readFileSync(path.join(raiz, entrada.name), "utf8");
+  if (!/DecisionTreeDefinition/.test(texto)) continue;
+
   const quantidade = countOtherModuleEdges(texto);
   if (!quantidade) continue;
 
