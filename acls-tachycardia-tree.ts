@@ -184,6 +184,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
     unstable_cardioversion: {
       id: "unstable_cardioversion",
       type: "action",
+      clinicalActionId: "cardioversao_sincronizada",
       title: "Cardioversão sincronizada IMEDIATA",
       summary: "Taquicardia instável com pulso → restaurar o ritmo sem demora.",
       actions: [

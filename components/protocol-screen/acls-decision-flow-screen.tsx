@@ -37,7 +37,8 @@ import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente
 import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, ClinicalShellHost, GuidedDiscoveryCard, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
+import { Card, ClinicalShellHost, GuidedDiscoveryCard, InstrucaoResumida, NumericStepper, SafetyGate, Tag } from "../ui-v2";
+import { evaluateClinicalActionAttemptFromPatientState } from "../../lib/clinical-action-gate-patient-state";
 import { guidedDiscoveryViewModel } from "../../lib/guided-discovery-adapter";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -768,6 +769,19 @@ function ActionStep({
 }) {
   const tr = useTr();
   const v = useEstilosDoTema(criarEstilosV2);
+  const [dismissedAdvisoryId, setDismissedAdvisoryId] = useState<string | undefined>(undefined);
+  useEffect(() => setDismissedAdvisoryId(undefined), [step.id]);
+  const actionGate =
+    step.clinicalActionId && protocolId
+      ? evaluateClinicalActionAttemptFromPatientState({
+          protocolId,
+          nodeId: step.id,
+          actionId: step.clinicalActionId,
+        })
+      : undefined;
+  const advisory = actionGate?.decision.advisories.find(
+    (item) => item.policy.id !== dismissedAdvisoryId
+  );
   const discovery =
     step.guidedDiscoveryOrigin && protocolId
       ? guidedDiscoveryViewModel(protocolId, step.guidedDiscoveryOrigin)
@@ -796,6 +810,15 @@ function ActionStep({
   if (emV2) {
     return (
       <View style={styles.stepStack}>
+        {advisory ? (
+          <SafetyGate
+            title={tr(advisory.policy.title)}
+            message={tr(advisory.policy.message)}
+            primaryLabel={tr("Entendido — manter cardioversão sem atraso")}
+            onPrimary={() => setDismissedAdvisoryId(advisory.policy.id)}
+            severity="warning"
+          />
+        ) : null}
         <Card tom="critical" style={v.cartao}>
           <Tag label={tr("Conduta — fazer agora")} />
           <Text style={v.titulo}>{tr(step.title)}</Text>

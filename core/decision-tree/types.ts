@@ -279,6 +279,8 @@ export type ActionNode = BaseNode & {
   type: "action";
   /** Decisão de origem quando este nó materializa uma descoberta guiada canônica. */
   guidedDiscoveryOrigin?: string;
+  /** Ação clínica canônica tentada/executada neste nó; usada por Safety Gates. */
+  clinicalActionId?: string;
   actions: string[];
   /**
    * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
@@ -473,6 +475,8 @@ export type FrontendTreeStep =
       summary?: string;
       /** Decisão para a qual a descoberta guiada deve retornar. */
       guidedDiscoveryOrigin?: string;
+      /** Ação clínica canônica declarada pelo nó. */
+      clinicalActionId?: string;
       actions: string[];
       /** O porquê, recolhido. Ver `ActionNode.porque`. */
       porque: string[];
