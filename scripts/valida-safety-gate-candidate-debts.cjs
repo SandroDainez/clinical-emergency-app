@@ -35,16 +35,13 @@ function blockFor(id) {
   return debts.slice(start, next === -1 ? debts.length : next);
 }
 
-for (const id of [
-  "tox-flumazenil-high-risk-context",
-  "tox-toxic-alcohol-decontamination",
-  "tep-high-risk-deep-sedation-ventilation",
-]) {
+for (const id of debtIds) {
   const block = blockFor(id);
   expect(block.includes("evidenceReview:"), `${id}: revisão de evidência concluída precisa ficar registrada`);
   expect(block.includes('reviewedAt: "2026-09-02"'), `${id}: data de revisão ausente`);
   expect(!block.includes('"needs_evidence_review"'), `${id}: não pode continuar marcado como evidence review pendente`);
 }
+
 expect(blockFor("tox-flumazenil-high-risk-context").includes('candidateLevel: "needs_level_review"'), "flumazenil: nível deve permanecer pendente até separar subcenários de risco");
 expect(blockFor("tep-high-risk-deep-sedation-ventilation").includes('candidateLevel: "soft_stop"'), "TEP sedação/VM: evidência revisada deve resolver o candidato para soft_stop contextual");
 expect(blockFor("tep-high-risk-deep-sedation-ventilation").includes('"needs_fact_model"') && blockFor("tep-high-risk-deep-sedation-ventilation").includes('"needs_action_surface"'), "TEP sedação/VM: fatos e superfície ainda precisam permanecer pendentes");
@@ -58,11 +55,12 @@ expect(!toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóx
 expect(toxicAlcoholBlock.includes("summary de tox_alcool_toxico separa carvão ativado"), "álcool tóxico: debt registry não descreve o conteúdo já revisado");
 
 const thrombolysisPainBlock = blockFor("tep-thrombolysis-for-isolated-ischemic-pain");
-expect(thrombolysisPainBlock.includes('"needs_evidence_review"'), "TEP trombólise por dor isolada: revisão de evidência ainda deve permanecer pendente");
-expect(!thrombolysisPainBlock.includes("evidenceReview:"), "TEP trombólise por dor isolada: não pode parecer revisado sem evidência registrada");
+expect(thrombolysisPainBlock.includes('candidateLevel: "hard_stop"'), "TEP trombólise por dor isolada: candidato deve permanecer hard_stop apenas no estado estreito revisado");
+expect(thrombolysisPainBlock.includes('"needs_fact_model"') && thrombolysisPainBlock.includes('"needs_action_surface"'), "TEP trombólise por dor isolada: fatos e superfície ainda precisam permanecer pendentes");
+expect(thrombolysisPainBlock.includes("A–C1") || thrombolysisPainBlock.includes("A–C2") || thrombolysisPainBlock.includes("A–C1 (Classe 3"), "TEP trombólise: revisão deve preservar a fronteira de dano nas categorias baixas/intermediárias");
 
 if (issues.length) {
   for (const issue of issues) console.error(`❌ ${issue}`);
   process.exit(1);
 }
-console.log("✅ SafetyGate candidate debts: 3 evidências revisadas + 1 pendente; nenhum candidato promovido ao registry ativo.");
+console.log("✅ SafetyGate candidate debts: 4/4 evidências revisadas; nenhum candidato promovido ao registry ativo.");
