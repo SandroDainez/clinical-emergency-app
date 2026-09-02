@@ -5,7 +5,7 @@ import type { ClinicalTransitionContract } from "./clinical-transitions";
  *
  * `module` descreve passagens navegáveis entre protocolos do app.
  * `external_service` descreve handoff definitivo para recurso assistencial que
- * não é um módulo, como centro cirúrgico/angioembolização.
+ * não é um módulo, como centro cirúrgico, angioembolização ou neurocirurgia.
  */
 export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[] = [
   {
@@ -107,5 +107,15 @@ export const CLINICAL_TRANSITION_CONTRACTS: readonly ClinicalTransitionContract[
     destinationKind: "external_service",
     externalLabel: "Centro cirúrgico / angioembolização para controle definitivo da hemorragia",
     preserves: ["horario_txa", "hemocomponentes", "resposta_reanimacao", "suspeita_fonte_hemorragica"],
+  },
+  {
+    id: "tce-neurocirurgia",
+    from: "tce",
+    to: "neurocirurgia",
+    trigger: "Lesão intracraniana com efeito de massa, desvio de linha média ou indicação cirúrgica",
+    mode: "terminal",
+    destinationKind: "external_service",
+    externalLabel: "Neurocirurgia imediata / centro neurocirúrgico",
+    preserves: ["glasgow", "pupilas", "resultado_tc", "anticoagulacao", "pressao_arterial", "oxigenacao"],
   },
 ] as const;
