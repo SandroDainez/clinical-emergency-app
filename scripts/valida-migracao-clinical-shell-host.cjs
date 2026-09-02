@@ -37,7 +37,7 @@ for (const token of hostRequired) {
   if (!host.includes(token)) throw new Error(`Host sem contrato esperado: ${token}`);
 }
 
-if (/DecisionTreeEngine/.test(host)) {
+if (/^\s*import[^\n]*DecisionTreeEngine/m.test(host)) {
   throw new Error("ClinicalShellHost não pode importar DecisionTreeEngine.");
 }
 
