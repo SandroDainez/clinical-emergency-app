@@ -9,11 +9,29 @@ const registry = fs.readFileSync(registryPath, "utf8");
 const esperadoPorArvore = new Map();
 const arquivosPorId = new Map();
 
+function countOtherModuleEdges(texto) {
+  const starts = [...texto.matchAll(/^    ([A-Za-z0-9_]+):\s*\{/gm)];
+  let edges = 0;
+
+  for (let i = 0; i < starts.length; i += 1) {
+    const start = starts[i].index;
+    const end = i + 1 < starts.length ? starts[i + 1].index : texto.length;
+    const node = texto.slice(start, end);
+    if (!/disposition\s*:\s*["']other_module["']/.test(node)) continue;
+
+    const moduleTargets = [...node.matchAll(/\bmoduleId\s*:\s*["'][^"']+["']/g)].length;
+    // Handoff externo terminal pode não ter moduleId porque não existe módulo no app.
+    edges += moduleTargets > 0 ? moduleTargets : 1;
+  }
+
+  return edges;
+}
+
 for (const entrada of fs.readdirSync(raiz, { withFileTypes: true })) {
   if (!entrada.isFile() || !/-decision-tree\.ts$/.test(entrada.name)) continue;
 
   const texto = fs.readFileSync(path.join(raiz, entrada.name), "utf8");
-  const quantidade = [...texto.matchAll(/disposition\s*:\s*["']other_module["']/g)].length;
+  const quantidade = countOtherModuleEdges(texto);
   if (!quantidade) continue;
 
   const inicioArvore = texto.match(/export\s+const\s+\w+\s*:\s*DecisionTreeDefinition\s*=\s*\{[\s\S]{0,1200}?\bid\s*:\s*["']([^"']+)["']/);
@@ -42,13 +60,13 @@ for (const [id, esperado] of esperadoPorArvore) {
   totalArvores += esperado;
   totalRegistry += registrado;
   if (registrado !== esperado) {
-    falhas.push(`${arquivosPorId.get(id)} (${id}): árvore=${esperado} other_module, registry=${registrado}`);
+    falhas.push(`${arquivosPorId.get(id)} (${id}): árvore=${esperado} aresta(s) other_module, registry=${registrado}`);
   }
 }
 
 for (const [origem, quantidade] of contratosPorOrigem) {
   if (!esperadoPorArvore.has(origem)) {
-    falhas.push(`registry possui ${quantidade} contrato(s) com from=${origem}, mas nenhuma árvore raiz com disposition=other_module foi encontrada`);
+    falhas.push(`registry possui ${quantidade} contrato(s) com from=${origem}, mas nenhuma aresta other_module foi encontrada na árvore raiz`);
   }
 }
 
@@ -63,7 +81,7 @@ if (totalArvores !== totalRegistry) {
   process.exit(1);
 }
 
-console.log(`\n✅ Cobertura completa dos handoffs explícitos: ${totalArvores} disposition=other_module nas árvores e ${totalRegistry} contratos correspondentes no registry.`);
+console.log(`\n✅ Cobertura completa dos handoffs explícitos: ${totalArvores} arestas other_module nas árvores e ${totalRegistry} contratos correspondentes no registry.`);
 for (const [id, quantidade] of [...esperadoPorArvore.entries()].sort()) {
   console.log(`   - ${id}: ${quantidade}`);
 }
