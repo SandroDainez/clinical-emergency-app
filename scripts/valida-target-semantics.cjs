@@ -22,6 +22,9 @@ const casos = [
   ["seizure-decision-tree.ts", "mal_epileptico", "uti", "isr-rapida", "adjunctive_module"],
   ["seizure-decision-tree.ts", "mal_epileptico", "uti", "sedoanalgesia", "adjunctive_module"],
   ["seizure-decision-tree.ts", "mal_epileptico", "uti", "ventilacao-mecanica", "adjunctive_module"],
+  ["tce-decision-tree.ts", "tce", "uti", "ventilacao-mecanica", "adjunctive_module"],
+  ["tce-decision-tree.ts", "tce", "uti", "sedoanalgesia", "adjunctive_module"],
+  ["tce-decision-tree.ts", "tce", "uti", "drogas-vasoativas", "adjunctive_module"],
 ];
 
 function trechoNo(texto, nodeId) {
