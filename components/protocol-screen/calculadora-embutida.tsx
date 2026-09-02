@@ -46,7 +46,10 @@ export default function CalculadoraEmbutida({
   valorAtual?: string;
 }) {
   const tr = useTr();
-  const [aberta, setAberta] = useState(false);
+  // NIHSS é parte do exame neurológico agudo e não deve parecer um recurso
+  // opcional escondido. Ele abre por padrão; os demais escores continuam
+  // recolhidos para não poluir outros fluxos.
+  const [aberta, setAberta] = useState(calculadoraId === "nihss");
   const [respostas, setRespostas] = useState<Record<string, number>>({});
 
   const escore = useMemo(() => {
@@ -62,7 +65,7 @@ export default function CalculadoraEmbutida({
   const leitura = completa ? escore.interpret(total) : undefined;
 
   return (
-    <View style={s.bloco}>
+    <View style={s.bloco} testID={`calculadora-${escore.id}`}>
       <Pressable
         onPress={() => setAberta((v) => !v)}
         accessibilityRole="button"
@@ -102,10 +105,6 @@ export default function CalculadoraEmbutida({
                       onPress={() => {
                         const novas = { ...respostas, [v.id]: o.points };
                         setRespostas(novas);
-                        // Só lança no campo quando TODOS os itens tiverem
-                        // resposta. Lançar parcial escreveria um escore falso —
-                        // "4" de um NIHSS pela metade é um AVC leve que não
-                        // existe, e o fluxo decidiria com base nele.
                         const faltando = escore.vars.some((x) => novas[x.id] === undefined);
                         if (!faltando) {
                           onTotal(escore.vars.reduce((sm, x) => sm + (novas[x.id] ?? 0), 0));
