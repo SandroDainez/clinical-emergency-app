@@ -128,16 +128,16 @@ export const PILOT_MODULE_TERMINAL_CLASSIFICATION: readonly ClinicalModuleTermin
     mode: "care_pathway",
     requiresClinicalDisposition: true,
     requiresReturnToOrigin: false,
-    rationale: "Injúria renal aguda conduz avaliação etiológica, complicações, tratamento e precisa terminar em alta/observação/internação conforme gravidade e necessidade de terapia renal substitutiva.",
+    rationale: "Injúria renal aguda conduz avaliação etiológica, complicações, tratamento e termina em monitorização ou suporte avançado conforme gravidade.",
     reviewedAt: "2026-09-02",
   },
   {
     protocolId: "isr_rsi_adulto",
-    mode: "procedural_subflow",
-    requiresClinicalDisposition: false,
+    mode: "embedded_care_pathway",
+    requiresClinicalDisposition: true,
     requiresReturnToOrigin: true,
     rationale:
-      "ISR é intervenção procedural acionada por outro atendimento; após intubação/estabilização deve devolver o controle ao protocolo que a originou, não escolher alta ou UTI por conta própria.",
+      "ISR pode ser aberta diretamente e terminar em observação monitorizada ou UTI pós-intubação; quando chamada por outro protocolo, deve preservar o contexto e devolver o controle após estabilizar a via aérea.",
     reviewedAt: "2026-09-02",
   },
 ] as const;
