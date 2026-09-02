@@ -18,9 +18,11 @@ const include = [
   "clinical-safety-cases/gate-action-triggers.ts",
   "clinical-safety-cases/gate-context-observations.ts",
   "clinical-safety-cases/decision-observation-bindings.ts",
+  "clinical-safety-cases/gate-promotion-governance.ts",
   "lib/clinical-action-gate.ts",
   "lib/clinical-decision-observation-bindings.ts",
   "lib/clinical-gate-context-adapter.ts",
+  "lib/clinical-gate-governance.ts",
   "lib/clinical-gate-policy.ts",
   "lib/clinical-gate-registry.ts",
   "lib/clinical-gate-trigger.ts",
@@ -58,9 +60,11 @@ try {
   const triggerCompiled = path.join(outDir, "clinical-safety-cases", "gate-action-triggers.js");
   const contextCompiled = path.join(outDir, "clinical-safety-cases", "gate-context-observations.js");
   const bindingCompiled = path.join(outDir, "clinical-safety-cases", "decision-observation-bindings.js");
+  const governanceCompiled = path.join(outDir, "clinical-safety-cases", "gate-promotion-governance.js");
   const { runExecutableClinicalGateTriggerCases } = require(triggerCompiled);
   const { runExecutableClinicalGateContextCases } = require(contextCompiled);
   const { runExecutableDecisionObservationBindingCases } = require(bindingCompiled);
+  const { runExecutableGatePromotionGovernanceCases } = require(governanceCompiled);
   if (typeof runExecutableClinicalGateTriggerCases !== "function") {
     throw new Error("runner compilado não exporta runExecutableClinicalGateTriggerCases");
   }
@@ -70,11 +74,15 @@ try {
   if (typeof runExecutableDecisionObservationBindingCases !== "function") {
     throw new Error("runner compilado não exporta runExecutableDecisionObservationBindingCases");
   }
+  if (typeof runExecutableGatePromotionGovernanceCases !== "function") {
+    throw new Error("runner compilado não exporta runExecutableGatePromotionGovernanceCases");
+  }
 
   const issues = [
     ...runExecutableClinicalGateTriggerCases(),
     ...runExecutableClinicalGateContextCases(),
     ...runExecutableDecisionObservationBindingCases(),
+    ...runExecutableGatePromotionGovernanceCases(),
   ];
   if (issues.length) {
     console.error("\n❌ casos executáveis de safety gate falharam\n");
@@ -82,7 +90,7 @@ try {
     process.exit(1);
   }
 
-  console.log("\n✅ safety gates passaram: ação, autorização/override, contexto temporal e decisão→observação sem inferência implícita.\n");
+  console.log("\n✅ safety gates passaram: ação, autorização/override, contexto temporal, decisão→observação e governança de promoção sem inferência implícita.\n");
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
