@@ -1,3 +1,4 @@
+import { decisionObservationFor } from "./clinical-decision-observation-bindings";
 import { appendClinicalEvent } from "./clinical-event-log";
 import { recordClinicalObservation } from "./clinical-observations";
 
@@ -34,6 +35,21 @@ export function recordFlowDecision(input: {
       optionId: input.optionId,
     },
   });
+
+  const boundObservation = decisionObservationFor({
+    protocolId: input.module,
+    nodeId: input.nodeId,
+    optionId: input.optionId,
+  });
+  if (boundObservation) {
+    recordFlowObservation({
+      module: input.module,
+      fieldId: boundObservation.id,
+      value: boundObservation.value,
+      unit: boundObservation.unit,
+      now,
+    });
+  }
 }
 
 export function recordFlowAdvance(input: {
