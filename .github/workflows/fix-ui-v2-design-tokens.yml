@@ -1,0 +1,110 @@
+name: Repair UI v2 design tokens
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - '.github/workflows/fix-ui-v2-design-tokens.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Replace invalid visual tokens only
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const replacements = new Map([
+            ['components/protocol-screen/clinical-action-step-card.tsx', [
+              ['t.cores.danger', 't.cores.critical'],
+              ['t.cores.onDanger', 't.cores.onCritical'],
+            ]],
+            ['components/protocol-screen/clinical-transition-step-card.tsx', [
+              ['RAIO.pill', 'RAIO.badge'],
+            ]],
+            ['components/ui-v2/card.tsx', [
+              ['RAIO.pill', 'RAIO.badge'],
+            ]],
+            ['components/ui-v2/crisis-action-bar.tsx', [
+              ['RAIO.pill', 'RAIO.badge'],
+            ]],
+            ['components/ui-v2/reassessment-card.tsx', [
+              ['RAIO.pill', 'RAIO.badge'],
+            ]],
+          ]);
+
+          for (const [file, pairs] of replacements) {
+            let src = fs.readFileSync(file, 'utf8');
+            for (const [from, to] of pairs) {
+              const count = src.split(from).length - 1;
+              if (count < 1) throw new Error(`${file}: token esperado não encontrado: ${from}`);
+              src = src.split(from).join(to);
+            }
+            fs.writeFileSync(file, src);
+          }
+
+          const forbidden = ['RAIO.pill', 't.cores.danger', 't.cores.onDanger'];
+          for (const file of replacements.keys()) {
+            const src = fs.readFileSync(file, 'utf8');
+            for (const token of forbidden) {
+              if (src.includes(token)) throw new Error(`${file}: token inválido restante: ${token}`);
+            }
+          }
+          console.log('OK: invalid UI tokens replaced with canonical design-system tokens.');
+          NODE
+
+      - name: TypeScript compile gate
+        run: npx tsc --noEmit --pretty false
+
+      - name: Clinical step parity
+        run: node scripts/valida-paridade-clinical-steps.cjs
+
+      - name: Build web
+        run: npm run build:web
+
+      - name: Validate scope
+        shell: bash
+        run: |
+          git diff --check
+          expected=$(cat <<'EOF'
+          components/protocol-screen/clinical-action-step-card.tsx
+          components/protocol-screen/clinical-transition-step-card.tsx
+          components/ui-v2/card.tsx
+          components/ui-v2/crisis-action-bar.tsx
+          components/ui-v2/reassessment-card.tsx
+          EOF
+          )
+          actual="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' "$expected" | sed 's/^ *//' | sort)"
+          echo "Changed files:"
+          echo "$actual"
+          test "$actual" = "$expected"
+
+      - name: Commit token repair
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            components/protocol-screen/clinical-action-step-card.tsx \
+            components/protocol-screen/clinical-transition-step-card.tsx \
+            components/ui-v2/card.tsx \
+            components/ui-v2/crisis-action-bar.tsx \
+            components/ui-v2/reassessment-card.tsx
+          git commit -m "fix(ui-v2): use canonical design-system tokens"
+          git push origin HEAD:emergencias-2-ui-core
