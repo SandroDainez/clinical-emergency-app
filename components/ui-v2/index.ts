@@ -43,6 +43,11 @@ export {
   type DecisionPromptProps,
 } from "./decision-prompt";
 export { FloatingButton, type FloatingButtonProps } from "./floating-button";
+export {
+  GuidedDiscoveryCard,
+  type GuidedDiscoveryCardProps,
+  type GuidedDiscoveryVisualStep,
+} from "./guided-discovery-card";
 export { Header, type HeaderProps } from "./header";
 export { Input, type InputProps } from "./input";
 export { Modal, type ModalProps } from "./modal";
