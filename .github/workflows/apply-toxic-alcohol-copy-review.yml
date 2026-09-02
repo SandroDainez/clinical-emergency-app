@@ -1,0 +1,68 @@
+name: Apply toxic alcohol evidence-reviewed copy
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths: [".github/workflows/apply-toxic-alcohol-copy-review.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript compile before migration
+        run: npx tsc --noEmit --pretty false
+      - name: Safety regressions before migration
+        run: |
+          node scripts/test-clinical-gate-triggers.cjs
+          node scripts/valida-safety-gate-candidate-debts.cjs
+          node scripts/valida-safety-gate-interaction-surfaces.cjs
+      - name: Apply exact-context migration
+        run: node scripts/migra-toxic-alcohol-decontamination-copy.cjs
+      - name: Validate reviewed toxic alcohol copy
+        run: |
+          node scripts/valida-toxic-alcohol-decontamination-copy.cjs
+          node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: TypeScript compile after migration
+        run: npx tsc --noEmit --pretty false
+      - name: Clinical regressions after migration
+        run: |
+          node scripts/test-clinical-gate-triggers.cjs
+          node scripts/valida-guided-discovery-hic-stemi.cjs
+          node scripts/valida-safety-gate-advisory-taquicardia.cjs
+          node scripts/valida-safety-gate-hard-stop-avc.cjs
+          node scripts/valida-safety-gate-soft-stop-stemi.cjs
+          node scripts/test-clinical-handoffs-emergencias-2.cjs
+      - name: Guard migration allowlist
+        shell: bash
+        run: |
+          mapfile -t changed < <(git diff --name-only | sort)
+          expected=(
+            "clinical-safety-cases/gate-candidate-debts.ts"
+            "poisoning-decision-tree.ts"
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          [[ "$(printf '%s\n' "${changed[@]}")" == "$(printf '%s\n' "${expected_sorted[@]}")" ]] || { printf '%s\n' "${changed[@]}"; exit 1; }
+      - name: Commit guarded migration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add clinical-safety-cases/gate-candidate-debts.ts poisoning-decision-tree.ts
+          git commit -m "fix: align toxic alcohol decontamination copy with evidence"
+          git push origin HEAD:emergencias-2-ui-core
