@@ -1,10 +1,8 @@
-import type { ClinicalReassessmentKind } from "./clinical-reassessment-policy";
-
 export type ClinicalReassessmentBinding = {
   moduleId: string;
   therapyNodeId: string;
   reassessmentNodeId: string;
-  kind: ClinicalReassessmentKind;
+  therapyId: string;
   label: string;
 };
 
@@ -19,21 +17,21 @@ export const CLINICAL_REASSESSMENT_BINDINGS: readonly ClinicalReassessmentBindin
     moduleId: "anafilaxia",
     therapyNodeId: "immediate_im_epinephrine",
     reassessmentNodeId: "severity_stratification",
-    kind: "epinephrine_anaphylaxis",
+    therapyId: "epinephrine_anaphylaxis",
     label: "Reavaliar resposta após adrenalina IM",
   },
   {
     moduleId: "isr",
     therapyNodeId: "intubacao",
     reassessmentNodeId: "confirmacao",
-    kind: "intubation",
+    therapyId: "intubation",
     label: "Confirmar posição traqueal após passagem do tubo",
   },
   {
     moduleId: "avc",
     therapyNodeId: "trombolise",
     reassessmentNodeId: "isq_trombectomia_check",
-    kind: "thrombolysis",
+    therapyId: "fibrinolysis",
     label: "Reavaliar estratégia de reperfusão após trombólise",
   },
 ] as const;
