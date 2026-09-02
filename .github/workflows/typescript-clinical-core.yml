@@ -44,6 +44,9 @@ jobs:
       - name: Run action-centered safety gate regressions
         run: node scripts/test-clinical-gate-triggers.cjs
 
+      - name: Validate decision observation bindings
+        run: node scripts/valida-decision-observation-bindings.cjs
+
       - name: Validate runtime bridge instrumentation
         run: |
           node scripts/valida-clinical-runtime-bridge.cjs
