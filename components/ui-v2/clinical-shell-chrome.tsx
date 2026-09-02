@@ -54,9 +54,13 @@ export function ClinicalShellChrome({
       <Header titulo={protocol} etapa={stepLabel} onVoltar={onBack} />
       {returnContext ? (
         <View style={e.returnBanner} accessibilityRole="summary">
-          <Text style={e.returnEyebrow}>ATENDIMENTO INTERROMPIDO</Text>
+          <View style={e.returnTopRow}>
+            <Text style={e.returnEyebrow}>INTERCORRÊNCIA EM TRATAMENTO</Text>
+            <Text style={e.returnStatus}>CONTEXTO PRESERVADO</Text>
+          </View>
+          <Text style={e.returnTitle}>Este módulo faz parte do atendimento em andamento.</Text>
           <Text style={e.returnText} numberOfLines={2}>
-            Após estabilizar aqui, retomar: {returnContext}
+            Após estabilizar esta intercorrência, retomar: {returnContext}
           </Text>
         </View>
       ) : null}
@@ -108,20 +112,40 @@ const criarEstilos = (t: Tema) =>
       paddingVertical: ESPACO.sm,
       borderRadius: RAIO.input,
       borderWidth: 1,
+      borderLeftWidth: 4,
       borderColor: t.cores.primary,
       backgroundColor: t.cores.surface,
-      gap: 2,
+      gap: 4,
+    },
+    returnTopRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
     },
     returnEyebrow: {
       ...TIPOGRAFIA.micro,
       color: t.cores.primary,
       fontWeight: "900",
       letterSpacing: 0.5,
+      flex: 1,
     },
-    returnText: {
+    returnStatus: {
+      fontSize: 9,
+      lineHeight: 11,
+      color: t.cores.success,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+    },
+    returnTitle: {
       ...TIPOGRAFIA.caption,
       color: t.cores.text,
-      fontWeight: "700",
+      fontWeight: "800",
+    },
+    returnText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "600",
     },
     reassessmentBanner: {
       marginHorizontal: ESPACO.md,
