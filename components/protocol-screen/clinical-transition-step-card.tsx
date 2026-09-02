@@ -178,7 +178,7 @@ const criarEstilos = (t: Tema) =>
       alignItems: "center",
       justifyContent: "center",
       gap: 5,
-      borderRadius: RAIO.pill,
+      borderRadius: RAIO.badge,
       borderWidth: 1,
       borderColor: t.cores.primary,
       paddingHorizontal: ESPACO.sm,

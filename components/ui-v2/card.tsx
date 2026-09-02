@@ -134,7 +134,7 @@ const criarEstilos = (t: Tema) => {
         alignItems: "center",
         justifyContent: "center",
         gap: ESPACO.xs,
-        borderRadius: RAIO.pill,
+        borderRadius: RAIO.badge,
         backgroundColor: cores.primary,
         paddingHorizontal: ESPACO.sm,
         paddingVertical: 4,

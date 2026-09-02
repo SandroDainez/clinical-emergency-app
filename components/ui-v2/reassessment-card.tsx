@@ -109,7 +109,7 @@ const criarEstilos = (t: Tema) =>
     },
     title: { ...TIPOGRAFIA.step, color: t.cores.text, fontWeight: "800", flex: 1 },
     whenPill: {
-      borderRadius: RAIO.pill,
+      borderRadius: RAIO.badge,
       borderWidth: 1,
       borderColor: t.cores.primary,
       backgroundColor: t.cores.bg,

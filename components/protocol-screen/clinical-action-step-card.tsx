@@ -104,7 +104,7 @@ const criarEstilos = (t: Tema) =>
     },
     executionEyebrow: {
       ...TIPOGRAFIA.micro,
-      color: t.cores.danger,
+      color: t.cores.critical,
       fontWeight: "900",
       letterSpacing: 0.7,
     },
@@ -120,12 +120,12 @@ const criarEstilos = (t: Tema) =>
       borderRadius: 14,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: t.cores.danger,
+      backgroundColor: t.cores.critical,
       flexShrink: 0,
     },
     numberText: {
       ...TIPOGRAFIA.micro,
-      color: t.cores.onDanger,
+      color: t.cores.onCritical,
       fontWeight: "900",
     },
     itemText: {
