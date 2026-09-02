@@ -19,8 +19,9 @@ export type ClinicalShellHostProps = {
  *
  * Mantém toda a composição fora do `acls-decision-flow-screen.tsx`: o shell
  * hospedeiro passa somente identidade, etapa e callbacks de navegação. O host
- * lê observações/interrupções pelo adapter, cria portas de crise pela fonte
- * canônica e instrumenta a passagem antes de delegar ao router existente.
+ * lê observações/interrupções/reavaliações pelo adapter, cria portas de crise
+ * pela fonte canônica e instrumenta a passagem antes de delegar ao router
+ * existente.
  *
  * Não conhece DecisionTreeEngine e não altera fluxo clínico.
  */
@@ -58,6 +59,7 @@ export function ClinicalShellHost({
       elapsed={elapsed}
       metrics={snapshot.metrics}
       returnContext={snapshot.returnContext}
+      reassessmentAlert={snapshot.reassessmentAlert}
       onBack={onBack}
       crisisActions={crisisActions}
     />
