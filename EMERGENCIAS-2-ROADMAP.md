@@ -86,9 +86,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Runtime de override exige motivo não vazio e registra evento auditável.
 - [x] Política de reavaliação definida para fibrinólise, cardioversão, intubação, vasopressor e adrenalina na anafilaxia.
 - [x] Ledger de reavaliações pendentes criado; terapia crítica pode abrir obrigação explícita até a reavaliação ser concluída.
+- [x] Bindings reais terapia → reavaliação criados para Anafilaxia, ISR e AVC.
+- [x] Runtime observa visita aos nós e abre/fecha a obrigação sem alterar a DecisionTreeEngine.
+- [x] Adjacência terapia → reavaliação protegida por trava estrutural nos três pilotos.
 - [ ] Classificar os achados reais do inventário em `unknown_required` / `binary_observable` / `guided_elsewhere`.
 - [ ] Diferenciar hard stop de soft stop por tipo de risco.
-- [ ] Ligar o ledger de reavaliação aos nós reais de terapias críticas.
+- [ ] Expandir bindings para cardioversão e vasopressor.
 - [ ] Garantir destino alcançável em todos os módulos.
 
 ## Bloco F — Drug Knowledge Base
@@ -128,8 +131,10 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural do registry único de medicamentos criada.
 - [x] Travas de evidência e isolamento de indicação criadas para TEP e SCA.
 - [x] Travas estruturais da política de incerteza, override e runtime de reavaliação criadas.
+- [x] Trava confirma que bindings de reavaliação apontam para nós reais nos pilotos.
+- [x] Trava confirma adjacência terapia crítica → reavaliação nos pilotos.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
-- [ ] Expandir trajetórias até reavaliação e destino.
+- [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.
 
