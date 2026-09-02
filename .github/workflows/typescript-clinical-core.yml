@@ -47,6 +47,9 @@ jobs:
       - name: Validate decision observation bindings
         run: node scripts/valida-decision-observation-bindings.cjs
 
+      - name: Validate tachycardia SafetyGate advisory
+        run: node scripts/valida-safety-gate-advisory-taquicardia.cjs
+
       - name: Validate runtime bridge instrumentation
         run: |
           node scripts/valida-clinical-runtime-bridge.cjs
