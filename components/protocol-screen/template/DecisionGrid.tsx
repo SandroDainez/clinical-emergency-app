@@ -165,8 +165,8 @@ const criarEstilos = (t: Tema) => ({
     pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
     dot: { width: 10, height: 10, borderRadius: 999, backgroundColor: t.cores.border },
     copy: { flex: 1, gap: 3 },
-    label: { ...TIPOGRAFIA.body, color: t.cores.text, fontWeight: "750" },
-    labelStrong: { fontWeight: "850" },
+    label: { ...TIPOGRAFIA.body, color: t.cores.text, fontWeight: "700" },
+    labelStrong: { fontWeight: "800" },
     sublabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "500" },
     chevron: {
       ...TIPOGRAFIA.body,
