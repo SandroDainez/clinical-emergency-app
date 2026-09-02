@@ -13,6 +13,8 @@ export type ClinicalGatePolicy = {
   overrideAllowed: boolean;
   /** O que precisa acontecer para o gate deixar de estar ativo. */
   resolution: string;
+  /** Nó seguro para o qual a UI pode retornar quando a política declara um. */
+  resolutionNodeId?: string;
   source?: {
     reference: string;
     version?: string;
@@ -32,6 +34,9 @@ export function validateClinicalGatePolicies(entries: readonly ClinicalGatePolic
     if (!entry.message.trim()) issues.push(`${entry.id}: mensagem ausente`);
     if (!entry.rationale.trim()) issues.push(`${entry.id}: justificativa ausente`);
     if (!entry.resolution.trim()) issues.push(`${entry.id}: resolução ausente`);
+    if (entry.resolutionNodeId !== undefined && !entry.resolutionNodeId.trim()) {
+      issues.push(`${entry.id}: resolutionNodeId vazio`);
+    }
     if (entry.level === "hard_stop" && entry.overrideAllowed) {
       issues.push(`${entry.id}: hard stop não pode permitir override`);
     }
