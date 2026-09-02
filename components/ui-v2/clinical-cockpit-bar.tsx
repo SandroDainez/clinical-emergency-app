@@ -6,6 +6,8 @@ import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 export type CockpitMetric = {
   label: string;
   value: string;
+  /** Idade do dado, ex.: "agora" ou "4 min". Dado volátil reutilizado nunca fica sem idade. */
+  age?: string;
   /** Quando verdadeiro, destaca o valor como atenção clínica sem transformá-lo em alerta crítico. */
   attention?: boolean;
 };
@@ -47,7 +49,10 @@ export function ClinicalCockpitBar({
         <View style={e.metricsRow}>
           {visibleMetrics.map((metric) => (
             <View key={`${metric.label}-${metric.value}`} style={e.metric}>
-              <Text style={e.metricLabel}>{metric.label}</Text>
+              <View style={e.metricTopRow}>
+                <Text style={e.metricLabel}>{metric.label}</Text>
+                {metric.age ? <Text style={e.metricAge}>há {metric.age}</Text> : null}
+              </View>
               <Text style={[e.metricValue, metric.attention && e.metricAttention]}>
                 {metric.value}
               </Text>
@@ -98,8 +103,16 @@ const criarEstilos = (t: Tema) =>
       borderColor: t.cores.border,
       paddingHorizontal: ESPACO.sm,
       paddingVertical: ESPACO.xs,
+      gap: 2,
+    },
+    metricTopRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: ESPACO.xs,
     },
     metricLabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary },
+    metricAge: { fontSize: 10, lineHeight: 13, color: t.cores.textSecondary, fontWeight: "600" },
     metricValue: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
     metricAttention: { color: t.cores.warning },
   });
