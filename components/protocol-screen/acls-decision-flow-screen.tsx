@@ -469,7 +469,7 @@ export default function AclsDecisionFlowScreen({
           phase={step.title ? tr(step.title) : undefined}
           step={stepCount}
           moduleSlug={currentModuleSlug}
-          onBack={() => router.back()}
+          onBack={() => (engine.canGoBack() ? handleBack() : router.back())}
           onPush={(href) => router.push(href)}
         />
       ) : null}
@@ -506,7 +506,11 @@ export default function AclsDecisionFlowScreen({
       ) : null}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {emV2 ? null : (
-          <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
+          <StepHeaderBar
+            protocolLabel={tr(protocolLabel)}
+            onBack={() => (engine.canGoBack() ? handleBack() : router.back())}
+            title={headerTitle ? tr(headerTitle) : undefined}
+          />
         )}
 
         {ofertaDeRetomada ? (
