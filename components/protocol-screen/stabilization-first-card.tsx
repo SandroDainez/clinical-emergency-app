@@ -146,7 +146,14 @@ export default function StabilizationFirstCard({
               </Text>
             )}
           </View>
-          <Text style={styles.chev}>{expanded ? "▲" : "▼"}</Text>
+          <View style={[styles.headerCta, expanded && styles.headerCtaAberto]}>
+            <Text style={[styles.headerCtaText, expanded && styles.headerCtaTextAberto]}>
+              {expanded ? tr("FECHAR") : tr("ABRIR")}
+            </Text>
+            <Text style={[styles.headerCtaArrow, expanded && styles.headerCtaTextAberto]}>
+              {expanded ? "▲" : "▼"}
+            </Text>
+          </View>
         </Pressable>
 
         {!expanded ? null : (
@@ -167,6 +174,7 @@ export default function StabilizationFirstCard({
                 onPress={() => onOpenModule(m.slug)}>
                 <Text style={styles.shortcutIcon}>{m.icon}</Text>
                 <Text style={styles.shortcutText}>{tr(m.label)}</Text>
+                <Text style={styles.shortcutArrow}>›</Text>
               </Pressable>
             ))}
           </View>
@@ -176,7 +184,7 @@ export default function StabilizationFirstCard({
             accessibilityLabel={tr("Ver o ABCDE completo")}
             onPress={() => setDetalheAberto(true)}
             style={({ pressed }) => [styles.verMais, pressed && { opacity: 0.7 }]}>
-            <Text style={styles.verMaisTexto}>{tr("Ver ABCDE completo")}</Text>
+            <Text style={styles.verMaisTexto}>{tr("VER ABCDE COMPLETO")} ›</Text>
           </Pressable>
         </View>
         )}
@@ -222,7 +230,14 @@ export default function StabilizationFirstCard({
             </Text>
           )}
         </View>
-        <Text style={styles.chev}>{expanded ? "▲" : "▼"}</Text>
+        <View style={[styles.headerCta, expanded && styles.headerCtaAberto]}>
+          <Text style={[styles.headerCtaText, expanded && styles.headerCtaTextAberto]}>
+            {expanded ? tr("FECHAR") : tr("ABRIR")}
+          </Text>
+          <Text style={[styles.headerCtaArrow, expanded && styles.headerCtaTextAberto]}>
+            {expanded ? "▲" : "▼"}
+          </Text>
+        </View>
       </Pressable>
 
       {expanded ? (
@@ -254,6 +269,7 @@ export default function StabilizationFirstCard({
                 onPress={() => onOpenModule(m.slug)}>
                 <Text style={styles.shortcutIcon}>{m.icon}</Text>
                 <Text style={styles.shortcutText}>{tr(m.label)}</Text>
+                <Text style={styles.shortcutArrow}>›</Text>
               </Pressable>
             ))}
           </View>
@@ -264,8 +280,36 @@ export default function StabilizationFirstCard({
 }
 
 const styles = StyleSheet.create({
-  verMais: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" },
-  verMaisTexto: { fontSize: 13, fontWeight: "800", color: "#7fb3ff" },
+  verMais: {
+    alignSelf: "flex-start",
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#7fb3ff",
+    backgroundColor: "rgba(127,179,255,0.12)",
+  },
+  verMaisTexto: { fontSize: 12, fontWeight: "900", color: "#7fb3ff", letterSpacing: 0.35 },
+  headerCta: {
+    minWidth: 78,
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: "#fecaca",
+    borderWidth: 1,
+    borderColor: "#fecaca",
+  },
+  headerCtaAberto: { backgroundColor: "transparent" },
+  headerCtaText: { fontSize: 10, fontWeight: "900", color: "#7f1d1d", letterSpacing: 0.5 },
+  headerCtaTextAberto: { color: "#fecaca" },
+  headerCtaArrow: { fontSize: 10, fontWeight: "900", color: "#7f1d1d" },
+  shortcutArrow: { fontSize: 18, lineHeight: 20, fontWeight: "900", color: "#dbeafe" },
   wrap: {
     borderRadius: 16,
     borderWidth: 1.5,
