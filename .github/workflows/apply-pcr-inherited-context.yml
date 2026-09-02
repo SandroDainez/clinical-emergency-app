@@ -1,0 +1,83 @@
+name: Apply PCR inherited context integration
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - ".github/workflows/apply-pcr-inherited-context.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate PCR handoff state and card foundation
+        run: |
+          node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
+          node scripts/valida-pcr-inherited-context-card.cjs
+          node scripts/test-clinical-handoffs-emergencias-2.cjs
+          node scripts/test-tree-to-handoff-emergencias-2.cjs
+
+      - name: Capture TypeScript baseline
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-before.txt 2>&1
+          echo $? > /tmp/tsc-before-status.txt
+          set -e
+
+      - name: Apply inherited context integration
+        run: node scripts/migra-pcr-inherited-context-card.cjs
+
+      - name: Validate integrated state
+        run: node scripts/valida-pcr-inherited-context-pos-migracao.cjs
+
+      - name: Enforce exact integration file allowlist
+        run: |
+          git diff --name-only | sort > /tmp/actual-files.txt
+          cat > /tmp/expected-files.txt <<'EOF'
+          components/protocol-screen.tsx
+          components/protocol-screen/acls-protocol-screen.tsx
+          EOF
+          diff -u /tmp/expected-files.txt /tmp/actual-files.txt
+
+      - name: Require unchanged TypeScript baseline
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-after.txt 2>&1
+          after_status=$?
+          set -e
+          before_status="$(cat /tmp/tsc-before-status.txt)"
+          if [ "$before_status" != "$after_status" ]; then
+            cat /tmp/tsc-after.txt
+            echo "TypeScript exit status changed across inherited-context integration."
+            exit 1
+          fi
+          diff -u /tmp/tsc-before.txt /tmp/tsc-after.txt
+
+      - name: Commit integration to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen.tsx components/protocol-screen/acls-protocol-screen.tsx
+          git commit -m "feat: show inherited context when PCR receives terminal handoff"
+          git push origin HEAD:emergencias-2-ui-core
