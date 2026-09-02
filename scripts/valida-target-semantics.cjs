@@ -17,6 +17,11 @@ const casos = [
   ["dyspnea-decision-tree.ts", "insuficiencia_respiratoria", "dx_dpoc", "ventilacao-mecanica", "adjunctive_module"],
   ["dyspnea-decision-tree.ts", "insuficiencia_respiratoria", "dx_eap", "edema-agudo-pulmao", "reference"],
   ["dyspnea-decision-tree.ts", "insuficiencia_respiratoria", "dx_sara", "ventilacao-mecanica", "adjunctive_module"],
+  ["seizure-decision-tree.ts", "mal_epileptico", "nao_convulsivo", "isr-rapida", "adjunctive_module"],
+  ["seizure-decision-tree.ts", "mal_epileptico", "nao_convulsivo", "pre-eclampsia", "reference"],
+  ["seizure-decision-tree.ts", "mal_epileptico", "uti", "isr-rapida", "adjunctive_module"],
+  ["seizure-decision-tree.ts", "mal_epileptico", "uti", "sedoanalgesia", "adjunctive_module"],
+  ["seizure-decision-tree.ts", "mal_epileptico", "uti", "ventilacao-mecanica", "adjunctive_module"],
 ];
 
 function trechoNo(texto, nodeId) {
