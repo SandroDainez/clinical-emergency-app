@@ -37,6 +37,15 @@ export { Modal, type ModalProps } from "./modal";
 export { NumericStepper, type NumericStepperProps } from "./numeric-stepper";
 export { Progress, type ProgressProps } from "./progress";
 export {
+  ReassessmentCard,
+  type ReassessmentCardProps,
+  type ReassessmentOutcome,
+} from "./reassessment-card";
+export {
+  SafetyGate,
+  type SafetyGateProps,
+} from "./safety-gate";
+export {
   InstrucaoResumida,
   ScreenTemplate,
   type ScreenTemplateProps,
