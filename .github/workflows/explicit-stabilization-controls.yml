@@ -1,0 +1,46 @@
+name: Explicit stabilization controls
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/explicita-controles-estabilizacao.cjs
+      - .github/workflows/explicit-stabilization-controls.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: node scripts/explicita-controles-estabilizacao.cjs
+      - run: node scripts/valida-paridade-clinical-steps.cjs
+      - run: npm run build:web
+
+      - name: Validate scope
+        run: |
+          CHANGED=$(git diff --name-only)
+          echo "$CHANGED"
+          test "$CHANGED" = "components/protocol-screen/stabilization-first-card.tsx"
+
+      - name: Commit affordance fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/stabilization-first-card.tsx
+          git commit -m "fix(ui): make stabilization actions visibly clickable"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
