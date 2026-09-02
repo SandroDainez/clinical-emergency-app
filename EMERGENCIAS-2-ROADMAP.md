@@ -25,6 +25,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] DecisionPrompt.
 - [x] SafetyGate.
 - [x] ReassessmentCard.
+- [x] GuidedDiscoveryCard criado sem regra clínica interna.
+- [x] Adapter de descoberta converte registry canônico em view model da UI.
+- [x] Tela `/dev/guided-discovery` consome casos reais via adapter, sem duplicar conteúdo clínico.
 - [x] DecisionGrid migrado para tokens semânticos.
 - [x] Ramo “não sei” visualmente destacado quando já existe na árvore.
 - [x] Showcase `/dev/ui-v2` atualizado para validar o conjunto.
@@ -40,6 +43,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Migração idempotente do ClinicalShellHost preparada: substitui apenas o header V2 e preserva StepHeaderBar/engine/timers como fallback/legado.
 - [x] Trava da migração confirma export do host, callbacks de navegação e invariantes antes de escrever o shell.
 - [ ] Executar a migração no shell compartilhado e validar build/CI antes de marcar integração concluída.
+- [ ] Ligar GuidedDiscoveryCard aos ramos reais somente após migração/build validado.
 
 ## Bloco B — Patient State 2.0
 
@@ -153,6 +157,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural protege a visibilidade da reavaliação pendente no cockpit.
 - [x] Travas estruturais protegem as migrações guiadas de HIC/anticoagulante desconhecido e STEMI/tempo de ICP desconhecido.
 - [x] Trava estrutural protege registry canônico e contratos de descoberta guiada.
+- [x] Trava estrutural protege a fronteira registry → adapter → GuidedDiscoveryCard e impede regra clínica duplicada na UI.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
