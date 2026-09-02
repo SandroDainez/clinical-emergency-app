@@ -33,7 +33,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Adapter do shell criado sem dependência de engine ou roteador.
 - [x] ClinicalShellChrome exibe contexto de protocolo interrompido para retorno.
 - [x] Adapter deriva o contexto de retorno diretamente da pilha de interrupções.
-- [ ] Integrar ClinicalShellChrome ao shell compartilhado sem duplicar headers.
+- [x] ClinicalShellHost plugável criado para reduzir a integração no shell legado a poucas props/callbacks.
+- [x] Trava estrutural do ClinicalShellHost criada.
+- [ ] Integrar ClinicalShellHost ao shell compartilhado sem duplicar headers.
 
 ## Bloco B — Patient State 2.0
 
@@ -86,8 +88,11 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 - [x] Contratos canônicos de fármaco, apresentação, indicação e fonte definidos.
 - [x] Separação estrutural entre apresentação comercial e recomendação clínica definida.
-- [ ] Migrar primeiro fármaco com comparação antigo × novo.
-- [ ] Validar apresentações comercializadas no Brasil.
+- [x] Primeiro fármaco migrado em paralelo: tenecteplase (sem substituir a fonte legada).
+- [x] Tenecteplase separa fonte da apresentação brasileira da fonte clínica do regime de AVC.
+- [x] Paridade do regime AVC 0,25 mg/kg, máximo 25 mg, protegida por trava estrutural.
+- [ ] Consumir a entrada canônica em um módulo piloto após CI/testes verdes.
+- [ ] Validar apresentações dos próximos fármacos comercializados no Brasil.
 - [ ] Bloquear duplicação de dose crítica entre módulos.
 
 ## Bloco G — Clinical Safety Test Suite
@@ -104,6 +109,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Auditoria de grafo para reavaliação/destino criada.
 - [x] Cenário estrutural de interrupção aninhada e retorno LIFO criado.
 - [x] Trava estrutural do runtime de retomada criada.
+- [x] Trava de paridade do primeiro fármaco canônico criada.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
@@ -114,7 +120,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Contrato de evidência por recomendação acionável criado.
 - [x] Contrato de versão clínica criado.
 - [x] Regra de preservar a versão em que o atendimento começou definida.
-- [ ] Migrar recomendações reais para fonte por nó/ação.
+- [x] Primeira recomendação canônica (tenecteplase no AVC) registrada com fonte clínica e data de revisão.
+- [ ] Migrar recomendações reais adicionais para fonte por nó/ação.
 - [ ] Data de revisão programada e responsável por revisão.
 
 ## Regra de migração
