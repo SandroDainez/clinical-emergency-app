@@ -1,0 +1,78 @@
+name: PCR inherited context simulation
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - "components/protocol-screen/pcr-inherited-context-card.tsx"
+      - "lib/pcr-handoff-context-adapter.ts"
+      - "lib/pcr-inherited-context-runtime.ts"
+      - "scripts/migra-pcr-inherited-context-card.cjs"
+      - "scripts/valida-pcr-inherited-context*.cjs"
+      - ".github/workflows/pcr-inherited-context-simulation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulate-inherited-context:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate prepared context card foundation
+        run: node scripts/valida-pcr-inherited-context-card.cjs
+
+      - name: Capture TypeScript baseline before visual migration
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-before.txt 2>&1
+          echo $? > /tmp/tsc-before-status.txt
+          set -e
+
+      - name: Simulate inherited context integration
+        run: node scripts/migra-pcr-inherited-context-card.cjs
+
+      - name: Validate integrated context card
+        run: node scripts/valida-pcr-inherited-context-pos-migracao.cjs
+
+      - name: Enforce exact visual migration allowlist
+        run: |
+          git diff --name-only | sort > /tmp/actual-files.txt
+          cat > /tmp/expected-files.txt <<'EOF'
+          components/protocol-screen.tsx
+          components/protocol-screen/acls-protocol-screen.tsx
+          EOF
+          diff -u /tmp/expected-files.txt /tmp/actual-files.txt
+
+      - name: Require unchanged TypeScript baseline
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-after.txt 2>&1
+          after_status=$?
+          set -e
+          before_status="$(cat /tmp/tsc-before-status.txt)"
+          if [ "$before_status" != "$after_status" ]; then
+            cat /tmp/tsc-after.txt
+            echo "TypeScript exit status changed across visual migration: before=$before_status after=$after_status"
+            exit 1
+          fi
+          if ! diff -u /tmp/tsc-before.txt /tmp/tsc-after.txt; then
+            echo "Inherited-context migration changed the TypeScript diagnostic baseline."
+            exit 1
+          fi
+          echo "TypeScript diagnostic baseline unchanged by inherited-context migration."
