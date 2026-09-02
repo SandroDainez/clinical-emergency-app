@@ -50,8 +50,8 @@ transform(files.shell, [
   },
   {
     label: "ActionStep hard stop render",
-    before: '  if (emV2) {\n',
-    after: '  if (hardStop) {\n    const resolutionNodeId = hardStop.policy.resolutionNodeId;\n    return (\n      <View style={styles.stepStack}>\n        <SafetyGate\n          title={tr(hardStop.policy.title)}\n          message={tr(hardStop.policy.message)}\n          primaryLabel={tr(hardStop.policy.resolution)}\n          onPrimary={() => {\n            if (resolutionNodeId) onResolveGate(resolutionNodeId);\n          }}\n          severity="critical"\n        />\n      </View>\n    );\n  }\n\n  if (emV2) {\n',
+    before: '          onReturn={onAdvance}\n        />\n      </View>\n    );\n  }\n\n  if (emV2) {\n',
+    after: '          onReturn={onAdvance}\n        />\n      </View>\n    );\n  }\n\n  if (hardStop) {\n    const resolutionNodeId = hardStop.policy.resolutionNodeId;\n    return (\n      <View style={styles.stepStack}>\n        <SafetyGate\n          title={tr(hardStop.policy.title)}\n          message={tr(hardStop.policy.message)}\n          primaryLabel={tr(hardStop.policy.resolution)}\n          onPrimary={() => {\n            if (resolutionNodeId) onResolveGate(resolutionNodeId);\n          }}\n          severity="critical"\n        />\n      </View>\n    );\n  }\n\n  if (emV2) {\n',
   },
 ]);
 
