@@ -53,6 +53,9 @@ jobs:
       - name: Validate AVC SafetyGate hard stop
         run: node scripts/valida-safety-gate-hard-stop-avc.cjs
 
+      - name: Validate STEMI SafetyGate soft stop
+        run: node scripts/valida-safety-gate-soft-stop-stemi.cjs
+
       - name: Validate runtime bridge instrumentation
         run: |
           node scripts/valida-clinical-runtime-bridge.cjs
