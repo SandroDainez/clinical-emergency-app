@@ -20,7 +20,7 @@ export const CLINICAL_GATE_REGISTRY: readonly ClinicalGatePolicy[] = [
   },
   {
     id: "sca-tempo-icp-nao-confirmado",
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     nodeId: "stemi_reperfusao",
     level: "soft_stop",
     title: "Tempo real até ICP ainda não confirmado",
