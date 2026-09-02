@@ -20,21 +20,26 @@ const original = Object.fromEntries(
 );
 const next = { ...original };
 
-function replaceDispositionInNode(source, nodeId) {
+function nodeRange(source, nodeId) {
   const marker = `    ${nodeId}: {`;
   const start = source.indexOf(marker);
   if (start < 0) throw new Error(`Nó ${nodeId} não encontrado`);
-  const end = source.indexOf("\n    ", start + marker.length);
-  const limit = end > start ? end : source.length;
-  const node = source.slice(start, limit);
 
+  const tail = source.slice(start + marker.length);
+  const sibling = tail.match(/\n    [A-Za-z0-9_]+:\s*\{/);
+  const end = sibling ? start + marker.length + sibling.index : source.length;
+  return { start, end, node: source.slice(start, end) };
+}
+
+function replaceDispositionInNode(source, nodeId) {
+  const { start, end, node } = nodeRange(source, nodeId);
   if (node.includes('disposition: "other_module"')) return source;
   if (!node.includes('disposition: "icu"')) {
-    throw new Error(`${nodeId}: disposition esperado \"icu\" não encontrado`);
+    throw new Error(`${nodeId}: disposition esperado \"icu\" não encontrado no nó completo`);
   }
 
   const migrated = node.replace('disposition: "icu"', 'disposition: "other_module"');
-  return source.slice(0, start) + migrated + source.slice(limit);
+  return source.slice(0, start) + migrated + source.slice(end);
 }
 
 function removeObjectById(source, id) {
@@ -70,10 +75,8 @@ next.debts = removeObjectById(next.debts, "tachy-pulseless-to-pcr");
 next.debts = removeObjectById(next.debts, "brady-pulseless-to-pcr");
 
 const invariants = [
-  [next.tachy, 'unstable_sem_pulso: {', "taquicardia: nó sem pulso ausente"],
-  [next.tachy, 'disposition: "other_module"', "taquicardia: handoff não promovido"],
-  [next.brady, 'bradi_sem_pulso: {', "bradicardia: nó sem pulso ausente"],
-  [next.brady, 'disposition: "other_module"', "bradicardia: handoff não promovido"],
+  [nodeRange(next.tachy, "unstable_sem_pulso").node, 'disposition: "other_module"', "taquicardia: handoff não promovido"],
+  [nodeRange(next.brady, "bradi_sem_pulso").node, 'disposition: "other_module"', "bradicardia: handoff não promovido"],
   [next.transitions, 'id: "taquicardia-sem-pulso-pcr-terminal"', "contrato terminal de taquicardia ausente"],
   [next.transitions, 'id: "bradicardia-sem-pulso-pcr-terminal"', "contrato terminal de bradicardia ausente"],
   [next.transitions, '"energia_ultima_cardioversao"', "contexto de cardioversão não preservado"],
@@ -106,4 +109,4 @@ for (const [nome, arquivo] of Object.entries(paths)) {
   if (next[nome] !== original[nome]) fs.writeFileSync(arquivo, next[nome], "utf8");
 }
 
-console.log("Handoffs terminais taquicardia/bradicardia → PCR migrados com contexto preservado e sem bloquear a PCR por dados ausentes.");
+console.log("Handoffs terminais taquicardia/bradicardia → PCR migrados com contexto preservado.");
