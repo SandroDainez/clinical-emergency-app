@@ -9,12 +9,17 @@ import {
   Button,
   Card,
   Chip,
+  ClinicalCockpitBar,
+  CrisisActionBar,
+  DecisionPrompt,
   FloatingButton,
   Header,
   Input,
   Modal,
   NumericStepper,
   Progress,
+  ReassessmentCard,
+  SafetyGate,
   Switch,
   Tag,
   Timer,
@@ -22,25 +27,15 @@ import {
 } from "../../components/ui-v2";
 import { ESPACO, TEMAS, TIPOGRAFIA, TOQUE, type Tema } from "../../design-system/tokens";
 
-/**
- * Showcase dos componentes da UI 2.0 — Fase 2 do plano.
- *
- * Serve para validar a aparência ISOLADAMENTE, antes de encostar em qualquer
- * tela clínica. Rota interna: nada aqui é ligado a engine, rota ou dado real.
- *
- * Os dois temas aparecem lado a lado de propósito: comparar é o único jeito
- * honesto de decidir se a paleta funciona nos dois.
- *
- * Abrir em: /dev/ui-v2
- */
+/** Showcase isolado da UI clínica. Abrir em /dev/ui-v2. */
 export default function ShowcaseUiV2() {
   return (
     <SafeAreaView style={estilosPagina.raiz} edges={["top", "left", "right"]} testID="showcase-ui-v2">
       <ScrollView contentContainerStyle={estilosPagina.conteudo}>
-        <Text style={estilosPagina.tituloPagina}>UI 2.0 — componentes base</Text>
+        <Text style={estilosPagina.tituloPagina}>Emergências 2.0 — Clinical Cockpit</Text>
         <Text style={estilosPagina.subtitulo}>
-          16 componentes, dois temas. Nenhuma tela do app foi alterada — isto é
-          uma vitrine isolada para você aprovar ou pedir mudança.
+          Componentes compartilhados para crise, decisão, segurança e reavaliação.
+          A vitrine permanece desacoplada das engines clínicas.
         </Text>
 
         <PainelDoTema tema={TEMAS.escuro} />
@@ -50,28 +45,16 @@ export default function ShowcaseUiV2() {
   );
 }
 
-/**
- * Renderiza a galeria inteira com um tema forçado.
- *
- * Os componentes leem o tema por `useTheme()`, que hoje devolve o escuro fixo
- * (ver design-system/theme.ts). Para exibir o claro sem mexer nisso, o painel
- * pinta o fundo com as cores do tema pedido e mostra a paleta ao lado — assim dá
- * para conferir contraste e harmonia dos dois sem ligar a troca de tema antes
- * da Fase 9.
- */
 function PainelDoTema({ tema }: { tema: Tema }) {
   const claro = tema.nome === "claro";
   return (
     <View style={[estilosPagina.painel, { backgroundColor: tema.cores.bg, borderColor: tema.cores.border }]}>
-      <Text style={[estilosPagina.tituloTema, { color: tema.cores.text }]}>
-        Tema {tema.nome}
-      </Text>
+      <Text style={[estilosPagina.tituloTema, { color: tema.cores.text }]}>Tema {tema.nome}</Text>
       <Paleta tema={tema} />
       {claro ? (
         <Text style={[estilosPagina.aviso, { color: tema.cores.textSecondary }]}>
-          Os componentes abaixo renderizam no tema escuro (fixado até a Fase 9).
-          Acima está a paleta clara já validada em contraste — é ela que entra
-          quando a troca de tema for ligada.
+          Os componentes interativos ainda usam o tema ativo do app. A paleta clara
+          fica aqui para inspeção visual e contraste enquanto a troca de tema não é ligada.
         </Text>
       ) : (
         <Galeria />
@@ -81,15 +64,12 @@ function PainelDoTema({ tema }: { tema: Tema }) {
 }
 
 function Paleta({ tema }: { tema: Tema }) {
-  const entradas = Object.entries(tema.cores);
   return (
     <View style={estilosPagina.paleta}>
-      {entradas.map(([nome, cor]) => (
+      {Object.entries(tema.cores).map(([nome, cor]) => (
         <View key={nome} style={estilosPagina.amostra}>
           <View style={[estilosPagina.quadrado, { backgroundColor: cor, borderColor: tema.cores.border }]} />
-          <Text style={[estilosPagina.amostraNome, { color: tema.cores.textSecondary }]} numberOfLines={1}>
-            {nome}
-          </Text>
+          <Text style={[estilosPagina.amostraNome, { color: tema.cores.textSecondary }]} numberOfLines={1}>{nome}</Text>
           <Text style={[estilosPagina.amostraHex, { color: tema.cores.textSecondary }]}>{cor}</Text>
         </View>
       ))}
@@ -113,35 +93,86 @@ function Galeria() {
 
   return (
     <View style={estilosPagina.galeria}>
+      <Secao titulo="Cockpit persistente">
+        <ClinicalCockpitBar
+          protocol="AVC isquêmico"
+          phase="Reperfusão"
+          elapsed="00:37:18"
+          metrics={[
+            { label: "PA", value: "178/96", attention: true },
+            { label: "FC", value: "92" },
+            { label: "SpO₂", value: "95%" },
+            { label: "GCS", value: "14" },
+          ]}
+        />
+      </Secao>
+
+      <Secao titulo="Decisão dominante + não sei">
+        <DecisionPrompt
+          eyebrow="Decisão clínica"
+          question="O paciente está hemodinamicamente instável?"
+          supportText="Responda pelo estado atual do paciente, não pelo diagnóstico presumido."
+          options={[
+            { id: "sim", label: "Sim", tone: "critical", onPress: () => {} },
+            { id: "nao", label: "Não", onPress: () => {} },
+          ]}
+          onDontKnow={() => {}}
+        />
+      </Secao>
+
+      <Secao titulo="Gate de segurança com override">
+        <SafetyGate
+          title="Item crítico pendente"
+          message="Glicemia ainda não foi registrada antes da decisão de reperfusão."
+          primaryLabel="Registrar glicemia"
+          onPrimary={() => {}}
+          onOverride={() => {}}
+        />
+      </Secao>
+
+      <Secao titulo="Reavaliação após terapia">
+        <ReassessmentCard
+          when="em 5 min"
+          items={["Pressão arterial", "Perfusão", "Estado mental", "Sinais de congestão"]}
+          outcomes={[
+            { id: "respondeu", label: "Respondeu", onPress: () => {} },
+            { id: "parcial", label: "Resposta parcial", onPress: () => {} },
+            { id: "nao", label: "Não respondeu", onPress: () => {} },
+            { id: "piorou", label: "Piorou", onPress: () => {}, critical: true },
+          ]}
+        />
+      </Secao>
+
+      <Secao titulo="Ações persistentes de crise">
+        <CrisisActionBar
+          actions={[
+            { id: "pcr", label: "PCR", critical: true, onPress: () => {} },
+            { id: "via-aerea", label: "Via aérea", onPress: () => {} },
+            { id: "choque", label: "Choque", onPress: () => {} },
+            { id: "intercorrencia", label: "Intercorrência", onPress: () => {} },
+          ]}
+        />
+      </Secao>
+
       <Secao titulo="Header compacto">
         <Header titulo="Anafilaxia" etapa="Etapa 3" onVoltar={() => {}} direita={<Badge label="GRAVE" tom="critical" solido />} />
       </Secao>
 
       <Secao titulo="Button — variantes e estados">
-        <Button label="Primary" onPress={() => {}} />
-        <Button label="Secondary" variant="secondary" onPress={() => {}} />
-        <Button label="Danger" variant="danger" onPress={() => {}} />
+        <Button label="Ação principal" onPress={() => {}} />
+        <Button label="Secundária" variant="secondary" onPress={() => {}} />
+        <Button label="Crítica" variant="danger" critico bloco onPress={() => {}} />
         <Button label="Ghost" variant="ghost" onPress={() => {}} />
-        <Button label="Crítico (56 px)" critico bloco onPress={() => {}} />
         <Button label="Carregando" loading onPress={() => {}} />
         <Button label="Desabilitado" disabled onPress={() => {}} />
       </Secao>
 
-      <Secao titulo="Stepper numérico — o controle padrão de todo número">
-        <NumericStepper
-          rotulo="Peso"
-          unidade="kg"
-          valor={peso}
-          onChange={setPeso}
-          min={1}
-          max={200}
-          passo={0.5}
-          ajuda="Slider para aproximar, −/+ para acertar."
-        />
+      <Secao titulo="Stepper numérico">
+        <NumericStepper rotulo="Peso" unidade="kg" valor={peso} onChange={setPeso} min={1} max={200} passo={0.5} ajuda="Slider para aproximar, −/+ para acertar." />
         <NumericStepper rotulo="PEEP" unidade="cmH₂O" valor={peep} onChange={setPeep} min={0} max={24} />
       </Secao>
 
-      <Secao titulo="Timer — dígitos de largura fixa">
+      <Secao titulo="Timer">
         <Timer segundos={154} rotulo="Tempo de parada" tamanho="grande" />
         <Timer segundos={92} rotulo="Ciclo" tom="warning" />
         <Timer segundos={3725} rotulo="Passa de 1 h" tom="critical" />
@@ -218,17 +249,11 @@ function Galeria() {
         titulo="Confirmar encerramento"
         acao={{ label: "Encerrar", onPress: () => setModal(false), critico: true }}
       >
-        <Text style={estilosPagina.textoModal}>
-          Modal interrompe o fluxo. Reservado para confirmação irreversível ou
-          erro que impede seguir.
-        </Text>
+        <Text style={estilosPagina.textoModal}>Modal reservado para confirmação irreversível ou erro que impede seguir.</Text>
       </Modal>
 
       <BottomSheet visivel={sheet} onFechar={() => setSheet(false)} titulo="Critérios de anafilaxia">
-        <Text style={estilosPagina.textoModal}>
-          É o destino do &quot;ver mais&quot;: o texto clínico completo sai da
-          tela principal sem ser removido do app.
-        </Text>
+        <Text style={estilosPagina.textoModal}>Conteúdo detalhado sai da tela principal sem desaparecer do app.</Text>
       </BottomSheet>
 
       <Toast mensagem="Conduta registrada às 14:32" visivel={toast} onFechar={() => setToast(false)} tom="success" />
@@ -245,11 +270,13 @@ function Secao({ titulo, children }: { titulo: string; children: React.ReactNode
   );
 }
 
+const ESCURO = TEMAS.escuro.cores;
+
 const estilosPagina = StyleSheet.create({
-  raiz: { flex: 1, backgroundColor: "#0a0f1a" },
+  raiz: { flex: 1, backgroundColor: ESCURO.bg },
   conteudo: { padding: ESPACO.md, gap: ESPACO.lg, paddingBottom: ESPACO.xl },
-  tituloPagina: { ...TIPOGRAFIA.title, color: "#f1f5f9" },
-  subtitulo: { ...TIPOGRAFIA.caption, color: "#94a3b8", fontWeight: "400" },
+  tituloPagina: { ...TIPOGRAFIA.title, color: ESCURO.text },
+  subtitulo: { ...TIPOGRAFIA.caption, color: ESCURO.textSecondary, fontWeight: "400" },
   painel: { borderRadius: 16, borderWidth: 1, padding: ESPACO.md, gap: ESPACO.md },
   tituloTema: { ...TIPOGRAFIA.step, textTransform: "capitalize" },
   aviso: { ...TIPOGRAFIA.micro, fontWeight: "400", lineHeight: 18 },
@@ -260,10 +287,10 @@ const estilosPagina = StyleSheet.create({
   amostraHex: { ...TIPOGRAFIA.micro, fontWeight: "400", fontSize: 11 },
   galeria: { gap: ESPACO.lg },
   secao: { gap: ESPACO.sm },
-  tituloSecao: { ...TIPOGRAFIA.micro, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1 },
+  tituloSecao: { ...TIPOGRAFIA.micro, color: ESCURO.textSecondary, textTransform: "uppercase", letterSpacing: 1 },
   corpoSecao: { gap: ESPACO.sm },
   linha: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
   areaFlutuante: { height: TOQUE.critico * 2, justifyContent: "center" },
-  notaFlutuante: { ...TIPOGRAFIA.micro, color: "#64748b", textAlign: "center" },
-  textoModal: { ...TIPOGRAFIA.body, color: "#f1f5f9" },
+  notaFlutuante: { ...TIPOGRAFIA.micro, color: ESCURO.textSecondary, textAlign: "center" },
+  textoModal: { ...TIPOGRAFIA.body, color: ESCURO.text },
 });
