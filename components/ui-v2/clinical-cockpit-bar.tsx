@@ -8,6 +8,8 @@ export type CockpitMetric = {
   value: string;
   /** Idade do dado, ex.: "agora" ou "4 min". Dado volátil reutilizado nunca fica sem idade. */
   age?: string;
+  /** Procedência exibida ao lado da métrica, ex.: "medido aqui" ou "importado · avc". */
+  origin?: string;
   /** Quando verdadeiro, destaca o valor como atenção clínica sem transformá-lo em alerta crítico. */
   attention?: boolean;
 };
@@ -69,6 +71,11 @@ export function ClinicalCockpitBar({
               <Text style={[e.metricValue, metric.attention && e.metricAttention]}>
                 {metric.value}
               </Text>
+              {metric.origin ? (
+                <Text style={e.metricOrigin} numberOfLines={1}>
+                  {metric.origin}
+                </Text>
+              ) : null}
             </View>
           ))}
         </View>
@@ -169,5 +176,12 @@ const criarEstilos = (t: Tema) =>
     metricLabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary },
     metricAge: { fontSize: 10, lineHeight: 13, color: t.cores.textSecondary, fontWeight: "600" },
     metricValue: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
+    metricOrigin: {
+      fontSize: 9,
+      lineHeight: 12,
+      color: t.cores.textSecondary,
+      fontWeight: "600",
+      letterSpacing: 0.1,
+    },
     metricAttention: { color: t.cores.warning },
   });
