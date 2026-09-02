@@ -6,6 +6,7 @@ on:
       - emergencias-2-ui-core
     paths:
       - .github/workflows/smoke-clinical-steps-v2.yml
+      - e2e/clinical-steps-integrados.spec.ts
 
 permissions:
   contents: read
@@ -34,5 +35,5 @@ jobs:
       - name: Build web
         run: npm run build:web
 
-      - name: Smoke E2E do shell integrado
-        run: npx playwright test e2e/fluxo-decisao-paridade.spec.ts
+      - name: Smoke E2E semantico do shell integrado
+        run: npx playwright test e2e/clinical-steps-integrados.spec.ts
