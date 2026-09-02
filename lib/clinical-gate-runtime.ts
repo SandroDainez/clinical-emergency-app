@@ -1,4 +1,6 @@
 import { clinicalGateFor } from "./clinical-gate-registry";
+import { activeClinicalGatesForAction } from "./clinical-gate-trigger-registry";
+import type { ClinicalGateContext } from "./clinical-gate-trigger";
 import { gateBlocks, gateNeedsOverrideReason, type ClinicalGatePolicy } from "./clinical-gate-policy";
 import { recordClinicalSafetyOverride } from "./clinical-safety-override";
 
@@ -19,6 +21,27 @@ export function evaluateClinicalGate(gateId: string): ClinicalGateEvaluation {
     overrideAllowed: policy.overrideAllowed,
     needsOverrideReason: gateNeedsOverrideReason(policy),
   };
+}
+
+/**
+ * Avalia gates a partir da ação TENTADA + contexto explícito.
+ *
+ * Esta função não navega, não executa a ação e não faz override. Ela apenas
+ * responde quais políticas estão ativas para que a camada de orquestração/UI
+ * decida como apresentar o gate correspondente.
+ */
+export function evaluateClinicalActionGates(input: {
+  protocolId: string;
+  nodeId?: string;
+  actionId: string;
+  context: ClinicalGateContext;
+}): ClinicalGateEvaluation[] {
+  return activeClinicalGatesForAction(input).map(({ policy }) => ({
+    policy,
+    blocks: gateBlocks(policy.level),
+    overrideAllowed: policy.overrideAllowed,
+    needsOverrideReason: gateNeedsOverrideReason(policy),
+  }));
 }
 
 export function overrideClinicalGate(input: {
