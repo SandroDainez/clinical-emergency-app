@@ -36,7 +36,7 @@ import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
+import { Card, ClinicalShellHost, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useFadeDeEtapa } from "../../design-system/motion";
@@ -373,16 +373,13 @@ export default function AclsDecisionFlowScreen({
           perderia o contexto, e o teste de travessia pegou isso.
           O voltar é a MESMA ação: router.back(). */}
       {emV2 ? (
-        <Header
-          // Nome do MÓDULO, não o rótulo curto de contexto.
-          //
-          // Antes eu usava `headerTitle` ("TEP · Emergência", "SCA · Emergência")
-          // e, na falta dele, o default "ACLS · Emergência" — que é simplesmente
-          // errado num módulo de TEP ou de EAP. O que identifica onde o médico
-          // está é o nome que ele tocou no hub.
-          titulo={tr(protocolLabel)}
-          etapa={`${tr("Passo")} ${stepCount}`}
-          onVoltar={() => router.back()}
+        <ClinicalShellHost
+          protocol={tr(protocolLabel)}
+          phase={step.title ? tr(step.title) : undefined}
+          step={stepCount}
+          moduleSlug={currentModuleSlug}
+          onBack={() => router.back()}
+          onPush={(href) => router.push(href)}
         />
       ) : null}
       {prazos.length ? (
