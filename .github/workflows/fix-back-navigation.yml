@@ -6,6 +6,7 @@ on:
     paths:
       - scripts/corrige-voltar-e-inputs-v2.cjs
       - scripts/valida-seguranca-input-voltar-nihss.cjs
+      - scripts/valida-paridade-input-step.cjs
       - components/protocol-screen/clinical-input-field.tsx
       - components/protocol-screen/calculadora-embutida.tsx
       - .github/workflows/fix-back-navigation.yml
