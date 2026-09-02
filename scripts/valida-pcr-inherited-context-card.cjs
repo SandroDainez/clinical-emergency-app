@@ -21,10 +21,16 @@ for (const token of [
 
 for (const token of [
   'consumeClinicalHandoff("pcr-adulto", contract.transitionId)',
+  'const expectedFacts = [',
+  '...contract.requiredFacts',
+  '...(contract.optionalFacts ?? []).filter',
+  'expectedFacts,',
   'return undefined;',
-  'expectedFacts: contract.requiredFacts',
 ]) {
   if (!runtime.includes(token)) errors.push(`runtime sem ${token}`);
+}
+if (runtime.includes('expectedFacts: contract.requiredFacts')) {
+  errors.push("runtime ainda limita apresentação aos fatos obrigatórios e esconde opcionais ausentes");
 }
 
 for (const token of [
@@ -56,4 +62,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("\n✅ contexto herdado do PCR permanece informativo, temporal e não bloqueante.\n");
+console.log("\n✅ contexto herdado do PCR mostra fatos disponíveis e mantém opcionais ausentes como Não registrado, sem bloquear a PCR.\n");
