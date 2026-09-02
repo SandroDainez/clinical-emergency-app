@@ -6,6 +6,8 @@ on:
       - emergencias-2-ui-core
     paths:
       - scripts/aplica-integracao-clinical-steps-v2.cjs
+      - components/protocol-screen/lista-de-criterios.tsx
+      - components/protocol-screen/clinical-step-shared-styles.ts
       - .github/workflows/integrar-clinical-steps-v2.yml
 
 permissions:
