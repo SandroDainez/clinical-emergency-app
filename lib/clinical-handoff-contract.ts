@@ -1,12 +1,19 @@
 import type { ClinicalHandoffPayload, ClinicalHandoffFact } from "./clinical-handoff-payload";
 import { createClinicalHandoffPayload } from "./clinical-handoff-payload";
 
+export type ClinicalHandoffTransferPolicy = "require_complete_context" | "do_not_delay_destination";
+
 export type ClinicalHandoffPreservationContract = {
   id: string;
   transitionId: string;
   fromModule: string;
   toModule: string;
   requiredFacts: readonly string[];
+  /**
+   * Define apenas se a AUSÊNCIA de contexto pode segurar a transferência.
+   * Não muda a obrigatoriedade documental dos fatos nem inventa valores.
+   */
+  transferPolicy?: ClinicalHandoffTransferPolicy;
 };
 
 export function buildClinicalHandoffPayload(
