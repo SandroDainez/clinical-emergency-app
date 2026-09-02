@@ -25,17 +25,17 @@ function pcrContract(source: "tachycardia" | "bradycardia") {
 }
 
 const tachyToPulseless: readonly ClinicalRunnerInstruction[] = [
-  { type: "advance" }, // entry -> assess_stability
-  { type: "choose", optionId: "instavel" }, // -> unstable_cardioversion
-  { type: "advance" }, // -> unstable_reavaliar
-  { type: "choose", optionId: "sem_pulso" }, // -> unstable_sem_pulso
+  { type: "advance" },
+  { type: "choose", optionId: "instavel" },
+  { type: "advance" },
+  { type: "choose", optionId: "sem_pulso" },
 ];
 
 const bradyToPulseless: readonly ClinicalRunnerInstruction[] = [
-  { type: "advance" }, // entry -> assess_stability
-  { type: "choose", optionId: "instavel" }, // -> atropine
-  { type: "advance" }, // -> after_atropine
-  { type: "choose", optionId: "sem_pulso" }, // -> bradi_sem_pulso
+  { type: "advance" },
+  { type: "choose", optionId: "instavel" },
+  { type: "advance" },
+  { type: "choose", optionId: "sem_pulso" },
 ];
 
 export const EXECUTABLE_TREE_TO_HANDOFF_CASES: readonly ExecutableTreeToHandoffCase[] = [
@@ -58,7 +58,7 @@ export const EXECUTABLE_TREE_TO_HANDOFF_CASES: readonly ExecutableTreeToHandoffC
       appendClinicalEvent({ id: "tachy-aa", type: "medication_given", occurredAt: now - 20_000, module: contract.fromModule, label: "Antiarrítmico", data: { antiarritmico_em_curso: "amiodarona" } });
       appendClinicalEvent({ id: "tachy-pulse", type: "decision_made", occurredAt: now - 5_000, module: contract.fromModule, label: "Perdeu o pulso", data: { tempo_perda_pulso: now - 5_000, suspeita_causa_reversivel: "isquemia" } });
 
-      const prepared = prepareAndPublishClinicalHandoff(contract, now);
+      const prepared = prepareAndPublishClinicalHandoff({ contract, now });
       if (prepared.status !== "complete") return [...issues, `handoff esperado complete; recebido ${prepared.status}`];
       const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
       if (!consumed) return [...issues, "PCR não consumiu handoff da trajetória de taquicardia"];
@@ -88,7 +88,7 @@ export const EXECUTABLE_TREE_TO_HANDOFF_CASES: readonly ExecutableTreeToHandoffC
       appendClinicalEvent({ id: "brady-pace", type: "action_completed", occurredAt: now - 20_000, module: contract.fromModule, label: "Suporte de bradicardia", data: { marcapasso_em_uso: false, captura_marcapasso: false, cronotropico_em_curso: "nenhum" } });
       appendClinicalEvent({ id: "brady-pulse", type: "decision_made", occurredAt: now - 5_000, module: contract.fromModule, label: "Perdeu o pulso", data: { tempo_perda_pulso: now - 5_000, suspeita_causa_reversivel: "isquemia/hipóxia" } });
 
-      const prepared = prepareAndPublishClinicalHandoff(contract, now);
+      const prepared = prepareAndPublishClinicalHandoff({ contract, now });
       if (prepared.status !== "complete") return [...issues, `handoff esperado complete; recebido ${prepared.status}`];
       const consumed = consumeClinicalHandoff("pcr-adulto", contract.transitionId);
       if (!consumed) return [...issues, "PCR não consumiu handoff da trajetória de bradicardia"];
