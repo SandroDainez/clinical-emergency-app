@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -15,43 +16,62 @@ export type CrisisActionBarProps = {
 };
 
 /**
- * Atalhos persistentes para deterioração clínica.
+ * Porta persistente para deterioração clínica.
  *
- * Não substitui o fluxo e não diagnostica. Apenas mantém portas de escape
- * disponíveis quando o paciente piora de forma incompatível com a etapa atual.
+ * Mantém acesso imediato às intercorrências sem ocupar o espaço da decisão
+ * principal quando o paciente está estável. Ao abrir, revela exatamente as
+ * mesmas ações/rotas fornecidas pelo shell; não diagnostica nem muda fluxo.
  */
 export function CrisisActionBar({ actions }: CrisisActionBarProps) {
   const e = useEstilosDoTema(criarEstilos);
+  const [expanded, setExpanded] = useState(false);
   const visible = actions.slice(0, 4);
 
   if (!visible.length) return null;
 
   return (
     <View style={e.wrapper} accessibilityLabel="Ações de emergência">
-      <View style={e.headingRow}>
-        <Text style={e.eyebrow}>INTERCORRÊNCIA / PIORA SÚBITA</Text>
-        <Text style={e.hint}>Acesso imediato sem perder o fluxo atual</Text>
-      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? "Fechar ações de intercorrência" : "Abrir ações de intercorrência"}
+        accessibilityHint="Use se o paciente apresentar piora súbita"
+        onPress={() => setExpanded((current) => !current)}
+        style={({ pressed }) => [e.trigger, expanded && e.triggerExpanded, pressed && e.pressed]}
+      >
+        <View style={e.triggerLead}>
+          <View style={e.urgentDot} />
+          <View style={e.triggerCopy}>
+            <Text style={e.triggerLabel}>PACIENTE PIOROU?</Text>
+            <Text style={e.triggerHint}>Abrir intercorrências sem perder o fluxo atual</Text>
+          </View>
+        </View>
+        <Text style={e.triggerChevron}>{expanded ? "⌃" : "⌄"}</Text>
+      </Pressable>
 
-      <View style={e.actionsRow}>
-        {visible.map((action) => (
-          <Pressable
-            key={action.id}
-            accessibilityRole="button"
-            accessibilityLabel={action.label}
-            onPress={action.onPress}
-            style={({ pressed }) => [
-              e.action,
-              action.critical && e.critical,
-              pressed && e.pressed,
-            ]}
-          >
-            <Text style={[e.label, action.critical && e.criticalLabel]} numberOfLines={2}>
-              {action.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {expanded ? (
+        <View style={e.expandedBlock}>
+          <Text style={e.eyebrow}>INTERCORRÊNCIA / PIORA SÚBITA</Text>
+          <View style={e.actionsRow}>
+            {visible.map((action) => (
+              <Pressable
+                key={action.id}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={action.onPress}
+                style={({ pressed }) => [
+                  e.action,
+                  action.critical && e.critical,
+                  pressed && e.pressed,
+                ]}
+              >
+                <Text style={[e.label, action.critical && e.criticalLabel]} numberOfLines={2}>
+                  {action.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -59,18 +79,67 @@ export function CrisisActionBar({ actions }: CrisisActionBarProps) {
 const criarEstilos = (t: Tema) =>
   StyleSheet.create({
     wrapper: {
-      gap: ESPACO.sm,
       paddingHorizontal: ESPACO.sm,
-      paddingTop: ESPACO.sm,
-      paddingBottom: ESPACO.md,
+      paddingTop: ESPACO.xs,
+      paddingBottom: ESPACO.sm,
       borderTopWidth: 1,
       borderTopColor: t.cores.border,
       backgroundColor: t.cores.surface,
+      gap: ESPACO.sm,
     },
-    headingRow: {
+    trigger: {
+      minHeight: TOQUE.minimo,
       flexDirection: "row",
-      alignItems: "baseline",
+      alignItems: "center",
       justifyContent: "space-between",
+      gap: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      backgroundColor: t.cores.bg,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.xs,
+    },
+    triggerExpanded: {
+      borderColor: t.cores.critical,
+    },
+    triggerLead: {
+      flex: 1,
+      minWidth: 0,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+    },
+    urgentDot: {
+      width: 9,
+      height: 9,
+      borderRadius: 999,
+      backgroundColor: t.cores.critical,
+    },
+    triggerCopy: {
+      flex: 1,
+      minWidth: 0,
+      gap: 1,
+    },
+    triggerLabel: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.text,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+    },
+    triggerHint: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "500",
+    },
+    triggerChevron: {
+      ...TIPOGRAFIA.body,
+      color: t.cores.textSecondary,
+      fontWeight: "900",
+      width: 24,
+      textAlign: "center",
+    },
+    expandedBlock: {
       gap: ESPACO.sm,
     },
     eyebrow: {
@@ -78,14 +147,6 @@ const criarEstilos = (t: Tema) =>
       color: t.cores.textSecondary,
       fontWeight: "900",
       letterSpacing: 0.5,
-      flexShrink: 0,
-    },
-    hint: {
-      ...TIPOGRAFIA.micro,
-      color: t.cores.textSecondary,
-      fontWeight: "500",
-      textAlign: "right",
-      flex: 1,
     },
     actionsRow: {
       flexDirection: "row",
