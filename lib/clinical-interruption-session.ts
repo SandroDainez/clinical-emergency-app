@@ -1,11 +1,13 @@
-import type { ClinicalTransition } from "./clinical-transitions";
+import type { ClinicalTransitionContract } from "./clinical-transitions";
 
 export type ClinicalInterruptionFrame = {
   id: string;
+  transitionId: string;
   fromModule: string;
   toModule: string;
   trigger: string;
-  returnTo?: string;
+  returnModule?: string;
+  returnLabel?: string;
   terminal: boolean;
   startedAt: number;
 };
@@ -23,16 +25,19 @@ export type ClinicalInterruptionFrame = {
 const stack: ClinicalInterruptionFrame[] = [];
 
 export function beginClinicalInterruption(
-  transition: ClinicalTransition,
+  transition: ClinicalTransitionContract,
   now: number = Date.now()
 ): ClinicalInterruptionFrame {
+  const returnable = transition.mode === "returnable";
   const frame: ClinicalInterruptionFrame = {
-    id: `${transition.from}:${transition.to}:${now}:${stack.length}`,
+    id: `${transition.id}:${now}:${stack.length}`,
+    transitionId: transition.id,
     fromModule: transition.from,
     toModule: transition.to,
     trigger: transition.trigger,
-    returnTo: transition.returnTo,
-    terminal: transition.terminal,
+    returnModule: returnable ? transition.from : undefined,
+    returnLabel: returnable ? transition.returnLabel : undefined,
+    terminal: transition.mode === "terminal",
     startedAt: now,
   };
   stack.push(frame);
@@ -44,6 +49,11 @@ export function peekClinicalInterruption(): ClinicalInterruptionFrame | undefine
   return frame ? { ...frame } : undefined;
 }
 
+/**
+ * Conclui somente a interrupção que está no topo da pilha e cujo módulo de
+ * destino corresponde ao módulo atual. Isso impede que um retorno salte um
+ * nível em interrupções aninhadas.
+ */
 export function completeClinicalInterruption(
   currentModule: string
 ): ClinicalInterruptionFrame | undefined {
