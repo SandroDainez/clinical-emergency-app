@@ -35,6 +35,24 @@ export const CLINICAL_DECISION_OBSERVATION_BINDINGS: readonly ClinicalDecisionOb
     optionId: "hsa",
     observation: { id: "hemorragia_intracraniana_aguda", value: "sim" },
   },
+  {
+    protocolId: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    optionId: "nao_sei",
+    observation: { id: "tempo_operacional_icp", value: "desconhecido" },
+  },
+  {
+    protocolId: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    optionId: "icp",
+    observation: { id: "tempo_operacional_icp", value: "confirmado" },
+  },
+  {
+    protocolId: "sindromes-coronarianas",
+    nodeId: "stemi_reperfusao",
+    optionId: "fibrino",
+    observation: { id: "tempo_operacional_icp", value: "confirmado" },
+  },
 ] as const;
 
 export function decisionObservationFor(input: {
