@@ -31,11 +31,11 @@ expect(/tep_dor_isquemica:\s*\{[\s\S]*?id: "tep_dor_isquemica"[\s\S]*?type: "act
 expect(tep.includes("NÃO trombolisar por dor torácica"), "alerta de trombólise por dor isolada mudou; reauditar dívida");
 
 const flumazenilBlock = debts.match(/id: "tox-flumazenil-high-risk-context"[\s\S]*?\n\s*},\n\s*\{/m)?.[0] ?? "";
-expect(flुमazenilBlock !== "", "dívida de flumazenil não foi localizada");
-expect(flुमazenilBlock.includes("evidenceReview:"), "flumazenil: revisão de evidência concluída precisa ficar registrada");
-expect(flुमazenilBlock.includes('reviewedAt: "2026-09-02"'), "flumazenil: data de revisão ausente");
-expect(!flुमazenilBlock.includes('"needs_evidence_review"'), "flumazenil: não pode continuar marcado como evidence review pendente");
-expect(flुमazenilBlock.includes('candidateLevel: "needs_level_review"'), "flumazenil: nível deve permanecer pendente até separar subcenários de risco");
+expect(flumazenilBlock !== "", "dívida de flumazenil não foi localizada");
+expect(flumazenilBlock.includes("evidenceReview:"), "flumazenil: revisão de evidência concluída precisa ficar registrada");
+expect(flumazenilBlock.includes('reviewedAt: "2026-09-02"'), "flumazenil: data de revisão ausente");
+expect(!flumazenilBlock.includes('"needs_evidence_review"'), "flumazenil: não pode continuar marcado como evidence review pendente");
+expect(flumazenilBlock.includes('candidateLevel: "needs_level_review"'), "flumazenil: nível deve permanecer pendente até separar subcenários de risco");
 
 for (const id of [
   "tox-toxic-alcohol-decontamination",
