@@ -1,5 +1,5 @@
 import { DecisionTreeEngine } from "../core/decision-tree/engine";
-import type { DecisionTreeDefinition } from "../core/decision-tree/types";
+import type { DecisionTreeDefinition, TreeValues } from "../core/decision-tree/types";
 
 export type ClinicalRunnerInstruction =
   | { type: "set"; field: string; value: string }
@@ -10,7 +10,7 @@ export type ClinicalRunnerInstruction =
 export type ClinicalRunnerResult = {
   visited: string[];
   finalNodeId: string;
-  values: Record<string, string>;
+  values: TreeValues;
 };
 
 /**
