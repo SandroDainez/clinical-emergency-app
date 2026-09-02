@@ -38,6 +38,12 @@ jobs:
       - name: TypeScript compile gate
         run: npx tsc --noEmit --pretty false
 
+      - name: Validate target semantics
+        run: |
+          node scripts/valida-target-semantics.cjs
+          node scripts/inventario-targets-sem-semantica.cjs
+          node scripts/valida-targets-versus-handoffs.cjs
+
       - name: Validate active guided discovery contracts
         run: node scripts/valida-guided-discovery-hic-stemi.cjs
 
