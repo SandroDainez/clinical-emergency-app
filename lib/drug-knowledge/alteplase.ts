@@ -1,11 +1,12 @@
 import type { CanonicalDrug } from "./types";
 
 /**
- * Alteplase (rt-PA) — entrada canônica inicial SOMENTE para AVC isquêmico.
+ * Alteplase (rt-PA) — fonte canônica por INDICAÇÃO.
  *
- * Esta migração não tenta unificar regimes de TEP/IAM com AVC. O mesmo fármaco
- * tem esquemas diferentes por indicação; cada um precisa de revisão e fonte
- * próprias antes de entrar na base canônica.
+ * AVC e TEP usam o mesmo fármaco com regimes diferentes. Eles permanecem
+ * separados por indicationId e fonte clínica. PCR atribuída ao TEP NÃO recebe
+ * dose canônica aqui porque a diretriz AHA 2025 não fixa um esquema único para
+ * esse cenário; o módulo legado mantém a discussão contextual já existente.
  */
 export const ALTEPLASE_CANONICAL: CanonicalDrug = {
   id: "alteplase",
@@ -26,6 +27,19 @@ export const ALTEPLASE_CANONICAL: CanonicalDrug = {
         reviewedAt: "2026-09-01",
       },
       reassessmentId: "avc_pos_trombolise",
+    },
+    {
+      indicationId: "tep_agudo_trombolise_sistemica",
+      indicationLabel: "TEP agudo — trombólise sistêmica quando indicada",
+      dose: "100 mg",
+      route: "IV",
+      rate: "infusão sistêmica em 2 h",
+      source: {
+        reference: "AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN — Acute Pulmonary Embolism Guideline",
+        version: "2026",
+        reviewedAt: "2026-09-01",
+      },
+      reassessmentId: "tep_pos_trombolise",
     },
   ],
 };
