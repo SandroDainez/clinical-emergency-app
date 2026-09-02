@@ -17,7 +17,14 @@ type DecisionGridProps = {
 
 type SemanticTone = "neutral" | "primary" | "success" | "warning" | "critical";
 
+function isDontKnow(optionId: string): boolean {
+  const normalized = optionId.toLowerCase().replace(/-/g, "_");
+  return normalized === "nao_sei" || normalized === "naosei" || normalized === "incerto";
+}
+
 function getSemanticTone(optionId: string): SemanticTone {
+  if (isDontKnow(optionId)) return "primary";
+
   if (
     optionId === "chocavel" ||
     optionId === "sem_pulso" ||
@@ -80,15 +87,20 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
       <View style={e.options}>
         {options.map((option) => {
           const tone = getSemanticTone(option.id);
+          const dontKnow = isDontKnow(option.id);
+          const sublabel = option.sublabel ?? (dontKnow ? "Abrir avaliação guiada" : undefined);
+
           return (
             <Pressable
               key={option.id}
               accessibilityRole="button"
               accessibilityLabel={tr(option.label)}
+              accessibilityHint={dontKnow ? tr("Abrir avaliação guiada") : undefined}
               onPress={() => onSelect(option.id)}
               style={({ pressed }) => [
                 e.option,
                 e.optionTone[tone],
+                dontKnow && e.dontKnow,
                 pressed && e.pressed,
               ]}
             >
@@ -97,10 +109,9 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
                 <Text style={[e.label, tone !== "neutral" && e.labelStrong]}>
                   {tr(option.label)}
                 </Text>
-                {option.sublabel ? (
-                  <Text style={e.sublabel}>{tr(option.sublabel)}</Text>
-                ) : null}
+                {sublabel ? <Text style={e.sublabel}>{tr(sublabel)}</Text> : null}
               </View>
+              {dontKnow ? <Text style={e.helpMark}>?</Text> : null}
             </Pressable>
           );
         })}
@@ -141,12 +152,23 @@ const criarEstilos = (t: Tema) => ({
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
     },
+    dontKnow: {
+      borderWidth: 1.5,
+      minHeight: TOQUE.critico + 4,
+    },
     pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
     dot: { width: 10, height: 10, borderRadius: 999, backgroundColor: t.cores.border },
     copy: { flex: 1, gap: 2 },
     label: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "700" },
     labelStrong: { fontWeight: "800" },
     sublabel: { ...TIPOGRAFIA.micro, color: t.cores.textSecondary, fontWeight: "400" },
+    helpMark: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.primary,
+      fontWeight: "900",
+      width: TOQUE.minimo,
+      textAlign: "center",
+    },
   }),
   optionTone: StyleSheet.create({
     neutral: {},
