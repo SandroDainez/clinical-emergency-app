@@ -32,6 +32,14 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
     actionId: "cardioversao_sincronizada",
     when: { fact: "sedacao", operator: "not_equals", value: "realizada" },
   },
+  {
+    id: "tachy-cardioversion-sedation-missing",
+    gateId: "taquicardia-sedacao-cardioversao",
+    protocolId: "taquicardia-acls",
+    nodeId: "unstable_cardioversion",
+    actionId: "cardioversao_sincronizada",
+    when: { fact: "sedacao", operator: "missing" },
+  },
 ] as const;
 
 export function activeClinicalGatesForAction(input: {
@@ -40,16 +48,20 @@ export function activeClinicalGatesForAction(input: {
   actionId: string;
   context: ClinicalGateContext;
 }): ActiveClinicalGate[] {
-  return CLINICAL_GATE_TRIGGER_REGISTRY.flatMap((trigger) => {
-    if (trigger.protocolId !== input.protocolId) return [];
-    if (trigger.nodeId && trigger.nodeId !== input.nodeId) return [];
-    if (trigger.actionId !== input.actionId) return [];
-    if (!conditionMatches(trigger.when, input.context)) return [];
+  const byGateId = new Map<string, ActiveClinicalGate>();
+
+  for (const trigger of CLINICAL_GATE_TRIGGER_REGISTRY) {
+    if (trigger.protocolId !== input.protocolId) continue;
+    if (trigger.nodeId && trigger.nodeId !== input.nodeId) continue;
+    if (trigger.actionId !== input.actionId) continue;
+    if (!conditionMatches(trigger.when, input.context)) continue;
 
     const policy = CLINICAL_GATE_REGISTRY.find((entry) => entry.id === trigger.gateId);
-    if (!policy) return [];
-    return [{ trigger, policy }];
-  });
+    if (!policy) continue;
+    if (!byGateId.has(policy.id)) byGateId.set(policy.id, { trigger, policy });
+  }
+
+  return [...byGateId.values()];
 }
 
 export function validateClinicalGateTriggerRegistry(): string[] {
