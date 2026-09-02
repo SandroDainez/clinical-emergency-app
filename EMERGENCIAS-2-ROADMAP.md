@@ -86,6 +86,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Inventário automático de decisões potencialmente sem ramo de incerteza criado.
 - [x] Política formal de incerteza criada: `unknown_required` / `binary_observable` / `guided_elsewhere`.
 - [x] Dispensa de ramo “não sei” exige justificativa explícita e data de revisão.
+- [x] Inventário reconhece `guiado` como saída de incerteza e reduz falsos positivos.
+- [x] Origem da incerteza distinguida em interpretação clínica, observação ausente, história ausente e dado operacional externo.
+- [x] Contrato reutilizável de descoberta guiada criado com informação faltante, 1–3 passos, critério de suficiência e retorno obrigatório à decisão.
+- [x] Registry canônico de descoberta guiada promovido para `lib/`, sem dependência de pasta de testes.
+- [x] HIC, STEMI, choque, taquicardia e TEP possuem contratos iniciais de descoberta; planos ainda não inseridos na árvore permanecem explicitamente `prepared_plan`.
+- [x] Trava cruza contrato de descoberta, política de incerteza e nós/arestas reais das árvores.
 - [x] Inventário de terapias críticas com sinal de reavaliação criado.
 - [x] Runtime de override exige motivo não vazio e registra evento auditável.
 - [x] Política de reavaliação definida para fibrinólise, cardioversão, intubação, vasopressor e adrenalina na anafilaxia.
@@ -146,6 +152,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava do runtime de vasopressor exige obrigação de reavaliação orientada a evento.
 - [x] Trava estrutural protege a visibilidade da reavaliação pendente no cockpit.
 - [x] Travas estruturais protegem as migrações guiadas de HIC/anticoagulante desconhecido e STEMI/tempo de ICP desconhecido.
+- [x] Trava estrutural protege registry canônico e contratos de descoberta guiada.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
