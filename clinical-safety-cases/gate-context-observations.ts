@@ -71,7 +71,7 @@ export function runExecutableClinicalGateContextCases(): string[] {
   ], now);
   const avcAttempt = evaluateClinicalActionAttempt({
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     actionId: "administrar_trombolise_iv",
     context: avcContext.context,
   });
