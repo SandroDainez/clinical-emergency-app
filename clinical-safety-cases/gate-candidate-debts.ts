@@ -24,7 +24,7 @@ export type ClinicalGateCandidateDebt = {
 export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[] = [
   {
     id: "tox-flumazenil-high-risk-context",
-    protocolId: "intoxicacoes",
+    protocolId: "intoxicacoes_exogenas",
     nodeId: "tox_sedativo",
     candidateLevel: "hard_stop",
     status: ["needs_evidence_review", "needs_fact_model", "needs_action_surface"],
@@ -41,18 +41,18 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
   },
   {
     id: "tox-toxic-alcohol-decontamination",
-    protocolId: "intoxicacoes",
+    protocolId: "intoxicacoes_exogenas",
     nodeId: "tox_alcool_toxico",
     candidateLevel: "hard_stop",
     status: ["needs_evidence_review", "needs_action_surface"],
     riskStatement: "A árvore declara que carvão ativado e lavagem não devem ser realizados no ramo de metanol/etilenoglicol.",
     currentTreeEvidence: "O summary de tox_alcool_toxico contém literalmente 'NÃO fazer carvão nem lavagem'.",
-    requiredFacts: ["agente_suspeito_metanal_ou_etilenoglicol"],
+    requiredFacts: ["agente_suspeito_metanol_ou_etilenoglicol"],
     activationRuleDraft: "Somente avaliar se houver tentativa explícita de descontaminação gastrointestinal nesse ramo; não bloquear outras medidas de suporte.",
   },
   {
     id: "tep-high-risk-deep-sedation-ventilation",
-    protocolId: "tep",
+    protocolId: "tep_2024",
     nodeId: "ar_suporte",
     candidateLevel: "needs_level_review",
     status: ["needs_evidence_review", "needs_fact_model", "needs_action_surface"],
@@ -63,7 +63,7 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
   },
   {
     id: "tep-thrombolysis-for-isolated-ischemic-pain",
-    protocolId: "tep",
+    protocolId: "tep_2024",
     nodeId: "tep_dor_isquemica",
     candidateLevel: "hard_stop",
     status: ["needs_evidence_review", "needs_fact_model", "needs_action_surface"],
