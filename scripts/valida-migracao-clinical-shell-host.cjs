@@ -29,7 +29,7 @@ const hostRequired = [
   "onBack: () => void",
   "onPush: (href: Href) => void",
   "buildClinicalShellSnapshot",
-  "beginCrisisRoute(route)",
+  "instrumentCrisisRoute(route, moduleSlug)",
   "onPush(route.href as Href)",
   "reassessmentAlert={snapshot.reassessmentAlert}",
 ];
