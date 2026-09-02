@@ -3,8 +3,8 @@ import type { ProtocolEvidenceRegistry } from "../lib/protocol-evidence-registry
 export const AVC_EVIDENCE_REGISTRY: ProtocolEvidenceRegistry = {
   version: {
     protocolId: "avc_agudo_2024",
-    clinicalVersion: "AHA-ASA-2026-reviewed-2026-09-01",
-    publishedAt: "2026-09-01",
+    clinicalVersion: "AHA-ASA-2026-reviewed-2026-09-02",
+    publishedAt: "2026-09-02",
     recommendations: [
       {
         id: "avc_imagem_inicial_urgente",
@@ -46,6 +46,17 @@ export const AVC_EVIDENCE_REGISTRY: ProtocolEvidenceRegistry = {
           reviewedAt: "2026-09-01",
         },
       },
+      {
+        id: "hic_anticoagulante_identificar_e_reverter",
+        statement:
+          "Na hemorragia intracerebral, obter rapidamente uso de anticoagulante, agente e última dose, função renal e estudos de coagulação; ausência de história não equivale a ausência de anticoagulação. Quando houver anticoagulação clinicamente relevante conhecida ou fortemente suspeita, interromper o anticoagulante e realizar reversão rapidamente sem atrasá-la por exames adicionais.",
+        evidence: {
+          reference: "AHA/ASA Guideline for the Management of Patients With Spontaneous Intracerebral Hemorrhage",
+          version: "2022-current review",
+          year: 2022,
+          reviewedAt: "2026-09-02",
+        },
+      },
     ],
   },
   bindings: [
@@ -55,5 +66,6 @@ export const AVC_EVIDENCE_REGISTRY: ProtocolEvidenceRegistry = {
       nodeId: "isq_janela",
       recommendationIds: ["avc_tenecteplase_025_max25", "avc_alteplase_09_max90"],
     },
+    { nodeId: "hic_anticoag", recommendationIds: ["hic_anticoagulante_identificar_e_reverter"] },
   ],
 };
