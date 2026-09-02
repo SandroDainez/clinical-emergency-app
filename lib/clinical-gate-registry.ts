@@ -4,14 +4,15 @@ export const CLINICAL_GATE_REGISTRY: readonly ClinicalGatePolicy[] = [
   {
     id: "avc-ivt-hemorragia-aguda",
     protocolId: "avc",
-    nodeId: "tc_resultado",
+    nodeId: "trombolise",
     level: "hard_stop",
     title: "Trombólise IV contraindicada",
     message: "Há hemorragia intracraniana aguda na TC. Não administrar trombólise IV para AVC isquêmico.",
     rationale:
       "A presença de hemorragia intracraniana aguda na neuroimagem é contraindicação absoluta à trombólise IV; não é um cenário apropriado para override operacional.",
     overrideAllowed: false,
-    resolution: "Seguir o ramo hemorrágico apropriado em vez de trombólise IV.",
+    resolution: "Voltar ao resultado da TC e seguir o ramo hemorrágico apropriado em vez de trombólise IV.",
+    resolutionNodeId: "tc_resultado",
     source: {
       reference: "2026 AHA/ASA Guideline for the Early Management of Patients With Acute Ischemic Stroke — Table 8",
       version: "2026",
