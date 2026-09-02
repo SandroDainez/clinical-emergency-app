@@ -1,7 +1,7 @@
 import type { Href } from "expo-router";
 
 import { buildClinicalShellSnapshot } from "../../lib/clinical-shell-adapter";
-import { buildCrisisRoutes, beginCrisisRoute } from "../../lib/clinical-crisis-routing";
+import { buildCrisisRoutes, instrumentCrisisRoute } from "../../lib/clinical-crisis-routing";
 import { ClinicalShellChrome } from "./clinical-shell-chrome";
 
 export type ClinicalShellHostProps = {
@@ -46,7 +46,7 @@ export function ClinicalShellHost({
     label: route.label,
     critical: route.critical,
     onPress: () => {
-      beginCrisisRoute(route);
+      instrumentCrisisRoute(route, moduleSlug);
       onPush(route.href as Href);
     },
   }));
