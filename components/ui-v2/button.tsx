@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESPACO, RAIO, SOMBRA, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
 export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
@@ -18,16 +18,10 @@ export type ButtonProps = {
   label: string;
   onPress?: () => void;
   variant?: ButtonVariant;
-  /**
-   * Botão de ação crítica (choque, adrenalina, iniciar/pausar): sobe a altura
-   * mínima de 44 para 56. O app é usado com luva e pressa.
-   */
   critico?: boolean;
   disabled?: boolean;
   loading?: boolean;
-  /** Ocupa a largura disponível. */
   bloco?: boolean;
-  /** Elemento à esquerda do rótulo (ícone). */
   antes?: React.ReactNode;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -35,11 +29,11 @@ export type ButtonProps = {
 };
 
 /**
- * Botão da UI 2.0.
+ * Botão de ação clínica.
  *
- * Sem nenhuma dependência de hover: o alvo é o toque. O retorno visual vem de
- * `pressed` (o app roda em aparelho, e no plantão o dedo cobre o botão), e
- * `loading` mantém a altura para a tela não pular.
+ * Ação primária tem presença suficiente para ser encontrada em um relance;
+ * perigo usa vermelho apenas quando a ação é de fato crítica; secundários ficam
+ * visuais sem competir com a conduta principal.
  */
 export function Button({
   label,
@@ -61,6 +55,7 @@ export function Button({
     ({ pressed }: { pressed: boolean }): StyleProp<ViewStyle> => [
       e.base,
       e[variant],
+      (variant === "primary" || variant === "danger") && e.elevado,
       critico && e.critico,
       bloco && e.bloco,
       pressed && !inativo && e.pressionado,
@@ -87,7 +82,7 @@ export function Button({
           {antes ? <View style={e.antes}>{antes}</View> : null}
           <Text
             style={[e.rotulo, e.corDoTexto[variant], critico && e.rotuloCritico]}
-            numberOfLines={1}
+            numberOfLines={2}
           >
             {label}
           </Text>
@@ -105,28 +100,31 @@ const criarEstilos = (t: Tema) => {
         minHeight: TOQUE.minimo,
         minWidth: TOQUE.minimo,
         paddingHorizontal: ESPACO.md,
-        paddingVertical: ESPACO.sm,
+        paddingVertical: 10,
         borderRadius: RAIO.botao,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
         borderColor: "transparent",
       },
-      critico: { minHeight: TOQUE.critico, paddingHorizontal: ESPACO.lg },
+      elevado: SOMBRA,
+      critico: {
+        minHeight: TOQUE.critico,
+        paddingHorizontal: ESPACO.lg,
+        paddingVertical: 12,
+      },
       bloco: { alignSelf: "stretch" },
-      primary: { backgroundColor: cores.primary },
+      primary: { backgroundColor: cores.primary, borderColor: cores.primary },
       secondary: { backgroundColor: cores.surface, borderColor: cores.border },
-      danger: { backgroundColor: cores.critical },
+      danger: { backgroundColor: cores.critical, borderColor: cores.critical },
       ghost: { backgroundColor: "transparent" },
-      // Sem hover: o retorno é no toque. 0.97 é perceptível sem parecer lento.
-      pressionado: { opacity: 0.88, transform: [{ scale: 0.97 }] },
-      inativo: { opacity: 0.45 },
-      conteudo: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+      pressionado: { opacity: 0.9, transform: [{ scale: 0.985 }] },
+      inativo: { opacity: 0.42 },
+      conteudo: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: ESPACO.sm },
       antes: { justifyContent: "center" },
-      rotulo: { ...TIPOGRAFIA.caption, textAlign: "center" },
+      rotulo: { ...TIPOGRAFIA.caption, textAlign: "center", fontWeight: "700" },
       rotuloCritico: { ...TIPOGRAFIA.body, fontWeight: "800" },
     }),
-    /** Cor do texto por variante — separada porque também alimenta o spinner. */
     corDoTexto: {
       primary: { color: cores.onPrimary },
       secondary: { color: cores.text },
