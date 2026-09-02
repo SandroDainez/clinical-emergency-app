@@ -44,6 +44,9 @@ jobs:
       - name: Run action-centered safety gate regressions
         run: node scripts/test-clinical-gate-triggers.cjs
 
+      - name: Validate safety gate interaction surfaces
+        run: node scripts/valida-safety-gate-interaction-surfaces.cjs
+
       - name: Validate decision observation bindings
         run: node scripts/valida-decision-observation-bindings.cjs
 
