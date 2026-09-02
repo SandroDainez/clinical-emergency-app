@@ -62,32 +62,37 @@ function AuxiliaryPanelCard({
                   placeholderTextColor="#94a3b8"
                 />
                 {field.unitOptions && field.unitOptions.length > 0 ? (
-                  <View style={styles.auxiliaryUnitRow}>
-                    {field.unitOptions.map((unitOption) => (
-                      <Pressable
-                        key={`${field.id}-${unitOption.value}`}
-                        style={[
-                          styles.auxiliaryUnitButton,
-                          field.unit === unitOption.value && styles.auxiliaryUnitButtonActive,
-                        ]}
-                        onPress={() => onUnitChange(field.id, unitOption.value)}>
-                        <Text
+                  <View style={styles.auxiliaryUnitRow} accessibilityRole="radiogroup">
+                    {field.unitOptions.map((unitOption) => {
+                      const isSelected = field.unit === unitOption.value;
+                      return (
+                        <Pressable
+                          key={`${field.id}-${unitOption.value}`}
+                          accessibilityRole="radio"
+                          accessibilityLabel={tr(unitOption.label)}
+                          accessibilityState={{ selected: isSelected }}
                           style={[
-                            styles.auxiliaryUnitButtonText,
-                            field.unit === unitOption.value &&
-                              styles.auxiliaryUnitButtonTextActive,
-                          ]}>
-                          {tr(unitOption.label)}
-                        </Text>
-                      </Pressable>
-                    ))}
+                            styles.auxiliaryUnitButton,
+                            isSelected && styles.auxiliaryUnitButtonActive,
+                          ]}
+                          onPress={() => onUnitChange(field.id, unitOption.value)}>
+                          <Text
+                            style={[
+                              styles.auxiliaryUnitButtonText,
+                              isSelected && styles.auxiliaryUnitButtonTextActive,
+                            ]}>
+                            {isSelected ? "✓ " : ""}{tr(unitOption.label)}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 ) : null}
                 {field.helperText ? (
                   <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
                 ) : null}
                 {field.presets && field.presets.length > 0 ? (
-                  <View style={styles.auxiliaryPresetRow}>
+                  <View style={styles.auxiliaryPresetRow} accessibilityRole="radiogroup">
                     {field.presets.map((preset) => {
                       const isSelected = hasSelectedPresetValue(
                         field.value,
@@ -98,6 +103,10 @@ function AuxiliaryPanelCard({
                       return (
                         <Pressable
                           key={`${field.id}-${preset.value}`}
+                          accessibilityRole="radio"
+                          accessibilityLabel={tr(preset.label)}
+                          accessibilityState={{ selected: isSelected }}
+                          accessibilityHint={isSelected ? tr("Opção selecionada") : tr("Selecionar esta opção")}
                           style={[
                             styles.auxiliaryPresetButton,
                             isSelected && styles.auxiliaryPresetButtonActive,
@@ -108,7 +117,7 @@ function AuxiliaryPanelCard({
                               styles.auxiliaryPresetButtonText,
                               isSelected && styles.auxiliaryPresetButtonTextActive,
                             ]}>
-                            {tr(preset.label)}
+                            {isSelected ? "✓ " : ""}{tr(preset.label)}
                           </Text>
                         </Pressable>
                       );
@@ -165,13 +174,16 @@ function AuxiliaryPanelCard({
               {item.helperText ? (
                 <Text style={styles.auxiliaryFieldHelper}>{tr(item.helperText)}</Text>
               ) : null}
-              <View style={styles.auxiliaryStatusButtons}>
+              <View style={styles.auxiliaryStatusButtons} accessibilityRole="radiogroup">
                 {item.options.map((option) => {
                   const isSelected = item.currentStatus === option.status;
 
                   return (
                     <Pressable
                       key={`${item.id}-${option.id}`}
+                      accessibilityRole="radio"
+                      accessibilityLabel={tr(option.label)}
+                      accessibilityState={{ selected: isSelected }}
                       style={[
                         styles.auxiliaryStatusButton,
                         option.status === "pendente" && styles.auxiliaryStatusPending,
@@ -196,7 +208,7 @@ function AuxiliaryPanelCard({
                           styles.auxiliaryStatusButtonText,
                           isSelected && styles.auxiliaryStatusButtonTextSelected,
                         ]}>
-                        {tr(option.label)}
+                        {isSelected ? "✓ " : ""}{tr(option.label)}
                       </Text>
                     </Pressable>
                   );
