@@ -95,6 +95,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava impede mistura dos regimes de amiodarona.
 - [x] Alteplase no AVC migrada em paralelo e isolada de TEP/IAM.
 - [x] Paridade da alteplase no AVC 0,9 mg/kg, máximo 90 mg, 10% bolus + 60 min protegida.
+- [x] Alteplase no TEP sistêmico adicionada como indicação separada (100 mg/2 h), sem criar dose canônica para PCR por TEP.
+- [x] Regime padrão de tenecteplase no STEMI adicionado por faixa de peso, sem promover meia-dose etária condicional a regra universal.
 - [x] Registry único da Drug Knowledge Base criado com IDs e indicações não duplicados.
 - [x] Inventário de doses críticas duplicadas criado para ordenar próximas migrações.
 - [ ] Consumir uma entrada canônica em módulo piloto após CI/testes verdes.
@@ -117,6 +119,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural do runtime de retomada criada.
 - [x] Travas de paridade das primeiras entradas canônicas de medicamentos criadas.
 - [x] Trava estrutural do registry único de medicamentos criada.
+- [x] Travas de evidência e isolamento de indicação criadas para TEP e SCA.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
@@ -129,7 +132,10 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Regra de preservar a versão em que o atendimento começou definida.
 - [x] Registry de evidência por nó criado.
 - [x] AVC já possui bindings iniciais para tempo, neuroimagem e trombólise.
+- [x] TEP possui bindings iniciais para classificação 2026 e trombólise sistêmica.
+- [x] SCA possui bindings iniciais para ECG precoce e fibrinólise no STEMI.
 - [x] Tenecteplase e alteplase do AVC registradas com fonte AHA/ASA 2026 e data de revisão.
+- [x] Índice único de evidências por protocolo criado com consulta por protocolId + nodeId.
 - [x] Inventário de cobertura de evidência por nó acionável criado.
 - [ ] Migrar recomendações reais adicionais para fonte por nó/ação.
 - [ ] Definir data de próxima revisão e responsável por revisão por protocolo.
