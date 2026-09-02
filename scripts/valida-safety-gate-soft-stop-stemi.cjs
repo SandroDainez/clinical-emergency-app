@@ -16,10 +16,16 @@ expect(/id: "icp"[^\n]*clinicalActionId: "definir_estrategia_reperfusao"/.test(t
 expect(/id: "fibrino"[^\n]*clinicalActionId: "definir_estrategia_reperfusao"/.test(tree), "STEMI fibrinólise não declara ação canônica");
 expect(!/id: "nao_sei"[^\n]*clinicalActionId/.test(tree.match(/stemi_reperfusao:[\s\S]*?stemi_reperfusao_descoberta:/)?.[0] ?? ""), "STEMI não-sei não pode ser gated");
 expect(shell.includes("const commitDecision = (optionId: string) =>"), "Shell não separa commit da avaliação prévia");
-const chooseIndex = shell.indexOf("const handleChoose = (optionId: string) =>");
-const gateIndex = shell.indexOf("evaluateClinicalActionAttemptFromPatientState", chooseIndex);
-const commitIndex = shell.indexOf("commitDecision(optionId)", chooseIndex);
-expect(chooseIndex >= 0 && gateIndex > chooseIndex && commitIndex > gateIndex, "Shell deve avaliar gate antes de commitar escolha gated");
+
+const gatedBranch = shell.match(/const handleChoose = \(optionId: string\) => \{[\s\S]*?setPendingSoftStop\(\{[\s\S]*?\n  \};/)?.[0] ?? "";
+expect(Boolean(gatedBranch), "Shell não contém ramo gated completo de handleChoose");
+const evaluateAt = gatedBranch.indexOf("evaluateClinicalActionAttemptFromPatientState");
+const pendingAt = gatedBranch.indexOf("setPendingSoftStop({");
+const gatedCommitAt = gatedBranch.indexOf("if (!gate) {\n      commitDecision(optionId);");
+expect(evaluateAt >= 0, "Ramo gated não avalia SafetyGate");
+expect(gatedCommitAt > evaluateAt, "Opção gated só pode ser commitada sem bloqueio depois da avaliação");
+expect(pendingAt > evaluateAt, "Soft stop pendente precisa ser criado depois da avaliação");
+
 expect(shell.includes("recordClinicalSafetyOverride"), "Override do soft stop não é auditado");
 expect(shell.includes("disabled={!softStopReason.trim()}"), "Override não exige justificativa não vazia");
 expect(shell.includes('commitDecision("nao_sei")'), "Ação segura não retorna à descoberta guiada");
