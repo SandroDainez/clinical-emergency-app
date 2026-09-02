@@ -31,6 +31,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Registro canônico das portas de crise criado.
 - [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
 - [x] Adapter do shell criado sem dependência de engine ou roteador.
+- [x] ClinicalShellChrome exibe contexto de protocolo interrompido para retorno.
+- [x] Adapter deriva o contexto de retorno diretamente da pilha de interrupções.
 - [ ] Integrar ClinicalShellChrome ao shell compartilhado sem duplicar headers.
 
 ## Bloco B — Patient State 2.0
@@ -54,6 +56,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Roteamento canônico de crise preservando `from_module`.
 - [x] Pilha explícita de interrupções aninhadas criada.
 - [x] Retorno LIFO modelado para trajetórias AVC -> ISR -> PCR -> ISR -> AVC.
+- [x] Rotas de crise podem ser instrumentadas mantendo o `router.push(href)` legado intacto.
+- [x] Runtime de retomada resolve o retorno correto sem controlar o router.
 - [ ] Declarar retorno, terminalidade e contexto preservado de cada aresta real.
 - [ ] Substituir navegações improvisadas progressivamente.
 
@@ -63,6 +67,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Timeline derivada do event log com cálculo de intervalos.
 - [x] Ponte de runtime para registrar decisão, ação, observação e transição.
 - [x] Evento de retomada de protocolo incorporado à bridge.
+- [x] Ida e retorno das portas de crise podem ser espelhados no event log sem alterar a navegação legada.
 - [ ] Integrar bridge ao shell compartilhado.
 - [ ] Integrar medicações, overrides, reavaliações e destino.
 - [ ] Gerar debrief automático por metas temporais.
@@ -98,6 +103,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural dos casos executáveis criada.
 - [x] Auditoria de grafo para reavaliação/destino criada.
 - [x] Cenário estrutural de interrupção aninhada e retorno LIFO criado.
+- [x] Trava estrutural do runtime de retomada criada.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
