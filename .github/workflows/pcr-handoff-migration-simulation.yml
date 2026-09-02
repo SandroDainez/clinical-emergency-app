@@ -55,6 +55,14 @@ jobs:
           node scripts/test-clinical-handoffs-emergencias-2.cjs
           node scripts/test-tree-to-handoff-emergencias-2.cjs
 
+      - name: Capture TypeScript baseline before migration
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-before.txt 2>&1
+          echo $? > /tmp/tsc-before-status.txt
+          set -e
+          cat /tmp/tsc-before.txt
+
       - name: Simulate terminal PCR migration in workspace
         run: node scripts/migra-pcr-handoffs-terminais.cjs
 
@@ -70,8 +78,23 @@ jobs:
           node scripts/test-clinical-handoffs-emergencias-2.cjs
           node scripts/test-tree-to-handoff-emergencias-2.cjs
 
-      - name: TypeScript check of migrated transition registry
-        run: npx tsc --noEmit --pretty false
+      - name: Require unchanged TypeScript baseline after migration
+        run: |
+          set +e
+          npx tsc --noEmit --pretty false > /tmp/tsc-after.txt 2>&1
+          after_status=$?
+          set -e
+          before_status="$(cat /tmp/tsc-before-status.txt)"
+          cat /tmp/tsc-after.txt
+          if [ "$before_status" != "$after_status" ]; then
+            echo "TypeScript exit status changed across migration: before=$before_status after=$after_status"
+            exit 1
+          fi
+          if ! diff -u /tmp/tsc-before.txt /tmp/tsc-after.txt; then
+            echo "PCR migration changed the TypeScript diagnostic baseline."
+            exit 1
+          fi
+          echo "TypeScript diagnostic baseline unchanged by PCR migration."
 
       - name: Confirm simulation did not create commits
         run: |
