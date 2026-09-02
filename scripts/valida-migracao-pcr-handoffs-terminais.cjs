@@ -19,8 +19,10 @@ function trechoNo(source, nodeId) {
   const marker = `    ${nodeId}: {`;
   const start = source.indexOf(marker);
   if (start < 0) return "";
-  const end = source.indexOf("\n    ", start + marker.length);
-  return source.slice(start, end > start ? end : source.length);
+  const tail = source.slice(start + marker.length);
+  const sibling = tail.match(/\n    [A-Za-z0-9_]+:\s*\{/);
+  const end = sibling ? start + marker.length + sibling.index : source.length;
+  return source.slice(start, end);
 }
 
 // Estado atual: dívida ainda aberta e árvores ainda NÃO migradas.
@@ -33,7 +35,6 @@ exige(targets, 'id: "bradicardia-sem-pulso-pcr"', "candidate de bradicardia ause
 exige(debts, 'id: "tachy-pulseless-to-pcr"', "dívida de taquicardia ausente antes da migração");
 exige(debts, 'id: "brady-pulseless-to-pcr"', "dívida de bradicardia ausente antes da migração");
 
-// Contratos de contexto e política crítica.
 for (const token of [
   'id: "tachy-pulseless-context"',
   'transitionId: "taquicardia-sem-pulso-pcr-terminal"',
@@ -53,7 +54,6 @@ for (const token of [
 exige(debts, 'contextContractId: "tachy-pulseless-context"', "dívida de taquicardia não aponta ao contexto preparado");
 exige(debts, 'contextContractId: "brady-pulseless-context"', "dívida de bradicardia não aponta ao contexto preparado");
 
-// A migração preparada deve mudar as duas árvores, criar contratos terminais e limpar estado transitório.
 for (const token of [
   'replaceDispositionInNode(next.tachy, "unstable_sem_pulso")',
   'replaceDispositionInNode(next.brady, "bradi_sem_pulso")',
@@ -70,7 +70,6 @@ for (const token of [
   'transferPolicy: "do_not_delay_destination"',
 ]) exige(migration, token, `migração preparada incompleta: ${token}`);
 
-// Registry vivo ainda não deve fingir que a migração ocorreu.
 if (transitions.includes('id: "taquicardia-sem-pulso-pcr-terminal"') || transitions.includes('id: "bradicardia-sem-pulso-pcr-terminal"')) {
   erros.push("registry vivo já contém os handoffs PCR; esta trava ainda descreve o estado pré-execução");
 }
