@@ -2,6 +2,8 @@ export type DecisionOption = {
   id: string;
   label: string;
   next: string;
+  /** Ação clínica canônica que esta escolha tenta executar; usada por Safety Gates. */
+  clinicalActionId?: string;
   /** Opcional: torna a opção visível apenas se a expressão de guarda for verdadeira. */
   showIf?: (values: TreeValues) => boolean;
   /**
@@ -466,7 +468,7 @@ export type FrontendTreeStep =
       evidence: string[];
       /** Padrões desenhados, já interpolados. Ver `DecisionNode.comparativo`. */
       comparativo: ComparativoVisual[];
-      options: Array<{ id: string; label: string }>;
+      options: Array<{ id: string; label: string; clinicalActionId?: string }>;
     }
   | {
       id: string;

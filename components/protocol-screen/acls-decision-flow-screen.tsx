@@ -35,6 +35,7 @@ import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
+import { recordClinicalSafetyOverride } from "../../lib/clinical-safety-override";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, ClinicalShellHost, GuidedDiscoveryCard, InstrucaoResumida, NumericStepper, SafetyGate, Tag } from "../ui-v2";
@@ -119,6 +120,8 @@ export default function AclsDecisionFlowScreen({
   const [step, setStep] = useState<FrontendTreeStep>(() => engine.toFrontendStep());
   const [canGoBack, setCanGoBack] = useState<boolean>(() => engine.canGoBack());
   const [trail, setTrail] = useState<string[]>(() => [engine.toFrontendStep().title]);
+  const [pendingSoftStop, setPendingSoftStop] = useState<{ optionId: string; gateId: string; title: string; message: string; resolution: string } | undefined>(undefined);
+  const [softStopReason, setSoftStopReason] = useState("");
 
   // ───────────────────────────────────────────────────────────────────────────
   // Retomada de fluxo (defeito relatado: sair para consultar outro protocolo
@@ -257,7 +260,7 @@ export default function AclsDecisionFlowScreen({
    */
   const escalonamentoRef = useRef<EstadoDeEscalonamento>(ESTADO_INICIAL);
 
-  const handleChoose = (optionId: string) => {
+  const commitDecision = (optionId: string) => {
     const currentStep = engine.toFrontendStep();
     const currentNodeId = engine.getCurrentNode().id;
     const optionLabel =
@@ -288,6 +291,33 @@ export default function AclsDecisionFlowScreen({
       });
     }
     sync(next.title);
+  };
+
+  const handleChoose = (optionId: string) => {
+    const currentStep = engine.toFrontendStep();
+    if (currentStep.kind !== "decision") return;
+    const selected = currentStep.options.find((option) => option.id === optionId);
+    if (!selected?.clinicalActionId || !currentModuleSlug) {
+      commitDecision(optionId);
+      return;
+    }
+    const gate = evaluateClinicalActionAttemptFromPatientState({
+      protocolId: currentModuleSlug,
+      nodeId: currentStep.id,
+      actionId: selected.clinicalActionId,
+    }).decision.softStops[0];
+    if (!gate) {
+      commitDecision(optionId);
+      return;
+    }
+    setSoftStopReason("");
+    setPendingSoftStop({
+      optionId,
+      gateId: gate.policy.id,
+      title: gate.policy.title,
+      message: gate.policy.message,
+      resolution: gate.policy.resolution,
+    });
   };
 
   const handleAdvance = () => {
@@ -558,7 +588,39 @@ export default function AclsDecisionFlowScreen({
 
         <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>
         {step.kind === "decision" ? (
-          <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
+          pendingSoftStop ? (
+            <View style={styles.stepStack}>
+              <SafetyGate
+                title={tr(pendingSoftStop.title)}
+                message={tr(pendingSoftStop.message)}
+                primaryLabel={tr("Voltar e confirmar o tempo real da ICP")}
+                onPrimary={() => { setPendingSoftStop(undefined); setSoftStopReason(""); commitDecision("nao_sei"); }}
+                severity="warning"
+              />
+              <TextInput
+                value={softStopReason}
+                onChangeText={setSoftStopReason}
+                placeholder={tr("Motivo clínico/operacional para prosseguir sem o dado confirmado")}
+                multiline
+                style={styles.customInput}
+              />
+              <Pressable
+                accessibilityRole="button"
+                disabled={!softStopReason.trim()}
+                onPress={() => {
+                  const pending = pendingSoftStop;
+                  const reason = softStopReason.trim();
+                  if (!pending || !reason) return;
+                  recordClinicalSafetyOverride({ module: currentModuleSlug, gateId: pending.gateId, reason, severity: "warning" });
+                  setPendingSoftStop(undefined); setSoftStopReason(""); commitDecision(pending.optionId);
+                }}
+                style={[styles.advanceButton, !softStopReason.trim() && styles.controlButtonDisabled]}>
+                <Text style={styles.advanceButtonText}>{tr("Prosseguir por exceção — registrar justificativa")}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
+          )
         ) : step.kind === "action" ? (
           <ActionStep
             step={step}

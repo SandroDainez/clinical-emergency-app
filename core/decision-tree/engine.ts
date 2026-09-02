@@ -527,7 +527,7 @@ function mapDecisionNode(
     })),
     options: node.options
       .filter((option) => !option.showIf || option.showIf(values))
-      .map((option) => ({ id: option.id, label: interpolate(option.label) })),
+      .map((option) => ({ id: option.id, label: interpolate(option.label), clinicalActionId: option.clinicalActionId })),
   };
 }
 

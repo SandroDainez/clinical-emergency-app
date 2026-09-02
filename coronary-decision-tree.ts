@@ -278,8 +278,8 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Reperfusão indicada até 12 h; entre 12–24 h apenas se isquemia/instabilidade persistente.",
       ],
       options: [
-        { id: "icp", label: "Sim — ICP primária em ≤ 120 min", next: "stemi_icp" },
-        { id: "fibrino", label: "Não — ICP indisponível em tempo", next: "stemi_fibrino_check" },
+        { id: "icp", label: "Sim — ICP primária em ≤ 120 min", next: "stemi_icp", clinicalActionId: "definir_estrategia_reperfusao" },
+        { id: "fibrino", label: "Não — ICP indisponível em tempo", next: "stemi_fibrino_check", clinicalActionId: "definir_estrategia_reperfusao" },
         { id: "nao_sei", label: "Não sei — me ajude", next: "stemi_reperfusao_descoberta" },
       ],
     },
