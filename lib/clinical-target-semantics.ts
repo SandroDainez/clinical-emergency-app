@@ -1,4 +1,8 @@
-export type ClinicalTargetSemantic = "reference" | "adjunctive_module";
+export type ClinicalTargetSemantic =
+  | "reference"
+  | "adjunctive_module"
+  | "contingency"
+  | "handoff_candidate";
 
 export type ClinicalTargetContract = {
   id: string;
@@ -7,6 +11,11 @@ export type ClinicalTargetContract = {
   targetModuleId: string;
   semantic: ClinicalTargetSemantic;
   rationale: string;
+  /**
+   * Apenas para auditoria de candidatos: descreve o modo esperado caso o target
+   * seja promovido futuramente a ClinicalTransitionContract.
+   */
+  candidateMode?: "returnable" | "terminal";
 };
 
 /**
@@ -21,6 +30,16 @@ export type ClinicalTargetContract = {
  *   do cuidado em paralelo (ex.: ventilação ou titulação vasoativa), mas o nó
  *   de origem continua sendo o responsável pelo destino assistencial já definido.
  *   Também não abre pilha de retorno automaticamente.
+ *
+ * contingency
+ *   Porta disponível apenas se uma condição NOVA ocorrer depois (ex.: perder o
+ *   pulso durante reavaliação). Não descreve o estado atual do paciente e não
+ *   deve abrir automaticamente outro módulo.
+ *
+ * handoff_candidate
+ *   O estado atual já parece exigir transferência real de controle para outro
+ *   módulo. É marcador de auditoria: NÃO altera navegação nem runtime até a
+ *   árvore ser migrada e os testes de trajetória cobrirem a promoção.
  */
 export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
   {
@@ -110,5 +129,39 @@ export const CLINICAL_TARGET_CONTRACTS: readonly ClinicalTargetContract[] = [
     targetModuleId: "ventilacao-mecanica",
     semantic: "adjunctive_module",
     rationale: "Ventilação protetora e pronação são suporte especializado em paralelo ao destino UTI já declarado.",
+  },
+  {
+    id: "taquicardia-sem-pulso-pcr",
+    fromProtocolId: "acls_tachycardia_2025",
+    fromNodeId: "unstable_sem_pulso",
+    targetModuleId: "pcr-adulto",
+    semantic: "handoff_candidate",
+    candidateMode: "terminal",
+    rationale: "O paciente já está sem pulso; o próprio nó determina seguir PCR e não retornar ao algoritmo de taquicardia.",
+  },
+  {
+    id: "taquicardia-uti-pcr-contingencia",
+    fromProtocolId: "acls_tachycardia_2025",
+    fromNodeId: "unstable_disposition",
+    targetModuleId: "pcr-adulto",
+    semantic: "contingency",
+    rationale: "O paciente ainda tem pulso; o target só se aplica se ocorrer perda de pulso durante a reavaliação.",
+  },
+  {
+    id: "taquicardia-observacao-pcr-contingencia",
+    fromProtocolId: "acls_tachycardia_2025",
+    fromNodeId: "stable_reassess",
+    targetModuleId: "pcr-adulto",
+    semantic: "contingency",
+    rationale: "É uma porta de deterioração futura: só deve assumir controle se o paciente perder o pulso.",
+  },
+  {
+    id: "bradicardia-sem-pulso-pcr",
+    fromProtocolId: "acls_bradycardia_2025",
+    fromNodeId: "bradi_sem_pulso",
+    targetModuleId: "pcr-adulto",
+    semantic: "handoff_candidate",
+    candidateMode: "terminal",
+    rationale: "O paciente já perdeu o pulso; o algoritmo de PCR passa a dominar e não há retorno clínico à bradicardia enquanto a parada estiver em curso.",
   },
 ] as const;
