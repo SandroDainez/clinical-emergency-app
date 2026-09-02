@@ -51,18 +51,19 @@ function removeObjectById(source, id) {
 next.tachy = replaceDispositionInNode(next.tachy, "unstable_sem_pulso");
 next.brady = replaceDispositionInNode(next.brady, "bradi_sem_pulso");
 
-const transitionInsertion = `  {\n    id: "taquicardia-sem-pulso-pcr",\n    from: "acls_tachycardia_2025",\n    to: "pcr-adulto",\n    trigger: "Perda de pulso durante taquiarritmia ou após cardioversão",\n    mode: "terminal",\n    destinationKind: "module",\n    preserves: [\n      "ritmo_pre_parada",\n      "energia_ultima_cardioversao",\n      "numero_cardioversoes",\n      "antiarritmico_em_curso",\n      "tempo_perda_pulso",\n      "suspeita_causa_reversivel",\n    ],\n  },\n  {\n    id: "bradicardia-sem-pulso-pcr",\n    from: "acls_bradycardia_2025",\n    to: "pcr-adulto",\n    trigger: "Perda de pulso durante bradicardia grave ou durante suporte cronotrópico/marcapasso",\n    mode: "terminal",\n    destinationKind: "module",\n    preserves: [\n      "ritmo_pre_parada",\n      "atropina_administrada",\n      "marcapasso_em_uso",\n      "captura_marcapasso",\n      "cronotropico_em_curso",\n      "tempo_perda_pulso",\n      "suspeita_causa_reversivel",\n    ],\n  },\n`;
+const transitionInsertion = `  {\n    id: "taquicardia-sem-pulso-pcr-terminal",\n    from: "acls_tachycardia_2025",\n    to: "pcr-adulto",\n    trigger: "Perda de pulso durante taquiarritmia ou após cardioversão",\n    mode: "terminal",\n    destinationKind: "module",\n    preserves: [\n      "ritmo_pre_parada",\n      "energia_ultima_cardioversao",\n      "numero_cardioversoes",\n      "antiarritmico_em_curso",\n      "tempo_perda_pulso",\n      "suspeita_causa_reversivel",\n    ],\n  },\n  {\n    id: "bradicardia-sem-pulso-pcr-terminal",\n    from: "acls_bradycardia_2025",\n    to: "pcr-adulto",\n    trigger: "Perda de pulso durante bradicardia grave ou durante suporte cronotrópico/marcapasso",\n    mode: "terminal",\n    destinationKind: "module",\n    preserves: [\n      "ritmo_pre_parada",\n      "atropina_administrada",\n      "marcapasso_em_uso",\n      "captura_marcapasso",\n      "cronotropico_em_curso",\n      "tempo_perda_pulso",\n      "suspeita_causa_reversivel",\n    ],\n  },\n`;
 
-if (!next.transitions.includes('id: "taquicardia-sem-pulso-pcr"')) {
+if (!next.transitions.includes('id: "taquicardia-sem-pulso-pcr-terminal"')) {
   const anchor = "] as const;";
   const at = next.transitions.lastIndexOf(anchor);
   if (at < 0) throw new Error("Final do registry de transições não encontrado");
   next.transitions = next.transitions.slice(0, at) + transitionInsertion + next.transitions.slice(at);
 }
-if (!next.transitions.includes('id: "bradicardia-sem-pulso-pcr"')) {
+if (!next.transitions.includes('id: "bradicardia-sem-pulso-pcr-terminal"')) {
   throw new Error("Contrato terminal de bradicardia não foi inserido");
 }
 
+// Os IDs dos targets são históricos e permanecem sem o sufixo -terminal.
 next.targets = removeObjectById(next.targets, "taquicardia-sem-pulso-pcr");
 next.targets = removeObjectById(next.targets, "bradicardia-sem-pulso-pcr");
 next.debts = removeObjectById(next.debts, "tachy-pulseless-to-pcr");
@@ -73,20 +74,31 @@ const invariants = [
   [next.tachy, 'disposition: "other_module"', "taquicardia: handoff não promovido"],
   [next.brady, 'bradi_sem_pulso: {', "bradicardia: nó sem pulso ausente"],
   [next.brady, 'disposition: "other_module"', "bradicardia: handoff não promovido"],
-  [next.transitions, 'id: "taquicardia-sem-pulso-pcr"', "contrato terminal de taquicardia ausente"],
-  [next.transitions, 'id: "bradicardia-sem-pulso-pcr"', "contrato terminal de bradicardia ausente"],
+  [next.transitions, 'id: "taquicardia-sem-pulso-pcr-terminal"', "contrato terminal de taquicardia ausente"],
+  [next.transitions, 'id: "bradicardia-sem-pulso-pcr-terminal"', "contrato terminal de bradicardia ausente"],
   [next.transitions, '"energia_ultima_cardioversao"', "contexto de cardioversão não preservado"],
   [next.transitions, '"captura_marcapasso"', "contexto de marcapasso não preservado"],
 ];
 for (const [source, token, message] of invariants) {
   if (!source.includes(token)) throw new Error(message);
 }
-if (next.targets.includes('semantic: "handoff_candidate"') &&
-    (next.targets.includes('id: "taquicardia-sem-pulso-pcr"') || next.targets.includes('id: "bradicardia-sem-pulso-pcr"'))) {
-  throw new Error("Target promovido permaneceu classificado como handoff_candidate");
+
+if (next.targets.includes('id: "taquicardia-sem-pulso-pcr"') || next.targets.includes('id: "bradicardia-sem-pulso-pcr"')) {
+  throw new Error("Target promovido permaneceu no registry de targets");
 }
 if (next.debts.includes('id: "tachy-pulseless-to-pcr"') || next.debts.includes('id: "brady-pulseless-to-pcr"')) {
   throw new Error("Dívida de promoção permaneceu aberta após a migração preparada");
+}
+
+// A política de não atrasar PCR vive no contrato de contexto/orquestrador,
+// não no ClinicalTransitionContract. Esta migração apenas torna a aresta real.
+const pcrContext = fs.readFileSync(path.join(raiz, "lib/pcr-terminal-handoff-context.ts"), "utf8");
+for (const token of [
+  'transitionId: "taquicardia-sem-pulso-pcr-terminal"',
+  'transitionId: "bradicardia-sem-pulso-pcr-terminal"',
+  'transferPolicy: "do_not_delay_destination"',
+]) {
+  if (!pcrContext.includes(token)) throw new Error(`Contrato PCR atual sem ${token}`);
 }
 
 // Só escreve depois que TODAS as transformações e invariantes passaram.
@@ -94,4 +106,4 @@ for (const [nome, arquivo] of Object.entries(paths)) {
   if (next[nome] !== original[nome]) fs.writeFileSync(arquivo, next[nome], "utf8");
 }
 
-console.log("Handoffs terminais taquicardia/bradicardia → PCR migrados com contexto preservado.");
+console.log("Handoffs terminais taquicardia/bradicardia → PCR migrados com contexto preservado e sem bloquear a PCR por dados ausentes.");
