@@ -41,6 +41,9 @@ jobs:
       - name: Validate active guided discovery contracts
         run: node scripts/valida-guided-discovery-hic-stemi.cjs
 
+      - name: Run action-centered safety gate regressions
+        run: node scripts/test-clinical-gate-triggers.cjs
+
       - name: Validate terminal PCR handoffs
         run: |
           node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
