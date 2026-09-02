@@ -46,8 +46,8 @@ for (const [arquivo, protocolId, nodeId, target, semantic] of casos) {
   }
 }
 
-if (!registry.includes('export type ClinicalTargetSemantic = "reference" | "adjunctive_module"')) {
-  erros.push("taxonomia reference/adjunctive_module ausente");
+for (const semantic of ["reference", "adjunctive_module", "contingency", "handoff_candidate"]) {
+  if (!registry.includes(`\"${semantic}\"`)) erros.push(`taxonomia sem ${semantic}`);
 }
 
 if (erros.length) {
