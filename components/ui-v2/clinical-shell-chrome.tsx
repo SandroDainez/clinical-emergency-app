@@ -52,27 +52,31 @@ export function ClinicalShellChrome({
   return (
     <View>
       <Header titulo={protocol} etapa={stepLabel} onVoltar={onBack} />
-      {returnContext ? (
-        <View style={e.returnBanner} accessibilityRole="summary">
-          <View style={e.returnTopRow}>
-            <Text style={e.returnEyebrow}>INTERCORRÊNCIA EM TRATAMENTO</Text>
-            <Text style={e.returnStatus}>CONTEXTO PRESERVADO</Text>
-          </View>
-          <Text style={e.returnTitle}>Este módulo faz parte do atendimento em andamento.</Text>
-          <Text style={e.returnText} numberOfLines={2}>
-            Após estabilizar esta intercorrência, retomar: {returnContext}
-          </Text>
-        </View>
-      ) : null}
       <ClinicalCockpitBar
         protocol={protocol}
         phase={phase}
         elapsed={elapsed}
         metrics={metrics}
       />
+
+      {returnContext ? (
+        <View style={e.returnBanner} accessibilityRole="summary">
+          <View style={e.returnTopRow}>
+            <Text style={e.returnEyebrow}>INTERCORRÊNCIA · CONTEXTO PRESERVADO</Text>
+            <Text style={e.returnStatus}>RETORNAR DEPOIS</Text>
+          </View>
+          <Text style={e.returnText} numberOfLines={2}>
+            Após estabilizar aqui, retomar: <Text style={e.returnTarget}>{returnContext}</Text>
+          </Text>
+        </View>
+      ) : null}
+
       {reassessmentAlert ? (
         <View
-          style={[e.reassessmentBanner, reassessmentAlert.overdue && e.reassessmentBannerOverdue]}
+          style={[
+            e.reassessmentBanner,
+            reassessmentAlert.overdue ? e.reassessmentBannerOverdue : e.reassessmentBannerPending,
+          ]}
           accessibilityRole="alert"
         >
           <View style={e.reassessmentTopRow}>
@@ -87,17 +91,18 @@ export function ClinicalShellChrome({
           </View>
           <Text style={e.reassessmentTitle}>{reassessmentAlert.title}</Text>
           {reassessmentAlert.signals.length ? (
-            <Text style={e.reassessmentSignals} numberOfLines={2}>
+            <Text style={e.reassessmentSignals} numberOfLines={reassessmentAlert.overdue ? 2 : 1}>
               Verificar: {reassessmentAlert.signals.join(" · ")}
             </Text>
           ) : null}
           {reassessmentAlert.pendingCount > 1 ? (
-            <Text style={e.reassessmentCount}>
+            <Text style={[e.reassessmentCount, reassessmentAlert.overdue && e.reassessmentCountOverdue]}>
               + {reassessmentAlert.pendingCount - 1} reavaliação(ões) pendente(s)
             </Text>
           ) : null}
         </View>
       ) : null}
+
       <CrisisActionBar actions={crisisActions} />
     </View>
   );
@@ -107,15 +112,15 @@ const criarEstilos = (t: Tema) =>
   StyleSheet.create({
     returnBanner: {
       marginHorizontal: ESPACO.md,
-      marginTop: ESPACO.sm,
+      marginTop: ESPACO.xs,
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
       borderRadius: RAIO.input,
       borderWidth: 1,
-      borderLeftWidth: 4,
+      borderLeftWidth: 3,
       borderColor: t.cores.primary,
       backgroundColor: t.cores.surface,
-      gap: 4,
+      gap: 2,
     },
     returnTopRow: {
       flexDirection: "row",
@@ -126,40 +131,42 @@ const criarEstilos = (t: Tema) =>
     returnEyebrow: {
       ...TIPOGRAFIA.micro,
       color: t.cores.primary,
-      fontWeight: "900",
-      letterSpacing: 0.5,
+      fontWeight: "800",
+      letterSpacing: 0.35,
       flex: 1,
     },
     returnStatus: {
       fontSize: 9,
       lineHeight: 11,
-      color: t.cores.success,
-      fontWeight: "900",
-      letterSpacing: 0.5,
-    },
-    returnTitle: {
-      ...TIPOGRAFIA.caption,
-      color: t.cores.text,
+      color: t.cores.textSecondary,
       fontWeight: "800",
+      letterSpacing: 0.35,
     },
     returnText: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
-      fontWeight: "600",
+      fontWeight: "500",
+    },
+    returnTarget: {
+      color: t.cores.text,
+      fontWeight: "800",
     },
     reassessmentBanner: {
       marginHorizontal: ESPACO.md,
-      marginTop: ESPACO.sm,
+      marginTop: ESPACO.xs,
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
       borderRadius: RAIO.input,
       borderWidth: 1,
       borderLeftWidth: 4,
-      borderColor: t.cores.warning,
       backgroundColor: t.cores.surface,
-      gap: 3,
+      gap: 2,
+    },
+    reassessmentBannerPending: {
+      paddingVertical: ESPACO.xs,
+      borderColor: t.cores.warning,
     },
     reassessmentBannerOverdue: {
+      paddingVertical: ESPACO.sm,
       borderColor: t.cores.critical,
     },
     reassessmentTopRow: {
@@ -196,5 +203,8 @@ const criarEstilos = (t: Tema) =>
       ...TIPOGRAFIA.micro,
       color: t.cores.warning,
       fontWeight: "700",
+    },
+    reassessmentCountOverdue: {
+      color: t.cores.critical,
     },
   });
