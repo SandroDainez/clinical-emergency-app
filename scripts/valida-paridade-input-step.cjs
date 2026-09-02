@@ -70,17 +70,35 @@ exigir(
 );
 exigir(
   !/onConfirmar=/.test(field),
-  "ClinicalInputField ganhou confirmação numérica extra e deixou de ser estritamente equivalente ao InputStep atual."
+  "ClinicalInputField ganhou confirmação numérica extra no NumericStepper."
 );
 
-// O número inicial visível não pode ser gravado por conta própria.
+// Valor ausente não pode ganhar sugestão visual. Peso, altura, glicemia, PAS,
+// PAD, NIHSS e qualquer outro campo clínico só mostram número após informação
+// explícita ou dado herdado verdadeiro.
 exigir(
-  /Number\(\(\(numericRange\.min \+ numericRange\.max\) \/ 2\)\.toFixed\(0\)\)/.test(field),
-  "Campo numérico deixou de usar o ponto médio apenas como valor visual inicial."
+  !/\(numericRange\.min\s*\+\s*numericRange\.max\)\s*\/\s*2/.test(field),
+  "ClinicalInputField voltou a inventar ponto médio para campo numérico vazio."
+);
+exigir(
+  /const hasNumericValue = numericValue !== undefined && Number\.isFinite\(numericValue\)/.test(field),
+  "Campo numérico perdeu a distinção entre valor real e ausência de informação."
+);
+exigir(
+  /hasNumericValue\s*\?\s*\([\s\S]{0,1200}<NumericStepper/.test(field),
+  "NumericStepper deixou de depender da existência de um valor real."
+);
+exigir(
+  /Valor ainda não informado/.test(field),
+  "Estado vazio do campo numérico deixou de ser explícito para o usuário."
+);
+exigir(
+  /testID=\{testID \? `\$\{testID\}-numeric-input` : undefined\}/.test(field),
+  "Campo numérico vazio perdeu sua entrada explícita testável."
 );
 exigir(
   !/useEffect\([\s\S]{0,300}onChange\(/.test(field),
-  "ClinicalInputField parece gravar valor automaticamente por efeito; valor visual não pode virar dado clínico."
+  "ClinicalInputField parece gravar valor automaticamente por efeito."
 );
 
 // ── Categoria fechada ───────────────────────────────────────────────────────
@@ -150,8 +168,8 @@ if (falhas.length) {
 
 console.log("✅ Paridade estrutural do InputStep preservada.");
 console.log("   • adaptador encaminha fields, values, herdados e canContinue sem reinterpretar");
-console.log("   • ranges continuam vindo da fonte canônica com o mesmo fallback legado");
-console.log("   • numéricos preservam min/max/passo e não ganham confirmação extra");
+console.log("   • ranges continuam vindo da fonte canônica com o mesmo fallback de faixa");
+console.log("   • numéricos ficam vazios até haver dado real e preservam min/max/passo depois disso");
 console.log("   • categorias preservam value/label da árvore");
 console.log("   • Outro…, herdados e calculadoras continuam representados");
 console.log("   • field.id e callbacks seguem sem reinterpretação");
