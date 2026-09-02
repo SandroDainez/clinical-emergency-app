@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { ESPACO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { BottomSheet } from "./bottom-sheet";
 import { Header } from "./header";
@@ -89,11 +89,9 @@ export function ScreenTemplate({
 }
 
 /**
- * Orientação da etapa em no máximo 2 linhas, com o restante em "ver mais".
- *
- * O plano é explícito: o excedente vai para um painel, **sem remover conteúdo
- * clínico**. Por isso o texto completo continua no app e a 3 linhas de distância
- * — o que sai da tela principal é ruído visual, não informação.
+ * Orientação da etapa em no máximo 2 linhas, com o restante em um botão de
+ * detalhes. Conteúdo informativo permanece plano; a abertura do painel recebe
+ * superfície, borda, verbo e seta para ser reconhecida como ação sem tentativa.
  */
 export function InstrucaoResumida({
   resumo,
@@ -117,12 +115,12 @@ export function InstrucaoResumida({
         <>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Ver mais sobre ${tituloCompleto}`}
+            accessibilityLabel={`Ver detalhes sobre ${tituloCompleto}`}
             onPress={() => setAberto(true)}
-            hitSlop={ESPACO.sm}
             style={({ pressed }) => [e.verMais, pressed && e.verMaisPressionado]}
           >
-            <Text style={e.verMaisTexto}>ver mais</Text>
+            <Text style={e.verMaisTexto}>VER DETALHES</Text>
+            <Text style={e.verMaisSeta}>›</Text>
           </Pressable>
 
           <BottomSheet
@@ -163,7 +161,7 @@ const criarEstilos = (t: Tema) =>
       width: "100%",
       alignSelf: "center",
     },
-    instrucao: { gap: ESPACO.xs },
+    instrucao: { gap: ESPACO.sm },
     instrucaoTexto: {
       ...TIPOGRAFIA.caption,
       color: t.cores.textSecondary,
@@ -172,10 +170,29 @@ const criarEstilos = (t: Tema) =>
     verMais: {
       alignSelf: "flex-start",
       minHeight: TOQUE.minimo,
+      flexDirection: "row",
+      alignItems: "center",
       justifyContent: "center",
+      gap: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      borderWidth: 1.5,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.surface,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.xs,
     },
-    verMaisPressionado: { opacity: 0.6 },
-    verMaisTexto: { ...TIPOGRAFIA.micro, color: t.cores.primary, fontWeight: "800" },
+    verMaisPressionado: { opacity: 0.78, transform: [{ scale: 0.98 }] },
+    verMaisTexto: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.45,
+    },
+    verMaisSeta: {
+      ...TIPOGRAFIA.body,
+      color: t.cores.primary,
+      fontWeight: "900",
+    },
     instrucaoCompleta: {
       ...TIPOGRAFIA.body,
       color: t.cores.text,
