@@ -12,19 +12,23 @@ for (const protocolId of ["politrauma", "injuria_renal_aguda"]) {
   if (!classification.includes(`protocolId: "${protocolId}"`)) {
     throw new Error(`Care pathway não classificado: ${protocolId}`);
   }
-  if (!debts.includes(`protocolId: "${protocolId}"`)) {
-    throw new Error(`Dívida terminal não registrada: ${protocolId}`);
+  if (debts.includes(`protocolId: "${protocolId}"`)) {
+    throw new Error(`Dívida terminal obsoleta ainda registrada: ${protocolId}`);
   }
 }
 
-for (const [source, protocolId] of [[trauma, "politrauma"], [ira, "injuria_renal_aguda"]]) {
-  if (!source.includes(`id: "${protocolId}"`)) throw new Error(`protocolId real ausente: ${protocolId}`);
-  if (/disposition:\s*"(discharge|observation|icu)"/.test(source)) {
-    throw new Error(`${protocolId}: árvore ganhou disposition assistencial; revisar/remover dívida em vez de mantê-la obsoleta.`);
-  }
-  if (!source.includes('disposition: "other_module"')) {
-    throw new Error(`${protocolId}: evidência de handoff other_module não encontrada.`);
-  }
+if (!trauma.includes('id: "destino"') || !trauma.includes('id: "uti"') || !trauma.includes('id: "observacao"')) {
+  throw new Error("Politrauma perdeu nós explícitos de destino.");
+}
+if (!/disposition:\s*"icu"/.test(trauma) || !/disposition:\s*"observation"/.test(trauma)) {
+  throw new Error("Politrauma perdeu disposition assistencial explícito.");
 }
 
-console.log("Dívidas terminais de politrauma e IRA permanecem explícitas e coerentes com as árvores atuais.");
+if (!ira.includes('id: "destino_monitorizado"') || !ira.includes('id: "destino_suporte"')) {
+  throw new Error("IRA perdeu nós terminais explícitos.");
+}
+if (!/disposition:\s*"observation"/.test(ira) || !/disposition:\s*"icu"/.test(ira)) {
+  throw new Error("IRA perdeu disposition assistencial explícito.");
+}
+
+console.log("Politrauma e IRA têm destinos assistenciais explícitos; debt registry permanece limpo.");
