@@ -88,12 +88,18 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 - [x] Contratos canônicos de fármaco, apresentação, indicação e fonte definidos.
 - [x] Separação estrutural entre apresentação comercial e recomendação clínica definida.
-- [x] Primeiro fármaco migrado em paralelo: tenecteplase (sem substituir a fonte legada).
+- [x] Tenecteplase migrada em paralelo, sem substituir a fonte legada.
 - [x] Tenecteplase separa fonte da apresentação brasileira da fonte clínica do regime de AVC.
 - [x] Paridade do regime AVC 0,25 mg/kg, máximo 25 mg, protegida por trava estrutural.
-- [ ] Consumir a entrada canônica em um módulo piloto após CI/testes verdes.
+- [x] Amiodarona migrada em paralelo com regimes PCR e com pulso explicitamente separados.
+- [x] Trava impede mistura dos regimes de amiodarona.
+- [x] Alteplase no AVC migrada em paralelo e isolada de TEP/IAM.
+- [x] Paridade da alteplase no AVC 0,9 mg/kg, máximo 90 mg, 10% bolus + 60 min protegida.
+- [x] Registry único da Drug Knowledge Base criado com IDs e indicações não duplicados.
+- [x] Inventário de doses críticas duplicadas criado para ordenar próximas migrações.
+- [ ] Consumir uma entrada canônica em módulo piloto após CI/testes verdes.
 - [ ] Validar apresentações dos próximos fármacos comercializados no Brasil.
-- [ ] Bloquear duplicação de dose crítica entre módulos.
+- [ ] Bloquear duplicação de dose crítica entre módulos após inventário/revisão.
 
 ## Bloco G — Clinical Safety Test Suite
 
@@ -109,7 +115,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Auditoria de grafo para reavaliação/destino criada.
 - [x] Cenário estrutural de interrupção aninhada e retorno LIFO criado.
 - [x] Trava estrutural do runtime de retomada criada.
-- [x] Trava de paridade do primeiro fármaco canônico criada.
+- [x] Travas de paridade das primeiras entradas canônicas de medicamentos criadas.
+- [x] Trava estrutural do registry único de medicamentos criada.
 - [ ] Ligar validadores ao `test:all` após execução local/CI verde.
 - [ ] Expandir trajetórias até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
@@ -120,9 +127,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Contrato de evidência por recomendação acionável criado.
 - [x] Contrato de versão clínica criado.
 - [x] Regra de preservar a versão em que o atendimento começou definida.
-- [x] Primeira recomendação canônica (tenecteplase no AVC) registrada com fonte clínica e data de revisão.
+- [x] Registry de evidência por nó criado.
+- [x] AVC já possui bindings iniciais para tempo, neuroimagem e trombólise.
+- [x] Tenecteplase e alteplase do AVC registradas com fonte AHA/ASA 2026 e data de revisão.
+- [x] Inventário de cobertura de evidência por nó acionável criado.
 - [ ] Migrar recomendações reais adicionais para fonte por nó/ação.
-- [ ] Data de revisão programada e responsável por revisão.
+- [ ] Definir data de próxima revisão e responsável por revisão por protocolo.
 
 ## Regra de migração
 
