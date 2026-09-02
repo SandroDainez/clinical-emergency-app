@@ -15,6 +15,7 @@ export type CockpitMetric = {
 };
 
 export type ClinicalCockpitBarProps = {
+  /** Mantido no contrato para compatibilidade do shell; o Header já exibe o protocolo. */
   protocol: string;
   phase?: string;
   elapsed?: string;
@@ -24,41 +25,42 @@ export type ClinicalCockpitBarProps = {
 /**
  * Faixa persistente do atendimento.
  *
- * Mostra somente contexto que precisa permanecer visível sem rolar a tela:
- * protocolo, fase, tempo e até quatro métricas resumidas. Não recebe decisões,
- * condutas ou texto explicativo — isso pertence ao corpo do fluxo.
+ * O Header já é a fonte visual de identidade do protocolo. Esta faixa mostra
+ * apenas o contexto complementar que precisa permanecer visível sem rolar a
+ * tela: fase, tempo e até quatro métricas resumidas. Repetir o nome do protocolo
+ * aqui criava duas faixas consecutivas dizendo a mesma coisa.
  *
  * Informação não usa linguagem visual de botão. Fase, cronômetro e métricas são
  * deliberadamente planos, sem cápsula/borda fechada, para não competir com os
  * controles realmente clicáveis do atendimento.
  */
 export function ClinicalCockpitBar({
-  protocol,
+  protocol: _protocol,
   phase,
   elapsed,
   metrics = [],
 }: ClinicalCockpitBarProps) {
   const e = useEstilosDoTema(criarEstilos);
   const visibleMetrics = metrics.slice(0, 4);
+  const temFaixaSuperior = Boolean(phase || elapsed);
+
+  if (!temFaixaSuperior && visibleMetrics.length === 0) return null;
 
   return (
     <View style={e.wrapper} accessibilityRole="summary">
-      <View style={e.topRow}>
-        <View style={e.titleBlock}>
-          <Text style={e.protocol} numberOfLines={1}>{protocol}</Text>
-          {phase ? (
-            <View style={e.phasePill}>
-              <Text style={e.phase} numberOfLines={1}>{phase}</Text>
+      {temFaixaSuperior ? (
+        <View style={e.topRow}>
+          <View style={e.phaseBlock}>
+            {phase ? <Text style={e.phase} numberOfLines={2}>{phase}</Text> : null}
+          </View>
+          {elapsed ? (
+            <View style={e.elapsedPill} accessibilityLabel={`Tempo de atendimento ${elapsed}`}>
+              <Text style={e.elapsedLabel}>TEMPO</Text>
+              <Text style={e.elapsed}>{elapsed}</Text>
             </View>
           ) : null}
         </View>
-        {elapsed ? (
-          <View style={e.elapsedPill} accessibilityLabel={`Tempo de atendimento ${elapsed}`}>
-            <Text style={e.elapsedLabel}>TEMPO</Text>
-            <Text style={e.elapsed}>{elapsed}</Text>
-          </View>
-        ) : null}
-      </View>
+      ) : null}
 
       {visibleMetrics.length ? (
         <View style={e.metricsRow}>
@@ -104,26 +106,15 @@ const criarEstilos = (t: Tema) =>
       justifyContent: "space-between",
       gap: ESPACO.md,
     },
-    titleBlock: {
+    phaseBlock: {
       flex: 1,
       minWidth: 0,
-      gap: 5,
-    },
-    protocol: {
-      ...TIPOGRAFIA.caption,
-      color: t.cores.text,
-      fontWeight: "900",
-      letterSpacing: 0.1,
-    },
-    phasePill: {
-      alignSelf: "flex-start",
-      maxWidth: "100%",
-      paddingVertical: 1,
     },
     phase: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
       fontWeight: "700",
+      lineHeight: 15,
     },
     elapsedPill: {
       minWidth: 64,
