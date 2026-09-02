@@ -3,9 +3,16 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
+export type CategoricalSelectorTone = "default" | "primary" | "warning" | "success" | "critical";
+
 export type CategoricalSelectorOption = {
   value: string;
   label: string;
+  /**
+   * Tom apenas de apresentação. Não altera ordem, valor, seleção nem semântica
+   * clínica da opção; serve para preservar estados já diferenciados pela tela.
+   */
+  tone?: CategoricalSelectorTone;
 };
 
 export type CategoricalSelectorProps = {
@@ -49,6 +56,28 @@ export function CategoricalSelector({
       >
         {options.map((option) => {
           const selected = option.value === value;
+          const tone = option.tone ?? "default";
+          const toneStyle =
+            tone === "primary"
+              ? e.tonePrimary
+              : tone === "warning"
+                ? e.toneWarning
+                : tone === "success"
+                  ? e.toneSuccess
+                  : tone === "critical"
+                    ? e.toneCritical
+                    : undefined;
+          const toneText =
+            tone === "primary"
+              ? e.textPrimary
+              : tone === "warning"
+                ? e.textWarning
+                : tone === "success"
+                  ? e.textSuccess
+                  : tone === "critical"
+                    ? e.textCritical
+                    : undefined;
+
           return (
             <Pressable
               key={option.value}
@@ -59,7 +88,9 @@ export function CategoricalSelector({
               onPress={() => onChange(option.value)}
               style={({ pressed }) => [
                 e.option,
+                toneStyle,
                 selected && e.optionSelected,
+                selected && toneStyle,
                 pressed && !disabled && e.pressed,
                 disabled && e.disabled,
               ]}
@@ -67,7 +98,14 @@ export function CategoricalSelector({
               <View style={[e.indicator, selected && e.indicatorSelected]}>
                 {selected ? <Text style={e.check}>✓</Text> : null}
               </View>
-              <Text style={[e.optionLabel, selected && e.optionLabelSelected]}>
+              <Text
+                style={[
+                  e.optionLabel,
+                  tone !== "default" && toneText,
+                  selected && e.optionLabelSelected,
+                  selected && tone !== "default" && toneText,
+                ]}
+              >
                 {option.label}
               </Text>
             </Pressable>
@@ -110,10 +148,13 @@ const criarEstilos = (t: Tema) =>
       paddingVertical: ESPACO.sm,
     },
     optionSelected: {
-      borderColor: t.cores.primary,
       borderWidth: 2,
       backgroundColor: t.cores.surface,
     },
+    tonePrimary: { borderColor: t.cores.primary },
+    toneWarning: { borderColor: t.cores.warning },
+    toneSuccess: { borderColor: t.cores.success },
+    toneCritical: { borderColor: t.cores.critical },
     indicator: {
       width: 22,
       height: 22,
@@ -143,6 +184,10 @@ const criarEstilos = (t: Tema) =>
       color: t.cores.primary,
       fontWeight: "900",
     },
+    textPrimary: { color: t.cores.primary },
+    textWarning: { color: t.cores.warning },
+    textSuccess: { color: t.cores.success },
+    textCritical: { color: t.cores.critical },
     helper: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
