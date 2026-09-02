@@ -1156,38 +1156,6 @@ function InputStep({
                 ) : null}
               </View>
 
-              {/* Barra de arrastar para campo numérico — pedido explícito do
-                  usuário: "onde se tem dados para preencher tipo peso, altura
-                  ... pedi uma barra de arrastar para selecionar e ainda
-                  permanece os cards para preencher".
-
-                  O NumericStepper (slider + botões −/+) já existia desde a Fase
-                  2 e só nunca foi ligado aqui. Os presets CONTINUAM: são valores
-                  curados pelo protocolo e continuam sendo o toque mais rápido —
-                  o slider é para o que está entre eles. Arrastar com luva é mais
-                  rápido e menos sujeito a erro que teclado numérico. */}
-              {faixa ? (
-                <NumericStepper
-                  valor={
-                    valorNumerico !== undefined && Number.isFinite(valorNumerico)
-                      ? valorNumerico
-                      : // Sem valor escolhido o controle parte do MEIO da faixa,
-                        // não de um número que pareça sugestão clínica. E só grava
-                        // quando ele arrasta: nada é preenchido por conta própria.
-                        Number(((faixa.min + faixa.max) / 2).toFixed(0))
-                  }
-                  onChange={(n) => {
-                    onSetValue(field.id, String(n));
-                    setCustomOpen((s) => ({ ...s, [field.id]: false }));
-                  }}
-                  min={faixa.min}
-                  max={faixa.max}
-                  passo={faixa.passo}
-                  unidade={field.unit}
-                  testID={`slider-${field.id}`}
-                />
-              ) : null}
-
               {/* Valor herdado de outro módulo — dito em voz alta.
                   Preencher sozinho e ficar calado seria pior que perguntar: o
                   usuário veria um número, não teria por que duvidar dele, e não
@@ -1198,15 +1166,61 @@ function InputStep({
                 </Text>
               ) : null}
 
-              {/* Calculadora embutida, quando o campo declara uma. Fica ANTES
-                  da barra: quem não sabe o valor calcula aqui e o total cai no
-                  campo; quem sabe ignora e arrasta. */}
+              {/* Calculadora embutida antes da entrada numérica: no NIHSS, quem
+                  ainda não tem o escore vê o instrumento primeiro, sem precisar
+                  sair do fluxo ou adivinhar um número. */}
               {field.calculadora ? (
                 <CalculadoraEmbutida
                   calculadoraId={field.calculadora}
                   valorAtual={current}
                   onTotal={(n) => onSetValue(field.id, String(n))}
                 />
+              ) : null}
+
+              {/* Campo numérico sem valor REAL permanece vazio. Uma barra exige
+                  uma posição; usar ponto médio, mínimo ou qualquer default faria
+                  a interface parecer possuir uma medida que ninguém informou.
+                  Depois do primeiro valor explícito, a barra volta a ser o
+                  controle rápido de ajuste. */}
+              {faixa && valorNumerico !== undefined && Number.isFinite(valorNumerico) ? (
+                <NumericStepper
+                  valor={valorNumerico}
+                  onChange={(n) => {
+                    onSetValue(field.id, String(n));
+                    setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                  }}
+                  min={faixa.min}
+                  max={faixa.max}
+                  passo={faixa.passo}
+                  unidade={field.unit}
+                  testID={`slider-${field.id}`}
+                />
+              ) : faixa ? (
+                <View style={styles.customRow}>
+                  <TextInput
+                    value={customText[field.id] ?? ""}
+                    onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
+                    placeholder={tr("Digitar valor")}
+                    placeholderTextColor="#64748b"
+                    keyboardType="numeric"
+                    style={styles.customInput}
+                    returnKeyType="done"
+                    testID={`input-numerico-${field.id}`}
+                    onSubmitEditing={() => {
+                      const v = (customText[field.id] ?? "").trim();
+                      if (v) onSetValue(field.id, v);
+                    }}
+                  />
+                  <Pressable
+                    testID={`confirmar-numerico-${field.id}`}
+                    onPress={() => {
+                      const v = (customText[field.id] ?? "").trim();
+                      if (v) onSetValue(field.id, v);
+                    }}
+                    style={({ pressed }) => [styles.customAdd, pressed && { opacity: 0.85 }]}>
+                    <Text style={styles.customAddText}>OK</Text>
+                  </Pressable>
+                </View>
               ) : null}
 
               {/* Campo NUMÉRICO: só a barra.
