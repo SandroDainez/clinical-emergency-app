@@ -44,20 +44,28 @@ export function ClinicalInputField({
   const e = useEstilosDoTema(criarEstilos);
   const [customOpen, setCustomOpen] = useState(false);
   const [customText, setCustomText] = useState("");
+  const [numericText, setNumericText] = useState("");
 
   const preset = field.presets.find((item) => item.value === value);
   const isPreset = Boolean(preset);
   const showingCustom = customOpen || (value !== undefined && !isPreset && !numericRange);
   const numericValue = value !== undefined ? Number(value.replace(",", ".")) : undefined;
+  const hasNumericValue = numericValue !== undefined && Number.isFinite(numericValue);
 
   const currentLabel = preset?.label ?? value;
-  const fallbackNumericValue = numericRange
-    ? Number(((numericRange.min + numericRange.max) / 2).toFixed(0))
-    : undefined;
-  const displayedNumericValue =
-    numericValue !== undefined && Number.isFinite(numericValue)
-      ? numericValue
-      : fallbackNumericValue;
+
+  const confirmarNumeroDigitado = () => {
+    if (!numericRange) return;
+    const texto = numericText.trim();
+    if (!texto) return;
+
+    const numero = Number(texto.replace(",", "."));
+    if (!Number.isFinite(numero)) return;
+    if (numero < numericRange.min || numero > numericRange.max) return;
+
+    onChange(String(numero));
+    setNumericText("");
+  };
 
   return (
     <View style={e.wrapper} testID={testID}>
@@ -84,17 +92,47 @@ export function ClinicalInputField({
 
       {renderCalculator}
 
-      {numericRange && displayedNumericValue !== undefined ? (
-        <NumericStepper
-          valor={displayedNumericValue}
-          onChange={(next) => onChange(String(next))}
-          min={numericRange.min}
-          max={numericRange.max}
-          passo={numericRange.passo}
-          unidade={field.unit}
-          rotulo={tr(field.label)}
-          testID={testID ? `${testID}-numeric` : undefined}
-        />
+      {numericRange ? (
+        hasNumericValue ? (
+          <NumericStepper
+            valor={numericValue}
+            onChange={(next) => onChange(String(next))}
+            min={numericRange.min}
+            max={numericRange.max}
+            passo={numericRange.passo}
+            unidade={field.unit}
+            rotulo={tr(field.label)}
+            testID={testID ? `${testID}-numeric` : undefined}
+          />
+        ) : (
+          <View style={e.numericEmpty} testID={testID ? `${testID}-numeric-empty` : undefined}>
+            <Text style={e.numericEmptyLabel}>{tr("Valor ainda não informado")}</Text>
+            <View style={e.customRow}>
+              <TextInput
+                value={numericText}
+                onChangeText={setNumericText}
+                placeholder={tr("Digitar valor")}
+                keyboardType="numeric"
+                returnKeyType="done"
+                onSubmitEditing={confirmarNumeroDigitado}
+                style={e.customInput}
+                testID={testID ? `${testID}-numeric-input` : undefined}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={tr("Confirmar valor")}
+                onPress={confirmarNumeroDigitado}
+                style={({ pressed }) => [e.customConfirm, pressed && e.pressed]}
+                testID={testID ? `${testID}-numeric-confirm` : undefined}
+              >
+                <Text style={e.customConfirmText}>OK</Text>
+              </Pressable>
+            </View>
+            <Text style={e.numericRangeHint}>
+              {tr("Faixa de entrada")}: {numericRange.min}–{numericRange.max}{field.unit ? ` ${field.unit}` : ""}
+            </Text>
+          </View>
+        )
       ) : (
         <>
           <CategoricalSelector
@@ -205,6 +243,24 @@ const criarEstilos = (t: Tema) =>
       letterSpacing: 0.4,
     },
     inheritedText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "500",
+    },
+    numericEmpty: {
+      gap: ESPACO.sm,
+      borderWidth: 1,
+      borderColor: t.cores.border,
+      borderRadius: RAIO.input,
+      backgroundColor: t.cores.bg,
+      padding: ESPACO.md,
+    },
+    numericEmptyLabel: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.textSecondary,
+      fontWeight: "700",
+    },
+    numericRangeHint: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
       fontWeight: "500",
