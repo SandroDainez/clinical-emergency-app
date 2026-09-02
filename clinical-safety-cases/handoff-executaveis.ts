@@ -6,7 +6,10 @@ import {
 } from "../lib/clinical-handoff-runtime";
 import { prepareAndPublishClinicalHandoff } from "../lib/clinical-handoff-orchestrator";
 import { clearClinicalObservations, recordClinicalObservation } from "../lib/clinical-observations";
-import { PCR_TERMINAL_HANDOFF_CONTEXTS } from "../lib/pcr-terminal-handoff-context";
+import {
+  PCR_TERMINAL_HANDOFF_CONTEXTS,
+  type PcrTerminalHandoffContextContract,
+} from "../lib/pcr-terminal-handoff-context";
 
 export type ExecutableClinicalHandoffCase = {
   id: string;
@@ -19,8 +22,8 @@ function resetHandoffState(): void {
   clearClinicalHandoffs();
 }
 
-function getPcrContract(source: "tachycardia" | "bradycardia") {
-  const contract = PCR_TERMINAL_HANDOFF_CONTEXTS.find((item) => item.source === source)?.handoffContract;
+function getPcrContract(source: "tachycardia" | "bradycardia"): PcrTerminalHandoffContextContract {
+  const contract = PCR_TERMINAL_HANDOFF_CONTEXTS.find((item) => item.source === source);
   if (!contract) throw new Error(`Contrato de PCR ausente para ${source}`);
   return contract;
 }
@@ -70,9 +73,12 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
 
       const result = prepareAndPublishClinicalHandoff({ contract, now });
       const issues: string[] = [];
-      if (result.status !== "incomplete") issues.push(`esperado incomplete, recebido ${result.status}`);
-      if (result.missingFacts.length === 0) issues.push("handoff incompleto não declarou fatos faltantes");
-      if (!result.missingFacts.includes("marcapasso_em_uso")) issues.push("falta de marcapasso_em_uso não foi declarada");
+      if (result.status !== "incomplete") {
+        issues.push(`esperado incomplete, recebido ${result.status}`);
+      } else {
+        if (result.missingFacts.length === 0) issues.push("handoff incompleto não declarou fatos faltantes");
+        if (!result.missingFacts.includes("marcapasso_em_uso")) issues.push("falta de marcapasso_em_uso não foi declarada");
+      }
       if (listPendingClinicalHandoffs().length !== 0) issues.push("handoff incompleto foi publicado indevidamente");
       return issues;
     },
