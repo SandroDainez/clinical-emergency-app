@@ -6,6 +6,7 @@ import {
 } from "../lib/clinical-handoff-runtime";
 import { prepareAndPublishClinicalHandoff } from "../lib/clinical-handoff-orchestrator";
 import { clearClinicalObservations, recordClinicalObservation } from "../lib/clinical-observations";
+import { prepareRegisteredTargetHandoff } from "../lib/clinical-target-handoff-runtime";
 import {
   PCR_TERMINAL_HANDOFF_CONTEXTS,
   type PcrTerminalHandoffContextContract,
@@ -133,6 +134,55 @@ export const EXECUTABLE_CLINICAL_HANDOFF_CASES: readonly ExecutableClinicalHando
       if (consumed.facts.length !== factIds.length) issues.push("payload não preservou todos os fatos disponíveis do contrato");
       for (const fact of consumed.facts) {
         if (fact.value !== `obs:${fact.id}`) issues.push(`observação não teve prioridade para ${fact.id}`);
+      }
+      return issues;
+    },
+  },
+  {
+    id: "target-contingency-does-not-promote-to-handoff",
+    run: () => {
+      resetHandoffState();
+      const attempt = prepareRegisteredTargetHandoff({
+        fromProtocolId: "acls_tachycardia_2025",
+        fromNodeId: "unstable_disposition",
+        targetModuleId: "pcr-adulto",
+        now: 1_800_000_300_000,
+      });
+      const issues: string[] = [];
+      if (attempt.matched) issues.push("target de contingência foi promovido indevidamente a handoff registrado");
+      if (!attempt.canProceedToDestination) issues.push("target comum foi bloqueado pelo resolver de handoff");
+      if (listPendingClinicalHandoffs().length !== 0) issues.push("target de contingência publicou payload indevidamente");
+      return issues;
+    },
+  },
+  {
+    id: "terminal-target-resolves-and-publishes-before-navigation",
+    run: () => {
+      resetHandoffState();
+      const now = 1_800_000_400_000;
+      appendClinicalEvent({
+        id: "evt-terminal-pulse-loss",
+        type: "decision_made",
+        occurredAt: now - 1_000,
+        module: "acls_tachycardia_2025",
+        label: "Perdeu o pulso",
+        data: { tempo_perda_pulso: now - 1_000 },
+      });
+
+      const attempt = prepareRegisteredTargetHandoff({
+        fromProtocolId: "acls_tachycardia_2025",
+        fromNodeId: "unstable_sem_pulso",
+        targetModuleId: "pcr-adulto",
+        now,
+      });
+      const issues: string[] = [];
+      if (!attempt.matched) return ["target terminal sem pulso não resolveu contrato de handoff"];
+      if (!attempt.canProceedToDestination) issues.push("handoff PCR terminal bloqueou a navegação");
+      if (!attempt.readiness.contextPublished) issues.push("contexto disponível não foi publicado antes da navegação");
+      if (listPendingClinicalHandoffs().length !== 1) issues.push("resolver terminal não publicou exatamente um payload");
+      const consumed = consumeClinicalHandoff("pcr-adulto", attempt.contract.transitionId);
+      if (!consumed?.facts.some((fact) => fact.id === "tempo_perda_pulso" && fact.value === now - 1_000)) {
+        issues.push("payload terminal não preservou o horário disponível da perda de pulso");
       }
       return issues;
     },
