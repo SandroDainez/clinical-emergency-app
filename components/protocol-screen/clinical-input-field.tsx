@@ -88,7 +88,6 @@ export function ClinicalInputField({
         <NumericStepper
           valor={displayedNumericValue}
           onChange={(next) => onChange(String(next))}
-          onConfirmar={(next) => onChange(String(next))}
           min={numericRange.min}
           max={numericRange.max}
           passo={numericRange.passo}
