@@ -1,0 +1,86 @@
+name: Apply tachycardia SafetyGate advisory
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - ".github/workflows/apply-safety-gate-advisory-taquicardia.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript compile before migration
+        run: npx tsc --noEmit --pretty false
+
+      - name: Run safety gate domain regressions before migration
+        run: |
+          node scripts/test-clinical-gate-triggers.cjs
+          node scripts/valida-decision-observation-bindings.cjs
+          node scripts/valida-clinical-runtime-bridge-shell.cjs
+
+      - name: Apply exact-context migration
+        run: node scripts/migra-safety-gate-advisory-taquicardia.cjs
+
+      - name: Validate advisory integration
+        run: node scripts/valida-safety-gate-advisory-taquicardia.cjs
+
+      - name: TypeScript compile after migration
+        run: npx tsc --noEmit --pretty false
+
+      - name: Run clinical regressions after migration
+        run: |
+          node scripts/test-clinical-gate-triggers.cjs
+          node scripts/valida-guided-discovery-hic-stemi.cjs
+          node scripts/valida-clinical-runtime-bridge-shell.cjs
+          node scripts/test-clinical-handoffs-emergencias-2.cjs
+          node scripts/test-tree-to-handoff-emergencias-2.cjs
+
+      - name: Guard migration allowlist
+        shell: bash
+        run: |
+          mapfile -t changed < <(git diff --name-only | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            "acls-tachycardia-tree.ts"
+            "components/protocol-screen/acls-decision-flow-screen.tsx"
+            "core/decision-tree/engine.ts"
+            "core/decision-tree/types.ts"
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          if [[ "$(printf '%s\n' "${changed[@]}")" != "$(printf '%s\n' "${expected_sorted[@]}")" ]]; then
+            echo "Unexpected migration diff"
+            exit 1
+          fi
+
+      - name: Commit guarded migration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add acls-tachycardia-tree.ts \
+            components/protocol-screen/acls-decision-flow-screen.tsx \
+            core/decision-tree/engine.ts core/decision-tree/types.ts
+          git commit -m "feat: show non-blocking sedation advisory before cardioversion"
+          git push origin HEAD:emergencias-2-ui-core
