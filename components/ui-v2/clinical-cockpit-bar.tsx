@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
 export type CockpitMetric = {
@@ -27,6 +27,10 @@ export type ClinicalCockpitBarProps = {
  * Mostra somente contexto que precisa permanecer visível sem rolar a tela:
  * protocolo, fase, tempo e até quatro métricas resumidas. Não recebe decisões,
  * condutas ou texto explicativo — isso pertence ao corpo do fluxo.
+ *
+ * Informação não usa linguagem visual de botão. Fase, cronômetro e métricas são
+ * deliberadamente planos, sem cápsula/borda fechada, para não competir com os
+ * controles realmente clicáveis do atendimento.
  */
 export function ClinicalCockpitBar({
   protocol,
@@ -114,12 +118,7 @@ const criarEstilos = (t: Tema) =>
     phasePill: {
       alignSelf: "flex-start",
       maxWidth: "100%",
-      borderRadius: RAIO.pill,
-      backgroundColor: t.cores.bg,
-      borderWidth: 1,
-      borderColor: t.cores.border,
-      paddingHorizontal: ESPACO.sm,
-      paddingVertical: 3,
+      paddingVertical: 1,
     },
     phase: {
       ...TIPOGRAFIA.micro,
@@ -127,15 +126,11 @@ const criarEstilos = (t: Tema) =>
       fontWeight: "700",
     },
     elapsedPill: {
-      minWidth: 72,
+      minWidth: 64,
       alignItems: "flex-end",
       justifyContent: "center",
-      borderRadius: RAIO.input,
-      borderWidth: 1,
-      borderColor: t.cores.primary,
-      backgroundColor: t.cores.bg,
-      paddingHorizontal: ESPACO.sm,
-      paddingVertical: ESPACO.xs,
+      paddingHorizontal: ESPACO.xs,
+      paddingVertical: 2,
       gap: 1,
     },
     elapsedLabel: {
@@ -154,17 +149,15 @@ const criarEstilos = (t: Tema) =>
     metricsRow: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: ESPACO.sm,
+      gap: ESPACO.md,
     },
     metric: {
       minWidth: 76,
       flexGrow: 1,
-      backgroundColor: t.cores.bg,
-      borderRadius: RAIO.input,
-      borderWidth: 1,
-      borderColor: t.cores.border,
-      paddingHorizontal: ESPACO.sm,
-      paddingVertical: ESPACO.xs,
+      borderLeftWidth: 2,
+      borderLeftColor: t.cores.border,
+      paddingLeft: ESPACO.sm,
+      paddingVertical: 2,
       gap: 2,
     },
     metricTopRow: {
