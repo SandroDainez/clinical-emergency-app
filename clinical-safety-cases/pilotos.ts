@@ -11,36 +11,36 @@ import type { ClinicalSafetyCase } from "../lib/clinical-safety-case";
 export const PILOT_SAFETY_CASES: ClinicalSafetyCase[] = [
   {
     id: "avc-tempo-dependente-001",
-    module: "avc",
+    moduleId: "avc",
     title: "AVC com janela conhecida deve percorrer avaliação de reperfusão",
-    input: {
-      inicioConhecido: "sim",
-      deficitsFocais: "sim",
+    description: "Paciente com déficit focal e início conhecido deve entrar no ramo de avaliação de reperfusão sem omitir glicemia e imagem.",
+    inputs: [
+      { field: "inicioConhecido", value: "sim" },
+      { field: "deficitsFocais", value: "sim" },
+    ],
+    expectation: {
+      mustVisit: ["reperfusao", "glicemia", "imagem"],
     },
-    mustVisit: ["reperfusao"],
-    mustNotSkip: ["glicemia", "imagem"],
-    notes: "Não fixa fármaco nem elegibilidade; cobra apenas a trajetória de avaliação.",
   },
   {
     id: "anafilaxia-instavel-001",
-    module: "anafilaxia",
-    title: "Anafilaxia com instabilidade não pode terminar sem tratamento e reavaliação",
-    input: {
-      instabilidade: "sim",
+    moduleId: "anafilaxia",
+    title: "Anafilaxia com instabilidade exige tratamento e reavaliação",
+    description: "O fluxo não pode encerrar nem avançar para destino sem passar por tratamento da anafilaxia e reavaliação clínica.",
+    inputs: [{ field: "instabilidade", value: "sim" }],
+    expectation: {
+      mustVisit: ["tratamento", "reavaliacao"],
+      requiredActions: ["adrenalina"],
     },
-    mustVisit: ["tratamento", "reavaliacao"],
-    mustNotSkip: ["adrenalina"],
-    notes: "Dose, via e repetição permanecem validadas pelos testes clínicos do módulo.",
   },
   {
     id: "isr-via-aerea-001",
-    module: "isr-rapida",
-    title: "ISR deve chegar à confirmação de via aérea e avaliação pós-intubação",
-    input: {
-      indicacaoViaAerea: "sim",
+    moduleId: "isr-rapida",
+    title: "ISR deve chegar à confirmação e ao pós-intubação",
+    description: "Uma sequência de ISR deve preservar preoxigenação e chegar à confirmação da via aérea e avaliação pós-intubação.",
+    inputs: [{ field: "indicacaoViaAerea", value: "sim" }],
+    expectation: {
+      mustVisit: ["preoxigenacao", "confirmacao", "pos_intubacao"],
     },
-    mustVisit: ["confirmacao", "pos_intubacao"],
-    mustNotSkip: ["preoxigenacao"],
-    notes: "Não prescreve agente nem dose; testa estrutura e continuidade do fluxo.",
   },
 ];
