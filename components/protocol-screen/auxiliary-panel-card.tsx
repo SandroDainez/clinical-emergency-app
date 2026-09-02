@@ -150,57 +150,42 @@ function AuxiliaryPanelCard({
 
       {auxiliaryPanel.statusItems && auxiliaryPanel.statusItems.length > 0 ? (
         <View style={styles.auxiliaryStatusList}>
-          {auxiliaryPanel.statusItems.map((item) => (
-            <View key={item.id} style={styles.auxiliaryStatusItem}>
-              <View style={styles.auxiliaryStatusHeader}>
-                <Text style={styles.auxiliaryStatusLabel}>{tr(item.label)}</Text>
-                <Text style={styles.auxiliaryStatusValue}>{item.value}</Text>
-              </View>
-              {item.helperText ? (
-                <Text style={styles.auxiliaryFieldHelper}>{tr(item.helperText)}</Text>
-              ) : null}
-              <View style={styles.auxiliaryStatusButtons} accessibilityRole="radiogroup">
-                {item.options.map((option) => {
-                  const isSelected = item.currentStatus === option.status;
+          {auxiliaryPanel.statusItems.map((item) => {
+            const selectedOption = item.options.find(
+              (option) => option.status === item.currentStatus
+            );
 
-                  return (
-                    <Pressable
-                      key={`${item.id}-${option.id}`}
-                      accessibilityRole="radio"
-                      accessibilityLabel={tr(option.label)}
-                      accessibilityState={{ selected: isSelected }}
-                      style={[
-                        styles.auxiliaryStatusButton,
-                        option.status === "pendente" && styles.auxiliaryStatusPending,
-                        option.status === "solicitado" && styles.auxiliaryStatusRequested,
-                        option.status === "realizado" && styles.auxiliaryStatusDone,
-                        isSelected && styles.auxiliaryStatusSelected,
-                        isSelected &&
-                          option.status === "pendente" &&
-                          styles.auxiliaryStatusPendingSelected,
-                        isSelected &&
-                          option.status === "solicitado" &&
-                          styles.auxiliaryStatusRequestedSelected,
-                        isSelected &&
-                          option.status === "realizado" &&
-                          styles.auxiliaryStatusDoneSelected,
-                      ]}
-                      onPress={() =>
-                        onStatusChange(item.id, option.status, option.requiresConfirmation)
-                      }>
-                      <Text
-                        style={[
-                          styles.auxiliaryStatusButtonText,
-                          isSelected && styles.auxiliaryStatusButtonTextSelected,
-                        ]}>
-                        {isSelected ? "✓ " : ""}{tr(option.label)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+            return (
+              <View key={item.id} style={styles.auxiliaryStatusItem}>
+                <View style={styles.auxiliaryStatusHeader}>
+                  <Text style={styles.auxiliaryStatusLabel}>{tr(item.label)}</Text>
+                  <Text style={styles.auxiliaryStatusValue}>{item.value}</Text>
+                </View>
+                {item.helperText ? (
+                  <Text style={styles.auxiliaryFieldHelper}>{tr(item.helperText)}</Text>
+                ) : null}
+                <CategoricalSelector
+                  value={selectedOption?.id}
+                  options={item.options.map((option) => ({
+                    value: option.id,
+                    label: tr(option.label),
+                    tone:
+                      option.status === "pendente"
+                        ? "warning"
+                        : option.status === "solicitado"
+                          ? "primary"
+                          : "success",
+                  }))}
+                  onChange={(optionId) => {
+                    const option = item.options.find((candidate) => candidate.id === optionId);
+                    if (!option) return;
+                    onStatusChange(item.id, option.status, option.requiresConfirmation);
+                  }}
+                  testID={`status-${item.id}`}
+                />
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       ) : null}
 
