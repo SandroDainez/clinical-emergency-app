@@ -3,10 +3,18 @@ export type DecisionUncertaintyClassification =
   | "binary_observable"
   | "guided_elsewhere";
 
+export type DecisionUncertaintySource =
+  | "clinical_interpretation"
+  | "missing_observation"
+  | "missing_history"
+  | "external_operational_data";
+
 export type DecisionUncertaintyPolicyEntry = {
   protocolId: string;
   nodeId: string;
   classification: DecisionUncertaintyClassification;
+  /** De onde nasce a incerteza. Não altera a classificação, mas orienta a descoberta. */
+  source?: DecisionUncertaintySource;
   /** Obrigatória quando o ramo de incerteza é dispensado neste nó. */
   rationale?: string;
   /** Nó que oferece a descoberta guiada quando classification = guided_elsewhere. */
@@ -46,6 +54,8 @@ export function validateDecisionUncertaintyPolicy(
  * - decisões interpretativas/diagnósticas: precisam de saída de incerteza;
  * - perguntas diretamente observáveis podem ser binárias, mas a exceção precisa
  *   estar documentada e revisada;
- * - quando a descoberta guiada já existe em outro nó, a aresta deve ser explícita.
+ * - quando a descoberta guiada já existe em outro nó, a aresta deve ser explícita;
+ * - incerteza clínica, história ausente, observação não obtida e dado operacional
+ *   externo são problemas diferentes e não devem receber o mesmo caminho de ajuda.
  */
-export const DECISION_UNCERTAINTY_POLICY_VERSION = "2026-09-01";
+export const DECISION_UNCERTAINTY_POLICY_VERSION = "2026-09-02";
