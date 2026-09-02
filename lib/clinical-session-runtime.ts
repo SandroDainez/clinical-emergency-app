@@ -3,6 +3,7 @@ import { clearClinicalInterruptions } from "./clinical-interruption-session";
 import { clearClinicalObservations } from "./clinical-observations";
 import { clearClinicalReassessmentNodeRuntime } from "./clinical-reassessment-node-runtime";
 import { clearPendingClinicalReassessments } from "./clinical-reassessment-runtime";
+import { clearVasopressorReassessmentState } from "./clinical-vasopressor-reassessment";
 import { limparContextoDoPaciente } from "./contexto-do-paciente";
 
 let currentCaseId: string | undefined;
@@ -28,6 +29,7 @@ export function startClinicalCase(caseId: string, now: number = Date.now()): Cli
   clearClinicalObservations();
   clearClinicalReassessmentNodeRuntime();
   clearPendingClinicalReassessments();
+  clearVasopressorReassessmentState();
   limparContextoDoPaciente();
 
   currentCaseId = id;
