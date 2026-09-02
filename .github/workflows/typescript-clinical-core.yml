@@ -38,6 +38,9 @@ jobs:
       - name: TypeScript compile gate
         run: npx tsc --noEmit --pretty false
 
+      - name: Validate active guided discovery contracts
+        run: node scripts/valida-guided-discovery-hic-stemi.cjs
+
       - name: Validate terminal PCR handoffs
         run: |
           node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
