@@ -107,3 +107,24 @@ export function recordProtocolTransition(input: {
     },
   });
 }
+
+export function recordProtocolResume(input: {
+  from: string;
+  to: string;
+  transitionId?: string;
+  now?: number;
+}): void {
+  const now = input.now ?? Date.now();
+  appendClinicalEvent({
+    id: nextEventId("resume", now),
+    type: "protocol_resumed",
+    occurredAt: now,
+    module: input.to,
+    label: `${input.from} → ${input.to}`,
+    data: {
+      from: input.from,
+      to: input.to,
+      transitionId: input.transitionId ?? null,
+    },
+  });
+}
