@@ -1,11 +1,14 @@
-export type ClinicalModuleTerminalMode = "care_pathway" | "procedural_subflow";
+export type ClinicalModuleTerminalMode =
+  | "care_pathway"
+  | "procedural_subflow"
+  | "embedded_care_pathway";
 
 export type ClinicalModuleTerminalContract = {
   protocolId: string;
   mode: ClinicalModuleTerminalMode;
-  /** care_pathway precisa terminar em alta, observação ou UTI. */
+  /** Linhas de cuidado autônomas ou embutíveis precisam de destino assistencial próprio. */
   requiresClinicalDisposition: boolean;
-  /** procedural_subflow precisa declarar retorno ao contexto de origem. */
+  /** Subfluxos e linhas embutíveis precisam saber devolver o controle ao protocolo de origem. */
   requiresReturnToOrigin: boolean;
   rationale: string;
   reviewedAt: string;
@@ -40,6 +43,15 @@ export function validateClinicalModuleTerminalContracts(
       }
       if (!entry.requiresReturnToOrigin) {
         issues.push(`${entry.protocolId}: procedural_subflow exige retorno explícito à origem`);
+      }
+    }
+
+    if (entry.mode === "embedded_care_pathway") {
+      if (!entry.requiresClinicalDisposition) {
+        issues.push(`${entry.protocolId}: embedded_care_pathway exige destino assistencial quando aberto diretamente`);
+      }
+      if (!entry.requiresReturnToOrigin) {
+        issues.push(`${entry.protocolId}: embedded_care_pathway exige retorno quando chamado por outro protocolo`);
       }
     }
   }
