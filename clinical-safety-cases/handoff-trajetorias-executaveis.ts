@@ -5,7 +5,10 @@ import { prepareAndPublishClinicalHandoff } from "../lib/clinical-handoff-orches
 import { clearClinicalHandoffs, consumeClinicalHandoff } from "../lib/clinical-handoff-runtime";
 import { clearClinicalObservations, recordClinicalObservation } from "../lib/clinical-observations";
 import { assertClinicalTrajectory, runClinicalTrajectory, type ClinicalRunnerInstruction } from "../lib/clinical-safety-runner";
-import { PCR_TERMINAL_HANDOFF_CONTEXTS } from "../lib/pcr-terminal-handoff-context";
+import {
+  PCR_TERMINAL_HANDOFF_CONTEXTS,
+  type PcrTerminalHandoffContextContract,
+} from "../lib/pcr-terminal-handoff-context";
 
 export type ExecutableTreeToHandoffCase = {
   id: string;
@@ -18,8 +21,8 @@ function reset(): void {
   clearClinicalHandoffs();
 }
 
-function pcrContract(source: "tachycardia" | "bradycardia") {
-  const contract = PCR_TERMINAL_HANDOFF_CONTEXTS.find((item) => item.source === source)?.handoffContract;
+function pcrContract(source: "tachycardia" | "bradycardia"): PcrTerminalHandoffContextContract {
+  const contract = PCR_TERMINAL_HANDOFF_CONTEXTS.find((item) => item.source === source);
   if (!contract) throw new Error(`Contrato PCR ausente para ${source}`);
   return contract;
 }
