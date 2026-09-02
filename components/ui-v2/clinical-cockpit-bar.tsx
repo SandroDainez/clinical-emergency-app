@@ -51,7 +51,11 @@ export function ClinicalCockpitBar({
             <View key={`${metric.label}-${metric.value}`} style={e.metric}>
               <View style={e.metricTopRow}>
                 <Text style={e.metricLabel}>{metric.label}</Text>
-                {metric.age ? <Text style={e.metricAge}>há {metric.age}</Text> : null}
+                {metric.age ? (
+                  <Text style={e.metricAge}>
+                    {metric.age === "agora" ? "agora" : `há ${metric.age}`}
+                  </Text>
+                ) : null}
               </View>
               <Text style={[e.metricValue, metric.attention && e.metricAttention]}>
                 {metric.value}
