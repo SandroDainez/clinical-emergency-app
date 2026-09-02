@@ -35,35 +35,34 @@ function blockFor(id) {
   return debts.slice(start, next === -1 ? debts.length : next);
 }
 
-for (const id of ["tox-flumazenil-high-risk-context", "tox-toxic-alcohol-decontamination"]) {
+for (const id of [
+  "tox-flumazenil-high-risk-context",
+  "tox-toxic-alcohol-decontamination",
+  "tep-high-risk-deep-sedation-ventilation",
+]) {
   const block = blockFor(id);
   expect(block.includes("evidenceReview:"), `${id}: revisão de evidência concluída precisa ficar registrada`);
   expect(block.includes('reviewedAt: "2026-09-02"'), `${id}: data de revisão ausente`);
   expect(!block.includes('"needs_evidence_review"'), `${id}: não pode continuar marcado como evidence review pendente`);
 }
 expect(blockFor("tox-flumazenil-high-risk-context").includes('candidateLevel: "needs_level_review"'), "flumazenil: nível deve permanecer pendente até separar subcenários de risco");
+expect(blockFor("tep-high-risk-deep-sedation-ventilation").includes('candidateLevel: "soft_stop"'), "TEP sedação/VM: evidência revisada deve resolver o candidato para soft_stop contextual");
+expect(blockFor("tep-high-risk-deep-sedation-ventilation").includes('"needs_fact_model"') && blockFor("tep-high-risk-deep-sedation-ventilation").includes('"needs_action_surface"'), "TEP sedação/VM: fatos e superfície ainda precisam permanecer pendentes");
 
 const toxicAlcoholBlock = blockFor("tox-toxic-alcohol-decontamination");
-const oldToxicAlcoholCopy = tox.includes("NÃO fazer carvão nem lavagem");
 const reviewedToxicAlcoholCopy =
   tox.includes("Carvão ativado não tem papel em metanol/etilenoglicol.") &&
   tox.includes("Lavagem gástrica não é recomendada rotineiramente; benefício não demonstrado.");
-expect(oldToxicAlcoholCopy || reviewedToxicAlcoholCopy, "álcool tóxico: árvore não está nem no estado antigo conhecido nem no texto revisado");
-if (oldToxicAlcoholCopy) {
-  expect(toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: texto antigo exige dívida explícita de conteúdo");
-} else if (reviewedToxicAlcoholCopy) {
-  expect(!toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: dívida de conteúdo deve sair quando o texto revisado entrar");
-  expect(toxicAlcoholBlock.includes("summary de tox_alcool_toxico separa carvão ativado"), "álcool tóxico: debt registry não descreve o conteúdo já revisado");
-}
+expect(reviewedToxicAlcoholCopy, "álcool tóxico: texto revisado deve permanecer na árvore");
+expect(!toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: dívida de conteúdo não pode reaparecer após correção");
+expect(toxicAlcoholBlock.includes("summary de tox_alcool_toxico separa carvão ativado"), "álcool tóxico: debt registry não descreve o conteúdo já revisado");
 
-for (const id of ["tep-high-risk-deep-sedation-ventilation", "tep-thrombolysis-for-isolated-ischemic-pain"]) {
-  const block = blockFor(id);
-  expect(block.includes('"needs_evidence_review"'), `${id}: revisão de evidência ainda deve permanecer pendente`);
-  expect(!block.includes("evidenceReview:"), `${id}: não pode parecer revisado sem evidência registrada`);
-}
+const thrombolysisPainBlock = blockFor("tep-thrombolysis-for-isolated-ischemic-pain");
+expect(thrombolysisPainBlock.includes('"needs_evidence_review"'), "TEP trombólise por dor isolada: revisão de evidência ainda deve permanecer pendente");
+expect(!thrombolysisPainBlock.includes("evidenceReview:"), "TEP trombólise por dor isolada: não pode parecer revisado sem evidência registrada");
 
 if (issues.length) {
   for (const issue of issues) console.error(`❌ ${issue}`);
   process.exit(1);
 }
-console.log(`✅ SafetyGate candidate debts sincronizados: 2 evidências revisadas + 2 pendentes; álcool tóxico em estado ${reviewedToxicAlcoholCopy ? "revisado" : "pré-migração"}.`);
+console.log("✅ SafetyGate candidate debts: 3 evidências revisadas + 1 pendente; nenhum candidato promovido ao registry ativo.");
