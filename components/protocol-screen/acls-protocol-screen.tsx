@@ -34,6 +34,8 @@ import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import { TEMAS } from "../../design-system/tokens";
 import CprGuidanceCard, { textoDaTrocaDeCompressor } from "./cpr-guidance-card";
+import PcrInheritedContextCard from "./pcr-inherited-context-card";
+import type { PcrInheritedContextViewModel } from "../../lib/pcr-handoff-context-adapter";
 import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
@@ -50,6 +52,7 @@ type AclsProtocolScreenProps = {
   documentationActions: DocumentationAction[];
   medicationSnapshot?: Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   encounterSummary: EncounterSummary;
+  inheritedContext?: PcrInheritedContextViewModel;
   options: string[];
   voiceAvailable: boolean;
   voiceModeEnabled: boolean;
@@ -121,6 +124,7 @@ function AclsProtocolScreen({
   documentationActions,
   medicationSnapshot,
   encounterSummary,
+  inheritedContext,
   options,
   voiceAvailable,
   voiceModeEnabled,
@@ -454,6 +458,8 @@ function AclsProtocolScreen({
             label={`${aclsBadgeColor === "green" ? tr("Atualizado") : aclsIsNearStale ? tr("Revisar em breve") : tr("Desatualizado")} · ${tr("Revisado")} ${aclsLastReviewedFormatted}`}
           />
         ) : null}
+
+        {inheritedContext ? <PcrInheritedContextCard model={inheritedContext} /> : null}
 
         {painelEmV2 ? null : (
         <ModuleFlowHero

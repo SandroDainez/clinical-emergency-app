@@ -49,6 +49,7 @@ import {
   stopSpeaking,
 } from "./audio-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
+import { consumePcrInheritedContext } from "../lib/pcr-inherited-context-runtime";
 import { markProtocolSessionForResume } from "../lib/module-session-navigation";
 import { createDefaultVoiceCaptureProvider } from "./voice";
 import { logClinicalSessionEvent } from "../lib/clinical-events";
@@ -201,6 +202,11 @@ export default function ProtocolScreen({
   onRouteBack,
 }: ProtocolScreenProps) {
   const router = useRouter();
+  const [pcrInheritedContext] = useState(() =>
+    engine.getEncounterSummary().protocolId === "pcr_adulto"
+      ? consumePcrInheritedContext()
+      : undefined
+  );
   function getFieldValue(fieldId: string) {
     return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
   }
@@ -1245,6 +1251,7 @@ export default function ProtocolScreen({
             medicationSnapshot={engine.getMedicationSnapshot?.()}
             historyCases={historyCases}
             encounterSummary={encounterSummary}
+            inheritedContext={pcrInheritedContext}
             hidePrimaryActionButton={hidePrimaryActionButton}
             isCurrentStateTimerRunning={isCurrentStateTimerRunning}
             onActionRun={runAuxiliaryAction}
