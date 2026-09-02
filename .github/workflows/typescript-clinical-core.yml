@@ -42,6 +42,7 @@ jobs:
         run: |
           node scripts/valida-target-semantics.cjs
           node scripts/inventario-targets-sem-semantica.cjs
+          node scripts/valida-targets-em-handoffs.cjs
           node scripts/valida-targets-versus-handoffs.cjs
 
       - name: Validate active guided discovery contracts
