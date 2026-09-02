@@ -33,7 +33,13 @@ export function SafetyGate({
 
   return (
     <View style={[e.wrapper, critical && e.wrapperCritical]} accessibilityRole="alert">
-      <Text style={[e.title, critical && e.titleCritical]}>{title}</Text>
+      <View style={e.heading}>
+        <Text style={[e.eyebrow, critical && e.eyebrowCritical]}>
+          {critical ? "BARREIRA DE SEGURANÇA" : "ATENÇÃO ANTES DE PROSSEGUIR"}
+        </Text>
+        <Text style={[e.title, critical && e.titleCritical]}>{title}</Text>
+      </View>
+
       <Text style={e.message}>{message}</Text>
 
       <Pressable
@@ -46,15 +52,18 @@ export function SafetyGate({
       </Pressable>
 
       {onOverride ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={overrideLabel}
-          onPress={onOverride}
-          style={({ pressed }) => [e.override, pressed && e.pressed]}
-        >
-          <Text style={e.overrideLabel}>{overrideLabel}</Text>
-          <Text style={e.overrideHint}>A exceção deve ser registrada no atendimento</Text>
-        </Pressable>
+        <View style={e.overrideBlock}>
+          <Text style={e.overrideEyebrow}>EXCEÇÃO</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={overrideLabel}
+            onPress={onOverride}
+            style={({ pressed }) => [e.override, pressed && e.pressed]}
+          >
+            <Text style={e.overrideLabel}>{overrideLabel}</Text>
+            <Text style={e.overrideHint}>A exceção deve ser registrada no atendimento</Text>
+          </Pressable>
+        </View>
       ) : null}
     </View>
   );
@@ -66,14 +75,22 @@ const criarEstilos = (t: Tema) =>
       backgroundColor: t.cores.surface,
       borderRadius: RAIO.card,
       borderWidth: 1,
-      borderLeftWidth: 4,
+      borderLeftWidth: 6,
       borderColor: t.cores.warning,
       padding: ESPACO.lg,
       gap: ESPACO.md,
     },
     wrapperCritical: { borderColor: t.cores.critical },
-    title: { ...TIPOGRAFIA.step, color: t.cores.warning, fontWeight: "800" },
-    titleCritical: { color: t.cores.critical },
+    heading: { gap: ESPACO.xs },
+    eyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.warning,
+      fontWeight: "800",
+      letterSpacing: 0.8,
+    },
+    eyebrowCritical: { color: t.cores.critical },
+    title: { ...TIPOGRAFIA.step, color: t.cores.text, fontWeight: "800" },
+    titleCritical: { color: t.cores.text },
     message: { ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "500" },
     primary: {
       minHeight: TOQUE.critico,
@@ -82,11 +99,23 @@ const criarEstilos = (t: Tema) =>
       borderRadius: RAIO.botao,
       backgroundColor: t.cores.warning,
       paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
+      paddingVertical: ESPACO.md,
     },
     primaryCritical: { backgroundColor: t.cores.critical },
     primaryLabel: { ...TIPOGRAFIA.body, color: t.cores.bg, fontWeight: "800", textAlign: "center" },
     primaryCriticalLabel: { color: t.cores.onCritical },
+    overrideBlock: {
+      borderTopWidth: 1,
+      borderTopColor: t.cores.border,
+      paddingTop: ESPACO.sm,
+      gap: ESPACO.xs,
+    },
+    overrideEyebrow: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "700",
+      letterSpacing: 0.6,
+    },
     override: {
       minHeight: TOQUE.minimo,
       alignItems: "center",
@@ -94,6 +123,7 @@ const criarEstilos = (t: Tema) =>
       borderRadius: RAIO.botao,
       borderWidth: 1,
       borderColor: t.cores.border,
+      backgroundColor: t.cores.bg,
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
       gap: 2,
