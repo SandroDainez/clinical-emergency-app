@@ -76,6 +76,10 @@ export {
   type SafetyGateProps,
 } from "./safety-gate";
 export {
+  StaleObservationConfirmationCard,
+  type StaleObservationConfirmationCardProps,
+} from "./stale-observation-confirmation-card";
+export {
   InstrucaoResumida,
   ScreenTemplate,
   type ScreenTemplateProps,
