@@ -140,4 +140,31 @@ export const PILOT_MODULE_TERMINAL_CLASSIFICATION: readonly ClinicalModuleTermin
       "ISR pode ser aberta diretamente e terminar em observação monitorizada ou UTI pós-intubação; quando chamada por outro protocolo, deve preservar o contexto e devolver o controle após estabilizar a via aérea.",
     reviewedAt: "2026-09-02",
   },
+  {
+    protocolId: "vm_adulto_2024",
+    mode: "care_pathway",
+    requiresClinicalDisposition: true,
+    requiresReturnToOrigin: false,
+    rationale:
+      "Ventilação mecânica invasiva conduz ajuste, estratégia por patologia, segurança, troubleshooting, desmame e termina em UTI com VM contínua ou observação monitorizada pós-extubação.",
+    reviewedAt: "2026-09-03",
+  },
+  {
+    protocolId: "intoxicacoes_exogenas",
+    mode: "care_pathway",
+    requiresClinicalDisposition: true,
+    requiresReturnToOrigin: false,
+    rationale:
+      "Intoxicações exógenas conduz estabilização, identificação, descontaminação/antídotos quando indicados e termina em UTI ou observação conforme gravidade e risco residual.",
+    reviewedAt: "2026-09-03",
+  },
+  {
+    protocolId: "abdome_agudo",
+    mode: "care_pathway",
+    requiresClinicalDisposition: true,
+    requiresReturnToOrigin: false,
+    rationale:
+      "Abdome agudo conduz estabilização, exclusão de catástrofes, definição do padrão e termina em tratamento cirúrgico/UTI ou observação com reavaliação seriada.",
+    reviewedAt: "2026-09-03",
+  },
 ] as const;
