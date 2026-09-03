@@ -1,14 +1,50 @@
-name: Archived compact sedation calculation flow
+name: Apply responsive sedation layout
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[sedation-responsive-layout-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Compact sedation calculation flow migration applied and validated."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply responsive sedation layout migration
+        run: node scripts/aplica-sedacao-layout-responsivo.cjs
+
+      - name: Validate sedation module
+        run: npm run test:sedacao
+
+      - name: Validate responsive sedation layout
+        run: node scripts/valida-sedacao-layout-responsivo.cjs
+
+      - name: Validate compact sedation calculation flow
+        run: node scripts/valida-sedacao-calculo-compacto.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No responsive sedation layout changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/sedation-calculator-screen.tsx
+          git commit -m "make sedation calculation layout responsive [sedation-responsive-layout-applied]"
+          git push origin HEAD:emergencias-2-ui-core
