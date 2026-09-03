@@ -85,6 +85,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [ ] Substituir navegações improvisadas progressivamente.
 - [x] Oito atalhos de recursos adicionais do PCR centralizados e classificados como consulta contextual, sem criar handoff artificial.
 - [x] Rotas do Engasgo inconsciente e da PCR na gestação centralizadas como transição terminal, subfluxo retornável e consulta obstétrica.
+- [x] Atalhos de Hs/Ts e passagem pós-ROSC da tela principal de PCR centralizados com semânticas distintas.
 
 ## Bloco D — Event Log e auditoria
 

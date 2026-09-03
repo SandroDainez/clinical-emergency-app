@@ -40,7 +40,7 @@ import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
-import { ACLS_REFERENCE_NAVIGATION, buildClinicalContextHref } from "../../lib/clinical-context-navigation";
+import { ACLS_REFERENCE_NAVIGATION, buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 import { useTr } from "../../lib/use-tr";
 
 type AclsProtocolScreenProps = {
@@ -195,6 +195,8 @@ function AclsProtocolScreen({
     label: tr(contract.label),
     sublabel: tr(contract.sublabel),
   }));
+  const reversibleCausesNavigation = getClinicalContextNavigation("pcr-ref-causas");
+  const postRoscNavigation = getClinicalContextNavigation("pcr-rosc-pos-pcr");
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
     getAppGuidelinesStatus()
   );
@@ -735,7 +737,7 @@ function AclsProtocolScreen({
             <Pressable
               onPress={() => {
                 markProtocolSessionForResume(encounterSummary.protocolId);
-                router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href);
+                router.push(buildClinicalContextHref(reversibleCausesNavigation) as Href);
               }}
               style={({ pressed }) => [aclsScreenStyles.referenceShortcutCard, pressed && aclsScreenStyles.referenceShortcutCardPressed]}>
               <View style={aclsScreenStyles.referenceShortcutRow}>
@@ -1011,7 +1013,7 @@ function AclsProtocolScreen({
           <Pressable
             onPress={() => {
               markProtocolSessionForResume(encounterSummary.protocolId);
-              router.push("/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href);
+              router.push(buildClinicalContextHref(postRoscNavigation) as Href);
             }}
             // `resourceCard` foi desenhado para a GRADE de recursos: tem
             // `flex: 1` e `minWidth: 44%`, e fora dela o cartão colapsava —
@@ -1223,7 +1225,7 @@ function AclsProtocolScreen({
             onStatusChange={onCauseStatusChange}
             onOpenReferenceModule={() => {
               markProtocolSessionForResume(encounterSummary.protocolId);
-              router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href);
+              router.push(buildClinicalContextHref(reversibleCausesNavigation) as Href);
             }}
           />
         ) : null}

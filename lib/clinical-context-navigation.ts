@@ -35,6 +35,15 @@ export const ACLS_REFERENCE_NAVIGATION: readonly ClinicalContextNavigationContra
 /** Navegações acionáveis fora do painel de consulta, com intenção explícita. */
 export const ACLS_ACTION_NAVIGATION: readonly ClinicalContextNavigationContract[] = [
   {
+    id: "pcr-rosc-pos-pcr",
+    fromModuleId: "pcr-adulto",
+    toModuleId: "pos-pcr-acls",
+    semantic: "terminal_transition",
+    icon: "✓",
+    label: "Cuidados pós-PCR",
+    sublabel: "Retorno da circulação espontânea confirmado",
+  },
+  {
     id: "ovace-inconsciente-pcr",
     fromModuleId: "ovace-adulto",
     toModuleId: "pcr-adulto",
