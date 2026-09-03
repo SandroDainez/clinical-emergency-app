@@ -62,8 +62,8 @@ try {
   execFileSync(
     "npx",
     [
-      "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-      "--moduleResolution", "node", "--skipLibCheck", "--outDir", tempDir,
+      "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",
+      "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tempDir,
       path.join(appDir, "tce-decision-tree.ts"),
       path.join(appDir, "lib/alvos-tce.ts"),
       path.join(appDir, "lib/pas-no-tce.ts"),
@@ -258,8 +258,11 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
       } else ok++;
     }
   }
-  if (!todos.some((t) => /Repetir TC em 6–12 h/.test(t))) {
-    falhas.push("a conduta de repetir a TC em 6–12 h sumiu — a D-18 fechou SEM afrouxar nada, e continua assim.");
+  if (!todos.some((t) => /Repetir TC IMEDIATAMENTE se houver deterioração neurológica/.test(t))) {
+    falhas.push("a repetição imediata da TC diante de deterioração neurológica sumiu — o gatilho clínico continua obrigatório.");
+  } else ok++;
+  if (!todos.some((t) => /individualizar TC seriada conforme tipo\/tamanho da lesão/.test(t))) {
+    falhas.push("a política explícita de TC seriada individualizada sumiu — retirar a janela fixa não pode virar ausência de reavaliação por imagem.");
   } else ok++;
 }
 

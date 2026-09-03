@@ -115,11 +115,11 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
       // lista segue embaixo, que é onde lista deve ficar.
       summary:
-        "⚠️ INDEPENDENTEMENTE DE QUALQUER REGRA DE IMAGEM, ESTES CINCO PEDEM TC: anticoagulação ou antiagregação, coagulopatia, déficit focal, convulsão pós-trauma e intoxicação. Nenhum escore os dispensa — a regra canadense abaixo é para quem NÃO tem nenhum deles.",
+        "⚠️ NÃO transformar a Canadian CT Head Rule em regra universal. Déficit focal, convulsão pós-trauma, suspeita de fratura e outros sinais de alto risco indicam TC. Em anticoagulante ou antiagregante (EXCETO aspirina em monoterapia), considerar TC mesmo sem outro critério; intoxicação isolada torna o exame menos confiável e exige julgamento/observação, mas não é indicação automática de TC por si só.",
       evidence: [
         "Canadian CT Head Rule (alto risco): Glasgow < 15 após 2 h; suspeita de fratura aberta/afundamento; sinais de fratura de base de crânio (equimose periorbitária/retroauricular, otorragia, fístula liquórica); ≥ 2 episódios de vômito; idade ≥ 65 anos.",
         "Risco médio: amnésia retrógrada > 30 min; mecanismo perigoso (atropelamento, ejeção, queda > 1 m ou 5 degraus).",
-        "Independentemente da regra: ANTICOAGULAÇÃO ou antiagregação, coagulopatia, déficit focal, convulsão pós-trauma ou intoxicação = TC.",
+        "Fora da Canadian CT Head Rule: déficit focal, convulsão pós-trauma e sinais de fratura/lesão grave têm indicação própria de TC. Em anticoagulante ou antiagregante (exceto aspirina em monoterapia), o NICE recomenda CONSIDERAR TC mesmo sem outra indicação; coagulopatia aumenta o risco. Intoxicação isolada reduz a confiabilidade do exame e exige julgamento clínico/observação, não TC automática apenas por esse motivo.",
         "Outros fatores que favorecem a TC: perda de consciência, náusea ou vômito, amnésia lacunar ou anterógrada, cefaleia intensa, e qualquer sinal externo de trauma acima da clavícula.",
         "Conforme o mecanismo, considerar também TC de face, TC de coluna cervical, angio-TC de vasos cervicais (suspeita de dissecção de carótida ou vertebral) e, no politraumatizado grave, TC de corpo inteiro.",
       ],
@@ -139,7 +139,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Observação clínica; alta com acompanhante orientado e orientações POR ESCRITO.",
         "Retorno imediato: rebaixamento, cefaleia progressiva, vômitos repetidos, convulsão, déficit focal, assimetria pupilar, saída de líquido claro pelo nariz/ouvido.",
         "Evitar álcool, sedativos e atividade de risco; retorno gradual às atividades.",
-        "Se anticoagulado: observação prolongada e TC mesmo com exame normal.",
+        "Em anticoagulante ou antiagregante (exceto aspirina em monoterapia), considerar TC mesmo sem outro critério conforme risco e possibilidade de seguimento. Após TC normal, não impor observação prolongada apenas pelo fármaco: decidir pela evolução clínica, confiabilidade do exame, supervisão disponível e capacidade de retorno.",
       ],
       targets: [],
     },
@@ -154,7 +154,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Buscar: hematoma extradural, subdural, contusão, hemorragia subaracnoide traumática, lesão axonal difusa, fratura, desvio de linha média e apagamento de cisternas.",
         "Incluir coluna cervical na tomografia quando indicado.",
         "REVERTER anticoagulação imediatamente se sangramento (ver nó específico).",
-        "Repetir TC em 6–12 h da TC INICIAL ou se houver qualquer deterioração neurológica.",
+        "Repetir TC IMEDIATAMENTE se houver deterioração neurológica. Em paciente estável com lesão já conhecida, individualizar TC seriada conforme tipo/tamanho da lesão, gravidade do TCE, exame neurológico, anticoagulação/coagulopatia, intervenção planejada e protocolo neurocirúrgico — não impor janela fixa de 6–12 h a todos.",
         // ── D-18, FECHADA SEM AFROUXAR NADA ──────────────────────────────
         // A dívida pedia abrir as fontes antes de propor mexer na TC de
         // rotina. Abertas (2026-08-16), elas confirmam a ressalva que a
