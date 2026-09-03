@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useRouter, type Href } from "expo-router";
+import { useRouter } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
+import { buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 import { useTr } from "../../lib/use-tr";
 import { TIPOGRAFIA, RAIO, SOMBRA, TEMAS } from "../../design-system/tokens";
 import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
@@ -145,6 +146,8 @@ function CardAcao({ acao }: { acao: AcaoImediata }) {
 export default function AclsPregnancyScreen() {
   const tr = useTr();
   const router = useRouter();
+  const pcrNavigation = getClinicalContextNavigation("gestacao-pcr-adulto");
+  const preEclampsiaNavigation = getClinicalContextNavigation("gestacao-pre-eclampsia-referencia");
   return (
     <ScrollView
       style={s.scroll}
@@ -242,7 +245,7 @@ export default function AclsPregnancyScreen() {
             // gestante a etiologia é aberta (ABCDEFGH), e marcar uma causa
             // sem saber qual é o oposto do que o módulo ensina.
             markProtocolSessionForResume("pcr_adulto");
-            router.push("/modulos/pcr-adulto?from_module=pcr-gestacao-acls" as Href);
+            router.push(buildClinicalContextHref(pcrNavigation) as never);
           }}
           style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
           <View style={{ flex: 1 }}>
@@ -255,7 +258,7 @@ export default function AclsPregnancyScreen() {
           </View>
         </Pressable>
         <Pressable
-          onPress={() => router.push("/modulos/pre-eclampsia?from_module=pcr-gestacao-acls" as Href)}
+          onPress={() => router.push(buildClinicalContextHref(preEclampsiaNavigation) as never)}
           style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
           <View style={{ flex: 1 }}>
             <Text style={s.rotaTitulo}>{tr("Pré-eclâmpsia e eclâmpsia")}</Text>

@@ -32,6 +32,43 @@ export const ACLS_REFERENCE_NAVIGATION: readonly ClinicalContextNavigationContra
   { id: "pcr-ref-pos-rosc", fromModuleId: "pcr-adulto", toModuleId: "pos-pcr-acls", semantic: "reference", icon: "✓", label: "Pós-PCR", sublabel: "ROSC · Metas · Neurologia" },
 ] as const;
 
+/** Navegações acionáveis fora do painel de consulta, com intenção explícita. */
+export const ACLS_ACTION_NAVIGATION: readonly ClinicalContextNavigationContract[] = [
+  {
+    id: "ovace-inconsciente-pcr",
+    fromModuleId: "ovace-adulto",
+    toModuleId: "pcr-adulto",
+    semantic: "terminal_transition",
+    icon: "RCP",
+    label: "Abrir PCR no adulto",
+    sublabel: "Perda de consciência após obstrução grave",
+  },
+  {
+    id: "gestacao-pcr-adulto",
+    fromModuleId: "pcr-gestacao-acls",
+    toModuleId: "pcr-adulto",
+    semantic: "returnable_subflow",
+    icon: "RCP",
+    label: "PCR no adulto",
+    sublabel: "Ritmos, fármacos e ciclos dentro da PCR na gestação",
+  },
+  {
+    id: "gestacao-pre-eclampsia-referencia",
+    fromModuleId: "pcr-gestacao-acls",
+    toModuleId: "pre-eclampsia",
+    semantic: "reference",
+    icon: "OB",
+    label: "Pré-eclâmpsia e eclâmpsia",
+    sublabel: "Consulta se houver pulso",
+  },
+] as const;
+
+export function getClinicalContextNavigation(id: string): ClinicalContextNavigationContract {
+  const contract = [...ACLS_REFERENCE_NAVIGATION, ...ACLS_ACTION_NAVIGATION].find((item) => item.id === id);
+  if (!contract) throw new Error(`Navegação clínica contextual não registrada: ${id}`);
+  return contract;
+}
+
 export function buildClinicalContextHref(contract: ClinicalContextNavigationContract): string {
   return `/modulos/${contract.toModuleId}?from_module=${encodeURIComponent(contract.fromModuleId)}`;
 }

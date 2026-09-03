@@ -2,11 +2,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
 import { ClinicalShellHost } from "../ui-v2/clinical-shell-host";
-import { useRouter, type Href } from "expo-router";
+import { useRouter } from "expo-router";
 import { useTr } from "../../lib/use-tr";
 import { TIPOGRAFIA, RAIO, SOMBRA, TEMAS } from "../../design-system/tokens";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 import { OVACE_CAUSA_JA_IDENTIFICADA, OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
+import { buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -116,6 +117,7 @@ export default function AclsChokingScreen() {
   const [gravidade, setGravidade] = useState<"leve" | "grave" | undefined>();
   const [desfecho, setDesfecho] = useState<"mantem" | "expulso" | "inconsciente" | undefined>();
   const [showSupport, setShowSupport] = useState(false);
+  const pcrNavigation = getClinicalContextNavigation("ovace-inconsciente-pcr");
   const step = !gravidade ? 1 : gravidade === "grave" && desfecho ? 3 : 2;
   const phase = !gravidade
     ? "Reconhecimento e classificação"
@@ -290,7 +292,7 @@ export default function AclsChokingScreen() {
             // navegação sabe. "suspeita" e não "abordada" — ela só é abordada
             // quando o objeto sair.
             markProtocolSessionForResume("pcr_adulto", ["hipoxia"]);
-            router.push("/modulos/pcr-adulto?from_module=ovace-adulto" as Href);
+            router.push(buildClinicalContextHref(pcrNavigation) as never);
           }}
           style={({ pressed }) => [s.pcrBotao, pressed && s.pcrBotaoPressed]}>
           <Text style={s.pcrBotaoTexto}>{tr("Abrir PCR no adulto")}</Text>

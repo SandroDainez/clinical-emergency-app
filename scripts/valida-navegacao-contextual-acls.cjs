@@ -22,4 +22,20 @@ for (const route of legacyRoutes) {
   if (screen.includes(route)) throw new Error(`Rota contextual ainda hardcoded na tela: ${route}`);
 }
 
-console.log("✅ Oito atalhos ACLS centralizados como consultas contextuais, sem handoff artificial.");
+for (const [id, semantic] of [
+  ["ovace-inconsciente-pcr", "terminal_transition"],
+  ["gestacao-pcr-adulto", "returnable_subflow"],
+  ["gestacao-pre-eclampsia-referencia", "reference"],
+]) {
+  const expression = new RegExp(`id:\\s*"${id}"[\\s\\S]*?semantic:\\s*"${semantic}"`);
+  if (!expression.test(registry)) throw new Error(`${id}: semântica ${semantic} ausente.`);
+}
+
+const choking = fs.readFileSync(path.join(root, "components/protocol-screen/acls-choking-screen.tsx"), "utf8");
+const pregnancy = fs.readFileSync(path.join(root, "components/protocol-screen/acls-pregnancy-screen.tsx"), "utf8");
+if (choking.includes("pcr-adulto?from_module=ovace-adulto")) throw new Error("Engasgo ainda monta a rota de PCR manualmente.");
+if (pregnancy.includes("?from_module=pcr-gestacao-acls")) throw new Error("Gestação ainda monta rotas clínicas manualmente.");
+if (!choking.includes('getClinicalContextNavigation("ovace-inconsciente-pcr")')) throw new Error("Engasgo não consome contrato terminal.");
+if (!pregnancy.includes('getClinicalContextNavigation("gestacao-pcr-adulto")')) throw new Error("Gestação não consome contrato do subfluxo PCR.");
+
+console.log("✅ Navegação ACLS centralizada: 8 consultas, 1 transição terminal, 1 subfluxo retornável e 1 consulta obstétrica.");
