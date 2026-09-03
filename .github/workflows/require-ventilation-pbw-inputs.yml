@@ -1,0 +1,55 @@
+name: Require ventilation PBW inputs
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/exige-dados-pbw-ventilacao.cjs
+      - .github/workflows/require-ventilation-pbw-inputs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - name: Aplicar obrigatoriedade dos dados de PBW
+        run: node scripts/exige-dados-pbw-ventilacao.cjs
+      - name: Validar ventilação mecânica
+        run: npm run test:vm
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Paridade InputStep
+        run: node scripts/valida-paridade-input-step.cjs
+      - name: Build web
+        run: npm run build:web
+      - name: Diff check
+        run: git diff --check
+
+      - name: Validar escopo
+        run: |
+          CHANGED=$(git diff --name-only)
+          echo "$CHANGED"
+          test "$CHANGED" = "ventilation-decision-tree.ts"
+
+      - name: Commit da correção
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ventilation-decision-tree.ts
+          git commit -m "fix(vm): require height and sex before PBW calculation"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
