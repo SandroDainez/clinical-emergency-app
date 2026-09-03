@@ -127,18 +127,36 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
                   Sem faixa declarada o campo cai de volta na caixa: melhor um
                   campo fora do padrão do que uma barra com limite inventado. */}
               {FAIXA_DE_ENTRADA[inp.id] ? (
-                <NumericStepper
-                  valor={
-                    Number((values[key] ?? "").replace(",", ".")) ||
-                    FAIXA_DE_ENTRADA[inp.id].min
-                  }
-                  onChange={(n) => setVal(key, String(n).replace(".", ","))}
-                  min={FAIXA_DE_ENTRADA[inp.id].min}
-                  max={FAIXA_DE_ENTRADA[inp.id].max}
-                  passo={FAIXA_DE_ENTRADA[inp.id].passo}
-                  unidade={inp.unit ? tr(inp.unit) : undefined}
-                  testID={`slider-${inp.id}`}
-                />
+                (() => {
+                  const texto = values[key] ?? "";
+                  const numerico = Number(texto.replace(",", "."));
+                  const informado = texto.trim().length > 0 && Number.isFinite(numerico);
+                  return informado ? (
+                    <NumericStepper
+                      valor={numerico}
+                      onChange={(n) => setVal(key, String(n).replace(".", ","))}
+                      min={FAIXA_DE_ENTRADA[inp.id].min}
+                      max={FAIXA_DE_ENTRADA[inp.id].max}
+                      passo={FAIXA_DE_ENTRADA[inp.id].passo}
+                      unidade={inp.unit ? tr(inp.unit) : undefined}
+                      testID={`slider-${inp.id}`}
+                    />
+                  ) : (
+                    <View style={s.emptyNumericField}>
+                      <Text style={s.emptyNumericLabel}>{tr("Valor ainda não informado")}</Text>
+                      <TextInput
+                        style={s.input}
+                        value={texto}
+                        onChangeText={(v) => setVal(key, v)}
+                        keyboardType="decimal-pad"
+                        placeholder={inp.placeholder ? tr(inp.placeholder) : tr("Digitar valor")}
+                        placeholderTextColor="#64748b"
+                        accessibilityLabel={tr(inp.label)}
+                        testID={`input-${inp.id}`}
+                      />
+                    </View>
+                  );
+                })()
               ) : (
                 <TextInput
                   style={s.input}
@@ -281,6 +299,8 @@ const s = StyleSheet.create({
   fieldLabel: { fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#aab6c6" },
   fieldHelper: { fontSize: 11, lineHeight: 16, color: "#aab6c6", marginTop: 6 },
+  emptyNumericField: { gap: 8 },
+  emptyNumericLabel: { fontSize: 12, fontWeight: "700", color: "#aab6c6" },
   input: { width: 110, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
   toggleRow: { flexDirection: "row", gap: 7, flexWrap: "wrap" },
   toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
