@@ -56,6 +56,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/doses-isr.ts rsi-decision-tree.ts sedation-engine.ts lib/i18n/modules/sedacao.ts
+          git add lib/doses-isr.ts rsi-decision-tree.ts sedation-engine.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/anafilaxia.ts lib/i18n/modules/isr.ts
           git commit -m "repair succinylcholine RSI consumer and remove unsupported anaphylaxis NMBA hierarchy [anaphylaxis-nmba-applied]"
           git push origin HEAD:emergencias-2-ui-core
