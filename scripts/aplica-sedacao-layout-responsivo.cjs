@@ -162,7 +162,7 @@ update('components/protocol-screen/sedation-calculator-screen.tsx', (src0) => {
                     </Text>
                     {bolus && !weightMissing && (
                       <Text style={s.resultSub}>
-                        Dose total: {mode.unit === "mg/kg" ? `${fmt(bolus.totalMg, 0)} mg` : `${fmt(bolus.totalMcg, 0)} mcg`} · {presentation.concentrationLabel}
+                        Dose total: {mode.unit === "mg/kg" ? fmt(bolus.totalMg, 0) + " mg" : fmt(bolus.totalMcg, 0) + " mcg"} · {presentation.concentrationLabel}
                       </Text>
                     )}
                   </>
