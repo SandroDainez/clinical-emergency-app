@@ -1,0 +1,45 @@
+name: Migrate disposition confirmation into shared shell
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - "scripts/migra-disposition-confirmation-shell.cjs"
+      - ".github/workflows/migrate-disposition-confirmation-shell.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply idempotent migration
+        run: node scripts/migra-disposition-confirmation-shell.cjs
+
+      - name: Validate migrated shell
+        run: node scripts/valida-disposition-confirmation-shell.cjs
+
+      - name: Commit migration when needed
+        run: |
+          if git diff --quiet; then
+            echo "No migration changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/acls-decision-flow-screen.tsx
+          git commit -m "feat(disposition): wire explicit transfer confirmation"
+          git push origin HEAD:emergencias-2-ui-core
