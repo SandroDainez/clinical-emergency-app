@@ -40,7 +40,7 @@ replaceOnce(
 replaceOnce(
   "midazolam-red",
   '{ upTo: null, tone: "red", label: "Acima do teto da SEDAÇÃO titulada por RASS", indication: "> 0,20 mg/kg/h — para SEDAR, preferir propofol/dexmedetomidina (acúmulo em 24–48 h). NÃO se aplica ao STATUS EPILÉPTICO REFRATÁRIO, que é outro objetivo: 0,05–2 mg/kg/h titulado por EEG, com IOT e meta de supressão da atividade elétrica." },',
-  '{ upTo: null, tone: "red", label: "Dose muito alta para sedação titulada por RASS", indication: "> 0,20 mg/kg/h — não é um teto farmacológico universal; reavaliar indicação e acúmulo. NÃO se aplica ao STATUS EPILÉPTICO REFRATÁRIO, que é outro objetivo terapêutico e deve seguir protocolo próprio com IOT/EEG." },'
+  '{ upTo: null, tone: "red", label: "Dose muito alta para sedação titulada por RASS", indication: "> 0,20 mg/kg/h — não é um teto farmacológico universal; reavaliar indicação e acúmulo. NÃO se aplica ao STATUS EPILÉPTICO REFRATÁRIO, que é outro objetivo: 0,05–2 mg/kg/h titulado por EEG, com IOT e meta de supressão da atividade elétrica." },'
 );
 replaceOnce(
   "midazolam-info",
