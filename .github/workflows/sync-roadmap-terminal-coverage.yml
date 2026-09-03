@@ -1,0 +1,37 @@
+name: Sync roadmap terminal coverage
+
+on:
+  push:
+    branches:
+      - emergencias-2-ui-core
+    paths:
+      - "scripts/atualiza-roadmap-pos-terminal-coverage.cjs"
+      - ".github/workflows/sync-roadmap-terminal-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+
+      - name: Apply idempotent roadmap sync
+        run: node scripts/atualiza-roadmap-pos-terminal-coverage.cjs
+
+      - name: Commit roadmap when needed
+        run: |
+          if git diff --quiet; then
+            echo "Roadmap already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add EMERGENCIAS-2-ROADMAP.md
+          git commit -m "docs: close canonical navigation and terminal coverage roadmap"
+          git push origin HEAD:emergencias-2-ui-core
