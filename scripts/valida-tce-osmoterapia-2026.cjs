@@ -4,13 +4,15 @@ const failures=[];let ok=0;
 const checks=[
  ['HTS preferida sobre manitol',/NCS sugere solução hipertônica sobre manitol|Neurocritical Care Society sugere solução hipertônica sobre manitol/],
  ['regime 3% rotulado como institucional',/Regime do protocolo institucional citado: NaCl 3%/],
- ['NaCl20 sem intervalo universal',/NaCl 20% 40 mL IV em 5 min[^\n]+não por intervalo universal fixo/],
+ ['soluções concentradas sem volume universal',/Soluções mais concentradas \(por exemplo 20–23,4%\)[^\n]+não transformar um volume fixo em recomendação universal/],
  ['manitol como alternativa',/Manitol 20%:[^\n]+alternativa eficaz/],
  ['manitol sem relógio fixo',/Repetição deve ser guiada pela resposta\/PIC e segurança, não por relógio fixo/],
  ['gap osmolar sem cutoff obrigatório',/NÃO há evidência suficiente para um cutoff obrigatório/],
  ['20 mOsm não é limite validado',/20 mOsm\/kg[^\n]+não é um limite validado/],
  ['sem alvo fixo de natremia na HIC',/Não perseguir um alvo fixo de natremia apenas para tratar a PIC/],
- ['monitorização Na Cl renal',/monitorar sódio, cloro e função renal/],
+ ['monitorização Na Cl renal',/monitorar sódio, cloro, equilíbrio ácido-base e função renal/],
+ ['Na e Cl como limites de segurança, não metas',/Na 155–160 mEq\/L e Cl 110–115 mEq\/L[^\n]+faixas superiores de segurança[^\n]+não como metas terapêuticas/],
  ['regra antiga gap acima 20 ausente',!/não há benefício adicional com gap acima de 20/.test(src)],
+ ['regime fixo NaCl20 antigo ausente',!/NaCl 20% 40 mL IV em 5 min/.test(src)],
 ];
 for(const [name,rule] of checks){const pass=typeof rule==='boolean'?rule:rule.test(src);if(pass)ok++;else failures.push(name);}if(failures.length){console.error('❌ TCE osmoterapia 2026:');for(const f of failures)console.error(' - '+f);process.exit(1);}console.log(`✅ TCE osmoterapia 2026: ${ok} travas aprovadas.`);
