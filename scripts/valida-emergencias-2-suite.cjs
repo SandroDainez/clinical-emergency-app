@@ -55,6 +55,7 @@ const validators = [
   "valida-succinilcolina-hipercalemia.cjs",
   "valida-fentanil-contexto.cjs",
   "valida-fentanil-rigidez.cjs",
+  "valida-remifentanil-morfina.cjs",
 ];
 
 for (const validator of validators) {
