@@ -1,0 +1,52 @@
+name: Apply obstructive shock ERC 2025 checkpoint
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-choque-obstrutivo-erc2025.cjs
+      - scripts/valida-choque-obstrutivo-erc2025.cjs
+      - .github/workflows/apply-choque-obstrutivo-erc2025.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply obstructive shock checkpoint
+        run: node scripts/ajusta-choque-obstrutivo-erc2025.cjs
+      - name: Focused obstructive shock validation
+        run: node scripts/valida-choque-obstrutivo-erc2025.cjs
+      - name: Existing shock regression
+        run: npm run test:choque
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/choque-obs shock-decision-tree.ts
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only)"
+          test "$changed" = "shock-decision-tree.ts"
+      - name: Commit validated obstructive shock checkpoint
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add shock-decision-tree.ts
+          git commit -m "fix(choque): refine obstructive shock recognition and rescue"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
