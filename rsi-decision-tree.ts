@@ -77,7 +77,6 @@ function deriveRsi(values: TreeValues): Record<string, string> {
     out.rocu = round1(MG_POR_KG.rocuronio * peso);
     out.sugam = Math.round(MG_POR_KG.sugamadex * peso).toString();
     out.fenta = Math.round(MG_POR_KG.fentanilMcg * peso).toString();
-    out.lido = round1(MG_POR_KG.lidocaina * peso);
   } else {
     // O fallback sem peso NÃO é texto traduzível: "0,3 mg/kg" não tem palavra em
     // português e a varredura não o vê. É valor de token, e por isso pode vir do
@@ -93,7 +92,6 @@ function deriveRsi(values: TreeValues): Record<string, string> {
     out.rocu = mgPorKg(MG_POR_KG.rocuronio);
     out.sugam = mgPorKg(MG_POR_KG.sugamadex);
     out.fenta = mgPorKg(MG_POR_KG.fentanilMcg, "mcg/kg");
-    out.lido = mgPorKg(MG_POR_KG.lidocaina);
   }
   return out;
 }
@@ -560,9 +558,9 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Não fecha critério de instabilidade, mas na intubação a margem é outra: quem está no limite colapsa com a indução.",
       actions: [
         "A indução tira o tônus simpático e a pressão positiva reduz o retorno venoso. Quem tem QUALQUER sinal de má perfusão antes da laringoscopia pode parar depois dela.",
-        "Índice de choque (FC ÷ PAS) acima de 0,9 prevê colapso/PCR peri-intubação mesmo com pressão ainda normal (Heffner, J Crit Care 2013) — some 100 de FC com 100 de PAS e o risco já está lá. A partir de 0,8 já se prevê hipotensão pós-intubação; 0,9 é o limiar do desfecho mais grave, e é o que este passo vigia.",
+        "Índice de choque (FC ÷ PAS) pode ajudar a reconhecer risco hemodinâmico peri-intubação, mas NÃO deve funcionar como corte isolado de 0,8 ou 0,9. Interpretar junto com pressão arterial, perfusão, lactato, contexto do choque e tendência clínica.",
         "OTIMIZE ANTES: volume conforme o contexto, vasopressor preparado (bolus de push-dose ou infusão já montada e conectada), pré-oxigenação caprichada.",
-        "Escolha a dose do indutor pensando na hemodinâmica: reduzir a dose do indutor e manter a do bloqueador é o padrão em quem está no limite.",
+        "Escolha o indutor e sua dose conforme reserva hemodinâmica e profundidade necessária. Não reduzir automaticamente todo indutor por um único marcador; o bloqueador continua em dose adequada para não comprometer as condições de laringoscopia.",
         "Se houver tempo, reavalie após a otimização — muitos saem do limítrofe antes da laringoscopia.",
       ],
       next: "otimizar",
@@ -574,9 +572,9 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Reanimar antes de intubar",
       summary: "Estabilizar a hemodinâmica antes da indução — indução + pressão positiva pioram a hipotensão e podem causar PCR peri-intubação.",
       actions: [
-        "Volume: bolus de cristaloide 250–500 mL se responsivo; iniciar/otimizar vasopressor (noradrenalina) para PAS adequada.",
-        "Ter push-dose pressor à mão para hipotensão pós-indução (ex.: noradrenalina 8–12 mcg IV em bolus, repetir conforme resposta).",
-        "Preferir indutor hemodinamicamente estável (cetamina; etomidato em dose plena).",
+        "Volume somente quando houver contexto de hipovolemia/responsividade: bolus rotineiro antes da intubação não reduziu colapso cardiovascular em ensaios. Corrigir o mecanismo do choque e evitar sobrecarga.",
+        "Se houver hipotensão ou alto risco de colapso, preparar vasopressor antes da indução. Preferir infusão titulável quando houver tempo; push-dose pode ser ponte em cenário selecionado, conforme protocolo local e monitorização, sem transformar uma dose fixa em regra universal.",
+        "Escolher o indutor conforme o perfil hemodinâmico. Etomidato e cetamina são opções frequentes; a evidência não sustenta uma regra universal de dose plena ou de redução automática para todos os pacientes instáveis.",
         "Corrigir hipóxia e acidose graves na medida do possível antes de prosseguir.",
       ],
       next: "pretratamento",
@@ -590,7 +588,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       summary: "Adjuvantes opcionais, ~3 min antes da indução. Pular se não houver indicação específica.",
       actions: [
         "Fentanil {fenta} mcg IV (1–3 mcg/kg, uso seletivo): pode atenuar a resposta simpática à laringoscopia quando essa resposta representar risco. Titular ao contexto hemodinâmico; rigidez torácica/laríngea é rara, favorecida por doses maiores e administração rápida, mas não existe limiar universal de 5 mcg/kg.",
-        "Lidocaína {lido} mg IV (1,5 mg/kg, 3 min antes): atenua HIC e broncoespasmo. Considerar em TCE grave e asma/DPOC (evidência limitada, perfil seguro).",
+        "Lidocaína IV NÃO é pré-tratamento rotineiro da ISR para atenuar hipertensão intracraniana ou broncoespasmo: não há evidência clínica suficiente de benefício nesses cenários. Se houver outra indicação específica para lidocaína, tratá-la como indicação separada.",
         FORA_DE_ESCOPO_PEDIATRICO,
         "Em asma/broncoespasmo: salbutamol inalatório antes da indução.",
         "Sem indicação dos itens acima → seguir direto para a indução.",
@@ -647,7 +645,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         ISR_AJUSTE_NO_INSTAVEL,
         "Cetamina {ketaShock} mg IV (1 mg/kg) no instável/choque; 0,5 mg/kg se choque grave; até {ketaInd} mg (1,5 mg/kg) se mais estável.",
         "Alternativa em instabilidade: etomidato {etom} mg IV (0,3 mg/kg).",
-        "Manter vasopressor/push-dose disponível (noradrenalina 8–12 mcg IV em bolus).",
+        "Preparar suporte vasopressor antes da indução quando houver risco de hipotensão; preferir infusão titulável quando factível e reservar push-dose como ponte selecionada conforme protocolo local.",
         "Administrar indutor e bloqueador em sequência sem atraso desnecessário. Manter oxigenação contínua; no paciente crítico ou com risco de dessaturação, ventilação suave com BVM entre indução e laringoscopia pode reduzir hipoxemia. Individualizar se houver risco excepcionalmente alto de regurgitação/aspiração.",
       ],
       next: "bloqueador",

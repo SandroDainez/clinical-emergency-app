@@ -12,10 +12,10 @@
  * do instável. Um manda reduzir, o outro manda dar tudo — e é o mesmo paciente,
  * no mesmo app, com um clique de distância.
  *
- * A prática recomendada é REDUZIR o indutor em pelo menos 50% no choque (índice
- * de choque elevado). A evidência é reconhecidamente limitada — dose plena de
- * cetamina se associou à maior taxa de hipotensão pós-intubação —, e por isso a
- * redução vem com o motivo escrito, não como número solto.
+ * A dose do indutor deve ser individualizada no choque. Estudos recentes não
+ * sustentam uma regra universal de reduzir todo indutor por um corte isolado de
+ * índice de choque; em pacientes com baixa reserva hemodinâmica pode ser
+ * apropriado usar doses menores de alguns agentes, sem reduzir o bloqueador.
  *
  * ── A REGRA QUE IMPORTA MAIS QUE O NÚMERO ────────────────────────────────────
  *
@@ -42,7 +42,7 @@
  */
 export const MG_POR_KG = {
   cetamina: { estavel: 1.5, instavel: 1, choqueGrave: 0.5, asma: 2 },
-  /** Hemodinamicamente neutro — não se reduz no choque. */
+  /** Dose de referência do cálculo; individualizar conforme contexto clínico. */
   etomidato: 0.3,
   propofol: { estavel: 2, reduzido: 1 },
   succinilcolina: { min: 1, max: 1.5 },
@@ -50,7 +50,6 @@ export const MG_POR_KG = {
   sugamadex: 16,
   /** Pré-tratamento — mcg/kg, não mg/kg. */
   fentanilMcg: 2,
-  lidocaina: 1.5,
 } as const;
 
 /**
@@ -90,7 +89,7 @@ export const DOSES_ISR = {
     asma: mgPorKg(MG_POR_KG.cetamina.asma),
   },
   etomidato: {
-    /** Hemodinamicamente neutro — não se reduz no choque. */
+    /** Dose de referência do cálculo; a dose clínica pode ser individualizada. */
     todos: mgPorKg(MG_POR_KG.etomidato),
   },
   propofol: {
@@ -115,7 +114,7 @@ export const DOSES_ISR = {
  * os números aqui batem com DOSES_ISR.
  */
 export const ISR_AJUSTE_NO_INSTAVEL =
-  "No instável, REDUZIR o indutor e MANTER o bloqueador. Cetamina 1 mg/kg (0,5 mg/kg no choque grave) em vez de 1,5; etomidato segue 0,3 mg/kg, que é hemodinamicamente neutro; evitar propofol e midazolam. Reduzir o bloqueador junto daria relaxamento insuficiente e mais tentativas — exatamente o que quem está no limite não tolera.";
+  "No instável, INDIVIDUALIZAR o indutor e MANTER o bloqueador em dose adequada. Neste módulo, cetamina 1 mg/kg é a referência no instável e 0,5 mg/kg no choque grave; esses valores orientam o cálculo, mas não transformam índice de choque ou outro marcador isolado em gatilho automático de redução. Etomidato 0,3 mg/kg permanece a dose de referência do cálculo, sem tornar dose plena ou redução uma regra universal. Reduzir o bloqueador junto pode piorar as condições de laringoscopia e aumentar tentativas.";
 
 /**
  * ── BLOQUEADOR NA ANAFILAXIA E NO ANGIOEDEMA ─────────────────────────────────

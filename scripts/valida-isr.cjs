@@ -149,7 +149,6 @@ const doses = lerFonte(path.join(appDir, "lib/doses-isr.ts"));
     ["succHigh", 1.5, "succinilcolina — teto por quilo"],
     ["rocu", 1.2, "rocurônio"],
     ["sugam", 16, "sugamadex"],
-    ["lido", 1.5, "lidocaína — pré-tratamento"],
   ];
   const PESO = 70;
 
