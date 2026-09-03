@@ -1,14 +1,49 @@
-name: Archived TCE imaging 2026
+name: Apply TCE osmotherapy 2026
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[tce-osmotherapy-2026-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "TCE imaging 2026 migration applied and validated."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply TCE osmotherapy migration
+        run: |
+          node scripts/aplica-tce-osmoterapia-2026.cjs
+          node scripts/ajusta-tce-osmoterapia-i18n-2026.cjs
+
+      - name: Validate TCE module
+        run: node scripts/valida-tce.cjs
+
+      - name: Validate TCE osmotherapy 2026
+        run: node scripts/valida-tce-osmoterapia-2026.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No TCE osmotherapy changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tce-decision-tree.ts lib/i18n/modules/tce.ts
+          git commit -m "align TCE hyperosmolar therapy safety and monitoring [tce-osmotherapy-2026-applied]"
+          git push origin HEAD:emergencias-2-ui-core
