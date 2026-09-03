@@ -53,6 +53,7 @@ const validators = [
   "valida-rocuronio-seguranca.cjs",
   "valida-etomidato-seguranca.cjs",
   "valida-succinilcolina-hipercalemia.cjs",
+  "valida-fentanil-contexto.cjs",
 ];
 
 for (const validator of validators) {
