@@ -152,7 +152,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Registry único da Drug Knowledge Base criado com IDs e indicações não duplicados.
 - [x] Inventário de doses críticas duplicadas criado para ordenar próximas migrações.
 - [x] Consumir uma entrada canônica em módulo piloto após CI/testes verdes — tenecteplase no AVC usa a regra estruturada da Drug KB com paridade protegida.
-- [ ] Validar apresentações dos próximos fármacos comercializados no Brasil.
+- [x] Apresentações brasileiras das entradas canônicas atuais revisadas e protegidas: alteplase/Actilyse 10, 20 e 50 mg; amiodarona 50 mg/mL em ampola de 3 mL; tenecteplase/Metalyse 40 mg + 8 mL e 50 mg + 10 mL. Novos fármacos continuam exigindo revisão própria antes de entrar na Drug KB.
 - [ ] Bloquear duplicação de dose crítica entre módulos após inventário/revisão.
 
 ## Bloco G — Clinical Safety Test Suite
@@ -183,40 +183,3 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural protege a fronteira registry → adapter → GuidedDiscoveryCard e impede regra clínica duplicada na UI.
 - [x] Travas estruturais protegem classificação terminal de módulos, transições retornáveis e handoffs externos definitivos.
 - [x] Suíte estrutural consolidada ligada ao `test:all` e ao gate crítico, sem fixar contagem manual de validadores no roadmap.
-- [x] Travas específicas protegem semântica de medicação/destino no Event Log e a fonte temporal do debrief ACLS.
-- [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
-- [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
-- [ ] Mutation testing clínico para doses, limites e passos críticos.
-
-## Classificação de alcançabilidade da nova arquitetura
-
-- [x] Runtimes de reavaliação por nó e retorno LIFO conectados às rotas reais.
-- [x] Ferramentas de QA/grafo/terminalidade classificadas como infraestrutura de teste, fora do bundle assistencial.
-- [x] Runtime de sessão, timeline/debrief e reavaliação de vasopressor mantidos preparados com dívida de integração explícita onde ainda não existe confirmação real na UI.
-- [x] Drug Knowledge Base e Evidence Governance mantidas paralelas ao legado até migração piloto com paridade demonstrada.
-
-## Classificação funcional dos módulos
-
-- [x] Os 31 módulos possuem função canônica declarada no catálogo: 22 fluxos assistenciais, 5 referências e 4 calculadoras.
-- [x] O hub ordena fluxo antes de consulta/calculadora pela função declarada, sem inferir comportamento pelo texto da etiqueta.
-- [x] As quatro calculadoras usam cabeçalho canônico com função, identidade e retorno uniformes.
-- [ ] Aplicar o contrato visual obrigatório de cada categoria e eliminar bifurcações antigas após paridade.
-
-## Bloco H — Evidence Governance
-
-- [x] Contrato de evidência por recomendação acionável criado.
-- [x] Contrato de versão clínica criado.
-- [x] Regra de preservar a versão em que o atendimento começou definida.
-- [x] Registry de evidência por nó criado.
-- [x] AVC já possui bindings iniciais para tempo, neuroimagem, trombólise e avaliação de anticoagulação na HIC.
-- [x] TEP possui bindings iniciais para classificação 2026 e trombólise sistêmica.
-- [x] SCA possui bindings iniciais para ECG precoce, estratégia de reperfusão e fibrinólise no STEMI.
-- [x] Tenecteplase e alteplase do AVC registradas com fonte AHA/ASA 2026 e data de revisão.
-- [x] Índice único de evidências por protocolo criado com consulta por protocolId + nodeId.
-- [x] Inventário de cobertura de evidência por nó acionável criado.
-- [ ] Migrar recomendações reais adicionais para fonte por nó/ação.
-- [ ] Definir data de próxima revisão e responsável por revisão por protocolo.
-
-## Regra de migração
-
-Nada do legado é removido porque o novo parece melhor. Uma peça antiga só sai depois que a nova está ligada, testada, auditada e com paridade funcional demonstrada.
