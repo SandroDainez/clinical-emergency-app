@@ -5,7 +5,9 @@
  * com dose repetível e sem limite superior escrito é o tipo de omissão que
  * não aparece na primeira dose.
  *
- * O EAP já traz a ressalva de evidência (ESC 2021 IIb, evitar de rotina). O
+ * O EAP traz a ressalva de evidência atual: ESC 2021 Classe III para uso
+ * rotineiro de opioides, exceto dor ou ansiedade graves/intratáveis que não
+ * possam ser manejadas de outra forma. O
  * que faltava era o que fazer quando se decide usar: quanto, com que
  * intervalo, até quanto, e em quem não.
  */

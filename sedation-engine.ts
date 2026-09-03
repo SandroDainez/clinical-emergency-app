@@ -312,7 +312,7 @@ export const SED_DRUGS: SedDrug[] = [
       icon: "⚠️", tone: "warn",
       lines: [
         "Aumenta secreções (pré-medicar atropina 0,01 mg/kg se necessário).",
-        "Pode elevar PIC — cautela em TCE grave (segura com ventilação controlada normal).",
+        "TCE/PIC: a preocupação histórica de aumento da pressão intracraniana não é sustentada de forma consistente pela evidência contemporânea; manter ventilação, oxigenação e hemodinâmica adequadas e monitorar conforme a gravidade neurológica.",
         "Disforia pós-uso em adultos — mitigar com benzodiazepínico.",
       ],
     },
@@ -456,7 +456,7 @@ export const SED_DRUGS: SedDrug[] = [
         ] },
     ],
     strategy: [
-      "Opioide para analgesia moderada a intensa; útil também no edema agudo de pulmão (alívio + venodilatação).",
+      "Opioide para analgesia moderada a intensa. No edema agudo de pulmão/insuficiência cardíaca aguda, NÃO usar de rotina; considerar apenas dor ou ansiedade graves/intratáveis quando outras medidas não forem suficientes.",
       "Evitar em insuficiência renal (acúmulo de M6G) — preferir fentanil.",
       "Histaminoliberação: pode causar hipotensão e broncoespasmo.",
     ],
@@ -490,7 +490,7 @@ export const SED_DRUGS: SedDrug[] = [
       "Início de ação mais lento que o fentanil.",
       "Bolus de 2–4 mg costuma ser titulado pela dor e nível de consciência.",
     ],
-    reference: "PADIS Guidelines 2018.",
+    reference: "SCCM PADIS 2018 · ESC Heart Failure Guidelines 2021/ACVC scientific statement sobre opioides na insuficiência cardíaca aguda.",
   },
 
   // ═══ GRUPO 3 — BNM ═══

@@ -234,7 +234,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "ALTERNATIVA — NITROGLICERINA IV: 10–20 mcg/min → titular 5–10 mcg/min a cada 5 min até alívio ou PAS 90–100 (máx 200 mcg/min). Preferir em isquemia miocárdica concomitante.",
         "FUROSEMIDA IV: 20–80 mg em bolus se sobrecarga (dose ≥ dose oral diária habitual do paciente).",
         "Reduzir a PA de forma controlada (não < 90 mmHg); manter VNI conforme necessidade.",
-        "Evitar morfina de rotina (associada a pior desfecho — ESC 2021 IIb).",
+        "⛔ Não usar morfina/opioides de rotina no EAP/insuficiência cardíaca aguda (ESC 2021, Classe III); uso excepcional apenas para dor ou ansiedade graves/intratáveis quando outras medidas falharam.",
       ],
       next: "card_causa",
     },
@@ -264,7 +264,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         NITRATO_CONTRAINDICACAO_PDE5,
         NITRATO_PDE5_USO_CRONICO,
         NITRATO_OUTRAS_CONTRAINDICACOES,
-        "Evitar morfina de rotina; reservar para angústia refratária (ESC 2021 IIb).",
+        "⛔ Morfina/opioides NÃO devem ser usados de rotina no EAP/insuficiência cardíaca aguda (ESC 2021, Classe III); reservar apenas para dor ou ansiedade graves/intratáveis que não possam ser controladas de outra forma.",
         MORFINA_TETO,
         MORFINA_CONTRAINDICACOES,
         // O sinal de reversibilidade no nó em que o erro de perfil acontece —
