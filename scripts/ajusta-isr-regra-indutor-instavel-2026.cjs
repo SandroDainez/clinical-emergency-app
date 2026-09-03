@@ -28,4 +28,11 @@ const root = path.resolve(__dirname, '..');
   fs.writeFileSync(file, src);
 }
 
-console.log('✅ ISR: referências de cetamina preservadas e dose órfã de lidocaína removida.');
+{
+  const file = path.join(root, 'scripts/valida-isr.cjs');
+  let src = fs.readFileSync(file, 'utf8');
+  src = src.replace('    ["lido", 1.5, "lidocaína — pré-tratamento"],\n', '');
+  fs.writeFileSync(file, src);
+}
+
+console.log('✅ ISR: referências de cetamina preservadas e lidocaína removida do runtime e do universo de teste.');
