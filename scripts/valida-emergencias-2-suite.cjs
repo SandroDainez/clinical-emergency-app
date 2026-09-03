@@ -62,6 +62,7 @@ const validators = [
   "valida-anafilaxia-bnm-escolha.cjs",
   "valida-sedacao-bnm-ui-semantics.cjs",
   "valida-sedacao-ui-hierarquia.cjs",
+  "valida-sedacao-calculo-compacto.cjs",
 ];
 
 for (const validator of validators) {
