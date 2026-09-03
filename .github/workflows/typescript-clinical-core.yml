@@ -45,6 +45,9 @@ jobs:
           node scripts/valida-targets-em-handoffs.cjs
           node scripts/valida-targets-versus-handoffs.cjs
 
+      - name: Validate contextual navigation contracts
+        run: node scripts/valida-navegacao-contextual-acls.cjs
+
       - name: Validate active guided discovery contracts
         run: node scripts/valida-guided-discovery-hic-stemi.cjs
 
