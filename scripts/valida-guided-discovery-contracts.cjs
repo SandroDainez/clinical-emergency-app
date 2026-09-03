@@ -29,7 +29,7 @@ if (!reexport.includes('from "../lib/guided-discovery-registry"')) {
 
 const expected = [
   ["avc", "hic_anticoag", "missing_history"],
-  ["sca", "stemi_reperfusao", "external_operational_data"],
+  ["sindromes-coronarianas", "stemi_reperfusao", "external_operational_data"],
   ["taquicardia-acls", "assess_stability", "clinical_interpretation"],
   ["choque", "inicio", "clinical_interpretation"],
   ["tep", "estabilidade", "clinical_interpretation"],
@@ -56,9 +56,15 @@ for (const [text, id] of [
   if (!text.includes(`id: "${id}"`)) throw new Error(`Nó real ausente: ${id}`);
 }
 
-for (const plannedId of ["hic_anticoag_descoberta", "stemi_reperfusao_tempo_real"]) {
-  if (registry.includes(`guidedNodeId: "${plannedId}"`)) {
-    throw new Error(`Plano preparado não deve apontar para nó inexistente: ${plannedId}`);
+for (const [tree, guidedId] of [
+  [avc, "hic_anticoag_descoberta"],
+  [sca, "stemi_reperfusao_descoberta"],
+]) {
+  if (!tree.includes(`id: "${guidedId}"`)) {
+    throw new Error(`Nó de descoberta existente ausente da árvore: ${guidedId}`);
+  }
+  if (!registry.includes(`guidedNodeId: "${guidedId}"`)) {
+    throw new Error(`Registry não aponta para o nó de descoberta existente: ${guidedId}`);
   }
 }
 

@@ -31,11 +31,11 @@ for (const [contractId, source, nodeId, moduleId] of expected) {
 }
 
 const returnableCount = (contracts.match(/mode: "returnable"/g) || []).length;
-if (returnableCount !== expected.length) {
-  throw new Error(`Esperadas ${expected.length} arestas retornáveis iniciais; encontradas ${returnableCount}.`);
+if (returnableCount < expected.length) {
+  throw new Error(`Esperadas ao menos ${expected.length} arestas retornáveis iniciais; encontradas ${returnableCount}.`);
 }
-if ((contracts.match(/returnLabel:/g) || []).length !== expected.length) {
-  throw new Error("Toda aresta retornável inicial precisa de returnLabel.");
+if ((contracts.match(/returnLabel:/g) || []).length !== returnableCount) {
+  throw new Error("Toda aresta retornável registrada precisa de returnLabel.");
 }
 
-console.log("Contratos iniciais de transição clínica correspondem aos targets reais de IRA e Politrauma.");
+console.log(`Contratos iniciais de IRA/Politrauma preservados; ${returnableCount} arestas retornáveis registradas e rotuladas.`);

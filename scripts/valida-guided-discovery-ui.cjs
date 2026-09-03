@@ -26,8 +26,8 @@ for (const clinicalToken of ["anticoagulante", "120 min", "capnografia", "hipope
 
 if (!index.includes("GuidedDiscoveryCard")) throw new Error("GuidedDiscoveryCard não exportado no índice UI V2.");
 if (!showcase.includes("guidedDiscoveryViewModel")) throw new Error("Showcase deve consumir o adapter, não texto clínico local.");
-if (!showcase.includes('["avc", "hic_anticoag"]')) throw new Error("Showcase não cobre plano preparado de HIC.");
+if (!showcase.includes('["avc", "hic_anticoag"]')) throw new Error("Showcase não cobre descoberta guiada de HIC.");
 if (!showcase.includes('["tep", "estabilidade"]')) throw new Error("Showcase não cobre descoberta existente de TEP.");
-if (!registry.includes("GUIDED_DISCOVERY_CONTRACTS")) throw new Error("Registry canônico ausente.");
+if (!registry.includes("GUIDED_DISCOVERY_REGISTRY")) throw new Error("Registry canônico ausente.");
 
 console.log("UI de descoberta guiada preserva fronteira domínio -> adapter -> apresentação.");

@@ -9,13 +9,13 @@ const target = fs.readFileSync(
 );
 
 const required = [
-  'import { Card, ClinicalShellHost, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";',
+  "ClinicalShellHost",
   "<ClinicalShellHost",
   "protocol={tr(protocolLabel)}",
   "phase={step.title ? tr(step.title) : undefined}",
   "step={stepCount}",
   "moduleSlug={currentModuleSlug}",
-  "onBack={() => router.back()}",
+  "onBack={() => (engine.canGoBack() ? handleBack() : router.back())}",
   "onPush={(href) => router.push(href)}",
   "{emV2 ? null : (",
   "<StepHeaderBar",
@@ -32,6 +32,9 @@ for (const token of required) {
 
 if (target.includes('import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";')) {
   errors.push("import antigo de Header permanece após migração");
+}
+if (!/import\s*\{[^}]*ClinicalShellHost[^}]*\}\s*from\s*["']\.\.\/ui-v2["']/.test(target)) {
+  errors.push("ClinicalShellHost deixou de ser importado pelo índice ui-v2");
 }
 if (target.includes("<Header\n")) {
   errors.push("render V2 antigo de Header permanece após migração");

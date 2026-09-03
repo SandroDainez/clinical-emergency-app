@@ -45,8 +45,9 @@ if (!runtime.includes("facts: payload.facts.map((fact) => ({ ...fact }))")) erro
 for (const token of [
   'transitionId: "taquicardia-sem-pulso-pcr-terminal"',
   'transitionId: "bradicardia-sem-pulso-pcr-terminal"',
-  'toModule: "pcr-adulto"',
-  "requiredFacts",
+  'targetModuleId: "pcr-adulto"',
+  "handoffPreservationFromTransition",
+  'transferPolicy: "do_not_delay_destination"',
 ]) {
   if (!pcr.includes(token)) erros.push(`PCR context sem ${token}`);
 }

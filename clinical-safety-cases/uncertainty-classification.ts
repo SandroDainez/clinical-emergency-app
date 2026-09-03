@@ -34,7 +34,7 @@ export const INITIAL_UNCERTAINTY_CLASSIFICATION: readonly DecisionUncertaintyPol
     reviewedAt: "2026-09-02",
   },
   {
-    protocolId: "sca",
+    protocolId: "sindromes-coronarianas",
     nodeId: "stemi_reperfusao",
     classification: "unknown_required",
     source: "external_operational_data",

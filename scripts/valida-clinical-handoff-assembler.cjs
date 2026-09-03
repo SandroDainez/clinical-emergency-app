@@ -18,13 +18,13 @@ for (const token of [
   "resolvedFacts",
   "getAllClinicalObservations()",
   "listClinicalEvents()",
-  "Object.prototype.hasOwnProperty.call(item.data, factId)",
+  "Object.prototype.hasOwnProperty.call(item.data, input.factId)",
   "buildClinicalHandoffPayload",
 ]) {
   if (!assembler.includes(token)) erros.push(`assembler sem ${token}`);
 }
 
-if (!assembler.includes("const observation = observationById.get(factId)")) {
+if (!assembler.includes("const observation = input.observationById.get(input.factId)")) {
   erros.push("assembler não prioriza observação por id exato");
 }
 if (!assembler.includes("eventsNewestFirst.find")) {
@@ -39,8 +39,8 @@ if (/infer|guess|estimate|approx/i.test(assembler)) {
 
 for (const token of [
   "prepareAndPublishClinicalHandoff",
-  'if (result.status === "complete")',
-  "publishClinicalHandoff(result.payload)",
+  'if (assembly.status === "complete")',
+  "publishClinicalHandoff(assembly.payload)",
 ]) {
   if (!orchestrator.includes(token)) erros.push(`orchestrator sem ${token}`);
 }

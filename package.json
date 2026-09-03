@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "android": "expo start --android",
+    "test:emergencias-2": "node ./scripts/valida-emergencias-2-suite.cjs",
+    "pretest:all": "npm run test:emergencias-2",
     "test:acls-ritmo": "node ./scripts/test-acls-troca-de-ritmo.cjs",
     "test:acls": "node ./scripts/auditoria-acls.cjs",
     "audit:confirmacao": "node ./scripts/diag-confirmacao-repetida.cjs",

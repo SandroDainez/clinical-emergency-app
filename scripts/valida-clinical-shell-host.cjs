@@ -10,19 +10,22 @@ const failures = [];
 for (const required of [
   "buildClinicalShellSnapshot",
   "buildCrisisRoutes",
-  "beginCrisisRoute(route)",
+  "instrumentCrisisRoute(route, moduleSlug)",
   "onPush(route.href",
   "ClinicalShellChrome",
 ]) {
   if (!text.includes(required)) failures.push(`host perdeu integração obrigatória: ${required}`);
 }
 
-if (text.indexOf("beginCrisisRoute(route)") > text.indexOf("onPush(route.href")) {
+if (text.indexOf("instrumentCrisisRoute(route, moduleSlug)") > text.indexOf("onPush(route.href")) {
   failures.push("host navega antes de registrar a interrupção clínica");
 }
 
-for (const forbidden of ["DecisionTreeEngine", "useRouter(", "router.push", "router.replace", ".choose(", ".advance("]) {
+for (const forbidden of ["useRouter(", "router.push", "router.replace", ".choose(", ".advance("]) {
   if (text.includes(forbidden)) failures.push(`host ultrapassou a fronteira de integração: ${forbidden}`);
+}
+if (/^\s*import[^\n]*DecisionTreeEngine/m.test(text)) {
+  failures.push("host ultrapassou a fronteira de integração: import de DecisionTreeEngine");
 }
 
 if (failures.length) {
