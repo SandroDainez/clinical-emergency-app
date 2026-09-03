@@ -51,6 +51,7 @@ const validators = [
   "valida-sedacao-evidencia-2025.cjs",
   "valida-sedacao-limites-dose.cjs",
   "valida-rocuronio-seguranca.cjs",
+  "valida-etomidato-seguranca.cjs",
 ];
 
 for (const validator of validators) {
