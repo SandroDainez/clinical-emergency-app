@@ -36,7 +36,7 @@ import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
 import { observeClinicalNodeForReassessment } from "../../lib/clinical-reassessment-node-runtime";
-import { prepareRegisteredTargetHandoff } from "../../lib/clinical-target-handoff-runtime";
+import { executeClinicalTargetNavigation } from "../../lib/clinical-target-navigation";
 import { recordClinicalSafetyOverride } from "../../lib/clinical-safety-override";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
@@ -204,17 +204,20 @@ export default function AclsDecisionFlowScreen({
     slug: string,
     handoff?: { fromNodeId: string; targetModuleId: string }
   ) => {
-    if (handoff) {
-      const attempt = prepareRegisteredTargetHandoff({
-        fromProtocolId: tree.id,
-        fromNodeId: handoff.fromNodeId,
-        targetModuleId: handoff.targetModuleId,
-      });
-      if (!attempt.canProceedToDestination) return;
-    }
-
-    const origem = currentModuleSlug ? `?from_module=${currentModuleSlug}` : "";
-    router.push(`/modulos/${slug}${origem}` as never);
+    executeClinicalTargetNavigation(
+      {
+        fromModuleId: currentModuleSlug,
+        targetModuleId: slug,
+        handoff: handoff
+          ? {
+              fromProtocolId: tree.id,
+              fromNodeId: handoff.fromNodeId,
+              targetModuleId: handoff.targetModuleId,
+            }
+          : undefined,
+      },
+      (href) => router.push(href as never)
+    );
   };
 
   const comecarDoInicio = () => {
