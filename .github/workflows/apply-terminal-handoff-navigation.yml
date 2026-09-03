@@ -23,11 +23,12 @@ jobs:
         run: |
           node scripts/aplica-vm-camada-inicial-2026.cjs
           node scripts/ajusta-vm-camada-inicial-i18n-2026.cjs
+          node scripts/ajusta-valida-ventilacao-typescript-2026.cjs
 
       - name: Show TypeScript compile diagnostics
         run: |
           rm -rf /tmp/vm-compile
-          npx tsc --module commonjs --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node --skipLibCheck --outDir /tmp/vm-compile ventilation-decision-tree.ts
+          npx tsc --ignoreConfig --module commonjs --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node --skipLibCheck --outDir /tmp/vm-compile ventilation-decision-tree.ts
 
       - name: Validate ventilation module
         run: npm run test:vm
@@ -49,6 +50,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ventilation-decision-tree.ts lib/i18n/modules/ventilacao.ts
+          git add ventilation-decision-tree.ts lib/i18n/modules/ventilacao.ts scripts/valida-ventilacao.cjs
           git commit -m "separate VM universal principles from pathology targets [vm-initial-layer-2026-applied]"
           git push origin HEAD:emergencias-2-ui-core
