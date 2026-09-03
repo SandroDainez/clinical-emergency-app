@@ -31,6 +31,7 @@ const validators = [
   "valida-terminal-semantic-debts.cjs",
   "valida-missing-terminal-disposition-debts.cjs",
   "valida-module-terminal-classification.cjs",
+  "valida-flow-terminal-coverage.cjs",
   "valida-external-terminal-handoffs.cjs",
   "valida-clinical-handoff-assembler.cjs",
   "valida-clinical-handoff-payload.cjs",
