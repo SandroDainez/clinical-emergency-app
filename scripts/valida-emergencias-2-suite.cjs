@@ -56,6 +56,7 @@ const validators = [
   "valida-fentanil-contexto.cjs",
   "valida-fentanil-rigidez.cjs",
   "valida-remifentanil-morfina.cjs",
+  "valida-bnm-sccm-2026.cjs",
 ];
 
 for (const validator of validators) {
