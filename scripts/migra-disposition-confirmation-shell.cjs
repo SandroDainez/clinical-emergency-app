@@ -2,6 +2,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
+// Migração one-shot, idempotente: existe para aplicar com segurança uma alteração
+// pequena no shell compartilhado e depois permanecer apenas como registro de auditoria.
 const root = path.resolve(__dirname, "..");
 const file = path.join(root, "components", "protocol-screen", "acls-decision-flow-screen.tsx");
 let source = fs.readFileSync(file, "utf8");
