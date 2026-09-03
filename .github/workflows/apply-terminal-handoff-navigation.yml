@@ -22,6 +22,21 @@ jobs:
       - name: Apply exact evidence migration
         run: node scripts/aplica-sedacao-evidence-update.cjs
 
+      - name: Restore roadmap catalog summary contract
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'EMERGENCIAS-2-ROADMAP.md';
+          let src = fs.readFileSync(file, 'utf8');
+          const summary = 'Estado da fundação: 22 fluxos assistenciais, 5 referências e 4 calculadoras; 19 transições explícitas auditadas.';
+          if (!src.includes(summary)) {
+            const anchor = 'Objetivo: evoluir o app existente para um copiloto determinístico de atendimento crítico, mantendo o produto utilizável e migrando por camadas, sem reescrita total.\n';
+            if (!src.includes(anchor)) throw new Error('Âncora do roadmap não encontrada.');
+            src = src.replace(anchor, `${anchor}\n${summary}\n`);
+            fs.writeFileSync(file, src);
+          }
+          NODE
+
       - name: Validate sedation module
         run: npm run test:sedacao
 
@@ -39,6 +54,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add sedation-engine.ts
+          git add sedation-engine.ts EMERGENCIAS-2-ROADMAP.md
           git commit -m "update sedation evidence messaging [sedation-evidence-applied]"
           git push origin HEAD:emergencias-2-ui-core
