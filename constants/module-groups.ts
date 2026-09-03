@@ -57,7 +57,7 @@ export const MODULE_GROUPS: readonly {
   },
   {
     title: "Calculadoras & escores",
-    subtitle: "Peso predito, TFG, SOFA, Glasgow, Wells, HEART, NIHSS, RASS e mais",
+    subtitle: "Antropometria, TFG, SOFA, Glasgow, Wells, HEART, NIHSS, RASS e mais",
     ids: ["calculadoras-clinicas"],
   },
 ] as const;
