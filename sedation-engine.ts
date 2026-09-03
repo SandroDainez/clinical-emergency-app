@@ -598,7 +598,7 @@ export const SED_DRUGS: SedDrug[] = [
       // assume 10 mL (10 mg/mL), que é a reconstituição usual — e diz isso,
       // porque assumir em silêncio é o que o R-6 proíbe.
       { id: "fa", label: "Frasco-ampola 100 mg (pó) → 10 mL = 10 mg/mL", ampouleVolumeMl: 10, basePerAmpoule: 100000, concentrationLabel: "10 mg/mL (reconstituído em 10 mL)",
-        fonte: "Cloreto de suxametônio 100 mg, pó para solução injetável, frasco-ampola (Succinil Colin — União Química, registro ANVISA 1.0497.0206.003-6). É PÓ: a concentração depende do volume de reconstituição; este app assume 10 mL → 10 mg/mL." },
+        fonte: "Cloreto de suxametônio, pó para solução injetável (Succinil Colin — União Química, registro ANVISA 1.0497.0206). A bula brasileira lista frascos de 100 mg e 500 mg. Este cálculo usa o frasco de 100 mg reconstituído em 10 mL → 10 mg/mL; a apresentação de 500 mg não deve ser tratada como equivalente sem conferir a reconstituição, pois em 10 mL resulta 50 mg/mL." },
     ],
     standardSolutions: [
       { id: "recon10", label: "10 mg/mL · 1 fr (100 mg) + 10 mL → 10 mL", presentationId: "fa", ampoules: "1", diluentMl: "0", diluent: "SF" },
@@ -606,7 +606,7 @@ export const SED_DRUGS: SedDrug[] = [
     modes: [
       { id: "bolus", label: "Bolus — ISR / intubação", kind: "bolus", unit: "mg/kg", defaultDose: "1,5",
         bolusNotes: [
-          "ISR: 1–1,5 mg/kg IV em bólus ultrarrápido (2 mg/kg em obeso). TETO 200 mg.",
+          "ISR: 1–1,5 mg/kg IV em bólus ultrarrápido. Em obesidade, calcular pelo peso corporal total/real; não aumentar automaticamente para 2 mg/kg apenas por obesidade. Não aplicar teto IV absoluto de 200 mg: a bula brasileira não traz esse teto para via IV.",
           "Início 45–60 s; duração ultracurta 8–12 min. SEM antídoto.",
           "Aguardar as fasciculações cessarem antes da laringoscopia.",
         ],

@@ -45,16 +45,13 @@ export const MG_POR_KG = {
   /** Hemodinamicamente neutro — não se reduz no choque. */
   etomidato: 0.3,
   propofol: { estavel: 2, reduzido: 1 },
-  succinilcolina: { min: 1, max: 1.5, obeso: 2 },
+  succinilcolina: { min: 1, max: 1.5 },
   rocuronio: 1.2,
   sugamadex: 16,
   /** Pré-tratamento — mcg/kg, não mg/kg. */
   fentanilMcg: 2,
   lidocaina: 1.5,
 } as const;
-
-/** Teto absoluto da succinilcolina, em mg. */
-export const SUCCINILCOLINA_TETO_MG = 200;
 
 /**
  * ── FORMATADOR — E O VETO QUE VEM COM ELE ───────────────────────────────────
@@ -105,7 +102,7 @@ export const DOSES_ISR = {
   midazolam: {
     instavel: "evitar",
   },
-  succinilcolina: `${MG_POR_KG.succinilcolina.min.toString().replace(".", ",")}–${mgPorKg(MG_POR_KG.succinilcolina.max)} (${mgPorKg(MG_POR_KG.succinilcolina.obeso)} em obeso; máx ${SUCCINILCOLINA_TETO_MG} mg)`,
+  succinilcolina: `${MG_POR_KG.succinilcolina.min.toString().replace(".", ",")}–${mgPorKg(MG_POR_KG.succinilcolina.max)}; em obesidade, calcular pelo peso corporal total/real`,
   rocuronio: mgPorKg(MG_POR_KG.rocuronio),
   sugamadex: mgPorKg(MG_POR_KG.sugamadex),
 } as const;
