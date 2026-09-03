@@ -1,50 +1,14 @@
-name: Finalize Drug KB AVC roadmap
+name: Archived Drug KB AVC pilot
 
 on:
-  push:
-    branches:
-      - emergencias-2-ui-core
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  finalize-roadmap:
-    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-roadmap-finalized]') }}
+  archived-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-        with:
-          ref: emergencias-2-ui-core
-          fetch-depth: 0
-
-      - name: Confirm pilot guards
-        run: |
-          npm run test:avc
-          npm run test:emergencias-2
-
-      - name: Mark roadmap
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const roadmap = 'EMERGENCIAS-2-ROADMAP.md';
-          let r = fs.readFileSync(roadmap, 'utf8');
-          const before = '- [ ] Consumir uma entrada canônica em módulo piloto após CI/testes verdes.';
-          const after = '- [x] Consumir uma entrada canônica em módulo piloto após CI/testes verdes — tenecteplase no AVC usa a regra estruturada da Drug KB com paridade protegida.';
-          if (r.includes(before)) r = r.replace(before, after);
-          else if (!r.includes(after)) throw new Error('Item do roadmap não encontrado para fechamento seguro.');
-          fs.writeFileSync(roadmap, r);
-          NODE
-
-      - name: Commit roadmap
-        run: |
-          if git diff --quiet -- EMERGENCIAS-2-ROADMAP.md; then
-            echo "Roadmap already finalized."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add EMERGENCIAS-2-ROADMAP.md
-          git commit -m "close Drug KB AVC pilot roadmap [drug-kb-roadmap-finalized]"
-          git push origin HEAD:emergencias-2-ui-core
+      - name: Archived migration notice
+        run: echo "Drug KB AVC pilot applied, validated and archived; retained only as an audit marker."
