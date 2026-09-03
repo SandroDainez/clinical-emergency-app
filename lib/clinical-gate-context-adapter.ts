@@ -1,8 +1,12 @@
 import {
   getClinicalObservation,
-  getObservationAgeMs,
   type ClinicalObservation,
 } from "./clinical-observations";
+import {
+  resolveObservationForDecision,
+  type ObservationDecisionPolicy,
+  type ObservationDecisionResolution,
+} from "./clinical-observation-decision-gate";
 import type { ClinicalGateContext, ClinicalGateFactValue } from "./clinical-gate-trigger";
 
 export type ClinicalGateFactBinding = {
@@ -10,14 +14,13 @@ export type ClinicalGateFactBinding = {
   observationId: string;
   /** Mapeamento literal: valor armazenado -> fato usado pelo gate. */
   values: Readonly<Record<string, Exclude<ClinicalGateFactValue, undefined | null>>>;
-  /** Se definido, observação mais antiga não entra como fato atual. */
-  maxAgeMs?: number;
 };
 
 export type ClinicalGateFactProblem = {
   fact: string;
   observationId: string;
   observation?: ClinicalObservation;
+  decisionResolution?: ObservationDecisionResolution;
 };
 
 export type ClinicalGateContextAssembly = {
@@ -25,46 +28,78 @@ export type ClinicalGateContextAssembly = {
   missingFacts: readonly ClinicalGateFactProblem[];
   staleFacts: readonly ClinicalGateFactProblem[];
   unmappedFacts: readonly ClinicalGateFactProblem[];
+  decisionResolutions: readonly ObservationDecisionResolution[];
 };
 
 /**
  * Constrói contexto de gate somente a partir de observações explícitas.
  *
  * Não interpreta texto livre, não consulta a árvore e não transforma ausência em
- * valor negativo. Observação stale fica fora do contexto e é devolvida como
- * problema separado para confirmação/recoleta pela camada chamadora.
+ * valor negativo. Validade temporal nunca pertence ao fato global: quando a
+ * ação consumidora possui uma `ObservationDecisionPolicy`, a reutilização passa
+ * obrigatoriamente por `resolveObservationForDecision`. Sem política explícita,
+ * a observação continua sendo um fato registrado com timestamp, sem TTL inventado.
  */
 export function assembleClinicalGateContextFromObservations(
   bindings: readonly ClinicalGateFactBinding[],
-  now: number = Date.now()
+  now: number = Date.now(),
+  decisionPolicies: readonly ObservationDecisionPolicy[] = []
 ): ClinicalGateContextAssembly {
   const context: Record<string, ClinicalGateFactValue> = {};
   const missingFacts: ClinicalGateFactProblem[] = [];
   const staleFacts: ClinicalGateFactProblem[] = [];
   const unmappedFacts: ClinicalGateFactProblem[] = [];
+  const decisionResolutions: ObservationDecisionResolution[] = [];
 
   for (const binding of bindings) {
-    const observation = getClinicalObservation(binding.observationId);
+    const policy = decisionPolicies.find((candidate) => candidate.observationId === binding.observationId);
+    const decisionResolution = policy ? resolveObservationForDecision(policy, now) : undefined;
+    if (decisionResolution) decisionResolutions.push(decisionResolution);
+
+    if (decisionResolution?.status === "missing") {
+      missingFacts.push({
+        fact: binding.fact,
+        observationId: binding.observationId,
+        decisionResolution,
+      });
+      continue;
+    }
+
+    if (decisionResolution?.status === "confirmation_required") {
+      staleFacts.push({
+        fact: binding.fact,
+        observationId: binding.observationId,
+        observation: decisionResolution.observation,
+        decisionResolution,
+      });
+      continue;
+    }
+
+    const observation =
+      decisionResolution && decisionResolution.status !== "missing"
+        ? decisionResolution.observation
+        : getClinicalObservation(binding.observationId);
+
     if (!observation) {
       missingFacts.push({ fact: binding.fact, observationId: binding.observationId });
       continue;
     }
 
-    if (binding.maxAgeMs !== undefined && getObservationAgeMs(observation, now) > binding.maxAgeMs) {
-      staleFacts.push({ fact: binding.fact, observationId: binding.observationId, observation });
-      continue;
-    }
-
     const mapped = binding.values[observation.value];
     if (mapped === undefined) {
-      unmappedFacts.push({ fact: binding.fact, observationId: binding.observationId, observation });
+      unmappedFacts.push({
+        fact: binding.fact,
+        observationId: binding.observationId,
+        observation,
+        decisionResolution,
+      });
       continue;
     }
 
     context[binding.fact] = mapped;
   }
 
-  return { context, missingFacts, staleFacts, unmappedFacts };
+  return { context, missingFacts, staleFacts, unmappedFacts, decisionResolutions };
 }
 
 export const INITIAL_CLINICAL_GATE_FACT_BINDINGS: readonly ClinicalGateFactBinding[] = [
