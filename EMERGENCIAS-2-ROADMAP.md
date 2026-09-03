@@ -151,7 +151,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Regime padrão de tenecteplase no STEMI adicionado por faixa de peso, sem promover meia-dose etária condicional a regra universal.
 - [x] Registry único da Drug Knowledge Base criado com IDs e indicações não duplicados.
 - [x] Inventário de doses críticas duplicadas criado para ordenar próximas migrações.
-- [ ] Consumir uma entrada canônica em módulo piloto após CI/testes verdes.
+- [x] Consumir uma entrada canônica em módulo piloto após CI/testes verdes — tenecteplase no AVC usa a regra estruturada da Drug KB com paridade protegida.
 - [ ] Validar apresentações dos próximos fármacos comercializados no Brasil.
 - [ ] Bloquear duplicação de dose crítica entre módulos após inventário/revisão.
 
