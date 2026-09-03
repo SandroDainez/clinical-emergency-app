@@ -5,6 +5,7 @@ import { clearClinicalObservations } from "./clinical-observations";
 import { clearObservationDecisionConfirmations } from "./clinical-observation-decision-gate";
 import { clearClinicalReassessmentNodeRuntime } from "./clinical-reassessment-node-runtime";
 import { clearPendingClinicalReassessments } from "./clinical-reassessment-runtime";
+import { recordClinicalCaseStarted } from "./clinical-runtime-bridge";
 import { clearVasopressorReassessmentState } from "./clinical-vasopressor-reassessment";
 import { limparContextoDoPaciente } from "./contexto-do-paciente";
 
@@ -38,6 +39,7 @@ export function startClinicalCase(caseId: string, now: number = Date.now()): Cli
 
   currentCaseId = id;
   currentCaseStartedAt = now;
+  recordClinicalCaseStarted({ caseId: id, now });
   return { caseId: currentCaseId, startedAt: currentCaseStartedAt };
 }
 
