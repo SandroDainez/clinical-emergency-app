@@ -1,14 +1,49 @@
-name: Archived ISR indication semantics 2026
+name: Apply mechanical ventilation initial layer 2026
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[vm-initial-layer-2026-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "ISR indication semantics migration applied and validated."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply mechanical ventilation initial-layer migration
+        run: |
+          node scripts/aplica-vm-camada-inicial-2026.cjs
+          node scripts/ajusta-vm-camada-inicial-i18n-2026.cjs
+
+      - name: Validate ventilation module
+        run: npm run test:vm
+
+      - name: Validate mechanical ventilation initial layer 2026
+        run: node scripts/valida-vm-camada-inicial-2026.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No VM initial-layer changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ventilation-decision-tree.ts lib/i18n/modules/ventilacao.ts
+          git commit -m "separate VM universal principles from pathology targets [vm-initial-layer-2026-applied]"
+          git push origin HEAD:emergencias-2-ui-core
