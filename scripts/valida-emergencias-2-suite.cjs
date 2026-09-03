@@ -59,6 +59,7 @@ const validators = [
   "valida-bnm-sccm-2026.cjs",
   "valida-atracurio-laudanosina.cjs",
   "valida-succinilcolina-peso-total.cjs",
+  "valida-anafilaxia-bnm-escolha.cjs",
 ];
 
 for (const validator of validators) {
