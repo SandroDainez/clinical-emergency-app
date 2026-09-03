@@ -13,6 +13,7 @@ const expect = (condition, message) => {
 };
 
 const alteplase = read("lib/drug-knowledge/alteplase.ts");
+const amiodarona = read("lib/drug-knowledge/amiodarona.ts");
 
 for (const mg of [10, 20, 50]) {
   expect(
@@ -21,15 +22,17 @@ for (const mg of [10, 20, 50]) {
   );
 }
 
-const concentrationCount = (alteplase.match(/concentration: "1 mg\/mL após reconstituição"/g) || []).length;
-expect(concentrationCount === 3, `esperadas 3 apresentações de alteplase a 1 mg/mL; encontradas ${concentrationCount}`);
+const alteplaseConcentrationCount = (alteplase.match(/concentration: "1 mg\/mL após reconstituição"/g) || []).length;
+expect(alteplaseConcentrationCount === 3, `esperadas 3 apresentações de alteplase a 1 mg/mL; encontradas ${alteplaseConcentrationCount}`);
 
-const sourceCount = (alteplase.match(/ANVISA\/CMED — lista oficial de apresentações comercializadas no Brasil/g) || []).length;
-expect(sourceCount === 3, `as 3 apresentações de alteplase precisam manter proveniência ANVISA/CMED; encontradas ${sourceCount}`);
+const alteplaseSourceCount = (alteplase.match(/ANVISA\/CMED — lista oficial de apresentações comercializadas no Brasil/g) || []).length;
+expect(alteplaseSourceCount === 3, `as 3 apresentações de alteplase precisam manter proveniência ANVISA/CMED; encontradas ${alteplaseSourceCount}`);
+expect(alteplase.includes('reviewedAt: "2026-09-03"'), "data de revisão das apresentações brasileiras de alteplase não está registrada");
 
-expect(
-  alteplase.includes('reviewedAt: "2026-09-03"'),
-  "data de revisão das apresentações brasileiras de alteplase não está registrada"
-);
+expect(amiodarona.includes('label: "Solução injetável 50 mg/mL — ampola 3 mL"'), "apresentação brasileira injetável de amiodarona 50 mg/mL em ampola de 3 mL ausente");
+expect(amiodarona.includes('vialAmount: "150 mg/3 mL"'), "conteúdo total de 150 mg/3 mL da amiodarona não está protegido");
+expect(amiodarona.includes("ANVISA — rótulo aprovado de cloridrato de amiodarona solução injetável 50 mg/mL, ampola 3 mL"), "proveniência ANVISA da apresentação de amiodarona ausente");
+expect(amiodarona.includes('version: "registro 1.0041.0206.001-9"'), "registro ANVISA da apresentação de amiodarona ausente");
+expect(amiodarona.includes('reviewedAt: "2026-09-03"'), "data de revisão da apresentação brasileira de amiodarona não está registrada");
 
-console.log("✅ Drug KB apresentações BR: Actilyse 10/20/50 mg com diluentes correspondentes e proveniência ANVISA/CMED protegidos.");
+console.log("✅ Drug KB apresentações BR: alteplase 10/20/50 mg e amiodarona 50 mg/mL x 3 mL possuem apresentação e proveniência brasileiras protegidas.");
