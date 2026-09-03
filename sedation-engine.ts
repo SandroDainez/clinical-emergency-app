@@ -571,7 +571,7 @@ export const SED_DRUGS: SedDrug[] = [
     alert: {
       icon: "🚨", tone: "danger",
       lines: [
-        "CONTRAINDICAÇÕES ABSOLUTAS (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna pessoal ou familiar; pseudocolinesterase atípica OU inibição adquirida da colinesterase (organofosforado); trauma ocular aberto.",
+        "CONTRAINDICAÇÕES IMPORTANTES (usar rocurônio quando presentes): hipercalemia conhecida ou suspeita clinicamente relevante — não usar um corte isolado de K⁺ como regra universal; após a fase aguda de queimadura grave, trauma múltiplo, denervação/lesão de neurônio motor superior ou imobilização prolongada, pelo risco de hipercalemia grave; rabdomiólise/esmagamento; miopatias/distrofias musculares e miotonias; suscetibilidade pessoal ou familiar à hipertermia maligna; pseudocolinesterase atípica OU inibição adquirida da colinesterase (organofosforado — risco de bloqueio prolongado); trauma ocular aberto/franca perfuração ocular — preferir bloqueador não despolarizante.",
         "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF quando houver.",
         FORA_DE_ESCOPO_PEDIATRICO,
       ],

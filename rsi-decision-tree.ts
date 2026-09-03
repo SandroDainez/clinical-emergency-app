@@ -665,7 +665,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         // atípica) e não a inibição ADQUIRIDA — organofosforado. O módulo de
         // intoxicações já avisava ("bloqueio prolongado pela inibição da
         // colinesterase"); este, que é onde a droga se escolhe, não.
-        "Contraindicações ABSOLUTAS da succinilcolina (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna (pessoal/familiar); pseudocolinesterase atípica OU inibição adquirida da colinesterase (intoxicação por organofosforado — bloqueio prolongado); trauma ocular aberto.",
+        "Contraindicações importantes da succinilcolina (usar rocurônio quando presentes): hipercalemia conhecida ou suspeita clinicamente relevante — não usar K⁺ > 5,5 como corte universal; após a fase aguda de queimadura grave, trauma múltiplo, denervação/lesão de neurônio motor superior ou imobilização prolongada, pelo risco de hipercalemia grave; rabdomiólise/esmagamento; miopatias/distrofias musculares e miotonias; suscetibilidade pessoal/familiar à hipertermia maligna; pseudocolinesterase atípica OU inibição adquirida da colinesterase (intoxicação por organofosforado — bloqueio prolongado); trauma ocular aberto/franca perfuração ocular — preferir bloqueador não despolarizante.",
         "Succinilcolina: início 45–60 s, duração ultracurta 8–12 min. Sem antídoto.",
         ANAFILAXIA_BLOQUEADOR,
         ANAFILAXIA_GATILHO_BLOQUEADOR,
