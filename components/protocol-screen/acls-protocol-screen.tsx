@@ -40,6 +40,7 @@ import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
+import { ACLS_REFERENCE_NAVIGATION, buildClinicalContextHref } from "../../lib/clinical-context-navigation";
 import { useTr } from "../../lib/use-tr";
 
 type AclsProtocolScreenProps = {
@@ -188,16 +189,12 @@ function AclsProtocolScreen({
   const [showRefModules, setShowRefModules] = useState(false);
   const router = useRouter();
 
-  const ACLS_REF_MODULES: { route: Href; icon: string; label: string; sublabel: string }[] = [
-    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: tr("Ritmos de Parada"), sublabel: tr("FV · TV · AESP · Assistolia") },
-    { route: "/modulos/farmacologia-acls?from_module=pcr-adulto" as Href,     icon: "Rx", label: tr("Farmacologia"),  sublabel: tr("Epinefrina · Amiodarona · +3") },
-    { route: "/modulos/bradicardia-acls?from_module=pcr-adulto" as Href,      icon: "↓",  label: tr("Bradicardia"),   sublabel: tr("Instável · Atropina · MP-TC") },
-    { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: tr("Taquicardia"),   sublabel: tr("Estável vs instável · CV") },
-    { route: "/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href, icon: "HT", label: tr("Hs e Ts"),     sublabel: tr("5H e 5T reversíveis") },
-    { route: "/modulos/pcr-gestacao-acls?from_module=pcr-adulto" as Href,     icon: "OB", label: tr("PCR na Gestação"), sublabel: tr("Deslocamento uterino · 5 min") },
-    { route: "/modulos/ovace-adulto?from_module=pcr-adulto" as Href,           icon: "VA", label: tr("Engasgo (OVACE)"), sublabel: tr("Golpes nas costas · 5+5") },
-    { route: "/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href,          icon: "✓",  label: tr("Pós-PCR"),       sublabel: tr("ROSC · Metas · Neurologia") },
-  ];
+  const ACLS_REF_MODULES = ACLS_REFERENCE_NAVIGATION.map((contract) => ({
+    ...contract,
+    route: buildClinicalContextHref(contract) as Href,
+    label: tr(contract.label),
+    sublabel: tr(contract.sublabel),
+  }));
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
     getAppGuidelinesStatus()
   );

@@ -83,6 +83,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Travas estruturais protegem arestas retornáveis e handoffs externos contra divergência com as árvores reais.
 - [x] As 19 transições explícitas das árvores possuem contrato de retorno ou terminalidade e preservação de contexto quando aplicável.
 - [ ] Substituir navegações improvisadas progressivamente.
+- [x] Oito atalhos de recursos adicionais do PCR centralizados e classificados como consulta contextual, sem criar handoff artificial.
 
 ## Bloco D — Event Log e auditoria
 
