@@ -20,7 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply ISR hemodynamic optimization migration
-        run: node scripts/aplica-isr-hemodinamica-pretratamento-2026.cjs
+        run: |
+          node scripts/aplica-isr-hemodinamica-pretratamento-2026.cjs
+          node scripts/ajusta-isr-regra-indutor-instavel-2026.cjs
 
       - name: Validate ISR module
         run: npm run test:isr
