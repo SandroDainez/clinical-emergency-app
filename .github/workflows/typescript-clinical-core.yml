@@ -45,8 +45,11 @@ jobs:
           node scripts/valida-targets-em-handoffs.cjs
           node scripts/valida-targets-versus-handoffs.cjs
 
-      - name: Validate contextual navigation contracts
-        run: node scripts/valida-navegacao-contextual-acls.cjs
+      - name: Validate canonical clinical navigation
+        run: |
+          node scripts/valida-navegacao-contextual-acls.cjs
+          node scripts/valida-target-navigation-shell.cjs
+          node scripts/valida-sem-from-module-hardcoded-na-ui.cjs
 
       - name: Validate Event Log medication and disposition semantics
         run: node scripts/valida-event-log-medication-disposition.cjs
