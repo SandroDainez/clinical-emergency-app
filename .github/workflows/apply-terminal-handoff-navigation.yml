@@ -23,7 +23,7 @@ jobs:
         run: node scripts/aplica-drug-kb-avc-pilot.cjs
 
       - name: Expose TypeScript diagnostics
-        run: npx tsc --ignoreConfig --module commonjs --target es2020 --esModuleInterop --moduleResolution node --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
+        run: npx tsc --ignoreConfig --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
 
       - name: Validate AVC
         run: npm run test:avc
