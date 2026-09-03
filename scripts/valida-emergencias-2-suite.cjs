@@ -54,6 +54,7 @@ const validators = [
   "valida-etomidato-seguranca.cjs",
   "valida-succinilcolina-hipercalemia.cjs",
   "valida-fentanil-contexto.cjs",
+  "valida-fentanil-rigidez.cjs",
 ];
 
 for (const validator of validators) {
