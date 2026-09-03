@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+const fs=require('node:fs');const path=require('node:path');const file=path.resolve(__dirname,'..','shock-decision-tree.ts');let s=fs.readFileSync(file,'utf8');
+const oldBlock=`        "Estenose aórtica: noradrenalina ± dobutamina. Com FE reduzida, considerar dobutamina titulada por ecocardiograma ou cateter de artéria pulmonar; com FE preservada, o inotrópico não traz ganho hemodinâmico.",
+        "Insuficiência aórtica: dopamina; considerar marca-passo temporário para manter a FC alta — a FC alta reduz o tempo de enchimento diastólico e ajuda a baixar a pressão diastólica final do VE.",
+        "Estenose mitral: noradrenalina ± amiodarona. EVITAR cronotrópicos — aqui o choque é pré-carga dependente; reduzir a FC e manter a sincronia atrioventricular melhoram a pré-carga.",
+        "Insuficiência mitral: noradrenalina ± dobutamina ± balão intra-aórtico. Depois de estabilizar com vasopressor, considerar inotrópico; a redução da pós-carga ajuda a baixar a pressão diastólica final do VE.",
+        "Obstrução dinâmica da via de saída do VE: alíquotas de fluido em bólus, noradrenalina, manter a sincronia atrioventricular e EVITAR inotrópicos e vasodilatadores.",
+        "Ruptura de septo interventricular: noradrenalina ± dobutamina ± balão intra-aórtico, com avaliação cirúrgica imediata.",
+        "Avaliação especializada e ecocardiograma são parte da conduta, não etapa posterior.",`;
+const newBlock=`        "Choque por valvopatia aguda ou complicação mecânica do IAM exige ecocardiografia imediata e Heart Team/equipe de choque precocemente; a terapia farmacológica é ponte para correção definitiva, não substituto de intervenção.",
+        "A estratégia hemodinâmica depende da LESÃO e do fenótipo. Evitar receitas universais do tipo ‘dopamina na insuficiência aórtica’, ‘amiodarona na estenose mitral’ ou ‘balão intra-aórtico para toda insuficiência mitral’: pressão, frequência, pré/pós-carga e suporte mecânico devem ser individualizados com eco e, quando necessário, hemodinâmica invasiva.",
+        "Na obstrução dinâmica da via de saída do VE, evitar aumento desnecessário de contratilidade e redução excessiva de pré/pós-carga; tratar precipitantes e usar estratégia guiada por ecocardiografia.",
+        "Suspeita de ruptura de músculo papilar/insuficiência mitral aguda, comunicação interventricular pós-IAM ou ruptura de parede livre exige cirurgia/intervenção estrutural imediata ou transferência urgente para centro capaz; suporte vasoativo/MCS, quando usados, são ponte selecionada pela anatomia e pelo fenótipo.",
+        "Estenose aórtica crítica, insuficiência aórtica aguda grave e doença mitral crítica em choque requerem avaliação urgente em Heart Valve Centre/Heart Team quando disponível, com decisão rápida entre cirurgia, intervenção transcateter ou ponte hemodinâmica apropriada.",`;
+if(!s.includes(oldBlock))throw new Error('Missing valvular mechanical block');s=s.replace(oldBlock,newBlock);fs.writeFileSync(file,s);console.log('✅ Choque valvar/mecânico: receitas rígidas removidas e decisão definitiva contextualizada.');
