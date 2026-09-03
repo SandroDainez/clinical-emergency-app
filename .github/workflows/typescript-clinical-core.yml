@@ -52,7 +52,9 @@ jobs:
         run: node scripts/valida-event-log-medication-disposition.cjs
 
       - name: Validate declarative temporal debrief
-        run: node scripts/valida-temporal-debrief.cjs
+        run: |
+          node scripts/valida-temporal-debrief.cjs
+          node scripts/valida-acls-debrief-temporal-source.cjs
 
       - name: Validate active guided discovery contracts
         run: node scripts/valida-guided-discovery-hic-stemi.cjs
