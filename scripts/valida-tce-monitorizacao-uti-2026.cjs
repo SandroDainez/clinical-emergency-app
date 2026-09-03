@@ -15,8 +15,8 @@ const checks=[
 ['EEG duration individualized',/Interromper ou prolongar conforme achados, evolução e redução dos sedativos/],
 ['EEG 24h baseline and longer selected',/pelo menos 24 h[^\n]+24–48 h ou mais pode ser necessário/],
 ['old fixed coma 48h statement absent',!/paciente em coma pode exigir 48 h de monitorização/.test(src)],
-['multimodal monitoring remains adjunctive',/Neuromonitorização multimodal[^\n]+complementar PIC\/PPC, TC e exame neurológico/],
-['PbtO2 not universal standalone threshold',/PbtO₂[^\n]+não deve ser apresentado como cutoff universal isolado/],
+['multimodal monitoring remains adjunctive',/Neuromonitorização multimodal[^\n]+usar tendências para complementar PIC, PPC, exame e TC/],
+['PbtO2 not universal standalone threshold',/PbtO₂[^\n]+não sustenta um limiar universal de desfecho/],
 ['SjvO2 below 50 treated as avoidable threshold',/SjvO₂ < 50%[^\n]+limiar a evitar/]
 ];
 for(const [name,rule] of checks){const pass=typeof rule==='boolean'?rule:rule.test(src);if(pass)ok++;else failures.push(name);}if(failures.length){console.error('❌ TCE monitorização UTI 2026:');for(const f of failures)console.error(' - '+f);process.exit(1);}console.log(`✅ TCE monitorização UTI 2026: ${ok} travas aprovadas.`);
