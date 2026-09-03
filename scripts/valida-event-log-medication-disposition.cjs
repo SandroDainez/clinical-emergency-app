@@ -61,8 +61,33 @@ forbidText(
 
 requireText(
   disposition,
-  'transition.mode !== "terminal" || transition.destinationKind !== "external_service"',
-  "Disposition pode ser emitido fora de transição terminal para serviço externo"
+  "function isExternalTerminalTransition",
+  "Runtime de destino perdeu o predicado canônico de terminal externo"
+);
+requireText(
+  disposition,
+  'transition.mode === "terminal"',
+  "Disposition pode ser emitido fora de transição terminal"
+);
+requireText(
+  disposition,
+  'transition.destinationKind === "external_service"',
+  "Disposition pode ser emitido para destino que não é serviço externo"
+);
+requireText(
+  disposition,
+  "Boolean(transition.externalLabel?.trim())",
+  "Disposition externo pode ficar sem rótulo clínico explícito"
+);
+requireText(
+  disposition,
+  "Boolean(transition.sourceNodeId?.trim())",
+  "Disposition externo pode ficar sem vínculo ao nó real da árvore"
+);
+requireText(
+  disposition,
+  "if (!isExternalTerminalTransition(transition))",
+  "Confirmação não reutiliza a guarda canônica antes de registrar disposition"
 );
 requireText(
   disposition,
