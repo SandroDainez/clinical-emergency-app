@@ -50,6 +50,7 @@ const validators = [
   "valida-critical-dose-ownership.cjs",
   "valida-sedacao-evidencia-2025.cjs",
   "valida-sedacao-limites-dose.cjs",
+  "valida-rocuronio-seguranca.cjs",
 ];
 
 for (const validator of validators) {
