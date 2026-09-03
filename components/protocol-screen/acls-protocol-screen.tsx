@@ -39,8 +39,7 @@ import type { PcrInheritedContextViewModel } from "../../lib/pcr-handoff-context
 import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
-import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
-import { ACLS_REFERENCE_NAVIGATION, buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
+import { ACLS_REFERENCE_NAVIGATION, buildClinicalContextHref, executeClinicalContextNavigation, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 import { useTr } from "../../lib/use-tr";
 
 type AclsProtocolScreenProps = {
@@ -736,8 +735,7 @@ function AclsProtocolScreen({
             </Text>
             <Pressable
               onPress={() => {
-                markProtocolSessionForResume(encounterSummary.protocolId);
-                router.push(buildClinicalContextHref(reversibleCausesNavigation) as Href);
+                executeClinicalContextNavigation(reversibleCausesNavigation, (href) => router.push(href as Href));
               }}
               style={({ pressed }) => [aclsScreenStyles.referenceShortcutCard, pressed && aclsScreenStyles.referenceShortcutCardPressed]}>
               <View style={aclsScreenStyles.referenceShortcutRow}>
@@ -1012,8 +1010,7 @@ function AclsProtocolScreen({
         {screenModel.clinicalIntent === "post_rosc_care" ? (
           <Pressable
             onPress={() => {
-              markProtocolSessionForResume(encounterSummary.protocolId);
-              router.push(buildClinicalContextHref(postRoscNavigation) as Href);
+              executeClinicalContextNavigation(postRoscNavigation, (href) => router.push(href as Href));
             }}
             // `resourceCard` foi desenhado para a GRADE de recursos: tem
             // `flex: 1` e `minWidth: 44%`, e fora dela o cartão colapsava —
@@ -1186,8 +1183,7 @@ function AclsProtocolScreen({
                     <Pressable
                       key={mod.label}
                       onPress={() => {
-                        markProtocolSessionForResume(encounterSummary.protocolId);
-                        router.push(mod.route);
+                        executeClinicalContextNavigation(mod, (href) => router.push(href as Href));
                       }}
                       style={({ pressed }) => [aclsScreenStyles.resourceCard, pressed && aclsScreenStyles.resourceCardPressed]}>
                       <View style={aclsScreenStyles.resourceIconWrap}>
@@ -1224,8 +1220,7 @@ function AclsProtocolScreen({
             onNotesChange={onCauseNotesChange}
             onStatusChange={onCauseStatusChange}
             onOpenReferenceModule={() => {
-              markProtocolSessionForResume(encounterSummary.protocolId);
-              router.push(buildClinicalContextHref(reversibleCausesNavigation) as Href);
+              executeClinicalContextNavigation(reversibleCausesNavigation, (href) => router.push(href as Href));
             }}
           />
         ) : null}

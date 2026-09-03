@@ -5,9 +5,8 @@ import { ClinicalShellHost } from "../ui-v2/clinical-shell-host";
 import { useRouter } from "expo-router";
 import { useTr } from "../../lib/use-tr";
 import { TIPOGRAFIA, RAIO, SOMBRA, TEMAS } from "../../design-system/tokens";
-import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 import { OVACE_CAUSA_JA_IDENTIFICADA, OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
-import { buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
+import { executeClinicalContextNavigation, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -287,12 +286,7 @@ export default function AclsChokingScreen() {
         <Text style={s.pcrCorpo}>{tr(OVACE_CAUSA_JA_IDENTIFICADA)}</Text>
         <Pressable
           onPress={() => {
-            // Pré-marca a hipóxia como SUSPEITA no destino: a causa já é
-            // conhecida, e o app não deve pedir que se procure o que a própria
-            // navegação sabe. "suspeita" e não "abordada" — ela só é abordada
-            // quando o objeto sair.
-            markProtocolSessionForResume("pcr_adulto", ["hipoxia"]);
-            router.push(buildClinicalContextHref(pcrNavigation) as never);
+            executeClinicalContextNavigation(pcrNavigation, (href) => router.push(href as never));
           }}
           style={({ pressed }) => [s.pcrBotao, pressed && s.pcrBotaoPressed]}>
           <Text style={s.pcrBotaoTexto}>{tr("Abrir PCR no adulto")}</Text>

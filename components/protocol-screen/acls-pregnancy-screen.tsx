@@ -1,11 +1,10 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
-import { buildClinicalContextHref, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
+import { executeClinicalContextNavigation, getClinicalContextNavigation } from "../../lib/clinical-context-navigation";
 import { useTr } from "../../lib/use-tr";
 import { TIPOGRAFIA, RAIO, SOMBRA, TEMAS } from "../../design-system/tokens";
 import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
-import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 import { CALCIO_NA_PARADA, CALCIO_PARADA_VS_COM_PULSO } from "../../lib/calcio-na-parada";
 import {
   DESLOCAMENTO_UTERINO_COMO,
@@ -241,11 +240,8 @@ export default function AclsPregnancyScreen() {
         <Text style={s.rotasTitulo}>{tr("Para onde ir daqui")}</Text>
         <Pressable
           onPress={() => {
-            // A causa NÃO é pré-marcada aqui, ao contrário do engasgo: na
-            // gestante a etiologia é aberta (ABCDEFGH), e marcar uma causa
-            // sem saber qual é o oposto do que o módulo ensina.
-            markProtocolSessionForResume("pcr_adulto");
-            router.push(buildClinicalContextHref(pcrNavigation) as never);
+            // A etiologia permanece aberta (ABCDEFGH); o contrato não pré-marca causa.
+            executeClinicalContextNavigation(pcrNavigation, (href) => router.push(href as never));
           }}
           style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
           <View style={{ flex: 1 }}>
@@ -258,7 +254,7 @@ export default function AclsPregnancyScreen() {
           </View>
         </Pressable>
         <Pressable
-          onPress={() => router.push(buildClinicalContextHref(preEclampsiaNavigation) as never)}
+          onPress={() => executeClinicalContextNavigation(preEclampsiaNavigation, (href) => router.push(href as never))}
           style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
           <View style={{ flex: 1 }}>
             <Text style={s.rotaTitulo}>{tr("Pré-eclâmpsia e eclâmpsia")}</Text>
