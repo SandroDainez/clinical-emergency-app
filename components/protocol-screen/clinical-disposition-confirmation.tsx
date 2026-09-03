@@ -81,7 +81,7 @@ export function ClinicalDispositionConfirmation({
   }
 
   return (
-    <Card tom="neutral" style={e.card} testID="registrar-destino-transferencia">
+    <Card tom="neutro" style={e.card} testID="registrar-destino-transferencia">
       <Tag label={tr("Registro de destino")} />
       <Text style={e.title}>{tr(disposition.label)}</Text>
       <Text style={e.body}>
