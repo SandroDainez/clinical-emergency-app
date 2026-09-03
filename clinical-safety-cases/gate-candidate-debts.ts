@@ -103,5 +103,53 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
       conclusion: "A diretriz classifica como Classe 3: Harm (C-LD) realizar sedação profunda e ventilação mecânica em TEP categorias C–E sem indicação clínica. Quando sedação para intubação é necessária, recomenda Classe 1 (C-LD) ter vasopressores, inotrópicos e/ou VA-ECMO disponíveis para eventual instabilidade. O candidato pode ter nível soft_stop, condicionado à ausência de indicação clínica explícita; nunca hard stop absoluto.",
     },
   },
-
+  {
+    id: "tce-prophylactic-severe-hyperventilation",
+    protocolId: "tce",
+    nodeId: "tce_grave",
+    candidateLevel: "hard_stop",
+    status: ["needs_fact_model", "needs_action_surface"],
+    riskStatement: "Hiperventilação profilática prolongada e intensa pode reduzir fluxo cerebral em TCE grave e expor tecido vulnerável a isquemia; não deve ser confundida com hiperventilação temporizadora por herniação ou HIC refratária.",
+    currentTreeEvidence: "tce_grave declara normocapnia, restringe hiperventilação a ponte para herniação iminente e proíbe hiperventilação profilática; conduta_hic mantém hiperventilação como resgate contextual.",
+    requiredFacts: [
+      "tce_grave_ou_lesao_cerebral_aguda",
+      "tentativa_hiperventilacao",
+      "finalidade_hiperventilacao_profilatica",
+      "paco2_alvo_25_ou_menos",
+      "herniação_iminente_ou_hic_refrataria",
+    ],
+    activationRuleDraft: "Interceptar apenas uma tentativa explícita de hiperventilação profilática prolongada com alvo PaCO₂ ≤25 mmHg e sem herniação iminente/HIC refratária registrada. Se houver indicação de resgate explicitamente documentada, este hard stop não pode ativar; nesse cenário a necessidade é orientar monitorização cerebral e reversão precoce, não bloquear uma terapia temporizadora.",
+    evidenceReview: {
+      reviewedAt: "2026-09-03",
+      sources: [
+        "Brain Trauma Foundation — Guidelines for the Management of Severe TBI, 4th Edition, Ventilation Therapies",
+        "Brain Trauma Foundation — Severe TBI 3rd Edition, Hyperventilation recommendations retained as contextual prior-edition guidance",
+      ],
+      conclusion: "A BTF 4ª edição mantém recomendação Level IIB contra hiperventilação profilática prolongada com PaCO₂ ≤25 mmHg. A própria BTF preserva, como orientação contextual de edição anterior, o uso de hiperventilação como medida temporizadora para PIC elevada, com cautela especial nas primeiras 24 h e monitorização de oxigenação cerebral quando usada. Portanto o candidato é hard stop apenas no estado profilático estreito e explicitamente modelado, nunca contra hiperventilação de resgate.",
+    },
+  },
+  {
+    id: "choque-cardiogenico-fluid-bolus-with-congestion",
+    protocolId: "choque",
+    nodeId: "dx_cardio_frio_umido",
+    candidateLevel: "soft_stop",
+    status: ["needs_fact_model", "needs_action_surface"],
+    riskStatement: "Expansão volêmica empírica em choque cardiogênico esquerdo com congestão documentada pode agravar pressões de enchimento e edema pulmonar sem corrigir a falência de bomba.",
+    currentTreeEvidence: "dx_cardio_frio_umido descreve baixo débito com congestão e orienta evitar expansão volêmica; os demais ramos só admitem pequenas alíquotas quando há baixa pré-carga provável e reavaliação imediata.",
+    requiredFacts: [
+      "choque_cardiogenico_esquerdo",
+      "congestao_pulmonar_ou_pressao_enchimento_alta",
+      "tentativa_expansao_volemica",
+      "hipovolemia_ou_responsividade_a_volume_provavel",
+    ],
+    activationRuleDraft: "Ao tentar expansão volêmica no fenótipo cardiogênico esquerdo com congestão explicitamente registrada, usar soft stop para exigir confirmação de uma razão fisiológica específica para fluido. Não bloquear pequenas alíquotas quando hipovolemia/baixa pré-carga ou provável responsividade estiverem documentadas; o gate deve distinguir 'fluido como tratamento primário do choque' de 'teste pequeno e reavaliado'.",
+    evidenceReview: {
+      reviewedAt: "2026-09-03",
+      sources: [
+        "ESICM 2025 Clinical Practice Guideline on Fluid Therapy in Adult Critically Ill Patients, Part 2 — volume of resuscitation fluids (PMID 40163133)",
+        "ESICM Guidelines on Circulatory Shock and Hemodynamic Monitoring 2025 (PMID 41236566)",
+      ],
+      conclusion: "A ESICM 2025 não recomenda ressuscitação volêmica como tratamento primário da falência circulatória por choque cardiogênico esquerdo e orienta avaliar responsividade antes de continuar fluidos em choque persistente. Como podem existir subfenótipos com baixa pré-carga real, a proteção adequada é contextual e reversível: soft stop condicionado à congestão explícita, não hard stop universal contra qualquer fluido.",
+    },
+  },
 ] as const;
