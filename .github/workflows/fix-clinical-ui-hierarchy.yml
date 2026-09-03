@@ -23,8 +23,27 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Adapt hierarchy patcher to tokenized OVACE screen
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'scripts/corrige-hierarquia-sedo-ovace-vm-pbw.cjs';
+          let src = fs.readFileSync(file, 'utf8');
+          const oldAnchor = `  const styleAnchor = '  scroll: { flex: 1, backgroundColor: "#101722" },\\n';`;
+          const newAnchor = `  const styleAnchor = '  scroll: { flex: 1, backgroundColor: TEMAS.escuro.cores.bg },\\n';`;
+          if (!src.includes(oldAnchor)) throw new Error('âncora antiga do patcher não encontrada');
+          src = src.replace(oldAnchor, newAnchor);
+
+          const oldStyles = '  src = src.replace(styleAnchor, `${styleAnchor}  guideCard: { backgroundColor: "#192331", borderRadius: 18, padding: 18, borderWidth: 2, borderColor: "#60a5fa", gap: 12 },\\n  guideEyebrow: { fontSize: 12, fontWeight: "900", letterSpacing: 1.2, color: "#93c5fd" },\\n  guideTitle: { fontSize: 24, lineHeight: 30, fontWeight: "900", color: "#f8fafc" },\\n  guideBody: { fontSize: 16, lineHeight: 23, fontWeight: "600", color: "#cbd5e1" },\\n  guideAction: { borderRadius: 14, borderWidth: 1, borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.10)", padding: 14, gap: 6 },\\n  guideActionCritical: { borderColor: "#ef4444", backgroundColor: "rgba(239,68,68,0.10)" },\\n  guideActionTitle: { fontSize: 18, lineHeight: 24, fontWeight: "900", color: "#f8fafc" },\\n  guideActionText: { fontSize: 15, lineHeight: 22, fontWeight: "600", color: "#cbd5e1" },\\n`);';
+          const newStyles = '  src = src.replace(styleAnchor, `${styleAnchor}  guideCard: { backgroundColor: TEMAS.escuro.cores.surface, borderRadius: RAIO.card, padding: 18, borderWidth: 2, borderColor: TEMAS.escuro.cores.primary, gap: 12 },\\n  guideEyebrow: { fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "900", letterSpacing: 1.2, color: TEMAS.escuro.cores.primary },\\n  guideTitle: { fontSize: TIPOGRAFIA.title.fontSize, lineHeight: 30, fontWeight: "900", color: TEMAS.escuro.cores.text },\\n  guideBody: { fontSize: TIPOGRAFIA.body.fontSize, lineHeight: 23, fontWeight: "600", color: TEMAS.escuro.cores.textSecondary },\\n  guideAction: { borderRadius: RAIO.input, borderWidth: 1, borderColor: TEMAS.escuro.cores.success, backgroundColor: TEMAS.escuro.cores.surface, padding: 14, gap: 6 },\\n  guideActionCritical: { borderColor: TEMAS.escuro.cores.critical },\\n  guideActionTitle: { fontSize: TIPOGRAFIA.step.fontSize, lineHeight: 24, fontWeight: "900", color: TEMAS.escuro.cores.text },\\n  guideActionText: { fontSize: TIPOGRAFIA.caption.fontSize, lineHeight: 22, fontWeight: "600", color: TEMAS.escuro.cores.textSecondary },\\n`);';
+          if (!src.includes(oldStyles)) throw new Error('bloco antigo de estilos OVACE não encontrado no patcher');
+          src = src.replace(oldStyles, newStyles);
+          fs.writeFileSync(file, src);
+          NODE
       - name: Apply deterministic hierarchy fixes
-        run: node scripts/corrige-hierarquia-sedo-ovace-vm-pbw.cjs
+        run: |
+          node scripts/corrige-hierarquia-sedo-ovace-vm-pbw.cjs
+          git checkout -- scripts/corrige-hierarquia-sedo-ovace-vm-pbw.cjs
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Clinical step parity
