@@ -51,6 +51,9 @@ jobs:
       - name: Validate Event Log medication and disposition semantics
         run: node scripts/valida-event-log-medication-disposition.cjs
 
+      - name: Validate declarative temporal debrief
+        run: node scripts/valida-temporal-debrief.cjs
+
       - name: Validate active guided discovery contracts
         run: node scripts/valida-guided-discovery-hic-stemi.cjs
 
