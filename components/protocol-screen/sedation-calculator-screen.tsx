@@ -42,6 +42,7 @@ import {
 import { useTr } from "../../lib/use-tr";
 import { Header } from "../ui-v2/header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
 import { RailDeModulo } from "./module-flow-shell";
 import { TEMAS } from "../../design-system/tokens";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
@@ -372,13 +373,16 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           {drug.modes.length > 1 && (
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("MODO DE USO")}</Text>
-              <View style={s.modeWrap}>
-                {drug.modes.map((m) => (
-                  <Pressable key={m.id} style={[s.modeChip, calc.modeId === m.id && s.modeChipActive]} onPress={() => selectMode(m)}>
-                    <Text style={[s.modeChipTxt, calc.modeId === m.id && s.modeChipTxtActive]}>{tr(m.label)}</Text>
-                  </Pressable>
-                ))}
-              </View>
+              <HorizontalChoiceSelector
+                value={calc.modeId}
+                options={drug.modes.map((m) => ({ value: m.id, label: tr(m.label) }))}
+                onChange={(id) => {
+                  const next = drug.modes.find((m) => m.id === id);
+                  if (next) selectMode(next);
+                }}
+                accessibilityLabel={tr("Modo de uso")}
+                testID="sedacao-modo"
+              />
             </View>
           )}
 
@@ -388,13 +392,13 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
               <Text style={s.cardLabel}>{tr("DILUIÇÃO")}</Text>
 
               <Text style={s.dilSectionLabel}>{tr("Diluições recomendadas")}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.solRow}>
-                {drug.standardSolutions.map((sol) => (
-                  <Pressable key={sol.id} style={[s.solChip, isActiveSolution(sol.id) && s.solChipActive]} onPress={() => applySolution(sol.id)}>
-                    <Text style={[s.solChipTxt, isActiveSolution(sol.id) && s.solChipTxtActive]}>{tr(sol.label)}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
+              <HorizontalChoiceSelector
+                value={drug.standardSolutions.find((sol) => isActiveSolution(sol.id))?.id}
+                options={drug.standardSolutions.map((sol) => ({ value: sol.id, label: tr(sol.label) }))}
+                onChange={applySolution}
+                accessibilityLabel={tr("Diluições recomendadas")}
+                testID="sedacao-diluicoes"
+              />
 
               {/* Diluições do usuário */}
               <View style={s.userDilHeader}>
@@ -447,13 +451,13 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                 </View>
                 <View style={s.dilField}>
                   <Text style={s.fieldLabel}>{tr("Tipo")}</Text>
-                  <View style={s.diluentSeg}>
-                    {(["SF", "SG"] as Diluent[]).map((d) => (
-                      <Pressable key={d} style={[s.diluentOpt, calc.diluent === d && s.diluentOptActive]} onPress={() => setCalc((c) => ({ ...c, diluent: d }))}>
-                        <Text style={[s.diluentOptTxt, calc.diluent === d && s.diluentOptTxtActive]}>{d}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
+                  <HorizontalChoiceSelector
+                    value={calc.diluent}
+                    options={(["SF", "SG"] as Diluent[]).map((d) => ({ value: d, label: d }))}
+                    onChange={(d) => setCalc((c) => ({ ...c, diluent: d as Diluent }))}
+                    accessibilityLabel={tr("Tipo de diluente")}
+                    testID="sedacao-diluente"
+                  />
                 </View>
               </View>
 
