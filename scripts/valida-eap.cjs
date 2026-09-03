@@ -20,8 +20,8 @@
  * 1. ⚠️ PAS NÃO É PERFUSÃO. `card_classificacao` tinha QUATRO saídas, todas
  *    por PA. Busca no módulo: "quente" 0, "frio" 0, "extremidades" 0,
  *    "enchimento capilar" 0, "pressão de pulso" 0. O FRIO-ÚMIDO COM PAS
- *    NORMAL caía em "110–180 → vasodilatador + diurético", que é a conduta do
- *    QUENTE — e é o que piora quem já está com débito baixo.
+ *    NORMAL caía em "110–180 → vasodilatador", que é a conduta do QUENTE —
+ *    e é o que piora quem já está com débito baixo.
  *
  * 2. ⚠️ O MISTO ESTAVA DESCRITO E NÃO TINHA BOTÃO. A evidência do nó `tipo`
  *    dizia "MISTO (sepse em cardiopata, pós-op cardíaco): tratar componente
@@ -63,15 +63,7 @@ try {
   falhas.push(`a árvore do EAP não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
 }
 
-/**
- * ⚠️ TODO o texto do nó — via helper canônico, não por lista de campos.
- *
- * A versão anterior listava campos à mão e ficava cega para os demais (aqui,
- * `options`, `intro` e `targets`). O helper deriva do objeto: campo novo entra
- * sozinho (R-73, D-15).
- */
 const { textosDoNo } = require("./lib/textos-do-no.cjs");
-
 const textosDe = (id) => textosDoNo(arvore?.nodes?.[id]);
 const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 
@@ -90,7 +82,8 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 
 // ── B. O RAMO EM QUE O PERFIL ERRADO ACONTECE MOSTRA COMO RECONHECER ─────
 {
-  const quente = textosDe("card_normo").join("\n");
+  // O nó 110–180 chama-se `card_vasodilatador`; `card_normo` era o ID antigo.
+  const quente = textosDe("card_vasodilatador").join("\n");
   const checks = [
     [/perfil.*errado|se.*erro|frio/i, "ramo 110–180: o sinal de que o perfil estava errado sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
     [/PA.*cai|hipotens/i, "ramo 110–180: a PA que cai com o vasodilatador sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
@@ -149,8 +142,6 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
   /NÃO usar BETABLOQUEADOR/i.test(arritmia) && /diltiazem.*verapamil/i.test(arritmia) ? ok++ : falhas.push("o veto de BB e BCC na descompensação sumiu — já auditado em bloco anterior, não pode regredir.");
 }
 
-// R-15 item 9: sanidade mínima — se a árvore não compilou ou o extrator ficou
-// cego, nenhuma bateria de regex pode fingir que testou clínica.
 if (todos.length < 100) {
   falhas.push(`só ${todos.length} textos no módulo — as conferências podem ter rodado sobre nada (R-15 item 9).`);
 } else ok++;
