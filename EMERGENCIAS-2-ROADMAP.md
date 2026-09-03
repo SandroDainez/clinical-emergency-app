@@ -153,7 +153,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Inventário de doses críticas duplicadas criado para ordenar próximas migrações.
 - [x] Consumir uma entrada canônica em módulo piloto após CI/testes verdes — tenecteplase no AVC usa a regra estruturada da Drug KB com paridade protegida.
 - [x] Apresentações brasileiras das entradas canônicas atuais revisadas e protegidas: alteplase/Actilyse 10, 20 e 50 mg; amiodarona 50 mg/mL em ampola de 3 mL; tenecteplase/Metalyse 40 mg + 8 mL e 50 mg + 10 mL. Novos fármacos continuam exigindo revisão própria antes de entrar na Drug KB.
-- [ ] Bloquear duplicação de dose crítica entre módulos após inventário/revisão.
+- [x] Ownership declarativo bloqueia duplicação computacional de doses críticas que atingiram status `exclusive`; tenecteplase no AVC é a primeira regra protegida e futuras migrações entram no mesmo registry após paridade/revisão.
 
 ## Bloco G — Clinical Safety Test Suite
 
