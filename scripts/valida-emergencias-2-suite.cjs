@@ -70,6 +70,7 @@ const validators = [
   "valida-isr-via-acordada-resgate-posiot-2026.cjs",
   "valida-vm-camada-inicial-2026.cjs",
   "valida-vm-sara-2026.cjs",
+  "valida-vm-liberacao-extubacao-2026.cjs",
 ];
 
 for (const validator of validators) {
