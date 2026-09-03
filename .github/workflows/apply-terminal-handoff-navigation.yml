@@ -28,7 +28,7 @@ jobs:
       - name: Show TypeScript compile diagnostics
         run: |
           rm -rf /tmp/vm-compile
-          npx tsc --ignoreConfig --module commonjs --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node --skipLibCheck --outDir /tmp/vm-compile ventilation-decision-tree.ts
+          npx tsc --ignoreConfig --module node16 --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/vm-compile ventilation-decision-tree.ts
 
       - name: Validate ventilation module
         run: npm run test:vm
