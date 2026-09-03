@@ -70,13 +70,13 @@ export const PRINCIPIOS_ANALGOSEDACAO: string[] = [
   "SEDAÇÃO LEVE é o padrão. A sedação excessiva aumenta tempo de ventilação, tempo de UTI e piora a cognição a longo prazo — manter o paciente o mais acordado e ativo possível.",
   "Definir a META de sedação (RASS-alvo) ANTES de titular, e reavaliar periodicamente. Protocolo guiado por alvo reduz exposição a sedativo e tempo de VM.",
   "REDUZIR benzodiazepínico: em ventilação mecânica associa-se a mais delirium, mais dias em coma e pior desempenho cognitivo. É fator de risco independente para delirium.",
-  "Opioide preferencialmente INTERMITENTE, não em infusão contínua — menor dose diária e menos eventos adversos. Usar analgesia multimodal e adjuvantes não opioides para poupar opioide.",
+  "Opioide deve ser titulado à necessidade e integrado à analgesia multimodal. Doses intermitentes podem reduzir exposição quando a dor é episódica; infusão contínua pode ser apropriada quando a dor é persistente ou recorrente. Evitar transformar uma via de administração em regra universal.",
   "Interrupção diária da sedação reduz tempo de VM e de UTI, sobretudo quando acoplada ao teste de respiração espontânea (bundle ABCDEF). Em quem já está em sedação leve guiada por alvo, o ganho adicional é pequeno.",
   "⚠️ EXCEÇÃO — ESTADO DE MAL EPILÉPTICO: NÃO fazer interrupção diária. O anestésico é desmamado gradualmente após ao menos 24 h de controle; desmame rápido causa crise de rebote.",
   "DELIRIUM: prevenir antes de tratar — mobilização precoce, evitar restrição física, família presente, orientação e estímulo cognitivo, sono, luz natural, óculos e aparelho auditivo, hidratação.",
   "Delirium — evitar os precipitantes: benzodiazepínico, opioide em dose alta, anti-histamínico, di-hidropiridina; e os fármacos dos critérios de Beers (tricíclico, corticoide, anti-H2, hipnótico, clorpromazina, tioridazina).",
-  "Antipsicótico no delirium é só para AGITAÇÃO PERIGOSA, com risco de lesão ao paciente ou à equipe — não para tratar o delirium em si. Quetiapina 12,5–25 mg 2×/dia, olanzapina 2,5–5 mg 2×/dia, risperidona 0,5–1 mg 2×/dia ou haloperidol 0,25–0,5 mg.",
-  "Emergência com agitação perigosa: haloperidol 2,5–5 mg IV, repetível a cada 20 min, máximo 20 mg em 24 h — em ambiente monitorado, por risco de torsades de pointes.",
+  "Antipsicótico não é tratamento rotineiro do delirium. O PADIS 2025 não estabelece recomendação a favor ou contra seu uso para tratar delirium; considerar uso individualizado e de curta duração apenas quando agitação perigosa ou sofrimento importante exigirem controle sintomático, após corrigir causas reversíveis e revisar risco de QT, efeitos extrapiramidais e interações.",
+  "Agitação perigosa exige contenção clínica imediata e ambiente monitorado. Se um antipsicótico for escolhido, individualizar fármaco, dose e repetição conforme idade, fragilidade, comorbidades, QT e resposta; não aplicar um esquema IV fixo universal como tratamento do delirium.",
   "Níveis de sedação (ASA) — ANSIÓLISE: responde normalmente ao comando verbal, via aérea e ventilação intactas. MODERADA: desperta ao comando verbal ou toque leve, sem necessidade de intervenção na via aérea. PROFUNDA: não desperta com facilidade, responde a estímulo doloroso repetido, pode precisar de suporte de via aérea e ventilação.",
   "⚠️ Reflexo de RETIRADA ao estímulo doloroso NÃO conta como resposta — quem só retira já está mais profundo do que a sedação moderada.",
   "Estrutura obrigatória antes de qualquer sedação moderada ou profunda: bolsa-válvula-máscara, cânula de Guedel e máscara laríngea, laringoscópio, aspirador, fonte de O₂ independente, carro de parada com desfibrilador e os antagonistas (flumazenil e naloxona) na sala.",
@@ -98,10 +98,10 @@ export const PRINCIPIOS_ANALGOSEDACAO: string[] = [
  * mal sedado está consciente, com dor, e sem nenhum meio de avisar.
  */
 export const REGRAS_BNM: string[] = [
-  "⚠️ REGRA DE OURO — antes de qualquer BNM: sedação PROFUNDA confirmada (RASS −5) e analgesia plena, mesmo sem causa aparente de dor. O paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar.",
-  "Indicações em UTI, e são poucas: SDRA grave nas primeiras 48 h com PaO₂/FiO₂ abaixo de 150 e assincronia ou drive intenso refratários à sedação; hipertensão intracraniana refratária; estado de mal refratário (só com EEG, porque o BNM mascara a crise); hipertermia maligna e síndrome neuroléptica maligna; e procedimentos específicos, como a intubação.",
+  "⚠️ REGRA DE OURO — antes de qualquer BNM: garantir hipnose/sedação e analgesia adequadas ao contexto clínico. Em UTI, documentar a meta de sedação e avaliar a profundidade quando possível; não transformar RASS −5 em pré-requisito universal. O paciente paralisado e mal sedado pode permanecer consciente, com dor e sem conseguir avisar.",
+  "Na SDRA, a SCCM 2026 sugere BNM quando PaO₂/FiO₂ < 150 e persiste hipoxemia e/ou não se atingem metas de ventilação mecânica apesar de analgesia/sedação adequadas; não usar bloqueio contínuo apenas pelo diagnóstico de SDRA. Outras indicações de BNM dependem do contexto, como procedimentos específicos, hipertensão intracraniana selecionada ou estado de mal refratário com monitorização eletroencefalográfica, porque a paralisia mascara atividade motora.",
   "Fora dessas indicações, BNM não tem papel em sedação de rotina.",
-  "Plano de retirada desde o início: reavaliar diariamente. Na SDRA, suspender quando a PaO₂/FiO₂ estiver estável acima de 150.",
+  "Plano de retirada desde o início: reavaliar diariamente se a indicação persiste e interromper quando o objetivo fisiológico puder ser mantido sem bloqueio. Não usar PaO₂/FiO₂ > 150 como gatilho universal de suspensão.",
   "Cuidados que só existem porque o paciente está paralisado: LUBRIFICAÇÃO OCULAR (ele não fecha os olhos) e tromboprofilaxia, farmacológica e mecânica.",
   "MONITORIZAÇÃO — recuperação adequada é razão TOF ≥ 0,9 medida no ADUTOR DO POLEGAR com estímulo do nervo ulnar. A avaliação clínica (elevar a cabeça, força de preensão, volume corrente) é imprecisa, e a monitorização apenas tátil ou visual tem sensibilidade inadequada.",
   "⚠️ NÃO titular por músculo central (diafragma, orbicular dos olhos): eles são RESISTENTES ao bloqueador adespolarizante, e dosar por eles leva a superdosagem e a mais bloqueio residual depois.",
@@ -567,7 +567,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           )}
           {drug.magnesiumInteraction && calc.mgSulfate && (
             <View style={s.alertWarn}>
-              <Text style={s.alertTxt}>{tr("⚠️ MgSO₄ potencializa o rocurônio — reduzir a dose em 30–50% e monitorar com TOF.")}</Text>
+              <Text style={s.alertTxt}>{tr("⚠️ MgSO₄ pode potencializar e prolongar o bloqueio por rocurônio. Não aplicar redução percentual fixa universal: titular doses subsequentes à resposta clínica e neuromuscular e usar monitorização quantitativa/TOF quando disponível.")}</Text>
             </View>
           )}
 
