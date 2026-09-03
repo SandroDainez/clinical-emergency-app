@@ -46,6 +46,7 @@ const validators = [
   "valida-interrupcoes-aninhadas-emergencias-2.cjs",
   "valida-tree-to-handoff-emergencias-2.cjs",
   "valida-drug-kb-avc-pilot.cjs",
+  "valida-drug-kb-apresentacoes-br.cjs",
 ];
 
 for (const validator of validators) {
