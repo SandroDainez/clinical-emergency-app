@@ -40,6 +40,7 @@ import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/gui
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
 import { Header } from "../ui-v2/header";
+import { CALCULATOR_VISUAL as CV } from "../ui-v2/calculator-visual-tokens";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
 import { RailDeModulo } from "./module-flow-shell";
@@ -911,7 +912,7 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen:           { flex: 1, backgroundColor: "#292e38" },
+  screen:           { flex: 1, backgroundColor: CV.cores.bg },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -919,13 +920,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 10,
-    backgroundColor: "#292e38",
+    backgroundColor: CV.cores.bg,
     gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.12)",
   },
-  headerTitle: { flex: 1, color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
-  versionHint: { fontSize: 11, fontWeight: "600", color: "rgba(241,245,249,0.55)", maxWidth: "42%" },
+  headerTitle: { flex: 1, color: CV.cores.text, fontSize: CV.tipo.body.fontSize, fontWeight: "800" },
+  versionHint: { fontSize: CV.tipo.micro.fontSize, fontWeight: "600", color: "rgba(241,245,249,0.55)", maxWidth: "42%" },
   versionWarn: { color: "rgba(254,243,199,0.95)" },
   versionAlert: { color: "rgba(254,202,202,0.95)" },
 
@@ -938,14 +939,14 @@ const s = StyleSheet.create({
   // Sidebar
 
   // Main scroll
-  mainScroll:       { flex: 1, backgroundColor: "#383e4a" },
+  mainScroll:       { flex: 1, backgroundColor: CV.cores.surface },
   scroll:           { padding: 14, gap: 12, paddingBottom: 28 },
-  referralCard:     { backgroundColor: "#383e4a", borderRadius: 14, padding: 14, gap: 4, borderWidth: 1, borderColor: "#565e6c" },
-  referralTitle:    { fontSize: 12, fontWeight: "800", color: "#93c5fd", textTransform: "uppercase", letterSpacing: 0.7 },
-  referralLine:     { fontSize: 12, color: "#aab6c6", lineHeight: 18 },
-  card:             { backgroundColor: "#383e4a", borderRadius: 14, padding: 14, gap: 10,
-                      shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
-  cardLabel:        { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
+  referralCard:     { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, gap: 4, borderWidth: 1, borderColor: CV.cores.border },
+  referralTitle:    { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary, textTransform: "uppercase", letterSpacing: 0.7 },
+  referralLine:     { fontSize: CV.tipo.label.fontSize, color: CV.cores.textSecondary, lineHeight: 18 },
+  card:             { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, gap: 10,
+                      shadowColor: CV.sombra.shadowColor, shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  cardLabel:        { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 1 },
   cardHeaderRow:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   // A barra precisa de largura para ser arrastável. Estes contêineres foram
   // desenhados para caixas de digitação estreitas lado a lado; com a barra
@@ -954,128 +955,128 @@ const s = StyleSheet.create({
   row:              { gap: 8 },
 
   // Patient
-  fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#aab6c6", flex: 1 },
-  input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10,
-                      fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a" },
-  hint:             { fontSize: 11, color: "#aab6c6" },
+  fieldLabel:       { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.textSecondary, flex: 1 },
+  input:            { flex: 1.5, borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.input, padding: 10,
+                      fontSize: CV.tipo.body.fontSize, fontWeight: "700", color: CV.cores.text, backgroundColor: CV.cores.surface },
+  hint:             { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary },
   // Token `warning` do tema: 6,43:1 sobre o card. O #f59e0b anterior dava
   // 3,37:1 — e este texto é o que avisa que a dose por kg depende de um peso
   // que ninguém confirmou.
-  hintWarn:         { fontSize: 11, color: "#fbbf24", fontWeight: "600" },
+  hintWarn:         { fontSize: CV.tipo.micro.fontSize, color: CV.cores.warning, fontWeight: "600" },
 
   // Dilution sections
   dilSection:       { gap: 8 },
-  dilSectionLabel:  { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 0.8, textTransform: "uppercase" },
+  dilSectionLabel:  { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 0.8, textTransform: "uppercase" },
 
   // Recommended solutions
   solRow:           { gap: 8, paddingVertical: 2 },
-  solChip:          { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10,
-                      backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
-  solChipActive:    { backgroundColor: "rgba(77,154,255,0.15)", borderColor: "#7fb3ff" },
-  solChipTxt:       { fontSize: 11, fontWeight: "600", color: "#aab6c6" },
-  solChipTxtActive: { color: "#7fb3ff", fontWeight: "800" },
+  solChip:          { paddingHorizontal: 12, paddingVertical: 8, borderRadius: CV.raio.input,
+                      backgroundColor: CV.cores.surface, borderWidth: 1.5, borderColor: CV.cores.border , minHeight: 44, justifyContent: "center" },
+  solChipActive:    { backgroundColor: CV.cores.surface, borderColor: CV.cores.primary },
+  solChipTxt:       { fontSize: CV.tipo.micro.fontSize, fontWeight: "600", color: CV.cores.textSecondary },
+  solChipTxtActive: { color: CV.cores.primary, fontWeight: "800" },
 
   // User dilutions
   userDilHeader:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  userDilTitle:     { fontSize: 12, fontWeight: "800", color: "#c4b5fd" },
-  userDilEmpty:     { fontSize: 11, color: "#aab6c6", fontStyle: "italic", paddingVertical: 6 },
+  userDilTitle:     { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary },
+  userDilEmpty:     { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary, fontStyle: "italic", paddingVertical: 6 },
   userDilList:      { gap: 6 },
   userDilRow:       { flexDirection: "row", alignItems: "center", gap: 8 },
-  userDilApply:     { flex: 1, backgroundColor: "#383e4a", borderRadius: 10, padding: 10,
-                      borderWidth: 1.5, borderColor: "#c4b5fd" },
-  userDilName:      { fontSize: 13, fontWeight: "800", color: "#c4b5fd" },
-  userDilMeta:      { fontSize: 10, color: "#c4b5fd", marginTop: 2 },
+  userDilApply:     { flex: 1, backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, padding: 10,
+                      borderWidth: 1.5, borderColor: CV.cores.primary },
+  userDilName:      { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary },
+  userDilMeta:      { fontSize: CV.tipo.micro.fontSize, color: CV.cores.primary, marginTop: 2 },
   userDilDel:       { padding: 8 },
-  userDilDelTxt:    { color: "#fca5a5", fontWeight: "700", fontSize: 14 },
+  userDilDelTxt:    { color: CV.cores.critical, fontWeight: "700", fontSize: 14 },
 
-  saveDilBtn:       { backgroundColor: "#383e4a", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: "#c4b5fd" , minHeight: 44, justifyContent: "center" },
-  saveDilBtnTxt:    { fontSize: 11, fontWeight: "800", color: "#c4b5fd" },
+  saveDilBtn:       { backgroundColor: CV.cores.surface, borderRadius: CV.raio.botao, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: CV.cores.primary , minHeight: 44, justifyContent: "center" },
+  saveDilBtnTxt:    { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.primary },
   dilFields:        { gap: 14 },
   dilField:         { gap: 6 },
-  diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, overflow: "hidden" , minHeight: 44, justifyContent: "center" },
-  diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: "#383e4a" , minHeight: 44, justifyContent: "center" },
-  diluentOptActive: { backgroundColor: "#383e4a" },
-  diluentOptTxt:    { fontSize: 13, fontWeight: "700", color: "#aab6c6" },
-  diluentOptTxtActive:{ color: "#f1f5f9" },
-  concGrid:         { flexDirection: "row", backgroundColor: "#383e4a", borderRadius: 10, borderWidth: 1, borderColor: "#565e6c", overflow: "hidden" },
+  diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.input, overflow: "hidden" , minHeight: 44, justifyContent: "center" },
+  diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: CV.cores.surface , minHeight: 44, justifyContent: "center" },
+  diluentOptActive: { backgroundColor: CV.cores.surface },
+  diluentOptTxt:    { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.textSecondary },
+  diluentOptTxtActive:{ color: CV.cores.text },
+  concGrid:         { flexDirection: "row", backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, borderWidth: 1, borderColor: CV.cores.border, overflow: "hidden" },
   concCell:         { flex: 1, alignItems: "center", paddingVertical: 10, paddingHorizontal: 4 },
-  concDivider:      { width: 1, backgroundColor: "#565e6c" },
-  concKey:          { fontSize: 9, fontWeight: "700", color: "#7fb3ff", letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2 },
-  concVal:          { fontSize: 13, fontWeight: "800", color: "#7fb3ff", textAlign: "center" },
-  concValHighlight: { color: "#f1f5f9", fontSize: 13 },
+  concDivider:      { width: 1, backgroundColor: CV.cores.border },
+  concKey:          { fontSize: CV.tipo.micro.fontSize, fontWeight: "700", color: CV.cores.primary, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2 },
+  concVal:          { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary, textAlign: "center" },
+  concValHighlight: { color: CV.cores.text, fontSize: 13 },
 
   // Calculator
-  calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#383e4a", borderRadius: 10, borderWidth: 1, borderColor: "#565e6c", paddingHorizontal: 12, paddingVertical: 8 },
-  calcWeightLabel:     { flex: 1, fontSize: 12, fontWeight: "600", color: "#aab6c6" },
+  calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, borderWidth: 1, borderColor: CV.cores.border, paddingHorizontal: 12, paddingVertical: 8 },
+  calcWeightLabel:     { flex: 1, fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.textSecondary },
   // Token `warning`: 6,43:1. O #d97706 dava 3,37:1 — e esta linha avisa que a
   // dose por kg depende de um peso que ninguém informou.
-  calcWeightLabelWarn: { color: "#fbbf24", fontWeight: "700" },
-  calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 15, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
-  calcWeightInputWarn: { borderColor: "#f59e0b", backgroundColor: "#383e4a" },
-  calcWeightUnit:      { fontSize: 12, fontWeight: "600", color: "#aab6c6", width: 22 },
-  calcMissingWeight:   { backgroundColor: "#383e4a", borderRadius: 8, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
-  calcMissingWeightTxt:{ fontSize: 12, fontWeight: "600", color: "#fbbf24" },
+  calcWeightLabelWarn: { color: CV.cores.warning, fontWeight: "700" },
+  calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.botao, paddingHorizontal: 10, paddingVertical: 6, fontSize: CV.tipo.body.fontSize, fontWeight: "700", color: CV.cores.text, backgroundColor: CV.cores.surface, textAlign: "right" },
+  calcWeightInputWarn: { borderColor: CV.cores.warning, backgroundColor: CV.cores.surface },
+  calcWeightUnit:      { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.textSecondary, width: 22 },
+  calcMissingWeight:   { backgroundColor: CV.cores.surface, borderRadius: CV.raio.botao, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
+  calcMissingWeightTxt:{ fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.warning },
   calcGrid:         { gap: 14 },
   calcCol:          { gap: 6 },
-  calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1, textAlign: "center" },
+  calcColLabel:     { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 1, textAlign: "center" },
   // Empilhado: o stepper dentro de uma linha ficava com 0 a 40 px de trilha.
-  calcInputRow:     { alignItems: "stretch", borderWidth: 2, borderColor: "#565e6c", borderRadius: 12, overflow: "hidden", backgroundColor: "#383e4a", padding: 8, gap: 4 },
-  calcInputRowActive:{ borderColor: "#7fb3ff", backgroundColor: "rgba(77,154,255,0.15)" },
-  calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#f1f5f9", textAlign: "right" },
-  calcUnit:         { fontSize: 10, fontWeight: "700", color: "#aab6c6", paddingRight: 8, paddingLeft: 2 },
+  calcInputRow:     { alignItems: "stretch", borderWidth: 2, borderColor: CV.cores.border, borderRadius: CV.raio.input, overflow: "hidden", backgroundColor: CV.cores.surface, padding: 8, gap: 4 },
+  calcInputRowActive:{ borderColor: CV.cores.primary, backgroundColor: CV.cores.surface },
+  calcInput:        { flex: 1, padding: 12, fontSize: CV.tipo.section.fontSize, fontWeight: "800", color: CV.cores.text, textAlign: "right" },
+  calcUnit:         { fontSize: CV.tipo.micro.fontSize, fontWeight: "700", color: CV.cores.textSecondary, paddingRight: 8, paddingLeft: 2 },
   calcArrow:        { paddingBottom: 12, alignItems: "center" },
-  calcArrowTxt:     { fontSize: 20, color: "#cbd5e1" },
+  calcArrowTxt:     { fontSize: CV.tipo.section.fontSize, color: CV.cores.text },
 
   // Alerts
-  alertDanger:      { backgroundColor: "#3b0a0a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#fca5a5" },
+  alertDanger:      { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, padding: 12, borderWidth: 1.5, borderColor: CV.cores.critical },
   // Fundo QUENTE, não o cinza neutro dos blocos comuns. Só a borda laranja
   // deixava o aviso com o mesmo peso visual de uma nota — e os dois avisos que
   // usam este estilo (associar vasopressina, dose > 1 mcg/kg/min) marcam pontos
   // em que a conduta muda. O vermelho segue exclusivo da dose excepcional.
-  alertWarn:        { backgroundColor: "#3a2a0f", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
-  alertInfo:        { backgroundColor: "#383e4a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
-  alertTxt:         { fontSize: 12, fontWeight: "600", color: "#f1f5f9", lineHeight: 18 },
+  alertWarn:        { backgroundColor: "#3a2a0f", borderRadius: CV.raio.input, padding: 12, borderWidth: 1.5, borderColor: CV.cores.warning },
+  alertInfo:        { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
+  alertTxt:         { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.text, lineHeight: 18 },
 
   // Preparo
   prepCard:         { backgroundColor: "#1a2e1a", borderColor: "#4ade80", borderWidth: 1.5 },
-  prepStep:         { fontSize: 13, color: "#f1f5f9", lineHeight: 20 },
-  prepStepRate:     { fontWeight: "800", color: "#86efac", fontSize: 14 },
-  prepNote:         { fontSize: 11, color: "#aab6c6", fontStyle: "italic", marginTop: 4 },
+  prepStep:         { fontSize: CV.tipo.label.fontSize, color: CV.cores.text, lineHeight: 20 },
+  prepStepRate:     { fontWeight: "800", color: CV.cores.success, fontSize: 14 },
+  prepNote:         { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary, fontStyle: "italic", marginTop: 4 },
 
   // Collapsible
   collapsible:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                      backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-                      shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
-  collapseTitle:    { fontSize: 13, fontWeight: "700", color: "#f1f5f9" },
-  collapseCta:      { minWidth: 78, minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 10, borderRadius: 9, backgroundColor: "#7fb3ff", borderWidth: 1, borderColor: "#7fb3ff" },
+                      backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, paddingHorizontal: 16, paddingVertical: 14,
+                      shadowColor: CV.sombra.shadowColor, shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  collapseTitle:    { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.text },
+  collapseCta:      { minWidth: 78, minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 10, borderRadius: CV.raio.botao, backgroundColor: CV.cores.primary, borderWidth: 1, borderColor: CV.cores.primary },
   collapseCtaOpen:  { backgroundColor: "transparent" },
-  collapseCtaText:  { fontSize: 9, fontWeight: "900", color: "#1d2939", letterSpacing: 0.45 },
-  collapseCtaTextOpen:{ color: "#7fb3ff" },
-  collapseCtaArrow: { fontSize: 9, fontWeight: "900", color: "#1d2939" },
-  collapseBody:     { backgroundColor: "#383e4a", borderRadius: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
+  collapseCtaText:  { fontSize: CV.tipo.micro.fontSize, fontWeight: "900", color: "#1d2939", letterSpacing: 0.45 },
+  collapseCtaTextOpen:{ color: CV.cores.primary },
+  collapseCtaArrow: { fontSize: CV.tipo.micro.fontSize, fontWeight: "900", color: "#1d2939" },
+  collapseBody:     { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
   refRow:           { gap: 2 },
   refNote:          { paddingLeft: 4 },
-  refKey:           { fontSize: 10, fontWeight: "700", color: "#aab6c6", letterSpacing: 0.5 },
-  refVal:           { fontSize: 12, color: "#aab6c6", lineHeight: 18 },
+  refKey:           { fontSize: CV.tipo.micro.fontSize, fontWeight: "700", color: CV.cores.textSecondary, letterSpacing: 0.5 },
+  refVal:           { fontSize: CV.tipo.label.fontSize, color: CV.cores.textSecondary, lineHeight: 18 },
 
   // Associations
-  assocCard:        { backgroundColor: "#383e4a", borderRadius: 10, padding: 12, gap: 2, borderWidth: 1, borderColor: "#565e6c" },
-  assocWarn:        { backgroundColor: "#383e4a", borderColor: "#fbbf24" },
-  assocAlert:       { backgroundColor: "#3b0a0a", borderColor: "#fca5a5" },
-  assocDrug:        { fontSize: 13, fontWeight: "800", color: "#f1f5f9" },
-  assocDose:        { fontSize: 12, fontWeight: "700", color: "#93c5fd" },
-  assocIndication:  { fontSize: 11, color: "#aab6c6", lineHeight: 16 },
+  assocCard:        { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, padding: 12, gap: 2, borderWidth: 1, borderColor: CV.cores.border },
+  assocWarn:        { backgroundColor: CV.cores.surface, borderColor: CV.cores.warning },
+  assocAlert:       { backgroundColor: CV.cores.surface, borderColor: CV.cores.critical },
+  assocDrug:        { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.text },
+  assocDose:        { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.primary },
+  assocIndication:  { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary, lineHeight: 16 },
 
   // Modal
   modalOverlay:     { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalCard:        { backgroundColor: "#383e4a", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
-  modalTitle:       { fontSize: 18, fontWeight: "800", color: "#f1f5f9" },
-  modalSub:         { fontSize: 12, color: "#aab6c6" },
-  modalInput:       { borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 12, padding: 14, fontSize: 15, color: "#f1f5f9" },
+  modalCard:        { backgroundColor: CV.cores.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
+  modalTitle:       { fontSize: CV.tipo.section.fontSize, fontWeight: "800", color: CV.cores.text },
+  modalSub:         { fontSize: CV.tipo.label.fontSize, color: CV.cores.textSecondary },
+  modalInput:       { borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.input, padding: 14, fontSize: CV.tipo.body.fontSize, color: CV.cores.text },
   modalBtns:        { flexDirection: "row", gap: 10 },
-  modalCancel:      { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#383e4a" },
-  modalCancelTxt:   { fontWeight: "700", color: "#aab6c6" },
-  modalSave:        { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#1e6fd9" },
-  modalSaveDisabled:{ backgroundColor: "#94a3b8" },
-  modalSaveTxt:     { fontWeight: "700", color: "#f1f5f9" },
+  modalCancel:      { flex: 1, padding: 14, borderRadius: CV.raio.input, alignItems: "center", backgroundColor: CV.cores.surface },
+  modalCancelTxt:   { fontWeight: "700", color: CV.cores.textSecondary },
+  modalSave:        { flex: 1, padding: 14, borderRadius: CV.raio.input, alignItems: "center", backgroundColor: "#1e6fd9" },
+  modalSaveDisabled:{ backgroundColor: CV.cores.textSecondary },
+  modalSaveTxt:     { fontWeight: "700", color: CV.cores.text },
 });
