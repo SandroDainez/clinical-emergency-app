@@ -123,6 +123,46 @@ export function recordFlowAdvance(input: {
   });
 }
 
+/**
+ * Registra uma medicação SOMENTE depois de a administração ter sido confirmada
+ * pelo fluxo consumidor. Esta função não deve ser chamada por recomendações,
+ * lembretes ou nós `medication_due_now`.
+ *
+ * `medicationId` e `dose` são opcionais de propósito: quando o fluxo sabe apenas
+ * que uma classe foi administrada (ex.: ação genérica `antiarrhythmic`), o Event
+ * Log preserva essa incerteza em vez de escolher uma droga/dose por inferência.
+ */
+export function recordMedicationGiven(input: {
+  module?: string;
+  actionId: string;
+  label: string;
+  medicationId?: string;
+  dose?: string;
+  count?: number;
+  stateId?: string;
+  now?: number;
+}): void {
+  const actionId = input.actionId.trim();
+  const label = input.label.trim();
+  if (!actionId || !label) return;
+
+  const now = input.now ?? Date.now();
+  appendClinicalEvent({
+    id: nextEventId("medication", now),
+    type: "medication_given",
+    occurredAt: now,
+    module: input.module,
+    label,
+    data: {
+      actionId,
+      medicationId: input.medicationId?.trim() || null,
+      dose: input.dose?.trim() || null,
+      count: input.count ?? null,
+      stateId: input.stateId?.trim() || null,
+    },
+  });
+}
+
 export function recordFlowObservation(input: {
   module?: string;
   fieldId: string;
