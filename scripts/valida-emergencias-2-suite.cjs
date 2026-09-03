@@ -78,6 +78,7 @@ const validators = [
   "valida-vm-fechamento-2026.cjs",
   "valida-tce-imagem-2026.cjs",
   "valida-tce-osmoterapia-2026.cjs",
+  "valida-tce-hic-refrataria-2026.cjs",
 ];
 
 for (const validator of validators) {
