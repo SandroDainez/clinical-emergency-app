@@ -201,12 +201,16 @@ const lib = limpo(LIB);
   } else ok++;
 }
 
-// ── D. A exceção do IAM de VD, que era o modelo ───────────────────────────
+// ── D. A ressalva do IAM de VD, preservada semanticamente ─────────────────
 {
-  if (!/EXCEÇÃO — IAM de ventrículo direito/.test(arvore)) {
+  const nomeiaVD = /IAM de ventrículo direito/.test(arvore);
+  const evitaVolumeLiberal = /NÃO autoriza volume liberal/.test(arvore) || /volume NÃO é tratamento automático/.test(arvore);
+  const pequenaAliquota = /pequenas alíquotas|pequena alíquota/.test(arvore);
+  const reavaliaCongestao = /congestão|ausência de resposta/.test(arvore);
+  if (!(nomeiaVD && evitaVolumeLiberal && pequenaAliquota && reavaliaCongestao)) {
     falhas.push(
-      `${ARVORE}: sumiu a exceção do IAM de VD. Ela é o MODELO de como o módulo nomeia uma confusão ` +
-      `perigosa e escreve a conduta invertida — e é por isso que o texto novo foi escrito na mesma forma.`
+      `${ARVORE}: a ressalva do IAM de VD perdeu a inversão clínica segura: deve nomear o IAM de VD, ` +
+      `impedir volume liberal, limitar a pequenas alíquotas quando baixa pré-carga for provável e exigir reavaliação.`
     );
   } else ok++;
 }
