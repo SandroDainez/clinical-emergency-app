@@ -44,6 +44,15 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
     actionId: "cardioversao_sincronizada",
     when: { fact: "sedacao", operator: "missing" },
   },
+  {
+    id: "tep-systemic-thrombolysis-lower-category",
+    gateId: "tep-lise-sistemica-categoria-inferior",
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    interactionKind: "action",
+    actionId: "administrar_trombolise_sistemica_tep",
+    when: { fact: "tep_categoria_reperfusao", operator: "equals", value: "a_b_c1_c2" },
+  },
 ] as const;
 
 export function activeClinicalGatesForAction(input: {

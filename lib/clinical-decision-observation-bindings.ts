@@ -53,6 +53,30 @@ export const CLINICAL_DECISION_OBSERVATION_BINDINGS: readonly ClinicalDecisionOb
     optionId: "fibrino",
     observation: { id: "tempo_operacional_icp", value: "confirmado" },
   },
+  {
+    protocolId: "tep_2024",
+    nodeId: "estratificacao",
+    optionId: "baixo",
+    observation: { id: "tep_categoria_reperfusao", value: "a_b_c1_c2" },
+  },
+  {
+    protocolId: "tep_2024",
+    nodeId: "estratificacao",
+    optionId: "int_baixo",
+    observation: { id: "tep_categoria_reperfusao", value: "a_b_c1_c2" },
+  },
+  {
+    protocolId: "tep_2024",
+    nodeId: "estratificacao",
+    optionId: "int_alto",
+    observation: { id: "tep_categoria_reperfusao", value: "c3" },
+  },
+  {
+    protocolId: "tep_2024",
+    nodeId: "estabilidade",
+    optionId: "instavel",
+    observation: { id: "tep_categoria_reperfusao", value: "e" },
+  },
 ] as const;
 
 export function decisionObservationFor(input: {

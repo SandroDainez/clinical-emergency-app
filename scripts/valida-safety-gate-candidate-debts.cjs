@@ -12,7 +12,7 @@ const issues = [];
 const expect = (ok, message) => { if (!ok) issues.push(message); };
 
 const debtIds = [...debts.matchAll(/\n\s*id: "([^"]+)",\n\s*protocolId:/g)].map((m) => m[1]);
-expect(debtIds.length === 4, `esperadas 4 dívidas iniciais de gate; encontradas ${debtIds.length}`);
+expect(debtIds.length === 3, `esperadas 3 dívidas remanescentes de gate; encontradas ${debtIds.length}`);
 expect(new Set(debtIds).size === debtIds.length, "há IDs duplicados em gate-candidate-debts");
 for (const id of debtIds) {
   expect(!activePolicies.includes(`id: "${id}"`), `${id}: dívida apareceu no registry ativo sem promoção explícita`);
@@ -54,13 +54,11 @@ expect(reviewedToxicAlcoholCopy, "álcool tóxico: texto revisado deve permanece
 expect(!toxicAlcoholBlock.includes('"needs_tree_content_review"'), "álcool tóxico: dívida de conteúdo não pode reaparecer após correção");
 expect(toxicAlcoholBlock.includes("summary de tox_alcool_toxico separa carvão ativado"), "álcool tóxico: debt registry não descreve o conteúdo já revisado");
 
-const thrombolysisPainBlock = blockFor("tep-thrombolysis-for-isolated-ischemic-pain");
-expect(thrombolysisPainBlock.includes('candidateLevel: "hard_stop"'), "TEP trombólise por dor isolada: candidato deve permanecer hard_stop apenas no estado estreito revisado");
-expect(thrombolysisPainBlock.includes('"needs_fact_model"') && thrombolysisPainBlock.includes('"needs_action_surface"'), "TEP trombólise por dor isolada: fatos e superfície ainda precisam permanecer pendentes");
-expect(thrombolysisPainBlock.includes("A–C1") || thrombolysisPainBlock.includes("A–C2") || thrombolysisPainBlock.includes("A–C1 (Classe 3"), "TEP trombólise: revisão deve preservar a fronteira de dano nas categorias baixas/intermediárias");
+expect(!debtIds.includes("tep-thrombolysis-for-isolated-ischemic-pain"), "TEP trombólise: candidato promovido não pode permanecer como dívida");
+expect(activePolicies.includes('id: "tep-lise-sistemica-categoria-inferior"'), "TEP trombólise: policy promovida deve existir no registry ativo");
 
 if (issues.length) {
   for (const issue of issues) console.error(`❌ ${issue}`);
   process.exit(1);
 }
-console.log("✅ SafetyGate candidate debts: 4/4 evidências revisadas; nenhum candidato promovido ao registry ativo.");
+console.log("✅ SafetyGate candidate debts: 3 dívidas remanescentes; gate de trombólise por categoria promovido explicitamente.");

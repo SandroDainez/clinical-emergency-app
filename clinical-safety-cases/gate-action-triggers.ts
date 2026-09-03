@@ -104,5 +104,39 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   });
   expect(tachySedated.evaluations.length === 0, "Taquicardia: sedação realizada deve resolver o advisory", issues);
 
+  const tepLower = evaluateClinicalActionAttempt({
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    actionId: "administrar_trombolise_sistemica_tep",
+    context: { tep_categoria_reperfusao: "a_b_c1_c2" },
+  });
+  expect(tepLower.hardStops.length === 1, "TEP: A/B/C1/C2 explícito deve ativar um hard stop de lise sistêmica", issues);
+  expect(tepLower.canProceedWithoutOverride === false, "TEP: categoria inferior explícita deve bloquear lise sistêmica", issues);
+  expect(canProceedAfterRecordedOverrides(tepLower, new Set(["tep-lise-sistemica-categoria-inferior"])) === false, "TEP: hard stop de categoria não pode ser liberado por override", issues);
+
+  const tepC3 = evaluateClinicalActionAttempt({
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    actionId: "administrar_trombolise_sistemica_tep",
+    context: { tep_categoria_reperfusao: "c3" },
+  });
+  expect(tepC3.evaluations.length === 0, "TEP: C3 não pode ser bloqueado pelo gate específico de A/B/C1/C2", issues);
+
+  const tepE = evaluateClinicalActionAttempt({
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    actionId: "administrar_trombolise_sistemica_tep",
+    context: { tep_categoria_reperfusao: "e" },
+  });
+  expect(tepE.evaluations.length === 0, "TEP: deterioração/reclassificação para E deve resolver o hard stop de categoria inferior", issues);
+
+  const tepMissing = evaluateClinicalActionAttempt({
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    actionId: "administrar_trombolise_sistemica_tep",
+    context: {},
+  });
+  expect(tepMissing.evaluations.length === 0, "TEP: ausência de categoria não pode ser silenciosamente tratada como categoria inferior", issues);
+
   return issues;
 }

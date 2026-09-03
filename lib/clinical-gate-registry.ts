@@ -55,6 +55,26 @@ export const CLINICAL_GATE_REGISTRY: readonly ClinicalGatePolicy[] = [
       reviewedAt: "2026-09-02",
     },
   },
+  {
+    id: "tep-lise-sistemica-categoria-inferior",
+    protocolId: "tep_2024",
+    nodeId: "ar_trombolise",
+    level: "hard_stop",
+    title: "Trombólise sistêmica não indicada nesta categoria de TEP",
+    message:
+      "A classificação registrada permanece A/B/C1/C2. Nestas categorias, a lise sistêmica causa dano sem benefício que justifique o risco; reclassifique se houve deterioração antes de administrar.",
+    rationale:
+      "A diretriz AHA/ACC 2026 recomenda contra trombólise sistêmica nas categorias A–C1 (Classe 3: Harm, A) e C2 (Classe 3: Harm, B-R). O bloqueio só é ativado quando uma categoria inferior foi explicitamente registrada; ausência de classificação não é convertida em contraindicação.",
+    overrideAllowed: false,
+    resolution:
+      "Voltar à estratificação/estabilidade e registrar a categoria atual. C3 não deve ser tratado como indicação automática; D/E exigem decisão de reperfusão contextual conforme risco e contraindicações.",
+    resolutionNodeId: "estabilidade",
+    source: {
+      reference: "2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN Acute Pulmonary Embolism Guideline — Table 7",
+      version: "2026",
+      reviewedAt: "2026-09-03",
+    },
+  },
 ] as const;
 
 export function clinicalGateFor(id: string): ClinicalGatePolicy | undefined {

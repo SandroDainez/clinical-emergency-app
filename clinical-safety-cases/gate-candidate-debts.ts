@@ -103,27 +103,5 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
       conclusion: "A diretriz classifica como Classe 3: Harm (C-LD) realizar sedação profunda e ventilação mecânica em TEP categorias C–E sem indicação clínica. Quando sedação para intubação é necessária, recomenda Classe 1 (C-LD) ter vasopressores, inotrópicos e/ou VA-ECMO disponíveis para eventual instabilidade. O candidato pode ter nível soft_stop, condicionado à ausência de indicação clínica explícita; nunca hard stop absoluto.",
     },
   },
-  {
-    id: "tep-thrombolysis-for-isolated-ischemic-pain",
-    protocolId: "tep_2024",
-    nodeId: "tep_dor_isquemica",
-    candidateLevel: "hard_stop",
-    status: ["needs_fact_model", "needs_action_surface"],
-    riskStatement: "Dor torácica isquêmica isolada não é critério para lise sistêmica no TEP; em pacientes sem critérios de maior gravidade, expor o paciente à trombólise pode produzir dano sem benefício demonstrado.",
-    currentTreeEvidence: "tep_dor_isquemica declara que não se deve trombolisar por dor torácica e orienta investigação coronariana paralela.",
-    requiredFacts: [
-      "dor_isquemica_isolada",
-      "categoria_pe_a_b_c1_ou_c2",
-      "ausencia_criterios_c3_d_ou_e",
-      "tentativa_lise_sistemica_tep",
-    ],
-    activationRuleDraft: "Hard stop somente no estado estreito em que a tentativa de lise sistêmica está sendo feita com dor isquêmica isolada e a classificação explícita permanece A–C2, sem critérios C3/D/E. Se houver C3, D ou E, esta regra não pode bloquear porque a recomendação de reperfusão muda de incerteza para possível/razoável conforme a categoria.",
-    evidenceReview: {
-      reviewedAt: "2026-09-02",
-      sources: [
-        "2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN Acute Pulmonary Embolism Guideline — Table 7 Summary of Advanced Therapy Recommendations",
-      ],
-      conclusion: "A diretriz recomenda contra lise sistêmica em A–C1 (Classe 3: Harm, A) e C2 (Classe 3: Harm, B-R); em C3 a utilidade é incerta (2b C-LD), em D1–D2 pode ser considerada (2b C-LD) e em E1–E2 é razoável (2a C-LD). Assim, um hard stop só é defensável quando a ausência de categorias C3/D/E estiver explicitamente estabelecida; dor torácica isolada nunca deve ser usada como substituto da classificação de gravidade.",
-    },
-  },
+
 ] as const;

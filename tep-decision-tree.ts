@@ -309,6 +309,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     ar_trombolise: {
       id: "ar_trombolise",
       type: "action",
+      clinicalActionId: "administrar_trombolise_sistemica_tep",
       title: "Trombólise sistêmica — dose",
       summary: "Suspender a HNF durante a infusão de alteplase; reiniciar SEM bólus quando o TTPa estiver abaixo de 2× o limite superior da normalidade.",
       actions: [
