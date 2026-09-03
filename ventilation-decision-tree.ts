@@ -223,8 +223,8 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
     pat_sara: {
       id: "pat_sara",
       type: "action",
-      title: "SARA — ventilação protetora (único tratamento que reduz mortalidade)",
-      summary: "Berlim: P/F ≤ 300 com PEEP ≥ 5 (leve 200–300 · moderada 100–200 · grave ≤ 100). VC {vc4}–{vc6} mL.",
+      title: "SARA — ventilação protetora e terapias adjuvantes",
+      summary: "Global Definition 2024 amplia Berlim: P/F ≤ 300 ou S/F ≤ 315 quando SpO₂ ≤ 97%, incluindo HFNO ≥ 30 L/min. VC {vc4}–{vc6} mL por PBW.",
       actions: [
         // ── V1 · SDRA CONFIRMADA × HIPOXEMIA EM INVESTIGAÇÃO ──────────────
         //
@@ -242,14 +242,14 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "O QUE VALE PARA OS DOIS: o VOLUME CORRENTE protetor. Vt 4–6 mL/kg PBW não é tratamento da SDRA — é a forma de ventilar quem tem lesão pulmonar aguda de qualquer grau, e não há motivo para esperar o diagnóstico para deixar de causar volutrauma.",
         "O QUE PODE DIFERIR: a titulação da PEEP. Enquanto Berlim NÃO fecha, a PEEP pode ser menos agressiva — PEEP alta em lesão pulmonar aguda SEM SDRA não mostrou benefício (AMIB/SBPT 2025), e PEEP sem lastro tem custo hemodinâmico real. Fechados os critérios, subir para a faixa da gravidade abaixo.",
         "VC 4–6 mL/kg PBW ({vc4}–{vc6} mL): iniciar em 6, reduzir 1 mL/kg se Pplat > 30 (até 4).",
-        "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
+        "Pplat ≤ 30 cmH₂O. Monitorar driving pressure (Pplat − PEEP) como marcador de estresse mecânico e titular para o menor valor compatível com ventilação/oxigenação seguras; não tratá-la como corte universal isolado.",
         "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
         "SEM GASOMETRIA? A relação SpO₂/FiO₂ substitui a PaO₂/FiO₂, e os DOIS pontos de corte saem da MESMA reta (Rice 2007: S/F = 64 + 0,84 × P/F) — mas respondem a perguntas diferentes, e usar um pelo outro troca diagnóstico por gravidade: S/F ≤ 315 equivale a P/F ≤ 300 e responde «É SDRA?» (sensibilidade 91%, mas especificidade de apenas 56% — superestima); S/F ≤ 235 equivale a P/F ≤ 200 e responde «É SDRA MODERADA ou pior?» (85% / 85%, mais equilibrado). Válido só com SpO₂ ≤ 97%, fora do platô da curva.",
-        "PEEP por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — a tabela PEEP/FiO₂ do ARDSNet está no próximo passo, com os valores deste app ao lado. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
+        "PEEP: iniciar por estratégia PEEP/FiO₂ validada (tabela ARDSNet no próximo passo) e individualizar por oxigenação, recrutabilidade, mecânica e hemodinâmica. Em SARA moderada-grave, considerar PEEP mais alta sem manobras de recrutamento de alta pressão; evitar recrutamento agressivo/prolongado.",
         "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60).",
         HIPERCAPNIA_EXCECAO_NA_SDRA,
         HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
-        "SARA grave (P/F ≤ 150): posição PRONA ≥ 16 h/dia (PROSEVA, RR 0,61); BNM cisatracúrio × 48 h se dissincronia/drive excessivo; ECMO-VV se refratária (P/F < 80, pH < 7,25 — EOLIA).",
+        "SARA moderada-grave com P/F < 150 apesar de ventilação protetora: posição PRONA por sessão prolongada (≥ 12–16 h/dia; PROSEVA usou ~16 h). Bloqueador neuromuscular NÃO é rotina: considerar em pacientes selecionados, especialmente assincronia/drive excessivo que impeçam ventilação protetora. Em SARA grave refratária, considerar avaliação precoce para ECMO-VV em centro experiente conforme critérios e reversibilidade.",
       ],
       next: "tabela_peep",
     },
@@ -267,14 +267,13 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
     tabela_peep: {
       id: "tabela_peep",
       type: "action",
-      title: "Tabela PEEP/FiO₂ (ARDSNet) — referência, com os valores deste app ao lado",
-      summary: "A tabela low-PEEP/high-FiO₂ é o braço de CONTROLE do ARDSNet, não um alvo a atingir. Está aqui para consulta; o app trabalha um degrau abaixo dela, de propósito.",
+      title: "Tabela PEEP/FiO₂ (ARDSNet) — referência para titulação",
+      summary: "A tabela low-PEEP/high-FiO₂ do ARDSNet é um ponto de partida validado; a PEEP deve ser individualizada pela resposta de oxigenação, mecânica e hemodinâmica.",
       actions: [
         ...TABELA_LOW_PEEP.map((l) => `FiO₂ ${l.fio2} → PEEP ${l.peep} cmH₂O`),
-        `Valores deste app, por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O (partida sugerida 8 · 10 · 14).`,
         `⚠️ ${TABELA_PEEP_RESSALVA}`,
         `Fonte: ${TABELA_PEEP_FONTE}`,
-        "Existe também a tabela high-PEEP/low-FiO₂ do ARDSNet, com PEEP bem mais alta para a mesma FiO₂. Escolher entre as duas é decisão de serviço, com titulação e monitorização — por isso o app não a oferece como padrão de emergência.",
+        "Em SARA moderada-grave, diretrizes contemporâneas permitem estratégia de PEEP mais alta, mas não definem uma única tabela superior para todos. Individualizar e evitar manobras de recrutamento de alta pressão/prolongadas.",
       ],
       next: "seguranca",
     },

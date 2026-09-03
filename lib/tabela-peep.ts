@@ -43,6 +43,6 @@ export const TABELA_LOW_PEEP: { fio2: string; peep: string }[] = [
 export const TABELA_PEEP_FONTE =
   "ARDSNet (ARMA). N Engl J Med. 2000;342:1301–1308 — tabela low-PEEP/high-FiO₂, braço de controle do ensaio.";
 
-/** O texto que fecha a tabela. Declara a escolha em vez de deixá-la implícita. */
+/** Ressalva clínica: tabela como ponto de partida, não como automatismo. */
 export const TABELA_PEEP_RESSALVA =
-  "o app adota degrau conservador em relação à tabela ARDSNet; PEEP acima disso requer titulação individualizada e monitorização hemodinâmica.";
+  "usar a tabela como ponto de partida e individualizar PEEP pela oxigenação, mecânica/recrutabilidade e hemodinâmica; evitar manobras de recrutamento de alta pressão ou prolongadas.";

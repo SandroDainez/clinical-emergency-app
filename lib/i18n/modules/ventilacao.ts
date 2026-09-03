@@ -278,4 +278,22 @@ export const ES_VENTILACAO: Record<string, string> = {
   "Segurança mecânica: medir pressão de platô e driving pressure. Na SARA, limitar Pplat a ≤ 30 cmH₂O tem recomendação forte. Driving pressure é marcador prognóstico útil e deve ser minimizada junto com Vt/PEEP, mas ≤ 15 cmH₂O não deve aparecer como corte universal com o mesmo nível de evidência.": "Seguridad mecánica: medir presión meseta y driving pressure. En SARA, limitar Pplat a ≤ 30 cmH₂O tiene recomendación fuerte. La driving pressure es un marcador pronóstico útil y debe minimizarse junto con Vt/PEEP, pero ≤ 15 cmH₂O no debe presentarse como un punto de corte universal con el mismo nivel de evidencia.",
   "QUANDO REMEDIR: a Pplat não é medida uma vez. Reavaliar após mudanças relevantes de Vt, PEEP, mecânica pulmonar, posição ou condição clínica e com frequência proporcional à instabilidade; não usar um relógio universal de 4–8 h para todos.": "CUÁNDO VOLVER A MEDIR: la Pplat no se mide una sola vez. Reevaluar tras cambios relevantes de Vt, PEEP, mecánica pulmonar, posición o condición clínica y con una frecuencia proporcional a la inestabilidad; no usar un reloj universal de 4–8 h para todos.",
 
+  // ── Alinhamento SARA 2026 ────────────────────────────────────────────────
+  "SARA — ventilação protetora e terapias adjuvantes":
+    "SDRA — ventilación protectora y terapias adyuvantes",
+  "Global Definition 2024 amplia Berlim: P/F ≤ 300 ou S/F ≤ 315 quando SpO₂ ≤ 97%, incluindo HFNO ≥ 30 L/min. VC {vc4}–{vc6} mL por PBW.":
+    "La Definición Global 2024 amplía Berlín: P/F ≤ 300 o S/F ≤ 315 cuando SpO₂ ≤ 97%, incluyendo HFNO ≥ 30 L/min. Vt {vc4}–{vc6} mL según PBW.",
+  "Pplat ≤ 30 cmH₂O. Monitorar driving pressure (Pplat − PEEP) como marcador de estresse mecânico e titular para o menor valor compatível com ventilação/oxigenação seguras; não tratá-la como corte universal isolado.":
+    "Pmeseta ≤ 30 cmH₂O. Monitorizar la driving pressure (Pmeseta − PEEP) como marcador de estrés mecánico y titular al menor valor compatible con ventilación/oxigenación seguras; no tratarla como un corte universal aislado.",
+  "PEEP: iniciar por estratégia PEEP/FiO₂ validada (tabela ARDSNet no próximo passo) e individualizar por oxigenação, recrutabilidade, mecânica e hemodinâmica. Em SARA moderada-grave, considerar PEEP mais alta sem manobras de recrutamento de alta pressão; evitar recrutamento agressivo/prolongado.":
+    "PEEP: iniciar con una estrategia PEEP/FiO₂ validada (tabla ARDSNet en el siguiente paso) e individualizar según oxigenación, reclutabilidad, mecánica y hemodinamia. En SDRA moderado-grave, considerar PEEP más alta sin maniobras de reclutamiento de alta presión; evitar reclutamiento agresivo/prolongado.",
+  "SARA moderada-grave com P/F < 150 apesar de ventilação protetora: posição PRONA por sessão prolongada (≥ 12–16 h/dia; PROSEVA usou ~16 h). Bloqueador neuromuscular NÃO é rotina: considerar em pacientes selecionados, especialmente assincronia/drive excessivo que impeçam ventilação protetora. Em SARA grave refratária, considerar avaliação precoce para ECMO-VV em centro experiente conforme critérios e reversibilidade.":
+    "SDRA moderado-grave con P/F < 150 pese a ventilación protectora: posición PRONA en sesiones prolongadas (≥ 12–16 h/día; PROSEVA utilizó ~16 h). El bloqueador neuromuscular NO es rutinario: considerarlo en pacientes seleccionados, especialmente con asincronía/drive excesivo que impidan ventilación protectora. En SDRA grave refractario, considerar evaluación precoz para ECMO-VV en un centro experto según criterios y reversibilidad.",
+  "Tabela PEEP/FiO₂ (ARDSNet) — referência para titulação":
+    "Tabla PEEP/FiO₂ (ARDSNet) — referencia para titulación",
+  "A tabela low-PEEP/high-FiO₂ do ARDSNet é um ponto de partida validado; a PEEP deve ser individualizada pela resposta de oxigenação, mecânica e hemodinâmica.":
+    "La tabla low-PEEP/high-FiO₂ de ARDSNet es un punto de partida validado; la PEEP debe individualizarse según la respuesta de oxigenación, mecánica y hemodinámica.",
+  "Em SARA moderada-grave, diretrizes contemporâneas permitem estratégia de PEEP mais alta, mas não definem uma única tabela superior para todos. Individualizar e evitar manobras de recrutamento de alta pressão/prolongadas.":
+    "En SDRA moderado-grave, las guías contemporáneas permiten una estrategia de PEEP más alta, pero no definen una única tabla superior para todos. Individualizar y evitar maniobras de reclutamiento de alta presión/prolongadas.",
+
 };
