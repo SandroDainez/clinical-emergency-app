@@ -659,7 +659,7 @@ export const SED_DRUGS: SedDrug[] = [
     ],
     strategy: [
       "BNM adespolarizante de início rápido — alternativa à succinilcolina na ISR (1,2 mg/kg).",
-      "Infusão contínua na UTI para SARA grave/assincronia refratária — sempre com sedação e analgesia plenas.",
+      "Bloqueio contínuo na UTI deve ser reservado a indicação fisiológica clara, com sedação e analgesia adequadas; na SDRA, a SCCM 2026 sugere BNM quando P/F < 150 e há hipoxemia persistente e/ou metas ventilatórias não atingidas apesar da sedação.",
       "Monitorar com neuroestimulador (TOF).",
     ],
     alert: {
@@ -714,24 +714,24 @@ export const SED_DRUGS: SedDrug[] = [
         acurasys: { label: "Dose ACURASYS (37,5 mg/h)", doseMgH: 37.5 } },
     ],
     strategy: [
-      "BNM de escolha para infusão prolongada em UTI — eliminação de Hofmann (independe de rim e fígado).",
+      "Cisatracúrio é uma opção útil quando se escolhe bloqueio sustentado em UTI, especialmente quando a eliminação de Hofmann é vantajosa; não tratar nenhum BNM como escolha universal apenas pelo contexto de UTI.",
       "Sem histaminoliberação relevante — mais seguro que atracúrio.",
-      "Protocolo ACURASYS: 37,5 mg/h × 48 h na SARA grave.",
+      "ACURASYS: 37,5 mg/h × 48 h é um regime histórico de dose fixa. A SCCM 2026 aceita tanto estratégia fixa quanto estratégia titulada quando BNM é indicado na SDRA; não confundir protocolo estudado com obrigação universal.",
     ],
     alert: {
       icon: "⚠️", tone: "warn",
       lines: [
         "NÃO tem antídoto específico — aguardar metabolismo (Hofmann). Neostigmina com cautela para reversão parcial.",
-        "Monitorar com TOF obrigatoriamente. Sempre com sedação e analgesia plenas.",
+        "Garantir sedação e analgesia adequadas antes e durante o bloqueio — o paciente paralisado não consegue comunicar dor ou consciência. TOF/monitorização neuromuscular é especialmente útil quando a estratégia é titulada, mas a SCCM 2026 não estabelece TOF como obrigação universal em toda estratégia fixa de BNM na SDRA.",
       ],
     },
     info: [
-      "✅ BNM de escolha em UTI para infusão prolongada.",
+      "✅ Opção de BNM sustentado em UTI quando há indicação; eliminação de Hofmann favorece seu uso quando disfunção renal/hepática torna outros agentes menos previsíveis.",
       "REGIME DE DOSE FIXA (ACURASYS, NEJM 2010): cisatracúrio 37,5 mg/h × 48 h, SEM titulação por TOF, na SDRA grave precoce (P/F < 150). É um protocolo específico — não a mesma coisa que a infusão titulada de 0,1–0,2 mg/kg/h.",
       "✅ Eliminação de Hofmann — independe de função renal/hepática.",
-      "⚠️ EVIDÊNCIA CONFLITANTE — o ROSE (NEJM 2019, 1.006 pacientes, PETAL Network) reavaliou o ACURASYS com protocolos modernos: bloqueio precoce + sedação PROFUNDA contra cuidado usual SEM bloqueio de rotina e com sedação LEVE. Foi interrompido por futilidade; mortalidade em 90 dias igual (43%), com MAIS fraqueza adquirida na UTI e mais eventos cardiovasculares graves no braço bloqueado. O uso ROTINEIRO de BNM na SDRA deixou de ser recomendação forte — o regime de dose fixa é opção em situação selecionada (dissincronia grave, drive excessivo, prona), não conduta corrente.",
+      "⚠️ EVIDÊNCIA ATUALIZADA — ACURASYS e ROSE produziram resultados diferentes. No ROSE, bloqueio precoce + sedação PROFUNDA foi comparado com cuidado usual SEM bloqueio de rotina e com sedação LEVE; o estudo foi interrompido por futilidade, com mortalidade em 90 dias semelhante e mais eventos adversos no braço bloqueado. A diretriz SCCM 2026 sugere BNM em adultos com SDRA e P/F < 150 quando persiste hipoxemia e/ou não se atingem metas de ventilação mecânica apesar da sedação; aceita estratégia fixa ou titulada. Portanto, não usar bloqueio contínuo por rotina apenas pelo diagnóstico de SDRA, nem exigir que todo caso replique o ACURASYS.",
     ],
-    reference: "ACURASYS (NEJM 2010) / ROSE (NEJM 2019).",
+    reference: "ACURASYS (NEJM 2010) · ROSE (NEJM 2019) · SCCM Guideline for Neuromuscular Blockade in Adults With ARDS, 2026.",
   },
   {
     key: "atracurio",
