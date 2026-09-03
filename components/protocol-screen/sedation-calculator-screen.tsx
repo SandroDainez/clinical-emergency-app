@@ -180,6 +180,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const [calc, setCalc] = useState<CalcState>(() => initialState());
   const [showPrinciples, setShowPrinciples] = useState(false);
   const [showBnmRules, setShowBnmRules] = useState(false);
+  const [showStrategy, setShowStrategy] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showRef, setShowRef] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -227,6 +228,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const selectDrug = useCallback((key: string) => {
     setCalc(() => initialState(key));
     setSavedDilutions(getSavedDilutions(key));
+    setShowStrategy(false);
     setShowInfo(false);
     setShowRef(false);
   }, []);
@@ -279,6 +281,15 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
     ? `${fmt(concMcgPerMl, 2)} mcg/mL`
     : `${fmt(concMgPerMl, concMgPerMl < 1 ? 2 : 1)} mg/mL`;
 
+  const safetyLead = drug.group === "bnm"
+    ? "Garantir hipnose/sedação + analgesia antes do bloqueio"
+    : drug.group === "analgesia"
+      ? "Avaliar dor · titular ao efeito · usar analgesia multimodal"
+      : "Analgesia primeiro · definir RASS-alvo · sedação leve quando apropriada";
+  const safetyHint = drug.group === "bnm"
+    ? "Abrir segurança do BNM, monitorização, retirada e reversão"
+    : "Abrir princípios de segurança, delirium, monitorização e profundidade";
+
   return (
     <View style={s.screen}>
       {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — a rota não desenha mais cromado (I7).
@@ -319,8 +330,8 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           <Pressable style={s.principlesSummary} onPress={() => setShowPrinciples((v) => !v)}>
             <View style={{ flex: 1, gap: 3 }}>
               <Text style={s.cardLabel}>{tr("ANTES DA DOSE")}</Text>
-              <Text style={s.principlesLead}>{tr("Analgesia primeiro · definir RASS-alvo · sedação leve como padrão")}</Text>
-              <Text style={s.principlesHint}>{tr("Abrir princípios de segurança, delirium, monitorização e profundidade")}</Text>
+              <Text style={s.principlesLead}>{tr(safetyLead)}</Text>
+              <Text style={s.principlesHint}>{tr(safetyHint)}</Text>
             </View>
             <Text style={s.principlesChevron}>{showPrinciples ? "▲" : "▼"}</Text>
           </Pressable>
@@ -338,8 +349,8 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
               <Pressable style={s.principlesSummary} onPress={() => setShowBnmRules((v) => !v)}>
                 <View style={{ flex: 1, gap: 3 }}>
                   <Text style={s.cardLabel}>{tr("BLOQUEIO NEUROMUSCULAR")}</Text>
-                  <Text style={s.principlesLead}>{tr("Sedação profunda + analgesia antes do bloqueio")}</Text>
-                  <Text style={s.principlesHint}>{tr("Abrir indicações, TOF, retirada e reversão")}</Text>
+                  <Text style={s.principlesLead}>{tr("Indicação declarada · monitorização · plano de retirada")}</Text>
+                  <Text style={s.principlesHint}>{tr("Abrir critérios de uso, monitorização neuromuscular e reversão")}</Text>
                 </View>
                 <Text style={s.principlesChevron}>{showBnmRules ? "▲" : "▼"}</Text>
               </Pressable>
@@ -353,13 +364,21 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </>
           ) : null}
 
-          {/* Estratégia */}
-          <View style={s.card}>
-            <Text style={s.cardLabel}>{tr("ESTRATÉGIA INICIAL")}</Text>
-            {drug.strategy.map((line) => (
-              <Text key={line} style={s.refLine}>• {tr(line)}</Text>
-            ))}
-          </View>
+          {/* Estratégia clínica resumida: disponível sem empurrar o cálculo para baixo. */}
+          <Pressable style={s.strategySummary} onPress={() => setShowStrategy((v) => !v)}>
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={s.cardLabel}>{tr("ESTRATÉGIA INICIAL")}</Text>
+              <Text style={s.strategyLead} numberOfLines={2}>{tr(drug.strategy[0] ?? "Abrir estratégia clínica")}</Text>
+            </View>
+            <Text style={s.principlesChevron}>{showStrategy ? "▲" : "▼"}</Text>
+          </Pressable>
+          {showStrategy ? (
+            <View style={s.card}>
+              {drug.strategy.map((line) => (
+                <Text key={line} style={s.refLine}>• {tr(line)}</Text>
+              ))}
+            </View>
+          ) : null}
 
           {/* Paciente */}
           <View style={s.card}>
@@ -673,6 +692,8 @@ const s = StyleSheet.create({
   principlesLead: { fontSize: CV.tipo.body.fontSize, lineHeight: CV.tipo.body.lineHeight, fontWeight: "800", color: CV.cores.text },
   principlesHint: { fontSize: CV.tipo.micro.fontSize, lineHeight: CV.tipo.micro.lineHeight, color: CV.cores.textSecondary },
   principlesChevron: { fontSize: 14, fontWeight: "900", color: CV.cores.primary },
+  strategySummary: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: CV.cores.border },
+  strategyLead: { fontSize: CV.tipo.label.fontSize, lineHeight: CV.tipo.body.lineHeight, fontWeight: "700", color: CV.cores.text },
 
   card: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, gap: 10, borderWidth: 1, borderColor: CV.cores.border },
   cardLabel: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 1 },
