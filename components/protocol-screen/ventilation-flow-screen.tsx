@@ -8,7 +8,7 @@ export default function VentilationFlowScreen() {
       tree={ventilationDecisionTree}
       protocolLabel="Ventilação Mecânica"
       headerTitle="Ventilação Mecânica"
-      intro="Fluxo interativo da ventilação mecânica invasiva. O app conduz a sequência real: objetivos e modo, cálculo do peso predito (pela altura — define o volume corrente protetor), ajuste inicial, estratégia por patologia, checagem de segurança (platô e driving pressure), troubleshooting (DOPES) e desmame."
+      intro="Fluxo interativo da ventilação mecânica invasiva. O app conduz a sequência real: objetivos e modo, cálculo do peso corporal predito pela altura e sexo para orientar o volume corrente protetor, ajuste inicial, estratégia por patologia, checagem de segurança (platô e driving pressure), troubleshooting (DOPES) e desmame."
       source="ARDSNet · Surviving Sepsis 2021 · ERS/ESICM 2017 · ACCP Weaning 2017"
       currentModuleSlug="ventilacao-mecanica"
       topContent={<VentilatorConfiguratorCard />}

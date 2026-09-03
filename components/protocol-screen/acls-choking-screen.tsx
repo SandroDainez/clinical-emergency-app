@@ -1,4 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
 import { useRouter, type Href } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
@@ -111,6 +113,7 @@ function CardPasso({ passo }: { passo: PassoOvace }) {
 export default function AclsChokingScreen() {
   const tr = useTr();
   const router = useRouter();
+  const [gravidade, setGravidade] = useState<"leve" | "grave" | undefined>();
   return (
     <ScrollView
       style={s.scroll}
@@ -130,6 +133,35 @@ export default function AclsChokingScreen() {
             "A obstrução leve se resolve com a própria tosse. A obstrução grave é uma emergência de minutos: a vítima que perde a consciência evolui rapidamente para parada.",
           )}
         </Text>
+      </View>
+
+      {/* Decisão operacional: o usuário precisa saber o que fazer antes de ler a referência. */}
+      <View style={s.guideCard}>
+        <Text style={s.guideEyebrow}>{tr("DECISÃO AGORA")}</Text>
+        <Text style={s.guideTitle}>{tr("A obstrução é leve ou grave?")}</Text>
+        <Text style={s.guideBody}>{tr("Leve: tosse forte, fala e respira. Grave: tosse fraca/ausente, incapaz de falar, cianose, alteração mental ou apneia.")}</Text>
+        <HorizontalChoiceSelector
+          value={gravidade}
+          options={[
+            { value: "leve", label: tr("Obstrução leve"), tone: "success" },
+            { value: "grave", label: tr("Obstrução grave"), tone: "critical" },
+          ]}
+          onChange={(v) => setGravidade(v as "leve" | "grave")}
+          accessibilityLabel={tr("Classificar gravidade da obstrução")}
+          testID="ovace-gravidade"
+        />
+        {gravidade === "leve" ? (
+          <View style={s.guideAction}>
+            <Text style={s.guideActionTitle}>{tr("INCENTIVE A TOSSE")}</Text>
+            <Text style={s.guideActionText}>{tr("Não faça golpes nem compressões enquanto a vítima tosse com força, fala e respira. Observe continuamente; se a tosse enfraquecer ou surgir qualquer sinal de gravidade, mude para obstrução grave.")}</Text>
+          </View>
+        ) : null}
+        {gravidade === "grave" ? (
+          <View style={[s.guideAction, s.guideActionCritical]}>
+            <Text style={s.guideActionTitle}>{tr("5 GOLPES NAS COSTAS → 5 COMPRESSÕES ABDOMINAIS")}</Text>
+            <Text style={s.guideActionText}>{tr("Acione ajuda. Repita ciclos de 5 + 5 até expelir o objeto ou a vítima ficar inconsciente. Se ficar inconsciente, inicie RCP pelas compressões.")}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* O que mudou */}
@@ -269,6 +301,14 @@ const cp = StyleSheet.create({
 
 const s = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: TEMAS.escuro.cores.bg },
+  guideCard: { backgroundColor: TEMAS.escuro.cores.surface, borderRadius: RAIO.card, padding: 18, borderWidth: 2, borderColor: TEMAS.escuro.cores.primary, gap: 12 },
+  guideEyebrow: { fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "900", letterSpacing: 1.2, color: TEMAS.escuro.cores.primary },
+  guideTitle: { fontSize: TIPOGRAFIA.title.fontSize, lineHeight: 30, fontWeight: "900", color: TEMAS.escuro.cores.text },
+  guideBody: { fontSize: TIPOGRAFIA.body.fontSize, lineHeight: 23, fontWeight: "600", color: TEMAS.escuro.cores.textSecondary },
+  guideAction: { borderRadius: RAIO.input, borderWidth: 1, borderColor: TEMAS.escuro.cores.success, backgroundColor: TEMAS.escuro.cores.surface, padding: 14, gap: 6 },
+  guideActionCritical: { borderColor: TEMAS.escuro.cores.critical },
+  guideActionTitle: { fontSize: TIPOGRAFIA.step.fontSize, lineHeight: 24, fontWeight: "900", color: TEMAS.escuro.cores.text },
+  guideActionText: { fontSize: TIPOGRAFIA.caption.fontSize, lineHeight: 22, fontWeight: "600", color: TEMAS.escuro.cores.textSecondary },
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,

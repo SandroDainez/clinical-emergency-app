@@ -46,7 +46,7 @@ const HEIGHT_PRESETS = ["150", "160", "165", "170", "175", "180", "190"];
 
 export default function VentilatorConfiguratorCard() {
   const tr = useTr();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   // ── Altura e sexo são do PACIENTE, não deste card ─────────────────────────
   //
   // A tela da ventilação pedia a altura DUAS vezes: aqui, no configurador do
@@ -103,7 +103,7 @@ export default function VentilatorConfiguratorCard() {
         <Text style={s.headerIcon}>🎛️</Text>
         <View style={{ flex: 1 }}>
           <Text style={s.headerTitle}>{tr("Configurador da VM")}</Text>
-          <Text style={s.headerSub}>{tr("Peso predito → VC, PEEP e FR iniciais")}</Text>
+          <Text style={s.headerSub}>{tr("Altura + sexo → peso corporal predito + parâmetros iniciais")}</Text>
         </View>
         <View style={[s.headerCta, expanded && s.headerCtaOpen]}>
           <Text style={[s.headerCtaText, expanded && s.headerCtaTextOpen]}>
@@ -176,7 +176,7 @@ export default function VentilatorConfiguratorCard() {
           {calc ? (
             <View style={s.result}>
               <View style={s.pbwRow}>
-                <Text style={s.pbwLabel}>{tr("Peso predito")}</Text>
+                <Text style={s.pbwLabel}>{tr("Peso corporal predito")}</Text>
                 <Text style={s.pbwValue}>{calc.pbw} kg</Text>
               </View>
               <View style={s.grid}>
@@ -207,7 +207,7 @@ export default function VentilatorConfiguratorCard() {
             </View>
           ) : (
             <View style={s.placeholder}>
-              <Text style={s.placeholderTxt}>{tr("Informe altura e sexo para calcular o peso predito e os parâmetros iniciais.")}</Text>
+              <Text style={s.placeholderTxt}>{tr("Informe altura e sexo para calcular o peso corporal predito e, a partir dele, os parâmetros ventilatórios iniciais.")}</Text>
             </View>
           )}
         </View>

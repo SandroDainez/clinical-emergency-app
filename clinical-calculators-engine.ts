@@ -245,8 +245,8 @@ export const CALC_TOOLS: CalcTool[] = [
   {
     kind: "formula",
     id: "peso-predito",
-    name: "Peso predito (VM)",
-    subtitle: "Volume corrente protetor — ARDSNet",
+    name: "Peso corporal predito",
+    subtitle: "Estimativa antropométrica pela altura e sexo — usada na ventilação e em outras aplicações clínicas",
     reference: "ARDSNet. N Engl J Med. 2000;342:1301–1308.",
     inputs: [
       { id: "sexo", label: "Sexo", kind: "toggle", options: [{ label: "Masculino", value: "masculino" }, { label: "Feminino", value: "feminino" }] },

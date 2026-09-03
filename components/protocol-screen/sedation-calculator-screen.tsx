@@ -178,6 +178,8 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const [calc, setCalc] = useState<CalcState>(() => initialState());
+  const [showPrinciples, setShowPrinciples] = useState(false);
+  const [showBnmRules, setShowBnmRules] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showRef, setShowRef] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -307,29 +309,49 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
 
         {/* ── Conteúdo ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {/* Princípios da analgo-sedação — vale para todos os fármacos */}
-          <View style={s.card}>
-            <Text style={s.cardLabel}>{tr("ANTES DA DOSE — PRINCÍPIOS")}</Text>
-            {PRINCIPIOS_ANALGOSEDACAO.map((linha) => (
-              <Text key={linha} style={s.refLine}>• {tr(linha)}</Text>
-            ))}
-          </View>
-
-          {/* Cabeçalho do fármaco */}
+          {/* A tarefa atual vem primeiro: qual fármaco está sendo calculado. */}
           <View style={s.drugHeader}>
             <Text style={s.drugName}>{drug.emoji} {tr(drug.name)}</Text>
             <Text style={s.drugClass}>{tr(drug.className)}</Text>
           </View>
 
-          {/* Regras do BNM — só no grupo de bloqueadores */}
-          {drug.group === "bnm" && (
+          {/* Princípios universais ficam disponíveis sem virar uma parede de texto. */}
+          <Pressable style={s.principlesSummary} onPress={() => setShowPrinciples((v) => !v)}>
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={s.cardLabel}>{tr("ANTES DA DOSE")}</Text>
+              <Text style={s.principlesLead}>{tr("Analgesia primeiro · definir RASS-alvo · sedação leve como padrão")}</Text>
+              <Text style={s.principlesHint}>{tr("Abrir princípios de segurança, delirium, monitorização e profundidade")}</Text>
+            </View>
+            <Text style={s.principlesChevron}>{showPrinciples ? "▲" : "▼"}</Text>
+          </Pressable>
+          {showPrinciples ? (
             <View style={s.card}>
-              <Text style={s.cardLabel}>{tr("BLOQUEIO NEUROMUSCULAR — REGRAS E REVERSÃO")}</Text>
-              {REGRAS_BNM.map((linha) => (
+              {PRINCIPIOS_ANALGOSEDACAO.map((linha) => (
                 <Text key={linha} style={s.refLine}>• {tr(linha)}</Text>
               ))}
             </View>
-          )}
+          ) : null}
+
+          {/* BNM também é consulta de segurança, não a ação dominante da tela. */}
+          {drug.group === "bnm" ? (
+            <>
+              <Pressable style={s.principlesSummary} onPress={() => setShowBnmRules((v) => !v)}>
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text style={s.cardLabel}>{tr("BLOQUEIO NEUROMUSCULAR")}</Text>
+                  <Text style={s.principlesLead}>{tr("Sedação profunda + analgesia antes do bloqueio")}</Text>
+                  <Text style={s.principlesHint}>{tr("Abrir indicações, TOF, retirada e reversão")}</Text>
+                </View>
+                <Text style={s.principlesChevron}>{showBnmRules ? "▲" : "▼"}</Text>
+              </Pressable>
+              {showBnmRules ? (
+                <View style={s.card}>
+                  {REGRAS_BNM.map((linha) => (
+                    <Text key={linha} style={s.refLine}>• {tr(linha)}</Text>
+                  ))}
+                </View>
+              ) : null}
+            </>
+          ) : null}
 
           {/* Estratégia */}
           <View style={s.card}>
@@ -646,6 +668,11 @@ const s = StyleSheet.create({
   drugHeader: { gap: 2 },
   drugName: { fontSize: CV.tipo.section.fontSize, fontWeight: "900", color: CV.cores.text },
   drugClass: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.primary },
+
+  principlesSummary: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, borderWidth: 1, borderColor: CV.cores.border },
+  principlesLead: { fontSize: CV.tipo.body.fontSize, lineHeight: CV.tipo.body.lineHeight, fontWeight: "800", color: CV.cores.text },
+  principlesHint: { fontSize: CV.tipo.micro.fontSize, lineHeight: CV.tipo.micro.lineHeight, color: CV.cores.textSecondary },
+  principlesChevron: { fontSize: 14, fontWeight: "900", color: CV.cores.primary },
 
   card: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, gap: 10, borderWidth: 1, borderColor: CV.cores.border },
   cardLabel: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 1 },
