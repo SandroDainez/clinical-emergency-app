@@ -82,7 +82,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Handoffs terminais externos iniciais classificados: Politrauma -> centro cirúrgico/angioembolização e TCE -> neurocirurgia.
 - [x] Travas estruturais protegem arestas retornáveis e handoffs externos contra divergência com as árvores reais.
 - [x] As 19 transições explícitas das árvores possuem contrato de retorno ou terminalidade e preservação de contexto quando aplicável.
-- [ ] Substituir navegações improvisadas progressivamente.
+- [x] Navegações clínicas com proveniência (`from_module`) migradas para executores canônicos; a UI assistencial não monta mais essa proveniência manualmente.
 - [x] Oito atalhos de recursos adicionais do PCR centralizados e classificados como consulta contextual, sem criar handoff artificial.
 - [x] Rotas do Engasgo inconsciente e da PCR na gestação centralizadas como transição terminal, subfluxo retornável e consulta obstétrica.
 - [x] Atalhos de Hs/Ts e passagem pós-ROSC da tela principal de PCR centralizados com semânticas distintas.
@@ -99,7 +99,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Bridge integrada ao shell compartilhado, com trava estrutural e CI.
 - [x] Medicações confirmadas integradas ao Event Log sem inferir fármaco ou dose que a UI não capturou.
 - [x] Runtime de destino criado e restrito a transições terminais para `external_service`.
-- [ ] Ligar `disposition` à UI apenas onde houver confirmação explícita de transferência/destino; entrada em nó terminal não basta.
+- [x] `disposition` ligado à UI apenas após confirmação explícita em dois tempos de transferência terminal externa; entrada no nó não registra destino e repetição do toque não duplica o evento.
 - [x] Motor declarativo de debrief temporal criado com `met`, `missed`, `pending` e `not_evaluable`, exigindo fonte para limiares numéricos.
 - [x] Debrief ACLS deixou de recalcular atraso de epinefrina e consome o guard rail temporal produzido pelo próprio runtime.
 - [ ] Cadastrar/ligar metas temporais clínicas adicionais somente quando houver fonte formal ou deadline explícito produzido pelo runtime.
@@ -133,8 +133,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Política de gates diferencia `hard_stop`, `soft_stop` e `advisory`; hard stop não admite override e soft stop exige motivo auditável.
 - [x] Auditoria terminal distingue destino assistencial de `other_module` e classifica módulos pelo papel real.
 - [x] Politrauma e IRA confirmados na branch com destinos assistenciais explícitos; dívidas falsas derivadas do `main` foram removidas.
-- [ ] Continuar classificando os demais achados reais do inventário.
-- [ ] Garantir cobertura terminal/retorno para todos os módulos e arestas reais.
+- [x] Todos os módulos `flow` do catálogo possuem classificação terminal explícita; PCR e OVACE usam `crisis_pathway` para não inventar alta/UTI ou retorno artificial.
+- [x] Cobertura terminal dos 22 fluxos do catálogo é auditada no CI; linhas de cuidado, subfluxos, caminhos embutíveis e fluxos de crise têm semântica própria.
 
 ## Bloco F — Drug Knowledge Base
 
