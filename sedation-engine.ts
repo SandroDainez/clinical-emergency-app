@@ -408,13 +408,13 @@ export const SED_DRUGS: SedDrug[] = [
     strategy: [
       "Opioide de 1ª linha para analgesia em VM (analgosedação) — analgesia primeiro, sedação depois.",
       "Bolus para pré-intubação e procedimentos; infusão para analgesia contínua.",
-      "Meia-vida contexto-sensível aumenta com infusões longas.",
+      "Meia-vida contexto-sensível aumenta progressivamente com a duração da infusão; em pacientes críticos, distribuição e depuração podem variar amplamente.",
     ],
     alert: {
       icon: "⚠️", tone: "warn",
       lines: [
         "Rigidez torácica com bolus IV rápido em dose alta (> 5 mcg/kg).",
-        "Infusões > 2–4 h prolongam o despertar — considerar remifentanil se precisar desmame rápido.",
+        "Infusões prolongadas podem atrasar o despertar por acúmulo e aumento da meia-vida contexto-sensível; não há um corte universal em 2–4 h. O efeito depende de duração, dose e fatores do paciente/doença crítica. Se recuperação rápida e previsível for prioridade, considerar remifentanil.",
       ],
     },
     info: [
@@ -426,7 +426,7 @@ export const SED_DRUGS: SedDrug[] = [
       NALOXONA_VIGILANCIA_APOS_REVERSAO,
       "1 mL = 50 mcg na apresentação padrão.",
     ],
-    reference: "PADIS 2018 · Miller's Anesthesia 9ª ed.",
+    reference: "PADIS 2018 · Miller's Anesthesia 9ª ed. · Hughes et al., Anesthesiology 1992 (context-sensitive half-time) · revisão sistemática de farmacocinética de opioides em UTI, 2025.",
   },
   {
     key: "morfina",
