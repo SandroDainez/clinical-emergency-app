@@ -52,6 +52,7 @@ const validators = [
   "valida-sedacao-limites-dose.cjs",
   "valida-rocuronio-seguranca.cjs",
   "valida-etomidato-seguranca.cjs",
+  "valida-succinilcolina-hipercalemia.cjs",
 ];
 
 for (const validator of validators) {
