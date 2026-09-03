@@ -769,7 +769,7 @@ export const SED_DRUGS: SedDrug[] = [
       icon: "⚠️", tone: "warn",
       lines: [
         "Histaminoliberação dose-dependente — hipotensão, broncoespasmo, flushing (sobretudo em bolus rápido).",
-        "Laudanosina acumula em IRA/IH (risco de convulsão). Sem antídoto específico. Refrigerar (perde potência em 14 dias a 25 °C).",
+        "Laudanosina pode acumular em infusões prolongadas, com concentrações maiores em disfunção renal/hepática. Efeito excitatório/convulsões são demonstrados em animais; em humanos, relatos são raros e geralmente têm fatores predisponentes, e a contribuição causal da laudanosina permanece incerta. Titular à necessidade e limitar exposição desnecessária. Sem antídoto específico. Refrigerar (perde potência em 14 dias a 25 °C).",
         // Terceiro caso da mesma assimetria (R-16): o aviso vivia em `info`
         // aqui também. A varredura só o encontrou comparando os três BNM lado a
         // lado — lendo o atracúrio sozinho, o aviso estava lá e parecia bastar.
