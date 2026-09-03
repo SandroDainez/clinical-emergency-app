@@ -1,0 +1,72 @@
+name: Finalize TCE and Shock 2026 clinical consolidation
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - .github/finalize-tce-choque.trigger
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-tce-choque-2026
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply all remaining clinical migrations idempotently
+        run: node scripts/finaliza-tce-choque-2026.cjs
+      - name: TCE focused clinical gates
+        run: |
+          node scripts/valida-tce-neuromonitorizacao-handoff-acs2024.cjs
+          node scripts/valida-tce-osmoterapia-2026.cjs
+          node scripts/valida-tce-monitorizacao-uti-2026.cjs
+      - name: Shock focused clinical gates
+        run: |
+          node scripts/valida-choque-avaliacao-ressuscitacao-esicm2025.cjs
+          node scripts/valida-choque-hemorragico-esicm2025.cjs
+          node scripts/valida-choque-obstrutivo-erc2025.cjs
+          node scripts/valida-choque-cardiogenico-acc2025.cjs
+          node scripts/valida-choque-distributivo-ssc2026.cjs
+          node scripts/valida-choque-valvar-mecanico-2026.cjs
+      - name: Install dependencies
+        run: npm ci
+      - name: Existing TCE and shock regressions
+        run: |
+          npm run test:tce
+          npm run test:choque
+          npm run test:vasoativos
+          npm run test:tep
+          npm run test:coronarias
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/final-clinical tce-decision-tree.ts shock-decision-tree.ts lib/clinical-transition-contracts.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/clinical-transition-contracts.ts lib/i18n/modules/choque.ts lib/i18n/modules/tce.ts shock-decision-tree.ts tce-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit final clinical consolidation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tce-decision-tree.ts shock-decision-tree.ts lib/i18n/modules/tce.ts lib/i18n/modules/choque.ts lib/clinical-transition-contracts.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(clinical): consolidate TCE and shock 2026 safety"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
