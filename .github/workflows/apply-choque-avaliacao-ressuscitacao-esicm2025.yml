@@ -1,0 +1,54 @@
+name: Apply shock initial resuscitation ESICM 2025 checkpoint
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-choque-avaliacao-ressuscitacao-esicm2025.cjs
+      - scripts/valida-choque-avaliacao-ressuscitacao-esicm2025.cjs
+      - .github/workflows/apply-choque-avaliacao-ressuscitacao-esicm2025.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply shock ESICM 2025 checkpoint
+        run: node scripts/ajusta-choque-avaliacao-ressuscitacao-esicm2025.cjs
+      - name: Focused shock validation
+        run: node scripts/valida-choque-avaliacao-ressuscitacao-esicm2025.cjs
+      - name: Existing shock regression
+        run: npm run test:choque
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/shock-esicm shock-decision-tree.ts lib/choque-diferencial.ts lib/instabilidade-guiada.ts
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/choque.ts shock-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated shock checkpoint
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/choque.ts shock-decision-tree.ts
+          git commit -m "fix(choque): align initial resuscitation with ESICM 2025"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
