@@ -22,6 +22,11 @@ jobs:
       - name: Apply anaphylaxis NMBA choice migration
         run: node scripts/aplica-anafilaxia-bnm-escolha-update.cjs
 
+      - name: Diagnose RSI TypeScript compilation
+        run: |
+          rm -rf /tmp/rsi-debug && mkdir -p /tmp/rsi-debug
+          tsc --ignoreConfig --module node16 --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/rsi-debug rsi-decision-tree.ts
+
       - name: Validate RSI module
         run: npm run test:isr
 
