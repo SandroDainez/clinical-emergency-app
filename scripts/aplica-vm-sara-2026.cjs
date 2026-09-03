@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const fs=require('node:fs');const path=require('node:path');const root=path.resolve(__dirname,'..');
-function exact(file,before,after,label){let s=fs.readFileSync(file,'utf8');if(s.includes(after))return;const n=s.split(before).length-1;if(n!==1)throw new Error(`${label}: esperado 1 alvo, encontrados ${n}`);s=s.replace(before,after);fs.writeFileSync(file,s);}
+function exact(file,before,after,label){let s=fs.readFileSync(file,'utf8');if(after&&s.includes(after))return;const n=s.split(before).length-1;if(n!==1)throw new Error(`${label}: esperado 1 alvo, encontrados ${n}`);s=s.replace(before,after);fs.writeFileSync(file,s);}
 const tree=path.join(root,'ventilation-decision-tree.ts');
 exact(tree,'      title: "SARA — ventilação protetora (único tratamento que reduz mortalidade)",','      title: "SARA — ventilação protetora e terapias adjuvantes",','título SARA');
 exact(tree,'      summary: "Berlim: P/F ≤ 300 com PEEP ≥ 5 (leve 200–300 · moderada 100–200 · grave ≤ 100). VC {vc4}–{vc6} mL.",','      summary: "Global Definition 2024 amplia Berlim: P/F ≤ 300 ou S/F ≤ 315 quando SpO₂ ≤ 97%, incluindo HFNO ≥ 30 L/min. VC {vc4}–{vc6} mL por PBW.",','resumo SARA');
