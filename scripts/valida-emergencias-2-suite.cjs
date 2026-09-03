@@ -8,6 +8,7 @@ const validators = [
   "valida-classificacao-de-modulos.cjs",
   "valida-cabecalho-de-calculadoras.cjs",
   "valida-cabecalho-de-referencias.cjs",
+  "valida-engasgo-padrao-fluxo.cjs",
   "valida-clinical-shell-adapter.cjs",
   "valida-clinical-shell-host.cjs",
   "valida-clinical-shell-host-pos-migracao.cjs",

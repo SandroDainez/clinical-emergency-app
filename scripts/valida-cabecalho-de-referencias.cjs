@@ -7,7 +7,6 @@ const referenceScreens = [
   "acls-rhythms-screen.tsx",
   "acls-pharmacology-screen.tsx",
   "acls-reversible-causes-screen.tsx",
-  "acls-choking-screen.tsx",
   "acls-pregnancy-screen.tsx",
   "acls-post-rosc-screen.tsx",
 ];

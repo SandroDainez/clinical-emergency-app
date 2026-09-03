@@ -31,8 +31,9 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] DecisionGrid migrado para tokens semânticos.
 - [x] Ramo “não sei” visualmente destacado quando já existe na árvore.
 - [x] Showcase `/dev/ui-v2` atualizado para validar o conjunto.
-- [x] Cabeçalho canônico aplicado às seis referências estáticas ACLS, distinguindo consulta rápida de fluxo e calculadora.
+- [x] Cabeçalho canônico aplicado às cinco referências estáticas ACLS, distinguindo consulta rápida de fluxo e calculadora.
 - [x] Bradicardia, Taquicardia e Engasgo classificados como fluxos por conterem decisão e progressão assistencial; aparência atual não define taxonomia.
+- [x] Engasgo migrado do cabeçalho de referência para o shell operacional, com a decisão leve × grave antes do contexto de leitura.
 - [x] Registro canônico das portas de crise criado.
 - [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
 - [x] Adapter do shell criado sem dependência de engine ou roteador.

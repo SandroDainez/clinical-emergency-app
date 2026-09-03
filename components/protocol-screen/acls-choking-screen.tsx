@@ -1,8 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
+import { ClinicalShellHost } from "../ui-v2/clinical-shell-host";
 import { useRouter, type Href } from "expo-router";
-import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
 import { TIPOGRAFIA, RAIO, SOMBRA, TEMAS } from "../../design-system/tokens";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
@@ -115,26 +115,19 @@ export default function AclsChokingScreen() {
   const router = useRouter();
   const [gravidade, setGravidade] = useState<"leve" | "grave" | undefined>();
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
-
-      <ReferenceBackHeader label={tr("ACLS · Engasgo (OVACE)")} />
-
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>{tr("ACLS · Referência")}</Text>
-        <Text style={s.introTitle}>{tr("Engasgo (OVACE) no Adulto")}</Text>
-        <Text style={s.introSubtitle}>{tr("Obstrução de via aérea por corpo estranho")}</Text>
-        <View style={s.introRule} />
-        <Text style={s.introBody}>
-          {tr(
-            "A obstrução leve se resolve com a própria tosse. A obstrução grave é uma emergência de minutos: a vítima que perde a consciência evolui rapidamente para parada.",
-          )}
-        </Text>
-      </View>
-
+    <View style={s.screen}>
+      <ClinicalShellHost
+        protocol={tr("Engasgo (OVACE)")}
+        phase={tr("Reconhecimento e classificação")}
+        step={1}
+        moduleSlug="ovace-adulto"
+        onBack={() => router.back()}
+        onPush={(href) => router.push(href)}
+      />
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}>
       {/* Decisão operacional: o usuário precisa saber o que fazer antes de ler a referência. */}
       <View style={s.guideCard}>
         <Text style={s.guideEyebrow}>{tr("DECISÃO AGORA")}</Text>
@@ -162,6 +155,19 @@ export default function AclsChokingScreen() {
             <Text style={s.guideActionText}>{tr("Acione ajuda. Repita ciclos de 5 + 5 até expelir o objeto ou a vítima ficar inconsciente. Se ficar inconsciente, inicie RCP pelas compressões.")}</Text>
           </View>
         ) : null}
+      </View>
+
+      {/* Contexto curto depois da decisão dominante; não compete com a ação. */}
+      <View style={s.introCard}>
+        <Text style={s.introEyebrow}>{tr("ACLS · FLUXO ASSISTENCIAL")}</Text>
+        <Text style={s.introTitle}>{tr("Engasgo (OVACE) no Adulto")}</Text>
+        <Text style={s.introSubtitle}>{tr("Obstrução de via aérea por corpo estranho")}</Text>
+        <View style={s.introRule} />
+        <Text style={s.introBody}>
+          {tr(
+            "A obstrução leve se resolve com a própria tosse. A obstrução grave é uma emergência de minutos: a vítima que perde a consciência evolui rapidamente para parada.",
+          )}
+        </Text>
       </View>
 
       {/* O que mudou */}
@@ -251,7 +257,8 @@ export default function AclsChokingScreen() {
           {tr("Baseado em AHA 2025 — Destaques das Diretrizes de RCP e ACE (JN-1580), Figura 6 e Suporte Básico de Vida em adultos")}
         </Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -300,6 +307,7 @@ const cp = StyleSheet.create({
 // ── Estilos principais ────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: TEMAS.escuro.cores.bg },
   scroll: { flex: 1, backgroundColor: TEMAS.escuro.cores.bg },
   guideCard: { backgroundColor: TEMAS.escuro.cores.surface, borderRadius: RAIO.card, padding: 18, borderWidth: 2, borderColor: TEMAS.escuro.cores.primary, gap: 12 },
   guideEyebrow: { fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "900", letterSpacing: 1.2, color: TEMAS.escuro.cores.primary },
