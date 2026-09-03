@@ -110,7 +110,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Preparação — indicação e plano",
       summary: "Indicação de via aérea definitiva (FLOW) + checklist SOAP-ME antes de qualquer droga.",
       actions: [
-        "Confirmar a indicação (mnemônico FLOW): Failure (falência ventilatória — apneia, PaCO₂ > 55 + pH < 7,20 refratário à VNI); Lungs (falência de oxigenação — SpO₂ < 90% com FiO₂ 1,0, SARA grave, EAP refratário); Obstruction (angioedema, epiglotite, trauma/queimadura de VA, anafilaxia); Work (FR > 35, musculatura acessória, paradoxo abdominal, fadiga). Também: GCS ≤ 8 com risco de aspiração.",
+        "Confirmar a indicação pela fisiologia e trajetória, não por um número isolado (FLOW): Failure — apneia ou falha ventilatória com hipercapnia/acidemia apesar do suporte adequado; Lungs — falha de oxigenação apesar de oxigênio/suporte não invasivo otimizados; Obstruction — obstrução de via aérea presente ou ameaçadora; Work — trabalho respiratório crescente, fadiga ou incapacidade de sustentar ventilação. Acrescentar incapacidade de proteger a via aérea por rebaixamento de consciência e deterioração previsível que torne a intubação posterior mais arriscada. PaCO₂, pH, SpO₂, frequência respiratória e GCS ajudam a medir gravidade, mas nenhum valor isolado é requisito universal para intubar.",
         "Checklist SOAP-ME: Sucção (Yankauer), O₂ (fonte com flush, MNR, BVM), Aparato (laringoscópio Mac 3/4 ou Miller 2/3 + videolaringoscópio, TOT 7,0/7,5 com cuff testado, estilete, bougie, cânula orofaríngea), Posição, Monitor/medicações, ETCO₂.",
         "Monitor completo (PA, ECG, SpO₂, capnografia waveform), 2 acessos venosos; equipe e funções definidas (operador, assistente, fármacos).",
         "Definir plano A/B/C e ter à mão o kit de via aérea difícil: VL, ML de 2ª geração (i-gel/LMA Supreme), kit de cricotireoidostomia (bisturi + tubo 6,0 com cuff).",
@@ -534,8 +534,8 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Ponte de oxigenação: VNI ou HFN com monitorização contínua — SpO₂, FR, trabalho respiratório, consciência.",
         "Otimizar o que tornou a via difícil ou o paciente instável: posição, volemia, broncodilatador, reversão de sedativo, anafilaxia tratada.",
         "Acionar quem faltava: anestesiologia, otorrino/cirurgia, broncoscópio, sala preparada.",
-        "GATILHOS DE RETORNO IMEDIATO à intubação: rebaixamento, falha da VNI/HFN (SpO₂ < 90% ou FR subindo), estridor progressivo, fadiga.",
-        "Reavaliação formal em intervalo curto e definido — adiar sem hora de reavaliar é abandonar.",
+        "GATILHOS DE RETORNO IMEDIATO à estratégia de via aérea: piora do nível de consciência/proteção da via aérea, deterioração da oxigenação apesar do suporte, trabalho respiratório ou frequência respiratória em ascensão, estridor/obstrução progressiva, fadiga ou instabilidade hemodinâmica. Não esperar um corte numérico isolado se a trajetória clínica estiver piorando.",
+        "Definir explicitamente quando e por quais sinais reavaliar, proporcionalmente ao risco e à velocidade de deterioração. Adiar sem plano de reavaliação é abandono; impor um intervalo universal também é inadequado.",
       ],
       targets: [],
     },
@@ -545,7 +545,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "otimizacao",
       type: "decision",
       title: "Otimização hemodinâmica",
-      question: "Há instabilidade (PAS < 90 / choque / hipoperfusão)?",
+      question: "Há instabilidade ou risco hemodinâmico relevante — hipotensão, choque ou hipoperfusão?",
       summary: "PAS informada: {pas} mmHg.",
       evidence: [
         "'Reanimar antes de intubar': a indução + pressão positiva pioram a hipotensão e podem causar PCR peri-intubação.",
