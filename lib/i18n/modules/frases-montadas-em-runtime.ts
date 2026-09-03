@@ -85,5 +85,6 @@ export const ES_FRASES_MONTADAS: Record<string, string> = {
   "Alvos: SpO₂ ≥ 90%, PaCO₂ 35–40 mmHg (NORMOventilação), PPC 60–70 mmHg, PIC < 22 mmHg.":
     "Metas: SpO₂ ≥ 90%, PaCO₂ 35–40 mmHg (NORMOventilación), PPC 60–70 mmHg, PIC < 22 mmHg.",
   "Cabeceira 30°; PEEP 5–10 cmH₂O — até 15 cmH₂O SOMENTE em paciente estável, euvolêmico e com neuromonitorização — condição que raramente existe na emergência; sem isso, o alvo é 5–10.":
-    "Cabecera 30°; PEEP 5–10 cmH₂O — hasta 15 cmH₂O SOLO en paciente estable, euvolémico y con neuromonitorización — condición que raramente existe en la emergencia; sin eso, la meta es 5–10.",
+    "Cabecera 30°; PEEP 5–10 cmH₂O — hasta 15 cmH₂O SOLO en paciente estable, euvolémico y con neuromonitorización — condición que raramente existe en la emergencia; sin eso, la meta es 5–10.",  "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 94% (PaO₂ 80–100 mmHg como alvo inicial) · PaCO₂ 35–40 mmHg na ausência de HIC · normotermia · glicemia 100–180 mg/dL · Na 135–145 mEq/L como alvo basal; evitar hiponatremia e não induzir hipernatremia profilática.": "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años) · SpO₂ ≥ 94% (PaO₂ 80–100 mmHg como objetivo inicial) · PaCO₂ 35–40 mmHg en ausencia de HIC · normotermia · glucemia 100–180 mg/dL · Na 135–145 mEq/L como objetivo basal; evitar hiponatremia y no inducir hipernatremia profiláctica.",
+
 };

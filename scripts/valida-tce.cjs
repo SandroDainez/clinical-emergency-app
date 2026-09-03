@@ -62,7 +62,7 @@ try {
   execFileSync(
     "npx",
     [
-      "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",
+      "tsc", "--module", "node16", "--target", "es2020", "--esModuleInterop",
       "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tempDir,
       path.join(appDir, "tce-decision-tree.ts"),
       path.join(appDir, "lib/alvos-tce.ts"),

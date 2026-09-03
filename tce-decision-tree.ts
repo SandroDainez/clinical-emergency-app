@@ -209,7 +209,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         // e vive em `estabilizacao`.
         TCE_PENETRANTE_FRONTEIRA,
         TCE_PENETRANTE_CONTINUA_ACIONANDO,
-        "Manter as metas da estabilização: PAS por faixa etária, SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
+        "Manter as metas da estabilização: PAS por faixa etária, SpO₂ ≥ 94% e PaO₂ 80–100 mmHg como alvos iniciais, normocapnia na ausência de HIC e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
         "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.",
       ],
@@ -225,7 +225,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       question: "O paciente usa anticoagulante/antiagregante ou tem coagulopatia?",
       evidence: [
         "Sangramento intracraniano em anticoagulado exige reversão IMEDIATA — não aguardar exames de coagulação para decidir.",
-        "Repetir TC precocemente mesmo se a primeira foi normal.",
+        "TC normal não cria indicação automática de repetição apenas por anticoagulação/antiagregação. Repetir diante de deterioração neurológica ou quando houver lesão intracraniana conhecida, risco de progressão, intervenção planejada ou protocolo neurocirúrgico que exija documentação de estabilidade.",
       ],
       options: [
         { id: "sim", label: "Sim", next: "reversao" },
@@ -243,7 +243,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Dabigatrana: idarucizumabe 5 g IV (2 × 2,5 g).",
         "Rivaroxabana/apixabana/edoxabana: andexanet alfa; se indisponível, CCP 4 fatores 50 UI/kg.",
         "Heparina não fracionada: protamina 1 mg por 100 UI (máx 50 mg).",
-        "Antiagregante: transfusão de plaquetas NÃO é rotina (estudo PATCH mostrou pior desfecho na hemorragia espontânea) — reservar para neurocirurgia iminente, com discussão conjunta.",
+        "Antiagregante: transfusão de plaquetas NÃO é rotina no TCE. Em paciente sem procedimento invasivo planejado, não usar plaquetas ou desmopressina apenas para reverter antiagregação. Se houver neurocirurgia/EVD/monitor de PIC, considerar estratégia hemostática individualizada, idealmente com teste de função plaquetária quando disponível; desmopressina 0,4 mcg/kg IV pode ser considerada no contexto perioperatório, com vigilância de sódio.",
         "Corrigir plaquetopenia e fibrinogênio; controlar a pressão arterial.",
       ],
       next: "gravidade_check",
@@ -360,14 +360,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         // neurocirurgia. A frase sabia o lugar dela; a tela não obedecia.
         // Febre, assincronia, crise, colar apertado e bexigoma resolvem muita
         // PIC sem osmoterapia — e custam segundos para checar.
-        "⚠️ ANTES de escalar terapia: checar as causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir isso resolve muita PIC sem osmoterapia.",
+        "⚠️ Em paralelo à terapia urgente, checar causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir causas reversíveis pode reduzir a PIC, mas na herniação clínica essa checagem NÃO deve atrasar osmoterapia, drenagem de LCR quando disponível nem acionamento neurocirúrgico.",
         "Tratar febre, convulsão e agitação — todos aumentam a PIC.",
-        "Terapia hiperosmolar — no TCE com PIC elevada/edema cerebral, a Neurocritical Care Society sugere solução hipertônica sobre manitol como manejo inicial quando não houver contraindicação. Regime do protocolo institucional citado: NaCl 3% {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min. Concentração e dose variam entre protocolos: titular à resposta clínica/PIC e monitorar sódio, cloro e função renal. NaCl 20% 40 mL IV em 5 min é outro regime institucional; repetir apenas conforme resposta e protocolo neurocrítico, não por intervalo universal fixo.",
+        "Terapia hiperosmolar — no TCE com PIC elevada/edema cerebral, a Neurocritical Care Society sugere solução hipertônica sobre manitol como manejo inicial quando não houver contraindicação. Regime do protocolo institucional citado: NaCl 3% {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min. Concentração e dose variam entre protocolos: titular à resposta clínica/PIC e monitorar sódio, cloro, equilíbrio ácido-base e função renal. Soluções mais concentradas (por exemplo 20–23,4%) existem em protocolos neurocríticos, mas a dose depende da apresentação, acesso vascular e protocolo institucional — não transformar um volume fixo em recomendação universal. Na 155–160 mEq/L e Cl 110–115 mEq/L devem ser entendidos como faixas superiores de segurança descritas pela NCS, não como metas terapêuticas a perseguir.",
         "Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min permanece alternativa eficaz quando solução hipertônica não é apropriada ou não está disponível. Repetição deve ser guiada pela resposta/PIC e segurança, não por relógio fixo; vigiar volemia, pressão arterial e função renal por diurese osmótica e risco de hipotensão/lesão renal.",
         "Durante manitol, monitorar função renal, volemia e carga osmótica. A NCS sugere usar o GAP OSMOLAR em vez de um limiar isolado de osmolaridade para acompanhar risco de acúmulo/lesão renal, mas NÃO há evidência suficiente para um cutoff obrigatório; 20 mOsm/kg é usado em alguns protocolos, porém não é um limite validado. Gap = osmolaridade medida − calculada; ao calcular com ureia total em mg/dL, usar a fórmula compatível com o laboratório local e não confundir ureia com BUN.",
         TCE_HIPERVENTILACAO,
         TCE_HIPERVENTILACAO_PROIBIDA,
-        "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.",
+        "Com derivação ventricular externa já instalada: usar drenagem de LCR como terapia da PIC conforme altura/configuração do dreno, resposta da PIC e protocolo neurocirúrgico. Não prescrever volume fixo universal. Quando o EVD estiver aberto para drenagem, a leitura de PIC pelo próprio sistema não representa a PIC verdadeira; se for necessária monitorização contínua simultânea, usar estratégia validada pelo serviço, como monitor independente.",
         "Guiar a hiperventilação por capnografia contínua, e reverter assim que a descompressão ou a osmoterapia entrarem.",
         "Acionar neurocirurgia imediatamente (drenagem/craniectomia descompressiva).",
         TCE_PPC_COM_VASOPRESSOR,
@@ -396,7 +396,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Exame neurológico seriado; repetir TC IMEDIATAMENTE diante de deterioração. Em paciente estável com lesão conhecida, individualizar imagem de controle conforme padrão da lesão, evolução, coagulação, intervenção planejada e protocolo neurocirúrgico — sem janela fixa universal.",
         "Profilaxia de TEV: usar compressão pneumática quando não houver contraindicação. Em TCE não operado com imagem de controle estável e baixo risco de progressão hemorrágica, considerar LMWH precocemente (frequentemente dentro de 24–48 h após demonstrar estabilidade); em hemorragia de maior risco, progressão, craniotomia/craniectomia, EVD ou outra intervenção intracraniana, individualizar o início em conjunto com trauma/neurocirurgia — não usar 24–48 h como relógio automático.",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",
-        "Evitar hipo-osmolaridade; sódio sérico normal-alto conforme protocolo.",
+        "Evitar hiponatremia. Usar Na 135–145 mEq/L como alvo basal; durante terapia hiperosmolar, qualquer elevação deve ser terapêutica, transitória e guiada pela resposta/PIC e segurança — não perseguir hipernatremia profilática.",
         "Monitorização invasiva da PIC: a BTF recomenda manejar o TCE grave usando informação da PIC. As regras clássicas — GCS 3–8 com TC alterada; ou TC normal com ≥2 entre idade >40 anos, postura motora anômala e PAS <90 mmHg — são REAPRESENTADAS pela 4ª edição para reconhecer alto risco, mas derivam de recomendações antigas que não atendem aos padrões atuais de evidência. Usar quadro clínico, TC, possibilidade de exame neurológico, necessidade de sedação/intervenção e decisão neurocirúrgica, não um checklist isolado.",
         "Sem monitor invasivo de PIC disponível, Doppler transcraniano, ultrassom da bainha do nervo óptico e pupilometria quantitativa podem acrescentar informação e acompanhar TENDÊNCIAS, especialmente quando combinados ao exame e à TC. Não usar PI, diâmetro da bainha ou NPi com um único cutoff universal para diagnosticar/excluir HIC ou decidir terapia isoladamente; técnica, dispositivo, população e contexto alteram os valores. Deterioração clínica/hernição deve ser tratada pelo quadro global sem esperar um teste não invasivo.",
         "HIC REFRATÁRIA: a escalada em etapas está no passo de conduta da herniação — 1ª etapa (medidas gerais, osmoterapia e drenagem quando disponível), 2ª (aprofundar sedação, ajustar osmoterapia pela resposta e reavaliar opção neurocirúrgica) e 3ª (resgates selecionados de maior risco, como barbitúrico, hipotermia terapêutica e hiperventilação monitorizada). Aqui se mantém apenas o que demonstrar benefício sobre a PIC e tolerância clínica, com reavaliação contínua.",

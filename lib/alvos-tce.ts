@@ -70,7 +70,8 @@ export const ALVOS_TCE = {
    * A meta de PAS no TCE tem dono, e é `lib/pas-no-tce.ts` — texto e lógica
    * juntos, estratificados por idade. Quem precisar dela, importa de lá.
    */
-  spo2: "≥ 90%",
+  /** ACS TBI Best Practices 2024: alvo inicial de oxigenação. */
+  spo2: "≥ 94%",
 } as const;
 
 // ⚠️ ALVOS_TCE_FONTE REMOVIDA (2026-08-17) — o módulo já mostra a
@@ -157,7 +158,7 @@ export const TCE_NORMOCAPNIA =
 
 /** `tce_grave` — o painel de metas. A PAS sai de lib/pas-no-tce.ts. */
 export const TCE_METAS_NEUROPROTECAO =
-  "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 90% · PaCO₂ 35–40 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.";
+  "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 94% (PaO₂ 80–100 mmHg como alvo inicial) · PaCO₂ 35–40 mmHg na ausência de HIC · normotermia · glicemia 100–180 mg/dL · Na 135–145 mEq/L como alvo basal; evitar hiponatremia e não induzir hipernatremia profilática.";
 
 /** `tce_grave` — a conduta ventilatória, com o teto de PEEP na mesma linha. */
 export const TCE_VENTILACAO =
@@ -169,7 +170,7 @@ export const TCE_MONITORIZACAO_PIC =
 
 /** `uti` — as metas mantidas. */
 export const TCE_METAS_UTI =
-  "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–40 mmHg, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.";
+  "Metas mantidas: PIC < 22 mmHg; PPC 60–70 mmHg, individualizada pela autorregulação quando disponível; SpO₂ ≥ 94% e PaO₂ 80–100 mmHg como alvos iniciais; PaCO₂ 35–40 mmHg na ausência de HIC; PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos); normotermia; glicemia 100–180 mg/dL; Na 135–145 mEq/L como alvo basal.";
 
 /** Onde a PPC é alvo de vasopressor — antes escrita à mão na árvore. */
 export const TCE_PPC_COM_VASOPRESSOR =
