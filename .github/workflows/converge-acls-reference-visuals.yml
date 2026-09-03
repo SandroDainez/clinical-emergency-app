@@ -1,0 +1,55 @@
+name: Converge ACLS reference visuals
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - .github/workflows/converge-acls-reference-visuals.yml
+      - scripts/padroniza-visual-acls-referencias.cjs
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply deterministic ACLS visual convergence
+        run: node scripts/padroniza-visual-acls-referencias.cjs
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Clinical step parity
+        run: node scripts/valida-paridade-clinical-steps.cjs
+
+      - name: Web build
+        run: npm run build:web
+
+      - name: Validate diff and scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' components/protocol-screen/acls-choking-screen.tsx components/protocol-screen/acls-pregnancy-screen.tsx | sort)"
+          test "$changed" = "$expected"
+
+      - name: Commit convergence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/acls-choking-screen.tsx components/protocol-screen/acls-pregnancy-screen.tsx
+          git commit -m "refactor(ui): align dedicated ACLS references with cockpit"
+          git push origin HEAD:emergencias-2-ui-core
