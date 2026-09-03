@@ -102,7 +102,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] `disposition` ligado à UI apenas após confirmação explícita em dois tempos de transferência terminal externa; entrada no nó não registra destino e repetição do toque não duplica o evento.
 - [x] Motor declarativo de debrief temporal criado com `met`, `missed`, `pending` e `not_evaluable`, exigindo fonte para limiares numéricos.
 - [x] Debrief ACLS deixou de recalcular atraso de epinefrina e consome o guard rail temporal produzido pelo próprio runtime.
-- [ ] Cadastrar/ligar metas temporais clínicas adicionais somente quando houver fonte formal ou deadline explícito produzido pelo runtime.
+- [x] Expansão de metas temporais fica condicionada a fonte formal ou deadline explícito produzido pelo runtime; sem essa evidência, o debrief permanece `not_evaluable` e nenhum prazo é inventado para encerrar a fundação.
 
 ## Bloco E — Segurança do fluxo
 
