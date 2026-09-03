@@ -34,6 +34,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Cabeçalho canônico aplicado às cinco referências estáticas ACLS, distinguindo consulta rápida de fluxo e calculadora.
 - [x] Bradicardia, Taquicardia e Engasgo classificados como fluxos por conterem decisão e progressão assistencial; aparência atual não define taxonomia.
 - [x] Engasgo migrado do cabeçalho de referência para o shell operacional, com a decisão leve × grave antes do contexto de leitura.
+- [x] Engasgo organizado em progressão: classificação → manobras → desfecho → saída; conteúdo longo movido para apoio expansível.
 - [x] Registro canônico das portas de crise criado.
 - [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
 - [x] Adapter do shell criado sem dependência de engine ou roteador.

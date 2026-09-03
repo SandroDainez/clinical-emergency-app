@@ -14,6 +14,17 @@ if (screen.indexOf("<ClinicalShellHost") > screen.indexOf("<ScrollView")) {
 if (screen.indexOf("<View style={s.guideCard}>") > screen.indexOf("<View style={s.introCard}>")) {
   throw new Error("A decisão dominante deve vir antes do contexto de leitura.");
 }
+if (!screen.includes('testID="ovace-desfecho"')) throw new Error("Fluxo não registra o desfecho das manobras.");
+if (!screen.includes('desfecho === "inconsciente"')) throw new Error("Ponte para PCR não depende do desfecho inconsciente.");
+if (!screen.includes("accessibilityState={{ expanded: showSupport }}")) {
+  throw new Error("Conteúdo de apoio não usa divulgação progressiva acessível.");
+}
+if (screen.indexOf("ovace-desfecho") > screen.indexOf("Apoio e sequência completa")) {
+  throw new Error("A reavaliação operacional deve vir antes do conteúdo de apoio.");
+}
+if (screen.indexOf("Quando as compressões são TORÁCICAS") > screen.indexOf("ovace-desfecho")) {
+  throw new Error("Exceção que muda a técnica deve aparecer antes da reavaliação das manobras.");
+}
 
 const entry = catalog.match(/id:\s*"ovace-adulto"[\s\S]*?presentation:\s*"([^"]+)"/);
 if (entry?.[1] !== "flow") throw new Error("Engasgo deve permanecer classificado como fluxo.");

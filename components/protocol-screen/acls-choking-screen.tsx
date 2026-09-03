@@ -114,12 +114,22 @@ export default function AclsChokingScreen() {
   const tr = useTr();
   const router = useRouter();
   const [gravidade, setGravidade] = useState<"leve" | "grave" | undefined>();
+  const [desfecho, setDesfecho] = useState<"mantem" | "expulso" | "inconsciente" | undefined>();
+  const [showSupport, setShowSupport] = useState(false);
+  const step = !gravidade ? 1 : gravidade === "grave" && desfecho ? 3 : 2;
+  const phase = !gravidade
+    ? "Reconhecimento e classificação"
+    : gravidade === "leve"
+      ? "Tosse eficaz e observação"
+      : desfecho
+        ? "Desfecho e próxima ação"
+        : "Manobras e reavaliação";
   return (
     <View style={s.screen}>
       <ClinicalShellHost
         protocol={tr("Engasgo (OVACE)")}
-        phase={tr("Reconhecimento e classificação")}
-        step={1}
+        phase={tr(phase)}
+        step={step}
         moduleSlug="ovace-adulto"
         onBack={() => router.back()}
         onPush={(href) => router.push(href)}
@@ -139,7 +149,10 @@ export default function AclsChokingScreen() {
             { value: "leve", label: tr("Obstrução leve"), tone: "success" },
             { value: "grave", label: tr("Obstrução grave"), tone: "critical" },
           ]}
-          onChange={(v) => setGravidade(v as "leve" | "grave")}
+          onChange={(v) => {
+            setGravidade(v as "leve" | "grave");
+            setDesfecho(undefined);
+          }}
           accessibilityLabel={tr("Classificar gravidade da obstrução")}
           testID="ovace-gravidade"
         />
@@ -150,13 +163,62 @@ export default function AclsChokingScreen() {
           </View>
         ) : null}
         {gravidade === "grave" ? (
-          <View style={[s.guideAction, s.guideActionCritical]}>
-            <Text style={s.guideActionTitle}>{tr("5 GOLPES NAS COSTAS → 5 COMPRESSÕES ABDOMINAIS")}</Text>
-            <Text style={s.guideActionText}>{tr("Acione ajuda. Repita ciclos de 5 + 5 até expelir o objeto ou a vítima ficar inconsciente. Se ficar inconsciente, inicie RCP pelas compressões.")}</Text>
-          </View>
+          <>
+            <View style={[s.guideAction, s.guideActionCritical]}>
+              <Text style={s.guideActionTitle}>{tr("5 GOLPES NAS COSTAS → 5 COMPRESSÕES ABDOMINAIS")}</Text>
+              <Text style={s.guideActionText}>{tr("Acione ajuda. Repita ciclos de 5 + 5 até expelir o objeto ou a vítima ficar inconsciente. Se ficar inconsciente, inicie RCP pelas compressões.")}</Text>
+            </View>
+            <View style={s.excecaoCard}>
+              <Text style={s.excecaoTitulo}>{tr("⚠️ Quando as compressões são TORÁCICAS")}</Text>
+              <Text style={s.excecaoCorpo}>
+                {tr(
+                  "Na gestação em fase final — ou sempre que o socorrista não conseguir circundar o abdome da vítima — as 5 compressões são TORÁCICAS, não abdominais. ONDE: na METADE INFERIOR DO ESTERNO — a MESMA referência da compressão da RCP, que você já conhece. Os 5 golpes nas costas continuam iguais.",
+                )}
+              </Text>
+            </View>
+          </>
         ) : null}
       </View>
 
+      {gravidade === "grave" ? (
+        <View style={s.guideCard}>
+          <Text style={s.guideEyebrow}>{tr("REAVALIE APÓS CADA CICLO")}</Text>
+          <Text style={s.guideTitle}>{tr("O que aconteceu após as manobras?")}</Text>
+          <HorizontalChoiceSelector
+            value={desfecho}
+            options={[
+              { value: "mantem", label: tr("Mantém obstrução"), tone: "warning" },
+              { value: "expulso", label: tr("Objeto expelido"), tone: "success" },
+              { value: "inconsciente", label: tr("Ficou inconsciente"), tone: "critical" },
+            ]}
+            onChange={(v) => setDesfecho(v as "mantem" | "expulso" | "inconsciente")}
+            accessibilityLabel={tr("Registrar resposta às manobras")}
+            testID="ovace-desfecho"
+          />
+          {desfecho === "mantem" ? (
+            <View style={s.guideAction}>
+              <Text style={s.guideActionTitle}>{tr("CONTINUE OS CICLOS DE 5 + 5")}</Text>
+              <Text style={s.guideActionText}>{tr("Repita até o objeto ser expelido ou a vítima ficar inconsciente; reavalie após cada ciclo.")}</Text>
+            </View>
+          ) : null}
+          {desfecho === "expulso" ? <CardPasso passo={PASSOS_OVACE[4]} /> : null}
+        </View>
+      ) : null}
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: showSupport }}
+        onPress={() => setShowSupport((current) => !current)}
+        style={({ pressed }) => [s.supportToggle, pressed && s.supportTogglePressed]}>
+        <View style={s.supportToggleCopy}>
+          <Text style={s.supportToggleTitle}>{tr("Apoio e sequência completa")}</Text>
+          <Text style={s.supportToggleText}>{tr("Sinais de gravidade, atualização de 2025, técnica e fonte")}</Text>
+        </View>
+        <Text style={s.supportToggleChevron}>{showSupport ? "▲" : "▼"}</Text>
+      </Pressable>
+
+      {showSupport ? (
+        <>
       {/* Contexto curto depois da decisão dominante; não compete com a ação. */}
       <View style={s.introCard}>
         <Text style={s.introEyebrow}>{tr("ACLS · FLUXO ASSISTENCIAL")}</Text>
@@ -208,6 +270,8 @@ export default function AclsChokingScreen() {
           <CardPasso key={p.ordem} passo={p} />
         ))}
       </View>
+        </>
+      ) : null}
 
       {/* PONTE PARA A PCR — R-33.
           O passo 6 mandava "iniciar a RCP" e não oferecia caminho nenhum: nem
@@ -215,7 +279,7 @@ export default function AclsChokingScreen() {
           retornava zero, no momento em que a pessoa acaba de MUDAR DE
           ALGORITMO. E a particularidade da boca vivia só aqui — na superfície
           de onde ela SAIU, não naquela em que ela está. */}
-      <View style={s.pcrCard}>
+      {desfecho === "inconsciente" ? <View style={s.pcrCard}>
         <Text style={s.pcrTitulo}>{tr("Virou parada — o que muda na RCP")}</Text>
         <Text style={s.pcrCorpo}>{tr(OVACE_NA_PCR)}</Text>
         <Text style={s.pcrCorpo}>{tr(OVACE_CAUSA_JA_IDENTIFICADA)}</Text>
@@ -232,20 +296,10 @@ export default function AclsChokingScreen() {
           <Text style={s.pcrBotaoTexto}>{tr("Abrir PCR no adulto")}</Text>
           <Text style={s.pcrBotaoChevron}>›</Text>
         </Pressable>
-      </View>
-
-      {/* Exceção da gestante e do obeso */}
-      <View style={s.excecaoCard}>
-        <Text style={s.excecaoTitulo}>{tr("⚠️ Quando as compressões são TORÁCICAS")}</Text>
-        <Text style={s.excecaoCorpo}>
-          {tr(
-            "Na gestação em fase final — ou sempre que o socorrista não conseguir circundar o abdome da vítima — as 5 compressões são TORÁCICAS, não abdominais. ONDE: na METADE INFERIOR DO ESTERNO — a MESMA referência da compressão da RCP, que você já conhece. Os 5 golpes nas costas continuam iguais.",
-          )}
-        </Text>
-      </View>
+      </View> : null}
 
       {/* Rodapé */}
-      <View style={s.footerCard}>
+      {showSupport ? <View style={s.footerCard}>
         <Text style={s.footerTitle}>{tr("Não confundir com a via aérea difícil da intubação")}</Text>
         <Text style={s.footerBody}>
           {tr(
@@ -256,7 +310,7 @@ export default function AclsChokingScreen() {
         <Text style={s.footerSource}>
           {tr("Baseado em AHA 2025 — Destaques das Diretrizes de RCP e ACE (JN-1580), Figura 6 e Suporte Básico de Vida em adultos")}
         </Text>
-      </View>
+      </View> : null}
       </ScrollView>
     </View>
   );
@@ -317,6 +371,24 @@ const s = StyleSheet.create({
   guideActionCritical: { borderColor: TEMAS.escuro.cores.critical },
   guideActionTitle: { fontSize: TIPOGRAFIA.step.fontSize, lineHeight: 24, fontWeight: "900", color: TEMAS.escuro.cores.text },
   guideActionText: { fontSize: TIPOGRAFIA.caption.fontSize, lineHeight: 22, fontWeight: "600", color: TEMAS.escuro.cores.textSecondary },
+  supportToggle: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    borderRadius: RAIO.input,
+    borderWidth: 1,
+    borderColor: TEMAS.escuro.cores.border,
+    backgroundColor: TEMAS.escuro.cores.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  supportTogglePressed: { opacity: 0.84 },
+  supportToggleCopy: { flex: 1, gap: 2 },
+  supportToggleTitle: { fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "800", color: TEMAS.escuro.cores.text },
+  supportToggleText: { fontSize: TIPOGRAFIA.micro.fontSize, lineHeight: 16, color: TEMAS.escuro.cores.textSecondary },
+  supportToggleChevron: { fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "900", color: TEMAS.escuro.cores.primary },
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
