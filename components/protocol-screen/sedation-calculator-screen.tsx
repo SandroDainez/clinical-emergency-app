@@ -181,6 +181,8 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const [showPrinciples, setShowPrinciples] = useState(false);
   const [showBnmRules, setShowBnmRules] = useState(false);
   const [showStrategy, setShowStrategy] = useState(false);
+  const [showDilutionTools, setShowDilutionTools] = useState(false);
+  const [showBolusNotes, setShowBolusNotes] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showRef, setShowRef] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -229,12 +231,16 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
     setCalc(() => initialState(key));
     setSavedDilutions(getSavedDilutions(key));
     setShowStrategy(false);
+    setShowDilutionTools(false);
+    setShowBolusNotes(false);
     setShowInfo(false);
     setShowRef(false);
   }, []);
 
   const selectMode = useCallback((m: SedMode) => {
     setCalc((c) => ({ ...c, modeId: m.id, doseInput: m.defaultDose }));
+    setShowDilutionTools(false);
+    setShowBolusNotes(false);
   }, []);
 
   const applySolution = useCallback((solId: string) => {
@@ -428,7 +434,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           )}
 
-          {/* Diluição (apenas infusão) */}
+          {/* Diluição compacta: preset e concentração no fluxo principal; personalização sob demanda. */}
           {isInfusion && (
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("DILUIÇÃO")}</Text>
@@ -442,68 +448,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                 testID="sedacao-diluicoes"
               />
 
-              {/* Diluições do usuário */}
-              <View style={s.userDilHeader}>
-                <Text style={s.userDilTitle}>{tr("Diluições do usuário")}</Text>
-                <Pressable onPress={() => setShowSaveModal(true)} style={[s.saveDilBtn, amps <= 0 && s.saveDilBtnDisabled]} disabled={amps <= 0}>
-                  <Text style={s.saveDilBtnTxt}>{tr("+ Salvar atual")}</Text>
-                </Pressable>
-              </View>
-              {savedDilutions.length === 0 ? (
-                <Text style={s.userDilEmpty}>{tr("Nenhuma diluição salva. Monte a sua abaixo (ampolas + diluente + tipo) e toque em \"+ Salvar atual\".")}</Text>
-              ) : (
-                <View style={s.userDilList}>
-                  {savedDilutions.map((d) => (
-                    <View key={d.id} style={s.userDilRow}>
-                      <Pressable style={s.userDilApply} onPress={() => setCalc((c) => ({ ...c, ampoules: String(d.ampoules), diluentMl: String(d.diluentMl), diluent: d.diluent }))}>
-                        <Text style={s.userDilName}>📌 {tr(d.label)}</Text>
-                        <Text style={s.userDilMeta}>{d.ampoules} amp · {d.diluentMl} mL {d.diluent}</Text>
-                      </Pressable>
-                      <Pressable onPress={() => handleDeleteSaved(d.id)} style={s.userDilDel}><Text style={s.userDilDelTxt}>✕</Text></Pressable>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Campos custom — criar a própria solução */}
-              <Text style={s.dilSectionLabel}>{tr("Criar diluição personalizada")}</Text>
-              <View style={s.dilFields}>
-                <View style={s.dilField}>
-                  <Text style={s.fieldLabel}>{tr("Ampolas")}</Text>
-                  <NumericStepper
-                    valor={Number(calc.ampoules.replace(",", ".")) || 1}
-                    onChange={(n) => setCalc((c) => ({ ...c, ampoules: String(n) }))}
-                    min={1}
-                    max={20}
-                    passo={1}
-                    testID="slider-ampolas"
-                  />
-                </View>
-                <View style={s.dilField}>
-                  <Text style={s.fieldLabel}>{tr("Diluente (mL)")}</Text>
-                  <NumericStepper
-                    valor={Number(calc.diluentMl.replace(",", ".")) || 100}
-                    onChange={(n) => setCalc((c) => ({ ...c, diluentMl: String(n) }))}
-                    min={0}
-                    max={500}
-                    passo={1}
-                    unidade="mL"
-                    testID="slider-diluente"
-                  />
-                </View>
-                <View style={s.dilField}>
-                  <Text style={s.fieldLabel}>{tr("Tipo")}</Text>
-                  <HorizontalChoiceSelector
-                    value={calc.diluent}
-                    options={(["SF", "SG"] as Diluent[]).map((d) => ({ value: d, label: d }))}
-                    onChange={(d) => setCalc((c) => ({ ...c, diluent: d as Diluent }))}
-                    accessibilityLabel={tr("Tipo de diluente")}
-                    testID="sedacao-diluente"
-                  />
-                </View>
-              </View>
-
-              {/* Resumo concentração */}
+              {/* Resumo concentração permanece sempre visível antes da dose. */}
               {conc && (
                 <View style={s.concGrid}>
                   <View style={s.concCell}><Text style={s.concKey}>{tr("Ampolas")}</Text><Text style={s.concVal}>{amps}</Text></View>
@@ -513,20 +458,103 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                   <View style={s.concCell}><Text style={s.concKey}>{tr("Concentração")}</Text><Text style={[s.concVal, s.concValHi]}>{concLabel}</Text></View>
                 </View>
               )}
+
+              <Pressable style={s.strategySummary} onPress={() => setShowDilutionTools((v) => !v)}>
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text style={s.cardLabel}>{tr("PERSONALIZAR DILUIÇÃO")}</Text>
+                  <Text style={s.strategyLead}>
+                    {tr("Diluições salvas e preparo personalizado")}{savedDilutions.length ? " · " + savedDilutions.length + " " + tr("salva(s)") : ""}
+                  </Text>
+                </View>
+                <Text style={s.principlesChevron}>{showDilutionTools ? "▲" : "▼"}</Text>
+              </Pressable>
+
+              {showDilutionTools ? (
+                <View style={{ gap: 10 }}>
+                  <View style={s.userDilHeader}>
+                    <Text style={s.userDilTitle}>{tr("Diluições do usuário")}</Text>
+                    <Pressable onPress={() => setShowSaveModal(true)} style={[s.saveDilBtn, amps <= 0 && s.saveDilBtnDisabled]} disabled={amps <= 0}>
+                      <Text style={s.saveDilBtnTxt}>{tr("+ Salvar atual")}</Text>
+                    </Pressable>
+                  </View>
+                  {savedDilutions.length === 0 ? (
+                    <Text style={s.userDilEmpty}>{tr("Nenhuma diluição salva. Monte a sua abaixo (ampolas + diluente + tipo) e toque em "+ Salvar atual".")}</Text>
+                  ) : (
+                    <View style={s.userDilList}>
+                      {savedDilutions.map((d) => (
+                        <View key={d.id} style={s.userDilRow}>
+                          <Pressable style={s.userDilApply} onPress={() => setCalc((c) => ({ ...c, ampoules: String(d.ampoules), diluentMl: String(d.diluentMl), diluent: d.diluent }))}>
+                            <Text style={s.userDilName}>📌 {tr(d.label)}</Text>
+                            <Text style={s.userDilMeta}>{d.ampoules} amp · {d.diluentMl} mL {d.diluent}</Text>
+                          </Pressable>
+                          <Pressable onPress={() => handleDeleteSaved(d.id)} style={s.userDilDel}><Text style={s.userDilDelTxt}>✕</Text></Pressable>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  <Text style={s.dilSectionLabel}>{tr("Criar diluição personalizada")}</Text>
+                  <View style={s.dilFields}>
+                    <View style={s.dilField}>
+                      <Text style={s.fieldLabel}>{tr("Ampolas")}</Text>
+                      <NumericStepper
+                        valor={Number(calc.ampoules.replace(",", ".")) || 1}
+                        onChange={(n) => setCalc((c) => ({ ...c, ampoules: String(n) }))}
+                        min={1}
+                        max={20}
+                        passo={1}
+                        testID="slider-ampolas"
+                      />
+                    </View>
+                    <View style={s.dilField}>
+                      <Text style={s.fieldLabel}>{tr("Diluente (mL)")}</Text>
+                      <NumericStepper
+                        valor={Number(calc.diluentMl.replace(",", ".")) || 100}
+                        onChange={(n) => setCalc((c) => ({ ...c, diluentMl: String(n) }))}
+                        min={0}
+                        max={500}
+                        passo={1}
+                        unidade="mL"
+                        testID="slider-diluente"
+                      />
+                    </View>
+                    <View style={s.dilField}>
+                      <Text style={s.fieldLabel}>{tr("Tipo")}</Text>
+                      <HorizontalChoiceSelector
+                        value={calc.diluent}
+                        options={(["SF", "SG"] as Diluent[]).map((d) => ({ value: d, label: d }))}
+                        onChange={(d) => setCalc((c) => ({ ...c, diluent: d as Diluent }))}
+                        accessibilityLabel={tr("Tipo de diluente")}
+                        testID="sedacao-diluente"
+                      />
+                    </View>
+                  </View>
+                </View>
+              ) : null}
             </View>
           )}
 
-          {/* Bolus: apresentação pura */}
+          {/* Bolus compacto: concentração no fluxo principal; notas clínicas sob demanda. */}
           {!isInfusion && (
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("APRESENTAÇÃO (BOLUS — AMPOLA PURA)")}</Text>
               <Text style={s.refLine}>{presentation.concentrationLabel}</Text>
-              {/* ⚠️ ESTE `tr()` FALTAVA, e era o único dos cinco renders de
-                  `refLine` deste arquivo sem ele (312, 327, 336, 577 têm). As
-                  três notas de bolus saíam em PORTUGUÊS com o app em espanhol —
-                  e a tradução já existia em `lib/i18n/modules/sedacao.ts`.
-                  Nenhuma palavra de espanhol foi escrita para corrigir. */}
-              {mode.bolusNotes?.map((n) => <Text key={n} style={s.refLine}>• {tr(n)}</Text>)}
+              {mode.bolusNotes?.length ? (
+                <>
+                  <Pressable style={s.strategySummary} onPress={() => setShowBolusNotes((v) => !v)}>
+                    <View style={{ flex: 1, gap: 3 }}>
+                      <Text style={s.cardLabel}>{tr("NOTAS DO BOLUS")}</Text>
+                      <Text style={s.strategyLead}>{tr("Indicação, contexto hemodinâmico e observações de administração")}</Text>
+                    </View>
+                    <Text style={s.principlesChevron}>{showBolusNotes ? "▲" : "▼"}</Text>
+                  </Pressable>
+                  {showBolusNotes ? (
+                    <View style={{ gap: 6 }}>
+                      {mode.bolusNotes.map((n) => <Text key={n} style={s.refLine}>• {tr(n)}</Text>)}
+                    </View>
+                  ) : null}
+                </>
+              ) : null}
             </View>
           )}
 

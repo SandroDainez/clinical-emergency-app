@@ -4,6 +4,11 @@
  * neuromuscular, RASS, solución fisiológica (SF), dextrosa al 5% (SG5%).
  */
 export const ES_SEDACAO: Record<string, string> = {
+  "PERSONALIZAR DILUIÇÃO": "PERSONALIZAR DILUCIÓN",
+  "Diluições salvas e preparo personalizado": "Diluciones guardadas y preparación personalizada",
+  "salva(s)": "guardada(s)",
+  "NOTAS DO BOLUS": "NOTAS DEL BOLO",
+  "Indicação, contexto hemodinâmico e observações de administração": "Indicación, contexto hemodinámico y observaciones de administración",
   // ── Fármacos ───────────────────────────────────────────────────────────────
   "Propofol": "Propofol",
   "Midazolam": "Midazolam",
