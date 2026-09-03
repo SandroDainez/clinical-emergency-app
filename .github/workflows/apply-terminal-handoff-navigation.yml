@@ -1,14 +1,47 @@
-name: Archived succinylcholine hyperkalemia semantics
+name: Apply fentanyl context-sensitive semantics
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[fentanyl-context-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Succinylcholine hyperkalemia semantics update applied, validated and archived; retained only as an audit marker."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply fentanyl context migration
+        run: node scripts/aplica-fentanil-contexto-update.cjs
+
+      - name: Validate sedation module
+        run: npm run test:sedacao
+
+      - name: Validate fentanyl context semantics
+        run: node scripts/valida-fentanil-contexto.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No fentanyl context changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sedation-engine.ts lib/i18n/modules/sedacao.ts
+          git commit -m "correct fentanyl context-sensitive semantics [fentanyl-context-applied]"
+          git push origin HEAD:emergencias-2-ui-core
