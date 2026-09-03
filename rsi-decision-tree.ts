@@ -483,15 +483,45 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Via aérea acordada — topização e sedação leve",
       summary: "O paciente continua ventilando durante toda a tentativa. NÃO usar bloqueador neuromuscular.",
       actions: [
-        "Topização: lidocaína tópica na via aérea (spray/atomizador 4%; máx ~4 mg/kg somando todas as vias) — é a base da técnica, não a sedação.",
+        "Topização: usar lidocaína tópica na menor dose eficaz, somando TODAS as vias. A DAS define teto de 9 mg/kg de peso corporal magro — teto de segurança, não dose-alvo. Testar a eficácia da topização antes de instrumentar a via aérea.",
         LAST_PONTEIRO_CURTO,
-        "Sedação LEVE mantendo o drive: cetamina em doses fracionadas de 10–20 mg IV (dissociação leve preservando respiração) OU dexmedetomidina 1 mcg/kg em 10 min. NÃO usar bolus de indução.",
+        "Sedação mínima e cautelosa, apenas se necessária, mantendo ventilação espontânea e cooperação. Não há regime sedativo único demonstrado como superior; sedação NÃO substitui topização inadequada e, idealmente, deve ser administrada por profissional independente.",
         "Videolaringoscópio ou broncoscópio flexível, com o operador mais experiente disponível.",
-        "Visualizou as cordas e passou o tubo → confirmar por capnografia. SÓ ENTÃO induzir e aprofundar sedação.",
-        "Falhou ou o paciente não tolera → ainda está ventilando: recuar, reoxigenar e reavaliar a estratégia (nova tentativa, ISR com kit cirúrgico aberto, ou via cirúrgica eletiva com equipe).",
+        "Após passar o tubo, fazer confirmação em DOIS pontos: visualização da posição traqueal + capnografia com CO₂ expirado sustentado. SÓ ENTÃO induzir/anestesiar e aprofundar sedação.",
+        "Se falhar ou o paciente não tolerar: interromper a instrumentação, manter ventilação espontânea se possível, reoxigenar e seguir para a decisão explícita de resgate — não presumir tubo confirmado.",
         "Antissialogogo se houver tempo; aspiração pronta; O₂ contínuo (cânula nasal/HFN) durante toda a tentativa.",
       ],
-      next: "confirmacao",
+      next: "via_acordada_resultado",
+    },
+
+    via_acordada_resultado: {
+      id: "via_acordada_resultado",
+      type: "decision",
+      title: "Resultado da via aérea acordada",
+      question: "O tubo está confirmado por visualização traqueal E capnografia com CO₂ expirado sustentado?",
+      summary: "Só induzir/anestesiar após a confirmação em dois pontos. Sem ambos, tratar como técnica ainda não concluída.",
+      options: [
+        { id: "confirmado", label: "Sim — visualização + capnografia confirmam", next: "pos_intubacao" },
+        { id: "nao_confirmado", label: "Não — falhou, não tolerou ou não confirmou", next: "via_acordada_falha" },
+      ],
+    },
+
+    via_acordada_falha: {
+      id: "via_acordada_falha",
+      type: "decision",
+      title: "Via aérea acordada não concluída — escolha o resgate",
+      question: "Após recuar e reoxigenar, qual é a estratégia mais segura agora?",
+      summary: "Preservar oxigenação e não transformar uma técnica acordada malsucedida em indução não planejada. A DAS limita a técnica acordada a 3 tentativas + 1 tentativa final por operador mais experiente.",
+      evidence: [
+        "Nova tentativa acordada: somente se as condições melhoraram, ainda há cooperação/ventilação espontânea e o limite de tentativas não foi atingido.",
+        "Converter para ISR: apenas se a urgência exigir e houver plano A/B/C/D preparado, incluindo eFONA se o resgate também for difícil.",
+        "Adiar/otimizar: quando a indicação não é imediata e há tempo para melhorar condições, recursos ou equipe antes de nova abordagem.",
+      ],
+      options: [
+        { id: "repetir", label: "Nova tentativa acordada — dentro do limite 3+1", next: "via_acordada" },
+        { id: "isr", label: "Converter para ISR com resgate/eFONA preparados", next: "preoxigenacao" },
+        { id: "adiar", label: "Adiar — otimizar e reavaliar", next: "adiar_iot" },
+      ],
     },
 
     adiar_iot: {
@@ -708,13 +738,13 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "intubacao",
       type: "action",
       title: "Posicionamento e passagem do tubo",
-      summary: "Aguardar relaxamento (45–60 s). Tentativa otimizada; limitar a apneia. Máx 2 tentativas por operador/dispositivo.",
+      summary: "Aguardar relaxamento e priorizar sucesso na primeira tentativa. Limitar tentativas, reoxigenar entre elas e declarar falha cedo se a trajetória estiver insegura.",
       actions: [
         "Confirmar relaxamento (ausência de tônus mandibular) antes da laringoscopia.",
         "Laringoscopia direta (Mac 3/4 ou Miller 2/3) ou videolaringoscópio (1ª escolha em VA difícil prevista ou após falha de LD; melhora a visão em > 90%).",
         "Sem visualizar a glote: bougie + manobra BURP (Backward-Upward-Rightward). Trocar para VL se Cormack-Lehane III/IV na LD.",
         "Avançar o TOT 2–3 cm abaixo das cordas; insuflar o cuff 20–30 cmH₂O. Profundidade na comissura: homem 21–23 cm, mulher 19–21 cm.",
-        "Limitar a tentativa a ~30 s ou até SpO₂ ~90% → reoxigenar (BVM/HFN) entre tentativas. Máximo 2 tentativas com o mesmo operador/dispositivo.",
+        "Interromper a tentativa quando a oxigenação, a fisiologia ou as condições técnicas estiverem se deteriorando; reoxigenar antes de nova tentativa. No algoritmo DAS 2025, o teto do Plano A é 3 tentativas + 1 por operador mais experiente, mas a falha pode e deve ser declarada ANTES se insistir estiver aumentando o risco.",
       ],
       next: "confirmacao",
     },
@@ -723,21 +753,21 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "confirmacao",
       type: "decision",
       title: "Confirmação (Prova)",
-      question: "A capnografia (ETCO₂) confirma a posição traqueal?",
+      question: "Há confirmação traqueal em dois pontos — visualização E capnografia com CO₂ expirado sustentado?",
       // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
       // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
       // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
       // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
       // os outros dois — que agora aparecem sem toque.
       summary:
-        "⚠️ ETCO₂ AUSENTE É ESÔFAGO ATÉ PROVA EM CONTRÁRIO — retire o tubo e ventile. Nenhum outro sinal desfaz esta conclusão.",
+        "⚠️ SEM CO₂ EXPIRADO SUSTENTADO, NÃO PRESUMIR POSIÇÃO TRAQUEAL. Reavaliar imediatamente e excluir intubação esofágica; sinais clínicos isolados não substituem capnografia.",
       evidence: [
-        "Capnografia waveform é o padrão-ouro: onda de ETCO₂ persistente em ≥ 6 ventilações.",
+        "Confirmação principal: visualização do tubo atravessando a glote quando possível + capnografia com CO₂ expirado sustentado. Se a capnografia não sustentar a posição, tratar a localização como não confirmada e investigar imediatamente.",
         "Confirmar também: ausculta 5 pontos (epigástrio + 2 axilas + 2 ápices), expansão torácica simétrica, condensação no tubo, SpO₂ mantendo/subindo; RX (tubo 2–3 cm acima da carina).",
       ],
       options: [
-        { id: "sim", label: "Sim — ETCO₂ confirma traqueia", next: "pos_intubacao" },
-        { id: "nao", label: "Não — sem confirmação / esôfago", next: "falha" },
+        { id: "sim", label: "Sim — visualização + capnografia confirmam", next: "pos_intubacao" },
+        { id: "nao", label: "Não — posição não confirmada", next: "falha" },
       ],
     },
 
@@ -780,8 +810,8 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       actions: [
         "DECLARAR via aérea difícil em voz alta. Chamar ajuda (anestesiologista, otorrino, cirurgião).",
         "Tentar resgate ventilatório: BVM + cânula orofaríngea; máscara laríngea de 2ª geração (i-gel / LMA Supreme).",
-        "Se usou rocurônio: sugamadex {sugam} mg IV (16 mg/kg) — reverte em < 3 min; considerar despertar o paciente.",
-        "Se a oxigenação não for restaurada → via aérea cirúrgica SEM demora.",
+        "CICO é falha de oxigenação: NÃO esperar sugamadex, retorno do bloqueio ou nova tentativa repetitiva antes de avançar para eFONA. Reversão farmacológica só pode integrar um plano de despertar quando a oxigenação já foi restaurada — nunca substituir o resgate da via aérea.",
+        "Se a oxigenação não for restaurada com as manobras de resgate → declarar CICO e executar eFONA sem demora.",
       ],
       next: "via_cirurgica",
     },
@@ -813,8 +843,8 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Fixar o tubo; registrar a profundidade; RX de tórax (ponta 2–3 cm acima da carina).",
         "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso PREDITO (calculado pela ALTURA, nunca o peso real nem tabela antropométrica), FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.",
         `Ajustes por cenário: TCE → PaCO₂ ${ALVOS_TCE.paco2}, PEEP ${ALVOS_TCE.peep} (hiperventilar só em herniação aguda); SARA → VC 4–6 mL/kg, PEEP alto, driving pressure ≤ 15; asma/DPOC → FR 8–12, tempo expiratório longo, PEEP 3–5, hipercapnia permissiva.`,
-        "Hipotensão pós-IOT (comum): SF 250–500 mL, reduzir PEEP, descartar pneumotórax; noradrenalina 8–12 mcg IV em bolus se refratária.",
-        "Gasometria arterial 20–30 min após a IOT para ajuste fino. Capnografia contínua.",
+        "Hipotensão pós-IOT: procurar e tratar o mecanismo imediatamente — efeito de drogas/vasoplegia, hipovolemia, pressão intratorácica/auto-PEEP excessiva ou pneumotórax hipertensivo. Dar volume apenas quando houver contexto de hipovolemia/responsividade; titular vasopressor, preferindo infusão quando factível. Push-dose é ponte selecionada conforme protocolo local, não dose fixa universal.",
+        "Capnografia contínua. Obter gasometria e reavaliar ventilação/oxigenação quando clinicamente indicado após estabilização ou mudanças relevantes do ventilador — sem intervalo universal fixo.",
       ],
       next: "destino",
     },
