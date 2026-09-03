@@ -73,12 +73,13 @@ test("InputStep v2 mantém número vazio até interação real e não avança co
   await expect(page.getByTestId("campo-clinico-altura-numeric")).toBeVisible();
 
   // Se sexo não veio herdado, ele continua obrigatório e precisa de uma escolha
-  // real. Se veio herdado, não sobrescrevemos um dado legítimo só para o teste.
+  // real. Buscamos pela semântica acessível do controle (radio), não por um
+  // detalhe estrutural do container, para o smoke sobreviver a refactors visuais.
   let confirmar = page.getByRole("button", { name: /Confirmar e continuar/i }).first();
   if (!(await confirmar.isEnabled().catch(() => false))) {
-    const sexo = page.getByTestId("campo-clinico-sexo-categorical");
-    await expect(sexo).toBeVisible();
-    await sexo.getByRole("radio").first().click();
+    const masculino = page.getByRole("radio", { name: /^Masculino$/i }).first();
+    await expect(masculino).toBeVisible();
+    await masculino.click();
     confirmar = page.getByRole("button", { name: /Confirmar e continuar/i }).first();
   }
 
