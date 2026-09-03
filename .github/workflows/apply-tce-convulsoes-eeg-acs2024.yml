@@ -1,0 +1,52 @@
+name: Apply TCE seizures EEG ACS 2024 checkpoint
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-tce-convulsoes-eeg-acs2024.cjs
+      - scripts/valida-tce-convulsoes-eeg-acs2024.cjs
+      - .github/workflows/apply-tce-convulsoes-eeg-acs2024.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply seizure EEG checkpoint
+        run: node scripts/ajusta-tce-convulsoes-eeg-acs2024.cjs
+      - name: Focused seizure EEG validation
+        run: node scripts/valida-tce-convulsoes-eeg-acs2024.cjs
+      - name: Existing TCE regression
+        run: npm run test:tce
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/tce-seizure tce-decision-tree.ts lib/alvos-tce.ts lib/pas-no-tce.ts
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/tce.ts tce-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated seizure EEG checkpoint
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/tce.ts tce-decision-tree.ts
+          git commit -m "fix(tce): refine seizure prophylaxis EEG and oxygenation"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
