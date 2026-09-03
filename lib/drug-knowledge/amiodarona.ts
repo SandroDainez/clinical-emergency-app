@@ -19,9 +19,9 @@ export const AMIODARONA_CANONICA: CanonicalDrug = {
       ampouleVolumeMl: 3,
       vialAmount: "150 mg/3 mL",
       source: {
-        reference: "ANVISA — rotulagem brasileira de cloridrato de amiodarona 50 mg/mL",
+        reference: "ANVISA — rótulo aprovado de cloridrato de amiodarona solução injetável 50 mg/mL, ampola 3 mL",
         version: "registro 1.0041.0206.001-9",
-        reviewedAt: "2026-09-01",
+        reviewedAt: "2026-09-03",
       },
     },
   ],
