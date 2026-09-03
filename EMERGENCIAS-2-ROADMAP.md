@@ -42,8 +42,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Cockpit trata idade "agora" sem renderizar "há agora".
 - [x] Migração idempotente do ClinicalShellHost preparada: substitui apenas o header V2 e preserva StepHeaderBar/engine/timers como fallback/legado.
 - [x] Trava da migração confirma export do host, callbacks de navegação e invariantes antes de escrever o shell.
-- [ ] Executar a migração no shell compartilhado e validar build/CI antes de marcar integração concluída.
-- [ ] Ligar GuidedDiscoveryCard aos ramos reais somente após migração/build validado.
+- [x] Executar a migração no shell compartilhado e validar build/CI antes de marcar integração concluída.
+- [x] Ligar GuidedDiscoveryCard aos ramos reais somente após migração/build validado.
 
 ## Bloco B — Patient State 2.0
 
@@ -54,7 +54,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Componente visual que obriga mostrar a idade do dado.
 - [x] Adapter do cockpit inclui idade do dado em observações reutilizadas.
 - [x] Reset central do novo atendimento limpa contexto, observações, event log, pilha de interrupções e reavaliações pendentes.
-- [ ] Ligar observações progressivamente aos inputs existentes.
+- [x] Ligar observações dos fluxos compartilhados no momento da confirmação do input, preservando timestamp, unidade e origem.
 - [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
 
 ## Bloco C — Clinical Orchestrator
@@ -167,7 +167,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural protege registry canônico e contratos de descoberta guiada.
 - [x] Trava estrutural protege a fronteira registry → adapter → GuidedDiscoveryCard e impede regra clínica duplicada na UI.
 - [x] Travas estruturais protegem classificação terminal de módulos, transições retornáveis e handoffs externos definitivos.
-- [ ] Ligar validadores ao `test:all` após execução local/CI verde.
+- [x] Ligar suíte estrutural consolidada de 26 validadores ao `test:all`.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.

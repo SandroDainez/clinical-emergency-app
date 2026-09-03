@@ -8,6 +8,7 @@ const validators = [
   "valida-clinical-shell-adapter.cjs",
   "valida-clinical-shell-host.cjs",
   "valida-clinical-shell-host-pos-migracao.cjs",
+  "valida-input-observation-binding.cjs",
   "valida-guided-discovery-contracts.cjs",
   "valida-guided-discovery-ui.cjs",
   "valida-guided-discovery-hic-stemi.cjs",

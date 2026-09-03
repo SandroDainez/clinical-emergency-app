@@ -340,7 +340,6 @@ export default function AclsDecisionFlowScreen({
 
   const handleAdvance = () => {
     const currentNode = engine.getCurrentNode();
-    const currentValues = engine.getValues();
     const next = engine.advance();
 
     if (currentNode.type === "action") {
@@ -349,17 +348,6 @@ export default function AclsDecisionFlowScreen({
         nodeId: currentNode.id,
         title: currentNode.title,
       });
-    } else if (currentNode.type === "input") {
-      for (const field of currentNode.fields) {
-        const value = currentValues[field.id];
-        if (value === undefined) continue;
-        recordFlowObservation({
-          module: tree.id,
-          fieldId: field.id,
-          value,
-          unit: field.unit,
-        });
-      }
     }
 
     caminhoRef.current.push(next.id);
@@ -375,6 +363,19 @@ export default function AclsDecisionFlowScreen({
   const handleSetValue = (fieldId: string, value: string) => {
     engine.setValue(fieldId, value);
     valoresRef.current[fieldId] = value;
+    const currentNode = engine.getCurrentNode();
+    const field = currentNode.type === "input"
+      ? currentNode.fields.find((item) => item.id === fieldId)
+      : undefined;
+    // O timestamp clínico pertence ao momento em que o valor é confirmado,
+    // não ao clique posterior em "avançar". Além de preservar a idade real do
+    // dado, isto impede perder a observação se o usuário sair antes da etapa.
+    recordFlowObservation({
+      module: tree.id,
+      fieldId,
+      value,
+      unit: field?.unit,
+    });
     // Guarda o que NÃO muda durante o atendimento (peso, altura, sexo, idade)
     // para os outros módulos não perguntarem de novo. Sinal vital não entra —
     // ver a justificativa em lib/contexto-do-paciente.ts.
