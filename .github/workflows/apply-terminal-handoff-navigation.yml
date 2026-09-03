@@ -19,6 +19,20 @@ jobs:
           ref: emergencias-2-ui-core
           fetch-depth: 0
 
+      - name: Restore full ISR validator and modernize only TypeScript invocation
+        run: |
+          git show 745a230c85e55ab04b1a86d9cf7dac443211b60a:scripts/valida-isr.cjs > scripts/valida-isr.cjs
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'scripts/valida-isr.cjs';
+          let src = fs.readFileSync(file, 'utf8');
+          const before = '["tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",\n       "--esModuleInterop", "--moduleResolution", "node", "--outDir", tmp,\n       path.join(appDir, "rsi-decision-tree.ts")],\n      { stdio: "pipe" }';
+          const after = '["tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--resolveJsonModule",\n       "--esModuleInterop", "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tmp,\n       path.join(appDir, "rsi-decision-tree.ts")],\n      { stdio: "pipe", cwd: appDir }';
+          if (!src.includes(before)) throw new Error('Invocação antiga do tsc não encontrada no validador ISR restaurado.');
+          src = src.replace(before, after);
+          fs.writeFileSync(file, src);
+          NODE
+
       - name: Apply exact succinylcholine migration
         run: node scripts/aplica-succinilcolina-hipercalemia-update.cjs
 
@@ -45,6 +59,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add sedation-engine.ts rsi-decision-tree.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/isr.ts
+          git add sedation-engine.ts rsi-decision-tree.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/isr.ts scripts/valida-isr.cjs
           git commit -m "correct succinylcholine hyperkalemia semantics [succinylcholine-k-applied]"
           git push origin HEAD:emergencias-2-ui-core
