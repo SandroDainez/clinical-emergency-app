@@ -44,8 +44,8 @@ const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "valida-ventilacao-"));
 // R-2: morrer não é veredicto.
 try {
   execFileSync("npx", [
-    "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
-    "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+    "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--resolveJsonModule",
+    "--esModuleInterop", "--moduleResolution", "node16", "--skipLibCheck",
     "--outDir", tempDir,
     path.join(appDir, "ventilation-decision-tree.ts"),
   ], { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] });

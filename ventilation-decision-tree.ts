@@ -132,14 +132,14 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       title: "Ventilação mecânica — objetivo, modo e sedação",
       summary: "Definir objetivo (oxigenação × ventilação), modo inicial e a sedação (analgesia primeiro).",
       actions: [
-        "Indicação/objetivo: corrigir hipoxemia (P/F < 150–200 refratária), hipoventilação (pH < 7,25–7,30), proteger via aérea (GCS ≤ 8) ou reduzir trabalho respiratório.",
+        "Indicação/objetivo: oferecer suporte invasivo quando houver falha de oxigenação ou ventilação apesar do suporte adequado, incapacidade de proteger a via aérea, trabalho respiratório/fadiga incompatíveis com ventilação sustentável ou deterioração previsível que torne a intubação posterior mais arriscada. P/F, pH, PaCO₂, frequência respiratória e GCS medem gravidade, mas nenhum corte isolado é requisito universal para iniciar ventilação invasiva.",
         "Modo inicial: VCV (garante VC, monitora Pplat/complacência) ou PCV (limita pressão) assistido-controlado. PSV para desmame.",
         "SEDAÇÃO — analgesia primeiro (analgosedação):",
         "MODOS ALÉM DO BÁSICO, e o que cada um resolve: PRVC / VC+ entrega o volume-alvo com limite de pressão — útil quando se quer proteção com adaptação automática; PC-AC controla a pressão e o Vt varia com a complacência, então o Vt tem de ser VIGIADO, não presumido; SIMV NÃO é primeira escolha na instabilidade aguda (o desmame por redução de FR mandatória é mais lento e a assincronia é maior); CPAP não tem I:E nem FR mandatória — é PEEP e FiO₂, para quem ventila sozinho.",
         FENTANIL_ANALGOSEDACAO,
         "Sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −2 a 0 (sedação LEVE é o padrão — PADIS 2018); mais profundo só por indicação declarada.",
         "Monitorização: capnografia waveform, oximetria, curvas do ventilador. Cabeceira 30–45°.",
-        "Gasometria arterial 20–30 min após estabilizar os parâmetros.",
+        "Gasometria arterial quando clinicamente indicada após estabilização ou mudanças ventilatórias relevantes; capnografia, oximetria e curvas orientam reavaliação contínua. Não impor um intervalo universal fixo.",
       ],
       next: "dados",
     },
@@ -178,11 +178,11 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       summary: "Volume baixo guiado pelo peso predito desde o início. Peso predito ≈ {pbw} kg.",
       actions: [
         "Volume corrente: alvo {vc6} mL (6 mL/kg PBW; faixa {vc4}–{vc8} mL = 4–8 mL/kg). NUNCA usar o peso atual, sobretudo em obesos.",
-        "FR 12–16/min (ajustar para PaCO₂ 35–45 e pH 7,35–7,45; vigiar auto-PEEP); relação I:E ~1:2; fluxo 40–60 L/min (VCV).",
-        "PEEP inicial 5 cmH₂O; FiO₂ 1,0 → reduzir o mais rápido possível para SpO₂ 94–98% / PaO₂ 60–100 (evitar hiperóxia).",
+        "Frequência respiratória e ventilação-minuto devem ser ajustadas à fisiologia e ao distúrbio ácido-base. Em adulto sem grande alteração metabólica/obstrutiva, 12–16/min pode ser um ponto de partida, mas NÃO forçar PaCO₂ 35–45 ou pH normal antes de considerar o cenário; TCE, obstrução e acidose metabólica têm alvos próprios nos ramos abaixo. Vigiar auto-PEEP e ajustar I:E/fluxo ao tempo expiratório necessário.",
+        "PEEP e FiO₂ não têm um único par correto para todos. Em pulmão sem hipoxemia importante, PEEP 5 cmH₂O é um ponto de partida comum; SARA/obesidade podem exigir PEEP maior e obstrução pode exigir outra estratégia. Após a intubação, usar FiO₂ suficiente para segurança imediata e titular para a menor FiO₂ que alcance o alvo de oxigenação apropriado ao cenário, evitando hiperóxia.",
         "Trigger sensível (pressão −1 a −2 cmH₂O ou fluxo 1–3 L/min) sem autociclagem.",
-        "Meta de segurança: pressão de platô ≤ 30 cmH₂O e driving pressure (platô − PEEP) ≤ 15 cmH₂O.",
-        "QUANDO REMEDIR: a Pplat não é medida uma vez — remedir a cada mudança de parâmetro e periodicamente (a cada 4–8 h) enquanto o paciente estiver instável. Complacência muda ao longo do dia, e um platô aceitável às 8h não garante o das 14h.",
+        "Segurança mecânica: medir pressão de platô e driving pressure. Na SARA, limitar Pplat a ≤ 30 cmH₂O tem recomendação forte. Driving pressure é marcador prognóstico útil e deve ser minimizada junto com Vt/PEEP, mas ≤ 15 cmH₂O não deve aparecer como corte universal com o mesmo nível de evidência.",
+        "QUANDO REMEDIR: a Pplat não é medida uma vez. Reavaliar após mudanças relevantes de Vt, PEEP, mecânica pulmonar, posição ou condição clínica e com frequência proporcional à instabilidade; não usar um relógio universal de 4–8 h para todos.",
         // ALARMES — o passo que faltava no ajuste inicial (V5).
         //
         // A árvore montava o ventilador inteiro e nunca mandava configurar
