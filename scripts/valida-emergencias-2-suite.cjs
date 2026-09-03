@@ -61,6 +61,7 @@ const validators = [
   "valida-succinilcolina-peso-total.cjs",
   "valida-anafilaxia-bnm-escolha.cjs",
   "valida-sedacao-bnm-ui-semantics.cjs",
+  "valida-sedacao-ui-hierarquia.cjs",
 ];
 
 for (const validator of validators) {
