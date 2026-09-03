@@ -7,17 +7,17 @@ const shell = fs.readFileSync(
   path.join(root, "components", "protocol-screen", "acls-decision-flow-screen.tsx"),
   "utf8"
 );
+const navigation = fs.readFileSync(path.join(root, "lib", "clinical-target-navigation.ts"), "utf8");
 const runtime = fs.readFileSync(path.join(root, "lib", "clinical-target-handoff-runtime.ts"), "utf8");
 const bridge = fs.readFileSync(path.join(root, "lib", "clinical-runtime-bridge.ts"), "utf8");
 
 const errors = [];
 
 for (const token of [
-  'import { prepareRegisteredTargetHandoff } from "../../lib/clinical-target-handoff-runtime";',
+  'import { executeClinicalTargetNavigation } from "../../lib/clinical-target-navigation";',
   "fromProtocolId: tree.id",
   "fromNodeId: handoff.fromNodeId",
   "targetModuleId: handoff.targetModuleId",
-  "if (!attempt.canProceedToDestination) return;",
   "module: tree.id",
   "bindingProtocolId: currentModuleSlug",
   "fromNodeId: step.id",
@@ -26,8 +26,28 @@ for (const token of [
   if (!shell.includes(token)) errors.push(`shell sem ${token}`);
 }
 
+if (shell.includes('import { prepareRegisteredTargetHandoff } from "../../lib/clinical-target-handoff-runtime";')) {
+  errors.push("shell voltou a preparar handoff diretamente");
+}
 if (/targetModuleId\s*===\s*["']pcr-adulto["']|slug\s*===\s*["']pcr-adulto["']/.test(shell)) {
   errors.push("shell não pode decidir handoff por hardcode de PCR");
+}
+
+for (const token of [
+  "prepareRegisteredTargetHandoff({",
+  "fromProtocolId: input.handoff.fromProtocolId",
+  "fromNodeId: input.handoff.fromNodeId",
+  "targetModuleId: input.handoff.targetModuleId",
+  "if (handoffAttempt && !handoffAttempt.canProceedToDestination)",
+  "navigate(href)",
+]) {
+  if (!navigation.includes(token)) errors.push(`executor de navegação sem ${token}`);
+}
+
+const readinessIndex = navigation.indexOf("if (handoffAttempt && !handoffAttempt.canProceedToDestination)");
+const navigateIndex = navigation.indexOf("navigate(href)");
+if (readinessIndex < 0 || navigateIndex < 0 || readinessIndex > navigateIndex) {
+  errors.push("executor precisa bloquear handoff inválido antes de navegar");
 }
 
 for (const token of [
@@ -48,16 +68,10 @@ if (!bridge.includes("protocolId: input.bindingProtocolId ?? input.module")) {
   errors.push("Runtime Bridge não preserva fallback de bindings existentes");
 }
 
-const resolverIndex = shell.indexOf("prepareRegisteredTargetHandoff({");
-const pushIndex = shell.indexOf("router.push(`/modulos/${slug}${origem}` as never)");
-if (resolverIndex < 0 || pushIndex < 0 || resolverIndex > pushIndex) {
-  errors.push("resolver precisa executar antes do router.push");
-}
-
 if (errors.length) {
   console.error("\n❌ navegação terminal com handoff inválida\n");
   errors.forEach((error) => console.error(`- ${error}`));
   process.exit(1);
 }
 
-console.log("\n✅ shell prepara apenas handoffs registrados antes da navegação e preserva slug separado do protocolId canônico.\n");
+console.log("\n✅ shell delega navegação ao executor canônico, que bloqueia handoffs inválidos antes da rota e preserva slug separado do protocolId canônico.\n");
