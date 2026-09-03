@@ -282,18 +282,18 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "pat_obstrutivo",
       type: "action",
       title: "Asma / DPOC — evitar auto-PEEP (expiração longa)",
-      summary: "Prioridade: tempo expiratório longo e PEEP baixo. Medir auto-PEEP (pausa expiratória).",
+      summary: "Prioridade: minimizar hiperinsuflação dinâmica, garantir expiração completa e titular PEEP/ventilação pela mecânica, não pela normalização da PaCO₂.",
       actions: [
-        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL). FR BAIXA — asma 8–12, DPOC 10–14 — para evitar hiperinsuflação.",
-        "I:E 1:3 a 1:4; fluxo inspiratório alto 60–80 L/min para encurtar a inspiração e prolongar a expiração.",
-        "PEEP: asma 0–5 (mínimo); DPOC 3–8 (PEEP externo ≤ 75–85% do auto-PEEP medido) para reduzir o trabalho sem hiperinsuflar.",
-        "Alvos: asma SpO₂ ≥ 90%, PaCO₂ tolerar 60–70, pH ≥ 7,20; DPOC SpO₂ 88–92%, pH ≥ 7,25 (hipercapnia permissiva).",
+        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL). Iniciar com FR baixa/moderada (por exemplo, ~10–12/min em obstrução grave) e titular pela expiração completa, auto-PEEP, pH e ventilação-minuto; não perseguir PaCO₂ normal às custas de hiperinsuflação.",
+        "Encurtar o tempo inspiratório e prolongar a expiração: I:E frequentemente 1:3–1:4 e fluxo inspiratório alto (~60–100 L/min) são pontos de partida, ajustados pelas curvas e pelo retorno do fluxo expiratório a zero antes do próximo ciclo.",
+        "PEEP externa: não aplicar uma fórmula universal. Em paciente passivo/controlado com hiperinsuflação, priorizar tempo expiratório e PEEP baixa conforme mecânica. Em DPOC com esforço espontâneo, auto-PEEP e dificuldade de disparo, PEEP externa pode reduzir trabalho/trigger; titular abaixo da PEEPi medida (frequentemente ~50–80%, cerca de 70% como referência) observando PEEP total, volume expirado, hemodinâmica e hiperinsuflação.",
+        "Hipercapnia permissiva: aceitar elevação da PaCO₂ quando necessária para evitar hiperinsuflação; não existe PaCO₂-alvo universal. Guiar tolerância por pH, hemodinâmica e contraindicações à hipercapnia. Na exacerbação de DPOC com risco de retenção de CO₂, titular oxigênio de forma controlada (alvo usual SpO₂ 88–92% enquanto se avaliam gasometria e resposta), individualizando se houver indicação diversa.",
         // O módulo citava auto-PEEP sete vezes e NUNCA dizia como medir nem o
         // que fazer quando ele descompensa. Citar um achado sem o gesto que o
         // encontra é ensinar a palavra, não a conduta.
         "COMO MEDIR o auto-PEEP: pausa expiratória ao fim da expiração, com o paciente SEM esforço (sedado, ou em modo controlado), segurando até o traçado de pressão estabilizar. O valor que aparecer ACIMA do PEEP ajustado é o auto-PEEP. Em respiração espontânea a medida não é confiável — nesse caso, guie-se pela curva de fluxo expiratório que não retorna ao zero antes da próxima inspiração.",
         "⚠️ HIPERINSUFLAÇÃO DINÂMICA COM INSTABILIDADE (hipotensão súbita/AESP, fluxo expiratório sem retornar a zero): desconectar brevemente do ventilador para permitir expiração e corrigir FR, tempo expiratório, fluxo e Vt. Em asma grave/peri-parada, compressão manual do tórax pode ser considerada por equipe experiente para ajudar a aliviar hiperinsuflação. Não assumir auto-PEEP se a instabilidade persistir: excluir pneumotórax hipertensivo e outras causas imediatamente.",
-        "Adjuvantes: salbutamol nebulizado no circuito; asma grave → MgSO₄ 2 g IV, ketamina (broncodilatação). DPOC → desmame precoce com VNI pós-extubação.",
+        "Adjuvantes: manter broncodilatador inalatório no circuito. Na exacerbação asmática grave que não responde ao tratamento inicial, MgSO₄ IV 2 g em infusão única pode ser considerado; não é terapia rotineira para todos. Ketamina pode ser escolhida como agente de sedação/peri-intubação por perfil hemodinâmico e potencial broncodilatador, mas não deve ser apresentada como broncodilatador específico de eficácia comprovada. Em DPOC de alto risco, considerar suporte não invasivo pós-extubação conforme o contexto clínico.",
       ],
       next: "seguranca",
     },
