@@ -1,14 +1,50 @@
-name: Archived etomidate safety semantics
+name: Apply succinylcholine hyperkalemia semantics
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[succinylcholine-k-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Etomidate safety update applied, validated and archived; retained only as an audit marker."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply exact succinylcholine migration
+        run: node scripts/aplica-succinilcolina-hipercalemia-update.cjs
+
+      - name: Validate sedation module
+        run: npm run test:sedacao
+
+      - name: Validate RSI module
+        run: npm run test:isr
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate succinylcholine semantics
+        run: node scripts/valida-succinilcolina-hipercalemia.cjs
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No succinylcholine changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sedation-engine.ts rsi-decision-tree.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/isr.ts
+          git commit -m "correct succinylcholine hyperkalemia semantics [succinylcholine-k-applied]"
+          git push origin HEAD:emergencias-2-ui-core
