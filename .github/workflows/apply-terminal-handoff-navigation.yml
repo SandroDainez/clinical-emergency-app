@@ -1,14 +1,47 @@
-name: Archived fentanyl rigidity semantics
+name: Apply remifentanil ICU and morphine renal semantics
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[remifentanil-morphine-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Fentanyl rigidity update applied and validated."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply remifentanil and morphine migration
+        run: node scripts/aplica-remifentanil-morfina-update.cjs
+
+      - name: Validate sedation module
+        run: npm run test:sedacao
+
+      - name: Validate remifentanil and morphine semantics
+        run: node scripts/valida-remifentanil-morfina.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No remifentanil/morphine changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sedation-engine.ts lib/i18n/modules/sedacao.ts
+          git commit -m "add remifentanil ICU path and contextualize morphine renal use [remifentanil-morphine-applied]"
+          git push origin HEAD:emergencias-2-ui-core
