@@ -102,6 +102,13 @@ jobs:
           node scripts/valida-clinical-runtime-bridge.cjs
           node scripts/valida-clinical-runtime-bridge-shell.cjs
 
+      - name: Validate terminal flow coverage
+        run: |
+          node scripts/valida-module-terminal-classification.cjs
+          node scripts/valida-flow-terminal-coverage.cjs
+          node scripts/valida-terminal-semantic-debts.cjs
+          node scripts/valida-missing-terminal-disposition-debts.cjs
+
       - name: Validate terminal PCR handoffs
         run: |
           node scripts/valida-pcr-handoffs-terminais-pos-migracao.cjs
