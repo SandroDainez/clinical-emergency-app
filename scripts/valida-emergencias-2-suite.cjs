@@ -23,6 +23,7 @@ const validators = [
   "valida-target-navigation-shell.cjs",
   "valida-sem-from-module-hardcoded-na-ui.cjs",
   "valida-event-log-medication-disposition.cjs",
+  "valida-disposition-confirmation-shell.cjs",
   "valida-temporal-debrief.cjs",
   "valida-acls-debrief-temporal-source.cjs",
   "valida-cobertura-other-module-registry.cjs",
