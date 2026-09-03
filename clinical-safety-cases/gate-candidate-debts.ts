@@ -116,7 +116,7 @@ export const CLINICAL_GATE_CANDIDATE_DEBTS: readonly ClinicalGateCandidateDebt[]
       "tentativa_hiperventilacao",
       "finalidade_hiperventilacao_profilatica",
       "paco2_alvo_25_ou_menos",
-      "herniação_iminente_ou_hic_refrataria",
+      "herniacao_iminente_ou_hic_refrataria",
     ],
     activationRuleDraft: "Interceptar apenas uma tentativa explícita de hiperventilação profilática prolongada com alvo PaCO₂ ≤25 mmHg e sem herniação iminente/HIC refratária registrada. Se houver indicação de resgate explicitamente documentada, este hard stop não pode ativar; nesse cenário a necessidade é orientar monitorização cerebral e reversão precoce, não bloquear uma terapia temporizadora.",
     evidenceReview: {
