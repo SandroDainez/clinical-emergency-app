@@ -167,4 +167,22 @@ export const PILOT_MODULE_TERMINAL_CLASSIFICATION: readonly ClinicalModuleTermin
       "Abdome agudo conduz estabilização, exclusão de catástrofes, definição do padrão e termina em tratamento cirúrgico/UTI ou observação com reavaliação seriada.",
     reviewedAt: "2026-09-03",
   },
+  {
+    protocolId: "pcr_adulto",
+    mode: "crisis_pathway",
+    requiresClinicalDisposition: false,
+    requiresReturnToOrigin: false,
+    rationale:
+      "PCR é um fluxo de crise: pode terminar em ROSC com passagem ao cuidado pós-parada ou em encerramento da ressuscitação. Quando chamada por perda de pulso, a parada substitui o fluxo anterior; não se deve inventar alta/UTI nem retorno obrigatório à origem para satisfazer o contrato.",
+    reviewedAt: "2026-09-03",
+  },
+  {
+    protocolId: "ovace_adulto",
+    mode: "crisis_pathway",
+    requiresClinicalDisposition: false,
+    requiresReturnToOrigin: false,
+    rationale:
+      "OVACE é um fluxo de crise: pode resolver com expulsão do corpo estranho ou escalar para PCR se houver inconsciência/perda de pulso. Esses desfechos não equivalem, por si, a alta/UTI nem a retorno obrigatório a um protocolo de origem.",
+    reviewedAt: "2026-09-03",
+  },
 ] as const;
