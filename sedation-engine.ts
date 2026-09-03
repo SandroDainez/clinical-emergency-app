@@ -429,6 +429,54 @@ export const SED_DRUGS: SedDrug[] = [
     reference: "PADIS 2018 · Miller's Anesthesia 9ª ed. · Hughes et al., Anesthesiology 1992 (context-sensitive half-time) · revisão sistemática de farmacocinética de opioides em UTI, 2025.",
   },
   {
+    key: "remifentanil",
+    group: "analgesia",
+    name: "Remifentanil",
+    className: "Opioide ultracurto",
+    emoji: "🟢",
+    displayUnit: "mcg/mL",
+    presentations: [
+      { id: "fa2", label: "Frasco-ampola 2 mg (pó liofilizado)", ampouleVolumeMl: 0, basePerAmpoule: 2000, concentrationLabel: "pó — concentração definida após diluição",
+        fonte: "Cloridrato de remifentanila 2 mg, pó liofilizado para solução injetável (Eurofarma; registro 1.0043.1327). Bula profissional brasileira atualizada conforme Bula Padrão ANVISA em 03/07/2026; concentração adulta recomendada após diluição: 50 mcg/mL." },
+    ],
+    standardSolutions: [
+      { id: "adulto50", label: "50 mcg/mL · 1 fr (2 mg) + diluente q.s.p. 40 mL → 40 mL", presentationId: "fa2", ampoules: "1", diluentMl: "40", diluent: "SF" },
+      { id: "adulto20", label: "20 mcg/mL · 1 fr (2 mg) + diluente q.s.p. 100 mL → 100 mL", presentationId: "fa2", ampoules: "1", diluentMl: "100", diluent: "SF" },
+    ],
+    modes: [
+      {
+        id: "inf", label: "Infusão contínua — UTI ventilada", kind: "infusion", unit: "mcg/kg/min", defaultDose: "0,1",
+        ranges: [
+          { upTo: 0.15, tone: "green", label: "Faixa inicial recomendada em UTI", indication: "0,10–0,15 mcg/kg/min; titular à analgesia e sedação" },
+          { upTo: 0.2, tone: "yellow", label: "Titulação antes de acrescentar sedativo", indication: "Ajustar em incrementos de 0,025 mcg/kg/min, com intervalo mínimo de 5 min" },
+          { upTo: 0.74, tone: "orange", label: "Faixa típica descrita em bula para UTI", indication: "0,006–0,74 mcg/kg/min; acima de 0,2, aumentos adicionais devem responder a necessidade de ANALGESIA, não substituir sedativo quando o alvo de sedação não foi atingido" },
+          { upTo: null, tone: "red", label: "Acima da faixa típica descrita em bula para UTI", indication: "Reavaliar indicação, analgesia, sedação concomitante e efeitos hemodinâmicos; 0,74 mcg/kg/min é limite da faixa típica descrita, não fronteira farmacológica universal" },
+        ],
+      },
+    ],
+    strategy: [
+      "Opioide de ação ultracurta para analgosedação em paciente mecanicamente ventilado quando se deseja titulação rápida e despertar previsível.",
+      "Metabolizado por esterases inespecíficas de sangue e tecidos; o efeito desaparece rapidamente após redução ou interrupção da infusão.",
+      "Se a sedação estiver inadequada a 0,2 mcg/kg/min, adicionar/titular sedativo apropriado; aumentos posteriores de remifentanil devem responder à necessidade de analgesia adicional.",
+    ],
+    alert: {
+      icon: "⚠️", tone: "warn",
+      lines: [
+        "UTI: NÃO administrar em bolus. A bula brasileira recomenda infusão contínua, com ajuste em incrementos de 0,025 mcg/kg/min e intervalo mínimo de 5 min.",
+        "Bradicardia, hipotensão, depressão respiratória e rigidez muscular podem ocorrer; reduzir/interromper a infusão e oferecer suporte conforme a gravidade.",
+        "A interrupção da linha pode retirar analgesia em poucos minutos. Usar linha exclusiva ou de fluxo rápido próxima à cânula e vigiar obstrução/desconexão.",
+        "ANTES de suspender, instituir analgesia alternativa com antecedência suficiente: não há atividade opioide residual clinicamente relevante cerca de 5–10 min após a descontinuação.",
+      ],
+    },
+    info: [
+      "Insuficiência renal, inclusive terapia renal substitutiva: a bula não exige ajuste inicial específico; titular ao efeito e monitorar.",
+      "Insuficiência hepática: não há ajuste farmacocinético rotineiro, mas hepatopatia grave pode aumentar sensibilidade à depressão respiratória.",
+      "A bula brasileira relata estudos controlados em UTI por até 3 dias e dados mais longos limitados; não transformar 3 dias em teto automático, mas reavaliar necessidade e estratégia em uso prolongado.",
+      "Faixa típica de UTI na bula: 0,006–0,74 mcg/kg/min. Para procedimentos estimulantes em ventilados, foram usados valores médios de 0,25 e máximos de 0,75 mcg/kg/min — contexto procedural, não alvo basal de sedação.",
+    ],
+    reference: "Bula profissional cloridrato de remifentanila Eurofarma/ANVISA, atualização 03/07/2026 · SCCM PADIS 2018 + Focused Update 2025 · estudos de analgosedação baseada em remifentanil em UTI.",
+  },
+  {
     key: "morfina",
     group: "analgesia",
     name: "Morfina",
@@ -457,7 +505,7 @@ export const SED_DRUGS: SedDrug[] = [
     ],
     strategy: [
       "Opioide para analgesia moderada a intensa. No edema agudo de pulmão/insuficiência cardíaca aguda, NÃO usar de rotina; considerar apenas dor ou ansiedade graves/intratáveis quando outras medidas não forem suficientes.",
-      "Evitar em insuficiência renal (acúmulo de M6G) — preferir fentanil.",
+      "Em disfunção renal significativa, sobretudo no uso contínuo/prolongado, M3G/M6G podem acumular: reduzir dose e/ou alongar intervalo, ou preferir opioide sem metabólitos ativos relevantes como fentanil/remifentanil.",
       "Histaminoliberação: pode causar hipotensão e broncoespasmo.",
     ],
     /**
@@ -479,7 +527,7 @@ export const SED_DRUGS: SedDrug[] = [
       icon: "⚠️", tone: "warn",
       lines: [
         "⚠️ VIA — Dimorf 0,1 e 0,2 mg/mL são apresentações PERIDURAL/INTRATECAL, sem conservantes. NÃO usar para as doses IV deste módulo: 0,2 mg/mL por via IV é subdose de 50×, e a ampola de 10 mg/mL por via intratecal é catastrófica. Conferir a via impressa na ampola antes de aspirar.",
-        "Metabólito ativo (M6G) acumula em IRA — preferir fentanil.",
+        "Disfunção renal: M3G/M6G acumulam e podem prolongar sedação/depressão respiratória; no uso contínuo ou prolongado, reduzir/intervalar ou preferir fentanil/remifentanil.",
         "Histaminoliberação — hipotensão/broncoespasmo.",
         NALOXONA_PROCEDENCIA_DECIDE,
         NALOXONA_TITULADA_IATROGENICA,
@@ -490,7 +538,7 @@ export const SED_DRUGS: SedDrug[] = [
       "Início de ação mais lento que o fentanil.",
       "Bolus de 2–4 mg costuma ser titulado pela dor e nível de consciência.",
     ],
-    reference: "SCCM PADIS 2018 · ESC Heart Failure Guidelines 2021/ACVC scientific statement sobre opioides na insuficiência cardíaca aguda.",
+    reference: "SCCM PADIS 2018 + Focused Update 2025 · revisões farmacocinéticas de opioides em UTI · ESC Heart Failure Guidelines 2021/ACVC scientific statement sobre opioides na insuficiência cardíaca aguda.",
   },
 
   // ═══ GRUPO 3 — BNM ═══
