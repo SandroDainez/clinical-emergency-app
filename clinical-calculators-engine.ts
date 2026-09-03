@@ -258,14 +258,16 @@ export const CALC_TOOLS: CalcTool[] = [
   {
     kind: "formula",
     id: "peso-predito",
-    name: "Peso predito (VM)",
-    subtitle: "Volume corrente protetor — ARDSNet",
+    name: "Peso corporal predito",
+    subtitle: "Sexo e altura · referência antropométrica com aplicação ventilatória",
     reference: "ARDSNet. N Engl J Med. 2000;342:1301–1308.",
     inputs: [
       { id: "sexo", label: "Sexo", kind: "toggle", options: [{ label: "Masculino", value: "masculino" }, { label: "Feminino", value: "feminino" }] },
       { id: "altura", label: "Altura", unit: "cm", kind: "number", placeholder: "ex: 175" },
     ],
-    alert: ["SEMPRE usar peso predito (altura), NUNCA o peso atual. Em obesos, o VC pelo peso real causa lesão pulmonar (volutrauma)."],
+    alert: [
+      "NA VENTILAÇÃO: calcule o volume corrente pelo peso predito, nunca pelo peso atual. Em outros usos (por exemplo, dose de fármaco), confirme qual escalar de peso a recomendação exige — peso predito, ideal, ajustado, magro e atual não são intercambiáveis.",
+    ],
     compute: (v) => {
       const altura = num(v.altura);
       if (!altura || altura <= 100 || !v.sexo) return null;
