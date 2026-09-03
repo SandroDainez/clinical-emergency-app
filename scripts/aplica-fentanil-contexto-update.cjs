@@ -32,17 +32,26 @@ replaceOnce(
   '    reference: "PADIS 2018 · Miller\'s Anesthesia 9ª ed. · Hughes et al., Anesthesiology 1992 (context-sensitive half-time) · revisão sistemática de farmacocinética de opioides em UTI, 2025.",'
 );
 
-replaceOnce(
-  "lib/i18n/modules/sedacao.ts",
-  "fentanyl-i18n-duration",
-  '  "Infusões > 2–4 h prolongam o despertar — considerar remifentanil se precisar desmame rápido.": "Las infusiones > 2–4 h prolongan el despertar — considerar remifentanilo si se necesita un destete rápido.",',
-  '  "Infusões prolongadas podem atrasar o despertar por acúmulo e aumento da meia-vida contexto-sensível; não há um corte universal em 2–4 h. O efeito depende de duração, dose e fatores do paciente/doença crítica. Se recuperação rápida e previsível for prioridade, considerar remifentanil.": "Las infusiones prolongadas pueden retrasar el despertar por acumulación y aumento de la semivida sensible al contexto; no existe un punto de corte universal de 2–4 h. El efecto depende de la duración, la dosis y factores del paciente/la enfermedad crítica. Si una recuperación rápida y predecible es prioritaria, considerar remifentanilo.",'
-);
-replaceOnce(
-  "lib/i18n/modules/sedacao.ts",
-  "fentanyl-i18n-context",
-  '  "Meia-vida contexto-sensível aumenta com infusões longas.": "La semivida sensible al contexto aumenta con las infusiones prolongadas.",',
-  '  "Meia-vida contexto-sensível aumenta progressivamente com a duração da infusão; em pacientes críticos, distribuição e depuração podem variar amplamente.": "La semivida sensible al contexto aumenta progresivamente con la duración de la infusión; en pacientes críticos, la distribución y la depuración pueden variar ampliamente.",'
-);
+const i18nFile = path.join(root, "lib/i18n/modules/sedacao.ts");
+let i18n = fs.readFileSync(i18nFile, "utf8");
+const entries = [
+  [
+    "Infusões prolongadas podem atrasar o despertar por acúmulo e aumento da meia-vida contexto-sensível; não há um corte universal em 2–4 h. O efeito depende de duração, dose e fatores do paciente/doença crítica. Se recuperação rápida e previsível for prioridade, considerar remifentanil.",
+    "Las infusiones prolongadas pueden retrasar el despertar por acumulación y aumento de la semivida sensible al contexto; no existe un punto de corte universal de 2–4 h. El efecto depende de la duración, la dosis y factores del paciente/la enfermedad crítica. Si una recuperación rápida y predecible es prioritaria, considerar remifentanilo."
+  ],
+  [
+    "Meia-vida contexto-sensível aumenta progressivamente com a duração da infusão; em pacientes críticos, distribuição e depuração podem variar amplamente.",
+    "La semivida sensible al contexto aumenta progresivamente con la duración de la infusión; en pacientes críticos, la distribución y la depuración pueden variar ampliamente."
+  ],
+];
+for (const [pt, es] of entries) {
+  const key = `  ${JSON.stringify(pt)}:`;
+  if (i18n.includes(key)) continue;
+  const close = "};";
+  const at = i18n.lastIndexOf(close);
+  if (at < 0) throw new Error("Fechamento do dicionário ES_SEDACAO não encontrado.");
+  i18n = i18n.slice(0, at) + `  ${JSON.stringify(pt)}: ${JSON.stringify(es)},\n` + i18n.slice(at);
+}
+fs.writeFileSync(i18nFile, i18n);
 
 console.log("✅ Fentanil: removido limiar artificial de 2–4 h; acúmulo e recuperação passam a ser descritos como dependentes de contexto clínico.");
