@@ -22,6 +22,9 @@ jobs:
       - name: Apply exact migration
         run: node scripts/aplica-drug-kb-avc-pilot.cjs
 
+      - name: Expose TypeScript diagnostics
+        run: npx tsc --module commonjs --target es2020 --esModuleInterop --moduleResolution node --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
+
       - name: Validate AVC
         run: npm run test:avc
 
