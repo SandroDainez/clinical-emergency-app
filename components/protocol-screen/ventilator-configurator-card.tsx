@@ -4,6 +4,7 @@ import { predictedBodyWeight } from "../../ventilation-decision-tree";
 import { ALVOS_TCE } from "../../lib/alvos-tce";
 import { useTr } from "../../lib/use-tr";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { useEffect } from "react";
@@ -118,22 +119,14 @@ export default function VentilatorConfiguratorCard() {
         <View style={s.body}>
           {/* Altura */}
           <Text style={s.label}>{tr("Altura (cm)")}</Text>
-          <View style={s.chipRow}>
-            {HEIGHT_PRESETS.map((h) => {
-              const active = altura === h;
-              return (
-                <Pressable
-                  key={h}
-                  onPress={() => { setAltura(h); setCustomAltura(""); }}
-                  style={[s.chip, active && s.chipActive]}>
-                  <Text style={[s.chipTxt, active && s.chipTxtActive]}>{h}</Text>
-                </Pressable>
-              );
-            })}
-            {/* Os chips de altura ficam — são o toque mais rápido para os
-                valores comuns. O que sai é a caixa "Outro", que obrigava a
-                abrir teclado para uma altura fora da lista. A barra alcança
-                qualquer valor da faixa e não erra de ordem de grandeza. */}
+          <HorizontalChoiceSelector
+            value={HEIGHT_PRESETS.includes(altura) ? altura : undefined}
+            options={HEIGHT_PRESETS.map((h) => ({ value: h, label: h }))}
+            onChange={(h) => { setAltura(h); setCustomAltura(""); }}
+            accessibilityLabel={tr("Altura em centímetros")}
+            testID="vm-altura-presets"
+          />
+          <View style={s.inputRow}>
             <TextInput
               style={s.customInput}
               value={customAltura}
@@ -158,29 +151,26 @@ export default function VentilatorConfiguratorCard() {
 
           {/* Sexo */}
           <Text style={s.label}>{tr("Sexo")}</Text>
-          <View style={s.chipRow}>
-            {(["masculino", "feminino"] as Sexo[]).map((sx) => {
-              const active = sexo === sx;
-              return (
-                <Pressable key={sx} onPress={() => setSexo(sx)} style={[s.chip, active && s.chipActive]}>
-                  <Text style={[s.chipTxt, active && s.chipTxtActive]}>{tr(sx === "masculino" ? "Masculino" : "Feminino")}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <HorizontalChoiceSelector
+            value={sexo ?? undefined}
+            options={([
+              { value: "masculino", label: tr("Masculino") },
+              { value: "feminino", label: tr("Feminino") },
+            ] as const)}
+            onChange={(sx) => setSexo(sx as Sexo)}
+            accessibilityLabel={tr("Sexo")}
+            testID="vm-sexo"
+          />
 
           {/* Patologia */}
           <Text style={s.label}>{tr("Cenário")}</Text>
-          <View style={s.chipRow}>
-            {PATOLOGIAS.map((p) => {
-              const active = patId === p.id;
-              return (
-                <Pressable key={p.id} onPress={() => setPatId(p.id)} style={[s.chip, active && s.chipActive]}>
-                  <Text style={[s.chipTxt, active && s.chipTxtActive]}>{tr(p.label)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <HorizontalChoiceSelector
+            value={patId}
+            options={PATOLOGIAS.map((p) => ({ value: p.id, label: tr(p.label) }))}
+            onChange={setPatId}
+            accessibilityLabel={tr("Cenário")}
+            testID="vm-cenario"
+          />
 
           {/* Resultado */}
           {calc ? (
@@ -240,12 +230,8 @@ const s = StyleSheet.create({
 
   body: { padding: 14, gap: 8 },
   label: { fontSize: 11, fontWeight: "800", color: "#aab6c6", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, alignItems: "center" },
-  chip: { minWidth: 46, borderRadius: 12, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", paddingHorizontal: 12, paddingVertical: 8, alignItems: "center" , minHeight: 44, justifyContent: "center" },
-  chipActive: { backgroundColor: "#1e6fd9", borderColor: "#7fb3ff" },
-  chipTxt: { fontSize: 13.5, fontWeight: "700", color: "#cbd5e1" },
-  chipTxtActive: { color: "#ffffff" },
-  customInput: { minWidth: 64, minHeight: 38, borderRadius: 12, backgroundColor: "#292e38", borderWidth: 1, borderColor: "#565e6c", paddingHorizontal: 12, color: "#f1f5f9", fontSize: 14 },
+  inputRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, alignItems: "center" },
+  customInput: { minWidth: 180, minHeight: 44, borderRadius: 12, backgroundColor: "#292e38", borderWidth: 1, borderColor: "#565e6c", paddingHorizontal: 12, color: "#f1f5f9", fontSize: 14 },
 
   result: { marginTop: 8, gap: 10, borderTopWidth: 1, borderTopColor: "#7fb3ff", paddingTop: 12 },
   pbwRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
