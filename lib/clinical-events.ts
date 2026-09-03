@@ -1,9 +1,37 @@
 import { recordMedicationGiven } from "./clinical-runtime-bridge";
 import { supabase } from "./supabase";
 
-function mirrorConfirmedMedicationToCore(
+function normalizeClinicalSessionEvent(
   eventType: string,
   eventLabel: string,
+  eventData?: Record<string, any>
+) {
+  if (eventType !== "medication_administered" || eventData?.medication !== "amiodarone") {
+    return {
+      eventLabel,
+      eventData: eventData ?? {},
+    };
+  }
+
+  /**
+   * O caller ACLS ainda usa a ação genérica `antiarrhythmic`, mas o logger
+   * legado a convertia em amiodarona 300/150 mg. Como a árvore permite também
+   * lidocaína e não captura qual agente foi usado, persistir esse nome/dose
+   * cria documentação falsa. Normalizamos na fronteira de persistência até a
+   * UI ganhar seleção explícita do antiarrítmico.
+   */
+  const normalizedData = { ...(eventData ?? {}) };
+  normalizedData.medication = "antiarrhythmic_unspecified";
+  delete normalizedData.dose;
+
+  return {
+    eventLabel: "Antiarrítmico administrado",
+    eventData: normalizedData,
+  };
+}
+
+function mirrorConfirmedMedicationToCore(
+  eventType: string,
   eventData?: Record<string, any>
 ) {
   if (eventType !== "medication_administered") return;
@@ -24,13 +52,7 @@ function mirrorConfirmedMedicationToCore(
     return;
   }
 
-  if (medication === "amiodarone") {
-    /**
-     * Adapter de migração ACLS: o logger legado chama a ação genérica
-     * `antiarrhythmic` de "amiodarona" e ainda deriva 300/150 mg pelo contador,
-     * embora a árvore permita amiodarona OU lidocaína e não capture qual foi
-     * escolhida. O Clinical Core não pode herdar essa falsa precisão.
-     */
+  if (medication === "antiarrhythmic_unspecified") {
     recordMedicationGiven({
       actionId: "antiarrhythmic",
       label: "Antiarrítmico administrado",
@@ -46,7 +68,8 @@ export const logClinicalSessionEvent = async (
   eventLabel: string,
   eventData?: Record<string, any>
 ) => {
-  mirrorConfirmedMedicationToCore(eventType, eventLabel, eventData);
+  const normalized = normalizeClinicalSessionEvent(eventType, eventLabel, eventData);
+  mirrorConfirmedMedicationToCore(eventType, normalized.eventData);
 
   if (!supabase) {
     return { data: null, error: null };
@@ -58,8 +81,8 @@ export const logClinicalSessionEvent = async (
       {
         session_id: sessionId,
         event_type: eventType,
-        event_label: eventLabel,
-        event_data: eventData ?? {},
+        event_label: normalized.eventLabel,
+        event_data: normalized.eventData,
       },
     ])
     .select()
