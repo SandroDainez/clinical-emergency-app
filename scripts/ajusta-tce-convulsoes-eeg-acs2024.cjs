@@ -27,7 +27,7 @@ replaceRequired(
 
 replaceRequired(
   'tce-decision-tree.ts',
-  '        "EEG contínuo é preferível quando há suspeita relevante de crise não convulsiva, coma/alteração inexplicada ou necessidade de acompanhar terapia que depende do EEG. A duração deve seguir probabilidade pré-teste, achados iniciais, sedação e evolução: em geral são necessárias pelo menos 24 h para rastreio adequado, e pacientes com coma, descargas periódicas ou forte suspeita podem precisar 48 h ou mais — não impor ...',
+  '        "EEG contínuo é preferível quando há suspeita relevante de crise não convulsiva, coma/alteração inexplicada ou necessidade de acompanhar terapia que depende do EEG. A duração deve seguir probabilidade pré-teste, achados iniciais, sedação e evolução: em geral são necessárias pelo menos 24 h para rastreio adequado, e pacientes com coma, descargas periódicas ou forte suspeita podem precisar 48 h ou mais — não impor 48 h a todo TCE em coma.",',
   '        "EEG contínuo: iniciar o mais cedo possível quando houver suspeita de crise não convulsiva/status, alteração de consciência sem explicação suficiente, TCE grave com alto risco eletrográfico ou quando a terapia depende do EEG (por exemplo, barbitúrico). Como regra prática, pelo menos 24 h costuma ser necessário para rastreio; em TCE com coma, hemorragia intracraniana, descargas periódicas, sedação importante ou forte suspeita, 24–48 h ou mais pode ser necessário. Interromper ou prolongar conforme achados, evolução e redução dos sedativos — não usar duração fixa universal.",',
   'continuous EEG'
 );
