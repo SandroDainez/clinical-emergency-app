@@ -23,6 +23,16 @@ replaceOnce('lib/doses-isr.ts','canonical-text',
 '  succinilcolina: `${MG_POR_KG.succinilcolina.min.toString().replace(".", ",")}–${mgPorKg(MG_POR_KG.succinilcolina.max)} (${mgPorKg(MG_POR_KG.succinilcolina.obeso)} em obeso; máx ${SUCCINILCOLINA_TETO_MG} mg)`,',
 '  succinilcolina: `${MG_POR_KG.succinilcolina.min.toString().replace(".", ",")}–${mgPorKg(MG_POR_KG.succinilcolina.max)}; em obesidade, calcular pelo peso corporal total/real`,');
 
+replaceOnce('rsi-decision-tree.ts','remove-cap-import',
+'  MG_POR_KG,\n  SUCCINILCOLINA_TETO_MG,\n  mgPorKg,',
+'  MG_POR_KG,\n  mgPorKg,');
+replaceOnce('rsi-decision-tree.ts','derive-low-no-cap',
+'    out.succLow = round1(Math.min(MG_POR_KG.succinilcolina.min * peso, SUCCINILCOLINA_TETO_MG));',
+'    out.succLow = round1(MG_POR_KG.succinilcolina.min * peso);');
+replaceOnce('rsi-decision-tree.ts','derive-high-no-cap',
+'    out.succHigh = round1(Math.min(MG_POR_KG.succinilcolina.max * peso, SUCCINILCOLINA_TETO_MG));',
+'    out.succHigh = round1(MG_POR_KG.succinilcolina.max * peso);');
+
 replaceOnce('sedation-engine.ts','sedation-bolus-note',
 '          "ISR: 1–1,5 mg/kg IV em bólus ultrarrápido (2 mg/kg em obeso). TETO 200 mg.",',
 '          "ISR: 1–1,5 mg/kg IV em bólus ultrarrápido. Em obesidade, calcular pelo peso corporal total/real; não aumentar automaticamente para 2 mg/kg apenas por obesidade. Não aplicar teto IV absoluto de 200 mg: a bula brasileira não traz esse teto para via IV.",');
@@ -47,4 +57,4 @@ if (oldKeyIdx !== -1) {
 }
 fs.writeFileSync(i18nFile, es);
 
-console.log('✅ Succinilcolina: fonte canônica corrigida para 1–1,5 mg/kg por peso corporal total na obesidade; removidos 2 mg/kg automático e teto IV de 200 mg.');
+console.log('✅ Succinilcolina: fonte canônica e derive ISR corrigidos para 1–1,5 mg/kg por peso corporal total na obesidade; removidos 2 mg/kg automático e teto IV de 200 mg.');
