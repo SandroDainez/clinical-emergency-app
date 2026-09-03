@@ -21,6 +21,7 @@ const validators = [
   "valida-clinical-transition-contracts.cjs",
   "valida-navegacao-contextual-acls.cjs",
   "valida-event-log-medication-disposition.cjs",
+  "valida-temporal-debrief.cjs",
   "valida-cobertura-other-module-registry.cjs",
   "valida-targets-versus-handoffs.cjs",
   "valida-terminal-semantic-debts.cjs",
