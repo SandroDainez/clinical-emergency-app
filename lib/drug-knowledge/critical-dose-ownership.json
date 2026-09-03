@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "ruleId": "tenecteplase-avc-weight-based",
+      "drugId": "tenecteplase",
+      "indicationId": "avc-isquemico-trombolise-iv",
+      "status": "exclusive",
+      "canonicalFile": "lib/drug-knowledge/tenecteplase.ts",
+      "canonicalSymbol": "TENECTEPLASE_AVC_WEIGHT_BASED",
+      "doseMgPerKg": 0.25,
+      "maxDoseMg": 25,
+      "allowedConsumers": [
+        "avc-decision-tree.ts",
+        "avc/protocol-config.ts"
+      ],
+      "note": "Primeira dose crítica com ownership exclusivo após migração e paridade comprovadas. Strings de apresentação clínica não são duplicação computacional."
+    }
+  ]
+}
