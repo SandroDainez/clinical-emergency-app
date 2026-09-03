@@ -8,8 +8,19 @@ const screen = fs.readFileSync(path.join(root, "components/protocol-screen/acls-
 const contracts = [...registry.matchAll(/id:\s*"pcr-ref-[^"]+"[\s\S]*?fromModuleId:\s*"pcr-adulto"[\s\S]*?toModuleId:\s*"([^"]+)"[\s\S]*?semantic:\s*"reference"/g)];
 if (contracts.length !== 8) throw new Error(`Esperados 8 atalhos contextuais ACLS; encontrados ${contracts.length}.`);
 if (!registry.includes("buildClinicalContextHref")) throw new Error("Builder de rota contextual ausente.");
+if (!registry.includes("executeClinicalContextNavigation")) throw new Error("Executor canônico de navegação contextual ausente.");
+if (!registry.includes("ClinicalContextNavigationResumePolicy")) throw new Error("Política de retomada não pertence ao contrato contextual.");
+if (!registry.includes('resume: { protocolId: "pcr_adulto", suspectedCauses: ["hipoxia"] }')) {
+  throw new Error("Transição OVACE → PCR perdeu a causa conhecida hipóxia na política do contrato.");
+}
+if (!registry.includes("markProtocolSessionForResume(")) {
+  throw new Error("Executor contextual não prepara retomada da sessão.");
+}
+if (!registry.includes("navigate(buildClinicalContextHref(contract))")) {
+  throw new Error("Executor contextual não é responsável pela rota final.");
+}
 if (!screen.includes("ACLS_REFERENCE_NAVIGATION.map")) throw new Error("Tela de PCR não consome o registry contextual.");
-if (!screen.includes("buildClinicalContextHref(contract)")) throw new Error("Tela de PCR ainda monta rota contextual por conta própria.");
+if (!screen.includes("buildClinicalContextHref(contract)")) throw new Error("Tela de PCR ainda não deriva atalhos do contrato contextual.");
 
 const legacyRoutes = [
   "ritmos-acls?from_module=pcr-adulto",
@@ -42,4 +53,4 @@ if (screen.includes("causas-reversiveis-acls?from_module=pcr-adulto")) throw new
 if (screen.includes("pos-pcr-acls?from_module=pcr-adulto")) throw new Error("PCR ainda monta rota pós-ROSC manualmente.");
 if (!screen.includes('getClinicalContextNavigation("pcr-rosc-pos-pcr")')) throw new Error("PCR não consome contrato terminal pós-ROSC.");
 
-console.log("✅ Navegação ACLS centralizada: 8 consultas, 2 transições terminais, 1 subfluxo retornável e 1 consulta obstétrica.");
+console.log("✅ Navegação ACLS centralizada: contratos têm semântica, política de sessão e executor canônico; telas legadas permanecem mapeadas para migração progressiva.");
