@@ -297,12 +297,16 @@ function buildPendingOrDelayedItems(timeline: AclsTimelineEvent[]) {
 
     if (!matchedAdmin) {
       items.push(`${medicationId} ${tr("sugerida sem registro de administração")}`);
-      continue;
     }
+  }
 
-    if (matchedAdmin.timestamp - dueEvent.timestamp > 5 * 60 * 1000) {
-      items.push(`${medicationId} ${tr("registrada com atraso relevante")}`);
-    }
+  const runtimeLateEpinephrine = timeline.some(
+    (event) =>
+      event.type === "guard_rail_triggered" &&
+      event.details?.issue === "epinephrine_late_after_five_minutes"
+  );
+  if (runtimeLateEpinephrine) {
+    items.push(`adrenaline ${tr("janela temporal excedida segundo o runtime")}`);
   }
 
   return Array.from(new Set(items)).slice(0, 5);
@@ -344,10 +348,6 @@ function buildOperationalIndicators(
     totalCaseTimeMs,
     totalCaseTimeLabel:
       totalCaseTimeMs !== undefined ? formatElapsedTime(totalCaseTimeMs) : encounterSummary.durationLabel,
-    // ⚠️ DOCUMENTAÇÃO — lê `totais`, que soma os episódios encerrados por
-    // re-parada. Os contadores do episódio corrente são variáveis de CONTROLE
-    // do algoritmo (teto de 2 doses, cadência da epinefrina) e zeram por
-    // decisão correta do reducer. O debrief que os lia relatava zero.
     cyclesCompleted:
       encounterSummary.totais?.cyclesCompleted ?? operationalMetrics?.cyclesCompleted ?? 0,
     shocksDelivered: encounterSummary.totais?.shockCount ?? encounterSummary.shockCount,
