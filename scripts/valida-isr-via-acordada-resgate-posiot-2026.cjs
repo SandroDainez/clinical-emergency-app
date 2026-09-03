@@ -24,6 +24,11 @@ ok('pós-IOT sem norepinefrina fixa', !tree.includes('noradrenalina 8–12 mcg I
 ok('pós-IOT sem volume rotineiro', tree.includes('Dar volume apenas quando houver contexto de hipovolemia/responsividade'));
 ok('pós-IOT sem gasometria em prazo fixo', !tree.includes('Gasometria arterial 20–30 min') && tree.includes('sem intervalo universal fixo'));
 ok('capnografia contínua pós-IOT preservada', tree.includes('Capnografia contínua. Obter gasometria'));
+ok('indicação não usa PaCO2/pH/SpO2/FR/GCS como pedágio', !tree.includes('PaCO₂ > 55 + pH < 7,20 refratário à VNI') && !tree.includes('FR > 35') && tree.includes('nenhum valor isolado é requisito universal para intubar'));
+ok('indicação explicita proteção da via aérea', tree.includes('incapacidade de proteger a via aérea por rebaixamento de consciência'));
+ok('pergunta hemodinâmica direta sem PAS fixa', !tree.includes('Há instabilidade (PAS < 90 / choque / hipoperfusão)?') && tree.includes('Há instabilidade ou risco hemodinâmico relevante'));
+ok('adiamento retorna por trajetória e não SpO2 fixa', !tree.includes('falha da VNI/HFN (SpO₂ < 90% ou FR subindo)') && tree.includes('Não esperar um corte numérico isolado se a trajetória clínica estiver piorando'));
+ok('reavaliação adiada tem plano sem intervalo universal', tree.includes('Definir explicitamente quando e por quais sinais reavaliar') && tree.includes('impor um intervalo universal também é inadequado'));
 
 const failed = checks.filter(([, value]) => !value);
 if (failed.length) {
