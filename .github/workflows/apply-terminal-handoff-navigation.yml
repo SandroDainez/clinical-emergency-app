@@ -36,6 +36,9 @@ jobs:
       - name: Apply exact succinylcholine migration
         run: node scripts/aplica-succinilcolina-hipercalemia-update.cjs
 
+      - name: Pay EAP translation debt introduced by morphine evidence update
+        run: node scripts/aplica-eap-morfina-traducao-update.cjs
+
       - name: Validate sedation module
         run: npm run test:sedacao
 
@@ -59,6 +62,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add sedation-engine.ts rsi-decision-tree.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/isr.ts scripts/valida-isr.cjs
+          git add sedation-engine.ts rsi-decision-tree.ts lib/i18n/modules/sedacao.ts lib/i18n/modules/isr.ts lib/i18n/modules/eap.ts scripts/valida-isr.cjs
           git commit -m "correct succinylcholine hyperkalemia semantics [succinylcholine-k-applied]"
           git push origin HEAD:emergencias-2-ui-core
