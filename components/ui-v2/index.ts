@@ -19,6 +19,10 @@ export {
   type CalculatorScreenHeaderProps,
 } from "./calculator-screen-header";
 export {
+  ReferenceScreenHeader,
+  type ReferenceScreenHeaderProps,
+} from "./reference-screen-header";
+export {
   CategoricalSelector,
   type CategoricalSelectorOption,
   type CategoricalSelectorProps,
