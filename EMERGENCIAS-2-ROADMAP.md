@@ -60,7 +60,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Adapter do cockpit inclui idade do dado em observações reutilizadas.
 - [x] Reset central do novo atendimento limpa contexto, observações, event log, pilha de interrupções e reavaliações pendentes.
 - [x] Ligar observações dos fluxos compartilhados no momento da confirmação do input, preservando timestamp, unidade e origem.
-- [ ] Exigir confirmação quando a observação estiver stale para aquela decisão.
+- [x] Runtime impede reutilização silenciosa de observação `stale` e vincula a confirmação à decisão e à medição exata.
+- [ ] Declarar janelas de validade nas decisões que vierem a consumir observações voláteis e ligar a confirmação à interface.
 
 ## Bloco C — Clinical Orchestrator
 

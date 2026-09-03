@@ -2,6 +2,7 @@ import { clearClinicalEventLog } from "./clinical-event-log";
 import { clearClinicalHandoffs } from "./clinical-handoff-runtime";
 import { clearClinicalInterruptions } from "./clinical-interruption-session";
 import { clearClinicalObservations } from "./clinical-observations";
+import { clearObservationDecisionConfirmations } from "./clinical-observation-decision-gate";
 import { clearClinicalReassessmentNodeRuntime } from "./clinical-reassessment-node-runtime";
 import { clearPendingClinicalReassessments } from "./clinical-reassessment-runtime";
 import { clearVasopressorReassessmentState } from "./clinical-vasopressor-reassessment";
@@ -29,6 +30,7 @@ export function startClinicalCase(caseId: string, now: number = Date.now()): Cli
   clearClinicalHandoffs();
   clearClinicalInterruptions();
   clearClinicalObservations();
+  clearObservationDecisionConfirmations();
   clearClinicalReassessmentNodeRuntime();
   clearPendingClinicalReassessments();
   clearVasopressorReassessmentState();
