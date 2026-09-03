@@ -4,6 +4,7 @@ import {
   type ClinicalGateFactBinding,
 } from "../lib/clinical-gate-context-adapter";
 import { clearClinicalObservations, recordClinicalObservation } from "../lib/clinical-observations";
+import type { ObservationDecisionPolicy } from "../lib/clinical-observation-decision-gate";
 
 function expect(condition: boolean, message: string, issues: string[]) {
   if (!condition) issues.push(message);
@@ -35,13 +36,20 @@ export function runExecutableClinicalGateContextCases(): string[] {
   expect(fresh.context.teste === true, "Contexto de gate: valor literal reconhecido deve ser mapeado", issues);
   expect(fresh.missingFacts.length === 0 && fresh.unmappedFacts.length === 0, "Contexto de gate: fato válido não deve gerar problema", issues);
 
-  const staleBinding: ClinicalGateFactBinding = {
-    ...missingBinding,
-    maxAgeMs: 500,
+  const stalePolicy: ObservationDecisionPolicy = {
+    decisionId: "teste-decisao",
+    observationId: "teste",
+    freshForMs: 100,
+    staleAfterMs: 500,
   };
-  const stale = assembleClinicalGateContextFromObservations([staleBinding], now);
-  expect(stale.staleFacts.length === 1, "Contexto de gate: observação além do limite deve ser stale", issues);
+  const stale = assembleClinicalGateContextFromObservations([missingBinding], now, [stalePolicy]);
+  expect(stale.staleFacts.length === 1, "Contexto de gate: política da decisão deve classificar observação antiga como stale", issues);
   expect(stale.context.teste === undefined, "Contexto de gate: observação stale não pode entrar como fato atual", issues);
+  expect(
+    stale.decisionResolutions[0]?.status === "confirmation_required",
+    "Contexto de gate: stale precisa preservar resolução que exige confirmação explícita",
+    issues
+  );
 
   clearClinicalObservations();
   recordClinicalObservation({
