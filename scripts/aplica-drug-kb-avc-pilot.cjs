@@ -86,7 +86,20 @@ function replaceOnce(content, before, after, label) {
   write(rel, s);
 }
 
-// 5) A trava entra na suíte estrutural do Emergências 2.
+// 5) TypeScript 6: o validador compila arquivos isolados e deve declarar isso explicitamente.
+{
+  const rel = "scripts/valida-avc.cjs";
+  let s = read(rel);
+  s = replaceOnce(
+    s,
+    '        "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",\n',
+    '        "tsc", "--ignoreConfig", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",\n',
+    `${rel}: compatibilidade com TypeScript 6`
+  );
+  write(rel, s);
+}
+
+// 6) A trava entra na suíte estrutural do Emergências 2.
 {
   const rel = "scripts/valida-emergencias-2-suite.cjs";
   let s = read(rel);
