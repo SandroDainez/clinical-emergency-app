@@ -1,5 +1,5 @@
 import { decisionObservationFor } from "./clinical-decision-observation-bindings";
-import { appendClinicalEvent } from "./clinical-event-log";
+import { appendClinicalEvent, listClinicalEvents } from "./clinical-event-log";
 import { recordClinicalObservation } from "./clinical-observations";
 
 let sequence = 0;
@@ -16,6 +16,53 @@ function nextEventId(prefix: string, now: number): string {
  * fluxo legado já fez. Isso permite ligar rastreabilidade de forma incremental
  * sem acoplar o shell ao formato interno do event log.
  */
+export function recordClinicalCaseStarted(input: {
+  caseId: string;
+  now?: number;
+}): void {
+  const caseId = input.caseId.trim();
+  if (!caseId) return;
+  const now = input.now ?? Date.now();
+  appendClinicalEvent({
+    id: nextEventId("case", now),
+    type: "case_started",
+    occurredAt: now,
+    label: "Atendimento iniciado",
+    data: { caseId },
+  });
+}
+
+/**
+ * Registra a primeira entrada real em um protocolo dentro do atendimento.
+ *
+ * O shell pode montar novamente ao retornar de uma interrupção. Nessa situação
+ * a volta já possui `protocol_resumed`; gravar outro `protocol_started` faria a
+ * timeline sugerir um novo protocolo. Por isso a deduplicação usa o próprio log
+ * append-only como fonte de verdade, sem criar um segundo store de lifecycle.
+ */
+export function recordProtocolStarted(input: {
+  module: string;
+  label?: string;
+  now?: number;
+}): void {
+  const module = input.module.trim();
+  if (!module) return;
+  const alreadyStarted = listClinicalEvents().some(
+    (event) => event.type === "protocol_started" && event.module === module
+  );
+  if (alreadyStarted) return;
+
+  const now = input.now ?? Date.now();
+  appendClinicalEvent({
+    id: nextEventId("protocol", now),
+    type: "protocol_started",
+    occurredAt: now,
+    module,
+    label: input.label?.trim() || module,
+    data: { module },
+  });
+}
+
 export function recordFlowDecision(input: {
   /** ID canônico do protocolo usado no Event Log e na proveniência clínica. */
   module?: string;
