@@ -74,8 +74,8 @@ for (const file of files) {
     .replace(/fontSize: 13,/g, 'fontSize: CV.tipo.label.fontSize,')
     .replace(/fontSize: 15,/g, 'fontSize: CV.tipo.body.fontSize,')
     .replace(/fontSize: 16,/g, 'fontSize: CV.tipo.body.fontSize,')
-    .replace(/fontSize: 18,/g, 'fontSize: CV.tipo.step.fontSize,')
-    .replace(/fontSize: 20,/g, 'fontSize: CV.tipo.step.fontSize,');
+    .replace(/fontSize: 18,/g, 'fontSize: CV.tipo.section.fontSize,')
+    .replace(/fontSize: 20,/g, 'fontSize: CV.tipo.section.fontSize,');
 
   // Remove identidade cromática local em fundos translúcidos de seleção.
   styles = styles
