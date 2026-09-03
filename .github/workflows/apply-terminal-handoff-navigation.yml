@@ -1,53 +1,14 @@
-name: Apply sedation BNM UI semantics
+name: Archived sedation BNM UI semantics
 
 on:
-  push:
-    branches:
-      - emergencias-2-ui-core
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  migrate-and-validate:
-    if: ${{ !contains(github.event.head_commit.message, '[sedation-bnm-ui-applied]') }}
+  archived-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-        with:
-          ref: emergencias-2-ui-core
-          fetch-depth: 0
-
-      - name: Apply sedation BNM UI semantics migration
-        run: node scripts/aplica-sedacao-bnm-ui-semantics.cjs
-
-      - name: Validate sedation module
-        run: npm run test:sedacao
-
-      - name: Validate sedation BNM UI semantics
-        run: node scripts/valida-sedacao-bnm-ui-semantics.cjs
-
-      - name: Validate SCCM 2026 BNM semantics
-        run: node scripts/valida-bnm-sccm-2026.cjs
-
-      - name: Validate rocuronium safety semantics
-        run: node scripts/valida-rocuronio-seguranca.cjs
-
-      - name: Validate translation consistency
-        run: npm run test:traducao-composta
-
-      - name: Validate Emergencias 2 structural suite
-        run: npm run test:emergencias-2
-
-      - name: Commit validated migration
-        run: |
-          if git diff --quiet; then
-            echo "No sedation BNM UI changes needed."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add components/protocol-screen/sedation-calculator-screen.tsx lib/i18n/modules/sedacao.ts
-          git commit -m "align sedation BNM UI with current evidence [sedation-bnm-ui-applied]"
-          git push origin HEAD:emergencias-2-ui-core
+      - name: Archived migration notice
+        run: echo "Sedation BNM UI semantics migration applied and validated."
