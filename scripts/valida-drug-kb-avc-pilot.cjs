@@ -22,7 +22,9 @@ for (const field of ["doseMgPerKg", "maxDoseMg", "roundingStepMg", "bolusOnly"])
   expect(types.includes(`${field}:`), `o contrato não declara ${field}`);
 }
 
-const rule = tnk.match(/TENECTEPLASE_AVC_WEIGHT_BASED\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\)/);
+const rule = tnk.match(
+  /TENECTEPLASE_AVC_WEIGHT_BASED\s*(?::\s*WeightBasedDrugCalculation)?\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\)/
+);
 expect(rule, "a regra canônica estruturada da tenecteplase no AVC não foi encontrada");
 const body = rule[1];
 const numberField = (name) => {
