@@ -64,6 +64,7 @@ const validators = [
   "valida-sedacao-ui-hierarquia.cjs",
   "valida-sedacao-calculo-compacto.cjs",
   "valida-sedacao-layout-responsivo.cjs",
+  "valida-isr-preoxigenacao-2026.cjs",
 ];
 
 for (const validator of validators) {
