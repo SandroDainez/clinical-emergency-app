@@ -33,3 +33,4 @@ for (const [from, to] of replacements) {
 
 fs.writeFileSync(file, source);
 console.log("✅ Roadmap sincronizado com navegação canônica, disposition explícito e cobertura terminal 22/22.");
+// one-shot sync trigger: 2026-09-03
