@@ -623,15 +623,15 @@ export const SED_DRUGS: SedDrug[] = [
         // o mais dado em bólus por quem está com pressa. Ver R-16.
         "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF.",
         "ANTÍDOTO SUGAMADEX — CICO/emergência: 16 mg/kg IV (70 kg = 1.120 mg); profunda: 4 mg/kg; moderada (T2): 2 mg/kg. Reversão < 3 min.",
-        "Manter sugamadex à beira leito SEMPRE que rocurônio em uso.",
-        "MgSO₄ potencializa — reduzir dose 30–50% (ex.: eclâmpsia). Monitorar TOF.",
+        "Se rocurônio for escolhido em uma via aérea na qual reversão rápida com sugamadex faça parte do plano de falha/despertar, pré-calcular a dose e garantir disponibilidade imediata antes da indução. Isso não transforma sugamadex em requisito universal à beira leito durante toda infusão de rocurônio em UTI.",
+        "MgSO₄ potencializa e pode prolongar o bloqueio neuromuscular. Não aplicar redução percentual fixa universal: usar monitorização quantitativa/TOF quando possível e titular doses subsequentes à resposta clínica e neuromuscular.",
       ],
     },
     info: [
       "Duração prolongada em hepatopatia.",
       "Bolus calculado a partir da ampola PURA (10 mg/mL).",
     ],
-    reference: "Miller's Anesthesia 9ª ed. · ASA Difficult Airway 2022.",
+    reference: "Miller's Anesthesia 9ª ed. · ESAIC Neuromuscular Blockade Guideline 2023 · Difficult Airway guidance · revisão de interação MgSO₄–BNM.",
   },
   {
     key: "cisatracurio",
