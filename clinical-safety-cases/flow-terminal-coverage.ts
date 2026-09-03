@@ -35,18 +35,6 @@ export const FLOW_TERMINAL_COVERAGE: readonly FlowTerminalCoverageEntry[] = [
   { moduleId: "injuria-renal-aguda", protocolId: "injuria_renal_aguda", status: "classified", reviewedAt: "2026-09-03" },
   { moduleId: "insuficiencia-respiratoria", protocolId: "insuficiencia_respiratoria", status: "classified", reviewedAt: "2026-09-03" },
   { moduleId: "abdome-agudo", protocolId: "abdome_agudo", status: "classified", reviewedAt: "2026-09-03" },
-  {
-    moduleId: "pcr-adulto",
-    status: "pending_semantic_review",
-    rationale:
-      "PCR usa runtime próprio e pode terminar em ROSC, transição pós-ROSC ou encerramento da ressuscitação; não promover esses estados a alta/observação/UTI sem contrato específico.",
-    reviewedAt: "2026-09-03",
-  },
-  {
-    moduleId: "ovace-adulto",
-    status: "pending_semantic_review",
-    rationale:
-      "OVACE pode resolver com expulsão do corpo estranho ou converter-se em PCR; a tela atual não representa isso como disposition assistencial e não deve receber um destino inventado apenas para completar a cobertura.",
-    reviewedAt: "2026-09-03",
-  },
+  { moduleId: "pcr-adulto", protocolId: "pcr_adulto", status: "classified", reviewedAt: "2026-09-03" },
+  { moduleId: "ovace-adulto", protocolId: "ovace_adulto", status: "classified", reviewedAt: "2026-09-03" },
 ] as const;
