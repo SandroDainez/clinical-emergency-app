@@ -66,6 +66,7 @@ const validators = [
   "valida-sedacao-layout-responsivo.cjs",
   "valida-isr-preoxigenacao-2026.cjs",
   "valida-isr-coerencia-bnm-ventilacao.cjs",
+  "valida-isr-hemodinamica-pretratamento-2026.cjs",
 ];
 
 for (const validator of validators) {
