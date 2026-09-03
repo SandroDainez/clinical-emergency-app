@@ -62,7 +62,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ligar observações dos fluxos compartilhados no momento da confirmação do input, preservando timestamp, unidade e origem.
 - [x] Runtime impede reutilização silenciosa de observação `stale` e vincula a confirmação à decisão e à medição exata.
 - [x] Gate visual de observação antiga exige escolha explícita entre confirmar aquela medição ou informar uma nova.
-- [ ] Declarar janelas de validade somente nas decisões que vierem a consumir observações voláteis e ligar seus bindings ao gate.
+- [x] Validade temporal é declarada somente pela decisão consumidora; registry canônico está ligado ao gate e permanece vazio enquanto não houver janela clínica/operacional explicitamente fundamentada, sem TTL global inventado.
 
 ## Bloco C — Clinical Orchestrator
 
