@@ -1,0 +1,79 @@
+name: Apply TEP thrombolysis category SafetyGate 2026
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - 'scripts/promove-tep-trombolise-safety-gate-2026.cjs'
+      - 'scripts/valida-tep-trombolise-safety-gate-2026.cjs'
+      - '.github/workflows/apply-tep-trombolise-safety-gate-2026.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tep-thrombolysis-safety-gate-2026
+  cancel-in-progress: false
+
+jobs:
+  apply-and-validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply deterministic promotion
+        run: node scripts/promove-tep-trombolise-safety-gate-2026.cjs
+
+      - name: Focused TEP SafetyGate validator
+        run: node scripts/valida-tep-trombolise-safety-gate-2026.cjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Existing executable gate regressions
+        run: |
+          node scripts/test-clinical-gate-triggers.cjs
+          node scripts/valida-decision-observation-bindings.cjs
+          node scripts/valida-safety-gate-interaction-surfaces.cjs
+          node scripts/valida-safety-gate-candidate-debts.cjs
+
+      - name: TEP regression
+        run: npm run test:tep
+
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+
+      - name: Scoped TypeScript compile
+        run: npx tsc --noEmit --skipLibCheck --moduleResolution node --module commonjs --target es2020 tep-decision-tree.ts lib/clinical-gate-registry.ts lib/clinical-gate-trigger-registry.ts lib/clinical-decision-observation-bindings.ts clinical-safety-cases/gate-action-triggers.ts
+
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          allowed='^(tep-decision-tree\.ts|lib/clinical-gate-registry\.ts|lib/clinical-gate-trigger-registry\.ts|lib/clinical-decision-observation-bindings\.ts|clinical-safety-cases/gate-action-triggers\.ts|clinical-safety-cases/gate-candidate-debts\.ts|scripts/valida-safety-gate-candidate-debts\.cjs)$'
+          bad=$(git diff --name-only | grep -Ev "$allowed" || true)
+          if [ -n "$bad" ]; then
+            echo "Unexpected generated files:"
+            echo "$bad"
+            exit 1
+          fi
+
+      - name: Commit promoted SafetyGate
+        run: |
+          if git diff --quiet; then
+            echo 'No generated changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tep-decision-tree.ts lib/clinical-gate-registry.ts lib/clinical-gate-trigger-registry.ts lib/clinical-decision-observation-bindings.ts clinical-safety-cases/gate-action-triggers.ts clinical-safety-cases/gate-candidate-debts.ts scripts/valida-safety-gate-candidate-debts.cjs
+          git commit -m 'fix(tep): gate systemic thrombolysis by explicit PE category'
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
