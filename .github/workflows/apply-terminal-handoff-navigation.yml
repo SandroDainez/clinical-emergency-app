@@ -1,14 +1,49 @@
-name: Archived mechanical ventilation ARDS alignment 2026
+name: Apply VM liberation and extubation 2026
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[vm-liberation-2026-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Mechanical ventilation ARDS 2026 alignment applied and validated."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply VM liberation/extubation migration
+        run: |
+          node scripts/aplica-vm-liberacao-extubacao-2026.cjs
+          node scripts/ajusta-vm-liberacao-extubacao-i18n-2026.cjs
+
+      - name: Validate ventilation module
+        run: npm run test:vm
+
+      - name: Validate VM liberation/extubation 2026
+        run: node scripts/valida-vm-liberacao-extubacao-2026.cjs
+
+      - name: Validate translation consistency
+        run: npm run test:traducao-composta
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No VM liberation/extubation changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ventilation-decision-tree.ts lib/i18n/modules/ventilacao.ts
+          git commit -m "align VM liberation SBT cuff leak and extubation [vm-liberation-2026-applied]"
+          git push origin HEAD:emergencias-2-ui-core
