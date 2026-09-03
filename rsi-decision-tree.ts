@@ -21,7 +21,6 @@ import {
   ANAFILAXIA_BLOQUEADOR,
   ANAFILAXIA_GATILHO_BLOQUEADOR,
   MG_POR_KG,
-  SUCCINILCOLINA_TETO_MG,
   mgPorKg,
   ISR_AJUSTE_NO_INSTAVEL,
 } from "./lib/doses-isr";
@@ -73,8 +72,8 @@ function deriveRsi(values: TreeValues): Record<string, string> {
     out.ketaAsma = round1(MG_POR_KG.cetamina.asma * peso);
     out.propInd = round1(MG_POR_KG.propofol.estavel * peso);
     out.propLow = round1(MG_POR_KG.propofol.reduzido * peso);
-    out.succLow = round1(Math.min(MG_POR_KG.succinilcolina.min * peso, SUCCINILCOLINA_TETO_MG));
-    out.succHigh = round1(Math.min(MG_POR_KG.succinilcolina.max * peso, SUCCINILCOLINA_TETO_MG));
+    out.succLow = round1(MG_POR_KG.succinilcolina.min * peso);
+    out.succHigh = round1(MG_POR_KG.succinilcolina.max * peso);
     out.rocu = round1(MG_POR_KG.rocuronio * peso);
     out.sugam = Math.round(MG_POR_KG.sugamadex * peso).toString();
     out.fenta = Math.round(MG_POR_KG.fentanilMcg * peso).toString();
