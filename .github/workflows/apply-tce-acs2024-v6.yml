@@ -1,0 +1,74 @@
+name: Apply TCE ACS 2024 corrections v6
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - .github/workflows/apply-tce-acs2024-v6.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Patch validator compatibility
+        run: |
+          node scripts/corrige-valida-tce-tsc.cjs
+          node scripts/corrige-valida-ventilacao-tsc.cjs
+
+      - name: Apply deterministic TCE corrections
+        run: |
+          node scripts/ajusta-tce-alvos-antitromboticos-acs2024-v2.cjs
+          node scripts/ajusta-tce-regressao-alvos-v3.cjs
+
+      - name: Focused TCE and translation validation
+        run: node scripts/valida-tce-alvos-antitromboticos-acs2024.cjs
+
+      - name: Existing TCE regression
+        run: npm run test:tce
+
+      - name: Ventilation consistency
+        run: npm run test:vm
+
+      - name: Runtime translation regression
+        run: npm run test:traducao-runtime
+
+      - name: TypeScript compile gate
+        run: npx tsc --noEmit --pretty false
+
+      - name: Baseline note for global i18n inventory
+        run: |
+          echo "Global test:i18n currently reports pre-existing untranslated inventory across the repository."
+          echo "This checkpoint relies on the focused TCE translation validator plus runtime translation regression, rather than hiding unrelated baseline debt."
+
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/alvos-tce.ts lib/i18n/modules/tce.ts scripts/valida-tce.cjs scripts/valida-ventilacao.cjs tce-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+
+      - name: Commit validated TCE correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/alvos-tce.ts lib/i18n/modules/tce.ts scripts/valida-tce.cjs scripts/valida-ventilacao.cjs tce-decision-tree.ts
+          git commit -m "fix(tce): align ACS 2024 targets and repair regression gates"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
