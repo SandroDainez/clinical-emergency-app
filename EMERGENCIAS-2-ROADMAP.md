@@ -81,7 +81,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Contrato de transição distingue destino `module` de `external_service`.
 - [x] Handoffs terminais externos iniciais classificados: Politrauma -> centro cirúrgico/angioembolização e TCE -> neurocirurgia.
 - [x] Travas estruturais protegem arestas retornáveis e handoffs externos contra divergência com as árvores reais.
-- [ ] Declarar retorno, terminalidade e contexto preservado das demais arestas reais.
+- [x] As 19 transições explícitas das árvores possuem contrato de retorno ou terminalidade e preservação de contexto quando aplicável.
 - [ ] Substituir navegações improvisadas progressivamente.
 
 ## Bloco D — Event Log e auditoria
@@ -189,7 +189,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 ## Classificação funcional dos módulos
 
-- [x] Os 31 módulos possuem função canônica declarada no catálogo: 19 fluxos assistenciais, 8 referências e 4 calculadoras.
+- [x] Os 31 módulos possuem função canônica declarada no catálogo: 22 fluxos assistenciais, 5 referências e 4 calculadoras.
 - [x] O hub ordena fluxo antes de consulta/calculadora pela função declarada, sem inferir comportamento pelo texto da etiqueta.
 - [x] As quatro calculadoras usam cabeçalho canônico com função, identidade e retorno uniformes.
 - [ ] Aplicar o contrato visual obrigatório de cada categoria e eliminar bifurcações antigas após paridade.

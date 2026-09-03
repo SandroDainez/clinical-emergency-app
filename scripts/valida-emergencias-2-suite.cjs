@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, "..");
 const validators = [
   "valida-emergencias-2-core.cjs",
   "valida-classificacao-de-modulos.cjs",
+  "valida-roadmap-vs-codigo.cjs",
   "valida-cabecalho-de-calculadoras.cjs",
   "valida-cabecalho-de-referencias.cjs",
   "valida-engasgo-padrao-fluxo.cjs",
