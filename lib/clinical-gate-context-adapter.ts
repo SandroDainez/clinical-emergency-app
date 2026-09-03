@@ -75,10 +75,9 @@ export function assembleClinicalGateContextFromObservations(
       continue;
     }
 
-    const observation =
-      decisionResolution && decisionResolution.status !== "missing"
-        ? decisionResolution.observation
-        : getClinicalObservation(binding.observationId);
+    const observation = decisionResolution
+      ? decisionResolution.observation
+      : getClinicalObservation(binding.observationId);
 
     if (!observation) {
       missingFacts.push({ fact: binding.fact, observationId: binding.observationId });
