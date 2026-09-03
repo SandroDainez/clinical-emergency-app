@@ -23,7 +23,7 @@ jobs:
         run: node scripts/aplica-drug-kb-avc-pilot.cjs
 
       - name: Expose TypeScript diagnostics
-        run: npx tsc --module commonjs --target es2020 --esModuleInterop --moduleResolution node --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
+        run: npx tsc --ignoreConfig --module commonjs --target es2020 --esModuleInterop --moduleResolution node --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
 
       - name: Validate AVC
         run: npm run test:avc
@@ -39,6 +39,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/drug-knowledge/types.ts lib/drug-knowledge/tenecteplase.ts avc-decision-tree.ts avc/protocol-config.ts scripts/valida-emergencias-2-suite.cjs
+          git add lib/drug-knowledge/types.ts lib/drug-knowledge/tenecteplase.ts avc-decision-tree.ts avc/protocol-config.ts scripts/valida-avc.cjs scripts/valida-emergencias-2-suite.cjs
           git commit -m "centralize AVC tenecteplase calculation in Drug KB [drug-kb-avc-applied]"
           git push origin HEAD:emergencias-2-ui-core
