@@ -1,4 +1,4 @@
-name: Finalize Drug KB AVC pilot
+name: Finalize Drug KB AVC roadmap
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  finalize:
-    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-avc-finalized]') }}
+  finalize-roadmap:
+    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-roadmap-finalized]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -24,7 +24,7 @@ jobs:
           npm run test:avc
           npm run test:emergencias-2
 
-      - name: Mark roadmap and archive this workflow
+      - name: Mark roadmap
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -35,15 +35,16 @@ jobs:
           if (r.includes(before)) r = r.replace(before, after);
           else if (!r.includes(after)) throw new Error('Item do roadmap não encontrado para fechamento seguro.');
           fs.writeFileSync(roadmap, r);
-
-          const wf = '.github/workflows/apply-terminal-handoff-navigation.yml';
-          fs.writeFileSync(wf, `name: Archived Drug KB AVC pilot\n\non:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  archived-check:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Archived migration notice\n        run: echo \"Drug KB AVC pilot applied, validated and archived; retained only as an audit marker.\"\n`);
           NODE
 
-      - name: Commit finalization
+      - name: Commit roadmap
         run: |
+          if git diff --quiet -- EMERGENCIAS-2-ROADMAP.md; then
+            echo "Roadmap already finalized."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add EMERGENCIAS-2-ROADMAP.md .github/workflows/apply-terminal-handoff-navigation.yml
-          git commit -m "finalize Drug KB AVC pilot [drug-kb-avc-finalized]"
+          git add EMERGENCIAS-2-ROADMAP.md
+          git commit -m "close Drug KB AVC pilot roadmap [drug-kb-roadmap-finalized]"
           git push origin HEAD:emergencias-2-ui-core
