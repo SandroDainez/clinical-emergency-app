@@ -28,8 +28,9 @@ export const TENECTEPLASE_CANONICAL: CanonicalDrug = {
       concentration: "5 mg/mL após reconstituição",
       vialAmount: "40 mg (8.000 U)",
       source: {
-        reference: "Metalyse — bula profissional brasileira / Bulário ANVISA",
-        reviewedAt: "2026-09-01",
+        reference: "ANVISA/CMED + bula profissional brasileira — Metalyse 40 mg com seringa de diluente 8 mL",
+        version: "apresentação brasileira vigente consultada em 2026",
+        reviewedAt: "2026-09-03",
       },
     },
     {
@@ -37,8 +38,9 @@ export const TENECTEPLASE_CANONICAL: CanonicalDrug = {
       concentration: "5 mg/mL após reconstituição",
       vialAmount: "50 mg (10.000 U)",
       source: {
-        reference: "Metalyse — bula profissional brasileira / Bulário ANVISA",
-        reviewedAt: "2026-09-01",
+        reference: "ANVISA/CMED + bula profissional brasileira — Metalyse 50 mg com seringa de diluente 10 mL",
+        version: "apresentação brasileira vigente consultada em 2026",
+        reviewedAt: "2026-09-03",
       },
     },
   ],
