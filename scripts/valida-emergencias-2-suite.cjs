@@ -77,6 +77,7 @@ const validators = [
   "valida-vm-obesidade-acidose-neuromuscular-2026.cjs",
   "valida-vm-fechamento-2026.cjs",
   "valida-tce-imagem-2026.cjs",
+  "valida-tce-osmoterapia-2026.cjs",
 ];
 
 for (const validator of validators) {
