@@ -292,7 +292,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         // que fazer quando ele descompensa. Citar um achado sem o gesto que o
         // encontra é ensinar a palavra, não a conduta.
         "COMO MEDIR o auto-PEEP: pausa expiratória ao fim da expiração, com o paciente SEM esforço (sedado, ou em modo controlado), segurando até o traçado de pressão estabilizar. O valor que aparecer ACIMA do PEEP ajustado é o auto-PEEP. Em respiração espontânea a medida não é confiável — nesse caso, guie-se pela curva de fluxo expiratório que não retorna ao zero antes da próxima inspiração.",
-        "⚠️ HIPERINSUFLAÇÃO DINÂMICA COM INSTABILIDADE (hipotensão súbita, AESP, pico subindo com platô estável): DESCONECTAR do ventilador e comprimir o tórax para esvaziar o ar aprisionado. Se a pressão melhorar em segundos, era auto-PEEP — e não pneumotórax. Reconectar com FR menor, expiração mais longa e Vt menor. Esta manobra é diagnóstica e terapêutica ao mesmo tempo, e vem ANTES de escalar vasopressor.",
+        "⚠️ HIPERINSUFLAÇÃO DINÂMICA COM INSTABILIDADE (hipotensão súbita/AESP, fluxo expiratório sem retornar a zero): desconectar brevemente do ventilador para permitir expiração e corrigir FR, tempo expiratório, fluxo e Vt. Em asma grave/peri-parada, compressão manual do tórax pode ser considerada por equipe experiente para ajudar a aliviar hiperinsuflação. Não assumir auto-PEEP se a instabilidade persistir: excluir pneumotórax hipertensivo e outras causas imediatamente.",
         "Adjuvantes: salbutamol nebulizado no circuito; asma grave → MgSO₄ 2 g IV, ketamina (broncodilatação). DPOC → desmame precoce com VNI pós-extubação.",
       ],
       next: "seguranca",
@@ -433,14 +433,14 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "seguranca",
       type: "decision",
       title: "Pressões dentro do alvo?",
-      question: "A mecânica ventilatória está segura para o cenário atual?",
+      question: "A pressão de platô está dentro do alvo do cenário e a mecânica está estável ou melhorando?",
       evidence: [
         "Pressão de platô (pausa inspiratória de 0,5 s, sem esforço) reflete a pressão alveolar — manter ≤ 30 cmH₂O.",
-        "Driving pressure = platô − PEEP: monitorar tendência e reduzir estresse mecânico quando possível. Valor ≤ 15 cmH₂O é associado a melhor prognóstico, mas não é corte universal isolado para todos os cenários.",
+        "Driving pressure = platô − PEEP. Monitorar tendência e reduzir estresse mecânico quando possível; valores menores costumam associar-se a melhor prognóstico, mas 15 cmH₂O não deve funcionar como corte universal isolado para todos os cenários.",
       ],
       options: [
-        { id: "sim", label: "Sim — dentro do alvo", next: "monitorizacao" },
-        { id: "nao", label: "Não — pressões altas", next: "pressao_alta" },
+        { id: "sim", label: "Sim — mecânica aceitável", next: "monitorizacao" },
+        { id: "nao", label: "Não — Pplat alta ou mecânica piorando", next: "pressao_alta" },
       ],
     },
 
@@ -457,7 +457,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
         "Fora desses casos: reduzir o VC 1 mL/kg em direção a 4 mL/kg PBW ({vc4} mL), aceitando hipercapnia permissiva (pH ≥ 7,20).",
         "Diferenciar: Pplat alta = complacência (recrutamento/PEEP, derrame, distensão, edema); pico alto com platô normal = resistência (broncoespasmo, secreção, tubo dobrado/mordido).",
-        "COMO MEDIR O COMPONENTE RESISTIVO — e são DUAS grandezas com o mesmo protagonista, fáceis de confundir: (1) PRESSÃO RESISTIVA = Ppico − Pplatô, em cmH₂O. Acima de ~10 cmH₂O aponta tubo dobrado ou obstruído, secreção, broncoespasmo ou massa intraluminal. (2) RESISTÊNCIA = essa mesma diferença DIVIDIDA PELO FLUXO, em cmH₂O/L/s — no ventilado com pulmão normal e tubo, raramente passa de 15. Usar o limiar de uma como se fosse da outra troca a conclusão: 10 é muito para a pressão e é normal para a resistência.",
+        "COMPONENTE RESISTIVO: pressão resistiva = Ppico − Pplatô. Aumento relevante em relação ao basal sugere maior resistência (secreção, broncoespasmo, tubo dobrado/mordido ou obstrução). Resistência das vias aéreas = (Ppico − Pplatô) / fluxo, em cmH₂O/L/s; interpretar com o fluxo usado e a tendência, sem transformar um único número em diagnóstico.",
         "Tratar a causa: broncodilatador, aspirar, drenar derrame/pneumotórax, ajustar PEEP.",
         "Reavaliar Pplat e driving pressure após cada ajuste.",
       ],
@@ -486,11 +486,11 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       title: "Troubleshooting — DOPES + assincronia",
       summary: "Deterioração: desconectar e ventilar à mão separa problema do paciente × do circuito.",
       actions: [
-        "Desconectar do ventilador e ventilar com BVM em O₂ 100%. D: posição do tubo (deslocamento/seletivo). O: obstrução/secreção → aspirar, checar dobra/mordida. P: pneumotórax hipertensivo → descompressão (agulha 14G 2º EIC LMC). E: equipamento/circuito. S: auto-PEEP → reduzir FR, prolongar expiração.",
+        "Deterioração ameaçadora: priorizar oxigenação/ventilação e percorrer DOPES. Se necessário, desconectar do ventilador e ventilar manualmente com BVM em O₂ 100% enquanto avalia D: deslocamento/seletivo do tubo; O: obstrução/secreção/dobra; P: pneumotórax hipertensivo; E: equipamento/circuito; S: stacking/auto-PEEP. Pneumotórax hipertensivo com instabilidade é diagnóstico clínico (POCUS ajuda sem atrasar): descomprimir imediatamente. Em parada/hipotensão grave e equipe habilitada, toracostomia aberta/finger é opção efetiva; descompressão por agulha deve usar cateter adequado e sítio conforme protocolo/anatomia (4º–5º EIC linha axilar anterior ou 2º EIC linha médio-clavicular), seguida de drenagem definitiva.",
         "Assincronia — esforço ineficaz/auto-PEEP: reduzir sedação, reduzir auto-PEEP (↓FR, ↑fluxo), ajustar PEEP externo.",
         "Assincronia — duplo disparo/fome de fluxo: aumentar Ti/fluxo, mudar para PCV; se drive muito forte na SARA grave, considerar BNM.",
         "Assincronia — ciclagem tardia (DPOC): reduzir Ti ou critério de ciclagem em PSV (↓% do pico de fluxo).",
-        "Hipoxemia refratária: ↑PEEP/FiO₂, recrutar com cautela, prona/BNM; reavaliar gasometria.",
+        "Hipoxemia refratária: confirmar tubo/circuito e causas reversíveis; otimizar FiO₂ e PEEP conforme estratégia do cenário. Na SARA, pronar quando critérios forem preenchidos; bloqueio neuromuscular apenas em selecionados quando assincronia/drive impedir ventilação protetora. Manobras de recrutamento de alta pressão não são rotina e as prolongadas devem ser evitadas.",
       ],
       next: "desmame_check",
     },
