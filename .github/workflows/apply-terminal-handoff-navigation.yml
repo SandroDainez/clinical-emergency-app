@@ -24,6 +24,11 @@ jobs:
           node scripts/aplica-vm-camada-inicial-2026.cjs
           node scripts/ajusta-vm-camada-inicial-i18n-2026.cjs
 
+      - name: Show TypeScript compile diagnostics
+        run: |
+          rm -rf /tmp/vm-compile
+          npx tsc --module commonjs --target es2020 --resolveJsonModule --esModuleInterop --moduleResolution node --skipLibCheck --outDir /tmp/vm-compile ventilation-decision-tree.ts
+
       - name: Validate ventilation module
         run: npm run test:vm
 
