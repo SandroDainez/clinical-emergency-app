@@ -20,6 +20,8 @@ const validators = [
   "valida-guided-discovery-hic-stemi.cjs",
   "valida-clinical-transition-contracts.cjs",
   "valida-navegacao-contextual-acls.cjs",
+  "valida-target-navigation-shell.cjs",
+  "valida-sem-from-module-hardcoded-na-ui.cjs",
   "valida-event-log-medication-disposition.cjs",
   "valida-temporal-debrief.cjs",
   "valida-acls-debrief-temporal-source.cjs",
