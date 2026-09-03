@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const fs=require('node:fs');const path=require('node:path');const t=fs.readFileSync(path.resolve(__dirname,'..','ventilation-decision-tree.ts'),'utf8');const c=[];const ok=(n,v)=>c.push([n,!!v]);
-ok('segurança não usa DP 15 como dupla obrigatória',t.includes('A mecânica ventilatória está segura para o cenário atual?')&&t.includes('não é corte universal isolado'));
+ok('segurança não usa DP 15 como dupla obrigatória',t.includes('A pressão de platô está dentro do alvo do cenário e a mecânica está estável ou melhorando?')&&t.includes('15 cmH₂O não deve funcionar como corte universal isolado'));
 ok('elegibilidade sem números universais',t.includes('Cortes isolados não substituem a avaliação clínica'));
 ok('TRE com ou sem PS',t.includes('TRE pode ser realizado com ou sem pressão de suporte'));
 ok('RSBI não obrigatório',t.includes('IRRS/RSBI não é obrigatório')&&t.includes('AARC 2024 não exige seu cálculo'));
