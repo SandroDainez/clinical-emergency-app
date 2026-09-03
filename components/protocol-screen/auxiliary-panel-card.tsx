@@ -3,6 +3,7 @@ import { tr } from "../../lib/i18n";
 import { useLanguage } from "../../lib/language-context";
 import type { AuxiliaryPanel } from "../../clinical-engine";
 import { CategoricalSelector } from "../ui-v2/categorical-selector";
+import { HorizontalMultiSelect } from "../ui-v2/horizontal-multi-select";
 import { styles } from "./protocol-screen-styles";
 import { hasSelectedPresetValue } from "./protocol-screen-utils";
 
@@ -83,39 +84,20 @@ function AuxiliaryPanelCard({
                   ) : null}
                   {field.presets && field.presets.length > 0 ? (
                     field.presetMode === "toggle_token" ? (
-                      <View style={styles.auxiliaryPresetRow} accessibilityLabel={tr(field.label)}>
-                        {field.presets.map((preset) => {
-                          const isSelected = hasSelectedPresetValue(
+                      <HorizontalMultiSelect
+                        options={field.presets.map((preset) => ({
+                          value: preset.value,
+                          label: tr(preset.label),
+                          selected: hasSelectedPresetValue(
                             field.value,
                             preset.value,
                             field.presetMode
-                          );
-
-                          return (
-                            <Pressable
-                              key={`${field.id}-${preset.value}`}
-                              accessibilityRole="checkbox"
-                              accessibilityLabel={tr(preset.label)}
-                              accessibilityState={{ checked: isSelected }}
-                              accessibilityHint={
-                                isSelected ? tr("Remover esta opção") : tr("Adicionar esta opção")
-                              }
-                              style={[
-                                styles.auxiliaryPresetButton,
-                                isSelected && styles.auxiliaryPresetButtonActive,
-                              ]}
-                              onPress={() => onPresetApply(field.id, preset.value)}>
-                              <Text
-                                style={[
-                                  styles.auxiliaryPresetButtonText,
-                                  isSelected && styles.auxiliaryPresetButtonTextActive,
-                                ]}>
-                                {isSelected ? "✓ " : ""}{tr(preset.label)}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
+                          ),
+                        }))}
+                        onToggle={(value) => onPresetApply(field.id, value)}
+                        accessibilityLabel={tr(field.label)}
+                        testID={`preset-multiplo-${field.id}`}
+                      />
                     ) : (
                       <CategoricalSelector
                         value={selectedPreset?.value}
