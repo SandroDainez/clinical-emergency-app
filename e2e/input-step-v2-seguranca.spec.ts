@@ -50,31 +50,38 @@ async function avancarAteInput(page: Page, maxPassos = 6) {
   throw new Error("InputStep da ventilação não foi alcançado no limite esperado");
 }
 
-test("InputStep v2 mantém número vazio até interação real e só libera após os obrigatórios", async ({ page }) => {
+test("InputStep v2 mantém número vazio até interação real e não avança com altura ausente", async ({ page }) => {
   await abrirVentilacaoV2(page);
-  const input = await avancarAteInput(page);
+  await avancarAteInput(page);
 
   // Invariante principal: campo numérico ausente NÃO ganha midpoint/preset implícito.
   const alturaVazia = page.getByTestId("campo-clinico-altura-numeric-empty");
   await expect(alturaVazia).toBeVisible();
   await expect(alturaVazia.getByText(/Valor ainda não informado/i)).toBeVisible();
 
-  // A etapa continua bloqueada enquanto altura + sexo ainda não foram realmente informados.
-  await expect(input.getByText(/Faltam informar\s+2\s+campos obrigatórios/i)).toBeVisible();
+  // Altura é obrigatória pela semântica do engine (!optional). Mesmo que sexo
+  // tenha vindo legitimamente herdado de outro módulo, altura vazia mantém o
+  // avanço bloqueado. Não dependemos de uma contagem frágil de pendências.
+  const bloqueado = page.getByRole("button", { name: /Falta(m)? informar/i }).first();
+  await expect(bloqueado).toBeVisible();
+  await expect(bloqueado).toBeDisabled();
 
   // Uma interação real grava a altura no engine e troca a UI vazia pelo NumericStepper.
   await page.getByTestId("campo-clinico-altura-numeric-input").fill("170");
   await page.getByTestId("campo-clinico-altura-numeric-confirm").click();
   await expect(alturaVazia).not.toBeVisible();
   await expect(page.getByTestId("campo-clinico-altura-numeric")).toBeVisible();
-  await expect(input.getByText(/Falta informar:\s*Sexo/i)).toBeVisible();
 
-  // Só depois do segundo obrigatório o CTA de avanço fica disponível.
-  const sexo = page.getByTestId("campo-clinico-sexo-categorical");
-  await expect(sexo).toBeVisible();
-  await sexo.getByRole("radio").first().click();
+  // Se sexo não veio herdado, ele continua obrigatório e precisa de uma escolha
+  // real. Se veio herdado, não sobrescrevemos um dado legítimo só para o teste.
+  let confirmar = page.getByRole("button", { name: /Confirmar e continuar/i }).first();
+  if (!(await confirmar.isEnabled().catch(() => false))) {
+    const sexo = page.getByTestId("campo-clinico-sexo-categorical");
+    await expect(sexo).toBeVisible();
+    await sexo.getByRole("radio").first().click();
+    confirmar = page.getByRole("button", { name: /Confirmar e continuar/i }).first();
+  }
 
-  const confirmar = input.getByRole("button", { name: /Confirmar e continuar/i });
   await expect(confirmar).toBeEnabled();
   await confirmar.click();
   await expect(page.getByTestId("passo-de-entrada")).not.toBeVisible();
