@@ -49,6 +49,7 @@ const validators = [
   "valida-drug-kb-apresentacoes-br.cjs",
   "valida-critical-dose-ownership.cjs",
   "valida-sedacao-evidencia-2025.cjs",
+  "valida-sedacao-limites-dose.cjs",
 ];
 
 for (const validator of validators) {
