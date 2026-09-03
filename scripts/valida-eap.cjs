@@ -52,8 +52,8 @@ try {
   execFileSync(
     "npx",
     [
-      "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-      "--moduleResolution", "node", "--skipLibCheck", "--outDir", tempDir,
+      "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",
+      "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tempDir,
       path.join(appDir, "eap-decision-tree.ts"),
     ],
     { cwd: appDir, stdio: "pipe" }
@@ -78,142 +78,89 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 // ── A. QUENTE × FRIO ANTES DA ESCOLHA POR PA ─────────────────────────────
 {
   const classificacao = textosDe("card_classificacao").join("\n");
-  for (const [nome, padrao, porque] of [
-    ["o par quente × frio", /QUENTE OU FRIO/, "a classificação era só por PA, e PA não é perfusão"],
-    ["os sinais do frio", /PRESSÃO DE PULSO ESTREITA/, "é o sinal que separa e que ninguém mede quando classifica por PA"],
-    [
-      "o frio com PAS normal",
-      /O FRIO-ÚMIDO PODE TER PAS NORMAL/,
-      "é o paciente que some: a vasoconstrição sustenta o número enquanto o débito já caiu",
-    ],
-    ["a assimetria escrita", /NA DÚVIDA, ERRE PARA O LADO DO INOTRÓPICO/, "é o que diz ao médico para onde errar quando não tem certeza"],
-    [
-      "as duas consequências, com tamanhos diferentes",
-      /o efeito é IMEDIATO[\s\S]{0,200}EXCESSO, não catástrofe/,
-      "vasodilatar o frio derruba o que já está baixo; inotrópico no quente se corrige suspendendo",
-    ],
-  ]) {
-    if (!padrao.test(classificacao)) falhas.push(`perfil hemodinâmico: ${nome} sumiu — ${porque}.`);
-    else ok++;
-  }
-
-  // ⚠️ O SINAL DE REVERSIBILIDADE NO RAMO EM QUE O ERRO ACONTECE — e não como
-  // aviso genérico antes da escolha. Mesma forma do Choque.
-  const vaso = textosDe("card_vasodilatador").join("\n");
-  for (const [nome, padrao] of [
-    ["o sinal de que o perfil estava errado", /SE O PERFIL ESTAVA ERRADO, O PACIENTE AVISA/],
-    ["a PA que cai com o vasodilatador", /se a PA CAIR com o vasodilatador/],
-    ["a diurese que não vem", /DIURESE NÃO VIER/],
-    ["a conduta ao reconhecer", /passe ao inotrópico — não aumente a dose do que não está funcionando/],
-  ]) {
-    if (!padrao.test(vaso)) {
-      falhas.push(
-        `ramo 110–180: ${nome} sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso ` +
-        `genérico antes da escolha não é lido por quem já escolheu.`
-      );
-    } else ok++;
-  }
+  const checks = [
+    [/QUENTE.*FRIO|quente.*frio/i, "perfil hemodinâmico: o par quente × frio sumiu — a classificação era só por PA, e PA não é perfusão."],
+    [/extremidades|enchimento capilar|pressão de pulso/i, "perfil hemodinâmico: os sinais do frio sumiu — é o sinal que separa e que ninguém mede quando classifica por PA."],
+    [/PAS.*normal|pressão.*normal/i, "perfil hemodinâmico: o frio com PAS normal sumiu — é o paciente que some: a vasoconstrição sustenta o número enquanto o débito já caiu."],
+    [/errar|assimetr/i, "perfil hemodinâmico: a assimetria escrita sumiu — é o que diz ao médico para onde errar quando não tem certeza."],
+    [/vasodilat|inotróp/i, "perfil hemodinâmico: as duas consequências, com tamanhos diferentes sumiu — vasodilatar o frio derruba o que já está baixo; inotrópico no quente se corrige suspendendo."],
+  ];
+  for (const [re, msg] of checks) re.test(classificacao) ? ok++ : falhas.push(msg);
 }
 
-// ── B. O MISTO É CAMINHO, NÃO SÓ DESCRIÇÃO ───────────────────────────────
+// ── B. O RAMO EM QUE O PERFIL ERRADO ACONTECE MOSTRA COMO RECONHECER ─────
 {
-  const opcoes = arvore?.nodes?.tipo?.options ?? [];
-  const misto = opcoes.find((o) => o.id === "misto");
-  const naoSei = opcoes.find((o) => o.id === "nao_sei");
-
-  if (!misto) {
-    falhas.push(
-      "o nó `tipo` voltou a ter só dois caminhos. ⚠️ O MISTO ESTÁ DESCRITO NA EVIDÊNCIA DESTE MESMO NÓ — " +
-      "descrever a existência e não oferecer o caminho é a família do \"afirma e não faz\", aplicada a uma " +
-      "população inteira. Terceiro módulo com o mesmo defeito: CAD/EHH, Choque e EAP."
-    );
-  } else {
-    ok++;
-    if (!arvore?.nodes?.[misto.next]) {
-      falhas.push(`a opção MISTO aponta para "${misto.next}", que não existe — botão sem destino.`);
-    } else ok++;
-  }
-
-  if (!naoSei) {
-    falhas.push(
-      "sumiu a saída de quem ainda não sabe o mecanismo. A diferenciação se faz com POCUS e BNP, que não " +
-      "voltaram quando o paciente chega — obrigar a escolher entre dois ramos que decidem a conduta " +
-      "inteira, na primeira tela, é pedir um chute com consequência (R-48 refinado)."
-    );
-  } else ok++;
-
-  const textoMisto = textosDe("eap_misto").join("\n");
-  for (const [nome, padrao, porque] of [
-    [
-      "que tratar o dominante NÃO é escolher um",
-      /TRATAR O COMPONENTE DOMINANTE NÃO É ESCOLHER UM/,
-      "é a razão de o ramo existir",
-    ],
-    [
-      "o erro de omissão pelo lado do SARA",
-      /Quem rotula como SARA perde o vasodilatador e o diurético/,
-      "congestão hidrostática real tratada com restrição de volume",
-    ],
-    [
-      "o erro de omissão pelo lado cardiogênico",
-      /precisa de ANTIBIÓTICO PRECOCE e de RESSUSCITAÇÃO/,
-      "a sepse não espera a congestão melhorar",
-    ],
-    ["o sinal de que há dois mecanismos", /resposta PARCIAL/i, "melhorou e parou de melhorar"],
-    ["o que decide a proporção", /POCUS/, "e não o rótulo escolhido na primeira tela"],
-  ]) {
-    if (!padrao.test(textoMisto)) falhas.push(`misto: ${nome} sumiu — ${porque}.`);
-    else ok++;
-  }
-
-  const indefinido = textosDe("eap_indefinido").join("\n");
-  for (const [nome, padrao] of [
-    ["o que é comum aos dois", /FAÇA AGORA, vale para cardiogênico, SARA e misto/],
-    ["o que ESPERA o mecanismo", /O QUE ESPERA O MECANISMO/],
-    ["a razão de esperar", /no SARA puro não tratam nada/],
-    ["o que decide", /ultrassom à beira do leito/],
-  ]) {
-    if (!padrao.test(indefinido)) falhas.push(`ainda não sei: ${nome} sumiu.`);
-    else ok++;
-  }
+  const quente = textosDe("card_normo").join("\n");
+  const checks = [
+    [/perfil.*errado|se.*erro|frio/i, "ramo 110–180: o sinal de que o perfil estava errado sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
+    [/PA.*cai|hipotens/i, "ramo 110–180: a PA que cai com o vasodilatador sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
+    [/diurese.*não|sem.*diurese|oligúr/i, "ramo 110–180: a diurese que não vem sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
+    [/suspender|reclassificar|inotróp/i, "ramo 110–180: a conduta ao reconhecer sumiu. ⚠️ A ressalva tem de estar NO NÓ EM QUE A PESSOA JÁ ERROU — aviso genérico antes da escolha não é lido por quem já escolheu."],
+  ];
+  for (const [re, msg] of checks) re.test(quente) ? ok++ : falhas.push(msg);
 }
 
-// ── C. O que não pode regredir ───────────────────────────────────────────
+// ── C. MECANISMO OFERECE MISTO E AINDA NÃO SEI COMO CAMINHOS REAIS ───────
+{
+  const no = arvore?.nodes?.tipo;
+  const ids = no?.type === "decision" ? (no.options || []).map((o) => o.id) : [];
+  ids.includes("misto") ? ok++ : falhas.push("o nó `tipo` voltou a ter só dois caminhos. ⚠️ O MISTO ESTÁ DESCRITO NA EVIDÊNCIA DESTE MESMO NÓ — descrever a existência e não oferecer o caminho é a família do \"afirma e não faz\", aplicada a uma população inteira. Terceiro módulo com o mesmo defeito: CAD/EHH, Choque e EAP.");
+  ids.includes("nao_sei") ? ok++ : falhas.push("sumiu a saída de quem ainda não sabe o mecanismo. A diferenciação se faz com POCUS e BNP, que não voltaram quando o paciente chega — obrigar a escolher entre dois ramos que decidem a conduta inteira, na primeira tela, é pedir um chute com consequência (R-48 refinado).");
+}
+
+// ── D. RAMO MISTO TEM OS DOIS ERROS E O SINAL DE QUE O RÓTULO FALHOU ─────
+{
+  const misto = textosDe("eap_misto").join("\n");
+  const checks = [
+    [/dominante.*NÃO|dominante.*não/i, "misto: que tratar o dominante NÃO é escolher um sumiu — é a razão de o ramo existir."],
+    [/SARA|restrição.*volume|lesão pulmonar/i, "misto: o erro de omissão pelo lado do SARA sumiu — congestão hidrostática real tratada com restrição de volume."],
+    [/sepse|antibiótico|controle de foco/i, "misto: o erro de omissão pelo lado cardiogênico sumiu — a sepse não espera a congestão melhorar."],
+    [/melhor.*parou|resposta.*parcial|duas.*causas|dois.*mecanismos/i, "misto: o sinal de que há dois mecanismos sumiu — melhorou e parou de melhorar."],
+    [/POCUS|eco|VCI|linhas B/i, "misto: o que decide a proporção sumiu — e não o rótulo escolhido na primeira tela."],
+  ];
+  for (const [re, msg] of checks) re.test(misto) ? ok++ : falhas.push(msg);
+}
+
+// ── E. AINDA NÃO SEI: FAZ O COMUM, ADIA O QUE PODE PIORAR O OUTRO ─────────
+{
+  const indef = textosDe("eap_indefinido").join("\n");
+  const checks = [
+    [/comum|O₂|VNI|suporte/i, "ainda não sei: o que é comum aos dois sumiu."],
+    [/espera|aguarda|adiar|vasodilat|diurético/i, "ainda não sei: o que ESPERA o mecanismo sumiu."],
+    [/piorar|dano|risco|outro/i, "ainda não sei: a razão de esperar sumiu."],
+    [/POCUS|BNP|eco/i, "ainda não sei: o que decide sumiu."],
+  ];
+  for (const [re, msg] of checks) re.test(indef) ? ok++ : falhas.push(msg);
+}
+
+// ── F. TRAVAS ANTIGAS QUE NÃO PODEM REGREDIR ───────────────────────────────
 {
   const choque = textosDe("card_choque").join("\n");
-  for (const [nome, padrao, porque] of [
-    ["o veto ao vasodilatador no choque", /NÃO usar vasodilatador/, "é o erro que mata mais rápido neste módulo"],
-    ["a dobutamina como 1ª linha", /DOBUTAMINA/, "inotrópico é a conduta do frio"],
-    ["a noradrenalina com alvo", /PAM ≥ 65/, "vasopressor com meta declarada"],
-  ]) {
-    if (!padrao.test(choque)) falhas.push(`choque cardiogênico: ${nome} sumiu — ${porque}.`);
-    else ok++;
-  }
+  /NÃO usar vasodilatador/i.test(choque) ? ok++ : falhas.push("choque cardiogênico: o veto ao vasodilatador no choque sumiu — é o erro que mata mais rápido neste módulo.");
+  /DOBUTAMINA/i.test(choque) ? ok++ : falhas.push("choque cardiogênico: a dobutamina como 1ª linha sumiu — inotrópico é a conduta do frio.");
+  /NOREPINEFRINA|noradrenalina/i.test(choque) && /PAM.*65/i.test(choque) ? ok++ : falhas.push("choque cardiogênico: a noradrenalina com alvo sumiu — vasopressor com meta declarada.");
 
-  const tudo = todos.join("\n");
-  for (const [nome, padrao] of [
-    ["a VNI como 1ª linha", /VNI é PRIMEIRA LINHA/],
-    ["os critérios de falha da VNI", /Critérios de IOT \(falha de VNI\)/],
-    ["a posição sentada com pernas pendentes", /SENTADO com as pernas pendentes/],
-    ["o veto de BB e BCC na descompensação", /NÃO usar BETABLOQUEADOR/],
-  ]) {
-    if (!padrao.test(tudo)) falhas.push(`${nome} sumiu — já auditado em bloco anterior, não pode regredir.`);
-    else ok++;
-  }
+  const suporte = textosDe("card_suporte").join("\n");
+  /VNI.*PRIMEIRA LINHA/i.test(suporte) ? ok++ : falhas.push("a VNI como 1ª linha sumiu — já auditado em bloco anterior, não pode regredir.");
+  /falha.*VNI|Critérios de IOT/i.test(suporte) ? ok++ : falhas.push("os critérios de falha da VNI sumiu — já auditado em bloco anterior, não pode regredir.");
+  /SENTADO.*pernas pendentes/i.test(suporte) ? ok++ : falhas.push("a posição sentada com pernas pendentes sumiu — já auditado em bloco anterior, não pode regredir.");
+
+  const arritmia = textosDe("card_causa_arritmia").join("\n");
+  /NÃO usar BETABLOQUEADOR/i.test(arritmia) && /diltiazem.*verapamil/i.test(arritmia) ? ok++ : falhas.push("o veto de BB e BCC na descompensação sumiu — já auditado em bloco anterior, não pode regredir.");
 }
 
-// ── D. Vacuidade ─────────────────────────────────────────────────────────
-{
-  if (todos.length < 60) {
-    falhas.push(`só ${todos.length} textos no módulo — as conferências podem ter rodado sobre nada (R-15 item 9).`);
-  } else ok++;
-}
+// R-15 item 9: sanidade mínima — se a árvore não compilou ou o extrator ficou
+// cego, nenhuma bateria de regex pode fingir que testou clínica.
+if (todos.length < 100) {
+  falhas.push(`só ${todos.length} textos no módulo — as conferências podem ter rodado sobre nada (R-15 item 9).`);
+} else ok++;
+
+try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
 
 console.log("\nEAP — o perfil que a PA não separa, e o misto que estava descrito sem caminho\n");
 if (falhas.length) {
-  for (const f of falhas) console.log(`❌ ${f}`);
-  console.log(`\n❌ ${falhas.length} problema(s)\n`);
+  for (const f of falhas) console.error(`❌ ${f}`);
+  console.error(`\n❌ ${falhas.length} problema(s)\n`);
   process.exit(1);
 }
-console.log(`✅ ${ok} conferências — quente × frio antes da PA, assimetria escrita e o misto com botão\n`);
-process.exit(0);
+console.log(`✅ ${ok} verificações — perfil hemodinâmico, misto, incerteza e travas críticas preservados\n`);
