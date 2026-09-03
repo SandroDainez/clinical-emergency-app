@@ -413,7 +413,7 @@ export const SED_DRUGS: SedDrug[] = [
     alert: {
       icon: "⚠️", tone: "warn",
       lines: [
-        "Rigidez torácica com bolus IV rápido em dose alta (> 5 mcg/kg).",
+        "Rigidez torácica/laríngea (wooden chest) é rara, mas pode comprometer a ventilação; é favorecida por dose alta e administração IV rápida, porém também foi descrita com doses menores — não usar 5 mcg/kg como fronteira de segurança. Administrar bolus lentamente e reconhecer ventilação difícil súbita após fentanil.",
         "Infusões prolongadas podem atrasar o despertar por acúmulo e aumento da meia-vida contexto-sensível; não há um corte universal em 2–4 h. O efeito depende de duração, dose e fatores do paciente/doença crítica. Se recuperação rápida e previsível for prioridade, considerar remifentanil.",
       ],
     },
