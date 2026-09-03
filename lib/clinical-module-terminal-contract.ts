@@ -1,7 +1,8 @@
 export type ClinicalModuleTerminalMode =
   | "care_pathway"
   | "procedural_subflow"
-  | "embedded_care_pathway";
+  | "embedded_care_pathway"
+  | "crisis_pathway";
 
 export type ClinicalModuleTerminalContract = {
   protocolId: string;
@@ -52,6 +53,15 @@ export function validateClinicalModuleTerminalContracts(
       }
       if (!entry.requiresReturnToOrigin) {
         issues.push(`${entry.protocolId}: embedded_care_pathway exige retorno quando chamado por outro protocolo`);
+      }
+    }
+
+    if (entry.mode === "crisis_pathway") {
+      if (entry.requiresClinicalDisposition) {
+        issues.push(`${entry.protocolId}: crisis_pathway não deve inventar alta/UTI para encerrar uma crise`);
+      }
+      if (entry.requiresReturnToOrigin) {
+        issues.push(`${entry.protocolId}: crisis_pathway não deve prometer retorno à origem após resolução/escalada da crise`);
       }
     }
   }
