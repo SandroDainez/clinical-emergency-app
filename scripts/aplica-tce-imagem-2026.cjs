@@ -52,4 +52,11 @@ replaceExact(
   'TypeScript valida-tce'
 );
 
+replaceExact(
+  test,
+  '  if (!todos.some((t) => /Repetir TC em 6–12 h/.test(t))) {\n    falhas.push("a conduta de repetir a TC em 6–12 h sumiu — a D-18 fechou SEM afrouxar nada, e continua assim.");\n  } else ok++;',
+  '  if (!todos.some((t) => /Repetir TC IMEDIATAMENTE se houver deterioração neurológica/.test(t))) {\n    falhas.push("a repetição imediata da TC diante de deterioração neurológica sumiu — o gatilho clínico continua obrigatório.");\n  } else ok++;\n  if (!todos.some((t) => /individualizar TC seriada conforme tipo\\/tamanho da lesão/.test(t))) {\n    falhas.push("a política explícita de TC seriada individualizada sumiu — retirar a janela fixa não pode virar ausência de reavaliação por imagem.");\n  } else ok++;',
+  'expectativa TC seriada valida-tce'
+);
+
 console.log('✅ TCE imagem 2026: critérios de TC, antitrombóticos e repetição seriada contextualizados.');
