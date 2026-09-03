@@ -9,6 +9,8 @@ export type ClinicalTransitionContract = {
   trigger: string;
   mode: ClinicalTransitionMode;
   destinationKind?: ClinicalTransitionDestinationKind;
+  /** Nó real da árvore que materializa esta transição quando há correspondência 1:1. */
+  sourceNodeId?: string;
   /** Nome clínico legível do destino externo, quando não existe módulo do app. */
   externalLabel?: string;
   /** Campos estáveis ou observações que o destino pode receber explicitamente. */
@@ -32,6 +34,9 @@ export function registerClinicalTransition(contract: ClinicalTransitionContract)
     throw new Error(`Transição ${contract.id} sem origem ou destino`);
   }
   if (!contract.trigger.trim()) throw new Error(`Transição ${contract.id} sem gatilho clínico`);
+  if (contract.sourceNodeId !== undefined && !contract.sourceNodeId.trim()) {
+    throw new Error(`Transição ${contract.id} com sourceNodeId vazio`);
+  }
 
   const destinationKind = contract.destinationKind ?? "module";
 
@@ -47,10 +52,14 @@ export function registerClinicalTransition(contract: ClinicalTransitionContract)
   if (destinationKind === "external_service" && contract.mode !== "terminal") {
     throw new Error(`Transição ${contract.id} para serviço externo deve ser terminal neste contrato`);
   }
+  if (destinationKind === "external_service" && !contract.sourceNodeId?.trim()) {
+    throw new Error(`Transição ${contract.id} para serviço externo deve declarar sourceNodeId`);
+  }
 
   registry.set(contract.id, {
     ...contract,
     destinationKind,
+    sourceNodeId: contract.sourceNodeId?.trim(),
     preserves: [...(contract.preserves ?? [])],
   });
 }
