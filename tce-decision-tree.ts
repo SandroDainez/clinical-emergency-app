@@ -53,7 +53,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "A lesão secundária (hipotensão e hipóxia) determina o desfecho mais que a lesão primária.",
       actions: [
         "Via aérea: Glasgow ≤ 8 → via aérea definitiva com estabilização cervical em linha.",
-        "Oxigenação: manter SpO₂ ≥ 90% (idealmente ≥ 94%). UM episódio de hipóxia já piora o prognóstico.",
+        "Oxigenação: manter SpO₂ ≥ 94% e, quando houver gasometria, usar PaO₂ 80–100 mmHg como alvo inicial. Evitar qualquer episódio de hipóxia.",
         PAS_TCE_META,
         "Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
@@ -283,7 +283,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         TCE_HIPERVENTILACAO_PROIBIDA,
         PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA,
         TCE_MONITORIZACAO_PIC,
-        "Profilaxia de convulsão precoce: fenitoína ou levetiracetam por 7 dias em alto risco (BTF) — reduz crise precoce, não altera epilepsia tardia.",
+        "Profilaxia de crise pós-traumática PRECOCE: considerar fármaco antisseizure nos pacientes com TCE em que o risco de crise precoce justifique a exposição ao medicamento. A BTF sustenta fenitoína para reduzir crises nos primeiros 7 dias quando o benefício superar os riscos; não há evidência suficiente para afirmar superioridade do levetiracetam sobre fenitoína. Não manter profilaxia além de 7 dias apenas para prevenir crise tardia, salvo se houver crise, status epiléptico ou outra indicação neurológica específica.",
         "NÃO usar corticoide — aumenta mortalidade no TCE (estudo CRASH).",
         "Normovolemia com cristaloide isotônico; evitar soluções hipotônicas (glicosado, Ringer lactato em excesso).",
       ],
@@ -401,7 +401,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Sem monitor invasivo de PIC disponível, Doppler transcraniano, ultrassom da bainha do nervo óptico e pupilometria quantitativa podem acrescentar informação e acompanhar TENDÊNCIAS, especialmente quando combinados ao exame e à TC. Não usar PI, diâmetro da bainha ou NPi com um único cutoff universal para diagnosticar/excluir HIC ou decidir terapia isoladamente; técnica, dispositivo, população e contexto alteram os valores. Deterioração clínica/hernição deve ser tratada pelo quadro global sem esperar um teste não invasivo.",
         "HIC REFRATÁRIA: a escalada em etapas está no passo de conduta da herniação — 1ª etapa (medidas gerais, osmoterapia e drenagem quando disponível), 2ª (aprofundar sedação, ajustar osmoterapia pela resposta e reavaliar opção neurocirúrgica) e 3ª (resgates selecionados de maior risco, como barbitúrico, hipotermia terapêutica e hiperventilação monitorizada). Aqui se mantém apenas o que demonstrar benefício sobre a PIC e tolerância clínica, com reavaliação contínua.",
         "Monitorização multimodal quando disponível: saturação venosa jugular acima de 55%, oximetria tissular cerebral acima de 20 mmHg, Doppler transcraniano para autorregulação e vasoespasmo.",
-        "EEG contínuo é preferível quando há suspeita relevante de crise não convulsiva, coma/alteração inexplicada ou necessidade de acompanhar terapia que depende do EEG. A duração deve seguir probabilidade pré-teste, achados iniciais, sedação e evolução: em geral são necessárias pelo menos 24 h para rastreio adequado, e pacientes com coma, descargas periódicas ou forte suspeita podem precisar 48 h ou mais — não impor 48 h a todo TCE em coma.",
+        "EEG contínuo: iniciar o mais cedo possível quando houver suspeita de crise não convulsiva/status, alteração de consciência sem explicação suficiente, TCE grave com alto risco eletrográfico ou quando a terapia depende do EEG (por exemplo, barbitúrico). Como regra prática, pelo menos 24 h costuma ser necessário para rastreio; em TCE com coma, hemorragia intracraniana, descargas periódicas, sedação importante ou forte suspeita, 24–48 h ou mais pode ser necessário. Interromper ou prolongar conforme achados, evolução e redução dos sedativos — não usar duração fixa universal.",
       ],
       targets: [
         { moduleId: "ventilacao-mecanica", label: "Ventilação mecânica", reason: "Controle de PaCO₂ e oxigenação" },
