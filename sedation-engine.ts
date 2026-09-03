@@ -192,11 +192,11 @@ export const SED_DRUGS: SedDrug[] = [
     },
     info: [
       "Emulsão lipídica: 1 mL = ~1,1 kcal — descontar do suporte nutricional.",
-      "Não usar em alergia a ovo ou soja.",
+      "Alergia alimentar a ovo ou soja, isoladamente, não exige evitar propofol; história de reação ao próprio propofol/formulação deve ser tratada como hipersensibilidade medicamentosa.",
       "pH ácido — dor na injeção (lidocaína prévia reduz).",
       "Meia-vida contexto-sensível curta — acorda rápido após suspensão.",
     ],
-    reference: "PADIS Guidelines 2018 (Crit Care Med).",
+    reference: "SCCM PADIS 2018 + Focused Update 2025 · AAAAI Drug Hypersensitivity Guidance / propofol e alergia alimentar, revisão 2024.",
   },
   {
     key: "midazolam",
@@ -265,7 +265,7 @@ export const SED_DRUGS: SedDrug[] = [
       ANTIDOTO_NAO_CRUZA_DE_CLASSE,
       "Infusão 0,02–0,2 mg/kg/h (≈ 1,4–14 mg/h em 70 kg). Bolus de sedação: 0,01–0,05 mg/kg.",
     ],
-    reference: "MIDEX/PRODEX trials (JAMA 2012).",
+    reference: "SCCM PADIS 2018 + Focused Update 2025 · MIDEX/PRODEX (JAMA 2012).",
   },
   {
     key: "cetamina",
@@ -352,7 +352,7 @@ export const SED_DRUGS: SedDrug[] = [
     ],
     strategy: [
       "Agonista α-2: sedação com analgesia preservando o drive respiratório — paciente comunicativo (RASS 0/−1).",
-      "Ideal no desmame de VM e no delirium hiperativo; reduz consumo de opioide.",
+      "Preferir quando sedação leve e/ou redução de delirium são prioridades; útil quando agitação dificulta desmame/extubação.",
       "Iniciar direto na manutenção (sem bolus de ataque em UTI).",
     ],
     alert: {
@@ -368,7 +368,7 @@ export const SED_DRUGS: SedDrug[] = [
       "✅ Opioid-sparing; sedação com paciente comunicativo.",
       "✅ Betabloqueados — sem interação relevante.",
     ],
-    reference: "MENDS2 trial (NEJM 2021).",
+    reference: "SCCM PADIS 2018 + Focused Update 2025 · MENDS2 (NEJM 2021).",
   },
 
   // ═══ GRUPO 2 — ANALGESIA ═══

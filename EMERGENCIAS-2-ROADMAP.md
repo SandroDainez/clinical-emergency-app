@@ -2,6 +2,8 @@
 
 Objetivo: evoluir o app existente para um copiloto determinístico de atendimento crítico, mantendo o produto utilizável e migrando por camadas, sem reescrita total.
 
+Estado da fundação: 22 fluxos assistenciais, 5 referências e 4 calculadoras; 19 transições explícitas auditadas.
+
 ## Princípios
 
 1. Uma tela, uma decisão dominante.
