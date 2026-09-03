@@ -1,59 +1,14 @@
-name: Apply sedation evidence update
+name: Archived sedation evidence update
 
 on:
-  push:
-    branches:
-      - emergencias-2-ui-core
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  migrate-and-validate:
-    if: ${{ !contains(github.event.head_commit.message, '[sedation-evidence-applied]') }}
+  archived-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-        with:
-          ref: emergencias-2-ui-core
-          fetch-depth: 0
-
-      - name: Apply exact evidence migration
-        run: node scripts/aplica-sedacao-evidence-update.cjs
-
-      - name: Restore roadmap catalog summary contract
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const file = 'EMERGENCIAS-2-ROADMAP.md';
-          let src = fs.readFileSync(file, 'utf8');
-          const summary = 'Estado da fundação: 22 fluxos assistenciais, 5 referências e 4 calculadoras; 19 transições explícitas auditadas.';
-          if (!src.includes(summary)) {
-            const anchor = 'Objetivo: evoluir o app existente para um copiloto determinístico de atendimento crítico, mantendo o produto utilizável e migrando por camadas, sem reescrita total.\n';
-            if (!src.includes(anchor)) throw new Error('Âncora do roadmap não encontrada.');
-            src = src.replace(anchor, `${anchor}\n${summary}\n`);
-            fs.writeFileSync(file, src);
-          }
-          NODE
-
-      - name: Validate sedation module
-        run: npm run test:sedacao
-
-      - name: Validate sedation evidence guard
-        run: node scripts/valida-sedacao-evidencia-2025.cjs
-
-      - name: Validate Emergencias 2 structural suite
-        run: npm run test:emergencias-2
-
-      - name: Commit validated migration
-        run: |
-          if git diff --quiet; then
-            echo "No sedation evidence changes needed."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add sedation-engine.ts EMERGENCIAS-2-ROADMAP.md
-          git commit -m "update sedation evidence messaging [sedation-evidence-applied]"
-          git push origin HEAD:emergencias-2-ui-core
+      - name: Archived migration notice
+        run: echo "Sedation evidence update applied, validated and archived; retained only as an audit marker."
