@@ -514,7 +514,7 @@ export const SED_DRUGS: SedDrug[] = [
       { id: "bolus", label: "Indução / bolus", kind: "bolus", unit: "mg/kg", defaultDose: "0,3",
         bolusNotes: [
           "Indução: 0,3 mg/kg IV — início 15–45 s, duração 5–10 min.",
-          "Dose PLENA também no instável: é o indutor hemodinamicamente neutro, e reduzi-lo perde justamente a vantagem.",
+          "ISR em adulto crítico: 0,2–0,3 mg/kg IV é faixa usada em estudos; o default deste módulo permanece 0,3 mg/kg. Não reduzir automaticamente apenas pela instabilidade, mas individualizar conforme idade, reserva fisiológica e fármacos concomitantes.",
           "NÃO tem modo de infusão: uso em bólus único. Infusão contínua causa supressão adrenal sustentada.",
         ],
       },
@@ -534,9 +534,9 @@ export const SED_DRUGS: SedDrug[] = [
     info: [
       "✅ ISR no paciente hipotenso ou com reserva cardíaca limitada.",
       "✅ Procedimento curto (< 10 min).",
-      "Dose máxima usual: não exceder ~3 ampolas (30 mL) no adulto.",
+      "Evitar limites por número de ampolas: a dose deve permanecer baseada em mg/kg e individualização clínica; a bula descreve 0,2–0,6 mg/kg para indução, com 0,3 mg/kg como dose usual.",
     ],
-    reference: "Bula Hypnomidate/ANVISA · The Walls Manual of Emergency Airway Management, 6ª ed. 2023.",
+    reference: "Bula de etomidato/Hypnomidate · SCCM RSI Guideline 2023 · estudos contemporâneos de etomidato vs cetamina em intubação de críticos.",
   },
   {
     key: "succinilcolina",
