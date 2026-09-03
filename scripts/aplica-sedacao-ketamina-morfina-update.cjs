@@ -35,9 +35,14 @@ update("sedation-engine.ts", [
 
 update("eap-decision-tree.ts", [
   [
-    "eap-morphine-class",
+    "eap-morphine-class-normotensive",
     '        "Evitar morfina de rotina; reservar para angústia refratária (ESC 2021 IIb).",',
     '        "⛔ Morfina/opioides NÃO devem ser usados de rotina no EAP/insuficiência cardíaca aguda (ESC 2021, Classe III); reservar apenas para dor ou ansiedade graves/intratáveis que não possam ser controladas de outra forma.",'
+  ],
+  [
+    "eap-morphine-class-hypertensive",
+    '        "Evitar morfina de rotina (associada a pior desfecho — ESC 2021 IIb).",',
+    '        "⛔ Não usar morfina/opioides de rotina no EAP/insuficiência cardíaca aguda (ESC 2021, Classe III); uso excepcional apenas para dor ou ansiedade graves/intratáveis quando outras medidas falharam.",'
   ],
 ]);
 
