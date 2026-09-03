@@ -1,0 +1,79 @@
+name: Apply TCE ACS 2024 HIC checkpoint v8
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/valida-tce-traducao-runtime-focada.cjs
+      - .github/workflows/apply-tce-acs2024-v8.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Repair validator compatibility
+        run: |
+          node scripts/corrige-valida-tce-tsc.cjs
+          node scripts/corrige-valida-ventilacao-tsc.cjs
+
+      - name: Apply ACS/NCS TCE checkpoint
+        run: |
+          node scripts/ajusta-tce-alvos-antitromboticos-acs2024-v2.cjs
+          node scripts/ajusta-tce-regressao-alvos-v3.cjs
+          node scripts/ajusta-tce-hic-osmoterapia-acs2024.cjs
+
+      - name: Focused ACS/NCS validators
+        run: |
+          node scripts/valida-tce-alvos-antitromboticos-acs2024.cjs
+          node scripts/valida-tce-hic-osmoterapia-acs2024.cjs
+          node scripts/valida-tce-traducao-runtime-focada.cjs
+
+      - name: Existing TCE and VM regressions
+        run: |
+          npm run test:tce
+          npm run test:vm
+
+      - name: Scoped TypeScript compile
+        run: |
+          tmp="$(mktemp -d)"
+          npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir "$tmp" tce-decision-tree.ts lib/alvos-tce.ts lib/pas-no-tce.ts lib/i18n/index.ts
+          rm -rf "$tmp"
+
+      - name: Baseline diagnostics outside checkpoint
+        run: |
+          echo 'Global tsc remains blocked by pre-existing syntax errors in sedation-calculator-screen.tsx.'
+          echo 'Global runtime-i18n also has pre-existing untranslated runtime strings outside TCE.'
+          echo 'The TCE checkpoint uses scoped compile plus focused runtime ES-419 checks so unrelated debt is not hidden or mistaken for a TCE regression.'
+
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/alvos-tce.ts lib/i18n/modules/frases-montadas-em-runtime.ts lib/i18n/modules/tce-hic.ts lib/i18n/modules/tce.ts scripts/valida-tce.cjs scripts/valida-ventilacao.cjs tce-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+
+      - name: Commit validated TCE HIC checkpoint
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/alvos-tce.ts lib/i18n/modules/frases-montadas-em-runtime.ts lib/i18n/modules/tce-hic.ts lib/i18n/modules/tce.ts scripts/valida-tce.cjs scripts/valida-ventilacao.cjs tce-decision-tree.ts
+          git commit -m "fix(tce): align ACS 2024 HIC and osmotherapy safety"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
