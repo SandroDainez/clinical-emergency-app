@@ -1,0 +1,54 @@
+name: Standardize VM selectors
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - .github/workflows/standardize-vm-selectors.yml
+      - scripts/padroniza-seletores-vm.cjs
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply deterministic selector migration
+        run: node scripts/padroniza-seletores-vm.cjs
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Clinical step parity
+        run: node scripts/valida-paridade-clinical-steps.cjs
+
+      - name: Web build
+        run: npm run build:web
+
+      - name: Validate diff and scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only)"
+          echo "$changed"
+          test "$changed" = "components/protocol-screen/ventilator-configurator-card.tsx"
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/protocol-screen/ventilator-configurator-card.tsx
+          git commit -m "refactor(ui): standardize VM selectors"
+          git push origin HEAD:emergencias-2-ui-core
