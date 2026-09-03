@@ -32,6 +32,7 @@ import {
   IMAGEM_SEM_NENHUM_DOS_EXAMES,
 } from "./lib/trombolise-guiada-por-imagem";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_AVC } from "./lib/tenecteplase";
+import { TENECTEPLASE_AVC_WEIGHT_BASED } from "./lib/drug-knowledge/tenecteplase";
 import {
   CI_AVC_LISTA,
   CI_AVC_PRESSAO_E_ALVO,
@@ -61,7 +62,12 @@ function deriveAvc(values: TreeValues): Record<string, string> {
     out.alteplaseDose = round1(alteplase);
     out.alteplaseBolus = round1(bolus);
     out.alteplaseInfusao = round1(alteplase - bolus);
-    out.tnkDose = round1(Math.min(0.25 * peso, 25));
+    out.tnkDose = round1(
+      Math.min(
+        TENECTEPLASE_AVC_WEIGHT_BASED.doseMgPerKg * peso,
+        TENECTEPLASE_AVC_WEIGHT_BASED.maxDoseMg
+      )
+    );
   } else {
     out.alteplaseDose = "0,9 mg/kg (máx 90)";
     out.alteplaseBolus = "10% da dose";

@@ -1,4 +1,12 @@
-import type { CanonicalDrug } from "./types";
+import type { CanonicalDrug, WeightBasedDrugCalculation } from "./types";
+
+export const TENECTEPLASE_AVC_WEIGHT_BASED: WeightBasedDrugCalculation = Object.freeze({
+  kind: "weight_based",
+  doseMgPerKg: 0.25,
+  maxDoseMg: 25,
+  roundingStepMg: 0.1,
+  bolusOnly: true,
+});
 
 /**
  * Tenecteplase (TNK) — fonte canônica por INDICAÇÃO.
@@ -41,6 +49,7 @@ export const TENECTEPLASE_CANONICAL: CanonicalDrug = {
       dose: "0,25 mg/kg",
       route: "IV em bolus único",
       maximum: "25 mg",
+      calculation: TENECTEPLASE_AVC_WEIGHT_BASED,
       source: {
         reference: "AHA/ASA 2026 — Guideline for the Early Management of Patients With Acute Ischemic Stroke",
         version: "2026",

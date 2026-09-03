@@ -52,8 +52,8 @@ const semImports = (rel) => limpo(rel).replace(/^\s*import[\s\S]*?from\s+"[^"]+"
     execFileSync(
       "npx",
       [
-        "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
-        "--moduleResolution", "node", "--outDir", tempDir,
+        "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",
+        "--moduleResolution", "node16", "--outDir", tempDir,
         path.join(appDir, "avc-decision-tree.ts"),
         path.join(appDir, "lib/trombolise-guiada-por-imagem.ts"),
       ],

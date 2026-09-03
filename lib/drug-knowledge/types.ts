@@ -16,6 +16,14 @@ export type DrugPresentation = {
   source: EvidenceReference;
 };
 
+export type WeightBasedDrugCalculation = {
+  kind: "weight_based";
+  doseMgPerKg: number;
+  maxDoseMg: number;
+  roundingStepMg: number;
+  bolusOnly: boolean;
+};
+
 export type DrugInstruction = {
   indicationId: string;
   indicationLabel: string;
@@ -25,6 +33,8 @@ export type DrugInstruction = {
   rate?: string;
   interval?: string;
   maximum?: string;
+  /** Regra computável específica desta indicação; nunca derivada por parsing do texto humano. */
+  calculation?: WeightBasedDrugCalculation;
   criticalContraindication?: string;
   alternative?: string;
   /** Fonte clínica específica desta indicação/dose. */

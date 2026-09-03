@@ -1,3 +1,4 @@
+import { TENECTEPLASE_AVC_WEIGHT_BASED } from "../lib/drug-knowledge/tenecteplase";
 import type {
   ContraindicationDefinition,
   NihssItemDefinition,
@@ -62,10 +63,10 @@ export const THROMBOLYTICS: ThrombolyticDefinition[] = [
   {
     id: "tenecteplase",
     label: "Tenecteplase",
-    doseMgPerKg: 0.25,
-    maxDoseMg: 25,
-    roundingStepMg: 0.1,
-    bolusOnly: true,
+    doseMgPerKg: TENECTEPLASE_AVC_WEIGHT_BASED.doseMgPerKg,
+    maxDoseMg: TENECTEPLASE_AVC_WEIGHT_BASED.maxDoseMg,
+    roundingStepMg: TENECTEPLASE_AVC_WEIGHT_BASED.roundingStepMg,
+    bolusOnly: TENECTEPLASE_AVC_WEIGHT_BASED.bolusOnly,
     note: "0,25 mg/kg em bolus ÚNICO, máximo 25 mg. ⚠️ NÃO usar os esquemas ponderais do infarto agudo do miocárdio: no IAM a dose chega ao dobro. Confirmar apresentação disponível no Brasil e alinhamento com o protocolo local e a estratégia de trombectomia.",
   },
 ];
