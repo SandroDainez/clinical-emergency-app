@@ -32,6 +32,7 @@ type ClinicalModule = {
   title: string;
   description: string;
   route: string;
+  presentation: "flow" | "reference" | "calculator";
   engine: ClinicalEngine;
 };
 
@@ -41,6 +42,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "PCR Adulto",
     description: "ACLS para parada cardiorrespiratória do adulto com loop, pós-ROSC, log e resumo clínico.",
     route: "/modulos/pcr-adulto",
+    presentation: "flow",
     engine: pcrEngine as ClinicalEngine
   },
   {
@@ -48,6 +50,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "Sepse / Choque Séptico",
     description: "Bundle da 1ª hora",
     route: "/modulos/sepse-adulto",
+    presentation: "flow",
     engine: criarEngineDeRegistro("sepse_adulto", "Sepse / Choque Séptico")
   },
   {
@@ -55,6 +58,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "Drogas Vasoativas",
     description: "Preparo e taxa",
     route: "/modulos/drogas-vasoativas",
+    presentation: "calculator",
     engine: vasoactiveEngine as ClinicalEngine
   },
   {
@@ -63,6 +67,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Na, K, Ca e Mg",
     route: "/modulos/correcoes-eletroliticas",
+    presentation: "calculator",
     engine: electrolyteEngine as ClinicalEngine
   },
   {
@@ -70,6 +75,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "ISR — Via aérea",
     description: "Drogas e equipamento",
     route: "/modulos/isr-rapida",
+    presentation: "flow",
     engine: rsiEngine as ClinicalEngine
   },
   {
@@ -77,6 +83,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "Edema agudo de pulmão",
     description: "VNI e vasodilatador",
     route: "/modulos/edema-agudo-pulmao",
+    presentation: "flow",
     engine: criarEngineDeRegistro("edema_agudo_pulmao", "Edema agudo de pulmão")
   },
   {
@@ -85,6 +92,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Hidratação e potássio",
     route: "/modulos/cetoacidose-hiperosmolar",
+    presentation: "flow",
     engine: criarEngineDeRegistro("cetoacidose_hiperosmolar", "CAD e estado hiperosmolar")
   },
   {
@@ -93,6 +101,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Metas e PEEP",
     route: "/modulos/ventilacao-mecanica",
+    presentation: "flow",
     engine: criarEngineDeRegistro("ventilacao_mecanica", "Ventilação mecânica")
   },
   {
@@ -101,6 +110,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Adrenalina IM",
     route: "/modulos/anafilaxia",
+    presentation: "flow",
     engine: criarEngineDeRegistro("anafilaxia", "Anafilaxia")
   },
   {
@@ -109,6 +119,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Janela e tempos",
     route: "/modulos/avc",
+    presentation: "flow",
     engine: criarEngineDeRegistro("acidente_vascular_cerebral", "AVC")
   },
   {
@@ -117,6 +128,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "STEMI e sem supra",
     route: "/modulos/sindromes-coronarianas",
+    presentation: "flow",
     engine: criarEngineDeRegistro("sindromes_coronarianas", "Síndromes coronarianas")
   },
   {
@@ -125,6 +137,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Chocável × não chocável",
     route: "/modulos/ritmos-acls",
+    presentation: "reference",
     engine: aclsRhythmsEngine as ClinicalEngine
   },
   {
@@ -133,6 +146,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Dose e indicação",
     route: "/modulos/farmacologia-acls",
+    presentation: "reference",
     engine: aclsPharmacologyEngine as ClinicalEngine
   },
   {
@@ -141,6 +155,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Atropina, marca-passo",
     route: "/modulos/bradicardia-acls",
+    presentation: "reference",
     engine: aclsBradycardiaEngine as ClinicalEngine
   },
   {
@@ -149,6 +164,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "QRS estreito × largo",
     route: "/modulos/taquicardia-acls",
+    presentation: "reference",
     engine: aclsTachycardiaEngine as ClinicalEngine
   },
   {
@@ -157,6 +173,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "5 Hs e 5 Ts",
     route: "/modulos/causas-reversiveis-acls",
+    presentation: "reference",
     engine: aclsReversibleCausesEngine as ClinicalEngine
   },
   {
@@ -165,6 +182,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Golpes e compressões",
     route: "/modulos/ovace-adulto",
+    presentation: "reference",
     engine: aclsChokingEngine as ClinicalEngine
   },
   {
@@ -173,6 +191,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Deslocamento uterino",
     route: "/modulos/pcr-gestacao-acls",
+    presentation: "reference",
     engine: aclsPregnancyEngine as ClinicalEngine
   },
   {
@@ -181,6 +200,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Metas e neuroproteção",
     route: "/modulos/pos-pcr-acls",
+    presentation: "reference",
     engine: aclsPostRoscEngine as ClinicalEngine
   },
   {
@@ -189,6 +209,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Wells e reperfusão",
     route: "/modulos/tep",
+    presentation: "flow",
     engine: tepEngine as ClinicalEngine
   },
   {
@@ -197,6 +218,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Sulfato de magnésio",
     route: "/modulos/pre-eclampsia",
+    presentation: "flow",
     engine: eclampsiaEngine as ClinicalEngine
   },
   {
@@ -205,6 +227,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Sedativos e opioides",
     route: "/modulos/sedoanalgesia",
+    presentation: "calculator",
     engine: sedationEngine as unknown as ClinicalEngine
   },
   {
@@ -213,6 +236,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Escores e doses",
     route: "/modulos/calculadoras-clinicas",
+    presentation: "calculator",
     engine: clinicalCalculatorsEngine as unknown as ClinicalEngine
   },
   {
@@ -221,6 +245,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "ATLS, hemorragia, danos",
     route: "/modulos/politrauma",
+    presentation: "flow",
     engine: politraumaEngine as unknown as ClinicalEngine
   },
   {
@@ -229,6 +254,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Glasgow, TC e PIC",
     route: "/modulos/tce",
+    presentation: "flow",
     engine: tceEngine as unknown as ClinicalEngine
   },
   {
@@ -237,6 +263,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Por tempo, até refratário",
     route: "/modulos/crises-convulsivas",
+    presentation: "flow",
     engine: seizureEngine as unknown as ClinicalEngine
   },
   {
@@ -245,6 +272,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Toxíndromes e antídotos",
     route: "/modulos/intoxicacoes-exogenas",
+    presentation: "flow",
     engine: poisoningEngine as unknown as ClinicalEngine
   },
   {
@@ -253,6 +281,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Diferencial por tipo",
     route: "/modulos/choque",
+    presentation: "flow",
     engine: shockEngine as unknown as ClinicalEngine
   },
   {
@@ -261,6 +290,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "KDIGO e diurese",
     route: "/modulos/injuria-renal-aguda",
+    presentation: "flow",
     engine: iraEngine as unknown as ClinicalEngine
   },
   {
@@ -269,6 +299,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Diferencial e suporte",
     route: "/modulos/insuficiencia-respiratoria",
+    presentation: "flow",
     engine: dyspneaEngine as unknown as ClinicalEngine
   },
   {
@@ -277,6 +308,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Catástrofes e padrão",
     route: "/modulos/abdome-agudo",
+    presentation: "flow",
     engine: acuteAbdomenEngine as unknown as ClinicalEngine
   },
 ];

@@ -113,14 +113,12 @@ export default function ModuleHub() {
   //
   // O critério: quem tem paciente vem antes; quem quer tabela vai buscá-la. Dentro
   // de cada camada, alfabético — que é previsível e não exige manutenção.
-  const SO_CONSULTA = new Set(["CONSULTA", "Calculadoras"]);
-  const ehConsulta = (id: string) => SO_CONSULTA.has(MODULE_AREA_LABELS[id] ?? "");
   const primaryModules = [...modules]
     .sort((a, b) => {
       if (a.id === "pcr-adulto") return -1;
       if (b.id === "pcr-adulto") return 1;
-      const ca = ehConsulta(a.id) ? 1 : 0;
-      const cb = ehConsulta(b.id) ? 1 : 0;
+      const ca = a.presentation === "flow" ? 0 : 1;
+      const cb = b.presentation === "flow" ? 0 : 1;
       if (ca !== cb) return ca - cb;
       return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
     });

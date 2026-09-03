@@ -181,6 +181,12 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Runtime de sessão, timeline/debrief e reavaliação de vasopressor mantidos preparados com dívida de integração explícita.
 - [x] Drug Knowledge Base e Evidence Governance mantidas paralelas ao legado até migração piloto com paridade demonstrada.
 
+## Classificação funcional dos módulos
+
+- [x] Os 31 módulos possuem função canônica declarada no catálogo: 19 fluxos assistenciais, 8 referências e 4 calculadoras.
+- [x] O hub ordena fluxo antes de consulta/calculadora pela função declarada, sem inferir comportamento pelo texto da etiqueta.
+- [ ] Aplicar o contrato visual obrigatório de cada categoria e eliminar bifurcações antigas após paridade.
+
 ## Bloco H — Evidence Governance
 
 - [x] Contrato de evidência por recomendação acionável criado.

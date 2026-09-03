@@ -5,6 +5,7 @@ const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const validators = [
   "valida-emergencias-2-core.cjs",
+  "valida-classificacao-de-modulos.cjs",
   "valida-clinical-shell-adapter.cjs",
   "valida-clinical-shell-host.cjs",
   "valida-clinical-shell-host-pos-migracao.cjs",
