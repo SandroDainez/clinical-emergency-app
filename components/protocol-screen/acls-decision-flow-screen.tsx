@@ -56,6 +56,7 @@ import { ClinicalDecisionStepAdapter } from "./clinical-decision-step-adapter";
 import { ClinicalActionStepAdapter } from "./clinical-action-step-adapter";
 import { ClinicalInputStepAdapter } from "./clinical-input-step-adapter";
 import { ClinicalTransitionStepAdapter } from "./clinical-transition-step-adapter";
+import { ClinicalDispositionConfirmation } from "./clinical-disposition-confirmation";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -689,27 +690,33 @@ export default function AclsDecisionFlowScreen({
           />
         )
         ) : (
-          emV2 ? (
-          <ClinicalTransitionStepAdapter
-            step={step}
-            onOpenModule={(moduleId) =>
-              abrirOutroModulo(moduleId.replace(/_/g, "-"), {
-                fromNodeId: step.id,
-                targetModuleId: moduleId,
-              })
-            }
-          />
-        ) : (
-          <TransitionStep
-            step={step}
-            onOpenModule={(moduleId) =>
-              abrirOutroModulo(moduleId.replace(/_/g, "-"), {
-                fromNodeId: step.id,
-                targetModuleId: moduleId,
-              })
-            }
-          />
-        )
+          <View style={styles.stepStack}>
+            {emV2 ? (
+              <ClinicalTransitionStepAdapter
+                step={step}
+                onOpenModule={(moduleId) =>
+                  abrirOutroModulo(moduleId.replace(/_/g, "-"), {
+                    fromNodeId: step.id,
+                    targetModuleId: moduleId,
+                  })
+                }
+              />
+            ) : (
+              <TransitionStep
+                step={step}
+                onOpenModule={(moduleId) =>
+                  abrirOutroModulo(moduleId.replace(/_/g, "-"), {
+                    fromNodeId: step.id,
+                    targetModuleId: moduleId,
+                  })
+                }
+              />
+            )}
+            <ClinicalDispositionConfirmation
+              protocolId={tree.id}
+              sourceNodeId={step.id}
+            />
+          </View>
         )}
         </Animated.View>
 
