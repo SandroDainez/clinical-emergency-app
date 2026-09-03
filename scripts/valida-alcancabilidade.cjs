@@ -71,6 +71,47 @@ const MORTOS_CONHECIDOS = {
     "estrutura pronta e não consumida — D-75; ligar ao motor é a próxima etapa, e nenhum fármaco novo entra antes disso",
   "lib/antimicrobianos/tipos.ts":
     "tipos do catálogo acima — mesma dívida (D-75)",
+  // EMERGÊNCIAS 2 · QA/GOVERNANÇA — consumidos pelos validadores, não pela UI.
+  // Forçar imports a partir de app/ apenas para silenciar esta trava colocaria
+  // código de auditoria no bundle clínico sem qualquer função assistencial.
+  "lib/clinical-gate-governance.ts":
+    "governança de promoção de gates consumida por safety cases; QA-2, fora do runtime por desenho",
+  "lib/clinical-graph-audit.ts":
+    "utilitário de auditoria de grafos consumido por scripts; QA-2, fora do runtime por desenho",
+  "lib/clinical-handoff-target-semantics.ts":
+    "classificação auditável de targets contextuais; QA-2, não executa navegação clínica",
+  "lib/clinical-module-terminal-contract.ts":
+    "contrato de classificação terminal consumido pela auditoria; QA-2, sem efeito de runtime",
+  "lib/clinical-safety-case.ts":
+    "contrato de casos de regressão determinística; QA-2, não pertence ao bundle assistencial",
+  "lib/clinical-safety-contract.ts":
+    "regras estruturais para auditoria; QA-2, não decide nem renderiza no runtime",
+  "lib/clinical-safety-runner.ts":
+    "runner determinístico de testes; QA-2, deliberadamente separado do motor em produção",
+  "lib/clinical-target-semantics.ts":
+    "registry de semântica de links usado pelos validadores; QA-2, não promove navegação automaticamente",
+  // EMERGÊNCIAS 2 · RUNTIME PREPARADO — só entra após a interação correspondente.
+  "lib/clinical-session-runtime.ts":
+    "reset canônico preparado; RT-SESSION exige definir a ação explícita Novo atendimento antes de conectar",
+  "lib/clinical-timeline.ts":
+    "projeção temporal preparada; RT-DEBRIEF entra junto da tela de debrief por metas",
+  "lib/clinical-vasopressor-reassessment.ts":
+    "obrigação orientada a evento preparada; RT-VASO depende de ação explícita iniciar/escalonar/reavaliar na calculadora",
+  // EMERGÊNCIAS 2 · BASE CANÔNICA EM MIGRAÇÃO — legado segue ativo até paridade.
+  "lib/drug-knowledge/index.ts":
+    "Drug Knowledge Base preparada; DK-1 será consumida por um módulo piloto após paridade clínica",
+  "lib/drug-knowledge/types.ts":
+    "tipos da Drug Knowledge Base; mesma dívida DK-1",
+  "lib/drug-knowledge/alteplase.ts":
+    "entrada canônica ainda paralela ao legado; DK-1 exige migração por indicação e prova de paridade",
+  "lib/drug-knowledge/amiodarona.ts":
+    "entrada canônica ainda paralela ao legado; DK-1 exige migração por indicação e prova de paridade",
+  "lib/drug-knowledge/tenecteplase.ts":
+    "entrada canônica ainda paralela ao legado; DK-1 exige migração por indicação e prova de paridade",
+  "lib/evidence-governance.ts":
+    "contrato de evidência preparado; EV-1 entra quando a fonte por nó for apresentada/consultada no runtime",
+  "lib/protocol-evidence-registry.ts":
+    "registry de evidência preparado; mesma dívida EV-1",
   // VAZIO PARA CONTEÚDO DE TELA — e é o desfecho da D-22. Os oito engines órfãos de render foram
   // deletados (ver auditoria/DELECAO.md). Entrada aqui cujo arquivo não exista
   // mais é acusada logo abaixo: a lista não pode virar cemitério permanente.

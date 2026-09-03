@@ -35,6 +35,7 @@ import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { recordFlowAdvance, recordFlowDecision, recordFlowObservation } from "../../lib/clinical-runtime-bridge";
+import { observeClinicalNodeForReassessment } from "../../lib/clinical-reassessment-node-runtime";
 import { prepareRegisteredTargetHandoff } from "../../lib/clinical-target-handoff-runtime";
 import { recordClinicalSafetyOverride } from "../../lib/clinical-safety-override";
 import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
@@ -127,6 +128,17 @@ export default function AclsDecisionFlowScreen({
   const [trail, setTrail] = useState<string[]>(() => [engine.toFrontendStep().title]);
   const [pendingSoftStop, setPendingSoftStop] = useState<{ optionId: string; gateId: string; title: string; message: string; resolution: string } | undefined>(undefined);
   const [softStopReason, setSoftStopReason] = useState("");
+
+  // Espelha a obrigação terapia crítica → reavaliação ao entrar nos nós reais.
+  // O observer não navega nem decide: apenas abre/fecha o lembrete temporal que
+  // o Clinical Cockpit já sabe apresentar.
+  useEffect(() => {
+    observeClinicalNodeForReassessment({
+      moduleId: currentModuleSlug ?? tree.id,
+      nodeId: step.id,
+      summary: step.title,
+    });
+  }, [currentModuleSlug, step.id, step.title, tree.id]);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Retomada de fluxo (defeito relatado: sair para consultar outro protocolo

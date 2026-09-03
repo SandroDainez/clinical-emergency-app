@@ -7,13 +7,13 @@ const bindings = fs.readFileSync(path.join(root, "lib/clinical-reassessment-bind
 
 const files = {
   anafilaxia: fs.readFileSync(path.join(root, "anaphylaxis-decision-tree.ts"), "utf8"),
-  isr: fs.readFileSync(path.join(root, "rsi-decision-tree.ts"), "utf8"),
+  "isr-rapida": fs.readFileSync(path.join(root, "rsi-decision-tree.ts"), "utf8"),
   avc: fs.readFileSync(path.join(root, "avc-decision-tree.ts"), "utf8"),
 };
 
 const expected = [
   ["anafilaxia", "immediate_im_epinephrine", "severity_stratification", "epinephrine_anaphylaxis"],
-  ["isr", "intubacao", "confirmacao", "intubation"],
+  ["isr-rapida", "intubacao", "confirmacao", "intubation"],
   ["avc", "trombolise", "isq_trombectomia_check", "fibrinolysis"],
 ];
 

@@ -35,6 +35,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
 - [x] Adapter do shell criado sem dependência de engine ou roteador.
 - [x] ClinicalShellChrome exibe contexto de protocolo interrompido para retorno.
+- [x] Banner de contexto interrompido oferece retomada explícita e conclui a pilha LIFO sem retorno automático.
 - [x] Adapter deriva o contexto de retorno diretamente da pilha de interrupções.
 - [x] ClinicalShellHost plugável criado para reduzir a integração no shell legado a poucas props/callbacks.
 - [x] Trava estrutural do ClinicalShellHost criada.
@@ -108,6 +109,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ledger de reavaliações pendentes criado; terapia crítica pode abrir obrigação explícita até a reavaliação ser concluída.
 - [x] Bindings reais terapia → reavaliação criados para Anafilaxia, ISR e AVC.
 - [x] Runtime observa visita aos nós e abre/fecha a obrigação sem alterar a DecisionTreeEngine.
+- [x] Observer de reavaliação ligado ao shell compartilhado nos nós reais; slug da ISR alinhado à rota canônica.
 - [x] Adjacência terapia → reavaliação protegida por trava estrutural nos três pilotos.
 - [x] Cardioversão instável ligada a `unstable_reavaliar` no módulo de taquicardia ACLS.
 - [x] Vasopressor usa obrigação orientada a evento, sem inventar nó de árvore inexistente.
@@ -171,6 +173,13 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.
+
+## Classificação de alcançabilidade da nova arquitetura
+
+- [x] Runtimes de reavaliação por nó e retorno LIFO conectados às rotas reais.
+- [x] Ferramentas de QA/grafo/terminalidade classificadas como infraestrutura de teste, fora do bundle assistencial.
+- [x] Runtime de sessão, timeline/debrief e reavaliação de vasopressor mantidos preparados com dívida de integração explícita.
+- [x] Drug Knowledge Base e Evidence Governance mantidas paralelas ao legado até migração piloto com paridade demonstrada.
 
 ## Bloco H — Evidence Governance
 

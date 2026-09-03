@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -25,6 +25,7 @@ export type ClinicalShellChromeProps = {
   crisisActions?: CrisisAction[];
   /** Contexto clínico interrompido, ex.: "AVC em andamento". */
   returnContext?: string;
+  onReturnToContext?: () => void;
   reassessmentAlert?: ClinicalShellReassessmentAlert;
 };
 
@@ -45,6 +46,7 @@ export function ClinicalShellChrome({
   onBack,
   crisisActions = [],
   returnContext,
+  onReturnToContext,
   reassessmentAlert,
 }: ClinicalShellChromeProps) {
   const e = useEstilosDoTema(criarEstilos);
@@ -68,6 +70,16 @@ export function ClinicalShellChrome({
           <Text style={e.returnText} numberOfLines={2}>
             Após estabilizar aqui, retomar: <Text style={e.returnTarget}>{returnContext}</Text>
           </Text>
+          {onReturnToContext ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Retomar ${returnContext}`}
+              onPress={onReturnToContext}
+              style={({ pressed }) => [e.returnButton, pressed && e.returnButtonPressed]}
+            >
+              <Text style={e.returnButtonText}>RETOMAR CONTEXTO</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -150,6 +162,24 @@ const criarEstilos = (t: Tema) =>
     returnTarget: {
       color: t.cores.text,
       fontWeight: "800",
+    },
+    returnButton: {
+      minHeight: 40,
+      marginTop: ESPACO.xs,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.input,
+      borderWidth: 1,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.primary,
+      paddingHorizontal: ESPACO.md,
+    },
+    returnButtonPressed: { opacity: 0.82 },
+    returnButtonText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.onPrimary,
+      fontWeight: "900",
+      letterSpacing: 0.45,
     },
     reassessmentBanner: {
       marginHorizontal: ESPACO.md,

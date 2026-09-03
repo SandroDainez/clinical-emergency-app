@@ -21,7 +21,7 @@ export const CLINICAL_REASSESSMENT_BINDINGS: readonly ClinicalReassessmentBindin
     label: "Reavaliar resposta após adrenalina IM",
   },
   {
-    moduleId: "isr",
+    moduleId: "isr-rapida",
     therapyNodeId: "intubacao",
     reassessmentNodeId: "confirmacao",
     therapyId: "intubation",

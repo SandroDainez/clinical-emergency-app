@@ -13,6 +13,8 @@ for (const required of [
   "instrumentCrisisRoute(route, moduleSlug)",
   "onPush(route.href",
   "ClinicalShellChrome",
+  "resolveClinicalResume(moduleSlug)",
+  "onReturnToContext={returnToContext}",
 ]) {
   if (!text.includes(required)) failures.push(`host perdeu integração obrigatória: ${required}`);
 }

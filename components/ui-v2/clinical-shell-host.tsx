@@ -3,6 +3,7 @@ import type { Href } from "expo-router";
 
 import { buildClinicalShellSnapshot } from "../../lib/clinical-shell-adapter";
 import { buildCrisisRoutes, instrumentCrisisRoute } from "../../lib/clinical-crisis-routing";
+import { resolveClinicalResume } from "../../lib/clinical-resume-runtime";
 import { ClinicalShellChrome } from "./clinical-shell-chrome";
 
 export type ClinicalShellHostProps = {
@@ -114,6 +115,13 @@ export function ClinicalShellHost({
     },
   }));
 
+  const returnToContext = snapshot.returnContext && moduleSlug
+    ? () => {
+        const target = resolveClinicalResume(moduleSlug);
+        if (target) onPush(`/modulos/${target.moduleSlug}` as Href);
+      }
+    : undefined;
+
   return (
     <ClinicalShellChrome
       protocol={snapshot.protocol}
@@ -122,6 +130,7 @@ export function ClinicalShellHost({
       elapsed={elapsed ?? pilotElapsed}
       metrics={snapshot.metrics}
       returnContext={snapshot.returnContext}
+      onReturnToContext={returnToContext}
       reassessmentAlert={snapshot.reassessmentAlert}
       onBack={onBack}
       crisisActions={crisisActions}
