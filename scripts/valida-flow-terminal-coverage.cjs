@@ -8,9 +8,11 @@ const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
 const modules = read("clinical-modules.ts");
 const coverage = read("clinical-safety-cases/flow-terminal-coverage.ts");
 const classification = read("clinical-safety-cases/module-terminal-classification.ts");
+const contract = read("lib/clinical-module-terminal-contract.ts");
 
 const flowIds = [];
-for (const match of modules.matchAll(/\{[\s\S]*?id:\s*"([^"]+)"[\s\S]*?presentation:\s*"flow"[\s\S]*?\}/g)) {
+const catalogBody = modules.slice(modules.indexOf("const CLINICAL_MODULES"));
+for (const match of catalogBody.matchAll(/\{\s*\n\s*id:\s*"([^"]+)"[\s\S]*?presentation:\s*"flow"[\s\S]*?\n\s*\},/g)) {
   flowIds.push(match[1]);
 }
 
@@ -39,16 +41,19 @@ for (const protocolId of coverageProtocolIds) {
   }
 }
 
-for (const block of coverage.matchAll(/\{[\s\S]*?moduleId:\s*"([^"]+)"[\s\S]*?status:\s*"pending_semantic_review"[\s\S]*?\}/g)) {
-  const text = block[0];
-  const moduleId = block[1];
-  if (!/rationale:\s*/.test(text)) issues.push(`${moduleId}: pending_semantic_review sem rationale`);
-  if (!/reviewedAt:\s*"\d{4}-\d{2}-\d{2}"/.test(text)) issues.push(`${moduleId}: pending_semantic_review sem reviewedAt`);
+if (coverage.includes('status: "pending_semantic_review"')) {
+  issues.push("Ainda existe flow com revisão semântica terminal pendente");
 }
 
-for (const expected of ["pcr-adulto", "ovace-adulto"]) {
-  const marker = new RegExp(`moduleId:\\s*"${expected}"[\\s\\S]*?status:\\s*"pending_semantic_review"`);
-  if (!marker.test(coverage)) issues.push(`${expected}: dívida semântica terminal deixou de estar explícita`);
+for (const token of [
+  '| "crisis_pathway"',
+  'entry.mode === "crisis_pathway"',
+  'protocolId: "pcr_adulto"',
+  'protocolId: "ovace_adulto"',
+  'mode: "crisis_pathway"',
+]) {
+  const source = token.startsWith("entry.") || token.startsWith("| ") ? contract : classification;
+  if (!source.includes(token)) issues.push(`Semântica terminal de crise incompleta: ${token}`);
 }
 
 if (issues.length) {
@@ -57,4 +62,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`✅ Cobertura terminal: ${uniq(flowIds).length} fluxos do catálogo auditados; ${coverageProtocolIds.length} classificados e 2 dívidas semânticas explícitas.`);
+console.log(`✅ Cobertura terminal: ${uniq(flowIds).length} fluxos do catálogo auditados e classificados; PCR/OVACE usam crisis_pathway sem disposition artificial.`);
