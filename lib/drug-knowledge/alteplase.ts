@@ -25,7 +25,7 @@ export const ALTEPLASE_CANONICAL: CanonicalDrug = {
       ampouleVolumeMl: 10,
       vialAmount: "10 mg",
       source: {
-        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/al­teplase)",
+        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/alteplase)",
         version: "consulta 2026",
         reviewedAt: "2026-09-03",
       },
@@ -36,7 +36,7 @@ export const ALTEPLASE_CANONICAL: CanonicalDrug = {
       ampouleVolumeMl: 20,
       vialAmount: "20 mg",
       source: {
-        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/al­teplase)",
+        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/alteplase)",
         version: "consulta 2026",
         reviewedAt: "2026-09-03",
       },
@@ -47,7 +47,7 @@ export const ALTEPLASE_CANONICAL: CanonicalDrug = {
       ampouleVolumeMl: 50,
       vialAmount: "50 mg",
       source: {
-        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/al­teplase)",
+        reference: "ANVISA/CMED — lista oficial de apresentações comercializadas no Brasil (Actilyse/alteplase)",
         version: "consulta 2026",
         reviewedAt: "2026-09-03",
       },
