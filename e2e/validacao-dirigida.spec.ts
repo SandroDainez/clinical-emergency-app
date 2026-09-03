@@ -145,7 +145,7 @@ test("[correcoes-eletroliticas] entradas e resultado", async ({ page }) => {
  * apareceria aqui e em nenhum outro lugar.
  */
 const CALCULADORAS = [
-  "Peso predito (VM)", "Clearance / TFG", "Osmolalidade sérica", "Ânion gap",
+  "Peso corporal predito", "Clearance / TFG", "Osmolalidade sérica", "Ânion gap",
   "APACHE II", "SAPS 3", "Dose de antibiótico (TFG)", "Glasgow (GCS)",
   "qSOFA", "SOFA", "Wells (TEP)", "CURB-65", "HEART Score", "NIHSS", "RASS",
 ];
