@@ -39,7 +39,7 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
-import { Header } from "../ui-v2/header";
+import { CalculatorScreenHeader } from "../ui-v2/calculator-screen-header";
 import { CALCULATOR_VISUAL as CV } from "../ui-v2/calculator-visual-tokens";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
@@ -419,11 +419,10 @@ export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: ()
           O comentário que estava aqui dizia "voltar aos módulos fica na faixa do
           ecrã modulos/[id]" — era a dependência exata que a inversão removeu, e
           sem esta linha a tela ficaria sem caminho de volta ao hub. */}
-      <Header
-        titulo={tr("💊 Drogas Vasoativas")}
-        onVoltar={onVoltar}
-        labelVoltar={tr("Voltar aos módulos")}
-        direita={
+      <CalculatorScreenHeader
+        title={tr("💊 Drogas Vasoativas")}
+        onBack={onVoltar}
+        right={
           <Text
             style={[
               s.versionHint,

@@ -15,7 +15,7 @@ import {
   type Tone,
 } from "../../clinical-calculators-engine";
 import { useTr } from "../../lib/use-tr";
-import { Header } from "../ui-v2/header";
+import { CalculatorScreenHeader } from "../ui-v2/calculator-screen-header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 import { RailDeModulo } from "./module-flow-shell";
@@ -46,7 +46,7 @@ export default function ClinicalCalculatorsScreen({ onVoltar }: { onVoltar?: () 
       {/* ⚠️ CABEÇALHO ÚNICO — este é o único desta tela, e é o `Header` canônico.
           A rota não desenha mais cromado (I7): quem não trouxer o próprio fica
           sem título E SEM SAÍDA. O `onVoltar` é o caminho para o hub. */}
-      <Header titulo={`🧮 ${tr("Calculadoras Clínicas")}`} onVoltar={onVoltar} labelVoltar={tr("Voltar aos módulos")} />
+      <CalculatorScreenHeader title={`🧮 ${tr("Calculadoras Clínicas")}`} onBack={onVoltar} />
 
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* Sidebar */}

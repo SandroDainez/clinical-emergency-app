@@ -74,7 +74,7 @@ import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/gui
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
-import { Header } from "../ui-v2/header";
+import { CalculatorScreenHeader } from "../ui-v2/calculator-screen-header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import {
   FAIXA_DE_ENTRADA,
@@ -2480,10 +2480,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
           geométrico não o contou (R-83). O `eyebrow` do herói ainda repete o nome
           logo abaixo deste cabeçalho; é repetição de CONTEÚDO, não segundo
           cabeçalho, e está anotada como dívida em vez de editada em silêncio. */}
-      <Header
-        titulo={tr("Correções eletrolíticas")}
-        onVoltar={onVoltar}
-        labelVoltar={tr("Voltar aos módulos")}
+      <CalculatorScreenHeader
+        title={tr("Correções eletrolíticas")}
+        onBack={onVoltar}
       />
       <ModuleFlowLayout
         hero={

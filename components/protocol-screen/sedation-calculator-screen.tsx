@@ -40,7 +40,7 @@ import {
   type SavedDilution,
 } from "../../lib/vasoactive-storage";
 import { useTr } from "../../lib/use-tr";
-import { Header } from "../ui-v2/header";
+import { CalculatorScreenHeader } from "../ui-v2/calculator-screen-header";
 import { CALCULATOR_VISUAL as CV } from "../ui-v2/calculator-visual-tokens";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { HorizontalChoiceSelector } from "../ui-v2/horizontal-choice-selector";
@@ -284,7 +284,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
       {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — a rota não desenha mais cromado (I7).
           Antes desta linha o `← Módulos` vinha de `app/modulos/[id].tsx`, e esta
           tela era uma das QUATRO que ficariam sem caminho de volta ao hub. */}
-      <Header titulo={tr("💉 Sedoanalgesia & BNM")} onVoltar={onVoltar} labelVoltar={tr("Voltar aos módulos")} />
+      <CalculatorScreenHeader title={tr("💉 Sedoanalgesia & BNM")} onBack={onVoltar} />
 
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* ── Sidebar agrupada ── */}
