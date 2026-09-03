@@ -12,8 +12,12 @@ const contract = read("lib/clinical-module-terminal-contract.ts");
 
 const flowIds = [];
 const catalogBody = modules.slice(modules.indexOf("const CLINICAL_MODULES"));
-for (const match of catalogBody.matchAll(/\{\s*\n\s*id:\s*"([^"]+)"[\s\S]*?presentation:\s*"flow"[\s\S]*?\n\s*\},/g)) {
-  flowIds.push(match[1]);
+for (const tail of catalogBody.split("\n  {\n").slice(1)) {
+  const end = tail.indexOf("\n  },");
+  const block = end >= 0 ? tail.slice(0, end) : tail;
+  if (!block.includes('presentation: "flow"')) continue;
+  const id = block.match(/^\s*id:\s*"([^"]+)"/m)?.[1];
+  if (id) flowIds.push(id);
 }
 
 const coverageIds = [...coverage.matchAll(/moduleId:\s*"([^"]+)"/g)].map((match) => match[1]);
@@ -48,12 +52,22 @@ if (coverage.includes('status: "pending_semantic_review"')) {
 for (const token of [
   '| "crisis_pathway"',
   'entry.mode === "crisis_pathway"',
-  'protocolId: "pcr_adulto"',
-  'protocolId: "ovace_adulto"',
-  'mode: "crisis_pathway"',
 ]) {
-  const source = token.startsWith("entry.") || token.startsWith("| ") ? contract : classification;
-  if (!source.includes(token)) issues.push(`Semântica terminal de crise incompleta: ${token}`);
+  if (!contract.includes(token)) issues.push(`Contrato terminal de crise incompleto: ${token}`);
+}
+for (const protocolId of ["pcr_adulto", "ovace_adulto"]) {
+  const start = classification.indexOf(`protocolId: "${protocolId}"`);
+  const next = classification.indexOf("\n  {", start + 1);
+  const block = start >= 0 ? classification.slice(start, next > start ? next : undefined) : "";
+  if (!block.includes('mode: "crisis_pathway"')) {
+    issues.push(`${protocolId}: não está classificado como crisis_pathway`);
+  }
+  if (!block.includes("requiresClinicalDisposition: false")) {
+    issues.push(`${protocolId}: crisis_pathway voltou a exigir disposition artificial`);
+  }
+  if (!block.includes("requiresReturnToOrigin: false")) {
+    issues.push(`${protocolId}: crisis_pathway voltou a prometer retorno artificial`);
+  }
 }
 
 if (issues.length) {
