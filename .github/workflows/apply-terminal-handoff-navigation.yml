@@ -1,4 +1,4 @@
-name: Apply Drug KB AVC pilot
+name: Finalize Drug KB AVC pilot
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  migrate-and-validate:
-    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-avc-applied]') }}
+  finalize:
+    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-avc-finalized]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -19,26 +19,31 @@ jobs:
           ref: emergencias-2-ui-core
           fetch-depth: 0
 
-      - name: Apply exact migration
-        run: node scripts/aplica-drug-kb-avc-pilot.cjs
-
-      - name: Expose TypeScript diagnostics
-        run: npx tsc --ignoreConfig --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --noEmit avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
-
-      - name: Validate AVC
-        run: npm run test:avc
-
-      - name: Validate Emergencias 2 structural suite
-        run: npm run test:emergencias-2
-
-      - name: Commit validated migration
+      - name: Confirm pilot guards
         run: |
-          if git diff --quiet; then
-            echo "No migration changes needed."
-            exit 0
-          fi
+          npm run test:avc
+          npm run test:emergencias-2
+
+      - name: Mark roadmap and archive this workflow
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const roadmap = 'EMERGENCIAS-2-ROADMAP.md';
+          let r = fs.readFileSync(roadmap, 'utf8');
+          const before = '- [ ] Consumir uma entrada canônica em módulo piloto após CI/testes verdes.';
+          const after = '- [x] Consumir uma entrada canônica em módulo piloto após CI/testes verdes — tenecteplase no AVC usa a regra estruturada da Drug KB com paridade protegida.';
+          if (r.includes(before)) r = r.replace(before, after);
+          else if (!r.includes(after)) throw new Error('Item do roadmap não encontrado para fechamento seguro.');
+          fs.writeFileSync(roadmap, r);
+
+          const wf = '.github/workflows/apply-terminal-handoff-navigation.yml';
+          fs.writeFileSync(wf, `name: Archived Drug KB AVC pilot\n\non:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  archived-check:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Archived migration notice\n        run: echo \"Drug KB AVC pilot applied, validated and archived; retained only as an audit marker.\"\n`);
+          NODE
+
+      - name: Commit finalization
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/drug-knowledge/types.ts lib/drug-knowledge/tenecteplase.ts avc-decision-tree.ts avc/protocol-config.ts scripts/valida-avc.cjs scripts/valida-emergencias-2-suite.cjs
-          git commit -m "centralize AVC tenecteplase calculation in Drug KB [drug-kb-avc-applied]"
+          git add EMERGENCIAS-2-ROADMAP.md .github/workflows/apply-terminal-handoff-navigation.yml
+          git commit -m "finalize Drug KB AVC pilot [drug-kb-avc-finalized]"
           git push origin HEAD:emergencias-2-ui-core
