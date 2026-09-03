@@ -296,4 +296,28 @@ export const ES_VENTILACAO: Record<string, string> = {
   "Em SARA moderada-grave, diretrizes contemporâneas permitem estratégia de PEEP mais alta, mas não definem uma única tabela superior para todos. Individualizar e evitar manobras de recrutamento de alta pressão/prolongadas.":
     "En SDRA moderado-grave, las guías contemporáneas permiten una estrategia de PEEP más alta, pero no definen una única tabla superior para todos. Individualizar y evitar maniobras de reclutamiento de alta presión/prolongadas.",
 
+  // ── Liberação/extubação 2026 ──────────────────────────────────────────────
+  "A mecânica ventilatória está segura para o cenário atual?":
+    "¿La mecánica ventilatoria es segura para el escenario actual?",
+  "Driving pressure = platô − PEEP: monitorar tendência e reduzir estresse mecânico quando possível. Valor ≤ 15 cmH₂O é associado a melhor prognóstico, mas não é corte universal isolado para todos os cenários.":
+    "Driving pressure = meseta − PEEP: monitorizar la tendencia y reducir el estrés mecánico cuando sea posible. Un valor ≤ 15 cmH₂O se asocia con mejor pronóstico, pero no es un corte universal aislado para todos los escenarios.",
+  "Avaliar prontidão diariamente quando a causa da VM estiver melhorando: oxigenação e hemodinâmica suficientes para sustentar respiração espontânea, drive presente e ausência de nova deterioração. Cortes isolados não substituem a avaliação clínica.":
+    "Evaluar diariamente la preparación cuando la causa de la VM esté mejorando: oxigenación y hemodinamia suficientes para sostener respiración espontánea, drive presente y ausencia de nuevo deterioro. Los cortes aislados no sustituyen la evaluación clínica.",
+  "TRE pode ser realizado com ou sem pressão de suporte. Avaliar tolerância clínica e troca gasosa; IRRS/RSBI não é obrigatório para decidir prontidão ou sucesso.":
+    "La PRE puede realizarse con o sin presión de soporte. Evaluar tolerancia clínica e intercambio gaseoso; el IRRS/RSBI no es obligatorio para decidir preparación o éxito.",
+  "Minimizar sedação e confirmar que o paciente consegue iniciar esforço espontâneo. O TRE pode ser realizado com pressão de suporte baixa ou sem pressão de suporte (por exemplo, peça em T/CPAP), conforme protocolo e contexto; não há um único método obrigatório.":
+    "Minimizar la sedación y confirmar que el paciente puede iniciar esfuerzo espontáneo. La PRE puede realizarse con presión de soporte baja o sin presión de soporte (por ejemplo, pieza en T/CPAP), según protocolo y contexto; no existe un único método obligatorio.",
+  "IRRS/RSBI (FR/VC em litros) pode ser usado como informação adicional quando disponível, mas a AARC 2024 não exige seu cálculo para determinar prontidão para TRE.":
+    "El IRRS/RSBI (FR/Vt en litros) puede usarse como información adicional cuando esté disponible, pero la AARC 2024 no exige su cálculo para determinar preparación para la PRE.",
+  "Teste de cuff leak NÃO é rotina para todos: considerar em quem já está apto à extubação e tem alto risco de estridor/edema laríngeo. Se o teste sugerir alto risco, administrar corticoide sistêmico com antecedência (ATS/CHEST: pelo menos 4 h antes) e individualizar o esquema; não é necessário repetir o cuff leak obrigatoriamente.":
+    "La prueba de cuff leak NO es rutinaria para todos: considerarla en quien ya está apto para extubación y tiene alto riesgo de estridor/edema laríngeo. Si la prueba sugiere alto riesgo, administrar corticoide sistémico con antelación (ATS/CHEST: al menos 4 h antes) e individualizar el esquema; no es obligatorio repetir la prueba.",
+  "Estridor pós-extubação: tratar edema de via aérea conforme gravidade, fornecer oxigenação e preparar reintubação precoce se houver obstrução progressiva, fadiga ou falha respiratória; não esperar um intervalo fixo diante de deterioração.":
+    "Estridor posextubación: tratar el edema de la vía aérea según gravedad, proporcionar oxigenación y preparar reintubación precoz si hay obstrucción progresiva, fatiga o insuficiencia respiratoria; no esperar un intervalo fijo ante el deterioro.",
+  "Não insistir durante intolerância: reconectar, tratar a causa da falha e repetir a avaliação quando a prontidão retornar.":
+    "No insistir durante la intolerancia: reconectar, tratar la causa del fracaso y repetir la evaluación cuando vuelva la preparación.",
+  "Reconectar ao ventilador em suporte confortável e suficiente para aliviar o trabalho respiratório; não impor período universal de 24 h antes de nova avaliação.":
+    "Reconectar al ventilador con soporte cómodo y suficiente para aliviar el trabajo respiratorio; no imponer un período universal de 24 h antes de una nueva evaluación.",
+  "Usar avaliação padronizada de prontidão pelo menos diariamente e repetir o TRE quando o paciente voltar a preencher condições clínicas para respiração espontânea.":
+    "Usar una evaluación estandarizada de preparación al menos diariamente y repetir la PRE cuando el paciente vuelva a cumplir condiciones clínicas para respiración espontánea.",
+
 };

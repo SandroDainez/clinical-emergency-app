@@ -433,10 +433,10 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "seguranca",
       type: "decision",
       title: "Pressões dentro do alvo?",
-      question: "A pressão de platô está ≤ 30 e a driving pressure ≤ 15 cmH₂O?",
+      question: "A mecânica ventilatória está segura para o cenário atual?",
       evidence: [
         "Pressão de platô (pausa inspiratória de 0,5 s, sem esforço) reflete a pressão alveolar — manter ≤ 30 cmH₂O.",
-        "Driving pressure = platô − PEEP — quanto menor, melhor (≤ 15 associada a melhor desfecho).",
+        "Driving pressure = platô − PEEP: monitorar tendência e reduzir estresse mecânico quando possível. Valor ≤ 15 cmH₂O é associado a melhor prognóstico, mas não é corte universal isolado para todos os cenários.",
       ],
       options: [
         { id: "sim", label: "Sim — dentro do alvo", next: "monitorizacao" },
@@ -507,7 +507,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
       // os outros dois — que agora aparecem sem toque.
       summary:
-        "ELEGIBILIDADE, EM NÚMEROS (ACCP/ATS 2017): causa reversível ou controlada; SpO₂ ≥ 90% com FiO₂ ≤ 0,40 e PEEP ≤ 8 (ou P/F ≥ 150–200); sem vasopressor, ou em dose baixa e estável (noradrenalina ≤ 0,1 mcg/kg/min).",
+        "Avaliar prontidão diariamente quando a causa da VM estiver melhorando: oxigenação e hemodinâmica suficientes para sustentar respiração espontânea, drive presente e ausência de nova deterioração. Cortes isolados não substituem a avaliação clínica.",
       evidence: [
         "Neuro: obedece comandos (GCS ≥ 8, RASS ≥ −2); drive inspiratório espontâneo presente.",
         "Ausência de: agitação incontrolável, convulsão ativa, isquemia miocárdica ativa, sepse não controlada.",
@@ -522,12 +522,12 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "tre",
       type: "action",
       title: "Teste de Respiração Espontânea (TRE)",
-      summary: "Padrão atual: PSV 5–8 + PEEP 5 por 30–120 min (ou tubo T). IRRS < 105 prediz sucesso.",
+      summary: "TRE pode ser realizado com ou sem pressão de suporte. Avaliar tolerância clínica e troca gasosa; IRRS/RSBI não é obrigatório para decidir prontidão ou sucesso.",
       actions: [
-        "Antes: SAT (suspender a sedação) bem-sucedido. Método: PSV 5–8 cmH₂O + PEEP 5 por 30–120 min (equivalente ao tubo T e mais confortável) ou peça em T.",
-        "IRRS (índice de respiração rápida superficial) = FR / VC(L), medido em 1 min de respiração espontânea: < 105 prediz sucesso (S 97%); ≥ 105 = alto risco de falha.",
-        "Critérios de SUCESSO (30–120 min): SpO₂ ≥ 90%, FR 10–35 sem distress, FC 50–130 sem arritmia nova, PAS 80–180, sem agitação/diaforese, IRRS < 105.",
-        "Critérios de FALHA: SpO₂ < 90% ou PaO₂ < 60, FR > 35 ou < 8, musculatura acessória/paradoxo, agitação/rebaixamento, taquicardia > 140, novas arritmias, hipo/hipertensão grave.",
+        "Minimizar sedação e confirmar que o paciente consegue iniciar esforço espontâneo. O TRE pode ser realizado com pressão de suporte baixa ou sem pressão de suporte (por exemplo, peça em T/CPAP), conforme protocolo e contexto; não há um único método obrigatório.",
+        "IRRS/RSBI (FR/VC em litros) pode ser usado como informação adicional quando disponível, mas a AARC 2024 não exige seu cálculo para determinar prontidão para TRE.",
+        "Durante o TRE, considerar sucesso quando o paciente mantém troca gasosa e padrão respiratório/hemodinâmico aceitáveis sem sinais progressivos de intolerância. Interpretar SpO₂, FR, FC, pressão, esforço, consciência e desconforto em conjunto — não por um único corte.",
+        "Interromper o TRE se houver deterioração sustentada da oxigenação, esforço respiratório importante, alteração de consciência, instabilidade hemodinâmica, arritmia nova relevante ou desconforto progressivo; reconectar e investigar a causa.",
       ],
       next: "tre_resultado",
     },
@@ -554,9 +554,9 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       summary: "Confirmar via aérea e tosse antes de extubar; prevenir falha pós-extubação.",
       actions: [
         "Tosse eficaz ao comando (tosse fraca prediz falha); secreções manejáveis sem aspiração excessiva; ausência de obstrução de VA.",
-        "Teste de cuff leak (se suspeita de edema subglótico): desinsuflar o cuff → diferença VC inspirado − expirado > 110 mL = leak adequado. Sem leak: dexametasona 8 mg IV/6 h × 24 h antes da extubação.",
+        "Teste de cuff leak NÃO é rotina para todos: considerar em quem já está apto à extubação e tem alto risco de estridor/edema laríngeo. Se o teste sugerir alto risco, administrar corticoide sistêmico com antecedência (ATS/CHEST: pelo menos 4 h antes) e individualizar o esquema; não é necessário repetir o cuff leak obrigatoriamente.",
         "VNI profilática pós-extubação se alto risco (DPOC, IC, P/F < 150, hipercapnia crônica, obeso, ≥ 2 fatores) — reduz reintubação (EPICO). HFN para hipoxemia moderada (OPERA).",
-        "Estridor pós-extubação: adrenalina 5 mL (1:1.000) NBZ + dexametasona IV; reintubar se sem melhora em 30 min.",
+        "Estridor pós-extubação: tratar edema de via aérea conforme gravidade, fornecer oxigenação e preparar reintubação precoce se houver obstrução progressiva, fadiga ou falha respiratória; não esperar um intervalo fixo diante de deterioração.",
         "Monitorar nas primeiras horas — reintubação é fator de pior prognóstico.",
       ],
       next: "destino_extubado",
@@ -566,12 +566,12 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "reconectar",
       type: "action",
       title: "Falha do TRE — reconectar e investigar",
-      summary: "Não insistir; descansar 24 h e corrigir a causa antes de novo TRE.",
+      summary: "Não insistir durante intolerância: reconectar, tratar a causa da falha e repetir a avaliação quando a prontidão retornar.",
       actions: [
-        "Reconectar ao ventilador em modo de repouso confortável (ex.: PSV com suporte adequado) por ~24 h.",
+        "Reconectar ao ventilador em suporte confortável e suficiente para aliviar o trabalho respiratório; não impor período universal de 24 h antes de nova avaliação.",
         "Investigar a causa da falha: sobrecarga cardíaca (disfunção de VE no desmame), fraqueza muscular/ICU-AW, sedação residual, distúrbio metabólico, infecção, hiper/hipovolemia.",
         "Otimizar: balanço hídrico, eletrólitos, nutrição (proteína 1,3 g/kg/dia), mobilização precoce, reduzir sedação.",
-        "Repetir o TRE diariamente quando os critérios de elegibilidade voltarem a ser preenchidos.",
+        "Usar avaliação padronizada de prontidão pelo menos diariamente e repetir o TRE quando o paciente voltar a preencher condições clínicas para respiração espontânea.",
       ],
       next: "destino",
     },
@@ -584,7 +584,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       summary: "Paciente ventilado → cuidado intensivo, bundles e avaliação diária de desmame.",
       disposition: "icu",
       exitCriteria: [
-        "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −2 a 0); SAT/SBT diários.",
+        "Manter ventilação protetora e analgosedação titulada; em SARA, Pplat ≤ 30 cmH₂O. Monitorar driving pressure sem transformá-la em corte universal. Avaliar diariamente redução de sedação e prontidão para TRE quando apropriado.",
         "Bundle ABCDEF (avaliar dor, SAT+SBT, escolha de sedação, delirium, mobilização precoce, família) e bundle PAV (cabeceira 30–45°, higiene oral com clorexidina, aspiração subglótica, checagem do cuff 20–30 cmH₂O).",
         "Gasometria e mecânica seriadas; ajustar conforme evolução. Traqueostomia se VM > 7–14 dias prevista.",
         "Reavaliar diariamente a prontidão para desmame quando a causa estiver controlada.",
