@@ -63,6 +63,7 @@ const validators = [
   "valida-sedacao-bnm-ui-semantics.cjs",
   "valida-sedacao-ui-hierarquia.cjs",
   "valida-sedacao-calculo-compacto.cjs",
+  "valida-sedacao-layout-responsivo.cjs",
 ];
 
 for (const validator of validators) {
