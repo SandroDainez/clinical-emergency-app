@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const fs = require("node:fs");
 const path = require("node:path");
-const ts = require("typescript");
 
 const root = path.resolve(__dirname, "..");
 const ownership = JSON.parse(
@@ -26,76 +25,120 @@ function sourceFiles(dir, out = []) {
   return out;
 }
 
-function numericValue(node) {
-  if (ts.isNumericLiteral(node)) return Number(node.text);
-  if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(node.operand)) {
-    return -Number(node.operand.text);
+/**
+ * Remove comentários e conteúdo de strings/templates, preservando o esqueleto
+ * executável. Assim textos clínicos como "0,25 mg/kg (máx 25)" não contam como
+ * duplicação computacional. Não é parser TypeScript: é deliberadamente um
+ * detector estreito das formas que queremos proibir depois que uma regra ganha
+ * ownership exclusivo na Drug KB.
+ */
+function stripNonExecutable(text) {
+  let out = "";
+  let i = 0;
+  let state = "code";
+  let quote = null;
+
+  while (i < text.length) {
+    const c = text[i];
+    const n = text[i + 1];
+
+    if (state === "line-comment") {
+      if (c === "\n") {
+        state = "code";
+        out += "\n";
+      } else out += " ";
+      i += 1;
+      continue;
+    }
+
+    if (state === "block-comment") {
+      if (c === "*" && n === "/") {
+        out += "  ";
+        i += 2;
+        state = "code";
+      } else {
+        out += c === "\n" ? "\n" : " ";
+        i += 1;
+      }
+      continue;
+    }
+
+    if (state === "string") {
+      if (c === "\\") {
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      if (c === quote) {
+        out += " ";
+        i += 1;
+        state = "code";
+        quote = null;
+        continue;
+      }
+      out += c === "\n" ? "\n" : " ";
+      i += 1;
+      continue;
+    }
+
+    if (c === "/" && n === "/") {
+      out += "  ";
+      i += 2;
+      state = "line-comment";
+      continue;
+    }
+    if (c === "/" && n === "*") {
+      out += "  ";
+      i += 2;
+      state = "block-comment";
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") {
+      quote = c;
+      state = "string";
+      out += " ";
+      i += 1;
+      continue;
+    }
+
+    out += c;
+    i += 1;
   }
-  return null;
+
+  return out;
 }
 
-function containsNumeric(node, value) {
-  let found = false;
-  const visit = (n) => {
-    if (found) return;
-    if (numericValue(n) === value) {
-      found = true;
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(node);
-  return found;
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function isMathMin(node) {
-  return (
-    ts.isCallExpression(node) &&
-    ts.isPropertyAccessExpression(node.expression) &&
-    node.expression.expression.getText() === "Math" &&
-    node.expression.name.text === "min"
-  );
+function hasExclusiveFormula(code, dose, max) {
+  const d = escapeRegExp(dose);
+  const m = escapeRegExp(max);
+  const numberBoundary = "(?![0-9.])";
+
+  // Detecta Math.min(0.25 * peso, 25) e variantes com expressão em qualquer
+  // lado, sem exigir nome específico para a variável de peso.
+  const minCalls = [...code.matchAll(/Math\s*\.\s*min\s*\(([^)]{0,240})\)/g)];
+  for (const match of minCalls) {
+    const args = match[1];
+    const hasDoseMultiplication = new RegExp(`(?:^|[^0-9.])${d}${numberBoundary}\\s*\\*|\\*\\s*${d}${numberBoundary}`).test(args);
+    const hasMaxLiteral = new RegExp(`(?:^|[^0-9.])${m}${numberBoundary}`).test(args);
+    if (hasDoseMultiplication && hasMaxLiteral) return true;
+  }
+
+  return false;
 }
 
-function hasWeightBasedMin(sourceFile, dose, max) {
-  let found = false;
-  const visit = (node) => {
-    if (found) return;
-    if (isMathMin(node) && node.arguments.length >= 2) {
-      const hasDose = node.arguments.some((arg) => containsNumeric(arg, dose));
-      const hasMax = node.arguments.some((arg) => numericValue(arg) === max);
-      if (hasDose && hasMax) {
-        found = true;
-        return;
-      }
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sourceFile);
-  return found;
-}
-
-function hasLocalWeightRuleObject(sourceFile, dose, max) {
-  let found = false;
-  const visit = (node) => {
-    if (found) return;
-    if (ts.isObjectLiteralExpression(node)) {
-      const props = new Map();
-      for (const prop of node.properties) {
-        if (!ts.isPropertyAssignment(prop)) continue;
-        const name = prop.name.getText().replace(/["']/g, "");
-        const value = numericValue(prop.initializer);
-        if (value !== null) props.set(name, value);
-      }
-      if (props.get("doseMgPerKg") === dose && props.get("maxDoseMg") === max) {
-        found = true;
-        return;
-      }
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sourceFile);
-  return found;
+function hasExclusiveRuleObject(code, dose, max) {
+  const d = escapeRegExp(dose);
+  const m = escapeRegExp(max);
+  const objects = [...code.matchAll(/\{[^{}]{0,900}\}/g)];
+  return objects.some(({ 0: body }) => {
+    const hasDose = new RegExp(`doseMgPerKg\\s*:\\s*${d}(?![0-9.])`).test(body);
+    const hasMax = new RegExp(`maxDoseMg\\s*:\\s*${m}(?![0-9.])`).test(body);
+    return hasDose && hasMax;
+  });
 }
 
 expect(Array.isArray(ownership.rules) && ownership.rules.length > 0, "registry sem regras");
@@ -117,16 +160,9 @@ for (const rule of ownership.rules) {
     if (rel === rule.canonicalFile) continue;
 
     const text = fs.readFileSync(full, "utf8");
-    const sourceFile = ts.createSourceFile(
-      rel,
-      text,
-      ts.ScriptTarget.Latest,
-      true,
-      rel.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS
-    );
-
-    const duplicateFormula = hasWeightBasedMin(sourceFile, rule.doseMgPerKg, rule.maxDoseMg);
-    const duplicateObject = hasLocalWeightRuleObject(sourceFile, rule.doseMgPerKg, rule.maxDoseMg);
+    const code = stripNonExecutable(text);
+    const duplicateFormula = hasExclusiveFormula(code, rule.doseMgPerKg, rule.maxDoseMg);
+    const duplicateObject = hasExclusiveRuleObject(code, rule.doseMgPerKg, rule.maxDoseMg);
     if (duplicateFormula || duplicateObject) {
       fail(`${rule.ruleId}: regra computacional duplicada fora da Drug KB em ${rel}`);
     }
