@@ -96,9 +96,13 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ida e retorno das portas de crise podem ser espelhados no event log sem alterar a navegação legada.
 - [x] Override de segurança gera evento com motivo e gravidade.
 - [x] Conclusão de reavaliação gera evento com tempo decorrido e resumo.
-- [ ] Integrar bridge ao shell compartilhado.
-- [ ] Integrar medicações e destino.
-- [ ] Gerar debrief automático por metas temporais.
+- [x] Bridge integrada ao shell compartilhado, com trava estrutural e CI.
+- [x] Medicações confirmadas integradas ao Event Log sem inferir fármaco ou dose que a UI não capturou.
+- [x] Runtime de destino criado e restrito a transições terminais para `external_service`.
+- [ ] Ligar `disposition` à UI apenas onde houver confirmação explícita de transferência/destino; entrada em nó terminal não basta.
+- [x] Motor declarativo de debrief temporal criado com `met`, `missed`, `pending` e `not_evaluable`, exigindo fonte para limiares numéricos.
+- [x] Debrief ACLS deixou de recalcular atraso de epinefrina e consome o guard rail temporal produzido pelo próprio runtime.
+- [ ] Cadastrar/ligar metas temporais clínicas adicionais somente quando houver fonte formal ou deadline explícito produzido pelo runtime.
 
 ## Bloco E — Segurança do fluxo
 
@@ -178,7 +182,8 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Trava estrutural protege registry canônico e contratos de descoberta guiada.
 - [x] Trava estrutural protege a fronteira registry → adapter → GuidedDiscoveryCard e impede regra clínica duplicada na UI.
 - [x] Travas estruturais protegem classificação terminal de módulos, transições retornáveis e handoffs externos definitivos.
-- [x] Ligar suíte estrutural consolidada de 26 validadores ao `test:all`.
+- [x] Suíte estrutural consolidada ligada ao `test:all` e ao gate crítico, sem fixar contagem manual de validadores no roadmap.
+- [x] Travas específicas protegem semântica de medicação/destino no Event Log e a fonte temporal do debrief ACLS.
 - [ ] Expandir trajetórias executáveis completas até reavaliação e destino.
 - [ ] Ligar interrupções aos pontos reais dos módulos pilotos.
 - [ ] Mutation testing clínico para doses, limites e passos críticos.
@@ -187,7 +192,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 
 - [x] Runtimes de reavaliação por nó e retorno LIFO conectados às rotas reais.
 - [x] Ferramentas de QA/grafo/terminalidade classificadas como infraestrutura de teste, fora do bundle assistencial.
-- [x] Runtime de sessão, timeline/debrief e reavaliação de vasopressor mantidos preparados com dívida de integração explícita.
+- [x] Runtime de sessão, timeline/debrief e reavaliação de vasopressor mantidos preparados com dívida de integração explícita onde ainda não existe confirmação real na UI.
 - [x] Drug Knowledge Base e Evidence Governance mantidas paralelas ao legado até migração piloto com paridade demonstrada.
 
 ## Classificação funcional dos módulos
