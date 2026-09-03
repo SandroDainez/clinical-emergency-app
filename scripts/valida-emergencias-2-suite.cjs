@@ -69,6 +69,7 @@ const validators = [
   "valida-isr-hemodinamica-pretratamento-2026.cjs",
   "valida-isr-via-acordada-resgate-posiot-2026.cjs",
   "valida-vm-camada-inicial-2026.cjs",
+  "valida-vm-sara-2026.cjs",
 ];
 
 for (const validator of validators) {
