@@ -32,7 +32,7 @@ Objetivo: evoluir o app existente para um copiloto determinístico de atendiment
 - [x] Ramo “não sei” visualmente destacado quando já existe na árvore.
 - [x] Showcase `/dev/ui-v2` atualizado para validar o conjunto.
 - [x] Cabeçalho canônico aplicado às seis referências estáticas ACLS, distinguindo consulta rápida de fluxo e calculadora.
-- [ ] Resolver a classificação de Bradicardia e Taquicardia: o catálogo declara `reference`, mas ambas usam o motor interativo de fluxo.
+- [x] Bradicardia, Taquicardia e Engasgo classificados como fluxos por conterem decisão e progressão assistencial; aparência atual não define taxonomia.
 - [x] Registro canônico das portas de crise criado.
 - [x] ClinicalShellChrome compondo header + cockpit + barra de crise.
 - [x] Adapter do shell criado sem dependência de engine ou roteador.

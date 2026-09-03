@@ -155,7 +155,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Atropina, marca-passo",
     route: "/modulos/bradicardia-acls",
-    presentation: "reference",
+    presentation: "flow",
     engine: aclsBradycardiaEngine as ClinicalEngine
   },
   {
@@ -164,7 +164,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "QRS estreito × largo",
     route: "/modulos/taquicardia-acls",
-    presentation: "reference",
+    presentation: "flow",
     engine: aclsTachycardiaEngine as ClinicalEngine
   },
   {
@@ -182,7 +182,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Golpes e compressões",
     route: "/modulos/ovace-adulto",
-    presentation: "reference",
+    presentation: "flow",
     engine: aclsChokingEngine as ClinicalEngine
   },
   {

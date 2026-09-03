@@ -18,8 +18,15 @@ const counts = entries.reduce((acc, item) => {
   return acc;
 }, {});
 
-for (const [kind, expected] of [["flow", 19], ["reference", 8], ["calculator", 4]]) {
+for (const [kind, expected] of [["flow", 22], ["reference", 5], ["calculator", 4]]) {
   if (counts[kind] !== expected) throw new Error(`${kind}: esperados ${expected}, encontrados ${counts[kind] ?? 0}.`);
+}
+
+for (const id of ["bradicardia-acls", "taquicardia-acls", "ovace-adulto"]) {
+  const item = entries.find((entry) => entry.id === id);
+  if (item?.presentation !== "flow") {
+    throw new Error(`${id}: contém decisão/progressão assistencial e deve permanecer classificado como flow.`);
+  }
 }
 
 if (!hub.includes('a.presentation === "flow"') || !hub.includes('b.presentation === "flow"')) {
@@ -27,4 +34,4 @@ if (!hub.includes('a.presentation === "flow"') || !hub.includes('b.presentation 
 }
 if (/SO_CONSULTA|ehConsulta/.test(hub)) throw new Error("Hub ainda mantém classificação textual duplicada.");
 
-console.log("✅ Catálogo canônico: 31 módulos classificados em 19 fluxos, 8 referências e 4 calculadoras.");
+console.log("✅ Catálogo canônico: 31 módulos classificados em 22 fluxos, 5 referências e 4 calculadoras.");
