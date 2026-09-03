@@ -86,14 +86,14 @@ function replaceOnce(content, before, after, label) {
   write(rel, s);
 }
 
-// 5) TypeScript 6: o validador compila arquivos isolados e deve declarar isso explicitamente.
+// 5) TypeScript 6: o validador compila arquivos isolados e deve declarar resolução moderna explicitamente.
 {
   const rel = "scripts/valida-avc.cjs";
   let s = read(rel);
   s = replaceOnce(
     s,
-    '        "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",\n',
-    '        "tsc", "--ignoreConfig", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",\n',
+    '        "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",\n        "--moduleResolution", "node", "--outDir", tempDir,\n',
+    '        "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",\n        "--moduleResolution", "node16", "--outDir", tempDir,\n',
     `${rel}: compatibilidade com TypeScript 6`
   );
   write(rel, s);
