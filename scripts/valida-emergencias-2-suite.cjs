@@ -73,6 +73,7 @@ const validators = [
   "valida-vm-liberacao-extubacao-2026.cjs",
   "valida-vm-troubleshooting-2026.cjs",
   "valida-vm-obstrutivo-2026.cjs",
+  "valida-vm-choque-eap-2026.cjs",
 ];
 
 for (const validator of validators) {
