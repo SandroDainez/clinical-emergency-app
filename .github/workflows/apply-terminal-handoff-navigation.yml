@@ -1,14 +1,41 @@
-name: Archived terminal handoff navigation check
+name: Apply Drug KB AVC pilot
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - emergencias-2-ui-core
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  archived-check:
+  migrate-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[drug-kb-avc-applied]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Archived migration notice
-        run: echo "Terminal handoff navigation integration was applied successfully; this workflow is read-only and retained only as an audit marker."
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+
+      - name: Apply exact migration
+        run: node scripts/aplica-drug-kb-avc-pilot.cjs
+
+      - name: Validate AVC
+        run: npm run test:avc
+
+      - name: Validate Emergencias 2 structural suite
+        run: npm run test:emergencias-2
+
+      - name: Commit validated migration
+        run: |
+          if git diff --quiet; then
+            echo "No migration changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/drug-knowledge/types.ts lib/drug-knowledge/tenecteplase.ts avc-decision-tree.ts avc/protocol-config.ts scripts/valida-emergencias-2-suite.cjs
+          git commit -m "centralize AVC tenecteplase calculation in Drug KB [drug-kb-avc-applied]"
+          git push origin HEAD:emergencias-2-ui-core
