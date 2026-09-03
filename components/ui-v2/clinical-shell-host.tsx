@@ -4,6 +4,7 @@ import type { Href } from "expo-router";
 import { buildClinicalShellSnapshot } from "../../lib/clinical-shell-adapter";
 import { buildCrisisRoutes, instrumentCrisisRoute } from "../../lib/clinical-crisis-routing";
 import { resolveClinicalResume } from "../../lib/clinical-resume-runtime";
+import { recordProtocolStarted } from "../../lib/clinical-runtime-bridge";
 import { ClinicalShellChrome } from "./clinical-shell-chrome";
 
 export type ClinicalShellHostProps = {
@@ -62,9 +63,9 @@ function presentationPhase(moduleSlug: string | undefined, phase: string | undef
  *
  * Mantém toda a composição fora do `acls-decision-flow-screen.tsx`: o shell
  * hospedeiro passa somente identidade, etapa e callbacks de navegação. O host
- * lê observações/interrupções/reavaliações pelo adapter, cria portas de crise
- * pela fonte canônica e instrumenta a passagem antes de delegar ao router
- * existente.
+ * lê observações/interrupções/reavaliações pelo adapter, cria portas de crise,
+ * registra o primeiro ingresso no protocolo pela Event Log bridge e instrumenta
+ * a passagem antes de delegar ao router existente.
  *
  * Não conhece DecisionTreeEngine e não altera fluxo clínico.
  */
@@ -79,6 +80,15 @@ export function ClinicalShellHost({
 }: ClinicalShellHostProps) {
   const startedAtRef = useRef(Date.now());
   const [now, setNow] = useState(() => Date.now());
+
+  // Entrada no protocolo é uma observação de lifecycle, não uma decisão clínica.
+  // A bridge deduplica por módulo no atendimento atual; remount após uma
+  // interrupção não cria falso `protocol_started` e a volta permanece registrada
+  // separadamente como `protocol_resumed` pelo runtime de retomada.
+  useEffect(() => {
+    if (!moduleSlug) return;
+    recordProtocolStarted({ module: moduleSlug, label: protocol });
+  }, [moduleSlug, protocol]);
 
   // O relógio abaixo serve somente à apresentação: mantém idade de observações,
   // reavaliações e, no piloto do AVC, o cronômetro visual atualizados. Não muda
