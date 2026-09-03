@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+const fs = require('node:fs');
+const path = require('node:path');
+const file = path.resolve(__dirname, '..', 'lib', 'i18n', 'modules', 'tce.ts');
+let s = fs.readFileSync(file, 'utf8');
+const pairs = [
+  ["Terapia hiperosmolar — no TCE com PIC elevada/edema cerebral, a Neurocritical Care Society sugere solução hipertônica sobre manitol como manejo inicial quando não houver contraindicação. Regime do protocolo institucional citado: NaCl 3% {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min. Concentração e dose variam entre protocolos: titular à resposta clínica/PIC e monitorar sódio, cloro e função renal. NaCl 20% 40 mL IV em 5 min é outro regime institucional; repetir apenas conforme resposta e protocolo neurocrítico, não por intervalo universal fixo.", "Terapia hiperosmolar — en TCE con PIC elevada/edema cerebral, la Neurocritical Care Society sugiere solución hipertónica sobre manitol como manejo inicial cuando no haya contraindicación. Régimen del protocolo institucional citado: NaCl 3% {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) en 10–20 min. La concentración y la dosis varían entre protocolos: titular según respuesta clínica/PIC y monitorizar sodio, cloro y función renal. NaCl 20% 40 mL IV en 5 min es otro régimen institucional; repetir solo según respuesta y protocolo neurocrítico, no por un intervalo universal fijo."],
+  ["Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min permanece alternativa eficaz quando solução hipertônica não é apropriada ou não está disponível. Repetição deve ser guiada pela resposta/PIC e segurança, não por relógio fixo; vigiar volemia, pressão arterial e função renal por diurese osmótica e risco de hipotensão/lesão renal.", "Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) en 15–20 min sigue siendo una alternativa eficaz cuando la solución hipertónica no es apropiada o no está disponible. La repetición debe guiarse por la respuesta/PIC y la seguridad, no por un reloj fijo; vigilar volemia, presión arterial y función renal por diuresis osmótica y riesgo de hipotensión/lesión renal."],
+  ["Durante manitol, monitorar função renal, volemia e carga osmótica. A NCS sugere usar o GAP OSMOLAR em vez de um limiar isolado de osmolaridade para acompanhar risco de acúmulo/lesão renal, mas NÃO há evidência suficiente para um cutoff obrigatório; 20 mOsm/kg é usado em alguns protocolos, porém não é um limite validado. Gap = osmolaridade medida − calculada; ao calcular com ureia total em mg/dL, usar a fórmula compatível com o laboratório local e não confundir ureia com BUN.", "Durante manitol, monitorizar función renal, volemia y carga osmótica. La NCS sugiere usar el GAP OSMOLAR en lugar de un umbral aislado de osmolaridad para seguir el riesgo de acumulación/lesión renal, pero NO hay evidencia suficiente para un punto de corte obligatorio; 20 mOsm/kg se usa en algunos protocolos, pero no es un límite validado. Gap = osmolaridad medida − calculada; al calcular con urea total en mg/dL, usar la fórmula compatible con el laboratorio local y no confundir urea con BUN."],
+  ["HIC REFRATÁRIA às medidas acima — 2ª ETAPA: aprofundar sedação e analgesia, repetir/ajustar terapia hiperosmolar guiada pela PIC e pela resposta clínica e avaliar craniectomia descompressiva com o neurocirurgião. Não perseguir um alvo fixo de natremia apenas para tratar a PIC; evitar hipernatremia/hipercloremia graves e monitorar função renal. ⚠️ Antes de subir de etapa, refazer a checagem das causas extracranianas — a resistência ao tratamento costuma ter causa remediável.", "HIC REFRACTARIA a las medidas anteriores — 2ª ETAPA: profundizar sedación y analgesia, repetir/ajustar terapia hiperosmolar guiada por la PIC y la respuesta clínica y evaluar craniectomía descompresiva con neurocirugía. No perseguir un objetivo fijo de natremia solo para tratar la PIC; evitar hipernatremia/hipercloremia graves y monitorizar función renal. ⚠️ Antes de subir de etapa, repetir la búsqueda de causas extracraneales: la resistencia al tratamiento suele tener una causa corregible."]
+];
+let added = 0;
+for (const [pt, es] of pairs) {
+  const key = JSON.stringify(pt) + ':';
+  if (s.includes(key)) continue;
+  const idx = s.lastIndexOf('\n};');
+  if (idx < 0) throw new Error('fim do dicionário TCE não encontrado');
+  s = s.slice(0, idx) + `\n  ${JSON.stringify(pt)}: ${JSON.stringify(es)},` + s.slice(idx);
+  added++;
+}
+fs.writeFileSync(file, s);
+console.log(`✅ TCE osmoterapia 2026 i18n: ${added} novas chaves.`);
