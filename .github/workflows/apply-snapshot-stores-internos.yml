@@ -1,0 +1,62 @@
+name: Apply internal clinical snapshot adapters
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - 'scripts/aplica-snapshot-stores-internos.cjs'
+      - 'scripts/valida-snapshot-stores-internos.cjs'
+      - '.github/workflows/apply-snapshot-stores-internos.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply internal snapshot adapters
+        run: node scripts/aplica-snapshot-stores-internos.cjs
+      - name: Validate internal snapshot adapters
+        run: node scripts/valida-snapshot-stores-internos.cjs
+      - name: Revalidate core snapshot adapters
+        run: node scripts/valida-snapshot-stores-basicos.cjs
+      - name: Run Emergencias 2 baseline
+        run: npm run test:emergencias-2
+      - name: Run executable safety gate regressions
+        run: node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Web export smoke test
+        run: npm run build:web
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only)"
+          allowed='^(lib/clinical-observation-decision-gate.ts|lib/clinical-vasopressor-reassessment.ts|lib/clinical-reassessment-node-runtime.ts)$'
+          unexpected="$(printf '%s\n' "$changed" | grep -Ev "$allowed" || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected files:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+      - name: Commit adapters
+        run: |
+          if git diff --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/clinical-observation-decision-gate.ts lib/clinical-vasopressor-reassessment.ts lib/clinical-reassessment-node-runtime.ts
+          git commit -m 'fix(state): add snapshot adapters for internal clinical state'
+          git push origin emergencias-2-ui-core
