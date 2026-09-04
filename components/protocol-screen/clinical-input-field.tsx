@@ -28,10 +28,9 @@ export type ClinicalInputFieldProps = {
  * Apresentação isolada de UM campo clínico do nó de entrada.
  *
  * Regra de UX para campo numérico: a barra aparece imediatamente, mas nenhum
- * número é mostrado antes da primeira interação. O slider precisa internamente
- * de um ponto de partida técnico; ele NÃO é exibido nem gravado no atendimento.
- * O valor só passa a existir para o usuário quando ele toca/arrasta a barra e
- * só passa a existir para o caso clínico quando conclui a interação.
+ * número clínico é mostrado antes da primeira interação. O polegar fica na
+ * origem visual da trilha; isso não representa valor do paciente e não é
+ * gravado até o médico concluir a interação.
  */
 export function ClinicalInputField({
   field,
@@ -55,16 +54,14 @@ export function ClinicalInputField({
   const hasNumericValue = numericValue !== undefined && Number.isFinite(numericValue);
 
   const currentLabel = preset?.label ?? value;
+  const translatedLabel = tr(field.label);
+  const unitAlreadyInLabel = field.unit
+    ? translatedLabel.toLowerCase().includes(`(${field.unit.toLowerCase()})`)
+    : false;
 
   const numeroInicialDaBarra = () => {
     if (!numericRange) return 0;
-    const bruto = numericRange.min + (numericRange.max - numericRange.min) / 2;
-    const passos = Math.round((bruto - numericRange.min) / numericRange.passo);
-    const alinhado = numericRange.min + passos * numericRange.passo;
-    const casas = Number.isInteger(numericRange.passo)
-      ? 0
-      : (String(numericRange.passo).split(".")[1]?.length ?? 0);
-    return Number(Math.min(numericRange.max, Math.max(numericRange.min, alinhado)).toFixed(casas));
+    return numericRange.min;
   };
 
   const confirmarNumeroDaBarra = (numero: number) => {
@@ -81,8 +78,8 @@ export function ClinicalInputField({
     <View style={e.wrapper} testID={testID}>
       <View style={e.header}>
         <Text style={e.label}>
-          {tr(field.label)}
-          {field.unit ? <Text style={e.unit}> ({field.unit})</Text> : null}
+          {translatedLabel}
+          {field.unit && !unitAlreadyInLabel ? <Text style={e.unit}> ({field.unit})</Text> : null}
         </Text>
         {value !== undefined ? (
           <Text style={e.currentValue} numberOfLines={1}>
@@ -119,7 +116,6 @@ export function ClinicalInputField({
             max={numericRange.max}
             passo={numericRange.passo}
             unidade={field.unit}
-            rotulo={tr(field.label)}
             testID={testID ? `${testID}-numeric` : undefined}
           />
         </View>
