@@ -1,0 +1,56 @@
+name: Apply TEP PCR fibrinolysis AHA 2025 ERC 2025
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-tep-pcr-trombolise-aha2025-erc2025.cjs
+      - scripts/valida-tep-pcr-trombolise-aha2025-erc2025.cjs
+      - .github/workflows/apply-tep-pcr-trombolise-aha2025-erc2025.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply AHA 2025 ERC 2025 PE arrest fibrinolysis correction
+        run: node scripts/ajusta-tep-pcr-trombolise-aha2025-erc2025.cjs
+      - name: Focused PE arrest fibrinolysis validator
+        run: node scripts/valida-tep-pcr-trombolise-aha2025-erc2025.cjs
+      - name: Existing TEP regression
+        run: npm run test:tep
+      - name: SafetyGate candidate regression
+        run: node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/tep-pcr tep-decision-tree.ts lib/i18n/modules/tep.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/tep.ts tep-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated PE arrest fibrinolysis correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/tep.ts tep-decision-tree.ts
+          git commit -m "fix(tep): align PE arrest fibrinolysis with AHA 2025 ERC 2025"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
