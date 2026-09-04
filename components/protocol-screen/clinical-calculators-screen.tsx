@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import {
   CALC_TOOLS,
   CALC_GROUPS,
@@ -130,15 +130,12 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
                   testID={`slider-${inp.id}`}
                 />
               ) : (
-                <TextInput
-                  style={s.input}
-                  value={texto}
-                  onChangeText={(v) => setVal(key, v)}
-                  keyboardType="decimal-pad"
-                  placeholder={inp.placeholder ? tr(inp.placeholder) : ""}
-                  placeholderTextColor="#64748b"
-                  accessibilityLabel={tr(inp.label)}
-                />
+                <View style={s.configError} accessibilityRole="alert">
+                  <Text style={s.configErrorTitle}>{tr("Campo numérico indisponível")}</Text>
+                  <Text style={s.configErrorText}>
+                    {tr("Este campo ainda não possui faixa de entrada configurada. Atualize a configuração antes de usar esta calculadora.")}
+                  </Text>
+                </View>
               )}
               {"helperText" in inp && inp.helperText ? (
                 <Text style={s.fieldHelper}>{tr(inp.helperText)}</Text>
@@ -251,9 +248,9 @@ const s = StyleSheet.create({
   fieldLabel: { fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#aab6c6" },
   fieldHelper: { fontSize: 11, lineHeight: 16, color: "#aab6c6", marginTop: 6 },
-  emptyNumericField: { gap: 8 },
-  emptyNumericLabel: { fontSize: 12, fontWeight: "700", color: "#aab6c6" },
-  input: { width: 110, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
+  configError: { borderWidth: 1.5, borderColor: "#f59e0b", borderRadius: 12, padding: 12, gap: 4, backgroundColor: "#2a2410" },
+  configErrorTitle: { color: "#fde047", fontSize: 13, fontWeight: "800" },
+  configErrorText: { color: "#fcd34d", fontSize: 12, lineHeight: 18 },
   toggleRow: { flexDirection: "row", gap: 7, flexWrap: "wrap" },
   toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", minHeight: 44, justifyContent: "center" },
   toggleChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#0ea5e9" },
