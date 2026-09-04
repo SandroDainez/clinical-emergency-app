@@ -117,4 +117,13 @@ export const INITIAL_CLINICAL_GATE_FACT_BINDINGS: readonly ClinicalGateFactBindi
     observationId: "sedacao",
     values: { realizada: "realizada", nao_realizada: "nao_realizada" },
   },
+  {
+    fact: "tep_categoria_reperfusao",
+    observationId: "tep_categoria_reperfusao",
+    values: {
+      a_b_c1_c2: "a_b_c1_c2",
+      c3: "c3",
+      e: "e",
+    },
+  },
 ] as const;
