@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { predictedBodyWeight } from "../../ventilation-decision-tree";
 import { ALVOS_TCE } from "../../lib/alvos-tce";
 import { useTr } from "../../lib/use-tr";
@@ -33,10 +33,6 @@ const PATOLOGIAS: Patologia[] = [
   { id: "padrao", label: "Padrão", vc: [6, 8], peep: "5", fr: "12–16", ie: "1:2", nota: "Pulmão normal — ventilação protetora mesmo sem doença." },
   { id: "sara", label: "SARA", vc: [4, 6], peep: "8–13 · grave 13–18 (tabela no módulo de VM)", fr: "12–35", ie: "1:1–1:2", nota: "Pplat ≤ 30, driving pressure ≤ 15. Prona se P/F ≤ 150." },
   { id: "obstrutivo", label: "Asma/DPOC", vc: [6, 8], peep: "0–5 (mínimo)", fr: "8–12", ie: "1:3–1:4", nota: "Expiração longa, fluxo alto; vigiar auto-PEEP (pausa expiratória)." },
-  // Os números do TCE vêm de lib/alvos-tce.ts — fonte única, compartilhada com
-  // a árvore do TCE e o cenário do motor de VM. Escrever "5–8" aqui à mão foi o
-  // que fez este card divergir da árvore (que dizia PaCO₂ 35–45) antes da
-  // unificação.
   { id: "tce", label: "TCE", vc: [6, 8], peep: ALVOS_TCE.peep.replace(" cmH₂O", ""), fr: "14–18", ie: "1:2",
     nota: `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto} PPC ${ALVOS_TCE.ppc}, PIC ${ALVOS_TCE.pic}.` },
   { id: "obeso", label: "Obeso", vc: [6, 6], peep: "8–12", fr: "14–18", ie: "1:2", nota: "VC pelo peso PREDITO (nunca o atual). Ramped position." },
@@ -47,20 +43,7 @@ const HEIGHT_PRESETS = ["150", "160", "165", "170", "175", "180", "190"];
 export default function VentilatorConfiguratorCard() {
   const tr = useTr();
   const [expanded, setExpanded] = useState(false);
-  // ── Altura e sexo são do PACIENTE, não deste card ─────────────────────────
-  //
-  // A tela da ventilação pedia a altura DUAS vezes: aqui, no configurador do
-  // topo, e de novo no passo do fluxo, logo abaixo. Mesma pergunta, mesma tela,
-  // dois controles independentes — a mesma redundância que já apareceu no peso
-  // das drogas vasoativas.
-  //
-  // Em vez de apagar uma das duas (as duas têm razão de existir: o configurador
-  // calcula o peso predito na hora, e o passo registra o dado do atendimento),
-  // as duas passam a falar com o contexto do paciente, que já existe e já é
-  // usado pelo fluxo. Informar num lugar preenche o outro, e o fluxo avisa que
-  // o valor veio de antes.
   const [altura, setAltura] = useState<string>(() => lerDoContexto("altura")?.valor ?? "");
-  const [customAltura, setCustomAltura] = useState<string>("");
   const [sexo, setSexo] = useState<Sexo | null>(
     () => (lerDoContexto("sexo")?.valor as Sexo | undefined) ?? null
   );
@@ -78,6 +61,7 @@ export default function VentilatorConfiguratorCard() {
   const alturaNumerica = Number(String(altura).replace(",", "."));
   const alturaValida =
     Number.isFinite(alturaNumerica) &&
+    altura.trim().length > 0 &&
     alturaNumerica >= FAIXA_DE_ENTRADA.altura.min &&
     alturaNumerica <= FAIXA_DE_ENTRADA.altura.max;
 
@@ -117,39 +101,26 @@ export default function VentilatorConfiguratorCard() {
 
       {expanded ? (
         <View style={s.body}>
-          {/* Altura */}
           <Text style={s.label}>{tr("Altura (cm)")}</Text>
           <HorizontalChoiceSelector
             value={HEIGHT_PRESETS.includes(altura) ? altura : undefined}
             options={HEIGHT_PRESETS.map((h) => ({ value: h, label: h }))}
-            onChange={(h) => { setAltura(h); setCustomAltura(""); }}
+            onChange={setAltura}
             accessibilityLabel={tr("Altura em centímetros")}
             testID="vm-altura-presets"
           />
-          <View style={s.inputRow}>
-            <TextInput
-              style={s.customInput}
-              value={customAltura}
-              onChangeText={(texto) => { setCustomAltura(texto); setAltura(texto); }}
-              keyboardType="numeric"
-              placeholder={tr("Informe a altura")}
-              placeholderTextColor="#94a3b8"
-              accessibilityLabel={tr("Altura em centímetros")}
-            />
-            {alturaValida ? (
-              <NumericStepper
-                valor={alturaNumerica}
-                onChange={(n) => { setCustomAltura(String(n)); setAltura(String(n)); }}
-                min={FAIXA_DE_ENTRADA.altura.min}
-                max={FAIXA_DE_ENTRADA.altura.max}
-                passo={FAIXA_DE_ENTRADA.altura.passo}
-                unidade="cm"
-                testID="slider-altura"
-              />
-            ) : null}
-          </View>
+          <NumericStepper
+            valor={alturaValida ? alturaNumerica : FAIXA_DE_ENTRADA.altura.min}
+            valorVisivel={alturaValida}
+            onChange={(n) => setAltura(String(n))}
+            onConfirmar={(n) => setAltura(String(n))}
+            min={FAIXA_DE_ENTRADA.altura.min}
+            max={FAIXA_DE_ENTRADA.altura.max}
+            passo={FAIXA_DE_ENTRADA.altura.passo}
+            unidade="cm"
+            testID="slider-altura"
+          />
 
-          {/* Sexo */}
           <Text style={s.label}>{tr("Sexo")}</Text>
           <HorizontalChoiceSelector
             value={sexo ?? undefined}
@@ -162,7 +133,6 @@ export default function VentilatorConfiguratorCard() {
             testID="vm-sexo"
           />
 
-          {/* Patologia */}
           <Text style={s.label}>{tr("Cenário")}</Text>
           <HorizontalChoiceSelector
             value={patId}
@@ -172,7 +142,6 @@ export default function VentilatorConfiguratorCard() {
             testID="vm-cenario"
           />
 
-          {/* Resultado */}
           {calc ? (
             <View style={s.result}>
               <View style={s.pbwRow}>
@@ -227,12 +196,8 @@ const s = StyleSheet.create({
   headerCtaText: { fontSize: 10, fontWeight: "900", color: "#06222b", letterSpacing: 0.5 },
   headerCtaTextOpen: { color: "#67e8f9" },
   headerCtaArrow: { fontSize: 10, fontWeight: "900", color: "#06222b" },
-
   body: { padding: 14, gap: 8 },
   label: { fontSize: 11, fontWeight: "800", color: "#aab6c6", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 },
-  inputRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, alignItems: "center" },
-  customInput: { minWidth: 180, minHeight: 44, borderRadius: 12, backgroundColor: "#292e38", borderWidth: 1, borderColor: "#565e6c", paddingHorizontal: 12, color: "#f1f5f9", fontSize: 14 },
-
   result: { marginTop: 8, gap: 10, borderTopWidth: 1, borderTopColor: "#7fb3ff", paddingTop: 12 },
   pbwRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   pbwLabel: { fontSize: 12, fontWeight: "700", color: "#aab6c6" },
@@ -245,7 +210,6 @@ const s = StyleSheet.create({
   nota: { fontSize: 12.5, lineHeight: 18, color: "#cbd5e1", fontWeight: "600" },
   fio2: { fontSize: 12, lineHeight: 17, color: "#aab6c6" },
   hint: { fontSize: 11.5, lineHeight: 16, color: "#67e8f9", fontWeight: "700" },
-
   placeholder: { marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: "#383e4a", borderWidth: 1, borderColor: "#565e6c" },
   placeholderTxt: { fontSize: 13, lineHeight: 19, color: "#aab6c6" },
 });
