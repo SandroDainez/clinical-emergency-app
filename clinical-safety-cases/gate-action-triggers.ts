@@ -105,7 +105,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(tachySedated.evaluations.length === 0, "Taquicardia: sedação realizada deve resolver o advisory", issues);
 
   const tepLower = evaluateClinicalActionAttempt({
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     actionId: "administrar_trombolise_sistemica_tep",
     context: { tep_categoria_reperfusao: "a_b_c1_c2" },
@@ -115,7 +115,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(canProceedAfterRecordedOverrides(tepLower, new Set(["tep-lise-sistemica-categoria-inferior"])) === false, "TEP: hard stop de categoria não pode ser liberado por override", issues);
 
   const tepC3 = evaluateClinicalActionAttempt({
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     actionId: "administrar_trombolise_sistemica_tep",
     context: { tep_categoria_reperfusao: "c3" },
@@ -123,7 +123,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(tepC3.evaluations.length === 0, "TEP: C3 não pode ser bloqueado pelo gate específico de A/B/C1/C2", issues);
 
   const tepE = evaluateClinicalActionAttempt({
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     actionId: "administrar_trombolise_sistemica_tep",
     context: { tep_categoria_reperfusao: "e" },
@@ -131,7 +131,7 @@ export function runExecutableClinicalGateTriggerCases(): string[] {
   expect(tepE.evaluations.length === 0, "TEP: deterioração/reclassificação para E deve resolver o hard stop de categoria inferior", issues);
 
   const tepMissing = evaluateClinicalActionAttempt({
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     actionId: "administrar_trombolise_sistemica_tep",
     context: {},
