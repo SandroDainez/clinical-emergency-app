@@ -47,7 +47,7 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
   {
     id: "tep-systemic-thrombolysis-lower-category",
     gateId: "tep-lise-sistemica-categoria-inferior",
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     interactionKind: "action",
     actionId: "administrar_trombolise_sistemica_tep",
