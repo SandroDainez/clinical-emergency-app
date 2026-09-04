@@ -154,7 +154,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         // a conduta, sem os critérios numéricos, que esperam a primária.
         TEP_CHOQUE_NORMOTENSO,
         TEP_CHOQUE_NORMOTENSO_PROCEDENCIA,
-        "Se instável: iniciar anticoagulação com HNF e considerar trombólise IMEDIATAMENTE — não aguardar AngioTC se a instabilidade impedir.",
+        "Se houver indicação de anticoagulação e não houver contraindicação, iniciar anticoagulação terapêutica precocemente. AHA/ACC 2026: quando anticoagulação parenteral inicial for necessária nas categorias C1–E1, preferir HBPM à HNF; se a imagem estiver atrasada em suspeita C2 ou superior e o risco hemorrágico for baixo, anticoagulação terapêutica pode ser iniciada antes da confirmação. Não atrasar terapia avançada necessária por busca de imagem no colapso iminente.",
         "Se estável: seguir o algoritmo diagnóstico (probabilidade pré-teste → D-dímero/AngioTC).",
       ],
       options: [
@@ -230,20 +230,20 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       id: "ar_suporte",
       type: "action",
       title: "TEP alto risco — suporte + anticoagulação imediata",
-      summary: "Emergência com risco de morte. Suporte hemodinâmico cauteloso + HNF JÁ.",
+      summary: "Emergência com risco de morte. Suporte hemodinâmico cauteloso + anticoagulação terapêutica quando indicada e não contraindicada.",
       actions: [
         "Suporte: O₂ (IOT se insuficiência respiratória grave); fluidos CAUTELOSOS — SF 0,9% 500 mL (máx 500–1.000 mL): sobrecarga piora a função do VD.",
         "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.",
         DOBUTAMINA_INICIO,
         DOBUTAMINA_FAIXA_USUAL,
         DOBUTAMINA_ATE_20,
-        "HNF IV imediata: bolus {hnfBolus} U (80 U/kg, máx 10.000) + {hnfInf} U/h (18 U/kg/h); alvo TTPa 60–100 s. Iniciar ANTES da AngioTC se risco de morte iminente.",
+        "Anticoagulação parenteral: AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 quando terapia parenteral inicial é necessária. Se HBPM for inadequada por contraindicação específica ou se o protocolo institucional definir HNF em situação excepcional, usar esquema e monitorização apropriados. Em suspeita C2 ou superior, com baixo risco hemorrágico e atraso de imagem, a anticoagulação terapêutica pode preceder a confirmação.",
         HNF_APRESENTACAO,
         "{avisoPeso}",
-        "HNF é o anticoagulante de escolha no alto risco (permite interrupção rápida se for trombolisar).",
+        "TEP de alto risco, por si só, NÃO torna HNF o anticoagulante parenteral preferido. AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 e também após trombólise ou procedimento endovascular; durante a própria infusão trombolítica, a evidência é insuficiente para preferir HBPM a HNF, portanto seguir o protocolo periprocedural específico.",
         "AHA/ACC 2026: preferir cateter nasal de ALTO FLUXO ao cateter comum na hipoxemia moderada-grave; EVITAR sedação profunda e ventilação mecânica sempre que possível (risco de colapso hemodinâmico).",
         "AHA/ACC 2026: VA-ECMO é razoável no choque cardiogênico refratário por TEP.",
-        "Anticoagulação de manutenção: DOAC preferido a antagonista da vitamina K (AHA/ACC 2026); HBPM preferida à HNF na maioria das categorias C–E, exceto quando se planeja trombólise ou há instabilidade que exija reversão rápida."
+        "Anticoagulação: DOAC é preferido a antagonista da vitamina K quando elegível. Para anticoagulação parenteral inicial, AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1; planejamento de trombólise ou procedimento endovascular NÃO cria exceção automática a favor de HNF. Após trombólise ou procedimento endovascular, HBPM também é preferida; durante a infusão trombolítica, seguir o protocolo específico porque não há evidência suficiente para escolher HBPM sobre HNF nesse intervalo."
       ],
       next: "ar_diagnostico",
     },
