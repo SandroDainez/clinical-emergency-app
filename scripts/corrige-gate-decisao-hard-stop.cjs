@@ -36,6 +36,23 @@ replaceOnce(
 );
 
 replaceOnce(
+  'lib/clinical-action-gate.ts',
+`export function evaluateClinicalActionAttempt(input: {
+  protocolId: string;
+  nodeId?: string;
+  actionId: string;
+  context: ClinicalGateContext;
+}): ClinicalActionGateDecision {`,
+`export function evaluateClinicalActionAttempt(input: {
+  protocolId: string;
+  nodeId?: string;
+  interactionKind?: "action" | "decision";
+  actionId: string;
+  context: ClinicalGateContext;
+}): ClinicalActionGateDecision {`
+);
+
+replaceOnce(
   'lib/clinical-action-gate-patient-state.ts',
 `  nodeId?: string;
   actionId: string;
@@ -127,7 +144,7 @@ replaceOnce(
                 message={tr(pendingHardStop.message)}
                 primaryLabel={tr("Voltar e corrigir a condição de segurança")}
                 onPrimary={() => setPendingHardStop(undefined)}
-                severity="danger"
+                severity="critical"
               />
               <Text style={styles.questionSummary}>{tr(pendingHardStop.resolution)}</Text>
             </View>
