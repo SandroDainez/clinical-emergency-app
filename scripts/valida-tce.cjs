@@ -196,44 +196,30 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
   } else ok++;
 }
 
-// ── E. A hiperventilação de 3ª linha: a CONDIÇÃO, não só o número ─────────
+// ── E. Hiperventilação refratária: tiers SIBICC + fronteira BTF ────────────
 {
-  const terceira = todos.find((t) => /3ª LINHA/.test(t)) ?? "";
-  if (!terceira) {
-    falhas.push("a hiperventilação de 3ª linha sumiu — e com ela a condição que torna o 25–34 defensável.");
+  const refrataria = todos.find((t) => /HIPERVENTILAÇÃO NA HIC REFRATÁRIA/.test(t)) ?? "";
+  if (!refrataria) {
+    falhas.push("a hiperventilação refratária sumiu — o fluxo perdeu a separação entre resgate e profilaxia.");
   } else {
     for (const [nome, padrao, porque] of [
-      ["o número do protocolo institucional", /PaCO₂ 25–34 mmHg/, "o número não muda sem reabrir a fonte (R-5) — e a conferência exige \"PaCO₂ … mmHg\" junto, porque a constante repete o 25–34 mais adiante e a menção não é a declaração do alvo"],
-      [
-        "a monitorização como CONDIÇÃO",
-        /SÓ COM MONITORIZAÇÃO ADICIONAL/,
-        "sem ela o 25–34 vira permissão de descer abaixo de 30 sem nada para ver isquemia",
-      ],
-      ["o piso de 30 quando não há monitorização", /o piso é 30 mmHg/, "é o limite que a literatura aberta declara"],
-      [
-        "o MOTIVO do piso",
-        /VASOCONSTRIÇÃO CEREBRAL/,
-        "sem o mecanismo, alguém desce \"só um pouco mais\" quando a PIC não cede",
-      ],
-      [
-        "a separação da ponte da herniação",
-        /NÃO é a hiperventilação-ponte/,
-        "dois PaCO₂ diferentes no mesmo módulo sem rótulo é convite a usar o mais agressivo",
-      ],
-      [
-        "a procedência da literatura aberta",
-        /never decrease below PaCO2 values of 30/,
-        "cada limite tem de dizer de onde vem",
-      ],
+      ["tier 2 32–35", /PaCO₂ 32–35 mmHg.*tier 2/, "SIBICC usa hiperventilação leve neste intervalo no tier 2"],
+      ["tier 3 30–32", /PaCO₂ 30–32 mmHg.*tier 3/, "a faixa mais baixa pertence ao resgate de tier 3"],
+      ["condição de oxigenação cerebral", /somente quando não há hipoxia tecidual cerebral/, "o tier 3 mais agressivo não pode ignorar oxigenação cerebral"],
+      ["piso de 30", /Evitar PaCO₂ <30 mmHg/, "abaixo de 30 aumenta risco de hipoperfusão cerebral"],
+      ["fronteira BTF <=25", /NÃO usar PaCO₂ ≤25 mmHg de forma profilática ou prolongada/, "BTF contraindica hiperventilação profilática prolongada intensa"],
+      ["reversão precoce", /reverter a hipocapnia assim que a medida de resgate deixar de ser necessária/, "hipocapnia de resgate não deve virar alvo crônico"],
     ]) {
-      if (!padrao.test(terceira)) {
-        falhas.push(`hiperventilação de 3ª linha: ${nome} sumiu — ${porque}.`);
-      } else ok++;
+      if (!padrao.test(refrataria)) falhas.push(`hiperventilação refratária: ${nome} sumiu — ${porque}.`);
+      else ok++;
     }
   }
+  if (/HIPERVENTILAÇÃO DE 3ª LINHA — PaCO₂ 25–34 mmHg/.test(todos.join("\n"))) {
+    falhas.push("o antigo alvo institucional 25–34 reapareceu como faixa genérica de 3ª linha.");
+  } else ok++;
   const ponte = todos.find((t) => /ponte para herniação iminente/.test(t)) ?? "";
   if (!/30–35 mmHg/.test(ponte)) {
-    falhas.push("a hiperventilação-ponte perdeu o 30–35 — é o alvo do resgate, e não é o mesmo da 3ª linha.");
+    falhas.push("a hiperventilação-ponte perdeu o 30–35 — ela continua separada do resgate escalonado da HIC.");
   } else ok++;
 }
 
