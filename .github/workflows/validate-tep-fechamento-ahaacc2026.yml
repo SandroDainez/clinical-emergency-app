@@ -1,0 +1,38 @@
+name: Validate TEP AHA ACC 2026 closure
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/valida-tep-fechamento-ahaacc2026.cjs
+      - .github/workflows/validate-tep-fechamento-ahaacc2026.yml
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Final TEP AHA ACC 2026 closure validator
+        run: node scripts/valida-tep-fechamento-ahaacc2026.cjs
+      - name: TEP regression
+        run: npm run test:tep
+      - name: Thrombolysis contraindication regression
+        run: npm run test:ci-trombolise
+      - name: SafetyGate candidate regression
+        run: node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/tep-final tep-decision-tree.ts lib/contraindicacao-trombolise.ts lib/clinical-gate-registry.ts clinical-safety-cases/gate-candidate-debts.ts
+      - name: Whitespace gate
+        run: git diff --check
