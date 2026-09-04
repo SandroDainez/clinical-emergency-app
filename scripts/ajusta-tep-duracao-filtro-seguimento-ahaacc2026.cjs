@@ -27,7 +27,7 @@ const reps = [
   ],
   [
     '"Seguimento ambulatorial garantido em 5–7 dias; acesso à emergência.",',
-    '"Garantir contato/seguimento clínico na primeira semana após a alta para educação, adesão, barreiras à anticoagulação e sangramento; programar também revisão até 3 meses.",'
+    '"Garantir contato/seguimento clínico na primeira semana após a alta para educação, adesão, barreiras à anticoagulação e sangramento; programar também consulta até 3 meses.",'
   ],
   [
     '"Seguimento ambulatorial garantido em 5–7 dias e acesso à emergência.",',
