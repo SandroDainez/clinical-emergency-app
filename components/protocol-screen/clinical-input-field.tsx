@@ -27,10 +27,11 @@ export type ClinicalInputFieldProps = {
 /**
  * Apresentação isolada de UM campo clínico do nó de entrada.
  *
- * Regra de UX para campo numérico: a barra aparece imediatamente. O valor
- * visual inicial é somente um ponto de partida do controle e NÃO é gravado no
- * atendimento até o médico concluir a interação (soltar a barra ou tocar −/+).
- * Não há etapa intermediária de digitação/OK nos campos com faixa numérica.
+ * Regra de UX para campo numérico: a barra aparece imediatamente, mas nenhum
+ * número é mostrado antes da primeira interação. O slider precisa internamente
+ * de um ponto de partida técnico; ele NÃO é exibido nem gravado no atendimento.
+ * O valor só passa a existir para o usuário quando ele toca/arrasta a barra e
+ * só passa a existir para o caso clínico quando conclui a interação.
  */
 export function ClinicalInputField({
   field,
@@ -74,6 +75,7 @@ export function ClinicalInputField({
   const valorDaBarra = hasNumericValue
     ? numericValue
     : numericDraft ?? numeroInicialDaBarra();
+  const valorVisivel = hasNumericValue || numericDraft !== undefined;
 
   return (
     <View style={e.wrapper} testID={testID}>
@@ -102,14 +104,15 @@ export function ClinicalInputField({
 
       {numericRange ? (
         <View style={e.numericBlock}>
-          {!hasNumericValue ? (
+          {!hasNumericValue && numericDraft === undefined ? (
             <Text style={e.numericPendingTitle} testID={testID ? `${testID}-numeric-pending` : undefined}>
-              {tr("Valor ainda não informado — ajuste a barra")}
+              {tr("Valor ainda não informado — toque na barra para definir")}
             </Text>
           ) : null}
 
           <NumericStepper
             valor={valorDaBarra}
+            valorVisivel={valorVisivel}
             onChange={(next) => setNumericDraft(next)}
             onConfirmar={confirmarNumeroDaBarra}
             min={numericRange.min}
