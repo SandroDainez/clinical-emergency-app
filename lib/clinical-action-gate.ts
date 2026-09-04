@@ -17,6 +17,7 @@ export type ClinicalActionGateDecision = {
 export function evaluateClinicalActionAttempt(input: {
   protocolId: string;
   nodeId?: string;
+  interactionKind?: "action" | "decision";
   actionId: string;
   context: ClinicalGateContext;
 }): ClinicalActionGateDecision {

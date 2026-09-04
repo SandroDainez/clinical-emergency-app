@@ -58,6 +58,7 @@ export const CLINICAL_GATE_TRIGGER_REGISTRY: readonly ClinicalGateTrigger[] = [
 export function activeClinicalGatesForAction(input: {
   protocolId: string;
   nodeId?: string;
+  interactionKind?: "action" | "decision";
   actionId: string;
   context: ClinicalGateContext;
 }): ActiveClinicalGate[] {
@@ -66,6 +67,7 @@ export function activeClinicalGatesForAction(input: {
   for (const trigger of CLINICAL_GATE_TRIGGER_REGISTRY) {
     if (trigger.protocolId !== input.protocolId) continue;
     if (trigger.nodeId && trigger.nodeId !== input.nodeId) continue;
+    if (input.interactionKind && trigger.interactionKind !== input.interactionKind) continue;
     if (trigger.actionId !== input.actionId) continue;
     if (!conditionMatches(trigger.when, input.context)) continue;
 

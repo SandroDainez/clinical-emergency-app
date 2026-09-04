@@ -127,6 +127,7 @@ export default function AclsDecisionFlowScreen({
   const [step, setStep] = useState<FrontendTreeStep>(() => engine.toFrontendStep());
   const [canGoBack, setCanGoBack] = useState<boolean>(() => engine.canGoBack());
   const [trail, setTrail] = useState<string[]>(() => [engine.toFrontendStep().title]);
+  const [pendingHardStop, setPendingHardStop] = useState<{ title: string; message: string; resolution: string } | undefined>(undefined);
   const [pendingSoftStop, setPendingSoftStop] = useState<{ optionId: string; gateId: string; title: string; message: string; resolution: string } | undefined>(undefined);
   const [softStopReason, setSoftStopReason] = useState("");
 
@@ -335,22 +336,36 @@ export default function AclsDecisionFlowScreen({
       commitDecision(optionId);
       return;
     }
-    const gate = evaluateClinicalActionAttemptFromPatientState({
+    const decision = evaluateClinicalActionAttemptFromPatientState({
       protocolId: currentModuleSlug,
       nodeId: currentStep.id,
+      interactionKind: "decision",
       actionId: selected.clinicalActionId,
-    }).decision.softStops[0];
-    if (!gate) {
+    }).decision;
+    const hardStop = decision.hardStops[0];
+    if (hardStop) {
+      setPendingSoftStop(undefined);
+      setSoftStopReason("");
+      setPendingHardStop({
+        title: hardStop.policy.title,
+        message: hardStop.policy.message,
+        resolution: hardStop.policy.resolution,
+      });
+      return;
+    }
+    const softStop = decision.softStops[0];
+    if (!softStop) {
       commitDecision(optionId);
       return;
     }
+    setPendingHardStop(undefined);
     setSoftStopReason("");
     setPendingSoftStop({
       optionId,
-      gateId: gate.policy.id,
-      title: gate.policy.title,
-      message: gate.policy.message,
-      resolution: gate.policy.resolution,
+      gateId: softStop.policy.id,
+      title: softStop.policy.title,
+      message: softStop.policy.message,
+      resolution: softStop.policy.resolution,
     });
   };
 
@@ -628,7 +643,18 @@ export default function AclsDecisionFlowScreen({
 
         <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>
         {step.kind === "decision" ? (
-          pendingSoftStop ? (
+          pendingHardStop ? (
+            <View style={styles.stepStack}>
+              <SafetyGate
+                title={tr(pendingHardStop.title)}
+                message={tr(pendingHardStop.message)}
+                primaryLabel={tr("Voltar e corrigir a condição de segurança")}
+                onPrimary={() => setPendingHardStop(undefined)}
+                severity="critical"
+              />
+              <Text style={styles.questionSummary}>{tr(pendingHardStop.resolution)}</Text>
+            </View>
+          ) : pendingSoftStop ? (
             <View style={styles.stepStack}>
               <SafetyGate
                 title={tr(pendingSoftStop.title)}
@@ -923,6 +949,7 @@ function ActionStep({
       ? evaluateClinicalActionAttemptFromPatientState({
           protocolId,
           nodeId: step.id,
+          interactionKind: "action",
           actionId: step.clinicalActionId,
         })
       : undefined;

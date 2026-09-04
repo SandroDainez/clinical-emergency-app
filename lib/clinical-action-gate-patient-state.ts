@@ -26,6 +26,7 @@ export type ClinicalActionGateFromPatientState = {
 export function evaluateClinicalActionAttemptFromPatientState(input: {
   protocolId: string;
   nodeId?: string;
+  interactionKind?: "action" | "decision";
   actionId: string;
   now?: number;
 }): ClinicalActionGateFromPatientState {
@@ -42,6 +43,7 @@ export function evaluateClinicalActionAttemptFromPatientState(input: {
   const decision = evaluateClinicalActionAttempt({
     protocolId: input.protocolId,
     nodeId: input.nodeId,
+    interactionKind: input.interactionKind,
     actionId: input.actionId,
     context: contextAssembly.context,
   });
