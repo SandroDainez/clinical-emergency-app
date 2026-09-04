@@ -33,28 +33,18 @@ export type NumericStepperProps = {
   /** Texto de apoio abaixo do controle. */
   ajuda?: string;
   /**
-   * Quando false, o controle ainda existe e pode ser tocado, mas NÃO exibe
-   * número, polegar nem progresso aparente. Serve para campos ainda não
-   * informados: o ponto técnico de partida do slider não pode parecer um dado
-   * do paciente.
+   * Quando false, o campo ainda não foi informado. A barra continua visível e
+   * o polegar fica na origem VISUAL da trilha, mas nenhum número é apresentado
+   * ou registrado como dado do paciente até a primeira interação concluída.
    */
   valorVisivel?: boolean;
-  /**
-   * Chamado quando o médico TERMINA de interagir com o controle — ao soltar a
-   * barra ou ao tocar −/+ —, mesmo que o número não tenha mudado.
-   */
+  /** Chamado quando o médico TERMINA a interação com o controle. */
   onConfirmar?: (valor: number) => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-/**
- * Controle numérico único do app — peso, idade, tempo, volume, PEEP, dose.
- *
- * O slider serve para aproximação rápida. Os botões −/+ ficam visualmente mais
- * fortes porque são o mecanismo de ajuste fino e respeitam o passo canônico do
- * campo. Nenhuma parte deste componente escolhe um valor clínico pelo usuário.
- */
+/** Controle numérico único do app — peso, idade, tempo, volume, PEEP, dose. */
 export function NumericStepper({
   valor,
   onChange,
@@ -97,6 +87,11 @@ export function NumericStepper({
     : "ainda não informado";
   const botoesDesabilitados = disabled || !valorVisivel;
 
+  // Enquanto não houve interação, o componente precisa de um número técnico
+  // para renderizar o slider. Usamos o mínimo apenas para colocar o polegar na
+  // origem visual da trilha. Esse número NÃO é exposto nem confirmado.
+  const valorRenderizado = valorVisivel ? valor : min;
+
   return (
     <View style={[e.wrapper, style]} testID={testID}>
       {rotulo ? <Text style={e.rotulo}>{rotulo}</Text> : null}
@@ -118,7 +113,9 @@ export function NumericStepper({
 
       <View style={e.precisionHintRow}>
         <Text style={e.precisionHint}>APROXIME NA BARRA</Text>
-        <Text style={e.precisionStep}>AJUSTE FINO · ± {passo.toFixed(decimais).replace(".", ",")}</Text>
+        {valorVisivel ? (
+          <Text style={e.precisionStep}>AJUSTE FINO · ± {passo.toFixed(decimais).replace(".", ",")}</Text>
+        ) : null}
       </View>
 
       <View style={e.controles}>
@@ -133,7 +130,7 @@ export function NumericStepper({
 
         <View style={e.sliderArea}>
           <Slider
-            value={valor}
+            value={valorRenderizado}
             onValueChange={(v) => onChange(limitar(v))}
             onSlidingComplete={(v) => onConfirmar?.(limitar(v))}
             minimumValue={min}
@@ -142,15 +139,17 @@ export function NumericStepper({
             disabled={disabled}
             minimumTrackTintColor={valorVisivel ? e.coresSlider.ativo : e.coresSlider.trilho}
             maximumTrackTintColor={e.coresSlider.trilho}
-            thumbTintColor={valorVisivel ? e.coresSlider.ativo : "transparent"}
+            thumbTintColor={valorVisivel ? e.coresSlider.ativo : e.coresSlider.pendente}
             accessibilityLabel={rotulo}
             accessibilityValue={{ min, max, now: valorVisivel ? valor : undefined, text: valorAcessivel }}
             style={e.slider}
           />
-          <View style={e.rangeRow}>
-            <Text style={e.rangeText}>{min.toFixed(decimais).replace(".", ",")}</Text>
-            <Text style={e.rangeText}>{max.toFixed(decimais).replace(".", ",")}</Text>
-          </View>
+          {valorVisivel ? (
+            <View style={e.rangeRow}>
+              <Text style={e.rangeText}>{min.toFixed(decimais).replace(".", ",")}</Text>
+              <Text style={e.rangeText}>{max.toFixed(decimais).replace(".", ",")}</Text>
+            </View>
+          ) : null}
         </View>
 
         <BotaoPasso
@@ -266,6 +265,10 @@ const criarEstilos = (t: Tema) => {
       simbolo: { ...TIPOGRAFIA.title, color: cores.primary, lineHeight: 30, fontWeight: "800" },
       ajuda: { ...TIPOGRAFIA.micro, color: cores.textSecondary, fontWeight: "400" },
     }),
-    coresSlider: { ativo: cores.primary, trilho: cores.border },
+    coresSlider: {
+      ativo: cores.primary,
+      trilho: cores.border,
+      pendente: cores.textSecondary,
+    },
   };
 };
