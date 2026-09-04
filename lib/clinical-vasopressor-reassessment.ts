@@ -32,6 +32,22 @@ export function recordVasopressorReassessment(input: {
   pendingByModule.delete(input.moduleId);
 }
 
+export type VasopressorReassessmentSnapshot = Array<{ moduleId: string; reassessmentId: string }>;
+
+export function exportVasopressorReassessmentSnapshot(): VasopressorReassessmentSnapshot {
+  return [...pendingByModule.entries()].map(([moduleId, reassessmentId]) => ({ moduleId, reassessmentId }));
+}
+
+export function restoreVasopressorReassessmentSnapshot(snapshot: VasopressorReassessmentSnapshot): void {
+  clearVasopressorReassessmentState();
+  for (const item of snapshot) {
+    if (!item.moduleId.trim() || !item.reassessmentId.trim()) {
+      throw new Error("Snapshot de reavaliação de vasopressor inválido");
+    }
+    pendingByModule.set(item.moduleId, item.reassessmentId);
+  }
+}
+
 export function clearVasopressorReassessmentState(): void {
   pendingByModule.clear();
 }

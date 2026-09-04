@@ -85,6 +85,25 @@ export function confirmStaleObservationForDecision(
   return resolveObservationForDecision(policy, now);
 }
 
+export type ObservationDecisionConfirmationSnapshot = StaleConfirmation[];
+
+export function exportObservationDecisionConfirmationsSnapshot(): ObservationDecisionConfirmationSnapshot {
+  return [...confirmations.values()].map((item) => ({ ...item }));
+}
+
+export function restoreObservationDecisionConfirmationsSnapshot(snapshot: ObservationDecisionConfirmationSnapshot): void {
+  clearObservationDecisionConfirmations();
+  for (const item of snapshot) {
+    if (!item.decisionId.trim() || !item.observationId.trim()) {
+      throw new Error("Snapshot de confirmação de observação inválido");
+    }
+    if (!Number.isFinite(item.observationRecordedAt) || !Number.isFinite(item.confirmedAt)) {
+      throw new Error("Snapshot de confirmação de observação com timestamp inválido");
+    }
+    confirmations.set(confirmationKey(item.decisionId, item.observationId), { ...item });
+  }
+}
+
 /** Novo atendimento: nenhuma confirmação anterior pode sobreviver. */
 export function clearObservationDecisionConfirmations(): void {
   confirmations.clear();

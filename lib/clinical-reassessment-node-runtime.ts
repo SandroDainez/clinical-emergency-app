@@ -48,6 +48,22 @@ export function observeClinicalNodeForReassessment(input: {
   pendingByBinding.delete(key);
 }
 
+export type ClinicalReassessmentNodeRuntimeSnapshot = Array<{ bindingKey: string; reassessmentId: string }>;
+
+export function exportClinicalReassessmentNodeRuntimeSnapshot(): ClinicalReassessmentNodeRuntimeSnapshot {
+  return [...pendingByBinding.entries()].map(([bindingKey, reassessmentId]) => ({ bindingKey, reassessmentId }));
+}
+
+export function restoreClinicalReassessmentNodeRuntimeSnapshot(snapshot: ClinicalReassessmentNodeRuntimeSnapshot): void {
+  clearClinicalReassessmentNodeRuntime();
+  for (const item of snapshot) {
+    if (!item.bindingKey.trim() || !item.reassessmentId.trim()) {
+      throw new Error("Snapshot do vínculo de reavaliação clínica inválido");
+    }
+    pendingByBinding.set(item.bindingKey, item.reassessmentId);
+  }
+}
+
 export function clearClinicalReassessmentNodeRuntime(): void {
   pendingByBinding.clear();
 }
