@@ -4,10 +4,10 @@
  *   dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não
  *   se contaminem entre si; que os dois itens comuns venham da CONSTANTE
  *   COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a
- *   divergência do TEP nomeie as duas fontes.
+ *   regra do TEP permaneça ancorada na bula/protocolo atual, sem inventar janela universal.
  * NÃO PROMETE: que as listas estejam completas segundo a diretriz primária — as
- *   fontes abertas foram bula, tabela adaptada e revisão (R-52), o que está
- *   declarado na tela. Não confere doses (test:coronarias, test:avc, test:tep).
+ *   fontes abertas e contratos clínicos sejam verdadeiros; a lista do TEP é ancorada
+ *   na bula/protocolo atual e não transforma fontes secundárias antigas em janela universal. Não confere doses (test:coronarias, test:avc, test:tep).
  * UNIVERSO: as três árvores compiladas e lib/contraindicacao-trombolise.ts.
  *
  * ── O ACHADO QUE DESENHOU ISTO ──────────────────────────────────────────────
@@ -18,7 +18,7 @@
  *
  *   cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA
  *   AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h;
- *                           3 (StatPearls) × 6 (ESC) no TEP
+ *                           no TEP, seguir bula/protocolo atual sem inventar 3 × 6 meses
  *   pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas
  *   dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP
  *
@@ -77,7 +77,7 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
     falhas.push(`\`${mod}/${decisao}\` não existe mais.`);
     continue;
   }
-  const duvida = (n.options ?? []).find((o) => /não sei/i.test(o.label ?? ""));
+  const duvida = (n.options ?? []).find((o) => /não sei|incert|revisar contraindica/i.test(o.label ?? ""));
   if (!duvida) {
     falhas.push(
       `\`${mod}/${decisao}\` voltou a ter só sim/não.\n` +
@@ -143,8 +143,8 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
       "a exceção do AVC agudo é específica da SCA"],
     ["avc", /A PRESSÃO AQUI NÃO É CONTRAINDICAÇÃO — É ALVO/i,
       "no AVC a PA é alvo tratável, e nas outras duas é contraindicação relativa"],
-    ["tep", /StatPearls[\s\S]{0,80}3 MESES[\s\S]{0,200}ESC 2019[\s\S]{0,40}6 MESES/i,
-      "a divergência do TEP tem de dizer QUAL fonte diz o quê"],
+    ["tep", /bula oficial atual do Activase[\s\S]{0,160}história de AVC recente/i,
+      "no TEP a incerteza temporal do AVC prévio deve ficar ancorada na bula atual, sem falsa janela universal"],
   ];
   for (const [mod, padrao, porque] of REGRAS) {
     if (!padrao.test(alvo(mod))) falhas.push(`\`${mod}\`: ${porque} — e isso sumiu da lista.`);

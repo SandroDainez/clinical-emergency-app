@@ -96,7 +96,7 @@ export const CI_SCA_EXCECAO_AVC_AGUDO =
 /* ── TEP ──────────────────────────────────────────────────────────────────── */
 
 export const CI_TEP_LISTA =
-  "CONTRAINDICAÇÕES À TROMBÓLISE NO TEP — confira item a item. ABSOLUTAS: doença intracraniana estrutural; hemorragia intracraniana; sangramento ativo; cirurgia cerebral ou de coluna recente; traumatismo craniano recente com fratura ou lesão encefálica; diátese hemorrágica; AVC isquêmico recente (a janela diverge entre as fontes — veja abaixo). RELATIVAS: PAS > 180 ou PAD > 110 mmHg; sangramento não intracraniano recente; cirurgia ou procedimento invasivo recente; AVC isquêmico há mais de 3 meses; anticoagulação em curso; RCP traumática; pericardite ou derrame pericárdico; retinopatia diabética; gravidez; idade > 65 anos; baixo peso corporal.";
+  "CONTRAINDICAÇÕES À ALTEPLASE NO TEP — usar a bula do produto disponível e o protocolo local. A bula oficial do Activase para TEP/infarto orienta NÃO administrar quando o risco hemorrágico excede o benefício nas seguintes situações: sangramento interno ativo; história de AVC RECENTE; cirurgia intracraniana ou intraespinhal, ou traumatismo craniano grave, nos últimos 3 meses; condição intracraniana que aumente o risco de sangramento; diátese hemorrágica; hipertensão grave não controlada. Além disso, cirurgia/procedimento maior recente, doença cerebrovascular, sangramento gastrointestinal ou geniturinário recente, trauma recente, pericardite, endocardite, defeitos hemostáticos por doença hepática/renal grave, gravidez, retinopatia hemorrágica, idade avançada e anticoagulação oral aumentam o risco e exigem balanço individual. Não converta fatores de risco em veto automático fora do que a bula/protocolo define.";
 
 /**
  * ⚠️ AUSÊNCIA DECLARADA COM AUTORIA (R-13) — e o autor exigiu dizer QUEM diz o
@@ -106,7 +106,7 @@ export const CI_TEP_LISTA =
  * é entre StatPearls e ESC, para escolher conforme o que o serviço segue.
  */
 export const CI_TEP_JANELA_DIVERGE =
-  "⚠️ A JANELA DO AVC ISQUÊMICO RECENTE DIVERGE ENTRE AS FONTES, E ESTE APP NÃO ESCOLHE POR VOCÊ: o StatPearls (Thrombolytic Therapy) usa 3 MESES como contraindicação absoluta, e coloca o AVC de mais de 3 meses entre as relativas; o ESC 2019 de embolia pulmonar usa 6 MESES. Um paciente com AVC isquêmico há 4 meses é ABSOLUTAMENTE contraindicado por uma fonte e não pela outra. Decida pela referência que o seu serviço adota, registre qual usou — e, se houver tempo, discuta com quem vai assumir o paciente. ➜ Nas outras duas indicações deste app a janela é 3 meses, sem divergência.";
+  "⚠️ AVC RECENTE E TEP: não invente uma janela universal de 3 versus 6 meses a partir de fontes secundárias antigas. A bula oficial atual do Activase para TEP usa a expressão “história de AVC recente” como contraindicação, sem definir nessa seção um número de meses. Se o intervalo for clinicamente limítrofe, confira a bula da apresentação disponível e o protocolo institucional e discuta com PERT/equipe de reperfusão quando houver tempo; se a lise sistêmica não for aceitável, avalie alternativas de reperfusão conforme categoria, risco hemorrágico e recursos.";
 
 /* ── O QUE VALE PARA AS TRÊS ──────────────────────────────────────────────── */
 
