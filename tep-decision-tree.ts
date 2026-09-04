@@ -264,7 +264,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       id: "ar_trombolise_check",
       type: "decision",
       title: "Trombólise sistêmica — contraindicações",
-      question: "Há contraindicação ABSOLUTA à trombólise?",
+      question: "O risco hemorrágico é aceitável para trombólise sistêmica neste cenário?",
       // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
       // O nó tem 5 itens e NÃO TINHA campo visível além de título e pergunta —
       // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
@@ -278,16 +278,16 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       summary:
         "⚠️ EM PCR OU COLAPSO IMINENTE, A RELAÇÃO RISCO–BENEFÍCIO MUDA, mas não transforme isso numa regra automática de ignorar contraindicações. AHA 2025 considera fibrinólise razoável no TEP confirmado como causa da parada e possível no TEP suspeito; a decisão deve integrar probabilidade de TEP, risco hemorrágico, alternativas disponíveis e possibilidade de embolectomia/ECLS.",
       evidence: [
-        "Trombólise sistêmica é PRIMEIRA LINHA no TEP de alto risco se não houver contraindicação absoluta.",
+        "AHA/ACC 2026: em E1–E2, com risco hemorrágico aceitável e quando terapia avançada está sendo considerada, trombólise sistêmica + anticoagulação é razoável sobre anticoagulação isolada; em D1–D2 pode ser considerada para prevenir deterioração. Em C3 o benefício é incerto; em A1–C2 não usar trombólise sistêmica sobre anticoagulação devido ao maior risco de sangramento grave e hemorragia intracraniana.",
         "Absolutas: AVC hemorrágico (qualquer tempo) ou isquêmico < 3 meses; neoplasia intracraniana; TCE grave/cirurgia intracraniana/espinhal recente; sangramento ativo; suspeita de dissecção de aorta; punção em sítio não compressível < 7 dias.",
         "── CONTRAINDICAÇÕES RELATIVAS — não proíbem, mudam a conta ──",
         "Idade > 75 anos; anticoagulação oral em uso; gestação e primeira semana pós-parto; RCP prolongada ou traumática; punção vascular não compressível; HAS grave não controlada (> 180/110); doença hepática avançada; endocardite infecciosa; úlcera péptica ativa; cirurgia de grande porte < 3 semanas; sangramento interno recente (2–4 semanas).",
         "⚠️ PCR/colapso iminente exige decisão individual rápida: contraindicações relativas não devem funcionar como veto mecânico, mas também não desaparecem. No TEP confirmado em parada, AHA 2025 considera fibrinólise, embolectomia cirúrgica e embolectomia mecânica opções razoáveis; em TEP apenas suspeito, fibrinólise pode ser considerada. Se houver recurso, discutir embolectomia/ECLS conforme o cenário.",
       ],
       options: [
-        { id: "sem", label: "Sem contraindicação absoluta", next: "ar_trombolise" },
-        { id: "com", label: "Há contraindicação absoluta", next: "ar_alternativas" },
-        { id: "nao_sei", label: "Não sei dizer — abrir a lista", next: "ci_tep_lista" },
+        { id: "sem", label: "Risco hemorrágico aceitável para trombólise", next: "ar_trombolise" },
+        { id: "com", label: "Risco hemorrágico inaceitável / contraindicação maior", next: "ar_alternativas" },
+        { id: "nao_sei", label: "Risco incerto — revisar contraindicações", next: "ci_tep_lista" },
       ],
     },
 
