@@ -6,6 +6,7 @@ on:
     paths:
       - scripts/ajusta-tep-suporte-hemodinamico-ventilatorio-ahaacc2026.cjs
       - scripts/valida-tep-suporte-hemodinamico-ventilatorio-ahaacc2026.cjs
+      - scripts/valida-safety-gate-candidate-debts.cjs
       - .github/workflows/apply-tep-suporte-hemodinamico-ventilatorio-ahaacc2026.yml
   workflow_dispatch:
 
