@@ -67,6 +67,20 @@ export function listClinicalInterruptions(): ClinicalInterruptionFrame[] {
   return stack.map((frame) => ({ ...frame }));
 }
 
+export function exportClinicalInterruptionsSnapshot(): ClinicalInterruptionFrame[] {
+  return listClinicalInterruptions();
+}
+
+export function restoreClinicalInterruptionsSnapshot(snapshot: ClinicalInterruptionFrame[]): void {
+  clearClinicalInterruptions();
+  for (const frame of snapshot) {
+    if (!frame.id.trim() || !frame.transitionId.trim() || !frame.fromModule.trim() || !frame.toModule.trim()) {
+      throw new Error("Snapshot de interrupção clínica inválido");
+    }
+    stack.push({ ...frame });
+  }
+}
+
 export function clearClinicalInterruptions(): void {
   stack.length = 0;
 }

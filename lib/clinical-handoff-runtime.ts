@@ -44,6 +44,15 @@ export function listPendingClinicalHandoffs(): ClinicalHandoffPayload[] {
   }));
 }
 
+export function exportClinicalHandoffsSnapshot(): ClinicalHandoffPayload[] {
+  return listPendingClinicalHandoffs();
+}
+
+export function restoreClinicalHandoffsSnapshot(snapshot: ClinicalHandoffPayload[]): void {
+  clearClinicalHandoffs();
+  for (const payload of snapshot) publishClinicalHandoff(payload);
+}
+
 export function clearClinicalHandoffs(): void {
   pending.length = 0;
 }

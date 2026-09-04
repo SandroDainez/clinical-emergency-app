@@ -79,6 +79,31 @@ export function lerDoContexto(campo: string): Registro | undefined {
   return r;
 }
 
+export type ContextoPacienteSnapshotEntry = {
+  campo: CampoCompartilhado;
+  valor: string;
+  origem: string;
+  salvoEm: number;
+};
+
+export function exportContextoDoPacienteSnapshot(): ContextoPacienteSnapshotEntry[] {
+  return [...contexto.entries()].map(([campo, registro]) => ({
+    campo: campo as CampoCompartilhado,
+    valor: registro.valor,
+    origem: registro.origem,
+    salvoEm: registro.salvoEm,
+  }));
+}
+
+export function restoreContextoDoPacienteSnapshot(snapshot: ContextoPacienteSnapshotEntry[]): void {
+  limparContextoDoPaciente();
+  for (const entry of snapshot) {
+    if (!ehCampoCompartilhado(entry.campo)) continue;
+    if (!entry.valor.trim() || !entry.origem.trim() || !Number.isFinite(entry.salvoEm)) continue;
+    contexto.set(entry.campo, { valor: entry.valor.trim(), origem: entry.origem.trim(), salvoEm: entry.salvoEm });
+  }
+}
+
 /** Novo paciente: esquece tudo. */
 export function limparContextoDoPaciente(): void {
   contexto.clear();

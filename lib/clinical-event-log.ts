@@ -45,6 +45,15 @@ export function listClinicalEvents(): ClinicalEvent[] {
   }));
 }
 
+export function exportClinicalEventLogSnapshot(): ClinicalEvent[] {
+  return listClinicalEvents();
+}
+
+export function restoreClinicalEventLogSnapshot(snapshot: ClinicalEvent[]): void {
+  clearClinicalEventLog();
+  for (const event of snapshot) appendClinicalEvent(event);
+}
+
 export function clearClinicalEventLog(): void {
   events.length = 0;
 }

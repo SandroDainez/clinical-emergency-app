@@ -72,6 +72,15 @@ export function formatObservationAge(
   return remainder ? `${hours} h ${remainder} min` : `${hours} h`;
 }
 
+export function exportClinicalObservationsSnapshot(): ClinicalObservation[] {
+  return getAllClinicalObservations();
+}
+
+export function restoreClinicalObservationsSnapshot(snapshot: ClinicalObservation[]): void {
+  clearClinicalObservations();
+  for (const observation of snapshot) recordClinicalObservation(observation);
+}
+
 /** Novo paciente: nenhum sinal vital/exame pode sobreviver. */
 export function clearClinicalObservations(): void {
   observations.clear();

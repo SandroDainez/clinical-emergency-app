@@ -67,6 +67,22 @@ export function listPendingClinicalReassessments(): PendingClinicalReassessment[
   return [...pending.values()].map((item) => ({ ...item }));
 }
 
+export function exportPendingClinicalReassessmentsSnapshot(): PendingClinicalReassessment[] {
+  return listPendingClinicalReassessments();
+}
+
+export function restorePendingClinicalReassessmentsSnapshot(snapshot: PendingClinicalReassessment[]): void {
+  clearPendingClinicalReassessments();
+  sequence = 0;
+  for (const item of snapshot) {
+    if (!item.id.trim() || !item.therapyId.trim() || !Number.isFinite(item.startedAt)) {
+      throw new Error("Snapshot de reavaliação clínica inválido");
+    }
+    pending.set(item.id, { ...item });
+    sequence += 1;
+  }
+}
+
 export function clearPendingClinicalReassessments(): void {
   pending.clear();
 }
