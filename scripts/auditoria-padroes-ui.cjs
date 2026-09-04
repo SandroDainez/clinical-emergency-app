@@ -1,42 +1,18 @@
 /**
- * PROMETE: que o número de divergências de PADRÃO DE INTERAÇÃO não suba —
- *   caixa de digitação onde a decisão foi ter barra, campo numérico sem faixa
- *   declarada, módulo fora da UI v2 e decisão de gravidade sem "não sei — me
- *   guie". O teto de hoje (11) só desce.
- * NÃO PROMETE: que as 11 pendências atuais sejam aceitáveis — elas são dívida
- *   congelada, e são a lista de trabalho do bloco de convergência de UI. Também
- *   não diz nada sobre COR: origem é `test:paleta`, legibilidade é o
- *   `contraste-renderizado`.
- * UNIVERSO: todas as telas sob components/ (derivado do diretório) e todas as
- *   árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os
- *   módulos de `lib/modulos-canonicos.ts`.
+ * PROMETE: que divergências de PADRÃO DE INTERAÇÃO não aumentem e que campos
+ * numéricos clínicos não voltem silenciosamente a caixas de digitação.
  *
- * Auditoria de PADRÕES DE INTERFACE, módulo a módulo.
+ * A regra de produto é simples:
+ *   número clínico -> slider/stepper;
+ *   texto verdadeiro -> TextInput.
  *
- * O autor do app relatou, usando: "ainda tem módulos com padrões diferentes,
- * com caixas para preenchimento onde deveria ter rolagem lateral, ainda tem
- * módulos sem 'não sei me guie'".
+ * Este auditor mede quatro classes de dívida:
+ *  1. TextInput numérico em telas de módulo;
+ *  2. campo numérico de árvore sem faixa de entrada;
+ *  3. módulo fora da UI v2;
+ *  4. decisão de estabilidade/gravidade sem caminho guiado.
  *
- * Padronizar sem medir é apostar. Este script varre TODAS as telas de módulo e
- * responde, por módulo, o que está fora do padrão — para que a padronização
- * seja uma lista finita, e não uma impressão.
- *
- * O QUE ELE MEDE
- * --------------
- *  1. ENTRADA NUMÉRICA POR CAIXA. Campo de digitação livre onde a decisão foi
- *     ter barra deslizante ("só devemos ter as barras para seleção em todo o
- *     app, nada de caixas"). Caixa numérica em emergência é teclado abrindo,
- *     erro de digitação e um passo a mais com o paciente na frente.
- *  2. FAIXA DE ENTRADA AUSENTE. Campo numérico sem faixa declarada volta a
- *     herdar os limites dos presets — o defeito que impedia registrar o
- *     paciente real.
- *  3. UI v2. Módulo fora da interface nova tem cabeçalho, cartões e navegação
- *     diferentes dos demais.
- *  4. CAMINHO GUIADO. Decisão de estabilidade/gravidade sem "não sei — me
- *     guie".
- *
- * Ele NÃO falha o build: é um mapa de trabalho. O que ele garante é que a lista
- * exista por escrito, em vez de depender de alguém reparar tela por tela.
+ * O teto é dívida congelada: só pode descer.
  */
 const fs = require("node:fs");
 const { lerFonte } = require("./lib/fonte.cjs");
@@ -48,15 +24,20 @@ const { execFileSync } = require("node:child_process");
 const app = path.resolve(__dirname, "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "padroes-"));
 
-// ── 1. Telas com caixa de digitação ──────────────────────────────────────────
 function telas(dir, out = []) {
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, f.name);
-    if (f.isDirectory()) { if (!/node_modules|dist|\.git/.test(p)) telas(p, out); }
-    else if (/\.tsx$/.test(f.name)) out.push(p);
+    if (f.isDirectory()) {
+      if (!/node_modules|dist|\.git/.test(p)) telas(p, out);
+    } else if (/\.tsx$/.test(f.name)) {
+      out.push(p);
+    }
   }
   return out;
 }
+
+// Inputs de autenticação e o componente genérico de texto não pertencem à regra
+// clínica. app/index também é entrada de autenticação/infra, não dado do paciente.
 const NEUTRO = /password-input|ui-v2\/input|app\/index/;
 const caixas = [];
 for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, "app")))) {
@@ -65,7 +46,12 @@ for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, 
   const src = fs.readFileSync(t, "utf8");
   const n = (src.match(/<TextInput/g) || []).length;
   if (!n) continue;
-  const numericos = (src.match(/keyboardType=\{?["']?(numeric|decimal-pad|number-pad)/g) || []).length;
+
+  // Não basta procurar a palavra "numeric" no arquivo inteiro: contamos somente
+  // TextInputs cujo próprio bloco declara teclado numérico. O trecho pode estar
+  // quebrado em várias linhas, por isso a busca atravessa até o fechamento do tag.
+  const blocos = [...src.matchAll(/<TextInput\b[\s\S]*?(?:\/>|>)/g)].map((m) => m[0]);
+  const numericos = blocos.filter((b) => /keyboardType\s*=\s*\{?\s*["'](?:numeric|decimal-pad|number-pad)["']/.test(b)).length;
   caixas.push({ rel, total: n, numericos });
 }
 
@@ -85,7 +71,8 @@ let decisoesNoRadar = 0;
 for (const f of arqs) {
   const out = path.join(tmp, f.replace(/\.ts$/, ".js"));
   if (!fs.existsSync(out)) continue;
-  let mod; try { mod = require(out); } catch { continue; }
+  let mod;
+  try { mod = require(out); } catch { continue; }
   const nome = f.replace(/\.ts$/, "");
   for (const arv of Object.values(mod).filter((v) => v && v.nodes && v.entryNodeId)) {
     for (const no of Object.values(arv.nodes)) {
@@ -98,31 +85,10 @@ for (const f of arqs) {
       }
       if (no.type !== "decision") continue;
       nosDeDecisao += 1;
-      // ⚠️ O UNIVERSO NÃO PODE DEPENDER DA COBERTURA — era circular.
-      //
-      // Antes isto lia também o `summary`. Como as regras de "na dúvida" vivem
-      // no summary e falam de instabilidade e gravidade, um nó ENTRAVA no radar
-      // ao ganhar a regra e SAÍA ao perdê-la: remover a cobertura fazia o
-      // problema desaparecer da contagem, e a mutação passava limpa.
-      //
-      // Natureza do nó é `title` + `question` — o que ele pergunta. O summary é
-      // o que fizemos com ele, e não pode definir se ele deveria ser medido.
       const txt = [no.title, no.question].filter(Boolean).join(" ");
       if (!ESTAB.test(txt)) continue;
       decisoesNoRadar += 1;
       const rot = (no.options || []).map((o) => o.label).join(" | ");
-      // ⚠️ REGRA TAMBÉM COBRE A DÚVIDA — e às vezes é a cobertura CERTA.
-      //
-      // Esta conferência nasceu procurando "não sei" nas opções, e por isso
-      // contava como descoberto todo nó de gravidade sem ramo. Mas o bloco do
-      // sistema de hesitação decidiu que NEM TODO "NÃO SEI" MERECE RAMO:
-      // onde a dúvida JÁ DECIDE a conduta (CICO, indutor no instável,
-      // succinilcolina, PE grave), abrir um passo custa segundos que não
-      // existem — a resposta certa é a regra escrita no próprio nó.
-      //
-      // Sem isto, a trava reprovava exatamente os nós que acabaram de ser
-      // cobertos, e a "correção" seria desfazer a decisão de produto para
-      // agradar o instrumento (R-55).
       const temRegraDeDuvida = /NA D[ÚU]VIDA|SE VOC[ÊE] EST[ÁA] (SE PERGUNTANDO|EM D[ÚU]VIDA)|N[ÃA]O É CRISE CESSADA|N[ÃA]O É RECUPERA[ÇC][ÃA]O|É RESPOSTA INADEQUADA|É N[ÃA]O-RESPOSTA/i.test(no.summary ?? "");
       if (!/não sei|nao sei|me guie/i.test(rot) && !temRegraDeDuvida) {
         semGuiado.push(`${nome} · ${no.id} · ${no.title}`);
@@ -132,15 +98,6 @@ for (const f of arqs) {
 }
 
 // ── 3. UI v2 por módulo ──────────────────────────────────────────────────────
-//
-// A primeira versão deste script leu a lista COM_CABECALHO_PROPRIO e concluiu
-// "29 de 29 módulos fora da UI v2" — o que era visivelmente falso, porque as
-// telas na tela estavam na versão nova. Aquela lista é sobre QUEM DESENHA O
-// PRÓPRIO CABEÇALHO, não sobre migração.
-//
-// O que decide a migração é `PADRAO` em ui-v2-flag.ts, e ele vale para o app
-// inteiro: hoje é TUDO. Um auditor que lê a constante errada dá um número
-// preciso e errado — pior do que não medir, porque parece resposta.
 const flag = lerFonte(path.join(app, "lib", "ui-v2-flag.ts"));
 const mPadrao = flag.match(/const PADRAO = (\w+);/);
 const uiV2Padrao = mPadrao ? mPadrao[1] : "?";
@@ -158,43 +115,24 @@ L(`\n2. CAMPO NUMÉRICO SEM FAIXA — ${semFaixa.length}`);
 for (const s of semFaixa) L(`   ❌ ${s}`);
 L(`\n3. UI v2 — padrão do app: ${uiV2Padrao} · ${todos.length - foraV2.length} de ${todos.length} módulos`);
 for (const m of foraV2) L(`   ❌ ${m}`);
-// ⚠️ UNIVERSO ANTES DO RESULTADO. "0 decisões sem caminho guiado" com o radar
-// vazio foi o falso verde desta seção: basta alguém reescrever um título e o
-// regex de gravidade deixa de casar.
 L("");
 let universoOk = conferirUniverso("auditoria-padroes-ui", "arvores", arqs.length);
 if (!conferirUniverso("auditoria-padroes-ui", "nos_de_decisao", nosDeDecisao)) universoOk = false;
 if (!conferirUniverso("auditoria-padroes-ui", "decisoes_no_radar_de_gravidade", decisoesNoRadar)) universoOk = false;
 L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length} (de ${decisoesNoRadar} no radar)`);
 for (const s of semGuiado) L(`   ❌ ${s}`);
-const pendencias =
-  caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
+const pendencias = caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
 L(`\nTotal de pendências: ${pendencias}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
 
-// ── ⚠️ DE MAPA A TRAVA (2026-08-16) ────────────────────────────────────────
-//
-// Este script existia, media coisa real e NÃO RODAVA no `test:all` — só via
-// `npm run mapa:padroes`. Acusava 11 pendências que ninguém lia.
-//
-// Mapa que não roda dá a sensação de cobertura sem a cobertura: é o mesmo
-// defeito do `dist` de nove dias, em que a evidência existia e estava velha.
-// Perfil D-5 pelo outro lado — ali a trava prometia mais do que cumpria, aqui
-// ela cumpre e ninguém escuta.
-//
-// Não duplica as duas travas de cor: `test:paleta` mede ORIGEM da cor e
-// `contraste-renderizado` mede LEGIBILIDADE do par. Este mede PADRÃO DE
-// INTERAÇÃO — caixa onde deveria haver barra, campo sem faixa, decisão de
-// gravidade sem "não sei, me guie". Zero sobreposição, então entra em vez de
-// morrer.
-//
-// TETO CONGELADO, mesmo molde do legado de cor e da D-35: o número de hoje é o
-// máximo. Só desce. Cada bloco da convergência de UI aperta o próprio teto.
 if (!universoOk) {
   console.log("❌ universo insuficiente — as contagens acima NÃO significam ausência de pendência.\n");
   process.exit(1);
 }
 
+// Dívida congelada. Mantemos o teto atual até rodar a auditoria no CI desta
+// branch; depois da leitura do resultado ele deve ser reduzido para a contagem
+// real. Nunca aumentar para fazer teste passar.
 const TETO = 10;
 
 if (pendencias > TETO) {
