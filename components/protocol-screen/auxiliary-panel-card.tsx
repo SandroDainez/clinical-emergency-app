@@ -2,8 +2,10 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { tr } from "../../lib/i18n";
 import { useLanguage } from "../../lib/language-context";
 import type { AuxiliaryPanel } from "../../clinical-engine";
+import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { CategoricalSelector } from "../ui-v2/categorical-selector";
 import { HorizontalMultiSelect } from "../ui-v2/horizontal-multi-select";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { styles } from "./protocol-screen-styles";
 import { hasSelectedPresetValue } from "./protocol-screen-utils";
 
@@ -51,6 +53,9 @@ function AuxiliaryPanelCard({
               const selectedPreset = field.presets?.find((preset) =>
                 hasSelectedPresetValue(field.value, preset.value, field.presetMode)
               );
+              const faixa = field.keyboardType === "numeric" ? faixaDeEntradaDe(field.id) : undefined;
+              const numero = Number(String(field.value ?? "").replace(",", "."));
+              const valorVisivel = String(field.value ?? "").trim().length > 0 && Number.isFinite(numero);
 
               return (
                 <View
@@ -60,14 +65,29 @@ function AuxiliaryPanelCard({
                     field.fullWidth ? styles.auxiliaryFieldGroupFullWidth : null,
                   ]}>
                   <Text style={styles.auxiliaryFieldLabel}>{tr(field.label)}</Text>
-                  <TextInput
-                    value={field.value}
-                    placeholder={field.placeholder ? tr(field.placeholder) : undefined}
-                    keyboardType={resolveKeyboardType(field.keyboardType)}
-                    onChangeText={(text) => onFieldChange(field.id, text)}
-                    style={styles.auxiliaryInput}
-                    placeholderTextColor="#94a3b8"
-                  />
+                  {faixa ? (
+                    <NumericStepper
+                      valor={valorVisivel ? numero : faixa.min}
+                      valorVisivel={valorVisivel}
+                      min={faixa.min}
+                      max={faixa.max}
+                      passo={faixa.passo}
+                      unidade={field.unit || faixa.unidade || undefined}
+                      onChange={(valor) => onFieldChange(field.id, String(valor).replace(".", ","))}
+                      onConfirmar={(valor) => onFieldChange(field.id, String(valor).replace(".", ","))}
+                      ajuda={field.helperText ? tr(field.helperText) : undefined}
+                      testID={`slider-${field.id}`}
+                    />
+                  ) : (
+                    <TextInput
+                      value={field.value}
+                      placeholder={field.placeholder ? tr(field.placeholder) : undefined}
+                      keyboardType={resolveKeyboardType(field.keyboardType)}
+                      onChangeText={(text) => onFieldChange(field.id, text)}
+                      style={styles.auxiliaryInput}
+                      placeholderTextColor="#94a3b8"
+                    />
+                  )}
                   {field.unitOptions && field.unitOptions.length > 0 ? (
                     <CategoricalSelector
                       value={field.unit}
@@ -79,7 +99,7 @@ function AuxiliaryPanelCard({
                       testID={`unidade-${field.id}`}
                     />
                   ) : null}
-                  {field.helperText ? (
+                  {!faixa && field.helperText ? (
                     <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
                   ) : null}
                   {field.presets && field.presets.length > 0 ? (
