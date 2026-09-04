@@ -231,8 +231,8 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       title: "TEP alto risco — suporte + anticoagulação imediata",
       summary: "Emergência com risco de morte. Suporte hemodinâmico cauteloso + anticoagulação terapêutica quando indicada e não contraindicada.",
       actions: [
-        "Suporte: O₂ (IOT se insuficiência respiratória grave); fluidos CAUTELOSOS — SF 0,9% 500 mL (máx 500–1.000 mL): sobrecarga piora a função do VD.",
-        "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.",
+        "SUPORTE RESPIRATÓRIO: na hipoxemia moderada-grave, preferir cânula nasal de alto fluxo ao cateter nasal convencional. Evitar sedação profunda e ventilação mecânica salvo indicação clínica forte, porque indução e pressão positiva podem precipitar colapso do VD. Se intubação for inevitável, ter vasopressor/inotrópico e estratégia de resgate hemodinâmico imediatamente disponíveis.",
+        "HEMODINÂMICA AHA/ACC 2026: norepinefrina é geralmente o vasopressor de escolha quando há hipotensão/choque; associar inotrópico conforme baixo débito e perfusão. A diretriz alerta que, acima de cerca de 15 mcg/min de norepinefrina, a resistência vascular pulmonar pode aumentar; em vez de apenas escalar mais a dose, considerar segundo vasopressor conforme o contexto. Volume NÃO é rotina: apenas se houver preocupação clínica com pré-carga reduzida, em pequenos bolus de até 500 mL com reavaliação imediata; evitar cargas maiores ou indiscriminadas por risco de sobrecarga do VD.",
         DOBUTAMINA_INICIO,
         DOBUTAMINA_FAIXA_USUAL,
         DOBUTAMINA_ATE_20,
@@ -240,7 +240,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         HNF_APRESENTACAO,
         "{avisoPeso}",
         "TEP de alto risco, por si só, NÃO torna HNF o anticoagulante parenteral preferido. AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 e também após trombólise ou procedimento endovascular; durante a própria infusão trombolítica, a evidência é insuficiente para preferir HBPM a HNF, portanto seguir o protocolo periprocedural específico.",
-        "AHA/ACC 2026: preferir cateter nasal de ALTO FLUXO ao cateter comum na hipoxemia moderada-grave; EVITAR sedação profunda e ventilação mecânica sempre que possível (risco de colapso hemodinâmico).",
+        "AHA/ACC 2026: em categorias C–E, sedação profunda e ventilação mecânica devem ser evitadas salvo indicação clínica. Se houver necessidade de sedação para intubação, vasopressores, inotrópicos e/ou VA-ECMO devem estar prontamente disponíveis conforme recursos. Em C2–E, vasodilatador pulmonar inalatório pode ser considerado para reduzir a pós-carga do VD; não confundir com vasodilatação sistêmica indiscriminada.",
         "AHA/ACC 2026: VA-ECMO é razoável no choque cardiogênico refratário por TEP.",
         "Anticoagulação: DOAC é preferido a antagonista da vitamina K quando elegível. Para anticoagulação parenteral inicial, AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1; planejamento de trombólise ou procedimento endovascular NÃO cria exceção automática a favor de HNF. Após trombólise ou procedimento endovascular, HBPM também é preferida; durante a infusão trombolítica, seguir o protocolo específico porque não há evidência suficiente para escolher HBPM sobre HNF nesse intervalo."
       ],
