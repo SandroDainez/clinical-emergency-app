@@ -34,10 +34,6 @@ function AuxiliaryPanelCard({
 }: AuxiliaryPanelCardProps) {
   useLanguage(); // re-renderiza ao trocar o idioma (tr() reavalia)
 
-  function resolveKeyboardType(keyboardType?: AuxiliaryPanel["fields"][number]["keyboardType"]) {
-    return keyboardType === "numeric" ? "numbers-and-punctuation" : keyboardType;
-  }
-
   return (
     <View style={styles.auxiliaryPanelCard}>
       <Text style={styles.auxiliaryPanelTitle}>{tr(auxiliaryPanel.title)}</Text>
@@ -53,7 +49,8 @@ function AuxiliaryPanelCard({
               const selectedPreset = field.presets?.find((preset) =>
                 hasSelectedPresetValue(field.value, preset.value, field.presetMode)
               );
-              const faixa = field.keyboardType === "numeric" ? faixaDeEntradaDe(field.id) : undefined;
+              const ehNumerico = field.keyboardType === "numeric";
+              const faixa = ehNumerico ? faixaDeEntradaDe(field.id) : undefined;
               const numero = Number(String(field.value ?? "").replace(",", "."));
               const valorVisivel = String(field.value ?? "").trim().length > 0 && Number.isFinite(numero);
 
@@ -78,11 +75,24 @@ function AuxiliaryPanelCard({
                       ajuda={field.helperText ? tr(field.helperText) : undefined}
                       testID={`slider-${field.id}`}
                     />
+                  ) : ehNumerico ? (
+                    <View
+                      style={[
+                        styles.auxiliaryRecommendationCard,
+                        styles.auxiliaryRecommendationCardWarning,
+                      ]}
+                      accessibilityRole="alert">
+                      <Text style={styles.auxiliaryRecommendationTitle}>
+                        {tr("Campo numérico indisponível")}
+                      </Text>
+                      <Text style={styles.auxiliaryRecommendationLine}>
+                        {tr("Faixa de entrada não configurada. Este campo não pode usar caixa de digitação como alternativa.")}
+                      </Text>
+                    </View>
                   ) : (
                     <TextInput
                       value={field.value}
                       placeholder={field.placeholder ? tr(field.placeholder) : undefined}
-                      keyboardType={resolveKeyboardType(field.keyboardType)}
                       onChangeText={(text) => onFieldChange(field.id, text)}
                       style={styles.auxiliaryInput}
                       placeholderTextColor="#94a3b8"
