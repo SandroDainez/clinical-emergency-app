@@ -27,9 +27,11 @@ export type ClinicalInputFieldProps = {
 /**
  * Apresentação isolada de UM campo clínico do nó de entrada.
  *
- * Não decide se um campo é numérico, não inventa faixa, não valida normalidade,
- * não interpreta presets e não conhece o motor. A faixa numérica chega pronta
- * do chamador; sem faixa, os presets são tratados como domínio categórico.
+ * Regra de UX para campo numérico: a barra deve existir desde o primeiro
+ * contato. O valor visual inicial é apenas um ponto de partida do controle e
+ * NÃO é gravado no atendimento até o médico terminar a interação (soltar a
+ * barra ou tocar −/+). Assim evitamos a sequência ruim "digitar → confirmar →
+ * só então aparecer a barra" sem inventar um dado clínico silenciosamente.
  */
 export function ClinicalInputField({
   field,
@@ -45,6 +47,7 @@ export function ClinicalInputField({
   const [customOpen, setCustomOpen] = useState(false);
   const [customText, setCustomText] = useState("");
   const [numericText, setNumericText] = useState("");
+  const [numericDraft, setNumericDraft] = useState<number | undefined>(undefined);
 
   const preset = field.presets.find((item) => item.value === value);
   const isPreset = Boolean(preset);
@@ -53,6 +56,17 @@ export function ClinicalInputField({
   const hasNumericValue = numericValue !== undefined && Number.isFinite(numericValue);
 
   const currentLabel = preset?.label ?? value;
+
+  const numeroInicialDaBarra = () => {
+    if (!numericRange) return 0;
+    const bruto = numericRange.min + (numericRange.max - numericRange.min) / 2;
+    const passos = Math.round((bruto - numericRange.min) / numericRange.passo);
+    const alinhado = numericRange.min + passos * numericRange.passo;
+    const casas = Number.isInteger(numericRange.passo)
+      ? 0
+      : (String(numericRange.passo).split(".")[1]?.length ?? 0);
+    return Number(Math.min(numericRange.max, Math.max(numericRange.min, alinhado)).toFixed(casas));
+  };
 
   const confirmarNumeroDigitado = () => {
     if (!numericRange) return;
@@ -64,8 +78,18 @@ export function ClinicalInputField({
     if (numero < numericRange.min || numero > numericRange.max) return;
 
     onChange(String(numero));
+    setNumericDraft(numero);
     setNumericText("");
   };
+
+  const confirmarNumeroDaBarra = (numero: number) => {
+    setNumericDraft(numero);
+    onChange(String(numero));
+  };
+
+  const valorDaBarra = hasNumericValue
+    ? numericValue
+    : numericDraft ?? numeroInicialDaBarra();
 
   return (
     <View style={e.wrapper} testID={testID}>
@@ -93,10 +117,20 @@ export function ClinicalInputField({
       {renderCalculator}
 
       {numericRange ? (
-        hasNumericValue ? (
+        <View style={e.numericBlock}>
+          {!hasNumericValue ? (
+            <View style={e.numericPending} testID={testID ? `${testID}-numeric-pending` : undefined}>
+              <Text style={e.numericPendingTitle}>{tr("Valor ainda não informado")}</Text>
+              <Text style={e.numericPendingText}>
+                {tr("A barra já está pronta para uso. Arraste ou use −/+; o valor só será registrado quando você concluir a interação.")}
+              </Text>
+            </View>
+          ) : null}
+
           <NumericStepper
-            valor={numericValue}
-            onChange={(next) => onChange(String(next))}
+            valor={valorDaBarra}
+            onChange={(next) => setNumericDraft(next)}
+            onConfirmar={confirmarNumeroDaBarra}
             min={numericRange.min}
             max={numericRange.max}
             passo={numericRange.passo}
@@ -104,9 +138,9 @@ export function ClinicalInputField({
             rotulo={tr(field.label)}
             testID={testID ? `${testID}-numeric` : undefined}
           />
-        ) : (
-          <View style={e.numericEmpty} testID={testID ? `${testID}-numeric-empty` : undefined}>
-            <Text style={e.numericEmptyLabel}>{tr("Valor ainda não informado")}</Text>
+
+          <View style={e.directInputBlock}>
+            <Text style={e.directInputLabel}>{tr("Ou digite o valor exato")}</Text>
             <View style={e.customRow}>
               <TextInput
                 value={numericText}
@@ -132,7 +166,7 @@ export function ClinicalInputField({
               {tr("Faixa de entrada")}: {numericRange.min}–{numericRange.max}{field.unit ? ` ${field.unit}` : ""}
             </Text>
           </View>
-        )
+        </View>
       ) : (
         <>
           <CategoricalSelector
@@ -247,16 +281,31 @@ const criarEstilos = (t: Tema) =>
       color: t.cores.textSecondary,
       fontWeight: "500",
     },
-    numericEmpty: {
+    numericBlock: {
       gap: ESPACO.sm,
-      borderWidth: 1,
-      borderColor: t.cores.border,
-      borderRadius: RAIO.input,
-      backgroundColor: t.cores.bg,
-      padding: ESPACO.md,
     },
-    numericEmptyLabel: {
+    numericPending: {
+      borderLeftWidth: 3,
+      borderLeftColor: t.cores.primary,
+      paddingLeft: ESPACO.sm,
+      gap: 2,
+    },
+    numericPendingTitle: {
       ...TIPOGRAFIA.caption,
+      color: t.cores.textSecondary,
+      fontWeight: "800",
+    },
+    numericPendingText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "500",
+    },
+    directInputBlock: {
+      gap: ESPACO.xs,
+      paddingTop: ESPACO.xs,
+    },
+    directInputLabel: {
+      ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
       fontWeight: "700",
     },
