@@ -387,7 +387,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         ],
         escolher: (v) => {
           // Ordem importa: VD e valvar mudam a conduta de forma mais radical que
-          // o perfil quente/frio — no VD, dar volume ajuda e diurético mata; na
+          // o perfil quente/frio — no VD, tanto volume liberal quanto retirada indiscriminada podem piorar; na
           // complicação mecânica, o tratamento é cirúrgico e nenhuma droga
           // resolve. Por isso são testados primeiro.
           if (v.vd === "sim") return "dx_cardio_vd";
@@ -438,7 +438,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Mecanismo: ↓ contratilidade → ↓ débito com pressões de enchimento altas.",
         "Confirmar: extremidades frias, congestão pulmonar ao exame/RX/ECO, FE reduzida.",
-        "Ações: estabilização hemodinâmica com NORADRENALINA (vasopressor de escolha); considerar acrescentar inotrópico; evitar expansão volêmica — mais de 70% dos IAM de VE em choque já têm congestão e pioram com volume.",
+        "Ações: na hipotensão, usar NORADRENALINA como vasopressor de primeira linha; considerar inotrópico quando houver baixo débito persistente apesar de pressão adequada. Na presença de congestão, NÃO usar expansão volêmica empírica como tratamento primário; reavaliar perfusão e congestão após cada intervenção.",
         "Reperfusão coronariana quando o IAM for a causa; considerar suporte circulatório mecânico conforme disponibilidade e avaliação especializada.",
       ],
       targets: [
@@ -451,12 +451,12 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       id: "dx_cardio_frio_seco",
       type: "transition",
       title: "Choque CARDIOGÊNICO — frio e seco",
-      summary: "Baixo débito SEM congestão: aqui cabem alíquotas de volume.",
+      summary: "Baixo débito SEM congestão: ausência de congestão, sozinha, NÃO prova responsividade a volume.",
       disposition: "icu",
       exitCriteria: [
-        "Mecanismo: baixo débito com pressão diastólica final do VE possivelmente baixa — o paciente pode tolerar bólus de fluido.",
+        "Mecanismo: baixo débito sem congestão clínica pode coexistir com baixa pré-carga, mas também com falência de bomba sem responsividade a volume; confirmar o fenótipo antes de expandir.",
         "Confirmar: extremidades frias sem congestão pulmonar; ECO sem sinais de sobrecarga de volume.",
-        "Ações: fluidos em PEQUENAS alíquotas, reavaliando a cada uma; estabilização hemodinâmica com noradrenalina; considerar acrescentar inotrópico.",
+        "Ações: se houver baixa pré-carga provável ou responsividade demonstrada, testar PEQUENA alíquota e reavaliar imediatamente volume sistólico/perfusão e sinais de congestão; interromper se não houver benefício. Na hipotensão, usar noradrenalina; considerar inotrópico se baixo débito persistir com pressão adequada.",
       ],
       targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de inotrópico e vasopressor." }],
     },

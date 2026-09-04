@@ -100,6 +100,14 @@ export const ES_CHOQUE_EINSTEIN: Record<string, string> = {
     "Reperfusión coronaria cuando el IAM sea la causa; considerar soporte circulatorio mecánico según disponibilidad y evaluación especializada.",
 
   // ── Cardiogênico: frio e seco ──
+  "Ações: se houver baixa pré-carga provável ou responsividade demonstrada, testar PEQUENA alíquota e reavaliar imediatamente volume sistólico/perfusão e sinais de congestão; interromper se não houver benefício. Na hipotensão, usar noradrenalina; considerar inotrópico se baixo débito persistir com pressão adequada.":
+    "Acciones: si hay baja precarga probable o respuesta a volumen demostrada, probar una PEQUEÑA alícuota y reevaluar de inmediato volumen sistólico/perfusión y signos de congestión; suspender si no hay beneficio. Ante hipotensión, usar noradrenalina; considerar un inotrópico si persiste bajo gasto con presión adecuada.",
+  "Mecanismo: baixo débito sem congestão clínica pode coexistir com baixa pré-carga, mas também com falência de bomba sem responsividade a volume; confirmar o fenótipo antes de expandir.":
+    "Mecanismo: el bajo gasto sin congestión clínica puede coexistir con baja precarga, pero también con fallo de bomba sin respuesta a volumen; confirmar el fenotipo antes de expandir.",
+  "Baixo débito SEM congestão: ausência de congestão, sozinha, NÃO prova responsividade a volume.":
+    "Bajo gasto SIN congestión: la ausencia de congestión, por sí sola, NO demuestra respuesta a volumen.",
+  "Ações: na hipotensão, usar NORADRENALINA como vasopressor de primeira linha; considerar inotrópico quando houver baixo débito persistente apesar de pressão adequada. Na presença de congestão, NÃO usar expansão volêmica empírica como tratamento primário; reavaliar perfusão e congestão após cada intervenção.":
+    "Acciones: ante hipotensión, usar NORADRENALINA como vasopresor de primera línea; considerar un inotrópico cuando persista bajo gasto a pesar de una presión adecuada. En presencia de congestión, NO usar expansión con volumen empírica como tratamiento primario; reevaluar perfusión y congestión después de cada intervención.",
   "Choque CARDIOGÊNICO — frio e seco": "Choque CARDIOGÉNICO — frío y seco",
   "Baixo débito SEM congestão: aqui cabem alíquotas de volume.":
     "Bajo gasto SIN congestión: aquí sí caben alícuotas de volumen.",
