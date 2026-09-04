@@ -43,21 +43,13 @@ export default function ClinicalCalculatorsScreen({ onVoltar }: { onVoltar?: () 
 
   return (
     <View style={s.screen}>
-      {/* ⚠️ CABEÇALHO ÚNICO — este é o único desta tela, e é o `Header` canônico.
-          A rota não desenha mais cromado (I7): quem não trouxer o próprio fica
-          sem título E SEM SAÍDA. O `onVoltar` é o caminho para o hub. */}
       <CalculatorScreenHeader title={`🧮 ${tr("Calculadoras Clínicas")}`} onBack={onVoltar} />
 
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
-        {/* Sidebar */}
-        {/* RAIL COMUM — 96 px próprios viraram o componente do shell. O grupo
-            (calculadoras / escores) vira `hint`; o `adjustsFontSizeToFit` que
-            encolhia o nome para caber some junto com a largura apertada. */}
         <RailDeModulo
           items={CALC_GROUPS.flatMap((g) =>
             CALC_TOOLS.filter((t) => t.kind === g.kind).map((t) => ({
               id: t.id,
-              // Sem símbolo: a lista é ordenada e o índice do shell serve.
               label: t.name,
               hint: g.label,
               accent: TEMAS.escuro.cores.primary,
@@ -69,7 +61,6 @@ export default function ClinicalCalculatorsScreen({ onVoltar }: { onVoltar?: () 
           titulo="Calculadoras e escores"
         />
 
-        {/* Conteúdo */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={s.toolHeader}>
             <Text style={s.toolName}>{tr(tool.name)}</Text>
@@ -117,50 +108,31 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
               </View>
             );
           }
+
+          const faixa = FAIXA_DE_ENTRADA[inp.id];
+          const texto = values[key] ?? "";
+          const numerico = Number(texto.replace(",", "."));
+          const informado = texto.trim().length > 0 && Number.isFinite(numerico);
+
           return (
             <View key={inp.id} style={s.fieldRow}>
               <Text style={s.fieldLabel}>{tr(inp.label)}{inp.unit ? <Text style={s.unit}> ({tr(inp.unit)})</Text> : null}</Text>
-              {/* Barra, não caixa. A faixa vem de lib/faixas-de-entrada pela
-                  GRANDEZA (na, k, cr, plaq…), que já é a fonte única do app —
-                  criar uma segunda tabela aqui seria repetir o erro de manter
-                  duas versões do mesmo número.
-                  Sem faixa declarada o campo cai de volta na caixa: melhor um
-                  campo fora do padrão do que uma barra com limite inventado. */}
-              {FAIXA_DE_ENTRADA[inp.id] ? (
-                (() => {
-                  const texto = values[key] ?? "";
-                  const numerico = Number(texto.replace(",", "."));
-                  const informado = texto.trim().length > 0 && Number.isFinite(numerico);
-                  return informado ? (
-                    <NumericStepper
-                      valor={numerico}
-                      onChange={(n) => setVal(key, String(n).replace(".", ","))}
-                      min={FAIXA_DE_ENTRADA[inp.id].min}
-                      max={FAIXA_DE_ENTRADA[inp.id].max}
-                      passo={FAIXA_DE_ENTRADA[inp.id].passo}
-                      unidade={inp.unit ? tr(inp.unit) : undefined}
-                      testID={`slider-${inp.id}`}
-                    />
-                  ) : (
-                    <View style={s.emptyNumericField}>
-                      <Text style={s.emptyNumericLabel}>{tr("Valor ainda não informado")}</Text>
-                      <TextInput
-                        style={s.input}
-                        value={texto}
-                        onChangeText={(v) => setVal(key, v)}
-                        keyboardType="decimal-pad"
-                        placeholder={inp.placeholder ? tr(inp.placeholder) : tr("Digitar valor")}
-                        placeholderTextColor="#64748b"
-                        accessibilityLabel={tr(inp.label)}
-                        testID={`input-${inp.id}`}
-                      />
-                    </View>
-                  );
-                })()
+              {faixa ? (
+                <NumericStepper
+                  valor={informado ? numerico : faixa.min}
+                  valorVisivel={informado}
+                  onChange={(n) => setVal(key, String(n).replace(".", ","))}
+                  onConfirmar={(n) => setVal(key, String(n).replace(".", ","))}
+                  min={faixa.min}
+                  max={faixa.max}
+                  passo={faixa.passo}
+                  unidade={inp.unit ? tr(inp.unit) : undefined}
+                  testID={`slider-${inp.id}`}
+                />
               ) : (
                 <TextInput
                   style={s.input}
-                  value={values[key] ?? ""}
+                  value={texto}
                   onChangeText={(v) => setVal(key, v)}
                   keyboardType="decimal-pad"
                   placeholder={inp.placeholder ? tr(inp.placeholder) : ""}
@@ -168,10 +140,6 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
                   accessibilityLabel={tr(inp.label)}
                 />
               )}
-              {/* A ressalva fica NO CAMPO, não numa nota longe dele: campo cuja
-                  unidade ou medida pode ser confundida precisa dizer isso onde
-                  o dedo digita (R-16 — o mesmo aviso longe do campo ensina que
-                  o risco é menor). */}
               {"helperText" in inp && inp.helperText ? (
                 <Text style={s.fieldHelper}>{tr(inp.helperText)}</Text>
               ) : null}
@@ -218,7 +186,6 @@ function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record
 
   return (
     <>
-      {/* Resultado no topo (fica visível ao rolar os itens) */}
       <View style={[s.resultCard, { borderColor: TONE[interp.tone].border, backgroundColor: TONE[interp.tone].bg }]}>
         <Text style={s.scoreTotalLabel}>{tr("PONTUAÇÃO")} ({tool.totalRange})</Text>
         <Text style={[s.scoreTotal, { color: TONE[interp.tone].text }]}>{total.toString().replace(".", ",")}</Text>
@@ -234,13 +201,6 @@ function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record
           return (
             <View key={v.id} style={s.scoreVar}>
               <Text style={s.scoreVarLabel}>{tr(v.label)}</Text>
-              {/*
-                `help` existia no tipo ScoreVar desde sempre e nunca era
-                renderizado — regra de pontuação escrita no código e invisível
-                na tela. É onde ficam as regras condicionais do NIHSS (paciente
-                em coma pontua 2 na sensibilidade e 3 na linguagem, por exemplo),
-                que mudam o total e que ninguém adivinha pelos rótulos.
-              */}
               {v.help ? <Text style={s.scoreVarHelp}>{tr(v.help)}</Text> : null}
               <View style={s.optWrap}>
                 {v.options.map((o, idx) => {
@@ -279,22 +239,14 @@ const s = StyleSheet.create({
   headerTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
   body: { flex: 1 },
   bodyLateral: { flexDirection: "row" },
-
-
   mainScroll: { flex: 1, backgroundColor: "#383e4a" },
   scroll: { padding: 14, gap: 12, paddingBottom: 28 },
   toolHeader: { gap: 2 },
   toolName: { fontSize: 20, fontWeight: "900", color: "#f1f5f9" },
   toolSub: { fontSize: 13, fontWeight: "600", color: "#7dd3fc" },
-
   card: { backgroundColor: "#383e4a", borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: "#565e6c" },
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
-
   field: { gap: 6 },
-  /**
-   * Empilhado — o rótulo dividia a linha com o controle (`flex: 1`) e a barra
-   * de altura media 0 px em produção. Padrão canônico da árvore de decisão.
-   */
   fieldRow: { gap: 8 },
   fieldLabel: { fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#aab6c6" },
@@ -303,14 +255,12 @@ const s = StyleSheet.create({
   emptyNumericLabel: { fontSize: 12, fontWeight: "700", color: "#aab6c6" },
   input: { width: 110, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
   toggleRow: { flexDirection: "row", gap: 7, flexWrap: "wrap" },
-  toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
+  toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", minHeight: 44, justifyContent: "center" },
   toggleChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#0ea5e9" },
   toggleChipTxt: { fontSize: 13, fontWeight: "700", color: "#aab6c6" },
   toggleChipTxtActive: { color: "#e0f2fe" },
-
   alertBox: { backgroundColor: "#383e4a", borderRadius: 12, borderWidth: 1.5, borderColor: "#f59e0b", padding: 12, gap: 4 },
   alertTxt: { fontSize: 12, fontWeight: "600", color: "#fcd34d", lineHeight: 18 },
-
   resultCard: { backgroundColor: "#383e4a", borderRadius: 16, borderWidth: 1.5, borderColor: "#565e6c", padding: 16, gap: 8 },
   bigMetric: { alignItems: "center", gap: 2, paddingBottom: 4 },
   bigMetricLabel: { fontSize: 12, fontWeight: "700", color: "#aab6c6" },
@@ -318,34 +268,27 @@ const s = StyleSheet.create({
   metricRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 8 },
   metricLabel: { flex: 1, fontSize: 12.5, fontWeight: "600", color: "#aab6c6" },
   metricVal: { fontSize: 14, fontWeight: "800", color: "#e2e8f0" },
-
   scoreTotalLabel: { fontSize: 11, fontWeight: "800", color: "#aab6c6", letterSpacing: 1, textAlign: "center" },
   scoreTotal: { fontSize: 48, fontWeight: "900", letterSpacing: -1, textAlign: "center" },
   scoreInterp: { fontSize: 15, fontWeight: "800", textAlign: "center" },
   scoreInterpLine: { fontSize: 12.5, color: "#cbd5e1", textAlign: "center", lineHeight: 18 },
-
   scoreVar: { gap: 6, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 10 },
   scoreVarLabel: { fontSize: 13, fontWeight: "700", color: "#e2e8f0" },
   scoreVarHelp: { fontSize: 11.5, fontWeight: "600", color: "#94a3b8", lineHeight: 16, marginTop: -2 },
   optWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  optChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
+  optChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", minHeight: 44, justifyContent: "center" },
   optChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#38bdf8" },
   optChipTxt: { fontSize: 12.5, fontWeight: "700", color: "#aab6c6" },
   optChipTxtActive: { color: "#e0f2fe" },
-
   interpBox: { borderRadius: 12, borderWidth: 1.5, padding: 12, gap: 4 },
   interpLabel: { fontSize: 14, fontWeight: "800" },
   interpLine: { fontSize: 12.5, color: "#cbd5e1", lineHeight: 18 },
-
-  tableRow: { flexDirection: "row", gap: 10, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 8 , minHeight: 44, justifyContent: "center" },
+  tableRow: { flexDirection: "row", gap: 10, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 8, minHeight: 44, justifyContent: "center" },
   tableK: { width: 92, fontSize: 12, fontWeight: "800", color: "#7dd3fc" },
   tableV: { flex: 1, fontSize: 12.5, color: "#cbd5e1", lineHeight: 18 },
-
   noteBox: { backgroundColor: "#383e4a", borderRadius: 12, borderWidth: 1, borderColor: "#565e6c", padding: 12 },
   noteTxt: { fontSize: 12.5, color: "#aab6c6", lineHeight: 18 },
-
   placeholder: { backgroundColor: "#383e4a", borderRadius: 12, borderWidth: 1, borderColor: "#565e6c", padding: 16 },
   placeholderTxt: { fontSize: 13, color: "#aab6c6" },
-
   reference: { fontSize: 11, color: "#aab6c6", fontStyle: "italic", lineHeight: 16 },
 });
