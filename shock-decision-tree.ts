@@ -135,10 +135,10 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       id: "estabilizacao_metas",
       type: "action",
       title: "Estabilizar e fixar as metas",
-      summary: "As metas valem para qualquer tipo de choque — o tipo define o tratamento, não o alvo.",
+      summary: "Os objetivos gerais são restaurar perfusão e oferta de oxigênio, mas os alvos numéricos NÃO são universais: devem seguir etiologia, sangramento/isquemia, comorbidades e resposta ao tratamento.",
       actions: [
         "Perfusão e pressão: usar PAM como alvo inicial e individualizar pela etiologia e pelo paciente. No choque séptico, PAM 65 mmHg é o alvo inicial de referência; em outros fenótipos, ajustar conforme perfusão, história de hipertensão, cérebro/coração e resposta ao tratamento. Acompanhar lactato seriado quando elevado, mas não perseguir normalização ou queda percentual horária como meta isolada.",
-        "Metas de oferta de O₂: hemoglobina ≥ 7 g/dL e saturação de pulso > 90%.",
+        "Oferta de O₂: não usar hemoglobina ≥7 g/dL nem SpO₂ >90% como metas universais de todo choque. Em adultos hospitalizados hemodinamicamente estáveis, estratégia transfusional restritiva costuma considerar transfusão quando Hb <7 g/dL; esse limiar não se aplica automaticamente a hemorragia ativa/exsanguinante e deve ser individualizado em doença cardiovascular/isquemia. Oxigênio e alvo de saturação também devem seguir hipoxemia e contexto clínico, evitando tratar um número isolado como objetivo único de ressuscitação.",
         "Meta de reversão de disfunção orgânica: diurese > 0,5 mL/kg/h e melhora do estado neurológico atribuível ao choque.",
         "Fluidos: após a abordagem inicial, só continuar expansão quando houver indicação clínica e probabilidade de responsividade. Preferir variáveis dinâmicas (elevação passiva das pernas, mudança de volume sistólico/débito após pequena prova de fluido, variação de pressão de pulso quando aplicável) a marcadores estáticos isolados; reavaliar perfusão e sinais de congestão após cada intervenção.",
         "Pressão arterial invasiva: considerar cateter arterial quando o choque não responder à terapia inicial e/ou houver necessidade de infusão vasopressora, especialmente se titulação rápida ou medidas não invasivas forem pouco confiáveis — não esperar uma dose fixa de noradrenalina para indicar.",
