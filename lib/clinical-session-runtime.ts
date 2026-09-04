@@ -11,6 +11,7 @@ import { limparContextoDoPaciente } from "./contexto-do-paciente";
 
 let currentCaseId: string | undefined;
 let currentCaseStartedAt: number | undefined;
+let generatedCaseSequence = 0;
 
 export type ClinicalSessionRuntime = {
   caseId?: string;
@@ -48,6 +49,12 @@ export function getClinicalSessionRuntime(): ClinicalSessionRuntime {
     caseId: currentCaseId,
     startedAt: currentCaseStartedAt,
   };
+}
+
+export function createClinicalCaseId(protocolId?: string, now: number = Date.now()): string {
+  generatedCaseSequence += 1;
+  const prefix = protocolId?.trim() || "clinical-case";
+  return prefix + ":" + now + ":" + generatedCaseSequence;
 }
 
 /**

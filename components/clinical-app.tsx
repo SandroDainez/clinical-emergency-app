@@ -44,20 +44,24 @@ import {
   isProtocolSessionMarkedForResume,
 } from "../lib/module-session-navigation";
 import { clearProtocolUiState } from "../lib/module-ui-state";
+import { createClinicalCaseId, getClinicalSessionRuntime, startClinicalCase } from "../lib/clinical-session-runtime";
 
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
   onRouteBack?: () => void;
   initialReferralFields?: Record<string, string>;
+  continuingClinicalCase?: boolean;
 };
 
 export default function ClinicalApp({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
   initialReferralFields,
+  continuingClinicalCase = false,
 }: ClinicalAppProps) {
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
+  const [caseBoundaryReady, setCaseBoundaryReady] = useState(false);
   // Causas já identificadas pela ROTA de entrada — hoje só o engasgo, que chega
   // ao PCR com a hipóxia por corpo estranho conhecida. Consumido uma vez, como
   // o próprio resume. Ver lib/module-session-navigation para por que "suspeita"
@@ -98,6 +102,15 @@ export default function ClinicalApp({
   const isAclsPostRoscModule = protocolId === "pos_pcr_acls";
   const isAclsPregnancyModule = protocolId === "pcr_gestacao_acls";
   const isAclsChokingModule = protocolId === "ovace_adulto";
+
+  useEffect(() => {
+    const active = getClinicalSessionRuntime();
+    const mayContinue = (continuingClinicalCase || resumeSession) && Boolean(active.caseId);
+    if (!mayContinue) {
+      startClinicalCase(createClinicalCaseId(protocolId));
+    }
+    setCaseBoundaryReady(true);
+  }, [continuingClinicalCase, protocolId, resumeSession]);
 
   useEffect(() => {
     preloadWebAudio();
@@ -141,6 +154,8 @@ export default function ClinicalApp({
       }
     };
   }, [engine, initialReferralFields, protocolId, resumeSession]);
+
+  if (!caseBoundaryReady) return null;
 
   // Raciocínio clínico (fluxos de referência) — sem consent gate, sem voz
   if (isShockFlowModule) {

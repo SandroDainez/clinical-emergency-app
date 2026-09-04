@@ -1,4 +1,8 @@
-const preservedProtocolSessions = new Set<string>();
+import { getClinicalSessionRuntime } from "./clinical-session-runtime";
+
+const RESUME_TTL_MS = 30 * 60 * 1000;
+type ResumeMarker = { caseId: string; markedAt: number };
+const preservedProtocolSessions = new Map<string, ResumeMarker>();
 
 /**
  * Causas reversíveis a PRÉ-MARCAR ao retomar um protocolo, por id de protocolo.
@@ -35,37 +39,54 @@ const preservedProtocolSessions = new Set<string>();
  * retomada por outro caminho, ou se este mecanismo falhar, o texto continua
  * ensinando. Remover qualquer um dos dois perde algo que o outro não cobre.
  */
-const preMarcacaoDeCausas = new Map<string, string[]>();
+const preMarcacaoDeCausas = new Map<string, { caseId: string; markedAt: number; causas: string[] }>();
+
+function currentCaseId(): string | undefined {
+  return getClinicalSessionRuntime().caseId;
+}
+
+function markerIsValid(marker: ResumeMarker | undefined, now: number = Date.now()): marker is ResumeMarker {
+  if (!marker) return false;
+  const activeCaseId = currentCaseId();
+  return Boolean(activeCaseId && marker.caseId === activeCaseId && now - marker.markedAt <= RESUME_TTL_MS);
+}
 
 function markProtocolSessionForResume(protocolId: string, causasSuspeitas?: string[]) {
-  if (!protocolId) {
-    return;
-  }
-  preservedProtocolSessions.add(protocolId);
+  if (!protocolId) return;
+  const caseId = currentCaseId();
+  if (!caseId) return;
+  const markedAt = Date.now();
+  preservedProtocolSessions.set(protocolId, { caseId, markedAt });
   if (causasSuspeitas?.length) {
-    preMarcacaoDeCausas.set(protocolId, [...causasSuspeitas]);
+    preMarcacaoDeCausas.set(protocolId, { caseId, markedAt, causas: [...causasSuspeitas] });
   }
 }
 
 /** Consome as causas a pré-marcar — uma vez só, como o próprio resume. */
 function consumeCausasPreMarcadas(protocolId: string): string[] {
-  const causas = preMarcacaoDeCausas.get(protocolId) ?? [];
-  if (causas.length) {
-    preMarcacaoDeCausas.delete(protocolId);
-  }
-  return causas;
+  const marker = preMarcacaoDeCausas.get(protocolId);
+  preMarcacaoDeCausas.delete(protocolId);
+  if (!marker) return [];
+  if (!markerIsValid({ caseId: marker.caseId, markedAt: marker.markedAt })) return [];
+  return marker.causas;
 }
 
 function isProtocolSessionMarkedForResume(protocolId: string) {
-  return preservedProtocolSessions.has(protocolId);
+  const marker = preservedProtocolSessions.get(protocolId);
+  if (markerIsValid(marker)) return true;
+  preservedProtocolSessions.delete(protocolId);
+  preMarcacaoDeCausas.delete(protocolId);
+  return false;
 }
 
 function consumeProtocolSessionResume(protocolId: string) {
-  const marked = preservedProtocolSessions.has(protocolId);
-  if (marked) {
-    preservedProtocolSessions.delete(protocolId);
+  const marker = preservedProtocolSessions.get(protocolId);
+  preservedProtocolSessions.delete(protocolId);
+  if (!markerIsValid(marker)) {
+    preMarcacaoDeCausas.delete(protocolId);
+    return false;
   }
-  return marked;
+  return true;
 }
 
 export {

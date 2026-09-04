@@ -6,6 +6,7 @@ import ClinicalApp from "../../components/clinical-app";
 import { getClinicalModuleById, getClinicalModules } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
+import { isProtocolSessionMarkedForResume } from "../../lib/module-session-navigation";
 
 /**
  * Ids de módulo a pré-renderizar na exportação web (`web.output: "static"`).
@@ -30,6 +31,10 @@ export default function ClinicalModuleScreen() {
   const sourceModuleId = Array.isArray(params.from_module) ? params.from_module[0] : params.from_module;
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
+  const protocolId = clinicalModule?.engine.getEncounterSummary().protocolId;
+  const continuingClinicalCase = Boolean(
+    sourceModuleId || (protocolId && isProtocolSessionMarkedForResume(protocolId))
+  );
 
   if (!clinicalModule) {
     return <Redirect href="/" />;
@@ -80,7 +85,11 @@ export default function ClinicalModuleScreen() {
        * ui-v2 no mesmo commit. `e2e/um-cabecalho-por-tela.spec.ts` mede isso nos
        * 31 e reprova tanto a duplicação quanto a ausência. */}
       <View style={styles.appBody}>
-        <ClinicalApp engine={clinicalModule.engine} onRouteBack={goBackTarget} />
+        <ClinicalApp
+          engine={clinicalModule.engine}
+          onRouteBack={goBackTarget}
+          continuingClinicalCase={continuingClinicalCase}
+        />
       </View>
     </SafeAreaView>
   );
