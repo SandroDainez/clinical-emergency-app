@@ -1,0 +1,50 @@
+name: Apply decision hard-stop runtime repair
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/corrige-gate-decisao-hard-stop.cjs
+      - scripts/valida-gate-decisao-hard-stop.cjs
+      - .github/workflows/apply-gate-decisao-hard-stop.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply runtime repair
+        run: node scripts/corrige-gate-decisao-hard-stop.cjs
+      - name: Validate decision hard-stop behavior wiring
+        run: node scripts/valida-gate-decisao-hard-stop.cjs
+      - name: Run executable safety gate regressions
+        run: node scripts/test-clinical-gate-triggers.cjs
+      - name: Run Emergencias 2 baseline
+        run: npm run test:emergencias-2
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' components/protocol-screen/acls-decision-flow-screen.tsx lib/clinical-action-gate-patient-state.ts lib/clinical-gate-trigger-registry.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit repair
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/protocol-screen/acls-decision-flow-screen.tsx lib/clinical-action-gate-patient-state.ts lib/clinical-gate-trigger-registry.ts
+          git commit -m 'fix(safety): enforce hard stops on decision surfaces'
+          git push origin HEAD:emergencias-2-ui-core
