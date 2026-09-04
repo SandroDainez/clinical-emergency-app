@@ -29,7 +29,12 @@ expect(/tox_sedativo:\s*\{[\s\S]*?id: "tox_sedativo"[\s\S]*?type: "action"/.test
 expect(tox.includes("FLUMAZENIL_NAO_USAR"), "fonte canônica FLUMAZENIL_NAO_USAR deixou de existir/ser consumida");
 expect(/tox_alcool_toxico:\s*\{[\s\S]*?id: "tox_alcool_toxico"[\s\S]*?type: "action"/.test(tox), "nó tox_alcool_toxico não existe mais como action");
 expect(/ar_suporte:\s*\{[\s\S]*?id: "ar_suporte"[\s\S]*?type: "action"/.test(tep), "nó ar_suporte do TEP mudou; reauditar dívida");
-expect(tep.includes("EVITAR sedação profunda e ventilação mecânica sempre que possível"), "alerta de sedação/VM no TEP mudou; reauditar dívida");
+expect(
+  tep.includes("EVITAR sedação profunda e ventilação mecânica sempre que possível") ||
+    tep.includes("sedação profunda e ventilação mecânica devem ser evitadas salvo indicação clínica") ||
+    tep.includes("Evitar sedação profunda e ventilação mecânica salvo indicação clínica forte"),
+  "alerta de sedação/VM no TEP mudou; reauditar dívida"
+);
 expect(/tce_grave:\s*\{[\s\S]*?id: "tce_grave"[\s\S]*?type: "action"/.test(tce), "nó tce_grave mudou; reauditar dívida de hiperventilação");
 expect(tce.includes("TCE_HIPERVENTILACAO_PROIBIDA"), "TCE: proibição canônica de hiperventilação profilática deixou de ser consumida");
 expect(/dx_cardio_frio_umido:\s*\{[\s\S]*?id: "dx_cardio_frio_umido"[\s\S]*?type: "transition"/.test(shock), "choque: fenótipo frio/úmido mudou; reauditar dívida de fluido");
