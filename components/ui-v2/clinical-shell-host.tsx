@@ -5,6 +5,7 @@ import { buildClinicalShellSnapshot } from "../../lib/clinical-shell-adapter";
 import { buildCrisisRoutes, instrumentCrisisRoute } from "../../lib/clinical-crisis-routing";
 import { resolveClinicalResume } from "../../lib/clinical-resume-runtime";
 import { recordProtocolStarted } from "../../lib/clinical-runtime-bridge";
+import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
 import { ClinicalShellChrome } from "./clinical-shell-chrome";
 
 export type ClinicalShellHostProps = {
@@ -81,18 +82,11 @@ export function ClinicalShellHost({
   const startedAtRef = useRef(Date.now());
   const [now, setNow] = useState(() => Date.now());
 
-  // Entrada no protocolo é uma observação de lifecycle, não uma decisão clínica.
-  // A bridge deduplica por módulo no atendimento atual; remount após uma
-  // interrupção não cria falso `protocol_started` e a volta permanece registrada
-  // separadamente como `protocol_resumed` pelo runtime de retomada.
   useEffect(() => {
     if (!moduleSlug) return;
     recordProtocolStarted({ module: moduleSlug, label: protocol });
   }, [moduleSlug, protocol]);
 
-  // O relógio abaixo serve somente à apresentação: mantém idade de observações,
-  // reavaliações e, no piloto do AVC, o cronômetro visual atualizados. Não muda
-  // elegibilidade, janela terapêutica, deadline ou qualquer derivação clínica.
   useEffect(() => {
     startedAtRef.current = Date.now();
     setNow(startedAtRef.current);
@@ -143,6 +137,7 @@ export function ClinicalShellHost({
       onReturnToContext={returnToContext}
       reassessmentAlert={snapshot.reassessmentAlert}
       onBack={onBack}
+      onExit={() => onPush(MODULES_HUB_HREF as Href)}
       crisisActions={crisisActions}
     />
   );
