@@ -56,10 +56,10 @@ export const ES_CHOQUE_EINSTEIN: Record<string, string> = {
   "Qual o perfil do choque cardiogênico?": "¿Cuál es el perfil del choque cardiogénico?",
   "O subtipo muda a conduta — sobretudo quanto a volume e a inotrópico. Qual se aplica?":
     "El subtipo cambia la conducta — sobre todo en cuanto a volumen e inotrópico. ¿Cuál se aplica?",
-  "Cerca de 80% dos choques cardiogênicos têm alguma forma de síndrome coronariana aguda por trás: fazer ECG em até 10 minutos.":
-    "Cerca del 80% de los choques cardiogénicos tienen detrás alguna forma de síndrome coronario agudo: realizar ECG en un máximo de 10 minutos.",
-  "Descompensação aguda de insuficiência cardíaca crônica responde por até 30% dos casos.":
-    "La descompensación aguda de insuficiencia cardíaca crónica explica hasta el 30% de los casos.",
+  "Síndrome coronariana aguda é uma causa crítica e tempo-dependente de choque cardiogênico, mas não representa todo o espectro contemporâneo. Obter ECG precocemente e investigar isquemia/reperfusão sem atrasar a definição hemodinâmica do choque.":
+    "El síndrome coronario agudo es una causa crítica y tiempo-dependiente de choque cardiogénico, pero no representa todo el espectro contemporáneo. Obtenga un ECG precoz e investigue isquemia/reperfusión sin retrasar la definición hemodinámica del choque.",
+  "Choque cardiogênico não relacionado a IAM é substancial e vem ganhando importância, incluindo insuficiência cardíaca aguda/descompensada, valvopatias, miocardite, arritmias e outras causas de falência de bomba.":
+    "El choque cardiogénico no relacionado con infarto es sustancial y gana importancia, incluyendo insuficiencia cardiaca aguda/descompensada, valvulopatías, miocarditis, arritmias y otras causas de fallo de bomba.",
   "Complicações mecânicas do IAM (ruptura de septo, ruptura valvar) exigem alto índice de suspeita e ecocardiograma rápido — ocorrem mais nas primeiras 24 h.":
     "Las complicaciones mecánicas del IAM (rotura de septo, rotura valvular) exigen alto índice de sospecha y ecocardiograma rápido — ocurren sobre todo en las primeras 24 h.",
   "Se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.":

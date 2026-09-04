@@ -299,10 +299,10 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
       // lista segue embaixo, que é onde lista deve ficar.
       summary:
-        "⏱ CERCA DE 80% DOS CHOQUES CARDIOGÊNICOS TÊM SÍNDROME CORONARIANA AGUDA POR TRÁS — faça o ECG em até 10 minutos, antes mesmo de fechar o subtipo. E se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.",
+        "⚠️ CHOQUE CARDIOGÊNICO NÃO É SINÔNIMO DE IAM. Síndrome coronariana aguda continua sendo causa crítica e tempo-dependente, mas insuficiência cardíaca aguda/descompensada, arritmias e complicações mecânicas também representam parcela importante dos casos contemporâneos. Faça ECG precocemente e use ecocardiografia para definir o fenótipo; se o subtipo não estiver claro, siga em 'Não definido' e reavalie.",
       evidence: [
-        "Cerca de 80% dos choques cardiogênicos têm alguma forma de síndrome coronariana aguda por trás: fazer ECG em até 10 minutos.",
-        "Descompensação aguda de insuficiência cardíaca crônica responde por até 30% dos casos.",
+        "Síndrome coronariana aguda é uma causa crítica e tempo-dependente de choque cardiogênico, mas não representa todo o espectro contemporâneo. Obter ECG precocemente e investigar isquemia/reperfusão sem atrasar a definição hemodinâmica do choque.",
+        "Choque cardiogênico não relacionado a IAM é substancial e vem ganhando importância, incluindo insuficiência cardíaca aguda/descompensada, valvopatias, miocardite, arritmias e outras causas de falência de bomba.",
         "Complicações mecânicas do IAM (ruptura de septo, ruptura valvar) exigem alto índice de suspeita e ecocardiograma rápido — ocorrem mais nas primeiras 24 h.",
         "Se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.",
       ],
