@@ -1,0 +1,56 @@
+name: Apply TEP reperfusion bleeding risk AHA ACC 2026
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-tep-reperfusao-risco-hemorragico-ahaacc2026.cjs
+      - scripts/valida-tep-reperfusao-risco-hemorragico-ahaacc2026.cjs
+      - .github/workflows/apply-tep-reperfusao-risco-hemorragico-ahaacc2026.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply AHA ACC 2026 reperfusion bleeding-risk correction
+        run: node scripts/ajusta-tep-reperfusao-risco-hemorragico-ahaacc2026.cjs
+      - name: Focused reperfusion bleeding-risk validator
+        run: node scripts/valida-tep-reperfusao-risco-hemorragico-ahaacc2026.cjs
+      - name: Existing TEP regression
+        run: npm run test:tep
+      - name: SafetyGate candidate regression
+        run: node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/tep-reperf tep-decision-tree.ts lib/i18n/modules/tep.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/tep.ts tep-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated AHA ACC 2026 reperfusion bleeding-risk correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/tep.ts tep-decision-tree.ts
+          git commit -m "fix(tep): align reperfusion with AHA ACC 2026 bleeding risk"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
