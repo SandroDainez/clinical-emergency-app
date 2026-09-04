@@ -196,7 +196,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Dor isquêmica isolada — pense no coração antes do pulmão",
       summary:
-        "Sem hipotensão, sem alteração do estado mental e sem má perfusão, dor em aperto com irradiação não classifica TEP de alto risco.",
+        "Sem hipotensão, alteração do estado mental ou má perfusão, dor em aperto com irradiação NÃO define falência cardiopulmonar D/E por TEP.",
       actions: [
         "ECG DE 12 DERIVAÇÕES AGORA e troponina. É o que separa síndrome coronariana de TEP — e os dois entram na mesma queixa.",
         "O ECG do TEP costuma ser inespecífico: taquicardia sinusal é o mais comum. S1Q3T3 é pouco frequente. Já supradesnivelamento de ST em parede contígua é coronariano até prova em contrário.",
@@ -211,15 +211,15 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     tep_limitrofe: {
       id: "tep_limitrofe",
       type: "action",
-      title: "Achado isolado — ainda NÃO é alto risco",
+      title: "Achado isolado — ainda NÃO define categoria D/E",
       summary:
         "Não fecha critério de instabilidade, mas também não afasta TEP grave. Siga a investigação SEM soltar a vigilância.",
       actions: [
-        "O achado isolado não classifica como alto risco — a definição exige PAS < 90 mmHg, queda ≥ 40 mmHg por mais de 15 min, ou necessidade de vasopressor.",
+        "O achado isolado não define sozinho categoria D/E. AHA/ACC 2026 inclui D1 (hipotensão transitória/recorrente) e D2 (hipoperfusão/choque normotensivo), além de E1–E2 com falência cardiopulmonar estabelecida. Portanto pressão preservada NÃO exclui deterioração relevante.",
         "SEGUIR o algoritmo diagnóstico: probabilidade pré-teste, D-dímero conforme a probabilidade, AngioTC.",
-        "PROCURAR o risco intermediário-alto, que é o que descompensa: disfunção de VD na AngioTC ou no ecocardiograma, com troponina ou BNP elevados. Esse paciente fica em ambiente monitorizado, com trombólise de resgate pactuada.",
+        "RECLASSIFICAR pela gravidade AHA/ACC 2026: integrar disfunção de VD, biomarcadores, sintomas, reserva cardiopulmonar, perfusão e tendência hemodinâmica para distinguir C de D. Não usar a antiga etiqueta intermediário-alto como autorização automática para trombólise.",
         "Ecocardiograma à beira do leito é o exame que mais muda a conduta aqui: VD dilatado, septo retificado e veia cava sem colapso apontam sobrecarga aguda mesmo com pressão normal.",
-        "REAVALIAR de perto. A deterioração no TEP é abrupta: se aparecer hipotensão, alteração do estado mental ou necessidade de vasopressor, passa a ser alto risco e a trombólise entra em discussão imediata.",
+        "REAVALIAR de perto. Deterioração pode aparecer como D2 com hipoperfusão apesar de pressão preservada, D1 com hipotensão transitória/recorrente, ou E1–E2 com choque/falência cardiopulmonar. Se migrar para D/E, discutir terapia avançada conforme categoria, risco hemorrágico e recursos — sem esperar hipotensão persistente para reconhecer piora.",
       ],
       next: "prob",
     },
@@ -228,7 +228,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     ar_suporte: {
       id: "ar_suporte",
       type: "action",
-      title: "TEP alto risco — suporte + anticoagulação imediata",
+      title: "TEP D/E — suporte + anticoagulação quando indicada",
       summary: "Emergência com risco de morte. Suporte hemodinâmico cauteloso + anticoagulação terapêutica quando indicada e não contraindicada.",
       actions: [
         "SUPORTE RESPIRATÓRIO: na hipoxemia moderada-grave, preferir cânula nasal de alto fluxo ao cateter nasal convencional. Evitar sedação profunda e ventilação mecânica salvo indicação clínica forte, porque indução e pressão positiva podem precipitar colapso do VD. Se intubação for inevitável, ter vasopressor/inotrópico e estratégia de resgate hemodinâmico imediatamente disponíveis.",
@@ -239,7 +239,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "Anticoagulação parenteral: AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 quando terapia parenteral inicial é necessária. Se HBPM for inadequada por contraindicação específica ou se o protocolo institucional definir HNF em situação excepcional, usar esquema e monitorização apropriados. Em suspeita C2 ou superior, com baixo risco hemorrágico e atraso de imagem, a anticoagulação terapêutica pode preceder a confirmação.",
         HNF_APRESENTACAO,
         "{avisoPeso}",
-        "TEP de alto risco, por si só, NÃO torna HNF o anticoagulante parenteral preferido. AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 e também após trombólise ou procedimento endovascular; durante a própria infusão trombolítica, a evidência é insuficiente para preferir HBPM a HNF, portanto seguir o protocolo periprocedural específico.",
+        "Categoria D/E, por si só, NÃO torna HNF o anticoagulante parenteral preferido. AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1 e também após trombólise ou procedimento endovascular; durante a própria infusão trombolítica, a evidência é insuficiente para preferir HBPM a HNF, portanto seguir o protocolo periprocedural específico.",
         "AHA/ACC 2026: em categorias C–E, sedação profunda e ventilação mecânica devem ser evitadas salvo indicação clínica. Se houver necessidade de sedação para intubação, vasopressores, inotrópicos e/ou VA-ECMO devem estar prontamente disponíveis conforme recursos. Em C2–E, vasodilatador pulmonar inalatório pode ser considerado para reduzir a pós-carga do VD; não confundir com vasodilatação sistêmica indiscriminada.",
         "AHA/ACC 2026: VA-ECMO é razoável no choque cardiogênico refratário por TEP.",
         "Anticoagulação: DOAC é preferido a antagonista da vitamina K quando elegível. Para anticoagulação parenteral inicial, AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1; planejamento de trombólise ou procedimento endovascular NÃO cria exceção automática a favor de HNF. Após trombólise ou procedimento endovascular, HBPM também é preferida; durante a infusão trombolítica, seguir o protocolo específico porque não há evidência suficiente para escolher HBPM sobre HNF nesse intervalo."
@@ -345,13 +345,13 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     ar_alternativas: {
       id: "ar_alternativas",
       type: "action",
-      title: "Alternativas à trombólise — alto risco",
+      title: "Alternativas à trombólise — TEP D/E",
       summary: "Contraindicação à trombólise ou falha — reperfusão mecânica.",
       actions: [
         "Embolectomia cirúrgica: contraindicação absoluta à trombólise ou falha; cirurgia cardíaca com CEC (melhor sem PCR prolongado). Acionar cirurgia cardiovascular precocemente.",
         "Trombólise cateter-dirigida (CDT): alteplase 1–2 mg/h intra-arterial pulmonar via cateter — menor dose, menor sangramento; centro de hemodinâmica.",
         "Trombectomia mecânica percutânea (AngioJet, FlowTriever, Aspirex): em centros com experiência.",
-        "ECMO venoarterial (VA-ECMO): TEP maciço com PCR/colapso refratário — ponte para cirurgia/trombólise.",
+        "ECMO venoarterial (VA-ECMO): considerar em E2/choque refratário ou PCR por TEP conforme recursos e estratégia de reperfusão — ponte para recuperação ou intervenção definitiva.",
         "Manter HNF e suporte hemodinâmico durante a abordagem.",
       ],
       next: "destino_uti",

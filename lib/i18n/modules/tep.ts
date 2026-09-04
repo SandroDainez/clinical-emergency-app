@@ -368,4 +368,20 @@ export const ES_TEP: Record<string, string> = {
     "ANTES DE LA LISIS: revisar la lista detallada de contraindicaciones a continuación y la ficha técnica/protocolo del producto utilizado. No convertir una ventana histórica de 3 o 6 meses para ACV previo en una regla universal si la propia ficha vigente solo dice ACV reciente.",
   "RISCO HEMORRÁGICO: além das contraindicações da bula, pesar cirurgia/procedimento maior recente, doença cerebrovascular, sangramento gastrointestinal/geniturinário recente, trauma, pericardite, endocardite, doença hepática/renal com defeito hemostático, gravidez, retinopatia hemorrágica, idade avançada e anticoagulação oral. A decisão depende da categoria AHA/ACC, gravidade, possibilidade de alternativa e risco de sangramento.":
     "RIESGO HEMORRÁGICO: además de las contraindicaciones de la ficha técnica, valorar cirugía/procedimiento mayor reciente, enfermedad cerebrovascular, sangrado gastrointestinal/genitourinario reciente, trauma, pericarditis, endocarditis, enfermedad hepática/renal con defecto hemostático, embarazo, retinopatía hemorrágica, edad avanzada y anticoagulación oral. La decisión depende de la categoría AHA/ACC, gravedad, posibilidad de alternativa y riesgo de sangrado.",
+  "Sem hipotensão, alteração do estado mental ou má perfusão, dor em aperto com irradiação NÃO define falência cardiopulmonar D/E por TEP.":
+    "Sin hipotensión, alteración del estado mental ni mala perfusión, el dolor opresivo con irradiación NO define falla cardiopulmonar D/E por TEP.",
+  "Achado isolado — ainda NÃO define categoria D/E":
+    "Hallazgo aislado — todavía NO define categoría D/E",
+  "O achado isolado não define sozinho categoria D/E. AHA/ACC 2026 inclui D1 (hipotensão transitória/recorrente) e D2 (hipoperfusão/choque normotensivo), além de E1–E2 com falência cardiopulmonar estabelecida. Portanto pressão preservada NÃO exclui deterioração relevante.":
+    "El hallazgo aislado no define por sí solo categoría D/E. AHA/ACC 2026 incluye D1 (hipotensión transitoria/recurrente) y D2 (hipoperfusión/shock normotensivo), además de E1–E2 con falla cardiopulmonar establecida. Por tanto, una presión conservada NO excluye deterioro relevante.",
+  "RECLASSIFICAR pela gravidade AHA/ACC 2026: integrar disfunção de VD, biomarcadores, sintomas, reserva cardiopulmonar, perfusão e tendência hemodinâmica para distinguir C de D. Não usar a antiga etiqueta intermediário-alto como autorização automática para trombólise.":
+    "RECLASIFICAR por gravedad AHA/ACC 2026: integrar disfunción de VD, biomarcadores, síntomas, reserva cardiopulmonar, perfusión y tendencia hemodinámica para distinguir C de D. No usar la antigua etiqueta intermedio-alto como autorización automática para trombólisis.",
+  "REAVALIAR de perto. Deterioração pode aparecer como D2 com hipoperfusão apesar de pressão preservada, D1 com hipotensão transitória/recorrente, ou E1–E2 com choque/falência cardiopulmonar. Se migrar para D/E, discutir terapia avançada conforme categoria, risco hemorrágico e recursos — sem esperar hipotensão persistente para reconhecer piora.":
+    "REEVALUAR de cerca. El deterioro puede aparecer como D2 con hipoperfusión pese a presión conservada, D1 con hipotensión transitoria/recurrente, o E1–E2 con shock/falla cardiopulmonar. Si progresa a D/E, discutir terapia avanzada según categoría, riesgo hemorrágico y recursos, sin esperar hipotensión persistente para reconocer el empeoramiento.",
+  "TEP D/E — suporte + anticoagulação quando indicada":
+    "TEP D/E — soporte + anticoagulación cuando esté indicada",
+  "Alternativas à trombólise — TEP D/E":
+    "Alternativas a la trombólisis — TEP D/E",
+  "ECMO venoarterial (VA-ECMO): considerar em E2/choque refratário ou PCR por TEP conforme recursos e estratégia de reperfusão — ponte para recuperação ou intervenção definitiva.":
+    "ECMO venoarterial (VA-ECMO): considerar en E2/shock refractario o paro por TEP según recursos y estrategia de reperfusión, como puente a recuperación o intervención definitiva.",
 };
