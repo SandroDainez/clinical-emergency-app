@@ -57,7 +57,7 @@ export const CLINICAL_GATE_REGISTRY: readonly ClinicalGatePolicy[] = [
   },
   {
     id: "tep-lise-sistemica-categoria-inferior",
-    protocolId: "tep_2024",
+    protocolId: "tep",
     nodeId: "ar_trombolise",
     level: "hard_stop",
     title: "Trombólise sistêmica não indicada nesta categoria de TEP",
