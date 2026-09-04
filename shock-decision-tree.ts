@@ -268,7 +268,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       disposition: "icu",
       exitCriteria: [
         "Mecanismo: ↑ pós-carga aguda do VD → ↓ débito do VE.",
-        "Confirmar: ECO (dilatação/disfunção de VD, McConnell), AngioTC quando estável; D-dímero não exclui no alto risco.",
+        "Diagnóstico: preferir AngioTC pulmonar quando factível. Em instabilidade, ecocardiografia/POCUS à beira leito ajuda a identificar disfunção/sobrecarga de VD e diagnósticos alternativos, mas NÃO confirma nem exclui TEP isoladamente; sinal de McConnell é achado de disfunção de VD e serve principalmente à estratificação. Em alta probabilidade clínica, avançar para imagem diagnóstica em vez de depender de D-dímero isolado.",
         "Ações no TEP de ALTO RISCO com choque/hipotensão persistente: priorizar reperfusão emergencial — trombólise sistêmica quando indicada; em contraindicação ou falha, considerar embolectomia cirúrgica ou tratamento dirigido por cateter conforme expertise/recursos. Usar HNF quando anticoagulação estiver indicada no contexto de reperfusão. Evitar expansão volêmica agressiva; considerar pequena carga apenas se houver baixa pressão de enchimento. Noradrenalina é o vasopressor de escolha na hipotensão/choque; dobutamina pode ser considerada em baixo débito com pressão preservada, não como associação automática.",
       ],
       targets: [{ moduleId: "tep", label: "Guia de TEP", reason: "Estratificação e reperfusão do tromboembolismo pulmonar." }],

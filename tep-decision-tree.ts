@@ -255,7 +255,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       summary: "Confirmar sem atrasar a reperfusão.",
       actions: [
         "AngioTC se a hemodinâmica permitir (< 5–10 min de estabilização).",
-        "AngioTC impossível: ecocardiograma à beira leito — dilatação/disfunção de VD + sinal de McConnell + TVP ao ultrassom = suficiente para indicar trombólise em extremis.",
+        "Se a AngioTC for inviável pela instabilidade: usar ecocardiografia/POCUS à beira leito para avaliar disfunção de VD e diagnósticos alternativos e ultrassom venoso quando útil. Ecocardiograma, inclusive sinal de McConnell, NÃO confirma nem exclui TEP isoladamente; no colapso iminente, a decisão de reperfusão deve integrar probabilidade clínica, achados disponíveis, contraindicações e impossibilidade de imagem definitiva, sem transformar um único achado ecográfico em confirmação diagnóstica.",
         "Não retardar a reperfusão por exames se o colapso for iminente.",
       ],
       next: "ar_trombolise_check",
