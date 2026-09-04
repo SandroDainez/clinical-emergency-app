@@ -45,6 +45,13 @@ import {
 } from "../lib/module-session-navigation";
 import { clearProtocolUiState } from "../lib/module-ui-state";
 import { createClinicalCaseId, getClinicalSessionRuntime, startClinicalCase } from "../lib/clinical-session-runtime";
+import ClinicalCaseRecoveryGate from "./clinical-case-recovery-gate";
+import {
+  clearActiveClinicalCaseMarker,
+  detectInterruptedClinicalCase,
+  writeActiveClinicalCaseMarker,
+  type PersistedClinicalCaseMarker,
+} from "../lib/clinical-case-reload-marker";
 
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
@@ -62,6 +69,7 @@ export default function ClinicalApp({
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
   const [caseBoundaryReady, setCaseBoundaryReady] = useState(false);
+  const [interruptedCase, setInterruptedCase] = useState<PersistedClinicalCaseMarker | undefined>(undefined);
   // Causas já identificadas pela ROTA de entrada — hoje só o engasgo, que chega
   // ao PCR com a hipóxia por corpo estranho conhecida. Consumido uma vez, como
   // o próprio resume. Ver lib/module-session-navigation para por que "suspeita"
@@ -107,7 +115,21 @@ export default function ClinicalApp({
     const active = getClinicalSessionRuntime();
     const mayContinue = (continuingClinicalCase || resumeSession) && Boolean(active.caseId);
     if (!mayContinue) {
-      startClinicalCase(createClinicalCaseId(protocolId));
+      const interrupted = detectInterruptedClinicalCase(active.caseId);
+      if (interrupted) {
+        setInterruptedCase(interrupted);
+        setCaseBoundaryReady(false);
+        return;
+      }
+      const next = startClinicalCase(createClinicalCaseId(protocolId));
+      if (next.caseId && next.startedAt !== undefined) {
+        writeActiveClinicalCaseMarker({
+          caseId: next.caseId,
+          protocolId,
+          startedAt: next.startedAt,
+          updatedAt: Date.now(),
+        });
+      }
     }
     setCaseBoundaryReady(true);
   }, [continuingClinicalCase, protocolId, resumeSession]);
@@ -154,6 +176,32 @@ export default function ClinicalApp({
       }
     };
   }, [engine, initialReferralFields, protocolId, resumeSession]);
+
+  if (interruptedCase) {
+    return (
+      <ClinicalCaseRecoveryGate
+        caseId={interruptedCase.caseId}
+        protocolId={interruptedCase.protocolId}
+        startedAt={interruptedCase.startedAt}
+        onDiscardAndStartNew={() => {
+          clearActiveClinicalCaseMarker();
+          const next = startClinicalCase(createClinicalCaseId(protocolId));
+          engine.resetSession?.();
+          clearProtocolUiState(protocolId);
+          if (next.caseId && next.startedAt !== undefined) {
+            writeActiveClinicalCaseMarker({
+              caseId: next.caseId,
+              protocolId,
+              startedAt: next.startedAt,
+              updatedAt: Date.now(),
+            });
+          }
+          setInterruptedCase(undefined);
+          setCaseBoundaryReady(true);
+        }}
+      />
+    );
+  }
 
   if (!caseBoundaryReady) return null;
 

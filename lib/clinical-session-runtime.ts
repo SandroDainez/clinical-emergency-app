@@ -8,6 +8,7 @@ import { clearPendingClinicalReassessments } from "./clinical-reassessment-runti
 import { recordClinicalCaseStarted } from "./clinical-runtime-bridge";
 import { clearVasopressorReassessmentState } from "./clinical-vasopressor-reassessment";
 import { limparContextoDoPaciente } from "./contexto-do-paciente";
+import { clearActiveClinicalCaseMarker } from "./clinical-case-reload-marker";
 
 let currentCaseId: string | undefined;
 let currentCaseStartedAt: number | undefined;
@@ -64,4 +65,5 @@ export function createClinicalCaseId(protocolId?: string, now: number = Date.now
 export function closeClinicalCase(): void {
   currentCaseId = undefined;
   currentCaseStartedAt = undefined;
+  clearActiveClinicalCaseMarker();
 }
