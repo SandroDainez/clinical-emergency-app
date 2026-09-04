@@ -33,7 +33,7 @@ replaceOnce(
 export function createClinicalCaseId(protocolId?: string, now: number = Date.now()): string {
   generatedCaseSequence += 1;
   const prefix = protocolId?.trim() || "clinical-case";
-  return `${prefix}:${now}:${generatedCaseSequence}`;
+  return prefix + ":" + now + ":" + generatedCaseSequence;
 }`
 );
 
