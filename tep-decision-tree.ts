@@ -276,13 +276,13 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
       // lista segue embaixo, que é onde lista deve ficar.
       summary:
-        "⚠️ EM PCR OU COLAPSO IMINENTE, AS CONTRAINDICAÇÕES RELATIVAS TORNAM-SE ACEITÁVEIS — a conta inverte: o risco de sangrar perde para o risco de morrer nos próximos minutos. As absolutas continuam absolutas; a lista das duas está abaixo.",
+        "⚠️ EM PCR OU COLAPSO IMINENTE, A RELAÇÃO RISCO–BENEFÍCIO MUDA, mas não transforme isso numa regra automática de ignorar contraindicações. AHA 2025 considera fibrinólise razoável no TEP confirmado como causa da parada e possível no TEP suspeito; a decisão deve integrar probabilidade de TEP, risco hemorrágico, alternativas disponíveis e possibilidade de embolectomia/ECLS.",
       evidence: [
         "Trombólise sistêmica é PRIMEIRA LINHA no TEP de alto risco se não houver contraindicação absoluta.",
         "Absolutas: AVC hemorrágico (qualquer tempo) ou isquêmico < 3 meses; neoplasia intracraniana; TCE grave/cirurgia intracraniana/espinhal recente; sangramento ativo; suspeita de dissecção de aorta; punção em sítio não compressível < 7 dias.",
         "── CONTRAINDICAÇÕES RELATIVAS — não proíbem, mudam a conta ──",
         "Idade > 75 anos; anticoagulação oral em uso; gestação e primeira semana pós-parto; RCP prolongada ou traumática; punção vascular não compressível; HAS grave não controlada (> 180/110); doença hepática avançada; endocardite infecciosa; úlcera péptica ativa; cirurgia de grande porte < 3 semanas; sangramento interno recente (2–4 semanas).",
-        "⚠️ EM PCR OU COLAPSO IMINENTE, AS RELATIVAS TORNAM-SE ACEITÁVEIS — a conta inverte: o risco de sangrar perde para o risco de morrer nos próximos minutos. Fora dessa situação, com relativa e sem absoluta, pese o tamanho do TEP contra o sítio de sangramento e considere a via de CATETER, que usa dose menor.",
+        "⚠️ PCR/colapso iminente exige decisão individual rápida: contraindicações relativas não devem funcionar como veto mecânico, mas também não desaparecem. No TEP confirmado em parada, AHA 2025 considera fibrinólise, embolectomia cirúrgica e embolectomia mecânica opções razoáveis; em TEP apenas suspeito, fibrinólise pode ser considerada. Se houver recurso, discutir embolectomia/ECLS conforme o cenário.",
       ],
       options: [
         { id: "sem", label: "Sem contraindicação absoluta", next: "ar_trombolise" },
@@ -327,11 +327,11 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         // O esquema abaixo NÃO é recomendação da AHA. É o mais usado e o mais
         // descrito na literatura de PCR por TEP, e vem rotulado como tal.
         "PCR atribuída ao TEP: a AHA 2025 NÃO estabelece dose única de alteplase nesse cenário — a recomendação é fibrinolisar, sem fixar esquema.",
-        "NA PRÁTICA, quando NÃO há protocolo institucional: alteplase 50 mg IV em BÓLUS durante a RCP é o esquema mais usado e mais descrito. Pode-se repetir 50 mg 15–20 min depois se a parada persistir. É o que orienta o ERC e o que aparece nas séries publicadas — não é dose chancelada pela AHA. Registre a decisão e a fonte no prontuário.",
-        "Se houver ROSC sem ter completado 100 mg, o restante pode ser infundido em 1 h, conforme a resposta e o risco hemorrágico.",
-        "Por que o bólus de 50 mg e não os 100 mg em 2 h: em parada não existe circulação para sustentar uma infusão de 2 h, e a diretriz de TEP de 2026 (AHA/ACC/CHEST) registra que doses de 25–50 mg têm eficácia comparável para recuperar o VD com menos sangramento grave, inclusive intracraniano, do que 100 mg.",
-        "MANTER RCP por 60–90 MIN após a fibrinólise antes de considerar encerrar — o trombolítico precisa de tempo e de compressões para chegar ao trombo. Encerrar aos 20 min desperdiça a droga que acabou de ser dada. (ERC; não há evidência de alta qualidade sobre a duração ideal.)",
-        "Alternativa citada em diretriz de TEP (não de PCR): regime acelerado 0,6 mg/kg em 15 min, máximo 50 mg.",
+        "DOSE NA PCR: AHA 2025 não define um esquema ótimo. ERC 2025 relata sobrevivência/ROSC com alteplase 50 mg IV em bólus, com ou sem 50 mg adicionais após 30 min, ou 0,6–1,0 mg/kg IV (máx. 100 mg), mas afirma que a evidência é insuficiente para recomendar uma estratégia de dose ótima. Se houver protocolo institucional validado, siga-o e registre a estratégia utilizada.",
+        "Após ROSC, NÃO complete automaticamente uma dose total de 100 mg apenas porque foi iniciado um esquema durante a parada: a estratégia ótima de fibrinólise na PCR não está estabelecida. Reavaliar sangramento, hemodinâmica, diagnóstico e necessidade de terapia adicional conforme protocolo/equipe especializada.",
+        "⚠️ NÃO extrapolar os estudos de dose reduzida do TEP agudo fora da parada para afirmar que 50 mg em bólus é a dose estabelecida da PCR. AHA/ACC 2026 admite que doses sistêmicas menores podem reduzir sangramento em TEP agudo, mas isso não resolve a estratégia ótima durante RCP.",
+        "DURAÇÃO DA RCP APÓS FIBRINÓLISE: ERC 2025 recomenda continuar RCP por pelo menos 60–90 min. AHA 2025 considera a duração ótima incerta; portanto registre o horário da fibrinólise e evite encerrar precocemente sem considerar essa diferença entre diretrizes e o contexto clínico.",
+        "Não apresente o regime acelerado de TEP fora da parada como alternativa equivalente e validada para PCR; os esquemas observados durante RCP e a evidência sobre dose ótima continuam heterogêneos.",
         "Havendo protocolo institucional validado, ele prevalece sobre o que está acima.",
         "Alternativas: estreptoquinase 250.000 UI em 30 min → 100.000 UI/h × 12–24 h; uroquinase 4.400 UI/kg em 10 min → 4.400 UI/kg/h × 12–24 h.",
         "SUSPENDER a HNF durante a infusão; reiniciar sem bólus quando o TTPa estiver ABAIXO DE 2× o limite superior da normalidade do laboratório, ajustando pelo nomograma institucional. Não administrar heparina pelo mesmo acesso da alteplase.",
