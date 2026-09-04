@@ -1,0 +1,54 @@
+name: Apply cardiogenic shock phenotype safety wording
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-choque-cardiogenico-fenotipos-acc2025.cjs
+      - scripts/valida-choque-cardiogenico-fenotipos-acc2025.cjs
+      - .github/workflows/apply-choque-cardiogenico-fenotipos-acc2025.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply ACC 2025 phenotype correction
+        run: node scripts/ajusta-choque-cardiogenico-fenotipos-acc2025.cjs
+      - name: Focused cardiogenic phenotype validator
+        run: node scripts/valida-choque-cardiogenico-fenotipos-acc2025.cjs
+      - name: Existing shock regression
+        run: npm run test:choque
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/shock-cardio-phenotype shock-decision-tree.ts lib/i18n/modules/choque-einstein.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/choque-einstein.ts shock-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated cardiogenic phenotype correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/choque-einstein.ts shock-decision-tree.ts
+          git commit -m "fix(choque): refine cardiogenic phenotype volume strategy"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
