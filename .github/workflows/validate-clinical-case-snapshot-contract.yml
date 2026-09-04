@@ -1,0 +1,28 @@
+name: Validate clinical case snapshot contract
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - lib/clinical-case-snapshot-contract.ts
+      - scripts/valida-clinical-case-snapshot-contract.cjs
+      - .github/workflows/validate-clinical-case-snapshot-contract.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate snapshot contract
+        run: node scripts/valida-clinical-case-snapshot-contract.cjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Whitespace gate
+        run: git diff --check
