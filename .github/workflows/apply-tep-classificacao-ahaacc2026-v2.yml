@@ -1,0 +1,59 @@
+name: Apply TEP AHA ACC 2026 clinical categories v2
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/corrige-valida-safety-gate-candidate-debts-choque-2026.cjs
+      - .github/workflows/apply-tep-classificacao-ahaacc2026-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply AHA ACC 2026 category migration
+        run: node scripts/ajusta-tep-classificacao-ahaacc2026.cjs
+      - name: Repair legacy TEP validator semantically
+        run: node scripts/corrige-valida-tep-ahaacc2026.cjs
+      - name: Repair cardiogenic SafetyGate debt validator semantically
+        run: node scripts/corrige-valida-safety-gate-candidate-debts-choque-2026.cjs
+      - name: Focused AHA ACC 2026 category validator
+        run: node scripts/valida-tep-classificacao-ahaacc2026.cjs
+      - name: Existing TEP regression
+        run: npm run test:tep
+      - name: Existing SafetyGate candidate regression
+        run: node scripts/valida-safety-gate-candidate-debts.cjs
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --skipLibCheck --outDir /tmp/tep-cat tep-decision-tree.ts lib/i18n/modules/tep.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/i18n/modules/tep.ts scripts/valida-safety-gate-candidate-debts.cjs scripts/valida-tep.cjs tep-decision-tree.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated TEP category migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/i18n/modules/tep.ts scripts/valida-safety-gate-candidate-debts.cjs scripts/valida-tep.cjs tep-decision-tree.ts
+          git commit -m "fix(tep): migrate severity model to AHA ACC 2026 categories"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
