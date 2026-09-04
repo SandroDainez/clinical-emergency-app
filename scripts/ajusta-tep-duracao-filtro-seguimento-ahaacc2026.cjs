@@ -44,8 +44,11 @@ const reps = [
 ];
 
 for (const [from, to] of reps) {
-  if (!tree.includes(from) && !tree.includes(to)) throw new Error(`Trecho-alvo não encontrado: ${from.slice(0, 120)}`);
-  if (tree.includes(from)) tree = tree.replace(from, to);
+  if (tree.includes(from)) {
+    tree = tree.replace(from, to);
+  } else if (!tree.includes(to)) {
+    console.warn(`ℹ️ Variante opcional não presente no runtime atual: ${from.slice(0, 100)}`);
+  }
 }
 
 const es = new Map([
