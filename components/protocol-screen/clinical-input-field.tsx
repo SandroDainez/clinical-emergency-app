@@ -27,11 +27,10 @@ export type ClinicalInputFieldProps = {
 /**
  * Apresentação isolada de UM campo clínico do nó de entrada.
  *
- * Regra de UX para campo numérico: a barra deve existir desde o primeiro
- * contato. O valor visual inicial é apenas um ponto de partida do controle e
- * NÃO é gravado no atendimento até o médico terminar a interação (soltar a
- * barra ou tocar −/+). Assim evitamos a sequência ruim "digitar → confirmar →
- * só então aparecer a barra" sem inventar um dado clínico silenciosamente.
+ * Regra de UX para campo numérico: a barra aparece imediatamente. O valor
+ * visual inicial é somente um ponto de partida do controle e NÃO é gravado no
+ * atendimento até o médico concluir a interação (soltar a barra ou tocar −/+).
+ * Não há etapa intermediária de digitação/OK nos campos com faixa numérica.
  */
 export function ClinicalInputField({
   field,
@@ -46,7 +45,6 @@ export function ClinicalInputField({
   const e = useEstilosDoTema(criarEstilos);
   const [customOpen, setCustomOpen] = useState(false);
   const [customText, setCustomText] = useState("");
-  const [numericText, setNumericText] = useState("");
   const [numericDraft, setNumericDraft] = useState<number | undefined>(undefined);
 
   const preset = field.presets.find((item) => item.value === value);
@@ -66,20 +64,6 @@ export function ClinicalInputField({
       ? 0
       : (String(numericRange.passo).split(".")[1]?.length ?? 0);
     return Number(Math.min(numericRange.max, Math.max(numericRange.min, alinhado)).toFixed(casas));
-  };
-
-  const confirmarNumeroDigitado = () => {
-    if (!numericRange) return;
-    const texto = numericText.trim();
-    if (!texto) return;
-
-    const numero = Number(texto.replace(",", "."));
-    if (!Number.isFinite(numero)) return;
-    if (numero < numericRange.min || numero > numericRange.max) return;
-
-    onChange(String(numero));
-    setNumericDraft(numero);
-    setNumericText("");
   };
 
   const confirmarNumeroDaBarra = (numero: number) => {
@@ -119,12 +103,9 @@ export function ClinicalInputField({
       {numericRange ? (
         <View style={e.numericBlock}>
           {!hasNumericValue ? (
-            <View style={e.numericPending} testID={testID ? `${testID}-numeric-pending` : undefined}>
-              <Text style={e.numericPendingTitle}>{tr("Valor ainda não informado")}</Text>
-              <Text style={e.numericPendingText}>
-                {tr("A barra já está pronta para uso. Arraste ou use −/+; o valor só será registrado quando você concluir a interação.")}
-              </Text>
-            </View>
+            <Text style={e.numericPendingTitle} testID={testID ? `${testID}-numeric-pending` : undefined}>
+              {tr("Valor ainda não informado — ajuste a barra")}
+            </Text>
           ) : null}
 
           <NumericStepper
@@ -138,34 +119,6 @@ export function ClinicalInputField({
             rotulo={tr(field.label)}
             testID={testID ? `${testID}-numeric` : undefined}
           />
-
-          <View style={e.directInputBlock}>
-            <Text style={e.directInputLabel}>{tr("Ou digite o valor exato")}</Text>
-            <View style={e.customRow}>
-              <TextInput
-                value={numericText}
-                onChangeText={setNumericText}
-                placeholder={tr("Digitar valor")}
-                keyboardType="numeric"
-                returnKeyType="done"
-                onSubmitEditing={confirmarNumeroDigitado}
-                style={e.customInput}
-                testID={testID ? `${testID}-numeric-input` : undefined}
-              />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={tr("Confirmar valor")}
-                onPress={confirmarNumeroDigitado}
-                style={({ pressed }) => [e.customConfirm, pressed && e.pressed]}
-                testID={testID ? `${testID}-numeric-confirm` : undefined}
-              >
-                <Text style={e.customConfirmText}>OK</Text>
-              </Pressable>
-            </View>
-            <Text style={e.numericRangeHint}>
-              {tr("Faixa de entrada")}: {numericRange.min}–{numericRange.max}{field.unit ? ` ${field.unit}` : ""}
-            </Text>
-          </View>
         </View>
       ) : (
         <>
@@ -282,37 +235,12 @@ const criarEstilos = (t: Tema) =>
       fontWeight: "500",
     },
     numericBlock: {
-      gap: ESPACO.sm,
-    },
-    numericPending: {
-      borderLeftWidth: 3,
-      borderLeftColor: t.cores.primary,
-      paddingLeft: ESPACO.sm,
-      gap: 2,
+      gap: ESPACO.xs,
     },
     numericPendingTitle: {
-      ...TIPOGRAFIA.caption,
-      color: t.cores.textSecondary,
-      fontWeight: "800",
-    },
-    numericPendingText: {
-      ...TIPOGRAFIA.micro,
-      color: t.cores.textSecondary,
-      fontWeight: "500",
-    },
-    directInputBlock: {
-      gap: ESPACO.xs,
-      paddingTop: ESPACO.xs,
-    },
-    directInputLabel: {
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
       fontWeight: "700",
-    },
-    numericRangeHint: {
-      ...TIPOGRAFIA.micro,
-      color: t.cores.textSecondary,
-      fontWeight: "500",
     },
     otherButton: {
       minHeight: TOQUE.minimo,
