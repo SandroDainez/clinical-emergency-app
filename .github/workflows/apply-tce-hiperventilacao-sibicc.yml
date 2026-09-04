@@ -1,0 +1,54 @@
+name: Apply TCE SIBICC hyperventilation correction
+
+on:
+  push:
+    branches: [emergencias-2-ui-core]
+    paths:
+      - scripts/ajusta-tce-hiperventilacao-sibicc.cjs
+      - scripts/valida-tce-hiperventilacao-sibicc.cjs
+      - .github/workflows/apply-tce-hiperventilacao-sibicc.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply SIBICC/BTF hyperventilation correction
+        run: node scripts/ajusta-tce-hiperventilacao-sibicc.cjs
+      - name: Focused hyperventilation validator
+        run: node scripts/valida-tce-hiperventilacao-sibicc.cjs
+      - name: TCE regression
+        run: npm run test:tce
+      - name: Emergencias 2 architecture suite
+        run: npm run test:emergencias-2
+      - name: Scoped TypeScript compile
+        run: npx tsc --noEmit --skipLibCheck --moduleResolution node --module commonjs --target es2020 tce-decision-tree.ts lib/alvos-tce.ts lib/i18n/modules/tce.ts
+      - name: Scope and whitespace gate
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          echo "$changed"
+          expected="$(printf '%s\n' lib/alvos-tce.ts lib/i18n/modules/tce.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated TCE hyperventilation correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/alvos-tce.ts lib/i18n/modules/tce.ts
+          git commit -m "fix(tce): align refractory hyperventilation with SIBICC"
+          git pull --rebase origin emergencias-2-ui-core
+          git push origin HEAD:emergencias-2-ui-core
