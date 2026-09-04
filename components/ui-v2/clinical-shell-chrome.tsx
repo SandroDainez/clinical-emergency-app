@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { Header } from "./header";
 import { ClinicalCockpitBar, type CockpitMetric } from "./clinical-cockpit-bar";
@@ -22,6 +22,7 @@ export type ClinicalShellChromeProps = {
   elapsed?: string;
   metrics?: CockpitMetric[];
   onBack?: () => void;
+  onExit?: () => void;
   crisisActions?: CrisisAction[];
   /** Contexto clínico interrompido, ex.: "AVC em andamento". */
   returnContext?: string;
@@ -44,6 +45,7 @@ export function ClinicalShellChrome({
   elapsed,
   metrics = [],
   onBack,
+  onExit,
   crisisActions = [],
   returnContext,
   onReturnToContext,
@@ -53,7 +55,25 @@ export function ClinicalShellChrome({
 
   return (
     <View>
-      <Header titulo={protocol} etapa={stepLabel} onVoltar={onBack} />
+      <Header
+        titulo={protocol}
+        etapa={stepLabel}
+        onVoltar={onBack}
+        direita={
+          onExit ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sair do módulo e abrir módulos"
+              accessibilityHint="Preserva o fluxo atual e volta para a lista de módulos"
+              onPress={onExit}
+              style={({ pressed }) => [e.exitButton, pressed && e.exitButtonPressed]}
+              testID="sair-para-modulos"
+            >
+              <Text style={e.exitButtonText}>MÓDULOS</Text>
+            </Pressable>
+          ) : null
+        }
+      />
       <ClinicalCockpitBar
         protocol={protocol}
         phase={phase}
@@ -122,6 +142,24 @@ export function ClinicalShellChrome({
 
 const criarEstilos = (t: Tema) =>
   StyleSheet.create({
+    exitButton: {
+      minHeight: TOQUE.minimo,
+      minWidth: 88,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      borderWidth: 1.5,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.bg,
+      paddingHorizontal: ESPACO.sm,
+    },
+    exitButtonPressed: { opacity: 0.78, transform: [{ scale: 0.97 }] },
+    exitButtonText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.primary,
+      fontWeight: "900",
+      letterSpacing: 0.35,
+    },
     returnBanner: {
       marginHorizontal: ESPACO.md,
       marginTop: ESPACO.xs,
