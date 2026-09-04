@@ -69,7 +69,8 @@ const arvore = limpo(ARVORE);
 
 // ── B. Estratificação: a separação que mais erra ──────────────────────────
 {
-  if (!/Intermediário-ALTO: disfunção de VD E biomarcadores/.test(arvore)) {
+  const separacaoC3 = /Intermediário-ALTO: disfunção de VD E biomarcadores/.test(arvore) || /C3 = VD anormal E pelo menos um biomarcador anormal/.test(arvore);
+  if (!separacaoC3) {
     falhas.push(
       `${ARVORE}: a definição de intermediário-ALTO perdeu o "E". Ele exige disfunção de VD E ` +
       `biomarcador elevado; o intermediário-BAIXO tem apenas UM dos dois. Fundir os dois manda para ` +
@@ -79,7 +80,7 @@ const arvore = limpo(ARVORE);
 
   for (const [nome, padrao] of [
     ["o sPESI com os seis itens", /sPESI \(1 ponto cada\)/],
-    ["o critério hemodinâmico do alto risco", /PAS < 90 mmHg ou queda ≥ 40 mmHg/],
+    ["a separação hemodinâmica D/E ou o critério legado equivalente", /PAS < 90 mmHg ou queda ≥ 40 mmHg|D1: hipotensão transitória\/recorrente|E1: hipotensão recorrente ou persistente/],
     ["a disfunção de VD por imagem", /VD\/VE > 0,9/],
   ]) {
     if (!padrao.test(arvore)) {
@@ -92,8 +93,8 @@ const arvore = limpo(ARVORE);
 {
   for (const [nome, padrao] of [
     ["as contraindicações RELATIVAS listadas", /CONTRAINDICAÇÕES RELATIVAS/],
-    ["a inversão da conta em PCR", /EM PCR OU COLAPSO IMINENTE, AS RELATIVAS TORNAM-SE ACEITÁVEIS/],
-    ["a saída de menor dose pelo cateter", /via de CATETER, que usa dose menor/],
+    ["o balanço risco-benefício em PCR", /EM PCR OU COLAPSO IMINENTE, AS RELATIVAS TORNAM-SE ACEITÁVEIS|contraindicações relativas não devem funcionar como veto mecânico/],
+    ["a alternativa por cateter sem promessa universal de menor risco", /via de CATETER, que usa dose menor|Trombólise cateter-dirigida|embolectomia mecânica/],
     ["as alternativas quando há absoluta", /Trombólise cateter-dirigida/],
     ["a embolectomia", /[Ee]mbolectomia/],
     ["o VA-ECMO", /VA-ECMO/],
@@ -154,7 +155,9 @@ const arvore = limpo(ARVORE);
 // classification scheme […] with 5 categories (A-E)". A atribuição do app está
 // correta, e a verificação fica registrada aqui para não se repetir.
 {
-  if (/AHA\/ACC 2026 — nova classificação A–E/.test(arvore) && !/A subclínico/.test(arvore)) {
+  const citaClassificacao2026 = /AHA\/ACC 2026|Classificação clínica AHA\/ACC 2026/.test(arvore);
+  const categorias2026Explicitas = (/A subclínico/.test(arvore) && /B baixa gravidade/.test(arvore) && /C gravidade elevada/.test(arvore) && /D falência incipiente/.test(arvore) && /E falência cardiopulmonar/.test(arvore)) || (/A = TEP incidental assintomático/.test(arvore) && /B = sintomático com baixo escore de gravidade/.test(arvore) && /C = sintomático com escore elevado/.test(arvore) && /D = falência cardiopulmonar incipiente/.test(arvore) && /E = falência cardiopulmonar/.test(arvore));
+  if (citaClassificacao2026 && !categorias2026Explicitas) {
     falhas.push(
       `${ARVORE}: a classificação A–E ficou só com o rótulo, sem as categorias. Citar a diretriz sem ` +
       `dizer o que ela classifica é D-27 — afirmação ao lado de citação.`

@@ -10,8 +10,7 @@ import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_TEV } from "./lib/enoxapar
 
 /**
  * Fluxo interativo de Tromboembolia Pulmonar (TEP) no adulto.
- * Baseado em: ESC 2019 (TEP) · AHA Scientific Statement 2011 (updated) · ACCP/CHEST
- * 2022 (VTE) · ASH 2020 · UpToDate 2024.
+ * Base clínica principal atual: AHA/ACC/Multisociety 2026 para classificação, diagnóstico, anticoagulação e terapias avançadas. ESC 2019 é mantida apenas como referência histórica/linguagem legada quando necessário.
  *
  * Ordem: reconhecimento → ESTABILIDADE (instável → alto risco/trombólise direto) →
  * probabilidade pré-teste (Wells) → D-dímero/AngioTC → estratificação de risco
@@ -75,7 +74,7 @@ function deriveTep(values: TreeValues): Record<string, string> {
 
 export const tepDecisionTree: DecisionTreeDefinition = {
   id: "tep_2024",
-  version: "2024.1",
+  version: "2026.1",
   label: "Tromboembolia Pulmonar",
   entryNodeId: "entry",
   derive: deriveTep,
@@ -85,9 +84,9 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       id: "entry",
       type: "action",
       title: "Suspeita de TEP — reconhecimento",
-      summary: "3ª causa de doença cardiovascular aguda. Mortalidade 1–3% (baixo risco) a 15–65% (maciço com choque).",
+      summary: "TEP agudo: confirmar o diagnóstico e classificar pela gravidade AHA/ACC 2026 (A–E), porque categoria e evolução clínica determinam destino e necessidade de terapia avançada.",
       actions: [
-        "Apresentação: dispneia súbita (73–80%), dor pleurítica, taquicardia, taquipneia, síncope (alto risco), hipotensão/choque (maciço), sinais de TVP.",
+        "Apresentação possível: dispneia súbita, dor pleurítica, taquicardia/taquipneia, síncope, sinais de TVP e, nos casos graves, hipoperfusão, hipotensão ou choque. Não use os termos maciço/submaciço como classificação principal; prefira categorias AHA/ACC 2026.",
         "Monitor, oximetria, PA, FC, 2 acessos venosos; O₂ se SpO₂ < 90% (alvo ≥ 94% com suporte no risco intermediário/alto).",
         "ECG (taquicardia sinusal, S1Q3T3, BRD novo, inversão de T V1–V4), gasometria, troponina, BNP, D-dímero (conforme probabilidade).",
         "Fatores de risco: cirurgia/trauma/imobilização recente, câncer ativo, TVP/TEP prévios, estrogênio, gestação/puerpério, trombofilia.",
@@ -147,7 +146,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       question: "Há instabilidade hemodinâmica (choque ou hipotensão)?",
       summary: "PAS informada: {pas} mmHg · FC {fc}.",
       evidence: [
-        "ALTO RISCO (maciço) = PAS < 90 mmHg ou queda ≥ 40 mmHg por > 15 min, ou necessidade de vasopressor — mortalidade > 15%.",
+        "AHA/ACC 2026: D = falência cardiopulmonar incipiente (D1: hipotensão transitória/recorrente de curta duração ou responsiva a volume; D2: hipoperfusão/choque normotensivo). E = falência cardiopulmonar (E1: hipotensão recorrente ou persistente com choque cardiogênico; E2: choque refratário ou parada cardíaca). Reclassifique dinamicamente com a evolução.",
         // ⚠️ O CONSTRUTO QUE FALTAVA. `grep "normotens"` neste módulo
         // retornava ZERO, enquanto o conceito já existia em Choque e no EAP
         // — e é aqui que a diretriz de 2026 o introduziu. Só a EXISTÊNCIA e
@@ -159,7 +158,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "guiado", label: OPCAO_GUIADA, next: "tep_instab_dados" },
-        { id: "instavel", label: "Instável — choque/hipotensão (alto risco)", next: "ar_suporte" },
+        { id: "instavel", label: "Instabilidade/falência cardiopulmonar — avaliar D/E", next: "ar_suporte" },
         { id: "estavel", label: "Estável", next: "prob" },
       ],
     },
@@ -459,35 +458,35 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     estratificacao: {
       id: "estratificacao",
       type: "decision",
-      title: "Estratificação de risco (ESC 2019 · categorias AHA/ACC 2026)",
-      question: "Qual a categoria de risco (disfunção de VD + biomarcadores + sPESI)?",
+      title: "Classificação clínica AHA/ACC 2026",
+      question: "Qual categoria AHA/ACC 2026 melhor descreve o paciente confirmado e atualmente sem falência cardiopulmonar persistente?",
       summary: NA_DUVIDA_TEP_RISCO,
       evidence: [
         "Disfunção de VD: dilatação/hipocinesia ao ECO ou relação VD/VE > 0,9 na AngioTC. Biomarcadores: troponina e/ou BNP elevados.",
         "sPESI (1 ponto cada): idade > 80, câncer, doença cardiopulmonar crônica, FC ≥ 110, PAS < 100, SpO₂ < 90%. sPESI = 0 → baixo risco (mortalidade 30 dias ~1%); ≥ 1 → risco elevado (~10,9%).",
-        "Intermediário-ALTO: disfunção de VD E biomarcadores elevados (ambos). Intermediário-BAIXO: VD ou biomarcador (apenas um) ou nenhum, com sPESI ≥ 1. BAIXO: sPESI = 0, sem disfunção de VD, troponina normal.",
-        "AHA/ACC 2026 — nova classificação A–E: A subclínico (assintomático) · B baixa gravidade · C gravidade elevada (biomarcador e/ou disfunção de VD → internar) · D falência incipiente (instabilidade TRANSITÓRIA) · E falência cardiopulmonar (hipotensão/choque persistente). Equivalência APROXIMADA com o esquema antigo: A–B ≈ baixo risco, C ≈ intermediário, D–E ≈ alto risco. ⚠️ E A EQUIVALÊNCIA PERDE O QUE A REVISÃO ACRESCENTOU: achatar cinco categorias em três apaga justamente o estado que a classificação de 2026 foi criada para nomear — o paciente com PRESSÃO PRESERVADA e PERFUSÃO JÁ FALHANDO. Use o esquema novo para decidir, e a equivalência só para conversar com quem ainda fala em maciço/submaciço.",
+        "Categorias 2026 no paciente sintomático sem falência cardiopulmonar: B = baixo escore de gravidade; C = escore de gravidade elevado. Dentro de C: C1 = VD e biomarcadores normais; C2 = VD anormal OU pelo menos um biomarcador anormal; C3 = VD anormal E pelo menos um biomarcador anormal.",
+        "AHA/ACC 2026: A = TEP incidental assintomático; B = sintomático com baixo escore de gravidade; C = sintomático com escore elevado; D = falência cardiopulmonar incipiente, inclusive choque normotensivo; E = falência cardiopulmonar. Os termos baixo/intermediário/alto risco da ESC 2019 podem aparecer como linguagem legada, mas não devem dirigir a decisão quando a categoria A–E estiver disponível.",
         "AHA/ACC 2026: acionar o time de resposta a TEP (PERT) nos casos C–E — melhora a agilidade do cuidado."
       ],
       options: [
-        { id: "int_alto", label: "Intermediário-alto (VD + biomarcadores)", next: "anticoag_intensivo" },
-        { id: "int_baixo", label: "Intermediário-baixo", next: "anticoag" },
-        { id: "baixo", label: "Baixo risco (sPESI = 0)", next: "ambulatorial_check" },
+        { id: "int_alto", label: "C3 — gravidade elevada + VD e biomarcador anormais", next: "anticoag_intensivo" },
+        { id: "int_baixo", label: "C1/C2 — gravidade elevada", next: "anticoag" },
+        { id: "baixo", label: "B — baixa gravidade (ex.: sPESI = 0/Hestia = 0)", next: "ambulatorial_check" },
       ],
     },
 
     anticoag_intensivo: {
       id: "anticoag_intensivo",
       type: "action",
-      title: "Intermediário-alto — anticoagulação plena + vigilância",
-      summary: "Anticoagulação plena + monitorização intensiva; trombólise de resgate se deteriorar.",
+      title: "Categoria C3 — anticoagulação + vigilância de deterioração",
+      summary: "Categoria C3 exige hospitalização e vigilância próxima. Trombólise sistêmica não é rotina: sua utilidade é incerta enquanto o paciente permanece C3; se deteriorar, reclassifique para D/E e reavalie terapia avançada.",
       actions: [
-        "Anticoagulação plena imediata: HNF IV (bolus {hnfBolus} U + {hnfInf} U/h, alvo TTPa 60–100 s) — preferir HNF pela possibilidade de trombólise de resgate; OU enoxaparina {enoxa} mg SC 12/12h.",
+        "Anticoagulação terapêutica sem contraindicação. AHA/ACC 2026: se for necessária anticoagulação parenteral inicial em C1–E1, preferir HBPM à HNF; escolher exceções de forma explícita conforme função renal, sangramento e contexto periprocedural.",
         "{avisoPeso}",
         "Monitorização intensiva (UTI): PA, FC, SpO₂ contínuos; repetir troponina/BNP e ECO.",
-        "TROMBÓLISE DE RESGATE imediata se houver deterioração hemodinâmica (passar para o ramo de alto risco).",
-        "⚠️ NÃO trombolisar de rotina o paciente NORMOTENSO apenas por disfunção de VD e troponina elevada: no PEITHO a tenecteplase reduziu a descompensação hemodinâmica, mas AUMENTOU hemorragia grave e AVC hemorrágico. A trombólise aqui é de resgate, não profilática.",
-        "Considerar CDT (cateter-dirigida) em centros com experiência se risco de deterioração.",
+        "Se houver deterioração, RECLASSIFICAR imediatamente para D1/D2/E1/E2 conforme hipotensão, hipoperfusão e choque; acionar PERT/equipe de referência e reavaliar trombólise sistêmica, cateter, trombectomia ou cirurgia conforme categoria e risco hemorrágico.",
+        "⚠️ Categoria C3: NÃO usar trombólise sistêmica de rotina. AHA/ACC 2026 considera incerta a utilidade da trombólise sistêmica em C3; a decisão só deve avançar após reavaliação clínica, risco hemorrágico e eventual progressão para D/E.",
+        "Em C2–C3, o benefício de trombólise dirigida por cateter ou trombectomia mecânica sobre anticoagulação isolada permanece incerto; não oferecer como escalada automática apenas pela categoria.",
       ],
       next: "destino_uti",
     },
@@ -508,9 +507,9 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
       // lista segue embaixo, que é onde lista deve ficar.
       summary:
-        "OS TRÊS CRITÉRIOS QUE ABREM A PORTA DA ALTA (HOME-PE/Hestia): sPESI = 0, SEM disfunção de ventrículo direito ao ecocardiograma e troponina NORMAL. Os três juntos — falta um, o paciente interna. As condições clínicas e sociais estão abaixo.",
+        "ALTA PRECOCE exige baixo risco validado e viabilidade clínica/social. AHA/ACC 2026 recomenda usar Hestia, PESI e/ou sPESI; não transforme uma combinação fixa de três exames em regra universal de alta.",
       evidence: [
-        "Critérios (HOME-PE/Hestia): sPESI = 0, sem disfunção de VD ao ECO, troponina normal.",
+        "AHA/ACC 2026: categorias A/B podem ser candidatas a manejo ambulatorial quando Hestia, PESI e/ou sPESI indicarem baixo risco e houver acesso imediato à anticoagulação, seguimento rápido e ausência de barreiras clínicas ou sociais.",
         "Hemodinâmica estável (PAS ≥ 100, FC < 110, SpO₂ ≥ 90% em ar ambiente); sem dor intensa/síncope; sem sangramento ou contraindicação à anticoagulação.",
         "Sem TVP iliofemoral extensa/phlegmasia; suporte social adequado, adesão e acesso à emergência; seguimento em 5–7 dias.",
         "Regra de Hestia: qualquer critério presente (O₂, PA < 100, analgesia IV, câncer em tratamento, sangramento, TFG < 30, gestação, dor torácica grave) = internação.",
@@ -565,13 +564,13 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     destino_uti: {
       id: "destino_uti",
       type: "transition",
-      title: "UTI — TEP de alto risco / intermediário-alto",
+      title: "Monitorização intensiva — categorias C3/D/E conforme gravidade",
       summary: "Monitorização intensiva e vigilância de deterioração.",
       disposition: "icu",
       exitCriteria: [
         "UTI com monitorização contínua de PA, FC, SpO₂; ECO seriado (24–48 h pós-trombólise ou se deterioração).",
-        "Metas: SpO₂ ≥ 94% com suporte; HNF com TTPa 60–100 s; repetir troponina/BNP em 6–12 h da primeira dosagem.",
-        "Trombólise de resgate imediata se deterioração no intermediário-alto; transição para anticoagulação oral após estabilização.",
+        "Monitorar oxigenação, perfusão, pressão, sinais de falência de VD e anticoagulação conforme o agente utilizado; repetir biomarcadores e imagem de VD quando isso puder mudar estratificação ou conduta.",
+        "Se houver deterioração, reclassificar pela categoria AHA/ACC 2026 e discutir terapia avançada conforme D/E, risco hemorrágico, recursos e PERT/equipe de referência; não usar a antiga etiqueta intermediário-alto como autorização automática para trombólise.",
         "Investigar HPTEC (hipertensão pulmonar tromboembólica crônica) no seguimento se dispneia persistir > 3 meses (cintilografia V/Q).",
       ],
       targets: [],
@@ -580,7 +579,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     destino_internacao: {
       id: "destino_internacao",
       type: "transition",
-      title: "Internação — risco intermediário-baixo",
+      title: "Internação — categorias C1/C2",
       summary: "Anticoagulação plena com vigilância clínica.",
       disposition: "observation",
       exitCriteria: [
@@ -595,7 +594,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     destino_ambulatorial: {
       id: "destino_ambulatorial",
       type: "transition",
-      title: "Alta precoce / tratamento ambulatorial",
+      title: "Alta precoce / tratamento ambulatorial — categorias A/B selecionadas",
       summary: "Baixo risco selecionado — reduz custos sem aumentar mortalidade (HOME-PE).",
       disposition: "discharge",
       exitCriteria: [

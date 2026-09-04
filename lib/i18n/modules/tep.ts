@@ -326,4 +326,12 @@ export const ES_TEP: Record<string, string> = {
     "El TEP de alto riesgo, por sí solo, NO convierte a HNF en el anticoagulante parenteral preferido. AHA/ACC 2026 recomienda HBPM sobre HNF en categorías C1–E1 y también después de trombólisis o procedimiento endovascular; durante la propia infusión trombolítica, la evidencia es insuficiente para preferir HBPM a HNF, por lo que debe seguirse el protocolo periprocedimiento específico.",
   "Anticoagulação: DOAC é preferido a antagonista da vitamina K quando elegível. Para anticoagulação parenteral inicial, AHA/ACC 2026 recomenda HBPM sobre HNF nas categorias C1–E1; planejamento de trombólise ou procedimento endovascular NÃO cria exceção automática a favor de HNF. Após trombólise ou procedimento endovascular, HBPM também é preferida; durante a infusão trombolítica, seguir o protocolo específico porque não há evidência suficiente para escolher HBPM sobre HNF nesse intervalo.":
     "Anticoagulación: DOAC se prefiere a antagonista de vitamina K cuando el paciente es elegible. Para anticoagulación parenteral inicial, AHA/ACC 2026 recomienda HBPM sobre HNF en categorías C1–E1; planear trombólisis o un procedimiento endovascular NO crea una excepción automática a favor de HNF. Después de trombólisis o procedimiento endovascular, HBPM también es preferida; durante la infusión trombolítica, seguir el protocolo específico porque no hay evidencia suficiente para elegir HBPM sobre HNF en ese intervalo.",
+  "Classificação clínica AHA/ACC 2026": "Clasificación clínica AHA/ACC 2026",
+  "C3 — gravidade elevada + VD e biomarcador anormais": "C3 — gravedad elevada + VD y biomarcador anormales",
+  "C1/C2 — gravidade elevada": "C1/C2 — gravedad elevada",
+  "B — baixa gravidade (ex.: sPESI = 0/Hestia = 0)": "B — baja gravedad (p. ej., sPESI = 0/Hestia = 0)",
+  "Categoria C3 — anticoagulação + vigilância de deterioração": "Categoría C3 — anticoagulación + vigilancia del deterioro",
+  "Monitorização intensiva — categorias C3/D/E conforme gravidade": "Monitorización intensiva — categorías C3/D/E según gravedad",
+  "Internação — categorias C1/C2": "Hospitalización — categorías C1/C2",
+  "Alta precoce / tratamento ambulatorial — categorias A/B selecionadas": "Alta precoz / tratamiento ambulatorio — categorías A/B seleccionadas",
 };

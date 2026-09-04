@@ -33,7 +33,7 @@ expect(tep.includes("EVITAR sedação profunda e ventilação mecânica sempre q
 expect(/tce_grave:\s*\{[\s\S]*?id: "tce_grave"[\s\S]*?type: "action"/.test(tce), "nó tce_grave mudou; reauditar dívida de hiperventilação");
 expect(tce.includes("TCE_HIPERVENTILACAO_PROIBIDA"), "TCE: proibição canônica de hiperventilação profilática deixou de ser consumida");
 expect(/dx_cardio_frio_umido:\s*\{[\s\S]*?id: "dx_cardio_frio_umido"[\s\S]*?type: "transition"/.test(shock), "choque: fenótipo frio/úmido mudou; reauditar dívida de fluido");
-expect(shock.includes("evitar expansão volêmica"), "choque cardiogênico: alerta de evitar expansão volêmica deixou de existir");
+expect(/(?:evitar expansão volêmica|NÃO usar expansão volêmica empírica)/.test(shock), "choque cardiogênico: proteção contra expansão volêmica empírica no fenótipo congesto deixou de existir");
 
 function blockFor(id) {
   const start = debts.indexOf(`id: "${id}"`);
