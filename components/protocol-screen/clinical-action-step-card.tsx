@@ -71,8 +71,8 @@ export function ClinicalActionStepCard({
           accessibilityLabel={tr("Conduta executada — seguir para a próxima etapa")}
           onPress={onAdvance}
           style={({ pressed }) => [e.advance, pressed && e.pressed]}
+          testID="concluir-etapa"
         >
-          <Text style={e.advanceEyebrow}>{tr("ETAPA CONCLUÍDA")}</Text>
           <Text style={e.advanceText}>{tr("Feito — continuar ›")}</Text>
         </Pressable>
       </View>
@@ -141,6 +141,7 @@ const criarEstilos = (t: Tema) =>
     },
     completionBlock: {
       gap: ESPACO.sm,
+      alignItems: "center",
     },
     completionHint: {
       ...TIPOGRAFIA.micro,
@@ -149,28 +150,23 @@ const criarEstilos = (t: Tema) =>
       textAlign: "center",
     },
     advance: {
-      minHeight: TOQUE.critico,
+      width: "100%",
+      minHeight: Math.max(56, TOQUE.critico),
       borderRadius: RAIO.botao,
-      borderWidth: 1,
-      borderColor: t.cores.border,
-      backgroundColor: t.cores.surface,
+      borderWidth: 1.5,
+      borderColor: t.cores.primary,
+      backgroundColor: t.cores.primary,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: ESPACO.md,
-      paddingVertical: ESPACO.sm,
-      gap: 2,
-    },
-    advanceEyebrow: {
-      ...TIPOGRAFIA.micro,
-      color: t.cores.textSecondary,
-      fontWeight: "800",
-      letterSpacing: 0.5,
+      paddingHorizontal: ESPACO.lg,
+      paddingVertical: ESPACO.md,
     },
     advanceText: {
-      ...TIPOGRAFIA.caption,
-      color: t.cores.primary,
+      ...TIPOGRAFIA.body,
+      color: t.cores.onPrimary,
       fontWeight: "900",
       textAlign: "center",
+      letterSpacing: 0.2,
     },
-    pressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
+    pressed: { opacity: 0.82, transform: [{ scale: 0.985 }] },
   });
