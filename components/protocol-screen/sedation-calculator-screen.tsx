@@ -483,7 +483,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                     </Pressable>
                   </View>
                   {savedDilutions.length === 0 ? (
-                    <Text style={s.userDilEmpty}>{tr("Nenhuma diluição salva. Monte a sua abaixo (ampolas + diluente + tipo) e toque em "+ Salvar atual".")}</Text>
+                    <Text style={s.userDilEmpty}>{tr('Nenhuma diluição salva. Monte a sua abaixo (ampolas + diluente + tipo) e toque em "+ Salvar atual".')}</Text>
                   ) : (
                     <View style={s.userDilList}>
                       {savedDilutions.map((d) => (
