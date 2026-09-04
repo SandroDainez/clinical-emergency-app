@@ -525,7 +525,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       id: "anticoag",
       type: "action",
       title: "Anticoagulação — escolha do agente",
-      summary: "Iniciar IMEDIATAMENTE. NOACs são preferidos (ESC 2019 — Classe I).",
+      summary: "AHA/ACC 2026: anticoagulação é a base do tratamento. Se elegível para via oral, preferir DOAC a antagonista da vitamina K; quando terapia parenteral inicial for necessária em C1–E1, preferir HBPM a HNF, salvo contraindicação/contexto específico.",
       actions: [
         "NOAC 1ª linha — Rivaroxabana 15 mg VO 12/12h × 21 dias → 20 mg/dia (com refeição); OU Apixabana 10 mg VO 12/12h × 7 dias → 5 mg 12/12h. Evitar se TFG < 15, gestação.",
         "Alternativas NOAC (requerem parenteral inicial 5–10 dias): Dabigatrana 150 mg 12/12h; Edoxabana 60 mg/dia (30 mg se ≤ 60 kg ou TFG 15–50).",
@@ -538,10 +538,10 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         // módulo menos maduro.
         ENOXAPARINA_REGIME_TEV,
         ENOXAPARINA_APRESENTACAO,
-        "Situações especiais — gestante: HBPM (NOAC contraindicado); câncer ativo: HBPM ou NOAC (rivaroxabana/apixabana); TIH: argatrobana/fondaparinux (suspender toda heparina); IRA TFG < 30: HNF preferida.",
+        "SITUAÇÕES ESPECIAIS: gestação exige anticoagulante compatível com a gestação; em síndrome antifosfolípide trombótica estabelecida, AHA/ACC 2026 recomenda antagonista da vitamina K sobre DOAC. Na doença renal grave (ClCr <30 mL/min), se HBPM for utilizada, é razoável monitorar anti-Xa para orientar ajuste e reduzir sangramento; escolher agente e dose conforme função renal, bula e contexto, sem transformar ClCr <30 isoladamente em regra automática de HNF para todo TEP.",
         "DURAÇÃO AHA/ACC 2026: a fase inicial de tratamento dura 3–6 meses. Se o primeiro TEP ocorreu por fator MAIOR reversível, em geral interromper ao fim dessa fase; sem fator maior reversível ou com fator persistente, considerar/continuar fase estendida além de 3–6 meses, reavaliando periodicamente recorrência versus sangramento. Não transformar “provocado = 3 meses” ou “não provocado = indefinido” em regra automática sem classificar o fator de risco.",
         "FILTRO DE VEIA CAVA AHA/ACC 2026: NÃO usar de rotina em paciente terapeuticamente anticoagulado. Se anticoagulação não puder ser tolerada e filtro for necessário, preferir filtro recuperável e programar retirada assim que o risco de TEP diminuir e a anticoagulação puder ser retomada. Em TEP recorrente apesar de anticoagulação terapêutica ótima, o filtro pode ser considerado; em categorias D–E submetidas a terapia avançada, o benefício do filtro de rotina é incerto.",
-        "PESO E OBESIDADE: usar peso real para HBPM, sem teto empírico; considerar anti-Xa em casos selecionados. Em obesidade extrema (IMC > 40 kg/m² ou peso > 120 kg), apixabana e rivaroxabana podem ser consideradas conforme bula; os dados de dabigatrana e edoxabana são menos robustos nesse grupo. Não reduzir dose apenas pelo peso.",
+        "OBESIDADE AHA/ACC 2026: em IMC >30 kg/m², DOAC é razoável sobre antagonista da vitamina K quando não contraindicado. Em obesidade classe III (IMC >40 kg/m²) tratada com HBPM, redução de dose pode ser razoável para reduzir sangramento; não crie automaticamente um teto universal. Em peso >150 kg ou IMC >40 kg/m², o benefício de monitorar anti-Xa rotineiramente para evitar níveis supraterapêuticos não está estabelecido.",
       ],
       next: "destino_internacao",
     },
