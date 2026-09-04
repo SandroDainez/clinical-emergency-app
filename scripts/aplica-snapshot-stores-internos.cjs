@@ -26,3 +26,5 @@ replaceOnce(
 );
 
 console.log('✅ HND-02b wave 2: adapters internos de confirmação e reavaliação preparados');
+
+// workflow trigger: HND-02b wave 2
