@@ -1725,3 +1725,31 @@ ficou 4 dias fora do tronco enquanto a mesma tela era reescrita no tronco.
 ⚠️⚠️ **`git pull` antes de escrever, `test:all` antes de `push`.** Os 6 commits do
 origin subiram com **55 literais PT sem espanhol** — `test:all` vermelho para
 quem puxasse. Corrigido em `lib/i18n/modules/ovace-cockpit.ts`.
+
+---
+
+## PD-35 · O BUNDLE ⛔ NÃO É O PROBLEMA QUE EU DISSE QUE ERA — MEDIDO (2026-09-05)
+
+**De onde saiu.** Eu havia classificado o bundle de **6,8 MB** como risco grave
+para plantão em 4G. ⚠️ **Errado — medido, ⛔ não estimado:**
+
+| | tamanho |
+|---|---|
+| descomprimido (o número que eu citei) | 7,15 MB |
+| **brotli — o que a Vercel realmente entrega** | **1,95 MB** |
+| tempo até a primeira tela utilizável em 4G (4 Mbps, 100 ms RTT) | **5,6 s** |
+
+⛔ Exagerei em 3,5×: a Vercel serve o bundle em brotli, ⛔ e eu li o tamanho do
+arquivo em disco. 5,6 s para a primeira tela ⛔ não é ideal, ⛔ mas ⛔ não é o
+"médico desiste" que eu descrevi.
+
+**A melhoria REAL que a medição achou.** ⚠️ As **24.538 linhas** de dicionário
+espanhol (`lib/i18n/modules/*.ts`, 126 módulos, 130 imports estáticos) entram no
+bundle **mesmo para o usuário em português** — que é a maioria. Carregar o ES sob
+demanda (só quando o idioma vira es-419) é o maior ganho de peso disponível, ⛔ e
+é de risco baixo porque ⛔ não toca conteúdo clínico.
+
+**⛔ POR QUE ⛔ NÃO FOI FEITO AGORA.** O foco declarado é **fechar o AVC**, ⛔ e ⛔ não
+performance. Split de i18n é otimização de médio porte que mexe no carregamento
+de TODOS os módulos — ⛔ não é o lugar de mexer enquanto o AVC hemorrágico está
+em aberto. Fica registrado como o **próximo item técnico**, depois do AVC.
