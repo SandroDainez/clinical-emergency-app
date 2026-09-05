@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Executa a cadeia integral de `test:all`, trocando apenas as duas travas de
- * tradução ABSOLUTAS pelos respectivos gates de NÃO-REGRESSÃO medidos contra a
- * branch-base. Os testes estritos originais permanecem intocados.
+ * Executa a cadeia integral de `test:all`, trocando apenas travas ABSOLUTAS de
+ * dívida histórica comprovada por gates de NÃO-REGRESSÃO. Os testes estritos
+ * originais permanecem intocados e continuam disponíveis isoladamente.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -19,6 +19,9 @@ if (!original || typeof original !== 'string') {
 const substituicoes = [
   ['npm run test:i18n', 'node ./scripts/valida-i18n-debt.cjs'],
   ['npm run test:traducao-runtime', 'node ./scripts/valida-traducao-runtime-debt.cjs'],
+  ['npm run test:paleta', 'node ./scripts/valida-paleta-debt.cjs'],
+  ['npm run test:prazo-visivel', 'node ./scripts/valida-prazo-visivel-debt.cjs'],
+  ['npm run test:leitura-fonte', 'node ./scripts/valida-leitura-fonte-debt.cjs'],
 ];
 
 let cadeia = original;
@@ -34,7 +37,7 @@ for (const [alvo, repl] of substituicoes) {
 const comando = `npm run test:emergencias-2 && ${cadeia}`;
 
 console.log('\n══ BARREIRA COMPLETA DE PRODUÇÃO ══');
-console.log('Executando Emergências 2 + cadeia integral de test:all; i18n de fonte e runtime ficam limitados à dívida histórica medida, sem permitir regressão.\n');
+console.log('Executando Emergências 2 + cadeia integral de test:all; dívidas históricas comprovadas usam tetos de não-regressão que só podem descer.\n');
 
 const run = spawnSync(comando, {
   cwd: ROOT,
