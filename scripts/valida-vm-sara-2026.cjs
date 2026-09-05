@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const fs=require('node:fs');const path=require('node:path');const root=path.resolve(__dirname,'..');
-const tree=fs.readFileSync(path.join(root,'ventilation-decision-tree.ts'),'utf8');const tabela=fs.readFileSync(path.join(root,'lib/tabela-peep.ts'),'utf8');const checks=[];const ok=(n,v)=>checks.push([n,!!v]);
+const path=require('node:path');const {lerFonte}=require('./lib/fonte.cjs');const root=path.resolve(__dirname,'..');
+const tree=lerFonte(path.join(root,'ventilation-decision-tree.ts'));const tabela=lerFonte(path.join(root,'lib/tabela-peep.ts'));const checks=[];const ok=(n,v)=>checks.push([n,!!v]);
 ok('Global Definition 2024 explícita',tree.includes('Global Definition 2024 amplia Berlim')&&tree.includes('S/F ≤ 315 quando SpO₂ ≤ 97%')&&tree.includes('HFNO ≥ 30 L/min'));
 ok('título não promete terapia única',!tree.includes('único tratamento que reduz mortalidade'));
 ok('Pplat preservada e DP não é corte universal',tree.includes('Pplat ≤ 30 cmH₂O')&&tree.includes('não tratá-la como corte universal isolado'));
