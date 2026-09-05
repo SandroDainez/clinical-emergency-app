@@ -25,8 +25,11 @@ requireText(categorical, "HorizontalChoiceSelector", "CategoricalSelector delega
 forbidText(categorical, 'flexWrap: "wrap"', "CategoricalSelector não recria grade local");
 
 const vm = read("components/protocol-screen/ventilator-configurator-card.tsx");
-requireText(vm, "HorizontalChoiceSelector", "VM usa seletor canônico");
-requireText(vm, 'testID="vm-altura-presets"', "VM altura padronizada");
+requireText(vm, "NumericStepper", "VM usa barra canônica para altura numérica");
+requireText(vm, 'testID="slider-altura"', "VM altura usa slider canônico");
+requireText(vm, "valorVisivel={alturaValida}", "VM altura preserva estado não informado");
+forbidText(vm, 'testID="vm-altura-presets"', "VM não reintroduz presets numéricos junto da barra");
+requireText(vm, "HorizontalChoiceSelector", "VM usa seletor canônico nas escolhas categóricas");
 requireText(vm, 'testID="vm-sexo"', "VM sexo padronizado");
 requireText(vm, 'testID="vm-cenario"', "VM cenário padronizado");
 
@@ -46,4 +49,4 @@ const auxiliary = read("components/protocol-screen/auxiliary-panel-card.tsx");
 requireText(auxiliary, "HorizontalMultiSelect", "presets múltiplos usam multisseletor canônico");
 forbidText(auxiliary, "styles.auxiliaryPresetRow", "toggle_token não volta a botões locais");
 
-console.log("OK · padrão canônico de seletores protegido");
+console.log("OK · padrão canônico de seletores e barra numérica protegido");
