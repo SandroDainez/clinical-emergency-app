@@ -167,10 +167,14 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       id: "q_hipovolemia",
       type: "decision",
       title: "Sinais de hipovolemia?",
-      question: "Sangramento ativo, vômitos/diarreia, queimadura ou trauma com perda volêmica?",
+      question: "Há perda de volume conhecida ou provável, inclusive hemorragia oculta?",
       evidence: [
-        "Veias colabadas, resposta a volume, hematócrito/lactato, foco de perda evidente.",
-        "Perfil de cabeceira que separa os tipos: extremidades FRIAS, pressão de pulso < 25 mmHg, enchimento capilar > 3 s e SvcO₂ < 70% apontam para hipovolêmico, cardiogênico ou obstrutivo. Extremidades QUENTES, pressão de pulso > 40 mmHg, enchimento capilar < 3 s e SvcO₂ normal ou alta apontam para distributivo.",
+        "A ausência de uma perda externa óbvia não exclui hipovolemia ou hemorragia oculta. Integre mecanismo, exame, tendência hemodinâmica, hemoglobina/lactato, FAST/POCUS quando pertinente e resposta à ressuscitação.",
+        "Extremidades frias, pressão de pulso, enchimento capilar e SvcO₂ ajudam a caracterizar perfusão, mas NÃO separam de forma rígida o tipo de choque; há sobreposição e fenótipos mistos.",
+        "Na reavaliação, acompanhar enchimento capilar em série junto com pressão, diurese, estado mental e lactato quando elevado; SvcO₂ deve ser interpretada em série e no contexto, não como classificador isolado do subtipo.",
+        "Quando a causa permanecer incerta ou a resposta inicial for inadequada, usar ecocardiografia/POCUS como imagem de primeira linha para caracterizar o fenótipo hemodinâmico.",
+        "Antes de repetir fluidos, avaliar responsividade a fluido com variáveis dinâmicas quando aplicáveis, como elevação passiva das pernas e mudança de volume sistólico/débito após pequena prova de fluido.",
+        "Não usar um marcador estático isolado de pré-carga como prova de hipovolemia nem como autorização automática para expansão volêmica.",
       ],
       options: [
         { id: "sim", label: "Sim", next: "dx_hipovolemico" },

@@ -14,8 +14,20 @@ export const ES_CHOQUE_EINSTEIN: Record<string, string> = {
     "Signos de laboratorio: hiperlactatemia, acidosis metabólica, SvcO₂ < 70% (o SvO₂ < 65%), gap de PCO₂ > 6 mmHg.",
   "A hipotensão NÃO é obrigatória para o diagnóstico: taquicardia e vasoconstrição podem preservar a PA na fase inicial (choque compensado ou oculto) com hipoperfusão já instalada.":
     "La hipotensión NO es obligatoria para el diagnóstico: taquicardia y vasoconstricción pueden preservar la PA en la fase inicial (choque compensado u oculto) con hipoperfusión ya instalada.",
-  "Perfil de cabeceira que separa os tipos: extremidades FRIAS, pressão de pulso < 25 mmHg, enchimento capilar > 3 s e SvcO₂ < 70% apontam para hipovolêmico, cardiogênico ou obstrutivo. Extremidades QUENTES, pressão de pulso > 40 mmHg, enchimento capilar < 3 s e SvcO₂ normal ou alta apontam para distributivo.":
-    "Perfil de cabecera que separa los tipos: extremidades FRÍAS, presión de pulso < 25 mmHg, llenado capilar > 3 s y SvcO₂ < 70% orientan a hipovolémico, cardiogénico u obstructivo. Extremidades CALIENTES, presión de pulso > 40 mmHg, llenado capilar < 3 s y SvcO₂ normal o alta orientan a distributivo.",
+  "Há perda de volume conhecida ou provável, inclusive hemorragia oculta?":
+    "¿Hay pérdida de volumen conocida o probable, incluida hemorragia oculta?",
+  "A ausência de uma perda externa óbvia não exclui hipovolemia ou hemorragia oculta. Integre mecanismo, exame, tendência hemodinâmica, hemoglobina/lactato, FAST/POCUS quando pertinente e resposta à ressuscitação.":
+    "La ausencia de una pérdida externa evidente no excluye hipovolemia ni hemorragia oculta. Integre mecanismo, examen, tendencia hemodinámica, hemoglobina/lactato, FAST/POCUS cuando corresponda y respuesta a la reanimación.",
+  "Extremidades frias, pressão de pulso, enchimento capilar e SvcO₂ ajudam a caracterizar perfusão, mas NÃO separam de forma rígida o tipo de choque; há sobreposição e fenótipos mistos.":
+    "Las extremidades frías, la presión de pulso, el llenado capilar y la SvcO₂ ayudan a caracterizar la perfusión, pero NO separan de forma rígida el tipo de shock; existe superposición y fenotipos mixtos.",
+  "Na reavaliação, acompanhar enchimento capilar em série junto com pressão, diurese, estado mental e lactato quando elevado; SvcO₂ deve ser interpretada em série e no contexto, não como classificador isolado do subtipo.":
+    "En la reevaluación, seguir el llenado capilar en serie junto con presión, diuresis, estado mental y lactato cuando esté elevado; la SvcO₂ debe interpretarse en serie y en contexto, no como clasificador aislado del subtipo.",
+  "Quando a causa permanecer incerta ou a resposta inicial for inadequada, usar ecocardiografia/POCUS como imagem de primeira linha para caracterizar o fenótipo hemodinâmico.":
+    "Cuando la causa siga siendo incierta o la respuesta inicial sea inadecuada, usar ecocardiografía/POCUS como imagen de primera línea para caracterizar el fenotipo hemodinámico.",
+  "Antes de repetir fluidos, avaliar responsividade a fluido com variáveis dinâmicas quando aplicáveis, como elevação passiva das pernas e mudança de volume sistólico/débito após pequena prova de fluido.":
+    "Antes de repetir fluidos, evaluar la respuesta a fluidos con variables dinámicas cuando sean aplicables, como elevación pasiva de piernas y cambio del volumen sistólico/gasto tras una pequeña prueba de fluidos.",
+  "Não usar um marcador estático isolado de pré-carga como prova de hipovolemia nem como autorização automática para expansão volêmica.":
+    "No usar un marcador estático aislado de precarga como prueba de hipovolemia ni como autorización automática para expansión con fluidos.",
 
   // ── Estabilização e metas ──
   "Estabilizar e fixar as metas": "Estabilizar y fijar las metas",
