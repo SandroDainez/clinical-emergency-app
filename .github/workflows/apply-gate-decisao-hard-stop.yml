@@ -39,4 +39,4 @@ jobs:
         run: npm run test:vasoativos
       - name: Ventilation
         run: npm run test:vm
-      # Reexecutado após adicionar caminho guiado à reavaliação pós-cardioversão da taquicardia.
+      # Reexecutado após impedir dupla contagem de decisões internas de um caminho guiado exclusivo.
