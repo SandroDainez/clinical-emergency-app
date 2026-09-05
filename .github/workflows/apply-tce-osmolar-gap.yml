@@ -1,0 +1,50 @@
+name: Apply TCE osmolar-gap clarification
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - scripts/ajusta-tce-gap-osmolar.cjs
+      - .github/workflows/apply-tce-osmolar-gap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply TCE osmolar-gap clarification
+        run: node scripts/ajusta-tce-gap-osmolar.cjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Osmolarity regression
+        run: node scripts/valida-osmolaridade.cjs
+      - name: TCE regression
+        run: npm run test:tce
+      - name: Amiodarone single-source regression
+        run: node scripts/valida-farmacos-fonte-unica.cjs
+      - name: Validate scope
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "tce-decision-tree.ts"
+      - name: Commit validated TCE clarification
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tce-decision-tree.ts
+          git commit -m "Restore explicit TCE osmolar-gap formula"
+          git pull --rebase origin fix-avc-slider-first
+          git push origin HEAD:fix-avc-slider-first
