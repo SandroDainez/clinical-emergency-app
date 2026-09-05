@@ -127,6 +127,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git restore auditoria/CAMADA-5-MAQUINAS-ESTADO.md auditoria/CAMADA-9-RASTREABILIDADE.md auditoria/INVENTARIO-CLINICO.md
           git add avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx lib/i18n/modules/pr18-convergence.ts scripts/valida-paleta-debt.cjs
           git commit -m "Fix AVC guided glycemia NIHSS pressure and action hierarchy"
           git pull --rebase origin fix-avc-slider-first
