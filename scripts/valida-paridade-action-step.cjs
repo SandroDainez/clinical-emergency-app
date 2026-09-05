@@ -48,7 +48,8 @@ exigir(!/useEffect\([\s\S]{0,300}onAdvance\(/.test(card), "Card parece avançar 
 // A semântica visual deve continuar distinguindo execução de navegação.
 exigir(/Conduta — fazer agora/.test(card), "Card perdeu o rótulo de conduta imediata.");
 exigir(/EXECUTE AGORA/.test(card), "Card perdeu o bloco visual dominante de execução.");
-exigir(/ETAPA CONCLUÍDA/.test(card), "Card perdeu a separação visual da conclusão da etapa.");
+exigir(/completionBlock/.test(card), "Card perdeu o bloco visual separado de conclusão da etapa.");
+exigir(/Depois de executar e conferir a conduta acima, registre a conclusão da etapa/.test(card), "Card perdeu a instrução explícita de conclusão da etapa.");
 exigir(/Feito — continuar/.test(card), "Card perdeu o rótulo de continuidade existente.");
 
 // O adaptador só pode encaminhar um ActionStep já liberado pelo shell.
@@ -87,4 +88,4 @@ console.log("   • ações permanecem na mesma ordem e sem reinterpretação");
 console.log("   • evidência e justificativa continuam compostas externamente");
 console.log("   • adapter não conhece protocolId, clinicalActionId nem SafetyGate");
 console.log("   • onAdvance permanece explícito e externo");
-console.log("   • execução clínica e navegação continuam visualmente separadas");
+console.log("   • execução clínica e conclusão continuam visualmente separadas sem declarar conclusão antes do clique");
