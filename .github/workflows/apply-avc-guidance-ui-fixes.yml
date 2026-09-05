@@ -28,6 +28,67 @@ jobs:
       - run: npm ci
       - name: Apply focused corrections
         run: node scripts/corrige-avc-guia-clinico-ui.cjs
+      - name: Add exact ES translations and repair palette gate parser
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const i18nPath = 'lib/i18n/modules/pr18-convergence.ts';
+          let s = fs.readFileSync(i18nPath, 'utf8');
+          const entries = {
+            'FAST · Face (rosto)': 'FAST · Cara (rostro)',
+            'FAST · Braços': 'FAST · Brazos',
+            'FAST · Fala': 'FAST · Habla',
+            'Glicemia capilar AGORA — registre o valor. O app classifica automaticamente hipo/normo/hiperglicemia e abre a correção quando necessária.': 'Glucemia capilar AHORA — registre el valor. La app clasifica automáticamente hipo/normo/hiperglucemia y abre la corrección cuando sea necesaria.',
+            'Iniciar o NIHSS em paralelo à neuroimagem. A calculadora completa será aberta no fluxo isquêmico; não estimar o escore de cabeça.': 'Iniciar el NIHSS en paralelo con la neuroimagen. La calculadora completa se abrirá en el flujo isquémico; no estimar la puntuación de memoria.',
+            'Hipoglicemia detectada — corrigir agora': 'Hipoglucemia detectada — corregir ahora',
+            'Glicemia informada: {glicemia} mg/dL. Hipoglicemia pode simular AVC e deve ser corrigida sem atrasar a neuroimagem.': 'Glucemia informada: {glicemia} mg/dL. La hipoglucemia puede simular un ACV y debe corregirse sin retrasar la neuroimagen.',
+            'Se houver alteração neurológica ou risco de aspiração, NÃO oferecer glicose por via oral.': 'Si hay alteración neurológica o riesgo de aspiración, NO ofrecer glucosa por vía oral.',
+            'Com acesso IV: preferir glicose IV titulada. Opções equivalentes usuais: glicose 10% 250 mL (25 g) ou glicose 50% 50 mL (25 g), conforme apresentação e protocolo local; administrar e reavaliar clinicamente.': 'Con acceso IV: preferir glucosa IV titulada. Opciones equivalentes habituales: glucosa al 10% 250 mL (25 g) o glucosa al 50% 50 mL (25 g), según presentación y protocolo local; administrar y reevaluar clínicamente.',
+            'Sem acesso IV imediato: glucagon 1 mg IM pode ser usado enquanto se obtém acesso venoso.': 'Sin acceso IV inmediato: puede usarse glucagón 1 mg IM mientras se obtiene acceso venoso.',
+            'Repetir glicemia em aproximadamente 15 minutos e repetir tratamento se permanecer < 60 mg/dL.': 'Repetir la glucemia en aproximadamente 15 minutos y repetir el tratamiento si permanece < 60 mg/dL.',
+            'Depois de iniciar a correção, manter TC/angioTC e demais passos do AVC em paralelo — não esperar normalização completa para acionar imagem.': 'Después de iniciar la corrección, mantener TC/angio-TC y los demás pasos del ACV en paralelo; no esperar la normalización completa para activar imagen.',
+            'Correção da hipoglicemia': 'Corrección de la hipoglucemia',
+            'Glicose IV administrada': 'Glucosa IV administrada',
+            'Glucagon usado enquanto obtém acesso': 'Glucagón utilizado mientras se obtiene acceso',
+            'Correção ainda pendente': 'Corrección aún pendiente',
+            'Glicemia após correção': 'Glucemia después de la corrección',
+            'Hipoglicemia persiste — repetir correção e investigar': 'La hipoglucemia persiste — repetir corrección e investigar',
+            'A glicemia continua abaixo do limiar de segurança informado. Não trate como déficit neurológico definitivo enquanto a hipoglicemia persistir.': 'La glucemia continúa por debajo del umbral de seguridad indicado. No considere el déficit neurológico como definitivo mientras persista la hipoglucemia.',
+            'Repetir glicose IV titulada e nova glicemia em cerca de 15 minutos.': 'Repetir glucosa IV titulada y nueva glucemia en unos 15 minutos.',
+            'Revisar causa: insulina/sulfonilureia, jejum prolongado, álcool, insuficiência hepática/renal, sepse e outros precipitantes.': 'Revisar la causa: insulina/sulfonilurea, ayuno prolongado, alcohol, insuficiencia hepática/renal, sepsis y otros precipitantes.',
+            'Se houver uso de sulfonilureia ou recorrência apesar de glicose, considerar toxicologia/terapia específica conforme protocolo institucional.': 'Si hubo uso de sulfonilurea o recurrencia pese a la glucosa, considerar toxicología/terapia específica según el protocolo institucional.',
+            'Continuar o fluxo de imagem do AVC em paralelo se a suspeita clínica permanecer.': 'Continuar en paralelo el flujo de imagen del ACV si persiste la sospecha clínica.',
+            'Hiperglicemia detectada — conduzir sem atraso da reperfusão': 'Hiperglucemia detectada — manejar sin retrasar la reperfusión',
+            'Glicemia informada: {glicemia} mg/dL. No AVC agudo, evitar hiperglicemia persistente e também evitar correção intensiva que provoque hipoglicemia.': 'Glucemia informada: {glicemia} mg/dL. En el ACV agudo, evitar la hiperglucemia persistente y también la corrección intensiva que provoque hipoglucemia.',
+            'Manter a neuroimagem e a avaliação de reperfusão em paralelo — glicemia elevada isoladamente não deve atrasar TC/angioTC.': 'Mantener la neuroimagen y la evaluación de reperfusión en paralelo; una glucemia elevada aislada no debe retrasar la TC/angio-TC.',
+            'Se a glicemia permanecer > 180 mg/dL, usar protocolo hospitalar de insulina com alvo usual de 140–180 mg/dL e monitorização seriada; NÃO perseguir 80–130 mg/dL no AVC agudo.': 'Si la glucemia permanece > 180 mg/dL, usar el protocolo hospitalario de insulina con objetivo habitual de 140–180 mg/dL y monitorización seriada; NO buscar 80–130 mg/dL en el ACV agudo.',
+            'Se glicemia ≥ 250 mg/dL, cetose, acidose, desidratação importante ou alteração metabólica desproporcional, colher eletrólitos/gasometria/cetonas e considerar CAD/EHH em paralelo.': 'Si la glucemia es ≥ 250 mg/dL, hay cetosis, acidosis, deshidratación importante o alteración metabólica desproporcionada, obtener electrolitos/gasometría/cetonas y considerar CAD/EHH en paralelo.',
+            'Reavaliar glicemia após a intervenção definida pelo protocolo institucional e vigiar hipoglicemia durante o tratamento.': 'Reevaluar la glucemia después de la intervención definida por el protocolo institucional y vigilar hipoglucemia durante el tratamiento.',
+            'Plano para hiperglicemia': 'Plan para hiperglucemia',
+            'Monitorização seriada iniciada': 'Monitorización seriada iniciada',
+            'Protocolo de insulina iniciado': 'Protocolo de insulina iniciado',
+            'Investigação/tratamento de CAD/EHH em paralelo': 'Investigación/tratamiento de CAD/EHH en paralelo',
+            'Pressão arterial antes da trombólise — classificação automática': 'Presión arterial antes de la trombólisis — clasificación automática',
+            'PA informada: {pas}/{pad} mmHg. O app compara o valor com o limite de 185/110 e encaminha para correção quando necessário.': 'PA informada: {pas}/{pad} mmHg. La app compara el valor con el límite de 185/110 y deriva a corrección cuando sea necesario.',
+            'Limite para liberar trombólise IV: PAS < 185 mmHg E PAD < 110 mmHg.': 'Límite para permitir trombólisis IV: PAS < 185 mmHg Y PAD < 110 mmHg.',
+            'Se qualquer um dos dois estiver acima do limite, o próximo passo abre a correção pressórica com doses e reavaliação.': 'Si cualquiera de los dos está por encima del límite, el siguiente paso abre la corrección de la presión con dosis y reevaluación.',
+            'Depois da trombólise, o alvo muda para < 180/105 mmHg por 24 horas.': 'Después de la trombólisis, el objetivo cambia a < 180/105 mmHg durante 24 horas.'
+          };
+          const marker = '\n};\n';
+          if (!s.endsWith(marker)) throw new Error('formato inesperado de pr18-convergence.ts');
+          const lines = [];
+          for (const [pt, es] of Object.entries(entries)) {
+            if (!s.includes(JSON.stringify(pt) + ':')) lines.push(`  ${JSON.stringify(pt)}: ${JSON.stringify(es)},`);
+          }
+          s = s.slice(0, -marker.length) + '\n' + lines.join('\n') + marker;
+          fs.writeFileSync(i18nPath, s);
+
+          const palettePath = 'scripts/valida-paleta-debt.cjs';
+          let p = fs.readFileSync(palettePath, 'utf8');
+          p = p.replace(/const cabecalhos=.*?;\nif\(n!==3/s, "const cabecalhos=(texto.match(/^❌ `components\\/[^\\n]+/gm)||[]).length;\nif(n!==3");
+          fs.writeFileSync(palettePath, p);
+          NODE
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: AVC regression
@@ -38,19 +99,27 @@ jobs:
         run: npm run test:faixas
       - name: Calculators
         run: npm run test:calculadoras
+      - name: Source i18n non-regression
+        run: node scripts/valida-i18n-debt.cjs
+      - name: Runtime i18n non-regression
+        run: node scripts/valida-traducao-runtime-debt.cjs
+      - name: Composed i18n non-regression
+        run: node scripts/valida-traducao-composta-debt.cjs
+      - name: Palette non-regression
+        run: node scripts/valida-paleta-debt.cjs
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
       - name: Diff sanity
         run: |
           git diff --check
           changed="$(git diff --name-only | sort)"
-          expected="$(printf '%s\n' avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx | sort)"
+          expected="$(printf '%s\n' avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx lib/i18n/modules/pr18-convergence.ts scripts/valida-paleta-debt.cjs | sort)"
           test "$changed" = "$expected"
       - name: Commit validated corrections
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx
-          git commit -m "Fix AVC guided glycemia NIHSS and action hierarchy"
+          git add avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx lib/i18n/modules/pr18-convergence.ts scripts/valida-paleta-debt.cjs
+          git commit -m "Fix AVC guided glycemia NIHSS pressure and action hierarchy"
           git pull --rebase origin fix-avc-slider-first
           git push origin HEAD:fix-avc-slider-first
