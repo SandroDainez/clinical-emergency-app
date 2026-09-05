@@ -20,8 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Replace midpoint pending state with canonical neutral origin
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
 
           path = Path("components/protocol-screen/electrolyte-calculator-screen.tsx")
@@ -83,8 +84,10 @@ jobs:
               raise SystemExit(f"bloco esperado encontrado {count} vez(es); abortando sem editar")
 
           path.write_text(src.replace(old, new))
+          PY
 
       - name: Remove one-shot workflow and commit patch
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
