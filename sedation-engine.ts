@@ -921,7 +921,17 @@ export function faixaDaBarra(mode: SedMode): { min: number; max: number; passo: 
 
   // O mínimo nunca é zero numa infusão em curso: zero é "desligado", e quem
   // arrasta até lá sem querer não percebe. Começa num passo.
-  return { min: passo, max: Number(teto.toFixed(2)), passo };
+  //
+  // O máximo também precisa cair EXATAMENTE na grade ancorada nesse mínimo.
+  // Arredondar apenas "teto" deixava combinações como 5→100,05 passo 5 e
+  // 0,05→1,11 passo 0,05: o botão + nunca alcançava o topo. Como o teto da
+  // barra é apenas alcance de UI (não limiar clínico), arredondamos para CIMA
+  // até o próximo ponto válido da mesma grade, preservando pelo menos o alcance
+  // derivado sem alterar nenhuma faixa clínica/colorida.
+  const casas = passo < 0.1 ? 2 : passo < 1 ? 1 : 0;
+  const degraus = Math.max(0, Math.ceil(((teto - passo) / passo) - 1e-9));
+  const max = Number((passo + degraus * passo).toFixed(casas));
+  return { min: passo, max, passo };
 }
 
 /**
