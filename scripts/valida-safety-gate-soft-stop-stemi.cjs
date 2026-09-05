@@ -17,14 +17,18 @@ expect(/id: "fibrino"[^\n]*clinicalActionId: "definir_estrategia_reperfusao"/.te
 expect(!/id: "nao_sei"[^\n]*clinicalActionId/.test(tree.match(/stemi_reperfusao:[\s\S]*?stemi_reperfusao_descoberta:/)?.[0] ?? ""), "STEMI não-sei não pode ser gated");
 expect(shell.includes("const commitDecision = (optionId: string) =>"), "Shell não separa commit da avaliação prévia");
 
-const gatedBranch = shell.match(/const handleChoose = \(optionId: string\) => \{[\s\S]*?setPendingSoftStop\(\{[\s\S]*?\n  \};/)?.[0] ?? "";
+const gatedBranch = shell.match(/const handleChoose = \(optionId: string\) => \{[\s\S]*?\n  \};/)?.[0] ?? "";
 expect(Boolean(gatedBranch), "Shell não contém ramo gated completo de handleChoose");
 const evaluateAt = gatedBranch.indexOf("evaluateClinicalActionAttemptFromPatientState");
+const hardStopAt = gatedBranch.indexOf("const hardStop = decision.hardStops[0]");
+const softStopAt = gatedBranch.indexOf("const softStop = decision.softStops[0]");
+const gatedCommitAt = gatedBranch.indexOf("if (!softStop) {\n      commitDecision(optionId);");
 const pendingAt = gatedBranch.indexOf("setPendingSoftStop({");
-const gatedCommitAt = gatedBranch.indexOf("if (!gate) {\n      commitDecision(optionId);");
 expect(evaluateAt >= 0, "Ramo gated não avalia SafetyGate");
-expect(gatedCommitAt > evaluateAt, "Opção gated só pode ser commitada sem bloqueio depois da avaliação");
-expect(pendingAt > evaluateAt, "Soft stop pendente precisa ser criado depois da avaliação");
+expect(hardStopAt > evaluateAt, "Hard stop precisa ser avaliado depois da decisão do gate");
+expect(softStopAt > hardStopAt, "Soft stop só pode ser considerado depois de excluir hard stop");
+expect(gatedCommitAt > softStopAt, "Opção gated só pode ser commitada sem bloqueio depois da avaliação");
+expect(pendingAt > softStopAt, "Soft stop pendente precisa ser criado depois da avaliação");
 
 expect(shell.includes("recordClinicalSafetyOverride"), "Override do soft stop não é auditado");
 expect(shell.includes("disabled={!softStopReason.trim()}"), "Override não exige justificativa não vazia");
@@ -36,4 +40,4 @@ if (issues.length) {
   issues.forEach((i) => console.error(`❌ ${i}`));
   process.exit(1);
 }
-console.log("✅ STEMI soft stop: gate pré-escolha, descoberta segura e override com justificativa auditável.");
+console.log("✅ STEMI soft stop: gate pré-escolha, hard stop prioritário, descoberta segura e override com justificativa auditável.");
