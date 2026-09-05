@@ -15,10 +15,13 @@ const promovida =
   transitions.includes('id: "bradicardia-sem-pulso-pcr-terminal"');
 
 function trechoNo(texto, nodeId) {
-  const inicio = texto.indexOf(`${nodeId}: {`);
+  const marker = `    ${nodeId}: {`;
+  const inicio = texto.indexOf(marker);
   if (inicio < 0) return null;
-  const proximo = texto.indexOf("\n    ", inicio + nodeId.length + 4);
-  return texto.slice(inicio, proximo > inicio ? proximo : texto.length);
+  const tail = texto.slice(inicio + marker.length);
+  const sibling = tail.match(/\n    [A-Za-z0-9_]+:\s*\{/);
+  const fim = sibling ? inicio + marker.length + sibling.index : texto.length;
+  return texto.slice(inicio, fim);
 }
 
 if (promovida) {
