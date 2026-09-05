@@ -1,0 +1,33 @@
+name: Validate instrument census final
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - scripts/censo-de-instrumentos.cjs
+      - .github/workflows/validate-instrument-census-final.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instrument census
+        run: npm run test:censo
+      - name: Emergencias 2 regression
+        run: npm run test:emergencias-2
+      - name: Diff sanity
+        run: git diff --check HEAD~2..HEAD
