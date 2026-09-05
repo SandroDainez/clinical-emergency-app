@@ -27,4 +27,4 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Full application validation
         run: npm run test:all
-      # Reexecutado após ancorar a ordem da dose da sedação no elemento renderizado.
+      # Reexecutado após alinhar o validador responsivo da sedação à estrutura renderizada atual.
