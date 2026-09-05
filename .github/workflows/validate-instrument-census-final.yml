@@ -5,6 +5,8 @@ on:
     branches: [fix-avc-slider-first]
     paths:
       - scripts/censo-de-instrumentos.cjs
+      - scripts/run-all-instruments-gate.cjs
+      - scripts/valida-emergencias-2-suite.cjs
       - .github/workflows/validate-instrument-census-final.yml
   workflow_dispatch:
 
@@ -25,9 +27,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Re-run after focused corrections until outside-gate failures reach zero.
-      # This pass validates the latest state-aware PCR/EAP contracts plus the
-      # canonical rail and current SafetyGate surface-debt semantics.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
@@ -58,6 +57,8 @@ jobs:
           exit 0
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
+      - name: Total instrument gate
+        run: node scripts/run-all-instruments-gate.cjs
       - name: InputStep parity
         run: node scripts/valida-paridade-input-step.cjs
       - name: ActionStep parity
