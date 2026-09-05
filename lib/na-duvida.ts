@@ -104,7 +104,7 @@ export const NA_DUVIDA_POLITRAUMA_FONTE =
   "⚠️ RESPOSTA TRANSITÓRIA É NÃO-RESPOSTA. Na dúvida se ele estabilizou, trate como sangramento ativo e vá para o controle da fonte. O respondedor transitório é justamente quem PARECE estável na hora de decidir e descompensa dentro do aparelho de tomografia — e instável não vai para a tomografia.";
 
 export const NA_DUVIDA_TEP_RISCO =
-  "⚠️ NA DÚVIDA, NÃO É BAIXO RISCO. Baixo risco é a única saída deste nó que manda alguém para casa. Sem sPESI zerado item a item, sem função de VD conferida e sem biomarcador, classifique como intermediário e interne — a mortalidade do intermediário-alto está longe do 1% do baixo risco.";
+  "⚠️ NA DÚVIDA, NÃO USE A SAÍDA DE BAIXO RISCO/ALTA. Sem dados suficientes para sustentar categoria B e elegibilidade ambulatorial, mantenha o paciente internado e complete a estratificação AHA/ACC 2026 — escore de gravidade, função de VD e biomarcadores — para então definir C1, C2 ou C3 quando aplicável. Mandar para casa antes de fechar essa estratificação é o erro irreversível; internar enquanto esclarece preserva a margem de segurança.";
 
 /**
  * ⚠️ A SAÍDA DE DÚVIDA JÁ EXISTIA DENTRO DO ENUNCIADO — e ninguém via.
