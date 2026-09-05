@@ -157,7 +157,7 @@ const doses = lerFonte(path.join(appDir, "lib/doses-isr.ts"));
   try {
     execFileSync(
       "npx",
-      ["tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--resolveJsonModule",
+      ["tsc", "--module", "node16", "--target", "es2020", "--resolveJsonModule",
        "--esModuleInterop", "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tmp,
        path.join(appDir, "rsi-decision-tree.ts")],
       { stdio: "pipe", cwd: appDir }

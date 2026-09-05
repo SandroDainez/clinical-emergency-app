@@ -91,6 +91,12 @@ const MORTOS_CONHECIDOS = {
   "lib/clinical-target-semantics.ts":
     "registry de semântica de links usado pelos validadores; QA-2, não promove navegação automaticamente",
   // EMERGÊNCIAS 2 · RUNTIME PREPARADO — só entra após a interação correspondente.
+  "lib/clinical-case-snapshot-contract.ts":
+    "contrato de snapshot preparado e fail-closed; RT-SNAPSHOT só conecta quando todos os stores tiverem export/import canônico",
+  "lib/clinical-temporal-goals.ts":
+    "avaliador temporal preparado; RT-DEBRIEF será consumido pela tela de debrief quando contratos revisados forem expostos no runtime",
+  "lib/clinical-temporal-debrief.ts":
+    "agregador temporal preparado; mesma dívida RT-DEBRIEF, fora do bundle assistencial até a tela consumidora existir",
   "lib/clinical-session-runtime.ts":
     "reset canônico preparado; RT-SESSION exige definir a ação explícita Novo atendimento antes de conectar",
   "lib/clinical-timeline.ts":

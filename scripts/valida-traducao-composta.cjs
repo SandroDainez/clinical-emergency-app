@@ -98,7 +98,7 @@ try {
   execFileSync(
     "npx",
     [
-      "tsc", "--ignoreConfig", "--module", "node16", "--target", "es2020", "--esModuleInterop",
+      "tsc", "--module", "node16", "--target", "es2020", "--esModuleInterop",
       "--moduleResolution", "node16", "--skipLibCheck", "--outDir", tempDir,
       ...arvores.map((f) => path.join(appDir, f)),
       path.join(appDir, "lib/i18n/index.ts"),
