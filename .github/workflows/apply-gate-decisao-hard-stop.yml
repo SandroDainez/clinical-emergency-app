@@ -13,6 +13,8 @@ on:
       - scripts/valida-prazo-visivel-debt.cjs
       - scripts/valida-leitura-fonte-debt.cjs
       - scripts/run-all-instruments-gate.cjs
+      - scripts/auditoria-padroes-ui.cjs
+      - scripts/valida-campos-do-no.cjs
 
 permissions:
   contents: read
