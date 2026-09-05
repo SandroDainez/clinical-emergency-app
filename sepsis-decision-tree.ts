@@ -480,9 +480,24 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         "ADRENAL: reversão mais rápida do choque (sem ganho de mortalidade); APROCCHSS (hidrocortisona + fludrocortisona): redução de mortalidade.",
       ],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "corticoide_guiado" },
         { id: "sim", label: "Sim — vasopressor persistente", next: "corticoide" },
         { id: "nao", label: "Não — choque revertido ou causa reversível corrigida", next: "foco_check" },
       ],
+    },
+
+    corticoide_guiado: {
+      id: "corticoide_guiado",
+      type: "action",
+      title: "Como decidir sem inventar um corte de dose",
+      summary: "A decisão é clínica: necessidade persistente de vasopressor após ressuscitação inicial e correção ativa das causas reversíveis — não um número universal de noradrenalina ou de horas.",
+      actions: [
+        "Confirme que a ressuscitação inicial foi realizada e que perfusão/pressão foram reavaliadas.",
+        "Procure e corrija causas reversíveis de hipotensão persistente: hipovolemia/responsividade, sangramento, pneumotórax/tamponamento, disfunção de bomba, sedação excessiva e outras causas compatíveis com o caso.",
+        "Se, apesar disso, o paciente CONTINUA dependente de vasopressor para sustentar perfusão/pressão, responda SIM. Se o vasopressor foi retirado ou a hipotensão se resolveu ao corrigir a causa, responda NÃO.",
+        "Não transforme NE ≥ 0,25 mcg/kg/min por ≥ 4 h em portão obrigatório; neste módulo ele é apenas referência de prática/ensaios.",
+      ],
+      next: "corticoide_check",
     },
 
     corticoide: {

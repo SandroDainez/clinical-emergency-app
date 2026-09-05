@@ -610,8 +610,21 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "Considerar transferência precoce se o serviço não dispuser de recurso definitivo (não retardar por exames).",
       ],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "destino_guiado" },
         { id: "grave", label: "Sim — lesão grave / suporte", next: "uti" },
         { id: "leve", label: "Não — trauma leve, estável", next: "observacao" },
+      ],
+    },
+
+    destino_guiado: {
+      id: "destino_guiado",
+      type: "decision",
+      title: "O que ainda exige recurso avançado?",
+      question: "Depois do XABCDE e da reavaliação, existe alguma necessidade que não cabe em observação simples?",
+      summary: "Considere procedimento/cirurgia, instabilidade não resolvida, via aérea/VM, vasoativo, lesão maior ou necessidade de recurso que o serviço atual não oferece.",
+      options: [
+        { id: "sim", label: "Sim — há necessidade de recurso avançado ou transferência", next: "uti" },
+        { id: "nao", label: "Não — estável, sem lesão maior ou suporte avançado", next: "observacao" },
       ],
     },
 

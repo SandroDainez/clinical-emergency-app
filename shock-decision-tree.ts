@@ -244,9 +244,23 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       title: "Tamponamento cardíaco?",
       question: "Há contexto e achados compatíveis com tamponamento (por exemplo, derrame conhecido/pericardite, pós-operatório cardíaco ou trauma penetrante) com instabilidade e POCUS sugestivo?",
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "tamponamento_guiado" },
         { id: "sim", label: "Sim", next: "dx_tamponamento" },
         { id: "nao", label: "Não — TEP maciço?", next: "dx_tep" },
       ],
+    },
+    tamponamento_guiado: {
+      id: "tamponamento_guiado",
+      type: "action",
+      title: "Como verificar tamponamento no instável",
+      summary: "Não descarte por ausência da tríade de Beck. Integre contexto + instabilidade + ecocardiografia/POCUS à beira-leito.",
+      actions: [
+        "Faça ecocardiografia/POCUS imediatamente quando disponível: procure derrame pericárdico e sinais de comprometimento do enchimento, sempre integrados à clínica.",
+        "Reforce o contexto: pós-operatório cardíaco, trauma penetrante, pericardite/derrame conhecido ou procedimento recente aumentam a plausibilidade.",
+        "Tríade de Beck, pulso paradoxal, baixa voltagem e alternância elétrica podem ajudar, mas a ausência deles NÃO exclui tamponamento.",
+        "Com POCUS/contexto reavaliados, volte e responda SIM se o conjunto for compatível; se não, siga para a próxima causa obstrutiva.",
+      ],
+      next: "q_tamponamento",
     },
     dx_tamponamento: {
       id: "dx_tamponamento",
@@ -282,9 +296,24 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       question: "IAM, ICC grave, arritmia de alta FC ou contusão miocárdica?",
       evidence: ["Perfil: pele fria, congestão, DC↓↓ e RVS↑↑."],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "cardiogenico_guiado" },
         { id: "sim", label: "Sim", next: "q_cardio_subtipo" },
         { id: "nao", label: "Não", next: "q_distributivo" },
       ],
+    },
+
+    cardiogenico_guiado: {
+      id: "cardiogenico_guiado",
+      type: "action",
+      title: "Antes de chamar de falência de bomba",
+      summary: "Procure evidência de disfunção miocárdica e mantenha choque misto no radar; pele fria ou PA baixa isoladas não definem o mecanismo.",
+      actions: [
+        "Obtenha ECG e ecocardiografia/POCUS precocemente quando disponíveis: função de VE/VD, congestão, complicação mecânica e sinais de baixo débito ajudam a definir o fenótipo.",
+        "Procure contexto de IAM/isquemia, insuficiência cardíaca aguda/descompensada, arritmia relevante, miocardite/contusão e valvopatia/complicação mecânica.",
+        "Se houver evidência predominante de falência de bomba, responda SIM e classifique o subtipo. Se não houver, responda NÃO e siga investigando distributivo/misto e outras causas.",
+        "Se os mecanismos coexistirem, trate como choque misto e reavalie após cada intervenção em vez de forçar uma classificação única.",
+      ],
+      next: "q_cardiogenico",
     },
 
     q_cardio_subtipo: {

@@ -831,6 +831,7 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Alcalinização urinária com bicarbonato: salicilato e fenobarbital.",
       ],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "eliminacao_guiada" },
         { id: "sim", label: "Sim — indicar hemodiálise/alcalinização", next: "uti" },
         { id: "nao", label: "Não", next: "observacao" },
         // ── A SAÍDA QUE NÃO EXISTIA: NÃO PRECISA DE NADA ──────────────────
@@ -841,6 +842,21 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         // subtóxica era empurrado para a mesma via do intoxicado grave.
         { id: "sem_indicacao", label: "Exposição sem indicação de tratamento — o que ainda assim se faz", next: "sem_indicacao" },
       ],
+    },
+
+    eliminacao_guiada: {
+      id: "eliminacao_guiada",
+      type: "action",
+      title: "Antes de decidir eliminação extracorpórea",
+      summary: "Não existe um limiar único que sirva para todos os tóxicos. Confirme agente, gravidade e órgão-alvo antes de responder.",
+      actions: [
+        "IDENTIFIQUE o tóxico, formulação, dose estimada e tempo desde a exposição; critérios de diálise variam por substância.",
+        "REAVALIE acidose, função renal, estado neurológico, hemodinâmica, ECG e concentrações séricas quando existirem e forem úteis para aquele agente.",
+        "CONSULTE CIATox/CEATOX e, quando houver possibilidade real de terapia extracorpórea, nefrologia/toxicologia e os critérios específicos do agente (por exemplo, recomendações EXTRIP quando aplicáveis).",
+        "Se houver deterioração clínica enquanto a definição está em curso, trate suporte e complicações sem esperar a decisão sobre diálise.",
+        "Com esses dados em mãos, volte à pergunta e escolha o ramo correspondente.",
+      ],
+      next: "eliminacao",
     },
 
     sem_indicacao: {

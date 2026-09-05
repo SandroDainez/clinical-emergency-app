@@ -431,8 +431,21 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Mal epiléptico (qualquer fase) sempre interna.",
       ],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "destino_guiado" },
         { id: "grave", label: "Sim — recorrência/causa grave/suporte", next: "uti" },
         { id: "nao", label: "Não — crise única, exame normal", next: "alta" },
+      ],
+    },
+
+    destino_guiado: {
+      id: "destino_guiado",
+      type: "decision",
+      title: "Há motivo concreto para internação?",
+      question: "Existe recorrência/status, rebaixamento ou déficit persistente, causa aguda relevante ou necessidade de suporte/monitorização intensiva?",
+      summary: "Qualquer um desses achados afasta o caminho de alta. Alta exige crise isolada, retorno ao basal e seguimento seguro.",
+      options: [
+        { id: "sim", label: "Sim — algum critério de internação está presente", next: "uti" },
+        { id: "nao", label: "Não — crise isolada, exame voltou ao basal e seguimento é seguro", next: "alta" },
       ],
     },
 

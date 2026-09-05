@@ -439,9 +439,24 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "Driving pressure = platô − PEEP. Monitorar tendência e reduzir estresse mecânico quando possível; valores menores costumam associar-se a melhor prognóstico, mas 15 cmH₂O não deve funcionar como corte universal isolado para todos os cenários.",
       ],
       options: [
+        { id: "guiado", label: "Não sei — me guie", next: "seguranca_guiada" },
         { id: "sim", label: "Sim — mecânica aceitável", next: "monitorizacao" },
         { id: "nao", label: "Não — Pplat alta ou mecânica piorando", next: "pressao_alta" },
       ],
+    },
+
+    seguranca_guiada: {
+      id: "seguranca_guiada",
+      type: "action",
+      title: "Meça antes de decidir",
+      summary: "A segurança mecânica depende da pressão de platô medida corretamente e da tendência da mecânica — não de impressão visual do ventilador.",
+      actions: [
+        "Meça a pressão de platô com pausa inspiratória, sem esforço ativo do paciente; confirme também PEEP e volume corrente entregues.",
+        "Use Pplat ≤ 30 cmH₂O como referência importante quando aplicável ao cenário e compare com a tendência prévia; driving pressure deve ser interpretada no contexto, sem transformar 15 cmH₂O em corte universal isolado.",
+        "Se a Pplat está acima do alvo do cenário OU a mecânica está piorando, responda NÃO e abra o troubleshooting de pressão alta. Se está dentro do alvo e estável/melhorando, responda SIM.",
+        "Se a medida não é confiável por esforço/dissincronia, corrija a condição de medição antes de classificar.",
+      ],
+      next: "seguranca",
     },
 
     pressao_alta: {
