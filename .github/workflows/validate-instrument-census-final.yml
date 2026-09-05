@@ -57,6 +57,10 @@ jobs:
           exit 0
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
+      - name: TEP uncertainty rule
+        run: node scripts/valida-na-duvida.cjs
+      - name: Tube confirmation order
+        run: node scripts/valida-ordem-clinica-parcial.cjs
       - name: Total instrument gate
         run: node scripts/run-all-instruments-gate.cjs
       - name: InputStep parity
