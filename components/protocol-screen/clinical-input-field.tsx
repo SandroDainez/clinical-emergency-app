@@ -119,6 +119,13 @@ export function ClinicalInputField({
             testID={testID ? `${testID}-numeric` : undefined}
           />
         </View>
+      ) : field.customKeyboard === "numeric" ? (
+        <View style={e.configError} accessibilityRole="alert">
+          <Text style={e.configErrorTitle}>{tr("Campo numérico indisponível")}</Text>
+          <Text style={e.configErrorText}>
+            {tr("Faixa de entrada não configurada. Este campo não pode usar caixa de digitação como alternativa.")}
+          </Text>
+        </View>
       ) : (
         <>
           <CategoricalSelector
@@ -155,7 +162,7 @@ export function ClinicalInputField({
                     value={customText || (isPreset ? "" : value ?? "")}
                     onChangeText={setCustomText}
                     placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
-                    keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
+                    keyboardType="default"
                     returnKeyType="done"
                     onSubmitEditing={() => {
                       const next = customText.trim();
@@ -240,6 +247,24 @@ const criarEstilos = (t: Tema) =>
       ...TIPOGRAFIA.micro,
       color: t.cores.textSecondary,
       fontWeight: "700",
+    },
+    configError: {
+      borderWidth: 1.5,
+      borderColor: t.cores.warning,
+      borderRadius: RAIO.card,
+      padding: ESPACO.md,
+      gap: ESPACO.xs,
+      backgroundColor: t.cores.surface,
+    },
+    configErrorTitle: {
+      ...TIPOGRAFIA.caption,
+      color: t.cores.warning,
+      fontWeight: "900",
+    },
+    configErrorText: {
+      ...TIPOGRAFIA.micro,
+      color: t.cores.textSecondary,
+      fontWeight: "600",
     },
     otherButton: {
       minHeight: TOQUE.minimo,
