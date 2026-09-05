@@ -26,7 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       # Re-run after focused corrections until outside-gate failures reach zero.
-      # Current pass also checks the aligned module rail and neutral numeric-input policy.
+      # This pass includes the shared input, action, transition, navigation and Drug KB contracts.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
@@ -59,9 +59,21 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: InputStep parity
         run: node scripts/valida-paridade-input-step.cjs
+      - name: ActionStep parity
+        run: node scripts/valida-paridade-action-step.cjs
+      - name: TransitionStep parity
+        run: node scripts/valida-paridade-transition-step.cjs
+      - name: Input safety, Back and NIHSS
+        run: node scripts/valida-seguranca-input-voltar-nihss.cjs
+      - name: Alteplase indication isolation
+        run: node scripts/valida-drug-knowledge-alteplase.cjs
       - name: Selector policy
         run: node scripts/valida-padrao-seletores-ui.cjs
+      - name: Calculator no-fake-default policy
+        run: node scripts/valida-sem-fallback-clinico-calculadoras.cjs
+      - name: STEMI soft stop
+        run: node scripts/valida-safety-gate-soft-stop-stemi.cjs
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
       - name: Diff sanity
-        run: git diff --check HEAD~4..HEAD
+        run: git diff --check HEAD~8..HEAD
