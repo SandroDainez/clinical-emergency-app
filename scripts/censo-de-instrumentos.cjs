@@ -50,7 +50,6 @@ const ISENTOS = {
 };
 
 const todos = fs.readdirSync(SCRIPTS_DIR).filter(EH_INSTRUMENTO).sort();
-const conjuntoInstrumentos = new Set(todos);
 let falhas = 0;
 const erro = (m) => { console.error(`❌ ${m}`); falhas++; };
 
@@ -110,10 +109,11 @@ while (filaArquivos.length) {
     for (const instrumento of todos) enfileirarArquivo(instrumento);
   }
 
-  // Só nomes reais de arquivos do próprio diretório contam. Isso cobre arrays
-  // explícitos de runners e chamadas spawn/exec/require sem depender do estilo.
+  // Runners auxiliares não precisam ser instrumentos. Se um arquivo alcançável
+  // referencia outro .cjs real de scripts/, seguimos a aresta e só depois
+  // decidimos quais desses arquivos pertencem ao universo auditado.
   for (const m of src.matchAll(/["'`]([\w.-]+\.cjs)["'`]/g)) {
-    if (conjuntoInstrumentos.has(m[1])) enfileirarArquivo(m[1]);
+    if (fs.existsSync(path.join(SCRIPTS_DIR, m[1]))) enfileirarArquivo(m[1]);
   }
 }
 
