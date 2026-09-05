@@ -310,6 +310,7 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Estabilizou com marcapasso/drogas?",
       question: "O paciente está estável com MP-TC e/ou infusão de droga cronotrópica?",
+      summary: "Na dúvida, se FC, PA, perfusão ou captura não estão claramente adequadas e sustentadas, considere a resposta ainda inadequada e mantenha o suporte enquanto reavalia.",
       evidence: [
         "Estável = FC e PA adequadas, boa perfusão, captura mantida com conforto.",
         "Refratário = persiste instável apesar de MP-TC e drogas.",

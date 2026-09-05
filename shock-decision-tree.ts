@@ -205,6 +205,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Sinais de obstrução mecânica?",
       question: "Há instabilidade/peri-parada com sinais que sugiram obstrução ao enchimento ou à circulação pulmonar (pneumotórax hipertensivo, tamponamento ou TEP de alto risco)?",
+      summary: "Na dúvida, não descarte causa obstrutiva por falta de confirmação: mantenha a hipótese aberta e procure rapidamente sinais dirigidos no exame e no POCUS à beira-leito.",
       evidence: [
         "Pensar em pneumotórax hipertensivo, tamponamento e TEP maciço.",
         "⚠️ RESPONDER \"NÃO\" AQUI FECHA ESTA PORTA: o fluxo segue para o cardiogênico, que compartilha com o obstrutivo o frio, a jugular distendida e o débito baixo — e tem conduta OPOSTA quanto a volume. Na dúvida, faça o ultrassom ANTES de responder.",
