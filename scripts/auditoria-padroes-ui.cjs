@@ -224,7 +224,7 @@ if (!universoOk) {
 
 // Dívida congelada. O teto só desce depois de a queda aparecer no CI desta
 // branch; nunca é aumentado para fazer teste passar.
-const TETO = 10;
+const TETO = 9;
 
 if (pendencias > TETO) {
   console.log(
