@@ -1,6 +1,10 @@
 /**
  * PROMETE: que divergências de PADRÃO DE INTERAÇÃO não aumentem e que campos
  * numéricos clínicos não voltem silenciosamente a caixas de digitação.
+ * NÃO PROMETE: correção clínica dos limites, doses ou decisões; tampouco prova
+ * qualidade visual, acessibilidade ou usabilidade além dos padrões enumerados.
+ * UNIVERSO: arquivos `.tsx` alcançados pela varredura de `components/` e
+ * `app/`, mais as árvores/fontes explicitamente coletadas por este auditor.
  *
  * A regra de produto é simples:
  *   número clínico -> slider/stepper;

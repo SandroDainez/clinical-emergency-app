@@ -140,9 +140,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:censo` → `scripts/censo-de-instrumentos.cjs`
 
-- **PROMETE:** que todo script de instrumento do repositório esteja no `test:all` ou numa isenção DATADA E JUSTIFICADA; que o número de instrumentos no portão não caia (piso registrado); que cada um RODE de fato; e que nenhum termine com código fora de {0,1} — porque 127, 126 e 2 são "não rodou", e "não rodou" saindo como verde é a mentira que este censo existe para matar.
-- **NÃO PROMETE:** que o instrumento meça a coisa certa, nem que o universo dele seja suficiente. Isso é `valida-pipeline` (declaração de cobertura) e `lib/universo.cjs` (piso por instrumento). O censo cobre EXISTÊNCIA e EXECUÇÃO, não qualidade.
-- **UNIVERSO:** `scripts/*.cjs` que casam com o padrão de instrumento, contados e impressos antes do resultado, com piso em auditoria/universo-dos-instrumentos.json. ── A FAMÍLIA QUE ELE NASCEU PARA MATAR (2026-08-23) ──────────────────────── Cinco coisas de uma rodada só, todas a mesma mentira — "está tudo bem" quando o correto era "nada foi olhado": 1. erro classificado saindo com código 0 (severidade não amarrada à saída) 2. três instrumentos FORA do test:all — 349 commits desde que nasceram 3. auditoria-doses-criticas MORTO desde a9b16ad, crashando na compilação 4. bloco pulado por `typeof === "function"`, relatório saindo limpo 5. uma varredura minha com `timeout` (inexistente no macOS): 53 instrumentos voltaram 127, e a saída vazia leu-se como "ninguém tem esse defeito" As duas últimas são as piores: o silêncio é indistinguível do sucesso.
+- **PROMETE:** que todo script de instrumento do repositório esteja alcançável a partir do portão `test:all`/`pretest:all` — diretamente, por outro npm script ou por um runner agrupador — ou numa isenção DATADA E JUSTIFICADA; que o número de instrumentos no portão não caia (piso registrado); que cada um RODE de fato; e que nenhum termine com código fora de {0,1}.
+- **NÃO PROMETE:** que o instrumento meça a coisa certa, nem que o universo dele seja suficiente. Isso é `valida-pipeline` (declaração de cobertura) e `lib/universo.cjs` (piso por instrumento). O censo cobre EXISTÊNCIA, ALCANÇABILIDADE NO PORTÃO e EXECUÇÃO, não qualidade.
+- **UNIVERSO:** `scripts/*.cjs` que casam com o padrão de instrumento, contados e impressos antes do resultado, com piso em auditoria/universo-dos-instrumentos.json. Um detalhe importante: o portão real do npm inclui `pretest:all` antes de `test:all`. Além disso, alguns blocos são runners explícitos (por exemplo, `valida-emergencias-2-suite.cjs`) que executam uma lista de validadores. O censo antigo olhava apenas a string literal de `test:all`; com isso, um validador podia RODAR no portão e ainda ser acusado de estar fora dele.
 
 ## `audit:confirmacao` → `scripts/diag-confirmacao-repetida.cjs`
 
@@ -206,9 +206,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:padroes-ui` → `scripts/auditoria-padroes-ui.cjs`
 
-- **PROMETE:** que o número de divergências de PADRÃO DE INTERAÇÃO não suba — caixa de digitação onde a decisão foi ter barra, campo numérico sem faixa declarada, módulo fora da UI v2 e decisão de gravidade sem "não sei — me guie". O teto de hoje (11) só desce.
-- **NÃO PROMETE:** que as 11 pendências atuais sejam aceitáveis — elas são dívida congelada, e são a lista de trabalho do bloco de convergência de UI. Também não diz nada sobre COR: origem é `test:paleta`, legibilidade é o `contraste-renderizado`.
-- **UNIVERSO:** todas as telas sob components/ (derivado do diretório) e todas as árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os módulos de `lib/modulos-canonicos.ts`. Auditoria de PADRÕES DE INTERFACE, módulo a módulo. O autor do app relatou, usando: "ainda tem módulos com padrões diferentes, com caixas para preenchimento onde deveria ter rolagem lateral, ainda tem módulos sem 'não sei me guie'". Padronizar sem medir é apostar. Este script varre TODAS as telas de módulo e responde, por módulo, o que está fora do padrão — para que a padronização seja uma lista finita, e não uma impressão. O QUE ELE MEDE -------------- 1. ENTRADA NUMÉRICA POR CAIXA. Campo de digitação livre onde a decisão foi ter barra deslizante ("só devemos ter as barras para seleção em todo o app, nada de caixas"). Caixa numérica em emergência é teclado abrindo, erro de digitação e um passo a mais com o paciente na frente. 2. FAIXA DE ENTRADA AUSENTE. Campo numérico sem faixa declarada volta a herdar os limites dos presets — o defeito que impedia registrar o paciente real. 3. UI v2. Módulo fora da interface nova tem cabeçalho, cartões e navegação diferentes dos demais. 4. CAMINHO GUIADO. Decisão de estabilidade/gravidade sem "não sei — me guie". Ele NÃO falha o build: é um mapa de trabalho. O que ele garante é que a lista exista por escrito, em vez de depender de alguém reparar tela por tela.
+- **PROMETE:** que divergências de PADRÃO DE INTERAÇÃO não aumentem e que campos numéricos clínicos não voltem silenciosamente a caixas de digitação.
+- **NÃO PROMETE:** correção clínica dos limites, doses ou decisões; tampouco prova qualidade visual, acessibilidade ou usabilidade além dos padrões enumerados.
+- **UNIVERSO:** arquivos `.tsx` alcançados pela varredura de `components/` e `app/`, mais as árvores/fontes explicitamente coletadas por este auditor. A regra de produto é simples: número clínico -> slider/stepper; texto verdadeiro -> TextInput. Este auditor mede quatro classes de dívida bloqueantes e uma inconsistência visual informativa: 1. TextInput numérico em telas de módulo; 2. campo numérico de árvore sem faixa de entrada; 3. módulo fora da UI v2; 4. decisão de estabilidade/gravidade sem caminho guiado; 5. slider que ainda representa "não informado" com ponto inicial no meio da faixa em vez do estado neutro/origem do NumericStepper. O teto é dívida congelada: só pode descer.
 
 ## `test:na-duvida` → `scripts/valida-na-duvida.cjs`
 
@@ -224,9 +224,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:ci-trombolise` → `scripts/valida-contraindicacao-trombolise.cjs`
 
-- **PROMETE:** que os três nós de contraindicação (AVC, SCA, TEP) tenham saída de dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não se contaminem entre si; que os dois itens comuns venham da CONSTANTE COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a divergência do TEP nomeie as duas fontes.
-- **NÃO PROMETE:** que as listas estejam completas segundo a diretriz primária — as fontes abertas foram bula, tabela adaptada e revisão (R-52), o que está declarado na tela. Não confere doses (test:coronarias, test:avc, test:tep).
-- **UNIVERSO:** as três árvores compiladas e lib/contraindicacao-trombolise.ts. ── O ACHADO QUE DESENHOU ISTO ────────────────────────────────────────────── A tentação era fonte única com acréscimos: as três listas se parecem. O autor mandou conferir JANELA A JANELA antes, e das quatro que pareciam núcleo, DUAS eram: cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h; 3 (StatPearls) × 6 (ESC) no TEP pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP Fundir teria criado limiar errado em duas das três telas. Esta trava existe para que a fusão não volte por descuido.
+- **PROMETE:** que os três nós de contraindicação (AVC, SCA, TEP) tenham saída de dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não se contaminem entre si; que os dois itens comuns venham da CONSTANTE COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a regra do TEP permaneça ancorada na bula/protocolo atual, sem inventar janela universal.
+- **NÃO PROMETE:** que as listas estejam completas segundo a diretriz primária — as fontes abertas e contratos clínicos sejam verdadeiros; a lista do TEP é ancorada na bula/protocolo atual e não transforma fontes secundárias antigas em janela universal. Não confere doses (test:coronarias, test:avc, test:tep).
+- **UNIVERSO:** as três árvores compiladas e lib/contraindicacao-trombolise.ts. ── O ACHADO QUE DESENHOU ISTO ────────────────────────────────────────────── A tentação era fonte única com acréscimos: as três listas se parecem. O autor mandou conferir JANELA A JANELA antes, e das quatro que pareciam núcleo, DUAS eram: cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h; no TEP, seguir bula/protocolo atual sem inventar 3 × 6 meses pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP Fundir teria criado limiar errado em duas das três telas. Esta trava existe para que a fusão não volte por descuido.
 
 ## `test:prazo-visivel` → `scripts/valida-prazo-visivel.cjs`
 
@@ -260,9 +260,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:campos-do-no` → `scripts/valida-campos-do-no.cjs`
 
-- **PROMETE:** que todo campo de TEXTO que um nó de árvore pode ter esteja classificado — VISÍVEL (a tela mostra sem toque) ou RECOLHIDO (atrás de um toque) — e que os campos recolhidos sejam vigiados por `test:prazo-visivel`.
-- **NÃO PROMETE:** que o conteúdo esteja no campo certo. Isso é decisão clínica. Só que nenhum campo exista sem que alguém saiba que ele existe.
-- **UNIVERSO:** o tipo `DecisionTreeNode` em core/decision-tree/types.ts e as árvores compiladas — os campos são derivados dos DOIS, para que um campo declarado e nunca usado, ou usado e nunca declarado, apareça. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────── `porque` nasceu neste dia, para receber o texto que sai da tela dos passos de ação. Antes de escrevê-lo, o levantamento perguntou quais travas leem nós: 17 derivam do objeto (`textosDoNo`) → enxergam campo novo sozinhas 7 leem CAMPO A CAMPO              → cegas para campo novo E entre as sete estava `valida-prazo-visivel` — a trava que existe justamente para impedir que um PRAZO fique atrás de um toque. Um campo novo feito para esconder texto, invisível para a trava que vigia texto escondido: o pior par possível, e ele só apareceu porque o campo foi levantado antes de ser escrito. Esta trava existe para que o PRÓXIMO campo não dependa de alguém lembrar.
+- **PROMETE:** que todo campo de TEXTO que um nó de árvore pode ter esteja classificado — VISÍVEL, RECOLHIDO ou METADADO NÃO RENDERIZADO — e que os campos recolhidos sejam vigiados por `test:prazo-visivel`.
+- **NÃO PROMETE:** que o conteúdo esteja no campo certo. Isso é decisão clínica.
+- **UNIVERSO:** campos textuais declarados nos tipos de nó em `core/decision-tree/types.ts` e sua classificação nas listas deste script.
 
 ## `test:timer-badge` → `scripts/valida-timer-badge-largura.cjs`
 
@@ -532,9 +532,9 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:pipeline` → `scripts/valida-pipeline.cjs`
 
-- **PROMETE:** toda trava test:* do package.json está ligada ao test:all, ou tem isenção com motivo registrado.
-- **NÃO PROMETE:** que as travas ligadas funcionem — só que estejam ligadas. É meta-trava.
-- **UNIVERSO:** os scripts do package.json. Meta-trava: toda trava tem de estar ligada ao pipeline. ── O DEFEITO QUE ORIGINOU ESTE SCRIPT ─────────────────────────────────────── A auditoria construiu, ao longo de várias sessões, sete verificações que QUEBRAM O BUILD por desenho: árvores de decisão, calculadoras, fatos clínicos, sulfatação, motor, AVC, coronárias. Cada uma foi escrita, testada por mutação, e declarada trava. Nenhuma delas estava no `test:all`. Sete portas trancadas num muro sem portão: existiam, pareciam proteger, e ninguém as abria. É a mesma classe do defeito da dopamina — o número certo no lugar certo, sem nada ligando um ao outro — e não se descobre lendo o script, porque o script está impecável. Descobre-se olhando o pipeline. ── O QUE ESTE SCRIPT COBRA ────────────────────────────────────────────────── Todo script `test:*` do package.json aparece dentro do `test:all`. A trava nova que alguém escrever daqui a três semanas nasce ligada, ou o build cai no mesmo dia — em vez de nascer solta e ser descoberta meses depois, como estas sete. ── ISENÇÕES ───────────────────────────────────────────────────────────────── Uma isenção sem motivo escrito é um buraco. Cada uma abaixo diz por quê. Isenção nova entra aqui com a razão, nunca no silêncio.
+- **PROMETE:** toda trava test:* do package.json está alcançável pelo portão real do npm (`pretest:all` + `test:all`), ou tem isenção com motivo registrado.
+- **NÃO PROMETE:** que as travas alcançadas funcionem — só que estejam ligadas.
+- **UNIVERSO:** os scripts do package.json.
 
 ## `test:indice` → `scripts/indice-de-travas.cjs`
 
@@ -607,22 +607,22 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 |---|---|---|---|---|
 | `acute-abdomen` | ✅ | — | 23/23 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
-| `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
-| `coronary` | ✅ | — | 26/27 (96%) | test:ci-trombolise, test:peso, test:calculadoras |
+| `avc` | ✅ | — | 31/31 (100%) | test:ci-trombolise, test:peso |
+| `coronary` | ✅ | — | 28/28 (100%) | test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
-| `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
+| `eap` | ✅ | ✅ | 28/28 (100%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
 | `ira` | ✅ | — | 72/74 (97%) | test:passo-zero, test:escalonamento, test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
-| `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
-| `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
-| `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
-| `seizure` | ✅ | — | 9/15 (60%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
-| `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
-| `shock` | ✅ | — | 13/31 (42%) | **nenhuma** |
+| `poisoning` | ✅ | — | 28/28 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
+| `politrauma` | ✅ | — | 5/25 (20%) | **nenhuma** |
+| `rsi` | ✅ | ✅ | 34/34 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
+| `seizure` | ✅ | — | 9/16 (56%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
+| `sepsis` | ✅ | ✅ | 18/25 (72%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
+| `shock` | ✅ | — | 22/33 (67%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
 | `tep` | ✅ | — | 23/24 (96%) | test:ci-trombolise, test:dobutamina, test:peso, test:calculadoras |
-| `ventilation` | ✅ | ✅ | 13/25 (52%) | test:sedacao, test:eletrolitos |
+| `ventilation` | ✅ | ✅ | 15/26 (58%) | test:sedacao, test:eletrolitos |
 
 ⚠️ **Nós interrogados** é medida de ALCANCE, não de qualidade: conta os nós
 em que ao menos um padrão da trava casa com algum texto. Nó fora da conta

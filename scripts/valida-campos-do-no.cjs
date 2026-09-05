@@ -4,6 +4,8 @@
  * classificado — VISÍVEL, RECOLHIDO ou METADADO NÃO RENDERIZADO — e que os
  * campos recolhidos sejam vigiados por `test:prazo-visivel`.
  * NÃO PROMETE: que o conteúdo esteja no campo certo. Isso é decisão clínica.
+ * UNIVERSO: campos textuais declarados nos tipos de nó em
+ * `core/decision-tree/types.ts` e sua classificação nas listas deste script.
  */
 const fs = require("fs");
 const path = require("path");
