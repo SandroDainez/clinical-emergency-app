@@ -1,0 +1,62 @@
+name: Apply final guided clinical paths
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - scripts/ajusta-caminhos-guiados-finais.cjs
+      - .github/workflows/apply-final-guided-paths.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply final guided paths
+        run: node scripts/ajusta-caminhos-guiados-finais.cjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: UI interaction-pattern audit
+        run: npm run test:padroes-ui
+      - name: Emergencias 2 architecture regression
+        run: npm run test:emergencias-2
+      - name: Poisoning regression
+        run: npm run test:intoxicacoes
+      - name: Politrauma regression
+        run: npm run test:politrauma
+      - name: Seizure regression
+        run: npm run test:convulsoes
+      - name: Sepsis regression
+        run: npm run test:consistencia
+      - name: Shock regression
+        run: npm run test:choque
+      - name: Ventilation regression
+        run: npm run test:vm
+      - name: Validate scope
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' eap-decision-tree.ts poisoning-decision-tree.ts politrauma-decision-tree.ts seizure-decision-tree.ts sepsis-decision-tree.ts shock-decision-tree.ts ventilation-decision-tree.ts | grep -v '^eap-' | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated guided paths
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add poisoning-decision-tree.ts politrauma-decision-tree.ts seizure-decision-tree.ts sepsis-decision-tree.ts shock-decision-tree.ts ventilation-decision-tree.ts
+          git commit -m "Add guided paths for remaining high-risk decisions"
+          git pull --rebase origin fix-avc-slider-first
+          git push origin HEAD:fix-avc-slider-first
