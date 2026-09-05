@@ -113,13 +113,13 @@ jobs:
         run: |
           git diff --check
           changed="$(git diff --name-only | sort)"
-          printf 'Arquivos alterados pelo mutador:\n%s\n' "$changed"
+          printf 'Arquivos alterados pelo mutador/testes:\n%s\n' "$changed"
           test -n "$changed"
           echo "$changed" | grep -qx 'avc-decision-tree.ts'
           echo "$changed" | grep -qx 'components/protocol-screen/clinical-action-step-card.tsx'
           while IFS= read -r file; do
             case "$file" in
-              avc-decision-tree.ts|components/protocol-screen/clinical-action-step-card.tsx|lib/i18n/modules/pr18-convergence.ts|scripts/valida-paleta-debt.cjs) ;;
+              avc-decision-tree.ts|components/protocol-screen/clinical-action-step-card.tsx|lib/i18n/modules/pr18-convergence.ts|scripts/valida-paleta-debt.cjs|auditoria/CAMADA-5-MAQUINAS-ESTADO.md|auditoria/CAMADA-9-RASTREABILIDADE.md|auditoria/INVENTARIO-CLINICO.md) ;;
               *) echo "Arquivo inesperado alterado: $file" >&2; exit 1 ;;
             esac
           done <<< "$changed"
