@@ -34,8 +34,10 @@ for (const [id, from, to] of expected) {
   }
 }
 
+// IDs abaixo são os IDs reais atuais das árvores. O contrato se ancora na
+// aresta clínica (destino), não no nome histórico de um nó que já foi renomeado.
 for (const token of [
-  'id: "transicao_ventilacao"',
+  'id: "transicao_vm"',
   'moduleId: "ventilacao-mecanica"',
   'id: "transicao_vasoativo"',
   'moduleId: "drogas-vasoativas"',
@@ -54,4 +56,4 @@ for (const token of [
   if (!anaf.includes(token)) throw new Error(`Anafilaxia perdeu aresta real: ${token}`);
 }
 
-console.log("Handoffs retornáveis de EAP e Anafilaxia permanecem coerentes com as árvores reais.");
+console.log("✅ Handoffs retornáveis de EAP e Anafilaxia permanecem coerentes com as árvores reais.");
