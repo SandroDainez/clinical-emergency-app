@@ -1,0 +1,61 @@
+name: Diagnose runtime translation baseline
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - .github/workflows/diagnose-runtime-i18n-baseline.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          path: base
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          path: current
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: current/package-lock.json
+      - name: Install base
+        working-directory: base
+        run: npm ci
+      - name: Install current
+        working-directory: current
+        run: npm ci
+      - name: Runtime translation baseline
+        working-directory: base
+        shell: bash
+        run: |
+          set +e
+          npm run test:traducao-runtime 2>&1 | tee /tmp/base-runtime.log
+          code=${PIPESTATUS[0]}
+          distinct=$(grep -oE '❌ [0-9]+ FRASES DISTINTAS' /tmp/base-runtime.log | tail -1 | grep -oE '[0-9]+' || true)
+          problems=$(grep -oE '❌ [0-9]+ problema\(s\)' /tmp/base-runtime.log | tail -1 | grep -oE '[0-9]+' || true)
+          echo "BASE_RUNTIME_DISTINCT=${distinct:-unknown}"
+          echo "BASE_RUNTIME_PROBLEMS=${problems:-unknown}"
+          echo "BASE_RUNTIME_EXIT=$code"
+          exit 0
+      - name: Runtime translation current
+        working-directory: current
+        shell: bash
+        run: |
+          set +e
+          npm run test:traducao-runtime 2>&1 | tee /tmp/current-runtime.log
+          code=${PIPESTATUS[0]}
+          distinct=$(grep -oE '❌ [0-9]+ FRASES DISTINTAS' /tmp/current-runtime.log | tail -1 | grep -oE '[0-9]+' || true)
+          problems=$(grep -oE '❌ [0-9]+ problema\(s\)' /tmp/current-runtime.log | tail -1 | grep -oE '[0-9]+' || true)
+          echo "CURRENT_RUNTIME_DISTINCT=${distinct:-unknown}"
+          echo "CURRENT_RUNTIME_PROBLEMS=${problems:-unknown}"
+          echo "CURRENT_RUNTIME_EXIT=$code"
+          exit 0
