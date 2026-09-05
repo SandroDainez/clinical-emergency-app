@@ -1228,15 +1228,17 @@ function InputStep({
                 />
               ) : null}
 
-              {/* Campo numérico sem valor REAL permanece vazio. Uma barra exige
-                  uma posição; usar ponto médio, mínimo ou qualquer default faria
-                  a interface parecer possuir uma medida que ninguém informou.
-                  Depois do primeiro valor explícito, a barra volta a ser o
-                  controle rápido de ajuste. */}
-              {faixa && valorNumerico !== undefined && Number.isFinite(valorNumerico) ? (
+              {/* Campo numérico usa sempre a barra. Enquanto não houve interação,
+                  o mínimo é apenas a origem visual e não representa dado do paciente. */}
+              {faixa ? (
                 <NumericStepper
-                  valor={valorNumerico}
+                  valor={valorNumerico !== undefined && Number.isFinite(valorNumerico) ? valorNumerico : faixa.min}
+                  valorVisivel={valorNumerico !== undefined && Number.isFinite(valorNumerico)}
                   onChange={(n) => {
+                    onSetValue(field.id, String(n));
+                    setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                  }}
+                  onConfirmar={(n) => {
                     onSetValue(field.id, String(n));
                     setCustomOpen((s) => ({ ...s, [field.id]: false }));
                   }}
@@ -1246,32 +1248,6 @@ function InputStep({
                   unidade={field.unit}
                   testID={`slider-${field.id}`}
                 />
-              ) : faixa ? (
-                <View style={styles.customRow}>
-                  <TextInput
-                    value={customText[field.id] ?? ""}
-                    onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
-                    placeholder={tr("Digitar valor")}
-                    placeholderTextColor="#64748b"
-                    keyboardType="numeric"
-                    style={styles.customInput}
-                    returnKeyType="done"
-                    testID={`input-numerico-${field.id}`}
-                    onSubmitEditing={() => {
-                      const v = (customText[field.id] ?? "").trim();
-                      if (v) onSetValue(field.id, v);
-                    }}
-                  />
-                  <Pressable
-                    testID={`confirmar-numerico-${field.id}`}
-                    onPress={() => {
-                      const v = (customText[field.id] ?? "").trim();
-                      if (v) onSetValue(field.id, v);
-                    }}
-                    style={({ pressed }) => [styles.customAdd, pressed && { opacity: 0.85 }]}>
-                    <Text style={styles.customAddText}>OK</Text>
-                  </Pressable>
-                </View>
               ) : null}
 
               {/* Campo NUMÉRICO: só a barra.
@@ -1308,7 +1284,7 @@ function InputStep({
                         </Pressable>
                       );
                     })}
-                    {field.allowCustom ? (
+                    {field.allowCustom && field.customKeyboard !== "numeric" ? (
                       <Pressable
                         onPress={() => setCustomOpen((s) => ({ ...s, [field.id]: !showingCustom }))}
                         style={({ pressed }) => [
@@ -1324,14 +1300,14 @@ function InputStep({
                     ) : null}
                   </View>
 
-                  {field.allowCustom && showingCustom ? (
+                  {field.allowCustom && field.customKeyboard !== "numeric" && showingCustom ? (
                     <View style={styles.customRow}>
                       <TextInput
                         value={customText[field.id] ?? (isPreset ? "" : current ?? "")}
                         onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
                         placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
                         placeholderTextColor="#64748b"
-                        keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
+                        keyboardType="default"
                         style={styles.customInput}
                         returnKeyType="done"
                         onSubmitEditing={() => {

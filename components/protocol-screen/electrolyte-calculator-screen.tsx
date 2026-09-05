@@ -2335,18 +2335,9 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
       <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>{tr(label)}</Text>
         <NumericStepper
-          valor={
-            temValor
-              ? numero
-              : // Sem valor escolhido o controle parte do MEIO da faixa, não de
-                // um número que pareça sugestão clínica — e só grava quando o
-                // médico arrasta. Mesma regra da árvore.
-                Number(((faixa.min + faixa.max) / 2).toFixed(faixa.casas))
-          }
+          valor={temValor ? numero : faixa.min}
+          valorVisivel={temValor}
           onChange={(n) => applyPickerValue(field, fmt(n, faixa.casas))}
-          // Confirmar é GRAVAR o valor corrente: quem solta a barra no ponto de
-          // partida informou aquele valor, e a tela precisa parar de dizer que
-          // não sabe.
           onConfirmar={(n) => applyPickerValue(field, fmt(n, faixa.casas))}
           min={faixa.min}
           max={faixa.max}
@@ -2354,14 +2345,11 @@ export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: (
           casas={faixa.casas}
           testID={`slider-${field}`}
         />
-        {/* ⚠️ O NÚMERO GRANDE NÃO É UM VALOR MEDIDO enquanto ninguém arrastou.
-            A barra precisa partir de algum ponto, e o meio da faixa é o menos
-            sugestivo — mas na tela ele aparece do mesmo tamanho de um valor
-            informado. Dizer isso é a mesma regra do peso não confirmado nas
-            Vasoativas: o app não finge que mediu o que não mediu. */}
+        {/* Sem interação não existe valor clínico. O mínimo serve apenas como
+            origem visual da trilha e fica oculto enquanto valorVisivel=false. */}
         {!temValor ? (
           <Text style={styles.inputAindaNaoInformado}>
-            {tr("⚠️ Ainda NÃO informado — a barra parte do meio da faixa. Arraste ou use −/+ para registrar o valor do paciente.")}
+            {tr("Valor ainda não informado — toque na barra para definir.")}
           </Text>
         ) : null}
       </View>
