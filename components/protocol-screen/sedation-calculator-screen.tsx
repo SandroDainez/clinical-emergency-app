@@ -212,7 +212,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const concMgPerMl = concMcgPerMl / 1000;
   const pureConcMcgPerMl = presentation.basePerAmpoule / presentation.ampouleVolumeMl;
 
-  // ── Result ──────────────────────────────────────────────────────────────
   const isInfusion = mode.kind === "infusion";
   const rate = isInfusion && dose != null
     ? sedRateFromDose(mode.unit as InfusionUnit, dose, wt, concMcgPerMl)
@@ -226,7 +225,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
   const needsWeight = mode.unit !== "mg/h" && mode.unit !== "mcg/h";
   const weightMissing = needsWeight && wt <= 0;
 
-  // ── Handlers ────────────────────────────────────────────────────────────
   const selectDrug = useCallback((key: string) => {
     setCalc(() => initialState(key));
     setSavedDilutions(getSavedDilutions(key));
@@ -251,8 +249,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
 
   const applyAcurasys = useCallback(() => {
     if (!mode.acurasys) return;
-    // garante diluição padrão (0,8 mg/mL) e dose fixa em mg/h → converter para mg/kg/h não é necessário:
-    // a infusão ACURASYS é dose fixa; mostramos a taxa direto via mg/h equivalente.
     setCalc((c) => ({ ...c, doseInput: "ACURASYS" }));
   }, [mode]);
 
@@ -273,11 +269,9 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
     setSavedDilutions((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // ── ACURASYS fixed-rate handling ──────────────────────────────────────────
   const acurasysActive = mode.acurasys != null && calc.doseInput === "ACURASYS";
   const acurasysRate = acurasysActive && concMgPerMl > 0 ? mode.acurasys!.doseMgH / concMgPerMl : null;
 
-  // ── Sidebar grouping ──────────────────────────────────────────────────────
   const groups: { group: SedGroup; drugs: SedDrug[] }[] = (["sedacao", "analgesia", "bnm"] as SedGroup[]).map((g) => ({
     group: g,
     drugs: SED_DRUGS.filter((d) => d.group === g),
@@ -298,16 +292,9 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
 
   return (
     <View style={s.screen}>
-      {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — a rota não desenha mais cromado (I7).
-          Antes desta linha o `← Módulos` vinha de `app/modulos/[id].tsx`, e esta
-          tela era uma das QUATRO que ficariam sem caminho de volta ao hub. */}
       <CalculatorScreenHeader title={tr("💉 Sedoanalgesia & BNM")} onBack={onVoltar} />
 
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
-        {/* ── Sidebar agrupada ── */}
-        {/* RAIL COMUM — 92 px próprios viraram o componente do shell. O grupo
-            (sedativo / analgésico / bloqueador) vira o `hint` do item, e o
-            emoji vai pelo campo `icon`: mesma rota do glifo do íon. */}
         <RailDeModulo
           items={groups.flatMap(({ group, drugs }) =>
             drugs.map((d) => ({
@@ -324,15 +311,12 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
           titulo="Sedação e analgesia"
         />
 
-        {/* ── Conteúdo ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {/* A tarefa atual vem primeiro: qual fármaco está sendo calculado. */}
           <View style={s.drugHeader}>
             <Text style={s.drugName}>{drug.emoji} {tr(drug.name)}</Text>
             <Text style={s.drugClass}>{tr(drug.className)}</Text>
           </View>
 
-          {/* Princípios universais ficam disponíveis sem virar uma parede de texto. */}
           <Pressable style={s.principlesSummary} onPress={() => setShowPrinciples((v) => !v)}>
             <View style={{ flex: 1, gap: 3 }}>
               <Text style={s.cardLabel}>{tr("ANTES DA DOSE")}</Text>
@@ -349,7 +333,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           ) : null}
 
-          {/* BNM também é consulta de segurança, não a ação dominante da tela. */}
           {drug.group === "bnm" ? (
             <>
               <Pressable style={s.principlesSummary} onPress={() => setShowBnmRules((v) => !v)}>
@@ -370,7 +353,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </>
           ) : null}
 
-          {/* Estratégia clínica resumida: disponível sem empurrar o cálculo para baixo. */}
           <Pressable style={s.strategySummary} onPress={() => setShowStrategy((v) => !v)}>
             <View style={{ flex: 1, gap: 3 }}>
               <Text style={s.cardLabel}>{tr("ESTRATÉGIA INICIAL")}</Text>
@@ -386,33 +368,23 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           ) : null}
 
-          {/* Núcleo responsivo: paciente + modo lado a lado em telas largas; empilhado no mobile. */}
           <View style={[s.quickGrid, larguraDaTela < 920 && s.quickGridStack]}>
             <View style={s.quickGridItem}>
               <View style={s.card}>
                 <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
                 <View style={s.row}>
                   <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
-                  <TextInput
-                    style={s.modalInput}
-                    value={calc.weightKg}
-                    onChangeText={(texto) => setCalc((c) => ({ ...c, weightKg: texto }))}
-                    keyboardType="numeric"
-                    placeholder={tr("Informe o peso")}
-                    placeholderTextColor="#94a3b8"
-                    accessibilityLabel={tr("Peso em quilogramas")}
+                  <NumericStepper
+                    valor={parsePt(calc.weightKg) ?? FAIXA_DE_ENTRADA.peso.min}
+                    valorVisivel={parsePt(calc.weightKg) !== null}
+                    onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n).replace(".", ",") }))}
+                    onConfirmar={(n) => setCalc((c) => ({ ...c, weightKg: String(n).replace(".", ",") }))}
+                    min={FAIXA_DE_ENTRADA.peso.min}
+                    max={FAIXA_DE_ENTRADA.peso.max}
+                    passo={FAIXA_DE_ENTRADA.peso.passo}
+                    unidade="kg"
+                    testID="slider-peso"
                   />
-                  {parsePt(calc.weightKg) !== null ? (
-                    <NumericStepper
-                      valor={Number(calc.weightKg.replace(",", "."))}
-                      onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
-                      min={FAIXA_DE_ENTRADA.peso.min}
-                      max={FAIXA_DE_ENTRADA.peso.max}
-                      passo={FAIXA_DE_ENTRADA.peso.passo}
-                      unidade="kg"
-                      testID="slider-peso"
-                    />
-                  ) : null}
                 </View>
                 {weightMissing
                   ? <Text style={s.hintWarn}>{tr("⚠️ Informe o peso para calcular esta dose.")}</Text>
@@ -439,11 +411,9 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             ) : null}
           </View>
 
-          {/* Diluição compacta: preset e concentração no fluxo principal; personalização sob demanda. */}
           {isInfusion && (
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("DILUIÇÃO")}</Text>
-
               <Text style={s.dilSectionLabel}>{tr("Diluições recomendadas")}</Text>
               <HorizontalChoiceSelector
                 value={drug.standardSolutions.find((sol) => isActiveSolution(sol.id))?.id}
@@ -453,7 +423,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                 testID="sedacao-diluicoes"
               />
 
-              {/* Resumo concentração permanece sempre visível antes da dose. */}
               {conc && (
                 <View style={s.concGrid}>
                   <View style={s.concCell}><Text style={s.concKey}>{tr("Ampolas")}</Text><Text style={s.concVal}>{amps}</Text></View>
@@ -539,7 +508,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           )}
 
-          {/* Bolus compacto: concentração no fluxo principal; notas clínicas sob demanda. */}
           {!isInfusion && (
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("APRESENTAÇÃO (BOLUS — AMPOLA PURA)")}</Text>
@@ -563,7 +531,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           )}
 
-          {/* Núcleo responsivo: dose + resultado lado a lado em telas largas; alertas continuam logo abaixo. */}
           <View style={[s.quickGrid, larguraDaTela < 920 && s.quickGridStack]}>
             <View style={s.quickGridItem}>
               <View style={s.card}>
@@ -577,9 +544,7 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
                   <View style={s.calcInputRow}>
                     <NumericStepper
                       valor={Number(calc.doseInput.replace(",", ".")) || faixaDaBarra(mode).min}
-                      onChange={(n) =>
-                        setCalc((c) => ({ ...c, doseInput: String(n).replace(".", ",") }))
-                      }
+                      onChange={(n) => setCalc((c) => ({ ...c, doseInput: String(n).replace(".", ",") }))}
                       min={faixaDaBarra(mode).min}
                       max={faixaDaBarra(mode).max}
                       passo={faixaDaBarra(mode).passo}
@@ -652,14 +617,12 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           </View>
 
-          {/* Alerta clínico (sempre visível) */}
           <View style={[s.alertBox, drug.alert.tone === "danger" ? s.alertDanger : s.alertWarn]}>
             {drug.alert.lines.map((l, i) => (
               <Text key={i} style={s.alertTxt}>{i === 0 ? `${drug.alert.icon} ` : ""}{tr(l)}</Text>
             ))}
           </View>
 
-          {/* Info clínica (collapsible) */}
           <Pressable style={s.collapsible} onPress={() => setShowInfo((v) => !v)}>
             <Text style={s.collapseTitle}>{tr("ℹ️ Informações clínicas")}</Text>
             <View style={[s.collapseCta, showInfo && s.collapseCtaOpen]}>
@@ -673,7 +636,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             </View>
           )}
 
-          {/* Referência (collapsible) */}
           <Pressable style={s.collapsible} onPress={() => setShowRef((v) => !v)}>
             <Text style={s.collapseTitle}>{tr("📚 Referência")}</Text>
             <View style={[s.collapseCta, showRef && s.collapseCtaOpen]}>
@@ -691,7 +653,6 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
         </ScrollView>
       </View>
 
-      {/* Modal salvar diluição */}
       <Modal visible={showSaveModal} transparent animationType="slide">
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
@@ -715,15 +676,11 @@ const s = StyleSheet.create({
   headerTitle: { color: CV.cores.text, fontSize: CV.tipo.body.fontSize, fontWeight: "800" },
   body: { flex: 1 },
   bodyLateral: { flexDirection: "row" },
-
-
   mainScroll: { flex: 1, backgroundColor: CV.cores.surface },
   scroll: { padding: 14, gap: 12, paddingBottom: 28 },
-
   drugHeader: { gap: 2 },
   drugName: { fontSize: CV.tipo.section.fontSize, fontWeight: "900", color: CV.cores.text },
   drugClass: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.primary },
-
   principlesSummary: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, borderWidth: 1, borderColor: CV.cores.border },
   principlesLead: { fontSize: CV.tipo.body.fontSize, lineHeight: CV.tipo.body.lineHeight, fontWeight: "800", color: CV.cores.text },
   principlesHint: { fontSize: CV.tipo.micro.fontSize, lineHeight: CV.tipo.micro.lineHeight, color: CV.cores.textSecondary },
@@ -734,32 +691,18 @@ const s = StyleSheet.create({
   quickGridStack: { flexDirection: "column" },
   quickGridItem: { flex: 1, minWidth: 0, gap: 10 },
   resultCardFill: { flex: 1, justifyContent: "center", minHeight: 150 },
-
   card: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, padding: 14, gap: 10, borderWidth: 1, borderColor: CV.cores.border },
   cardLabel: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 1 },
-  /**
-   * ⚠️ EMPILHADO, e o motivo é medido: com `flexDirection: "row"` e o rótulo em
-   * `flex: 1`, o NumericStepper ficava com largura ZERO — medido no DOM de
-   * produção, 0 px. A barra existia e não dava para arrastar; só os botões −/+
-   * funcionavam.
-   *
-   * Aqui isso não era estética: `weightMissing` BLOQUEIA a dose, então um campo
-   * sem barra utilizável é uma conduta a mais de distância. Mesmo defeito das
-   * Calculadoras Clínicas, terceira aparição — e é o padrão canônico da árvore
-   * que resolve: rótulo em cima, controle na largura inteira.
-   */
   row: { gap: 8 },
   fieldLabel: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.textSecondary },
   input: { flex: 1.5, borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.input, padding: 10, fontSize: CV.tipo.body.fontSize, fontWeight: "700", color: CV.cores.text, backgroundColor: CV.cores.surface },
   hint: { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary },
   hintWarn: { fontSize: CV.tipo.micro.fontSize, color: CV.cores.warning, fontWeight: "600" },
-
   modeWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   modeChip: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: CV.raio.input, backgroundColor: CV.cores.surface, borderWidth: 1.5, borderColor: CV.cores.border , minHeight: 44, justifyContent: "center" },
   modeChipActive: { backgroundColor: CV.cores.surface, borderColor: CV.cores.primary },
   modeChipTxt: { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.textSecondary },
   modeChipTxtActive: { color: CV.cores.primary },
-
   dilSectionLabel: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.textSecondary, letterSpacing: 0.6, textTransform: "uppercase", marginTop: 2 },
   userDilEmpty: { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary, fontStyle: "italic", paddingVertical: 4 },
   saveDilBtnDisabled: { opacity: 0.4 },
@@ -768,7 +711,6 @@ const s = StyleSheet.create({
   solChipActive: { backgroundColor: CV.cores.surface, borderColor: CV.cores.primary },
   solChipTxt: { fontSize: CV.tipo.micro.fontSize, fontWeight: "600", color: CV.cores.textSecondary },
   solChipTxtActive: { color: CV.cores.primary, fontWeight: "800" },
-
   userDilHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   userDilTitle: { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary },
   userDilList: { gap: 6 },
@@ -780,7 +722,6 @@ const s = StyleSheet.create({
   userDilDelTxt: { color: CV.cores.critical, fontWeight: "700", fontSize: 14 },
   saveDilBtn: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.botao, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: CV.cores.primary , minHeight: 44, justifyContent: "center" },
   saveDilBtnTxt: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.primary },
-
   dilFields: { flexDirection: "row", gap: 8 },
   dilField: { flex: 1, gap: 4 },
   diluentSeg: { flexDirection: "row", borderWidth: 1.5, borderColor: CV.cores.border, borderRadius: CV.raio.input, overflow: "hidden" , minHeight: 44, justifyContent: "center" },
@@ -788,25 +729,20 @@ const s = StyleSheet.create({
   diluentOptActive: { backgroundColor: CV.cores.surface },
   diluentOptTxt: { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.textSecondary },
   diluentOptTxtActive: { color: CV.cores.text },
-
   concGrid: { flexDirection: "row", backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, borderWidth: 1, borderColor: CV.cores.border, overflow: "hidden" },
   concCell: { flex: 1, alignItems: "center", paddingVertical: 10, paddingHorizontal: 4 },
   concDivider: { width: 1, backgroundColor: CV.cores.border },
   concKey: { fontSize: CV.tipo.micro.fontSize, fontWeight: "700", color: CV.cores.primary, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2 },
   concVal: { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: CV.cores.primary, textAlign: "center" },
   concValHi: { color: CV.cores.text },
-
-  // Empilhado: o stepper da dose media 2 px dentro da linha.
   calcInputRow: { alignItems: "stretch", borderWidth: 2, borderColor: CV.cores.primary, borderRadius: CV.raio.input, overflow: "hidden", backgroundColor: CV.cores.surface, padding: 8, gap: 4 },
   calcInput: { flex: 1, padding: 12, fontSize: 22, fontWeight: "800", color: CV.cores.text, textAlign: "right" },
   calcUnit: { fontSize: CV.tipo.micro.fontSize, fontWeight: "700", color: CV.cores.primary, paddingRight: 10, paddingLeft: 4 },
-
   acurasysBtn: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, borderWidth: 1.5, borderColor: "#facc15", padding: 12, alignItems: "center" },
   acurasysBtnActive: { backgroundColor: "rgba(250,204,21,0.18)" },
   acurasysTxt: { fontSize: CV.tipo.label.fontSize, fontWeight: "800", color: "#fde047" },
   acurasysReset: { paddingVertical: 6 },
   acurasysResetTxt: { fontSize: CV.tipo.micro.fontSize, color: "#fde047", fontWeight: "600" },
-
   ruler: { gap: 8 },
   rulerBar: { flexDirection: "row", height: 12, borderRadius: 6, overflow: "hidden", gap: 2 },
   rulerSeg: { flex: 1, opacity: 0.35, borderRadius: 3 , minHeight: 44, justifyContent: "center" },
@@ -814,22 +750,18 @@ const s = StyleSheet.create({
   rangeBox: { borderWidth: 1.5, borderRadius: CV.raio.input, padding: 10, backgroundColor: CV.cores.surface },
   rangeLabel: { fontSize: CV.tipo.label.fontSize, fontWeight: "800" },
   rangeIndic: { fontSize: CV.tipo.micro.fontSize, color: CV.cores.textSecondary, marginTop: 2 },
-
   mgRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 4 },
   mgTxt: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.text },
-
   resultCard: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.card, borderWidth: 1.5, borderColor: CV.cores.success, padding: 18, alignItems: "center", gap: 4 },
   resultLabel: { fontSize: CV.tipo.micro.fontSize, fontWeight: "800", color: CV.cores.success, letterSpacing: 1 },
   resultValue: { fontSize: 44, fontWeight: "900", color: "#f0fdf4", letterSpacing: -1 },
   resultUnit: { fontSize: CV.tipo.section.fontSize, fontWeight: "700", color: CV.cores.success },
   resultSub: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.success, textAlign: "center" },
   resultWarn: { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.warning },
-
   alertBox: { borderRadius: CV.raio.input, padding: 12, borderWidth: 1.5, gap: 4 },
   alertDanger: { backgroundColor: CV.cores.surface, borderColor: CV.cores.critical },
   alertWarn: { backgroundColor: CV.cores.surface, borderColor: CV.cores.warning },
   alertTxt: { fontSize: CV.tipo.label.fontSize, fontWeight: "600", color: CV.cores.text, lineHeight: 18 },
-
   collapsible: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, paddingHorizontal: 16, paddingVertical: 13, borderWidth: 1, borderColor: CV.cores.border },
   collapseTitle: { fontSize: CV.tipo.label.fontSize, fontWeight: "700", color: CV.cores.text },
   collapseCta: { minWidth: 78, minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 10, borderRadius: CV.raio.botao, backgroundColor: CV.cores.primary, borderWidth: 1, borderColor: CV.cores.primary },
@@ -839,7 +771,6 @@ const s = StyleSheet.create({
   collapseCtaArrow: { fontSize: CV.tipo.micro.fontSize, fontWeight: "900", color: CV.cores.onPrimary },
   collapseBody: { backgroundColor: CV.cores.surface, borderRadius: CV.raio.input, paddingHorizontal: 16, paddingVertical: 12, gap: 6, marginTop: -6, borderWidth: 1, borderColor: CV.cores.border },
   refLine: { fontSize: CV.tipo.label.fontSize, color: CV.cores.textSecondary, lineHeight: 19 },
-
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalCard: { backgroundColor: CV.cores.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
   modalTitle: { fontSize: CV.tipo.section.fontSize, fontWeight: "800", color: CV.cores.text },
