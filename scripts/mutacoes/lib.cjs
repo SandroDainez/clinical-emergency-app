@@ -42,6 +42,12 @@ const ARQ = {
   telaF: "components/avc/superficie-f.tsx",
   telaG: "components/avc/superficie-g.tsx",
   telaC: "components/avc/superficie-c.tsx",
+  conteudoD: "avc/conteudo/superficie-d.ts",
+  derivD: "avc/nucleo/derivacoes-d.ts",
+  /** ⚠️ Quantos FATOS um gesto numérico escreve — o contrato de correção. */
+  rascunho: "avc/nucleo/rascunho-numerico.ts",
+  /** ⚠️ O kit visual novo — A, B ⛔ e agora o ASPECTS de C. */
+  kit: "components/avc/ui/index.tsx",
 };
 
 /**

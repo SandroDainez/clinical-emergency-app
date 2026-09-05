@@ -39,6 +39,8 @@ import {
   type ItemDeSeguranca,
 } from "../conteudo/superficie-d";
 import { COLETA, FATOR_PARA_MM3 } from "../conteudo/laboratorio";
+import { NAO_SEI } from "../conteudo/campo";
+import { campoDoModulo } from "../conteudo/campos";
 
 /** ⚠️ A leitura de UM item — e o verbo viaja junto, ⛔ sempre. */
 export type LeituraDeSeguranca = {
@@ -479,6 +481,178 @@ export function leiturasDaSuperficieD(estado: EstadoAvc): readonly (Leitura & { 
     { id: "antiagregante", ...antiagregante(estado) },
     { id: "microssangramentos", ...microssangramentos(estado) },
   ];
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * A AUSÊNCIA RESPONDIDA — ⛔ e as TRÊS coisas que ela ⛔ não é
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ ⛔ "⛔ NINGUÉM PERGUNTOU" ⛔ NÃO É "⛔ NÃO TEM" — e era assim que a tela lia.
+ *
+ * ── ⛔ O DEFEITO QUE ISTO FECHA (auditoria visual, 2026-09-01) ───────────────
+ *
+ * ⛔ `itensMarcados` filtra opções marcadas. Com *"Nenhum destes"* respondido,
+ * ⛔ nenhum item nasce — **exatamente como quando ⛔ ninguém abriu o painel**. ⚠️ As
+ * duas situações chegavam idênticas ao olho do médico: uma tela silenciosa.
+ *
+ * ⚠️⚠️ E o fato **já existe**: Paciente guarda *"Nenhum destes"* e *"Não sei"*
+ * como opções exclusivas nos três grupos. ⛔ Esta derivação ⛔ não cria fato
+ * ⛔ nenhum — ela **lê** o que já está gravado e o torna visível.
+ *
+ * ⛔⛔ ⛔ NÃO INFERIR `nenhum` A PARTIR DO SILÊNCIO. ⚠️ Grupo ⛔ nunca respondido é
+ * `nao_perguntado`, ⛔ e ⛔ jamais `nenhum_registrado`: seria transformar ausência
+ * de pergunta em resposta negativa, que é o defeito que este módulo persegue.
+ *
+ * ⛔⛔ ⛔ E `Não sei` ⛔ NÃO É AUSÊNCIA. ⚠️ Alguém foi perguntado ⛔ e ⛔ não soube
+ * dizer — é **estado epistêmico registrado**, ⛔ não campo vazio (**E-02**).
+ */
+export type EstadoDoGrupoDeAntecedentes =
+  | "nao_perguntado"
+  | "nenhum_registrado"
+  | "nao_sei"
+  | "com_itens";
+
+/**
+ * ⚠️⚠️ A OPÇÃO DE AUSÊNCIA É **LIDA DO CAMPO**, ⛔ e ⛔ não escrita aqui.
+ *
+ * ⛔ Escrita à mão, ela seria uma **segunda cópia** de um rótulo que vive em
+ * Paciente: renomear a opção lá deixaria esta derivação casando com uma string
+ * que ⛔ não existe mais, ⛔ e o grupo respondido voltaria a parecer ⛔ não
+ * perguntado — em silêncio.
+ *
+ * ⚠️ O campo declara as suas exclusivas; a de ausência é a que ⛔ **não** é
+ * `NAO_SEI`. ⛔ Depender da ORDEM do arranjo seria frágil do mesmo jeito.
+ */
+function opcaoDeAusencia(campo: string): string | undefined {
+  return campoDoModulo(campo)?.exclusivas?.find((o) => o !== NAO_SEI);
+}
+
+export type LeituraDeGrupoDeAntecedentes = {
+  readonly campo: string;
+  readonly estado: EstadoDoGrupoDeAntecedentes;
+  /** ⚠️ Quantos itens da Table 8 aquele grupo tem marcados. */
+  readonly marcados: number;
+};
+
+/**
+ * ⚠️ Os três grupos de antecedentes que a Table 8 lê — DERIVADOS do catálogo de
+ * itens, ⛔ e ⛔ não escritos à mão (**D-15**): um grupo novo entra já coberto.
+ */
+export const CAMPOS_DE_ANTECEDENTES: readonly string[] = [
+  ...new Set(ITENS_DE_SEGURANCA.map((i) => i.campo)),
+];
+
+export function estadoDoGrupoDeAntecedentes(
+  estado: EstadoAvc,
+  campo: string
+): LeituraDeGrupoDeAntecedentes {
+  const selecao = selecaoDe(estado, campo);
+  const marcados = ITENS_DE_SEGURANCA.filter(
+    (i) => i.campo === campo && selecao.includes(i.opcao)
+  ).length;
+  if (marcados > 0) return { campo, estado: "com_itens", marcados };
+  /**
+   * ⚠️⚠️ ⛔ AQUI ⛔ NÃO SE USA `respondeuDesconhecido`, ⛔ e a diferença é real.
+   *
+   * ⛔ Aquela função compara o valor gravado com o **slug** `"nao_sei"`. ⚠️ Em
+   * campo de **seleção múltipla** o que fica gravado é o **rótulo** — `"Não
+   * sei"` —, porque `alternarItem` junta rótulos. ⛔ Comparar com o slug devolve
+   * `false` sempre, ⛔ e `Não sei` cairia no ramo de "⛔ ninguém respondeu": a
+   * confusão exata que esta derivação existe para desfazer.
+   *
+   * ⚠️ A ORDEM também importa: `Não sei` é conferido ANTES do vazio.
+   */
+  if (selecao.includes(NAO_SEI)) return { campo, estado: "nao_sei", marcados: 0 };
+  const ausencia = opcaoDeAusencia(campo);
+  if (ausencia !== undefined && selecao.includes(ausencia)) {
+    return { campo, estado: "nenhum_registrado", marcados: 0 };
+  }
+  return { campo, estado: "nao_perguntado", marcados: 0 };
+}
+
+export function estadoDosGruposDeAntecedentes(
+  estado: EstadoAvc
+): readonly LeituraDeGrupoDeAntecedentes[] {
+  return CAMPOS_DE_ANTECEDENTES.map((c) => estadoDoGrupoDeAntecedentes(estado, c));
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * OS PARES DA FONTE — ⚠️ vizinhança anatômica ⛔ ou temporal em faixas OPOSTAS
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ A FONTE ESCONDE PARES, ⛔ e agrupar por estado os separa.
+ *
+ * ⚠️ *Extra-axial* está na faixa 1 ⛔ e *intra-axial* na 3; *≤14 dias* na 3 ⛔ e
+ * *14 dias a 3 meses* na 2. ⛔ Agrupar por estado — que é o certo, porque o
+ * verbo decide — joga cada membro do par para pontas opostas da tela. ⚠️ Se o
+ * médico marcou o membro errado, ⛔ nada na tela o faria perceber.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE A RELAÇÃO É **DERIVADA**, ⛔ E ⛔ NÃO UMA LISTA À MÃO ──────────
+ *
+ * ⛔ Uma lista escrita envelheceria em silêncio: item novo entraria ⛔ sem par,
+ * ⛔ e ⛔ ninguém notaria. ⚠️ Aqui a chave é o que a **própria fonte fez** ao
+ * nomear os dois membros com o mesmo começo — *"Neoplasia intracraniana …"*,
+ * *"Neurocirurgia …"* — porque eles são a mesma família com um qualificador
+ * diferente (**D-15**).
+ *
+ * ⚠️⚠️ O PISO DE 7 CARACTERES ⛔ NÃO FOI ESCOLHIDO PARA DAR CERTO. Abaixo dele a
+ * derivação passa a casar **famílias falsas**, medidas uma a uma:
+ *   · *Trauma*tismo craniano × *Trauma* de grande porte — regiões diferentes;
+ *   · *Punção* arterial × *Punção* dural — procedimentos diferentes.
+ * ⚠️ Em 7, os seis pares que saem estão **todos** em faixas diferentes, ⛔ e a
+ * trava mede exatamente isso: par em faixa igual seria ruído na tela.
+ */
+const PISO_DO_PREFIXO = 7;
+
+/** ⚠️ O prefixo comum, cortado em fronteira de PALAVRA — ⛔ nunca no meio de uma. */
+function prefixoComum(a: string, b: string): string {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  return a.slice(0, i).replace(/\s+\S*$/, "").trim();
+}
+
+export type ParDaFonte = {
+  readonly opcao: string;
+  readonly vizinho: string;
+  readonly familia: string;
+};
+
+/**
+ * ⚠️ Simétrico: cada membro aponta para o outro. ⛔ Um marcador de mão única
+ * faria o par existir ⛔ só quando o médico marcasse o lado "certo".
+ */
+export const PARES_DA_FONTE: readonly ParDaFonte[] = (() => {
+  const pares: ParDaFonte[] = [];
+  for (let i = 0; i < ITENS_DE_SEGURANCA.length; i += 1) {
+    for (let j = i + 1; j < ITENS_DE_SEGURANCA.length; j += 1) {
+      const a = ITENS_DE_SEGURANCA[i];
+      const b = ITENS_DE_SEGURANCA[j];
+      /** ⚠️ ⛔ Só dentro do MESMO campo: famílias ⛔ não atravessam grupos. */
+      if (a.campo !== b.campo) continue;
+      const familia = prefixoComum(a.opcao, b.opcao);
+      if (familia.length < PISO_DO_PREFIXO) continue;
+      pares.push({ opcao: a.opcao, vizinho: b.opcao, familia });
+      pares.push({ opcao: b.opcao, vizinho: a.opcao, familia });
+    }
+  }
+  return pares;
+})();
+
+/**
+ * ⚠️⚠️ O VIZINHO APARECE **mesmo ⛔ não estando marcado** — ⛔ e é esse o ponto.
+ *
+ * ⛔ Mostrá-lo ⛔ só quando os dois estão marcados resolveria o caso fácil ⛔ e
+ * deixaria o perigoso: o médico marcou **um** membro do par ⛔ e ⛔ não sabe que
+ * o outro existe, em faixa oposta.
+ *
+ * ⛔⛔ A frase da tela fala da **FONTE**, ⛔ e ⛔ nunca do paciente: ⛔ ela ⛔ não
+ * sugere que o vizinho seja verdade, ⛔ não pede conferência ⛔ e ⛔ não cancela
+ * ⛔ nem substitui o item marcado (**E-43**).
+ */
+export function vizinhoNaFonte(opcao: string): ParDaFonte | undefined {
+  return PARES_DA_FONTE.find((p) => p.opcao === opcao);
 }
 
 /** ⚠️ Os itens que a fonte manda considerar caso a caso — para a tela agrupar. */

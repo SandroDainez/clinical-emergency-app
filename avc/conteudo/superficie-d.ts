@@ -556,7 +556,20 @@ const GRUPOS_D_DECLARADOS: readonly GrupoDeclarado[] = [
     id: "juizo",
     titulo: "Juízo de segurança",
     campos: FATOS_PROPRIOS_D,
-    nota: "A fonte não traz classe de recomendação em nenhuma célula da tabela de contraindicações, e declara a faixa mais restritiva como não sustentada por evidência clínica. Cada item é apresentado com o verbo da própria fonte.",
+    /**
+     * ⛔⛔ ⛔ SEM NOTA — e a ausência é DECISÃO, ⛔ não esquecimento (autor,
+     * 2026-09-01).
+     *
+     * ⚠️ A nota que morava aqui era a **mesma frase** da declaração de natureza
+     * da fonte, reescrita: *"⛔ não traz classe de recomendação em ⛔ nenhuma
+     * célula … faixa mais restritiva ⛔ não sustentada por evidência clínica …
+     * cada item com o verbo da fonte"*. ⛔ Duas redações da mesma regra, uma
+     * logo abaixo da outra, custando 440 caracteres antes da primeira pergunta.
+     *
+     * ⛔ E ⛔ não era ⛔ só densidade: duas redações **podem divergir**. A regra
+     * vive em UM lugar (**I6**) — a declaração no topo da superfície —, ⛔ e o
+     * grupo a herda.
+     */
   },
   { id: "consultas", titulo: "Consultas especializadas", campos: CONSULTAS_D, recolhido: true },
 ];

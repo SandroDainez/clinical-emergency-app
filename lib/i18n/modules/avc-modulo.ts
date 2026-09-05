@@ -1732,4 +1732,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Sítio da oclusão": "Sitio de la oclusión",
   // ⚠️ Rótulo de INTERFACE — o valor gravado continua sendo a opção inteira.
   "Indisponível": "No disponible",
+
+  // ── Superfície D · migração visual, 2026-09-01 ────────────────────────────
+  "Antecedentes que a fonte lê": "Antecedentes que la fuente lee",
+  "Anticoagulação e antiagregação": "Anticoagulación y antiagregación",
+  "Não perguntado": "No preguntado",
+  "sem cruzar o corte ou ainda sem resultado": "sin cruzar el punto de corte o aún sin resultado",
 };

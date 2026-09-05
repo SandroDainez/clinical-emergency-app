@@ -200,5 +200,150 @@ module.exports = {
       de: '  {\n    id: "juizo",\n    titulo: "Juízo clínico",\n    campos: JUIZO_C,',
       para: '  {\n    id: "capacidade2",\n    titulo: "Juízo clínico",\n    campos: JUIZO_C,',
     },
+
+    /* ══ ⚠️⚠️ O CONTRATO DE CORREÇÃO DO ASPECTS ══════════════════════════════
+     *
+     * ⚠️ Até 2026-09-01 esta regra morava dentro de um componente React, ⛔ e
+     * ⛔ NENHUMA mutação podia alcançá-la: mutação mede trava, ⛔ e ⛔ nenhuma
+     * trava conseguia executar JSX. ⚠️ O autor adiou a migração visual por
+     * isso, com todas as letras — *"⛔ não adaptar ASPECTS ao `Numero` atual
+     * ⛔ enquanto esse contrato ⛔ não existir"*.
+     *
+     * ⚠️ Agora a regra é módulo puro, ⛔ e estas mutações são a prova de que a
+     * trava **reprova quando ela some**. ⛔ Sem elas, o verde da seção 15 ⛔ não
+     * distingue *"está certo"* de *"⛔ ninguém está medindo"*.
+     * ══════════════════════════════════════════════════════════════════════ */
+
+    /**
+     * ⚠️⚠️ **A MUTAÇÃO QUE O AUTOR PEDIU**: o modo de correção volta a gravar a
+     * cada ajuste.
+     *
+     * ⛔ É literalmente o `Numero` de antes deste commit. ⚠️ Se sobreviver,
+     * corrigir um ASPECTS de 1 para 7 com o `+` escreve **seis correções** na
+     * trilha, ⛔ e a auditoria — que existe para reconstituir o que o médico
+     * sabia e quando — lê seis erros onde houve **um**.
+     */
+    {
+      nome: "⚠️⚠️ o modo de correção volta a gravar a CADA ajuste",
+      arquivo: ARQ.rascunho,
+      de: '      if (confirmando) return { rascunho: String(alvo), efeito: NADA };',
+      para: '      return { rascunho: String(alvo), efeito: { tipo: "medir", valor: alvo } };',
+    },
+
+    /**
+     * ⚠️⚠️ O MESMO DEFEITO PELA OUTRA PORTA: o **dígito** volta a gravar dentro
+     * da correção.
+     *
+     * ⛔ É o caso literal da dívida declarada — corrigir de **1 para 10** passa
+     * por `1` ⛔ e por `10`, ⛔ e o primeiro é o valor que já estava lá.
+     */
+    {
+      nome: "⚠️⚠️ o dígito volta a gravar dentro da correção",
+      arquivo: ARQ.rascunho,
+      de: '      if (confirmando) return { rascunho: limpo, efeito: NADA };',
+      para: '      if (confirmando && false) return { rascunho: limpo, efeito: NADA };',
+    },
+
+    /**
+     * ⚠️⚠️ O DEFEITO DE **ORDEM DE EVENTOS** — o mais silencioso dos três.
+     *
+     * ⛔ Tocar em "Confirmar" tira o foco da caixa ANTES. ⚠️ Com o blur
+     * limpando o rascunho, o médico vê **7** na tela, toca em confirmar, ⛔ e a
+     * trilha recebe **1**. ⛔ Nada quebra, ⛔ nada avisa, ⛔ e o número errado
+     * fica.
+     */
+    {
+      nome: "⚠️⚠️ sair da caixa volta a apagar a correção em curso",
+      arquivo: ARQ.rascunho,
+      de: '      if (confirmando) return { rascunho, efeito: NADA };\n      /** ⚠️ Fora da correção, rascunho fora da faixa ⛔ não vira valor: some. */',
+      para: '      /** ⚠️ Fora da correção, rascunho fora da faixa ⛔ não vira valor: some. */',
+    },
+
+    /**
+     * ⚠️⚠️ CONFIRMAR VOLTA A CAIR NO `gravado` QUANDO O RASCUNHO ⛔ NÃO SERVE.
+     *
+     * ⛔ Escreveria uma "correção" do valor **para ele mesmo**: um fato na
+     * trilha dizendo que houve erro onde ⛔ não houve.
+     */
+    {
+      nome: "confirmar rascunho inválido volta a gravar o valor que já estava lá",
+      arquivo: ARQ.rascunho,
+      de: '      if (n === undefined) return { rascunho, efeito: NADA };\n      /** ⚠️ Confirmar o MESMO número ⛔ também ⛔ não é correção. */\n      if (n === gravado) return { rascunho: undefined, efeito: NADA };',
+      para: '      if (n === undefined && gravado === undefined) return { rascunho, efeito: NADA };\n      if (n === undefined) return { rascunho: undefined, efeito: { tipo: "medir", valor: gravado } };',
+    },
+
+    /**
+     * ⚠️⚠️ O MODO EXISTE, ⛔ E ⛔ NÃO É LIGADO.
+     *
+     * ⛔ O `commitOnConfirm` continua declarado, documentado ⛔ e testável — ⛔ e
+     * o ASPECTS ⛔ não o recebe. ⚠️ É a forma mais provável de a regra se perder
+     * numa migração seguinte: ⛔ ninguém apaga o contrato, ⛔ só param de
+     * plugá-lo.
+     */
+    {
+      nome: "⚠️⚠️ o ASPECTS deixa de RECEBER o modo de correção",
+      arquivo: ARQ.kit,
+      de: '      commitOnConfirm={emCorrecao}',
+      para: '      commitOnConfirm={false}',
+    },
+
+    /**
+     * ⚠️⚠️ O KIT VOLTA A DECIDIR SOZINHO, DENTRO DO JSX.
+     *
+     * ⛔ A regra sai do módulo puro e volta para dentro do componente. ⚠️ O
+     * comportamento pode até continuar certo **hoje** — ⛔ e ⛔ nenhuma trava
+     * conseguiria dizer isso amanhã, que é exatamente como a regra quase se
+     * perdeu.
+     */
+    {
+      nome: "⚠️⚠️ o kit volta a decidir no JSX quantos fatos um gesto escreve",
+      arquivo: ARQ.kit,
+      de: '    const passo = proximoPasso({ modo, faixa, gravado, rascunho, gesto });',
+      para: '    const passo = { rascunho, efeito: { tipo: "nada" } };',
+    },
+
+    /**
+     * ⚠️⚠️ AS DUAS SAÍDAS NOMEADAS VIRAM UMA.
+     *
+     * ⛔ *Novo exame* some do ponto onde a ambiguidade nasce. ⚠️ Quem quis medir
+     * de novo ⛔ não acha a alternativa no instante em que ela é a certa, ⛔ e é
+     * empurrado a "corrigir" o que ⛔ não era correção — a trilha passa a mentir
+     * sobre quantos exames existiram.
+     */
+    {
+      nome: "⚠️⚠️ o campo respondido perde a saída *Novo exame*",
+      arquivo: ARQ.telaC,
+      de: '                            rotuloDeNovaMedida="Novo exame"',
+      para: '                            rotuloDeCorrecao={campo.rotuloDeCorrecao}',
+    },
+
+    /**
+     * ⚠️⚠️ O ASPECTS VOLTA PARA O CONTROLE ANTIGO.
+     *
+     * ⛔ A dívida visual de 2026-09-01 reaberta em silêncio: a barra
+     * deslizante e o "Registrar N" de volta na única superfície que já ⛔ não
+     * os tinha. ⚠️ Se sobreviver, pagar a dívida foi arrumação de layout, ⛔ e
+     * ⛔ não uma garantia.
+     */
+    {
+      nome: "⚠️⚠️ o ASPECTS volta a cair no controle antigo",
+      arquivo: ARQ.telaC,
+      de: '                    if (campo.tipo === "grandeza" && campo.faixa) {',
+      para: '                    if (campo.tipo === "grandeza" && campo.faixa && false) {',
+    },
+
+    /**
+     * ⚠️⚠️ A FRASE QUE DIZ QUE O APP ⛔ NÃO CALCULA VAI PARA TRÁS DO ⓘ.
+     *
+     * ⛔ Relato do autor, 2026-08-29: *"o usuário ⛔ não sabe classificar
+     * isso"*. ⚠️ Atrás do ⓘ ela serve a quem já sabe — ⛔ e quem ⛔ não abre o ⓘ
+     * é justamente quem chuta.
+     */
+    {
+      nome: "a frase *o app ⛔ não calcula o ASPECTS* se esconde atrás do ⓘ",
+      arquivo: ARQ.telaC,
+      de: '                            ajuda={campo.ajuda}',
+      para: '                            unidade={campo.unidade}',
+    },
   ],
 };

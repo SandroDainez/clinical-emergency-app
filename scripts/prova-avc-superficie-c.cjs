@@ -36,6 +36,7 @@ const { execFileSync } = require("node:child_process");
 const { lerFonte } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
+const { semImports } = require("./lib/consumo.cjs");
 const falhas = [];
 let ok = 0;
 const confere = (d, c, p) => (c ? ok++ : falhas.push(`${d}\n      ⚠️ ${p}`));
@@ -54,6 +55,8 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficies.ts"),
   // ⚠️ Entra no grafo porque a prova confere o ESTADO dos slots F-28 e F-29.
   path.join(appDir, "avc", "conteudo", "fontes.ts"),
+  // ⚠️ Quantos FATOS um gesto numérico escreve — ver a seção 15.
+  path.join(appDir, "avc", "nucleo", "rascunho-numerico.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
@@ -65,6 +68,7 @@ const P = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
 const F = require(path.join(tmp, "avc", "conteudo", "fontes.js"));
 const I = require(path.join(tmp, "avc", "nucleo", "instancia.js"));
 const CAMPOS = require(path.join(tmp, "avc", "conteudo", "campos.js"));
+const RN = require(path.join(tmp, "avc", "nucleo", "rascunho-numerico.js"));
 
 const novo = () => {
   const rel = R.relogioControlado(1_000_000);
@@ -1173,6 +1177,299 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
   confere("⛔ e o achado ⛔ NÃO vaza para outro estudo",
     I.valorNaInstancia(vascular(seis, s2), s2, "aspects") === undefined,
     "achado de um exame ⛔ não pode aparecer noutro");
+}
+
+// ── 15 · O CONTRATO DE CORREÇÃO DO ASPECTS · QUANTOS FATOS UM GESTO ESCREVE ──
+/**
+ * ⚠️⚠️ POR QUE ESTA SEÇÃO EXISTE, e por que ela é EXECUTADA e ⛔ não lida.
+ *
+ * ⚠️ Até 2026-09-01 esta regra morava dentro de um componente React, ⛔ e por
+ * isso ⛔ NENHUMA trava conseguia rodá-la: o e2e a exercitava pelo navegador, e
+ * o resto do repositório só podia procurar palavras no arquivo. ⚠️ Uma migração
+ * visual que trocasse o controle a apagaria ⛔ sem que ⛔ nada aqui reprovasse —
+ * ⛔ e foi exatamente esse o risco que o autor declarou ao adiar a migração.
+ *
+ * ⚠️ Agora a regra é `avc/nucleo/rascunho-numerico`, módulo puro. ⛔ Estas
+ * conferências **rodam a máquina**.
+ */
+{
+  const faixa = { min: 0, max: 10, passo: 1 };
+
+  /**
+   * ⚠️ Toca a máquina como a tela tocaria: gesto a gesto, carregando o rascunho.
+   *
+   * ⚠️⚠️ ⛔ E ANOTA **EM QUE GESTO** CADA FATO NASCEU — ⛔ e ⛔ não ⛔ só quantos
+   * nasceram. ⛔ Contar o total deixa passar o defeito que mais importa: o fato
+   * escrito **antes** de o médico confirmar. ⛔ Uma mutação sobreviveu
+   * exatamente aí, ⛔ e a conferência é que estava fraca.
+   */
+  const encenar = (modo, gravado, gestos) => {
+    let rascunho = undefined;
+    const efeitos = [];
+    const antesDeConfirmar = [];
+    let confirmou = false;
+    for (const gesto of gestos) {
+      /** ⚠️ O gesto de confirmar ⛔ não conta contra si mesmo. */
+      if (gesto.tipo === "confirmou") confirmou = true;
+      const passo = RN.proximoPasso({ modo, faixa, gravado, rascunho, gesto });
+      rascunho = passo.rascunho;
+      if (passo.efeito.tipo !== "nada") {
+        efeitos.push(passo.efeito);
+        if (!confirmou) antesDeConfirmar.push(passo.efeito);
+      }
+      /** ⚠️ A tela grava e re-renderiza: o gravado ANDA junto, ⛔ como no app. */
+      if (passo.efeito.tipo === "medir") gravado = passo.efeito.valor;
+      if (passo.efeito.tipo === "desfazer") gravado = undefined;
+    }
+    return { efeitos, antesDeConfirmar, rascunho, gravado };
+  };
+
+  const mais = { tipo: "ajustou", delta: 1 };
+  const confirmar = { tipo: "confirmou" };
+
+  /**
+   * ⚠️⚠️ **O SENTINELA DO ASPECTS, NA MÁQUINA.** ⛔ Seis toques dentro de uma
+   * correção ⛔ NÃO são seis fatos. É a asserção que o e2e faz pela tela, aqui
+   * medida no que decide.
+   */
+  {
+    const r = encenar("comConfirmacao", 1, [mais, mais, mais, mais, mais, mais]);
+    confere("⚠️⚠️ seis ajustes DENTRO da correção escrevem ⛔ ZERO fatos",
+      r.efeitos.length === 0,
+      "⛔ a auditoria leria que o médico corrigiu seis vezes; ⛔ ele corrigiu uma");
+    confere("⚠️ e o rascunho chegou a 7, à vista do médico",
+      r.rascunho === "7",
+      "⛔ rascunho que ⛔ não acompanha o dedo faz o médico confirmar um número que ⛔ não viu");
+  }
+
+  {
+    const r = encenar("comConfirmacao", 1, [mais, mais, mais, mais, mais, mais, confirmar]);
+    confere("⚠️⚠️ **Confirmar** escreve **UM** fato, ⛔ e o fato é 7",
+      r.efeitos.length === 1 && r.efeitos[0].tipo === "medir" && r.efeitos[0].valor === 7,
+      "§3.1: a trilha é append-only — dois fatos aqui ⛔ não se apagam depois");
+    confere("⚠️⚠️ ⛔ e os seis ajustes ⛔ NÃO escreveram ⛔ nada antes do Confirmar",
+      r.antesDeConfirmar.length === 0,
+      "⛔ é a asserção que distingue 'um fato no fim' de 'um fato por toque, ⛔ e o último venceu'");
+    confere("⚠️ e o rascunho morre com o fato",
+      r.rascunho === undefined,
+      "⛔ rascunho sobrevivente reapareceria na próxima correção como valor herdado");
+  }
+
+  /**
+   * ⚠️⚠️ CORRIGIR **1 PARA 10** DIGITANDO — o caso literal da dívida declarada.
+   * ⛔ Os estados intermediários são `1` e `10`: gravar cada dígito escreveria
+   * DOIS fatos, e o primeiro é o valor que já estava lá.
+   */
+  {
+    const r = encenar("comConfirmacao", 1, [
+      { tipo: "digitou", texto: "1" },
+      { tipo: "digitou", texto: "10" },
+      confirmar,
+    ]);
+    confere("⚠️⚠️ corrigir ASPECTS de 1 para 10 escreve UM fato, ⛔ e ⛔ não dois",
+      r.efeitos.length === 1 && r.efeitos[0].valor === 10,
+      "⛔ era exatamente o defeito que impedia a migração visual de 2026-09-01");
+    /**
+     * ⚠️⚠️ ⛔ E ⛔ NENHUM DELES NASCEU ANTES DO CONFIRMAR. ⛔ Contar ⛔ só o total
+     * deixava passar o caso em que o dígito grava ⛔ e o Confirmar ⛔ não faz
+     * ⛔ nada: **um** fato no fim, ⛔ escrito na hora errada, ⛔ e por um gesto
+     * que ⛔ não era o gesto de gravar.
+     */
+    confere("⚠️⚠️ ⛔ e ⛔ NENHUM fato nasceu antes de o médico confirmar",
+      r.antesDeConfirmar.length === 0,
+      "⛔ digitar ⛔ não é confirmar: o fato escrito no dígito ignora quem desiste depois");
+  }
+
+  /**
+   * ⚠️⚠️ O DEFEITO DE ORDEM DE EVENTOS: tocar em **Confirmar** tira o foco da
+   * caixa ANTES. ⛔ Se o blur limpasse o rascunho, o médico veria 7 na tela e a
+   * trilha receberia 1.
+   */
+  {
+    const r = encenar("comConfirmacao", 1, [mais, mais, mais, mais, mais, mais,
+      { tipo: "saiu" }, confirmar]);
+    confere("⚠️⚠️ sair da caixa ⛔ NÃO apaga a correção em curso",
+      r.efeitos.length === 1 && r.efeitos[0].valor === 7,
+      "⛔ o botão de confirmar dá blur primeiro; rascunho apagado gravaria o valor ANTIGO");
+  }
+
+  /** ⚠️⚠️ Cancelar ⛔ NÃO grava — ⛔ senão corrigir vira armadilha. */
+  {
+    const r = encenar("comConfirmacao", 1, [mais, mais, { tipo: "cancelou" }]);
+    confere("⚠️⚠️ **Cancelar** ⛔ não escreve fato nenhum",
+      r.efeitos.length === 0 && r.rascunho === undefined,
+      "⛔ um gesto de correção que ⛔ não pode ser abandonado é armadilha");
+  }
+
+  /** ⚠️ Confirmar ⛔ SEM rascunho válido ⛔ não é correção — é ruído na trilha. */
+  {
+    const vazio = encenar("comConfirmacao", 7, [{ tipo: "digitou", texto: "" }, confirmar]);
+    const igual = encenar("comConfirmacao", 7, [{ tipo: "digitou", texto: "7" }, confirmar]);
+    const fora = encenar("comConfirmacao", 7, [{ tipo: "digitou", texto: "99" }, confirmar]);
+    confere("⚠️⚠️ confirmar rascunho vazio, IGUAL ⛔ ou fora da faixa ⛔ NÃO grava",
+      vazio.efeitos.length === 0 && igual.efeitos.length === 0 && fora.efeitos.length === 0,
+      "⛔ escreveria uma correção do valor para ele mesmo — a trilha diria que houve erro ⛔ sem ter havido");
+    confere("⛔ e apagar a caixa DENTRO da correção ⛔ não desfaz o fato",
+      vazio.gravado === 7,
+      "⛔ desfazer é decisão explícita; descobrir que apagou ao tocar em Cancelar ⛔ não é");
+  }
+
+  /**
+   * ⚠️⚠️ E O MODO DIRETO ⛔ NÃO REGREDIU — a glicemia sendo digitada **pela
+   * primeira vez** continua gravando quando cai na faixa. ⛔ Obrigar confirmação
+   * ali poria um gesto entre o médico e o número, ⛔ e ⛔ nada o justifica: ⛔ não
+   * há valor anterior para proteger.
+   */
+  {
+    const r = encenar("direto", undefined, [{ tipo: "digitou", texto: "7" }]);
+    confere("⚠️ no modo direto, valor que cai na faixa vira medida NA HORA",
+      r.efeitos.length === 1 && r.efeitos[0].tipo === "medir" && r.efeitos[0].valor === 7,
+      "⛔ primeira medida ⛔ não tem o que confirmar — ⛔ não existe valor anterior a corrigir");
+  }
+
+  /**
+   * ⚠️⚠️ O QUE PROTEGE `178` DE VIRAR **1** E **17** NA TRILHA É O **PISO DA
+   * FAIXA** — ⛔ e ⛔ não o rascunho. Medido aqui com a faixa REAL da PAS.
+   *
+   * ── ⚠️⚠️ E ONDE ESSA PROTEÇÃO ⛔ NÃO ALCANÇA ─────────────────────────────
+   *
+   * ⚠️ Ela vale ⛔ enquanto os estados intermediários caírem **abaixo do piso**.
+   * ⛔ Numa faixa de piso baixo isso deixa de ser verdade: com a glicemia
+   * (20 a 800), digitar **240** passa por `24`, que É um valor de dentro da
+   * faixa — ⛔ e a trilha recebe DOIS fatos.
+   *
+   * ⛔ Isto ⛔ NÃO é regressão desta migração: é o comportamento do `Numero`
+   * desde que ele nasceu, ⛔ e vale para as Superfícies A e B. ⚠️ Fica **medido
+   * e nomeado** aqui em vez de descoberto de novo — ⛔ e mudá-lo é decisão do
+   * autor, ⛔ não efeito colateral de pagar uma dívida visual.
+   */
+  {
+    const comFaixa = (faixaDoCampo, textos) => {
+      let rascunho = undefined; let gravado = undefined; const efeitos = [];
+      for (const texto of textos) {
+        const p = RN.proximoPasso({ modo: "direto", faixa: faixaDoCampo, gravado, rascunho,
+          gesto: { tipo: "digitou", texto } });
+        rascunho = p.rascunho;
+        if (p.efeito.tipo === "medir") { efeitos.push(p.efeito.valor); gravado = p.efeito.valor; }
+      }
+      return efeitos;
+    };
+    const PAS = { min: 60, max: 300, passo: 1 };
+    const GLICEMIA = { min: 20, max: 800, passo: 1 };
+
+    confere("⚠️⚠️ digitar PAS **178** deixa **UM** fato — ⛔ e ⛔ não 1, 17 e 178",
+      comFaixa(PAS, ["1", "17", "178"]).join(",") === "178",
+      "⛔ o piso 60 é o que faz `1` e `17` ⛔ não serem medidas de ninguém");
+
+    confere("⚠️⚠️ ⛔ e o limite dessa proteção está DECLARADO: piso baixo ⛔ não protege",
+      comFaixa(GLICEMIA, ["2", "24", "240"]).join(",") === "24,240",
+      "⛔ ⛔ não é regressão desta migração — é o `Numero` desde sempre, em A e B; mudar isso é decisão do autor");
+  }
+
+  /** ⚠️ Apagar ⛔ NÃO é zero — nos dois modos, ⛔ e por razões diferentes. */
+  {
+    const p = RN.proximoPasso({ modo: "direto", faixa, gravado: 8, rascunho: "8",
+      gesto: { tipo: "digitou", texto: "" } });
+    confere("⚠️⚠️ apagar a caixa **desfaz**, ⛔ e ⛔ NÃO grava zero",
+      p.efeito.tipo === "desfazer",
+      "⛔ gravar 0 poria uma glicemia de 0 mg/dL na trilha porque ⛔ alguém limpou o campo");
+  }
+
+  /**
+   * ⚠️⚠️ `−/+` INERTES ⛔ SEM VALOR DE PARTIDA — §0.2. ⛔ Um `+` partindo do nada
+   * gravaria o piso da faixa como se fosse medida.
+   */
+  {
+    const p = RN.proximoPasso({ modo: "direto", faixa, gravado: undefined,
+      rascunho: undefined, gesto: mais });
+    confere("⚠️⚠️ `+` ⛔ sem valor registrado ⛔ NÃO grava o piso da faixa",
+      p.efeito.tipo === "nada" && RN.temPartida(undefined, undefined, faixa) === false,
+      "⛔ ASPECTS 0 é escore VÁLIDO (F-08): um `+` inerte que gravasse 0 seria um escore que ⛔ ninguém leu");
+    confere("⚠️ e o desenho pergunta ao MESMO lugar se há de onde partir",
+      RN.temPartida(3, undefined, faixa) === true && RN.temPartida(undefined, "3", faixa) === true,
+      "⛔ duas contas separadas é como nasce um `+` clicável que ⛔ não faz nada");
+  }
+}
+
+// ── 16 · A DÍVIDA VISUAL DE 2026-09-01, PAGA · O ASPECTS FALA A LÍNGUA NOVA ──
+/**
+ * ⚠️⚠️ ⛔ NÃO É TRAVA DE ESTÉTICA. ⚠️ Ela mede que a migração ⛔ não foi feita do
+ * jeito que o autor proibiu — *"⛔ não adaptar ASPECTS ao `Numero` atual enquanto
+ * esse contrato ⛔ não existir"* —, ⛔ e que o contrato de correção continua
+ * **consumido**, ⛔ e ⛔ não ⛔ só escrito.
+ */
+{
+  const fonteTelaC = lerFonte(path.join(appDir, "components", "avc", "superficie-c.tsx"));
+  const fonteKit = lerFonte(path.join(appDir, "components", "avc", "ui", "index.tsx"));
+  const fonteRascunho = lerFonte(path.join(appDir, "avc", "nucleo", "rascunho-numerico.ts"));
+  /** ⚠️ ⛔ `import` ⛔ não é consumo, ⛔ e comentário ⛔ não executa (R-92). */
+  const kitUsa = semImports(fonteKit);
+  const telaUsa = semImports(fonteTelaC);
+
+  /**
+   * ⚠️⚠️ A GUARDA É LIDA **INTEIRA**, ⛔ até o `) {` — ⛔ e ⛔ não por pedaço.
+   *
+   * ⛔ Uma primeira versão desta conferência procurava ⛔ só
+   * `campo.tipo === "grandeza" && campo.faixa`, ⛔ e a mutação que acrescenta
+   * `&& false` **sobreviveu**: a busca casava dentro da condição falsificada, e
+   * o ASPECTS voltava para o controle antigo com a trava verde.
+   */
+  confere("⚠️⚠️ o ASPECTS ⛔ NÃO passa mais pelo controle antigo",
+    telaUsa.includes("<NumeroComCorrecao")
+    && telaUsa.includes('if (campo.tipo === "grandeza" && campo.faixa) {'),
+    "⛔ era a última barra deslizante da Superfície C — e a dívida visual declarada em 2026-09-01");
+
+  /**
+   * ⚠️⚠️ ⛔ E A DELEGAÇÃO É LIDA NA LINHA QUE A FAZ.
+   *
+   * ⛔ Procurar `proximoPasso(` no arquivo inteiro ⛔ não bastava: o botão de
+   * confirmar ⛔ também o chama, ⛔ e a chamada do `Numero` podia sumir com a
+   * trava verde. ⚠️ É a mesma lição de `lib/consumo.cjs`: **o uso em outro
+   * lugar do mesmo arquivo ⛔ não é consumo aqui**.
+   */
+  confere("⚠️⚠️ ⛔ e o kit ⛔ NÃO decide sozinho quantos fatos um gesto escreve",
+    kitUsa.includes("const passo = proximoPasso({ modo, faixa, gravado, rascunho, gesto });")
+    && kitUsa.includes('gesto: { tipo: "confirmou" },'),
+    "⛔ regra dentro do JSX ⛔ não é executável por trava nenhuma — foi assim que ela quase se perdeu");
+
+  confere("⚠️ o `commitOnConfirm` existe no kit ⛔ e chega ao ASPECTS",
+    kitUsa.includes("commitOnConfirm") && kitUsa.includes('commitOnConfirm={emCorrecao}'),
+    "⛔ o modo declarado ⛔ e ⛔ não ligado é o mesmo que ⛔ não existir");
+
+  /**
+   * ⚠️⚠️ AS DUAS SAÍDAS NOMEADAS CONTINUAM SENDO DUAS. ⛔ Fundi-las num
+   * "editar" devolveria a semântica implícita que o autor proibiu em
+   * 2026-08-30, ⛔ e a trilha passaria a mentir sobre quantos exames existiram.
+   */
+  confere("⚠️⚠️ campo respondido oferece **Corrigir** ⛔ E **Novo exame**, ⛔ e ⛔ não um só gesto",
+    kitUsa.includes("avc-corrigir-${campo}") && kitUsa.includes("avc-nova-medida-${campo}")
+    && telaUsa.includes('rotuloDeNovaMedida="Novo exame"'),
+    "⛔ quem ⛔ não acha a alternativa é empurrado a 'corrigir' o que ⛔ não era correção");
+
+  confere("⚠️ **Cancelar correção** existe, ⛔ e ⛔ não grava",
+    kitUsa.includes("avc-cancelar-correcao-${campo}")
+    && /onPress=\{\(\) => \{\s*setRascunho\(undefined\);\s*onCancelarCorrecao\(\);/.test(kitUsa),
+    "⛔ correção ⛔ não abandonável é armadilha");
+
+  /**
+   * ⚠️⚠️ A FRASE QUE DIZ QUE O APP ⛔ NÃO CALCULA FICA **VISÍVEL** — relato do
+   * autor, 2026-08-29: *"o usuário ⛔ não sabe classificar isso"*. ⛔ Atrás do ⓘ
+   * ela serve a quem já sabe.
+   */
+  confere("⚠️⚠️ a ajuda do ASPECTS continua VISÍVEL, ⛔ e ⛔ não atrás do ⓘ",
+    telaUsa.includes("ajuda={campo.ajuda}") && kitUsa.includes("{ajuda ? <Text style={e.corrAjuda}>"),
+    "⛔ quem ⛔ não abre o ⓘ é justamente quem chuta, ⛔ e o chute alimenta a trombectomia");
+
+  /** ⚠️ ⛔ Nenhuma barra deslizante sobrou na Superfície C. */
+  confere("⛔ ⛔ NENHUM `Slider` ⛔ nem `NumericStepper` chega à Superfície C",
+    !telaUsa.includes("NumericStepper") && !telaUsa.includes("Slider")
+    && !kitUsa.includes("NumericStepper") && !kitUsa.includes("Slider"),
+    "⛔ era a queixa do autor em 2026-08-28: *\"⛔ não precisa ter de deslizar, ⛔ não funcional\"*");
+
+  /** ⚠️ ⛔ E o módulo puro ⛔ não pode virar casa de medicina (E-29). */
+  confere("⛔ o rascunho numérico ⛔ NÃO conhece campo, corte ⛔ nem medicina",
+    !/\baspects\b|\bnihss\b|glicemia:|corte/i.test(semImports(fonteRascunho).replace(/glicemia/gi, "")),
+    "⛔ regra de gesto que aprende nome de campo vira exceção clínica escondida na tela");
 }
 
 if (falhas.length) {

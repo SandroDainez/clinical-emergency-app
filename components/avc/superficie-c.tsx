@@ -63,6 +63,7 @@ import {
   LeiturasEmBlocos,
   LinhaDeAchado,
   LinhaDeRelogio,
+  NumeroComCorrecao,
   Recolhido,
   Secao,
   Segmentado,
@@ -706,30 +707,78 @@ export default function SuperficieC({
                     }
 
                     /**
-                     * ⚠️⚠️ O ASPECTS FICA NO COMPONENTE ANTIGO — ⛔ e ⛔ não por
-                     * preguiça de migrar.
+                     * ⚠️⚠️ O ASPECTS — ⛔ o último campo de C a falar a
+                     * linguagem antiga, ⛔ e agora ⛔ não mais.
                      *
-                     * ⚠️ Ele carrega o contrato de **correção com rascunho**: seis
-                     * toques dentro de uma correção ⛔ não são seis fatos, e ⛔ só
-                     * **Confirmar** grava — **um**. ⚠️ O `Numero` do kit grava a
-                     * cada dígito válido, o que é certo para uma glicemia sendo
-                     * digitada ⛔ e errado para corrigir um escore já registrado.
+                     * ── ⚠️⚠️ A DÍVIDA VISUAL DE 2026-09-01, PAGA ────────────────
                      *
-                     * ⛔ Refazer essa regra de memória numa migração visual seria
-                     * o jeito mais rápido de perdê-la.
+                     * ⚠️ Ela ⛔ não foi paga trocando o controle: foi paga
+                     * **construindo primeiro o contrato que faltava**. O
+                     * `Numero` do kit gravava a cada dígito válido — certo para
+                     * uma glicemia sendo digitada, ⛔ e escreveria **dois fatos**
+                     * ao corrigir um ASPECTS de 1 para 10.
                      *
-                     * ── ⚠️⚠️ DÍVIDA VISUAL DECLARADA (⛔ não bloqueante) ──────────
+                     * ⚠️ Agora ele tem `commitOnConfirm`, ⛔ e quem decide
+                     * quantos fatos um gesto escreve é
+                     * `avc/nucleo/rascunho-numerico` — módulo puro, executado
+                     * por trava, ⛔ e ⛔ não uma regra dentro de um JSX que a
+                     * próxima migração reescreveria de memória.
                      *
-                     * ⚠️ É o **único** lugar da Superfície C que ainda fala a
-                     * linguagem visual antiga: cartão com moldura, **barra** e
-                     * botão "Registrar N" — enquanto A e B já ⛔ não têm barra
-                     * ⛔ nenhuma. ⛔ Fechá-la exige um controle numérico com
-                     * **modo de correção** (rascunho + Confirmar), que o kit
-                     * ainda ⛔ não tem: o `Numero` grava a cada dígito válido, o
-                     * que é certo para uma glicemia sendo digitada ⛔ e escreveria
-                     * **dois fatos** ao corrigir um ASPECTS de 1 para 10.
+                     * ⛔ ⛔ NÃO voltar a semântica implícita: campo respondido
+                     * ⛔ não aceita escrita direta, ⛔ e *Corrigir* ⛔ e *Novo
+                     * exame* continuam sendo **duas** saídas nomeadas.
+                     */
+                    if (campo.tipo === "grandeza" && campo.faixa) {
+                      const medido = typeof fato?.valor === "number" ? fato.valor : undefined;
+                      return (
+                        <View
+                          key={`${estudo.id}-${campo.id}`}
+                          style={e.pergunta}
+                          testID={`avc-campo-${campo.id}`}
+                        >
+                          <NumeroComCorrecao
+                            campo={campo.id}
+                            rotulo={campo.rotulo}
+                            /**
+                              * ⚠️⚠️ VISÍVEL, ⛔ e ⛔ não atrás do ⓘ — relato do autor
+                              * em 2026-08-29: *"o usuário ⛔ não sabe classificar
+                              * isso"*. ⛔ Quem ⛔ não abre o ⓘ é justamente quem
+                              * chuta, ⛔ e o chute alimenta a trombectomia.
+                              */
+                            ajuda={campo.ajuda}
+                            unidade={campo.unidade}
+                            faixa={campo.faixa}
+                            gravado={medido}
+                            emCorrecao={emCorrecao(estudo.id, campo.id)}
+                            onEntrarEmCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
+                            onCancelarCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
+                            onNovaMedida={onNovoEstudo}
+                            rotuloDeCorrecao={campo.rotuloDeCorrecao}
+                            rotuloDeNovaMedida="Novo exame"
+                            detalheAberto={detalhes.aberto(`${estudo.id}-${campo.id}`)}
+                            onAlternarDetalhe={() => detalhes.alternar(`${estudo.id}-${campo.id}`)}
+                            onMedir={(c, v) => gravar(c, v)}
+                            onDesfazer={(c) => onDesfazerNoEstudo(estudo.id, c)}
+                          >
+                            <DetalheDoCampo campo={{ ...campo, casa: "imagem" }} />
+                          </NumeroComCorrecao>
+                        </View>
+                        );
+                    }
+
+                    /**
+                     * ⚠️⚠️ A SAÍDA DE SEGURANÇA — ⛔ e ⛔ nenhum campo de C passa
+                     * por ela hoje.
                      *
-                     * ⛔ ⛔ Não trocar o controle sem construir esse modo antes.
+                     * ⚠️ Toda pergunta desta superfície é escolha, hora ⛔ ou
+                     * grandeza, ⛔ e cada uma tem a sua ramificação acima. ⚠️ Esta
+                     * existe para que um tipo novo — acrescentado ao conteúdo
+                     * antes de o kit saber desenhá-lo — apareça **antigo** em vez
+                     * de **sumir**: campo clínico que ⛔ não renderiza ⛔ não é
+                     * dívida visual, é pergunta que ⛔ ninguém responde.
+                     *
+                     * ⛔ ⛔ NÃO devolver o ASPECTS para cá: ele tem ramificação
+                     * própria, ⛔ e a trava mede isso.
                      */
                     return (
                       <CampoDaSuperficie
@@ -741,11 +790,6 @@ export default function SuperficieC({
                         agora={agora}
                         detalheAberto={detalhes.aberto(`${estudo.id}-${campo.id}`)}
                         onAlternarDetalhe={() => detalhes.alternar(`${estudo.id}-${campo.id}`)}
-                        emCorrecao={emCorrecao(estudo.id, campo.id)}
-                        onEntrarEmCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
-                        onCancelarCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
-                        onNovaMedida={onNovoEstudo}
-                        rotuloDeNovaMedida="Novo exame"
                         onEscolher={(c, v) => gravar(c, v)}
                         onMedir={(c, v) => gravar(c, v)}
                         onHora={(c, instante) => onHoraNoEstudo(estudo.id, c, instante)}

@@ -409,24 +409,57 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await abrirC(page);
 
     await novoExame(page, MODALIDADE.tcSemContraste);
-    // ⚠️ Um toque grava o primeiro valor: 1.
-    await page.getByTestId("avc-grandeza-aspects-mais").click();
-    await expect(page.getByTestId("avc-valor-aspects")).toContainText("1");
 
     /**
-     * ⚠️⚠️ Preenchido, o campo ⛔ não aceita escrita direta: o gesto é **Corrigir**.
+     * ⚠️⚠️ O CONTROLE MUDOU EM 2026-09-01 — ⛔ e ⛔ nenhuma asserção clínica saiu.
      *
-     * ⚠️⚠️ E dentro da correção os toques movem o RASCUNHO — seis toques ⛔ não são
-     * seis correções. Só **Confirmar** grava, e grava **um** fato.
+     * ⛔ A barra deslizante e o "Registrar N" eram a dívida visual declarada; o
+     * campo agora usa o `Numero` do kit. ⚠️ O que **⛔ não** mudou é o que este
+     * teste mede: ⛔ campo preenchido ⛔ não aceita escrita direta, a correção
+     * roda em rascunho, ⛔ e **Confirmar** grava **um** fato no **mesmo** exame.
+     *
+     * ⚠️ O primeiro valor agora é **digitado**, ⛔ e ⛔ não tocado: ⛔ sem número
+     * registrado o `−/+` é inerte de propósito (§0.2) — ⛔ um `+` partindo do
+     * nada gravaria o piso da faixa como se fosse medida.
+     */
+    await page.getByTestId("avc-num-caixa-aspects").fill("1");
+    /** ⚠️ Sair da caixa é o fim da digitação — ⛔ e ⛔ só então vem a leitura. */
+    await page.getByTestId("avc-num-caixa-aspects").blur();
+    await expect(page.getByTestId("avc-valor-aspects")).toContainText("1");
+
+    /** ⚠️⚠️ Preenchido, o campo ⛔ não aceita escrita direta: ⛔ nem caixa há. */
+    await expect(page.getByTestId("avc-num-caixa-aspects")).toHaveCount(0);
+
+    /**
+     * ⚠️⚠️ SEIS TOQUES DENTRO DA CORREÇÃO ⛔ NÃO SÃO SEIS CORREÇÕES — e a prova
+     * na tela é **cancelar**: se algum toque tivesse gravado, o valor ⛔ não
+     * voltaria a ser 1.
+     *
+     * ⚠️ É asserção MAIS forte que a anterior, ⛔ e ⛔ não menos: a versão antiga
+     * ⛔ só conferia o valor final depois de confirmar, ⛔ e um controle que
+     * gravasse a cada toque passaria por ela.
      */
     await corrigir(page, "aspects");
-    await page.getByTestId("avc-grandeza-aspects-mais").click({ clickCount: 6 });
+    await page.getByTestId("avc-num-mais-aspects").click({ clickCount: 6 });
+    await page.getByTestId("avc-cancelar-correcao-aspects").click();
+    await expect(page.getByTestId("avc-valor-aspects")).toContainText("1");
+
+    /** ⚠️⚠️ E agora a correção de verdade: seis toques ⛔ e **Confirmar**. */
+    await corrigir(page, "aspects");
+    await page.getByTestId("avc-num-mais-aspects").click({ clickCount: 6 });
     await page.getByTestId("avc-confirmar-aspects").click();
     await expect(page.getByTestId("avc-valor-aspects")).toContainText("7");
 
     // ⛔ E ⛔ NENHUM exame novo foi criado por corrigir um achado.
     await expect(page.getByTestId("avc-estudo-estudo_2")).toHaveCount(0);
     await expect(page.getByTestId("avc-estudo-estudo_1")).toBeVisible();
+
+    /**
+     * ⚠️⚠️ A ALTERNATIVA CONTINUA NOMEADA, ⛔ e no ponto onde a ambiguidade
+     * nasce: quem mediu de novo precisa achar *Novo exame* AQUI, ⛔ senão é
+     * empurrado a "corrigir" o que ⛔ não era correção.
+     */
+    await expect(page.getByTestId("avc-nova-medida-aspects")).toBeVisible();
   });
 
   /**

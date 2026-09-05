@@ -509,6 +509,145 @@ const marca = (e, campo, ...opcoes) => {
     "*'risco elevado' ⛔ não é automaticamente proibido* — enunciado do autor sustentado por verbatim");
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+ * A AUSÊNCIA RESPONDIDA — ⚠️ as TRÊS que a tela confundia em UMA
+ * ══════════════════════════════════════════════════════════════════════════ */
+{
+  /**
+   * ⚠️⚠️ O DEFEITO QUE ISTO TRAVA: com *"Nenhum destes"* respondido em Paciente,
+   * ⛔ nenhum item nasce — **exatamente como quando ⛔ ninguém abriu o painel**.
+   * ⚠️ As duas situações chegavam idênticas ao olho: uma tela silenciosa.
+   */
+  const campo = "antecedentes_intracranianos";
+  const nunca = D.estadoDoGrupoDeAntecedentes(est, campo);
+  confere("grupo ⛔ nunca respondido é `nao_perguntado`, ⛔ e ⛔ NÃO `nenhum_registrado`",
+    nunca.estado === "nao_perguntado" && nunca.marcados === 0,
+    "inferir `nenhum` do silêncio transforma ausência de pergunta em resposta negativa");
+
+  const nenhum = reg(est, campo, "Nenhum destes");
+  confere("⛔ 'Nenhum destes' respondido é `nenhum_registrado`",
+    D.estadoDoGrupoDeAntecedentes(nenhum, campo).estado === "nenhum_registrado",
+    "o fato já existe em Paciente; ⛔ não mostrá-lo é jogar fora uma resposta dada");
+
+  /** ⚠️ O RÓTULO, ⛔ e ⛔ não o slug: é assim que seleção múltipla grava. */
+  const naoSei = reg(est, campo, "Não sei");
+  confere("⛔ e 'Não sei' ⛔ NÃO cai em ⛔ nenhum dos outros dois",
+    D.estadoDoGrupoDeAntecedentes(naoSei, campo).estado === "nao_sei",
+    "alguém foi perguntado ⛔ e ⛔ não soube dizer — é estado epistêmico, ⛔ não campo vazio (E-02)");
+
+  /** ⚠️⚠️ AS TRÊS PRECISAM SER **DISTINGUÍVEIS** — ⛔ e ⛔ não ⛔ só existir. */
+  confere("os três estados de ausência são DISTINTOS entre si",
+    new Set([
+      D.estadoDoGrupoDeAntecedentes(est, campo).estado,
+      D.estadoDoGrupoDeAntecedentes(nenhum, campo).estado,
+      D.estadoDoGrupoDeAntecedentes(naoSei, campo).estado,
+    ]).size === 3,
+    "dois estados iguais devolvem a confusão que esta derivação existe para desfazer (E-37)");
+
+  const comItem = reg(est, campo, "Neoplasia intracraniana intra-axial");
+  const lido = D.estadoDoGrupoDeAntecedentes(comItem, campo);
+  confere("grupo com item marcado conta QUANTOS, ⛔ e ⛔ não vira ausência",
+    lido.estado === "com_itens" && lido.marcados === 1,
+    "a contagem é o que permite ao bloco dizer o que guarda ⛔ sem reinterpretar");
+
+  /** ⚠️ D-15: um grupo novo de antecedentes entra já coberto. */
+  confere("os campos de antecedentes são DERIVADOS do catálogo de itens",
+    D.CAMPOS_DE_ANTECEDENTES.length === 3
+    && D.CAMPOS_DE_ANTECEDENTES.every((c) => S.ITENS_DE_SEGURANCA.some((i) => i.campo === c)),
+    "lista escrita à mão deixa grupo novo sem leitura de ausência, ⛔ e ⛔ ninguém percebe");
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * OS PARES DA FONTE — ⚠️ vizinhança em faixas OPOSTAS
+ * ══════════════════════════════════════════════════════════════════════════ */
+{
+  const unicos = new Map();
+  for (const p of D.PARES_DA_FONTE) {
+    unicos.set([p.opcao, p.vizinho].sort().join("|"), p);
+  }
+  const faixa = (o) => S.ITENS_DE_SEGURANCA.find((i) => i.opcao === o)?.faixa;
+
+  /**
+   * ⚠️⚠️ PISO, ⛔ e ⛔ não igualdade: a trava ⛔ não pode virar uma cópia da
+   * resposta. ⛔ Zero pares passaria calado se a derivação quebrasse (**R-1**).
+   */
+  confere("a derivação produz os pares da fonte, ⛔ e ⛔ não uma lista vazia",
+    unicos.size >= 6,
+    "uma trava que roda sobre lista vazia ⛔ não mede ⛔ nada");
+
+  /**
+   * ⚠️⚠️ **TODO** PAR ESTÁ EM FAIXAS DIFERENTES — ⛔ e é isso que justifica o
+   * marcador existir. ⛔ Um par na mesma faixa seria ruído: dois itens que a
+   * fonte trata igual ⛔ não precisam de aviso de que ela os separa.
+   */
+  confere("⛔ e TODO par derivado está em faixas DIFERENTES da fonte",
+    [...unicos.values()].every((p) => faixa(p.opcao) !== faixa(p.vizinho)),
+    "par na mesma faixa é marcador sem informação, ⛔ e marcador sem informação ensina a ignorar marcador");
+
+  /** ⚠️ Simétrico: ⛔ um marcador de mão única existiria ⛔ só de um lado. */
+  confere("cada membro do par aponta para o outro",
+    D.PARES_DA_FONTE.every((p) =>
+      D.PARES_DA_FONTE.some((q) => q.opcao === p.vizinho && q.vizinho === p.opcao)),
+    "mão única faria o par aparecer ⛔ só quando o médico marcasse o lado 'certo'");
+
+  /**
+   * ⚠️⚠️ A FAMÍLIA É PREFIXO DE **PALAVRA INTEIRA** nos dois rótulos.
+   *
+   * ⛔ Sem isso, uma família poderia nascer de coincidência de letras no meio
+   * de uma palavra — *"Traumatismo cranio…"* casando *cranioencefálico* com
+   * *craniano* — ⛔ e o par diria que a fonte separa dois itens que ⛔ ela
+   * ⛔ nem nomeia assim.
+   *
+   * ⚠️ Esta trava mede a **propriedade**, ⛔ e ⛔ não a consequência: com os
+   * itens de hoje a regra ⛔ não muda par ⛔ nenhum, ⛔ e por isso ⛔ nenhuma
+   * mutação de comportamento poderia pegá-la (ver `scripts/mutacoes/superficie-d`).
+   */
+  confere("a família do par é prefixo de PALAVRA INTEIRA nos dois rótulos",
+    [...unicos.values()].every((p) =>
+      [p.opcao, p.vizinho].every(
+        (r) => r.startsWith(p.familia) && (r.length === p.familia.length || r[p.familia.length] === " ")
+      )),
+    "família cortada no meio de uma palavra relaciona itens que a fonte ⛔ não nomeia como parentes");
+
+  /** ⛔ Famílias ⛔ não atravessam grupos: ⛔ nada relaciona intracraniano a procedimento. */
+  confere("⛔ e ⛔ NENHUM par atravessa campos diferentes",
+    D.PARES_DA_FONTE.every((p) => {
+      const a = S.ITENS_DE_SEGURANCA.find((i) => i.opcao === p.opcao);
+      const b = S.ITENS_DE_SEGURANCA.find((i) => i.opcao === p.vizinho);
+      return a && b && a.campo === b.campo;
+    }),
+    "relacionar itens de grupos diferentes inventaria família que a fonte ⛔ não nomeia");
+
+  /**
+   * ⚠️⚠️ ⛔ O MARCADOR ⛔ NÃO PODE VIRAR REGRA CLÍNICA. ⛔ O par diz ⛔ só que a
+   * fonte **separa** os dois; ⛔ ele ⛔ não move faixa, ⛔ não muda estado ⛔ e ⛔ não
+   * cancela item.
+   */
+  const comUm = reg(est, "antecedentes_intracranianos", "Neoplasia intracraniana intra-axial");
+  const itens = D.itensComModificacao(comUm);
+  confere("marcar UM membro do par ⛔ NÃO faz o outro aparecer como item",
+    itens.length === 1 && itens[0].id === "Neoplasia intracraniana intra-axial",
+    "o vizinho é informação sobre a FONTE, ⛔ e ⛔ jamais um achado do paciente (E-43)");
+  confere("⛔ e o item marcado MANTÉM o estado da própria faixa",
+    itens[0].estado === "contraindicacao_nao_corrigivel",
+    "se o par mexesse na faixa, agrupar por família teria alterado a classificação da fonte");
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * A REGRA VIVE EM UM LUGAR — ⚠️ I6
+ * ══════════════════════════════════════════════════════════════════════════ */
+{
+  /**
+   * ⚠️⚠️ A declaração de natureza da fonte era **duas**: o aviso da superfície e
+   * a nota do grupo, reescrita. ⛔ 440 caracteres de prosa quase idêntica antes
+   * da primeira pergunta — ⛔ e, pior, **duas redações que podem divergir**.
+   */
+  const juizo = S.GRUPOS_D.find((g) => g.id === "juizo");
+  confere("o grupo de juízo ⛔ NÃO reescreve a declaração de natureza da fonte",
+    juizo !== undefined && juizo.nota === undefined,
+    "a mesma regra em duas redações diverge com o tempo, ⛔ e ⛔ nenhuma trava veria");
+}
+
 if (falhas.length > 0) {
   console.error(`\n❌ PROVA DA SUPERFÍCIE D — ${falhas.length} falha(s), ${ok} ok\n`);
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}\n`));

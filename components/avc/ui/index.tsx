@@ -20,6 +20,13 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { valorDaOpcao } from "../../../avc/conteudo/campo";
+import {
+  proximoPasso,
+  temPartida,
+  textoDaCaixa,
+  type EfeitoNumerico,
+  type GestoNumerico,
+} from "../../../avc/nucleo/rascunho-numerico";
 import { useEstilosDoTema, type Tema } from "../../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
@@ -298,6 +305,10 @@ export function Numero({
   onMedir,
   onDesfazer,
   alerta,
+  rotuloOculto,
+  commitOnConfirm,
+  rascunho: rascunhoDeFora,
+  onRascunho,
   testID,
 }: {
   campo: string;
@@ -309,57 +320,86 @@ export function Numero({
   onDesfazer: (campo: string) => void;
   /** ⚠️ Pintado ⛔ só quando um valor MEDIDO cruzou limite — ⛔ nunca por vazio. */
   alerta?: boolean;
+  /**
+   * ⚠️⚠️ O rótulo some da LINHA, ⛔ e ⛔ nunca da acessibilidade.
+   *
+   * ⛔ Quem já escreveu o nome do campo logo acima ⛔ não pode escrevê-lo de
+   * novo ao lado da caixa. ⚠️ Mas `accessibilityLabel` continua: ⛔ um campo
+   * numérico ⛔ sem nome no leitor de tela é um número ⛔ sem pergunta.
+   */
+  rotuloOculto?: boolean;
+  /**
+   * ⚠️⚠️ O MODO DE CORREÇÃO — nome do autor, 2026-09-01.
+   *
+   * ⛔ Ligado, **⛔ nenhum ajuste grava**: dígitos e `−/+` movem o rascunho, ⛔ e
+   * ⛔ só um gesto explícito de confirmação chama `onMedir` — **uma** vez.
+   *
+   * ⚠️ Sem ele o controle segue como sempre: a glicemia sendo digitada grava
+   * quando cai na faixa, ⛔ e ⛔ nada muda para A e B.
+   */
+  commitOnConfirm?: boolean;
+  /**
+   * ⚠️ O rascunho pode viver FORA quando quem confirma é outro componente —
+   * ⛔ o botão de confirmar ⛔ não pode estar do lado de fora de um estado que
+   * ⛔ só este componente enxerga.
+   */
+  rascunho?: string | undefined;
+  onRascunho?: (rascunho: string | undefined) => void;
   testID?: string;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
-  const [rascunho, setRascunho] = useState<string | undefined>(undefined);
+  const [rascunhoLocal, setRascunhoLocal] = useState<string | undefined>(undefined);
 
-  /** ⚠️ Correção vinda de fora (desfazer, nova medida) limpa o rascunho. */
+  /** ⚠️ Rascunho de fora manda; ⛔ sem ele o controle guarda o seu. */
+  const controlado = onRascunho !== undefined;
+  const rascunho = controlado ? rascunhoDeFora : rascunhoLocal;
+  const definirRascunho = (r: string | undefined) =>
+    controlado ? onRascunho(r) : setRascunhoLocal(r);
+
+  /**
+   * ⚠️ Correção vinda de fora (desfazer, nova medida) limpa o rascunho.
+   *
+   * ⛔ ⛔ Não vale quando o rascunho é controlado: lá quem manda é o dono, ⛔ e
+   * este efeito apagaria a correção em curso a cada `render`.
+   */
   useEffect(() => {
-    if (gravado === undefined) setRascunho(undefined);
-  }, [gravado]);
+    if (!controlado && gravado === undefined) setRascunhoLocal(undefined);
+  }, [gravado, controlado]);
 
-  const texto = rascunho ?? (gravado === undefined ? "" : String(gravado));
-  const dentroDaFaixa = (n: number) => n >= faixa.min && n <= faixa.max;
+  const modo = commitOnConfirm ? "comConfirmacao" : "direto";
+  const texto = textoDaCaixa(gravado, rascunho);
 
-  function digitou(bruto: string) {
-    /** ⚠️ ⛔ Só dígitos: ⛔ nada de sinal, espaço ⛔ ou letra num campo clínico. */
-    const limpo = bruto.replace(/[^0-9]/g, "");
-    setRascunho(limpo);
-
-    /**
-     * ⚠️⚠️ APAGAR ⛔ NÃO É ZERO — é **desfazer**. ⛔ Gravar 0 aqui poria uma
-     * glicemia de 0 mg/dL na trilha porque ⛔ alguém limpou o campo.
-     */
-    if (limpo === "") {
-      if (gravado !== undefined) onDesfazer(campo);
-      return;
-    }
-    const n = Number(limpo);
-    if (Number.isFinite(n) && dentroDaFaixa(n) && n !== gravado) onMedir(campo, n);
+  /**
+   * ⚠️⚠️ QUEM DECIDE QUANTOS FATOS UM GESTO ESCREVE ⛔ NÃO É ESTE ARQUIVO —
+   * é `avc/nucleo/rascunho-numerico`, ⛔ e ⛔ de propósito.
+   *
+   * ⚠️ A regra ⛔ não pode morar dentro do JSX: ⛔ nenhuma trava consegue
+   * executá-la aqui, e foi assim que ela quase se perdeu na migração visual.
+   */
+  function aplicar(gesto: GestoNumerico) {
+    const passo = proximoPasso({ modo, faixa, gravado, rascunho, gesto });
+    definirRascunho(passo.rascunho);
+    executar(passo.efeito);
   }
 
-  /** ⚠️ Ao sair, rascunho fora da faixa ⛔ não vira valor — ele simplesmente some. */
-  function saiu() {
-    setRascunho(undefined);
+  function executar(efeito: EfeitoNumerico) {
+    if (efeito.tipo === "medir") onMedir(campo, efeito.valor);
+    else if (efeito.tipo === "desfazer") onDesfazer(campo);
   }
 
-  const ajustar = (d: number) => {
-    if (gravado === undefined) return;
-    const alvo = Math.min(faixa.max, Math.max(faixa.min, gravado + d));
-    if (alvo !== gravado) onMedir(campo, alvo);
-  };
+  /** ⚠️ Inerte ⛔ sem valor de partida — ⛔ e o módulo puro é quem sabe disso. */
+  const semPartida = !temPartida(gravado, rascunho, faixa);
 
   return (
     <View style={e.num} testID={testID ?? `avc-num-${campo}`}>
-      <Text style={e.numRotulo}>{tr(rotulo)}</Text>
+      {rotuloOculto ? null : <Text style={e.numRotulo}>{tr(rotulo)}</Text>}
       <View style={e.numGrupo}>
         <TextInput
           style={[e.numCaixa, alerta ? e.numCaixaAlerta : null]}
           value={texto}
-          onChangeText={digitou}
-          onBlur={saiu}
+          onChangeText={(bruto) => aplicar({ tipo: "digitou", texto: bruto })}
+          onBlur={() => aplicar({ tipo: "saiu" })}
           /** ⚠️⚠️ TECLADO DO SISTEMA — ⛔ e ⛔ nenhum teclado próprio. */
           keyboardType="number-pad"
           inputMode="numeric"
@@ -376,25 +416,250 @@ export function Numero({
           */}
         <View style={e.numPasso}>
           <Pressable
-            style={[e.numPassoBotao, gravado === undefined ? e.numPassoInerte : null]}
+            style={[e.numPassoBotao, semPartida ? e.numPassoInerte : null]}
             accessibilityRole="button"
-            disabled={gravado === undefined}
+            disabled={semPartida}
             testID={`avc-num-mais-${campo}`}
-            onPress={() => ajustar(faixa.passo)}
+            onPress={() => aplicar({ tipo: "ajustou", delta: faixa.passo })}
           >
             <Text style={e.numPassoTexto}>+</Text>
           </Pressable>
           <Pressable
-            style={[e.numPassoBotao, gravado === undefined ? e.numPassoInerte : null]}
+            style={[e.numPassoBotao, semPartida ? e.numPassoInerte : null]}
             accessibilityRole="button"
-            disabled={gravado === undefined}
+            disabled={semPartida}
             testID={`avc-num-menos-${campo}`}
-            onPress={() => ajustar(-faixa.passo)}
+            onPress={() => aplicar({ tipo: "ajustou", delta: -faixa.passo })}
           >
             <Text style={e.numPassoTexto}>−</Text>
           </Pressable>
         </View>
       </View>
+    </View>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * 4b · NÚMERO COM CORREÇÃO — o `Numero`, mais o gesto explícito
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️ O CONTRATO DE CORREÇÃO NA LINGUAGEM NOVA — ⛔ e ⛔ não um `Numero` com
+ * dois botões pendurados.
+ *
+ * ── ⚠️⚠️ O QUE ELE PROMETE, ⛔ E ⛔ POR QUE ────────────────────────────────────
+ *
+ *   · **campo respondido ⛔ NÃO aceita escrita direta.** Ele vira LEITURA, com
+ *     as duas saídas nomeadas lado a lado — *Corrigir* ⛔ e *Nova medida*.
+ *     ⛔ Redigitar um valor já registrado ⛔ não pode ter semântica implícita
+ *     (autor, 2026-08-30): a tela **pergunta qual das duas**, ⛔ em vez de
+ *     deduzir do que foi digitado.
+ *
+ *   · **dentro da correção, ⛔ NENHUM toque grava.** Seis toques no `+` ⛔ não
+ *     são seis correções na trilha; **Confirmar** grava **um** fato. ⚠️ Quem
+ *     decide isso é `avc/nucleo/rascunho-numerico`, ⛔ e ⛔ não este JSX.
+ *
+ *   · **Cancelar ⛔ NÃO grava.** ⛔ Um gesto de correção que ⛔ não pode ser
+ *     abandonado é armadilha.
+ *
+ * ⚠️⚠️ **Nova medida aparece AQUI**, no ponto onde a ambiguidade nasce — ⛔ e
+ * ⛔ não ⛔ só no fim do painel. ⛔ Quem quis medir de novo e ⛔ não acha a
+ * alternativa no instante certo é empurrado a "corrigir" o que ⛔ não era
+ * correção, ⛔ e a trilha passa a mentir sobre quantos exames existiram.
+ *
+ * ⚠️ O rascunho mora AQUI porque **Confirmar** mora aqui: o botão ⛔ não pode
+ * ficar do lado de fora de um estado que ⛔ só o `Numero` enxerga.
+ */
+export function NumeroComCorrecao({
+  campo,
+  rotulo,
+  ajuda,
+  unidade,
+  faixa,
+  gravado,
+  onMedir,
+  onDesfazer,
+  emCorrecao,
+  onEntrarEmCorrecao,
+  onCancelarCorrecao,
+  onNovaMedida,
+  rotuloDeCorrecao,
+  rotuloDeNovaMedida,
+  detalheAberto,
+  onAlternarDetalhe,
+  children,
+}: {
+  campo: string;
+  rotulo: string;
+  /**
+   * ⚠️⚠️ VISÍVEL, ⛔ e ⛔ não atrás do ⓘ — ⛔ quem ⛔ não abre o ⓘ é justamente
+   * quem chuta. ⚠️ No ASPECTS ela é a frase que diz que **o app ⛔ não calcula**.
+   */
+  ajuda?: string;
+  unidade?: string;
+  faixa: { readonly min: number; readonly max: number; readonly passo: number };
+  gravado: number | undefined;
+  onMedir: (campo: string, valor: number) => void;
+  onDesfazer: (campo: string) => void;
+  emCorrecao?: boolean;
+  onEntrarEmCorrecao: () => void;
+  onCancelarCorrecao: () => void;
+  onNovaMedida?: () => void;
+  rotuloDeCorrecao?: string;
+  rotuloDeNovaMedida?: string;
+  detalheAberto: boolean;
+  onAlternarDetalhe: () => void;
+  /** ⚠️ O detalhe do campo — ajuda longa, nota ⛔ e FONTE (E-30). */
+  children?: ReactNode;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  /** ⚠️⚠️ O rascunho da CORREÇÃO — ⛔ e ⛔ nunca um valor da trilha. */
+  const [rascunho, setRascunho] = useState<string | undefined>(undefined);
+
+  /** ⚠️ Sair da correção por fora (desfazer, novo exame) ⛔ não deixa resto. */
+  useEffect(() => {
+    if (!emCorrecao) setRascunho(undefined);
+  }, [emCorrecao]);
+
+  const cabeca = (
+    <>
+      <View style={e.corrTopo}>
+        <Text style={e.corrRotulo}>{tr(rotulo)}</Text>
+        <Recolhido
+          id={campo}
+          texto={undefined}
+          aberto={detalheAberto}
+          onAlternar={onAlternarDetalhe}
+        >
+          {children}
+        </Recolhido>
+      </View>
+      {ajuda ? <Text style={e.corrAjuda}>{tr(ajuda)}</Text> : null}
+    </>
+  );
+
+  /**
+   * ⚠️⚠️ RESPONDIDO ⛔ E FORA DA CORREÇÃO: LEITURA, com as duas saídas nomeadas.
+   *
+   * ── ⚠️⚠️ ⛔ MAS ⛔ NÃO COM O DEDO AINDA NA CAIXA ─────────────────────────────
+   *
+   * ⛔ A primeira versão trocava para leitura assim que o **primeiro dígito
+   * válido** virasse fato — ⛔ e num escore de dois dígitos isso é uma
+   * armadilha: quem digita **10** vê a caixa **sumir** depois do `1`, com o
+   * `0` caindo no vazio.
+   *
+   * ⚠️ Com a barra antiga o problema ⛔ não existia: `+` é um toque por vez.
+   * ⚠️ Com teclado, a troca tem de esperar o **fim da digitação** — ⛔ e o fim
+   * da digitação é o rascunho morrer, ⛔ não o primeiro dígito nascer.
+   */
+  if (gravado !== undefined && !emCorrecao && rascunho === undefined) {
+    return (
+      <View style={e.corr} testID={`avc-leitura-campo-${campo}`}>
+        {cabeca}
+        <Text style={e.corrValor} testID={`avc-valor-${campo}`}>
+          {`${gravado}${unidade ? ` ${tr(unidade)}` : ""}`}
+        </Text>
+        {/**
+          * ⚠️ LADO A LADO, ⛔ e ⛔ não empilhados: são **alternativas** de um mesmo
+          * dilema, ⛔ e empilhadas viram botões idênticos rolando pela coluna.
+          */}
+        <View style={e.corrGestos}>
+          <Pressable
+            style={e.corrBotao}
+            accessibilityRole="button"
+            testID={`avc-corrigir-${campo}`}
+            onPress={onEntrarEmCorrecao}
+          >
+            <Text style={e.corrBotaoTexto}>{tr(rotuloDeCorrecao ?? "Corrigir resultado")}</Text>
+          </Pressable>
+          {onNovaMedida ? (
+            <Pressable
+              style={e.corrBotao}
+              accessibilityRole="button"
+              testID={`avc-nova-medida-${campo}`}
+              onPress={onNovaMedida}
+            >
+              <Text style={e.corrBotaoTexto}>{tr(rotuloDeNovaMedida ?? "Nova medida")}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
+  const controle = (
+    <Numero
+      campo={campo}
+      rotulo={rotulo}
+      unidade={unidade}
+      faixa={faixa}
+      gravado={gravado}
+      onMedir={onMedir}
+      onDesfazer={onDesfazer}
+      /** ⚠️ O nome do campo já está na cabeça do bloco — ⛔ e ⛔ não duas vezes. */
+      rotuloOculto
+      commitOnConfirm={emCorrecao}
+      rascunho={rascunho}
+      onRascunho={setRascunho}
+    />
+  );
+
+  /** ⚠️ Em correção: o controle volta, ⛔ e a tela diz o que está acontecendo. */
+  if (emCorrecao) {
+    return (
+      <View style={e.corr} testID={`avc-corrigindo-${campo}`}>
+        {cabeca}
+        <Text style={e.corrAviso}>
+          {tr("Corrigindo o valor desta aferição. O anterior permanece na trilha.")}
+        </Text>
+        {controle}
+        <View style={e.corrGestos}>
+          <Pressable
+            style={e.corrBotao}
+            accessibilityRole="button"
+            testID={`avc-confirmar-${campo}`}
+            /**
+              * ⚠️⚠️ ⛔ NÃO chama `onMedir` direto: quem decide se este gesto vira
+              * fato — ⛔ e com que valor — é o módulo puro. ⛔ Um rascunho vazio,
+              * fora da faixa ⛔ ou igual ao gravado ⛔ NÃO é correção.
+              */
+            onPress={() => {
+              const passo = proximoPasso({
+                modo: "comConfirmacao",
+                faixa,
+                gravado,
+                rascunho,
+                gesto: { tipo: "confirmou" },
+              });
+              setRascunho(passo.rascunho);
+              if (passo.efeito.tipo === "medir") onMedir(campo, passo.efeito.valor);
+            }}
+          >
+            <Text style={e.corrBotaoTexto}>{tr("Confirmar correção")}</Text>
+          </Pressable>
+          <Pressable
+            style={e.corrBotao}
+            accessibilityRole="button"
+            testID={`avc-cancelar-correcao-${campo}`}
+            /** ⚠️⚠️ Cancelar ⛔ NÃO grava — ⛔ e ⛔ nem sequer consulta o rascunho. */
+            onPress={() => {
+              setRascunho(undefined);
+              onCancelarCorrecao();
+            }}
+          >
+            <Text style={e.corrBotaoTexto}>{tr("Cancelar correção")}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  /** ⚠️ Intocado: primeira medida, ⛔ e ⛔ sem gesto nenhum no caminho. */
+  return (
+    <View style={e.corr} testID={`avc-campo-numero-${campo}`}>
+      {cabeca}
+      {controle}
     </View>
   );
 }
@@ -968,6 +1233,34 @@ const criarEstilos = (tema: Tema) =>
     },
     numPassoInerte: { opacity: 0.35 },
     numPassoTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+
+    /**
+     * ⚠️ ⛔ SEM MOLDURA — a linguagem nova ⛔ não empilha cartões dentro de
+     * cartões. ⛔ O que separa um campo do seguinte é o espaço, ⛔ e ⛔ não uma
+     * borda dentro de outra borda.
+     */
+    corr: { paddingVertical: ESPACO.xs, gap: ESPACO.xs },
+    corrTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    corrRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    corrAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    corrValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
+    corrAviso: { color: tema.cores.warning, fontSize: TIPOGRAFIA.micro.fontSize },
+    corrGestos: { flexDirection: "row", gap: ESPACO.xs },
+    corrBotao: {
+      flex: 1,
+      minHeight: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.xs,
+    },
+    corrBotaoTexto: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      textAlign: "center",
+    },
 
     rel: {
       flexDirection: "row",
