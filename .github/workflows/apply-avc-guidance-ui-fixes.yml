@@ -1,0 +1,56 @@
+name: Apply AVC guided care UI fixes
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - scripts/corrige-avc-guia-clinico-ui.cjs
+      - .github/workflows/apply-avc-guidance-ui-fixes.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply focused corrections
+        run: node scripts/corrige-avc-guia-clinico-ui.cjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: AVC regression
+        run: npm run test:avc
+      - name: UI patterns
+        run: npm run test:padroes-ui
+      - name: Numeric ranges
+        run: npm run test:faixas
+      - name: Calculators
+        run: npm run test:calculadoras
+      - name: Emergencias 2 regression
+        run: npm run test:emergencias-2
+      - name: Diff sanity
+        run: |
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx | sort)"
+          test "$changed" = "$expected"
+      - name: Commit validated corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add avc-decision-tree.ts components/protocol-screen/clinical-action-step-card.tsx
+          git commit -m "Fix AVC guided glycemia NIHSS and action hierarchy"
+          git pull --rebase origin fix-avc-slider-first
+          git push origin HEAD:fix-avc-slider-first
