@@ -48,11 +48,15 @@ for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, 
   const n = (src.match(/<TextInput/g) || []).length;
   if (!n) continue;
 
-  // Não basta procurar a palavra "numeric" no arquivo inteiro: contamos somente
-  // TextInputs cujo próprio bloco declara teclado numérico. O trecho pode estar
-  // quebrado em várias linhas, por isso a busca atravessa até o fechamento do tag.
+  // Contamos o próprio bloco do TextInput. Além do literal keyboardType="numeric",
+  // também tratamos como numérico qualquer expressão de keyboardType que contenha
+  // um ramo "numeric"/"decimal-pad"/"number-pad". Isso captura o legado do shell,
+  // por exemplo `keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}`.
   const blocos = [...src.matchAll(/<TextInput\b[\s\S]*?(?:\/>|>)/g)].map((m) => m[0]);
-  const numericos = blocos.filter((b) => /keyboardType\s*=\s*\{?\s*["'](?:numeric|decimal-pad|number-pad)["']/.test(b)).length;
+  const numericos = blocos.filter((b) => {
+    const prop = b.match(/keyboardType\s*=\s*(?:\{[\s\S]*?\}|["'][^"']+["'])/);
+    return Boolean(prop && /["'](?:numeric|decimal-pad|number-pad)["']/.test(prop[0]));
+  }).length;
   caixas.push({ rel, total: n, numericos });
 }
 
