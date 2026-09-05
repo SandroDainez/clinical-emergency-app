@@ -47,6 +47,7 @@ export function RailDeModulo({
         horizontal={!lateral}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={!lateral}
+        persistentScrollbar={!lateral}
         contentContainerStyle={lateral ? styles.listVertical : styles.listHorizontal}>
         {items.map((item, index) => {
           const active = item.id === activeId;
