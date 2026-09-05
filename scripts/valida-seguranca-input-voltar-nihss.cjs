@@ -19,8 +19,16 @@ exigir(!/\(numericRange\.min\s*\+\s*numericRange\.max\)\s*\/\s*2/.test(field),
   "Campo numérico V2 voltou a inventar ponto médio quando não há dado.");
 exigir(/Valor ainda não informado/.test(field),
   "Campo numérico vazio deixou de sinalizar explicitamente ausência de dado.");
-exigir(/hasNumericValue\s*\?\s*\(/.test(field),
-  "NumericStepper deixou de depender da existência de um valor real.");
+exigir(/const valorVisivel = hasNumericValue \|\| numericDraft !== undefined/.test(field),
+  "Campo numérico perdeu o estado explícito de visibilidade dependente de dado real/interação.");
+exigir(/valorVisivel=\{valorVisivel\}/.test(field),
+  "NumericStepper deixou de receber a semântica neutra de valor não informado.");
+exigir(/valor=\{valorDaBarra\}/.test(field),
+  "NumericStepper deixou de receber o valor visual controlado pelo campo.");
+exigir(/onChange=\{\(next\) => setNumericDraft\(next\)\}/.test(field),
+  "Primeiro movimento da barra deixou de permanecer em rascunho antes da confirmação.");
+exigir(/onConfirmar=\{confirmarNumeroDaBarra\}/.test(field),
+  "Campo numérico perdeu a confirmação explícita antes de gravar no TreeValues.");
 exigir(!/useEffect\([\s\S]{0,300}onChange\(/.test(field),
   "Campo numérico parece gravar valor automaticamente.");
 
@@ -45,6 +53,6 @@ if (falhas.length) {
 }
 
 console.log("✅ Segurança de inputs, Voltar e NIHSS preservada.");
-console.log("   • valor ausente continua ausente");
+console.log("   • barra aparece neutra sem fabricar valor e só confirma após interação");
 console.log("   • NIHSS mantém calculadora embutida e visível");
 console.log("   • Voltar usa histórico clínico antes de sair do módulo");
