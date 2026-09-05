@@ -19,6 +19,7 @@ if (!original || typeof original !== 'string') {
 const substituicoes = [
   ['npm run test:i18n', 'node ./scripts/valida-i18n-debt.cjs'],
   ['npm run test:traducao-runtime', 'node ./scripts/valida-traducao-runtime-debt.cjs'],
+  ['npm run test:traducao-composta', 'node ./scripts/valida-traducao-composta-debt.cjs'],
   ['npm run test:paleta', 'node ./scripts/valida-paleta-debt.cjs'],
   ['npm run test:prazo-visivel', 'node ./scripts/valida-prazo-visivel-debt.cjs'],
   ['npm run test:leitura-fonte', 'node ./scripts/valida-leitura-fonte-debt.cjs'],
