@@ -2,39 +2,31 @@
 /**
  * O CENSO DOS INSTRUMENTOS — a trava que cobre o instrumento que NÃO RODA.
  *
- * PROMETE: que todo script de instrumento do repositório esteja no `test:all`
- *   ou numa isenção DATADA E JUSTIFICADA; que o número de instrumentos no
- *   portão não caia (piso registrado); que cada um RODE de fato; e que nenhum
- *   termine com código fora de {0,1} — porque 127, 126 e 2 são "não rodou", e
- *   "não rodou" saindo como verde é a mentira que este censo existe para matar.
+ * PROMETE: que todo script de instrumento do repositório esteja alcançável a
+ * partir do portão `test:all`/`pretest:all` — diretamente, por outro npm script
+ * ou por um runner agrupador — ou numa isenção DATADA E JUSTIFICADA; que o
+ * número de instrumentos no portão não caia (piso registrado); que cada um RODE
+ * de fato; e que nenhum termine com código fora de {0,1}.
  * NÃO PROMETE: que o instrumento meça a coisa certa, nem que o universo dele
- *   seja suficiente. Isso é `valida-pipeline` (declaração de cobertura) e
- *   `lib/universo.cjs` (piso por instrumento). O censo cobre EXISTÊNCIA e
- *   EXECUÇÃO, não qualidade.
+ * seja suficiente. Isso é `valida-pipeline` (declaração de cobertura) e
+ * `lib/universo.cjs` (piso por instrumento). O censo cobre EXISTÊNCIA,
+ * ALCANÇABILIDADE NO PORTÃO e EXECUÇÃO, não qualidade.
  * UNIVERSO: `scripts/*.cjs` que casam com o padrão de instrumento, contados e
- *   impressos antes do resultado, com piso em auditoria/universo-dos-instrumentos.json.
+ * impressos antes do resultado, com piso em auditoria/universo-dos-instrumentos.json.
  *
- * ── A FAMÍLIA QUE ELE NASCEU PARA MATAR (2026-08-23) ────────────────────────
- *
- * Cinco coisas de uma rodada só, todas a mesma mentira — "está tudo bem" quando
- * o correto era "nada foi olhado":
- *
- *   1. erro classificado saindo com código 0 (severidade não amarrada à saída)
- *   2. três instrumentos FORA do test:all — 349 commits desde que nasceram
- *   3. auditoria-doses-criticas MORTO desde a9b16ad, crashando na compilação
- *   4. bloco pulado por `typeof === "function"`, relatório saindo limpo
- *   5. uma varredura minha com `timeout` (inexistente no macOS): 53 instrumentos
- *      voltaram 127, e a saída vazia leu-se como "ninguém tem esse defeito"
- *
- * As duas últimas são as piores: o silêncio é indistinguível do sucesso.
+ * Um detalhe importante: o portão real do npm inclui `pretest:all` antes de
+ * `test:all`. Além disso, alguns blocos são runners explícitos (por exemplo,
+ * `valida-emergencias-2-suite.cjs`) que executam uma lista de validadores. O
+ * censo antigo olhava apenas a string literal de `test:all`; com isso, um
+ * validador podia RODAR no portão e ainda ser acusado de estar fora dele.
  */
 const fs = require("fs"), path = require("path");
 const { spawnSync } = require("child_process");
 const { conferirUniverso } = require("./lib/universo.cjs");
 
 const RAIZ = path.resolve(__dirname, "..");
+const SCRIPTS_DIR = path.join(RAIZ, "scripts");
 const pkg = JSON.parse(fs.readFileSync(path.join(RAIZ, "package.json"), "utf8"));
-const TEST_ALL = pkg.scripts["test:all"];
 
 /** Scripts que SÃO instrumento — o resto de scripts/ é biblioteca e ferramenta. */
 const EH_INSTRUMENTO = (n) => /^(valida|auditoria|mapa|censo)-/.test(n) && n.endsWith(".cjs");
@@ -57,64 +49,85 @@ const ISENTOS = {
     "2026-08-23 · MEDIÇÃO sem código de saída: inventário de fontes por módulo.",
 };
 
-const todos = fs.readdirSync(path.join(RAIZ, "scripts")).filter(EH_INSTRUMENTO).sort();
+const todos = fs.readdirSync(SCRIPTS_DIR).filter(EH_INSTRUMENTO).sort();
+const conjuntoInstrumentos = new Set(todos);
 let falhas = 0;
 const erro = (m) => { console.error(`❌ ${m}`); falhas++; };
 
 // ── 1. UNIVERSO ANTES DO RESULTADO
 console.log(`\n════ CENSO DE INSTRUMENTOS ════\n`);
 console.log(`UNIVERSO: ${todos.length} instrumentos em scripts/`);
-// ⚠️ O QUE ESTE CENSO NÃO COBRE, DITO EM VOZ ALTA: os scripts de MEDIÇÃO
-// (`mede-*`, `compara-*`) não têm código de saída por decisão — medir não é
-// reprovar — e por isso "estar no portão" não se aplica a eles. Deixá-los fora
-// em silêncio seria o censo tendo o próprio buraco de universo que ele existe
-// para achar.
-const MEDICOES = fs.readdirSync(path.join(RAIZ, "scripts")).filter((n) => /^(mede|compara)-/.test(n) && n.endsWith(".cjs"));
+const MEDICOES = fs.readdirSync(SCRIPTS_DIR).filter((n) => /^(mede|compara)-/.test(n) && n.endsWith(".cjs"));
 console.log(`  fora do escopo: ${MEDICOES.length} medição(ões) sem código de saída — ${MEDICOES.join(", ")}`);
 
-// ── 2. QUEM ESTÁ NO PORTÃO
-const noPortao = [], fora = [];
-for (const arq of todos) {
-  const alvo = `scripts/${arq}`;
-  // ⚠️ TODAS as entradas npm que rodam este arquivo, não a primeira. O mesmo
-  // instrumento tem apelidos (`audit:estado` e `test:arvores` rodam o mesmo
-  // script), e olhar só o primeiro acusou de "fora do portão" um que está
-  // dentro pelo segundo nome — R-87 dentro do censo, no dia em que ele nasceu.
-  const entradas = Object.entries(pkg.scripts).filter(([, v]) => v.includes(alvo)).map(([k]) => k);
-  const ligado = entradas.some((k) => TEST_ALL.includes(`npm run ${k}`));
-  (ligado ? noPortao : fora).push(arq);
+// ── 2. QUEM ESTÁ NO PORTÃO — ALCANÇABILIDADE, NÃO SÓ TEXTO EM test:all
+// O npm executa `pretest:all` automaticamente. A partir desses dois roots,
+// seguimos `npm run ...`, scripts .cjs chamados diretamente e runners .cjs que
+// nomeiam outros instrumentos em strings de código. Comentários são removidos
+// antes da leitura para uma documentação não poder fabricar cobertura.
+const removerComentarios = (src) => src
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+
+const scriptsNpmAlcancados = new Set();
+const arquivosAlcancados = new Set();
+const filaNpm = ["pretest:all", "test:all"].filter((k) => typeof pkg.scripts[k] === "string");
+const filaArquivos = [];
+
+function enfileirarArquivo(nome) {
+  const base = path.basename(nome);
+  if (!base.endsWith(".cjs")) return;
+  if (!fs.existsSync(path.join(SCRIPTS_DIR, base))) return;
+  if (arquivosAlcancados.has(base)) return;
+  arquivosAlcancados.add(base);
+  filaArquivos.push(base);
 }
-console.log(`  no test:all: ${noPortao.length}  ·  fora: ${fora.length}`);
+
+while (filaNpm.length) {
+  const nome = filaNpm.shift();
+  if (!nome || scriptsNpmAlcancados.has(nome)) continue;
+  scriptsNpmAlcancados.add(nome);
+  const comando = pkg.scripts[nome] ?? "";
+
+  for (const m of comando.matchAll(/npm\s+run\s+([\w:.-]+)/g)) {
+    if (pkg.scripts[m[1]] && !scriptsNpmAlcancados.has(m[1])) filaNpm.push(m[1]);
+  }
+  for (const m of comando.matchAll(/(?:\.\/)?scripts\/([\w.-]+\.cjs)/g)) {
+    enfileirarArquivo(m[1]);
+  }
+}
+
+while (filaArquivos.length) {
+  const arq = filaArquivos.shift();
+  const src = removerComentarios(fs.readFileSync(path.join(SCRIPTS_DIR, arq), "utf8"));
+  // Só nomes reais de arquivos do próprio diretório contam. Isso cobre arrays
+  // explícitos de runners e chamadas spawn/exec/require sem depender do estilo.
+  for (const m of src.matchAll(/["'`]([\w.-]+\.cjs)["'`]/g)) {
+    if (conjuntoInstrumentos.has(m[1])) enfileirarArquivo(m[1]);
+  }
+}
+
+const noPortao = todos.filter((arq) => arquivosAlcancados.has(arq) || arq === "censo-de-instrumentos.cjs");
+const fora = todos.filter((arq) => !noPortao.includes(arq));
+console.log(`  npm scripts alcançados desde pretest:test/all: ${scriptsNpmAlcancados.size}`);
+console.log(`  no portão (direto ou por runner): ${noPortao.length}  ·  fora: ${fora.length}`);
 if (!conferirUniverso("censo-de-instrumentos", "instrumentos", todos.length)) falhas++;
 if (!conferirUniverso("censo-de-instrumentos", "no_portao", noPortao.length)) falhas++;
 
 for (const arq of fora) {
-  if (!ISENTOS[arq]) erro(`${arq} não está no test:all e não tem isenção — ou entra, ou vira isenção DATADA e JUSTIFICADA`);
+  if (!ISENTOS[arq]) erro(`${arq} não está alcançável pelo portão e não tem isenção — ou ligue-o ao test:all/pretest:all, ou registre isenção DATADA e JUSTIFICADA`);
   else if (!/^\d{4}-\d{2}-\d{2} · .{30,}/.test(ISENTOS[arq]))
     erro(`${arq} tem isenção sem data ou sem motivo suficiente`);
   else console.log(`  ⚠️ isento: ${arq} — ${ISENTOS[arq]}`);
 }
 
 // ── 3. CADA UM RODA DE FATO, E COM CÓDIGO QUE SIGNIFICA ALGUMA COISA
-// ⚠️ 0 = passou · 1 = reprovou (as duas são respostas). Qualquer outro código é
-// "não rodou": 127 é comando inexistente, 126 é sem permissão, 2 é erro de uso.
-// Foi 127 que fez 53 instrumentos parecerem sem defeito na varredura de hoje.
 console.log(`\n  executando ${todos.length - 1} instrumento(s)…`);
 const naoRodaram = [];
 const repetidos = [];
 for (const arq of todos) {
   if (arq === "censo-de-instrumentos.cjs") continue;
-  // ⚠️ SINAL NÃO É CÓDIGO DE SAÍDA, E A DIFERENÇA IMPORTA.
-  //
-  // `status: null` com `signal` significa que o processo foi MORTO — não que
-  // reprovou nem que passou. Dentro do `test:all`, com 89 filhos em série depois
-  // do build e do e2e, o sistema mata por pressão de recurso: dois instrumentos
-  // que rodam em menos de um segundo isolados voltaram SIGTERM ali dentro.
-  //
-  // ⚠️ UMA repetição, e ela é registrada. Morto duas vezes seguidas não é
-  // pressão de recurso — é defeito, e aí reprova. Repetir em silêncio seria
-  // transformar um portão instável em portão frouxo, que é pior.
-  const rodar = () => spawnSync(process.execPath, [path.join(RAIZ, "scripts", arq)], { cwd: RAIZ, encoding: "utf8", timeout: 300000 });
+  const rodar = () => spawnSync(process.execPath, [path.join(SCRIPTS_DIR, arq)], { cwd: RAIZ, encoding: "utf8", timeout: 300000 });
   let r = rodar();
   if (r.status === null && r.signal) {
     repetidos.push(`${arq} (morto por ${r.signal} — repetido)`);
