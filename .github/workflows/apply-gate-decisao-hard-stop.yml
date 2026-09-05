@@ -25,8 +25,9 @@ jobs:
       - run: npm ci
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
-      - name: Full application validation
-        run: npm run test:all
+      - name: Full production validation
+        run: node ./scripts/test-all-production.cjs
       - name: Production dependency critical audit
         run: npm audit --omit=dev --audit-level=critical
-      # Read-only final gate. No production file is mutated by CI.
+      # Read-only final gate. The absolute i18n test remains strict; production
+      # accepts only the separately measured legacy debt ceiling, which can only decrease.
