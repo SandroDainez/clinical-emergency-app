@@ -28,6 +28,22 @@ jobs:
       - run: npm ci
       - name: Apply TCE absence declaration
         run: node scripts/ajusta-ausencia-hiperventilacao-tce.cjs
+      - name: Register Spanish translation for the exact runtime sentence
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('lib/i18n/modules/pr18-convergence.ts')
+          s = p.read_text()
+          pt = 'HIPERVENTILAÇÃO NA HIC REFRATÁRIA — usar apenas como RESGATE, não como rotina. No algoritmo SIBICC, hiperventilação leve com PaCO₂ 32–35 mmHg é opção de tier 2; PaCO₂ 30–32 mmHg aparece apenas no tier 3 e, no algoritmo com monitorização de oxigênio cerebral, somente quando não há hipoxia tecidual cerebral. A LITERATURA ABERTA NÃO SUSTENTA adotar alvo abaixo de 30 mmHg como regra geral de resgate. Evitar PaCO₂ <30 mmHg e NÃO usar PaCO₂ ≤25 mmHg de forma profilática ou prolongada. Reavaliar PIC, PPC e oxigenação cerebral quando disponível e reverter a hipocapnia assim que a medida de resgate deixar de ser necessária.'
+          es = 'HIPERVENTILACIÓN EN HIC REFRACTARIA — usar solo como RESCATE, no como rutina. En el algoritmo SIBICC, la hiperventilación leve con PaCO₂ 32–35 mmHg es una opción de tier 2; PaCO₂ 30–32 mmHg aparece solo en tier 3 y, en el algoritmo con monitorización de oxígeno cerebral, únicamente cuando no hay hipoxia tisular cerebral. LA LITERATURA ABIERTA NO RESPALDA adoptar un objetivo por debajo de 30 mmHg como regla general de rescate. Evitar PaCO₂ <30 mmHg y NO usar PaCO₂ ≤25 mmHg de forma profiláctica o prolongada. Reevaluar PIC, PPC y oxigenación cerebral cuando esté disponible y revertir la hipocapnia en cuanto la medida de rescate deje de ser necesaria.'
+          if pt not in s:
+              anchor = '\n};\n'
+              if anchor not in s:
+                  raise SystemExit('Dictionary closing anchor not found')
+              entry = f'  {pt!r}: {es!r},\n'
+              s = s.replace(anchor, '\n' + entry + '};\n', 1)
+              p.write_text(s)
+          PY
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: Declared absences
@@ -41,12 +57,14 @@ jobs:
       - name: Validate scope
         run: |
           git diff --check
-          test "$(git diff --name-only)" = "lib/alvos-tce.ts"
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' lib/alvos-tce.ts lib/i18n/modules/pr18-convergence.ts | sort)"
+          test "$changed" = "$expected"
       - name: Commit validated TCE declaration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/alvos-tce.ts
+          git add lib/alvos-tce.ts lib/i18n/modules/pr18-convergence.ts
           git commit -m "Restore explicit TCE hyperventilation boundary"
           git pull --rebase origin fix-avc-slider-first
           git push origin HEAD:fix-avc-slider-first
