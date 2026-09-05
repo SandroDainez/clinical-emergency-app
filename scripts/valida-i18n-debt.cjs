@@ -7,13 +7,13 @@
  * qualquer literal sem tradução. Este wrapper não muda essa promessa.
  * Ele serve apenas para a barreira de produção: a branch que estamos integrando
  * não pode aumentar a dívida existente na base e, após as traduções desta PR,
- * o teto medido é 563. O teto só pode descer.
+ * o teto medido é 561. O teto só pode descer.
  */
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const TETO = 563;
+const TETO = 561;
 const run = spawnSync(process.execPath, [path.join(__dirname, 'varredura-pt.cjs')], {
   cwd: ROOT,
   encoding: 'utf8',
