@@ -25,7 +25,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Re-run after each focused correction until outside-gate failures reach zero.
+      # Re-run after focused corrections until outside-gate failures reach zero.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
@@ -54,7 +54,13 @@ jobs:
           done < /tmp/outside.txt
           echo "OUTSIDE_FAIL_COUNT=$failures"
           exit 0
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: InputStep parity
+        run: node scripts/valida-paridade-input-step.cjs
+      - name: Selector policy
+        run: node scripts/valida-padrao-seletores-ui.cjs
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
       - name: Diff sanity
-        run: git diff --check HEAD~2..HEAD
+        run: git diff --check HEAD~4..HEAD
