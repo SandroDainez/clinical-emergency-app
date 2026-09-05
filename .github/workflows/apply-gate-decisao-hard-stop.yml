@@ -33,8 +33,8 @@ jobs:
       - name: Production dependency critical audit
         run: npm audit --omit=dev --audit-level=critical
       # Final read-only gate on the cleaned branch head. Operational AVC states,
-      # lowered i18n debt ceilings, the explicit TCE evidence boundary and the
-      # newly detected composed UI phrases have each passed scoped regression.
+      # lowered i18n debt ceilings, the explicit TCE evidence boundary, composed
+      # UI phrases and sedation slider grid alignment each passed scoped regression.
       # This run must prove the complete production chain together before merge.
       # The original absolute i18n checks remain strict; production accepts only
       # the separately measured legacy debt ceilings, both proven against
