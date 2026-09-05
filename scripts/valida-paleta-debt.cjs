@@ -21,8 +21,7 @@ const esperados=[
   /❌ `components\/protocol-screen\/stabilization-first-card\.tsx` subiu de 19 para 26 cores em hexadecimal\./,
 ];
 const presentes=esperados.filter((rx)=>rx.test(texto)).length;
-const cabecalhos=(texto.match(/^❌ `components\/[^
-]+/gm)||[]).length;
+const cabecalhos=(texto.match(/^❌ `components\/[^\n]+/gm)||[]).length;
 if(n!==3||presentes!==3||cabecalhos!==3){
   console.error('\n❌ Paleta mudou além da dívida exatamente congelada; produção bloqueada.\n');
   process.exit(1);

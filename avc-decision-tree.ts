@@ -94,21 +94,21 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "FAST: registrar achados observáveis e o estado do último momento visto bem (LKW).",
         "Acionar o CÓDIGO AVC e a equipe de neurologia/imagem imediatamente.",
         "ABC: registrar SpO₂, necessidade de O₂, monitorização, ECG e acessos venosos.",
-        "Glicemia capilar AGORA — registrar o valor e se hipoglicemia precisou de tratamento.",
-        "Registrar coleta dos exames iniciais e NIHSS basal.",
+        "Glicemia capilar AGORA — registre o valor. O app classifica automaticamente hipo/normo/hiperglicemia e abre a correção quando necessária.",
+        "Iniciar o NIHSS em paralelo à neuroimagem. A calculadora completa será aberta no fluxo isquêmico; não estimar o escore de cabeça.",
       ],
       interactions: [
-        { id: "fast_face", label: "FAST · Face", kind: "choice", options: [
+        { id: "fast_face", label: "FAST · Face (rosto)", kind: "choice", options: [
           { id: "normal", label: "Normal", value: "normal" },
           { id: "assimetria", label: "Assimetria facial", value: "assimetria" },
         ] },
-        { id: "fast_arms", label: "FAST · Arms", kind: "choice", options: [
+        { id: "fast_arms", label: "FAST · Braços", kind: "choice", options: [
           { id: "normal", label: "Sem queda", value: "normal" },
           { id: "direita", label: "Queda à direita", value: "queda_direita" },
           { id: "esquerda", label: "Queda à esquerda", value: "queda_esquerda" },
           { id: "bilateral", label: "Queda bilateral", value: "queda_bilateral" },
         ] },
-        { id: "fast_speech", label: "FAST · Speech", kind: "choice", options: [
+        { id: "fast_speech", label: "FAST · Fala", kind: "choice", options: [
           { id: "normal", label: "Normal", value: "normal" },
           { id: "disartria", label: "Disartria", value: "disartria" },
           { id: "afasia", label: "Afasia", value: "afasia" },
@@ -153,17 +153,83 @@ export const avcDecisionTree: DecisionTreeDefinition = {
           { id: "dois", label: "2", value: "2" },
         ] },
         { id: "glicemia", label: "Glicemia capilar", kind: "number", min: 20, max: 1200, step: 1, unit: "mg/dL" },
-        { id: "hipoglicemia_tratada", label: "Hipoglicemia tratada?", kind: "choice", options: [
-          { id: "nao_aplicavel", label: "Não aplicável (glicemia ≥ 60)", value: "nao_aplicavel" },
-          { id: "sim", label: "Sim — tratamento realizado", value: "sim" },
-          { id: "pendente", label: "Ainda pendente", value: "pendente" },
-        ] },
         { id: "labs_iniciais", label: "HMG, INR/TTPa, eletrólitos, função renal e troponina", kind: "choice", options: [
           { id: "coletados", label: "Coletados", value: "coletados" },
           { id: "parcial", label: "Coleta parcial", value: "parcial" },
           { id: "pendente", label: "Pendente", value: "pendente" },
         ] },
-        { id: "nihss", label: "NIHSS basal", kind: "number", min: 0, max: 42, step: 1 },
+      ],
+      next: {
+        possiveis: ["avc_hipoglicemia", "avc_hiperglicemia", "tempo"],
+        escolher: (values) => {
+          const glicemia = toNumber(values.glicemia);
+          if (glicemia !== null && glicemia < 60) return "avc_hipoglicemia";
+          if (glicemia !== null && glicemia > 180) return "avc_hiperglicemia";
+          return "tempo";
+        },
+      },
+    },
+
+    avc_hipoglicemia: {
+      id: "avc_hipoglicemia",
+      type: "action",
+      title: "Hipoglicemia detectada — corrigir agora",
+      summary: "Glicemia informada: {glicemia} mg/dL. Hipoglicemia pode simular AVC e deve ser corrigida sem atrasar a neuroimagem.",
+      actions: [
+        "Se houver alteração neurológica ou risco de aspiração, NÃO oferecer glicose por via oral.",
+        "Com acesso IV: preferir glicose IV titulada. Opções equivalentes usuais: glicose 10% 250 mL (25 g) ou glicose 50% 50 mL (25 g), conforme apresentação e protocolo local; administrar e reavaliar clinicamente.",
+        "Sem acesso IV imediato: glucagon 1 mg IM pode ser usado enquanto se obtém acesso venoso.",
+        "Repetir glicemia em aproximadamente 15 minutos e repetir tratamento se permanecer < 60 mg/dL.",
+        "Depois de iniciar a correção, manter TC/angioTC e demais passos do AVC em paralelo — não esperar normalização completa para acionar imagem.",
+      ],
+      interactions: [
+        { id: "hipoglicemia_tratada", label: "Correção da hipoglicemia", kind: "choice", options: [
+          { id: "iv", label: "Glicose IV administrada", value: "iv" },
+          { id: "glucagon", label: "Glucagon usado enquanto obtém acesso", value: "glucagon" },
+          { id: "pendente", label: "Correção ainda pendente", value: "pendente" },
+        ] },
+        { id: "glicemia_pos_correcao", label: "Glicemia após correção", kind: "number", min: 20, max: 1200, step: 1, unit: "mg/dL" },
+      ],
+      next: {
+        possiveis: ["tempo", "avc_hipoglicemia_persistente"],
+        escolher: (values) => {
+          const glicemia = toNumber(values.glicemia_pos_correcao);
+          return glicemia !== null && glicemia >= 60 ? "tempo" : "avc_hipoglicemia_persistente";
+        },
+      },
+    },
+
+    avc_hipoglicemia_persistente: {
+      id: "avc_hipoglicemia_persistente",
+      type: "action",
+      title: "Hipoglicemia persiste — repetir correção e investigar",
+      summary: "A glicemia continua abaixo do limiar de segurança informado. Não trate como déficit neurológico definitivo enquanto a hipoglicemia persistir.",
+      actions: [
+        "Repetir glicose IV titulada e nova glicemia em cerca de 15 minutos.",
+        "Revisar causa: insulina/sulfonilureia, jejum prolongado, álcool, insuficiência hepática/renal, sepse e outros precipitantes.",
+        "Se houver uso de sulfonilureia ou recorrência apesar de glicose, considerar toxicologia/terapia específica conforme protocolo institucional.",
+        "Continuar o fluxo de imagem do AVC em paralelo se a suspeita clínica permanecer.",
+      ],
+      next: "tempo",
+    },
+
+    avc_hiperglicemia: {
+      id: "avc_hiperglicemia",
+      type: "action",
+      title: "Hiperglicemia detectada — conduzir sem atraso da reperfusão",
+      summary: "Glicemia informada: {glicemia} mg/dL. No AVC agudo, evitar hiperglicemia persistente e também evitar correção intensiva que provoque hipoglicemia.",
+      actions: [
+        "Manter a neuroimagem e a avaliação de reperfusão em paralelo — glicemia elevada isoladamente não deve atrasar TC/angioTC.",
+        "Se a glicemia permanecer > 180 mg/dL, usar protocolo hospitalar de insulina com alvo usual de 140–180 mg/dL e monitorização seriada; NÃO perseguir 80–130 mg/dL no AVC agudo.",
+        "Se glicemia ≥ 250 mg/dL, cetose, acidose, desidratação importante ou alteração metabólica desproporcional, colher eletrólitos/gasometria/cetonas e considerar CAD/EHH em paralelo.",
+        "Reavaliar glicemia após a intervenção definida pelo protocolo institucional e vigiar hipoglicemia durante o tratamento.",
+      ],
+      interactions: [
+        { id: "hiperglicemia_plano", label: "Plano para hiperglicemia", kind: "choice", options: [
+          { id: "monitorar", label: "Monitorização seriada iniciada", value: "monitorar" },
+          { id: "insulina", label: "Protocolo de insulina iniciado", value: "insulina" },
+          { id: "cad_ehh", label: "Investigação/tratamento de CAD/EHH em paralelo", value: "cad_ehh" },
+        ] },
       ],
       next: "tempo",
     },
@@ -461,18 +527,22 @@ export const avcDecisionTree: DecisionTreeDefinition = {
 
     isq_pa_check: {
       id: "isq_pa_check",
-      type: "decision",
-      title: "Pressão arterial antes da trombólise",
-      question: "A PA está < 185/110 mmHg?",
-      summary: "PA informada: {pas}/{pad} mmHg.",
-      evidence: [
-        "Para trombolisar, a PA deve estar < 185/110 mmHg.",
-        "Após a trombólise, manter < 180/105 mmHg por 24 horas.",
+      type: "action",
+      title: "Pressão arterial antes da trombólise — classificação automática",
+      summary: "PA informada: {pas}/{pad} mmHg. O app compara o valor com o limite de 185/110 e encaminha para correção quando necessário.",
+      actions: [
+        "Limite para liberar trombólise IV: PAS < 185 mmHg E PAD < 110 mmHg.",
+        "Se qualquer um dos dois estiver acima do limite, o próximo passo abre a correção pressórica com doses e reavaliação.",
+        "Depois da trombólise, o alvo muda para < 180/105 mmHg por 24 horas.",
       ],
-      options: [
-        { id: "sim", label: "Sim — < 185/110", next: "trombolise" },
-        { id: "nao", label: "Não — ≥ 185/110", next: "isq_pa_tratar" },
-      ],
+      next: {
+        possiveis: ["trombolise", "isq_pa_tratar"],
+        escolher: (values) => {
+          const pas = toNumber(values.pas);
+          const pad = toNumber(values.pad);
+          return pas !== null && pad !== null && pas < 185 && pad < 110 ? "trombolise" : "isq_pa_tratar";
+        },
+      },
     },
 
     isq_pa_tratar: {

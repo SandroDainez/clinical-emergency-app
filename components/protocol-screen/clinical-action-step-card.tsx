@@ -66,7 +66,15 @@ export function ClinicalActionStepCard({
             {interactions.map((item) => {
               const atual = interactionValues[item.id];
               return (
-                <View key={item.id} style={e.interactionCard} testID={`acao-${item.id}`}>
+                <View
+                  key={item.id}
+                  style={[
+                    e.interactionCard,
+                    item.kind === "number" ? e.interactionCardNumber : item.kind === "choice" ? e.interactionCardChoice : e.interactionCardConfirm,
+                    atual !== undefined && e.interactionCardRecorded,
+                  ]}
+                  testID={`acao-${item.id}`}
+                >
                   <View style={e.interactionHeader}>
                     <Text style={e.interactionLabel}>{tr(item.label)}</Text>
                     {atual !== undefined ? <Text style={e.recorded}>{tr("REGISTRADO")}</Text> : null}
@@ -177,15 +185,20 @@ const criarEstilos = (t: Tema) =>
     numberText: { ...TIPOGRAFIA.micro, color: t.cores.onCritical, fontWeight: "900" },
     itemText: { flex: 1, ...TIPOGRAFIA.body, color: t.cores.text, fontWeight: "700" },
     operationalBlock: { gap: ESPACO.sm },
-    operationalTitle: { ...TIPOGRAFIA.micro, color: t.cores.primary, fontWeight: "900", letterSpacing: 0.6 },
+    operationalTitle: { ...TIPOGRAFIA.caption, color: t.cores.primary, fontWeight: "900", letterSpacing: 0.5 },
     interactionCard: {
       gap: ESPACO.sm,
       borderWidth: 1,
+      borderLeftWidth: 4,
       borderColor: t.cores.border,
       borderRadius: RAIO.input,
       padding: ESPACO.md,
       backgroundColor: t.cores.surface,
     },
+    interactionCardConfirm: { borderLeftColor: t.cores.success },
+    interactionCardChoice: { borderLeftColor: t.cores.primary },
+    interactionCardNumber: { borderLeftColor: t.cores.warning },
+    interactionCardRecorded: { borderColor: t.cores.success, backgroundColor: t.cores.bg },
     interactionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: ESPACO.sm },
     interactionLabel: { flex: 1, ...TIPOGRAFIA.caption, color: t.cores.text, fontWeight: "800" },
     recorded: { ...TIPOGRAFIA.micro, color: t.cores.success, fontWeight: "900" },
