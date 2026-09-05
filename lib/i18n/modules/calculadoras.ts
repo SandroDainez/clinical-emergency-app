@@ -31,15 +31,14 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "Infusão": "Infusión",
   "Equação": "Ecuación",
 
-  // ── Peso predito (VM) ──────────────────────────────────────────────────────
-  "Peso predito (VM)": "Peso predicho (VM)",
-  "Volume corrente protetor — ARDSNet": "Volumen corriente protector — ARDSNet",
+  // ── Peso corporal predito ──────────────────────────────────────────────────
+  "Peso corporal predito": "Peso corporal predicho",
+  "Sexo e altura · referência antropométrica com aplicação ventilatória": "Sexo y talla · referencia antropométrica con aplicación ventilatoria",
+  "NA VENTILAÇÃO: calcule o volume corrente pelo peso predito, nunca pelo peso atual. Em outros usos (por exemplo, dose de fármaco), confirme qual escalar de peso a recomendação exige — peso predito, ideal, ajustado, magro e atual não são intercambiáveis.": "EN VENTILACIÓN: calcule el volumen corriente con el peso predicho, nunca con el peso actual. En otros usos (por ejemplo, dosis de fármacos), confirme qué escalar de peso exige la recomendación: peso predicho, ideal, ajustado, magro y actual no son intercambiables.",
   "Sexo": "Sexo",
   "Masculino": "Masculino",
   "Feminino": "Femenino",
   "Altura": "Talla",
-  "SEMPRE usar peso predito (altura), NUNCA o peso atual. Em obesos, o VC pelo peso real causa lesão pulmonar (volutrauma).":
-    "SIEMPRE usar el peso predicho (por la talla), NUNCA el peso actual. En obesos, el volumen corriente calculado por el peso real causa lesión pulmonar (volutrauma).",
   "Peso predito": "Peso predicho",
   "VC 6 mL/kg (padrão ARDSNet)": "VC 6 mL/kg (estándar ARDSNet)",
   "VC 4 mL/kg (SARA grave)": "VC 4 mL/kg (SDRA grave)",
