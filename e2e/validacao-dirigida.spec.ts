@@ -166,7 +166,7 @@ test("[calculadoras-clinicas] as 15 abrem, e o peso predito calcula na casa nova
   // ⚠️ PESO PREDITO NA CASA NOVA — a fórmula mudou de `ventilation-decision-tree.ts`
   // (removido) para `lib/peso-predito.ts`. A conferência estrutural é `test:vm`;
   // aqui se prova que ela CHEGA À TELA por este módulo, que passou a ser o dono.
-  await pressables(page).filter({ hasText: /Peso predito/i }).first().click();
+  await pressables(page).filter({ hasText: /Peso corporal predito/i }).first().click();
   await page.waitForTimeout(300);
   await pressables(page).filter({ hasText: /^Masculino/ }).first().click();
   await page.waitForTimeout(300);

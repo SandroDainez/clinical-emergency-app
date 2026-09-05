@@ -163,12 +163,45 @@ test.describe("OVACE · a rota até a PCR leva a particularidade junto", () => {
     await page.goto("/modulos/ovace-adulto");
     await page.waitForTimeout(1500);
 
-    const ovace = await page.locator("body").innerText();
-    expect(ovace, "a sequência de 2025 sumiu").toMatch(/5 golpes nas costas → 5 compressões abdominais/);
-    expect(ovace, "a posição da compressão abdominal sumiu").toMatch(/ACIMA DO UMBIGO/);
-    expect(ovace, "a âncora da compressão torácica na RCP sumiu").toMatch(/METADE INFERIOR DO ESTERNO/);
-    expect(ovace, "o pós-desobstrução voltou a descrever risco").toMatch(/NECESSÁRIA MESMO EM QUEM FICOU ASSINTOMÁTICO/);
-    expect(ovace, "a particularidade da RCP não aparece no módulo").toMatch(/A RCP É A PADRÃO/);
+    /**
+     * ⚠️ A TELA VIROU COCKPIT COM ESTADOS (`refactor(ovace)`) — antes era linear
+     * e uma leitura só via tudo. O teste ⛔ não afrouxou: ele PERCORRE os estados
+     * e cobra cada texto onde ele de fato mora. Ler a tela inicial e exigir o
+     * conteúdo da RCP passaria a testar a ausência de navegação, ⛔ e não a
+     * presença do conteúdo.
+     */
+    const tela = () => page.locator("body").innerText();
+    /**
+     * ⚠️ TOCA EM BOTÃO, ⛔ e não em texto: "Perdeu a consciência" também aparece
+     * DENTRO da frase de reavaliação ("Objeto saiu? Perdeu a consciência? Se
+     * não: repita…"), que vem ANTES do botão na ordem do DOM. Um `text=` com
+     * `.first()` pegava a frase ⛔ e o estado nunca mudava.
+     */
+    const tocar = async (rotulo: string) => {
+      await page.getByRole("button", { name: rotulo, exact: true }).first().click();
+      await page.waitForTimeout(600);
+    };
+
+    // Estado 1 · reconhecimento: a decisão que classifica a obstrução.
+    expect(await tela(), "a decisão de classificação sumiu").toMatch(
+      /A obstrução é leve, grave ou já houve inconsciência\?/
+    );
+
+    // Estado 2 · obstrução grave: a sequência 2025 — golpes ANTES das compressões.
+    await tocar("Tosse fraca/ausente ou não consegue falar");
+    const grave = await tela();
+    expect(grave, "a sequência de 2025 sumiu — os golpes nas costas vêm primeiro").toMatch(/5 golpes nas costas/);
+    expect(grave, "a compressão abdominal sumiu do ciclo 5 + 5").toMatch(/5 compressões ABDOMINAIS/);
+    expect(grave, "a posição da compressão abdominal sumiu").toMatch(/ACIMA DO UMBIGO/);
+
+    // Estado 3 · inconsciência: a particularidade da RCP no engasgo.
+    await tocar("Perdeu a consciência");
+    const inconsciente = await tela();
+    expect(inconsciente, "a particularidade da RCP não aparece no módulo").toMatch(/A RCP É A PADRÃO/);
+    expect(inconsciente, "a boca examinada antes das ventilações sumiu").toMatch(/APÓS CADA 30 COMPRESSÕES/);
+    expect(inconsciente, "a ressalva de nunca varrer às cegas sumiu").toMatch(
+      /NUNCA faça varredura digital às cegas/
+    );
 
     // A ponte: navega para a PCR pré-marcando a hipóxia.
     await page.locator("text=Abrir PCR no adulto >> visible=true").first().click();

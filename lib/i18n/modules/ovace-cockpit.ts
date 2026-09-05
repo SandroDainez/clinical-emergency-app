@@ -107,6 +107,11 @@ export const ES_OVACE_COCKPIT: Record<string, string> = {
     "Después de ejecutar y verificar la conducta, registre el resultado del ciclo.",
   "Intercorrências sem perder o fluxo atual": "Intercurrencias sin perder el flujo actual",
   "ABRIR ▼": "ABRIR ▼",
+  /** ⚠️ "detalhes" ⛔ não é "detalles" por acaso: o dígrafo `lh` é PT, ⛔ e a trava
+   *  de tela em espanhol cobra exatamente ele. */
+  "VER DETALHES ›": "VER DETALLES ›",
+  "OCULTAR DETALHES": "OCULTAR DETALLES",
+  "Mudou em 2025": "Cambió en 2025",
   "Fonte: American Heart Association · Diretrizes de RCP e ACE 2025 · OVACE em adultos":
     "Fuente: American Heart Association · Guías de RCP y ACE 2025 · OVACE en adultos",
 
