@@ -37,8 +37,9 @@ function telas(dir, out = []) {
 }
 
 // Inputs de autenticação e o componente genérico de texto não pertencem à regra
-// clínica. app/index também é entrada de autenticação/infra, não dado do paciente.
-const NEUTRO = /password-input|ui-v2\/input|app\/index/;
+// clínica. app/index é autenticação/infra e app/dev contém apenas showcases de
+// componentes; nenhum dos dois representa uma tela de atendimento em produção.
+const NEUTRO = /password-input|ui-v2\/input|app\/index|app\/dev\//;
 const caixas = [];
 for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, "app")))) {
   const rel = path.relative(app, t);
