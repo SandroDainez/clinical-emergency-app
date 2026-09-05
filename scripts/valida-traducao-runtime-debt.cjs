@@ -3,8 +3,8 @@
  * Gate de NÃO-REGRESSÃO para tradução em runtime.
  *
  * A checagem estrita `valida-traducao-runtime.cjs` continua exigindo zero.
- * Para esta barreira de produção, aceitamos apenas a dívida histórica ainda
- * existente após as traduções operacionais desta PR, medida em 2026-09-05:
+ * Para a barreira de produção aceitamos somente a dívida histórica comprovada
+ * e já reduzida nesta PR:
  *   - 160 frases distintas sem chave;
  *   - 19 grupos/problemas reportados.
  * Estes tetos só podem descer.
