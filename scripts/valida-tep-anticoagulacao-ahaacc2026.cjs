@@ -12,7 +12,7 @@ expect(!tep.includes("HNF é o anticoagulante de escolha no alto risco"), "TEP: 
 expect(!tep.includes("HBPM preferida à HNF na maioria das categorias C–E, exceto quando se planeja trombólise"), "TEP: exceção automática antiga para trombólise ainda presente");
 expect(tep.includes("quando anticoagulação parenteral inicial for necessária nas categorias C1–E1, preferir HBPM à HNF"), "TEP: recomendação AHA/ACC 2026 C1–E1 ausente");
 expect(tep.includes("suspeita C2 ou superior e o risco hemorrágico for baixo"), "TEP: anticoagulação antes de imagem atrasada em C2+ não ficou condicionada ao risco hemorrágico");
-expect(tep.includes("TEP de alto risco, por si só, NÃO torna HNF o anticoagulante parenteral preferido"), "TEP: proteção contra preferência automática por HNF ausente");
+expect(tep.includes("Categoria D/E, por si só, NÃO torna HNF o anticoagulante parenteral preferido"), "TEP: proteção contra preferência automática por HNF ausente");
 expect(tep.includes("Após trombólise ou procedimento endovascular, HBPM também é preferida"), "TEP: preferência pós-procedimento/pós-trombólise ausente");
 expect(tep.includes("durante a infusão trombolítica, seguir o protocolo específico"), "TEP: incerteza durante a própria infusão trombolítica não ficou explícita");
 expect(tep.includes("planejamento de trombólise ou procedimento endovascular NÃO cria exceção automática a favor de HNF"), "TEP: planejamento de intervenção ainda poderia virar exceção automática para HNF");
