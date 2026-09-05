@@ -277,6 +277,17 @@ export type DeclaracaoDeAfirmacao = {
   procedencia?: ProcedenciaDaConduta;
 };
 
+export type ActionInteractionOption = {
+  id: string;
+  label: string;
+  value: string;
+};
+
+export type ActionInteraction =
+  | { id: string; label: string; kind: "confirm"; optional?: boolean; valueWhenDone?: string }
+  | { id: string; label: string; kind: "choice"; optional?: boolean; options: ActionInteractionOption[] }
+  | { id: string; label: string; kind: "number"; optional?: boolean; min: number; max: number; step: number; unit?: string };
+
 export type ActionNode = BaseNode & {
   type: "action";
   /** Decisão de origem quando este nó materializa uma descoberta guiada canônica. */
@@ -284,6 +295,8 @@ export type ActionNode = BaseNode & {
   /** Ação clínica canônica tentada/executada neste nó; usada por Safety Gates. */
   clinicalActionId?: string;
   actions: string[];
+  /** Interações observáveis que transformam a recomendação em execução rastreável. */
+  interactions?: ActionInteraction[];
   /**
    * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
    *
@@ -480,13 +493,15 @@ export type FrontendTreeStep =
       /** Ação clínica canônica declarada pelo nó. */
       clinicalActionId?: string;
       actions: string[];
+      interactions: ActionInteraction[];
+      interactionValues: TreeValues;
+      canContinue: boolean;
       /** O porquê, recolhido. Ver `ActionNode.porque`. */
       porque: string[];
       /** Força e procedência, já interpoladas. Ver `ProcedenciaDaConduta`. */
       procedencia?: ProcedenciaDaConduta;
       /** Uma declaração por afirmação, já interpoladas. Ver `DeclaracaoDeAfirmacao`. */
       declaracoes: DeclaracaoDeAfirmacao[];
-      canContinue: true;
     }
   | {
       id: string;

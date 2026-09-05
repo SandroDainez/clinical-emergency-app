@@ -9,6 +9,7 @@ export type ClinicalActionStepAdapterProps = {
   evidence?: ReactNode;
   rationale?: ReactNode;
   onAdvance: () => void;
+  onRecordValue?: (fieldId: string, value: string) => void;
 };
 
 /**
@@ -23,6 +24,7 @@ export function ClinicalActionStepAdapter({
   evidence,
   rationale,
   onAdvance,
+  onRecordValue,
 }: ClinicalActionStepAdapterProps) {
   const tr = useTr();
 
@@ -31,6 +33,10 @@ export function ClinicalActionStepAdapter({
       title={step.title}
       summary={step.summary}
       actions={step.actions}
+      interactions={step.interactions}
+      interactionValues={step.interactionValues}
+      canContinue={step.canContinue}
+      onRecordValue={onRecordValue}
       evidence={evidence}
       rationale={rationale}
       onAdvance={onAdvance}

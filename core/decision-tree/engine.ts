@@ -431,6 +431,13 @@ export class DecisionTreeEngine {
     // pares de confirmação dos critérios compostos (enchimento capilar,
     // congestão) existem justamente para poderem não ser avaliados — a ausência
     // deles significa "não confirmado", que é diferente de "não preenchido".
+    if (node.type === "action" && node.interactions?.length) {
+      const faltando = node.interactions.filter((item) => !item.optional && this.values[item.id] === undefined);
+      if (faltando.length) {
+        throw new Error(`Node "${node.id}": ação operacional obrigatória sem estado — ${faltando.map((f) => `"${f.id}"`).join(", ")}`);
+      }
+    }
+
     if (node.type === "input") {
       // Basta comparar com `undefined`: `setValue` já normaliza — valor só com
       // espaços APAGA a chave em vez de gravar string vazia. A primeira versão
@@ -476,7 +483,7 @@ export class DecisionTreeEngine {
       return mapDecisionNode(node, this.getValues(), (t) => this.interpolate(t));
     }
     if (node.type === "action") {
-      return mapActionNode(node, (t) => this.interpolate(t));
+      return mapActionNode(node, this.values, (t) => this.interpolate(t));
     }
     if (node.type === "input") {
       return mapInputNode(node, this.values, (t) => this.interpolate(t));
@@ -531,7 +538,17 @@ function mapDecisionNode(
   };
 }
 
-function mapActionNode(node: ActionNode, interpolate: (t: string) => string): FrontendTreeStep {
+function mapActionNode(
+  node: ActionNode,
+  rawValues: Record<string, string>,
+  interpolate: (t: string) => string
+): FrontendTreeStep {
+  const interactions = (node.interactions ?? []).map((item) => ({
+    ...item,
+    label: interpolate(item.label),
+    ...(item.kind === "choice" ? { options: item.options.map((option) => ({ ...option, label: interpolate(option.label) })) } : {}),
+  }));
+  const canContinue = interactions.every((item) => item.optional || rawValues[item.id] !== undefined);
   return {
     id: node.id,
     kind: "action",
@@ -540,6 +557,9 @@ function mapActionNode(node: ActionNode, interpolate: (t: string) => string): Fr
     guidedDiscoveryOrigin: node.guidedDiscoveryOrigin,
     clinicalActionId: node.clinicalActionId,
     actions: node.actions.map(interpolate),
+    interactions,
+    interactionValues: { ...rawValues },
+    canContinue,
     // Interpolado como as ações: o porquê pode citar peso, dose ou valor do caso.
     porque: (node.porque ?? []).map(interpolate),
     procedencia: node.procedencia ? interpolarProcedencia(node.procedencia, interpolate) : undefined,
@@ -551,7 +571,6 @@ function mapActionNode(node: ActionNode, interpolate: (t: string) => string): Fr
       afirmacao: interpolate(d.afirmacao),
       procedencia: d.procedencia ? interpolarProcedencia(d.procedencia, interpolate) : undefined,
     })),
-    canContinue: true,
   };
 }
 

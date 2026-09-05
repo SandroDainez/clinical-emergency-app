@@ -696,6 +696,7 @@ export default function AclsDecisionFlowScreen({
             step={step}
             onAdvance={handleAdvance}
             onResolveGate={handleGateResolution}
+            onRecordValue={handleSetValue}
             emV2={emV2}
             protocolId={currentModuleSlug}
           />
@@ -931,12 +932,14 @@ function ActionStep({
   step,
   onAdvance,
   onResolveGate,
+  onRecordValue,
   emV2,
   protocolId,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
   onResolveGate: (nodeId: string) => void;
+  onRecordValue?: (fieldId: string, value: string) => void;
   emV2?: boolean;
   protocolId?: string;
 }) {
@@ -1036,6 +1039,7 @@ function ActionStep({
             />
           }
           onAdvance={onAdvance}
+          onRecordValue={onRecordValue}
         />
       </View>
     );
