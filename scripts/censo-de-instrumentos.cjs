@@ -137,7 +137,14 @@ const naoRodaram = [];
 const repetidos = [];
 for (const arq of todos) {
   if (arq === "censo-de-instrumentos.cjs") continue;
-  const rodar = () => spawnSync(process.execPath, [path.join(SCRIPTS_DIR, arq)], { cwd: RAIZ, encoding: "utf8", timeout: 300000 });
+  const rodar = () => spawnSync(process.execPath, [path.join(SCRIPTS_DIR, arq)], {
+    cwd: RAIZ,
+    encoding: "utf8",
+    timeout: 300000,
+    // Se o instrumento for a suite do Emergências 2, ela não deve chamar de
+    // novo o portão total enquanto o próprio censo está enumerando instrumentos.
+    env: { ...process.env, SKIP_TOTAL_INSTRUMENT_GATE: "1" },
+  });
   let r = rodar();
   if (r.status === null && r.signal) {
     repetidos.push(`${arq} (morto por ${r.signal} — repetido)`);
