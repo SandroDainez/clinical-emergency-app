@@ -11,7 +11,17 @@ const screens = [
   "clinical-calculators-screen.tsx",
 ];
 
-for (const token of ['tr("Calculadora clínica")', 'tr("Voltar aos módulos")', "right?: ReactNode"]) {
+// O cabeçalho canônico agora segue a mesma gramática do Clinical Cockpit:
+// “Voltar” preserva a navegação local e “MÓDULOS” é a saída explícita para o hub.
+// A validação antiga ainda procurava a cópia “Voltar aos módulos”, que deixou de
+// existir quando as calculadoras foram alinhadas ao AVC/UI v2.
+for (const token of [
+  'tr("Calculadora clínica")',
+  'labelVoltar={tr("Voltar")}',
+  'tr("MÓDULOS")',
+  'router.replace("/modulos" as never)',
+  "right?: ReactNode",
+]) {
   if (!component.includes(token)) throw new Error(`Cabeçalho canônico incompleto: ${token}`);
 }
 
@@ -23,4 +33,4 @@ for (const file of screens) {
   }
 }
 
-console.log("✅ Quatro calculadoras usam o mesmo cabeçalho canônico, sem alterar seus motores.");
+console.log("✅ Quatro calculadoras usam o mesmo cabeçalho canônico e a mesma saída explícita para MÓDULOS, sem alterar seus motores.");
