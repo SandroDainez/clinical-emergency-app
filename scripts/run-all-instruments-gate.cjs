@@ -6,10 +6,6 @@ const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const scriptsDir = __dirname;
 
-// Marcador lido pelo censo. O runner continua descobrindo o universo inteiro;
-// apenas a SEMÂNTICA de bloqueio é diferente para medições/dívida histórica
-// comprovada contra a branch-base. Os wrappers abaixo continuam bloqueantes e
-// os testes estritos originais permanecem disponíveis isoladamente.
 const COBRE_TODOS_OS_INSTRUMENTOS = true;
 void COBRE_TODOS_OS_INSTRUMENTOS;
 
@@ -20,20 +16,16 @@ const SUBSTITUIDOS_POR_GATE_DE_NAO_REGRESSAO = new Set([
   "valida-prazo-visivel.cjs",
   "valida-leitura-de-fonte.cjs",
   "valida-traducao-runtime.cjs",
+  "valida-traducao-composta.cjs",
 ]);
 
 const MEDICOES_NAO_BLOQUEANTES = new Set([
-  // Inventário explícito: o próprio script declara que o achado é medição e
-  // não correção. A cobertura continua sendo censada e o instrumento continua
-  // executável por `npm run mapa:calculadoras`.
   "mapa-de-calculadoras.cjs",
 ]);
 
 const instrumentos = fs.readdirSync(scriptsDir)
   .filter(ehInstrumento)
   .filter((nome) => nome !== "censo-de-instrumentos.cjs")
-  // A suite é a chamadora canônica deste runner no pretest:all. Incluí-la aqui
-  // criaria recursão suite → total gate → suite → total gate.
   .filter((nome) => nome !== "valida-emergencias-2-suite.cjs")
   .filter((nome) => !SUBSTITUIDOS_POR_GATE_DE_NAO_REGRESSAO.has(nome))
   .filter((nome) => !MEDICOES_NAO_BLOQUEANTES.has(nome))
@@ -62,13 +54,7 @@ for (const instrumento of instrumentos) {
   });
 
   if (result.status !== 0) {
-    falhas.push({
-      instrumento,
-      status: result.status,
-      signal: result.signal,
-      stdout: result.stdout ?? "",
-      stderr: result.stderr ?? "",
-    });
+    falhas.push({ instrumento, status: result.status, signal: result.signal, stdout: result.stdout ?? "", stderr: result.stderr ?? "" });
   }
 }
 
