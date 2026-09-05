@@ -25,6 +25,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Re-run after each focused correction until outside-gate failures reach zero.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
