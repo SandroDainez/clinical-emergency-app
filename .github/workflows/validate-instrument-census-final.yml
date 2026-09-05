@@ -76,8 +76,27 @@ jobs:
       - name: STEMI soft stop
         run: node scripts/valida-safety-gate-soft-stop-stemi.cjs
       - name: Emergencias 2 regression
+        env:
+          SKIP_TOTAL_INSTRUMENT_GATE: "1"
         run: npm run test:emergencias-2
       - name: Total instrument gate
-        run: node scripts/run-all-instruments-gate.cjs
+        id: total_gate
+        shell: bash
+        run: |
+          set +e
+          node scripts/run-all-instruments-gate.cjs 2>&1 | tee instrument-gate.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload instrument gate log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrument-gate-log
+          path: instrument-gate.log
+          if-no-files-found: error
+      - name: Fail if total instrument gate failed
+        if: steps.total_gate.outputs.status != '0'
+        run: exit 1
       - name: Diff sanity
         run: git diff --check HEAD~15..HEAD
