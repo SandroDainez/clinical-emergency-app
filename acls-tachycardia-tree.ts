@@ -220,9 +220,46 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "Sem pulso: qualquer ritmo sem pulso — inclusive FV desencadeada pelo choque — é PCR.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "unstable_reavaliar_pulso" },
         { id: "reverteu", label: "Reverteu — ritmo e pulso recuperados", next: "unstable_disposition" },
         { id: "refratario", label: "NÃO reverteu ou recorreu", next: "unstable_refratario" },
         { id: "sem_pulso", label: "Perdeu o pulso", next: "unstable_sem_pulso" },
+      ],
+    },
+
+    // Caminho guiado pós-choque: decompõe a decisão em dois fatos observáveis.
+    // Primeiro o pulso, porque ausência de pulso muda imediatamente o algoritmo
+    // para PCR; só depois, com pulso confirmado, se pergunta se a taquiarritmia
+    // persiste ou recorreu. Assim a opção "não sei" não vira um chute clínico.
+    unstable_reavaliar_pulso: {
+      id: "unstable_reavaliar_pulso",
+      type: "decision",
+      title: "Primeiro: há pulso?",
+      question: "Cheque pulso central e sinais de circulação imediatamente. Há pulso?",
+      summary: "Se não houver pulso, não repita cardioversão sincronizada — o paciente está em PCR.",
+      evidence: [
+        "Pulso central palpável e sinais de circulação presentes → continuar a reavaliação do ritmo.",
+        "Pulso ausente → iniciar RCP e seguir o algoritmo de parada.",
+      ],
+      options: [
+        { id: "com_pulso", label: "Sim — há pulso", next: "unstable_reavaliar_ritmo" },
+        { id: "sem_pulso", label: "Não — sem pulso", next: "unstable_sem_pulso" },
+      ],
+    },
+
+    unstable_reavaliar_ritmo: {
+      id: "unstable_reavaliar_ritmo",
+      type: "decision",
+      title: "Com pulso: o ritmo reverteu?",
+      question: "A taquiarritmia que motivou a cardioversão ainda está presente ou recorreu logo após o choque?",
+      summary: "Com pulso confirmado, o próximo passo depende de a taquiarritmia ter cessado ou persistido/recorrido.",
+      evidence: [
+        "Ritmo organizado sem a taquiarritmia tratada → seguir para estabilização e reavaliação da perfusão.",
+        "Taquiarritmia persiste ou recorre precocemente → tratar como refratária antes do próximo choque.",
+      ],
+      options: [
+        { id: "reverteu", label: "Não — a taquiarritmia cessou", next: "unstable_disposition" },
+        { id: "persistiu", label: "Sim — persiste ou recorreu", next: "unstable_refratario" },
       ],
     },
 
