@@ -6,11 +6,14 @@
  *   número clínico -> slider/stepper;
  *   texto verdadeiro -> TextInput.
  *
- * Este auditor mede quatro classes de dívida:
+ * Este auditor mede quatro classes de dívida bloqueantes e uma inconsistência
+ * visual informativa:
  *  1. TextInput numérico em telas de módulo;
  *  2. campo numérico de árvore sem faixa de entrada;
  *  3. módulo fora da UI v2;
- *  4. decisão de estabilidade/gravidade sem caminho guiado.
+ *  4. decisão de estabilidade/gravidade sem caminho guiado;
+ *  5. slider que ainda representa "não informado" com ponto inicial no meio da
+ *     faixa em vez do estado neutro/origem do NumericStepper.
  *
  * O teto é dívida congelada: só pode descer.
  */
@@ -41,23 +44,33 @@ function telas(dir, out = []) {
 // componentes; nenhum dos dois representa uma tela de atendimento em produção.
 const NEUTRO = /password-input|ui-v2\/input|app\/index|app\/dev\//;
 const caixas = [];
+const slidersPendentesForaDoPadrao = [];
 for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, "app")))) {
   const rel = path.relative(app, t);
   if (NEUTRO.test(rel)) continue;
   const src = fs.readFileSync(t, "utf8");
   const n = (src.match(/<TextInput/g) || []).length;
-  if (!n) continue;
+  if (n) {
+    // Contamos o próprio bloco do TextInput. Além do literal keyboardType="numeric",
+    // também tratamos como numérico qualquer expressão de keyboardType que contenha
+    // um ramo "numeric"/"decimal-pad"/"number-pad". Isso captura o legado do shell,
+    // por exemplo `keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}`.
+    const blocos = [...src.matchAll(/<TextInput\b[\s\S]*?(?:\/>|>)/g)].map((m) => m[0]);
+    const numericos = blocos.filter((b) => {
+      const prop = b.match(/keyboardType\s*=\s*(?:\{[\s\S]*?\}|["'][^"']+["'])/);
+      return Boolean(prop && /["'](?:numeric|decimal-pad|number-pad)["']/.test(prop[0]));
+    }).length;
+    caixas.push({ rel, total: n, numericos });
+  }
 
-  // Contamos o próprio bloco do TextInput. Além do literal keyboardType="numeric",
-  // também tratamos como numérico qualquer expressão de keyboardType que contenha
-  // um ramo "numeric"/"decimal-pad"/"number-pad". Isso captura o legado do shell,
-  // por exemplo `keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}`.
-  const blocos = [...src.matchAll(/<TextInput\b[\s\S]*?(?:\/>|>)/g)].map((m) => m[0]);
-  const numericos = blocos.filter((b) => {
-    const prop = b.match(/keyboardType\s*=\s*(?:\{[\s\S]*?\}|["'][^"']+["'])/);
-    return Boolean(prop && /["'](?:numeric|decimal-pad|number-pad)["']/.test(prop[0]));
-  }).length;
-  caixas.push({ rel, total: n, numericos });
+  // Estado pendente canônico: `valorVisivel=false` faz o NumericStepper manter o
+  // thumb na origem visual sem expor/gravar o mínimo. O padrão antigo do módulo
+  // de eletrólitos calculava explicitamente o ponto médio quando o campo estava
+  // vazio; isso é visualmente diferente dos demais módulos e pode parecer uma
+  // sugestão clínica. Mantemos esta detecção explícita enquanto o legado existir.
+  if (/Number\(\(\(faixa\.min\s*\+\s*faixa\.max\)\s*\/\s*2\)/.test(src)) {
+    slidersPendentesForaDoPadrao.push(rel);
+  }
 }
 
 // ── 2/4. Árvores: faixa de entrada e caminho guiado ──────────────────────────
@@ -126,8 +139,10 @@ if (!conferirUniverso("auditoria-padroes-ui", "nos_de_decisao", nosDeDecisao)) u
 if (!conferirUniverso("auditoria-padroes-ui", "decisoes_no_radar_de_gravidade", decisoesNoRadar)) universoOk = false;
 L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length} (de ${decisoesNoRadar} no radar)`);
 for (const s of semGuiado) L(`   ❌ ${s}`);
+L(`\n5. SLIDER PENDENTE FORA DO PADRÃO — ${slidersPendentesForaDoPadrao.length}`);
+for (const s of slidersPendentesForaDoPadrao) L(`   ⚠️  ${s} · estado vazio ainda parte do meio da faixa`);
 const pendencias = caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
-L(`\nTotal de pendências: ${pendencias}\n`);
+L(`\nTotal de pendências bloqueantes: ${pendencias}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
 
 if (!universoOk) {
