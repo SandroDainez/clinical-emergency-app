@@ -422,6 +422,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
   return (
     <View style={s.moldura}>
+    {/**
+      * ⚠️⚠️ CABEÇALHO FIXO — FORA DO ScrollView (2026-09-05).
+      *
+      * ⛔ Antes ele rolava com o conteúdo: nas superfícies longas (Estabilização,
+      * Segurança) o médico rolava para baixo ⛔ e o botão de sair sumia — ficava
+      * **preso no módulo**. Agora ele fica no topo, como a barra inferior fica
+      * no rodapé: sair está sempre a um toque, em qualquer superfície.
+      *
+      * ⚠️ E o botão diz **MÓDULOS**, ⛔ não um "‹" mudo: rótulo declara o destino.
+      */}
+      <View style={s.cabecalho}>
+        <Pressable
+          onPress={onVoltar}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Sair do módulo e voltar para a lista")}
+          hitSlop={8}
+          style={({ pressed }) => [s.voltarBotao, pressed && s.voltarBotaoPressionado]}
+        >
+          <Text style={s.voltarTexto}>{tr("‹ Módulos")}</Text>
+        </Pressable>
+        <Text style={s.titulo} numberOfLines={1}>{tr("AVC isquêmico agudo")}</Text>
+        <Recolhido
+          id="escopo-do-modulo"
+          texto="Adulto com suspeita de AVC isquêmico agudo"
+          aberto={escopoAberto}
+          onAlternar={() => setEscopoAberto((v) => !v)}
+        />
+      </View>
     <ScrollView
       style={s.root}
       /**
@@ -433,26 +461,6 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        */
       contentContainerStyle={[s.conteudo, { paddingBottom: ALTURA_DA_BARRA + insets.bottom + ESPACO.lg }]}
     >
-      {/**
-        * ⚠️ I7: a tela desenha o PRÓPRIO cabeçalho, com saída. A rota ⛔ não põe.
-        *
-        * ⚠️⚠️ UMA LINHA. ⛔ O subtítulo de escopo — *"adulto com suspeita de AVC
-        * isquêmico agudo"* — descreve **o módulo**, ⛔ e ⛔ não o paciente: ⛔ ele
-        * ⛔ não muda durante o atendimento ⛔ e custava 120 px em toda superfície.
-        */}
-      <View style={s.cabecalho}>
-        <Pressable onPress={onVoltar} accessibilityRole="button" accessibilityLabel={tr("Voltar")}>
-          <Text style={s.voltar}>‹</Text>
-        </Pressable>
-        <Text style={s.titulo} numberOfLines={1}>{tr("AVC isquêmico agudo")}</Text>
-        <Recolhido
-          id="escopo-do-modulo"
-          texto="Adulto com suspeita de AVC isquêmico agudo"
-          aberto={escopoAberto}
-          onAlternar={() => setEscopoAberto((v) => !v)}
-        />
-      </View>
-
       {/**
         * ── ⚠️⚠️ COCKPIT (§7.8) ────────────────────────────────────────────
         *
@@ -1072,7 +1080,17 @@ const criarEstilos = (tema: Tema) =>
     conteudo: { padding: ESPACO.md, paddingBottom: ESPACO.xl, gap: ESPACO.md },
     /** ⚠️ Uma linha: voltar · nome · ⓘ do escopo. Eram 120 px; agora ~44. */
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm, minHeight: 44 },
-    voltar: { color: AREA_AVC.accent, fontSize: TIPOGRAFIA.title.fontSize },
+    voltarBotao: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingRight: ESPACO.sm,
+    },
+    voltarBotaoPressionado: { opacity: 0.6 },
+    voltarTexto: {
+      color: AREA_AVC.accent,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "700",
+    },
     titulo: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     subtitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     resumo: { backgroundColor: AREA_AVC.badgeBg, borderRadius: RAIO.card, padding: ESPACO.sm, gap: ESPACO.xs },

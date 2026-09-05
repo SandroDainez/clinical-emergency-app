@@ -20,8 +20,32 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
     await expect(page.getByText("AVC isquêmico agudo").first()).toBeVisible();
-    // I7: a tela desenha o próprio cabeçalho, e ele tem volta.
-    await expect(page.getByRole("button", { name: "Voltar" })).toBeVisible();
+    // I7: a tela desenha o próprio cabeçalho, e ele tem saída — agora rotulada
+    // "Módulos" e FIXA no topo (fora do ScrollView), para não sumir no scroll
+    // das superfícies longas.
+    await expect(
+      page.getByRole("button", { name: "Sair do módulo e voltar para a lista" })
+    ).toBeVisible();
+  });
+
+  test("a saída leva de volta ao hub, MESMO após rolar uma superfície longa", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    await expect(page.getByText("AVC isquêmico agudo").first()).toBeVisible();
+
+    // Vai para uma superfície longa e rola até o fim — onde o médico se perdia.
+    const est = page.getByText("Entrada e estabilização", { exact: false }).first();
+    if (await est.count()) await est.click();
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(300);
+
+    // A saída continua visível (cabeçalho fixo) e leva ao hub.
+    const sair = page.getByRole("button", { name: "Sair do módulo e voltar para a lista" });
+    await expect(sair, "a saída deve permanecer visível após o scroll").toBeVisible();
+    await sair.click();
+    await expect
+      .poll(async () => page.url(), { timeout: 15_000 })
+      .not.toContain("/modulos/avc");
   });
 
   test("as nove superfícies abrem em qualquer ordem", async ({ page }) => {
