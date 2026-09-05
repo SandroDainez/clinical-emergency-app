@@ -26,6 +26,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Remove accidental no-op assertion from temporary mutator
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/ajusta-avc-acoes-operacionais-wave2.cjs')
+          s = p.read_text()
+          old = '''once(`      actions: [\n        "Alteplase: dose total {alteplaseDose} mg (0,9 mg/kg, máx 90 mg) — {alteplaseBolus} mg em bolus em 1 min (10%) + {alteplaseInfusao} mg em infusão por 60 min.",`, `      actions: [\n        "Alteplase: dose total {alteplaseDose} mg (0,9 mg/kg, máx 90 mg) — {alteplaseBolus} mg em bolus em 1 min (10%) + {alteplaseInfusao} mg em infusão por 60 min.",`, 'âncora trombólise');\n'''
+          if old not in s:
+              raise SystemExit('No-op anchor not found')
+          p.write_text(s.replace(old, '', 1))
+          PY
       - name: Apply AVC operational actions wave 2
         run: node scripts/ajusta-avc-acoes-operacionais-wave2.cjs
       - name: TypeScript
@@ -38,6 +49,7 @@ jobs:
         run: npm run test:emergencias-2
       - name: Validate scope
         run: |
+          git checkout -- scripts/ajusta-avc-acoes-operacionais-wave2.cjs
           git diff --check
           test "$(git diff --name-only)" = "avc-decision-tree.ts"
       - name: Commit validated AVC operational actions
