@@ -3,19 +3,18 @@
  * Gate de NÃO-REGRESSÃO para tradução em runtime.
  *
  * A checagem estrita `valida-traducao-runtime.cjs` continua exigindo zero.
- * Para esta barreira de produção, aceitamos apenas a dívida histórica já
- * medida na base `emergencias-2-ui-core` em 2026-09-05:
- *   - 162 frases distintas sem chave;
- *   - 20 grupos/problemas reportados.
- * A branch atual foi comparada diretamente com a base e apresentou exatamente
- * os mesmos números. Estes tetos só podem descer.
+ * Para esta barreira de produção, aceitamos apenas a dívida histórica ainda
+ * existente após as traduções operacionais desta PR, medida em 2026-09-05:
+ *   - 160 frases distintas sem chave;
+ *   - 19 grupos/problemas reportados.
+ * Estes tetos só podem descer.
  */
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const TETO_DISTINTAS = 162;
-const TETO_PROBLEMAS = 20;
+const TETO_DISTINTAS = 160;
+const TETO_PROBLEMAS = 19;
 
 const run = spawnSync(process.execPath, [path.join(__dirname, 'valida-traducao-runtime.cjs')], {
   cwd: ROOT,
