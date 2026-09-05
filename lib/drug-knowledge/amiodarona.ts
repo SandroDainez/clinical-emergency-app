@@ -1,4 +1,9 @@
 import type { CanonicalDrug } from "./types";
+import {
+  AMIODARONA_COM_PULSO_CARGA,
+  AMIODARONA_COM_PULSO_MANUTENCAO,
+  AMIODARONA_COM_PULSO_RECORRENCIA,
+} from "../amiodarona-com-pulso";
 
 /**
  * Amiodarona — fonte canônica por INDICAÇÃO.
@@ -7,6 +12,10 @@ import type { CanonicalDrug } from "./types";
  * Isto evita o defeito clássico de tratar “amiodarona” como se tivesse uma dose
  * universal. O legado continua ativo; esta entrada nasce em paralelo e só deve
  * substituí-lo depois de paridade demonstrada.
+ *
+ * Para TV COM PULSO, esta entrada não reescreve o regime: consome as constantes
+ * do dono canônico `lib/amiodarona-com-pulso.ts`. Assim a Drug KB não vira uma
+ * segunda fonte de dose/manutenção/recorrência.
  */
 export const AMIODARONA_CANONICA: CanonicalDrug = {
   id: "amiodarona",
@@ -42,11 +51,11 @@ export const AMIODARONA_CANONICA: CanonicalDrug = {
     {
       indicationId: "tv_com_pulso",
       indicationLabel: "Taquiarritmia ventricular com pulso — carga e manutenção IV",
-      dose: "150 mg em 10 min",
+      dose: AMIODARONA_COM_PULSO_CARGA,
       route: "IV",
-      dilution: "100 mL de SG5% no regime legado atualmente usado pelo app",
-      rate: "150 mg/10 min; depois 1 mg/min por 6 h; depois 0,5 mg/min por 18 h",
-      interval: "recorrência: 150 mg suplementares em 10 min conforme regime de bula",
+      dilution: "Ver carga canônica do regime com pulso",
+      rate: AMIODARONA_COM_PULSO_MANUTENCAO,
+      interval: AMIODARONA_COM_PULSO_RECORRENCIA,
       source: {
         reference: "FDA — amiodarone HCl injection / Nexterone prescribing information",
         version: "label 2021",
