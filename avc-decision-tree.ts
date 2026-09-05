@@ -607,6 +607,31 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "Glicemia 140–180; normotermia (≤ 37,5); rastrear disfagia antes da via oral; profilaxia de TVP (compressão pneumática).",
         "Investigar etiologia: carótidas, ECG/Holter, ecocardiograma. PA-alvo de prevenção após 24 h: < 130/80.",
       ],
+      interactions: [
+        { id: "isq_antitrombotico_status", label: "Estratégia antitrombótica", kind: "choice", options: [
+          { id: "aas", label: "AAS iniciado / programado", value: "aas" },
+          { id: "dapt", label: "DAPT iniciada / programada", value: "dapt" },
+          { id: "aguarda_24h_pos_trombolise", label: "Aguardando 24 h + TC após trombólise", value: "aguarda_24h_pos_trombolise" },
+          { id: "anticoagulacao_programada", label: "Anticoagulação programada por indicação específica", value: "anticoagulacao_programada" },
+          { id: "contraindicado_adiado", label: "Contraindicado / adiado — motivo clínico", value: "contraindicado_adiado" },
+          { id: "pendente", label: "Ainda pendente de definição", value: "pendente" },
+        ] },
+        { id: "isq_disfagia_status", label: "Rastreio de disfagia antes da via oral", kind: "choice", options: [
+          { id: "concluido", label: "Concluído", value: "concluido" },
+          { id: "via_oral_suspensa", label: "Via oral suspensa até avaliação", value: "via_oral_suspensa" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+        ] },
+        { id: "isq_tvp_status", label: "Profilaxia mecânica de TEV", kind: "choice", options: [
+          { id: "iniciada", label: "Compressão pneumática iniciada", value: "iniciada" },
+          { id: "nao_indicada", label: "Não indicada neste momento", value: "nao_indicada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+        ] },
+        { id: "isq_etiologia_status", label: "Investigação etiológica", kind: "choice", options: [
+          { id: "iniciada", label: "Iniciada", value: "iniciada" },
+          { id: "programada", label: "Programada", value: "programada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+        ] },
+      ],
       next: "isq_destino",
     },
 
