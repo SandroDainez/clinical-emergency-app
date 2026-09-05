@@ -29,14 +29,22 @@ jobs:
       - run: npm ci
       - name: Apply operational ActionStep contract and AVC entry
         run: node scripts/ajusta-actionstep-operacional-avc.cjs
+      - name: Fix legacy AVC validator compiler option
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/valida-avc.cjs')
+          s = p.read_text()
+          old = '"tsc", "--ignoreConfig", "--module", "node16"'
+          new = '"tsc", "--module", "node16"'
+          if old not in s:
+              raise SystemExit('Legacy --ignoreConfig invocation not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: UI patterns
         run: npm run test:padroes-ui
-      - name: Standalone AVC compile used by validator
-        run: |
-          rm -rf /tmp/avc-standalone
-          npx tsc --ignoreConfig --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --outDir /tmp/avc-standalone avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
       - name: AVC regression
         run: npm run test:avc
       - name: Emergencias 2 regression
@@ -45,13 +53,13 @@ jobs:
         run: |
           git diff --check
           changed="$(git diff --name-only | sort)"
-          expected="$(printf '%s\n' avc-decision-tree.ts components/protocol-screen/acls-decision-flow-screen.tsx components/protocol-screen/clinical-action-step-adapter.tsx core/decision-tree/engine.ts core/decision-tree/types.ts | sort)"
+          expected="$(printf '%s\n' avc-decision-tree.ts components/protocol-screen/acls-decision-flow-screen.tsx components/protocol-screen/clinical-action-step-adapter.tsx core/decision-tree/engine.ts core/decision-tree/types.ts scripts/valida-avc.cjs | sort)"
           test "$changed" = "$expected"
       - name: Commit validated operational ActionStep
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add avc-decision-tree.ts components/protocol-screen/acls-decision-flow-screen.tsx components/protocol-screen/clinical-action-step-adapter.tsx core/decision-tree/engine.ts core/decision-tree/types.ts
+          git add avc-decision-tree.ts components/protocol-screen/acls-decision-flow-screen.tsx components/protocol-screen/clinical-action-step-adapter.tsx core/decision-tree/engine.ts core/decision-tree/types.ts scripts/valida-avc.cjs
           git commit -m "Make AVC initial actions operational and traceable"
           git pull --rebase origin fix-avc-slider-first
           git push origin HEAD:fix-avc-slider-first
