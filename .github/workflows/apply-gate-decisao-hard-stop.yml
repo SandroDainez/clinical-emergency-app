@@ -27,3 +27,4 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Full application validation
         run: npm run test:all
+      # Reexecutado após alinhar o teste do cabeçalho ao padrão MÓDULOS do cockpit.
