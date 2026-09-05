@@ -16,7 +16,6 @@ const exigir = (condicao, mensagem) => {
 };
 
 // ── Contratos que pertencem ao motor/chamador ───────────────────────────────
-// A nova camada NÃO pode passar a decidir continuidade nem reinterpretar o step.
 exigir(
   /rangeForField:\s*\(field:\s*InputField\)\s*=>\s*ClinicalInputRange\s*\|\s*undefined/.test(fields),
   "ClinicalInputFields deixou de receber a faixa numérica pronta do chamador."
@@ -44,8 +43,12 @@ exigir(
   "O adaptador deixou de restringir faixa numérica aos campos declarados como numéricos."
 );
 exigir(
-  /field\.presets[\s\S]{0,240}Number\(preset\.value\.replace\(",", "\."\)\)/.test(adapter),
-  "O fallback de faixa por presets numéricos desapareceu do adaptador."
+  /if \(!declarada\) return undefined/.test(adapter),
+  "Campo numérico sem faixa declarada deixou de falhar fechado."
+);
+exigir(
+  !/field\.presets[\s\S]{0,300}Number\(preset\.value/.test(adapter),
+  "O adaptador voltou a inferir faixa clínica a partir de presets."
 );
 exigir(
   /rangeForField=\{faixaNumerica\}/.test(adapter),
@@ -65,17 +68,16 @@ exigir(/min=\{numericRange\.min\}/.test(field), "NumericStepper não recebe mais
 exigir(/max=\{numericRange\.max\}/.test(field), "NumericStepper não recebe mais o máximo resolvido.");
 exigir(/passo=\{numericRange\.passo\}/.test(field), "NumericStepper não recebe mais o passo resolvido.");
 exigir(
-  /onChange=\{\(next\)\s*=>\s*onChange\(String\(next\)\)\}/.test(field),
-  "Valor numérico deixou de voltar ao chamador como string, contrato do TreeValues."
+  /onChange=\{\(next\)\s*=>\s*setNumericDraft\(next\)\}/.test(field),
+  "Movimento da barra deixou de atualizar apenas o rascunho local."
 );
 exigir(
-  !/onConfirmar=/.test(field),
-  "ClinicalInputField ganhou confirmação numérica extra no NumericStepper."
+  /onConfirmar=\{confirmarNumeroDaBarra\}/.test(field) && /onChange\(String\(numero\)\)/.test(field),
+  "Confirmação da barra deixou de gravar string no contrato TreeValues."
 );
 
-// Valor ausente não pode ganhar sugestão visual. Peso, altura, glicemia, PAS,
-// PAD, NIHSS e qualquer outro campo clínico só mostram número após informação
-// explícita ou dado herdado verdadeiro.
+// Valor ausente não pode ganhar sugestão clínica; a barra continua visível em
+// estado neutro e só passa a expor número após interação real.
 exigir(
   !/\(numericRange\.min\s*\+\s*numericRange\.max\)\s*\/\s*2/.test(field),
   "ClinicalInputField voltou a inventar ponto médio para campo numérico vazio."
@@ -85,23 +87,37 @@ exigir(
   "Campo numérico perdeu a distinção entre valor real e ausência de informação."
 );
 exigir(
-  /hasNumericValue\s*\?\s*\([\s\S]{0,1200}<NumericStepper/.test(field),
-  "NumericStepper deixou de depender da existência de um valor real."
+  /const valorVisivel = hasNumericValue \|\| numericDraft !== undefined/.test(field),
+  "Estado visual da barra deixou de depender de dado real ou interação explícita."
 );
 exigir(
-  /Valor ainda não informado/.test(field),
+  /valorVisivel=\{valorVisivel\}/.test(field),
+  "NumericStepper deixou de receber a semântica de valor ainda não informado."
+);
+exigir(
+  /Valor ainda não informado — toque na barra para definir/.test(field),
   "Estado vazio do campo numérico deixou de ser explícito para o usuário."
 );
 exigir(
-  /testID=\{testID \? `\$\{testID\}-numeric-input` : undefined\}/.test(field),
-  "Campo numérico vazio perdeu sua entrada explícita testável."
+  /testID=\{testID \? `\$\{testID\}-numeric-pending` : undefined\}/.test(field),
+  "Estado pendente do campo numérico perdeu identificação testável."
 );
 exigir(
   !/useEffect\([\s\S]{0,300}onChange\(/.test(field),
   "ClinicalInputField parece gravar valor automaticamente por efeito."
 );
 
-// ── Categoria fechada ───────────────────────────────────────────────────────
+// Sem faixa, numérico falha fechado: não reaparece uma caixa de digitação.
+exigir(
+  /field\.customKeyboard === "numeric"[\s\S]{0,500}Campo numérico indisponível/.test(field),
+  "Campo numérico sem faixa não exibe erro de configuração fail-closed."
+);
+exigir(
+  /Este campo não pode usar caixa de digitação como alternativa/.test(field),
+  "Falha fechada perdeu a proibição explícita de fallback por digitação."
+);
+
+// ── Categoria fechada / texto verdadeiro ────────────────────────────────────
 exigir(/<CategoricalSelector/.test(field), "ClinicalInputField perdeu o seletor categórico comum.");
 exigir(
   /value:\s*item\.value[\s\S]{0,120}label:\s*tr\(item\.label\)/.test(field),
@@ -111,10 +127,8 @@ exigir(
   /onChange\(next\)/.test(field),
   "Seleção categórica deixou de devolver exatamente o valor escolhido ao chamador."
 );
-
-// ── Valor customizado ───────────────────────────────────────────────────────
 exigir(/field\.allowCustom/.test(field), "Suporte a allowCustom desapareceu.");
-exigir(/field\.customKeyboard === "numeric"/.test(field), "Teclado customizado deixou de respeitar customKeyboard.");
+exigir(/keyboardType="default"/.test(field), "Texto customizado verdadeiro deixou de usar teclado textual.");
 exigir(/customText\.trim\(\)/.test(field), "Valor customizado deixou de ser normalizado por trim antes de gravar.");
 
 // ── Dado herdado ────────────────────────────────────────────────────────────
@@ -168,8 +182,9 @@ if (falhas.length) {
 
 console.log("✅ Paridade estrutural do InputStep preservada.");
 console.log("   • adaptador encaminha fields, values, herdados e canContinue sem reinterpretar");
-console.log("   • ranges continuam vindo da fonte canônica com o mesmo fallback de faixa");
-console.log("   • numéricos ficam vazios até haver dado real e preservam min/max/passo depois disso");
-console.log("   • categorias preservam value/label da árvore");
-console.log("   • Outro…, herdados e calculadoras continuam representados");
+console.log("   • numéricos usam apenas faixas declaradas; presets não fabricam limites");
+console.log("   • barra fica visível e neutra até dado real/interação, então confirma string no TreeValues");
+console.log("   • numérico sem faixa falha fechado, sem caixa de digitação");
+console.log("   • categorias e texto verdadeiro preservam value/label e allowCustom");
+console.log("   • herdados e calculadoras continuam representados");
 console.log("   • field.id e callbacks seguem sem reinterpretação");
