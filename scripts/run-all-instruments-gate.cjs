@@ -15,6 +15,9 @@ const ehInstrumento = (nome) => /^(valida|auditoria|mapa|censo)-/.test(nome) && 
 const instrumentos = fs.readdirSync(scriptsDir)
   .filter(ehInstrumento)
   .filter((nome) => nome !== "censo-de-instrumentos.cjs")
+  // A suite é a chamadora canônica deste runner no pretest:all. Incluí-la aqui
+  // criaria recursão suite → total gate → suite → total gate.
+  .filter((nome) => nome !== "valida-emergencias-2-suite.cjs")
   .sort();
 
 const falhas = [];
@@ -23,6 +26,7 @@ for (const instrumento of instrumentos) {
     cwd: root,
     encoding: "utf8",
     timeout: 300000,
+    env: { ...process.env, SKIP_TOTAL_INSTRUMENT_GATE: "1" },
   });
 
   if (result.status !== 0) {
