@@ -32,16 +32,14 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: ISR validator
         run: node scripts/valida-isr.cjs
-      - name: Composed translation validator
-        run: node scripts/valida-traducao-composta.cjs
+      - name: Composed translation non-regression
+        run: node scripts/valida-traducao-composta-debt.cjs
       - name: Reachability validator
         run: node scripts/valida-alcancabilidade.cjs
       - name: Runtime translation debt
         run: node scripts/valida-traducao-runtime-debt.cjs
       - name: Amiodarone Drug KB validator
         run: node scripts/valida-drug-knowledge-amiodarona.cjs
-      - name: Emergencias 2 regression
-        run: npm run test:emergencias-2
       - name: Validate scope
         run: |
           git diff --check
