@@ -82,10 +82,81 @@ execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--res
 const { FAIXA_DE_ENTRADA } = require(path.join(tmp, "lib", "faixas-de-entrada.js"));
 
 const ESTAB = /instabil|instável|instavel|est[áa]vel|gravidade|grave\b|crítico|critico|choque/i;
+const GUIADO = /não sei|nao sei|me guie/i;
 const semFaixa = [];
 const semGuiado = [];
 let nosDeDecisao = 0;
 let decisoesNoRadar = 0;
+
+/**
+ * Nós internos de um caminho explicitamente guiado não precisam repetir
+ * "Não sei — me guie" em cada micropergunta.
+ *
+ * O que conta como interno é deliberadamente estrito: o nó precisa ser alcançado
+ * apenas pelo ramo guiado (ou por outros nós que também sejam exclusivos dele).
+ * Quando o fluxo reconverge com um caminho normal, a isenção termina. Assim uma
+ * opção guiada não vira um guarda-chuva capaz de esconder dívida clínica adiante.
+ */
+function nosInternosDoGuiado(arv) {
+  const incoming = new Map();
+  const sementes = [];
+
+  const registrar = (origem, destino, guiado = false) => {
+    if (typeof destino !== "string" || !arv.nodes[destino]) return;
+    if (!incoming.has(destino)) incoming.set(destino, []);
+    incoming.get(destino).push({ origem, guiado });
+    if (guiado) sementes.push(destino);
+  };
+
+  for (const no of Object.values(arv.nodes)) {
+    if (typeof no.next === "string") registrar(no.id, no.next, false);
+    for (const op of no.options || []) {
+      registrar(no.id, op.next, GUIADO.test(op.label || ""));
+    }
+  }
+
+  const internos = new Set();
+  let mudou = true;
+  while (mudou) {
+    mudou = false;
+    for (const id of sementes.concat([...internos])) {
+      if (internos.has(id)) continue;
+      const entradas = incoming.get(id) || [];
+      if (!entradas.length) continue;
+      const exclusivo = entradas.every((e) => e.guiado || internos.has(e.origem));
+      if (exclusivo) {
+        internos.add(id);
+        mudou = true;
+      }
+    }
+
+    for (const no of Object.values(arv.nodes)) {
+      if (!internos.has(no.id)) continue;
+      if (typeof no.next === "string") {
+        const entradas = incoming.get(no.next) || [];
+        if (entradas.length && entradas.every((e) => e.guiado || internos.has(e.origem))) {
+          if (!internos.has(no.next)) {
+            internos.add(no.next);
+            mudou = true;
+          }
+        }
+      }
+      for (const op of no.options || []) {
+        if (typeof op.next !== "string") continue;
+        const entradas = incoming.get(op.next) || [];
+        if (entradas.length && entradas.every((e) => e.guiado || internos.has(e.origem))) {
+          if (!internos.has(op.next)) {
+            internos.add(op.next);
+            mudou = true;
+          }
+        }
+      }
+    }
+  }
+
+  return internos;
+}
+
 for (const f of arqs) {
   const out = path.join(tmp, f.replace(/\.ts$/, ".js"));
   if (!fs.existsSync(out)) continue;
@@ -93,6 +164,7 @@ for (const f of arqs) {
   try { mod = require(out); } catch { continue; }
   const nome = f.replace(/\.ts$/, "");
   for (const arv of Object.values(mod).filter((v) => v && v.nodes && v.entryNodeId)) {
+    const internosDoGuiado = nosInternosDoGuiado(arv);
     for (const no of Object.values(arv.nodes)) {
       if (no.type === "input") {
         for (const c of no.fields || []) {
@@ -108,7 +180,7 @@ for (const f of arqs) {
       decisoesNoRadar += 1;
       const rot = (no.options || []).map((o) => o.label).join(" | ");
       const temRegraDeDuvida = /NA D[ÚU]VIDA|SE VOC[ÊE] EST[ÁA] (SE PERGUNTANDO|EM D[ÚU]VIDA)|N[ÃA]O É CRISE CESSADA|N[ÃA]O É RECUPERA[ÇC][ÃA]O|É RESPOSTA INADEQUADA|É N[ÃA]O-RESPOSTA/i.test(no.summary ?? "");
-      if (!/não sei|nao sei|me guie/i.test(rot) && !temRegraDeDuvida) {
+      if (!GUIADO.test(rot) && !temRegraDeDuvida && !internosDoGuiado.has(no.id)) {
         semGuiado.push(`${nome} · ${no.id} · ${no.title}`);
       }
     }
@@ -150,9 +222,8 @@ if (!universoOk) {
   process.exit(1);
 }
 
-// Dívida congelada. Mantemos o teto atual até rodar a auditoria no CI desta
-// branch; depois da leitura do resultado ele deve ser reduzido para a contagem
-// real. Nunca aumentar para fazer teste passar.
+// Dívida congelada. O teto só desce depois de a queda aparecer no CI desta
+// branch; nunca é aumentado para fazer teste passar.
 const TETO = 10;
 
 if (pendencias > TETO) {
