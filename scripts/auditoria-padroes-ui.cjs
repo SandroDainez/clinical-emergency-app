@@ -51,10 +51,6 @@ for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, 
   const src = fs.readFileSync(t, "utf8");
   const n = (src.match(/<TextInput/g) || []).length;
   if (n) {
-    // Contamos o próprio bloco do TextInput. Além do literal keyboardType="numeric",
-    // também tratamos como numérico qualquer expressão de keyboardType que contenha
-    // um ramo "numeric"/"decimal-pad"/"number-pad". Isso captura o legado do shell,
-    // por exemplo `keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}`.
     const blocos = [...src.matchAll(/<TextInput\b[\s\S]*?(?:\/>|>)/g)].map((m) => m[0]);
     const numericos = blocos.filter((b) => {
       const prop = b.match(/keyboardType\s*=\s*(?:\{[\s\S]*?\}|["'][^"']+["'])/);
@@ -63,17 +59,11 @@ for (const t of telas(path.join(app, "components")).concat(telas(path.join(app, 
     caixas.push({ rel, total: n, numericos });
   }
 
-  // Estado pendente canônico: `valorVisivel=false` faz o NumericStepper manter o
-  // thumb na origem visual sem expor/gravar o mínimo. O padrão antigo do módulo
-  // de eletrólitos calculava explicitamente o ponto médio quando o campo estava
-  // vazio; isso é visualmente diferente dos demais módulos e pode parecer uma
-  // sugestão clínica. Mantemos esta detecção explícita enquanto o legado existir.
   if (/Number\(\(\(faixa\.min\s*\+\s*faixa\.max\)\s*\/\s*2\)/.test(src)) {
     slidersPendentesForaDoPadrao.push(rel);
   }
 }
 
-// ── 2/4. Árvores: faixa de entrada e caminho guiado ──────────────────────────
 const arqs = fs.readdirSync(app).filter((f) => /-(decision-)?tree\.ts$/.test(f)).sort();
 execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
   "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck", "--outDir", tmp,
@@ -89,14 +79,6 @@ const limiaresObjetivos = [];
 let nosDeDecisao = 0;
 let decisoesNoRadar = 0;
 
-/**
- * Uma decisão de gravidade pode ser apenas a aplicação mecânica de um valor já
- * medido a um limiar explícito. Nesses casos não existe raciocínio subjetivo a
- * decompor em "Não sei — me guie": o dado deve ser obtido e comparado com a
- * faixa. Para não criar uma isenção ampla, só reconhecemos como limiar objetivo
- * quando a pergunta contém um número + linguagem de comparação e TODAS as opções
- * também estão quantificadas. Ex.: pH < 7,0 versus pH ≥ 7,0.
- */
 function decisaoPorLimiarObjetivo(no) {
   const pergunta = no.question || "";
   const opcoes = no.options || [];
@@ -107,15 +89,6 @@ function decisaoPorLimiarObjetivo(no) {
   return temNumero && compara && opcoesQuantificadas;
 }
 
-/**
- * Nós internos de um caminho explicitamente guiado não precisam repetir
- * "Não sei — me guie" em cada micropergunta.
- *
- * O que conta como interno é deliberadamente estrito: o nó precisa ser alcançado
- * apenas pelo ramo guiado (ou por outros nós que também sejam exclusivos dele).
- * Quando o fluxo reconverge com um caminho normal, a isenção termina. Assim uma
- * opção guiada não vira um guarda-chuva capaz de esconder dívida clínica adiante.
- */
 function nosInternosDoGuiado(arv) {
   const incoming = new Map();
   const sementes = [];
@@ -210,7 +183,6 @@ for (const f of arqs) {
   }
 }
 
-// ── 3. UI v2 por módulo ──────────────────────────────────────────────────────
 const flag = lerFonte(path.join(app, "lib", "ui-v2-flag.ts"));
 const mPadrao = flag.match(/const PADRAO = (\w+);/);
 const uiV2Padrao = mPadrao ? mPadrao[1] : "?";
@@ -247,9 +219,7 @@ if (!universoOk) {
   process.exit(1);
 }
 
-// Dívida congelada. O teto só desce depois de a queda aparecer no CI desta
-// branch; nunca é aumentado para fazer teste passar.
-const TETO = 9;
+const TETO = 8;
 
 if (pendencias > TETO) {
   console.log(
