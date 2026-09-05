@@ -58,45 +58,23 @@ export function ClinicalInputStepAdapter({
 }
 
 /**
- * Mesma resolução usada pelo InputStep legado.
- *
- * Primeiro consulta a fonte canônica por grandeza. Se não houver uma faixa
- * declarada, mantém o fallback legado derivado dos presets numéricos. Esse
- * fallback é rede de segurança de apresentação; não cria limite clínico.
+ * Campo clínico numérico só ganha barra quando sua faixa de ENTRADA foi
+ * declarada na fonte canônica. Presets são exemplos/atalhos históricos e não
+ * podem virar limites por inferência: isso fabricaria um contrato numérico que
+ * o domínio nunca declarou. Sem faixa explícita, ClinicalInputField falha
+ * fechado e mostra erro de configuração em vez de oferecer digitação livre.
  */
 function faixaNumerica(field: InputField): ClinicalInputRange | undefined {
   if (field.customKeyboard !== "numeric") return undefined;
 
   const declarada = faixaDeEntradaDe(field.id);
-  if (declarada) {
-    return {
-      min: declarada.min,
-      max: declarada.max,
-      passo: declarada.passo,
-    };
-  }
+  if (!declarada) return undefined;
 
-  const numeros = field.presets
-    .map((preset) => Number(preset.value.replace(",", ".")))
-    .filter((numero) => Number.isFinite(numero));
-
-  if (numeros.length < 2) return undefined;
-
-  const min = Math.min(...numeros);
-  const max = Math.max(...numeros);
-  if (min === max) return undefined;
-
-  const maisCasas = Math.max(
-    ...field.presets.map((preset) => {
-      const parteDecimal = preset.value.replace(",", ".").split(".")[1];
-      return parteDecimal ? parteDecimal.length : 0;
-    })
-  );
-
-  const passo =
-    maisCasas === 0 ? 1 : Number((10 ** -maisCasas).toFixed(maisCasas));
-
-  return { min, max, passo };
+  return {
+    min: declarada.min,
+    max: declarada.max,
+    passo: declarada.passo,
+  };
 }
 
 export { faixaNumerica as faixaNumericaDoInputStep };
