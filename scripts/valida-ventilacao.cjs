@@ -332,35 +332,30 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
   } else ok++;
 }
 
-// As frases literais do TCE precisam repetir os números do objeto ALVOS_TCE.
-// Elas são literais (e não interpolação) para que a varredura de tradução as
-// enxergue; o vínculo com a fonte, que a interpolação daria de graça, passa a
-// ser cobrado aqui.
+// As frases literais do TCE precisam permanecer alinhadas ao contrato clínico
+// explicitado em lib/alvos-tce.ts. Elas são literais (e não interpolação) para
+// que a varredura de tradução as enxergue; esta trava protege os números que
+// precisam continuar aparecendo juntos na frase de resgate.
 {
   const fonte = lerFonte(path.join(appDir, "lib/alvos-tce.ts"));
-  // ⚠️ `TCE_VERSUS_POLITRAUMA` SAIU DA LISTA PORQUE SAIU DO APP.
-  //
-  // Ela dizia "prevalece a meta do TCE, PAS ≥ 110 mmHg" — o número LISO, sem a
-  // estratificação por idade da BTF. Quem manda nessa frase agora é
-  // PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA, em lib/pas-no-tce.ts, que é o dono
-  // único da meta desde que a D-1 fechou. Conferir aqui que ela contém "≥ 110"
-  // seria pedir de volta exatamente o defeito.
-  const paresObrigatorios = [
-    ["TCE_HIPERVENTILACAO", "PaCO₂ 30–35 mmHg"],
-    // ⚠️ COM "PaCO₂" E "mmHg" JUNTOS, de propósito. Conferir só "25–34" passava
-    // com o alvo trocado, porque a constante cita o número de novo mais adiante
-    // ("o 25–34 vem do protocolo institucional"). Presença no arquivo não é
-    // declaração do alvo — mesma classe de "import não é consumo".
-    ["TCE_HIPERVENTILACAO_TERCEIRA_LINHA", "PaCO₂ 25–34 mmHg"],
+  const frasesObrigatorias = [
+    ["TCE_HIPERVENTILACAO", ["PaCO₂ 30–35 mmHg"]],
+    [
+      "TCE_HIPERVENTILACAO_TERCEIRA_LINHA",
+      ["PaCO₂ 32–35 mmHg", "PaCO₂ 30–32 mmHg", "PaCO₂ <30 mmHg", "PaCO₂ ≤25 mmHg"],
+    ],
   ];
-  for (const [nome, numero] of paresObrigatorios) {
+  for (const [nome, trechos] of frasesObrigatorias) {
     const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?;`));
     if (!bloco) {
       falhas.push(`lib/alvos-tce.ts não exporta ${nome}.`);
-    } else if (!bloco[0].includes(numero)) {
+      continue;
+    }
+    const ausentes = trechos.filter((trecho) => !bloco[0].includes(trecho));
+    if (ausentes.length) {
       falhas.push(
-        `${nome} não contém "${numero}" — a frase literal descolou dos números de ALVOS_TCE. ` +
-        `Ela é literal para poder ser traduzida; o vínculo com a fonte é esta trava.`
+        `${nome} perdeu ${ausentes.map((trecho) => `"${trecho}"`).join(", ")} — ` +
+        `a frase literal de hiperventilação deixou de refletir o contrato SIBICC registrado na própria fonte.`
       );
     } else ok++;
   }
