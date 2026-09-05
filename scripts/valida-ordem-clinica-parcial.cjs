@@ -115,23 +115,13 @@ const PARES = [
     conferir() {
       const t = ler("sepsis-decision-tree.ts");
       if (!t) return "sepsis-decision-tree.ts não encontrado";
-      // ⚠️ ANCORADO NO NÓ, não no arquivo. A primeira versão perguntava se o
-      // arquivo continha "não atrasar" em qualquer lugar — e continha, sobre
-      // TC/punção lombar e sobre acesso central. Duas mutações passaram limpas
-      // por isso: dá para apagar a ressalva DA CULTURA e a trava seguir verde
-      // porque sobrou "não atrasar" falando de outra coisa.
       const linhas = t.split("\n").filter((l) => !/^\s*\/\//.test(l));
       const daCultura = linhas.filter((l) => /hemocultura|cultura/i.test(l));
       if (!daCultura.length) return "não achei nenhuma linha de hemocultura — a conferência não rodou";
-
       const comOrdem = daCultura.filter((l) => /ANTES do (antibiótico|ATB)/i.test(l));
-      if (!comOrdem.length) {
-        return "nenhuma linha de hemocultura diz que ela vem ANTES do antibiótico";
-      }
+      if (!comOrdem.length) return "nenhuma linha de hemocultura diz que ela vem ANTES do antibiótico";
       const comRessalva = daCultura.some((l) => /n[ãa]o atrasar|sem atrasar/i.test(l));
-      if (!comRessalva) {
-        return "a ordem está escrita mas a RESSALVA sumiu DA LINHA DA CULTURA — sem ela, o par manda atrasar o antibiótico";
-      }
+      if (!comRessalva) return "a ordem está escrita mas a RESSALVA sumiu DA LINHA DA CULTURA — sem ela, o par manda atrasar o antibiótico";
       return null;
     },
   },
@@ -160,8 +150,8 @@ const PARES = [
       if (!t) return "rsi-decision-tree.ts não encontrado";
       const confirmacao = linhaDe(t, /id: "confirmacao"/);
       if (confirmacao < 0) return "o nó de confirmação sumiu do fluxo de ISR";
-      const pergunta = linhaDe(t, /capnografia \(ETCO₂\) confirma a posição traqueal/i);
-      if (pergunta < 0) return "o nó de confirmação não pergunta pela capnografia";
+      const pergunta = linhaDe(t, /capnografia.*CO₂ expirado sustentado/i);
+      if (pergunta < 0) return "o nó de confirmação não pergunta pela capnografia com CO₂ expirado sustentado";
       const posIntubacao = linhaDe(t, /id: "pos_intubacao"|id: "pos-intubacao"|id: "posIntubacao"/);
       if (posIntubacao >= 0 && !(confirmacao < posIntubacao)) {
         return `o nó de confirmação (linha ${confirmacao + 1}) vem depois do pós-intubação (linha ${posIntubacao + 1})`;
@@ -170,8 +160,6 @@ const PARES = [
     },
   },
 ];
-
-// ══ OS QUATRO NÃO COBERTOS — impressos, não silenciados ════════════════════
 
 const NAO_COBERTOS = [
   {
@@ -206,8 +194,6 @@ const NAO_COBERTOS = [
   },
 ];
 
-// ══ Execução ═══════════════════════════════════════════════════════════════
-
 for (const par of PARES) {
   const problema = par.conferir();
   if (problema) falhas.push(`par ${par.n} — ${par.nome}\n    ${problema}\n    POR QUÊ IMPORTA: ${par.porque}.`);
@@ -216,10 +202,8 @@ for (const par of PARES) {
 
 console.log(`\nOrdem clínica — SEIS pares de uma lista de dez (PARCIAL)\n`);
 console.log(`⚠️  ESTA TRAVA NÃO VERIFICA A ORDEM CLÍNICA DO APP. Verifica seis pares nomeados.\n`);
-
 console.log(`CONFERIDOS (${PARES.length}):`);
 for (const p of PARES) console.log(`   ${String(p.n).padStart(2)} · ${p.nome}`);
-
 console.log(`\nNÃO COBERTOS (${NAO_COBERTOS.length}) — e por quê:`);
 for (const p of NAO_COBERTOS) {
   console.log(`   ${String(p.n).padStart(2)} · ${p.nome}`);
