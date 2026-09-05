@@ -32,6 +32,7 @@ jobs:
         run: node ./scripts/test-all-production.cjs
       - name: Production dependency critical audit
         run: npm audit --omit=dev --audit-level=critical
-      # Read-only final gate. The original absolute i18n checks remain strict;
-      # production accepts only the separately measured legacy debt ceilings,
-      # both proven against emergencias-2-ui-core and allowed only to decrease.
+      # Read-only final gate after the operational AVC ActionStep convergence.
+      # The original absolute i18n checks remain strict; production accepts only
+      # the separately measured legacy debt ceilings, both proven against
+      # emergencias-2-ui-core and allowed only to decrease.
