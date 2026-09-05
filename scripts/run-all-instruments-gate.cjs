@@ -20,6 +20,22 @@ const instrumentos = fs.readdirSync(scriptsDir)
   .filter((nome) => nome !== "valida-emergencias-2-suite.cjs")
   .sort();
 
+// Alguns validadores consomem artefatos gerados por etapas anteriores. O portão
+// total precisa reproduzir essa pré-condição em vez de executar cada script em
+// isolamento e chamar dependência ausente de regressão clínica.
+const inventario = spawnSync("npm", ["run", "audit:inventario"], {
+  cwd: root,
+  encoding: "utf8",
+  timeout: 300000,
+  env: { ...process.env, SKIP_TOTAL_INSTRUMENT_GATE: "1" },
+});
+if (inventario.status !== 0) {
+  console.error("\n❌ Portão total: não foi possível gerar o inventário clínico exigido pela rastreabilidade.\n");
+  if (inventario.stdout) console.error(inventario.stdout);
+  if (inventario.stderr) console.error(inventario.stderr);
+  process.exit(1);
+}
+
 const falhas = [];
 for (const instrumento of instrumentos) {
   const result = spawnSync(process.execPath, [path.join(scriptsDir, instrumento)], {
