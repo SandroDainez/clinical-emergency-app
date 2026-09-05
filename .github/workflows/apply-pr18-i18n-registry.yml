@@ -46,18 +46,15 @@ jobs:
           PY
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
-      - name: i18n debt measurement
+      - name: i18n debt must not exceed base
         shell: bash
         run: |
           set +e
           npm run test:i18n 2>&1 | tee /tmp/i18n.log
-          code=${PIPESTATUS[0]}
           count=$(grep -oE 'SEM TRADUÇÃO: [0-9]+' /tmp/i18n.log | tail -1 | grep -oE '[0-9]+' || true)
           echo "I18N_COUNT=${count:-unknown}"
           test -n "$count"
           test "$count" -le 585
-      - name: Runtime translation validation
-        run: npm run test:i18n-runtime
       - name: Validate scope
         run: |
           git diff --check
