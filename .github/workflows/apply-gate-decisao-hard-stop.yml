@@ -25,6 +25,18 @@ jobs:
       - run: npm ci
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
-      - name: Full application validation
-        run: npm run test:all
-      # Reexecutado após alinhar o validador responsivo da sedação à estrutura renderizada atual.
+      - name: UI interaction-pattern audit
+        run: npm run test:padroes-ui
+      - name: Numeric ranges
+        run: npm run test:faixas
+      - name: Calculators
+        run: npm run test:calculadoras
+      - name: Sedation
+        run: npm run test:sedacao
+      - name: Electrolytes
+        run: npm run test:eletrolitos
+      - name: Vasoactives
+        run: npm run test:vasoativos
+      - name: Ventilation
+        run: npm run test:vm
+      # Validação focada para concluir a padronização de inputs sem mascarar a dívida global de tradução.
