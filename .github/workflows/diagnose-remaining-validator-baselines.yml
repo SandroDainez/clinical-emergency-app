@@ -1,0 +1,48 @@
+name: Diagnose remaining validator baselines
+
+on:
+  push:
+    branches: [fix-avc-slider-first]
+    paths:
+      - .github/workflows/diagnose-remaining-validator-baselines.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: emergencias-2-ui-core
+          path: base
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-avc-slider-first
+          path: current
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: current/package-lock.json
+      - name: Install base
+        working-directory: base
+        run: npm ci
+      - name: Install current
+        working-directory: current
+        run: npm ci
+      - name: Compare validators
+        shell: bash
+        run: |
+          set +e
+          for validator in valida-paleta.cjs valida-prazo-visivel.cjs valida-leitura-de-fonte.cjs mapa-de-calculadoras.cjs; do
+            echo "===== BASE $validator ====="
+            (cd base && node "scripts/$validator") 2>&1 | tee "/tmp/base-$validator.log"
+            echo "BASE_${validator}_EXIT=${PIPESTATUS[0]}"
+            echo "===== CURRENT $validator ====="
+            (cd current && node "scripts/$validator") 2>&1 | tee "/tmp/current-$validator.log"
+            echo "CURRENT_${validator}_EXIT=${PIPESTATUS[0]}"
+          done
+          exit 0
