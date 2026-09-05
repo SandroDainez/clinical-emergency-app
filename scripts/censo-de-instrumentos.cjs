@@ -100,6 +100,16 @@ while (filaNpm.length) {
 while (filaArquivos.length) {
   const arq = filaArquivos.shift();
   const src = removerComentarios(fs.readFileSync(path.join(SCRIPTS_DIR, arq), "utf8"));
+
+  // Runner canônico: ele descobre em runtime exatamente o mesmo universo de
+  // instrumentos deste censo e falha se qualquer um retornar código diferente
+  // de zero. O marcador abaixo só vale se estiver em código executável do
+  // runner (comentários já foram removidos). Assim o censo consegue provar
+  // alcançabilidade mesmo sem uma lista manual de centenas de nomes.
+  if (/COBRE_TODOS_OS_INSTRUMENTOS\s*=\s*true/.test(src)) {
+    for (const instrumento of todos) enfileirarArquivo(instrumento);
+  }
+
   // Só nomes reais de arquivos do próprio diretório contam. Isso cobre arrays
   // explícitos de runners e chamadas spawn/exec/require sem depender do estilo.
   for (const m of src.matchAll(/["'`]([\w.-]+\.cjs)["'`]/g)) {
