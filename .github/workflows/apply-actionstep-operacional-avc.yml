@@ -33,6 +33,10 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: UI patterns
         run: npm run test:padroes-ui
+      - name: Standalone AVC compile used by validator
+        run: |
+          rm -rf /tmp/avc-standalone
+          npx tsc --ignoreConfig --module node16 --target es2020 --esModuleInterop --moduleResolution node16 --outDir /tmp/avc-standalone avc-decision-tree.ts lib/trombolise-guiada-por-imagem.ts
       - name: AVC regression
         run: npm run test:avc
       - name: Emergencias 2 regression
