@@ -85,8 +85,27 @@ const ESTAB = /instabil|instável|instavel|est[áa]vel|gravidade|grave\b|crític
 const GUIADO = /não sei|nao sei|me guie/i;
 const semFaixa = [];
 const semGuiado = [];
+const limiaresObjetivos = [];
 let nosDeDecisao = 0;
 let decisoesNoRadar = 0;
+
+/**
+ * Uma decisão de gravidade pode ser apenas a aplicação mecânica de um valor já
+ * medido a um limiar explícito. Nesses casos não existe raciocínio subjetivo a
+ * decompor em "Não sei — me guie": o dado deve ser obtido e comparado com a
+ * faixa. Para não criar uma isenção ampla, só reconhecemos como limiar objetivo
+ * quando a pergunta contém um número + linguagem de comparação e TODAS as opções
+ * também estão quantificadas. Ex.: pH < 7,0 versus pH ≥ 7,0.
+ */
+function decisaoPorLimiarObjetivo(no) {
+  const pergunta = no.question || "";
+  const opcoes = no.options || [];
+  if (opcoes.length < 2) return false;
+  const temNumero = /\d+(?:[.,]\d+)?/.test(pergunta);
+  const compara = /(?:<|>|≤|≥|abaixo de|acima de|maior que|menor que|atingiu|chegou a)/i.test(pergunta);
+  const opcoesQuantificadas = opcoes.every((o) => /(?:<|>|≤|≥|\d+(?:[.,]\d+)?)/.test(o.label || ""));
+  return temNumero && compara && opcoesQuantificadas;
+}
 
 /**
  * Nós internos de um caminho explicitamente guiado não precisam repetir
@@ -180,7 +199,11 @@ for (const f of arqs) {
       decisoesNoRadar += 1;
       const rot = (no.options || []).map((o) => o.label).join(" | ");
       const temRegraDeDuvida = /NA D[ÚU]VIDA|SE VOC[ÊE] EST[ÁA] (SE PERGUNTANDO|EM D[ÚU]VIDA)|N[ÃA]O É CRISE CESSADA|N[ÃA]O É RECUPERA[ÇC][ÃA]O|É RESPOSTA INADEQUADA|É N[ÃA]O-RESPOSTA/i.test(no.summary ?? "");
-      if (!GUIADO.test(rot) && !temRegraDeDuvida && !internosDoGuiado.has(no.id)) {
+      const limiarObjetivo = decisaoPorLimiarObjetivo(no);
+      if (limiarObjetivo) {
+        limiaresObjetivos.push(`${nome} · ${no.id} · ${no.title}`);
+      }
+      if (!GUIADO.test(rot) && !temRegraDeDuvida && !internosDoGuiado.has(no.id) && !limiarObjetivo) {
         semGuiado.push(`${nome} · ${no.id} · ${no.title}`);
       }
     }
@@ -211,6 +234,8 @@ if (!conferirUniverso("auditoria-padroes-ui", "nos_de_decisao", nosDeDecisao)) u
 if (!conferirUniverso("auditoria-padroes-ui", "decisoes_no_radar_de_gravidade", decisoesNoRadar)) universoOk = false;
 L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length} (de ${decisoesNoRadar} no radar)`);
 for (const s of semGuiado) L(`   ❌ ${s}`);
+L(`\n   LIMIAR OBJETIVO — ${limiaresObjetivos.length} decisão(ões) quantificada(s), não bloqueante(s)`);
+for (const s of limiaresObjetivos) L(`   ℹ️  ${s}`);
 L(`\n5. SLIDER PENDENTE FORA DO PADRÃO — ${slidersPendentesForaDoPadrao.length}`);
 for (const s of slidersPendentesForaDoPadrao) L(`   ⚠️  ${s} · estado vazio ainda parte do meio da faixa`);
 const pendencias = caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
