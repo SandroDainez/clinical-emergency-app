@@ -48,7 +48,7 @@ for (const token of [
 for (const token of [
   'id: "transition_to_ventilation_module"',
   'moduleId: "ventilacao-mecanica"',
-  'id: "transition_to_isr"',
+  'id: "transition_to_airway_module"',
   'moduleId: "isr-rapida"',
   'id: "transition_to_vasoactive_module"',
   'moduleId: "drogas-vasoativas"',
