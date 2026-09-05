@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const fs=require('node:fs');const path=require('node:path');const src=fs.readFileSync(path.resolve(__dirname,'..','ventilation-decision-tree.ts'),'utf8');
+const path=require('node:path');const {lerFonte}=require('./lib/fonte.cjs');const src=lerFonte(path.resolve(__dirname,'..','ventilation-decision-tree.ts'));
 const checks=[
  ['pneumotórax não fixa 14G/2º EIC como regra única',!src.includes('agulha 14G 2º EIC LMC')],
  ['pneumotórax reconhece 4º–5º EIC/axilar e 2º EIC/MCL conforme contexto',src.includes('4º–5º EIC linha axilar anterior ou 2º EIC linha médio-clavicular')],
