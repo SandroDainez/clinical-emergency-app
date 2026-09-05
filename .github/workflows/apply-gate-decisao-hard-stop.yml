@@ -39,4 +39,4 @@ jobs:
         run: npm run test:vasoativos
       - name: Ventilation
         run: npm run test:vm
-      # Reexecutado após corrigir a leitura da string literal longa de hiperventilação do TCE.
+      # Reexecutado após adicionar caminho guiado à reavaliação pós-cardioversão da taquicardia.
