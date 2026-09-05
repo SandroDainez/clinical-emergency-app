@@ -39,9 +39,6 @@ function telas(dir, out = []) {
   return out;
 }
 
-// Inputs de autenticação e o componente genérico de texto não pertencem à regra
-// clínica. app/index é autenticação/infra e app/dev contém apenas showcases de
-// componentes; nenhum dos dois representa uma tela de atendimento em produção.
 const NEUTRO = /password-input|ui-v2\/input|app\/index|app\/dev\//;
 const caixas = [];
 const slidersPendentesForaDoPadrao = [];
@@ -219,7 +216,7 @@ if (!universoOk) {
   process.exit(1);
 }
 
-const TETO = 7;
+const TETO = 0;
 
 if (pendencias > TETO) {
   console.log(
