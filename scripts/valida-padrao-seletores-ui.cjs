@@ -41,7 +41,9 @@ const vaso = read("components/protocol-screen/vasoactive-calculator-screen.tsx")
 requireText(vaso, "HorizontalChoiceSelector", "vasoativos usa seletor canônico");
 forbidText(vaso, "showsHorizontalScrollIndicator={false}", "vasoativos não esconde scrollbar de escolhas");
 
-const rail = read("components/protocol-screen/module-flow-shell.tsx");
+// module-flow-shell.tsx é apenas a fachada de compatibilidade. A implementação
+// canônica do rail vive em module-rail-cockpit.tsx e é ela que deve ser auditada.
+const rail = read("components/protocol-screen/module-rail-cockpit.tsx");
 requireText(rail, "showsHorizontalScrollIndicator={!lateral}", "rail horizontal mostra scrollbar");
 requireText(rail, "persistentScrollbar={!lateral}", "rail horizontal mantém scrollbar");
 
