@@ -38,8 +38,6 @@ const PATOLOGIAS: Patologia[] = [
   { id: "obeso", label: "Obeso", vc: [6, 6], peep: "8–12", fr: "14–18", ie: "1:2", nota: "VC pelo peso PREDITO (nunca o atual). Ramped position." },
 ];
 
-const HEIGHT_PRESETS = ["150", "160", "165", "170", "175", "180", "190"];
-
 export default function VentilatorConfiguratorCard() {
   const tr = useTr();
   const [expanded, setExpanded] = useState(false);
@@ -102,13 +100,6 @@ export default function VentilatorConfiguratorCard() {
       {expanded ? (
         <View style={s.body}>
           <Text style={s.label}>{tr("Altura (cm)")}</Text>
-          <HorizontalChoiceSelector
-            value={HEIGHT_PRESETS.includes(altura) ? altura : undefined}
-            options={HEIGHT_PRESETS.map((h) => ({ value: h, label: h }))}
-            onChange={setAltura}
-            accessibilityLabel={tr("Altura em centímetros")}
-            testID="vm-altura-presets"
-          />
           <NumericStepper
             valor={alturaValida ? alturaNumerica : FAIXA_DE_ENTRADA.altura.min}
             valorVisivel={alturaValida}
