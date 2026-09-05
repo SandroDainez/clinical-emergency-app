@@ -20,7 +20,7 @@
  *
  *   localStorage.setItem("ui-v2", "ritmos-acls")
  *
- * Precedência: localStorage (só web) → variável de ambiente → desligado.
+ * Precedência: localStorage (só web) → variável de ambiente → padrão do app.
  *
  * Regra importante: esta flag decide APENAS qual árvore de componentes visuais
  * renderizar. Ela nunca deve alterar fluxo clínico, ordem de etapas, timers ou
@@ -116,7 +116,13 @@ export function isUiV2Enabled(moduloId: string): boolean {
 
 /** Somente a configuração de build — sem ler localStorage. */
 function habilitadoPorAmbiente(moduloId: string): boolean {
-  const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? DESLIGADO).trim().toLowerCase();
+  // O primeiro render precisa usar o MESMO padrão do app quando a variável não
+  // foi definida. Antes o fallback era `off`: a página podia nascer no shell
+  // legado (inclusive com caixas numéricas antigas) e só depois do mount trocar
+  // para a UI v2. Isso fazia a interface antiga continuar aparecendo apesar de
+  // `PADRAO = all`. Um `EXPO_PUBLIC_UI_V2=off` explícito continua sendo respeitado
+  // para rollback; a mudança elimina apenas o desligamento implícito.
+  const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? PADRAO).trim().toLowerCase();
   if (!bruto || bruto === DESLIGADO || bruto === "false" || bruto === "0") return false;
   if (bruto === TUDO || bruto === "true" || bruto === "1") return true;
   return bruto.split(",").map((id: string) => id.trim()).includes(moduloId.toLowerCase());
