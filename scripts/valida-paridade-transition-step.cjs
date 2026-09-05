@@ -14,12 +14,14 @@ const exigir = (condicao, mensagem) => {
 };
 
 // O card é apresentação: não pode decidir destino nem executar handoff.
-exigir(!/prepareRegisteredTargetHandoff/.test(card), "ClinicalTransitionStepCard passou a executar handoff; isso deve permanecer no shell.");
+exigir(!/executeClinicalTargetNavigation/.test(card), "ClinicalTransitionStepCard passou a executar navegação clínica; isso deve permanecer no shell.");
+exigir(!/prepareRegisteredTargetHandoff/.test(card), "ClinicalTransitionStepCard passou a preparar handoff; isso deve permanecer fora da apresentação.");
 exigir(!/router\.(push|replace)/.test(card), "ClinicalTransitionStepCard passou a navegar diretamente.");
 exigir(!/currentModuleSlug/.test(card), "ClinicalTransitionStepCard passou a conhecer o módulo de origem.");
 
 // O adaptador também é apenas pass-through: não pode absorver navegação ou handoff.
-exigir(!/prepareRegisteredTargetHandoff/.test(adapter), "ClinicalTransitionStepAdapter passou a executar handoff; isso deve permanecer no shell.");
+exigir(!/executeClinicalTargetNavigation/.test(adapter), "ClinicalTransitionStepAdapter passou a executar navegação clínica; isso deve permanecer no shell.");
+exigir(!/prepareRegisteredTargetHandoff/.test(adapter), "ClinicalTransitionStepAdapter passou a preparar handoff; isso deve permanecer no shell.");
 exigir(!/router\.(push|replace)/.test(adapter), "ClinicalTransitionStepAdapter passou a navegar diretamente.");
 exigir(!/currentModuleSlug/.test(adapter), "ClinicalTransitionStepAdapter passou a conhecer o módulo de origem.");
 exigir(!/targetModuleId/.test(adapter), "ClinicalTransitionStepAdapter passou a reinterpretar o destino do handoff.");
@@ -49,10 +51,16 @@ exigir(/exitCriteria=\{step\.exitCriteria\}/.test(adapter), "Adapter deixou de e
 exigir(/targets=\{step\.targets\}/.test(adapter), "Adapter deixou de encaminhar targets diretamente do step.");
 exigir(/onOpenModule=\{onOpenModule\}/.test(adapter), "Adapter deixou de encaminhar o callback externo sem transformação.");
 
-// O shell continua sendo dono do handoff/roteamento até a integração controlada.
-exigir(/prepareRegisteredTargetHandoff/.test(principal), "Shell perdeu a preparação do handoff antes da integração controlada.");
+// O shell é dono da navegação clínica e usa o executor canônico, que prepara o
+// handoff quando existe e preserva proveniência. O validador antigo exigia a
+// implementação pré-executor (`prepareRegisteredTargetHandoff`) e passou a
+// acusar regressão justamente depois da centralização correta.
+exigir(/executeClinicalTargetNavigation/.test(principal), "Shell perdeu o executor canônico de navegação clínica.");
 exigir(/abrirOutroModulo/.test(principal), "Shell perdeu a função de navegação entre módulos.");
-exigir(/targetModuleId:\s*moduleId/.test(principal) || /targetModuleId:\s*step\.targets/.test(principal) || /targetModuleId/.test(principal), "Shell perdeu o targetModuleId do handoff.");
+exigir(/fromModuleId:\s*currentModuleSlug/.test(principal), "Shell perdeu a proveniência do módulo de origem.");
+exigir(/fromProtocolId:\s*tree\.id/.test(principal), "Shell perdeu o protocolo de origem do handoff.");
+exigir(/fromNodeId:\s*handoff\.fromNodeId/.test(principal), "Shell perdeu o nó de origem do handoff.");
+exigir(/targetModuleId:\s*handoff\.targetModuleId/.test(principal), "Shell perdeu o destino registrado do handoff.");
 
 if (falhas.length) {
   console.error("\n❌ Paridade do TransitionStep: falhou\n");
@@ -64,4 +72,4 @@ console.log("✅ Paridade estrutural do TransitionStep preservada.");
 console.log("   • destino e critérios continuam vindo do step");
 console.log("   • adapter permanece pass-through");
 console.log("   • moduleId, label e reason permanecem intactos");
-console.log("   • navegação e handoff continuam fora da apresentação");
+console.log("   • navegação/handoff continuam fora da apresentação e passam pelo executor canônico");
