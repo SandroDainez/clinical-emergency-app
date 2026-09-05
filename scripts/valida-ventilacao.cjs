@@ -346,7 +346,10 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
     ],
   ];
   for (const [nome, trechos] of frasesObrigatorias) {
-    const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?;`));
+    // A constante é uma string literal longa e pode conter ponto-e-vírgula no
+    // próprio texto clínico. Parar no primeiro `;` truncava a frase no tier 2
+    // e fazia o teste acusar falsamente que os alvos posteriores tinham sumido.
+    const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?";`));
     if (!bloco) {
       falhas.push(`lib/alvos-tce.ts não exporta ${nome}.`);
       continue;
