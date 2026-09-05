@@ -118,15 +118,31 @@ export const avcDecisionTree: DecisionTreeDefinition = {
           { id: "conhecido", label: "Horário/janela conhecido", value: "conhecido" },
           { id: "desconhecido", label: "Desconhecido / ao acordar", value: "desconhecido" },
         ] },
-        { id: "codigo_avc_acionado", label: "Código AVC acionado", kind: "confirm" },
-        { id: "neurologia_acionada", label: "Neurologia acionada", kind: "confirm" },
-        { id: "imagem_acionada", label: "Equipe de imagem acionada", kind: "confirm" },
+        { id: "codigo_avc_acionado", label: "Código AVC", kind: "choice", options: [
+          { id: "acionado", label: "Acionado", value: "acionado" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Fluxo institucional indisponível", value: "indisponivel" },
+        ] },
+        { id: "neurologia_acionada", label: "Neurologia", kind: "choice", options: [
+          { id: "acionada", label: "Acionada", value: "acionada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Indisponível — escalonamento/transferência necessário", value: "indisponivel" },
+        ] },
+        { id: "imagem_acionada", label: "Equipe de imagem", kind: "choice", options: [
+          { id: "acionada", label: "Acionada", value: "acionada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Indisponível no serviço", value: "indisponivel" },
+        ] },
         { id: "spo2", label: "SpO₂", kind: "number", min: 50, max: 100, step: 1, unit: "%" },
         { id: "oxigenio_status", label: "Oxigênio suplementar", kind: "choice", options: [
           { id: "nao_indicado", label: "Não indicado", value: "nao_indicado" },
           { id: "iniciado", label: "Iniciado", value: "iniciado" },
         ] },
-        { id: "monitor_instalado", label: "Monitorização instalada", kind: "confirm" },
+        { id: "monitor_instalado", label: "Monitorização", kind: "choice", options: [
+          { id: "instalada", label: "Instalada", value: "instalada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Indisponível neste momento", value: "indisponivel" },
+        ] },
         { id: "ecg_status", label: "ECG 12 derivações", kind: "choice", options: [
           { id: "feito", label: "Realizado", value: "feito" },
           { id: "pendente", label: "Pendente", value: "pendente" },
@@ -585,7 +601,11 @@ export const avcDecisionTree: DecisionTreeDefinition = {
           { id: "confirmada", label: "Confirmada", value: "confirmada" },
           { id: "imagem_pendente", label: "Imagem pendente", value: "imagem_pendente" },
         ] },
-        { id: "neurorradio_acionada", label: "Neurorradiologia intervencionista acionada", kind: "confirm" },
+        { id: "neurorradio_acionada", label: "Neurorradiologia intervencionista", kind: "choice", options: [
+          { id: "acionada", label: "Acionada", value: "acionada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Indisponível — transferência necessária", value: "indisponivel" },
+        ] },
         { id: "trombectomia_logistica", label: "Logística para trombectomia", kind: "choice", options: [
           { id: "local", label: "Centro atual realizará", value: "local" },
           { id: "transferencia", label: "Transferência acionada", value: "transferencia" },
@@ -785,7 +805,11 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "Reavaliar continuamente o nível de consciência e o efeito de massa.",
       ],
       interactions: [
-        { id: "hic_neurocirurgia_acionada", label: "Neurocirurgia acionada", kind: "confirm" },
+        { id: "hic_neurocirurgia_acionada", label: "Neurocirurgia", kind: "choice", options: [
+          { id: "acionada", label: "Acionada", value: "acionada" },
+          { id: "pendente", label: "Pendente", value: "pendente" },
+          { id: "indisponivel", label: "Indisponível — transferência/escalonamento necessário", value: "indisponivel" },
+        ] },
         { id: "hic_indicacao_cirurgica", label: "Indicação neurocirúrgica", kind: "choice", options: [
           { id: "presente", label: "Presente", value: "presente" },
           { id: "ausente", label: "Ausente neste momento", value: "ausente" },
