@@ -7,9 +7,11 @@ const es = fs.readFileSync(path.join(root, 'lib/i18n/modules/sedacao.ts'), 'utf8
 const checks = [];
 const ok = (name, value) => checks.push([name, Boolean(value)]);
 
-const doseFlowStart = screen.includes('Núcleo responsivo: dose + resultado lado a lado')
-  ? screen.indexOf('Núcleo responsivo: dose + resultado lado a lado')
-  : screen.indexOf('{/* Dose */}');
+// A validação antiga dependia de comentários de implementação que desapareceram
+// numa refatoração visual, embora a ordem renderizada continuasse correta.
+// Ancoramos agora no elemento real da UI: o card DOSE deve vir depois do bloco
+// de apresentação/diluição (incluindo NOTAS DO BOLUS) e antes do resultado.
+const doseFlowStart = screen.indexOf('<Text style={s.cardLabel}>{tr("DOSE")}</Text>');
 const resultPosition = screen.indexOf('style={[s.resultCard, s.resultCardFill]}') >= 0
   ? screen.indexOf('style={[s.resultCard, s.resultCardFill]}')
   : screen.indexOf('{/* RESULTADO */}');
@@ -24,6 +26,7 @@ ok('construtor personalizado continua existente', screen.includes('Criar diluiç
 ok('ferramentas avançadas ficam condicionais', screen.includes('showDilutionTools ? ('));
 ok('concentração de bolus continua visível', screen.includes('presentation.concentrationLabel'));
 ok('notas de bolus ficam condicionais', screen.includes('showBolusNotes ? ('));
+ok('card de dose existe', doseFlowStart >= 0);
 ok('dose permanece depois da apresentação/diluição', doseFlowStart > screen.indexOf('NOTAS DO BOLUS'));
 ok('resultado permanece no mesmo núcleo de cálculo após a dose', resultPosition > doseFlowStart && (clinicalAlertPosition < 0 || resultPosition < clinicalAlertPosition));
 ok('troca de fármaco fecha ferramentas avançadas', screen.includes('setShowDilutionTools(false);') && screen.includes('setShowBolusNotes(false);'));
