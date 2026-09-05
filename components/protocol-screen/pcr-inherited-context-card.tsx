@@ -3,6 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import type { PcrInheritedContextViewModel } from "../../lib/pcr-handoff-context-adapter";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { tr } from "../../lib/i18n";
+import { trf } from "../../lib/i18n/trf";
 
 export type PcrInheritedContextCardProps = {
   model: PcrInheritedContextViewModel;
@@ -14,10 +16,12 @@ function formatAge(recordedAt: number | undefined, now: number): string {
   const seconds = Math.max(0, Math.floor((now - recordedAt) / 1000));
   if (seconds < 60) return "registrado agora";
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `há ${minutes} min`;
+  if (minutes < 60) return trf(tr, "há {0} min", [minutes]);
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
-  return remainder ? `há ${hours} h ${remainder} min` : `há ${hours} h`;
+  return remainder
+    ? trf(tr, "há {0} h {1} min", [hours, remainder])
+    : trf(tr, "há {0} h", [hours]);
 }
 
 /**

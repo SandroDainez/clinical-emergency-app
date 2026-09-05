@@ -1,5 +1,7 @@
 import { appendClinicalEvent } from "./clinical-event-log";
 import { getCriticalTherapyReassessmentRule } from "./clinical-reassessment-policy";
+import { tr } from "./i18n";
+import { trf } from "./i18n/trf";
 
 export type PendingClinicalReassessment = {
   id: string;
@@ -52,7 +54,7 @@ export function completeClinicalReassessment(input: {
     type: "reassessment",
     occurredAt: now,
     module: item.module,
-    label: `Reavaliação após ${item.therapyId}`,
+    label: trf(tr, "Reavaliação após {0}", [item.therapyId]),
     data: {
       therapyId: item.therapyId,
       reassessmentId: item.id,

@@ -1,4 +1,6 @@
 import { appendClinicalEvent } from "./clinical-event-log";
+import { tr } from "./i18n";
+import { trf } from "./i18n/trf";
 
 let overrideSequence = 0;
 
@@ -23,7 +25,7 @@ export function recordClinicalSafetyOverride(input: ClinicalSafetyOverrideInput)
     type: "safety_override",
     occurredAt: now,
     module: input.module,
-    label: `Override de segurança: ${input.gateId}`,
+    label: trf(tr, "Override de segurança: {0}", [input.gateId]),
     data: {
       gateId: input.gateId,
       reason,

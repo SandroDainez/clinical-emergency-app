@@ -224,4 +224,10 @@ export const ES_PR18_CONVERGENCE: Record<string, string> = {
   "Reconhecimento — suspeita de AVC": "Reconocimiento — sospecha de ACV",
   "TC de crânio SEM contraste": "TC de cráneo SIN contraste",
   "Tempo desde o início": "Tiempo desde el inicio",
+  "há {0} min": "hace {0} min",
+  "há {0} h {1} min": "hace {0} h {1} min",
+  "há {0} h": "hace {0} h",
+  "Reavaliação após {0}": "Reevaluación después de {0}",
+  "Override de segurança: {0}": "Excepción de seguridad: {0}",
+  "Reavaliar após {0}": "Reevaluar después de {0}",
 };

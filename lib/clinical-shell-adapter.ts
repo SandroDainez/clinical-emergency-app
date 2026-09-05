@@ -1,4 +1,6 @@
 import { getAllClinicalObservations, formatObservationAge, type ClinicalObservation } from "./clinical-observations";
+import { tr } from "./i18n";
+import { trf } from "./i18n/trf";
 import { peekClinicalInterruption } from "./clinical-interruption-session";
 import { getCriticalTherapyReassessmentRule } from "./clinical-reassessment-policy";
 import { listPendingClinicalReassessments } from "./clinical-reassessment-runtime";
@@ -125,7 +127,7 @@ export function buildClinicalShellSnapshot(input: {
   const reassessmentAlert = oldest
     ? {
         id: oldest.id,
-        title: rule?.label ? `Reavaliar após ${rule.label}` : `Reavaliar após ${oldest.therapyId}`,
+        title: trf(tr, "Reavaliar após {0}", [rule?.label ?? oldest.therapyId]),
         signals: [...(rule?.reassessmentSignals ?? [])],
         elapsedLabel: formatElapsed(oldest.startedAt, now),
         overdue: oldest.dueAt !== undefined && now > oldest.dueAt,
