@@ -26,7 +26,8 @@ jobs:
           cache: npm
       - run: npm ci
       # Re-run after focused corrections until outside-gate failures reach zero.
-      # This pass includes the shared input, action, transition, navigation and Drug KB contracts.
+      # This pass validates the latest state-aware PCR/EAP contracts plus the
+      # canonical rail and current SafetyGate surface-debt semantics.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
@@ -69,6 +70,16 @@ jobs:
         run: node scripts/valida-drug-knowledge-alteplase.cjs
       - name: Selector policy
         run: node scripts/valida-padrao-seletores-ui.cjs
+      - name: Safety surface debts
+        run: node scripts/valida-safety-gate-surface-debts.cjs
+      - name: PCR migration state
+        run: node scripts/valida-migracao-pcr-handoffs-terminais.cjs
+      - name: PCR target semantics
+        run: node scripts/valida-pcr-target-semantics.cjs
+      - name: Target promotion state
+        run: node scripts/valida-target-promotion-debts.cjs
+      - name: EAP and anaphylaxis transitions
+        run: node scripts/valida-transition-contracts-eap-anafilaxia.cjs
       - name: Calculator no-fake-default policy
         run: node scripts/valida-sem-fallback-clinico-calculadoras.cjs
       - name: STEMI soft stop
@@ -76,4 +87,4 @@ jobs:
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
       - name: Diff sanity
-        run: git diff --check HEAD~8..HEAD
+        run: git diff --check HEAD~12..HEAD
