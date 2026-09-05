@@ -1670,3 +1670,58 @@ aceitável), contraindicações ⛔ não corrigíveis e consultas.
 ⚠️ PA 190/110 → tratamento → PA 170/95 registra **evolução real**. É a mesma regra
 que a trava da Superfície A impôs quando a inferência por temporalidade tentou
 transformar medida nova em correção.
+
+---
+
+## PD-34 · UMA LINHAGEM SÓ, E O QUE FEZ AS OUTRAS TRÊS NASCEREM — DECIDIDA (2026-09-05)
+
+**De onde saiu.** O Sandro relatou que "parece que temos 2 versões do mesmo app,
+e isso impede de corrigir corretamente". O levantamento achou **quatro** frentes
+vivas do mesmo módulo, ⛔ e não duas:
+
+| frente | o que tinha | por que existia |
+|---|---|---|
+| `refactor/…` **local** | AVC em 9 superfícies + 1.677 linhas **sem commit** | trabalho do dia nunca fechado |
+| `refactor/…` **no origin** | 6 commits de padronização, incl. `refactor(ovace)` | push sem `git pull` do outro lado |
+| `wt/avc-superficie-d` | 3 commits do design **Filete**, aprovados em 01/09 | worktree que ⛔ nunca voltou para o tronco |
+| `emergencias-2-ui-core` | AVC como **árvore de decisão** (`avc-decision-tree.ts`) | linhagem paralela desde `main` 4873cc6 |
+
+⚠️ ⛔ NENHUMA DAS DUAS LINHAGENS GRANDES CONTINHA O AVC DA OUTRA. Elas divergiram
+do mesmo commit e reescreveram o módulo inteiro por caminhos diferentes — por
+isso toda correção parecia se perder: ela ia para **uma** das quatro.
+
+**A decisão.** Fica `refactor/clinical-modules-rebuild`. ⛔ Não por gosto:
+
+| | refactor | emergencias-2 |
+|---|---|---|
+| e2e | **308 ✓ / 0 ✘** | 144 ✓ / **37 ✘** |
+| arquivos · soltos na raiz | 745 · 19 | 1.147 · 42 |
+| AVC | 3 camadas (`conteudo` × `nucleo` × tela), 25 testes | 1 arquivo, 3 testes |
+| rastreabilidade | `slot` + `§` + página do PDF + `cor` (classe) + verbatim | texto livre |
+
+⚠️ A rastreabilidade é o argumento que decide: `ivt_tnk_04` registra que TNK
+**0,4 mg/kg** *"is not recommended"* citando `§4.6.2 rec. 2 · p. e357`, ⛔ e a
+constante de uso é 0,25/25. A árvore antiga ⛔ não tinha como dizer isso.
+
+**Superfície D — o kit `./ui` venceu o Filete.** As duas ⛔ não eram concorrentes
+por acaso: **Filete** é camada visual (paleta escopada a D e B); o trabalho de
+05/09 é camada de núcleo (`rascunho-numerico.ts`) ⛔ e reescreveu a tela sobre o
+kit `./ui` **compartilhado com C**. Escolhido o kit: D e C ficam consistentes ⛔ e
+o kit serve as duas. ⚠️ O Filete ⛔ não foi apagado — está em
+`~/Documents/backups-clinical-emergency/filete-superficie-d-20260905.bundle`.
+
+**O que ⛔ NÃO era duplicata, apesar de parecer.** `acls-pcr-standalone` tem
+`admin-login`, `user-login`, tela de consentimento ⛔ e assistente de IA que o app
+principal ⛔ não tem — apagá-lo derrubaria um app com autenticação ⛔ e usuários no
+Supabase. `protocolos-medicos` é outro app (Next.js). ⛔ Os dois ficam.
+
+### A regra que sai daqui
+
+⚠️⚠️ **Worktree ⛔ não é branch de longo prazo.** Os dois worktrees viraram
+diretórios órfãos em `APPs Projetos/` ⛔ e o git perdeu a referência — o Filete
+ficou 4 dias fora do tronco enquanto a mesma tela era reescrita no tronco.
+➜ Worktree fecha no **mesmo dia**, com merge ⛔ ou bundle.
+
+⚠️⚠️ **`git pull` antes de escrever, `test:all` antes de `push`.** Os 6 commits do
+origin subiram com **55 literais PT sem espanhol** — `test:all` vermelho para
+quem puxasse. Corrigido em `lib/i18n/modules/ovace-cockpit.ts`.
