@@ -216,6 +216,24 @@ export default function RootLayout() {
   const destino = useAcessoClinico();
 
   /**
+   * ⚠️⚠️ ESTES HOOKS FICAM NO TOPO — ⛔ ANTES DE TODO `return` CONDICIONAL.
+   *
+   * ⛔ A versão anterior os punha depois dos returns de `login` e
+   * `aguardando_aprovacao`: nesses caminhos os hooks ⛔ não rodavam, ⛔ e nos
+   * outros rodavam — **contagem de hooks variável entre renders**, que é o
+   * React #300/#418 que travou o módulo em produção. ⚠️ Regra dos hooks: todo
+   * hook roda em TODO render, ⛔ e por isso ele vem antes de qualquer saída.
+   *
+   * ⚠️ Lido em efeito, ⛔ e ⛔ não no render: o primeiro quadro do cliente tem de
+   * bater com o do build estático. ⛔ `undefined` = ainda ⛔ não sei — ⛔ e nesse
+   * estado ⛔ nada clínico aparece.
+   */
+  const [aceitou, setAceitou] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    setAceitou(consentimentoAceito());
+  }, []);
+
+  /**
    * ⚠️⚠️ ⛔ NÃO RENDERIZA O `Stack` enquanto ⛔ não estiver liberado.
    *
    * ⛔ Redirecionar dentro de um efeito ⛔ não basta: a tela clínica chega a
@@ -289,39 +307,11 @@ export default function RootLayout() {
   const cobrindo = destino === 'carregando';
 
   /**
-   * ⚠️⚠️ O ACEITE VEM **DEPOIS** DA GUARDA, ⛔ E ANTES DO CONTEÚDO CLÍNICO.
-   *
-   * ⛔ Antes da guarda seria pedir ciência a quem ⛔ nem tem acesso. Aqui, o
-   * médico já foi autorizado ⛔ e a próxima coisa que ele veria é conduta —
-   * ⛔ que é exatamente o que o aceite precede.
-   *
-   * ⚠️ Lido em efeito, ⛔ e ⛔ não no render: o primeiro quadro do cliente tem de
-   * bater com o do build estático (a mesma disciplina de `flow-session`).
-   * ⛔ `undefined` = ainda ⛔ não sei — ⛔ e nesse estado ⛔ nada clínico aparece.
+   * ⚠️ O ACEITE PRECEDE O CONTEÚDO CLÍNICO, ⛔ e vem DEPOIS da guarda: os
+   * destinos terminais (`login`, `aguardando_aprovacao`, `conta_indisponivel`)
+   * já retornaram acima, então aqui só chegam os que abrem conteúdo.
    */
-  const [aceitou, setAceitou] = useState<boolean | undefined>(undefined);
-  useEffect(() => {
-    setAceitou(consentimentoAceito());
-  }, []);
-
-  /** ⛔ `login` já retornou acima — aqui só chegam destinos que abrem conteúdo. */
   const precisaConsentir = !cobrindo && aceitou === false;
-
-  if (precisaConsentir) {
-    return (
-      <LanguageProvider>
-        <ThemeProvider value={TEMA_NAVEGACAO}>
-          <ConsentScreen
-            onAccept={() => {
-              registrarConsentimento();
-              setAceitou(true);
-            }}
-          />
-          <StatusBar style="light" />
-        </ThemeProvider>
-      </LanguageProvider>
-    );
-  }
 
   return (
     <LanguageProvider>
@@ -330,6 +320,28 @@ export default function RootLayout() {
         {cobrindo ? (
           <View style={guarda.cobertura} testID="guarda-cobertura">
             <ActivityIndicator color={CORES.primary} />
+          </View>
+        ) : null}
+        {/**
+          * ⚠️⚠️ O CONSENTIMENTO COBRE, ⛔ NÃO SUBSTITUI — mesma disciplina de
+          * `cobrindo`. A versão anterior fazia `return <ConsentScreen>` cedo,
+          * desmontando o `Stack` inteiro; no build estático (output: static)
+          * isso remontava a árvore entre o HTML pré-renderizado e o cliente, e
+          * o React abortava a hidratação com o erro #300 — o módulo desenhava o
+          * título ⛔ e mais nada tocável. Cobrindo por cima, o `Stack` nasce uma
+          * vez ⛔ e vive; a parede é uma camada opaca sobre ele.
+          *
+          * ⚠️ `aceitou === false` só depois do efeito: em `undefined` (servidor
+          * ⛔ e primeiro quadro do cliente) ⛔ nada cobre, ⛔ e os dois quadros batem.
+          */}
+        {precisaConsentir ? (
+          <View style={guarda.cobertura} testID="consentimento-cobertura">
+            <ConsentScreen
+              onAccept={() => {
+                registrarConsentimento();
+                setAceitou(true);
+              }}
+            />
           </View>
         ) : null}
         {degradado ? (
