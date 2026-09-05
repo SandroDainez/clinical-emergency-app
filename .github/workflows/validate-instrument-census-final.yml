@@ -26,6 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       # Re-run after focused corrections until outside-gate failures reach zero.
+      # Current pass also checks the aligned module rail and neutral numeric-input policy.
       - name: Instrument census and outside-gate diagnosis
         shell: bash
         run: |
