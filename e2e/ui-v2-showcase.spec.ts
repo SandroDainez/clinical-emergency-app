@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { press, pressables, texto } from "./helpers";
+import { aceitarConsentimento, press, pressables, texto } from "./helpers";
 
 /**
  * Showcase da UI 2.0 (/dev/ui-v2).
@@ -16,6 +16,7 @@ test.describe("Showcase UI 2.0", () => {
   test.beforeEach(async ({ page }) => {
     const erros: string[] = [];
     page.on("pageerror", (e) => erros.push(e.message));
+    await aceitarConsentimento(page);
     await page.goto("/dev/ui-v2");
     await expect.poll(async () => (await texto(page)).length).toBeGreaterThan(500);
     expect(erros, "o showcase não deveria lançar exceção").toEqual([]);

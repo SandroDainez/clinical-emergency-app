@@ -71,6 +71,20 @@ const MORTOS_CONHECIDOS = {
     "D-123 · a DECISÃO da troca, sem imports por decisão — executada por test:troca-de-sessao (16 conferências)",
   "lib/sessao-anonima.ts":
     "D-123 · aguarda habilitar Anonymous Sign-In + aplicar migration + implantar claim; medido por test:posse-de-sessao",
+  // ⚠️⚠️ NÃO É MORTO — É VIVO **NO NATIVO**, e invisível a um grafo ESTÁTICO.
+  //
+  // `armazenamento-local.native.ts` é escolhido pelo **Metro**, por extensão de
+  // plataforma: em iOS/Android ele SUBSTITUI `armazenamento-local.ts` em todo
+  // import de `./armazenamento-local`. ⛔ Nenhum arquivo o importa pelo nome —
+  // ⛔ e não deve importar: quem escrever `from "./armazenamento-local.native"`
+  // no código compartilhado quebra a web, que ⛔ não tem `expo-sqlite/kv-store`.
+  //
+  // ⚠️ A trava percorre imports; a resolução por plataforma acontece DEPOIS
+  // dela, no empacotador. Por isso a exceção — ⛔ e por isso ela é do par, ⛔ e não
+  // do arquivo: `armazenamento-local.ts` (web) É alcançável, ⛔ e é ele que
+  // `lib/consentimento.ts` importa.
+  "lib/armazenamento-local.native.ts":
+    "resolvido pelo Metro por extensão de plataforma (iOS/Android); o par web `armazenamento-local.ts` é alcançável e é o importado",
   // ⚠️ NÃO É MORTO — É VIVO FORA DO APP. Único órfão que a inclusão de `lib/`
   // revelou (1 em 77). `lib/modulos-canonicos.ts` é a tabela de nomes e
   // apelidos dos módulos, consumida pelos SCRIPTS de auditoria — não pela

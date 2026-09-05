@@ -1,4 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
+/**
+ * ⚠️ A VERSÃO VEM DA FONTE, ⛔ e ⛔ não é redigitada aqui: se `VERSAO_DO_TEXTO`
+ * subir ⛔ e esta cópia ficasse para trás, a suíte continuaria "aceitando" uma
+ * versão que ⛔ não existe mais — ⛔ e o aviso de que o texto mudou se perderia.
+ */
+import { VERSAO_DO_TEXTO } from "./lib/consentimento";
 
 /**
  * E2E de não-regressão (Fase 0.2 do plano UI 2.0).
@@ -38,6 +44,34 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   use: {
     baseURL: process.env.E2E_BASE_URL || "http://localhost:4173",
+    /**
+     * ⚠️⚠️ CONSENTIMENTO PRÉ-ACEITO EM TODA A SUÍTE — ⛔ e ⛔ não spec a spec.
+     *
+     * O aceite ("Li e estou ciente") precede ⛔ todo conteúdo clínico. Sem isto,
+     * ⛔ cada teste de módulo mediria a **parede**, ⛔ e ⛔ não a tela que veio
+     * medir — ⛔ e a primeira tentativa (pré-aceitar dentro de `fixarIdioma`)
+     * deixou 10 testes de fora, os que fazem `page.goto` direto.
+     *
+     * ⚠️ `storageState` injeta o localStorage ⛔ antes do primeiro quadro, em
+     * ⛔ todos os testes, ⛔ sem depender de disciplina de import.
+     *
+     * ⚠️⚠️ A CHAVE CARREGA A VERSÃO, ⛔ de propósito: mudou o texto do aviso ⛔ e
+     * subiu `VERSAO_DO_TEXTO`, esta chave para de casar ⛔ e a suíte bate na
+     * parede de novo — que é o aviso que se quer. ⛔ Um "aceita qualquer versão"
+     * esconderia a mudança.
+     *
+     * ⛔ `e2e/consentimento.spec.ts` ANULA isto com `test.use`, ⛔ porque é ele
+     * quem mede a parede.
+     */
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: process.env.E2E_BASE_URL || "http://localhost:4173",
+          localStorage: [{ name: `consentimento-clinico:${VERSAO_DO_TEXTO}`, value: "1" }],
+        },
+      ],
+    },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     // Emergência é mobile-first: o contrato é validado no tamanho real de uso.

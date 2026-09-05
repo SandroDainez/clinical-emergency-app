@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { VERSAO_DO_TEXTO } from "../lib/consentimento";
 import { LOCALE_STORAGE_KEY } from "../lib/locale";
 
 /**
@@ -141,7 +142,34 @@ export const emSegundos = (mmss: string) => {
  * Chave de estado controlada por teste é parte do CONTRATO: ela sai do módulo
  * que a lê, nunca de um literal repetido em sete arquivos.
  */
+/**
+ * ⚠️⚠️ PRÉ-ACEITA O CONSENTIMENTO — ⛔ e ⛔ não o remove do app.
+ *
+ * O aceite ("Li e estou ciente") passou a preceder ⛔ todo conteúdo clínico. Sem
+ * isto, ⛔ TODOS os testes de módulo veriam a parede em vez da tela que vieram
+ * medir — ⛔ e mediriam a parede.
+ *
+ * ⚠️ A CHAVE É A MESMA DE `lib/consentimento.ts`, ⛔ versão incluída: se o texto
+ * do aviso mudar ⛔ e a versão subir, esta chave para de casar ⛔ e os testes
+ * batem no consentimento de novo — que é exatamente o aviso que se quer. ⛔ Um
+ * "aceitar qualquer versão" aqui esconderia a mudança.
+ *
+ * ⛔ Quem TESTA o consentimento ⛔ não chama isto: chama `page.goto` direto.
+ */
+export const CHAVE_CONSENTIMENTO = `consentimento-clinico:${VERSAO_DO_TEXTO}`;
+
+export async function aceitarConsentimento(page: Page) {
+  await page.addInitScript((chave) => {
+    try {
+      window.localStorage.setItem(chave as string, "1");
+    } catch {
+      /* modo privado — o teste bate no consentimento e falha por motivo certo */
+    }
+  }, CHAVE_CONSENTIMENTO);
+}
+
 export async function fixarIdioma(page: Page, locale: "pt-BR" | "es-419") {
+  await aceitarConsentimento(page);
   await page.addInitScript(
     ([chave, valor]) => {
       try {

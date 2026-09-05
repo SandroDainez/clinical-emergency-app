@@ -21,6 +21,8 @@ import {
 } from '../lib/guarda-de-acesso';
 
 import { SubscriptionProvider } from '../lib/subscription-context';
+import ConsentScreen from '../components/consent-screen';
+import { consentimentoAceito, registrarConsentimento } from '../lib/consentimento';
 import { LanguageProvider } from '../lib/language-context';
 import { TEMAS } from '../design-system/tokens';
 
@@ -285,6 +287,41 @@ export default function RootLayout() {
   const degradado = destino === 'liberado_local_degradado';
   /** ⚠️ Cobre sem desmontar: o navegador continua vivo por baixo. */
   const cobrindo = destino === 'carregando';
+
+  /**
+   * ⚠️⚠️ O ACEITE VEM **DEPOIS** DA GUARDA, ⛔ E ANTES DO CONTEÚDO CLÍNICO.
+   *
+   * ⛔ Antes da guarda seria pedir ciência a quem ⛔ nem tem acesso. Aqui, o
+   * médico já foi autorizado ⛔ e a próxima coisa que ele veria é conduta —
+   * ⛔ que é exatamente o que o aceite precede.
+   *
+   * ⚠️ Lido em efeito, ⛔ e ⛔ não no render: o primeiro quadro do cliente tem de
+   * bater com o do build estático (a mesma disciplina de `flow-session`).
+   * ⛔ `undefined` = ainda ⛔ não sei — ⛔ e nesse estado ⛔ nada clínico aparece.
+   */
+  const [aceitou, setAceitou] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    setAceitou(consentimentoAceito());
+  }, []);
+
+  /** ⛔ `login` já retornou acima — aqui só chegam destinos que abrem conteúdo. */
+  const precisaConsentir = !cobrindo && aceitou === false;
+
+  if (precisaConsentir) {
+    return (
+      <LanguageProvider>
+        <ThemeProvider value={TEMA_NAVEGACAO}>
+          <ConsentScreen
+            onAccept={() => {
+              registrarConsentimento();
+              setAceitou(true);
+            }}
+          />
+          <StatusBar style="light" />
+        </ThemeProvider>
+      </LanguageProvider>
+    );
+  }
 
   return (
     <LanguageProvider>
