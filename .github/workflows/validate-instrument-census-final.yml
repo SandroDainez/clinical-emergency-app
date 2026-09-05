@@ -25,8 +25,34 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Instrument census
-        run: npm run test:censo
+      - name: Instrument census and outside-gate diagnosis
+        shell: bash
+        run: |
+          set +e
+          npm run test:censo 2>&1 | tee /tmp/censo.log
+          census_status=${PIPESTATUS[0]}
+          echo "CENSUS_EXIT=${census_status}"
+
+          grep -oE '❌ [^ ]+\.cjs não está alcançável' /tmp/censo.log \
+            | awk '{print $2}' \
+            | sort -u > /tmp/outside.txt || true
+
+          echo "OUTSIDE_COUNT=$(wc -l < /tmp/outside.txt | tr -d ' ')"
+          failures=0
+          while IFS= read -r validator; do
+            [ -n "$validator" ] || continue
+            node "scripts/$validator" > /tmp/validator.log 2>&1
+            rc=$?
+            if [ "$rc" -ne 0 ]; then
+              failures=$((failures + 1))
+              echo "OUTSIDE_FAIL rc=$rc $validator"
+              tail -n 12 /tmp/validator.log || true
+            else
+              echo "OUTSIDE_PASS $validator"
+            fi
+          done < /tmp/outside.txt
+          echo "OUTSIDE_FAIL_COUNT=$failures"
+          exit 0
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
       - name: Diff sanity
