@@ -145,7 +145,7 @@ for (const [modulo, no, constante] of ESPERADO) {
     ["eap", "card_reaval", /Refrat[áa]rio|piora/i, "tratar como refratário"],
     ["eclampsia", "classificacao", /crit[ée]rios de gravidade/i, "tratar como grave"],
     ["politrauma", "fonte", /N[ãa]o respondeu|transit[óo]ria/i, "tratar como não respondedor"],
-    ["tep", "estratificacao", /Intermedi[áa]rio/i, "classificar como intermediário"],
+    ["tep", "estratificacao", /C1\/C2|C3/i, "seguir por ramo de internação C1/C2/C3 até concluir a estratificação"],
     ["acute-abdomen", "reavaliar", /Sim — indica[çc][ãa]o cir[úu]rgica/i, "seguir por SIM"],
   ];
   for (const [modulo, no, padrao, oQue] of COERENCIA) {
