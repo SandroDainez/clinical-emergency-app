@@ -7,6 +7,14 @@ on:
       - scripts/censo-de-instrumentos.cjs
       - scripts/run-all-instruments-gate.cjs
       - scripts/valida-emergencias-2-suite.cjs
+      - scripts/valida-na-duvida.cjs
+      - scripts/valida-ordem-clinica-parcial.cjs
+      - scripts/valida-eap.cjs
+      - scripts/valida-osmolaridade.cjs
+      - scripts/valida-farmacos-fonte-unica.cjs
+      - lib/na-duvida.ts
+      - lib/drug-knowledge/amiodarona.ts
+      - tce-decision-tree.ts
       - .github/workflows/validate-instrument-census-final.yml
   workflow_dispatch:
 
@@ -27,42 +35,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Instrument census and outside-gate diagnosis
-        shell: bash
-        run: |
-          set +e
-          npm run test:censo 2>&1 | tee /tmp/censo.log
-          census_status=${PIPESTATUS[0]}
-          echo "CENSUS_EXIT=${census_status}"
-
-          grep -oE '❌ [^ ]+\.cjs não está alcançável' /tmp/censo.log \
-            | awk '{print $2}' \
-            | sort -u > /tmp/outside.txt || true
-
-          echo "OUTSIDE_COUNT=$(wc -l < /tmp/outside.txt | tr -d ' ')"
-          failures=0
-          while IFS= read -r validator; do
-            [ -n "$validator" ] || continue
-            node "scripts/$validator" > /tmp/validator.log 2>&1
-            rc=$?
-            if [ "$rc" -ne 0 ]; then
-              failures=$((failures + 1))
-              echo "OUTSIDE_FAIL rc=$rc $validator"
-              tail -n 12 /tmp/validator.log || true
-            else
-              echo "OUTSIDE_PASS $validator"
-            fi
-          done < /tmp/outside.txt
-          echo "OUTSIDE_FAIL_COUNT=$failures"
-          exit 0
+      - name: Instrument census
+        run: npm run test:censo
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: TEP uncertainty rule
         run: node scripts/valida-na-duvida.cjs
       - name: Tube confirmation order
         run: node scripts/valida-ordem-clinica-parcial.cjs
-      - name: Total instrument gate
-        run: node scripts/run-all-instruments-gate.cjs
+      - name: EAP clinical structure
+        run: node scripts/valida-eap.cjs
+      - name: Osmolarity and TCE formula
+        run: node scripts/valida-osmolaridade.cjs
+      - name: Drug single-source invariants
+        run: node scripts/valida-farmacos-fonte-unica.cjs
       - name: InputStep parity
         run: node scripts/valida-paridade-input-step.cjs
       - name: ActionStep parity
@@ -91,5 +77,7 @@ jobs:
         run: node scripts/valida-safety-gate-soft-stop-stemi.cjs
       - name: Emergencias 2 regression
         run: npm run test:emergencias-2
+      - name: Total instrument gate
+        run: node scripts/run-all-instruments-gate.cjs
       - name: Diff sanity
-        run: git diff --check HEAD~12..HEAD
+        run: git diff --check HEAD~15..HEAD
