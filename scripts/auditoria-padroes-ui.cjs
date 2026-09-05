@@ -219,7 +219,7 @@ if (!universoOk) {
   process.exit(1);
 }
 
-const TETO = 8;
+const TETO = 7;
 
 if (pendencias > TETO) {
   console.log(
