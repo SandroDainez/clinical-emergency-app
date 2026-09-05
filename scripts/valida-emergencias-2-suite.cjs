@@ -91,3 +91,12 @@ for (const validator of validators) {
 }
 
 console.log(`\n✅ Emergências 2: ${validators.length} validadores estruturais aprovados.\n`);
+
+// O pretest:all já chama esta suite. Rodar o portão total daqui garante que
+// qualquer instrumento novo ou historicamente fora do test:all passe a ser
+// bloqueante sem duplicar centenas de entradas no package.json.
+const totalGate = spawnSync(process.execPath, [path.join(__dirname, "run-all-instruments-gate.cjs")], {
+  cwd: root,
+  stdio: "inherit",
+});
+if (totalGate.status !== 0) process.exit(totalGate.status ?? 1);
