@@ -309,6 +309,17 @@ export default function SuperficieB({
                         onAlternarDetalhe={() => detalhes.alternar(campo.id)}
                         onRegistrarEscala={onEscala}
                         onDesfazer={onDesfazer}
+                        /**
+                         * ⚠️ O segundo caminho abre o bloco que **já existe** —
+                         * ⛔ ele ⛔ não cria campo novo ⛔ nem funde as duas
+                         * entidades. ⚠️ O que muda é que a escolha passa a ser
+                         * **oferecida onde a decisão acontece**.
+                         */
+                        aoInformarTotal={() =>
+                          setAbertos((a) =>
+                            a.includes("nihss-de-fora") ? a : [...a, "nihss-de-fora"]
+                          )
+                        }
                       />
                     );
                   }

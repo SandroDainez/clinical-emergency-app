@@ -36,6 +36,48 @@
  *     para cá antes da regra, fariam esta tela parecer porta terapêutica.
  */
 
+/**
+ * ⚠️⚠️ A PRIORIDADE DA IMAGEM — pedida pelo autor em 2026-09-06:
+ * *"TEM QUE TER DESTAQUE TC DE CRÂNIO SEM CONTRASTE O MAIS RÁPIDO POSSÍVEL"*.
+ *
+ * ── ⚠️⚠️ O QUE AUTORIZA ESTE DESTAQUE ──────────────────────────────────────
+ *
+ * ⛔ ⛔ Não é opinião de tela. É **F-16, rec. 1 · COR 1 · LOE A**, p. e341:
+ *
+ * > *"In patients with suspected AIS, emergent brain imaging with NCCT or MRI
+ * > is recommended on initial evaluation to assess ischemic burden (eg,
+ * > ASPECTS) and exclude intracranial hemorrhage before initiating reperfusion
+ * > interventions"*
+ *
+ * ⚠️ *"emergent"*, *"on initial evaluation"* ⛔ e *"before initiating
+ * reperfusion interventions"* são da **fonte**, ⛔ e é isso que faz a imagem ser
+ * o primeiro bloco da tela ⛔ e ⛔ não mais uma pendência numa lista de três
+ * iguais.
+ *
+ * ── ⚠️⚠️ ⛔ E O QUE ESTE DESTAQUE ⛔ NÃO PODE VIRAR ─────────────────────────
+ *
+ * ⛔ **⛔ NENHUMA META NUMÉRICA, ⛔ nenhum cronômetro, ⛔ nenhum alerta de
+ * atraso.** ⚠️ A rec. 2 diz *"as rapidly as possible (eg, within 25 minutes)"*,
+ * ⛔ e a transcrição registra que `eg` é **hedge** ⛔ e que a recomendação é
+ * sobre **protocolo institucional**, ⛔ e ⛔ não sobre este paciente (**E-45**).
+ * ⚠️ A varredura do documento inteiro ⛔ não achou ⛔ nenhuma meta de porta-agulha
+ * com COR/LOE — ⛔ e o app ⛔ não exibe meta que a fonte ⛔ não dá (**E-31**).
+ *
+ * ⚠️ Por isso a frase da tela é *"o mais rápido possível"* — que é a tradução
+ * do verbatim —, ⛔ e ⛔ nunca *"em até 25 minutos"*.
+ */
+export const PRIORIDADE_DA_IMAGEM = {
+  id: "imagem-primeiro",
+  titulo: "Tomografia de crânio sem contraste",
+  chamada: "Imagem cerebral emergencial, o mais rápido possível",
+  porque:
+    "Exclui hemorragia intracraniana antes de iniciar qualquer reperfusão, e mede a carga isquêmica.",
+  acao: "Registrar a imagem",
+  cor: "1",
+  loe: "A",
+  fonte: "F-16",
+} as const;
+
 import type { SuperficieId } from "../nucleo/tipos";
 import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
 import { camposDoGrupo, comCasa, NAO_SEI, SIM_NAO_INCERTO } from "./campo";

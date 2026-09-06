@@ -56,6 +56,7 @@ const fonteSupA = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-a.ts
 const fonteDeriv = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes.ts"));
 const fonteA = lerFonte(path.join(appDir, "avc", "nucleo", "apresentacao-f.ts"));
 const fonteTela = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
+const fonteVeredito = lerFonte(path.join(appDir, "avc", "nucleo", "veredito-da-trombolise.ts"));
 
 /** ⚠️ Leitura sintética — a trava mede a ARRUMAÇÃO, ⛔ não a correspondência. */
 const leitura = (o) => ({
@@ -469,6 +470,37 @@ confere("há recomendações e insumos a arrumar",
 
 // ══ ⚠️⚠️ O QUE A TELA ⛔ NÃO PODE DIZER ═══════════════════════════════════
 {
+  /* ══ ⚠️⚠️ O VEREDITO — PD-40, ⛔ e as travas que ele exige ═══════════════
+   *
+   * ⚠️ O autor pediu, em 2026-09-06, que o app **diga** se a trombólise está
+   * indicada. ⛔ Isso ⛔ não desfaz ⛔ nenhuma das regras abaixo — ⛔ e estas
+   * conferências existem para provar que ⛔ não desfez.
+   */
+  confere("⚠️⚠️ o veredito ⛔ NÃO usa a palavra 'contraindicad'",
+    !/contraindicad/i.test(fonteVeredito.replace(/⛔ n[aã]o existe[^]{0,400}?fabricada pela tela\./g, "")),
+    "⛔ COR 3 é *not recommended* — a força extra seria inventada pelo app");
+
+  confere("⚠️⚠️ o veredito ⛔ NÃO grava fato ⛔ nenhum",
+    !/registrarFato|definirRelogio|setEstado/.test(fonteVeredito),
+    "⛔ veredito gravado num fato **congela** a conclusão ⛔ e sobrevive à correção do dado (E-43)");
+
+  confere("⚠️⚠️ falta de dado ⛔ NÃO vira desfecho negativo",
+    /"incompleta"/.test(fonteVeredito) && /faltam/.test(fonteVeredito),
+    "⛔ achatar ausência em 'não indicada' faria ⛔ não trombolisar por campo vazio (E-37)");
+
+  confere("⚠️⚠️ a ressalva do médico viaja DENTRO do veredito",
+    /readonly ressalva: string/.test(fonteVeredito)
+    && /ressalva: RESSALVA_DO_VEREDITO/.test(fonteVeredito),
+    "⛔ como campo obrigatório, ⛔ nenhuma tela consegue exibir a conclusão ⛔ sem ela");
+
+  confere("⚠️⚠️ ⛔ e a tela IMPRIME a ressalva",
+    /veredito\.ressalva/.test(fonteTela),
+    "⛔ carregar a frase ⛔ e ⛔ não mostrá-la ⛔ não cumpre o pedido do autor");
+
+  confere("⚠️ corrigível ⛔ NÃO entra como motivo contra",
+    /corrigirAntes/.test(fonteVeredito) && !/contra: .*corrigirAntes/.test(fonteVeredito),
+    "⛔ PA acima da meta tem conserto — ⛔ ela ⛔ não é veredito negativo");
+
   confere("⚠️⚠️ a palavra 'contraindicado' ⛔ NÃO existe na tela",
     !/contraindicad/i.test(fonteTela),
     "⛔ COR 3 da fonte é *not recommended* / *No Benefit* — converter inventa força que ela ⛔ não deu");

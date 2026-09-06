@@ -56,6 +56,10 @@ const MIGRADAS = [
   "components/avc/superficie-paciente.tsx",
   "components/avc/superficie-laboratorio.tsx",
   "components/avc/superficie-e.tsx",
+  /** ⚠️ PD-39 · o kit da Superfície A, migrado ao clonar as referências. */
+  "components/avc/ui/index.tsx",
+  /** ⚠️ PD-39 · os blocos que as referências têm e o módulo ⛔ não tinha. */
+  "components/avc/sistema/blocos.tsx",
 ];
 
 /**

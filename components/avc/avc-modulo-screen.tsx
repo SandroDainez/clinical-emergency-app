@@ -22,7 +22,7 @@ import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { pendenciasDaSeguranca } from "../../avc/nucleo/derivacoes-d";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
-import { ESTUDO } from "../../avc/conteudo/superficie-c";
+import { ESTUDO, PRIORIDADE_DA_IMAGEM } from "../../avc/conteudo/superficie-c";
 import SuperficieD from "./superficie-d";
 import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
@@ -37,11 +37,17 @@ import {
   ClinicalHeader,
   ClinicalShell,
   InfoToggle,
-  PatientContext,
   PhaseNavigation,
+  PrimaryAction,
   ScreenHeader,
-  type DadoDeContexto,
+  WarningCard,
 } from "./sistema";
+import {
+  CardHeader,
+  LinkAction,
+  VitalGrid,
+  type SinalVital,
+} from "./sistema/blocos";
 
 /**
  * ⚠️ A ALTURA DA BARRA É UMA CONSTANTE PORQUE **DUAS COISAS** dependem dela:
@@ -125,7 +131,7 @@ import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESPACO, LARGURA, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
 /**
@@ -203,6 +209,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         rotulo: "PA",
         unidade: "mmHg",
         campo: "pas",
+        icone: "circulacao" as const,
+        acento: "critical" as const,
         valor:
           typeof pas === "number" && typeof pad === "number" ? `${pas}/${pad}` : undefined,
       },
@@ -211,6 +219,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         rotulo: "Glicemia",
         unidade: "mg/dL",
         campo: "glicemia",
+        icone: "glicemia" as const,
+        acento: "debt" as const,
         valor: typeof glic === "number" ? String(glic) : undefined,
       },
       {
@@ -218,6 +228,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         rotulo: "NIHSS",
         unidade: "0–42",
         campo: "nihss_informado",
+        icone: "neuro" as const,
+        acento: "success" as const,
         valor: typeof nihss === "number" ? String(nihss) : undefined,
       },
       {
@@ -226,6 +238,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         rotulo: "Imagem",
         unidade: "exame",
         campo: "estudo_modalidade",
+        icone: "imagem" as const,
+        acento: "info" as const,
         valor: img === undefined ? undefined : tr("saída"),
       },
     ];
@@ -451,32 +465,30 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   }
 
   /**
-   * ⚠️⚠️ O CONTEXTO PERSISTENTE (PD-37) — ⛔ e ⛔ ele ⛔ NÃO é um painel.
+   * ⚠️⚠️ O CONTEXTO PERSISTENTE — reescrito em 2026-09-06 como **GRADE**.
    *
-   * ⚠️ Quatro dados, numa faixa de uma linha, **fixa acima do conteúdo**. ⛔ Ela
-   * ⛔ não rola: era esse o defeito do cockpit antigo, que vivia dentro do
-   * ScrollView ⛔ e sumia justamente quando o médico descia para decidir.
+   * ⛔ Ele era uma faixa de texto de uma linha: `LKW — · PA — · Glicemia —`.
+   * ⚠️ Nas referências que o autor mandou, este é o bloco mais característico
+   * da tela: uma **grade de tiles**, cada um com ícone colorido, número grande
+   * ⛔ e unidade embaixo. ⛔ A faixa dizia a mesma coisa ⛔ e ⛔ não parecia um
+   * painel de medidas — ⛔ parecia uma frase.
    *
-   * ⚠️ **Cresce com o atendimento**: quem ⛔ ainda ⛔ não foi medido aparece como
-   * travessão **neutro** ⛔ e tocável, levando a onde se registra. ⛔ Ausência
-   * ⛔ nunca é âmbar — campo vazio ⛔ não é achado.
+   * ⚠️ O que ⛔ **não** mudou: quem ⛔ ainda ⛔ não foi medido mostra travessão
+   * **neutro** ⛔ e tocável, levando a onde se registra (**E-37**).
+   *
+   * ⚠️⚠️ ⛔ E O RELÓGIO ⛔ NÃO ESTÁ AQUI: ele subiu para o **cabeçalho fixo**.
+   * ⛔ É o único valor que muda sozinho, ⛔ e ⛔ ele ⛔ não pode rolar para fora
+   * da tela enquanto o médico decide (§7.8).
    */
-  const contextoDoPaciente: readonly DadoDeContexto[] = [
-    {
-      id: "lkw",
-      rotulo: "LKW",
-      valor: lkwMin === undefined
-        ? undefined
-        : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
-      onTocar: () => abrir("estabilizacao"),
-    },
-    ...VITAIS.slice(0, 3).map((v) => ({
-      id: v.campo,
-      rotulo: v.rotulo,
-      valor: v.valor,
-      onTocar: () => irParaCampo(v.campo),
-    })),
-  ];
+  const sinaisVitais: readonly SinalVital[] = VITAIS.map((v) => ({
+    id: v.id,
+    rotulo: v.rotulo,
+    valor: v.valor,
+    unidade: v.unidade,
+    icone: v.icone,
+    acento: v.acento,
+    onTocar: () => irParaCampo(v.campo),
+  }));
 
   return (
     <ClinicalShell
@@ -495,37 +507,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          */
         <ClinicalHeader
           titulo={TITULO_DA_SINDROME[atual.id] ?? "AVC isquêmico agudo"}
+          escopo={ESCOPO_DA_SINDROME[atual.id] ?? "Adulto com suspeita de AVC isquêmico agudo"}
+          /**
+           * ⚠️⚠️ *"Atendimento aberto"* ⛔ e ⛔ não *"Atendimento ativo"*: o app
+           * ⛔ não sabe se alguém está de fato atendendo — ⛔ ele sabe que **este
+           * caso está aberto** nele. ⚠️ Afirmar o que ⛔ não se observa é o erro
+           * que **E-23** existe para impedir.
+           */
+          marcador={`${tr("Atendimento aberto há")} ${abertoHaMin ?? 0} ${tr("min")}`}
+          relogio={{
+            rotulo: "Última vez bem",
+            valor:
+              lkwMin === undefined
+                ? undefined
+                : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
+            onTocar: () => irParaCampo("hora_ultima_vez_bem"),
+          }}
           onSair={onVoltar}
-          aoLado={
-            <Recolhido
-              id="escopo-do-modulo"
-              texto={ESCOPO_DA_SINDROME[atual.id] ?? "Adulto com suspeita de AVC isquêmico agudo"}
-              aberto={escopoAberto}
-              onAlternar={() => setEscopoAberto((v) => !v)}
-            />
-          }
-        />
-      }
-      contexto={
-        <PatientContext
-          dados={contextoDoPaciente}
-          aoFim={
-            /**
-             * ⚠️ O detalhe do cockpit — cronômetro de atendimento ⛔ e a grade
-             * completa de vitais — abre por aqui. ⛔ Ele ⛔ não cabe na faixa de
-             * uma linha, ⛔ e ⛔ não pode simplesmente sumir.
-             */
-            <Pressable
-              onPress={() => setCockpitAberto((v) => !v)}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: cockpitAberto }}
-              accessibilityLabel={tr("Ver o contexto completo do paciente")}
-              hitSlop={8}
-              testID="avc-cockpit-faixa"
-            >
-              <Icone nome={cockpitAberto ? "informacao" : "adiante"} tamanho={13} />
-            </Pressable>
-          }
         />
       }
       navegacao={
@@ -586,6 +584,76 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * ⚠️ O que ficou aqui é o que ⛔ NÃO cabe numa faixa de uma linha: o
         * bloqueio corrigível (com a frase de D) ⛔ e os auxiliares.
         */}
+      {/**
+        * ── ⚠️⚠️ SINAIS VITAIS — o primeiro bloco da tela, como na referência ──
+        *
+        * ⚠️ Ele carrega o `testID` **antigo** (`avc-resumo`), ⛔ e ⛔ isso ⛔ não é
+        * descuido: a suíte usa esse id para guardar a garantia de que o contexto
+        * do paciente **acompanha todas as superfícies**. ⛔ Renomeá-lo por motivo
+        * cosmético obrigaria a reescrever um teste que protege medicina.
+        */}
+      <View style={s.cartao} testID="avc-resumo">
+        <CardHeader
+          titulo="Sinais vitais e dados iniciais"
+          aoLado={
+            /**
+             * ⚠️⚠️ SAÍDA DECLARADA (**E-09**), ⛔ e ⛔ não um interruptor.
+             *
+             * ⛔ Com a expansão removida, um botão que alterna ⛔ nada seria um
+             * controle mentiroso. ⚠️ Aqui ele **nomeia para onde leva** — o
+             * painel do paciente, onde moram identificação, peso ⛔ e alergias.
+             *
+             * ⚠️ O `testID` é o antigo de propósito: um cenário clínico o usa
+             * para provar que o estado sobrevive a sete trocas de superfície, ⛔ e
+             * ⛔ isso ⛔ continua sendo exatamente o que o toque faz.
+             */
+            <LinkAction
+              rotulo="Ver paciente"
+              onPress={() => abrir("paciente")}
+              testID="avc-cockpit-faixa"
+            />
+          }
+        />
+        <VitalGrid vitais={sinaisVitais} />
+      </View>
+
+      {/**
+        * ── ⚠️⚠️ A IMAGEM É O PRIMEIRO BLOCO ENQUANTO ⛔ NÃO VOLTA ──────────
+        *
+        * ⚠️ Pedido do autor, 2026-09-06: *"TEM QUE TER DESTAQUE TC DE CRÂNEO
+        * SEM CONTRASTE O MAIS RÁPIDO POSSÍVEL"*. ⛔ Na captura, *"Tomografia de
+        * crânio"* era **uma de três pendências visualmente idênticas** — mesmo
+        * peso que *"Registrar o exame neurológico"*, ⛔ que ⛔ não decide se o
+        * paciente pode receber trombolítico.
+        *
+        * ⚠️ O destaque tem fonte: **F-16, rec. 1 · COR 1 · LOE A** — *"emergent
+        * brain imaging… on initial evaluation… before initiating reperfusion
+        * interventions"*. ⛔ Ele ⛔ não é ênfase inventada pela tela.
+        *
+        * ⚠️⚠️ ⛔ E ELE SOME SOZINHO: registrada a imagem, `destinoDaImagem`
+        * passa a existir ⛔ e o bloco sai. ⛔ Um aviso que ⛔ não sabe desaparecer
+        * vira paisagem, ⛔ e ⛔ deixa de ser lido.
+        *
+        * ⛔ ⛔ SEM CRONÔMETRO ⛔ E ⛔ SEM META: a fonte diz *"as rapidly as possible
+        * (eg, within 25 minutes)"* sobre **protocolo institucional**, ⛔ e ⛔ não
+        * sobre este paciente (**E-45**, **E-31**).
+        */}
+      {destinoDaImagem(estado) === undefined ? (
+        <WarningCard
+          nivel="risco"
+          titulo={PRIORIDADE_DA_IMAGEM.chamada}
+          texto={`${tr(PRIORIDADE_DA_IMAGEM.titulo)} · ${tr(PRIORIDADE_DA_IMAGEM.porque)} (COR ${PRIORIDADE_DA_IMAGEM.cor} · LOE ${PRIORIDADE_DA_IMAGEM.loe})`}
+          testID="avc-prioridade-imagem"
+          acao={
+            <PrimaryAction
+              rotulo={PRIORIDADE_DA_IMAGEM.acao}
+              onPress={() => abrir("imagem")}
+              testID="avc-prioridade-imagem-acao"
+            />
+          }
+        />
+      ) : null}
+
       <View style={s.cockpit} testID="avc-cockpit-detalhe">
         {/**
           * ⚠️⚠️ O BLOQUEIO CORRIGÍVEL VEM DE **D**, com a frase DELA.
@@ -594,20 +662,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * significado pré-IVT é de D. ⚠️ Aqui o cockpit **cita** D — ⛔ e ⛔ não
           * repete o limiar por conta própria.
           */}
+        {/**
+          * ⚠️⚠️ O BLOQUEIO CORRIGÍVEL É O **CARD ÂMBAR** DAS REFERÊNCIAS — ⛔ e
+          * ⛔ não mais uma linha de texto com um link no fim (2026-09-06).
+          *
+          * ⚠️ É exatamente o bloco *"Antes da trombólise: PA deve estar <
+          * 185/110"* + botão *"Controle pressórico"* que o autor mandou. ⛔ A
+          * lógica já existia ⛔ e já dizia a frase certa; ⛔ o que faltava era a
+          * forma que faz o médico **ver** que há algo a corrigir antes de
+          * seguir.
+          *
+          * ⚠️ `atencao`, ⛔ e ⛔ não `risco`: ⛔ há conserto, ⛔ e o conserto está no
+          * botão. ⛔ Vermelho aqui gastaria o alarme que a tela precisa guardar
+          * para o que ⛔ não tem saída.
+          */}
         {bloqueios.map((b) => (
-          <Pressable
+          <WarningCard
             key={b.id}
-            style={s.bloqueio}
-            accessibilityRole="button"
+            nivel="atencao"
+            titulo={b.formulacao}
             testID={`avc-cockpit-bloqueio-${b.id}`}
-            onPress={() => abrir("correcoes")}
-          >
-            <Icone nome="seguranca" tamanho={15} cor={tema.cores.warning} />
-            <Text style={s.bloqueioTexto} numberOfLines={2}>{tr(b.formulacao)}</Text>
-            <Text style={s.bloqueioAcao}>
-              {b.id === "pressao_acima_da_meta" ? tr("Corrigir PA") : tr("Corrigir glicemia")}
-            </Text>
-          </Pressable>
+            acao={
+              <PrimaryAction
+                rotulo={b.id === "pressao_acima_da_meta" ? "Corrigir a pressão arterial" : "Corrigir a glicemia"}
+                onPress={() => abrir("correcoes")}
+                testID={`avc-cockpit-bloqueio-acao-${b.id}`}
+              />
+            }
+          />
         ))}
 
         {/**
@@ -649,48 +731,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           })}
         </View>
 
-        {cockpitAberto ? (
-          <View style={s.cockpitCompleto} testID="avc-cockpit-completo">
-            <View style={s.cockpitTopo}>
-              <Pressable
-                style={s.relogioClinico}
-                accessibilityRole="button"
-                testID="avc-cockpit-lkw"
-                onPress={() => irParaCampo("hora_ultima_vez_bem")}
-              >
-                <Text style={s.cockpitRotulo}>{tr("Última vez bem")}</Text>
-                {lkwMin === undefined ? (
-                  <Text style={s.cockpitAusente}>{tr("não informado")}</Text>
-                ) : (
-                  <Text style={s.cockpitRelogio}>
-                    {Math.floor(lkwMin / 60)}h{String(lkwMin % 60).padStart(2, "0")}
-                  </Text>
-                )}
-              </Pressable>
-              <Text style={s.cockpitAtendimento} testID="avc-cockpit-atendimento">
-                {tr("Atendimento há")} {abertoHaMin ?? 0} {tr("min")}
-              </Text>
-            </View>
-            <View style={s.vitais}>
-              {VITAIS.map((v) => (
-                <Pressable
-                  key={v.id}
-                  style={s.vital}
-                  accessibilityRole="button"
-                  accessibilityLabel={tr(v.rotulo)}
-                  testID={`avc-cockpit-${v.id}`}
-                  onPress={() => irParaCampo(v.campo)}
-                >
-                  <Text style={s.vitalChave}>{tr(v.rotulo)}</Text>
-                  <Text style={[s.vitalValor, v.valor === undefined && s.vitalAusente]}>
-                    {v.valor ?? "—"}
-                  </Text>
-                  <Text style={s.vitalUnidade}>{tr(v.unidade)}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        ) : null}
+        {/**
+          * ⚠️⚠️ A EXPANSÃO DO COCKPIT FOI **REMOVIDA** em 2026-09-06 — ⛔ e
+          * ⛔ nada se perdeu.
+          *
+          * ⛔ Ela mostrava três coisas: a última vez visto bem, o tempo de
+          * atendimento ⛔ e a lista de vitais. ⚠️ As duas primeiras subiram para
+          * o **cabeçalho fixo**; a terceira virou a **grade de tiles** acima.
+          * ⛔ Mantê-la seria exibir os mesmos quatro números duas vezes na
+          * mesma tela — a duplicação de contexto que o próprio template proíbe.
+          */}
       </View>
 
       {/* ── SUPERFÍCIE ABERTA ──────────────────────────────────────────────
@@ -1136,7 +1186,32 @@ const criarEstilos = (tema: Tema) =>
     auxNome: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
     root: { flex: 1, backgroundColor: tema.cores.bg },
-    conteudo: { padding: ESPACO.md, paddingBottom: ESPACO.xl, gap: ESPACO.md },
+    /**
+     * ⚠️⚠️ A COLUNA DE LEITURA TEM TETO (2026-09-06) — ⛔ e ⛔ isso ⛔ não muda o
+     * layout aprovado em 375 px.
+     *
+     * ⛔ Sem `maxWidth`, no desktop a linha do relógio esticava até ~2000 px: o
+     * rótulo na extrema esquerda ⛔ e "Informar horário" na extrema direita.
+     * ⚠️ O par **rótulo → ação** deixava de ser lido como par.
+     *
+     * ⚠️ `alignSelf: center` centraliza a coluna; ⛔ o fundo continua atravessando
+     * a tela (quem pinta o fundo é o `ClinicalShell`).
+     */
+    /** ⚠️ O card padrão do conteúdo — mesma caixa de `ClinicalCard`. */
+    cartao: {
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.card,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+    } as const,
+    conteudo: {
+      padding: ESPACO.md,
+      paddingBottom: ESPACO.xl,
+      gap: ESPACO.md,
+      width: "100%",
+      maxWidth: LARGURA.leitura,
+      alignSelf: "center",
+    },
     /** ⚠️ Uma linha: voltar · nome · ⓘ do escopo. Eram 120 px; agora ~44. */
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm, minHeight: 44 },
     voltarBotao: {

@@ -83,6 +83,40 @@ export type Cores = {
    */
   info: string;
   /**
+   * ⚠️⚠️ O PREENCHIMENTO DO BOTÃO — ⛔ e ⛔ **não** o `primary` de texto.
+   *
+   * ⛔ No tema escuro `primary` é CLARO (ele precisa ser legível como texto
+   * sobre o fundo quase preto). ⚠️ Um botão pintado com ele ficaria claro, ⛔ e
+   * exigiria texto escuro em cima — o oposto das referências, onde a ação é um
+   * bloco **saturado com texto branco**.
+   *
+   * ⚠️ Por isso são dois tokens, ⛔ e ⛔ não um: `primary` **escreve**,
+   * `primaryFill` **preenche**. ⛔ Confundi-los foi o que produziu botões
+   * pálidos onde a referência tem ação sólida.
+   */
+  primaryFill: string;
+  /** ⚠️ O verde do "Sim" — ⛔ preenchido, ⛔ e ⛔ não contornado. */
+  successFill: string;
+  /** ⚠️ O vermelho do "Não". ⛔ Decisão negativa ⛔ não é erro: ⛔ é resposta. */
+  criticalFill: string;
+  /** ⚠️ Texto ⛔ e ícone sobre QUALQUER preenchimento acima. ⛔ Um só, de propósito. */
+  onFill: string;
+
+  /**
+   * ⚠️⚠️ OS TINGIMENTOS — o fundo levemente colorido do bloco de estado.
+   *
+   * ⚠️ É o que dá ao card de alerta ⛔ e ao card da decisão a **presença** que
+   * as referências têm ⛔ sem recorrer a borda grossa: um fundo que já pertence
+   * à família da cor, ⛔ e o acento por cima.
+   *
+   * ⛔ Eles ⛔ não são `surface` com opacidade: opacidade sobre fundo variável dá
+   * cor imprevisível, ⛔ e o contraste deixa de ser calculável.
+   */
+  primaryTint: string;
+  successTint: string;
+  warningTint: string;
+  criticalTint: string;
+  /**
    * ⚠️ DESABILITADO — ⛔ e ⛔ nunca o único sinal de que algo ⛔ não está
    * disponível. ⚠️ Cor sozinha ⛔ não comunica estado (E-15): quem depende dela
    * ⛔ não enxerga a diferença. Vem sempre com texto ⛔ ou ícone.
@@ -122,46 +156,100 @@ const CORES_CLARO: Cores = {
   text: "#0F172A",
   textSecondary: "#5A6678",
   info: "#0E7490",
+  primaryFill: "#1A6BD5",
+  successFill: "#15803D",
+  criticalFill: "#B3261E",
+  onFill: "#FFFFFF",
+  primaryTint: "#EAF2FE",
+  successTint: "#E9F7EE",
+  warningTint: "#FDF4E3",
+  /**
+   * ⚠️ `#FEF5F5` ⛔ e ⛔ não `#FDECEC`: no tom anterior o próprio vermelho
+   * escrito em cima dava **4,41:1** — reprovado por 0,09. ⛔ Clarear o
+   * tingimento foi o ajuste certo; escurecer o vermelho mexeria numa cor usada
+   * em ⛔ outros ⛔ oito pares que já passavam.
+   */
+  criticalTint: "#FEF5F5",
   disabled: "#A3AEBF",
 };
 
 const CORES_ESCURO: Cores = {
-  // Clareados junto com o fundo: no degrau anterior, #4D9AFF dava 4,27:1 e
-  // #F87171 dava 4,39:1 como texto pequeno sobre a superfície — abaixo de 4,5.
-  // Quem pegou foi e2e/contraste-renderizado.spec.ts; o validador de tokens
-  // exigia só 3:1 para eles e passava batido.
-  primary: "#7FB3FF",
-  // O primary do tema escuro é claro: texto branco em cima daria ~2:1, então o
-  // texto do botão é escuro.
-  onPrimary: "#0B1220",
-  critical: "#FCA5A5",
-  onCritical: "#0B1220",
-  success: "#4ADE80",
-  warning: "#FBBF24",
-  debt: "#C4B5FD",
-  // Três degraus mais claros que o valor original do plano (#121417 / #1C1F24 /
-  // #2A2E35), que na tela cheia ficava quase preto e sem separação entre card e
-  // fundo.
-  //
-  // Regra que este arquivo aprendeu na prática: clarear o fundo obriga a clarear
-  // JUNTO o texto secundário e os acentos. Eles são usados como texto pequeno, e
-  // o piso é 4,5:1 — não os 3:1 de elemento gráfico. Mexer só no fundo derruba a
-  // legibilidade sem aviso.
-  bg: "#292E38",
-  surface: "#383E4A",
   /**
-   * ⚠️ O segundo degrau no escuro. ⛔ Clarear mais aproximaria de `border` ⛔ e a
-   * separação sumiria; ⛔ escurecer o faria voltar para o `bg`.
+   * ⚠️⚠️ RETONALIZADO EM 2026-09-06 PARA AS REFERÊNCIAS DO AUTOR.
+   *
+   * ⛔ A paleta anterior (`bg #292E38`, `surface #383E4A`) era **cinza-ardósia
+   * médio**: card ⛔ e fundo separados por dois degraus quase iguais, ⛔ e todo
+   * acento tinha de ser pastel para não brigar. ⚠️ O resultado ⛔ não parecia um
+   * produto — parecia um esqueleto bem organizado, ⛔ e foi exatamente essa a
+   * crítica do autor ao ver a tela ao lado das referências que ele mandou.
+   *
+   * ⚠️ As referências são **quase-pretas com viés azul**, com o card apenas um
+   * degrau acima ⛔ e os acentos **saturados**. ⛔ Fundo escuro ⛔ não é estética:
+   * ele é o que permite ao verde do "Sim" ⛔ e ao vermelho do "Não" existirem
+   * como blocos sólidos ⛔ sem ofuscar o texto ao redor.
    */
-  surfaceElevated: "#3F4654",
-  border: "#565E6C",
-  text: "#F1F5F9",
-  // Clareado junto com o fundo: #94A3B8 dava 4,19:1 na superfície nova.
-  textSecondary: "#AAB6C6",
+  bg: "#0B0E14",
+  surface: "#151C27",
+  /** ⚠️ O degrau de dentro do card — onde mora o tile de sinal vital. */
+  surfaceElevated: "#1E2735",
+  border: "#2A3442",
+  text: "#FFFFFF",
+  /**
+   * ⚠️⚠️ `#A6B2C4` ⛔ e ⛔ não `#9BA8BA` — corrigido pela suíte em 2026-09-06.
+   *
+   * ⛔ O tom anterior passava com folga no AVC (8,01:1 sobre o fundo novo) ⛔ e
+   * **reprovava em três módulos legados** — `calculadoras-clinicas`,
+   * `drogas-vasoativas` ⛔ e `pcr-gestacao-acls` —, onde caía para **4,45:1**:
+   * 0,05 abaixo do piso, em textos como *"mcg/kg/min"* ⛔ e *"mL/h"*.
+   *
+   * ⚠️⚠️ A CAUSA: esses módulos desenham sobre superfície de **hex cru**, mais
+   * clara que a do AVC. ⛔ Escurecer o fundo do tema ⛔ não os alcançou — ⛔ e o
+   * validador de tokens ⛔ também ⛔ não, porque ele mede a paleta contra ela
+   * mesma. ⛔ Quem viu foi o teste **RENDERIZADO**, ⛔ e ⛔ só ele poderia ver.
+   *
+   * ⚠️ Registrado porque é a segunda vez que esta armadilha aparece neste
+   * arquivo: token que passa na paleta ⛔ e reprova na tela.
+   */
+  textSecondary: "#A6B2C4",
+
+  /**
+   * ⚠️⚠️ OS ACENTOS SÃO DE **TEXTO**, ⛔ e por isso continuam claros.
+   *
+   * ⚠️ Todos medem ≥ 5,4:1 sobre `surface` — folga confortável acima do piso,
+   * ⛔ e ⛔ não o mínimo raspado que a paleta anterior vivia negociando.
+   */
+  primary: "#5AA9FF",
+  onPrimary: "#0B0E14",
+  critical: "#FF6B75",
+  onCritical: "#0B0E14",
+  success: "#3DDC84",
+  warning: "#FBBF24",
+  debt: "#C58BFF",
   /** ⚠️ Ciano, ⛔ e ⛔ não o azul de `primary`: informar ⛔ não é convidar a tocar. */
-  info: "#67E8F9",
-  disabled: "#7A8496",
+  info: "#5CE1F2",
+
+  /**
+   * ⚠️⚠️ OS PREENCHIMENTOS SÃO **ESCUROS**, ⛔ e o texto em cima é branco.
+   *
+   * ⛔ É o inverso dos acentos acima, ⛔ e ⛔ isso ⛔ não é inconsistência: um
+   * acento **escreve** sobre o fundo escuro (então precisa ser claro); um
+   * preenchimento **é** o fundo (então precisa ser escuro o bastante para
+   * sustentar o branco). ⚠️ Medidos: 5,11:1 · 4,83:1 · 6,54:1.
+   */
+  primaryFill: "#1A6BD5",
+  successFill: "#12833F",
+  criticalFill: "#B3261E",
+  onFill: "#FFFFFF",
+
+  /** ⚠️ Tingimentos — a família da cor no fundo, ⛔ e o acento por cima. */
+  primaryTint: "#0F1D30",
+  successTint: "#0D2419",
+  warningTint: "#2A2110",
+  criticalTint: "#2A1419",
+
+  disabled: "#5C6878",
 };
+
 
 // ── Tipografia ───────────────────────────────────────────────────────────────
 
@@ -244,6 +332,26 @@ export const SOMBRA = {
   // Android não usa shadow*; usa elevation.
   elevation: 2,
 } satisfies ViewStyle;
+
+// ── Largura de leitura ───────────────────────────────────────────────────────
+
+/**
+ * ⚠️⚠️ O TETO DA COLUNA DE LEITURA — nasceu de um defeito visto em produção
+ * (2026-09-06).
+ *
+ * ⛔ O módulo foi construído ⛔ e validado inteiro em **375×812**, ⛔ e ⛔ nunca
+ * olhado no desktop. ⚠️ Sem teto, numa janela de ~2000 px a linha estica de
+ * ponta a ponta: o rótulo fica na extrema esquerda ⛔ e a ação na extrema
+ * direita, com um vazio no meio — ⛔ e o olho perde o par.
+ *
+ * ⚠️ 720 px é largo o bastante para as fileiras de opção (Sim/Não/Incerto) ⛔ e
+ * estreito o bastante para o par **rótulo → ação** continuar legível como par.
+ *
+ * ⛔ Em 375 px ⛔ ele ⛔ não faz efeito ⛔ nenhum — o layout aprovado ⛔ não muda.
+ */
+export const LARGURA = {
+  leitura: 720,
+} as const;
 
 // ── Alvo de toque ────────────────────────────────────────────────────────────
 

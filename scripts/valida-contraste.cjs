@@ -95,6 +95,35 @@ const PARES = [
   ["info", "bg", 4.5, "informativo como texto sobre o fundo"],
   ["info", "surface", 4.5, "informativo como texto sobre card"],
   /**
+   * ⚠️⚠️ OS PREENCHIMENTOS — acrescentados em 2026-09-06 junto com os tokens.
+   *
+   * ⛔ Token de cor que ⛔ não é medido volta a apodrecer ⛔ sem ⛔ ninguém ver:
+   * foi assim que `#4D9AFF` sobreviveu a 4,27:1 até um teste RENDERIZADO
+   * reclamar. ⚠️ Preenchimento nasce aqui no mesmo commit em que nasce no tema.
+   *
+   * ⚠️ Piso 4,5 (⛔ e ⛔ não os 3:1 que WCAG permitiria a texto grande): o
+   * rótulo do botão é curto ⛔ e lido sob pressão — ⛔ e as cores escolhidas
+   * passam com folga, então ⛔ não há razão para negociar o piso para baixo.
+   */
+  ["onFill", "primaryFill", 4.5, "texto do botão de ação preenchido"],
+  ["onFill", "successFill", 4.5, "texto do botão \"Sim\""],
+  ["onFill", "criticalFill", 4.5, "texto do botão \"Não\""],
+  /**
+   * ⚠️⚠️ O TINGIMENTO PRECISA SUSTENTAR **TEXTO** — ⛔ ele ⛔ não é papel de
+   * parede. ⚠️ O card de alerta escreve título ⛔ e corpo em cima dele; ⛔ um
+   * tingimento bonito ⛔ e ilegível ⛔ não serve para ⛔ nada.
+   */
+  ["text", "warningTint", 4.5, "texto principal sobre o tingimento de alerta"],
+  ["textSecondary", "warningTint", 4.5, "texto secundário sobre o tingimento de alerta"],
+  ["warning", "warningTint", 4.5, "o acento âmbar sobre o próprio tingimento"],
+  ["text", "criticalTint", 4.5, "texto principal sobre o tingimento crítico"],
+  ["textSecondary", "criticalTint", 4.5, "texto secundário sobre o tingimento crítico"],
+  ["critical", "criticalTint", 4.5, "o acento vermelho sobre o próprio tingimento"],
+  ["text", "primaryTint", 4.5, "texto principal sobre o tingimento de ação"],
+  ["textSecondary", "primaryTint", 4.5, "texto secundário sobre o tingimento de ação"],
+  ["text", "successTint", 4.5, "texto principal sobre o tingimento de confirmação"],
+  ["success", "successTint", 4.5, "o acento verde sobre o próprio tingimento"],
+  /**
    * ⛔ `disabled` ⛔ NÃO ENTRA AQUI, ⛔ e a ausência é deliberada: WCAG isenta
    * controle desabilitado do piso de contraste, ⛔ e forçá-lo a 4,5:1 faria o
    * desabilitado competir visualmente com o ativo — o oposto do que ele

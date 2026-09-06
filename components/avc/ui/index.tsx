@@ -28,7 +28,8 @@ import {
   type GestoNumerico,
 } from "../../../avc/nucleo/rascunho-numerico";
 import { useEstilosDoTema, type Tema } from "../../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../../design-system/tokens";
+import { PAPEL } from "../../../design-system/tipografia-clinica";
+import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -120,6 +121,24 @@ export function Secao({ titulo, testID }: { titulo: string; testID?: string }) {
  * ⚠️⚠️ ⛔ NENHUMA OPÇÃO NASCE MARCADA. ⚠️ `valor` vazio é estado legítimo, ⛔ e o
  * controle mostra os três sem escolher por ⛔ ninguém (E-02).
  */
+/**
+ * ⚠️⚠️ QUANDO A PERGUNTA MERECE OS BOTÕES GRANDES DA REFERÊNCIA.
+ *
+ * ⚠️ ⛔ Só quando **todas** as opções pertencem ao vocabulário binário do módulo
+ * — `sim` · `nao` · `incerto` · `nao_sei`. ⛔ Aplicá-los a *"Este serviço /
+ * Serviço externo / ⛔ Não sei"* daria três blocos de 56 px para escolher **onde
+ * o exame foi feito**, ⛔ o que roubaria a tela da decisão que importa.
+ *
+ * ⚠️ ⛔ É a diferença entre copiar a **forma** da referência ⛔ e copiar o
+ * **critério** dela: lá o par verde/vermelho aparece ⛔ só na pergunta que
+ * governa a conduta.
+ */
+const VOCABULARIO_BINARIO = new Set(["sim", "nao", "incerto", "nao_sei"]);
+
+function binaria(opcoes: readonly string[]): boolean {
+  return opcoes.length <= 3 && opcoes.every((o) => VOCABULARIO_BINARIO.has(valorDaOpcao(o)));
+}
+
 export function Segmentado({
   campo,
   opcoes,
@@ -169,7 +188,7 @@ export function Segmentado({
      * o verde continuaria — medindo ⛔ nada. ⚠️ O sufixo é `valorDaOpcao`, que é
      * o que o estado realmente guarda: rótulo ⛔ nunca chega ao estado.
      */
-    <View style={e.seg} testID={`avc-campo-${campo}-opcoes`}>
+    <View style={binaria(opcoes) ? e.decisaoLinha : e.seg} testID={`avc-campo-${campo}-opcoes`}>
       {opcoes.map((op, i) => {
         /**
          * ⚠️⚠️ O ESTADO GUARDA O **SLUG**, ⛔ e ⛔ NUNCA O RÓTULO.
@@ -186,10 +205,31 @@ export function Segmentado({
          */
         const gravado = valorDaOpcao(op);
         const marcada = valor === gravado;
+        /**
+         * ⚠️⚠️ O TOM VEM DO **SLUG**, ⛔ e ⛔ nunca da POSIÇÃO.
+         *
+         * ⛔ Pintar "o primeiro de verde ⛔ e o segundo de vermelho" quebraria na
+         * primeira pergunta cuja ordem fosse outra — ⛔ e pintaria de vermelho
+         * uma resposta que ⛔ nada tem de negativa. ⚠️ Aqui `sim` é verde ⛔ e
+         * `nao` é vermelho **porque são essas respostas**, ⛔ e ⛔ não porque
+         * estão nesses lugares.
+         *
+         * ⚠️⚠️ ⛔ E VERDE ⛔ NÃO É "BOM": *"Há hemorragia? **Sim**"* é a pior
+         * notícia da tela ⛔ e mesmo assim é o botão verde. ⛔ A cor identifica a
+         * **resposta**, ⛔ e ⛔ não o desfecho — ⛔ é por isso que ela ⛔ nunca vem
+         * sozinha: o ✓ ⛔ e a palavra dizem o mesmo.
+         */
+        const grande = binaria(opcoes);
+        const tom = gravado === "sim" ? e.decisaoSim : gravado === "nao" ? e.decisaoNao : e.decisaoNeutra;
+        const corDoTexto = grande && (gravado === "sim" || gravado === "nao")
+          ? e.decisaoTextoPreenchido
+          : grande ? e.decisaoTextoNeutro : e.segTexto;
         return (
           <Pressable
             key={op}
-            style={[e.segItem, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
+            style={grande
+              ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
+              : [e.segItem, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
             accessibilityRole="radio"
             /**
              * ⚠️⚠️ `aria-checked`, ⛔ e ⛔ NÃO `selected`.
@@ -214,7 +254,10 @@ export function Segmentado({
               * ⛔ não sabe o que está marcado. ⚠️ Defeito que eu introduzi na
               * migração ⛔ e que a suíte de B pegou — ⛔ e ele valia para A também.
               */}
-            <Text style={[e.segTexto, marcada ? e.segTextoAtivo : null]}>
+            <Text
+              style={grande ? corDoTexto : [e.segTexto, marcada ? e.segTextoAtivo : null]}
+              numberOfLines={1}
+            >
               {marcada ? "✓ " : ""}
               {tr(rotuloDeInterface?.[op] ?? op)}
             </Text>
@@ -723,6 +766,20 @@ export function LinhaDeAchado({
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   return (
+    /**
+     * ⚠️⚠️ PERGUNTA EM CIMA, RESPOSTAS EMBAIXO — 2026-09-06.
+     *
+     * ⛔ Antes: enunciado clínico numa coluna estreita à esquerda ⛔ e três
+     * caixinhas de 11 pt espremidas à direita. ⚠️ Na captura, *"Há razão para
+     * suspeitar de coagulação alterada"* quebrava em **seis linhas** ao lado de
+     * botões de ~40 px — ⛔ o texto que decide a conduta encolhia para caber o
+     * controle, ⛔ quando é o controle que existe para servir o texto.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ ISSO CUSTA ROLAGEM, ⛔ e o custo foi medido ⛔ e aceito: cada
+     * achado passa de ~70 px para ~110 px. ⛔ A decisão anterior (compactar)
+     * economizava tela ⛔ e cobrava legibilidade da pergunta — ⛔ e é a pergunta
+     * que carrega a medicina.
+     */
     <View style={e.achadoBloco} testID={`avc-campo-${campo}`}>
       <View style={e.achadoTopo}>
         <View style={e.achadoNome}>
@@ -733,28 +790,7 @@ export function LinhaDeAchado({
             </Text>
           ) : null}
         </View>
-        <View style={e.segEstreito}>
-          {opcoes.map((op, i) => {
-            const gravado = valorDaOpcao(op);
-            const marcada = valor === gravado;
-            return (
-              <Pressable
-                key={op}
-                style={[e.segItemEstreito, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: marcada }}
-                aria-checked={marcada}
-                testID={`avc-opcao-${campo}-${gravado}`}
-                onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
-              >
-                <Text style={[e.segTextoEstreito, marcada ? e.segTextoAtivo : null]}>
-                  {marcada ? "✓ " : ""}
-                  {tr(op)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {/** ⚠️ O ⓘ fica NA LINHA do que explica — ⛔ nunca órfão. */}
         <Pressable
           style={e.info}
           accessibilityRole="button"
@@ -764,6 +800,38 @@ export function LinhaDeAchado({
         >
           <Icone nome="informacao" tamanho={13} />
         </Pressable>
+      </View>
+      <View style={binaria(opcoes) ? e.decisaoLinha : e.segEstreito}>
+        {opcoes.map((op, i) => {
+          const gravado = valorDaOpcao(op);
+          const marcada = valor === gravado;
+          const grande = binaria(opcoes);
+          const tom = gravado === "sim" ? e.decisaoSim : gravado === "nao" ? e.decisaoNao : e.decisaoNeutra;
+          const preenchido = grande && (gravado === "sim" || gravado === "nao");
+          return (
+            <Pressable
+              key={op}
+              style={grande
+                ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
+                : [e.segItemEstreito, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: marcada }}
+              aria-checked={marcada}
+              testID={`avc-opcao-${campo}-${gravado}`}
+              onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+            >
+              <Text
+                style={grande
+                  ? (preenchido ? e.decisaoTextoPreenchido : e.decisaoTextoNeutro)
+                  : [e.segTextoEstreito, marcada ? e.segTextoAtivo : null]}
+                numberOfLines={1}
+              >
+                {marcada ? "✓ " : ""}
+                {tr(op)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
       <Procedencia campo={campo} daEscala={daEscala} divergente={divergente} manual={manual} />
       {/**
@@ -1130,15 +1198,22 @@ const criarEstilos = (tema: Tema) =>
     corPadraoDeIcone: { color: tema.cores.textSecondary },
     corPlaceholder: { color: tema.cores.textSecondary },
 
-    secao: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm, marginTop: ESPACO.md },
-    secaoTitulo: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      fontWeight: "700",
-      letterSpacing: 1,
-      textTransform: "uppercase",
-    },
-    secaoFilete: { flex: 1, height: 1, backgroundColor: tema.cores.border },
+    /**
+     * ⚠️⚠️ TÍTULO, ⛔ e ⛔ não sobrancelha — mudado em 2026-09-06.
+     *
+     * ⛔ *"RELÓGIOS"* em 11 pt cinza com `letterSpacing` ⛔ e caixa alta é um
+     * rótulo de formulário: ⛔ ele **legenda** um bloco, ⛔ e ⛔ não o encabeça.
+     * ⚠️ Nas referências, seção é **texto branco em negrito no tamanho de
+     * leitura** — é o que faz a tela ter capítulos em vez de etiquetas.
+     */
+    /**
+     * ⚠️ ⛔ Sem `marginTop` aqui: o chamador põe o ícone **na mesma linha**, ⛔ e a
+     * margem no texto derrubava o título ⛔ e deixava o ícone órfão em cima.
+     * ⚠️ O respiro entre grupos é do grupo, ⛔ e ⛔ não do título.
+     */
+    secao: {},
+    secaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    secaoFilete: { width: 0, height: 0 },
 
     seg: {
       flexDirection: "row",
@@ -1151,17 +1226,42 @@ const criarEstilos = (tema: Tema) =>
     segItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 44 },
     segDivisor: { borderLeftWidth: 1, borderLeftColor: tema.cores.border },
     segAtivo: { backgroundColor: tema.cores.primary },
-    segTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    segTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+    segTexto: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    segTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onPrimary },
+
+    /**
+     * ⚠️⚠️ OS BOTÕES DA DECISÃO — blocos separados, ⛔ e ⛔ não um controle
+     * segmentado. ⚠️ Nas referências eles ⛔ **não** se tocam: são duas ações
+     * distintas, ⛔ e o vão entre elas é o que impede o dedo apressado de
+     * escolher a errada por um pixel.
+     */
+    decisaoLinha: { flexDirection: "row", gap: ESPACO.sm },
+    decisaoBotao: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: TOQUE.critico,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.xs,
+    },
+    decisaoSim: { backgroundColor: tema.cores.successFill },
+    decisaoNao: { backgroundColor: tema.cores.criticalFill },
+    /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
+    decisaoNeutra: {
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      backgroundColor: tema.cores.surfaceElevated,
+    },
+    /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor — ⛔ ela ⛔ não vira outro botão. */
+    decisaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
+    decisaoTextoPreenchido: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
+    decisaoTextoNeutro: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
 
     achadoBloco: { paddingVertical: ESPACO.xs },
-    achadoTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    achadoTopo: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
     achadoNome: { flex: 1, minWidth: 0 },
-    achadoRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    achadoDefinicao: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-    },
+    achadoRotulo: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    achadoDefinicao: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     /** ⚠️ Estreito: onze achados de largura cheia seriam 990 px de rolagem. */
     segEstreito: {
       flexDirection: "row",
@@ -1179,32 +1279,36 @@ const criarEstilos = (tema: Tema) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    segTextoEstreito: { color: tema.cores.text, fontSize: TIPOGRAFIA.micro.fontSize },
+    segTextoEstreito: { ...PAPEL.micro, color: tema.cores.text },
 
-    procedencia: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      paddingTop: 2,
-    },
+    procedencia: { ...PAPEL.micro, color: tema.cores.textSecondary, paddingTop: 2 },
     procedenciaDivergente: { color: tema.cores.warning },
 
     /** ⚠️ Uma linha por opção — alvo de dedo inteiro, ⛔ e ⛔ não um sexto de fileira. */
-    empilhado: {
-      borderWidth: 2,
+    /**
+     * ⚠️⚠️ OPÇÕES **SEPARADAS**, ⛔ e ⛔ não uma lista dentro de uma moldura —
+     * mudado em 2026-09-06 ao clonar as referências.
+     *
+     * ⛔ Antes: uma caixa de borda 2 px com as opções coladas por divisores de
+     * 1 px. ⚠️ Cada opção aqui é uma **resposta clínica inteira** (*"Hemorragia
+     * intracraniana identificada"*), ⛔ e ⛔ não um item de menu: ⛔ ela merece o
+     * mesmo alvo ⛔ e o mesmo peso que os botões da decisão binária ao lado.
+     */
+    empilhado: { gap: ESPACO.sm },
+    empilhadoItem: {
+      minHeight: TOQUE.critico,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+      backgroundColor: tema.cores.surfaceElevated,
+      borderWidth: 1,
       borderColor: tema.cores.border,
       borderRadius: RAIO.botao,
-      overflow: "hidden",
     },
-    empilhadoItem: {
-      minHeight: 44,
-      justifyContent: "center",
-      paddingHorizontal: ESPACO.sm,
-      borderTopWidth: 1,
-      borderTopColor: tema.cores.border,
-    },
-    empilhadoAtivo: { backgroundColor: tema.cores.primary },
-    empilhadoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    empilhadoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+    /** ⚠️ Escolhida: preenchimento de ação, ⛔ e texto branco sobre ele. */
+    empilhadoAtivo: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
+    empilhadoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    empilhadoTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
 
     achados: { gap: 1 },
     achadoLinha: {
@@ -1225,11 +1329,19 @@ const criarEstilos = (tema: Tema) =>
     },
     achadoMarcaOn: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
     corSobreMarca: { color: tema.cores.onPrimary },
-    achadoTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    achadoTextoOn: { fontWeight: "700" },
+    achadoTexto: { ...PAPEL.textoPrincipal, flex: 1, color: tema.cores.text },
+    /**
+     * ⚠️⚠️ MARCADO ⛔ NÃO ENGROSSA O TEXTO — mudado em 2026-09-06.
+     *
+     * ⛔ Trocar o peso ao marcar reflui a linha (o texto fica mais largo ⛔ e pode
+     * quebrar), ⛔ e o estado **já é dito** pela caixa com ✓ à esquerda — que é o
+     * que **E-15** exige. ⚠️ O negrito ⛔ não acrescentava informação: ⛔ ele só
+     * mexia o layout debaixo do dedo.
+     */
+    achadoTextoOn: { color: tema.cores.text },
 
     num: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, paddingVertical: ESPACO.xs },
-    numRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    numRotulo: { ...PAPEL.textoPrincipal, flex: 1, minWidth: 0, color: tema.cores.text },
     numGrupo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     numCaixa: {
       backgroundColor: tema.cores.bg,
@@ -1248,16 +1360,10 @@ const criarEstilos = (tema: Tema) =>
       flexShrink: 0,
       textAlign: "center",
       color: tema.cores.text,
-      fontSize: TIPOGRAFIA.step.fontSize,
-      fontWeight: "700",
+      ...PAPEL.metrica,
     },
     numCaixaAlerta: { borderColor: tema.cores.critical, color: tema.cores.critical },
-    numUnidade: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      minWidth: 42,
-      flexShrink: 0,
-    },
+    numUnidade: { ...PAPEL.legenda, color: tema.cores.textSecondary, minWidth: 42, flexShrink: 0 },
     numPasso: { gap: 2 },
     numPassoBotao: {
       backgroundColor: tema.cores.surface,
@@ -1270,7 +1376,7 @@ const criarEstilos = (tema: Tema) =>
       justifyContent: "center",
     },
     numPassoInerte: { opacity: 0.35 },
-    numPassoTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    numPassoTexto: { ...PAPEL.legenda, color: tema.cores.textSecondary },
 
     /**
      * ⚠️ ⛔ SEM MOLDURA — a linguagem nova ⛔ não empilha cartões dentro de
@@ -1279,10 +1385,10 @@ const criarEstilos = (tema: Tema) =>
      */
     corr: { paddingVertical: ESPACO.xs, gap: ESPACO.xs },
     corrTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
-    corrRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    corrAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
-    corrValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
-    corrAviso: { color: tema.cores.warning, fontSize: TIPOGRAFIA.micro.fontSize },
+    corrRotulo: { ...PAPEL.textoPrincipal, flex: 1, minWidth: 0, color: tema.cores.text },
+    corrAjuda: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    corrValor: { ...PAPEL.metrica, color: tema.cores.text },
+    corrAviso: { ...PAPEL.legenda, color: tema.cores.warning },
     corrGestos: { flexDirection: "row", gap: ESPACO.xs },
     corrBotao: {
       flex: 1,
@@ -1294,11 +1400,7 @@ const criarEstilos = (tema: Tema) =>
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.xs,
     },
-    corrBotaoTexto: {
-      color: tema.cores.text,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      textAlign: "center",
-    },
+    corrBotaoTexto: { ...PAPEL.micro, color: tema.cores.text, textAlign: "center" },
 
     /**
      * ⚠️⚠️ LINHA DE UMA LISTA, ⛔ e ⛔ NÃO UM CARD — mudado em 2026-09-05 (PD-37),
@@ -1318,13 +1420,25 @@ const criarEstilos = (tema: Tema) =>
      * garante a área de toque é `relToque` (44 px). ⚠️ Assim vários horários
      * cabem na mesma viewport ⛔ sem perder alvo para o dedo.
      */
+    /**
+     * ⚠️⚠️ A LINHA VIROU **CARD** em 2026-09-06 — ⛔ e ⛔ isso ⛔ não é "mais uma
+     * caixa".
+     *
+     * ⛔ Antes: texto solto separado por um filete de 1 px. ⚠️ Nas referências,
+     * cada item é um bloco com fundo próprio, ⛔ e é justamente isso que faz o
+     * toque parecer **alvo** em vez de parágrafo. ⛔ Numa lista de campos
+     * tocáveis, o divisor ⛔ não diz onde o dedo encosta.
+     */
     rel: {
       flexDirection: "row",
       alignItems: "center",
-      gap: ESPACO.xs,
-      paddingHorizontal: ESPACO.xs,
-      borderBottomWidth: 1,
-      borderBottomColor: tema.cores.border,
+      gap: ESPACO.sm,
+      backgroundColor: tema.cores.surfaceElevated,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
     },
     /** ⚠️ 44 px é o piso, ⛔ e ⛔ não uma sugestão: o app é usado com luva. */
     /**
@@ -1339,6 +1453,7 @@ const criarEstilos = (tema: Tema) =>
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
       minHeight: TOQUE.minimo,
       flexShrink: 1,
       minWidth: 0,
@@ -1364,18 +1479,12 @@ const criarEstilos = (tema: Tema) =>
      * nele**. Esticado, ele empurrava o ⓘ para o outro lado da tela ⛔ e desfazia
      * a associação que o ícone existe para criar.
      */
-    relNome: { flexShrink: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    relValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
-    relValorVazio: {
-      color: tema.cores.primary,
-      fontSize: TIPOGRAFIA.caption.fontSize,
-      fontWeight: "400",
-    },
-    relValorDesconhecido: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.caption.fontSize,
-      fontWeight: "400",
-    },
+    relNome: { ...PAPEL.textoPrincipal, flexShrink: 1, color: tema.cores.text },
+    /** ⚠️ O horário registrado é **métrica**: tabular, ⛔ e ⛔ nunca "pulando". */
+    relValor: { ...PAPEL.metrica, color: tema.cores.text },
+    /** ⚠️ Sem valor, o lugar do número é da **ação** — em azul, ⛔ e tocável. */
+    relValorVazio: { ...PAPEL.textoSecundario, color: tema.cores.primary },
+    relValorDesconhecido: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
 
     blocos: { gap: ESPACO.sm },
     blocoAtencao: {
@@ -1394,20 +1503,9 @@ const criarEstilos = (tema: Tema) =>
       padding: ESPACO.sm,
       gap: ESPACO.xs,
     },
-    blocoTituloAtencao: {
-      color: tema.cores.warning,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      fontWeight: "700",
-      letterSpacing: 0.8,
-      textTransform: "uppercase",
-    },
-    blocoTitulo: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      fontWeight: "700",
-      letterSpacing: 0.8,
-      textTransform: "uppercase",
-    },
+    /** ⚠️ Título de bloco — ⛔ sem caixa alta, pelo mesmo motivo de `secaoTitulo`. */
+    blocoTituloAtencao: { ...PAPEL.tituloDeSecao, color: tema.cores.warning },
+    blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
 
     info: {
       width: 22,
@@ -1418,9 +1516,5 @@ const criarEstilos = (tema: Tema) =>
       borderColor: tema.cores.border,
       borderRadius: 11,
     },
-    infoTexto: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.caption.fontSize,
-      marginTop: ESPACO.xs,
-    },
+    infoTexto: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary, marginTop: ESPACO.xs },
   });

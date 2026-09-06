@@ -27,6 +27,12 @@ async function paAlta(page: Page) {
   await page.getByTestId("avc-num-caixa-pad").fill("112");
 }
 
+/** ⚠️ Glicemia abaixo do corte de tratamento — ⛔ pelo mesmo caminho da PA. */
+async function glicemiaBaixa(page: Page) {
+  await aba(page, "estabilizacao");
+  await page.getByTestId("avc-num-caixa-glicemia").fill("48");
+}
+
 test.describe("AVC · Correções", () => {
   test("⛔ sem bloqueio, a tela ⛔ não espera por ação", async ({ page }) => {
     await abrirAvc(page);
@@ -113,15 +119,93 @@ test.describe("AVC · Correções", () => {
     await expect(page.getByTestId("avc-opcao-acao_estado-Disponível")).toHaveCount(0);
   });
 
-  /** ⛔⛔ ⛔ NENHUM fármaco enquanto F-19 estiver parcial. */
-  test("⛔ a tela ⛔ NÃO prescreve", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️ ESTA PROVA MUDOU EM 2026-09-06, ⛔ E O MOTIVO ESTÁ ESCRITO ────────
+   *
+   * ⛔ A versão anterior proibia **qualquer fármaco na tela**, ⛔ e a própria
+   * frase dela dizia por quê: *"⛔ NENHUM fármaco **enquanto F-19 estiver
+   * parcial**"*. ⚠️ A premissa era a **ausência de fonte**, ⛔ e ⛔ não uma regra
+   * clínica permanente.
+   *
+   * ⚠️ O autor entregou a revisão clínica em 2026-09-06; ela foi transcrita
+   * (`f19-antihipertensivo-avc.md`), conferida contra a AHA/ASA 2026 ⛔ e
+   * corrigida em **cinco atribuições**. ⛔ F-19 deixou de ser `parcial`.
+   *
+   * ⚠️⚠️ ⛔ MAS A PROVA ⛔ NÃO FOI AFROUXADA — ⛔ ela **trocou de eixo**, ⛔ e ficou
+   * mais exigente no que continua valendo:
+   *
+   *   ⛔ mostrar dose ⛔ **não é** prescrever. ⛔ Continua proibido **preparo**,
+   *      **diluição**, **bomba** ⛔ e instrução de **administração**.
+   *   ⛔ ⛔ Nenhum agente pode ser apresentado como *"melhor"* ⛔ ou *"primeira
+   *      escolha"* — ⛔ não há evidência de superioridade entre eles.
+   *   ⛔ ⛔ Nenhuma dose pode aparecer **sem procedência** (**E-30**).
+   *   ⛔ ⛔ E a dose histórica perigosa de esmolol ⛔ nunca pode voltar.
+   */
+  test("⛔ a tela mostra dose, ⛔ e ⛔ NÃO prescreve", async ({ page }) => {
     await abrirAvc(page);
     await paAlta(page);
     await aba(page, "correcoes");
     const tela = await page.getByTestId("avc-superficie-e-conteudo").innerText();
-    expect(tela).not.toMatch(/labetalol|esmolol|nitroprussiato|hidralazina|insulina/i);
-    expect(tela).not.toMatch(/\d+\s*(mg|mcg|ml)\b(?!\s*\/\s*d[lL])/i);
-    expect(tela).not.toMatch(/\bbolus\b|\bEV\b|via oral/);
+
+    /** ⚠️ O que passou a ser **esperado**: F-19 transcrito chega ao médico. */
+    expect(tela).toMatch(/Labetalol/i);
+    expect(tela).toMatch(/10 a 20 mg/i);
+
+    /** ⚠️⚠️ ⛔ E CADA DOSE VEM COM PROCEDÊNCIA — ⛔ e ⛔ nunca "AHA/ASA" ⛔ sem ano. */
+    expect(tela).toMatch(/AHA\/ASA 2019/);
+    expect(tela).not.toMatch(/AHA\/ASA(?!\s+(de\s+)?\d{4})/);
+    expect(tela).toMatch(/não nomeia fármaco/i);
+
+    /** ⛔ ⛔ PRESCREVER continua proibido. */
+    expect(tela).not.toMatch(/diluir|diluição|soro fisiológico 0,9|bomba de infusão|ampola/i);
+
+    /** ⛔ ⛔ E O APP ⛔ NÃO ESCOLHE O AGENTE. */
+    expect(tela).not.toMatch(/primeira escolha|é superior|o melhor agente/i);
+    expect(tela).toMatch(/escolha é do médico/i);
+
+    /**
+     * ⚠️⚠️ A DOSE HISTÓRICA PERIGOSA ⛔ NUNCA VOLTA — ⛔ **como dose**.
+     *
+     * ⚠️ ⛔ E ⛔ não basta proibir o texto: para **avisar** contra 3 mg/kg/min, o
+     * alerta precisa **nomear** o valor. ⛔ A primeira versão desta asserção
+     * proibia a string inteira ⛔ e reprovou o próprio aviso — bug da prova,
+     * ⛔ e ⛔ não do app.
+     *
+     * ⚠️ A regra certa: **a proibição vem antes**. ⛔ O valor pode ser citado
+     * — ⛔ no título que o proíbe ⛔ e na explicação do porquê —, ⛔ mas ⛔ nunca
+     * antes de o leitor saber que ⛔ não deve usá-lo.
+     */
+    const proibicao = tela.search(/Não utilizar esmolol/i);
+    const valorPerigoso = tela.search(/3\s*mg\s*(?:por quilo|\/kg)\s*(?:por minuto|\/min)/i);
+    expect(proibicao).toBeGreaterThanOrEqual(0);
+    expect(valorPerigoso).toBeGreaterThan(proibicao);
+    /** ⚠️ ⛔ E o motivo aparece junto — ⛔ proibição ⛔ sem motivo ⛔ não ensina. */
+    expect(tela).toMatch(/dez vezes o teto contemporâneo/i);
+  });
+
+  /**
+   * ⚠️⚠️ F-18 · GLICEMIA — ⛔ o reflexo antigo ⛔ não pode voltar pela tela.
+   *
+   * ⛔ `<50` ⛔ e `>400` foram, por anos, critério de **exclusão**. ⚠️ Um app que
+   * os apresente assim faria o médico **deixar de trombolisar alguém elegível**
+   * — ⛔ e esse erro ⛔ não aparece em log ⛔ nenhum.
+   */
+  test("⛔ disglicemia grave ⛔ NÃO é apresentada como contraindicação", async ({ page }) => {
+    await abrirAvc(page);
+    await glicemiaBaixa(page);
+    await aba(page, "correcoes");
+    const tela = await page.getByTestId("avc-superficie-e-conteudo").innerText();
+
+    /** ⚠️ A pergunta que decide ⛔ e os dois ramos dela. */
+    expect(tela).toMatch(/déficit neurológico persiste depois de corrigir/i);
+    expect(tela).toMatch(/mimetizador metabólico/i);
+
+    /** ⛔ ⛔ E a negação está **escrita**, ⛔ e ⛔ não implícita. */
+    expect(tela).toMatch(/não é contraindicação absoluta/i);
+
+    /** ⛔ ⛔ NENHUMA dose fixa de insulina. */
+    expect(tela).not.toMatch(/\d+\s*(UI|unidades)\b/i);
+    expect(tela).toMatch(/Não existe dose fixa recomendada/i);
   });
 
   test("a superfície inteira aparece em espanhol", async ({ page }) => {

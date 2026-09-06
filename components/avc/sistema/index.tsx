@@ -35,7 +35,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
-import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
+import { ESPACO, LARGURA, RAIO, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -48,29 +48,42 @@ import { useTr } from "../../../lib/use-tr";
  */
 export function ClinicalHeader({
   titulo,
+  escopo,
+  marcador,
+  relogio,
   onSair,
   aoLado,
 }: {
   titulo: string;
+  /** ⚠️ A linha de baixo — o escopo da síndrome. ⛔ Nunca o nome do módulo de novo. */
+  escopo?: string;
+  /** ⚠️ O estado do atendimento, em vermelho ⛔ e com marcador redondo. */
+  marcador?: string;
+  /**
+   * ⚠️⚠️ O RELÓGIO CLÍNICO À DIREITA — ⛔ e ⛔ **não** o tempo de atendimento.
+   *
+   * ⚠️ Decisão do autor mantida (2026-09-05): *"contador grande correndo vira
+   * ruído ansiogênico numa sala já tensa"*. ⛔ Na referência esse lugar é do
+   * cronômetro; aqui ele é da **última vez visto bem** — o número que decide
+   * janela ⛔ e elegibilidade. ⚠️ Mesma posição, mesmo peso, ⛔ conteúdo mais
+   * útil.
+   */
+  relogio?: { readonly rotulo: string; readonly valor?: string; readonly onTocar?: () => void };
   onSair: () => void;
-  /** ⚠️ Um controle discreto à direita, ⛔ no máximo. */
   aoLado?: ReactNode;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(estilos);
   /**
-   * ⚠️⚠️ DUAS LINHAS, ⛔ e ⛔ não uma — corrigido em 2026-09-05 **na captura**.
+   * ⚠️⚠️ TRÊS COLUNAS, COMO NAS REFERÊNCIAS: sair · identidade · relógio.
    *
-   * ⛔ Numa linha só, "AVC isquêmico agudo" dividia 375 px com o botão de sair ⛔ e
-   * o ⓘ, ⛔ e truncava para *"AVC isquêmico a…"*. ⚠️ Título de módulo truncado
-   * ⛔ não identifica o módulo — que é a única coisa que ele existe para fazer.
-   *
-   * ⚠️ É também o padrão das referências: a volta é discreta ⛔ e fica acima; o
-   * título ocupa a largura inteira embaixo.
+   * ⛔ A versão anterior era duas linhas empilhadas ⛔ e ⛔ nenhum relógio fixo —
+   * ⛔ o tempo só existia dentro do contexto expandido, ⛔ que rolava. ⚠️ Aqui
+   * ele fica **fora do ScrollView**, ⛔ e por isso ⛔ nunca some (§7.8).
    */
   return (
     <View style={e.header}>
-      <View style={e.headerLinha}>
+      <View style={e.headerLado}>
         <Pressable
           onPress={onSair}
           accessibilityRole="button"
@@ -78,11 +91,44 @@ export function ClinicalHeader({
           hitSlop={8}
           style={({ pressed }) => [e.headerSair, pressed && e.pressionado]}
         >
-          <Text style={e.headerSairTexto}>{tr("‹ Módulos")}</Text>
+          <Text style={e.headerSairTexto}>{tr("‹ Voltar")}</Text>
         </Pressable>
+      </View>
+
+      <View style={e.headerCentro}>
+        {marcador ? (
+          <View style={e.headerMarcador}>
+            <View style={e.headerMarcadorPonto} />
+            <Text style={e.headerMarcadorTexto}>{tr(marcador)}</Text>
+          </View>
+        ) : null}
+        <Text style={e.headerTitulo} numberOfLines={3}>{tr(titulo)}</Text>
+        {escopo ? <Text style={e.headerEscopo} numberOfLines={2}>{tr(escopo)}</Text> : null}
+      </View>
+
+      <View style={e.headerLado}>
+        {relogio ? (
+          <Pressable
+            onPress={relogio.onTocar}
+            disabled={!relogio.onTocar}
+            accessibilityRole={relogio.onTocar ? "button" : undefined}
+            accessibilityLabel={`${tr(relogio.rotulo)}: ${relogio.valor ?? tr("não informado")}`}
+            testID="avc-relogio-do-topo"
+            style={({ pressed }) => [e.headerRelogio, pressed && e.pressionado]}
+          >
+            {/**
+              * ⚠️ Ausência NEUTRA (**E-37**): sem o horário, o relógio mostra
+              * travessão ⛔ e ⛔ não zero. ⛔ Zero seria uma medida ⛔ que ⛔ ninguém
+              * fez.
+              */}
+            <Text style={[e.headerRelogioValor, relogio.valor === undefined && e.headerRelogioAusente]}>
+              {relogio.valor ?? "—"}
+            </Text>
+            <Text style={e.headerRelogioRotulo} numberOfLines={2}>{tr(relogio.rotulo)}</Text>
+          </Pressable>
+        ) : null}
         {aoLado ?? null}
       </View>
-      <Text style={e.headerTitulo} numberOfLines={1}>{tr(titulo)}</Text>
     </View>
   );
 }
@@ -228,6 +274,7 @@ export function PhaseNavigation({
    */
   return (
     <View style={[e.navTrilho, { paddingBottom: paddingInferior }]}>
+    <View style={e.colunaNav}>
     <ScrollView
       ref={trilho}
       horizontal
@@ -259,6 +306,7 @@ export function PhaseNavigation({
             <Text style={[e.navNome, ativa && e.navNomeAtivo]} numberOfLines={1} testID={`avc-rotulo-aba-${f.id}`}>
               {tr(f.nome)}
             </Text>
+            <View style={ativa ? e.navSublinhado : e.navSublinhadoVazio} />
           </Pressable>
         );
       })}
@@ -273,6 +321,7 @@ export function PhaseNavigation({
       * ⛔ `pointerEvents="none"`: ele ⛔ não pode roubar o toque da aba embaixo.
       */}
     <View style={e.navBorda} pointerEvents="none" testID="avc-barra-continua" />
+    </View>
     </View>
   );
 }
@@ -505,8 +554,26 @@ export function DecisionSection({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(estilos);
+  /**
+   * ⚠️⚠️ O CARD HERÓI — o *"Etapa atual"* das referências, desde 2026-09-06.
+   *
+   * ⛔ Antes ela era texto grande solto no meio do conteúdo: a pergunta que
+   * governa a fase tinha o mesmo **fundo** que a lista de campos abaixo, ⛔ e
+   * por isso ⛔ não dominava ⛔ nada. ⚠️ Agora ela tem tingimento, borda de
+   * acento ⛔ e sobrancelha — ⛔ e é o **único** bloco da tela com esse
+   * tratamento, porque dois heróis ⛔ não deixam ⛔ nenhum herói.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ela ⛔ CONTINUA ⛔ NÃO criando fluxo obrigatório (**E-11**):
+   * ⛔ responder ⛔ não tranca ⛔ nada, ⛔ e qualquer fase segue abrindo a partir de
+   * qualquer outra. ⛔ Por isso ⛔ também ⛔ não há contador *"3 de 4"* como na
+   * referência — ⛔ ele prometeria uma sequência que este módulo ⛔ não tem.
+   */
   return (
     <View style={e.decisao} testID={testID}>
+      <View style={e.decisaoSobrancelha}>
+        <View style={e.decisaoPonto} />
+        <Text style={e.decisaoSobrancelhaTexto}>{tr("Decisão desta fase")}</Text>
+      </View>
       <Text style={e.decisaoPergunta}>{tr(pergunta)}</Text>
       {contexto ? <Text style={e.decisaoContexto}>{tr(contexto)}</Text> : null}
       <View style={e.decisaoOpcoes}>{children}</View>
@@ -544,16 +611,35 @@ export function WarningCard({
   const tr = useTr();
   const e = useEstilosDoTema(estilos);
   const porNivel = {
-    info: { faixa: e.avisoInfo, marcador: "Informação" },
-    atencao: { faixa: e.avisoAtencao, marcador: "Atenção" },
-    risco: { faixa: e.avisoRisco, marcador: "Risco" },
-    bloqueio: { faixa: e.avisoBloqueio, marcador: "Bloqueio clínico" },
+    info: { faixa: e.avisoInfo, marcador: "Informação", simbolo: "\u24D8", corDoTexto: e.avisoCorInfo },
+    atencao: { faixa: e.avisoAtencao, marcador: "Atenção", simbolo: "\u26A0", corDoTexto: e.avisoCorAtencao },
+    risco: { faixa: e.avisoRisco, marcador: "Risco", simbolo: "\u26A0", corDoTexto: e.avisoCorRisco },
+    bloqueio: { faixa: e.avisoBloqueio, marcador: "Bloqueio clínico", simbolo: "\u2716", corDoTexto: e.avisoCorRisco },
   }[nivel];
+  /**
+   * ⚠️⚠️ ÍCONE + TINGIMENTO + AÇÃO — a forma das referências, desde 2026-09-06.
+   *
+   * ⛔ Antes era uma faixa lateral de 3 px sobre a superfície neutra: o aviso
+   * tinha o mesmo fundo que o card comum ⛔ e só se distinguia por um fio na
+   * lateral. ⚠️ Nas referências o alerta é um **bloco da cor dele**, com o
+   * triângulo à esquerda ⛔ e a ação dentro — ⛔ e é a ação dentro que o
+   * transforma de recado em ferramenta.
+   *
+   * ⚠️⚠️ ⛔ O MARCADOR EM TEXTO CONTINUA (**E-15**): quem ⛔ não distingue âmbar
+   * de vermelho lê *"Atenção"* ⛔ ou *"Bloqueio clínico"* escrito.
+   */
   return (
     <View style={[e.aviso, porNivel.faixa]} testID={testID}>
-      <Text style={e.avisoMarcador}>{tr(porNivel.marcador)}</Text>
-      <Text style={e.avisoTitulo}>{tr(titulo)}</Text>
-      {texto ? <Text style={e.avisoTexto}>{tr(texto)}</Text> : null}
+      <View style={e.avisoLinha}>
+        <Text style={[e.avisoSimbolo, porNivel.corDoTexto]} accessibilityElementsHidden>
+          {porNivel.simbolo}
+        </Text>
+        <View style={e.avisoCorpo}>
+          <Text style={[e.avisoMarcador, porNivel.corDoTexto]}>{tr(porNivel.marcador)}</Text>
+          <Text style={e.avisoTitulo}>{tr(titulo)}</Text>
+          {texto ? <Text style={e.avisoTexto}>{tr(texto)}</Text> : null}
+        </View>
+      </View>
       {acao ?? null}
     </View>
   );
@@ -668,9 +754,18 @@ export function ClinicalShell({
   const e = useEstilosDoTema(estilos);
   return (
     <View style={e.shell}>
+      {/**
+        * ⚠️⚠️ O FUNDO ATRAVESSA A TELA; o **conteúdo** tem teto (2026-09-06).
+        *
+        * ⛔ Limitar o fundo deixaria faixas vazias nas laterais no desktop, ⛔ e
+        * ⛔ pareceria que a tela quebrou. ⚠️ Quem tem teto é a **coluna de
+        * leitura** — ⛔ e ela fica centrada.
+        */}
       <View style={e.shellTopo}>
-        {header}
-        {contexto ?? null}
+        <View style={e.coluna}>
+          {header}
+          {contexto ?? null}
+        </View>
       </View>
       {children}
       {navegacao}
@@ -685,6 +780,9 @@ export function ClinicalShell({
 function estilos(tema: Tema) {
   return {
     shell: { flex: 1, backgroundColor: tema.cores.bg } as const,
+    /** ⚠️ A coluna de leitura — teto ⛔ e centrada. ⛔ Em 375 px ⛔ não faz efeito. */
+    coluna: { width: "100%", maxWidth: LARGURA.leitura, alignSelf: "center" } as const,
+    colunaNav: { width: "100%", maxWidth: LARGURA.leitura, alignSelf: "center" } as const,
     /** ⚠️ Divisor, ⛔ e ⛔ não card: o topo se separa por linha ⛔ e espaço. */
     shellTopo: {
       backgroundColor: tema.cores.bg,
@@ -696,16 +794,46 @@ function estilos(tema: Tema) {
       gap: ESPACO.xs,
     } as const,
 
-    header: { gap: ESPACO.xs } as const,
-    /** ⚠️ A linha de cima: voltar à esquerda, ⛔ e ⛔ no máximo um controle à direita. */
-    headerLinha: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+    header: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm } as const,
+    /**
+     * ⚠️⚠️ 64 px, ⛔ e ⛔ não 82 — medido na captura de 2026-09-06.
+     *
+     * ⛔ Com 82 de cada lado, o centro ficava com ~215 px ⛔ e *"AVC isquêmico
+     * agudo"* truncava para *"AVC isquêmico .."*. ⚠️ **Nome clínico ⛔ nunca
+     * trunca**: quem cede espaço é a moldura, ⛔ e ⛔ não o nome.
+     */
+    headerLado: { width: 64, gap: ESPACO.xs } as const,
+    headerCentro: { flex: 1, alignItems: "center", gap: 2 } as const,
+    headerSair: { minHeight: TOQUE.minimo, justifyContent: "center" } as const,
+    headerSairTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary } as const,
+    headerMarcador: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs } as const,
+    headerMarcadorPonto: {
+      width: 8,
+      height: 8,
+      borderRadius: RAIO.badge,
+      backgroundColor: tema.cores.critical,
     } as const,
-    headerSair: { minHeight: TOQUE.minimo, justifyContent: "center", paddingRight: ESPACO.xs } as const,
-    headerSairTexto: { ...PAPEL.textoSecundario, color: tema.cores.primary } as const,
-    headerTitulo: { ...PAPEL.tituloDaTela, color: tema.cores.text, flex: 1 } as const,
+    headerMarcadorTexto: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical } as const,
+    headerTitulo: {
+      ...PAPEL.tituloDaTela,
+      color: tema.cores.text,
+      textAlign: "center",
+      /** ⚠️ ⛔ Ele encolhe até caber ⛔ antes de aceitar reticências. */
+      flexShrink: 1,
+    } as const,
+    headerEscopo: {
+      ...PAPEL.legenda,
+      color: tema.cores.textSecondary,
+      textAlign: "center",
+    } as const,
+    headerRelogio: { alignItems: "flex-end", minHeight: TOQUE.minimo, justifyContent: "center" } as const,
+    headerRelogioValor: { ...PAPEL.tituloDeSecao, color: tema.cores.critical } as const,
+    headerRelogioAusente: { color: tema.cores.textSecondary } as const,
+    headerRelogioRotulo: {
+      ...PAPEL.micro,
+      color: tema.cores.textSecondary,
+      textAlign: "right",
+    } as const,
 
     contexto: { flexDirection: "row", flexWrap: "wrap", alignItems: "center" } as const,
     contextoItem: { flexDirection: "row", alignItems: "center" } as const,
@@ -716,8 +844,16 @@ function estilos(tema: Tema) {
     /** ⚠️ Ausência NEUTRA — ⛔ nunca âmbar: campo vazio ⛔ não é achado. */
     contextoAusente: { color: tema.cores.textSecondary } as const,
 
+    /**
+     * ⚠️⚠️ A BARRA É UMA **SUPERFÍCIE**, ⛔ e ⛔ não o fundo com um filete.
+     *
+     * ⚠️ Nas referências o rodapé é um bloco elevado, ⛔ visivelmente separado
+     * do conteúdo — é o que faz a navegação parecer parte do aplicativo, ⛔ e
+     * ⛔ não o fim da página. ⛔ Um filete de 1 px sobre o mesmo fundo ⛔ não
+     * produz essa leitura.
+     */
     navTrilho: {
-      backgroundColor: tema.cores.bg,
+      backgroundColor: tema.cores.surface,
       borderTopWidth: 1,
       borderTopColor: tema.cores.border,
       paddingTop: ESPACO.sm,
@@ -741,14 +877,28 @@ function estilos(tema: Tema) {
      * couber sai para a rolagem ⛔ e mantém o nome inteiro.
      */
     navItem: {
-      minWidth: 72,
+      minWidth: 76,
       paddingHorizontal: ESPACO.xs,
+      paddingBottom: ESPACO.xs,
       alignItems: "center",
       gap: ESPACO.xs,
       minHeight: TOQUE.minimo,
     } as const,
     navNome: { ...PAPEL.micro, color: tema.cores.textSecondary } as const,
     navNomeAtivo: { color: tema.cores.primary } as const,
+    /**
+     * ⚠️⚠️ O SUBLINHADO DA ABA ATIVA — ⛔ e ⛔ ele ⛔ não substitui a cor: soma.
+     *
+     * ⛔ Só a cor reprovaria **E-15** (quem ⛔ não distingue azul de cinza ficaria
+     * sem saber onde está). ⚠️ Com o traço, a posição é legível **por forma**.
+     */
+    navSublinhado: {
+      height: 3,
+      width: 22,
+      borderRadius: RAIO.badge,
+      backgroundColor: tema.cores.primary,
+    } as const,
+    navSublinhadoVazio: { height: 3, width: 22 } as const,
     navPonto: {
       position: "absolute",
       top: -2,
@@ -797,54 +947,97 @@ function estilos(tema: Tema) {
       paddingLeft: ESPACO.sm,
     } as const,
 
+    /**
+     * ⚠️⚠️ PREENCHIMENTO SATURADO COM TEXTO BRANCO — a ação das referências.
+     *
+     * ⛔ Com `primary` (que no escuro é **claro**), o botão saía pálido ⛔ e
+     * exigia texto escuro: parecia um campo desabilitado, ⛔ e ⛔ não a ação
+     * principal da tela.
+     */
     acaoPrincipal: {
       minHeight: TOQUE.critico,
-      backgroundColor: tema.cores.primary,
+      backgroundColor: tema.cores.primaryFill,
       borderRadius: RAIO.botao,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
     } as const,
-    acaoPrincipalTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onPrimary } as const,
+    acaoPrincipalTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill } as const,
     acaoCritica: {
       minHeight: TOQUE.critico,
-      backgroundColor: tema.cores.critical,
+      backgroundColor: tema.cores.criticalFill,
       borderRadius: RAIO.botao,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
     } as const,
-    acaoCriticaTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onCritical } as const,
+    acaoCriticaTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill } as const,
     acaoSecundaria: {
-      minHeight: TOQUE.minimo,
+      minHeight: TOQUE.critico,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.primary,
       borderRadius: RAIO.botao,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
     } as const,
-    acaoSecundariaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text } as const,
+    acaoSecundariaTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.primary } as const,
 
-    decisao: { gap: ESPACO.sm } as const,
-    decisaoPergunta: { ...PAPEL.tituloDaDecisao, color: tema.cores.text } as const,
-    decisaoContexto: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary } as const,
-    decisaoOpcoes: { gap: ESPACO.sm } as const,
-
-    /** ⚠️ Faixa lateral, ⛔ e ⛔ não caixa colorida inteira: o aviso informa, ⛔ não grita. */
-    aviso: {
-      borderLeftWidth: 3,
-      borderRadius: RAIO.botao,
-      backgroundColor: tema.cores.surface,
-      padding: ESPACO.sm,
-      gap: ESPACO.xs,
+    decisao: {
+      gap: ESPACO.sm,
+      backgroundColor: tema.cores.criticalTint,
+      borderWidth: 1,
+      borderColor: tema.cores.critical,
+      borderRadius: RAIO.card,
+      padding: ESPACO.md,
     } as const,
-    avisoInfo: { borderLeftColor: tema.cores.info } as const,
-    avisoAtencao: { borderLeftColor: tema.cores.warning } as const,
-    avisoRisco: { borderLeftColor: tema.cores.critical } as const,
-    avisoBloqueio: { borderLeftColor: tema.cores.critical } as const,
-    avisoMarcador: { ...PAPEL.micro, color: tema.cores.textSecondary } as const,
-    avisoTitulo: { ...PAPEL.textoPrincipal, color: tema.cores.text } as const,
+    decisaoSobrancelha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs } as const,
+    decisaoPonto: {
+      width: 8,
+      height: 8,
+      borderRadius: RAIO.badge,
+      backgroundColor: tema.cores.critical,
+    } as const,
+    decisaoSobrancelhaTexto: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical } as const,
+    decisaoPergunta: { ...PAPEL.tituloDaDecisao, color: tema.cores.text } as const,
+    decisaoContexto: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary } as const,
+    decisaoOpcoes: { gap: ESPACO.sm, paddingTop: ESPACO.xs } as const,
+
+    /**
+     * ⚠️ Bloco da própria cor — ⛔ e ⛔ ele ⛔ continua ⛔ não gritando: quem grita é
+     * o vermelho, ⛔ e o vermelho é **raro**. `info` ⛔ e `atencao` são o caso
+     * comum.
+     */
+    aviso: {
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+    } as const,
+    avisoLinha: { flexDirection: "row", gap: ESPACO.sm, alignItems: "flex-start" } as const,
+    avisoCorpo: { flex: 1, gap: 2 } as const,
+    avisoSimbolo: { ...PAPEL.tituloDaDecisao } as const,
+    avisoInfo: {
+      borderColor: tema.cores.info,
+      backgroundColor: tema.cores.primaryTint,
+    } as const,
+    avisoAtencao: {
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.warningTint,
+    } as const,
+    avisoRisco: {
+      borderColor: tema.cores.critical,
+      backgroundColor: tema.cores.criticalTint,
+    } as const,
+    avisoBloqueio: {
+      borderColor: tema.cores.critical,
+      backgroundColor: tema.cores.criticalTint,
+    } as const,
+    avisoCorInfo: { color: tema.cores.info } as const,
+    avisoCorAtencao: { color: tema.cores.warning } as const,
+    avisoCorRisco: { color: tema.cores.critical } as const,
+    avisoMarcador: { ...PAPEL.rotuloDeMetrica } as const,
+    avisoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text } as const,
     avisoTexto: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary } as const,
 
     selo: {

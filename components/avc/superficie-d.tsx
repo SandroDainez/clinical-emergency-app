@@ -79,10 +79,36 @@ const ORDEM: readonly {
   titulo: string;
   recolhido?: true;
 }[] = [
+  /**
+   * ⚠️⚠️ ⛔ TODOS RECOLHÍVEIS desde 2026-09-06 — pedido do autor: *"CONTRA
+   * INDICAÇÕES ABSOLUTAS E RELATIVAS CLICÁVEIS E RECOLHÍVEIS"*.
+   *
+   * ⛔ Antes, ⛔ só *"risco baixo"* recolhia; os outros quatro ficavam sempre
+   * abertos ⛔ e a tela abria com trinta itens empilhados.
+   *
+   * ── ⚠️⚠️ ⛔ E POR QUE OS TÍTULOS ⛔ NÃO VIRARAM *"ABSOLUTA"* E *"RELATIVA"* ──
+   *
+   * ⛔ Porque a fonte ⛔ não usa essas duas palavras: ⚠️ ela grada com **verbos
+   * diferentes** — *"should not be administered"*, *"likely contraindicated"*,
+   * *"potentially harmful"*, *"should be avoided"* —, ⛔ e este arquivo existe
+   * em parte para **⛔ não** achatá-los (**E-45**, ⛔ e a proibição escrita em
+   * `superficie-d.ts`: *"⛔ NÃO EXISTE ESTADO AGREGADO 'CONTRAINDICADO'"*).
+   *
+   * ⚠️ Espremer os quatro verbos em dois baldes faria *"potencialmente
+   * prejudicial"* ⛔ e *"⛔ não deve ser administrado"* lerem **igual** — ⛔ e é
+   * exatamente a diferença entre eles que decide se o médico pondera ⛔ ou para.
+   *
+   * ⚠️ O primeiro grupo **é** o que a prática chama de absoluta; o quarto **é**
+   * o que ela chama de relativa. ⛔ O que ⛔ não fazemos é apagar o verbo que
+   * sustenta cada um.
+   *
+   * ⚠️⚠️ ⛔ E O PRIMEIRO NASCE **ABERTO**: ⛔ o que a fonte manda ⛔ não
+   * administrar ⛔ não pode depender de um toque para aparecer.
+   */
   { estado: "contraindicacao_nao_corrigivel", titulo: "A fonte diz para não administrar" },
-  { estado: "risco_aumentado", titulo: "A fonte descreve risco aumentado" },
-  { estado: "informacao_insuficiente", titulo: "A fonte declara segurança desconhecida" },
-  { estado: "situacao_individualizada", titulo: "A fonte manda decidir caso a caso" },
+  { estado: "risco_aumentado", titulo: "A fonte descreve risco aumentado", recolhido: true },
+  { estado: "informacao_insuficiente", titulo: "A fonte declara segurança desconhecida", recolhido: true },
+  { estado: "situacao_individualizada", titulo: "A fonte manda decidir caso a caso", recolhido: true },
   { estado: "baixa_preocupacao_declarada", titulo: "A fonte declara risco baixo", recolhido: true },
 ];
 
@@ -539,20 +565,53 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "700",
     },
 
+    /**
+     * ⚠️⚠️ LINHA VIROU **CARD**, ⛔ e o estado virou **selo** — 2026-09-06.
+     *
+     * ⛔ Relato do autor sobre a captura: *"tudo muito cinza ainda, tudo fica
+     * parecido ⛔ e confunde"*. ⛔ Ele estava certo sobre o que via: o antecedente
+     * ⛔ e o estado dele tinham o **mesmo tamanho ⛔ e quase o mesmo peso**, lado
+     * a lado — ⛔ e a linha inteira lia como uma frase só.
+     *
+     * ⚠️ Agora o **antecedente** é o texto de leitura ⛔ e o **estado** é um selo
+     * compacto: eles deixam de competir porque deixaram de ser a mesma coisa
+     * visualmente.
+     */
     linha: {
       flexDirection: "row", alignItems: "center", gap: ESPACO.sm,
       minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.surfaceElevated,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
     },
-    linhaRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    linhaEstado: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700" },
+    linhaRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
+    /** ⚠️ Selo: menor que o rótulo, ⛔ e com moldura própria. */
+    linhaEstado: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "700",
+      overflow: "hidden",
+      borderRadius: RAIO.badge,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      backgroundColor: tema.cores.surface,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: 2,
+      flexShrink: 0,
+    },
     /**
      * ⚠️⚠️ ⛔ NÃO PERGUNTADO ⛔ NÃO É ALERTA — ⛔ e ⛔ não pode ser pintado.
      * ⛔ Nenhum campo desta superfície retém terapia (**E-49**), e vermelho que
      * ⛔ não é defeito ensina a ignorar vermelho.
      */
+    /** ⚠️ Mais fraco que os outros dois — ⛔ e ⛔ nunca âmbar: ⛔ não é achado. */
     linhaEstadoVazio: {
       color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "600",
     },
     /** ⚠️ Filete à esquerda: quem CRUZA o corte se distingue sem virar cartão. */
     linhaCruza: {

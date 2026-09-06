@@ -380,4 +380,37 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   /** ⚠️ Ponteiro de fonte — traduzido só o miolo em palavras; § e página não mudam. */
   "§8.3, rec. 1, p. e339 (dose in supportive text, p. e340)":
     "§8.3, rec. 1, p. e339 (dosis en texto de soporte, p. e340)",
+
+  /* ── ⚠️ PD-39 · o vocabulário que nasceu ao clonar as referências ──────── */
+  "Atendimento aberto há": "Atención abierta hace",
+  "Corrigir a pressão arterial": "Corregir la presión arterial",
+  "Corrigir a glicemia": "Corregir la glucemia",
+  "Decisão desta fase": "Decisión de esta fase",
+  "Indicada, ainda não administrada": "Indicada, aún no administrada",
+  "Imagem cerebral emergencial, o mais rápido possível":
+    "Imagen cerebral emergente, lo más rápido posible",
+  "Exclui hemorragia intracraniana antes de iniciar qualquer reperfusão, e mede a carga isquêmica.":
+    "Excluye hemorragia intracraneal antes de iniciar cualquier reperfusión, y mide la carga isquémica.",
+  "Registrar a imagem": "Registrar la imagen",
+  "Avaliar item a item": "Evaluar ítem por ítem",
+  "Já tenho o total, medido em outro serviço":
+    "Ya tengo el total, medido en otro servicio",
+
+  /* ── ⚠️ PD-40 · o veredito da trombólise ──────────────────────────────── */
+  "A diretriz não recomenda a trombólise neste caso":
+    "La guía no recomienda la trombólisis en este caso",
+  "Ainda não dá para concluir: faltam dados":
+    "Aún no es posible concluir: faltan datos",
+  "Conferência dos critérios da diretriz contra o que foi registrado. A decisão é do médico.":
+    "Verificación de los criterios de la guía contra lo registrado. La decisión es del médico.",
+  "Nenhum critério da diretriz alcança este caso ainda":
+    "Ningún criterio de la guía alcanza este caso todavía",
+  "Os critérios registrados sustentam a trombólise":
+    "Los criterios registrados sustentan la trombólisis",
+  "? Ainda não dá para concluir": "? Aún no es posible concluir",
+  "· Sem critério aplicável ainda": "· Sin criterio aplicable todavía",
+  "✓ Trombólise indicada": "✓ Trombólisis indicada",
+  "✕ A diretriz não recomenda": "✕ La guía no recomienda",
+  "✕ Reperfusão retida pela imagem": "✕ Reperfusión retenida por la imagen",
+  "Corrigir antes": "Corregir antes",
 };

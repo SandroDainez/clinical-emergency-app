@@ -52,6 +52,23 @@ type Props = {
   /** Grava a escala inteira: um fato por item, mais o total. */
   onRegistrarEscala: (pontos: Record<string, number>, total: number) => void;
   onDesfazer: (campo: string) => void;
+  /**
+   * ⚠️⚠️ O SEGUNDO CAMINHO — pedido do autor em 2026-09-06: *"tem que deixar
+   * opção de colocar o valor ⛔ ou expandir ⛔ e marcar um a um com os detalhes
+   * para o usuário pouco experiente saber o que é cada um dos itens"*.
+   *
+   * ⚠️ ⛔ Os dois caminhos **já existiam** — a escala aqui, ⛔ e o total trazido
+   * de fora no bloco *"NIHSS trazido de fora"*. ⛔ O que ⛔ não existia era a
+   * **escolha visível**: os dois blocos ficavam separados na tela, ⛔ e quem
+   * chegava com o escore na mão ⛔ não descobria onde informá-lo.
+   *
+   * ⚠️⚠️ ⛔ E ELES ⛔ CONTINUAM SENDO ⛔ DUAS ENTIDADES, ⛔ e ⛔ isso ⛔ não é
+   * burocracia: o escore que **este** serviço mediu ⛔ e o que chegou pela
+   * regulação têm **procedência diferente**, ⛔ e a procedência muda a confiança
+   * ⛔ sem mudar o número (**E-03**). ⛔ Fundi-los num campo só apagaria de onde
+   * veio o 14.
+   */
+  aoInformarTotal?: () => void;
 };
 
 export default function CampoDeEscala({
@@ -62,6 +79,7 @@ export default function CampoDeEscala({
   onAlternarDetalhe,
   onRegistrarEscala,
   onDesfazer,
+  aoInformarTotal,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -117,13 +135,17 @@ export default function CampoDeEscala({
           {total === undefined ? tr("não informado") : String(total)}
         </Text>
         <Pressable
-          style={e.acao}
+          style={[e.acao, e.acaoPrincipal]}
           accessibilityRole="button"
           testID={`avc-escala-abrir-${campo.id}`}
           onPress={() => setAberta((v) => !v)}
         >
-          <Text style={e.acaoTexto}>
-            {aberta ? tr("Fechar escala") : total === undefined ? tr("Abrir escala") : tr("Refazer escala")}
+          <Text style={[e.acaoTexto, e.acaoTextoPrincipal]}>
+            {aberta
+              ? tr("Fechar escala")
+              : total === undefined
+                ? tr("Avaliar item a item")
+                : tr("Refazer escala")}
           </Text>
         </Pressable>
         {total !== undefined ? (
@@ -140,6 +162,27 @@ export default function CampoDeEscala({
           </Pressable>
         ) : null}
       </View>
+
+      {/**
+        * ⚠️⚠️ A ALTERNATIVA DECLARADA, ⛔ e ⛔ não escondida num bloco recolhido
+        * lá embaixo. ⚠️ *"Já tenho o total"* é o caminho de quem chegou com o
+        * escore medido por outro serviço — ⛔ e ele precisa ser **oferecido no
+        * mesmo lugar** em que a escala é oferecida.
+        *
+        * ⛔ Ela some quando a escala já foi feita: aí ⛔ não há escolha a fazer.
+        */}
+      {aoInformarTotal && total === undefined && !aberta ? (
+        <Pressable
+          style={e.alternativa}
+          accessibilityRole="button"
+          testID={`avc-escala-informar-total-${campo.id}`}
+          onPress={aoInformarTotal}
+        >
+          <Text style={e.alternativaTexto}>
+            {tr("Já tenho o total, medido em outro serviço")}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {aberta ? (
         <View style={e.escala} testID={`avc-escala-${campo.id}`}>
@@ -329,6 +372,19 @@ const criarEstilos = (tema: Tema) =>
       borderWidth: 2, borderColor: tema.cores.border,
     },
     acaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
+    /** ⚠️ O caminho principal é **preenchido**; a alternativa é texto. */
+    acaoPrincipal: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
+    acaoTextoPrincipal: { color: tema.cores.onFill },
+    alternativa: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+    },
+    alternativaTexto: {
+      color: tema.cores.primary,
+      fontSize: TIPOGRAFIA.caption.fontSize,
+      fontWeight: "600",
+    },
 
     escala: { gap: ESPACO.sm, marginTop: ESPACO.xs },
     item: {

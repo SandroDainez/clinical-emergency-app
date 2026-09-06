@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**72 de 86 travas com declaração completa.**
+**74 de 88 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -55,6 +55,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que a Superfície E registre **ações**, e ⛔ nunca conclua correção — que ⛔ nenhum estado de ação derrube bloqueio, que `cancelada` ⛔ nunca produza derivação favorável, que os estados ⛔ **não** formem sequência obrigatória, que cada intervenção seja uma **instância** própria, que E ⛔ não invente causalidade entre ação e aferição, que E ⛔ não declare PA ⛔ nem glicemia, e que ⛔ nenhum fármaco, dose, via ou esquema apareça enquanto F-19 estiver parcial.
 - **NÃO PROMETE:** que os limiares estejam certos — são transcrição, conferida pelo autor contra o verbatim. ⛔ Não mede tela: isso é `e2e/avc-superficie-e`.
 - **UNIVERSO:** `avc/conteudo/superficie-e.ts` inteiro e todas as derivações de `avc/nucleo/derivacoes-e.ts`, mais os bloqueios de `derivacoes-d.ts` e os campos de A que os sustentam. ⛔ Fora: F e G.
+
+## `test:avc-antihipertensivos` → `scripts/prova-avc-antihipertensivos.cjs`
+
+- **PROMETE:** que o app ⛔ não reproduza a dose histórica perigosa de esmolol, que ⛔ nenhuma dose apareça ⛔ sem procedência, que a atribuição dos fármacos ⛔ não seja lavada para *"AHA/ASA"* ⛔ sem ano, ⛔ e que os alvos pressóricos ⛔ não colapsem uns nos outros.
+- **NÃO PROMETE:** que a dose esteja clinicamente **certa** — ⛔ ela ⛔ não sabe farmacologia. ⚠️ Ela guarda a **rastreabilidade** ⛔ e a **não-reprodução** do valor histórico.
+- **UNIVERSO:** `avc/conteudo/antihipertensivos.ts` ⛔ e a tela que o consome. ── ⚠️⚠️ O QUE ORIGINOU ──────────────────────────────────────────────────── ⚠️ A revisão clínica do autor (2026-09-06) encontrou, no *Manual de Rotinas* do MS de 2013, manutenção de esmolol até **3 mg/kg/min** — ⛔ **dez vezes** o teto contemporâneo de **300 mcg/kg/min**, acima do qual a bula declara que a segurança ⛔ **não foi estudada**. ⛔ ⛔ Um valor desses ⛔ não pode voltar por descuido de edição.
+
+## `test:avc-glicemia` → `scripts/prova-avc-glicemia.cjs`
+
+- **PROMETE:** que o app ⛔ nunca apresente disglicemia como **contraindicação absoluta**, ⛔ que ⛔ não invente um valor de "liberação" depois de `>400`, ⛔ que ⛔ não escreva dose fixa de insulina, ⛔ e que a **pergunta que decide** — o déficit persistir depois da correção — chegue à tela.
+- **NÃO PROMETE:** que os cortes sejam clinicamente os melhores. ⚠️ Ela guarda a **estrutura da decisão**, ⛔ e ⛔ não a escolha dos números.
+- **UNIVERSO:** `avc/conteudo/correcao-glicemica.ts` ⛔ e a tela que o consome. ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ───────────────────────────────────────── ⛔ `<50` ⛔ e `>400` foram, por anos, **critério de exclusão** de trombólise — na AHA/ASA 2019 ⛔ e em protocolos brasileiros. ⚠️ A edição de 2026 os trata como definição de **gravidade**, ⛔ e ⛔ não de exclusão. ⚠️⚠️ ⛔ O REFLEXO ANTIGO É O PERIGO: um app que os apresente como contraindicação faria o médico **deixar de trombolisar alguém elegível** — ⛔ e esse erro ⛔ não aparece em ⛔ nenhum log.
 
 ## `test:avc-superficie-f` → `scripts/prova-avc-superficie-f.cjs`
 

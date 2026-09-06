@@ -78,8 +78,19 @@ export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-17", assunto: "Déficit incapacitante", estado: "transcrito", arquivo: AHA },
   { id: "F-23", assunto: "Via aérea, ventilação e oxigenação", estado: "transcrito", arquivo: AHA },
   { id: "F-24", assunto: "Crise convulsiva no AVC", estado: "transcrito", arquivo: AHA },
-  { id: "F-18", assunto: "Correção glicêmica operacional", estado: "parcial", arquivo: BR_GLI },
-  { id: "F-19", assunto: "Anti-hipertensivo IV operacional", estado: "parcial", arquivo: BR_PA },
+  /**
+   * ⚠️ **TRANSCRITO** em 2026-09-06. ⚠️ Diferente de F-19, aqui ⛔ **não houve
+   * correção de atribuição**: cada número da revisão do autor tem verbatim
+   * correspondente na fonte-mãe — inclusive a **Classe 1** do déficit que
+   * persiste ⛔ e o *"reasonable"* (COR 2a) do alvo 140–180.
+   */
+  { id: "F-18", assunto: "Correção glicêmica operacional", estado: "transcrito", arquivo: BR_GLI },
+  /**
+   * ⚠️ **TRANSCRITO** em 2026-09-06, a partir da revisão clínica do autor,
+   * conferida contra a transcrição da AHA/ASA 2026 — ⛔ e com **cinco
+   * correções de atribuição** registradas no arquivo da fonte.
+   */
+  { id: "F-19", assunto: "Anti-hipertensivo IV operacional", estado: "transcrito", arquivo: BR_PA },
   { id: "F-20", assunto: "Preparo do trombolítico", estado: "parcial", arquivo: BR_TROMBO },
   { id: "F-25", assunto: "Terapêutica anticonvulsiva", estado: "ponteiro", arquivo: AHA },
   /**

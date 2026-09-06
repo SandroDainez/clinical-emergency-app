@@ -44,10 +44,11 @@ import {
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
@@ -132,8 +133,129 @@ export default function SuperficieF({
       ? doseDerivada(agenteDose, typeof pesoBruto === "number" ? pesoBruto : undefined, origem)
       : undefined;
 
+  /**
+   * ⚠️⚠️ O VEREDITO — pedido do autor, 2026-09-06. ⛔ Derivado a cada render,
+   * ⛔ e ⛔ **nunca** gravado: quem congela veredito num fato faz a conclusão
+   * sobreviver à correção do dado (**E-43**).
+   */
+  const veredito = useMemo(() => vereditoDaTrombolise(estado), [estado]);
+
   return (
     <View style={e.raiz} testID="avc-superficie-f-conteudo">
+      {/**
+        * ── ⚠️⚠️ O VEREDITO DA TROMBÓLISE ────────────────────────────────────
+        *
+        * > *"O APP DEVE SER CAPAZ DE DIZER SE ESTÁ INDICADO ⛔ OU ⛔ NÃO
+        * > TROMBÓLISE COM OS CRITÉRIOS QUE TEM, ⛔ E DEPOIS CLARO QUE A DECISÃO
+        * > FINAL É DO MÉDICO."* — autor
+        *
+        * ⚠️ Quatro saídas, ⛔ e ⛔ não duas: *indicada* · *contraindicada* ·
+        * *faltam dados* (nomeando quais) · *nenhum critério alcança ⛔ ainda*.
+        * ⛔ Achatar as quatro em sim/⛔ não faria **falta de dado** virar
+        * **contraindicação** — ⛔ e alguém deixaria de trombolisar por um campo
+        * vazio (**E-37**).
+        *
+        * ⚠️ A ressalva viaja **dentro** do veredito ⛔ e é impressa aqui: ⛔ a
+        * conclusão ⛔ não aparece ⛔ sem ela.
+        */}
+      <View
+        style={[
+          e.veredito,
+          veredito.tipo === "indicada" && e.vereditoIndicada,
+          (veredito.tipo === "retida" || veredito.tipo === "nao_recomendada") && e.vereditoContra,
+        ]}
+        testID="avc-f-veredito"
+      >
+        <View style={e.vereditoTopo}>
+          <Text
+            style={[
+              e.vereditoSelo,
+              veredito.tipo === "indicada" && e.vereditoSeloIndicada,
+              (veredito.tipo === "retida" || veredito.tipo === "nao_recomendada")
+                && e.vereditoSeloContra,
+            ]}
+            testID="avc-f-veredito-tipo"
+          >
+            {/** ⚠️ Símbolo + palavra (**E-15**) — ⛔ a cor ⛔ nunca decide sozinha. */}
+            {/**
+              * ⚠️⚠️ ⛔ A PALAVRA *"CONTRAINDICADA"* ⛔ NÃO APARECE — ⛔ e ⛔ isso
+              * ⛔ não é eufemismo. ⚠️ COR 3 nesta fonte é *not recommended* /
+              * *No Benefit*; traduzir por *"contraindicado"* daria à
+              * recomendação uma força que ela ⛔ não tem. ⛔ Reprovado por
+              * `prova-avc-apresentacao-f` na primeira versão deste bloco.
+              */}
+            {veredito.tipo === "indicada"
+              ? tr("✓ Trombólise indicada")
+              : veredito.tipo === "retida"
+                ? tr("✕ Reperfusão retida pela imagem")
+                : veredito.tipo === "nao_recomendada"
+                  ? tr("✕ A diretriz não recomenda")
+                  : veredito.tipo === "incompleta"
+                    ? tr("? Ainda não dá para concluir")
+                    : tr("· Sem critério aplicável ainda")}
+          </Text>
+        </View>
+        <Text style={e.vereditoFrase}>{tr(veredito.frase)}</Text>
+
+        {/** ⚠️ Cada motivo cita COR/LOE ⛔ e o verbo **verbatim** da fonte. */}
+        {[...veredito.contra, ...veredito.sustentam].map((m) => (
+          <View key={m.id} style={e.vereditoMotivo} testID={`avc-f-veredito-motivo-${m.id}`}>
+            <Text style={e.vereditoGrau}>
+              {tr("COR")} {m.cor} · {tr("LOE")} {m.loe} · {m.localizacao}
+            </Text>
+            <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+          </View>
+        ))}
+
+        {/**
+          * ⚠️⚠️ O QUE FALTA, **NOMEADO** — ⛔ e ⛔ nunca "dados insuficientes".
+          * ⚠️ Pendência sem nome é muro (**E-26**), ⛔ e o médico ⛔ não adivinha
+          * o que colher.
+          */}
+        {veredito.faltam.length > 0 ? (
+          <View style={e.vereditoFaltas} testID="avc-f-veredito-faltas">
+            {/**
+              * ⚠️⚠️ TOCÁVEL, ⛔ e ⛔ não azul de mentira.
+              *
+              * ⛔ Na primeira captura elas saíram com a cor de ação ⛔ e ⛔ sem
+              * ação: o médico tocaria ⛔ e ⛔ nada aconteceria. ⚠️ Cor de ação em
+              * texto inerte ensina a desconfiar de **todo** azul da tela.
+              *
+              * ⚠️ Agora cada falta leva ao campo onde ela se resolve — que é o
+              * que **E-26** exige: pendência sem condição de resolução é muro.
+              */}
+            {veredito.faltam.map((i) => (
+              <Pressable
+                key={i}
+                accessibilityRole="button"
+                accessibilityLabel={tr(acaoPendente(i))}
+                testID={`avc-f-veredito-falta-${i}`}
+                onPress={() => onIrParaCampo(i)}
+                style={e.vereditoFaltaToque}
+              >
+                <Text style={e.vereditoFalta}>{tr(acaoPendente(i))}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        {/**
+          * ⚠️⚠️ CORRIGÍVEL ⛔ NÃO É CONTRAINDICAÇÃO — ⛔ e por isso aparece como
+          * **ressalva**, ⛔ e ⛔ não como motivo contra. ⚠️ PA acima da meta tem
+          * conserto; tratá-la como veredito negativo desaconselharia uma
+          * trombólise que ⛔ só precisava de anti-hipertensivo.
+          */}
+        {veredito.corrigirAntes.map((b) => (
+          <Text key={b.id} style={e.vereditoCorrigir} testID={`avc-f-veredito-corrigir-${b.id}`}>
+            {tr("Corrigir antes")}: {tr(b.formulacao)}
+          </Text>
+        ))}
+
+        <Text style={e.vereditoRessalva} testID="avc-f-veredito-ressalva">
+          {tr(veredito.ressalva)}
+        </Text>
+      </View>
+
       {/**
         * ⚠️⚠️ A FAIXA DE PARALELISMO ⛔ NUNCA SAI DA TELA.
         *
@@ -697,6 +819,56 @@ function formatarRestante(min: number, tr: (pt: string) => string): string {
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
+
+    /**
+     * ⚠️⚠️ O CARD DO VEREDITO — o *"Etapa atual / Elegibilidade"* das
+     * referências. ⛔ Ele é o **primeiro** bloco da Reperfusão ⛔ e o único com
+     * este tratamento: dois heróis ⛔ não deixam ⛔ nenhum herói.
+     *
+     * ⚠️ Neutro por padrão. ⛔ A cor só entra quando há **resposta** — verde
+     * quando os critérios fecham, vermelho quando há achado que contraindica.
+     * ⛔ *"Faltam dados"* fica **neutro**, ⛔ e ⛔ isso ⛔ não é timidez: pintar a
+     * ausência de âmbar transformaria toda tela recém-aberta em alarme.
+     */
+    veredito: {
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+    },
+    vereditoIndicada: {
+      borderColor: tema.cores.success,
+      backgroundColor: tema.cores.successTint,
+    },
+    vereditoContra: {
+      borderColor: tema.cores.critical,
+      backgroundColor: tema.cores.criticalTint,
+    },
+    vereditoTopo: { flexDirection: "row", alignItems: "center" },
+    vereditoSelo: { ...PAPEL.tituloDaDecisao, color: tema.cores.text },
+    vereditoSeloIndicada: { color: tema.cores.success },
+    vereditoSeloContra: { color: tema.cores.critical },
+    vereditoFrase: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    /** ⚠️ O motivo, com a fonte colada nele — ⛔ veredito sem fonte ⛔ não confere. */
+    vereditoMotivo: {
+      backgroundColor: tema.cores.surfaceElevated,
+      borderRadius: RAIO.botao,
+      padding: ESPACO.sm,
+      gap: 2,
+    },
+    vereditoGrau: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    /** ⚠️ Verbatim em inglês — ⛔ verbatim ⛔ não se traduz (§6.14). */
+    vereditoVerbo: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    vereditoFaltas: { gap: ESPACO.xs },
+    /** ⚠️ Alvo de dedo, ⛔ e ⛔ não de mouse. */
+    vereditoFaltaToque: { minHeight: TOQUE.minimo, justifyContent: "center" },
+    /** ⚠️ A falta é dita como **ação**, ⛔ e ⛔ nunca como nome de campo. */
+    vereditoFalta: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
+    vereditoCorrigir: { ...PAPEL.textoSecundario, color: tema.cores.warning },
+    /** ⚠️ ⛔ Nunca some, ⛔ e ⛔ nunca vira letra miúda ilegível. */
+    vereditoRessalva: { ...PAPEL.legenda, color: tema.cores.textSecondary },
 
     paralelo: {
       backgroundColor: tema.cores.surface,

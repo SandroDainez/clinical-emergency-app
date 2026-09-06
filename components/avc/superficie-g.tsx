@@ -42,6 +42,7 @@ import type { Relogio } from "../../avc/nucleo/relogio";
 import { sinteseDoCaso } from "../../avc/nucleo/sintese-do-caso";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { ClinicalCard, SectionTitle, WarningCard } from "./sistema";
+import { ChecklistTimeline } from "./sistema/blocos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
@@ -137,14 +138,26 @@ export default function SuperficieG({
       {sintese.condutas.length > 0 ? (
         <View style={e.grupo} testID="avc-g-sintese-conduta">
           <SectionTitle testID="avc-g-bloco-conduta">Conduta</SectionTitle>
-          {sintese.condutas.map((c) => (
-            <ClinicalCard key={c.id} testID={`avc-g-conduta-${c.id}`}>
-              <Text style={e.sinteseLinha}>
-                {tr(c.texto)} — {tr(c.natureza === "realizada" ? "administrada" : "indicada")}
-                {c.horario ? ` · ${c.horario}` : ""}
-              </Text>
-            </ClinicalCard>
-          ))}
+          {/**
+            * ⚠️⚠️ A LINHA DO TEMPO DAS REFERÊNCIAS — ⛔ e ⛔ ela ⛔ não achata a
+            * distinção que esta superfície existe para manter.
+            *
+            * ⚠️ **Realizada** ganha o círculo verde com ✓ ⛔ e o horário; ⛔
+            * **indicada** fica com o círculo vazio ⛔ e a palavra *"indicada"*.
+            * ⛔ Marcar as duas como feitas seria transformar *"trombólise
+            * indicada"* em *"trombólise administrada"* — o pior erro possível
+            * aqui, ⛔ e agora ele seria cometido **pelo desenho**.
+            */}
+          <ChecklistTimeline
+            testID="avc-g-conduta"
+            itens={sintese.condutas.map((c) => ({
+              id: c.id,
+              titulo: c.texto,
+              detalhe: c.natureza === "realizada" ? "Administrada" : "Indicada, ainda não administrada",
+              estado: c.natureza === "realizada" ? ("feito" as const) : ("pendente" as const),
+              horario: c.horario,
+            }))}
+          />
         </View>
       ) : null}
 
@@ -173,13 +186,18 @@ export default function SuperficieG({
       {sintese.pendencias.length > 0 ? (
         <View style={e.grupo} testID="avc-g-sintese-pendencias">
           <SectionTitle testID="avc-g-bloco-pendencias">Pendências</SectionTitle>
-          <ClinicalCard testID="avc-g-pendencias">
-            {sintese.pendencias.map((p) => (
-              <Text key={p.id} style={e.sinteseLinha} testID={`avc-g-pendencia-${p.id}`}>
-                {tr(acaoPendente(p.campo))}
-              </Text>
-            ))}
-          </ClinicalCard>
+          {/**
+            * ⚠️ Círculo **vazio**, ⛔ e ⛔ nunca âmbar: pendência é trabalho
+            * ⛔ ainda ⛔ não feito, ⛔ e ⛔ não um achado ruim (**E-37**).
+            */}
+          <ChecklistTimeline
+            testID="avc-g-pendencias"
+            itens={sintese.pendencias.map((p) => ({
+              id: p.id,
+              titulo: acaoPendente(p.campo),
+              estado: "pendente" as const,
+            }))}
+          />
         </View>
       ) : null}
 

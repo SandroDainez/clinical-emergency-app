@@ -32,7 +32,7 @@ import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
-import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
@@ -74,6 +74,29 @@ type Props = {
  * ⛔ Bloco sem ícone declarado simplesmente ⛔ não ganha um — ⛔ nada de
  * improvisar símbolo para um grupo novo.
  */
+/**
+ * ⚠️⚠️ A COR DO BLOCO — acrescentada em 2026-09-06.
+ *
+ * ⛔ Relato do autor: *"tudo muito cinza ainda, tudo fica parecido ⛔ e
+ * confunde"*. ⚠️ Nas referências, cada domínio tem a sua cor de reconhecimento
+ * — ⛔ e é ela que deixa o olho achar *"pressão"* ⛔ sem ler todos os títulos.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É COR-COMO-ESTADO (**E-15**): ⛔ ela ⛔ não diz se está
+ * bom ⛔ ou ruim, ⛔ nem muda quando o valor muda. ⛔ Ela identifica **de que
+ * assunto se trata**, ⛔ e o título escrito ao lado diz o mesmo.
+ *
+ * ⛔ Bloco sem cor declarada fica neutro — ⛔ nada de improvisar cor nova no JSX.
+ */
+const COR_DO_GRUPO: Readonly<Record<string, "critical" | "info" | "success" | "warning" | "debt" | "primary">> = {
+  relogios: "primary",
+  "via-aerea": "info",
+  respiracao: "info",
+  pressao: "critical",
+  glicemia: "debt",
+  peso: "warning",
+  crise: "warning",
+};
+
 const ICONE_DO_GRUPO: Readonly<Record<string, NomeDeIcone>> = {
   relogios: "chegada",
   "via-aerea": "viaAerea",
@@ -103,6 +126,7 @@ export default function SuperficieA({
   onNovaMedida,
 }: Props) {
   const tr = useTr();
+  const tema = useTheme();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
@@ -204,7 +228,11 @@ export default function SuperficieA({
               */}
             <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
               {ICONE_DO_GRUPO[grupo.id] ? (
-                <Icone nome={ICONE_DO_GRUPO[grupo.id]} tamanho={14} />
+                <Icone
+                  nome={ICONE_DO_GRUPO[grupo.id]}
+                  tamanho={18}
+                  cor={COR_DO_GRUPO[grupo.id] ? tema.cores[COR_DO_GRUPO[grupo.id]] : undefined}
+                />
               ) : null}
               <Secao titulo={grupo.titulo} />
             </View>
@@ -614,7 +642,12 @@ const criarEstilos = (tema: Tema) =>
       fontSize: TIPOGRAFIA.caption.fontSize,
     },
     grupo: { gap: ESPACO.xs },
-    cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    cabecalho: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      marginTop: ESPACO.md,
+    },
     /**
      * ⚠️ O ⓘ fica NA LINHA do campo. ⛔ Abaixo, ele ocupava uma faixa inteira
      * ⛔ e parecia um controle solto, ⛔ sem dono.

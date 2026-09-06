@@ -383,14 +383,40 @@ export function CampoDeEscolha({
        * distinção nenhuma.
        */}
       {mostrarOpcoes ? (
-      <View style={[e.opcoes, empilhado && e.opcoesEmpilhadas]} accessibilityRole="radiogroup">
+      <View
+        style={[e.opcoes, empilhado && e.opcoesEmpilhadas, binaria(campo.opcoes) && e.opcoesDecisao]}
+        accessibilityRole="radiogroup"
+      >
         {(campo.opcoes ?? []).map((op) => {
           const valor = valorDaOpcao(op);
           const ativa = escolhido === op;
+          /**
+           * ⚠️⚠️ O PAR VERDE/VERMELHO DAS REFERÊNCIAS — 2026-09-06.
+           *
+           * ⚠️ O tom vem do **slug** (`sim` · `nao`), ⛔ e ⛔ nunca da posição:
+           * uma pergunta cuja ordem fosse outra pintaria de vermelho a resposta
+           * errada. ⛔ E verde ⛔ não significa "bom": *"Há hemorragia? **Sim**"*
+           * é a pior notícia da tela ⛔ e continua verde, porque a cor identifica
+           * a **resposta**, ⛔ e ⛔ não o desfecho.
+           *
+           * ⚠️ Por isso ela ⛔ nunca vem sozinha (**E-15**): o ✓ ⛔ e a palavra
+           * dizem o mesmo que a cor.
+           */
+          const grande = binaria(campo.opcoes);
+          const tom = !grande
+            ? null
+            : valor === "sim" ? e.opcaoSim : valor === "nao" ? e.opcaoNao : e.opcaoNeutra;
+          const preenchida = grande && (valor === "sim" || valor === "nao");
           return (
             <Pressable
               key={op}
-              style={[e.opcao, empilhado && e.opcaoLarga, ativa && e.opcaoAtiva]}
+              style={[
+                e.opcao,
+                empilhado && e.opcaoLarga,
+                grande && e.opcaoDecisao,
+                tom,
+                ativa && (grande ? e.opcaoMarcada : e.opcaoAtiva),
+              ]}
               accessibilityRole="radio"
               aria-checked={ativa}
               testID={`avc-opcao-${campo.id}-${valor}`}
@@ -409,7 +435,13 @@ export function CampoDeEscolha({
                * que ficar procurando onde tem que clicar"*. Uma opção que só se
                * distingue por "fundo um pouco mais claro" ⛔ não se distingue.
                */}
-              <Text style={[e.opcaoTexto, ativa && e.opcaoTextoAtivo]}>
+              <Text
+                style={[
+                  e.opcaoTexto,
+                  preenchida && e.opcaoTextoPreenchido,
+                  ativa && !grande && e.opcaoTextoAtivo,
+                ]}
+              >
                 {ativa ? "✓ " : ""}
                 {tr(op)}
               </Text>
@@ -1019,6 +1051,25 @@ export function CampoDeTexto({
  * ⚠️ E é aqui que a **etiqueta de procedência** do campo emprestado vive — uma
  * vez, e ⛔ não quatro.
  */
+/**
+ * ⚠️⚠️ QUANDO A PERGUNTA MERECE OS BOTÕES GRANDES DA REFERÊNCIA.
+ *
+ * ⚠️ ⛔ Só quando **todas** as opções pertencem ao vocabulário binário do módulo
+ * — `sim` · `nao` · `incerto` · `nao_sei`. ⛔ Aplicá-los a *"Este serviço /
+ * Serviço externo / ⛔ Não sei"* daria três blocos de 56 px para escolher **onde
+ * o exame foi feito**, roubando a tela da decisão que de fato importa.
+ *
+ * ⚠️ ⛔ É a diferença entre copiar a **forma** da referência ⛔ e copiar o
+ * **critério** dela: lá o par verde/vermelho aparece ⛔ só na pergunta que
+ * governa a conduta.
+ */
+const VOCABULARIO_BINARIO = new Set(["sim", "nao", "incerto", "nao_sei"]);
+
+function binaria(opcoes: readonly string[] | undefined): boolean {
+  if (!opcoes || opcoes.length === 0 || opcoes.length > 3) return false;
+  return opcoes.every((o) => VOCABULARIO_BINARIO.has(valorDaOpcao(o)));
+}
+
 export function CampoDaSuperficie({
   campo,
   casaAtual,
@@ -1729,6 +1780,34 @@ export const criarEstilos = (tema: Tema) =>
       flexShrink: 1,
     },
     opcaoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+
+    /**
+     * ⚠️⚠️ A DECISÃO BINÁRIA OCUPA A LARGURA — ⛔ e ⛔ não um canto da linha.
+     *
+     * ⛔ Na captura de 2026-09-06, *"Sim | Não | Incerto"* apareciam em três
+     * caixinhas espremidas à direita, com o enunciado clínico numa coluna
+     * estreita à esquerda. ⚠️ Nas referências a pergunta é **cheia** ⛔ e as
+     * respostas são blocos de 56 px embaixo dela.
+     */
+    opcoesDecisao: { alignSelf: "stretch", flexWrap: "nowrap" },
+    opcaoDecisao: {
+      flex: 1,
+      minWidth: 0,
+      minHeight: TOQUE.critico,
+      borderWidth: 0,
+      paddingHorizontal: ESPACO.xs,
+    },
+    opcaoSim: { backgroundColor: tema.cores.successFill },
+    opcaoNao: { backgroundColor: tema.cores.criticalFill },
+    /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
+    opcaoNeutra: {
+      backgroundColor: tema.cores.surfaceElevated,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+    },
+    /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor. */
+    opcaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
+    opcaoTextoPreenchido: { color: tema.cores.onFill },
 
     /** ⚠️ Neutraliza o `flexBasis: "100%"` do wrapper, que em coluna vira altura. */
     stepper: { flexGrow: 0, flexBasis: "auto", alignSelf: "stretch" },
