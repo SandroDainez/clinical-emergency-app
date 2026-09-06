@@ -56,6 +56,7 @@ import {
   type NomeDeIcone,
 } from "./ui";
 import { InfoToggle } from "./sistema";
+import { useFoco } from "./sistema/foco";
 
 type Props = {
   estado: EstadoAvc;
@@ -126,6 +127,7 @@ export default function SuperficieA({
   onNovaMedida,
 }: Props) {
   const tr = useTr();
+  const foco = useFoco();
   const tema = useTheme();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
@@ -165,7 +167,10 @@ export default function SuperficieA({
   }
 
   return (
-    <View style={e.raiz} testID="avc-superficie-a-conteudo">
+    <View
+      style={e.raiz}
+      testID="avc-superficie-a-conteudo"
+    >
       {/**
         * ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — moldura de **prioridade**, ⛔ e ⛔ não conduta.
         *
@@ -221,7 +226,28 @@ export default function SuperficieA({
           campoAparece(campo, (c) => valorAtual(estado, c)?.valor)
         );
         return (
-          <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
+          <View
+            key={grupo.id}
+            style={e.grupo}
+            testID={`avc-grupo-${grupo.id}`}
+            /**
+             * ⚠️⚠️ O GRUPO REGISTRA **QUAIS CAMPOS CONTÉM** — ⛔ e ⛔ não ⛔ só a
+             * si mesmo. ⚠️ Quem toca *"Pressão arterial"* ⛔ não sabe em que
+             * bloco ela mora; ⛔ quem sabe é o bloco.
+             */
+            /**
+             * ⚠️⚠️ O GRUPO ENTREGA O **NÓ**, ⛔ e ⛔ não uma posição de layout.
+             *
+             * ⛔ A primeira versão registrava `onLayout` — que, medido no
+             * navegador, ⛔ nunca disparou nestas Views. ⚠️ O nó é medido no
+             * momento do toque, ⛔ e ⛔ isso ⛔ não depende de evento anterior.
+             *
+             * ⚠️ Ele declara **quais campos contém**: quem toca *"Pressão
+             * arterial"* ⛔ não sabe em que bloco ela mora — ⛔ quem sabe é o
+             * bloco.
+             */
+            ref={(n) => foco.registrarGrupo(camposDoGrupo(grupo).map((c) => c.id), n)}
+          >
             {/**
               * ⚠️⚠️ FILETE NO LUGAR DA BARRA CHEIA. ⛔ Com seis blocos de barra
               * preenchida, ⛔ nenhum era hierarquia — eram seis pesos iguais.

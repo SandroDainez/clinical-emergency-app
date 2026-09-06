@@ -112,19 +112,47 @@ export function ClinicalHeader({
             onPress={relogio.onTocar}
             disabled={!relogio.onTocar}
             accessibilityRole={relogio.onTocar ? "button" : undefined}
-            accessibilityLabel={`${tr(relogio.rotulo)}: ${relogio.valor ?? tr("não informado")}`}
+            accessibilityLabel={
+              relogio.valor === undefined
+                ? tr("Definir a última vez em que o paciente foi visto bem")
+                : `${tr(relogio.rotulo)}: ${relogio.valor}`
+            }
             testID="avc-relogio-do-topo"
-            style={({ pressed }) => [e.headerRelogio, pressed && e.pressionado]}
+            style={({ pressed }) => [
+              e.headerRelogio,
+              relogio.valor === undefined && e.headerRelogioVazio,
+              pressed && e.pressionado,
+            ]}
           >
             {/**
-              * ⚠️ Ausência NEUTRA (**E-37**): sem o horário, o relógio mostra
-              * travessão ⛔ e ⛔ não zero. ⛔ Zero seria uma medida ⛔ que ⛔ ninguém
-              * fez.
+              * ⚠️⚠️ VAZIO, ⛔ ELE **PEDE** — ⛔ e ⛔ não mostra um travessão.
+              *
+              * ⛔ Relato do autor, 2026-09-06: *"esse última vez bem, o que faz
+              * nesse canto da tela? ⛔ Nem tinha visto ele, ⛔ não entendi a
+              * função dele aí."*
+              *
+              * ⚠️ Ele estava certo: um `—` com duas palavras minúsculas ⛔ não
+              * comunica ⛔ nada ⛔ e ⛔ não parece tocável. ⚠️ ⛔ E este ⛔ não é um
+              * dado qualquer — ⛔ **sem ele ⛔ não há janela terapêutica**.
+              *
+              * ⚠️ Preenchido, ⛔ ele volta a ser o que a referência põe neste
+              * canto: um **número grande**, o que corre sozinho.
               */}
-            <Text style={[e.headerRelogioValor, relogio.valor === undefined && e.headerRelogioAusente]}>
-              {relogio.valor ?? "—"}
-            </Text>
-            <Text style={e.headerRelogioRotulo} numberOfLines={2}>{tr(relogio.rotulo)}</Text>
+            {relogio.valor === undefined ? (
+              <>
+                <Text style={e.headerRelogioPedido}>{tr("Definir")}</Text>
+                <Text style={e.headerRelogioRotulo} numberOfLines={2}>
+                  {tr(relogio.rotulo)}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={e.headerRelogioValor}>{relogio.valor}</Text>
+                <Text style={e.headerRelogioRotulo} numberOfLines={2}>
+                  {tr(relogio.rotulo)}
+                </Text>
+              </>
+            )}
           </Pressable>
         ) : null}
         {aoLado ?? null}
@@ -866,9 +894,28 @@ function estilos(tema: Tema) {
       color: tema.cores.textSecondary,
       textAlign: "center",
     } as const,
-    headerRelogio: { alignItems: "flex-end", minHeight: TOQUE.minimo, justifyContent: "center" } as const,
-    headerRelogioValor: { ...PAPEL.tituloDeSecao, color: tema.cores.critical } as const,
-    headerRelogioAusente: { color: tema.cores.textSecondary } as const,
+    headerRelogio: {
+      alignItems: "flex-end",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.xs,
+      borderRadius: RAIO.botao,
+    } as const,
+    /**
+     * ⚠️ ⛔ Sem valor, ⛔ ele ganha moldura: é a mesma regra dos cabeçalhos
+     * recolhíveis — **o que tem moldura, toca**.
+     *
+     * ⛔ ⛔ E ⛔ não é âmbar: ⛔ falta de dado ⛔ não é achado (**E-37**). ⚠️ É a
+     * cor de **ação**, porque é ⛔ exatamente isso que ele pede.
+     */
+    headerRelogioVazio: {
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+      backgroundColor: tema.cores.primaryTint,
+    } as const,
+    headerRelogioPedido: { ...PAPEL.rotuloDeMetrica, color: tema.cores.primary } as const,
+    /** ⚠️ O número que decide a janela — ⛔ ele é métrica, ⛔ e tabular. */
+    headerRelogioValor: { ...PAPEL.metrica, color: tema.cores.critical } as const,
     headerRelogioRotulo: {
       ...PAPEL.micro,
       color: tema.cores.textSecondary,

@@ -60,6 +60,8 @@ const MIGRADAS = [
   "components/avc/ui/index.tsx",
   /** ⚠️ PD-39 · os blocos que as referências têm e o módulo ⛔ não tinha. */
   "components/avc/sistema/blocos.tsx",
+  /** ⚠️ O foco de campo — ⛔ nenhum texto, ⛔ mas o sistema é um só. */
+  "components/avc/sistema/foco.tsx",
 ];
 
 /**

@@ -441,7 +441,8 @@ const criarEstilos = (tema: Tema) =>
       paddingHorizontal: ESPACO.md,
       borderRadius: RAIO.botao,
       borderWidth: 2,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
     },
     avaliarTexto: {
       color: tema.cores.text,

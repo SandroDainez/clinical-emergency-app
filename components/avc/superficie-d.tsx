@@ -65,6 +65,18 @@ type Props = {
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
+  /**
+   * ⚠️⚠️ ONDE OS ANTECEDENTES SE RESPONDEM — ⛔ e ⛔ não é aqui.
+   *
+   * ⛔ Relato do autor, 2026-09-06: as linhas *"Antecedentes intracranianos ·
+   * ⛔ Não perguntado"* **pareciam botões ⛔ e ⛔ não eram**. ⚠️ Elas dizem *"Do
+   * painel Paciente"* ⛔ e mostram *"⛔ Não perguntado"* — ⛔ o toque natural é ir
+   * lá responder.
+   *
+   * ⚠️ D **lê** esses fatos ⛔ e ⛔ não os redeclara; ⛔ por isso ela ⛔ não
+   * responde por eles — ⛔ ela leva a quem responde (**E-09**).
+   */
+  onAbrirPaciente: () => void;
 };
 
 /**
@@ -133,6 +145,7 @@ export default function SuperficieD({
   onHora,
   onMedir,
   onDesfazer,
+  onAbrirPaciente,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -193,7 +206,14 @@ export default function SuperficieD({
           const campo = campoDoModulo(g.campo);
           const vazio = g.estado === "nao_perguntado";
           return (
-            <View key={g.campo} style={e.linha} testID={`avc-d-antecedentes-${g.campo}`}>
+            <Pressable
+              key={g.campo}
+              style={e.linha}
+              accessibilityRole="button"
+              accessibilityLabel={`${tr(campo?.rotulo ?? g.campo)} — ${tr("abrir o painel do paciente")}`}
+              testID={`avc-d-antecedentes-${g.campo}`}
+              onPress={onAbrirPaciente}
+            >
               <Text style={e.linhaRotulo}>{tr(campo?.rotulo ?? g.campo)}</Text>
               {/**
                 * ⚠️⚠️ *"Não perguntado"* ⛔ NÃO é alerta, ⛔ e ⛔ não pode virar
@@ -209,7 +229,7 @@ export default function SuperficieD({
                   ? `${g.marcados} ${tr(FRASE_DO_GRUPO.com_itens)}`
                   : tr(FRASE_DO_GRUPO[g.estado])}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </View>
@@ -460,9 +480,31 @@ export default function SuperficieD({
           return (
             <View key={l.id} testID={`avc-leitura-${l.id}`}>
               <View style={e.linha}>
-                <Text style={e.linhaRotulo} testID={`avc-leitura-curto-${l.id}`}>
-                  {tr(l.curto)}
-                </Text>
+                {/**
+                  * ⚠️⚠️ DUAS ÁREAS DE TOQUE NA MESMA LINHA — ⛔ e ⛔ isso ⛔ não é
+                  * novo: é o padrão que `LinhaDeRelogio` já usa.
+                  *
+                  * ⛔ Relato do autor, 2026-09-06: *"essas coisas ⛔ não são
+                  * utilizáveis, ⛔ não tem botão clicável, ⛔ não sei se é para
+                  * ter"*. ⚠️ Era: a linha tinha cara de card ⛔ e o único
+                  * controle era o ⓘ minúsculo.
+                  *
+                  * ⚠️ O texto leva ao **painel Paciente** — que a própria linha
+                  * já nomeia como origem —, ⛔ e o ⓘ continua abrindo a
+                  * explicação. ⛔ D **lê** esses fatos ⛔ e ⛔ não responde por
+                  * eles (**E-09**).
+                  */}
+                <Pressable
+                  style={e.linhaToque}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${tr(l.curto)} — ${tr("abrir o painel do paciente")}`}
+                  testID={`avc-leitura-abrir-${l.id}`}
+                  onPress={onAbrirPaciente}
+                >
+                  <Text style={e.linhaRotulo} testID={`avc-leitura-curto-${l.id}`}>
+                    {tr(l.curto)}
+                  </Text>
+                </Pressable>
                 <Recolhido
                   id={`leitura-${l.id}`}
                   texto={exposto ? undefined : l.texto}
@@ -580,13 +622,15 @@ const criarEstilos = (tema: Tema) =>
     linha: {
       flexDirection: "row", alignItems: "center", gap: ESPACO.sm,
       minHeight: TOQUE.minimo,
-      backgroundColor: tema.cores.surfaceElevated,
+      backgroundColor: tema.cores.controlSurface,
       borderRadius: RAIO.botao,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       paddingHorizontal: ESPACO.sm,
       paddingVertical: ESPACO.xs,
     },
+    /** ⚠️ A área de toque do texto — ⛔ o ⓘ tem a dele, ⛔ e ⛔ elas ⛔ não se cruzam. */
+    linhaToque: { flex: 1, minWidth: 0, minHeight: TOQUE.minimo, justifyContent: "center" },
     linhaRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     /** ⚠️ Selo: menor que o rótulo, ⛔ e com moldura própria. */
     linhaEstado: {

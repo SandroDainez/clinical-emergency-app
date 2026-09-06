@@ -912,9 +912,16 @@ export default function SuperficieC({
           testID="avc-novo-estudo"
           onPress={onNovoEstudo}
         >
-          {/** ⚠️ Mesma correção do Laboratório: *"Novo"* pressupõe um anterior. */}
+          {/**
+            * ⚠️ Mesma correção do Laboratório: *"Novo"* pressupõe um anterior.
+            *
+            * ⛔ **Bug corrigido em 2026-09-06:** aqui estava `estudos.length`,
+            * ⛔ e `estudos` é uma **função** importada de `derivacoes-c` — ⛔ o
+            * `.length` dela é a **aridade**, ⛔ nunca 0. ⚠️ O TypeScript ⛔ não
+            * pegou: `Function.length` é um número válido. ⛔ A lista é `lista`.
+            */}
           <Text style={e.novoEstudoTexto}>
-            {tr(estudos.length === 0 ? "Registrar exame" : "Novo exame")}
+            {tr(lista.length === 0 ? "Registrar exame" : "Novo exame")}
           </Text>
         </Pressable>
       </View>
@@ -1167,8 +1174,9 @@ const criarEstilos = (tema: Tema) =>
       justifyContent: "center",
       paddingHorizontal: ESPACO.sm,
       borderWidth: 2,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
     },
     abrirEscolhaTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 

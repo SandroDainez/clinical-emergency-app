@@ -12,7 +12,7 @@
  *
  * ⚠️ E-29: nenhum texto clínico nasce aqui — tudo vem de `avc/conteudo/`.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -48,6 +48,7 @@ import {
   ScreenHeader,
   WarningCard,
 } from "./sistema";
+import { ProvedorDeFoco, type NoMensuravel } from "./sistema/foco";
 import {
   CardHeader,
   CardNota,
@@ -94,6 +95,25 @@ const ESCOPO_DA_SINDROME: Readonly<Record<string, string>> = {
  * ⚠️ A cor de cada atalho — ⛔ identidade do assunto, ⛔ e ⛔ não estado clínico.
  * ⚠️ O nome escrito ao lado diz o mesmo (**E-15**).
  */
+/**
+ * ⚠️⚠️ A COR DE CADA EIXO — ⛔ identidade do assunto, ⛔ e ⛔ NÃO estado clínico.
+ *
+ * ⛔ Relato do autor: *"quatro coisas da mesma cor misturando o visual"*.
+ * ⚠️ Os quatro tiles eram cinza idênticos, ⛔ e o olho ⛔ não achava *"glicemia"*
+ * ⛔ sem ler os quatro nomes.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO COLIDE COM O ESTADO: a cor identifica **de que eixo se
+ * trata** ⛔ e ⛔ não muda com a resposta; quem muda é o **símbolo** (○ ✓ !) ⛔ e a
+ * borda do tile. ⛔ Apague todas as cores ⛔ e o tile continua dizendo o mesmo
+ * (**E-15**).
+ */
+const COR_DO_EIXO: Readonly<Record<string, "info" | "primary" | "critical" | "debt">> = {
+  via_aerea: "info",
+  respiracao: "primary",
+  pressao: "critical",
+  glicemia: "debt",
+};
+
 const COR_DO_ATALHO: Readonly<Record<string, "primary" | "info" | "warning">> = {
   paciente: "primary",
   laboratorio: "info",
@@ -336,7 +356,22 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       ["reperfusao", ACAO_DE_TROMBOLISE],
     ];
     const achado = donos.find(([, campos]) => campos.some((c) => c.id === campo));
-    if (achado) setEstado((e) => verSuperficie(e, achado[0]));
+    if (!achado) return;
+    /**
+     * ⚠️⚠️ TROCAR DE FASE ⛔ E **LEVAR ATÉ O CAMPO** — ⛔ e ⛔ não ⛔ só a
+     * primeira metade.
+     *
+     * ⛔ Antes isto fazia ⛔ só `verSuperficie()`. ⚠️ Quando o campo já estava na
+     * fase aberta — PA ⛔ e glicemia em Estabilizar —, ⛔ o toque ⛔ não produzia
+     * efeito ⛔ nenhum, ⛔ e o autor relatou *"clico ⛔ e ⛔ não abre ⛔ nada"* três
+     * vezes.
+     *
+     * ⚠️ `rolarAte` guarda o pedido quando a superfície ⛔ ainda ⛔ não montou,
+     * ⛔ e o atende no primeiro layout — ⛔ por isso a troca de fase ⛔ e o foco
+     * podem ser pedidos juntos.
+     */
+    if (estado.superficieVista !== achado[0]) setEstado((e) => verSuperficie(e, achado[0]));
+    rolarAte(campo);
   }
 
   function escolher(campo: string, valor: string) {
@@ -494,21 +529,87 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * equivalente a virar a página ⛔ e ⛔ não olhar.
    */
   const rolagem = useRef<ScrollView | null>(null);
+  /**
+   * ⚠️⚠️ OS NÓS DOS GRUPOS — ⛔ e ⛔ isso ⛔ não é estado clínico: é geometria.
+   *
+   * ⛔ `useRef` ⛔ e ⛔ não `useState`: guardar nó em estado provocaria
+   * re-render a cada montagem de grupo.
+   */
+  const nosDosCampos = useRef<Record<string, NoMensuravel>>({});
+  /**
+   * ⚠️⚠️ O NÓ DO **CONTEÚDO**, ⛔ e ⛔ não o da área rolável.
+   *
+   * ⛔ A versão anterior media contra a área ⛔ e somava o deslocamento atual,
+   * rastreado por `onScroll`. ⚠️ Medido: depois de rolar até a pressão (2169),
+   * a glicemia levava a **170** — ⛔ o deslocamento rastreado estava
+   * desatualizado, ⛔ e a conta somava zero.
+   *
+   * ⚠️ O conteúdo **anda junto com a rolagem**. ⛔ A distância entre o topo dele
+   * ⛔ e o topo do grupo é a posição absoluta — ⛔ e ⛔ ela ⛔ não depende de saber
+   * onde a rolagem está.
+   */
+  const noDoConteudo = useRef<View | null>(null);
+  /** ⚠️ O campo pedido enquanto a superfície ⛔ ainda ⛔ não montou. */
+  const focoPendente = useRef<string | undefined>(undefined);
+
+  /**
+   * ⚠️⚠️ MEDE **NO MOMENTO DO TOQUE** — ⛔ e ⛔ não guarda posição de layout.
+   *
+   * ⛔ A primeira versão usava `onLayout`; medido no navegador, ⛔ ele ⛔ nunca
+   * disparou nessas Views. ⚠️ `measureInWindow` existe nas duas plataformas ⛔ e
+   * lê a geometria **real**, ⛔ sem depender de evento anterior.
+   */
+  const rolarAte = useCallback((campo: string) => {
+    const no = nosDosCampos.current[campo];
+    const conteudo = noDoConteudo.current;
+    if (!no || !conteudo) {
+      /** ⚠️ A superfície pode ⛔ ainda ⛔ não ter montado — o pedido espera. */
+      focoPendente.current = campo;
+      return;
+    }
+    focoPendente.current = undefined;
+    conteudo.measureInWindow((_cx, cy) => {
+      no.measureInWindow((_gx, gy) => {
+        /** ⚠️ ⛔ Um respiro acima: encostado no topo, o bloco parece cortado. */
+        const alvo = Math.max(0, gy - cy - 12);
+        rolagem.current?.scrollTo({ y: alvo, animated: false });
+      });
+    });
+  }, []);
+
+  /**
+   * ⚠️⚠️ AO TROCAR DE FASE, A ROLAGEM VOLTA AO TOPO.
+   *
+   * ⛔ **O efeito foi apagado por engano numa reescrita de bloco em
+   * 2026-09-06**, ⛔ e ⛔ só o comentário sobreviveu. ⚠️ Quem pegou foi o teste
+   * que eu mesmo tinha escrito para ele — ⛔ e é exatamente por isso que ele
+   * existe: comentário ⛔ não executa.
+   *
+   * ⚠️ ⛔ Se há foco pedido, ⛔ ele manda: quem tocou *"Pressão arterial"* quer
+   * chegar **na pressão**, ⛔ e ⛔ não no topo da fase.
+   */
   useEffect(() => {
-    /**
-     * ⚠️⚠️ `animated: false`, ⛔ e ⛔ não `true` — medido na tela em 2026-09-06.
-     *
-     * ⛔ Com animação, a rolagem **⛔ não acontecia** quando o contêiner estava
-     * em contexto sem `requestAnimationFrame` ativo: o `scrollTop` ficava
-     * exatamente onde estava. ⚠️ Medido: suave = 1500, instantâneo = 0.
-     *
-     * ⚠️⚠️ ⛔ E ⛔ INSTANTÂNEO ⛔ É MELHOR AQUI, independentemente do defeito: o
-     * médico tocou para **chegar** na fase, ⛔ e ⛔ não para assistir 1500 px
-     * passarem. ⛔ Animação longa em tela de emergência é tempo cobrado ⛔ sem
-     * ⛔ nada em troca.
-     */
+    if (focoPendente.current !== undefined) return;
     rolagem.current?.scrollTo({ y: 0, animated: false });
   }, [estado.superficieVista]);
+
+  const foco = useMemo(
+    () => ({
+      registrarGrupo: (campos: readonly string[], no: NoMensuravel) => {
+        for (const c of campos) nosDosCampos.current[c] = no;
+        const pedido = focoPendente.current;
+        if (pedido !== undefined && campos.includes(pedido)) {
+          /**
+           * ⚠️ O nó acabou de existir, ⛔ mas a árvore ⛔ ainda ⛔ pode estar
+           * assentando. ⛔ Medir no mesmo tique daria a posição de antes.
+           */
+          requestAnimationFrame(() => rolarAte(pedido));
+        }
+      },
+      pedirFoco: rolarAte,
+    }),
+    [rolarAte]
+  );
 
   /**
    * ⚠️⚠️ O CONTEXTO PERSISTENTE — reescrito em 2026-09-06 como **GRADE**.
@@ -609,6 +710,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         />
       }
     >
+    <ProvedorDeFoco valor={foco}>
     <ScrollView
       ref={rolagem}
       style={s.root}
@@ -621,6 +723,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        */
       contentContainerStyle={[s.conteudo, { paddingBottom: ALTURA_DA_BARRA + insets.bottom + ESPACO.lg }]}
     >
+      {/**
+        * ⚠️⚠️ ESTE `View` EXISTE ⛔ SÓ PARA SER MEDIDO — ⛔ e ⛔ ele ⛔ não desenha
+        * ⛔ nada. ⚠️ `contentContainerStyle` ⛔ não dá um nó que se possa medir,
+        * ⛔ e é contra o **topo do conteúdo** que a posição de um grupo é
+        * calculada.
+        */}
+      <View ref={noDoConteudo} style={s.medidor} />
       {/**
         * ── ⚠️⚠️ COCKPIT (§7.8) ────────────────────────────────────────────
         *
@@ -731,7 +840,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 >
                   {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
                 </Text>
-                <Text style={s.ameacaLetra}>{a.letra}</Text>
+                <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
+                  {a.letra}
+                </Text>
               </View>
               <Text style={s.ameacaNome} numberOfLines={2}>{tr(a.nome)}</Text>
               {/**
@@ -794,7 +905,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               >
                 {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
               </Text>
-              <Text style={s.ameacaLetra}>{a.letra}</Text>
+              {/** ⚠️ Mesma cor de identidade da grade cheia — ⛔ e ⛔ não cinza. */}
+              <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
+                {a.letra}
+              </Text>
               <Text style={s.eixoChipValor} numberOfLines={1}>
                 {a.valor ?? tr(a.nome)}
               </Text>
@@ -834,7 +948,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * o que faz o médico aprender a rolar por cima dele.
         */}
       {destinoDaImagem(estado) !== undefined ? null
-        : estado.superficieVista !== "estabilizacao" && estado.superficieVista !== "imagem" ? (
+        /**
+         * ⚠️⚠️ ⛔ NA PRÓPRIA SUPERFÍCIE IMAGEM ⛔ ELE ⛔ NÃO APARECE — corrigido em
+         * 2026-09-06.
+         *
+         * ⛔ Relato do autor: *"clico em abrir imagem ⛔ e aparece o mesmo card na
+         * parte superior ⛔ e também ⛔ não abre ⛔ nada"*. ⚠️ Ele tocou o botão,
+         * chegou onde o botão prometia — ⛔ e encontrou **o mesmo card
+         * idêntico** no topo, mandando ir para onde ele já estava.
+         *
+         * ⛔ Um aviso que sobrevive à própria resolução ⛔ não é ênfase: é o que
+         * faz o médico concluir que o toque ⛔ não funcionou.
+         */
+        : estado.superficieVista === "imagem" ? null
+        : estado.superficieVista !== "estabilizacao" ? (
         <Pressable
           onPress={() => abrir("imagem")}
           accessibilityRole="button"
@@ -1167,6 +1294,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onHora={registrarHora}
             onMedir={medir}
             onDesfazer={desfazer}
+            onAbrirPaciente={() => abrir("paciente")}
           />
         ) : atual.id === "reperfusao" ? (
           <SuperficieF
@@ -1320,6 +1448,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         )}
       </View>
     </ScrollView>
+    </ProvedorDeFoco>
     </ClinicalShell>
   );
 }
@@ -1613,6 +1742,9 @@ const criarEstilos = (tema: Tema) =>
     ameacaEstado: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     ameacaAviso: { ...PAPEL.rotuloDeMetrica, color: tema.cores.warning },
 
+    /** ⚠️ ⛔ Altura zero: ⛔ ele existe para ser medido, ⛔ e ⛔ não para ocupar. */
+    medidor: { height: 0 } as const,
+
     /** ⚠️ O card padrão do conteúdo — mesma caixa de `ClinicalCard`. */
     cartao: {
       backgroundColor: tema.cores.surface,
@@ -1651,12 +1783,27 @@ const criarEstilos = (tema: Tema) =>
     blocoTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1 },
     blocoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, marginTop: -ESPACO.xs },
     vazio: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize, fontStyle: "italic" },
+    /**
+     * ⚠️⚠️ A PENDÊNCIA É UM **CARD TOCÁVEL INTEIRO** — ⛔ e precisava parecer.
+     *
+     * ⛔ Relato do autor, 2026-09-06: *"isso tudo se parece com textos ⛔ e ⛔ não
+     * botões funcionais"*. ⚠️ O card usava `surface` — o mesmo fundo do card
+     * que o contém — ⛔ e o rótulo da ação (*"Abrir Imagem"*) era texto branco
+     * em negrito, indistinguível de um título.
+     */
     pendencia: {
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao, padding: ESPACO.sm,
-      gap: 2, borderLeftWidth: 3, borderLeftColor: AREA_AVC.accent,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      padding: ESPACO.md,
+      gap: 2,
+      borderLeftWidth: 3,
+      borderLeftColor: AREA_AVC.accent,
+      minHeight: TOQUE.minimo,
     },
-    pendenciaRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
-    pendenciaResolve: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    pendenciaRotulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    pendenciaResolve: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     /**
      * ⚠️ TEXTO NÃO USA O ACCENT DA ÁREA — medido, não suposto.
      *
@@ -1665,7 +1812,15 @@ const criarEstilos = (tema: Tema) =>
      * de 4.5:1. O accent continua identificando a área na BARRA LATERAL, que é
      * forma e não texto; o texto passa a usar a cor de texto do tema (§7.18).
      */
-    pendenciaDono: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", marginTop: ESPACO.xs },
+    /**
+     * ⚠️ O rótulo da ação usa a **cor de ação** ⛔ e ⛔ não branco: é ele que
+     * diz para onde o toque leva, ⛔ e branco em negrito lê como título.
+     */
+    pendenciaDono: {
+      ...PAPEL.rotuloDeMetrica,
+      color: tema.cores.primary,
+      marginTop: ESPACO.xs,
+    },
     abas: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
     aba: {
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,

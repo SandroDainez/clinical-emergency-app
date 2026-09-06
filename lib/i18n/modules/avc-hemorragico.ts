@@ -439,4 +439,8 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Abrir Imagem": "Abrir Imagen",
   "Falta": "Falta",
   "item": "ítem",
+  "Definir": "Definir",
+  "Definir a última vez em que o paciente foi visto bem":
+    "Definir la última vez en que el paciente fue visto bien",
+  "abrir o painel do paciente": "abrir el panel del paciente",
 };

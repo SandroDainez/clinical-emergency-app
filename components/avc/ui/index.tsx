@@ -1215,19 +1215,37 @@ const criarEstilos = (tema: Tema) =>
     secaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
     secaoFilete: { width: 0, height: 0 },
 
+    /**
+     * ⚠️⚠️ O SEGMENTADO ERA **OCO** — corrigido em 2026-09-06.
+     *
+     * ⛔ Relato do autor: *"isso aqui também parece texto ⛔ e ⛔ não botão
+     * clicável"*. ⚠️ Ele estava descrevendo geometria: `segItem` ⛔ não tinha
+     * preenchimento ⛔ nenhum, ⛔ e o contorno era `border` — **1,19:1**. ⛔ Um
+     * retângulo transparente com um fio quase invisível ⛔ não é um botão.
+     *
+     * ⛔ A correção anterior alcançou ⛔ só as perguntas **binárias** (Sim/Não);
+     * ⛔ estas — *"Disponível / Indisponível / ⛔ Não sei"*, *"Incapacitante /
+     * ⛔ Não incapacitante / Incerto"* — ficaram para trás.
+     */
     seg: {
       flexDirection: "row",
-      borderWidth: 2,
-      borderColor: tema.cores.border,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
       overflow: "hidden",
     },
     /** ⚠️ Alvo de DEDO, ⛔ e ⛔ não de mouse: 44 px é o piso. */
-    segItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 44 },
-    segDivisor: { borderLeftWidth: 1, borderLeftColor: tema.cores.border },
-    segAtivo: { backgroundColor: tema.cores.primary },
-    segTexto: { ...PAPEL.textoSecundario, color: tema.cores.text },
-    segTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onPrimary },
+    segItem: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    segDivisor: { borderLeftWidth: 1, borderLeftColor: tema.cores.controlBorder },
+    segAtivo: { backgroundColor: tema.cores.primaryFill },
+    segTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    segTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
 
     /**
      * ⚠️⚠️ OS BOTÕES DA DECISÃO — blocos separados, ⛔ e ⛔ não um controle
@@ -1266,7 +1284,7 @@ const criarEstilos = (tema: Tema) =>
     segEstreito: {
       flexDirection: "row",
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
       overflow: "hidden",
       flexShrink: 0,
@@ -1278,6 +1296,7 @@ const criarEstilos = (tema: Tema) =>
       minHeight: 44,
       alignItems: "center",
       justifyContent: "center",
+      backgroundColor: tema.cores.controlSurface,
     },
     segTextoEstreito: { ...PAPEL.micro, color: tema.cores.text },
 
@@ -1396,9 +1415,10 @@ const criarEstilos = (tema: Tema) =>
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.xs,
+      backgroundColor: tema.cores.controlSurface,
     },
     corrBotaoTexto: { ...PAPEL.micro, color: tema.cores.text, textAlign: "center" },
 
