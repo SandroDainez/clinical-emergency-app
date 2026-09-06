@@ -34,14 +34,35 @@ import type { EstadoAvc } from "./estado";
 import { numero } from "./leitura";
 import { oxigenio, pressaoArterial, suporteDeViaAerea } from "./derivacoes";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
+import { CORTES_GLICEMICOS, type CorteGlicemico } from "../conteudo/correcao-glicemica";
 
 /**
  * ⚠️⚠️ TRÊS ESTADOS, ⛔ e ⛔ não dois.
  *
  * ⛔ *"⛔ Não avaliado"* ⛔ e *"avaliado, sem ameaça"* ⛔ não podem parecer a mesma
  * coisa: ⛔ um é trabalho pendente, o outro é um **achado negativo** (**E-37**).
+ *
+ * ── ⚠️⚠️ ⛔ E O QUARTO NASCEU DE UM DEFEITO CLÍNICO (2026-09-06) ────────────
+ *
+ * ⛔ Relato do autor: *"aparece PA ⛔ e glicemia como ⛔ não sendo ameaça apesar
+ * de estarem muito fora do padrão de normalidade"*. ⚠️ Na captura: **PA 80/46**
+ * ⛔ e **glicemia 579** — ⛔ os dois com **✓ avaliado**.
+ *
+ * ⛔ **A causa:** C ⛔ e D perguntavam à lista de **bloqueios da trombólise** se
+ * havia bloqueio, ⛔ e liam *"⛔ não há"* como *"⛔ não há ameaça"*. ⚠️ São coisas
+ * diferentes: o corte de F-04 é **pré-IVT** (≥185/110) ⛔ e ⛔ não define
+ * *"pressão normal"*; a hiperglicemia **⛔ não bloqueia** a trombólise ⛔ e mesmo
+ * assim a fonte manda tratá-la.
+ *
+ * ⚠️⚠️ ⛔ E O AVISO JÁ ESTAVA ESCRITO NESTE ARQUIVO, três linhas acima do
+ * defeito: *"Medida ⛔ sem bloqueio ⛔ não vira 'sem ameaça' automaticamente"*.
+ * ⛔ **Comentário ⛔ não executa** — ⛔ é a terceira vez hoje.
+ *
+ * ⚠️ `medido` é o que o app pode dizer ⛔ sem inventar limiar: **há número, ⛔ e a
+ * fonte que este módulo transcreve ⛔ não prescreve ⛔ nada para ele**. ⛔ Ele ⛔ não
+ * carrega ✓, porque ✓ é afirmação, ⛔ e o app ⛔ não tem como afirmar.
  */
-export type EstadoDaAmeaca = "nao_avaliado" | "sem_ameaca" | "ameaca";
+export type EstadoDaAmeaca = "nao_avaliado" | "sem_ameaca" | "medido" | "ameaca";
 
 export type AmeacaImediata = {
   readonly id: string;
@@ -53,6 +74,21 @@ export type AmeacaImediata = {
   readonly achado?: string;
   /** ⚠️ Onde se resolve — ⛔ toda ameaça leva a um campo (**E-26**). */
   readonly campo: string;
+  /**
+   * ⚠️⚠️ ⛔ O QUE FAZER — ⛔ e ⛔ ele existe porque o autor apontou o buraco:
+   *
+   * > *"apareceu ameaça registrada, porém ⛔ não oferece caminho para
+   * >  tratamento das ameaças que foram registradas"*
+   *
+   * ⛔ O eixo dizia **que** havia ameaça ⛔ e parava aí. ⚠️ A frase vem da
+   * **fonte transcrita** (F-04, F-06, F-18, F-19), ⛔ e ⛔ nunca da tela.
+   */
+  readonly conduta?: string;
+  /**
+   * ⚠️ Para qual superfície a conduta leva. ⛔ `undefined` quando o tratamento
+   * ⛔ não mora em outra tela — ⛔ aí o caminho é o próprio campo.
+   */
+  readonly leva?: string;
   /**
    * ⚠️⚠️ O VALOR MEDIDO — ⛔ e ⛔ ele mora AQUI, ⛔ e ⛔ não num card à parte.
    *
@@ -111,6 +147,21 @@ function daConclusao(conclusao: string): EstadoDaAmeaca {
  * o que esta tela registra"*. ⛔ Prometer um ABCDE completo aqui seria promessa
  * que o conteúdo ⛔ não sustenta.
  */
+/**
+ * ⚠️⚠️ ⛔ EM QUE CORTE TRANSCRITO ESTE NÚMERO CAI — ⛔ e ⛔ nenhum limiar nasce
+ * aqui: ⛔ os quatro números (50, 60, 180, 400) vêm escritos na `faixa` de cada
+ * corte, ⛔ e a trava confere que a frase ⛔ e o número dizem o mesmo.
+ *
+ * ⚠️ `de` inclusivo, `ate` exclusivo — ⛔ 60 é *"de 60 a 180"*, ⛔ e ⛔ não
+ * *"abaixo de 60"*.
+ */
+function corteGlicemico(g: number | undefined): CorteGlicemico | undefined {
+  if (g === undefined) return undefined;
+  return CORTES_GLICEMICOS.find(
+    (c) => (c.de === undefined || g >= c.de) && (c.ate === undefined || g < c.ate)
+  );
+}
+
 export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
   const bloqueios = bloqueiosCorrigiveis(estado);
   const bloqueio = (id: string) => bloqueios.find((b) => b.id === id);
@@ -130,6 +181,8 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
       estado: estadoDoEixo,
       /** ⚠️ A frase curta é da derivação — ⛔ a tela ⛔ não reescreve o achado. */
       achado: estadoDoEixo === "ameaca" ? l.curto : undefined,
+      /** ⚠️ A conduta é a **frase longa da própria leitura** — ⛔ nada novo. */
+      conduta: estadoDoEixo === "ameaca" ? l.texto : undefined,
       campo: "consciencia_rebaixada",
     };
   })();
@@ -143,6 +196,7 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
       nome: "Respiração",
       estado: estadoDoEixo,
       achado: estadoDoEixo === "ameaca" ? l.curto : undefined,
+      conduta: estadoDoEixo === "ameaca" ? l.texto : undefined,
       campo: "hipoxia",
     };
   })();
@@ -171,8 +225,23 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
       id: "pressao",
       letra: "C",
       nome: "Pressão arterial",
-      estado: b ? "ameaca" : m ? "sem_ameaca" : "nao_avaliado",
+      /**
+       * ⚠️⚠️ ⛔ **⛔ NUNCA `sem_ameaca`** — ⛔ e ⛔ é aqui que estava o defeito.
+       *
+       * ⛔ O único corte que este módulo transcreve para a PA é o **pré-IVT**
+       * (≥185/110, F-04). ⚠️ ⛔ Ele responde *"precisa baixar antes de
+       * trombolisar?"*, ⛔ e ⛔ **⛔ não** *"esta pressão está boa?"*. ⛔ Uma PA de
+       * **80/46** ⛔ não cruza esse corte — ⛔ e ⛔ o app desenhava ✓.
+       *
+       * ⚠️ ⛔ E o app ⛔ não vai passar a acender por hipotensão: ⛔ **⛔ nenhuma
+       * fonte transcrita aqui dá limiar inferior**, ⛔ e inventá-lo seria a
+       * conduta nascendo na tela (**E-31**). ⛔ O que ⛔ ele para de fazer é
+       * **afirmar o contrário**.
+       */
+      estado: b ? "ameaca" : m ? "medido" : "nao_avaliado",
       achado: b?.formulacao,
+      conduta: b ? "Abrir Correções — a fonte traz os agentes e as doses" : undefined,
+      leva: b ? "correcoes" : undefined,
       campo: "pas",
       valor: m ? `${m.pas}/${m.pad}` : undefined,
       unidade: "mmHg",
@@ -180,14 +249,34 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
   })();
 
   const glicemia = ((): AmeacaImediata => {
-    const b = bloqueio("glicemia_alterada");
+    /**
+     * ⚠️⚠️ ⛔ ELE ⛔ NÃO PERGUNTA MAIS À LISTA DE **BLOQUEIOS** — ⛔ e essa troca
+     * é a correção inteira.
+     *
+     * ⛔ `bloqueiosCorrigiveis` responde *"o que segura a trombólise?"*, ⛔ e ⛔ só
+     * a **hipoglicemia <60** segura. ⚠️ A hiperglicemia **⛔ não bloqueia** — ⛔ a
+     * própria transcrição escreve isso — ⛔ e mesmo assim a fonte manda agir:
+     * *"avaliar necessidade de tratamento, ⛔ sem atrasar a reperfusão"* acima
+     * de 180, ⛔ e *"corrigir, investigar cetoacidose ⛔ ou estado
+     * hiperosmolar"* acima de 400.
+     *
+     * ⛔ Lendo a lista errada, **579 mg/dL** saía com **✓ avaliado**.
+     *
+     * ⚠️ Agora ⛔ ele lê `CORTES_GLICEMICOS` — ⛔ os mesmos cortes transcritos de
+     * F-06 ⛔ e F-18 —, ⛔ e a frase que aparece é a **da fonte**.
+     */
     const g = numero(estado, "glicemia");
+    const corte = corteGlicemico(g);
     return {
       id: "glicemia",
       letra: "D",
       nome: "Glicemia",
-      estado: b ? "ameaca" : g !== undefined ? "sem_ameaca" : "nao_avaliado",
-      achado: b?.formulacao,
+      estado:
+        corte === undefined ? "nao_avaliado" : corte.pedeConduta ? "ameaca" : "medido",
+      /** ⚠️ A natureza é da fonte — ⛔ a tela ⛔ não batiza faixa glicêmica. */
+      achado: corte?.pedeConduta ? corte.natureza : undefined,
+      conduta: corte?.pedeConduta ? corte.conduta : undefined,
+      leva: corte?.pedeConduta ? "correcoes" : undefined,
       campo: "glicemia",
       valor: g === undefined ? undefined : String(g),
       unidade: "mg/dL",

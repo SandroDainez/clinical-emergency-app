@@ -880,7 +880,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   ? "ameaça registrada"
                   : a.estado === "sem_ameaca"
                     ? "avaliado"
-                    : "ainda não avaliado"
+                    : a.estado === "medido"
+                      ? "medido"
+                      : "ainda não avaliado"
               )}`}
               testID={`avc-ameaca-${a.id}`}
               style={[
@@ -901,7 +903,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                     a.estado === "sem_ameaca" && s.ameacaMarcaOk,
                   ]}
                 >
-                  {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
+                  {/**
+                    * ⚠️⚠️ **`medido` ⛔ NÃO GANHA ✓** — 2026-09-06.
+                    *
+                    * ⛔ O ✓ é afirmação: *"avaliado, ⛔ e ⛔ sem ameaça"*. ⚠️ Com
+                    * **PA 80/46** ⛔ e **glicemia 579** na tela, ⛔ ele era uma
+                    * afirmação **falsa** — ⛔ e o autor a viu antes de mim.
+                    *
+                    * ⚠️ `·` diz o que o app realmente sabe: **há número**, ⛔ e a
+                    * fonte transcrita ⛔ não prescreve ⛔ nada para ele.
+                    */}
+                  {a.estado === "ameaca"
+                    ? "!"
+                    : a.estado === "sem_ameaca"
+                      ? "✓"
+                      : a.estado === "medido"
+                        ? "·"
+                        : "○"}
                 </Text>
                 <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
                   {a.letra}
@@ -929,11 +947,69 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   ? tr(a.achado ?? "Ameaça registrada")
                   : a.estado === "sem_ameaca"
                     ? tr("Avaliado")
-                    : tr("A avaliar")}
+                    : a.estado === "medido"
+                      ? tr("Medido")
+                      : tr("A avaliar")}
               </Text>
             </Pressable>
           ))}
         </View>
+
+        {/**
+          * ── ⚠️⚠️ O QUE FAZER AGORA ────────────────────────────────────────
+          *
+          * > *"apareceu ameaça registrada, porém ⛔ não oferece caminho para
+          * >  tratamento das ameaças que foram registradas"*
+          * >                                          — autor, 2026-09-06
+          *
+          * ⛔ **⛔ Ele estava certo, ⛔ e o próprio título do card já prometia o
+          * que a tela ⛔ não entregava:** *"Avaliar ⛔ **e tratar** ameaças
+          * imediatas"*. ⚠️ O card avaliava ⛔ e parava.
+          *
+          * ⚠️⚠️ ⛔ AS FRASES SÃO DAS FONTES (F-04, F-06, F-18, F-19), ⛔ e ⛔ a
+          * tela ⛔ não escreve conduta ⛔ nenhuma (**E-31**). ⛔ O botão ⛔ não
+          * trata: ⛔ ele **leva a onde o tratamento está registrado** — que é o
+          * que **E-09** exige de toda saída.
+          *
+          * ⚠️ ⛔ E ⛔ ele ⛔ não trava ⛔ nada (**E-11**): ⛔ é um atalho, ⛔ e ⛔ não
+          * um portão.
+          */}
+        {ameacas.filter((a) => a.estado === "ameaca" && a.conduta !== undefined).length === 0
+          ? null
+          : (
+            <View style={s.condutas} testID="avc-ameacas-conduta">
+              <Text style={s.condutasTitulo}>{tr("O que fazer agora")}</Text>
+              {ameacas
+                .filter((a) => a.estado === "ameaca" && a.conduta !== undefined)
+                .map((a) => (
+                  <Pressable
+                    key={a.id}
+                    style={({ pressed }) => [s.conduta, pressed ? s.pressionado : null]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${tr(a.nome)}: ${tr(a.conduta ?? "")}`}
+                    testID={`avc-conduta-${a.id}`}
+                    onPress={() =>
+                      a.leva === undefined
+                        ? irParaCampo(a.campo)
+                        : abrir(a.leva as SuperficieId)
+                    }
+                  >
+                    <View style={s.condutaTexto}>
+                      <Text style={s.condutaEixo}>
+                        <Text style={{ color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }}>
+                          {a.letra}
+                        </Text>
+                        {" · "}
+                        {tr(a.nome)}
+                      </Text>
+                      {/** ⚠️ A conduta VEM DA FONTE — ⛔ a tela ⛔ não a redige. */}
+                      <Text style={s.condutaFrase}>{tr(a.conduta ?? "")}</Text>
+                    </View>
+                    <Text style={s.condutaSeta}>{SETA}</Text>
+                  </Pressable>
+                ))}
+            </View>
+          )}
       </View>
       ) : (
         /**
@@ -954,7 +1030,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               onPress={() => irParaCampo(a.campo)}
               accessibilityRole="button"
               accessibilityLabel={`${tr(a.nome)}: ${
-                a.valor ?? tr(a.estado === "ameaca" ? "ameaça registrada" : a.estado === "sem_ameaca" ? "avaliado" : "ainda não avaliado")
+                a.valor
+                  ?? tr(
+                    a.estado === "ameaca"
+                      ? "ameaça registrada"
+                      : a.estado === "sem_ameaca"
+                        ? "avaliado"
+                        : a.estado === "medido"
+                          ? "medido"
+                          : "ainda não avaliado"
+                  )
               }`}
               testID={`avc-ameaca-${a.id}`}
               style={[s.eixoChip, a.estado === "ameaca" && s.ameacaAtiva]}
@@ -966,7 +1051,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   a.estado === "sem_ameaca" && s.ameacaMarcaOk,
                 ]}
               >
-                {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
+                {a.estado === "ameaca"
+                  ? "!"
+                  : a.estado === "sem_ameaca"
+                    ? "✓"
+                    : a.estado === "medido"
+                      ? "·"
+                      : "○"}
               </Text>
               {/** ⚠️ Mesma cor de identidade da grade cheia — ⛔ e ⛔ não cinza. */}
               <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
@@ -1791,6 +1882,31 @@ const criarEstilos = (tema: Tema) =>
     imagemLinhaAcao: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical, flexShrink: 0 },
     /** ⚠️ Solicitar ⛔ e registrar são **dois** gestos — ⛔ empilhados, ⛔ e ⛔ sem disputa. */
     imagemAcoes: { gap: ESPACO.sm },
+
+    /**
+     * ⚠️ O bloco de conduta — ⛔ ele se separa da grade por espaço ⛔ e por um
+     * filete, ⛔ e ⛔ não por outro cartão dentro do cartão.
+     */
+    condutas: { gap: ESPACO.xs, marginTop: ESPACO.sm },
+    /** ⚠️ O mesmo retorno de toque do kit — ⛔ nunca reinventado por tela. */
+    pressionado: { opacity: 0.65 },
+    condutasTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    conduta: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.warningTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.warning,
+    },
+    condutaTexto: { flex: 1, minWidth: 0, gap: 2 },
+    condutaEixo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    condutaFrase: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    condutaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
 
     /* ── ⚠️ ESTABILIZAÇÃO PRIMEIRO ──────────────────────────────────────── */
     ameacaFrase: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },

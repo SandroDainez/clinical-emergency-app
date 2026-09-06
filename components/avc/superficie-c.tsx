@@ -267,6 +267,48 @@ export default function SuperficieC({
     return { respondidos, porResponder };
   }
 
+  /**
+   * ── ⚠️⚠️ O SELETOR NASCE **COLADO NO EXAME QUE ELE EDITA** ──────────────
+   *
+   * ⛔ Mesmo defeito da Superfície A, medido em 2026-09-06: ⛔ ele era desenhado
+   * no **rodapé da superfície**, ⛔ e o toque abria um seletor fora de qualquer
+   * tela. ⚠️ ⛔ Abrir algo que ⛔ ninguém vê é o mesmo que ⛔ não abrir.
+   *
+   * ⚠️⚠️ ⛔ E aqui há uma agravante que A ⛔ não tem: **cada exame é uma
+   * instância**. ⛔ Um seletor ⛔ sem nome no rodapé ⛔ não dizia ⛔ nem o campo
+   * ⛔ nem **de qual exame** — com duas tomografias registradas, ⛔ ele editava
+   * o horário de uma delas ⛔ sem que ⛔ ninguém pudesse ver qual.
+   */
+  function seletorDoCampo(estudoId: string, campoId: string) {
+    if (editando?.estudo !== estudoId || editando.campo !== campoId) return null;
+    return (
+
+        <SeletorDeHora
+          rotulo={editando.rotulo}
+          instante={editando.instante}
+          selecionado={editando.selecionado}
+          agora={agora}
+          onMudar={(i, escolheuValor) =>
+            setEditando((atual) =>
+              atual === undefined
+                ? atual
+                : {
+                    ...atual,
+                    instante: i,
+                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
+                    selecionado: escolheuValor || atual.selecionado,
+                  }
+            )
+          }
+          onConfirmar={() => {
+            onHoraNoEstudo(editando.estudo, editando.campo, editando.instante);
+            setEditando(undefined);
+          }}
+          onCancelar={() => setEditando(undefined)}
+        />
+    );
+  }
+
   return (
     <View style={e.raiz} testID="avc-superficie-c-conteudo">
       {/**
@@ -660,6 +702,7 @@ export default function SuperficieC({
                               <DetalheDoCampo campo={{ ...campo, casa: "imagem" }} />
                             </Recolhido>
                           </View>
+                          {seletorDoCampo(estudo.id, campo.id)}
                         </View>
                       );
                     }
@@ -1118,37 +1161,6 @@ export default function SuperficieC({
         }}
       />
 
-      {/**
-        * ⚠️⚠️ O SELETOR DE HORA É O MESMO — ⛔ e ⛔ não uma reimplementação.
-        *
-        * ⚠️ Ele carrega o teto em `agora`, o controle de data ⛔ e o gate que
-        * impede "agora" de virar default silencioso.
-        */}
-      {editando ? (
-        <SeletorDeHora
-          rotulo={editando.rotulo}
-          instante={editando.instante}
-          selecionado={editando.selecionado}
-          agora={agora}
-          onMudar={(i, escolheuValor) =>
-            setEditando((atual) =>
-              atual === undefined
-                ? atual
-                : {
-                    ...atual,
-                    instante: i,
-                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
-                    selecionado: escolheuValor || atual.selecionado,
-                  }
-            )
-          }
-          onConfirmar={() => {
-            onHoraNoEstudo(editando.estudo, editando.campo, editando.instante);
-            setEditando(undefined);
-          }}
-          onCancelar={() => setEditando(undefined)}
-        />
-      ) : null}
     </View>
   );
 }

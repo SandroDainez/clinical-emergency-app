@@ -36,6 +36,35 @@
 export type CorteGlicemico = {
   readonly id: string;
   readonly faixa: string;
+  /**
+   * ⚠️⚠️ OS LIMITES EM NÚMERO — ⛔ e ⛔ eles moram AQUI, colados na frase que os
+   * escreve, ⛔ e ⛔ não numa segunda tabela no núcleo.
+   *
+   * ⛔ Enquanto a faixa era **⛔ só texto** (*"Acima de 180 e até 400 mg/dL"*),
+   * quem precisava comparar um número tinha de redigitar 180 ⛔ e 400 em outro
+   * arquivo — ⛔ duas verdades sobre o mesmo corte (**I6**), ⛔ e a que decide
+   * seria a cópia.
+   *
+   * ⚠️ `de` é **inclusivo**, `ate` é **exclusivo**: 60 cai em *"de 60 a 180"*,
+   * ⛔ e 180 cai em *"acima de 180"*. ⛔ `undefined` = ⛔ sem piso ⛔ ou sem teto.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ NENHUM DELES É LIMIAR NOVO: ⛔ os quatro números — 50, 60, 180,
+   * 400 — ⛔ já estavam escritos na `faixa` transcrita. ⛔ A trava confere que a
+   * frase ⛔ e o número dizem a mesma coisa.
+   */
+  readonly de?: number;
+  readonly ate?: number;
+  /**
+   * ⚠️⚠️ ⛔ ELE PEDE CONDUTA AGORA? — ⛔ e ⛔ isto ⛔ **não** é *"bloqueia a
+   * trombólise"*. ⚠️ As duas coisas foram confundidas na tela, ⛔ e o resultado
+   * foi uma glicemia de **579 mg/dL** desenhada com **✓ avaliado**: o eixo lia
+   * a lista de **bloqueios da trombólise**, ⛔ e hiperglicemia ⛔ não bloqueia
+   * trombólise — ⛔ ela ⛔ só **⛔ não é** motivo para ⛔ não reperfundir.
+   *
+   * ⛔ *"⛔ Não bloqueia"* ⛔ e *"⛔ não é ameaça"* são coisas diferentes, ⛔ e o
+   * app afirmava a segunda a partir da primeira (**E-23**).
+   */
+  readonly pedeConduta: boolean;
   readonly natureza: string;
   /** ⚠️ O que fazer — ⛔ e ⛔ nunca "não trombolisar". */
   readonly conduta: string;
@@ -48,6 +77,8 @@ export const CORTES_GLICEMICOS: readonly CorteGlicemico[] = [
   {
     id: "hipo_grave",
     faixa: "Abaixo de 50 mg/dL",
+    ate: 50,
+    pedeConduta: true,
     natureza: "Disglicemia grave",
     conduta: "Corrigir imediatamente, repetir a glicemia e reavaliar o déficit",
     naoE: "Não é contraindicação absoluta à trombólise",
@@ -56,6 +87,21 @@ export const CORTES_GLICEMICOS: readonly CorteGlicemico[] = [
   {
     id: "hipo_tratar",
     faixa: "Abaixo de 60 mg/dL",
+    /**
+     * ⚠️⚠️ ⛔ SEM PISO — ⛔ e a trava me obrigou a tirar o que eu havia posto.
+     *
+     * ⛔ Eu escrevi `de: 50` para as faixas ⛔ não se sobreporem. ⚠️ ⛔ Mas a
+     * fonte **⛔ não escreve** esse piso: *"hypoglycemia (blood glucose <60
+     * mg/dL) should be treated"* vale para **tudo** abaixo de 60, ⛔ inclusive
+     * abaixo de 50. ⛔ O 50 é rótulo de **gravidade**, ⛔ e ⛔ não fronteira de
+     * outra faixa.
+     *
+     * ⚠️ As faixas se sobrepõem **porque a fonte as escreve assim**, ⛔ e quem
+     * resolve é a **ordem da lista**: do mais grave para o menos. ⛔ Inventar
+     * uma fronteira para arrumar a estrutura é o que **E-31** proíbe.
+     */
+    ate: 60,
+    pedeConduta: true,
     natureza: "Hipoglicemia a tratar",
     conduta: "Corrigir e reavaliar",
     naoE: "Não é bloqueio da trombólise",
@@ -64,6 +110,9 @@ export const CORTES_GLICEMICOS: readonly CorteGlicemico[] = [
   {
     id: "sem_bloqueio",
     faixa: "De 60 a 180 mg/dL",
+    de: 60,
+    ate: 180,
+    pedeConduta: false,
     natureza: "Sem bloqueio glicêmico",
     conduta: "Seguir o protocolo de reperfusão",
     naoE: "Não exige correção antes da trombólise",
@@ -72,6 +121,9 @@ export const CORTES_GLICEMICOS: readonly CorteGlicemico[] = [
   {
     id: "hiper",
     faixa: "Acima de 180 e até 400 mg/dL",
+    de: 180,
+    ate: 400,
+    pedeConduta: true,
     natureza: "Hiperglicemia",
     conduta: "Avaliar necessidade de tratamento, sem atrasar a reperfusão",
     naoE: "Não bloqueia a trombólise isoladamente",
@@ -80,6 +132,8 @@ export const CORTES_GLICEMICOS: readonly CorteGlicemico[] = [
   {
     id: "hiper_grave",
     faixa: "Acima de 400 mg/dL",
+    de: 400,
+    pedeConduta: true,
     natureza: "Disglicemia grave",
     conduta:
       "Corrigir, investigar cetoacidose ou estado hiperosmolar conforme o contexto, e reavaliar o déficit",

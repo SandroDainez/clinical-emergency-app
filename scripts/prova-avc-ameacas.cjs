@@ -65,6 +65,7 @@ function achar(nome) {
 const A = require(achar("ameacas-imediatas.js"));
 const E = require(achar("estado.js"));
 const I = require(achar("instancia.js"));
+const D = require(achar("derivacoes-d.js"));
 
 const relogio = { agora: () => 1000000 };
 
@@ -198,6 +199,113 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
     "⚠️ atendimento vazio deixa os quatro eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
     lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
     `⛔ ${lista.map((a) => `${a.id}=${a.estado}`).join(" · ")}`
+  );
+}
+
+/* ══ ⚠️⚠️ O ✓ QUE MENTIA — autor, 2026-09-06 ════════════════════════════ */
+{
+  /**
+   * > *"aparece PA ⛔ e glicemia como ⛔ não sendo ameaça apesar de estarem
+   * >  muito fora do padrão de normalidade"*
+   *
+   * ⛔ Na captura: **PA 80/46** ⛔ e **glicemia 579**, ⛔ os dois com **✓
+   * avaliado**. ⚠️ Os eixos C ⛔ e D perguntavam à lista de **bloqueios da
+   * trombólise** ⛔ e liam *"⛔ não há bloqueio"* como *"⛔ não há ameaça"*.
+   */
+  let e = novo();
+  const inst = I.instanciaParaRegistrar(e, "pa");
+  e = E.registrarFato(e, { campo: "pas", valor: 80, instancia: inst }, relogio);
+  e = E.registrarFato(e, { campo: "pad", valor: 46, instancia: inst }, relogio);
+  const c = eixo(e, "pressao");
+  conf(
+    "⚠️⚠️ PA 80/46 ⛔ NÃO é desenhada como 'sem ameaça'",
+    c.estado === "medido" && c.valor === "80/46",
+    `⛔ estado="${c.estado}" — o corte de F-04 é pré-IVT (≥185/110) e ⛔ não define "pressão normal"`
+  );
+  conf(
+    "⚠️ ⛔ e o app ⛔ TAMBÉM ⛔ não inventa limiar de hipotensão",
+    c.estado !== "ameaca" && c.achado === undefined,
+    `⛔ estado="${c.estado}" · achado=${JSON.stringify(c.achado)} — ⛔ nenhuma fonte transcrita aqui dá limiar inferior (E-31)`
+  );
+}
+
+{
+  let e = com(novo(), "glicemia", 579);
+  const d = eixo(e, "glicemia");
+  conf(
+    "⚠️⚠️ glicemia 579 ACENDE o eixo D, com a frase da fonte",
+    d.estado === "ameaca" && typeof d.achado === "string" && typeof d.conduta === "string",
+    `⛔ estado="${d.estado}" · achado=${JSON.stringify(d.achado)} — F-18 manda corrigir e investigar cetoacidose ou estado hiperosmolar acima de 400`
+  );
+}
+
+{
+  /** ⚠️ ⛔ E o corte de cima **⛔ não bloqueia** a trombólise — as duas coisas ⛔ não se confundem. */
+  const e = com(novo(), "glicemia", 250);
+  const d = eixo(e, "glicemia");
+  conf(
+    "⚠️ glicemia 250 acende como ameaça, ⛔ e ⛔ NÃO como bloqueio da trombólise",
+    d.estado === "ameaca" && D.bloqueiosCorrigiveis(e).every((b) => b.id !== "glicemia_alterada"),
+    `⛔ estado="${d.estado}" · bloqueios=${JSON.stringify(D.bloqueiosCorrigiveis(e).map((b) => b.id))}`
+  );
+}
+
+{
+  /** ⚠️ ⛔ E a faixa que a fonte nomeia como sem bloqueio ⛔ não vira ameaça. */
+  const d = eixo(com(novo(), "glicemia", 110), "glicemia");
+  conf(
+    "⚠️ glicemia 110 ⛔ não acende — ⛔ e ⛔ também ⛔ não ganha ✓",
+    d.estado === "medido",
+    `⛔ estado="${d.estado}"`
+  );
+}
+
+{
+  /** ⚠️ ⛔ E a hipoglicemia continua acendendo — a trava ⛔ não pode cegar o caso antigo. */
+  const d = eixo(com(novo(), "glicemia", 48), "glicemia");
+  conf(
+    "⚠️ glicemia 48 continua acendendo",
+    d.estado === "ameaca",
+    `⛔ estado="${d.estado}"`
+  );
+}
+
+{
+  /** ⚠️⚠️ ⛔ NENHUM eixo com número diz "sem ameaça" — ⛔ ✓ é ⛔ só de A e B. */
+  let e = novo();
+  const inst = I.instanciaParaRegistrar(e, "pa");
+  e = E.registrarFato(e, { campo: "pas", valor: 120, instancia: inst }, relogio);
+  e = E.registrarFato(e, { campo: "pad", valor: 70, instancia: inst }, relogio);
+  e = com(e, "glicemia", 100);
+  const medidos = A.ameacasImediatas(e).filter((x) => x.valor !== undefined);
+  conf(
+    "⚠️⚠️ eixo que MEDE ⛔ nunca afirma 'sem ameaça' — ⛔ ✓ é ⛔ só de pergunta respondida",
+    medidos.length === 2 && medidos.every((x) => x.estado !== "sem_ameaca"),
+    `⛔ ${medidos.map((x) => `${x.id}=${x.estado}`).join(" · ")}`
+  );
+}
+
+/* ══ ⚠️⚠️ TODA AMEAÇA OFERECE CAMINHO (E-26) ═══════════════════════════ */
+{
+  /**
+   * > *"apareceu ameaça registrada, porém ⛔ não oferece caminho para
+   * >  tratamento das ameaças que foram registradas"*
+   *
+   * ⛔ O card se chama *"Avaliar ⛔ **e tratar**"* ⛔ e ⛔ só avaliava.
+   */
+  let e = com(novo(), "consciencia_rebaixada", "sim");
+  e = com(e, "hipoxia", "sim");
+  e = com(e, "glicemia", 579);
+  const abertas = A.ameacasImediatas(e).filter((x) => x.estado === "ameaca");
+  conf(
+    "⚠️⚠️ TODA ameaça aberta carrega uma CONDUTA",
+    abertas.length === 3 && abertas.every((x) => typeof x.conduta === "string" && x.conduta.length > 0),
+    `⛔ ${abertas.map((x) => `${x.id}:${x.conduta === undefined ? "SEM CONDUTA" : "ok"}`).join(" · ")}`
+  );
+  conf(
+    "⚠️ ⛔ e ⛔ nenhuma delas inventa a frase — ⛔ ela vem da leitura ⛔ ou do corte",
+    abertas.every((x) => x.conduta !== x.nome && x.conduta !== "Tratar"),
+    "⛔ conduta redigida na tela é conduta ⛔ sem fonte (E-31)"
   );
 }
 

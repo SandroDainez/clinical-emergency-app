@@ -7,6 +7,11 @@
  */
 export const avcSolicitacaoImagemEs: Record<string, string> = {
   "Solicitação da imagem": "Solicitud de la imagen",
+  /** ⚠️ As ameaças imediatas — o eixo que deixou de afirmar o que não sabe. */
+  "Medido": "Medido",
+  "O que fazer agora": "Qué hacer ahora",
+  "Abrir Correções — a fonte traz os agentes e as doses":
+    "Abrir Correcciones — la fuente trae los agentes y las dosis",
   "Imagem solicitada às": "Imagen solicitada a las",
   "Registrar o exame": "Registrar el examen",
   "Já foi feita — registrar o exame": "Ya fue hecha — registrar el examen",

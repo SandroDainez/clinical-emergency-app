@@ -166,6 +166,55 @@ export default function SuperficieA({
     return String(valorAtual(estado, id)?.valor ?? "") === "nao_sei";
   }
 
+  /**
+   * ── ⚠️⚠️ O SELETOR NASCE **COLADO NO RELÓGIO QUE ELE EDITA** ────────────
+   *
+   * ⛔ Relato do autor, 2026-09-06: *"os botões ⛔ não funcionam"*. ⚠️ ⛔ E eles
+   * funcionavam: o toque abria o seletor — **a 2.596 px**, no fim da
+   * superfície, ⛔ fora de qualquer tela. ⛔ Medido, ⛔ e ⛔ não deduzido.
+   *
+   * ⚠️⚠️ ⛔ ABRIR ALGO QUE ⛔ NINGUÉM VÊ É O MESMO QUE ⛔ NÃO ABRIR — ⛔ e pior,
+   * porque ensina o médico a ⛔ não confiar no controle.
+   *
+   * ⚠️⚠️ ⛔ E HÁ UMA RAZÃO **CLÍNICA** ALÉM DA ERGONÔMICA: `SeletorDeHora` ⛔ não
+   * escreve o nome do marco na própria tela — ⛔ ele o entrega ⛔ só como rótulo
+   * acessível, ⛔ e o comentário dele diz por quê: *"o cartão do campo, logo
+   * acima, já diz de que marco se trata"*. ⛔ Renderizado no rodapé, esse
+   * *"logo acima"* ⛔ deixava de existir: ⛔ o médico via um seletor **sem nome**
+   * ⛔ e ⛔ nenhuma forma de saber se estava editando *última vez visto bem*
+   * ⛔ ou *chegada*. ⛔ Num módulo em que o marco decide a janela, ⛔ isso ⛔ não
+   * é ergonomia.
+   */
+  function seletorDoCampo(campoId: string) {
+    if (editando?.campo !== campoId) return null;
+    return (
+
+        <SeletorDeHora
+          rotulo={TODOS_OS_CAMPOS_A.find((c) => c.id === editando.campo)?.rotulo ?? editando.campo}
+          instante={editando.instante}
+          selecionado={editando.selecionado}
+          agora={agora}
+          onMudar={(i, escolheuValor) =>
+            setEditando((atual) =>
+              atual === undefined
+                ? atual
+                : {
+                    ...atual,
+                    instante: i,
+                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
+                    selecionado: escolheuValor || atual.selecionado,
+                  }
+            )
+          }
+          onConfirmar={() => {
+            onHora(editando.campo, editando.instante, editando.relogio);
+            setEditando(undefined);
+          }}
+          onCancelar={() => setEditando(undefined)}
+        />
+    );
+  }
+
   return (
     <View
       style={e.raiz}
@@ -386,6 +435,7 @@ export default function SuperficieA({
                       </Pressable>
                     ) : null}
                     </View>
+                    {seletorDoCampo(campo.id)}
                     {/**
                       * ⚠️ A revelação vem EMBAIXO do relógio que o ⓘ explica —
                       * ⛔ inline, ⛔ e ⛔ nunca em modal: modal tiraria o médico da
@@ -532,38 +582,6 @@ export default function SuperficieA({
         );
       })}
 
-      {/**
-        * ⚠️⚠️ O SELETOR DE HORA É O MESMO — ⛔ e ⛔ não uma reimplementação.
-        *
-        * ⚠️ Ele carrega o teto em `agora`, o controle de data ⛔ e o gate que
-        * impede "agora" de virar default silencioso. ⛔ Refazê-lo com aparência
-        * nova seria trocar regra provada por pixel.
-        */}
-      {editando ? (
-        <SeletorDeHora
-          rotulo={TODOS_OS_CAMPOS_A.find((c) => c.id === editando.campo)?.rotulo ?? editando.campo}
-          instante={editando.instante}
-          selecionado={editando.selecionado}
-          agora={agora}
-          onMudar={(i, escolheuValor) =>
-            setEditando((atual) =>
-              atual === undefined
-                ? atual
-                : {
-                    ...atual,
-                    instante: i,
-                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
-                    selecionado: escolheuValor || atual.selecionado,
-                  }
-            )
-          }
-          onConfirmar={() => {
-            onHora(editando.campo, editando.instante, editando.relogio);
-            setEditando(undefined);
-          }}
-          onCancelar={() => setEditando(undefined)}
-        />
-      ) : null}
 
       {/**
         * ⚠️⚠️ TRÊS BLOCOS NO LUGAR DA PAREDE — decisão do autor, 2026-09-01.

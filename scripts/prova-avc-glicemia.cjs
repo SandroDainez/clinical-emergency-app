@@ -137,6 +137,44 @@ confere("⚠️ a divergência do volume da glicose está REGISTRADA",
   /30 mL de glicose a 50%/.test(conteudo),
   "⛔ duas fontes descrevem volumes diferentes — ⛔ o app nomeia as duas em vez de escolher");
 
+/* ══ ⚠️⚠️ O NÚMERO ⛔ E A FRASE DIZEM O MESMO ═══════════════════════════ */
+
+{
+  /**
+   * ⚠️⚠️ ⛔ POR QUE ISTO EXISTE (2026-09-06) ────────────────────────────────
+   *
+   * ⛔ As faixas eram **⛔ só texto** (*"Acima de 180 e até 400 mg/dL"*), ⛔ e o
+   * eixo de ameaça precisava comparar um número. ⚠️ Redigitar 180 ⛔ e 400 no
+   * núcleo daria **duas verdades** sobre o mesmo corte (**I6**) — ⛔ e, no dia
+   * em que a transcrição mudasse, a que decide seria a cópia esquecida.
+   *
+   * ⚠️ Agora `de`/`ate` moram colados na frase, ⛔ e esta conferência exige que
+   * **todo número declarado apareça na frase transcrita**. ⛔ Um limiar que
+   * ⛔ não está escrito na `faixa` é limiar inventado (**E-31**).
+   */
+  const blocos = semComentarios.split(/\n  \{\n/).filter((b) => /faixa: "/.test(b));
+  const incoerentes = [];
+  for (const b of blocos) {
+    const faixa = (b.match(/faixa: "([^"]+)"/) || [])[1] ?? "";
+    const numerosDaFrase = new Set((faixa.match(/\d+/g) ?? []).map(Number));
+    for (const chave of ["de", "ate"]) {
+      const m = b.match(new RegExp(`\\b${chave}: (\\d+)`));
+      if (!m) continue;
+      if (!numerosDaFrase.has(Number(m[1]))) {
+        incoerentes.push(`${chave}=${m[1]} ⛔ não aparece em "${faixa}"`);
+      }
+    }
+  }
+  confere("⚠️⚠️ todo limite numérico está ESCRITO na faixa transcrita",
+    blocos.length === 5 && incoerentes.length === 0,
+    `⛔ ${incoerentes.join(" · ") || `⛔ ${blocos.length} corte(s) lidos`}`);
+
+  const semPedeConduta = blocos.filter((b) => !/pedeConduta: (true|false)/.test(b));
+  confere("⚠️ todo corte declara se PEDE CONDUTA — ⛔ e ⛔ isso ⛔ não é 'bloqueia'",
+    semPedeConduta.length === 0,
+    `⛔ ${semPedeConduta.length} corte(s) ⛔ sem declarar — ⛔ e foi confundir os dois que pôs ✓ numa glicemia de 579`);
+}
+
 if (falhas > 0) {
   console.log(`\n❌ F-18 · GLICEMIA — ${falhas} falha(s), ${ok} ok\n`);
   process.exit(1);

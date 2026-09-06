@@ -119,12 +119,12 @@ test.describe("AVC — afordância e navegação", () => {
       }
 
       const alvos = [
-        ...document.querySelectorAll('[data-testid^="avc-hora-hora_"]'),
-        ...document.querySelectorAll('[data-testid^="avc-opcao-"]'),
+        ...Array.from(document.querySelectorAll('[data-testid^="avc-hora-hora_"]')),
+        ...Array.from(document.querySelectorAll('[data-testid^="avc-opcao-"]')),
       ];
       const fora: string[] = [];
       for (const alvo of alvos) {
-        for (const t of alvo.querySelectorAll("div, span")) {
+        for (const t of Array.from(alvo.querySelectorAll("div, span"))) {
           const el = t as HTMLElement;
           if (el.children.length > 0 || !el.textContent?.trim()) continue;
           if (estaCortado(el)) fora.push(el.textContent.trim());
@@ -188,7 +188,7 @@ test.describe("AVC — afordância e navegação", () => {
        * ⚠️ Caixa desenhada = tem **corpo** ⛔ ou **borda**. ⛔ É a mesma
        * definição de `prova-avc-afordancia.cjs`, ⛔ e ⛔ não uma segunda.
        */
-      const alvos = [...document.querySelectorAll("div")].filter((el) => {
+      const alvos = Array.from(document.querySelectorAll("div")).filter((el) => {
         const r = el.getBoundingClientRect();
         if (r.width <= 1 || r.height <= 1) return false;
         const cs = getComputedStyle(el);
@@ -270,6 +270,54 @@ test.describe("AVC — afordância e navegação", () => {
      */
     expect(Number(valor)).toBeGreaterThan(100);
     expect(Number(valor)).toBeLessThanOrEqual(300);
+  });
+
+  test("o que o toque abre aparece ONDE o dedo tocou", async ({ page }) => {
+    /**
+     * ── ⚠️⚠️ *"OS BOTÕES ⛔ NÃO FUNCIONAM"* — autor, 2026-09-06 ─────────────
+     *
+     * ⚠️ ⛔ E eles funcionavam. ⛔ O toque abria o seletor de hora **a 2.596 px**,
+     * no rodapé da superfície: numa janela de 1.100 px de altura, ⛔ nada mudava
+     * na tela. ⚠️ Medido, ⛔ e ⛔ não deduzido.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ NENHUMA TRAVA PEGAVA, porque **⛔ todas** clicavam na metade
+     * esquerda ⛔ e conferiam ⛔ só que o seletor **existia no DOM**. ⛔ Existir
+     * no DOM ⛔ não é aparecer para o médico.
+     *
+     * ⚠️ ⛔ E há razão clínica: `SeletorDeHora` ⛔ não escreve o nome do marco —
+     * ⛔ ele conta com o cartão **logo acima** para identificá-lo. ⛔ No rodapé,
+     * o médico via um seletor ⛔ sem nome, ⛔ sem saber que marco editava.
+     */
+    await abrirModulo(page, "avc");
+
+    const texto = page.getByTestId("avc-hora-valor-hora_ultima_vez_bem");
+    await texto.scrollIntoViewIfNeeded();
+    /** ⚠️ O **botão azul** — a metade que o autor toca, ⛔ e que ⛔ nenhuma prova clicava. */
+    const botao = texto.locator("xpath=..");
+    const linha = await botao.boundingBox();
+    if (!linha) throw new Error("⛔ o botão do relógio ⛔ não foi desenhado");
+
+    await botao.click();
+
+    const seletor = page.getByTestId("avc-seletor-hora");
+    await expect(seletor).toBeVisible();
+
+    const caixa = await seletor.boundingBox();
+    if (!caixa) throw new Error("⛔ o seletor abriu ⛔ sem geometria");
+
+    /** ⚠️ Ele tem de estar DENTRO da janela — ⛔ e ⛔ não apenas no documento. */
+    const altura = page.viewportSize()?.height ?? 812;
+    expect(caixa.y, "⛔ o seletor abriu fora da tela").toBeLessThan(altura);
+    expect(caixa.y + caixa.height, "⛔ o seletor abriu acima da tela").toBeGreaterThan(0);
+
+    /**
+     * ⚠️⚠️ ⛔ E **JUNTO DO RELÓGIO QUE ELE EDITA**: é a adjacência que diz de que
+     * marco se trata, porque o seletor ⛔ não escreve o próprio nome.
+     */
+    expect(
+      Math.abs(caixa.y - (linha.y + linha.height)),
+      "⛔ o seletor abriu longe do relógio que o abriu — sem o cartão logo acima, ele não tem nome"
+    ).toBeLessThan(120);
   });
 
   test('"Voltar" desfaz UM passo dentro do módulo, ⛔ e ⛔ não sai dele', async ({ page }) => {
