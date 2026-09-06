@@ -161,12 +161,42 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
   );
 }
 
+/* ══ ⚠️⚠️ O NÚMERO VIAJA COM O JULGAMENTO ═══════════════════════════════ */
+{
+  /**
+   * ⚠️⚠️ ⛔ ELES ⛔ NÃO PODEM VOLTAR A MORAR EM BLOCOS DIFERENTES.
+   *
+   * ⛔ PA ⛔ e glicemia apareciam num card de vitais (o **número**) ⛔ e nos eixos
+   * (o **julgamento**), separados pelo card da tomografia. ⚠️ Com PA 198/112 o
+   * médico lia *"198/112"* num lugar ⛔ e *"acima da meta pré-trombólise"*
+   * noutro — ⛔ dois blocos para entender um fato só.
+   */
+  let e = novo();
+  const inst = I.instanciaParaRegistrar(e, "pa");
+  e = E.registrarFato(e, { campo: "pas", valor: 198, instancia: inst }, relogio);
+  e = E.registrarFato(e, { campo: "pad", valor: 112, instancia: inst }, relogio);
+  e = com(e, "glicemia", 48);
+  const c = eixo(e, "pressao");
+  const d = eixo(e, "glicemia");
+  conf(
+    "⚠️⚠️ o eixo carrega o VALOR MEDIDO junto do achado",
+    c.valor === "198/112" && c.unidade === "mmHg" && typeof c.achado === "string"
+      && d.valor === "48" && d.unidade === "mg/dL" && typeof d.achado === "string",
+    `⛔ C=${JSON.stringify({ v: c.valor, u: c.unidade })} · D=${JSON.stringify({ v: d.valor, u: d.unidade })}`
+  );
+  conf(
+    "⚠️ a sistólica ⛔ e a diastólica vêm da MESMA aferição",
+    c.valor === "198/112",
+    "⛔ lendo campo a campo, a sistólica das 14h se juntaria à diastólica das 15h (D-120)"
+  );
+}
+
 /* ══ ⚠️ ATENDIMENTO VAZIO: ⛔ NENHUM EIXO AFIRMA ⛔ NADA ══════════════════ */
 {
   const lista = A.ameacasImediatas(novo());
   conf(
-    "⚠️ atendimento vazio deixa os quatro eixos em ⛔ NÃO avaliado",
-    lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado"),
+    "⚠️ atendimento vazio deixa os quatro eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
+    lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
     `⛔ ${lista.map((a) => `${a.id}=${a.estado}`).join(" · ")}`
   );
 }

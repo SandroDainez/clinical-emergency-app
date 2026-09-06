@@ -32,7 +32,7 @@
  */
 import type { EstadoAvc } from "./estado";
 import { numero } from "./leitura";
-import { oxigenio, suporteDeViaAerea } from "./derivacoes";
+import { oxigenio, pressaoArterial, suporteDeViaAerea } from "./derivacoes";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
 
 /**
@@ -53,6 +53,20 @@ export type AmeacaImediata = {
   readonly achado?: string;
   /** ⚠️ Onde se resolve — ⛔ toda ameaça leva a um campo (**E-26**). */
   readonly campo: string;
+  /**
+   * ⚠️⚠️ O VALOR MEDIDO — ⛔ e ⛔ ele mora AQUI, ⛔ e ⛔ não num card à parte.
+   *
+   * ⛔ **O defeito que isto desfaz:** PA ⛔ e glicemia apareciam em **dois
+   * blocos**, separados pelo card da tomografia — o **número** num, o
+   * **julgamento** no outro. ⚠️ Com PA 198/112, o médico lia *"198/112"* num
+   * lugar ⛔ e *"acima da meta pré-trombólise"* noutro, ⛔ e precisava cruzar os
+   * dois para entender um fato só.
+   *
+   * ⛔ `undefined` nos eixos que ⛔ não têm número (via aérea, respiração):
+   * ⛔ eles ⛔ não medem — ⛔ eles observam.
+   */
+  readonly valor?: string;
+  readonly unidade?: string;
 };
 
 /**
@@ -146,27 +160,37 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
    */
   const pressao = ((): AmeacaImediata => {
     const b = bloqueio("pressao_acima_da_meta");
-    const medida = numero(estado, "pas") !== undefined;
+    /**
+     * ⚠️ As duas metades vêm da **mesma aferição** — ⛔ e ⛔ é por isso que o
+     * valor sai de `pressaoArterial()`, ⛔ e ⛔ não de dois `numero()` soltos:
+     * a sistólica das 14h com a diastólica das 15h daria uma pressão que
+     * ⛔ nunca existiu (D-120).
+     */
+    const m = pressaoArterial(estado).medida;
     return {
       id: "pressao",
       letra: "C",
       nome: "Pressão arterial",
-      estado: b ? "ameaca" : medida ? "sem_ameaca" : "nao_avaliado",
+      estado: b ? "ameaca" : m ? "sem_ameaca" : "nao_avaliado",
       achado: b?.formulacao,
       campo: "pas",
+      valor: m ? `${m.pas}/${m.pad}` : undefined,
+      unidade: "mmHg",
     };
   })();
 
   const glicemia = ((): AmeacaImediata => {
     const b = bloqueio("glicemia_alterada");
-    const medida = numero(estado, "glicemia") !== undefined;
+    const g = numero(estado, "glicemia");
     return {
       id: "glicemia",
       letra: "D",
       nome: "Glicemia",
-      estado: b ? "ameaca" : medida ? "sem_ameaca" : "nao_avaliado",
+      estado: b ? "ameaca" : g !== undefined ? "sem_ameaca" : "nao_avaliado",
       achado: b?.formulacao,
       campo: "glicemia",
+      valor: g === undefined ? undefined : String(g),
+      unidade: "mg/dL",
     };
   })();
 

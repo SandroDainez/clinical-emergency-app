@@ -127,15 +127,12 @@ import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
 import { TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
 import { TODOS_OS_CAMPOS_P } from "../../avc/conteudo/paciente";
-import type { EstadoAvc } from "../../avc/nucleo/estado";
 import {
   abrirAtendimento,
   decorridoEmMinutos,
   definirRelogioClinico,
-  desfazerRegistro,
   pendenciasAbertas,
   registrarFato,
-  valorAtual,
   verSuperficie,
 } from "../../avc/nucleo/estado";
 import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
@@ -213,32 +210,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ `campo` é para onde o toque leva: ausente **tocável** é o que transforma
    * o cockpit de painel em atalho.
    */
+  /**
+   * ⚠️⚠️ PA ⛔ E GLICEMIA SAÍRAM DAQUI — 2026-09-06, ⛔ e ⛔ não foram perdidas.
+   *
+   * ⛔ **A duplicação que isto desfaz:** as duas apareciam em **dois blocos** da
+   * mesma rolagem — como *"A avaliar"* nos eixos ⛔ e como *"—"* aqui. ⚠️ Num
+   * atendimento vazio eram **quatro células dizendo ⛔ nada**; com PA 198/112, o
+   * **número** ficava aqui ⛔ e o **julgamento** ficava lá, separados pelo card
+   * da tomografia.
+   *
+   * ⚠️ Agora o valor mora **dentro do eixo** que o julga (C ⛔ e D). ⛔ Este card
+   * fica com o que ⛔ **não tem eixo**: NIHSS ⛔ e imagem.
+   */
+  /**
+   * ⚠️⚠️ PA ⛔ E GLICEMIA SAÍRAM DAQUI — 2026-09-06, ⛔ e ⛔ não se perderam.
+   *
+   * ⛔ **A duplicação que isto desfaz:** as duas apareciam em **dois blocos** da
+   * mesma rolagem — como *"A avaliar"* nos eixos ⛔ e como *"—"* aqui. ⚠️ Num
+   * atendimento vazio eram **quatro células dizendo ⛔ nada**; com PA 198/112, o
+   * **número** ficava aqui ⛔ e o **julgamento** ficava lá, separados pelo card
+   * da tomografia — ⛔ dois blocos para ler um fato só.
+   *
+   * ⚠️ Agora o valor mora **dentro do eixo que o julga** (C ⛔ e D). ⛔ Este card
+   * fica com o que ⛔ **não tem eixo**: o NIHSS ⛔ e a imagem.
+   */
   const VITAIS = useMemo(() => {
-    const pas = valorAtual(estado, "pas")?.valor;
-    const pad = valorAtual(estado, "pad")?.valor;
-    const glic = valorAtual(estado, "glicemia")?.valor;
     const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
     const img = destinoDaImagem(estado);
     return [
-      {
-        id: "pa",
-        rotulo: "PA",
-        unidade: "mmHg",
-        campo: "pas",
-        icone: "circulacao" as const,
-        acento: "critical" as const,
-        valor:
-          typeof pas === "number" && typeof pad === "number" ? `${pas}/${pad}` : undefined,
-      },
-      {
-        id: "glicemia",
-        rotulo: "Glicemia",
-        unidade: "mg/dL",
-        campo: "glicemia",
-        icone: "glicemia" as const,
-        acento: "debt" as const,
-        valor: typeof glic === "number" ? String(glic) : undefined,
-      },
       {
         id: "nihss",
         rotulo: "NIHSS",
@@ -296,13 +295,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     [estado]
   );
 
-  // ⚠️ Quantos campos da Superfície A já foram informados — ⛔ NÃO é barra de
-  // progresso nem meta: nenhum deles é obrigatório (E-49). Serve só para o
-  // médico ver o que falta, sem que a falta trave coisa alguma.
-  const informadosEmA = useMemo(
-    () => TODOS_OS_CAMPOS_A.filter((c) => valorAtual(estado, c.id) !== undefined).length,
-    [estado]
-  );
+  /**
+   * ⚠️ ⛔ `informadosEmA` foi removido em 2026-09-06: contava campos preenchidos
+   * da Superfície A ⛔ e ⛔ nunca era lido. ⚠️ O que ele prometia — *"ver o que
+   * falta"* — hoje é dito pelo cabeçalho da fase (*"N a resolver aqui"*) ⛔ e
+   * pelo estado de cada eixo.
+   */
 
   function abrir(id: SuperficieId) {
     // ⚠️ E-20: mudar de superfície ⛔ NÃO produz ação clínica nem registra nada.
@@ -737,6 +735,18 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               </View>
               <Text style={s.ameacaNome} numberOfLines={2}>{tr(a.nome)}</Text>
               {/**
+                * ⚠️⚠️ O NÚMERO AO LADO DO JULGAMENTO — ⛔ e ⛔ não num card à
+                * parte. ⚠️ Com PA 198/112, o médico lia o **valor** num bloco ⛔ e
+                * *"acima da meta pré-trombólise"* noutro, separados pelo card da
+                * tomografia: ⛔ dois blocos para um fato só.
+                */}
+              {a.valor === undefined ? null : (
+                <View style={s.ameacaMedida}>
+                  <Text style={s.ameacaValor}>{a.valor}</Text>
+                  {a.unidade ? <Text style={s.ameacaUnidade}>{tr(a.unidade)}</Text> : null}
+                </View>
+              )}
+              {/**
                 * ⚠️ ⛔ Ausência é **neutra** ⛔ e escrita — ⛔ nunca âmbar, ⛔ nunca
                 * vazia (**E-37**).
                 */}
@@ -751,36 +761,47 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           ))}
         </View>
       </View>
-      ) : haAmeacaAberta(ameacas) ? (
+      ) : (
         /**
-         * ⚠️ A forma compacta — ⛔ e ⛔ ela ⛔ não é um resumo: ⛔ cada ameaça
-         * continua nomeada ⛔ e continua levando ao campo onde se resolve.
+         * ⚠️⚠️ A FORMA COMPACTA CARREGA **OS QUATRO EIXOS**, ⛔ e ⛔ não ⛔ só as
+         * ameaças — mudado em 2026-09-06.
+         *
+         * ⛔ Mostrando ⛔ só as ameaças, PA ⛔ e glicemia **sumiam** das outras
+         * fases assim que saíram do card de vitais. ⚠️ Este bloco é o contexto
+         * persistente do A/B/C/D: ⛔ ele encolhe, ⛔ e ⛔ não desaparece.
+         *
+         * ⚠️ Cada chip carrega **símbolo + letra + valor** — ⛔ e a cor ⛔ nunca
+         * decide sozinha (**E-15**).
          */
-        <View style={s.cartao} testID="avc-ameacas-imediatas">
-          <CardHeader
-            titulo={PRIORIDADE_A.titulo}
-            aoLado={<Text style={s.ameacaAviso}>{tr("Ameaça registrada")}</Text>}
-          />
-          {ameacas
-            .filter((a) => a.estado === "ameaca")
-            .map((a) => (
-              <Pressable
-                key={a.id}
-                onPress={() => irParaCampo(a.campo)}
-                accessibilityRole="button"
-                accessibilityLabel={`${tr(a.nome)}: ${tr("ameaça registrada")}`}
-                testID={`avc-ameaca-${a.id}`}
-                style={[s.ameaca, s.ameacaAtiva, s.ameacaLinha]}
+        <View style={s.eixosCompactos} testID="avc-ameacas-imediatas">
+          {ameacas.map((a) => (
+            <Pressable
+              key={a.id}
+              onPress={() => irParaCampo(a.campo)}
+              accessibilityRole="button"
+              accessibilityLabel={`${tr(a.nome)}: ${
+                a.valor ?? tr(a.estado === "ameaca" ? "ameaça registrada" : a.estado === "sem_ameaca" ? "avaliado" : "ainda não avaliado")
+              }`}
+              testID={`avc-ameaca-${a.id}`}
+              style={[s.eixoChip, a.estado === "ameaca" && s.ameacaAtiva]}
+            >
+              <Text
+                style={[
+                  s.ameacaMarca,
+                  a.estado === "ameaca" && s.ameacaMarcaAtiva,
+                  a.estado === "sem_ameaca" && s.ameacaMarcaOk,
+                ]}
               >
-                <Text style={s.ameacaMarcaAtiva}>{"!"}</Text>
-                <Text style={s.ameacaNome}>{tr(a.nome)}</Text>
-                <Text style={s.ameacaEstado} numberOfLines={2}>
-                  {tr(a.achado ?? "Ameaça registrada")}
-                </Text>
-              </Pressable>
-            ))}
+                {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
+              </Text>
+              <Text style={s.ameacaLetra}>{a.letra}</Text>
+              <Text style={s.eixoChipValor} numberOfLines={1}>
+                {a.valor ?? tr(a.nome)}
+              </Text>
+            </Pressable>
+          ))}
         </View>
-      ) : null}
+      )}
 
       {/**
         * ── ⚠️⚠️ A IMAGEM VEM **DEPOIS** DA ESTABILIZAÇÃO ────────────────────
@@ -900,7 +921,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         */}
       <View style={s.cartao} testID="avc-resumo">
         <CardHeader
-          titulo="Sinais vitais e dados iniciais"
+          /**
+           * ⚠️ O título mudou junto com o conteúdo: com PA ⛔ e glicemia nos
+           * eixos, *"sinais vitais"* deixaria de descrever o que o card mostra.
+           */
+          titulo="Escala e imagem"
           aoLado={
             /**
              * ⚠️⚠️ SAÍDA DECLARADA (**E-09**), ⛔ e ⛔ não um interruptor.
@@ -1552,6 +1577,25 @@ const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.warningTint,
     },
     ameacaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ O valor medido, dentro do eixo — ⛔ tabular, ⛔ e com a unidade colada. */
+    ameacaMedida: { flexDirection: "row", alignItems: "baseline", gap: ESPACO.xs },
+    ameacaValor: { ...PAPEL.metrica, color: tema.cores.text } as const,
+    ameacaUnidade: { ...PAPEL.micro, color: tema.cores.textSecondary } as const,
+    /** ⚠️ A fileira compacta dos quatro eixos, fora de Estabilizar. */
+    eixosCompactos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
+    eixoChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      flexGrow: 1,
+      minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.sm,
+    },
+    eixoChipValor: { ...PAPEL.legenda, color: tema.cores.text, flexShrink: 1 } as const,
     /** ⚠️ A forma compacta: uma linha, ⛔ e ⛔ não um tile de 84 px. */
     ameacaLinha: {
       width: "100%",
