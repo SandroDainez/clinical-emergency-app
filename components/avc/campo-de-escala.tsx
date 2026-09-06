@@ -34,10 +34,11 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
-import { CAMPO_DE_ITEM, ITENS_NIHSS } from "../../avc/conteudo/nihss";
+import { ITENS_NIHSS } from "../../avc/conteudo/nihss";
 import { comoAvaliarItem, oQueAvaliaItem } from "../../avc/conteudo/explicacoes";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
+import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { BotaoDeInfo, DetalheDoCampo } from "./campos-clinicos";
 
@@ -294,7 +295,7 @@ export default function CampoDeEscala({
                         {ativa ? "✓ " : ""}
                         {tr(o.label)}
                       </Text>
-                      <Text style={e.opcaoPonto}>{o.points}</Text>
+                      <Text style={[e.opcaoPonto, ativa && e.opcaoPontoAtivo]}>{o.points}</Text>
                     </Pressable>
                   );
                 })}
@@ -340,7 +341,28 @@ export default function CampoDeEscala({
                 setAberta(false);
               }}
             >
-              <Text style={e.confirmarTexto}>{tr("Confirmar escala")}</Text>
+              <Text style={[e.confirmarTexto, !completa && e.confirmarTextoInativo]}>
+                {completa
+                  ? tr("Confirmar escala")
+                  /**
+                   * ⚠️⚠️ BLOQUEIO QUE **DIZ O QUE FALTA** (**E-26**).
+                   *
+                   * ⛔ Antes o botão ⛔ só ficava apagado — ⛔ e apagado ⛔ não
+                   * explica. ⚠️ *"Faltam 12 itens"* diz **o que destrava**, ⛔ e
+                   * ⛔ é a diferença entre um bloqueio ⛔ e um muro.
+                   */
+                  : (() => {
+                      /**
+                       * ⚠️ Plural — ⛔ *"Faltam 1 itens"* era o que saía com um
+                       * item restante. ⛔ Concordância errada numa tela clínica
+                       * ⛔ não é detalhe: ⛔ ela ensina a ⛔ não confiar no texto.
+                       */
+                      const faltam = ITENS_NIHSS.length - respondidos;
+                      return faltam === 1
+                        ? `${tr("Falta")} 1 ${tr("item")}`
+                        : `${tr("Faltam")} ${faltam} ${tr("itens")}`;
+                    })()}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -351,98 +373,140 @@ export default function CampoDeEscala({
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    /**
+     * ⚠️⚠️ ESTILOS REESCRITOS EM 2026-09-06 — ⛔ relato do autor sobre a escala
+     * aberta: *"tudo misturado por cor, tudo igual"*.
+     *
+     * ⛔ A causa era estrutural: as opções usavam `bg` (quase-preto) **dentro**
+     * de um card `surface`. ⚠️ Elas liam como **buracos**, ⛔ e ⛔ não como
+     * botões — ⛔ e as três ficavam idênticas, porque a única diferença era um
+     * contorno cinza.
+     *
+     * ⚠️ Agora a pilha de superfícies sobe: card `surface` → item
+     * `surfaceElevated` → opção `surface` com contorno. ⛔ Cada degrau se
+     * separa do anterior **pelo fundo**, ⛔ e ⛔ não por linha.
+     */
     campo: {
-      backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
-      padding: ESPACO.sm, gap: ESPACO.xs,
-      borderWidth: 1, borderColor: tema.cores.border,
-      borderLeftWidth: 4, borderLeftColor: tema.cores.border,
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.card,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
     },
-    campoRespondido: { borderLeftColor: tema.cores.primary },
-    topo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
-    marca: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize, width: 16, textAlign: "center" },
-    marcaAtiva: { color: tema.cores.text, fontWeight: "800" },
-    rotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, flex: 1, fontWeight: "600" },
+    /** ⚠️ Já respondida: contorno de ação, ⛔ e ⛔ não faixa lateral solta. */
+    campoRespondido: { borderColor: tema.cores.primary },
+    topo: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+    marca: { ...PAPEL.tituloDeSecao, color: tema.cores.textSecondary, width: 18, textAlign: "center" },
+    marcaAtiva: { color: tema.cores.success },
+    rotulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
 
     linhaDoValor: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: ESPACO.sm },
-    valor: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700", minWidth: 40 },
-    valorAusente: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "400", fontStyle: "italic" },
+    valor: { ...PAPEL.metrica, color: tema.cores.text, minWidth: 40 },
+    valorAusente: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary, fontStyle: "italic" },
     acao: {
       minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.controlBorder,
     },
-    acaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
+    acaoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     /** ⚠️ O caminho principal é **preenchido**; a alternativa é texto. */
     acaoPrincipal: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
     acaoTextoPrincipal: { color: tema.cores.onFill },
-    alternativa: {
-      minHeight: TOQUE.minimo,
-      justifyContent: "center",
-      paddingHorizontal: ESPACO.sm,
-    },
-    alternativaTexto: {
-      color: tema.cores.primary,
-      fontSize: TIPOGRAFIA.caption.fontSize,
-      fontWeight: "600",
-    },
+    alternativa: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
+    alternativaTexto: { ...PAPEL.textoSecundario, color: tema.cores.primary },
 
     escala: { gap: ESPACO.sm, marginTop: ESPACO.xs },
+    /** ⚠️ O 2º degrau — o item se separa do card **pelo fundo**. */
     item: {
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      padding: ESPACO.sm, gap: ESPACO.xs,
+      backgroundColor: tema.cores.surfaceElevated,
+      borderRadius: RAIO.botao,
+      padding: ESPACO.md,
+      gap: ESPACO.xs,
     },
-    itemTopo: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.xs },
-    itemRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", flex: 1 },
+    itemTopo: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
+    itemRotulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
     itemInfo: {
       minWidth: TOQUE.minimo, minHeight: TOQUE.minimo,
       alignItems: "center", justifyContent: "center",
     },
-    itemInfoTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
-    itemAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
-    itemComoAvaliar: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    itemInfoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
+    itemAjuda: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    itemComoAvaliar: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     /** ⚠️ Um degrau acima da manobra: é o que destrava quem ⛔ não conhece o item. */
-    itemOQueAvalia: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
-    opcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
+    itemOQueAvalia: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+
+    opcoes: { gap: ESPACO.sm, paddingTop: ESPACO.xs },
+    /**
+     * ⚠️⚠️ UMA OPÇÃO POR LINHA, ⛔ e ⛔ não três espremidas.
+     *
+     * ⛔ *"Paralisia parcial"* ⛔ e *"Desvio forçado"* ⛔ não cabem lado a lado
+     * ⛔ sem encolher a fonte, ⛔ e **rótulo clínico ⛔ não encolhe**. ⚠️ Em
+     * linha cheia o alvo também fica do tamanho do dedo.
+     */
     opcao: {
-      paddingVertical: ESPACO.xs, paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.sm, paddingHorizontal: ESPACO.md,
       minHeight: TOQUE.minimo, justifyContent: "center",
       flexDirection: "row", alignItems: "center", gap: ESPACO.sm,
-      backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.controlBorder,
     },
-    opcaoAtiva: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
-    opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize, flex: 1 },
-    opcaoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+    /** ⚠️ Escolhida: **preenchida**, ⛔ e ⛔ não "um cinza um pouco diferente". */
+    opcaoAtiva: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
+    opcaoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },
+    opcaoTextoAtivo: { color: tema.cores.onFill },
     /**
-     * ⚠️ O PONTO EM SEGUNDO PLANO — pequeno, secundário, à direita. ⛔ Ele ⛔ não
-     * some (o médico precisa poder conferir a pontuação), ⛔ mas ⛔ também ⛔ não
-     * é o que se escolhe.
+     * ⚠️⚠️ O PONTO É UM **SELO**, ⛔ e ⛔ não texto cinza de 11 px.
+     *
+     * ⛔ Ele estava tão apagado que as três opções liam iguais — ⛔ e o ponto é
+     * a **consequência** da escolha: ⛔ ele precisa ser conferível de relance.
+     * ⚠️ Continua **secundário ao rótulo**: quem se escolhe é o achado clínico,
+     * ⛔ e ⛔ não o número.
      */
     opcaoPonto: {
+      ...PAPEL.rotuloDeMetrica,
       color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      fontWeight: "600",
+      minWidth: 26,
+      textAlign: "center",
+      overflow: "hidden",
+      borderRadius: RAIO.badge,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      backgroundColor: tema.cores.surfaceElevated,
+      paddingVertical: 2,
+    },
+    opcaoPontoAtivo: {
+      color: tema.cores.onFill,
+      borderColor: tema.cores.onFill,
+      backgroundColor: tema.cores.primaryFill,
     },
 
     escalaTopo: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: ESPACO.sm,
+      flexDirection: "row", alignItems: "center",
+      justifyContent: "space-between", gap: ESPACO.sm,
     },
-    escalaProgresso: {
-      color: tema.cores.textSecondary,
-      fontSize: TIPOGRAFIA.micro.fontSize,
-      fontWeight: "600",
-    },
+    escalaProgresso: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary },
     escalaRevisar: { minHeight: TOQUE.minimo, justifyContent: "center" },
 
     rodape: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: ESPACO.sm },
-    parcial: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700", flex: 1 },
+    parcial: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },
     confirmar: {
-      minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.primary, borderRadius: RAIO.botao,
+      minHeight: TOQUE.critico, justifyContent: "center", paddingHorizontal: ESPACO.md,
+      backgroundColor: tema.cores.primaryFill, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.primaryFill,
     },
-    confirmarInativo: { opacity: 0.35 },
-    confirmarTexto: { color: tema.cores.onPrimary, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
+    /**
+     * ⚠️⚠️ BLOQUEADO ⛔ NÃO É `opacity` — mudado em 2026-09-06.
+     *
+     * ⛔ `opacity: 0.35` sobre um botão azul dá um borrão que lê como **defeito
+     * de renderização**, ⛔ e ⛔ não como *"ainda ⛔ não dá para confirmar"*.
+     * ⚠️ Aqui ele vira contorno ⛔ sem preenchimento — ⛔ e a frase ao lado diz
+     * **quantos itens faltam** (**E-26**: bloqueio ⛔ sem saída é muro).
+     */
+    confirmarInativo: {
+      backgroundColor: "transparent",
+      borderColor: tema.cores.border,
+    },
+    confirmarTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
+    confirmarTextoInativo: { color: tema.cores.textSecondary },
   });

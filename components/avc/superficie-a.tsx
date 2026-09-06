@@ -700,10 +700,10 @@ const criarEstilos = (tema: Tema) =>
       minHeight: TOQUE.minimo,
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface,
+      backgroundColor: tema.cores.controlSurface,
       borderRadius: RAIO.botao,
       borderWidth: 2,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
     },
     novaMedidaTexto: {
       color: tema.cores.text,

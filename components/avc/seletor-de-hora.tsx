@@ -374,15 +374,15 @@ const criarEstilos = (tema: Tema) =>
     },
     passo: {
       width: TOQUE.minimo, height: TOQUE.minimo, alignItems: "center", justifyContent: "center",
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 1, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.controlBorder,
     },
     passoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     linhaFina: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
     botaoFino: {
       minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 1, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.controlBorder,
     },
     botaoFinoAtivo: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
     botaoFinoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
@@ -393,7 +393,7 @@ const criarEstilos = (tema: Tema) =>
     acoes: { flexDirection: "row", gap: ESPACO.sm },
     cancelar: {
       flex: 1, minHeight: TOQUE.minimo, alignItems: "center", justifyContent: "center",
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
     },
     cancelarTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     confirmar: {

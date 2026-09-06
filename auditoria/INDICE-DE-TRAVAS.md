@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**74 de 88 travas com declaração completa.**
+**75 de 89 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -67,6 +67,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o app ⛔ nunca apresente disglicemia como **contraindicação absoluta**, ⛔ que ⛔ não invente um valor de "liberação" depois de `>400`, ⛔ que ⛔ não escreva dose fixa de insulina, ⛔ e que a **pergunta que decide** — o déficit persistir depois da correção — chegue à tela.
 - **NÃO PROMETE:** que os cortes sejam clinicamente os melhores. ⚠️ Ela guarda a **estrutura da decisão**, ⛔ e ⛔ não a escolha dos números.
 - **UNIVERSO:** `avc/conteudo/correcao-glicemica.ts` ⛔ e a tela que o consome. ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ───────────────────────────────────────── ⛔ `<50` ⛔ e `>400` foram, por anos, **critério de exclusão** de trombólise — na AHA/ASA 2019 ⛔ e em protocolos brasileiros. ⚠️ A edição de 2026 os trata como definição de **gravidade**, ⛔ e ⛔ não de exclusão. ⚠️⚠️ ⛔ O REFLEXO ANTIGO É O PERIGO: um app que os apresente como contraindicação faria o médico **deixar de trombolisar alguém elegível** — ⛔ e esse erro ⛔ não aparece em ⛔ nenhum log.
+
+## `test:avc-ameacas` → `scripts/prova-avc-ameacas.cjs`
+
+- **PROMETE:** que ⛔ nenhum eixo da checagem inicial diga *"avaliado, sem ameaça"* a partir de um valor que ⛔ não é resposta negativa — seleção múltipla preenchida, campo desfeito ⛔ ou ignorância declarada.
+- **NÃO PROMETE:** que os quatro eixos sejam os certos, ⛔ nem que os cortes de PA ⛔ e glicemia estejam corretos — ⛔ isso é F-04 ⛔ e F-06.
+- **UNIVERSO:** `avc/nucleo/ameacas-imediatas.ts`. ── ⚠️⚠️ O BUG QUE ORIGINOU (auditoria de 2026-09-06) ────────────────────── ⛔ A primeira versão lia os campos por conta própria: *"se ⛔ não é `sim`, ⛔ então é `sem_ameaca`"*. ⚠️ `disfuncao_bulbar` é seleção **múltipla**: o estado guarda os rótulos unidos por separador, ⛔ e ⛔ nunca `"sim"`. ⛔ Um paciente com tosse ineficaz ⛔ e acúmulo de saliva caía no `else`, ⛔ e a tela desenhava **✓ "Avaliado"** na via aérea dele. ⛔ ⛔ Isso ⛔ não é *"a ameaça ⛔ não acendeu"*: é o app **afirmando o negativo** (**E-23**). ⚠️⚠️ ⛔ E O AVISO JÁ ESTAVA ESCRITO em `leitura.ts`, em letras garrafais: *"⛔ NUNCA LER ESSE CAMPO POR `ternario()`: cinco achados presentes lidos como 'não há disfunção'."* ⛔ A leitura foi reimplementada por fora, ⛔ e caiu exatamente nela — a duplicação que **I6** existe para impedir.
 
 ## `test:avc-superficie-f` → `scripts/prova-avc-superficie-f.cjs`
 

@@ -105,6 +105,17 @@ const PARES = [
    * rótulo do botão é curto ⛔ e lido sob pressão — ⛔ e as cores escolhidas
    * passam com folga, então ⛔ não há razão para negociar o piso para baixo.
    */
+  /**
+   * ⚠️⚠️ O CONTROLE PRECISA SER **VISTO** ⛔ e precisa sustentar TEXTO.
+   *
+   * ⛔ O piso de 1,25 na separação ⛔ não é WCAG: é o mínimo abaixo do qual o
+   * autor relatou *"botões todos iguais, parecem textos"*. ⚠️ Medido: 1,14
+   * reprovava na prática, ⛔ e 1,42 resolveu.
+   */
+  ["controlSurface", "surface", 1.25, "o controle se separa do card que o contém"],
+  ["controlBorder", "controlSurface", 1.5, "a borda do controle é visível sobre ele"],
+  ["text", "controlSurface", 4.5, "texto sobre o controle"],
+  ["textSecondary", "controlSurface", 4.5, "texto secundário sobre o controle"],
   ["onFill", "primaryFill", 4.5, "texto do botão de ação preenchido"],
   ["onFill", "successFill", 4.5, "texto do botão \"Sim\""],
   ["onFill", "criticalFill", 4.5, "texto do botão \"Não\""],

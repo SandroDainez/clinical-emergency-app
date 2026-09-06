@@ -468,8 +468,8 @@ const criarEstilos = (tema: Tema) =>
     ajustar: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md, marginTop: ESPACO.xs,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     ajustarTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
   });

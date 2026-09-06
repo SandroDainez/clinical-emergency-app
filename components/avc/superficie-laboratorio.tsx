@@ -30,7 +30,7 @@ import {
   useDetalhes,
 } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
@@ -192,7 +192,18 @@ export default function SuperficieLaboratorio({
         testID="avc-nova-coleta"
         onPress={onNovaColeta}
       >
-        <Text style={e.novaColetaTexto}>{tr("Nova coleta")}</Text>
+        {/**
+          * ⚠️⚠️ *"NOVA"* PRESSUPÕE UMA ANTERIOR — relato do autor, 2026-09-06:
+          * *"nova coleta se é o primeiro atendimento?"*.
+          *
+          * ⚠️ Na primeira vez ⛔ não há coleta anterior, ⛔ e *"Nova"* faz o
+          * médico procurar a que ele ⛔ nunca fez. ⛔ A superfície de Correções
+          * já acertava isso (*"Registrar ação"* → *"Registrar outra ação"*) —
+          * ⛔ era esta que destoava.
+          */}
+        <Text style={e.novaColetaTexto}>
+          {tr(lista.length === 0 ? "Registrar coleta" : "Nova coleta")}
+        </Text>
       </Pressable>
 
       <PainelDeLeituras
@@ -214,8 +225,8 @@ const criarEstilos = (tema: Tema) =>
     novaColeta: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     novaColetaTexto: {
       ...PAPEL.tituloDeSecao, color: tema.cores.text,

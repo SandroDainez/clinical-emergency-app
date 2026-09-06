@@ -103,6 +103,26 @@ export type Cores = {
   onFill: string;
 
   /**
+   * ⚠️⚠️ A SUPERFÍCIE DO **CONTROLE** — ⛔ e ⛔ ela ⛔ não é `surfaceElevated`.
+   *
+   * ⛔ Nasceu de um defeito medido em 2026-09-06: o chip de opção usava
+   * `surfaceElevated` sobre um card `surface` (**1,14:1**) com borda `border`
+   * (**1,19:1** sobre o próprio chip). ⚠️ Os dois sinais que dizem *"isto é um
+   * botão"* estavam, ⛔ ambos, ⛔ abaixo do limiar de percepção.
+   *
+   * ⛔ Relato do autor: *"botões todos iguais, parecem textos"*. ⛔ Ele ⛔ não
+   * estava descrevendo gosto — ⛔ estava descrevendo **1,14:1**.
+   *
+   * ⚠️ `surfaceElevated` continua sendo o **degrau de conteúdo** (um bloco
+   * dentro de um card). `controlSurface` é o degrau do **que se aperta** — ⛔ e
+   * separá-los é o que permite ao segundo ser mais forte ⛔ sem inflar o
+   * primeiro.
+   */
+  controlSurface: string;
+  /** ⚠️ A borda do controle — ⛔ visível, ⛔ e ⛔ não o filete de `border`. */
+  controlBorder: string;
+
+  /**
    * ⚠️⚠️ OS TINGIMENTOS — o fundo levemente colorido do bloco de estado.
    *
    * ⚠️ É o que dá ao card de alerta ⛔ e ao card da decisão a **presença** que
@@ -160,6 +180,13 @@ const CORES_CLARO: Cores = {
   successFill: "#15803D",
   criticalFill: "#B3261E",
   onFill: "#FFFFFF",
+  /**
+   * ⚠️ Medidos: 1,28:1 sobre o card branco, ⛔ e a borda a 2,24:1 sobre o
+   * preenchimento. ⛔ Os primeiros valores (`#EEF1F5` / `#C2CBD8`) davam 1,13 ⛔ e
+   * 1,44 — ⛔ e reprovaram na mesma trava que pegou o tema escuro.
+   */
+  controlSurface: "#DDE4ED",
+  controlBorder: "#8E9CB1",
   primaryTint: "#EAF2FE",
   successTint: "#E9F7EE",
   warningTint: "#FDF4E3",
@@ -240,6 +267,14 @@ const CORES_ESCURO: Cores = {
   successFill: "#12833F",
   criticalFill: "#B3261E",
   onFill: "#FFFFFF",
+
+  /**
+   * ⚠️ Medidos: `controlSurface` dá **1,42:1** sobre o card ⛔ e sustenta texto
+   * branco a **12:1**; `controlBorder` dá **1,78:1** sobre o preenchimento.
+   * ⛔ Os valores anteriores davam 1,14 ⛔ e 1,19.
+   */
+  controlSurface: "#2A374A",
+  controlBorder: "#4E5C73",
 
   /** ⚠️ Tingimentos — a família da cor no fundo, ⛔ e o acento por cima. */
   primaryTint: "#0F1D30",

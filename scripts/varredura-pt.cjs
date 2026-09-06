@@ -284,13 +284,31 @@ const NEUTRO = new RegExp(
  */
 const CAMPO_DE_TELA = /\b(label|title|value|summary|name|subtitle|question|intro|reason|customLabel|note|indication|category|genericName|text|placeholder|helperText|headerChamada)\s*:\s*$/;
 
+/**
+ * ⚠️⚠️ `tr("…")` É A EVIDÊNCIA MAIS OBJETIVA QUE EXISTE — acrescentado em
+ * 2026-09-06, ⛔ e ⛔ ele estava faltando.
+ *
+ * ⛔ **O furo, medido:** `tr("Nada pendente aqui")` passou batido. ⚠️ A frase
+ * ⛔ não tem acento ⛔ e ⛔ nenhuma das palavras da lista de pistas — ⛔ então a
+ * heurística de idioma a descartou como *"⛔ não parece português"*.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É DETALHE: o valor da varredura está em poder dizer
+ * *"0 sem tradução"* ⛔ e ⛔ isso significar alguma coisa. ⛔ Com ponto cego, o
+ * zero vira ⛔ apenas *"⛔ nada que a heurística reconheça"*.
+ *
+ * ⚠️ Quem escreve `tr(x)` está **declarando** que `x` vai para a tela. ⛔ Ela é
+ * mais confiável que `label:`, ⛔ e mais confiável que qualquer lista de
+ * palavras.
+ */
+const DENTRO_DE_TR = /\btr\(\s*$/;
+
 /** Um literal só interessa se parece frase de tela, não identificador/código. */
 function isProse(s, prefixo = "") {
   if (s.length < 3 || s.length > 4000) return false;
 
   // Em posição de conteúdo de tela, a heurística de idioma é dispensada: o
   // literal VAI para a tela, e isso basta. Só escapam os rótulos neutros.
-  const naTela = CAMPO_DE_TELA.test(prefixo);
+  const naTela = CAMPO_DE_TELA.test(prefixo) || DENTRO_DE_TR.test(prefixo);
   if (naTela) {
     if (NEUTRO.test(s.trim())) return false;
     if (/^[a-z][a-zA-Z0-9_]*$/.test(s)) return false;   // id/slug em camelCase

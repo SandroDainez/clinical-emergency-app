@@ -30,7 +30,7 @@ import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
@@ -91,7 +91,25 @@ export default function SuperficiePaciente({
                   )
                 }
               >
-                <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
+                {/**
+                  * ⚠️⚠️ `aberto` ⛔ NÃO ERA PASSADO — ⛔ e ⛔ esse era o defeito.
+                  *
+                  * ⛔ Relato do autor, 2026-09-06: *"aqui também ⛔ não dá para
+                  * saber que faz parte do fluxo"*. ⚠️ Ele viu três títulos em
+                  * branco, soltos, ⛔ sem ⛔ nenhum sinal de que abrem — porque a
+                  * prop que desenha o sinal ⛔ nunca chegava aqui.
+                  *
+                  * ⚠️ O componente já sabia fazer isso desde 2026-08-30, ⛔ e o
+                  * comentário dele diz por quê: *"`aria-expanded` sozinho ⛔ não
+                  * resolve: ele fala com a tecnologia assistiva, ⛔ e ⛔ não com
+                  * quem está olhando a tela"*. ⛔ Era exatamente o que estava
+                  * acontecendo.
+                  */}
+                <CabecalhoDeBloco
+                  titulo={grupo.titulo}
+                  aberto={!fechado}
+                  testID={`avc-bloco-${grupo.id}`}
+                />
               </Pressable>
             ) : (
               <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />

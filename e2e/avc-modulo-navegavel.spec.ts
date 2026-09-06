@@ -190,6 +190,85 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     await expect(page.getByTestId("avc-superficie-reperfusao")).not.toContainText("F · Reperfusão");
   });
 
+  /**
+   * ⚠️⚠️ TROCAR DE FASE LEVA O OLHO JUNTO — regressão de 2026-09-06.
+   *
+   * ⛔ **O defeito, ⛔ e ⛔ ele ⛔ não era de estilo.** O autor relatou *"clica ⛔ e
+   * ⛔ nada acontece"* em dois controles diferentes. ⚠️ A superfície trocava ⛔ de
+   * verdade — ⛔ mas o `scrollTop` ficava onde estava, ⛔ e o médico continuava
+   * parado a 1500 px dentro de **outra** tela.
+   *
+   * ⚠️ Do ponto de vista de quem usa, o botão ⛔ não fez ⛔ nada. ⛔ E ⛔ nenhum
+   * teste via isso, porque todos mediam **qual superfície abriu**, ⛔ e ⛔ nenhum
+   * media **onde o olho ficou**.
+   */
+  /**
+   * ⚠️⚠️ ESTABILIZAÇÃO VEM ANTES DA IMAGEM — regra clínica, ⛔ e ⛔ não layout.
+   *
+   * > *"O princípio de atendimento emergencial é estabilização — ⛔ não adianta
+   * > seguir um fluxo bonito ⛔ e bem feito com a deterioração ⛔ sem
+   * > intervenção."* — autor, 2026-09-06
+   *
+   * ⛔ O card da tomografia chegou a ser o **primeiro bloco do módulo**, ⛔ e com
+   * isso a imagem passou a valer mais que a via aérea. ⚠️ A ordem na tela **é**
+   * a ordem de prioridade que o médico lê, ⛔ e por isso ela é medida.
+   */
+  test("estabilização aparece antes da prioridade de imagem", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+
+    const estabilizacao = page.getByTestId("avc-ameacas-imediatas");
+    const imagem = page.getByTestId("avc-prioridade-imagem");
+    await expect(estabilizacao).toBeVisible();
+    await expect(imagem).toBeVisible();
+
+    const yDe = async (loc: ReturnType<typeof page.getByTestId>) =>
+      (await loc.boundingBox())?.y ?? -1;
+    expect(
+      await yDe(estabilizacao),
+      "⛔ a imagem ⛔ não pode ser lida antes da estabilização"
+    ).toBeLessThan(await yDe(imagem));
+  });
+
+  test("trocar de fase volta a rolagem ao topo", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    await page.getByTestId("avc-aba-estabilizacao").click();
+
+    /**
+     * ⚠️ O contêiner rolável do conteúdo — o **maior** da tela.
+     *
+     * ⛔ A primeira versão procurava `scrollHeight > 5000`, que era o tamanho
+     * no MEU ambiente ⛔ e ⛔ não no viewport do teste (375×812). ⚠️ Achar pelo
+     * maior rolável ⛔ não depende de altura absoluta ⛔ nenhuma.
+     */
+    const maiorRolavel = `
+      [...document.querySelectorAll("*")]
+        .filter((x) => x.scrollHeight > x.clientHeight + 100)
+        .sort((a, b) => b.scrollHeight - a.scrollHeight)[0]
+    `;
+    const rolar = async (y: number) =>
+      page.evaluate(
+        ([expr, alvo]) => {
+          const el = eval(expr as string) as HTMLElement | undefined;
+          if (el) el.scrollTop = alvo as number;
+        },
+        [maiorRolavel, y] as const
+      );
+    const posicao = () =>
+      page.evaluate((expr) => {
+        const el = eval(expr) as HTMLElement | undefined;
+        return el ? el.scrollTop : -1;
+      }, maiorRolavel);
+
+    await rolar(1500);
+    expect(await posicao()).toBeGreaterThan(1000);
+
+    await page.getByTestId("avc-aba-imagem").click();
+    await expect(page.getByTestId("avc-superficie-imagem")).toBeVisible();
+    expect(await posicao(), "⛔ a fase abriu, ⛔ mas o olho ficou na tela anterior").toBe(0);
+  });
+
   test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");

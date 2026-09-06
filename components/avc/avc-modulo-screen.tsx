@@ -12,7 +12,7 @@
  *
  * ⚠️ E-29: nenhum texto clínico nasce aqui — tudo vem de `avc/conteudo/`.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +23,12 @@ import { pendenciasDaSeguranca } from "../../avc/nucleo/derivacoes-d";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO, PRIORIDADE_DA_IMAGEM } from "../../avc/conteudo/superficie-c";
+import { PRIORIDADE_A } from "../../avc/conteudo/superficie-a";
+import {
+  ameacasImediatas,
+  eixosNaoAvaliados,
+  haAmeacaAberta,
+} from "../../avc/nucleo/ameacas-imediatas";
 import SuperficieD from "./superficie-d";
 import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
@@ -30,9 +36,9 @@ import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
-import { destinoDaImagem } from "../../avc/nucleo/derivacoes-c";
+import { destinoDaImagem, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
-import { Icone, Recolhido, type NomeDeIcone } from "./ui";
+import { Icone, type NomeDeIcone } from "./ui";
 import {
   ClinicalHeader,
   ClinicalShell,
@@ -44,6 +50,7 @@ import {
 } from "./sistema";
 import {
   CardHeader,
+  CardNota,
   LinkAction,
   VitalGrid,
   type SinalVital,
@@ -81,6 +88,16 @@ const TITULO_DA_SINDROME: Readonly<Record<string, string>> = {
 const ESCOPO_DA_SINDROME: Readonly<Record<string, string>> = {
   hic: "Adulto com hemorragia intracerebral espontânea",
   hsa: "Adulto com hemorragia subaracnóidea aneurismática",
+};
+
+/**
+ * ⚠️ A cor de cada atalho — ⛔ identidade do assunto, ⛔ e ⛔ não estado clínico.
+ * ⚠️ O nome escrito ao lado diz o mesmo (**E-15**).
+ */
+const COR_DO_ATALHO: Readonly<Record<string, "primary" | "info" | "warning">> = {
+  paciente: "primary",
+  laboratorio: "info",
+  correcoes: "warning",
 };
 
 const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
@@ -131,6 +148,7 @@ import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, LARGURA, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
@@ -177,8 +195,6 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * **toda** superfície. ⚠️ Compacto por padrão; o completo abre ao toque.
    * ⛔ ⛔ Nada some: é a mesma informação, noutra densidade.
    */
-  const [cockpitAberto, setCockpitAberto] = useState(false);
-  const [escopoAberto, setEscopoAberto] = useState(false);
   const [resumoAberto, setResumoAberto] = useState(false);
 
   /**
@@ -465,6 +481,38 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   }
 
   /**
+   * ⚠️⚠️ A ROLAGEM VOLTA AO TOPO AO TROCAR DE SUPERFÍCIE — 2026-09-06.
+   *
+   * ⛔ **O defeito que isto corrige, ⛔ e ⛔ ele ⛔ não era de estilo.** O autor
+   * relatou *"clica ⛔ e ⛔ nada acontece"* em dois controles diferentes. ⚠️ Medido
+   * na tela: `scrollTop` **1500 antes ⛔ e 1500 depois** da troca.
+   *
+   * ⚠️ A superfície trocava ⛔ **de verdade** — ⛔ mas o médico continuava parado
+   * a 1500 px dentro de **outra** tela, olhando um pedaço qualquer do meio dela.
+   * ⛔ Do ponto de vista de quem usa, o botão ⛔ não fez ⛔ nada.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É NAVEGAÇÃO NOVA: a fase já abria: o que faltava era
+   * **levar o olho junto**. ⛔ Trocar de assunto ⛔ sem mover a viewport é o
+   * equivalente a virar a página ⛔ e ⛔ não olhar.
+   */
+  const rolagem = useRef<ScrollView | null>(null);
+  useEffect(() => {
+    /**
+     * ⚠️⚠️ `animated: false`, ⛔ e ⛔ não `true` — medido na tela em 2026-09-06.
+     *
+     * ⛔ Com animação, a rolagem **⛔ não acontecia** quando o contêiner estava
+     * em contexto sem `requestAnimationFrame` ativo: o `scrollTop` ficava
+     * exatamente onde estava. ⚠️ Medido: suave = 1500, instantâneo = 0.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ INSTANTÂNEO ⛔ É MELHOR AQUI, independentemente do defeito: o
+     * médico tocou para **chegar** na fase, ⛔ e ⛔ não para assistir 1500 px
+     * passarem. ⛔ Animação longa em tela de emergência é tempo cobrado ⛔ sem
+     * ⛔ nada em troca.
+     */
+    rolagem.current?.scrollTo({ y: 0, animated: false });
+  }, [estado.superficieVista]);
+
+  /**
    * ⚠️⚠️ O CONTEXTO PERSISTENTE — reescrito em 2026-09-06 como **GRADE**.
    *
    * ⛔ Ele era uma faixa de texto de uma linha: `LKW — · PA — · Glicemia —`.
@@ -480,6 +528,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ É o único valor que muda sozinho, ⛔ e ⛔ ele ⛔ não pode rolar para fora
    * da tela enquanto o médico decide (§7.8).
    */
+  /**
+   * ⚠️ As ameaças imediatas — derivadas, ⛔ e ⛔ nunca gravadas. ⛔ Elas mudam
+   * quando o estado muda, ⛔ e ⛔ é isso que as mantém verdadeiras.
+   */
+  const ameacas = useMemo(() => ameacasImediatas(estado), [estado]);
+
   const sinaisVitais: readonly SinalVital[] = VITAIS.map((v) => ({
     id: v.id,
     rotulo: v.rotulo,
@@ -507,7 +561,18 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          */
         <ClinicalHeader
           titulo={TITULO_DA_SINDROME[atual.id] ?? "AVC isquêmico agudo"}
-          escopo={ESCOPO_DA_SINDROME[atual.id] ?? "Adulto com suspeita de AVC isquêmico agudo"}
+          /**
+           * ⚠️⚠️ O ESCOPO SAIU DO CABEÇALHO — 2026-09-06.
+           *
+           * ⛔ Ele dizia *"Adulto com suspeita de AVC isquêmico agudo"* logo
+           * abaixo de *"AVC isquêmico agudo"*: ⛔ a segunda linha **repetia a
+           * primeira** ⛔ e acrescentava duas palavras. ⚠️ Nas referências esse
+           * lugar carrega **contexto novo** (o box, o setor) — ⛔ e ⛔ não o eco
+           * do título.
+           *
+           * ⛔ Ele ⛔ não sumiu: continua atrás do ⓘ da fase, onde já estava
+           * antes de eu trazê-lo para cá.
+           */
           /**
            * ⚠️⚠️ *"Atendimento aberto"* ⛔ e ⛔ não *"Atendimento ativo"*: o app
            * ⛔ não sabe se alguém está de fato atendendo — ⛔ ele sabe que **este
@@ -547,6 +612,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       }
     >
     <ScrollView
+      ref={rolagem}
       style={s.root}
       /**
        * ⚠️⚠️ O PADDING INFERIOR É A BARRA + A SAFE AREA.
@@ -585,12 +651,252 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * bloqueio corrigível (com a frase de D) ⛔ e os auxiliares.
         */}
       {/**
-        * ── ⚠️⚠️ SINAIS VITAIS — o primeiro bloco da tela, como na referência ──
+        * ── ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — ⛔ E ⛔ ISSO É ORDEM CLÍNICA ────────
         *
-        * ⚠️ Ele carrega o `testID` **antigo** (`avc-resumo`), ⛔ e ⛔ isso ⛔ não é
-        * descuido: a suíte usa esse id para guardar a garantia de que o contexto
-        * do paciente **acompanha todas as superfícies**. ⛔ Renomeá-lo por motivo
-        * cosmético obrigaria a reescrever um teste que protege medicina.
+        * > *"O princípio de atendimento emergencial é estabilização — ⛔ não
+        * > adianta seguir um fluxo bonito ⛔ e bem feito com a deterioração
+        * > ⛔ sem intervenção."* — autor, 2026-09-06
+        *
+        * ⚠️⚠️ ⛔ ELE ESTAVA CORRIGINDO UM ERRO MEU: eu havia posto o card da
+        * tomografia como **primeiro bloco do módulo**, ⛔ e com isso a imagem
+        * passou a valer mais que a via aérea. ⛔ A regra mestra do app já dizia
+        * o contrário desde 2026-08-30 — ⛔ mas era uma faixa cinza **abaixo** do
+        * card que a contradizia.
+        *
+        * ⚠️ Agora ela é o **primeiro bloco**, ⛔ e é uma checagem de verdade:
+        * quatro eixos, cada um com o seu estado, ⛔ e cada um tocável.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO TRAVA ⛔ NADA (**E-11**): ordena a **atenção**, ⛔ e
+        * ⛔ não o acesso. ⛔ Um portão aqui impediria o médico de registrar a
+        * tomografia que já está pronta.
+        */}
+      {/**
+        * ⚠️⚠️ A GRADE CHEIA VIVE EM **ESTABILIZAR** — medido em 2026-09-06.
+        *
+        * ⛔ Com ela em toda superfície, o conteúdo da fase aberta começava a
+        * **1108 px** na Destino — ⛔ 300 px abaixo da dobra de 812. ⚠️ O médico
+        * rolava três blocos de contexto antes de chegar ao trabalho da fase que
+        * ⛔ ele mesmo escolheu abrir.
+        *
+        * ⚠️⚠️ ⛔ FORA DE ESTABILIZAR, ⛔ ELA ⛔ NÃO SOME — ⛔ ela **encolhe**, ⛔ e
+        * ⛔ só quando há ameaça registrada. ⚠️ *"4 a avaliar"* na tela do NIHSS é
+        * ruído; *"PA acima da meta"* ⛔ nunca é.
+        */}
+      {estado.superficieVista === "estabilizacao" ? (
+      <View style={s.cartao} testID="avc-ameacas-imediatas">
+        <CardHeader
+          titulo={PRIORIDADE_A.titulo}
+          aoLado={
+            haAmeacaAberta(ameacas) ? (
+              <Text style={s.ameacaAviso}>{tr("Ameaça registrada")}</Text>
+            ) : (
+              <CardNota>
+                {eixosNaoAvaliados(ameacas) === 0
+                  ? tr("Os quatro eixos avaliados")
+                  : `${eixosNaoAvaliados(ameacas)} ${tr("a avaliar")}`}
+              </CardNota>
+            )
+          }
+        />
+        <Text style={s.ameacaFrase}>{tr(PRIORIDADE_A.frase)}</Text>
+        <View style={s.ameacas}>
+          {ameacas.map((a) => (
+            <Pressable
+              key={a.id}
+              onPress={() => irParaCampo(a.campo)}
+              accessibilityRole="button"
+              accessibilityLabel={`${tr(a.nome)}: ${tr(
+                a.estado === "ameaca"
+                  ? "ameaça registrada"
+                  : a.estado === "sem_ameaca"
+                    ? "avaliado"
+                    : "ainda não avaliado"
+              )}`}
+              testID={`avc-ameaca-${a.id}`}
+              style={[
+                s.ameaca,
+                a.estado === "ameaca" && s.ameacaAtiva,
+              ]}
+            >
+              <View style={s.ameacaTopo}>
+                {/**
+                  * ⚠️⚠️ **FORMA**, ⛔ e ⛔ não ⛔ só cor (**E-15**): ✓ avaliado ·
+                  * ! ameaça · ○ ⛔ ainda ⛔ não avaliado. ⛔ Quem ⛔ não distingue
+                  * as cores lê o mesmo.
+                  */}
+                <Text
+                  style={[
+                    s.ameacaMarca,
+                    a.estado === "ameaca" && s.ameacaMarcaAtiva,
+                    a.estado === "sem_ameaca" && s.ameacaMarcaOk,
+                  ]}
+                >
+                  {a.estado === "ameaca" ? "!" : a.estado === "sem_ameaca" ? "✓" : "○"}
+                </Text>
+                <Text style={s.ameacaLetra}>{a.letra}</Text>
+              </View>
+              <Text style={s.ameacaNome} numberOfLines={2}>{tr(a.nome)}</Text>
+              {/**
+                * ⚠️ ⛔ Ausência é **neutra** ⛔ e escrita — ⛔ nunca âmbar, ⛔ nunca
+                * vazia (**E-37**).
+                */}
+              <Text style={s.ameacaEstado} numberOfLines={2}>
+                {a.estado === "ameaca"
+                  ? tr(a.achado ?? "Ameaça registrada")
+                  : a.estado === "sem_ameaca"
+                    ? tr("Avaliado")
+                    : tr("A avaliar")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+      ) : haAmeacaAberta(ameacas) ? (
+        /**
+         * ⚠️ A forma compacta — ⛔ e ⛔ ela ⛔ não é um resumo: ⛔ cada ameaça
+         * continua nomeada ⛔ e continua levando ao campo onde se resolve.
+         */
+        <View style={s.cartao} testID="avc-ameacas-imediatas">
+          <CardHeader
+            titulo={PRIORIDADE_A.titulo}
+            aoLado={<Text style={s.ameacaAviso}>{tr("Ameaça registrada")}</Text>}
+          />
+          {ameacas
+            .filter((a) => a.estado === "ameaca")
+            .map((a) => (
+              <Pressable
+                key={a.id}
+                onPress={() => irParaCampo(a.campo)}
+                accessibilityRole="button"
+                accessibilityLabel={`${tr(a.nome)}: ${tr("ameaça registrada")}`}
+                testID={`avc-ameaca-${a.id}`}
+                style={[s.ameaca, s.ameacaAtiva, s.ameacaLinha]}
+              >
+                <Text style={s.ameacaMarcaAtiva}>{"!"}</Text>
+                <Text style={s.ameacaNome}>{tr(a.nome)}</Text>
+                <Text style={s.ameacaEstado} numberOfLines={2}>
+                  {tr(a.achado ?? "Ameaça registrada")}
+                </Text>
+              </Pressable>
+            ))}
+        </View>
+      ) : null}
+
+      {/**
+        * ── ⚠️⚠️ A IMAGEM VEM **DEPOIS** DA ESTABILIZAÇÃO ────────────────────
+        *
+        * ⚠️ Pedido do autor, 2026-09-06: *"TEM QUE TER DESTAQUE TC DE CRÂNEO
+        * SEM CONTRASTE O MAIS RÁPIDO POSSÍVEL"*. ⛔ Na captura, *"Tomografia de
+        * crânio"* era **uma de três pendências visualmente idênticas** — mesmo
+        * peso que *"Registrar o exame neurológico"*, ⛔ que ⛔ não decide se o
+        * paciente pode receber trombolítico.
+        *
+        * ⚠️ O destaque tem fonte: **F-16, rec. 1 · COR 1 · LOE A** — *"emergent
+        * brain imaging… on initial evaluation… before initiating reperfusion
+        * interventions"*. ⛔ Ele ⛔ não é ênfase inventada pela tela.
+        *
+        * ⚠️⚠️ ⛔ E ELE SOME SOZINHO: registrada a imagem, `destinoDaImagem`
+        * passa a existir ⛔ e o bloco sai. ⛔ Um aviso que ⛔ não sabe desaparecer
+        * vira paisagem, ⛔ e ⛔ deixa de ser lido.
+        *
+        * ⛔ ⛔ SEM CRONÔMETRO ⛔ E ⛔ SEM META: a fonte diz *"as rapidly as possible
+        * (eg, within 25 minutes)"* sobre **protocolo institucional**, ⛔ e ⛔ não
+        * sobre este paciente (**E-45**, **E-31**).
+        */}
+      {/**
+        * ⚠️⚠️ MESMA REGRA DA ESTABILIZAÇÃO: o card **cheio** vive onde ele é o
+        * trabalho — Estabilizar ⛔ e Imagem. ⚠️ Nas outras fases ele vira **uma
+        * linha**, ⛔ e ⛔ não some: a prioridade continua declarada, ⛔ e continua
+        * a um toque.
+        *
+        * ⛔ Um card de 200 px repetido em oito superfícies ⛔ não é ênfase — ⛔ é
+        * o que faz o médico aprender a rolar por cima dele.
+        */}
+      {destinoDaImagem(estado) !== undefined ? null
+        : estado.superficieVista !== "estabilizacao" && estado.superficieVista !== "imagem" ? (
+        <Pressable
+          onPress={() => abrir("imagem")}
+          accessibilityRole="button"
+          accessibilityLabel={tr(PRIORIDADE_DA_IMAGEM.chamada)}
+          testID="avc-prioridade-imagem"
+          style={s.imagemLinha}
+        >
+          <Icone nome="imagem" tamanho={18} cor={tema.cores.critical} />
+          <Text style={s.imagemLinhaTexto} numberOfLines={2}>
+            {tr(PRIORIDADE_DA_IMAGEM.titulo)}
+          </Text>
+          <Text style={s.imagemLinhaAcao}>
+            {tr(
+              situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
+                ? "Registrar o resultado da tomografia"
+                : "Solicitar a tomografia"
+            )}
+          </Text>
+        </Pressable>
+      ) : (
+        <WarningCard
+          nivel="risco"
+          titulo={PRIORIDADE_DA_IMAGEM.chamada}
+          texto={`${tr(PRIORIDADE_DA_IMAGEM.titulo)} · ${tr(PRIORIDADE_DA_IMAGEM.porque)} (COR ${PRIORIDADE_DA_IMAGEM.cor} · LOE ${PRIORIDADE_DA_IMAGEM.loe})`}
+          testID="avc-prioridade-imagem"
+          acao={
+            /**
+             * ⚠️⚠️ A AÇÃO SEGUE A SITUAÇÃO DERIVADA — ⛔ e ⛔ não é fixa.
+             *
+             * ⛔ *"Registrar a imagem"* no primeiro segundo do atendimento
+             * pressupõe uma imagem que ⛔ ainda ⛔ não existe. ⚠️ O que se faz no
+             * início é **solicitar**.
+             *
+             * ⚠️⚠️ ⛔ E O APP ⛔ NÃO AFIRMA QUE ELA ⛔ NÃO FOI FEITA (**E-23**): ele
+             * sabe ⛔ apenas que ⛔ nada está na trilha. ⛔ Por isso oferece as
+             * **duas** saídas — o paciente pode ter chegado com a TC pronta.
+             */
+            /**
+             * ⚠️⚠️ **UM** BOTÃO, ⛔ e ⛔ não três — corrigido em 2026-09-06 por
+             * auditoria.
+             *
+             * ⛔ **O defeito:** havia *"Solicitar a tomografia"*, *"Já foi feita
+             * — registrar"* ⛔ e *"Registrar o resultado"*. ⚠️ Três rótulos que
+             * prometiam coisas diferentes ⛔ e faziam **exatamente a mesma**:
+             * `abrir("imagem")`. ⛔ Nada era solicitado, ⛔ nada era pré-marcado,
+             * ⛔ nenhum campo recebia foco.
+             *
+             * ⚠️⚠️ É o mesmo critério que este arquivo já aplica ao atalho do
+             * paciente: *"um botão que alterna ⛔ nada seria um controle
+             * mentiroso"*.
+             *
+             * ⚠️ A instrução clínica — **solicitar** — vive no **título** do
+             * card, que é onde ela é verdadeira. O botão nomeia o que o toque
+             * faz: leva à Imagem. ⛔ Quando houver campo de *"solicitada às
+             * HH:MM"*, ⛔ aí sim cabe um segundo botão que **registre** algo.
+             */
+            <PrimaryAction
+              rotulo={
+                situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
+                  ? PRIORIDADE_DA_IMAGEM.acaoResultado
+                  : PRIORIDADE_DA_IMAGEM.acaoAbrir
+              }
+              onPress={() => abrir("imagem")}
+              testID="avc-prioridade-imagem-acao"
+            />
+          }
+        />
+      )}
+
+      {/**
+        * ── ⚠️⚠️ SINAIS VITAIS — ⛔ DEPOIS da estabilização ⛔ e da imagem ─────
+        *
+        * ⛔ **Ele era o primeiro bloco, ⛔ e ⛔ isso estava errado.** Ao abrir o
+        * atendimento ⛔ nenhum vital foi medido: a grade mostrava **quatro
+        * travessões** ocupando o topo da tela — ⛔ um terço da primeira dobra
+        * para dizer ⛔ nada.
+        *
+        * ⚠️ Ela é **leitura**, ⛔ e ⛔ não ação: ganha valor quando há valor.
+        * ⛔ O que precisa estar em cima é o que se **faz** — ameaças imediatas,
+        * ⛔ e depois a imagem.
+        *
+        * ⚠️⚠️ ⛔ E O RELÓGIO ⛔ NÃO DEPENDE DELA: ele vive no **cabeçalho fixo**,
+        * fora do ScrollView. ⛔ Descer a grade ⛔ não esconde o tempo (§7.8).
         */}
       <View style={s.cartao} testID="avc-resumo">
         <CardHeader
@@ -616,43 +922,6 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         />
         <VitalGrid vitais={sinaisVitais} />
       </View>
-
-      {/**
-        * ── ⚠️⚠️ A IMAGEM É O PRIMEIRO BLOCO ENQUANTO ⛔ NÃO VOLTA ──────────
-        *
-        * ⚠️ Pedido do autor, 2026-09-06: *"TEM QUE TER DESTAQUE TC DE CRÂNEO
-        * SEM CONTRASTE O MAIS RÁPIDO POSSÍVEL"*. ⛔ Na captura, *"Tomografia de
-        * crânio"* era **uma de três pendências visualmente idênticas** — mesmo
-        * peso que *"Registrar o exame neurológico"*, ⛔ que ⛔ não decide se o
-        * paciente pode receber trombolítico.
-        *
-        * ⚠️ O destaque tem fonte: **F-16, rec. 1 · COR 1 · LOE A** — *"emergent
-        * brain imaging… on initial evaluation… before initiating reperfusion
-        * interventions"*. ⛔ Ele ⛔ não é ênfase inventada pela tela.
-        *
-        * ⚠️⚠️ ⛔ E ELE SOME SOZINHO: registrada a imagem, `destinoDaImagem`
-        * passa a existir ⛔ e o bloco sai. ⛔ Um aviso que ⛔ não sabe desaparecer
-        * vira paisagem, ⛔ e ⛔ deixa de ser lido.
-        *
-        * ⛔ ⛔ SEM CRONÔMETRO ⛔ E ⛔ SEM META: a fonte diz *"as rapidly as possible
-        * (eg, within 25 minutes)"* sobre **protocolo institucional**, ⛔ e ⛔ não
-        * sobre este paciente (**E-45**, **E-31**).
-        */}
-      {destinoDaImagem(estado) === undefined ? (
-        <WarningCard
-          nivel="risco"
-          titulo={PRIORIDADE_DA_IMAGEM.chamada}
-          texto={`${tr(PRIORIDADE_DA_IMAGEM.titulo)} · ${tr(PRIORIDADE_DA_IMAGEM.porque)} (COR ${PRIORIDADE_DA_IMAGEM.cor} · LOE ${PRIORIDADE_DA_IMAGEM.loe})`}
-          testID="avc-prioridade-imagem"
-          acao={
-            <PrimaryAction
-              rotulo={PRIORIDADE_DA_IMAGEM.acao}
-              onPress={() => abrir("imagem")}
-              testID="avc-prioridade-imagem-acao"
-            />
-          }
-        />
-      ) : null}
 
       <View style={s.cockpit} testID="avc-cockpit-detalhe">
         {/**
@@ -700,6 +969,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * ⚠️ Correções entra aqui como acesso discreto; quando há bloqueio
           * corrigível, ela também aparece **contextual**, acima.
           */}
+        {/**
+          * ⚠️ O título nomeia o grupo — ⛔ sem ele, três cards soltos ⛔ não
+          * dizem que são **outra coisa** que as fases da barra de baixo.
+          */}
+        <Text style={s.auxTitulo}>{tr("Acesso rápido")}</Text>
         <View style={s.auxiliares}>
           {SUPERFICIES.filter((sup) => sup.painel || sup.id === "correcoes").map((sup) => {
             const c = CURTO[sup.id];
@@ -714,10 +988,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 testID={`avc-aba-${sup.id}`}
                 style={[s.auxItem, ativa && s.auxItemAtivo]}
               >
+                {/**
+                  * ⚠️ Ícone **colorido por assunto**, ⛔ e ⛔ não cinza: é o que
+                  * faz o olho achar *"Correções"* ⛔ sem ler os três nomes.
+                  */}
                 <Icone
                   nome={c?.icone ?? "adiante"}
-                  tamanho={13}
-                  cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
+                  tamanho={22}
+                  cor={COR_DO_ATALHO[sup.id] ? tema.cores[COR_DO_ATALHO[sup.id]] : tema.cores.primary}
                 />
                 <Text
                   style={[s.auxNome, ativa && s.barraNomeAtivo]}
@@ -766,9 +1044,24 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               * ⚠️ O nome CURTO, o mesmo da barra. ⛔ "Entrada e estabilização"
               * aqui ⛔ e "Estabilizar" ali eram dois nomes para a mesma coisa.
               */}
+            {/**
+              * ⚠️ *"O que falta AQUI"* — ⛔ e ⛔ não o total do atendimento, que
+              * já vive no bloco de pendências no fim da tela.
+              */}
             <ScreenHeader
               nome={CURTO[atual.id]?.nome ?? atual.titulo}
-              objetivo={resumoAberto ? atual.resumo : undefined}
+              /**
+               * ⚠️ O escopo entra ⛔ só onde **acrescenta**: em HIC ⛔ e HSA a
+               * população é outra (*"hemorragia intracerebral espontânea"*),
+               * ⛔ e ⛔ isso ⛔ não está no título. ⛔ No fluxo isquêmico ele
+               * repetiria o nome do módulo, ⛔ e por isso ⛔ não aparece.
+               */
+              objetivo={
+                resumoAberto
+                  ? [ESCOPO_DA_SINDROME[atual.id], atual.resumo].filter(Boolean).join(" · ")
+                  : undefined
+              }
+              pendentes={pendencias.filter((p) => p.dono === atual.id).length}
             />
           </View>
           {/** ⚠️ O ⓘ vive NA LINHA do título que explica — ⛔ nunca órfão. */}
@@ -1170,20 +1463,37 @@ const criarEstilos = (tema: Tema) =>
     },
     navNomeAtivo: { color: tema.cores.primary },
     aux: { flexDirection: "row", gap: ESPACO.xs },
+    /**
+     * ⚠️⚠️ CARDS, ⛔ E ⛔ NÃO PASTILHAS — 2026-09-06.
+     *
+     * ⛔ Relato do autor: *"esses botões têm que ter maior destaque para o
+     * usuário saber que fazem parte do fluxo; assim o usuário às vezes ⛔ nem
+     * sabe que tem que clicar aí"*. ⚠️ Ele descreveu o defeito com precisão:
+     * eram contornos de 30 px de altura, com texto de 11 px **cinza** — ⛔ a
+     * mesma aparência de uma etiqueta inerte.
+     *
+     * ⚠️ É o *"Acesso rápido"* das referências: card com fundo próprio, ícone
+     * colorido em cima ⛔ e nome em branco. ⛔ Alvo de 64 px, ⛔ e ⛔ não de 30.
+     */
     auxItem: {
-      flexDirection: "row",
+      flex: 1,
       alignItems: "center",
       justifyContent: "center",
       gap: ESPACO.xs,
       borderRadius: RAIO.botao,
       borderWidth: 1,
-      borderColor: tema.cores.border,
-      paddingVertical: 1,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
+      paddingVertical: ESPACO.sm,
       paddingHorizontal: ESPACO.xs,
-      minHeight: 30,
+      minHeight: 64,
     },
-    auxItemAtivo: { borderColor: tema.cores.primary },
-    auxNome: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    /** ⚠️ Ativo: contorno **e** fundo tingido — ⛔ a cor ⛔ não decide sozinha. */
+    auxItemAtivo: {
+      borderColor: tema.cores.primary,
+      backgroundColor: tema.cores.primaryTint,
+    },
+    auxNome: { ...PAPEL.rotuloDeMetrica, color: tema.cores.text },
 
     root: { flex: 1, backgroundColor: tema.cores.bg },
     /**
@@ -1197,6 +1507,68 @@ const criarEstilos = (tema: Tema) =>
      * ⚠️ `alignSelf: center` centraliza a coluna; ⛔ o fundo continua atravessando
      * a tela (quem pinta o fundo é o `ClinicalShell`).
      */
+    /** ⚠️ As duas saídas da imagem — ⛔ empilhadas, ⛔ e ⛔ não lado a lado. */
+    acoesDaImagem: { gap: ESPACO.sm },
+    /** ⚠️ A forma compacta da prioridade — ⛔ uma linha, ⛔ e tocável inteira. */
+    imagemLinha: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.criticalTint,
+      borderWidth: 1,
+      borderColor: tema.cores.critical,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+    },
+    imagemLinhaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },
+    imagemLinhaAcao: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical, flexShrink: 0 },
+
+    /* ── ⚠️ ESTABILIZAÇÃO PRIMEIRO ──────────────────────────────────────── */
+    ameacaFrase: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
+    /** ⚠️ Grade de quatro — ⛔ dois por linha em 375 px, ⛔ e ⛔ sem truncar nome. */
+    ameacas: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
+    ameaca: {
+      width: "48%",
+      flexGrow: 1,
+      gap: 2,
+      backgroundColor: tema.cores.controlSurface,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      padding: ESPACO.sm,
+      minHeight: 84,
+    },
+    /**
+     * ⚠️⚠️ ⛔ SÓ A AMEAÇA GANHA COR — ⛔ e ⛔ nunca a ausência de avaliação.
+     *
+     * ⛔ Pintar de âmbar o que ⛔ ainda ⛔ não foi avaliado faria a tela abrir com
+     * os quatro eixos em alerta, ⛔ e alerta em tudo ⛔ não é alerta em ⛔ nada
+     * (**E-37**).
+     */
+    ameacaAtiva: {
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.warningTint,
+    },
+    ameacaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ A forma compacta: uma linha, ⛔ e ⛔ não um tile de 84 px. */
+    ameacaLinha: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+    },
+    ameacaMarca: { ...PAPEL.tituloDeSecao, color: tema.cores.textSecondary },
+    ameacaMarcaAtiva: { color: tema.cores.warning },
+    /** ⚠️ Avaliado é **verde de evento**: alguém olhou ⛔ e respondeu. */
+    ameacaMarcaOk: { color: tema.cores.success },
+    ameacaLetra: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary },
+    ameacaNome: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    ameacaEstado: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    ameacaAviso: { ...PAPEL.rotuloDeMetrica, color: tema.cores.warning },
+
     /** ⚠️ O card padrão do conteúdo — mesma caixa de `ClinicalCard`. */
     cartao: {
       backgroundColor: tema.cores.surface,
@@ -1274,7 +1646,8 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "700",
     },
     /** ⚠️ Linha auxiliar MUITO compacta — ⛔ e ainda a um toque. */
-    auxiliares: { flexDirection: "row", gap: ESPACO.xs },
+    auxiliares: { flexDirection: "row", gap: ESPACO.sm },
+    auxTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, paddingBottom: ESPACO.xs },
     superficieTitulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     superficieResumo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     emConstrucao: { color: tema.cores.warning, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", marginTop: ESPACO.sm },

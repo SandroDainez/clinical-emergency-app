@@ -335,12 +335,52 @@ export function PhaseNavigation({
  * responde ao *teste de três segundos*: o médico chega ⛔ e sabe o que a tela
  * espera dele ⛔ sem ler o conteúdo inteiro.
  */
-export function ScreenHeader({ nome, objetivo }: { nome: string; objetivo?: string }) {
+export function ScreenHeader({
+  nome,
+  objetivo,
+  pendentes,
+}: {
+  nome: string;
+  objetivo?: string;
+  /**
+   * ⚠️⚠️ QUANTAS PENDÊNCIAS **desta fase** — pedido do autor, 2026-09-06:
+   * *"quero que o usuário siga os passos sabendo o que fez ⛔ e o que falta"*.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É BADGE DE ALERTA. ⛔ A barra de fases continua ⛔ sem
+   * número, pela decisão de 2026-09-05 (*"⛔ não é painel de alerta"*): ⛔ um
+   * número aceso sobre a aba lê como urgência, ⛔ e pendência ⛔ não trava ⛔ nada
+   * (**E-49**).
+   *
+   * ⚠️ Aqui ⛔ ele é **contexto da fase aberta**, ao lado do nome dela — ⛔ e
+   * ⛔ nunca em cima de uma aba que o médico ⛔ nem escolheu abrir.
+   *
+   * ⛔ `undefined` = a fase ⛔ não tem pendências declaradas, ⛔ e ⛔ nesse caso
+   * ⛔ nada é dito. ⛔ `0` **é** dito: *"⛔ nada pendente"* é informação.
+   */
+  pendentes?: number;
+}) {
   const tr = useTr();
   const e = useEstilosDoTema(estilos);
   return (
     <View style={e.fase} testID="avc-fase-cabecalho">
-      <Text style={e.faseNome}>{tr(nome)}</Text>
+      <View style={e.faseLinha}>
+        <Text style={e.faseNome}>{tr(nome)}</Text>
+        {pendentes === undefined ? null : (
+          <Text
+            style={[e.fasePendentes, pendentes === 0 && e.fasePendentesZero]}
+            testID="avc-fase-pendentes"
+          >
+            {pendentes === 0
+              ? tr("Nada pendente aqui")
+              /**
+               * ⚠️ ⛔ Havia aqui um ternário com **os dois ramos iguais** —
+               * ⛔ código morto que sinalizava uma intenção ⛔ não implementada.
+               * ⚠️ A frase funciona no singular ⛔ e no plural como está.
+               */
+              : `${pendentes} ${tr("a resolver aqui")}`}
+          </Text>
+        )}
+      </View>
       {objetivo ? <Text style={e.faseObjetivo}>{tr(objetivo)}</Text> : null}
     </View>
   );
@@ -910,7 +950,20 @@ function estilos(tema: Tema) {
     } as const,
 
     fase: { gap: ESPACO.xs } as const,
-    faseNome: { ...PAPEL.tituloDeSecao, color: tema.cores.text } as const,
+    faseLinha: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+    } as const,
+    faseNome: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flexShrink: 1 } as const,
+    /**
+     * ⚠️ Âmbar ⛔ só quando **há** o que resolver. ⛔ Zero fica neutro — ⛔ e ⛔ não
+     * verde: *"⛔ nada pendente aqui"* ⛔ não é *"esta fase está concluída"*, ⛔ e
+     * num catálogo de fatos *"concluir"* ⛔ não tem definição clínica.
+     */
+    fasePendentes: { ...PAPEL.rotuloDeMetrica, color: tema.cores.warning, flexShrink: 0 } as const,
+    fasePendentesZero: { color: tema.cores.textSecondary } as const,
     faseObjetivo: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary } as const,
 
     card: {

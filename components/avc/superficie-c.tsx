@@ -912,7 +912,10 @@ export default function SuperficieC({
           testID="avc-novo-estudo"
           onPress={onNovoEstudo}
         >
-          <Text style={e.novoEstudoTexto}>{tr("Novo exame")}</Text>
+          {/** ⚠️ Mesma correção do Laboratório: *"Novo"* pressupõe um anterior. */}
+          <Text style={e.novoEstudoTexto}>
+            {tr(estudos.length === 0 ? "Registrar exame" : "Novo exame")}
+          </Text>
         </Pressable>
       </View>
 
@@ -1173,8 +1176,8 @@ const criarEstilos = (tema: Tema) =>
       alignSelf: "flex-start", marginTop: ESPACO.md,
       minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     novoEstudoTexto: {
       color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700",

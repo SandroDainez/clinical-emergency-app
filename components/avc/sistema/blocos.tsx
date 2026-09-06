@@ -437,10 +437,10 @@ function estilos(tema: Tema) {
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.sm,
-      backgroundColor: tema.cores.surfaceElevated,
+      backgroundColor: tema.cores.controlSurface,
       borderRadius: RAIO.botao,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       paddingVertical: ESPACO.sm,
       paddingHorizontal: ESPACO.sm,
       minHeight: 76,
@@ -511,10 +511,15 @@ function estilos(tema: Tema) {
     respostaSim: { backgroundColor: tema.cores.successFill } as const,
     respostaNao: { backgroundColor: tema.cores.criticalFill } as const,
     /** ⚠️ *"Incerto"* / *"⛔ Não sei"* — ⛔ contorno, ⛔ e ⛔ nunca preenchido. */
+    /**
+     * ⚠️ Mesmos tokens do gêmeo `decisaoNeutra` em `ui/index.tsx` — ⛔ eles são
+     * o **mesmo botão conceitual** (*"Incerto"* / *"⛔ Não sei"*), ⛔ e ficaram
+     * com aparências diferentes até a auditoria de 2026-09-06 apontar.
+     */
     respostaNeutra: {
       borderWidth: 1,
-      borderColor: tema.cores.border,
-      backgroundColor: tema.cores.surfaceElevated,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
     } as const,
     respostaSelecionada: { borderWidth: 2, borderColor: tema.cores.text } as const,
     respostaTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill } as const,

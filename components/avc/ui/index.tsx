@@ -1249,8 +1249,8 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
     decisaoNeutra: {
       borderWidth: 1,
-      borderColor: tema.cores.border,
-      backgroundColor: tema.cores.surfaceElevated,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
     },
     /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor — ⛔ ela ⛔ não vira outro botão. */
     decisaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
@@ -1300,9 +1300,9 @@ const criarEstilos = (tema: Tema) =>
       justifyContent: "center",
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
-      backgroundColor: tema.cores.surfaceElevated,
+      backgroundColor: tema.cores.controlSurface,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
     },
     /** ⚠️ Escolhida: preenchimento de ação, ⛔ e texto branco sobre ele. */
@@ -1366,9 +1366,9 @@ const criarEstilos = (tema: Tema) =>
     numUnidade: { ...PAPEL.legenda, color: tema.cores.textSecondary, minWidth: 42, flexShrink: 0 },
     numPasso: { gap: 2 },
     numPassoBotao: {
-      backgroundColor: tema.cores.surface,
+      backgroundColor: tema.cores.controlSurface,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
       width: 30,
       height: 22,

@@ -37,7 +37,7 @@ import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, RAIO } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
@@ -411,8 +411,8 @@ const criarEstilos = (tema: Tema) =>
     },
     novaAcao: {
       alignSelf: "flex-start", paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     novaAcaoTexto: {
       ...PAPEL.tituloDeSecao, color: tema.cores.text,

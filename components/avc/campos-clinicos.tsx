@@ -114,12 +114,37 @@ export function CabecalhoDeBloco({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
+  /**
+   * ⚠️⚠️ CABEÇALHO QUE ABRE TEM **FORMA DE CONTROLE** — 2026-09-06.
+   *
+   * ⛔ Antes ele era texto em branco, igual a um título comum: ⛔ nada dizia que
+   * dava para tocar. ⚠️ Agora ele ganha fundo, contorno ⛔ e o sinal à direita —
+   * ⛔ e o título fixo continua sendo **só texto**, porque ⛔ ele ⛔ não faz nada.
+   *
+   * ⚠️ ⛔ A diferença de forma é a informação: **o que tem moldura, abre**.
+   */
+  const abrivel = aberto !== undefined;
   return (
-    <View style={e.blocoCabecalho} testID={testID}>
+    <View style={[e.blocoCabecalho, abrivel && e.blocoCabecalhoAbrivel]} testID={testID}>
       <View style={e.blocoBarra} />
       <Text style={e.blocoTitulo}>{tr(titulo)}</Text>
       {aberto === undefined ? null : (
         <Text style={e.blocoEstado} testID={`${testID ?? "bloco"}-estado`}>
+          {/**
+            * ⚠️⚠️ O **ESTADO**, ⛔ e ⛔ não a ação — restaurado em 2026-09-06.
+            *
+            * ⛔ Eu havia trocado por *"abrir ▸"* / *"recolher ▾"*, ⛔ e
+            * `avc-superficie-laboratorio` reprovou. ⚠️ A prova estava certa: a
+            * garantia dela ⛔ não é dizer o que o toque faz — é dizer **que há
+            * conteúdo escondido ali**.
+            *
+            * ⛔ *"Um resultado que o médico ⛔ não consegue reencontrar é, na
+            * prática, um resultado perdido"* — o comentário deste componente já
+            * dizia isso desde 2026-08-30.
+            *
+            * ⚠️ A affordance que faltava veio da **moldura**, ⛔ e ⛔ não da
+            * palavra: ⛔ as duas coisas cabem juntas.
+            */}
           {aberto ? `▾ ${tr("aberta")}` : `▸ ${tr("recolhida")}`}
         </Text>
       )}
@@ -415,6 +440,13 @@ export function CampoDeEscolha({
                 empilhado && e.opcaoLarga,
                 grande && e.opcaoDecisao,
                 tom,
+                /**
+                 * ⚠️ *"⛔ Não sei"* fica **tracejado ⛔ e apagado** enquanto ⛔ não
+                 * é escolhido: ⛔ ele ⛔ não disputa com os achados clínicos ao
+                 * lado. ⚠️ Escolhido, ⛔ ele se marca como qualquer outro — ⛔ é
+                 * uma resposta legítima, ⛔ e ⛔ não um estado de erro.
+                 */
+                !grande && valor === "nao_sei" && !ativa && e.opcaoNaoSei,
                 ativa && (grande ? e.opcaoMarcada : e.opcaoAtiva),
               ]}
               accessibilityRole="radio"
@@ -438,6 +470,7 @@ export function CampoDeEscolha({
               <Text
                 style={[
                   e.opcaoTexto,
+                  !grande && valor === "nao_sei" && !ativa && e.opcaoTextoNaoSei,
                   preenchida && e.opcaoTextoPreenchido,
                   ativa && !grande && e.opcaoTextoAtivo,
                 ]}
@@ -1610,6 +1643,17 @@ export const criarEstilos = (tema: Tema) =>
     /** ⛔ Sem barra de acento: ⛔ não há mais faixa em que ela se apoie. */
     blocoBarra: { width: 0, height: 0 },
     blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
+    /** ⚠️ Só quem abre ganha moldura — ⛔ e é a moldura que convida o toque. */
+    blocoCabecalhoAbrivel: {
+      backgroundColor: tema.cores.surface,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+    },
     /** ⚠️ Palavra + seta: ⛔ nem a forma ⛔ nem a cor carregam o estado sozinhas (E-39). */
     blocoEstado: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     grupoTitulo: {
@@ -1617,16 +1661,29 @@ export const criarEstilos = (tema: Tema) =>
       fontWeight: "700", letterSpacing: 1, marginTop: ESPACO.xs,
     },
 
+    /**
+     * ⚠️⚠️ O CAMPO SOBE UM DEGRAU — 2026-09-06.
+     *
+     * ⛔ Relato do autor: *"tudo misturado, tudo com o mesmo padrão de cores,
+     * ⛔ sem destaques"*. ⚠️ A causa: o campo usava `bg` — **o mesmo fundo da
+     * tela** — ⛔ e as opções dentro dele usavam `surface`. ⛔ Resultado: campo,
+     * opção ⛔ e fundo eram três tons quase idênticos, ⛔ e a única separação
+     * era um contorno cinza.
+     *
+     * ⚠️ Agora: tela `bg` → campo `surface` → opção `surfaceElevated`. ⛔ Cada
+     * degrau se separa **pelo fundo**, ⛔ e ⛔ não por linha.
+     */
     campo: {
-      backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
-      padding: ESPACO.sm, gap: ESPACO.xs,
+      backgroundColor: tema.cores.surface, borderRadius: RAIO.card,
+      padding: ESPACO.md, gap: ESPACO.xs,
       borderWidth: 1, borderColor: tema.cores.border,
       // ⚠️ A borda esquerda é o trilho de estado: neutra enquanto ninguém
       // respondeu, com a cor da área depois. ⛔ Largura constante, para o texto
       // ⛔ não dançar quando o campo é respondido.
       borderLeftWidth: 4, borderLeftColor: tema.cores.border,
     },
-    campoRespondido: { borderLeftColor: AREA_AVC.accent },
+    /** ⚠️ Respondido: **verde**, ⛔ e ⛔ não o roxo da área. ⚠️ É estado, ⛔ não marca. */
+    campoRespondido: { borderLeftColor: tema.cores.success },
     /**
      * ⚠️ `flex-start`, ⛔ não `center`: com rótulo de quatro linhas — e os da
      * Table 4 têm —, a marca centralizada flutua no MEIO do texto e lê-se como
@@ -1641,7 +1698,8 @@ export const criarEstilos = (tema: Tema) =>
       // ⚠️ Acompanha a primeira linha do rótulo, ⛔ não o centro do bloco.
       lineHeight: TIPOGRAFIA.body.fontSize * 1.5,
     },
-    marcaAtiva: { color: tema.cores.text, fontWeight: "800" },
+    /** ⚠️ Respondido: mesma cor do trilho — ⛔ o olho liga os dois. */
+    marcaAtiva: { color: tema.cores.success, fontWeight: "800" },
     campoAjuda: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
     /** ⚠️ Tipografia de VALOR: quem lê está conferindo um resultado, ⛔ não escaneando. */
     valorEmLeitura: {
@@ -1658,8 +1716,8 @@ export const criarEstilos = (tema: Tema) =>
     botaoSecundario: {
       minHeight: TOQUE.minimo, justifyContent: "center", alignSelf: "flex-start",
       paddingHorizontal: ESPACO.md, marginTop: ESPACO.sm,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     textoSecundario: {
       color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700",
@@ -1683,15 +1741,15 @@ export const criarEstilos = (tema: Tema) =>
     relogioAcao: {
       minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     numericoLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
     passoNumerico: {
       minWidth: TOQUE.minimo, minHeight: TOQUE.minimo,
       alignItems: "center", justifyContent: "center",
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     entradaNumerica: {
       flexGrow: 1, minWidth: 90,
@@ -1758,20 +1816,20 @@ export const criarEstilos = (tema: Tema) =>
       paddingVertical: ESPACO.sm, paddingHorizontal: ESPACO.sm,
       minHeight: TOQUE.minimo, minWidth: 76,
       justifyContent: "center", alignItems: "center",
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 1, borderColor: tema.cores.controlBorder,
       maxWidth: "100%",
     },
     abrirEscolha: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     abrirEscolhaTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
     opcoesEmpilhadas: { flexDirection: "column" },
     opcaoLarga: { alignSelf: "stretch", alignItems: "flex-start" },
-    opcaoAtiva: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
+    opcaoAtiva: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
     opcaoTexto: {
       color: tema.cores.text,
       fontSize: TIPOGRAFIA.body.fontSize,
@@ -1779,7 +1837,21 @@ export const criarEstilos = (tema: Tema) =>
       /** ⚠️ Deixa o texto QUEBRAR em vez de estourar o cartão. */
       flexShrink: 1,
     },
-    opcaoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+    opcaoTextoAtivo: { color: tema.cores.onFill, fontWeight: "700" },
+    /**
+     * ⚠️⚠️ *"⛔ NÃO SEI"* ⛔ NÃO É UMA RESPOSTA CLÍNICA — ⛔ e ⛔ não pode parecer
+     * uma. ⚠️ Ele é **ignorância declarada**, ⛔ e o núcleo já o separa
+     * (`nao_sei`): ⛔ o que faltava era a tela separar também.
+     *
+     * ⛔ Com a mesma forma das outras, *"⛔ Não sei"* competia visualmente com
+     * *"Varfarina"* ⛔ e *"Heparina"* — ⛔ e um dos três ⛔ não é um achado.
+     */
+    opcaoNaoSei: {
+      backgroundColor: "transparent",
+      borderStyle: "dashed",
+      borderColor: tema.cores.border,
+    },
+    opcaoTextoNaoSei: { color: tema.cores.textSecondary },
 
     /**
      * ⚠️⚠️ A DECISÃO BINÁRIA OCUPA A LARGURA — ⛔ e ⛔ não um canto da linha.
@@ -1801,9 +1873,9 @@ export const criarEstilos = (tema: Tema) =>
     opcaoNao: { backgroundColor: tema.cores.criticalFill },
     /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
     opcaoNeutra: {
-      backgroundColor: tema.cores.surfaceElevated,
+      backgroundColor: tema.cores.controlSurface,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
     },
     /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor. */
     opcaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
@@ -1816,8 +1888,8 @@ export const criarEstilos = (tema: Tema) =>
       minHeight: TOQUE.minimo, minWidth: 72,
       justifyContent: "center", alignItems: "center",
       paddingHorizontal: ESPACO.sm,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     degrauTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
     /** ⚠️ Desabilitado se vê, ⛔ não some: botão que aparece e desaparece muda o alvo debaixo do dedo. */
@@ -1826,8 +1898,8 @@ export const criarEstilos = (tema: Tema) =>
     zero: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,
-      backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
-      borderWidth: 2, borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
     },
     zeroTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
 

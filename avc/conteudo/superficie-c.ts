@@ -72,10 +72,45 @@ export const PRIORIDADE_DA_IMAGEM = {
   chamada: "Imagem cerebral emergencial, o mais rápido possível",
   porque:
     "Exclui hemorragia intracraniana antes de iniciar qualquer reperfusão, e mede a carga isquêmica.",
-  acao: "Registrar a imagem",
   cor: "1",
   loe: "A",
   fonte: "F-16",
+
+  /**
+   * ⚠️⚠️ A AÇÃO MUDA COM A SITUAÇÃO — correção do autor, 2026-09-06:
+   *
+   * > *"a imagem, solicitar… porque está iniciando o atendimento, ⛔ não tem
+   * > imagem ainda"*
+   *
+   * ⛔ O card dizia *"Registrar a imagem"* desde o primeiro segundo do
+   * atendimento — ⛔ e **registrar pressupõe que a imagem existe**. ⚠️ No início
+   * ⛔ ela ⛔ não existe: o que se faz é **pedir**.
+   *
+   * ── ⚠️⚠️ ⛔ E POR QUE SÃO **DUAS** AÇÕES, ⛔ E ⛔ NÃO UMA ────────────────────
+   *
+   * ⛔ O app sabe que ⛔ **nada está registrado na trilha**. ⛔ Ele ⛔ NÃO sabe que
+   * *"a tomografia ⛔ ainda ⛔ não foi feita"* — ⛔ isso é afirmação sobre o mundo
+   * tirada de silêncio, ⛔ e é o que **E-23** proíbe. ⚠️ O paciente pode ter
+   * chegado com a TC pronta de outro serviço.
+   *
+   * ⚠️ Por isso a tela oferece **as duas saídas**: solicitar (o caso comum no
+   * início) ⛔ e registrar uma que já existe. ⛔ Escolher uma só obrigaria o app
+   * a adivinhar em qual dos dois mundos ele está.
+   */
+  /**
+   * ⚠️⚠️ O RÓTULO NOMEIA O QUE O TOQUE **FAZ** — ⛔ e ⛔ não o que o médico
+   * deveria fazer no mundo.
+   *
+   * ⛔ *"Solicitar a tomografia"* como rótulo de botão prometia uma ação que o
+   * app ⛔ não executa: ⛔ ele ⛔ não pede exame, ⛔ e ⛔ não registra pedido.
+   * ⚠️ A instrução clínica vive no **título** do card, onde ela é verdadeira.
+   */
+  acaoAbrir: "Abrir Imagem",
+  /** ⚠️ Realizada ⛔ e resultado pendente: ⛔ aí ⛔ só falta o laudo. */
+  acaoResultado: "Registrar o resultado da tomografia",
+  /** ⚠️ O que o app sabe — ⛔ sobre a **trilha**, ⛔ e ⛔ não sobre o mundo. */
+  semRegistro: "Nenhuma tomografia registrada neste atendimento",
+  aguardandoLaudo: "Tomografia registrada, resultado ainda não informado",
 } as const;
 
 import type { SuperficieId } from "../nucleo/tipos";
