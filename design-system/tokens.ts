@@ -174,7 +174,13 @@ const CORES_CLARO: Cores = {
   surfaceElevated: "#F8FAFC",
   border: "#DBE0E7",
   text: "#0F172A",
-  textSecondary: "#5A6678",
+  /**
+   * ⚠️ Escurecido junto com `controlSurface` (2026-09-06): o corpo do controle
+   * ficou mais escuro, ⛔ e o texto secundário sobre ele caiu para **4,16:1**.
+   * ⛔ Mexer numa cor ⛔ sem medir o par que ⛔ ela ⛔ não sabe que tem é como
+   * nasce contraste ruim que passa na revisão.
+   */
+  textSecondary: "#515D6E",
   info: "#0E7490",
   primaryFill: "#1A6BD5",
   successFill: "#15803D",
@@ -185,7 +191,15 @@ const CORES_CLARO: Cores = {
    * preenchimento. ⛔ Os primeiros valores (`#EEF1F5` / `#C2CBD8`) davam 1,13 ⛔ e
    * 1,44 — ⛔ e reprovaram na mesma trava que pegou o tema escuro.
    */
-  controlSurface: "#DDE4ED",
+  /**
+   * ⚠️⚠️ ESCURECIDO EM 2026-09-06 — ⛔ e ⛔ isso é medida, ⛔ não gosto.
+   *
+   * ⛔ `#DDE4ED` sobre o fundo `#F2F4F7` media **1,16:1**: no tema claro, ⛔ o
+   * corpo do botão ⛔ praticamente ⛔ não existia — ⛔ e sobrava ⛔ só a borda para
+   * dizer que ali se toca. ⚠️ ⛔ É a mesma classe de defeito que o autor
+   * relatou seis vezes: a regra estava no arquivo, ⛔ e ⛔ não na tela.
+   */
+  controlSurface: "#D2DBE6",
   controlBorder: "#8E9CB1",
   primaryTint: "#EAF2FE",
   successTint: "#E9F7EE",

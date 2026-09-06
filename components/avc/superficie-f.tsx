@@ -48,6 +48,7 @@ import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
@@ -234,6 +235,7 @@ export default function SuperficieF({
                 style={e.vereditoFaltaToque}
               >
                 <Text style={e.vereditoFalta}>{tr(acaoPendente(i))}</Text>
+                <Text style={e.vereditoFaltaSeta}>{SETA}</Text>
               </Pressable>
             ))}
           </View>
@@ -790,6 +792,7 @@ function Relogios({
             </Text>
           ) : (
             <Pressable
+              style={e.relogioRegistrar}
               accessibilityRole="button"
               testID={`avc-f-relogio-registrar-${r.marco}`}
               onPress={() => (r.campo ? onIrParaCampo(r.campo) : undefined)}
@@ -863,7 +866,24 @@ const criarEstilos = (tema: Tema) =>
     vereditoVerbo: { ...PAPEL.textoSecundario, color: tema.cores.text },
     vereditoFaltas: { gap: ESPACO.xs },
     /** ⚠️ Alvo de dedo, ⛔ e ⛔ não de mouse. */
-    vereditoFaltaToque: { minHeight: TOQUE.minimo, justifyContent: "center" },
+    /**
+     * ⚠️⚠️ **E-26 EXIGE QUE A PENDÊNCIA SE RESOLVA** — ⛔ e uma pendência que
+     * ⛔ não parece tocável ⛔ não se resolve. ⚠️ Ela já levava ao campo certo;
+     * ⛔ o que faltava era **parecer que levava**.
+     */
+    vereditoFaltaToque: {
+      minHeight: TOQUE.minimo,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
+    vereditoFaltaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
     /** ⚠️ A falta é dita como **ação**, ⛔ e ⛔ nunca como nome de campo. */
     vereditoFalta: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
     vereditoCorrigir: { ...PAPEL.textoSecundario, color: tema.cores.warning },
@@ -986,7 +1006,17 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "700",
     },
     relogioApertado: { color: tema.cores.warning },
-    relogioSemMarco: { color: tema.cores.primary, fontSize: TIPOGRAFIA.micro.fontSize },
+    /** ⚠️ Registrar um marco é ação — ⛔ e ação ⛔ não se escreve como legenda. */
+    relogioRegistrar: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
+    relogioSemMarco: { color: tema.cores.primary, fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "700" },
     relogioSemCampo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
     falta: {

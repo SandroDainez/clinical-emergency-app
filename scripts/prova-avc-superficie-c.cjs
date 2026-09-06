@@ -134,10 +134,35 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
    * ⚠️ A ORDEM É PARTE DA TRAVA: o operacional vem **por último**. Posto antes,
    * ele vira filtro de entrada.
    */
-  confere("os três blocos existem, na ordem, e ⛔ nenhum se chama imagem avançada",
-    C.GRUPOS_C.length === 3
-    && C.GRUPOS_C.map((g) => g.id).join(",") === "estudos,juizo,capacidade",
-    "os exames primeiro, porque governam a classe de reperfusão; o juízo depois; o operacional por último");
+  /**
+   * ⚠️⚠️ **QUATRO BLOCOS DESDE 2026-09-06** — ⛔ e a prova mudou porque o
+   * **fluxo** mudou, ⛔ e ⛔ não para ficar verde.
+   *
+   * ⛔ Relato do autor: *"tem o botão abrir imagem ⛔ e ⛔ nem apareceu antes a
+   * solicitação da imagem"*. ⚠️ ⛔ Ele estava certo: no primeiro minuto do
+   * atendimento ⛔ **⛔ não há imagem** — ⛔ há um pedido a fazer —, ⛔ e o app ⛔ só
+   * sabia registrar exame **já acontecido**.
+   *
+   * ⚠️⚠️ ⛔ E A GARANTIA ANTIGA CONTINUA INTEIRA, ⛔ palavra por palavra: o
+   * operacional segue **por último**, `imagem_avancada` segue ⛔ não existindo,
+   * ⛔ e a ordem clínica dos três blocos originais ⛔ não mudou. ⛔ O que entrou
+   * foi um bloco **antes** deles — ⛔ que é ⛔ onde o mundo o põe.
+   */
+  confere("os quatro blocos existem, na ordem, e ⛔ nenhum se chama imagem avançada",
+    C.GRUPOS_C.length === 4
+    && C.GRUPOS_C.map((g) => g.id).join(",") === "solicitacao,estudos,juizo,capacidade",
+    "pedir vem antes de registrar; os exames governam a classe de reperfusão; o juízo depois; o operacional por último");
+
+  /**
+   * ⚠️⚠️ ⛔ E O PEDIDO ⛔ NÃO PODE VIRAR EXAME. ⛔ Se `hora_solicitacao_imagem`
+   * ganhasse `instanciaDe: ESTUDO`, `situacaoDaTcSemContraste()` leria o pedido
+   * como uma TC **realizada** com resultado pendente — ⛔ o app afirmando um
+   * exame que ⛔ ninguém fez (**E-23**).
+   */
+  confere("⚠️⚠️ o pedido da imagem é fato do EPISÓDIO, ⛔ e ⛔ nunca instância de estudo",
+    K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "solicitacao"))
+      .every((c) => c.instanciaDe === undefined && c.relogio === undefined),
+    "com instância, o pedido seria lido como exame realizado; com relógio, viraria marco de janela (E-21)");
 
   confere("o bloco operacional carrega ⛔ SÓ o fato operacional",
     K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "capacidade")).map((c) => c.id)
@@ -1481,11 +1506,35 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
     telaUsa.includes("ajuda={campo.ajuda}") && kitUsa.includes("{ajuda ? <Text style={e.corrAjuda}>"),
     "⛔ quem ⛔ não abre o ⓘ é justamente quem chuta, ⛔ e o chute alimenta a trombectomia");
 
-  /** ⚠️ ⛔ Nenhuma barra deslizante sobrou na Superfície C. */
-  confere("⛔ ⛔ NENHUM `Slider` ⛔ nem `NumericStepper` chega à Superfície C",
-    !telaUsa.includes("NumericStepper") && !telaUsa.includes("Slider")
-    && !kitUsa.includes("NumericStepper") && !kitUsa.includes("Slider"),
-    "⛔ era a queixa do autor em 2026-08-28: *\"⛔ não precisa ter de deslizar, ⛔ não funcional\"*");
+  /**
+   * ── ⚠️⚠️ A BARRA: ⛔ POR QUE ESTA CONFERÊNCIA MUDOU (2026-09-06) ──────────
+   *
+   * ⚠️ Ela media *"a string `Slider` ⛔ não aparece no arquivo do kit"*. ⛔ Em
+   * 2026-09-06 o autor pediu barra **na estabilização** — PA, glicemia, SpO₂ ⛔ e
+   * peso, faixas de centenas de valores —, ⛔ e o kit é **o mesmo arquivo** das
+   * duas telas. ⛔ A medida por nome de símbolo passou a proibir na Superfície A
+   * uma coisa que ⛔ ela ⛔ nunca teve por que proibir.
+   *
+   * ⚠️⚠️ **A REGRA DO AUTOR ⛔ NÃO MUDOU, ⛔ e ⛔ não foi afrouxada.** Ela é sobre
+   * o ASPECTS: onze valores em que arrastar erra por um ⛔ e ⛔ não ganha ⛔ nada.
+   * ⚠️ ⛔ O que a prova mede agora é **exatamente essa regra**, ⛔ e ⛔ não um
+   * `grep`: a barra nasce **desligada** ⛔ e a Superfície C ⛔ nunca a liga.
+   *
+   * ⛔ ⛔ É uma garantia MAIS FORTE que a anterior: o `grep` passaria verde se
+   * alguém desenhasse uma barra própria com outro nome dentro de C.
+   */
+  confere("⛔ ⛔ NENHUMA barra deslizante chega à Superfície C",
+    !telaUsa.includes("NumericStepper") && !telaUsa.includes("<Slider")
+    && !telaUsa.includes("comBarra") && !kitUsa.includes("NumericStepper"),
+    "⛔ era a queixa do autor em 2026-08-28: *\"⛔ não precisa ter de deslizar, ⛔ não funcional\"* — no ASPECTS, e ela continua valendo");
+
+  confere("⚠️ a barra do kit nasce DESLIGADA — quem quiser tem de pedir",
+    kitUsa.includes("comBarra?: boolean") && kitUsa.includes("{!comBarra ? null : ("),
+    "⛔ ligada por padrão, ⛔ ela apareceria no ASPECTS na primeira tela nova que usasse o kit");
+
+  confere("⚠️ o ASPECTS ⛔ não recebe barra nem por dentro do NumeroComCorrecao",
+    !/<Numero\b[\s\S]{0,900}?comBarra/.test(kitUsa),
+    "⛔ `NumeroComCorrecao` é o caminho do ASPECTS: uma barra ligada ali burlaria a regra sem a tela pedir");
 
   /** ⚠️ ⛔ E o módulo puro ⛔ não pode virar casa de medicina (E-29). */
   confere("⛔ o rascunho numérico ⛔ NÃO conhece campo, corte ⛔ nem medicina",

@@ -116,6 +116,22 @@ const PARES = [
   ["controlBorder", "controlSurface", 1.5, "a borda do controle é visível sobre ele"],
   ["text", "controlSurface", 4.5, "texto sobre o controle"],
   ["textSecondary", "controlSurface", 4.5, "texto secundário sobre o controle"],
+
+  /**
+   * ⚠️⚠️ O VOCABULÁRIO DE AFORDÂNCIA (`design-system/afordancia.ts`) —
+   * acrescentado em 2026-09-06, depois do **sexto** relato de *"parece texto e
+   * ⛔ não botão"*.
+   *
+   * ⛔ ⛔ Não basta a regra existir no arquivo: a correção anterior usava
+   * `surface` sobre `bg` (1,2:1) ⛔ e `border` — ⛔ **medidas abaixo do que o
+   * olho separa**, ⛔ e foi por isso que o autor continuou vendo texto. ⚠️ Estes
+   * pares travam as três marcas: corpo, borda ⛔ e o texto que vive nelas.
+   */
+  ["controlSurface", "bg", 1.25, "a linha tocável se separa do fundo da tela"],
+  ["controlBorder", "controlSurface", 1.5, "a borda da linha tocável é visível sobre ela"],
+  ["text", "controlSurface", 4.5, "a seta de navegação sobre a linha tocável"],
+  ["primary", "primaryTint", 4.5, "o texto do PEDIDO sobre o seu preenchimento"],
+  ["primary", "bg", 4.5, "o contorno do pedido é perceptível sobre o fundo"],
   ["onFill", "primaryFill", 4.5, "texto do botão de ação preenchido"],
   ["onFill", "successFill", 4.5, "texto do botão \"Sim\""],
   ["onFill", "criticalFill", 4.5, "texto do botão \"Não\""],

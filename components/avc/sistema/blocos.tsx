@@ -29,6 +29,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
+import { SETA } from "../../../design-system/afordancia";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
 import { Icone, type NomeDeIcone } from "../ui";
@@ -370,8 +371,15 @@ export function ChecklistTimeline({
             ? tema.cores.textSecondary
             : tema.cores.border;
         const ultimo = i === itens.length - 1;
+        /**
+         * ⚠️⚠️ ⛔ NEM TODO PASSO LEVA A ALGUM LUGAR — ⛔ e os que levam ⛔ não
+         * podiam ser distinguidos dos que ⛔ não levam. ⚠️ A seta ⛔ e a moldura
+         * entram ⛔ só em quem tem `onTocar`; ⛔ pintar todos prometeria um toque
+         * que a metade da lista ⛔ não cumpre.
+         */
+        const tocavel = item.onTocar !== undefined;
         const linha = (
-          <View style={e.trilhaItem}>
+          <View style={[e.trilhaItem, tocavel ? e.trilhaItemTocavel : null]}>
             <View style={e.trilhaMarcaColuna}>
               <View style={[e.trilhaMarca, { borderColor: cor }, feito && { backgroundColor: cor }]}>
                 {/**
@@ -393,6 +401,7 @@ export function ChecklistTimeline({
               </View>
               {item.detalhe ? <Text style={e.trilhaDetalhe}>{tr(item.detalhe)}</Text> : null}
             </View>
+            {tocavel ? <Text style={e.trilhaSeta}>{SETA}</Text> : null}
           </View>
         );
         if (!item.onTocar) return <View key={item.id} testID={`avc-passo-${item.id}`}>{linha}</View>;
@@ -527,7 +536,16 @@ function estilos(tema: Tema) {
 
     /* ── linha do tempo ───────────────────────────────────────────────────── */
     trilha: { gap: 0 } as const,
-    trilhaItem: { flexDirection: "row", gap: ESPACO.sm } as const,
+    trilhaItem: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm } as const,
+    trilhaItemTocavel: {
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    } as const,
+    trilhaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text } as const,
     trilhaMarcaColuna: { alignItems: "center", width: 26 } as const,
     trilhaMarca: {
       width: 22,

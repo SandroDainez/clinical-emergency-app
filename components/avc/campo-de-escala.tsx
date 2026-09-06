@@ -413,7 +413,23 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ O caminho principal é **preenchido**; a alternativa é texto. */
     acaoPrincipal: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
     acaoTextoPrincipal: { color: tema.cores.onFill },
-    alternativa: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
+    /**
+     * ⚠️⚠️ ⛔ TUDO QUE SE TOCA GANHA CORPO, BORDA ⛔ E ALTURA — 2026-09-06.
+     *
+     * ⛔ Isto era **texto azul solto**. ⚠️ *"Já tenho o total"* é uma das duas
+     * portas da escala: quem chega com o NIHSS medido fora ⛔ e ⛔ não vê a
+     * porta refaz a escala inteira ⛔ ou desiste dela.
+     */
+    alternativa: {
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
     alternativaTexto: { ...PAPEL.textoSecundario, color: tema.cores.primary },
 
     escala: { gap: ESPACO.sm, marginTop: ESPACO.xs },
@@ -429,6 +445,10 @@ const criarEstilos = (tema: Tema) =>
     itemInfo: {
       minWidth: TOQUE.minimo, minHeight: TOQUE.minimo,
       alignItems: "center", justifyContent: "center",
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
     },
     itemInfoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
     itemAjuda: { ...PAPEL.legenda, color: tema.cores.textSecondary },
@@ -486,7 +506,17 @@ const criarEstilos = (tema: Tema) =>
       justifyContent: "space-between", gap: ESPACO.sm,
     },
     escalaProgresso: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary },
-    escalaRevisar: { minHeight: TOQUE.minimo, justifyContent: "center" },
+    /** ⚠️ *"Ver todos"* ⛔ e *"Item anterior"* são navegação — ⛔ e navegação é botão. */
+    escalaRevisar: {
+      minHeight: TOQUE.minimo,
+      alignSelf: "flex-start",
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
 
     rodape: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: ESPACO.sm },
     parcial: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },

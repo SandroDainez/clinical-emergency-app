@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**75 de 89 travas com declaração completa.**
+**77 de 91 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -73,6 +73,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhum eixo da checagem inicial diga *"avaliado, sem ameaça"* a partir de um valor que ⛔ não é resposta negativa — seleção múltipla preenchida, campo desfeito ⛔ ou ignorância declarada.
 - **NÃO PROMETE:** que os quatro eixos sejam os certos, ⛔ nem que os cortes de PA ⛔ e glicemia estejam corretos — ⛔ isso é F-04 ⛔ e F-06.
 - **UNIVERSO:** `avc/nucleo/ameacas-imediatas.ts`. ── ⚠️⚠️ O BUG QUE ORIGINOU (auditoria de 2026-09-06) ────────────────────── ⛔ A primeira versão lia os campos por conta própria: *"se ⛔ não é `sim`, ⛔ então é `sem_ameaca`"*. ⚠️ `disfuncao_bulbar` é seleção **múltipla**: o estado guarda os rótulos unidos por separador, ⛔ e ⛔ nunca `"sim"`. ⛔ Um paciente com tosse ineficaz ⛔ e acúmulo de saliva caía no `else`, ⛔ e a tela desenhava **✓ "Avaliado"** na via aérea dele. ⛔ ⛔ Isso ⛔ não é *"a ameaça ⛔ não acendeu"*: é o app **afirmando o negativo** (**E-23**). ⚠️⚠️ ⛔ E O AVISO JÁ ESTAVA ESCRITO em `leitura.ts`, em letras garrafais: *"⛔ NUNCA LER ESSE CAMPO POR `ternario()`: cinco achados presentes lidos como 'não há disfunção'."* ⛔ A leitura foi reimplementada por fora, ⛔ e caiu exatamente nela — a duplicação que **I6** existe para impedir.
+
+## `test:avc-afordancia` → `scripts/prova-avc-afordancia.cjs`
+
+- **PROMETE:** que ⛔ nenhum `<Pressable>` do módulo AVC seja desenhado ⛔ sem **corpo** (preenchimento) ⛔ nem **borda** — as duas marcas que fazem um alvo se distinguir de um parágrafo.
+- **NÃO PROMETE:** que a cor seja bonita, que o alvo seja grande o bastante ⛔ nem que o rótulo diga a coisa certa. ⛔ Isso é `valida-contraste`, `valida-rotulos-clinicos` ⛔ e o olho do autor.
+- **UNIVERSO:** `components/avc/**.tsx`. ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ───────────────────────────────────────── ⛔ O autor relatou **seis vezes**, entre 2026-09-05 ⛔ e 09-06, que os controles do módulo *"parecem texto ⛔ e ⛔ não botões"*. ⚠️ Nas **cinco** primeiras eu consertei ⛔ só o pedaço que aparecia na captura que ⛔ ele tinha mandado — ⛔ e ⛔ na captura seguinte havia outro. ⚠️⚠️ ⛔ ISSO ⛔ NÃO É UM PROBLEMA DE GOSTO: ⛔ é uma classe de defeito, ⛔ e classe de defeito se fecha com varredura, ⛔ e ⛔ não com remendo. ⚠️ Enquanto ⛔ nada varria, cada tela nova nascia com a chance de repetir o erro — ⛔ e o autor ⛔ é quem pagava, uma captura por vez. ── ⚠️ COMO ELA LÊ ───────────────────────────────────────────────────────── ⚠️ Para cada `<Pressable>`, ela junta os estilos citados no bloco de abertura (`e.foo`, `s.foo`) ⛔ e procura, nas declarações do próprio arquivo, `backgroundColor` ⛔ ou `border*`. ⛔ Sem ⛔ nenhum dos dois, é achado. ⚠️⚠️ ⛔ ELA ⛔ NÃO ENXERGA DENTRO DE COMPONENTE FILHO — ⛔ e é ⛔ por isso que a lista de EXCEÇÕES existe, ⛔ com o motivo escrito ⛔ e o filho nomeado. ⛔ Uma exceção ⛔ sem motivo é a trava sendo desligada em silêncio.
+
+## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
+
+- **PROMETE:** · que **arrastar a barra** ⛔ não escreva fato antes de o dedo sair dela, ⛔ não invente valor de partida ⛔ e respeite faixa ⛔ e passo; · que **registrar a solicitação** da imagem ⛔ NÃO faça o app afirmar que o exame foi feito.
+- **NÃO PROMETE:** que a barra seja o controle certo para cada grandeza, ⛔ nem que os cortes de PA ⛔ e glicemia estejam corretos — ⛔ isso é F-04 ⛔ e F-06.
+- **UNIVERSO:** `avc/nucleo/rascunho-numerico.ts` ⛔ e `avc/nucleo/derivacoes-c.ts`. ── ⚠️⚠️ O RISCO QUE ELA VIGIA ──────────────────────────────────────────── ⛔ **A barra:** ⛔ um `onValueChange` no lugar de `onSlidingComplete` escreve ⛔ um fato **por pixel**. ⚠️ Numa arrastada de glicemia de 20 a 300 isso são ~280 fatos numa trilha append-only (§3.1) — ⛔ e ⛔ nenhum deles é a medida: ⛔ são o **caminho** até ela. ⛔ A auditoria leria 280 glicemias. ⛔ **O pedido:** ⛔ se ⛔ ele virasse uma **instância de estudo**, `situacaoDaTcSemContraste()` o classificaria como `realizada_resultado_pendente` — ⛔ e a tela diria *"Tomografia registrada, resultado ⛔ ainda ⛔ não informado"* sobre um exame que ⛔ **⛔ ninguém fez**. ⚠️ ⛔ Isso é afirmação sobre o mundo tirada de silêncio: **E-23**.
 
 ## `test:avc-superficie-f` → `scripts/prova-avc-superficie-f.cjs`
 

@@ -1644,10 +1644,15 @@ export const criarEstilos = (tema: Tema) =>
     blocoBarra: { width: 0, height: 0 },
     blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
     /** ⚠️ Só quem abre ganha moldura — ⛔ e é a moldura que convida o toque. */
+    /**
+     * ⚠️⚠️ ⛔ `surface` SOBRE `bg` MEDE **1,2:1** — ⛔ e ⛔ é por isso que o autor
+     * continuou lendo estes cabeçalhos como texto depois da correção anterior.
+     * ⚠️ A moldura existia no arquivo ⛔ e ⛔ quase ⛔ não existia na tela.
+     */
     blocoCabecalhoAbrivel: {
-      backgroundColor: tema.cores.surface,
+      backgroundColor: tema.cores.controlSurface,
       borderWidth: 1,
-      borderColor: tema.cores.border,
+      borderColor: tema.cores.controlBorder,
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
@@ -1778,7 +1783,17 @@ export const criarEstilos = (tema: Tema) =>
     origem: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, fontStyle: "italic" },
 
     // ⚠️ Alvo mínimo de toque mesmo sendo um glifo pequeno (§7.18).
-    info: { minWidth: 24, minHeight: 24, alignItems: "center", justifyContent: "center" },
+    /** ⚠️ ⛔ O ⓘ ⛔ também é botão: ⛔ sem moldura ⛔ ele some no meio do rótulo. */
+    info: {
+      minWidth: 26,
+      minHeight: 26,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.badge,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
     infoTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     detalhe: {
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,

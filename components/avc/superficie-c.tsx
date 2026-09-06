@@ -45,6 +45,7 @@ import {
   FRONTEIRA_OPERACIONAL_C,
   IDENTIDADE_DO_ESTUDO,
   JUIZO_C,
+  SOLICITACAO_C,
   ROTULO_CURTO,
   ROTULO_DE_INTERFACE,
   TODOS_OS_CAMPOS_C,
@@ -338,6 +339,54 @@ export default function SuperficieC({
       ) : null}
 
       {/**
+        * ── ⚠️⚠️ A SOLICITAÇÃO, ⛔ ANTES DOS EXAMES ──────────────────────────
+        *
+        * > *"tem o botão abrir imagem ⛔ e ⛔ nem apareceu antes a solicitação da
+        * >  imagem"* — autor, 2026-09-06
+        *
+        * ⚠️ ⛔ Ele ⛔ não estava pedindo um botão a mais: ⛔ estava apontando que o
+        * **primeiro gesto real do atendimento** ⛔ não existia na tela. ⛔ A
+        * tomografia é COR 1 · A ⛔ e precede a reperfusão — ⛔ e até aqui o app
+        * ⛔ só sabia registrar exame que **já tinha acontecido**.
+        *
+        * ⚠️⚠️ ⛔ E REGISTRAR O PEDIDO ⛔ NÃO AFIRMA QUE O EXAME FOI FEITO: ⛔ o
+        * fato é do episódio, ⛔ e ⛔ não de ⛔ nenhuma instância de estudo — ⛔ por
+        * isso ⛔ ele ⛔ não chega a `situacaoDaTcSemContraste()` (**E-23**).
+        */}
+      <View style={e.grupo} testID="avc-grupo-solicitacao">
+        <View style={e.cabecalho} testID="avc-bloco-solicitacao">
+          <Icone nome="imagem" tamanho={14} />
+          <Secao titulo="Solicitação da imagem" />
+        </View>
+        <Text style={e.grupoNota} testID="avc-grupo-nota-solicitacao">
+          {tr("Registrar o pedido não afirma que o exame foi feito. O exame e o resultado são registrados abaixo, quando existirem.")}
+        </Text>
+        {SOLICITACAO_C.map((campo) => (
+          /**
+           * ⚠️ ⛔ SEM `testID` aqui: `CampoDaSuperficie` já emite
+           * `avc-campo-<id>`. ⛔ Repetido, o mesmo id casaria com **dois**
+           * elementos ⛔ e derrubaria qualquer e2e que o procurasse — foi o que
+           * aconteceu na primeira versão deste bloco.
+           */
+          <View key={campo.id} style={e.pergunta}>
+            <CampoDaSuperficie
+              campo={{ ...campo, casa: "imagem" }}
+              casaAtual="imagem"
+              bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+              numero={undefined}
+              agora={agora}
+              detalheAberto={detalhes.aberto(campo.id)}
+              onAlternarDetalhe={() => detalhes.alternar(campo.id)}
+              onEscolher={onEscolher}
+              onMedir={onMedir}
+              onHora={onHora}
+              onDesfazer={onDesfazer}
+            />
+          </View>
+        ))}
+      </View>
+
+      {/**
         * ⚠️⚠️ OS ESTUDOS — cada exame é uma **instância**, e ⛔ nenhum achado existe
         * fora do estudo que o produziu.
         */}
@@ -429,7 +478,7 @@ export default function SuperficieC({
                 * secundário"*.
                 */}
               <Pressable
-                style={e.estudoTopo}
+                style={[e.estudoTopo, e.cabecalhoTocavel]}
                 accessibilityRole="button"
                 aria-expanded={!fechado}
                 testID={`avc-estudo-abrir-${estudo.id}`}
@@ -1109,6 +1158,23 @@ const criarEstilos = (tema: Tema) =>
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /**
+     * ⚠️⚠️ ⛔ SÓ O CABEÇALHO QUE **RECOLHE** VIRA BOTÃO — 2026-09-06.
+     *
+     * ⛔ Pintar `cabecalho` inteiro daria cara de botão aos títulos que ⛔ não
+     * fazem ⛔ nada quando tocados: ⛔ um controle mentiroso é pior que um
+     * controle apagado, porque o médico toca, ⛔ nada acontece, ⛔ e ele passa a
+     * desconfiar dos que **funcionam**.
+     */
+    cabecalhoTocavel: {
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+
 
     /**
      * ⚠️ Cada instância é um cartão com filete à esquerda: ele diz **onde um
@@ -1157,10 +1223,21 @@ const criarEstilos = (tema: Tema) =>
       gap: ESPACO.sm,
       paddingLeft: ESPACO.md,
     },
+    /**
+     * ⚠️⚠️ *"Sem essa informação"* É UMA **RESPOSTA**, ⛔ e ⛔ não uma legenda —
+     * 2026-09-06. ⛔ Ela declara ignorância (**E-37**), que é diferente de ⛔ não
+     * ter perguntado; ⛔ e uma resposta que ⛔ não parece tocável ⛔ nunca é dada.
+     */
     desconhecidoCompacto: {
       minHeight: TOQUE.minimo,
+      alignSelf: "flex-start",
       justifyContent: "center",
-      paddingRight: ESPACO.sm,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
     },
     desconhecidoTexto: {
       color: tema.cores.textSecondary,

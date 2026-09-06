@@ -157,6 +157,12 @@ export default function SuperficieB({
               * anunciando o que guarda: ⛔ ele ⛔ não mente sobre o conteúdo.
               */}
             <Pressable
+              /**
+               * ⚠️ ⛔ SÓ quando recolhe é que ele se veste de botão: o mesmo
+               * cabeçalho serve ao grupo fixo, ⛔ e ⛔ um grupo fixo com cara de
+               * botão promete um toque que ⛔ não existe.
+               */
+              style={recolhivel ? e.cabecalhoTocavel : undefined}
               accessibilityRole={recolhivel ? "button" : undefined}
               aria-expanded={recolhivel ? aberto : undefined}
               testID={recolhivel ? `avc-bloco-abrir-${grupo.id}` : undefined}
@@ -432,6 +438,23 @@ const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /**
+     * ⚠️⚠️ ⛔ SÓ O CABEÇALHO QUE **RECOLHE** VIRA BOTÃO — 2026-09-06.
+     *
+     * ⛔ Pintar `cabecalho` inteiro daria cara de botão aos títulos que ⛔ não
+     * fazem ⛔ nada quando tocados: ⛔ um controle mentiroso é pior que um
+     * controle apagado, porque o médico toca, ⛔ nada acontece, ⛔ e ele passa a
+     * desconfiar dos que **funcionam**.
+     */
+    cabecalhoTocavel: {
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+
     abrir: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     /** ⚠️ O convite a avaliar — ⛔ e ele DIZ se já há derivação. */
     avaliar: {

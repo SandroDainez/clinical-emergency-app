@@ -46,6 +46,21 @@ export type GestoNumerico =
   | { readonly tipo: "digitou"; readonly texto: string }
   /** ⚠️ `+` ⛔ e `−`: movimento RELATIVO, ⛔ e ⛔ nunca um valor de partida. */
   | { readonly tipo: "ajustou"; readonly delta: number }
+  /**
+   * ⚠️⚠️ A BARRA, ⛔ **SOLTA** — pedido do autor em 2026-09-06: *"isso quero
+   * barras roláveis ⛔ e ⛔ sem valores predeterminados"*.
+   *
+   * ── ⛔ POR QUE ⛔ NÃO É `ajustou`, ⛔ E ⛔ POR QUE ⛔ É ⛔ SÓ AO SOLTAR ────────
+   *
+   * ⛔ Ela é **absoluta**: arrastar ⛔ não é somar passos, é apontar um número.
+   * ⛔ Traduzi-la em `delta` obrigaria a tela a calcular a diferença, ⛔ e ⛔ é
+   * exatamente aí que entra o erro de um valor de partida inventado.
+   *
+   * ⚠️⚠️ ⛔ E ELA ⛔ SÓ CHEGA AQUI **AO SOLTAR O DEDO**. ⛔ Um evento por pixel
+   * escreveria ~200 fatos numa arrastada de glicemia — a trilha é append-only
+   * (§3.1), ⛔ e ⛔ nenhum deles seria uma medida: eram o caminho até ela.
+   */
+  | { readonly tipo: "arrastou"; readonly valor: number }
   /** ⚠️ Saiu da caixa (blur). */
   | { readonly tipo: "saiu" }
   /** ⚠️ ⛔ Só existe em `comConfirmacao`: é o gesto que **grava**. */
@@ -172,6 +187,31 @@ export function proximoPasso({
       /** ⚠️⚠️ Em correção o ajuste move o RASCUNHO — ⛔ seis toques ⛔ não são seis fatos. */
       if (confirmando) return { rascunho: String(alvo), efeito: NADA };
 
+      if (alvo === gravado) return { rascunho: undefined, efeito: NADA };
+      return { rascunho: undefined, efeito: { tipo: "medir", valor: alvo } };
+    }
+
+    case "arrastou": {
+      /**
+       * ⚠️ Presa à faixa técnica ⛔ e à grade do passo: a barra ⛔ não pode
+       * entregar 137,4 num campo cujo passo é 1.
+       */
+      const bruto = Math.min(faixa.max, Math.max(faixa.min, gesto.valor));
+      const alvo = Math.round(bruto / faixa.passo) * faixa.passo;
+
+      /** ⚠️⚠️ Em correção, arrastar move o RASCUNHO — ⛔ e ⛔ não a trilha. */
+      if (confirmando) return { rascunho: String(alvo), efeito: NADA };
+
+      /**
+       * ⚠️⚠️ SOLTAR NO MESMO NÚMERO ⛔ NÃO É FATO NOVO — ⛔ mas ⛔ **também ⛔ não
+       * é ⛔ nada**: se ⛔ nada estava gravado, o médico ACABOU de dizer que a
+       * medida é essa, ⛔ e o campo tem de sair de *"⛔ não informado"*.
+       *
+       * ⛔ É o defeito que o `NumericStepper` já tinha corrigido em 2026-08-16:
+       * quem solta a barra na posição inicial continuava marcado como ⛔ não
+       * informado. ⚠️ *"⛔ Não informado"* ⛔ e *"informado, ⛔ e igual ao padrão"*
+       * são **opostos**.
+       */
       if (alvo === gravado) return { rascunho: undefined, efeito: NADA };
       return { rascunho: undefined, efeito: { tipo: "medir", valor: alvo } };
     }

@@ -17,6 +17,7 @@
  */
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useState, type ReactNode } from "react";
+import Slider from "@react-native-community/slider";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { valorDaOpcao } from "../../../avc/conteudo/campo";
@@ -27,6 +28,7 @@ import {
   type EfeitoNumerico,
   type GestoNumerico,
 } from "../../../avc/nucleo/rascunho-numerico";
+import { SETA } from "../../../design-system/afordancia";
 import { useEstilosDoTema, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
@@ -139,6 +141,30 @@ function binaria(opcoes: readonly string[]): boolean {
   return opcoes.length <= 3 && opcoes.every((o) => VOCABULARIO_BINARIO.has(valorDaOpcao(o)));
 }
 
+/**
+ * ⚠️⚠️ FILEIRA ⛔ OU COLUNA — ⛔ e **quem decide é o rótulo mais longo**.
+ *
+ * ⛔ Relato do autor, 2026-09-06, sobre *"Como o peso foi obtido"*: a fileira
+ * mostrava *"Informado pelo paciente ou f…"*. ⚠️ ⛔ Rótulo de opção cortado é
+ * **pergunta cortada** — ⛔ e ⛔ não um detalhe de layout.
+ *
+ * ⚠️ O corte é em **⛔ caracteres do rótulo desenhado**, ⛔ e ⛔ não em pixels: o
+ * componente ⛔ não mede a tela, ⛔ e medir aqui exigiria `onLayout` — que neste
+ * projeto já se provou ⛔ não disparar em react-native-web.
+ *
+ * ⚠️ 14 caracteres é o que cabe em ⛔ um terço de 343 px a 16 px ⛔ sem cortar.
+ * ⛔ *"Indisponível"* (12) segue em fileira; *"Estimado pela equipe"* (20) leva o
+ * grupo inteiro para a coluna.
+ */
+const CABE_NA_FILEIRA = 14;
+
+function empilha(
+  opcoes: readonly string[],
+  rotuloDeInterface?: Readonly<Record<string, string>>
+): boolean {
+  return opcoes.some((o) => (rotuloDeInterface?.[o] ?? o).length > CABE_NA_FILEIRA);
+}
+
 export function Segmentado({
   campo,
   opcoes,
@@ -188,8 +214,11 @@ export function Segmentado({
      * o verde continuaria — medindo ⛔ nada. ⚠️ O sufixo é `valorDaOpcao`, que é
      * o que o estado realmente guarda: rótulo ⛔ nunca chega ao estado.
      */
-    <View style={binaria(opcoes) ? e.decisaoLinha : e.seg} testID={`avc-campo-${campo}-opcoes`}>
-      {opcoes.map((op, i) => {
+    <View
+      style={binaria(opcoes) ? e.decisaoLinha : empilha(opcoes, rotuloDeInterface) ? e.segColuna : e.seg}
+      testID={`avc-campo-${campo}-opcoes`}
+    >
+      {opcoes.map((op) => {
         /**
          * ⚠️⚠️ O ESTADO GUARDA O **SLUG**, ⛔ e ⛔ NUNCA O RÓTULO.
          *
@@ -229,7 +258,7 @@ export function Segmentado({
             key={op}
             style={grande
               ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
-              : [e.segItem, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
+              : [e.segItem, marcada ? e.segAtivo : null]}
             accessibilityRole="radio"
             /**
              * ⚠️⚠️ `aria-checked`, ⛔ e ⛔ NÃO `selected`.
@@ -254,10 +283,17 @@ export function Segmentado({
               * ⛔ não sabe o que está marcado. ⚠️ Defeito que eu introduzi na
               * migração ⛔ e que a suíte de B pegou — ⛔ e ele valia para A também.
               */}
-            <Text
-              style={grande ? corDoTexto : [e.segTexto, marcada ? e.segTextoAtivo : null]}
-              numberOfLines={1}
-            >
+            {/**
+              * ⚠️⚠️ **⛔ SEM `numberOfLines`** — 2026-09-06.
+              *
+              * ⛔ Em fileira de três, *"Informado pelo paciente ou familiar"*
+              * chegava à tela como *"Informado pelo paciente ou f…"*. ⚠️ ⛔ É a
+              * mesma regra que já vale para o nome do marco no relógio: **⛔ o
+              * rótulo da opção é a pergunta**, ⛔ e uma pergunta cortada ⛔ não é
+              * respondível. ⛔ Quem cede é o LAYOUT — a fileira vira coluna —,
+              * ⛔ e ⛔ nunca o texto.
+              */}
+            <Text style={grande ? corDoTexto : [e.segTexto, marcada ? e.segTextoAtivo : null]}>
               {marcada ? "✓ " : ""}
               {tr(rotuloDeInterface?.[op] ?? op)}
             </Text>
@@ -352,6 +388,7 @@ export function Numero({
   commitOnConfirm,
   rascunho: rascunhoDeFora,
   onRascunho,
+  comBarra,
   testID,
 }: {
   campo: string;
@@ -388,6 +425,24 @@ export function Numero({
    */
   rascunho?: string | undefined;
   onRascunho?: (rascunho: string | undefined) => void;
+  /**
+   * ⚠️⚠️ A BARRA É **OPCIONAL**, ⛔ e ⛔ isso ⛔ não é frescura de API — é a
+   * convivência de duas instruções do autor que ⛔ parecem opostas ⛔ e ⛔ não são.
+   *
+   *   · **2026-08-28, Superfície C:** *"⛔ não precisa ter de deslizar, ⛔ não
+   *     funcional"*. ⛔ Ali a barra era o **único** controle do ASPECTS — uma
+   *     escala de ⛔ **onze** valores, em que arrastar ⛔ não ganha ⛔ nada ⛔ e
+   *     erra por um. ⚠️ Existe trava medindo isso, ⛔ e ⛔ ela continua valendo.
+   *
+   *   · **2026-09-06, estabilização:** *"quero barras roláveis"*. ⛔ Ali a faixa
+   *     é de **260 valores** (PA 40–300): chegar a 190 pelo `+` de passo 1 são
+   *     ~150 toques. ⚠️ ⛔ É a mesma pessoa dizendo a mesma coisa — *o controle
+   *     tem de caber na grandeza* —, ⛔ e a resposta certa é oposta nos dois.
+   *
+   * ⚠️ Por isso ela nasce **desligada**: quem quiser a barra ⛔ tem de pedir, ⛔ e
+   * ⛔ a Superfície C ⛔ não pede.
+   */
+  comBarra?: boolean;
   testID?: string;
 }) {
   const tr = useTr();
@@ -434,8 +489,27 @@ export function Numero({
   /** ⚠️ Inerte ⛔ sem valor de partida — ⛔ e o módulo puro é quem sabe disso. */
   const semPartida = !temPartida(gravado, rascunho, faixa);
 
+  /**
+   * ⚠️⚠️ ONDE O POLEGAR DA BARRA FICA QUANDO ⛔ NADA FOI MEDIDO.
+   *
+   * ⛔ Ele **precisa** de um número para ser desenhado — ⛔ e esse número ⛔ NÃO
+   * é uma resposta (§0.2). ⚠️ Por isso ⛔ ele ⛔ não é o meio da faixa, que se
+   * lê como *"o app achou que é mais ou menos isso"*: ⛔ ele é o **piso**, ⛔ e
+   * a caixa continua dizendo `—`.
+   *
+   * ⚠️⚠️ ⛔ E A BARRA INTEIRA FICA **APAGADA** enquanto ⛔ não houver medida:
+   * ⛔ trilho preenchido é a marca de *"há um valor até aqui"*, ⛔ e ⛔ não pode
+   * aparecer antes de haver.
+   */
+  const numeroVisivel = Number(texto);
+  const medido = texto !== "" && Number.isFinite(numeroVisivel);
+  const posicaoDaBarra = medido
+    ? Math.min(faixa.max, Math.max(faixa.min, numeroVisivel))
+    : faixa.min;
+
   return (
-    <View style={e.num} testID={testID ?? `avc-num-${campo}`}>
+    <View style={e.numRaiz} testID={testID ?? `avc-num-${campo}`}>
+    <View style={e.num}>
       {rotuloOculto ? null : <Text style={e.numRotulo}>{tr(rotulo)}</Text>}
       <View style={e.numGrupo}>
         <TextInput
@@ -478,6 +552,50 @@ export function Numero({
           </Pressable>
         </View>
       </View>
+    </View>
+
+    {!comBarra ? null : (
+    /**
+      * ── ⚠️⚠️ A BARRA ROLÁVEL — pedido do autor, 2026-09-06 ────────────────
+      *
+      * > *"isso quero barras roláveis ⛔ e ⛔ sem valores predeterminados"*
+      *
+      * ⛔ **O que estava errado:** para chegar a uma sistólica de 190 com o `+`
+      * de passo 1 eram **~150 toques**. ⚠️ Na prática ⛔ ninguém faz isso — ⛔ o
+      * médico digita ⛔ ou desiste, ⛔ e um controle que ⛔ ninguém usa ocupa
+      * espaço mentindo que serve.
+      *
+      * ⚠️ A caixa **continua sendo o caminho exato** (⛔ ela ⛔ não sumiu), o
+      * `−/+` continua sendo o ajuste fino de 1, ⛔ e a barra é o gesto grosso
+      * que leva **perto** em um movimento.
+      *
+      * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO GRAVA ENQUANTO O DEDO ESTÁ NELA: `onSlidingComplete`,
+      * ⛔ e ⛔ nunca `onValueChange`. ⛔ Um fato por pixel encheria a trilha
+      * append-only com o **caminho** até a medida, ⛔ e ⛔ nenhum deles é a
+      * medida.
+      *
+      * ⚠️⚠️ ⛔ E O ⛔ NÃO-MEDIDO CONTINUA ⛔ NÃO-MEDIDO: enquanto a caixa diz `—`,
+      * o trilho fica todo cinza ⛔ e o polegar no piso — ⛔ **posição ⛔ não é
+      * valor** (§0.2), ⛔ que é a mesma regra do seletor de hora.
+      */
+    <View style={e.numBarra}>
+      <Text style={e.numLimite}>{faixa.min}</Text>
+      <Slider
+        style={e.numSlider}
+        minimumValue={faixa.min}
+        maximumValue={faixa.max}
+        step={faixa.passo}
+        value={posicaoDaBarra}
+        minimumTrackTintColor={medido ? e.corDaBarraViva.color : e.corDaBarraMorta.color}
+        maximumTrackTintColor={e.corDaBarraMorta.color}
+        thumbTintColor={medido ? e.corDaBarraViva.color : e.corDoPolegarMorto.color}
+        accessibilityLabel={tr(rotulo)}
+        testID={`avc-num-barra-${campo}`}
+        onSlidingComplete={(v) => aplicar({ tipo: "arrastou", valor: v })}
+      />
+      <Text style={e.numLimite}>{faixa.max}</Text>
+    </View>
+    )}
     </View>
   );
 }
@@ -802,7 +920,7 @@ export function LinhaDeAchado({
         </Pressable>
       </View>
       <View style={binaria(opcoes) ? e.decisaoLinha : e.segEstreito}>
-        {opcoes.map((op, i) => {
+        {opcoes.map((op) => {
           const gravado = valorDaOpcao(op);
           const marcada = valor === gravado;
           const grande = binaria(opcoes);
@@ -813,7 +931,7 @@ export function LinhaDeAchado({
               key={op}
               style={grande
                 ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
-                : [e.segItemEstreito, i > 0 ? e.segDivisor : null, marcada ? e.segAtivo : null]}
+                : [e.segItemEstreito, marcada ? e.segAtivo : null]}
               accessibilityRole="radio"
               accessibilityState={{ checked: marcada }}
               aria-checked={marcada}
@@ -945,7 +1063,7 @@ export function Achados({
         return (
           <Pressable
             key={op}
-            style={e.achadoLinha}
+            style={[e.achadoLinha, marcado ? e.achadoLinhaOn : null]}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: marcado }}
             aria-checked={marcado}
@@ -1036,8 +1154,28 @@ export function LinhaDeRelogio({
       </Pressable>
       {/** ⚠️ Encostado no rótulo que explica — ⛔ nunca numa linha própria. */}
       {info ?? null}
+      {/**
+        * ⚠️⚠️ ISTO É UM **BOTÃO**, ⛔ e ⛔ não um valor azul — 2026-09-06, sexto
+        * relato do autor sobre a mesma coisa:
+        *
+        * > *"relógios ⛔ não se parecem botões, se parecem textos"*
+        *
+        * ⛔ Ele estava certo, ⛔ e a linha inteira também estava: *"Informar
+        * horário"* era **texto azul solto** dentro de um cartão. ⚠️ Azul é a
+        * única marca que ele tinha — ⛔ e cor sozinha ⛔ nunca é marca (**E-15**).
+        *
+        * ⚠️ Agora ele tem as três: **preenchimento**, **borda** ⛔ e a **seta**.
+        * ⛔ Vazio, ele veste `pedido` — o app está **pedindo** o dado. ⚠️ Com
+        * horário registrado, ⛔ ele ⛔ não pode continuar gritando azul: vira
+        * `controle`, ⛔ que é tocável ⛔ e discreto, porque o trabalho já foi
+        * feito ⛔ e o que resta é poder corrigir.
+        */}
       <Pressable
-        style={e.relValorToque}
+        style={({ pressed }) => [
+          e.relValorToque,
+          estado === "registrado" ? e.relAcaoFeita : e.relAcaoPedido,
+          pressed ? e.pressionado : null,
+        ]}
         accessibilityRole="button"
         accessibilityLabel={`${tr(rotulo)}: ${estado === "registrado" ? valor : tr(valor)}`}
         onPress={onPress}
@@ -1052,6 +1190,8 @@ export function LinhaDeRelogio({
         >
           {estado === "registrado" ? valor : tr(valor)}
         </Text>
+        {/** ⚠️ ⛔ Sem cor ⛔ nenhuma na conta: a seta diz *leva a algum lugar*. */}
+        <Text style={e.relSeta}>{SETA}</Text>
       </Pressable>
     </View>
   );
@@ -1118,7 +1258,12 @@ export function LeiturasEmBlocos({
 
       {info.length > 0 ? (
         <View style={e.blocoNeutro} testID="avc-bloco-registrado">
+          {/**
+            * ⚠️ Um recolhedor é um **botão**: ⛔ ele ⛔ não pode ser o mesmo texto
+            * dos títulos que ⛔ não fazem nada quando tocados.
+            */}
           <Pressable
+            style={({ pressed }) => [e.blocoRecolher, pressed ? e.pressionado : null]}
             accessibilityRole="button"
             accessibilityState={{ expanded: aberto }}
             testID="avc-bloco-registrado-abrir"
@@ -1227,12 +1372,27 @@ const criarEstilos = (tema: Tema) =>
      * ⛔ estas — *"Disponível / Indisponível / ⛔ Não sei"*, *"Incapacitante /
      * ⛔ Não incapacitante / Incerto"* — ficaram para trás.
      */
+    /**
+     * ⚠️⚠️ ⛔ AS OPÇÕES ⛔ NÃO SE TOCAM MAIS — 2026-09-06, sexto relato do autor.
+     *
+     * ⛔ Era **uma** moldura com filetes de 1 px dentro: na tela isso lê como
+     * uma caixa de texto com separadores, ⛔ e ⛔ não como três alvos. ⚠️ ⛔ Agora
+     * cada opção é um bloco com a sua borda ⛔ e o seu fundo, com vão entre
+     * elas — ⛔ exatamente o que os botões Sim/⛔ Não já faziam, ⛔ e que o autor
+     * ⛔ nunca reclamou de ⛔ não reconhecer.
+     */
     seg: {
       flexDirection: "row",
-      borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-      borderRadius: RAIO.botao,
-      overflow: "hidden",
+      gap: ESPACO.xs,
+    },
+    /**
+     * ⚠️⚠️ ⛔ COLUNA QUANDO O RÓTULO ⛔ NÃO CABE — ⛔ e a decisão é do texto, ⛔ e
+     * ⛔ não do gosto. ⛔ Três rótulos longos numa fileira de 343 px ⛔ não têm
+     * como caber ⛔ sem cortar, ⛔ e cortar rótulo de opção é cortar a pergunta.
+     */
+    segColuna: {
+      flexDirection: "column",
+      gap: ESPACO.xs,
     },
     /** ⚠️ Alvo de DEDO, ⛔ e ⛔ não de mouse: 44 px é o piso. */
     segItem: {
@@ -1240,10 +1400,14 @@ const criarEstilos = (tema: Tema) =>
       alignItems: "center",
       justifyContent: "center",
       minHeight: 44,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
       backgroundColor: tema.cores.controlSurface,
     },
-    segDivisor: { borderLeftWidth: 1, borderLeftColor: tema.cores.controlBorder },
-    segAtivo: { backgroundColor: tema.cores.primaryFill },
+    segAtivo: { backgroundColor: tema.cores.primaryFill, borderColor: tema.cores.primaryFill },
     segTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     segTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
 
@@ -1281,12 +1445,10 @@ const criarEstilos = (tema: Tema) =>
     achadoRotulo: { ...PAPEL.textoSecundario, color: tema.cores.text },
     achadoDefinicao: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     /** ⚠️ Estreito: onze achados de largura cheia seriam 990 px de rolagem. */
+    /** ⚠️ Mesma mudança do `seg`: blocos separados, ⛔ e ⛔ não uma caixa fatiada. */
     segEstreito: {
       flexDirection: "row",
-      borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-      borderRadius: RAIO.botao,
-      overflow: "hidden",
+      gap: ESPACO.xs,
       flexShrink: 0,
     },
     /** ⚠️ Estreito na LARGURA, ⛔ e ⛔ nunca na altura — o dedo ⛔ não encolhe. */
@@ -1296,6 +1458,9 @@ const criarEstilos = (tema: Tema) =>
       minHeight: 44,
       alignItems: "center",
       justifyContent: "center",
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
       backgroundColor: tema.cores.controlSurface,
     },
     segTextoEstreito: { ...PAPEL.micro, color: tema.cores.text },
@@ -1330,13 +1495,28 @@ const criarEstilos = (tema: Tema) =>
     empilhadoTextoAtivo: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
 
     achados: { gap: 1 },
+    /**
+     * ⚠️⚠️ CADA ACHADO É UM **ALVO**, ⛔ e ⛔ não um item de lista — 2026-09-06.
+     *
+     * ⛔ Relato do autor: *"essas coisas ⛔ não são utilizáveis, ⛔ não tem botão
+     * clicável, ⛔ não sei se é para ter"*. ⚠️ A caixinha de marcar existia, ⛔ mas
+     * ⛔ ela ⛔ não diz que **a linha toda** responde ao dedo — ⛔ e é a linha
+     * toda que responde.
+     */
     achadoLinha: {
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.sm,
       paddingVertical: ESPACO.xs,
+      paddingHorizontal: ESPACO.sm,
       minHeight: 44,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
     },
+    /** ⚠️ Marcado: ⛔ a moldura acompanha a caixa — ⛔ e ⛔ nunca sozinha (E-15). */
+    achadoLinhaOn: { borderColor: tema.cores.primary, backgroundColor: tema.cores.primaryTint },
     achadoMarca: {
       width: 18,
       height: 18,
@@ -1359,7 +1539,15 @@ const criarEstilos = (tema: Tema) =>
      */
     achadoTextoOn: { color: tema.cores.text },
 
-    num: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, paddingVertical: ESPACO.xs },
+    numRaiz: { paddingVertical: ESPACO.xs },
+    num: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ Os extremos escritos: a barra ⛔ não pode ser um trilho sem escala. */
+    numBarra: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    numSlider: { flex: 1, height: 36 },
+    numLimite: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    corDaBarraViva: { color: tema.cores.primary },
+    corDaBarraMorta: { color: tema.cores.controlBorder },
+    corDoPolegarMorto: { color: tema.cores.textSecondary },
     numRotulo: { ...PAPEL.textoPrincipal, flex: 1, minWidth: 0, color: tema.cores.text },
     numGrupo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     numCaixa: {
@@ -1478,13 +1666,48 @@ const criarEstilos = (tema: Tema) =>
       flexShrink: 1,
       minWidth: 0,
     },
+    /**
+     * ⚠️⚠️ O BOTÃO TEM **TETO DE LARGURA**, ⛔ e ⛔ isso ⛔ não é estética.
+     *
+     * ⛔ Sem teto, *"Informar horário"* em uma linha comia **163 px** dos 343 da
+     * linha ⛔ e o nome do marco ficava com 98: *"Chegada ao pronto-…"*,
+     * *"Início observado …"*. ⚠️ ⛔ E o comentário deste componente já dizia,
+     * desde 2026-09-05, que **nome clínico ⛔ NUNCA trunca — em relógio de AVC o
+     * marco É o dado**.
+     *
+     * ⚠️ Com teto, o rótulo do botão quebra em duas linhas (*"Informar"* /
+     * *"horário"*), o botão cabe em ~110 px ⛔ e o nome recupera ~50: ⛔ as duas
+     * coisas cabem inteiras. ⛔ Dar afordância ⛔ e perder o nome do marco seria
+     * copiar a forma ⛔ e jogar fora o conteúdo.
+     */
     relValorToque: {
       marginLeft: "auto",
+      flexDirection: "row",
+      alignItems: "center",
       justifyContent: "center",
+      gap: ESPACO.xs,
       minHeight: TOQUE.minimo,
-      paddingLeft: ESPACO.sm,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      borderRadius: RAIO.botao,
+      maxWidth: 122,
       flexShrink: 0,
     },
+    /** ⚠️ ⛔ Sem horário: o app **pede**. ⛔ Preenchido, borda ⛔ e seta. */
+    relAcaoPedido: {
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
+    /** ⚠️ Com horário: continua botão, ⛔ e para de disputar atenção. */
+    relAcaoFeita: {
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+    relSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    /** ⚠️ O mesmo retorno de toque em todo o kit — ⛔ nunca reinventado por tela. */
+    pressionado: { opacity: 0.65 },
     /**
      * ⚠️ O realce agora é uma **barra à esquerda**, ⛔ e ⛔ não uma borda em
      * volta: ⛔ sem moldura, ⛔ não há o que colorir sem devolver a caixa.
@@ -1501,9 +1724,9 @@ const criarEstilos = (tema: Tema) =>
      */
     relNome: { ...PAPEL.textoPrincipal, flexShrink: 1, color: tema.cores.text },
     /** ⚠️ O horário registrado é **métrica**: tabular, ⛔ e ⛔ nunca "pulando". */
-    relValor: { ...PAPEL.metrica, color: tema.cores.text },
+    relValor: { ...PAPEL.metrica, color: tema.cores.text, textAlign: "center" },
     /** ⚠️ Sem valor, o lugar do número é da **ação** — em azul, ⛔ e tocável. */
-    relValorVazio: { ...PAPEL.textoSecundario, color: tema.cores.primary },
+    relValorVazio: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
     relValorDesconhecido: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
 
     blocos: { gap: ESPACO.sm },
@@ -1526,6 +1749,16 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ Título de bloco — ⛔ sem caixa alta, pelo mesmo motivo de `secaoTitulo`. */
     blocoTituloAtencao: { ...PAPEL.tituloDeSecao, color: tema.cores.warning },
     blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    blocoRecolher: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
 
     info: {
       width: 22,

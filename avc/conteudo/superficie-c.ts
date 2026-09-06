@@ -105,7 +105,18 @@ export const PRIORIDADE_DA_IMAGEM = {
    * app ⛔ não executa: ⛔ ele ⛔ não pede exame, ⛔ e ⛔ não registra pedido.
    * ⚠️ A instrução clínica vive no **título** do card, onde ela é verdadeira.
    */
-  acaoAbrir: "Abrir Imagem",
+  /**
+   * ⚠️⚠️ ⛔ AGORA O RÓTULO PODE PROMETER *"solicitar"*, ⛔ e ⛔ é isso que mudou.
+   *
+   * ⛔ O comentário acima proibia *"Solicitar a tomografia"* como rótulo de
+   * botão — ⛔ com razão: o app ⛔ não registrava pedido ⛔ nenhum, ⛔ e o botão
+   * prometia uma ação que ⛔ ele ⛔ não executava. ⚠️ Com `hora_solicitacao_imagem`
+   * o pedido virou **fato**, ⛔ e o rótulo passou a ser verdadeiro.
+   */
+  acaoSolicitar: "Solicitar a tomografia",
+  /** ⚠️ Pedido já registrado: ⛔ o que falta é o exame. */
+  acaoRegistrar: "Registrar o exame",
+  acaoAbrir: "Já foi feita — registrar o exame",
   /** ⚠️ Realizada ⛔ e resultado pendente: ⛔ aí ⛔ só falta o laudo. */
   acaoResultado: "Registrar o resultado da tomografia",
   /** ⚠️ O que o app sabe — ⛔ sobre a **trilha**, ⛔ e ⛔ não sobre o mundo. */
@@ -356,6 +367,53 @@ export const OPCOES_SITIO_OCLUSAO: readonly string[] = [
  * está em `derivacoes-c.ts` — a estrutura guarda os dois fatos, e a tela ⛔ nunca
  * manda o médico para dois lugares ao mesmo tempo.
  */
+/**
+ * ⚠️⚠️ A SOLICITAÇÃO — o passo que faltava, ⛔ e ⛔ ele ⛔ não é um exame.
+ *
+ * ── ⚠️⚠️ O DEFEITO QUE ISTO FECHA (autor, 2026-09-06) ──────────────────────
+ *
+ * > *"tem o botão abrir imagem ⛔ e ⛔ nem apareceu antes a solicitação da
+ * >  imagem"*
+ *
+ * ⛔ Ele estava certo, ⛔ e o comentário deste arquivo **já admitia a dívida**:
+ * o card mandava *"solicitar"* no título ⛔ e o botão ⛔ só sabia **abrir** — ⛔ o
+ * app ⛔ não tinha onde guardar o pedido, ⛔ então ⛔ não podia oferecê-lo. ⚠️ O
+ * fluxo real do pronto-socorro começa em **pedir**, ⛔ e ⛔ não em registrar.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ⛔ NÃO É UMA INSTÂNCIA DE ESTUDO ────────────────────────
+ *
+ * ⛔ ⛔ Isto seria o erro caro. `situacaoDaTcSemContraste()` classifica **⛔ toda
+ * instância de TC sem resultado** como `realizada_resultado_pendente` — ⛔ e
+ * uma TC apenas **pedida** entraria ali como *"Tomografia registrada,
+ * resultado ⛔ ainda ⛔ não informado"*. ⚠️ O app passaria a afirmar que o exame
+ * **foi feito** a partir de um pedido: exatamente a afirmação sobre o mundo
+ * tirada de silêncio que **E-23** proíbe.
+ *
+ * ⚠️ Por isso o pedido é fato **do episódio**, ⛔ e ⛔ não do estudo. ⛔ Ele ⛔ não
+ * entra em ⛔ nenhuma derivação de exclusão de hemorragia, ⛔ e ⛔ não muda
+ * ⛔ nenhum destino.
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO É MARCO DE JANELA ────────────────────────────────
+ *
+ * ⛔ ⛔ Sem `relogio` declarado, como `estudo_hora` ⛔ e pela mesma razão: um
+ * horário operacional que virasse marco produziria janela errada com aparência
+ * de precisão (**E-21**). ⛔ ⛔ E ⛔ nenhum cronômetro nasce dele — R2.5 fala de
+ * **protocolo institucional**, ⛔ e ⛔ não deste paciente (**E-45**).
+ */
+export const SOLICITACAO_C: readonly CampoC[] = [
+  {
+    id: "hora_solicitacao_imagem",
+    temporalidade: "estavel",
+    rotulo: "Imagem solicitada às",
+    tipo: "hora",
+    aceitaDesconhecido: true,
+    ajuda: "Momento em que a imagem foi pedida. Registro operacional: não é marco de janela terapêutica e não afirma que o exame foi feito.",
+    fonte: "F-16",
+    bloqueiaTerapia: false,
+    nota: "A fonte recomenda imagem cerebral de emergência na avaliação inicial, antes de iniciar intervenções de reperfusão. Registrar o pedido não substitui registrar o exame nem o seu resultado.",
+  },
+];
+
 export const ESTUDO_C: readonly CampoC[] = [
   {
     id: "estudo_modalidade",
@@ -855,6 +913,18 @@ export const ROTULO_CURTO: Readonly<Record<string, string>> = {
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
 const GRUPOS_C_DECLARADOS: readonly GrupoDeclarado[] = [
+  /**
+   * ⚠️⚠️ **PRIMEIRO**, ⛔ e ⛔ isso é ordem clínica: ⛔ no início do atendimento
+   * ⛔ não há imagem — ⛔ há um pedido a fazer. ⛔ Pôr os exames antes obrigaria
+   * o médico a passar por *"⛔ nenhum exame registrado"* para chegar ao gesto
+   * que ele precisa fazer **agora**.
+   */
+  {
+    id: "solicitacao",
+    titulo: "Solicitação da imagem",
+    campos: SOLICITACAO_C,
+    nota: "Registrar o pedido não afirma que o exame foi feito. O exame e o resultado são registrados abaixo, quando existirem.",
+  },
   {
     id: "estudos",
     titulo: "Exames de imagem",

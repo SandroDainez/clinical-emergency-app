@@ -137,6 +137,26 @@ export type SituacaoDaTc =
  * ⛔ E ⛔ não fecha pendência nenhuma (**PD-22**): o resultado pendente continua
  * sendo a tarefa mais importante do atendimento.
  */
+/**
+ * ⚠️⚠️ ⛔ **QUANDO A IMAGEM FOI PEDIDA** — ⛔ e ⛔ nada além disso.
+ *
+ * ⚠️ Devolve o instante do pedido, ⛔ ou `undefined`. ⛔ **⛔ Não** diz que o
+ * exame foi feito, ⛔ **⛔ não** entra na exclusão de hemorragia ⛔ e ⛔ **⛔ não**
+ * é marco de janela — ⛔ ela existe ⛔ só para a tela saber se ⛔ ainda cabe
+ * oferecer *"solicitar"*.
+ *
+ * ⚠️⚠️ ⛔ E ELA ⛔ NÃO ACEITA *"sem essa informação"* COMO PEDIDO. ⛔ Ignorância
+ * declarada sobre o horário ⛔ não é um horário (**E-37**), ⛔ e transformá-la em
+ * *"já solicitada"* seria o app afirmando um pedido que ⛔ ninguém registrou.
+ *
+ * ⚠️ Vive aqui, ⛔ e ⛔ não no JSX, porque leitura de fato é do núcleo (**I6**):
+ * escrita na tela, ⛔ ela envelheceria em silêncio junto com o layout.
+ */
+export function imagemSolicitadaEm(estado: EstadoAvc): number | undefined {
+  const v = valorAtual(estado, "hora_solicitacao_imagem")?.valor;
+  return typeof v === "number" ? v : undefined;
+}
+
 export function situacaoDaTcSemContraste(estado: EstadoAvc): SituacaoDaTc {
   const tcs = tcsSemContraste(estado);
   if (tcs.length === 0) return "nenhuma_registrada";

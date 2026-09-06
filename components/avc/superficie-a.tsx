@@ -438,6 +438,16 @@ export default function SuperficieA({
                 return comEtiqueta(
                   <View key={campo.id} testID={`avc-campo-${campo.id}`} style={e.linhaNumero}>
                     <Numero
+                      /**
+                       * ⚠️⚠️ A BARRA VIVE **AQUI**, ⛔ e ⛔ não no ASPECTS.
+                       *
+                       * ⛔ Pedido do autor em 2026-09-06 sobre esta tela: PA,
+                       * glicemia, SpO₂ ⛔ e peso têm faixas largas, ⛔ e o `+` de
+                       * passo 1 é ⛔ ~150 toques até uma sistólica de 190.
+                       * ⚠️ ⛔ A caixa continua sendo o caminho exato; a barra é o
+                       * gesto grosso que leva perto em ⛔ um movimento.
+                       */
+                      comBarra
                       campo={campo.id}
                       rotulo={campo.rotulo}
                       unidade={campo.unidade}
@@ -644,7 +654,7 @@ const criarEstilos = (tema: Tema) =>
      * coloridas ⛔ não tem hierarquia — tem ruído.
      */
     prioridade: {
-      backgroundColor: tema.cores.surfaceElevated,
+      backgroundColor: tema.cores.controlSurface,
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.sm,
       paddingVertical: ESPACO.sm,
@@ -710,10 +720,21 @@ const criarEstilos = (tema: Tema) =>
     perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     perguntaTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 
+    /**
+     * ⚠️⚠️ *"Sem essa informação"* É UMA **RESPOSTA**, ⛔ e ⛔ não uma legenda —
+     * 2026-09-06. ⛔ Ela declara ignorância (**E-37**), que é diferente de ⛔ não
+     * ter perguntado; ⛔ e uma resposta que ⛔ não parece tocável ⛔ nunca é dada.
+     */
     desconhecidoCompacto: {
       minHeight: TOQUE.minimo,
+      alignSelf: "flex-start",
       justifyContent: "center",
-      paddingRight: ESPACO.sm,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
     },
     desconhecidoTexto: {
       color: tema.cores.textSecondary,

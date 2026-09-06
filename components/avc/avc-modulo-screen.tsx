@@ -36,7 +36,8 @@ import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
-import { destinoDaImagem, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
+import { SETA } from "../../design-system/afordancia";
+import { destinoDaImagem, imagemSolicitadaEm, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 import { Icone, type NomeDeIcone } from "./ui";
 import {
@@ -45,6 +46,7 @@ import {
   InfoToggle,
   PhaseNavigation,
   PrimaryAction,
+  SecondaryAction,
   ScreenHeader,
   WarningCard,
 } from "./sistema";
@@ -254,6 +256,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ Agora o valor mora **dentro do eixo que o julga** (C ⛔ e D). ⛔ Este card
    * fica com o que ⛔ **não tem eixo**: o NIHSS ⛔ e a imagem.
    */
+  /** ⚠️ Lida pelo núcleo (I6) — ⛔ a tela ⛔ não interpreta fato por conta própria. */
+  const imagemJaSolicitada = imagemSolicitadaEm(estado) !== undefined;
+
   const VITAIS = useMemo(() => {
     const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
     const img = destinoDaImagem(estado);
@@ -322,9 +327,59 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * pelo estado de cada eixo.
    */
 
+  /**
+   * ── ⚠️⚠️ A PILHA DE ONDE SE VEIO ────────────────────────────────────────
+   *
+   * ⛔ Relato do autor, 2026-09-06:
+   *
+   * > *"quando clico nos botões de estabilização ⛔ e depois tento voltar,
+   * >  volta para a página onde tem os módulos ⛔ e ⛔ não de volta à página que
+   * >  eu estava, de estabilização"*
+   *
+   * ⛔ **O defeito:** o módulo inteiro é **⛔ uma** rota. ⚠️ Trocar de superfície
+   * ⛔ não passava por navegador ⛔ nenhum, ⛔ então *"‹ Voltar"* ⛔ só sabia fazer
+   * uma coisa: **sair**. ⛔ Quem tocou num eixo, foi levado à Imagem ⛔ e quis
+   * desfazer o passo era jogado para fora do atendimento.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO CRIA ORDEM (**E-11**): a pilha guarda **por onde se
+   * passou**, ⛔ e ⛔ não por onde se **deve** passar. ⛔ Ela ⛔ não bloqueia, ⛔ não
+   * exige ⛔ e ⛔ não altera ⛔ nenhum fato — ⛔ é memória de navegação, ⛔ e ⛔ nada
+   * mais.
+   *
+   * ⚠️ ⛔ Ela vive num `ref` de propósito: se fosse estado, cada troca de
+   * superfície causaria um render a mais ⛔ e a rolagem já paga esse preço.
+   */
+  const trilhaDeSuperficies = useRef<SuperficieId[]>([]);
+
   function abrir(id: SuperficieId) {
     // ⚠️ E-20: mudar de superfície ⛔ NÃO produz ação clínica nem registra nada.
+    /**
+     * ⚠️⚠️ O EMPILHAR ACONTECE **FORA** DO `setEstado` — ⛔ e ⛔ isso ⛔ não é
+     * estilo. ⛔ O atualizador de estado do React pode ser executado **duas
+     * vezes** (StrictMode), ⛔ e um `push` lá dentro empilharia a mesma
+     * superfície em dobro: dois toques em *"Voltar"* para desfazer **um**
+     * passo.
+     *
+     * ⚠️ Abrir a superfície **em que já se está** ⛔ não empilha.
+     */
+    if (estado.superficieVista !== id) trilhaDeSuperficies.current.push(estado.superficieVista);
     setEstado((e) => verSuperficie(e, id));
+  }
+
+  /**
+   * ⚠️⚠️ *"Voltar"* VOLTA **UM PASSO**, ⛔ e ⛔ só sai do módulo quando ⛔ não há
+   * passo para desfazer.
+   *
+   * ⚠️ ⛔ E o `onVoltar` de fora continua existindo inteiro — ⛔ ele é o fim da
+   * pilha, ⛔ e ⛔ não foi substituído.
+   */
+  function voltarUmPasso() {
+    const anterior = trilhaDeSuperficies.current.pop();
+    if (anterior === undefined) {
+      onVoltar();
+      return;
+    }
+    setEstado((e) => verSuperficie(e, anterior));
   }
 
   // ── Entrada de fatos da Superfície A ──────────────────────────────────────
@@ -370,7 +425,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
      * ⛔ e o atende no primeiro layout — ⛔ por isso a troca de fase ⛔ e o foco
      * podem ser pedidos juntos.
      */
-    if (estado.superficieVista !== achado[0]) setEstado((e) => verSuperficie(e, achado[0]));
+    /** ⚠️ Por `abrir`, ⛔ e ⛔ não por fora: ir a um campo ⛔ também deixa rastro. */
+    if (estado.superficieVista !== achado[0]) abrir(achado[0]);
     rolarAte(campo);
   }
 
@@ -687,7 +743,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
             onTocar: () => irParaCampo("hora_ultima_vez_bem"),
           }}
-          onSair={onVoltar}
+          onSair={voltarUmPasso}
+          /**
+           * ⚠️ O rótulo diz **para onde** volta — ⛔ quem lê *"Voltar"* num app
+           * de uma rota só ⛔ não sabe se vai perder o atendimento.
+           */
+          rotuloDeSaida={
+            CURTO[trilhaDeSuperficies.current[trilhaDeSuperficies.current.length - 1] ?? ""]?.nome
+          }
         />
       }
       navegacao={
@@ -976,8 +1039,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <Text style={s.imagemLinhaAcao}>
             {tr(
               situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
-                ? "Registrar o resultado da tomografia"
-                : "Solicitar a tomografia"
+                ? PRIORIDADE_DA_IMAGEM.acaoResultado
+                : imagemJaSolicitada
+                  ? PRIORIDADE_DA_IMAGEM.acaoRegistrar
+                  : PRIORIDADE_DA_IMAGEM.acaoSolicitar
             )}
           </Text>
         </Pressable>
@@ -1018,15 +1083,50 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
              * faz: leva à Imagem. ⛔ Quando houver campo de *"solicitada às
              * HH:MM"*, ⛔ aí sim cabe um segundo botão que **registre** algo.
              */
-            <PrimaryAction
-              rotulo={
-                situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
-                  ? PRIORIDADE_DA_IMAGEM.acaoResultado
-                  : PRIORIDADE_DA_IMAGEM.acaoAbrir
-              }
-              onPress={() => abrir("imagem")}
-              testID="avc-prioridade-imagem-acao"
-            />
+            /**
+             * ⚠️⚠️ AGORA SÃO **DUAS** AÇÕES, ⛔ e ⛔ elas fazem coisas
+             * **diferentes** — que é a condição que o comentário acima já
+             * exigia para a segunda existir.
+             *
+             * ⛔ Enquanto ⛔ não havia campo de *"solicitada às HH:MM"*, três
+             * rótulos diferentes chamavam o mesmo `abrir("imagem")`, ⛔ e ⛔ isso
+             * era um controle mentiroso. ⚠️ ⛔ Agora **solicitar** leva ao campo
+             * do pedido, ⛔ e **registrar** leva ao exame — ⛔ dois lugares, ⛔ e
+             * ⛔ dois fatos distintos.
+             *
+             * ⚠️ ⛔ E a ordem segue o mundo: ⛔ no início do atendimento ⛔ não há
+             * imagem, ⛔ há um pedido a fazer.
+             */
+            <View style={s.imagemAcoes}>
+              <PrimaryAction
+                rotulo={
+                  situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
+                    ? PRIORIDADE_DA_IMAGEM.acaoResultado
+                    : imagemJaSolicitada
+                      ? PRIORIDADE_DA_IMAGEM.acaoRegistrar
+                      : PRIORIDADE_DA_IMAGEM.acaoSolicitar
+                }
+                onPress={() =>
+                  situacaoDaTcSemContraste(estado) !== "nenhuma_registrada" || imagemJaSolicitada
+                    ? abrir("imagem")
+                    : irParaCampo("hora_solicitacao_imagem")
+                }
+                testID="avc-prioridade-imagem-acao"
+              />
+              {/**
+                * ⚠️⚠️ **E-23** — o app sabe que ⛔ nada está na trilha, ⛔ e ⛔ não
+                * que o exame ⛔ não foi feito. ⛔ O paciente pode ter chegado com
+                * a TC pronta de outro serviço, ⛔ e essa saída ⛔ não pode
+                * depender de ⛔ ele ⛔ ter pedido primeiro.
+                */}
+              {situacaoDaTcSemContraste(estado) === "nenhuma_registrada" && !imagemJaSolicitada ? (
+                <SecondaryAction
+                  rotulo={PRIORIDADE_DA_IMAGEM.acaoAbrir}
+                  onPress={() => abrir("imagem")}
+                  testID="avc-prioridade-imagem-registrar"
+                />
+              ) : null}
+            </View>
           }
         />
       )}
@@ -1440,9 +1540,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * "Neurológico · Resolver" descrevia um lugar e deixava a ação
                 * por último, na tela em que o médico está com pressa.
                 */}
-              <Text style={s.pendenciaDono}>
-                {tr("Abrir")} {tr(superficie(p.dono).titulo)}
-              </Text>
+              {/**
+                * ⚠️⚠️ A AÇÃO É UM **BOTÃO DENTRO DO CARTÃO** — 2026-09-06.
+                *
+                * ⛔ Ela era uma terceira linha de texto azul, ⛔ e o autor a
+                * apontou entre as coisas que *"parecem texto ⛔ e ⛔ não
+                * botões"*. ⚠️ ⛔ O cartão inteiro continua tocável (o alvo ⛔ não
+                * encolheu); ⛔ o que mudou é que agora **se vê** onde tocar.
+                */}
+              <View style={s.pendenciaAcao}>
+                <Text style={s.pendenciaDono}>
+                  {tr("Abrir")} {tr(superficie(p.dono).titulo)}
+                </Text>
+                <Text style={s.pendenciaSeta}>{SETA}</Text>
+              </View>
             </Pressable>
           ))
         )}
@@ -1678,6 +1789,8 @@ const criarEstilos = (tema: Tema) =>
     },
     imagemLinhaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },
     imagemLinhaAcao: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical, flexShrink: 0 },
+    /** ⚠️ Solicitar ⛔ e registrar são **dois** gestos — ⛔ empilhados, ⛔ e ⛔ sem disputa. */
+    imagemAcoes: { gap: ESPACO.sm },
 
     /* ── ⚠️ ESTABILIZAÇÃO PRIMEIRO ──────────────────────────────────────── */
     ameacaFrase: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
@@ -1802,6 +1915,20 @@ const criarEstilos = (tema: Tema) =>
       borderLeftColor: AREA_AVC.accent,
       minHeight: TOQUE.minimo,
     },
+    pendenciaAcao: {
+      alignSelf: "flex-start",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      marginTop: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
+    pendenciaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
     pendenciaRotulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
     pendenciaResolve: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     /**
@@ -1819,7 +1946,6 @@ const criarEstilos = (tema: Tema) =>
     pendenciaDono: {
       ...PAPEL.rotuloDeMetrica,
       color: tema.cores.primary,
-      marginTop: ESPACO.xs,
     },
     abas: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
     aba: {
@@ -1851,7 +1977,17 @@ const criarEstilos = (tema: Tema) =>
     superficieResumo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     emConstrucao: { color: tema.cores.warning, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", marginTop: ESPACO.sm },
     emConstrucaoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
-    fontesBotao: { minHeight: TOQUE.minimo, justifyContent: "center", marginTop: ESPACO.md },
+    fontesBotao: {
+      minHeight: TOQUE.minimo,
+      alignSelf: "flex-start",
+      justifyContent: "center",
+      marginTop: ESPACO.md,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
     fontesTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700", letterSpacing: 1 },
     fontes: { gap: 2 },
     fonte: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },

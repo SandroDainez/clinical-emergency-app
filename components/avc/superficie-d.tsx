@@ -55,6 +55,7 @@ import { valorAtual } from "../../avc/nucleo/estado";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import { Icone, LinhaDeAchado, Recolhido, Secao } from "./ui";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
@@ -248,7 +249,7 @@ export default function SuperficieD({
           <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
             {grupo.recolhido ? (
               <Pressable
-                style={e.cabecalho}
+                style={[e.cabecalho, e.cabecalhoTocavel]}
                 accessibilityRole="button"
                 aria-expanded={!fechado}
                 testID={`avc-bloco-abrir-${grupo.id}`}
@@ -334,7 +335,7 @@ export default function SuperficieD({
           <View key={qual} style={e.grupo} testID={`avc-d-estado-${qual}`}>
             {recolhido ? (
               <Pressable
-                style={e.cabecalho}
+                style={[e.cabecalho, e.cabecalhoTocavel]}
                 accessibilityRole="button"
                 aria-expanded={!fechado}
                 testID={`avc-d-abrir-${qual}`}
@@ -504,6 +505,7 @@ export default function SuperficieD({
                   <Text style={e.linhaRotulo} testID={`avc-leitura-curto-${l.id}`}>
                     {tr(l.curto)}
                   </Text>
+                  <Text style={e.linhaSeta}>{SETA}</Text>
                 </Pressable>
                 <Recolhido
                   id={`leitura-${l.id}`}
@@ -541,7 +543,7 @@ export default function SuperficieD({
         ))}
         {demais.length > 0 ? (
           <Pressable
-            style={e.cabecalho}
+            style={[e.cabecalho, e.cabecalhoTocavel]}
             accessibilityRole="button"
             aria-expanded={abertos.includes("cortes")}
             testID="avc-d-abrir-cortes"
@@ -597,6 +599,23 @@ const criarEstilos = (tema: Tema) =>
     },
     grupo: { gap: ESPACO.xs },
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /**
+     * ⚠️⚠️ ⛔ SÓ O CABEÇALHO QUE **RECOLHE** VIRA BOTÃO — 2026-09-06.
+     *
+     * ⛔ Pintar `cabecalho` inteiro daria cara de botão aos títulos que ⛔ não
+     * fazem ⛔ nada quando tocados: ⛔ um controle mentiroso é pior que um
+     * controle apagado, porque o médico toca, ⛔ nada acontece, ⛔ e ele passa a
+     * desconfiar dos que **funcionam**.
+     */
+    cabecalhoTocavel: {
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+
     cabecalhoNome: { flex: 1, minWidth: 0 },
     giradoParaBaixo: { transform: [{ rotate: "90deg" }] },
     grupoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
@@ -630,7 +649,24 @@ const criarEstilos = (tema: Tema) =>
       paddingVertical: ESPACO.xs,
     },
     /** ⚠️ A área de toque do texto — ⛔ o ⓘ tem a dele, ⛔ e ⛔ elas ⛔ não se cruzam. */
-    linhaToque: { flex: 1, minWidth: 0, minHeight: TOQUE.minimo, justifyContent: "center" },
+    /**
+     * ⚠️ Ela **navega** para o painel Paciente. ⛔ Sem corpo ⛔ e ⛔ sem seta,
+     * ⛔ era um rótulo — ⛔ e ⛔ ninguém toca num rótulo.
+     */
+    linhaToque: {
+      flex: 1,
+      minWidth: 0,
+      minHeight: TOQUE.minimo,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+    linhaSeta: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
     linhaRotulo: { flex: 1, minWidth: 0, color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
     /** ⚠️ Selo: menor que o rótulo, ⛔ e com moldura própria. */
     linhaEstado: {

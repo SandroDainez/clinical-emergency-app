@@ -52,6 +52,7 @@ export function ClinicalHeader({
   marcador,
   relogio,
   onSair,
+  rotuloDeSaida,
   aoLado,
 }: {
   titulo: string;
@@ -70,6 +71,15 @@ export function ClinicalHeader({
    */
   relogio?: { readonly rotulo: string; readonly valor?: string; readonly onTocar?: () => void };
   onSair: () => void;
+  /**
+   * ⚠️⚠️ ⛔ PARA ONDE O *"Voltar"* VOLTA — ⛔ e ⛔ não *"voltar"* no vazio.
+   *
+   * ⛔ O módulo é **uma** rota: quem tocou num eixo ⛔ e foi levado à Imagem
+   * ⛔ não tinha como desfazer o passo ⛔ sem sair do atendimento. ⚠️ Com a
+   * pilha, ⛔ o botão nomeia o passo que desfaz — ⛔ e ⛔ sem ela ⛔ ele diz
+   * *"Voltar"*, que é o que ⛔ ele faz mesmo: sair.
+   */
+  rotuloDeSaida?: string;
   aoLado?: ReactNode;
 }) {
   const tr = useTr();
@@ -87,11 +97,23 @@ export function ClinicalHeader({
         <Pressable
           onPress={onSair}
           accessibilityRole="button"
-          accessibilityLabel={tr("Sair do módulo e voltar para a lista")}
+          accessibilityLabel={
+            rotuloDeSaida === undefined
+              ? tr("Sair do módulo e voltar para a lista")
+              : `${tr("Voltar para")} ${tr(rotuloDeSaida)}`
+          }
           hitSlop={8}
+          testID="avc-voltar"
           style={({ pressed }) => [e.headerSair, pressed && e.pressionado]}
         >
-          <Text style={e.headerSairTexto}>{tr("‹ Voltar")}</Text>
+          {/**
+            * ⚠️ ⛔ Sem moldura ⛔ e ⛔ sem fundo **de propósito**: ⛔ ele ⛔ não
+            * compete com a ação do cabeçalho. ⚠️ A seta ⛔ e a posição de canto
+            * superior esquerdo são a convenção que ⛔ ninguém precisa aprender.
+            */}
+          <Text style={e.headerSairTexto} numberOfLines={2}>
+            {rotuloDeSaida === undefined ? tr("‹ Voltar") : `‹ ${tr(rotuloDeSaida)}`}
+          </Text>
         </Pressable>
       </View>
 
@@ -106,7 +128,7 @@ export function ClinicalHeader({
         {escopo ? <Text style={e.headerEscopo} numberOfLines={2}>{tr(escopo)}</Text> : null}
       </View>
 
-      <View style={e.headerLado}>
+      <View style={e.headerLadoDireito}>
         {relogio ? (
           <Pressable
             onPress={relogio.onTocar}
@@ -141,7 +163,7 @@ export function ClinicalHeader({
             {relogio.valor === undefined ? (
               <>
                 <Text style={e.headerRelogioPedido}>{tr("Definir")}</Text>
-                <Text style={e.headerRelogioRotulo} numberOfLines={2}>
+                <Text style={e.headerRelogioPedidoRotulo} numberOfLines={2}>
                   {tr(relogio.rotulo)}
                 </Text>
               </>
@@ -871,6 +893,17 @@ function estilos(tema: Tema) {
      * trunca**: quem cede espaço é a moldura, ⛔ e ⛔ não o nome.
      */
     headerLado: { width: 64, gap: ESPACO.xs } as const,
+    /**
+     * ⚠️⚠️ MAIS LARGO QUE O LADO ESQUERDO, ⛔ e ⛔ isso ⛔ não é assimetria por
+     * descuido — 2026-09-06, relato do autor: *"esse botão está muito ruim
+     * ainda, tem que ser maior ⛔ e mais destacado"*.
+     *
+     * ⛔ Em 64 px, *"Definir · Última vez bem"* quebrava em **três** linhas de
+     * 11 px espremidas. ⚠️ ⛔ E ⛔ não é um dado qualquer: **⛔ sem ele ⛔ não há
+     * janela terapêutica** — é o único número do cabeçalho que decide
+     * elegibilidade.
+     */
+    headerLadoDireito: { width: 112, alignItems: "flex-end", gap: ESPACO.xs } as const,
     headerCentro: { flex: 1, alignItems: "center", gap: 2 } as const,
     headerSair: { minHeight: TOQUE.minimo, justifyContent: "center" } as const,
     headerSairTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary } as const,
@@ -896,9 +929,11 @@ function estilos(tema: Tema) {
     } as const,
     headerRelogio: {
       alignItems: "flex-end",
+      alignSelf: "stretch",
       minHeight: TOQUE.minimo,
       justifyContent: "center",
-      paddingHorizontal: ESPACO.xs,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
       borderRadius: RAIO.botao,
     } as const,
     /**
@@ -908,12 +943,28 @@ function estilos(tema: Tema) {
      * ⛔ ⛔ E ⛔ não é âmbar: ⛔ falta de dado ⛔ não é achado (**E-37**). ⚠️ É a
      * cor de **ação**, porque é ⛔ exatamente isso que ele pede.
      */
+    /**
+     * ⚠️⚠️ **PREENCHIDO**, ⛔ e ⛔ não mais um contorno claro — 2026-09-06.
+     *
+     * ⛔ O contorno em `primaryTint` media 1,4:1 contra o cabeçalho: existia no
+     * arquivo ⛔ e ⛔ quase ⛔ não existia na tela. ⚠️ Este é o **único** controle
+     * do cabeçalho, ⛔ e ⛔ ele pede o dado que abre ⛔ ou fecha a trombólise —
+     * ⛔ ele pode ser o botão mais forte da tela ⛔ sem competir com ⛔ nada.
+     */
     headerRelogioVazio: {
+      minHeight: TOQUE.critico,
+      alignItems: "center",
       borderWidth: 1,
-      borderColor: tema.cores.primary,
-      backgroundColor: tema.cores.primaryTint,
+      borderColor: tema.cores.primaryFill,
+      backgroundColor: tema.cores.primaryFill,
     } as const,
-    headerRelogioPedido: { ...PAPEL.rotuloDeMetrica, color: tema.cores.primary } as const,
+    headerRelogioPedido: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill } as const,
+    /** ⚠️ Sobre o azul cheio, o rótulo ⛔ não pode ser cinza secundário. */
+    headerRelogioPedidoRotulo: {
+      ...PAPEL.micro,
+      color: tema.cores.onFill,
+      textAlign: "center",
+    } as const,
     /** ⚠️ O número que decide a janela — ⛔ ele é métrica, ⛔ e tabular. */
     headerRelogioValor: { ...PAPEL.metrica, color: tema.cores.critical } as const,
     headerRelogioRotulo: {
