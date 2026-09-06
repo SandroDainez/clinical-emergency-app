@@ -690,12 +690,29 @@ const criarEstilos = (tema: Tema) =>
      */
     linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
+    /**
+     * ⚠️⚠️ ⛔ SEM PUXÃO NEGATIVO — corrigido em 2026-09-06, relato do autor:
+     * *"aqui tem sobreposição de imagem"*.
+     *
+     * ⛔ Havia `marginTop: -ESPACO.xs`. ⚠️ Enquanto *"Sem essa informação"* era
+     * **texto solto**, os 4 px para cima só o encostavam no relógio de cima — ⛔ e
+     * era ⛔ exatamente o que se queria, porque a sub-linha **pertence ao relógio
+     * acima**, ⛔ e ⛔ não ao de baixo.
+     *
+     * ⚠️⚠️ ⛔ AO GANHAR CORPO ⛔ E BORDA, o mesmo −4 px deixou de aproximar ⛔ e
+     * passou a **cobrir a borda do cartão**. ⛔ É o preço escondido da
+     * afordância: ⛔ toda folga negativa desenhada para um texto vira
+     * sobreposição quando o texto vira caixa.
+     *
+     * ⚠️ O pertencimento continua dito — ⛔ e por meio que ⛔ não empilha objeto
+     * sobre objeto: o **recuo à esquerda**.
+     */
     subLinha: {
       flexDirection: "row",
       alignItems: "center",
       gap: ESPACO.sm,
       paddingLeft: ESPACO.md,
-      marginTop: -ESPACO.xs,
+      marginTop: ESPACO.xs,
       marginBottom: ESPACO.sm,
     },
     leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },

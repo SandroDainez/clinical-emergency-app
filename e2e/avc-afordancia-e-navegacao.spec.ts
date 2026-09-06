@@ -136,6 +136,114 @@ test.describe("AVC — afordância e navegação", () => {
     expect(cortados, `⛔ rótulo(s) cortado(s) na tela: ${cortados.join(" | ")}`).toEqual([]);
   });
 
+  test("⛔ NENHUMA caixa desenhada cobre outra", async ({ page }) => {
+    await abrirModulo(page, "avc");
+
+    /**
+     * ⚠️⚠️ ⛔ O PREÇO ESCONDIDO DA AFORDÂNCIA — relato do autor, 2026-09-06:
+     * *"aqui tem sobreposição de imagem"*.
+     *
+     * ⛔ *"Sem essa informação"* tinha `marginTop: -4`. ⚠️ Enquanto era **texto
+     * solto**, os 4 px para cima ⛔ só o encostavam no relógio a que ⛔ ele
+     * pertence. ⛔ Ao ganhar corpo ⛔ e borda, o mesmo −4 passou a **cobrir a
+     * borda do cartão de cima**.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É UMA LINHA DE CSS: é **a classe inteira**. ⛔ Toda
+     * folga negativa que alguém desenhou para um texto vira sobreposição no dia
+     * em que o texto vira caixa — ⛔ e ⛔ nenhuma trava anterior olhava para
+     * isso.
+     */
+    const colisoes = await page.evaluate(() => {
+      /**
+       * ⚠️⚠️ ⛔ COMPARAR EM COORDENADA DE **VIEWPORT** ⛔ NÃO FUNCIONA — ⛔ e a
+       * primeira versão desta trava acusou oito falsos positivos por isso.
+       *
+       * ⛔ `getBoundingClientRect()` devolve a posição na janela mesmo de quem
+       * está **abaixo da dobra**, recortado pelo `ScrollView`. ⚠️ Resultado: o
+       * card da escala, que mora 900 px abaixo, "colidia" com a barra de fases
+       * — ⛔ dois objetos que ⛔ nunca se veem na mesma tela.
+       *
+       * ⚠️ O que vale é a geometria **dentro do mesmo contêiner de rolagem**:
+       * ali a sobreposição é real, ⛔ e independe de onde a rolagem está. ⛔ Quem
+       * mora em contêineres diferentes ⛔ não se compara.
+       */
+      function contêiner(el: Element): Element {
+        for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+          const ov = getComputedStyle(n).overflowY;
+          if ((ov === "auto" || ov === "scroll") && n.scrollHeight > n.clientHeight) return n;
+        }
+        return document.body;
+      }
+
+      /**
+       * ⚠️⚠️ ⛔ O UNIVERSO SÃO AS **CAIXAS DESENHADAS**, ⛔ e ⛔ não ⛔ só os
+       * tocáveis — ⛔ e a primeira versão errou ⛔ exatamente nisso.
+       *
+       * ⛔ O que o autor viu foi a etiqueta *"Sem essa informação"* subindo por
+       * cima do **cartão do relógio**. ⚠️ O cartão ⛔ não é `Pressable`: quem
+       * responde ao toque são as duas metades **dentro** dele. ⛔ Varrendo ⛔ só
+       * `tabindex`, a colisão que ⛔ ele apontou ⛔ nem entrava na conta — ⛔ e a
+       * trava passou verde sobre o defeito.
+       *
+       * ⚠️ Caixa desenhada = tem **corpo** ⛔ ou **borda**. ⛔ É a mesma
+       * definição de `prova-avc-afordancia.cjs`, ⛔ e ⛔ não uma segunda.
+       */
+      const alvos = [...document.querySelectorAll("div")].filter((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width <= 1 || r.height <= 1) return false;
+        const cs = getComputedStyle(el);
+        const opaco =
+          cs.backgroundColor !== "transparent" &&
+          !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(cs.backgroundColor);
+        const temBorda = parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0;
+        return opaco || temBorda;
+      });
+
+      const nome = (el: Element) =>
+        el.getAttribute("data-testid") ?? (el.textContent ?? "").trim().slice(0, 40);
+
+      /** ⚠️ Posição no CONTEÚDO do contêiner — ⛔ e ⛔ não na janela. */
+      const caixa = (el: Element, dono: Element) => {
+        const r = el.getBoundingClientRect();
+        const d = dono.getBoundingClientRect();
+        const dx = dono === document.body ? 0 : dono.scrollLeft;
+        const dy = dono === document.body ? 0 : dono.scrollTop;
+        return {
+          left: r.left - d.left + dx,
+          right: r.right - d.left + dx,
+          top: r.top - d.top + dy,
+          bottom: r.bottom - d.top + dy,
+        };
+      };
+
+      const fora: string[] = [];
+      for (let i = 0; i < alvos.length; i++) {
+        for (let j = i + 1; j < alvos.length; j++) {
+          const a = alvos[i];
+          const b = alvos[j];
+          /**
+           * ⚠️ Alvo DENTRO de alvo se sobrepõe por construção — um botão num
+           * cartão que também responde ao toque. ⛔ Isso ⛔ não é o defeito.
+           */
+          if (a.contains(b) || b.contains(a)) continue;
+
+          const dono = contêiner(a);
+          if (dono !== contêiner(b)) continue;
+
+          const ra = caixa(a, dono);
+          const rb = caixa(b, dono);
+          /** ⚠️ 1 px de folga: bordas encostadas ⛔ não são sobreposição. */
+          const cruzaX = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left) > 1;
+          const cruzaY = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top) > 1;
+          if (cruzaX && cruzaY) fora.push(`${nome(a)} × ${nome(b)}`);
+        }
+      }
+      return fora;
+    });
+
+    expect(colisoes, `⛔ alvos sobrepostos: ${colisoes.join(" | ")}`).toEqual([]);
+  });
+
   test("arrastar a barra da pressão GRAVA a medida", async ({ page }) => {
     await abrirModulo(page, "avc");
 
