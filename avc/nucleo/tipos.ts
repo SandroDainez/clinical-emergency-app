@@ -54,7 +54,16 @@ export type SuperficieId =
   | "seguranca"
   | "correcoes"
   | "reperfusao"
-  | "destino";
+  | "destino"
+  /**
+   * ⚠️⚠️ AS DUAS ÚLTIMAS SÃO **DESTINOS**, e ⛔ não etapas do fluxo isquêmico
+   * (PD-36). Alcançadas a partir de Destino/Imagem quando a TC identifica
+   * hemorragia (`hic`) ou há suspeita de HSA (`hsa`). ⛔ Elas ⛔ não entram na
+   * navegação de passos — o paciente hemorrágico ⛔ não faz trombólise. São
+   * catálogos de recomendação (AHA/ASA 2022 HIC e 2023 HSA).
+   */
+  | "hic"
+  | "hsa";
 
 /**
  * Os relógios clínicos do módulo (§1.1, E-36).

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { GRUPOS_P, TODOS_OS_CAMPOS_P } from "../avc/conteudo/paciente";
-import { SUPERFICIES } from "../avc/conteudo/superficies";
+import { SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -50,8 +50,8 @@ test.describe("AVC · Paciente — painel de contexto", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
 
-    expect(SUPERFICIES.length).toBe(9);
-    for (const sup of SUPERFICIES) {
+    expect(SUPERFICIES_COM_ABA.length).toBe(9);
+    for (const sup of SUPERFICIES_COM_ABA) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       await expect(page.getByTestId(`avc-superficie-${sup.id}`), `${sup.id} ⛔ não abriu`)
         .toBeVisible();

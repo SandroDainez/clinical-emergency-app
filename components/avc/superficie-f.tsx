@@ -48,6 +48,8 @@ import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 
@@ -152,6 +154,133 @@ export default function SuperficieF({
         <Raia titulo={tr("Trombólise")} itens={itens} terapia="ivt" testID="avc-f-raia-ivt" />
         <Raia titulo={tr("Trombectomia")} itens={itens} terapia="evt" testID="avc-f-raia-evt" />
       </View>
+
+      {/**
+        * ⚠️⚠️ MEDICAMENTO · DOSE · ADMINISTRAÇÃO SUBIRAM PARA CÁ (PD-37).
+        *
+        * ⛔ Eles eram o **11º bloco** da tela, depois de dez faixas de
+        * recomendação. ⚠️ O médico precisa responder *"este paciente recebe
+        * reperfusão? qual? quanto? o que faço agora?"* — ⛔ e a resposta
+        * operacional estava no fim de um catálogo.
+        *
+        * ⚠️ Agora a ordem é a clínica: **elegibilidade** (as duas raias, acima)
+        * → **medicamento** → **dose** → **administração**. As recomendações,
+        * os alertas ⛔ e o que falta colher vêm **depois** — ⛔ eles informam a
+        * decisão, ⛔ mas ⛔ não são a decisão.
+        *
+        * ⛔ ⛔ NADA foi removido ⛔ e ⛔ nenhuma regra clínica mudou: é reordenação
+        * de apresentação. As faixas continuam inteiras, logo abaixo.
+        */}
+      {/* ── agente e dose ────────────────────────────────────────────────── */}
+      <View style={e.grupo} testID="avc-f-agente">
+        <CabecalhoDeBloco titulo={tr(CAMPO_AGENTE.rotulo)} testID="avc-f-bloco-agente" />
+        <View style={e.opcoes}>
+          {CAMPO_AGENTE.opcoes.map((op) => {
+            const on = agente === op;
+            return (
+              <Pressable
+                key={op}
+                style={[e.opcao, on ? e.opcaoAtiva : null]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                testID={`avc-f-agente-${op}`}
+                onPress={() => onEscolher(CAMPO_AGENTE.id, op)}
+              >
+                <Text style={[e.opcaoTexto, on ? e.opcaoTextoAtivo : null]}>{tr(op)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={e.agenteNota}>{tr(CAMPO_AGENTE.nota)}</Text>
+
+        {/**
+          * ⚠️⚠️ O CÁLCULO ⛔ NÃO É A ADMINISTRAÇÃO — e a tela diz isso ⛔ antes de
+          * mostrar qualquer número. ⛔ Sem peso ⛔ não há dose: o app ⛔ não estima.
+          */}
+        <View style={e.dose} testID="avc-f-dose">
+          <Text style={e.doseRotulo}>{tr("Cálculo de dose — não é administração")}</Text>
+          {dose ? (
+            <>
+              {/**
+                * ⚠️⚠️ ESTE É O NÚMERO QUE VAI NA VEIA — `PAPEL.dose` existe para
+                * ele (PD-37). ⚠️ Tabular, peso 800: ⛔ nenhum outro texto desta
+                * tela pode competir com ele.
+                *
+                * ⚠️ O agente entra na MESMA linha porque *"17,5 mg"* sozinho
+                * ⛔ não é uma prescrição — miligramas **de quê** é parte do
+                * número, ⛔ e ⛔ não explicação dele.
+                */}
+              <Text style={e.doseValor} testID="avc-f-dose-valor">
+                {tr(dose.agente === "alteplase" ? "Alteplase" : "Tenecteplase")}{" "}
+                {dose.totalMg} {tr("mg")}
+              </Text>
+              {/** ⚠️ COMO se chegou ao número — abaixo dele, ⛔ e menor. */}
+              <Text style={e.doseSub}>
+                {dose.mgPorKg} {tr("mg/kg")} · {tr("máx.")} {dose.maximoMg} {tr("mg")}
+              </Text>
+              <Text style={e.doseSub} testID="avc-f-dose-origem">
+                {tr("peso")} {dose.pesoKg} {tr("kg")} — {tr(origemBruta)}
+              </Text>
+            </>
+          ) : (
+            <Text style={e.doseVazia} testID="avc-f-dose-vazia">
+              {tr(
+                "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso."
+              )}
+            </Text>
+          )}
+        </View>
+      </View>
+
+      {/**
+        * ⚠️⚠️ A AÇÃO DE TROMBÓLISE — ⛔ DECIDIR ⛔ NÃO É ADMINISTRAR.
+        *
+        * ⚠️ A cadeia é: recomendação → decisão do agente → **ação** → monitorização
+        * (Superfície G). ⛔ Sem esta ação registrada, a Table 7 ⛔ nunca aparece —
+        * ⛔ e o app ⛔ não presume trombólise porque um critério ficou aplicável.
+        *
+        * ⚠️⚠️ O agente aqui é o **efetivamente utilizado**, ⛔ e ⛔ não corrige o
+        * agente em consideração: os dois podem divergir, ⛔ e a trilha guarda os dois.
+        */}
+      <View style={e.grupo} testID="avc-f-acao-trombolise">
+        <CabecalhoDeBloco titulo={tr("Trombólise administrada")} testID="avc-f-bloco-acao-ivt" />
+        {instanciasDe(estado, TROMBOLISE_IV).map((inst, i) => (
+          <View key={inst} style={e.cartao} testID={`avc-f-trombolise-${inst}`}>
+            <Text style={e.grau}>
+              {tr("Administração")} {i + 1}
+            </Text>
+            {ACAO_DE_TROMBOLISE.map((campo) => (
+              <CampoDaSuperficie
+                key={`${inst}-${campo.id}`}
+                campo={{ ...campo, casa: "reperfusao" }}
+                casaAtual="reperfusao"
+                bruto={String(valorNaInstancia(estado, inst, campo.id)?.valor ?? "")}
+                numero={
+                  typeof valorNaInstancia(estado, inst, campo.id)?.valor === "number"
+                    ? (valorNaInstancia(estado, inst, campo.id)?.valor as number)
+                    : undefined
+                }
+                agora={agora}
+                detalheAberto={false}
+                onAlternarDetalhe={() => undefined}
+                onEscolher={(c, v) => onEscolherNaInstancia(inst, c, v)}
+                onMedir={() => undefined}
+                onHora={(c, v) => onHoraNaInstancia(inst, c, v)}
+                onDesfazer={(c) => onDesfazerNaInstancia(inst, c)}
+              />
+            ))}
+          </View>
+        ))}
+        <Pressable
+          style={e.opcao}
+          accessibilityRole="button"
+          testID="avc-nova-trombolise"
+          onPress={onNovaTrombolise}
+        >
+          <Text style={e.opcaoTexto}>{tr("Registrar administração")}</Text>
+        </Pressable>
+      </View>
+
 
       {/**
         * ⚠️⚠️ ⛔ NENHUM RELÓGIO CORRENDO — e isso precisa APARECER.
@@ -319,106 +448,6 @@ export default function SuperficieF({
         </View>
       ) : null}
 
-      {/* ── agente e dose ────────────────────────────────────────────────── */}
-      <View style={e.grupo} testID="avc-f-agente">
-        <CabecalhoDeBloco titulo={tr(CAMPO_AGENTE.rotulo)} testID="avc-f-bloco-agente" />
-        <View style={e.opcoes}>
-          {CAMPO_AGENTE.opcoes.map((op) => {
-            const on = agente === op;
-            return (
-              <Pressable
-                key={op}
-                style={[e.opcao, on ? e.opcaoAtiva : null]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: on }}
-                testID={`avc-f-agente-${op}`}
-                onPress={() => onEscolher(CAMPO_AGENTE.id, op)}
-              >
-                <Text style={[e.opcaoTexto, on ? e.opcaoTextoAtivo : null]}>{tr(op)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={e.agenteNota}>{tr(CAMPO_AGENTE.nota)}</Text>
-
-        {/**
-          * ⚠️⚠️ O CÁLCULO ⛔ NÃO É A ADMINISTRAÇÃO — e a tela diz isso ⛔ antes de
-          * mostrar qualquer número. ⛔ Sem peso ⛔ não há dose: o app ⛔ não estima.
-          */}
-        <View style={e.dose} testID="avc-f-dose">
-          <Text style={e.doseRotulo}>{tr("Cálculo de dose — não é administração")}</Text>
-          {dose ? (
-            <>
-              <Text style={e.doseValor} testID="avc-f-dose-valor">
-                {dose.totalMg} {tr("mg")}
-              </Text>
-              <Text style={e.doseSub}>
-                {tr(dose.agente === "alteplase" ? "Alteplase" : "Tenecteplase")}{" "}
-                {dose.mgPorKg} {tr("mg/kg")} · {tr("máx.")} {dose.maximoMg} {tr("mg")}
-              </Text>
-              <Text style={e.doseSub} testID="avc-f-dose-origem">
-                {tr("peso")} {dose.pesoKg} {tr("kg")} — {tr(origemBruta)}
-              </Text>
-            </>
-          ) : (
-            <Text style={e.doseVazia} testID="avc-f-dose-vazia">
-              {tr(
-                "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso."
-              )}
-            </Text>
-          )}
-        </View>
-      </View>
-
-      {/**
-        * ⚠️⚠️ A AÇÃO DE TROMBÓLISE — ⛔ DECIDIR ⛔ NÃO É ADMINISTRAR.
-        *
-        * ⚠️ A cadeia é: recomendação → decisão do agente → **ação** → monitorização
-        * (Superfície G). ⛔ Sem esta ação registrada, a Table 7 ⛔ nunca aparece —
-        * ⛔ e o app ⛔ não presume trombólise porque um critério ficou aplicável.
-        *
-        * ⚠️⚠️ O agente aqui é o **efetivamente utilizado**, ⛔ e ⛔ não corrige o
-        * agente em consideração: os dois podem divergir, ⛔ e a trilha guarda os dois.
-        */}
-      <View style={e.grupo} testID="avc-f-acao-trombolise">
-        <CabecalhoDeBloco titulo={tr("Trombólise administrada")} testID="avc-f-bloco-acao-ivt" />
-        {instanciasDe(estado, TROMBOLISE_IV).map((inst, i) => (
-          <View key={inst} style={e.cartao} testID={`avc-f-trombolise-${inst}`}>
-            <Text style={e.grau}>
-              {tr("Administração")} {i + 1}
-            </Text>
-            {ACAO_DE_TROMBOLISE.map((campo) => (
-              <CampoDaSuperficie
-                key={`${inst}-${campo.id}`}
-                campo={{ ...campo, casa: "reperfusao" }}
-                casaAtual="reperfusao"
-                bruto={String(valorNaInstancia(estado, inst, campo.id)?.valor ?? "")}
-                numero={
-                  typeof valorNaInstancia(estado, inst, campo.id)?.valor === "number"
-                    ? (valorNaInstancia(estado, inst, campo.id)?.valor as number)
-                    : undefined
-                }
-                agora={agora}
-                detalheAberto={false}
-                onAlternarDetalhe={() => undefined}
-                onEscolher={(c, v) => onEscolherNaInstancia(inst, c, v)}
-                onMedir={() => undefined}
-                onHora={(c, v) => onHoraNaInstancia(inst, c, v)}
-                onDesfazer={(c) => onDesfazerNaInstancia(inst, c)}
-              />
-            ))}
-          </View>
-        ))}
-        <Pressable
-          style={e.opcao}
-          accessibilityRole="button"
-          testID="avc-nova-trombolise"
-          onPress={onNovaTrombolise}
-        >
-          <Text style={e.opcaoTexto}>{tr("Registrar administração")}</Text>
-        </Pressable>
-      </View>
-
       {/**
         * ⚠️⚠️ PRINCÍPIO GERAL — ⛔ NÃO recebe veredito de correspondência.
         *
@@ -557,8 +586,21 @@ function Cartao({
       <Relogios relogios={item.relogios} onIrParaCampo={onIrParaCampo} />
 
       {leitura.faltam.length > 0 ? (
+        /**
+         * ⚠️⚠️ AÇÃO CLÍNICA, ⛔ E ⛔ NÃO O NOME DA VARIÁVEL.
+         *
+         * ⛔ Esta linha imprimia `Falta: deficit_incapacitante` — o identificador
+         * interno, na tela clínica. ⛔ `tr()` faz *fallback* para a própria
+         * chave, então o slug **atravessava em silêncio**, ⛔ e ⛔ nenhum teste
+         * pegava.
+         *
+         * ⚠️ Agora passa por `acaoPendente()`, ⛔ e o que aparece é o que o
+         * médico **faz**: *"Definir se o déficit é incapacitante"*. ⚠️ A fonte é
+         * única (`rotulos-clinicos.ts`), ⛔ e a trava `valida-rotulos-clinicos`
+         * reprova identificador em texto de tela.
+         */
         <Text style={e.falta1} testID={`avc-f-rec-falta-${leitura.id}`}>
-          {tr("Falta")}: {leitura.faltam.map((x) => tr(x)).join(", ")}
+          {leitura.faltam.map((x) => tr(acaoPendente(x))).join(" · ")}
         </Text>
       ) : null}
 
@@ -842,7 +884,7 @@ const criarEstilos = (tema: Tema) =>
       fontSize: TIPOGRAFIA.micro.fontSize,
       fontWeight: "700",
     },
-    doseValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.title.fontSize, fontWeight: "700" },
+    doseValor: { ...PAPEL.dose, color: tema.cores.text },
     doseSub: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     doseVazia: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
 

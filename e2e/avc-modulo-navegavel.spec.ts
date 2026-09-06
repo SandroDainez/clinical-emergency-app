@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { SUPERFICIES } from "../avc/conteudo/superficies";
+import { SUPERFICIES, SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -72,7 +72,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
       await expect(page.getByTestId(`avc-superficie-${id}`)).toBeVisible();
     }
 
-    expect(SUPERFICIES.length).toBe(9);
+    expect(SUPERFICIES_COM_ABA.length).toBe(9);
   });
 
   /**
@@ -193,7 +193,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    for (const sup of SUPERFICIES) {
+    for (const sup of SUPERFICIES_COM_ABA) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       // ⚠️ O resumo é persistente porque o RELÓGIO é o único valor que muda
       // sozinho: escondê-lo numa superfície faria o médico trabalhar noutra sem
@@ -247,7 +247,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     // ⚠️ E-20: percorrer TODAS as superfícies não pode mudar nada — as pendências
     // continuam exatamente as mesmas, porque navegação não é fato clínico.
     const antes = await page.getByTestId("avc-pendencias").innerText();
-    for (const sup of SUPERFICIES) {
+    for (const sup of SUPERFICIES_COM_ABA) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
     }
     const depois = await page.getByTestId("avc-pendencias").innerText();

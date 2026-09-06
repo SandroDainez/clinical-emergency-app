@@ -32,6 +32,20 @@ async function novoExame(page: Page, modalidade: string) {
   await page.getByTestId("avc-novo-estudo").click();
   await page.getByTestId(OPCAO("estudo_modalidade", modalidade)).click();
 }
+/**
+ * ⚠️⚠️ ABRE O EXAME **E RESPONDE A DECISÃO** — necessário desde PD-37.
+ *
+ * ⚠️ Com a revelação progressiva, os achados (ASPECTS, hipodensidade, efeito de
+ * massa) ⛔ só aparecem depois de respondida a pergunta que governa a classe
+ * inteira de reperfusão. ⛔ Testes que medem **os achados** precisam passar por
+ * ela — ⛔ e ⛔ isso ⛔ não afrouxa ⛔ nada: o que cada modalidade oferece
+ * continua sendo medido em *"a modalidade decide o que o exame pergunta"*.
+ */
+async function exameComAchados(page: Page, modalidade: string) {
+  await novoExame(page, modalidade);
+  await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
+}
+
 /** ⚠️ Campo preenchido vira leitura: mexer nele exige o gesto de correção. */
 async function corrigir(page: Page, campo: string) {
   await page.getByTestId(`avc-corrigir-${campo}`).click();
@@ -105,7 +119,19 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toHaveCount(0);
 
     await page.getByTestId(OPCAO("estudo_modalidade", MODALIDADE.tcSemContraste)).click();
+    /**
+     * ⚠️⚠️ REVELAÇÃO PROGRESSIVA (PD-37): a DECISÃO aparece primeiro, ⛔ sozinha.
+     *
+     * ⛔ Antes desta rodada, os treze campos surgiam juntos ⛔ e a pergunta que
+     * governa a reperfusão inteira competia com ASPECTS ⛔ e sítio de oclusão.
+     * ⚠️ O que a modalidade decide **⛔ não mudou** — mudou **quando** cada campo
+     * é mostrado.
+     */
     await expect(page.getByTestId("avc-campo-estudo_resultado")).toBeVisible();
+    await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toHaveCount(0);
+
+    // ⚠️ Respondida a decisão, os achados daquela modalidade aparecem.
+    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
     await expect(page.getByTestId("avc-campo-hipodensidade_clara")).toBeVisible();
     await expect(page.getByTestId("avc-campo-sitio_oclusao")).toHaveCount(0);
 
@@ -160,9 +186,17 @@ test.describe("AVC · Superfície C — Imagem", () => {
   });
 
   /**
-   * ⚠️⚠️ **E-09 NA TELA** — destino para módulo inexistente ⛔ não é beco.
+   * ⚠️⚠️ **E-09 NA TELA** — e a trava MUDOU DE LADO em 2026-09-05 (**PD-36**).
+   *
+   * ⚠️ Ela nasceu medindo a honestidade do beco: o módulo ⛔ não existia, ⛔ e a
+   * tela **dizia isso**. Com o catálogo de HIC construído, exigir a frase
+   * *"ainda não existe"* reprovaria o app por ter **ganhado** o módulo.
+   *
+   * ⚠️ O que E-09 sempre cobrou continua medido, ⛔ e é o essencial: o destino é
+   * **nomeado**, diz **o que acontece**, ⛔ e ⛔ não é beco. O que mudou é que
+   * agora ele também **abre** — ⛔ e a porta é medida aqui.
    */
-  test("hemorragia produz destino nomeado, que declara o módulo inexistente", async ({ page }) => {
+  test("hemorragia produz destino nomeado, que ABRE o módulo hemorrágico", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
@@ -172,10 +206,20 @@ test.describe("AVC · Superfície C — Imagem", () => {
     const destino = page.getByTestId("avc-destino-imagem");
     await expect(destino).toBeVisible();
     await expect(destino).toContainText(/AVC hemorrágico/i);
-    await expect(page.getByTestId("avc-destino-modulo-inexistente"))
-      .toContainText(/ainda não existe/i);
     // ⚠️ E o que acontece MESMO ASSIM — sem isto, o destino seria um vazio educado.
     await expect(destino).toContainText(/o atendimento continua/i);
+
+    // ⛔ A frase do beco ⛔ NÃO pode mais aparecer: ela seria mentira.
+    await expect(page.getByTestId("avc-destino-modulo-inexistente")).toHaveCount(0);
+
+    /**
+     * ⚠️⚠️ A PORTA ABRE DE VERDADE — ⛔ e ⛔ não só existe. Botão que ⛔ não leva a
+     * lugar nenhum é o beco de volta, com outra roupa.
+     */
+    await page.getByTestId("avc-destino-abrir-hemorragia_intracraniana").click();
+    await expect(page.getByTestId("avc-hemorragica-hic")).toBeVisible();
+    // ⚠️ E o catálogo traz a recomendação COR 1 da fonte primária (H-11).
+    await expect(page.getByTestId("avc-hem-rec-cerebelar")).toContainText(/15 mL/);
   });
 
   /**
@@ -280,7 +324,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await novoExame(page, MODALIDADE.tcSemContraste);
+    await exameComAchados(page, MODALIDADE.tcSemContraste);
     const campo = page.getByTestId("avc-campo-aspects");
     await expect(campo).toContainText(/informado no laudo ou pela equipe/i);
     // ⚠️ VISÍVEL, e ⛔ não atrás do ⓘ: quem ⛔ não abre o ⓘ é justamente quem chuta.
@@ -298,7 +342,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await novoExame(page, MODALIDADE.tcSemContraste);
+    await exameComAchados(page, MODALIDADE.tcSemContraste);
     const campo = page.getByTestId("avc-campo-hipodensidade_clara");
     await expect(campo).toContainText(/substância branca contralateral/i);
 
@@ -309,8 +353,13 @@ test.describe("AVC · Superfície C — Imagem", () => {
     const conteudo = page.getByTestId("avc-superficie-c-conteudo");
     await expect(conteudo).not.toContainText(/não elegív|está contraindicad|não trombolis/i);
 
-    // ⛔ E ela ⛔ não retém a reperfusão: a exclusão de hemorragia segue intacta.
-    await page.getByTestId(OPCAO("estudo_resultado", RESULTADO_TC.semHemorragia)).click();
+    /**
+     * ⛔ E ela ⛔ não retém a reperfusão: a exclusão de hemorragia segue intacta.
+     *
+     * ⚠️ A resposta já foi dada por `exameComAchados` — ⛔ é ela que revela a
+     * hipodensidade (PD-37). ⛔ Respondê-la de novo aqui exigiria o **gesto de
+     * correção**, que é outro contrato ⛔ e ⛔ não o que este teste mede.
+     */
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
       .toContainText(/excluída pela tomografia/i);
   });
@@ -408,7 +457,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    await novoExame(page, MODALIDADE.tcSemContraste);
+    await exameComAchados(page, MODALIDADE.tcSemContraste);
 
     /**
      * ⚠️⚠️ O CONTROLE MUDOU EM 2026-09-01 — ⛔ e ⛔ nenhuma asserção clínica saiu.

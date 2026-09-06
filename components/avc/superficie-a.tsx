@@ -55,6 +55,7 @@ import {
   Segmentado,
   type NomeDeIcone,
 } from "./ui";
+import { InfoToggle } from "./sistema";
 
 type Props = {
   estado: EstadoAvc;
@@ -156,6 +157,19 @@ export default function SuperficieA({
         * ⚠️ O título "Estabilização primeiro" saiu porque o nome da superfície
         * já está na faixa do cockpit ⛔ e aceso na barra: era o terceiro lugar
         * a dizer a mesma coisa.
+        */}
+      {/**
+        * ⚠️⚠️ FORMA DE **AVISO INFORMATIVO** desde 2026-09-05 (PD-37) — ⛔ e ⛔ não
+        * mais uma linha solta com um ⓘ ao lado.
+        *
+        * ⛔ Na captura, esta frase ficava **imediatamente abaixo** do nome da
+        * fase, no mesmo peso ⛔ e com o seu próprio ⓘ: lia como um **segundo
+        * subtítulo** da tela, ⛔ e ⛔ não como a regra clínica que ela é.
+        *
+        * ⚠️ É a regra mestra do app (*estabilização antes do protocolo*), ⛔ e
+        * por isso ela ganha a faixa lateral de `info` — ⛔ presença declarada,
+        * ⛔ sem gritar. ⛔ `atencao` seria errado: ⛔ não há nada de anormal
+        * acontecendo com este paciente.
         */}
       <View style={e.prioridade} testID="avc-a-prioridade">
         <View style={e.prioridadeLinha}>
@@ -274,6 +288,20 @@ export default function SuperficieA({
                           selecionado: instante !== undefined,
                         })
                       }
+                      /**
+                        * ⚠️⚠️ O ⓘ NA LINHA DO RÓTULO (PD-37) — ⛔ e ⛔ não numa
+                        * linha própria embaixo. ⛔ Solto, ⛔ ele ⛔ não dizia qual
+                        * relógio explicava; num campo de horário isso troca o
+                        * marco temporal.
+                        */
+                      info={
+                        <InfoToggle
+                          aberto={detalhes.aberto(campo.id)}
+                          onAlternar={() => detalhes.alternar(campo.id)}
+                          rotuloAcessivel={`${tr(campo.rotulo)}: ver explicação`}
+                          testID={`avc-info-${campo.id}`}
+                        />
+                      }
                     />
                     {/**
                       * ⚠️⚠️ A SUB-LINHA PERTENCE AO RELÓGIO ACIMA.
@@ -303,15 +331,17 @@ export default function SuperficieA({
                         </Text>
                       </Pressable>
                     ) : null}
-                    <Recolhido
-                      id={campo.id}
-                      texto={campo.ajuda}
-                      aberto={detalhes.aberto(campo.id)}
-                      onAlternar={() => detalhes.alternar(campo.id)}
-                    >
-                      <DetalheDoCampo campo={campo} />
-                    </Recolhido>
                     </View>
+                    {/**
+                      * ⚠️ A revelação vem EMBAIXO do relógio que o ⓘ explica —
+                      * ⛔ inline, ⛔ e ⛔ nunca em modal: modal tiraria o médico da
+                      * tela para ler uma frase.
+                      */}
+                    {detalhes.aberto(campo.id) ? (
+                      <View style={e.explicacao} testID={`avc-explicacao-${campo.id}`}>
+                        <DetalheDoCampo campo={campo} />
+                      </View>
+                    ) : null}
                   </View>
                 );
               }
@@ -543,7 +573,30 @@ const criarEstilos = (tema: Tema) =>
      * ⚠️ Card de prioridade: destaque **sem** cor de espécie clínica — ele ⛔ não é
      * um estado do paciente, é a ordem de leitura da tela (**E-39**).
      */
-    prioridade: { paddingVertical: ESPACO.xs },
+    /**
+     * ⚠️ Faixa lateral `info`, ⛔ e ⛔ não caixa colorida inteira: a regra mestra
+     * se declara presente, ⛔ sem competir com a decisão da tela.
+     */
+    /**
+     * ⚠️⚠️ NEUTRA, ⛔ e ⛔ não colorida — revisto pelo autor em 2026-09-05.
+     *
+     * ⛔ A faixa ciano criava **mais uma categoria visual chamativa** para algo
+     * que é **contexto**, ⛔ e ⛔ não ação, alerta ⛔ nem risco. ⚠️ O princípio do
+     * sistema é: `primary` = ação · `warning`/`critical` = risco · `info` =
+     * contexto **quando realmente ajuda a identificar** · neutro = estrutura.
+     *
+     * ⚠️ Aqui a identificação vem de **tipografia ⛔ e superfície**: o segundo
+     * degrau separa o bloco ⛔ sem pintar a tela. ⛔ Um app cheio de faixas
+     * coloridas ⛔ não tem hierarquia — tem ruído.
+     */
+    prioridade: {
+      backgroundColor: tema.cores.surfaceElevated,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.sm,
+    },
+    /** ⚠️ A revelação do ⓘ — recuada, presa ao campo acima. */
+    explicacao: { paddingLeft: ESPACO.md, paddingBottom: ESPACO.sm },
     /**
      * ⚠️ O ⓘ vem NO FIM DA FRASE, ⛔ e ⛔ não numa coluna à direita: ali ele
      * ficava alinhado com o ⓘ do resumo da superfície, dois ⓘ empilhados na

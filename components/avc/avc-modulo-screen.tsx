@@ -27,11 +27,21 @@ import SuperficieD from "./superficie-d";
 import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
 import SuperficieG from "./superficie-g";
+import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
 import { destinoDaImagem } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 import { Icone, Recolhido, type NomeDeIcone } from "./ui";
+import {
+  ClinicalHeader,
+  ClinicalShell,
+  InfoToggle,
+  PatientContext,
+  PhaseNavigation,
+  ScreenHeader,
+  type DadoDeContexto,
+} from "./sistema";
 
 /**
  * ⚠️ A ALTURA DA BARRA É UMA CONSTANTE PORQUE **DUAS COISAS** dependem dela:
@@ -47,6 +57,26 @@ const ALTURA_DA_BARRA = 62;
  * truncado ⛔ não identifica a superfície que ele existe para nomear. ⚠️ O nome
  * completo continua no cabeçalho da superfície aberta: ⛔ nada se perde.
  */
+/**
+ * ⚠️⚠️ O CABEÇALHO SEGUE A SÍNDROME — ⛔ e ⛔ não é um rótulo fixo (PD-36).
+ *
+ * ⛔ O módulo dizia *"AVC isquêmico agudo"* em TODA superfície. Nos destinos
+ * hemorrágicos isso vira **contradição na tela**: título isquêmico por cima de
+ * recomendações de hemorragia, cujas condutas são **opostas** (reperfundir ×
+ * reverter anticoagulação).
+ *
+ * ⚠️ Ausente aqui = a síndrome do fluxo principal. ⛔ Só os destinos divergem.
+ */
+const TITULO_DA_SINDROME: Readonly<Record<string, string>> = {
+  hic: "AVC hemorrágico (HIC)",
+  hsa: "Hemorragia subaracnóidea (HSA)",
+};
+
+const ESCOPO_DA_SINDROME: Readonly<Record<string, string>> = {
+  hic: "Adulto com hemorragia intracerebral espontânea",
+  hsa: "Adulto com hemorragia subaracnóidea aneurismática",
+};
+
 const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   estabilizacao: { nome: "Estabilizar", icone: "estabilizar" },
   neurologico: { nome: "Neuro", icone: "neuro" },
@@ -420,36 +450,104 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     });
   }
 
+  /**
+   * ⚠️⚠️ O CONTEXTO PERSISTENTE (PD-37) — ⛔ e ⛔ ele ⛔ NÃO é um painel.
+   *
+   * ⚠️ Quatro dados, numa faixa de uma linha, **fixa acima do conteúdo**. ⛔ Ela
+   * ⛔ não rola: era esse o defeito do cockpit antigo, que vivia dentro do
+   * ScrollView ⛔ e sumia justamente quando o médico descia para decidir.
+   *
+   * ⚠️ **Cresce com o atendimento**: quem ⛔ ainda ⛔ não foi medido aparece como
+   * travessão **neutro** ⛔ e tocável, levando a onde se registra. ⛔ Ausência
+   * ⛔ nunca é âmbar — campo vazio ⛔ não é achado.
+   */
+  const contextoDoPaciente: readonly DadoDeContexto[] = [
+    {
+      id: "lkw",
+      rotulo: "LKW",
+      valor: lkwMin === undefined
+        ? undefined
+        : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
+      onTocar: () => abrir("estabilizacao"),
+    },
+    ...VITAIS.slice(0, 3).map((v) => ({
+      id: v.campo,
+      rotulo: v.rotulo,
+      valor: v.valor,
+      onTocar: () => irParaCampo(v.campo),
+    })),
+  ];
+
   return (
-    <View style={s.moldura}>
-    {/**
-      * ⚠️⚠️ CABEÇALHO FIXO — FORA DO ScrollView (2026-09-05).
-      *
-      * ⛔ Antes ele rolava com o conteúdo: nas superfícies longas (Estabilização,
-      * Segurança) o médico rolava para baixo ⛔ e o botão de sair sumia — ficava
-      * **preso no módulo**. Agora ele fica no topo, como a barra inferior fica
-      * no rodapé: sair está sempre a um toque, em qualquer superfície.
-      *
-      * ⚠️ E o botão diz **MÓDULOS**, ⛔ não um "‹" mudo: rótulo declara o destino.
-      */}
-      <View style={s.cabecalho}>
-        <Pressable
-          onPress={onVoltar}
-          accessibilityRole="button"
-          accessibilityLabel={tr("Sair do módulo e voltar para a lista")}
-          hitSlop={8}
-          style={({ pressed }) => [s.voltarBotao, pressed && s.voltarBotaoPressionado]}
-        >
-          <Text style={s.voltarTexto}>{tr("‹ Módulos")}</Text>
-        </Pressable>
-        <Text style={s.titulo} numberOfLines={1}>{tr("AVC isquêmico agudo")}</Text>
-        <Recolhido
-          id="escopo-do-modulo"
-          texto="Adulto com suspeita de AVC isquêmico agudo"
-          aberto={escopoAberto}
-          onAlternar={() => setEscopoAberto((v) => !v)}
+    <ClinicalShell
+      header={
+        /**
+         * ⚠️⚠️ O CABEÇALHO SEGUE A SÍNDROME ABERTA — ⛔ e ⛔ não é fixo (PD-36).
+         *
+         * ⛔ Ele dizia *"AVC isquêmico agudo"* SEMPRE. Com os destinos
+         * hemorrágicos, isso passou a mentir na tela: o médico lia
+         * *"AVC isquêmico agudo"* no topo ⛔ e recomendações de **hemorragia**
+         * logo abaixo — a contradição mais cara possível num módulo de AVC,
+         * porque as duas condutas são **opostas**.
+         *
+         * ⚠️ Medido na tela em 2026-09-05, ⛔ e ⛔ não deduzido: a captura do
+         * catálogo de HIC mostrava o cabeçalho isquêmico truncado por cima.
+         */
+        <ClinicalHeader
+          titulo={TITULO_DA_SINDROME[atual.id] ?? "AVC isquêmico agudo"}
+          onSair={onVoltar}
+          aoLado={
+            <Recolhido
+              id="escopo-do-modulo"
+              texto={ESCOPO_DA_SINDROME[atual.id] ?? "Adulto com suspeita de AVC isquêmico agudo"}
+              aberto={escopoAberto}
+              onAlternar={() => setEscopoAberto((v) => !v)}
+            />
+          }
         />
-      </View>
+      }
+      contexto={
+        <PatientContext
+          dados={contextoDoPaciente}
+          aoFim={
+            /**
+             * ⚠️ O detalhe do cockpit — cronômetro de atendimento ⛔ e a grade
+             * completa de vitais — abre por aqui. ⛔ Ele ⛔ não cabe na faixa de
+             * uma linha, ⛔ e ⛔ não pode simplesmente sumir.
+             */
+            <Pressable
+              onPress={() => setCockpitAberto((v) => !v)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: cockpitAberto }}
+              accessibilityLabel={tr("Ver o contexto completo do paciente")}
+              hitSlop={8}
+              testID="avc-cockpit-faixa"
+            >
+              <Icone nome={cockpitAberto ? "informacao" : "adiante"} tamanho={13} />
+            </Pressable>
+          }
+        />
+      }
+      navegacao={
+        <PhaseNavigation
+          fases={SUPERFICIES.filter((sup) => !sup.painel && !sup.destino && sup.id !== "correcoes")
+            .map((sup) => ({
+              id: sup.id,
+              nome: CURTO[sup.id]?.nome ?? sup.titulo,
+              icone: (
+                <Icone
+                  nome={CURTO[sup.id]?.icone ?? "adiante"}
+                  tamanho={19}
+                  cor={sup.id === estado.superficieVista ? tema.cores.primary : tema.cores.textSecondary}
+                />
+              ),
+            }))}
+          atual={estado.superficieVista}
+          onAbrir={(id) => abrir(id as SuperficieId)}
+          paddingInferior={insets.bottom}
+        />
+      }
+    >
     <ScrollView
       style={s.root}
       /**
@@ -476,34 +574,19 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * ⚠️⚠️ E AUSÊNCIA É **NEUTRA**, ⛔ nunca âmbar: campo vazio ⛔ não é achado.
         * ⛔ Tocar num ausente leva a onde ele se registra.
         */}
-      <View style={s.cockpit} testID="avc-resumo">
-        {/**
-          * ⚠️⚠️ A FAIXA COMPACTA — quatro dados numa linha, sempre.
-          *
-          * ⛔ É ela que fica em toda superfície. ⚠️ Tocar abre o cockpit
-          * completo; ⛔ e ⛔ nada some no compacto — só muda a densidade.
-          */}
-        <Pressable
-          style={s.faixa}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: cockpitAberto }}
-          testID="avc-cockpit-faixa"
-          onPress={() => setCockpitAberto((v) => !v)}
-        >
-          {[
-            { k: "LKW", v: lkwMin === undefined ? undefined
-                : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}` },
-            ...VITAIS.slice(0, 3).map((x) => ({ k: tr(x.rotulo), v: x.valor })),
-          ].map((x, n) => (
-            <View key={x.k} style={s.faixaItem}>
-              {n > 0 ? <Text style={s.faixaSep}>·</Text> : null}
-              <Text style={s.faixaChave}>{x.k}</Text>
-              <Text style={[s.faixaValor, x.v === undefined && s.faixaAusente]}>{x.v ?? "—"}</Text>
-            </View>
-          ))}
-          <Icone nome={cockpitAberto ? "informacao" : "adiante"} tamanho={13} />
-        </Pressable>
-
+      {/**
+        * ⚠️⚠️ A FAIXA COMPACTA SAIU DAQUI EM 2026-09-05 (PD-37) — ⛔ e ⛔ isso ⛔ não
+        * é remoção de informação: ela virou `PatientContext`, **fixo no topo**,
+        * fora do ScrollView.
+        *
+        * ⛔ O defeito que isso corrige: o contexto rolava junto com o conteúdo ⛔ e
+        * sumia exatamente quando o médico descia para decidir. ⚠️ Um contexto que
+        * some na hora da decisão ⛔ não é contexto — é enfeite do topo.
+        *
+        * ⚠️ O que ficou aqui é o que ⛔ NÃO cabe numa faixa de uma linha: o
+        * bloqueio corrigível (com a frase de D) ⛔ e os auxiliares.
+        */}
+      <View style={s.cockpit} testID="avc-cockpit-detalhe">
         {/**
           * ⚠️⚠️ O BLOQUEIO CORRIGÍVEL VEM DE **D**, com a frase DELA.
           *
@@ -613,29 +696,37 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       {/* ── SUPERFÍCIE ABERTA ──────────────────────────────────────────────
           ⚠️ Esqueleto declarado: a tela DIZ que não há conteúdo, em vez de
           parecer completa e vazia. Vacuidade silenciosa é o que a casa proíbe. */}
+      {/**
+        * ⚠️⚠️ O CARD EXTERNO SAIU EM 2026-09-05 (PD-37) — ⛔ e ⛔ ele era a origem
+        * do *card dentro de card dentro de card*.
+        *
+        * ⛔ Toda superfície vinha embrulhada num `surface` com borda ⛔ e padding;
+        * dentro dele, cada grupo era outro card; dentro do grupo, cada campo era
+        * mais um. ⚠️ Três molduras para dizer uma coisa só.
+        *
+        * ⚠️ Agora o conteúdo vive **direto sobre a tela**, ⛔ e o agrupamento vem
+        * de espaço, título ⛔ e alinhamento. Card ⛔ só onde há unidade clínica
+        * independente — decisão do autor: *"o objetivo é reduzir o número de
+        * caixas, ⛔ não trocar caixas com borda por caixas com fundo"*.
+        */}
       <View style={s.superficie} testID={`avc-superficie-${atual.id}`}>
-        {/**
-          * ⚠️⚠️ TÍTULO GRANDE + RESUMO SAÍRAM — 70 px por superfície.
-          *
-          * ⛔ O nome da superfície já está na faixa do cockpit ⛔ e aceso na
-          * barra inferior: dizê-lo uma terceira vez, em corpo grande, era
-          * repetição. ⚠️ O resumo descreve **o que vem logo abaixo**, ⛔ e o
-          * médico está vendo — ⛔ ele vai para o ⓘ, ⛔ e ⛔ não some.
-          */}
         <View style={s.superficieLinha}>
-          {/**
-            * ⚠️ O nome CURTO, o mesmo da barra inferior. ⛔ "Entrada e
-            * estabilização" aqui ⛔ e "Estabilizar" ali eram dois nomes para a
-            * mesma coisa, a 60 px de distância.
-            */}
-          <Text style={s.superficieNome} numberOfLines={1}>
-            {tr(CURTO[atual.id]?.nome ?? atual.titulo)}
-          </Text>
-          <Recolhido
-            id={`resumo-${atual.id}`}
-            texto={atual.resumo}
+          <View style={s.superficieTituloBloco}>
+            {/**
+              * ⚠️ O nome CURTO, o mesmo da barra. ⛔ "Entrada e estabilização"
+              * aqui ⛔ e "Estabilizar" ali eram dois nomes para a mesma coisa.
+              */}
+            <ScreenHeader
+              nome={CURTO[atual.id]?.nome ?? atual.titulo}
+              objetivo={resumoAberto ? atual.resumo : undefined}
+            />
+          </View>
+          {/** ⚠️ O ⓘ vive NA LINHA do título que explica — ⛔ nunca órfão. */}
+          <InfoToggle
             aberto={resumoAberto}
             onAlternar={() => setResumoAberto((v) => !v)}
+            rotuloAcessivel="Ver o objetivo desta fase"
+            testID={`avc-info-superficie-${atual.id}`}
           />
         </View>
 
@@ -698,6 +789,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onCorrigirNoEstudo={corrigirNaInstanciaDaTela}
             onDesfazerNoEstudo={desfazerNaInstancia}
             onNovoEstudo={() => novaMedida(ESTUDO)}
+            onAbrirSuperficie={abrir}
           />
         ) : atual.id === "seguranca" ? (
           <SuperficieD
@@ -725,6 +817,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             agora={agora}
             onEscolher={escolher}
             onIrParaCampo={irParaCampo}
+            onAbrirSuperficie={abrir}
+            /**
+             * ⚠️ A MESMA lista que a tela já usa para as pendências — ⛔ e ⛔ não
+             * uma segunda apuração dentro da síntese (I6).
+             */
+            pendencias={pendencias}
+            relogio={relogio}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE
@@ -741,6 +840,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               setEstado((e) => registrarComInstancia(e, { campo: "acao_tipo", valor: tipo }, relogio, inst));
             }}
           />
+        ) : atual.id === "hic" ? (
+          <SuperficieHemorragica variante="hic" />
+        ) : atual.id === "hsa" ? (
+          <SuperficieHemorragica variante="hsa" />
         ) : (
           <>
             <Text style={s.emConstrucao}>{tr("Superfície em construção")}</Text>
@@ -849,51 +952,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         )}
       </View>
     </ScrollView>
-
-    {/**
-      * ── ⚠️⚠️ BARRA INFERIOR FIXA ──────────────────────────────────────────
-      *
-      * ⚠️ A navegação custava **204 px em toda superfície** para repetir os
-      * mesmos seis destinos. ⛔ Fora do fluxo, ela custa zero de altura — ⛔ e
-      * fica onde o polegar já está.
-      *
-      * ⚠️⚠️ ⛔ ELA ⛔ NÃO É UMA ÁRVORE. Qualquer uma das seis abre a partir de
-      * qualquer outra, em um toque, em qualquer ordem (§7.2, E-11).
-      *
-      * ⛔ ⛔ E ⛔ NÃO É PAINEL DE ALERTA: ⛔ nenhum badge com número. Um ponto
-      * discreto no destino que tem bloqueio corrigível, ⛔ e nada além.
-      */}
-    <View style={[s.barra, { paddingBottom: insets.bottom }]} testID="avc-barra">
-      {SUPERFICIES.filter((sup) => !sup.painel && sup.id !== "correcoes").map((sup) => {
-        const ativa = sup.id === estado.superficieVista;
-        const c = CURTO[sup.id];
-        return (
-          <Pressable
-            key={sup.id}
-            onPress={() => abrir(sup.id)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: ativa }}
-            accessibilityLabel={tr(sup.titulo)}
-            testID={`avc-aba-${sup.id}`}
-            style={s.barraItem}
-          >
-            <Icone
-              nome={c?.icone ?? "adiante"}
-              tamanho={19}
-              cor={ativa ? tema.cores.primary : tema.cores.textSecondary}
-            />
-            <Text
-              style={[s.barraNome, ativa && s.barraNomeAtivo]}
-              numberOfLines={1}
-              testID={`avc-rotulo-aba-${sup.id}`}
-            >
-              {tr(c?.nome ?? sup.titulo)}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-    </View>
+    </ClinicalShell>
   );
 }
 
@@ -1129,8 +1188,10 @@ const criarEstilos = (tema: Tema) =>
     abaLetraAtiva: { color: AREA_AVC.badgeText },
     abaTitulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     abaTituloAtivo: { color: tema.cores.text },
-    superficie: { backgroundColor: tema.cores.surface, borderRadius: RAIO.card, padding: ESPACO.md, gap: ESPACO.sm },
-    superficieLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+    /** ⚠️ ⛔ SEM fundo, ⛔ SEM borda, ⛔ SEM padding: ⛔ não é mais um card. */
+    superficie: { gap: ESPACO.md },
+    superficieLinha: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
+    superficieTituloBloco: { flex: 1 },
     superficieNome: {
       flex: 1,
       color: tema.cores.text,

@@ -7,7 +7,7 @@ import {
   TODOS_OS_CAMPOS_B,
 } from "../avc/conteudo/superficie-b";
 import { ITENS_NIHSS } from "../avc/conteudo/nihss";
-import { SUPERFICIES } from "../avc/conteudo/superficies";
+import { SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -26,6 +26,15 @@ import { fixarIdioma } from "./helpers";
  */
 async function preencherEscala(page: Page, pontos: Record<string, number> = {}) {
   await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
+  /**
+   * ⚠️⚠️ A ESCALA ABRE EM **MODO FOCO** desde PD-37 — um item por vez.
+   *
+   * ⚠️ Para preencher a escala inteira de uma vez, este auxiliar entra na
+   * **revisão** (`Ver todos`), que é a mesma lista de antes. ⛔ Isso ⛔ não
+   * afrouxa ⛔ nada: o rascunho, o cálculo ⛔ e a gravação em gesto único são os
+   * mesmos; muda ⛔ só quantos itens ficam na tela.
+   */
+  await page.getByTestId("avc-escala-ver-todos-nihss_calculado").click();
   for (const item of ITENS_NIHSS) {
     const ponto = pontos[item.id] ?? 0;
     await page.getByTestId(`avc-escala-opcao-${item.id}-${ponto}`).click();
@@ -396,8 +405,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
      * **Paciente**: com ela **vazia** — ⛔ nada foi respondido lá neste teste —,
      * ⛔ nenhuma superfície deixa de abrir.
      */
-    expect(SUPERFICIES.length).toBe(9);
-    for (const sup of SUPERFICIES) {
+    expect(SUPERFICIES_COM_ABA.length).toBe(9);
+    for (const sup of SUPERFICIES_COM_ABA) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       await expect(page.getByTestId(`avc-superficie-${sup.id}`), `${sup.id} não abriu`)
         .toBeVisible();
@@ -555,6 +564,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await abrirB(page);
 
     await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
+    /** ⚠️ A revisão mostra os quinze itens — é onde se confere todos de uma vez. */
+    await page.getByTestId("avc-escala-ver-todos-nihss_calculado").click();
     /**
      * ⚠️ DUAS LINHAS, NESTA ORDEM: o que avalia, depois como testar. A primeira
      * é o que destrava quem ⛔ não usa a escala todo dia.

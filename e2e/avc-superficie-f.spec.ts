@@ -248,6 +248,15 @@ test.describe("AVC · Reperfusão", () => {
       await page.getByTestId("avc-novo-estudo").click();
       /** ⚠️ Efeito de massa é achado de TC sem contraste — ⛔ não de RM. */
       await page.getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste").click();
+      /**
+       * ⚠️⚠️ A DECISÃO VEM ANTES DOS ACHADOS desde PD-37 (revelação progressiva):
+       * efeito de massa ⛔ só aparece depois de respondido *há hemorragia?*.
+       *
+       * ⚠️ Responder "sem hemorragia" ⛔ não enfraquece o que este teste mede — a
+       * contradição que ele persegue é entre **efeito de massa presente** ⛔ e a
+       * população que exige ausência, ⛔ e ela continua intacta.
+       */
+      await page.getByTestId("avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada").click();
       await page.getByTestId("avc-opcao-efeito_de_massa-sim").click();
       await page.getByTestId("avc-aba-reperfusao").click();
       /** ⚠️ Efeito de massa PRESENTE contradiz a população que pede ausência. */

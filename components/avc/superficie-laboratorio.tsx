@@ -31,6 +31,7 @@ import {
 } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
 type Props = {
@@ -208,8 +209,8 @@ const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     coleta: { gap: ESPACO.xs },
-    identidade: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
-    vazio: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
+    identidade: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    vazio: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
     novaColeta: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,
@@ -217,6 +218,6 @@ const criarEstilos = (tema: Tema) =>
       borderWidth: 2, borderColor: tema.cores.border,
     },
     novaColetaTexto: {
-      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600",
+      ...PAPEL.tituloDeSecao, color: tema.cores.text,
     },
   });

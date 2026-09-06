@@ -28,7 +28,7 @@ import {
   type GestoNumerico,
 } from "../../../avc/nucleo/rascunho-numerico";
 import { useEstilosDoTema, type Tema } from "../../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -907,6 +907,7 @@ export function LinhaDeRelogio({
   estado,
   destaque,
   onPress,
+  info,
 }: {
   campo: string;
   icone: NomeDeIcone;
@@ -917,37 +918,74 @@ export function LinhaDeRelogio({
   /** ⚠️ Recém-revelado pelo contexto — ⛔ dura ⛔ só enquanto estiver vazio. */
   destaque?: boolean;
   onPress: () => void;
+  /**
+   * ⚠️⚠️ O ⓘ VIVE **NA LINHA DO RÓTULO** — padrão global do AVC desde
+   * 2026-09-05 (PD-37), decidido sobre a captura.
+   *
+   * ⛔ Antes ele ficava numa linha própria, **abaixo** do relógio: o médico via
+   * um ícone solto ⛔ e ⛔ não sabia o que ele explicava — se o relógio de cima
+   * ⛔ ou o de baixo. ⚠️ Num campo de horário, essa dúvida troca o **marco**.
+   */
+  info?: ReactNode;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
+  /**
+   * ⚠️⚠️ DUAS ÁREAS DE TOQUE, ⛔ e ⛔ não uma — exigência do ⓘ inline.
+   *
+   * ⛔ Um `Pressable` dentro de outro ⛔ não funciona na web: o toque interno
+   * dispara os dois. ⚠️ Então a linha virou `View`, ⛔ e o relógio ganhou a sua
+   * própria área — que continua carregando `avc-hora-<campo>`, o contrato que a
+   * suíte usa.
+   */
   return (
-    <Pressable
-      style={[e.rel, destaque ? e.relDestaque : null]}
-      accessibilityRole="button"
-      /**
-       * ⚠️⚠️ O `testID` É O CONTRATO — `avc-hora-<campo>`, como sempre foi.
-       *
-       * ⛔ A primeira versão inventou `avc-rel-*` ⛔ e derrubou 29 conferências
-       * da Superfície A de uma vez. ⚠️ Renomear a superfície de contrato numa
-       * reescrita **desliga a suíte justo quando ela é mais necessária** — ⛔ e o
-       * defeito ⛔ não teria aparecido se ela tivesse continuado verde por sorte.
-       */
-      testID={`avc-hora-${campo}`}
-      onPress={onPress}
-    >
-      <Icone nome={icone} tamanho={15} />
-      <Text style={e.relNome}>{tr(rotulo)}</Text>
-      <Text
-        style={[
-          e.relValor,
-          estado === "vazio" ? e.relValorVazio : null,
-          estado === "desconhecido" ? e.relValorDesconhecido : null,
-        ]}
-        testID={`avc-hora-valor-${campo}`}
+    <View style={[e.rel, destaque ? e.relDestaque : null]}>
+      <Pressable
+        style={e.relToque}
+        accessibilityRole="button"
+        /**
+         * ⚠️⚠️ O `testID` É O CONTRATO — `avc-hora-<campo>`, como sempre foi.
+         *
+         * ⛔ A primeira versão inventou `avc-rel-*` ⛔ e derrubou 29 conferências
+         * da Superfície A de uma vez. ⚠️ Renomear a superfície de contrato numa
+         * reescrita **desliga a suíte justo quando ela é mais necessária**.
+         */
+        testID={`avc-hora-${campo}`}
+        onPress={onPress}
       >
-        {estado === "registrado" ? valor : tr(valor)}
-      </Text>
-    </Pressable>
+        <Icone nome={icone} tamanho={15} />
+        {/**
+          * ⚠️⚠️ QUEBRA EM DUAS LINHAS, ⛔ e ⛔ NUNCA trunca — decidido na captura.
+          *
+          * ⛔ Com uma linha só, "Chegada ao pronto-socorro" virava
+          * *"Chegada ao pronto-s…"*. ⚠️ Nome clínico truncado ⛔ não identifica o
+          * marco que nomeia, ⛔ e em relógio de AVC o marco **é** o dado.
+          *
+          * ⚠️ Duas linhas custam ~18 px ⛔ e preservam o nome inteiro; o valor
+          * continua intacto porque quem cede espaço é o rótulo (`flexShrink`).
+          */}
+        <Text style={e.relNome} numberOfLines={2}>{tr(rotulo)}</Text>
+      </Pressable>
+      {/** ⚠️ Encostado no rótulo que explica — ⛔ nunca numa linha própria. */}
+      {info ?? null}
+      <Pressable
+        style={e.relValorToque}
+        accessibilityRole="button"
+        accessibilityLabel={`${tr(rotulo)}: ${estado === "registrado" ? valor : tr(valor)}`}
+        onPress={onPress}
+      >
+        <Text
+          style={[
+            e.relValor,
+            estado === "vazio" ? e.relValorVazio : null,
+            estado === "desconhecido" ? e.relValorDesconhecido : null,
+          ]}
+          testID={`avc-hora-valor-${campo}`}
+        >
+          {estado === "registrado" ? valor : tr(valor)}
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -1262,20 +1300,71 @@ const criarEstilos = (tema: Tema) =>
       textAlign: "center",
     },
 
+    /**
+     * ⚠️⚠️ LINHA DE UMA LISTA, ⛔ e ⛔ NÃO UM CARD — mudado em 2026-09-05 (PD-37),
+     * ⛔ e a captura é que provou a necessidade.
+     *
+     * ⛔ Com `borderWidth: 2` ⛔ e fundo próprio, cada relógio virava uma **caixa
+     * independente**: quatro molduras empilhadas para dizer *"estes são os
+     * tempos deste paciente"*, ⛔ e a sub-linha ("Sem essa informação", o ⓘ)
+     * ficava **fora** da moldura, flutuando entre dois relógios.
+     *
+     * ⚠️ Agora eles são **linhas de um mesmo bloco**, separadas por um divisor
+     * discreto. ⚠️ O agrupamento vem do bloco, ⛔ e ⛔ não de repetir contorno —
+     * que é a regra do sistema: *reduzir o número de caixas*.
+     */
+    /**
+     * ⚠️ Densidade CLÍNICA: a linha ⛔ não tem padding vertical próprio — quem
+     * garante a área de toque é `relToque` (44 px). ⚠️ Assim vários horários
+     * cabem na mesma viewport ⛔ sem perder alvo para o dedo.
+     */
     rel: {
       flexDirection: "row",
       alignItems: "center",
-      gap: ESPACO.sm,
-      backgroundColor: tema.cores.surface,
-      borderWidth: 2,
-      borderColor: tema.cores.border,
-      borderRadius: RAIO.botao,
-      paddingVertical: ESPACO.sm,
-      paddingHorizontal: ESPACO.sm,
-      marginBottom: ESPACO.xs,
+      gap: ESPACO.xs,
+      paddingHorizontal: ESPACO.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: tema.cores.border,
     },
-    relDestaque: { borderColor: tema.cores.primary },
-    relNome: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    /** ⚠️ 44 px é o piso, ⛔ e ⛔ não uma sugestão: o app é usado com luva. */
+    /**
+     * ⚠️⚠️ QUEM ENCOLHE É O RÓTULO, ⛔ e ⛔ NUNCA O VALOR — corrigido na captura.
+     *
+     * ⛔ Sem `flexShrink`, a linha estourava a largura ⛔ e o **valor** era cortado:
+     * *"Informar horári…"*. ⚠️ Cortar o valor é o pior lado para cortar — ele é
+     * a **ação** ⛔ e, quando há horário registrado, é o próprio dado clínico.
+     * ⛔ O rótulo tolera reticências; o horário ⛔ não.
+     */
+    relToque: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      flexShrink: 1,
+      minWidth: 0,
+    },
+    relValorToque: {
+      marginLeft: "auto",
+      justifyContent: "center",
+      minHeight: TOQUE.minimo,
+      paddingLeft: ESPACO.sm,
+      flexShrink: 0,
+    },
+    /**
+     * ⚠️ O realce agora é uma **barra à esquerda**, ⛔ e ⛔ não uma borda em
+     * volta: ⛔ sem moldura, ⛔ não há o que colorir sem devolver a caixa.
+     */
+    relDestaque: {
+      borderLeftWidth: 3,
+      borderLeftColor: tema.cores.primary,
+      paddingLeft: ESPACO.sm,
+    },
+    /**
+     * ⚠️ ⛔ SEM `flex: 1` — o rótulo ocupa ⛔ só o que precisa, para o ⓘ **encostar
+     * nele**. Esticado, ele empurrava o ⓘ para o outro lado da tela ⛔ e desfazia
+     * a associação que o ícone existe para criar.
+     */
+    relNome: { flexShrink: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     relValor: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700" },
     relValorVazio: {
       color: tema.cores.primary,

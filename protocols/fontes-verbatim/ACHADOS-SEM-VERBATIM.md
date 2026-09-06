@@ -34,10 +34,24 @@ existe só no ID.
 
 ---
 
-## AVC HEMORRÁGICO — a saída que o módulo declara e ⛔ não conduz
+## AVC HEMORRÁGICO — ✅ VERBATIM TRANSCRITO (2026-09-05)
 
-**Estado:** ⛔ **NENHUM PDF transcrito.** Este bloco existe para registrar a
-lacuna, ⛔ e ⛔ não para ser consumido por tela.
+> ✅ **LACUNA FECHADA em 2026-09-05.** O autor enviou os dois PDFs primários e eles
+> foram transcritos verbatim:
+> - HIC → `fontes-verbatim/aha-asa-2022-hic.md` (slots **H-01…H-15**)
+> - HSA → `fontes-verbatim/aha-asa-2023-hsa.md` (slots **S-01…S-08**)
+>
+> Registrados como FONTE_HIC / FONTE_HSA em `avc/conteudo/fontes.ts`. O texto
+> abaixo permanece como **memória histórica** de por que a lacuna existiu — ⛔ não
+> é mais verdade que "nenhum PDF foi transcrito".
+>
+> ⚠️ **Uma correção de conteúdo que a transcrição primária impôs sobre a síntese:**
+> a cerebelar é **"≥15 mL" (H-11, COR 1)**, ⛔ não ">15 mL"; e a duração de "21
+> dias" do nimodipino **não é número desta guideline** (S-03) — vem do ensaio de
+> 1983/bula.
+
+**Estado (histórico):** quando este bloco foi escrito, ⛔ **NENHUM PDF estava
+transcrito**. Mantido para rastrear a origem da lacuna.
 
 **O que a medição encontrou (2026-09-05).** A Superfície C (Imagem) já resolve
 as três saídas — segue isquêmico · hemorragia intracraniana · suspeita de HSA —

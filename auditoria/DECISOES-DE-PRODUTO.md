@@ -1753,3 +1753,147 @@ demanda (só quando o idioma vira es-419) é o maior ganho de peso disponível, 
 performance. Split de i18n é otimização de médio porte que mexe no carregamento
 de TODOS os módulos — ⛔ não é o lugar de mexer enquanto o AVC hemorrágico está
 em aberto. Fica registrado como o **próximo item técnico**, depois do AVC.
+
+---
+
+## PD-36 · AVC HEMORRÁGICO — arquitetura e fonte (2026-09-05)
+
+**Contexto.** O autor enviou os dois PDFs primários (HIC 2022 [2] e HSA 2023 [3])
+e escolheu a opção (A): transcrever verbatim, mesmo padrão do isquêmico. A
+pendência de rastreabilidade E-30 do ramo hemorrágico ficou **fechada** com
+`fontes-verbatim/aha-asa-2022-hic.md` (slots H-01…H-15) e
+`fontes-verbatim/aha-asa-2023-hsa.md` (slots S-01…S-08), registrados em
+`avc/conteudo/fontes.ts` (FONTE_HIC / FONTE_HSA).
+
+**Decisão de arquitetura — catálogo, ⛔ não algoritmo.** HIC e HSA são construídos
+como **superfícies-catálogo de recomendações**, ⛔ não como uma árvore de decisão.
+É fiel à natureza da fonte: as duas guidelines são **conjuntos de recomendações
+COR/LOE sobrepostas** (populações, relógios e forças diferentes), exatamente como
+a Superfície F já trata a reperfusão isquêmica (*"o catálogo de recomendações,
+⛔ não um algoritmo"*). Achatar em veredito agregado inverteria o sentido da fonte.
+
+**Onde plugam.** As duas superfícies são **destinos**, alcançadas a partir do
+**Destino/Superfície C→G** quando a Imagem identifica `hemorragia_intracraniana`
+ou `suspeita_hsa`. Ao existirem, `DESTINOS_DA_IMAGEM.*.moduloExiste` vira `true`.
+⛔ Elas ⛔ não entram na navegação de passos do fluxo isquêmico — o paciente
+hemorrágico ⛔ não faz trombólise.
+
+**Correções que a fonte primária impôs sobre a síntese do autor (E-30):**
+- cerebelar é **≥15 mL** (H-11, COR 1), ⛔ não ">15 mL";
+- nimodipino é **"60 mg 6×/dia"** (S-03, texto de suporte); os **"21 dias"** ⛔ não
+  são número desta guideline (vêm do ensaio de 1983/bula) — ⛔ não afirmar como
+  desta fonte;
+- **idarucizumabe 5 g** ⛔ não é número da recomendação HIC (texto de suporte,
+  descrevendo estudo/bula);
+- antifibrinolítico de rotina na HSA é **COR 3: No benefit, LOE A** — apesar do ULTRA.
+
+**Conferência clínica do autor:** PENDENTE. O verbatim está transcrito; o autor
+ainda ⛔ não conferiu contra o PDF na tela (mesmo estado do isquêmico ao nascer).
+
+---
+
+## PD-37 · SISTEMA VISUAL DO AVC — CONGELADO (2026-09-05)
+
+**Aprovado pelo autor** após revisão visual das três superfícies-piloto
+(Estabilização, Neurológico, Imagem) em **375×812 real**, nos dois temas, com a
+suíte em `EXIT=0` · **312 e2e**.
+
+### O que está congelado
+
+`ClinicalShell` · `ClinicalHeader` · `PatientContext` · `PhaseNavigation` ·
+`ScreenHeader` · `ClinicalCard` · `DecisionSection` · `PrimaryAction` ·
+`SecondaryAction` · `WarningCard` · `EmptyState` · `InfoToggle`
+(`components/avc/sistema/index.tsx`), mais a **tipografia clínica**
+(`design-system/tipografia-clinica.ts`), o **spacing**, os **tokens semânticos**,
+as **regras de contraste** e os **estados interativos**.
+
+### A regra que o congelamento cria
+
+⛔ **Superfície ⛔ nenhuma inventa variação local.** Necessidade nova se resolve
+**primeiro por composição** dos componentes existentes. Padrão novo ⛔ só nasce
+com **necessidade clínica real e reutilizável** — ⛔ e ⛔ nunca por preferência de
+tela.
+
+⚠️ A diferença entre superfícies é o **conteúdo clínico**, ⛔ e ⛔ não o design.
+
+### As decisões do autor que o sistema preserva
+
+⛔ Quatro escolhas anteriores foram **mantidas** contra o que as referências
+sugeriam, ⛔ e ⛔ isso ⛔ não é conservadorismo:
+
+| decisão | por quê |
+|---|---|
+| ⛔ **⛔ Não-wizard** (E-11) | qualquer fase abre de qualquer outra; a sequência existe ⛔ só **dentro** do NIHSS, que tem ordem de exame própria |
+| **Cronômetro discreto** | contador grande correndo é *"ruído ansiogênico numa sala já tensa"*; quem manda visualmente é o **relógio clínico** (LKW) |
+| ⛔ **Sem badge numérico** | a barra ⛔ não é painel de alerta — um ponto no destino com bloqueio corrigível, ⛔ e nada além |
+| ⛔ **Sem estado "concluída"** | num **catálogo de fatos**, *"concluir"* ⛔ não tem definição clínica |
+
+### O que o julgamento VISUAL pegou e o teste ⛔ NÃO pegaria
+
+⚠️ Três defeitos desta rodada ⛔ não apareceriam em suíte ⛔ nenhuma — ⛔ e é por
+isso que a revisão por captura virou parte do processo:
+
+1. **`DecisionSection` invisível.** Compilava, os 18 testes de C passavam, ⛔ e a
+   seção ⛔ nunca renderizava: o ramo `EMPILHADOS` capturava `estudo_resultado`
+   **antes** dela. ⛔ Ordem de ramos ⛔ não tem asserção.
+2. **Troca de um defeito por outro pior.** Ao impedir o corte do **valor**
+   (*"Informar horári…"*), os **rótulos clínicos** passaram a truncar. ⚠️ Quem
+   cede espaço agora é o rótulo, que **quebra em duas linhas** ⛔ e ⛔ nunca trunca.
+3. **Diagnóstico que eu teria errado.** `microinteracoes` quebrou ⛔ e parecia
+   perda do retorno visual do botão. ⚠️ Era outra coisa: os três tokens novos
+   acrescentaram swatches na galeria `/dev/ui-v2`, que mostra **os dois temas
+   lado a lado**, ⛔ e empurraram o botão para baixo da dobra — o `mouse.move` do
+   teste ia para fora da viewport. ⛔ **O botão ⛔ nunca deixou de reagir; o mouse
+   é que deixou de alcançá-lo.** O teste passou a rolar até ele.
+
+### O tema claro ⛔ NÃO foi ligado
+
+⚠️ O app segue fixo em `TEMAS.escuro`. O claro foi ligado **temporariamente**,
+⛔ só para inspeção, ⛔ e revertido. ⚠️ As três pilotos renderizaram corretas nele
+**sem ⛔ nenhum ajuste** — que é a prova de que o sistema nasceu certo nos dois
+temas, ⛔ e ⛔ não em um depois do outro.
+
+⛔ Ligar o claro continua bloqueado pelos **52 arquivos com hex cru** fora do
+AVC (`legado-de-cor.json`). ⚠️ Isso é etapa separada do design system global.
+
+
+---
+
+## PD-38 · AVC APROVADO COMO GOLD STANDARD (2026-09-05)
+
+**Aprovado pelo autor** com a suíte de fechamento em `EXIT=0` · **320 e2e** ·
+**8 cenários clínicos** · contraste **42/42** nos dois temas · **265 textos** sob
+a trava de rótulos · **0** strings sem tradução · **64 instrumentos** no censo.
+
+O módulo AVC é o **Gold Standard de UX/UI e navegação clínica** do aplicativo
+Emergências. O template está em `auditoria/TEMPLATE-EMERGENCIAS.md`.
+
+### ⛔ O AVC ESTÁ FECHADO
+
+⛔ **⛔ Nenhuma alteração estrutural nova**, salvo defeito real. ⚠️ A partir daqui
+⛔ não existe mais *"redesign módulo por módulo"* — existe **aplicação do
+template**. O conteúdo clínico muda; o sistema visual, estrutural ⛔ e de
+navegação ⛔ **não muda**.
+
+### As 11 superfícies migradas
+
+`paciente` · `laboratorio` · `estabilizacao` · `neurologico` · `imagem` ·
+`seguranca` · `correcoes` · `reperfusao` · `destino` · `hic` · `hsa`
+
+### O que nasceu nesta fase, e ⛔ não pode ser desfeito
+
+| artefato | protege |
+|---|---|
+| `components/avc/sistema/` | os 13 componentes congelados |
+| `design-system/tipografia-clinica.ts` | 10 papéis sobre 7 tamanhos |
+| `avc/conteudo/rotulos-clinicos.ts` | id interno ⛔ nunca chega ao médico |
+| `avc/nucleo/sintese-do-caso.ts` | Destino é síntese, ⛔ e ⛔ não formulário |
+| `valida-tipografia-clinica` | ⛔ zero `fontSize`/hex em arquivo migrado |
+| `valida-rotulos-clinicos` | ⛔ zero slug em texto clínico |
+| `e2e/avc-cenarios-clinicos` | os 8 cenários, como **regressão permanente** |
+
+### ⛔ A PRÓXIMA MIGRAÇÃO ESPERA INDICAÇÃO DO AUTOR
+
+⛔ **⛔ Não migrar todos os módulos de uma vez.** A ordem sugerida pelo autor é
+SCA → TEP → Sepse → Anafilaxia → demais, ⛔ **mas ⛔ nenhuma começa ⛔ sem ele
+indicar**.

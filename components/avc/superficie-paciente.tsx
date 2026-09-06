@@ -31,6 +31,7 @@ import { valorAtual } from "../../avc/nucleo/estado";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, TIPOGRAFIA } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
 type Props = {
@@ -132,6 +133,6 @@ const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
-    grupoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
-    aviso: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    grupoNota: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    aviso: { ...PAPEL.legenda, color: tema.cores.textSecondary },
   });

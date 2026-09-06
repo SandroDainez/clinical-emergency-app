@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**70 de 84 travas com declaração completa.**
+**72 de 86 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -329,6 +329,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** ⚠️ NÃO DECLARADO
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
+
+## `test:tipografia-clinica` → `scripts/valida-tipografia-clinica.cjs`
+
+- **PROMETE:** que ⛔ nenhum arquivo da lista `MIGRADAS` — os que já vestem o sistema clínico do AVC — escreva `fontSize`, `fontWeight` ⛔ ou `lineHeight` avulso, ⛔ nem hexadecimal de cor. Todo texto sai de `PAPEL` (`design-system/tipografia-clinica.ts`) ⛔ e toda cor sai de `tema.cores`, ⛔ que é o que faz os dois temas nascerem corretos ao mesmo tempo.
+- **NÃO PROMETE:** que o papel escolhido seja o **certo** para aquele texto — ela ⛔ não sabe se um título virou legenda. ⛔ Também ⛔ não cobre os arquivos fora de `MIGRADAS`: as superfícies antigas do AVC ⛔ ainda usam a escala global, ⛔ e cobrar delas hoje reprovaria o build por trabalho que ⛔ ainda ⛔ não foi feito. ⛔ E ⛔ não mede contraste — quem faz isso é `valida-contraste` ⛔ e `e2e/contraste-renderizado`.
+- **UNIVERSO:** os arquivos declarados em `MIGRADAS`, ⛔ e ⛔ nada além. A lista ⛔ só cresce: arquivo que entra ⛔ nunca mais sai, ⛔ e é assim que a trava avança sem bloquear a migração. ── ⚠️⚠️ O QUE ELA IMPEDE ────────────────────────────────────────────────── `fontSize`, `fontWeight` ⛔ e `lineHeight` **avulsos** dentro do sistema clínico do AVC. ⚠️ Foi exatamente essa liberdade que produziu, no código antigo, dezenas de combinações de tamanho+peso+cor inventadas tela a tela — o que o autor descreveu como *"não quero dezenas de combinações diferentes"*. ⚠️ Todo texto sai de `PAPEL` (`design-system/tipografia-clinica.ts`), que descreve **função**, ⛔ e ⛔ não tamanho. ── ⚠️⚠️ O ESCOPO CRESCE COM A MIGRAÇÃO, ⛔ E ⛔ NÃO DE UMA VEZ ───────────── ⛔ As superfícies antigas do AVC ⛔ ainda ⛔ não passaram pelo sistema novo, ⛔ e cobrar delas hoje reprovaria o build por trabalho que ⛔ ainda ⛔ não foi feito. ⚠️ `MIGRADAS` é a lista do que **já veste** o sistema — arquivo que entra ali ⛔ nunca mais pode sair, ⛔ e é assim que a trava avança sem bloquear. ⛔ Este é o mesmo mecanismo de `legado-de-cor.json`: teto que só desce.
+
+## `test:rotulos-clinicos` → `scripts/valida-rotulos-clinicos.cjs`
+
+- **PROMETE:** que ⛔ nenhum **identificador interno** chegue à interface clínica do AVC. Ela procura, no texto que as telas renderizam, os padrões que ⛔ só existem no código: `snake_case`, `camelCase`, os identificadores que `rotulos-clinicos.ts` conhece, ⛔ e os valores técnicos `true`, `false`, `undefined` ⛔ e `null` como palavra isolada.
+- **NÃO PROMETE:** que o rótulo escolhido seja **clinicamente o melhor** — ⛔ ela ⛔ não sabe se *"Déficit incapacitante"* é o termo que o médico usa. ⛔ Também ⛔ não varre conteúdo vindo do banco ⛔ nem verbatim de fonte (que é inglês citado, ⛔ e ⛔ não texto de interface).
+- **UNIVERSO:** as telas do AVC (`components/avc/**`) ⛔ e o conteúdo que as alimenta (`avc/conteudo/**`), ⛔ exceto os arquivos declarados em `FONTES_DE_IDENTIFICADOR` — que são justamente os que **definem** os ids. ── ⚠️⚠️ O DEFEITO QUE ORIGINOU ──────────────────────────────────────────── ⛔ A Superfície F imprimia `Falta: deficit_incapacitante` numa captura de 2026-09-05. ⚠️ `tr()` faz *fallback* para a própria chave, ⛔ então slug ⛔ não traduzido **atravessa em silêncio** — ⛔ e ⛔ nenhuma trava existente o via. ⚠️ Instrução do autor: *"⛔ Não quero resolver um slug; quero eliminar essa classe de defeito."*
 
 ## `test:paleta` → `scripts/valida-paleta.cjs`
 

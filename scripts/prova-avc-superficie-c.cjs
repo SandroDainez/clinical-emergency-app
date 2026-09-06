@@ -64,6 +64,8 @@ const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
 const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-c.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
 const K = require(path.join(tmp, "avc", "conteudo", "campo.js"));
+/** ⚠️ PD-36: a prova confere que os destinos hemorrágicos têm superfície registrada. */
+const SUP = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
 const P = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
 const F = require(path.join(tmp, "avc", "conteudo", "fontes.js"));
 const I = require(path.join(tmp, "avc", "nucleo", "instancia.js"));
@@ -353,10 +355,29 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
   confere("as quatro respostas do campo são as quatro constantes",
     JSON.stringify(campo?.opcoes) === JSON.stringify(C.OPCOES_RESULTADO_TC),
     "fonte única: comparar contra literal repetido faz a derivação parar de reconhecer o rótulo quando alguém melhora o texto");
-  confere("os dois destinos declaram módulo, inexistência e o que acontece",
+  /**
+   * ⚠️⚠️ ESTA TRAVA MUDOU DE LADO EM 2026-09-05 (PD-36), ⛔ e ⛔ não foi afrouxada.
+   *
+   * Ela nasceu exigindo `moduloExiste === false`: naquele dia, o honesto era a
+   * tela **declarar que o módulo ⛔ não existia**. Com os catálogos de HIC e HSA
+   * construídos, ⛔ manter a exigência do `false` reprovaria o app por ter
+   * **ganhado** o módulo que faltava — a trava passaria a defender o beco.
+   *
+   * ⚠️ O que E-09 sempre cobrou continua cobrado, ⛔ e é o resto da linha: todo
+   * destino declara **módulo** ⛔ e **o que acontece**. O que mudou é ⛔ apenas o
+   * valor de `moduloExiste`, ⛔ e ele agora é conferido contra a existência real
+   * da superfície correspondente — ⛔ não contra um literal.
+   */
+  confere("os dois destinos declaram módulo e o que acontece",
     Object.values(C.DESTINOS_DA_IMAGEM).every((d) =>
-      d.moduloExiste === false && d.modulo.length > 0 && d.oQueAcontece.length > 0),
+      typeof d.moduloExiste === "boolean" && d.modulo.length > 0 && d.oQueAcontece.length > 0),
     "E-09: destino sem comportamento é beco — o paciente com hemorragia cairia num estado que ⛔ não diz nada");
+  confere("os dois módulos hemorrágicos EXISTEM e têm superfície alcançável",
+    C.DESTINOS_DA_IMAGEM.hemorragia.moduloExiste === true
+    && C.DESTINOS_DA_IMAGEM.hsa.moduloExiste === true
+    && SUP.SUPERFICIES.some((s) => s.id === "hic" && s.destino === true)
+    && SUP.SUPERFICIES.some((s) => s.id === "hsa" && s.destino === true),
+    "PD-36: `moduloExiste: true` sem a superfície registrada faria a tela oferecer uma porta que ⛔ não abre");
   confere("a procedência dos dois destinos ⛔ NÃO se mistura",
     C.DESTINOS_DA_IMAGEM.hemorragia.fonte === "F-16"
     && C.DESTINOS_DA_IMAGEM.hsa.fonte === "spec §1.8",

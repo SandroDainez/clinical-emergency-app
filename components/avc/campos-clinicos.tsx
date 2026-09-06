@@ -36,6 +36,7 @@ import SeletorDeHora from "./seletor-de-hora";
 import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
 /**
@@ -116,7 +117,7 @@ export function CabecalhoDeBloco({
   return (
     <View style={e.blocoCabecalho} testID={testID}>
       <View style={e.blocoBarra} />
-      <Text style={e.blocoTitulo}>{tr(titulo).toUpperCase()}</Text>
+      <Text style={e.blocoTitulo}>{tr(titulo)}</Text>
       {aberto === undefined ? null : (
         <Text style={e.blocoEstado} testID={`${testID ?? "bloco"}-estado`}>
           {aberto ? `▾ ${tr("aberta")}` : `▸ ${tr("recolhida")}`}
@@ -1537,24 +1538,29 @@ export const criarEstilos = (tema: Tema) =>
      * ⚠️ O TÍTULO DE BLOCO DEIXOU DE SER LEGENDA. Faixa com a cor da área, barra
      * de accent e tipo maior: o degrau de hierarquia que a varredura precisa.
      */
+    /**
+     * ⚠️⚠️ A BARRA ROXA PREENCHIDA SAIU EM 2026-09-05 (PD-37) — ⛔ e a captura de
+     * Reperfusão é que a condenou.
+     *
+     * ⛔ Cada bloco vinha dentro de uma faixa **roxa cheia**, em caixa alta, com
+     * uma barrinha de acento: numa tela com seis blocos, isso dá **seis pesos
+     * iguais** ⛔ e ⛔ nenhuma hierarquia — a dose que vai na veia competia com
+     * *"O que falta colher"*.
+     *
+     * ⚠️ Agora é **texto ⛔ e espaço**, igual ao `SectionTitle` do sistema
+     * congelado. ⛔ A hierarquia vem do papel tipográfico, ⛔ e ⛔ não de pintar a
+     * largura da tela. ⚠️ Mudar aqui propaga para **todas** as superfícies de
+     * uma vez — que é exatamente o ponto de haver um sistema.
+     */
     blocoCabecalho: {
       flexDirection: "row", alignItems: "center", gap: ESPACO.sm,
-      backgroundColor: AREA_AVC.badgeBg, borderRadius: RAIO.botao,
-      paddingVertical: ESPACO.sm, paddingHorizontal: ESPACO.sm,
       marginTop: ESPACO.md,
     },
-    blocoBarra: {
-      width: 4, alignSelf: "stretch", minHeight: 18,
-      borderRadius: RAIO.badge, backgroundColor: AREA_AVC.accent,
-    },
-    blocoTitulo: {
-      color: AREA_AVC.badgeText, fontSize: TIPOGRAFIA.body.fontSize,
-      fontWeight: "800", letterSpacing: 1, flex: 1,
-    },
+    /** ⛔ Sem barra de acento: ⛔ não há mais faixa em que ela se apoie. */
+    blocoBarra: { width: 0, height: 0 },
+    blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
     /** ⚠️ Palavra + seta: ⛔ nem a forma ⛔ nem a cor carregam o estado sozinhas (E-39). */
-    blocoEstado: {
-      color: AREA_AVC.badgeText, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700",
-    },
+    blocoEstado: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     grupoTitulo: {
       color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
       fontWeight: "700", letterSpacing: 1, marginTop: ESPACO.xs,

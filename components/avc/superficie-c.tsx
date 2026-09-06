@@ -68,8 +68,10 @@ import {
   Secao,
   Segmentado,
 } from "./ui";
+import { DecisionSection } from "./sistema";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
@@ -95,6 +97,15 @@ type Props = {
   onCorrigirNoEstudo: (estudo: string, campo: string, valor: string | number) => void;
   onDesfazerNoEstudo: (estudo: string, campo: string) => void;
   onNovoEstudo: () => void;
+  /**
+   * ⚠️ Abre a superfície-destino do módulo hemorrágico (PD-36).
+   *
+   * ⚠️⚠️ A PORTA FICA ONDE O ACHADO APARECE. ⛔ C ⛔ não decide o destino — ela o
+   * **lê** de `destinoDaImagem`. Mas é aqui que o médico vê *"Hemorragia
+   * identificada"*, ⛔ e mandá-lo procurar a porta no Destino seria pedir uma
+   * navegação que o achado já justificou.
+   */
+  onAbrirSuperficie: (id: SuperficieId) => void;
 };
 
 /**
@@ -142,6 +153,7 @@ export default function SuperficieC({
   onCorrigirNoEstudo,
   onDesfazerNoEstudo,
   onNovoEstudo,
+  onAbrirSuperficie,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -292,6 +304,24 @@ export default function SuperficieC({
           )}
           <Text style={e.destinoNota}>{tr(destino.oQueAcontece)}</Text>
           {/**
+            * ⚠️⚠️ A PORTA, ⛔ e ⛔ não um "continuar" genérico. O rótulo nomeia o
+            * que abre — recomendações da diretriz daquela síndrome —, ⛔ e ⛔ não
+            * promete conduta. ⛔ Ela só existe quando o módulo existe (PD-36).
+            */}
+          {destino.moduloExiste ? (
+            <Pressable
+              style={e.destinoBotao}
+              accessibilityRole="button"
+              accessibilityLabel={tr("Abrir o catálogo de recomendações deste módulo")}
+              testID={`avc-destino-abrir-${destino.saida}`}
+              onPress={() =>
+                onAbrirSuperficie(destino.saida === "hemorragia_intracraniana" ? "hic" : "hsa")
+              }
+            >
+              <Text style={e.destinoBotaoTexto}>{tr("Abrir recomendações")}</Text>
+            </Pressable>
+          ) : null}
+          {/**
             * ⚠️⚠️ A FRASE VEM INTEIRA DO CONTEÚDO, e a tela ⛔ não a compõe.
             *
             * A versão anterior imprimia `"Também registrado" + ":" + rótulo` — e
@@ -349,9 +379,45 @@ export default function SuperficieC({
            * app ⛔ não sabe o que aquele exame pode responder, e ⛔ não inventa.
            */
           const achados = achadosDaModalidade(estudo.modalidade);
-          const campos = ESTUDO_C.filter(
+          const todosOsCampos = ESTUDO_C.filter(
             (c) => CAMPOS_DE_IDENTIDADE.includes(c.id) || achados.includes(c.id)
           );
+
+          /**
+           * ⚠️⚠️ REVELAÇÃO PROGRESSIVA (PD-37) — a decisão vem ANTES dos detalhes.
+           *
+           * ⛔ A tela mostrava os treze campos ao mesmo tempo, ⛔ e a pergunta que
+           * **governa a classe inteira de reperfusão** — *há hemorragia?* —
+           * competia por atenção com sítio de oclusão, ASPECTS ⛔ e efeito de
+           * massa, que ⛔ só importam **depois** dela.
+           *
+           * ⚠️ Três grupos, nesta ordem:
+           *   1 · **identidade** — o mínimo para saber de que exame se fala;
+           *   2 · **a decisão** — hemorragia sim/não, sozinha ⛔ e dominante;
+           *   3 · **o resto** — ⛔ só depois de decidida.
+           *
+           * ⚠️⚠️ ⛔ E ⛔ NÃO É WIZARD: ⛔ nada trava. O médico pode responder em
+           * qualquer ordem ⛔ e mudar a resposta; o que muda é **o que a tela
+           * mostra primeiro**, ⛔ e ⛔ não o que ela permite (**E-11**).
+           *
+           * ⛔ Modalidade que ⛔ não oferece `estudo_resultado` (angiotomografia,
+           * perfusão) ⛔ não tem decisão a esperar — ⛔ nela tudo aparece de uma
+           * vez, ⛔ e gatilho ⛔ nenhum fica pendurado.
+           */
+          const camposDeIdentidade = todosOsCampos.filter((c) =>
+            CAMPOS_DE_IDENTIDADE.includes(c.id)
+          );
+          const campoDaDecisao = todosOsCampos.find((c) => c.id === "estudo_resultado");
+          const decidido =
+            valorNaInstancia(estado, estudo.id, "estudo_resultado")?.valor !== undefined;
+          const camposRestantes = todosOsCampos.filter(
+            (c) => !CAMPOS_DE_IDENTIDADE.includes(c.id) && c.id !== "estudo_resultado"
+          );
+          const campos = [
+            ...camposDeIdentidade,
+            ...(campoDaDecisao ? [campoDaDecisao] : []),
+            ...(campoDaDecisao && !decidido ? [] : camposRestantes),
+          ];
           const resumo = resumoDoEstudo(estudo.id, estudo.modalidade);
 
           return (
@@ -625,6 +691,45 @@ export default function SuperficieC({
                               onDesfazer={(c) => onDesfazerNoEstudo(estudo.id, c)}
                             />
                           ) : null}
+                        </View>
+                      );
+                    }
+
+                    /**
+                     * ⚠️⚠️ A DECISÃO VEM ANTES DE TUDO (PD-37) — ⛔ e a ORDEM DOS
+                     * RAMOS É O QUE FAZ ISSO FUNCIONAR.
+                     *
+                     * ⛔ Na primeira tentativa este bloco ficou **depois** do ramo
+                     * de `EMPILHADOS`, que também casa com `estudo_resultado` —
+                     * ⛔ e ⛔ nunca foi alcançado. ⚠️ O código compilava, os testes
+                     * passavam ⛔ e a tela continuava igual: o defeito só apareceu
+                     * **na captura**.
+                     *
+                     * ⛔ *Há hemorragia?* governa a **classe inteira** de
+                     * reperfusão — ela decide entre trombolisar ⛔ e reverter
+                     * anticoagulação, condutas **opostas**. ⛔ Com o peso de
+                     * "Procedência do exame", a pergunta mais importante da
+                     * superfície parecia burocracia.
+                     *
+                     * ⚠️ A hierarquia vem de **tipografia ⛔ e posição** — ⛔ não de
+                     * mais uma moldura colorida.
+                     */
+                    if (campo.id === "estudo_resultado" && campo.opcoes) {
+                      return (
+                        <View key={campo.id} testID={`avc-campo-${campo.id}`}>
+                          <DecisionSection
+                            pergunta="Há hemorragia intracraniana?"
+                            contexto={campo.rotulo}
+                            testID={`avc-decisao-${estudo.id}`}
+                          >
+                            <Empilhado
+                              campo={campo.id}
+                              opcoes={campo.opcoes}
+                              valor={bruto}
+                              onEscolher={(c, v) => gravar(c, v)}
+                              onDesfazer={(c) => onDesfazerNoEstudo(estudo.id, c)}
+                            />
+                          </DecisionSection>
                         </View>
                       );
                     }
@@ -1119,6 +1224,20 @@ const criarEstilos = (tema: Tema) =>
       letterSpacing: 1,
     },
     destinoRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
+    destinoBotao: {
+      marginTop: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.primary,
+      borderRadius: RAIO.botao,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+    },
+    destinoBotaoTexto: {
+      color: tema.cores.onPrimary,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "700",
+    },
     destinoModulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
     destinoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     /**

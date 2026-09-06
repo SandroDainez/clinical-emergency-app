@@ -633,8 +633,13 @@ export const DESTINOS_DA_IMAGEM = {
     temporalidade: "estado",
     rotulo: "Suspeita clínica de hemorragia subaracnóidea",
     modulo: "Fluxo de hemorragia subaracnóidea",
-    /** ⚠️ ⛔ NÃO EXISTE — e dizer isso na tela é o que E-09 exige. */
-    moduloExiste: false,
+    /**
+     * ⚠️ EXISTE desde 2026-09-05 (PD-36): o catálogo de recomendações da HSA
+     * (AHA/ASA 2023) foi construído e é alcançável a partir do Destino. E-09
+     * agora se cumpre pelo caminho oposto — a tela abre o módulo em vez de dizer
+     * que ele não existe.
+     */
+    moduloExiste: true,
     oQueAcontece:
       "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua.",
     fonte: "spec §1.8",
@@ -648,7 +653,8 @@ export const DESTINOS_DA_IMAGEM = {
      */
     rotulo: "Hemorragia intracraniana identificada",
     modulo: "Módulo de AVC hemorrágico",
-    moduloExiste: false,
+    /** ⚠️ EXISTE desde 2026-09-05 (PD-36): catálogo HIC (AHA/ASA 2022) construído. */
+    moduloExiste: true,
     oQueAcontece:
       "A reperfusão não é iniciada sem exclusão de hemorragia. O motivo fica registrado, e o atendimento continua.",
     fonte: "F-16",

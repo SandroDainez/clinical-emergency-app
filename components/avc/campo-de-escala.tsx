@@ -74,6 +74,26 @@ export default function CampoDeEscala({
   const [rascunho, setRascunho] = useState<Record<string, number>>({});
   /** Quais regras de pontuação estão abertas. ⚠️ Fechadas por padrão. */
   const [regrasAbertas, setRegrasAbertas] = useState<readonly string[]>([]);
+  /**
+   * ⚠️⚠️ MODO FOCO — um item por vez (PD-37).
+   *
+   * ⛔ Os quinze itens juntos transformavam a escala num formulário: o médico
+   * lia rótulo, manobra ⛔ e regra de pontuação de quinze coisas ao mesmo tempo,
+   * ⛔ e a pergunta que ele precisa responder — *o que este paciente faz?* —
+   * ficava perdida no meio.
+   *
+   * ⚠️⚠️ ⛔ ISTO ⛔ NÃO É UM WIZARD DO AVC. A sequência existe **dentro da
+   * escala**, ⛔ que tem ordem de exame própria (**Brott 1989**); o módulo
+   * continua livre — o médico sai daqui, abre outra fase ⛔ e volta, ⛔ e ⛔ nada
+   * trava (**E-11**).
+   *
+   * ⚠️⚠️ ⛔ E ⛔ NÃO MUDA A SEMÂNTICA: a ordem dos itens, os critérios, os valores,
+   * o rascunho ⛔ e a gravação em **gesto único** continuam idênticos. Muda
+   * ⛔ apenas **quantos itens a tela mostra por vez**.
+   */
+  const [foco, setFoco] = useState(0);
+  /** ⚠️ A revisão: a lista inteira, para conferir ⛔ ou corrigir qualquer item. */
+  const [verTodos, setVerTodos] = useState(false);
 
   const emEdicao = { ...pontos, ...rascunho };
   const respondidos = ITENS_NIHSS.filter((v) => emEdicao[v.id] !== undefined).length;
@@ -123,7 +143,31 @@ export default function CampoDeEscala({
 
       {aberta ? (
         <View style={e.escala} testID={`avc-escala-${campo.id}`}>
-          {ITENS_NIHSS.map((item) => (
+          {/**
+            * ⚠️⚠️ O CROMADO DA ESCALA — progresso ⛔ e a porta da revisão.
+            *
+            * ⚠️ O progresso diz **onde estou na escala**, ⛔ e ⛔ não "quanto
+            * falta para liberar algo": ⛔ nada é liberado por completar o NIHSS.
+            */}
+          <View style={e.escalaTopo}>
+            <Text style={e.escalaProgresso} testID={`avc-escala-progresso-${campo.id}`}>
+              {verTodos
+                ? tr("Todos os itens")
+                : `${tr("Item")} ${foco + 1} ${tr("de")} ${ITENS_NIHSS.length}`}
+            </Text>
+            <Pressable
+              style={e.escalaRevisar}
+              accessibilityRole="button"
+              testID={`avc-escala-ver-todos-${campo.id}`}
+              onPress={() => setVerTodos((v) => !v)}
+            >
+              <Text style={e.acaoTexto}>
+                {verTodos ? tr("Voltar ao item") : tr("Ver todos")}
+              </Text>
+            </Pressable>
+          </View>
+
+          {(verTodos ? ITENS_NIHSS : [ITENS_NIHSS[foco]]).map((item) => (
             <View key={item.id} style={e.item} testID={`avc-escala-item-${item.id}`}>
               <View style={e.itemTopo}>
                 <Text style={e.itemRotulo}>{tr(item.label)}</Text>
@@ -180,18 +224,56 @@ export default function CampoDeEscala({
                       accessibilityRole="radio"
                       aria-checked={ativa}
                       testID={`avc-escala-opcao-${item.id}-${o.points}`}
-                      onPress={() => setRascunho((r) => ({ ...r, [item.id]: o.points }))}
+                      onPress={() => {
+                        setRascunho((r) => ({ ...r, [item.id]: o.points }));
+                        /**
+                         * ⚠️ AVANÇO NATURAL — ⛔ e ⛔ só no modo foco. ⚠️ No último
+                         * item ⛔ não avança: ⛔ não há para onde, ⛔ e pular para o
+                         * rodapé esconderia a resposta que acabou de ser dada.
+                         */
+                        if (!verTodos && foco < ITENS_NIHSS.length - 1) {
+                          setFoco((i) => i + 1);
+                        }
+                      }}
                     >
+                      {/**
+                        * ⚠️⚠️ A DESCRIÇÃO CLÍNICA VEM PRIMEIRO, ⛔ e o número
+                        * **em segundo plano** (autor, 2026-09-05).
+                        *
+                        * ⛔ Antes era `rótulo · pontos` na mesma linha ⛔ e no
+                        * mesmo peso: o médico escolhia **o número da escala**.
+                        * ⚠️ Ele precisa pensar *"o que o paciente faz?"* — o
+                        * ponto é **consequência**, ⛔ e ⛔ não a pergunta.
+                        *
+                        * ⛔ O valor gravado ⛔ NÃO mudou: continua `o.points`.
+                        */}
                       <Text style={[e.opcaoTexto, ativa && e.opcaoTextoAtivo]}>
                         {ativa ? "✓ " : ""}
-                        {tr(o.label)} · {o.points}
+                        {tr(o.label)}
                       </Text>
+                      <Text style={e.opcaoPonto}>{o.points}</Text>
                     </Pressable>
                   );
                 })}
               </View>
             </View>
           ))}
+
+          {/**
+            * ⚠️ VOLTAR AO ITEM ANTERIOR — ⛔ só no modo foco, ⛔ e ⛔ só quando há
+            * anterior. ⚠️ Rever ⛔ não apaga: o rascunho guarda o que já foi
+            * respondido, ⛔ e a opção marcada continua marcada.
+            */}
+          {!verTodos && foco > 0 ? (
+            <Pressable
+              style={e.escalaRevisar}
+              accessibilityRole="button"
+              testID={`avc-escala-anterior-${campo.id}`}
+              onPress={() => setFoco((i) => Math.max(0, i - 1))}
+            >
+              <Text style={e.acaoTexto}>‹ {tr("Item anterior")}</Text>
+            </Pressable>
+          ) : null}
 
           <View style={e.rodape}>
             {/**
@@ -268,12 +350,36 @@ const criarEstilos = (tema: Tema) =>
     opcao: {
       paddingVertical: ESPACO.xs, paddingHorizontal: ESPACO.sm,
       minHeight: TOQUE.minimo, justifyContent: "center",
+      flexDirection: "row", alignItems: "center", gap: ESPACO.sm,
       backgroundColor: tema.cores.bg, borderRadius: RAIO.botao,
       borderWidth: 2, borderColor: tema.cores.border,
     },
     opcaoAtiva: { backgroundColor: tema.cores.primary, borderColor: tema.cores.primary },
-    opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
+    opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize, flex: 1 },
     opcaoTextoAtivo: { color: tema.cores.onPrimary, fontWeight: "700" },
+    /**
+     * ⚠️ O PONTO EM SEGUNDO PLANO — pequeno, secundário, à direita. ⛔ Ele ⛔ não
+     * some (o médico precisa poder conferir a pontuação), ⛔ mas ⛔ também ⛔ não
+     * é o que se escolhe.
+     */
+    opcaoPonto: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "600",
+    },
+
+    escalaTopo: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: ESPACO.sm,
+    },
+    escalaProgresso: {
+      color: tema.cores.textSecondary,
+      fontSize: TIPOGRAFIA.micro.fontSize,
+      fontWeight: "600",
+    },
+    escalaRevisar: { minHeight: TOQUE.minimo, justifyContent: "center" },
 
     rodape: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: ESPACO.sm },
     parcial: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700", flex: 1 },

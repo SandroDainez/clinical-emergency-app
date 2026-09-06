@@ -28,7 +28,31 @@ export const FONTE_MAE = {
   arquivo: "protocols/fontes-verbatim/aha-asa-2026-avc-isquemico.md",
 } as const;
 
+/**
+ * ⚠️ Fonte do ramo **HIC** (hemorragia intracerebral espontânea). Enviada pelo
+ * autor em 2026-09-05 e transcrita verbatim. ⛔ NÃO é a fonte-mãe — o módulo
+ * nasceu do isquêmico; o hemorrágico tem fontes próprias, uma por síndrome.
+ */
+export const FONTE_HIC = {
+  id: "aha_asa_hic_2022",
+  citacao:
+    "Greenberg SM, et al. 2022 Guideline for the Management of Patients With Spontaneous Intracerebral Hemorrhage. Stroke. 2022;53:e282–e361.",
+  doi: "10.1161/STR.0000000000000407",
+  arquivo: "protocols/fontes-verbatim/aha-asa-2022-hic.md",
+} as const;
+
+/** ⚠️ Fonte do ramo **HSA** (hemorragia subaracnóidea aneurismática). */
+export const FONTE_HSA = {
+  id: "aha_asa_hsa_2023",
+  citacao:
+    "Hoh BL, et al. 2023 Guideline for the Management of Patients With Aneurysmal Subarachnoid Hemorrhage. Stroke. 2023;54:e314–e370.",
+  doi: "10.1161/STR.0000000000000436",
+  arquivo: "protocols/fontes-verbatim/aha-asa-2023-hsa.md",
+} as const;
+
 const AHA = FONTE_MAE.arquivo;
+const HIC = FONTE_HIC.arquivo;
+const HSA = FONTE_HSA.arquivo;
 const BR_TROMBO = "protocols/fontes-verbatim/bulas-br-tromboliticos.md";
 const BR_PA = "protocols/fontes-verbatim/fontes-br-anti-hipertensivos.md";
 const BR_GLI = "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md";
@@ -95,6 +119,40 @@ export const SLOTS: readonly SlotDeFonte[] = [
     estado: "aberto",
     arquivo: SEG_DEF,
   },
+
+  /**
+   * ⚠️⚠️ RAMO HIC — hemorragia intracerebral espontânea (AHA/ASA 2022).
+   * Transcritos verbatim em 2026-09-05 · conferência clínica do autor pendente.
+   * ⛔ Cada slot carrega COR/LOE por recomendação no arquivo-fonte.
+   */
+  { id: "H-01", assunto: "HIC · PA aguda — meta e alvo pressórico", estado: "transcrito", arquivo: HIC },
+  { id: "H-02", assunto: "HIC · Reversão de anticoagulação por agente + doses", estado: "transcrito", arquivo: HIC },
+  { id: "H-03", assunto: "HIC · Hemorragia associada a antiplaquetário", estado: "transcrito", arquivo: HIC },
+  { id: "H-04", assunto: "HIC · Hemostáticos gerais (rFVIIa, TXA)", estado: "transcrito", arquivo: HIC },
+  { id: "H-05", assunto: "HIC · Glicemia — monitorização e alvos", estado: "transcrito", arquivo: HIC },
+  { id: "H-06", assunto: "HIC · Temperatura", estado: "transcrito", arquivo: HIC },
+  { id: "H-07", assunto: "HIC · Convulsões e antiepilépticos", estado: "transcrito", arquivo: HIC },
+  { id: "H-08", assunto: "HIC · PIC, osmoterapia, DVE, corticoide", estado: "transcrito", arquivo: HIC },
+  { id: "H-09", assunto: "HIC · Tromboprofilaxia (TEV)", estado: "transcrito", arquivo: HIC },
+  { id: "H-10", assunto: "HIC · Cirurgia supratentorial (MIS, craniotomia, craniectomia)", estado: "transcrito", arquivo: HIC },
+  { id: "H-11", assunto: "HIC · Cirurgia cerebelar (≥15 mL, COR 1)", estado: "transcrito", arquivo: HIC },
+  { id: "H-12", assunto: "HIC · Hemorragia intraventricular e DVE", estado: "transcrito", arquivo: HIC },
+  { id: "H-13", assunto: "HIC · Local de cuidado e transferência", estado: "transcrito", arquivo: HIC },
+  { id: "H-14", assunto: "HIC · Prevenção secundária (PA, antitrombóticos)", estado: "transcrito", arquivo: HIC },
+  { id: "H-15", assunto: "HIC · Predição de desfecho e metas de cuidado", estado: "transcrito", arquivo: HIC },
+
+  /**
+   * ⚠️⚠️ RAMO HSA — hemorragia subaracnóidea aneurismática (AHA/ASA 2023).
+   * Transcritos verbatim em 2026-09-05 · conferência clínica do autor pendente.
+   */
+  { id: "S-01", assunto: "HSA · Ressangramento (PA, reversão, antifibrinolítico)", estado: "transcrito", arquivo: HSA },
+  { id: "S-02", assunto: "HSA · Tratamento do aneurisma (<24 h, modalidade)", estado: "transcrito", arquivo: HSA },
+  { id: "S-03", assunto: "HSA · Vasoespasmo/DCI (nimodipino, euvolemia, resgate)", estado: "transcrito", arquivo: HSA },
+  { id: "S-04", assunto: "HSA · Monitorização de vasoespasmo/DCI", estado: "transcrito", arquivo: HSA },
+  { id: "S-05", assunto: "HSA · Hidrocefalia", estado: "transcrito", arquivo: HSA },
+  { id: "S-06", assunto: "HSA · Convulsões (fenitoína COR 3: Harm)", estado: "transcrito", arquivo: HSA },
+  { id: "S-07", assunto: "HSA · Complicações (volume, TEV, glicemia)", estado: "transcrito", arquivo: HSA },
+  { id: "S-08", assunto: "HSA · Sistemas de cuidado e transferência", estado: "transcrito", arquivo: HSA },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

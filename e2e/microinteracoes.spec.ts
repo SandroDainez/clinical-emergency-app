@@ -93,6 +93,21 @@ test("o toque em botão dá retorno visual", async ({ page }) => {
   const botao = pressables(page).filter({ hasText: /^Primary$/ }).first();
   await expect(botao).toBeVisible();
 
+  /**
+   * ⚠️⚠️ ROLAR ATÉ O BOTÃO ANTES DE MEDIR — ⛔ e ⛔ isto ⛔ não é detalhe de teste.
+   *
+   * ⛔ `boundingBox()` devolve coordenadas do frame, ⛔ mesmo quando o elemento
+   * está **fora da viewport** — ⛔ e `mouse.move` para uma coordenada fora da
+   * tela ⛔ não toca ⛔ nada. ⚠️ O teste media o estilo de repouso ⛔ e reprovava
+   * por motivo errado.
+   *
+   * ⚠️ Apareceu em 2026-09-05, quando a paleta ganhou três tokens
+   * (`surfaceElevated`, `info`, `disabled`): a galeria mostra **os dois temas
+   * lado a lado**, ⛔ e três swatches a mais em cada empurraram o botão para
+   * baixo da dobra. ⛔ O botão ⛔ nunca deixou de reagir — o mouse é que deixou
+   * de alcançá-lo.
+   */
+  await botao.scrollIntoViewIfNeeded();
   const caixa = await botao.boundingBox();
   expect(caixa).not.toBeNull();
 

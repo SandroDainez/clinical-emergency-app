@@ -580,9 +580,21 @@ confere("há catálogo, regras e fatos operacionais a conferir",
     && !/sinais\.join/.test(fonteTela),
     "⛔ em texto corrido o olho passa por cima, ⛔ e isto é conteúdo de resposta rápida");
 
+  /**
+   * ⚠️⚠️ A ASSERÇÃO FICOU **PRECISA** EM 2026-09-05 — ⛔ e ⛔ não afrouxada.
+   *
+   * ⛔ Ela procurava a primeira ocorrência da palavra `condutas` ⛔ e exigia que
+   * viesse depois de `sinais.map`. ⚠️ Com a **síntese do caso** (PD-37), a
+   * Superfície G passou a ter `sintese.condutas` no topo — **outro conceito**,
+   * com o mesmo nome —, ⛔ e a busca ingênua casou com ele.
+   *
+   * ⛔ A invariante clínica ⛔ NÃO mudou: a consequência da deterioração continua
+   * **depois** dos sinais. ⚠️ O que mudou é que a prova agora nomeia
+   * `deterioracao.condutas` — ⛔ o que ela sempre quis dizer.
+   */
   confere("⚠️⚠️ a consequência fica SEPARADA dos sinais",
-    /condutas\.map/.test(fonteTela)
-    && fonteTela.indexOf("condutas") > fonteTela.indexOf("sinais.map"),
+    /deterioracao\.condutas\.map/.test(fonteTela)
+    && fonteTela.indexOf("deterioracao.condutas") > fonteTela.indexOf("sinais.map"),
     "⛔ misturar sinal e ação faz o médico ler cinco itens ⛔ sem saber quais são conduta");
 
   confere("⚠️ ⛔ e o alerta ⛔ NÃO é permanente",

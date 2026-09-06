@@ -29,6 +29,16 @@ export type Superficie = {
    * ⛔ nunca foi sobre a letra: é sobre **ser ou não ser passo do atendimento**.
    */
   readonly painel?: true;
+  /**
+   * ⚠️⚠️ DESTINO — ⛔ **não é etapa do fluxo isquêmico** (PD-36).
+   *
+   * `hic` e `hsa` são alcançadas a partir de Destino quando a Imagem identifica
+   * hemorragia ou suspeita de HSA. Elas existem em `SUPERFICIES` para que
+   * `superficie(id)` as encontre e a tela as renderize — ⛔ mas ⛔ **não** entram
+   * na barra de passos, porque o paciente hemorrágico ⛔ não segue o fluxo de
+   * trombólise. A navegação de passos filtra `!destino`.
+   */
+  readonly destino?: true;
   readonly titulo: string;
   readonly resumo: string;
   /** Slots de fonte que governam esta superfície. */
@@ -138,6 +148,27 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
     resumo: "Transferência, unidade de AVC, saídas do fluxo.",
     fontes: ["F-15"],
   },
+  /**
+   * ⚠️⚠️ OS DOIS DESTINOS HEMORRÁGICOS (PD-36). Catálogos de recomendação,
+   * alcançados a partir de Destino/Imagem. ⛔ Não são passos do fluxo isquêmico.
+   */
+  {
+    id: "hic",
+    destino: true,
+    titulo: "AVC hemorrágico (HIC)",
+    resumo: "Recomendações da diretriz de hemorragia intracerebral espontânea.",
+    fontes: [
+      "H-01", "H-02", "H-03", "H-04", "H-05", "H-06", "H-07", "H-08",
+      "H-09", "H-10", "H-11", "H-12", "H-13", "H-14", "H-15",
+    ],
+  },
+  {
+    id: "hsa",
+    destino: true,
+    titulo: "Hemorragia subaracnóidea (HSA)",
+    resumo: "Recomendações da diretriz de HSA aneurismática.",
+    fontes: ["S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08"],
+  },
 ] as const;
 
 
@@ -165,6 +196,20 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
  * este dia fosse barato.
  */
 export const SUPERFICIES: readonly Superficie[] = ORDEM_DE_APRESENTACAO.map((s) => ({ ...s }));
+
+/**
+ * ⚠️⚠️ AS SUPERFÍCIES QUE TÊM **ABA** — ⛔ e ⛔ não "as superfícies que existem".
+ *
+ * ⚠️ Nasceu em 2026-09-05 (PD-36) porque a distinção passou a existir: os
+ * destinos hemorrágicos são superfícies de verdade, ⛔ mas ⛔ não têm aba —
+ * chega-se a elas pelo Destino, ⛔ e ⛔ não pela barra.
+ *
+ * ⚠️ Ela mora aqui, ⛔ e ⛔ não repetida em cada tela e em cada teste: o filtro
+ * `!destino` escrito em seis lugares vira seis verdades que divergem na
+ * primeira mudança (**I6**). Quem pergunta *"quais superfícies o médico
+ * alcança pela navegação?"* pergunta a esta lista.
+ */
+export const SUPERFICIES_COM_ABA: readonly Superficie[] = SUPERFICIES.filter((s) => !s.destino);
 
 export function superficie(id: SuperficieId): Superficie {
   const achada = SUPERFICIES.find((s) => s.id === id);

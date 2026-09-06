@@ -84,6 +84,23 @@ const PARES = [
   ["border", "bg", 1.2, "borda visível sobre o fundo"],
   ["onPrimary", "primary", 4.5, "texto do botão principal"],
   ["onCritical", "critical", 4.5, "texto do botão crítico"],
+  /**
+   * ⚠️⚠️ O SEGUNDO DEGRAU DE SUPERFÍCIE precisa sustentar TEXTO — ⛔ senão ele
+   * ⛔ não serve para o que foi criado: substituir a moldura do card aninhado.
+   * ⛔ Um degrau que só funciona vazio obrigaria a borda de volta.
+   */
+  ["text", "surfaceElevated", 4.5, "texto principal sobre o segundo degrau"],
+  ["textSecondary", "surfaceElevated", 4.5, "texto secundário sobre o segundo degrau"],
+  /** ⚠️ `info` é TEXTO pequeno (rótulo de contexto), ⛔ e ⛔ não elemento gráfico. */
+  ["info", "bg", 4.5, "informativo como texto sobre o fundo"],
+  ["info", "surface", 4.5, "informativo como texto sobre card"],
+  /**
+   * ⛔ `disabled` ⛔ NÃO ENTRA AQUI, ⛔ e a ausência é deliberada: WCAG isenta
+   * controle desabilitado do piso de contraste, ⛔ e forçá-lo a 4,5:1 faria o
+   * desabilitado competir visualmente com o ativo — o oposto do que ele
+   * comunica. ⚠️ A garantia de que ele ⛔ não é o único sinal está em E-15, ⛔ e é
+   * medida na tela, ⛔ não na paleta.
+   */
 ];
 
 let falhas = 0;

@@ -295,6 +295,20 @@ export default function SuperficieD({
                 onPress={() => alternar(qual)}
               >
                 <View style={e.cabecalhoNome} testID={`avc-bloco-${qual}`}>
+                  {/**
+                    * ⚠️⚠️ ⛔ AQUI ⛔ NÃO ENTRA `SafetyBadge` — regra do autor,
+                    * 2026-09-05: *"⛔ não aplique selo em todo item apenas porque
+                    * existe um estado disponível"*.
+                    *
+                    * ⛔ Eu havia posto um. ⚠️ O título **já diz o estado em
+                    * palavras** — *"A fonte diz para ⛔ não administrar"* —, ⛔ e o
+                    * selo ao lado diria a mesma coisa uma segunda vez: ícone +
+                    * cor + rótulo + borda para **uma** informação.
+                    *
+                    * ⚠️ O selo serve onde o estado ⛔ NÃO está no texto: item
+                    * solto numa lista, ⛔ ou linha cujo rótulo é o nome do dado ⛔ e
+                    * ⛔ não o juízo sobre ele.
+                    */}
                   <Secao titulo={titulo} />
                 </View>
                 <View style={fechado ? null : e.giradoParaBaixo}>

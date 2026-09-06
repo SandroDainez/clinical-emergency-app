@@ -37,8 +37,14 @@ import {
 } from "../../avc/nucleo/derivacoes-g";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { numeroCurto } from "../../avc/nucleo/formato";
+import type { SuperficieId } from "../../avc/nucleo/tipos";
+import type { Relogio } from "../../avc/nucleo/relogio";
+import { sinteseDoCaso } from "../../avc/nucleo/sintese-do-caso";
+import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
+import { ClinicalCard, SectionTitle, WarningCard } from "./sistema";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco } from "./campos-clinicos";
 
@@ -47,6 +53,15 @@ type Props = {
   agora: number;
   onEscolher: (campo: string, valor: string) => void;
   onIrParaCampo: (campo: string) => void;
+  /**
+   * ⚠️ Abre a superfície-destino do módulo hemorrágico (PD-36). G ⛔ não decide
+   * QUAL — quem decide é a Imagem (`saida.saida`); G só oferece a porta quando o
+   * módulo existe.
+   */
+  onAbrirSuperficie: (id: SuperficieId) => void;
+  /** ⚠️ Quem sabe quais pendências existem é o módulo — ⛔ não esta tela (I6). */
+  pendencias: readonly { readonly id: string; readonly campo: string }[];
+  relogio: Relogio;
 };
 
 /**
@@ -67,7 +82,15 @@ function SeloDaTabela() {
   );
 }
 
-export default function SuperficieG({ estado, agora, onEscolher, onIrParaCampo }: Props) {
+export default function SuperficieG({
+  estado,
+  agora,
+  onEscolher,
+  onIrParaCampo,
+  onAbrirSuperficie,
+  pendencias,
+  relogio,
+}: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
 
@@ -76,9 +99,90 @@ export default function SuperficieG({ estado, agora, onEscolher, onIrParaCampo }
   const fase = useMemo(() => faseDaMonitorizacao(estado, agora), [estado, agora]);
   const saida = useMemo(() => saidaDeFluxo(estado), [estado]);
   const contexto = useMemo(() => contextoOperacional(estado), [estado]);
+  /**
+   * ⚠️⚠️ A SÍNTESE — ⛔ e ⛔ ela ⛔ não pergunta ⛔ nada (PD-37).
+   *
+   * ⚠️ Destino deixou de ser *"a última página do formulário"*: ⛔ ele ⛔ não tem
+   * campo próprio ⛔ e ⛔ não repete o que o médico já viu. Ele responde
+   * *"com tudo o que o sistema já sabe, o que eu preciso saber ⛔ e fazer agora?"*
+   */
+  const sintese = useMemo(
+    () => sinteseDoCaso(estado, relogio, pendencias),
+    [estado, relogio, pendencias]
+  );
 
   return (
     <View style={e.raiz} testID="avc-superficie-g-conteudo">
+      {/* ── 0 · A SÍNTESE DO CASO — o que o sistema já sabe ─────────────── */}
+      {sintese.situacao.length > 0 ? (
+        <View style={e.grupo} testID="avc-g-sintese-situacao">
+          <SectionTitle testID="avc-g-bloco-situacao">Situação atual</SectionTitle>
+          <ClinicalCard testID="avc-g-situacao">
+            {sintese.situacao.map((l) => (
+              <Text key={l.id} style={e.sinteseLinha} testID={`avc-g-situacao-${l.id}`}>
+                {tr(l.texto)}
+              </Text>
+            ))}
+          </ClinicalCard>
+        </View>
+      ) : null}
+
+      {/**
+        * ⚠️⚠️ INDICADO ⛔ ≠ REALIZADO — ⛔ e a tela diz qual é qual **em palavra**.
+        *
+        * ⛔ Ler *"Tenecteplase"* ⛔ e entender *"já foi administrada"* é o pior
+        * erro que esta superfície poderia induzir. ⚠️ A natureza vem do domínio
+        * (`iniciada`/`realizada`), ⛔ e ⛔ não de suposição da tela.
+        */}
+      {sintese.condutas.length > 0 ? (
+        <View style={e.grupo} testID="avc-g-sintese-conduta">
+          <SectionTitle testID="avc-g-bloco-conduta">Conduta</SectionTitle>
+          {sintese.condutas.map((c) => (
+            <ClinicalCard key={c.id} testID={`avc-g-conduta-${c.id}`}>
+              <Text style={e.sinteseLinha}>
+                {tr(c.texto)} — {tr(c.natureza === "realizada" ? "administrada" : "indicada")}
+                {c.horario ? ` · ${c.horario}` : ""}
+              </Text>
+            </ClinicalCard>
+          ))}
+        </View>
+      ) : null}
+
+      {/**
+        * ⚠️⚠️ A ÁREA MAIS IMPORTANTE DA SUPERFÍCIE (autor, 2026-09-05): ⛔ não é
+        * texto genérico de diretriz — é **o próximo passo deste paciente**.
+        */}
+      {sintese.proximaAcao.length > 0 ? (
+        <View style={e.grupo} testID="avc-g-sintese-proxima">
+          <SectionTitle testID="avc-g-bloco-proxima">Próxima ação</SectionTitle>
+          {sintese.proximaAcao.map((l) => (
+            <WarningCard
+              key={l.id}
+              nivel="atencao"
+              titulo={l.texto}
+              testID={`avc-g-proxima-${l.id}`}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      {/**
+        * ⚠️ Pendência dita como **ação clínica**, ⛔ e ⛔ nunca como nome de campo
+        * — `acaoPendente()` é a fonte única (`rotulos-clinicos.ts`).
+        */}
+      {sintese.pendencias.length > 0 ? (
+        <View style={e.grupo} testID="avc-g-sintese-pendencias">
+          <SectionTitle testID="avc-g-bloco-pendencias">Pendências</SectionTitle>
+          <ClinicalCard testID="avc-g-pendencias">
+            {sintese.pendencias.map((p) => (
+              <Text key={p.id} style={e.sinteseLinha} testID={`avc-g-pendencia-${p.id}`}>
+                {tr(acaoPendente(p.campo))}
+              </Text>
+            ))}
+          </ClinicalCard>
+        </View>
+      ) : null}
+
       {/* ── 1 · recomendação graduada ──────────────────────────────────── */}
       <View style={e.grupo} testID="avc-g-recomendados">
         <CabecalhoDeBloco titulo={tr("Recomendação da diretriz")} testID="avc-g-bloco-rec" />
@@ -282,6 +386,24 @@ export default function SuperficieG({ estado, agora, onEscolher, onIrParaCampo }
               {tr("produzido em Imagem")}
               {saida.moduloExiste ? "" : ` · ${tr("o módulo ainda não existe")}`}
             </Text>
+            {/**
+              * ⚠️ A PORTA PARA O MÓDULO HEMORRÁGICO (PD-36). Só aparece quando o
+              * módulo existe. G ⛔ não escolhe qual — a Imagem já decidiu em
+              * `saida.saida`; aqui só se traduz o destino para a superfície.
+              */}
+            {saida.moduloExiste ? (
+              <Pressable
+                style={e.saidaBotao}
+                accessibilityRole="button"
+                accessibilityLabel={tr("Abrir o catálogo de recomendações deste módulo")}
+                testID={`avc-g-abrir-${saida.saida}`}
+                onPress={() =>
+                  onAbrirSuperficie(saida.saida === "hemorragia_intracraniana" ? "hic" : "hsa")
+                }
+              >
+                <Text style={e.saidaBotaoTexto}>{tr("Abrir recomendações")}</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       ) : null}
@@ -552,6 +674,7 @@ const criarEstilos = (tema: Tema) =>
     },
     lacunaTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 
+    sinteseLinha: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     saidaCartao: {
       backgroundColor: tema.cores.surface,
       borderRadius: RAIO.botao,
@@ -559,6 +682,20 @@ const criarEstilos = (tema: Tema) =>
       borderColor: tema.cores.border,
       padding: ESPACO.sm,
       gap: ESPACO.xs,
+    },
+    saidaBotao: {
+      marginTop: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.primary,
+      borderRadius: RAIO.botao,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+    },
+    saidaBotaoTexto: {
+      color: tema.cores.onPrimary,
+      fontSize: TIPOGRAFIA.body.fontSize,
+      fontWeight: "700",
     },
 
     operacional: {

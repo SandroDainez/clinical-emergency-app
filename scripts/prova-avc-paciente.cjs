@@ -199,9 +199,32 @@ const TODOS = [
    * antes do fluxo é a forma mais natural de reintroduzir o atraso que as doze
    * marcas 🚫 proíbem — e ⛔ nem pareceria bloqueio: pareceria organização.
    */
-  confere("com Paciente VAZIO, as nove superfícies continuam declaradas",
-    S.SUPERFICIES.length === 9,
-    "⛔ nenhuma superfície some por falta de dado do paciente");
+  /**
+   * ⚠️⚠️ O NÚMERO SAIU DAQUI EM 2026-09-05 (PD-36), ⛔ e ⛔ isso ⛔ não é
+   * afrouxamento — é a trava ficando **mais forte**.
+   *
+   * ⛔ `length === 9` reprovava por **ganhar** superfície: no dia em que os dois
+   * destinos hemorrágicos (`hic`, `hsa`) nasceram, a prova acusou falha ⛔ sem
+   * ⛔ nenhuma superfície ter sumido. ⚠️ E um contador ⛔ nunca diz **qual**
+   * sumiu — que é justamente o que a invariante existe para detectar.
+   *
+   * ⚠️ Conferindo o **conjunto de ids**, acrescentar superfície exige declarar a
+   * intenção aqui (uma linha), ⛔ e remover uma acusa pelo nome.
+   */
+  const SUPERFICIES_ESPERADAS = [
+    "paciente", "laboratorio", "estabilizacao", "neurologico", "imagem",
+    "seguranca", "correcoes", "reperfusao", "destino",
+    // ⚠️ Destinos hemorrágicos (PD-36) — ⛔ não são etapas do fluxo isquêmico.
+    "hic", "hsa",
+  ];
+  const declaradas = S.SUPERFICIES.map((s) => s.id);
+  const faltando = SUPERFICIES_ESPERADAS.filter((id) => !declaradas.includes(id));
+  const inesperadas = declaradas.filter((id) => !SUPERFICIES_ESPERADAS.includes(id));
+  confere("com Paciente VAZIO, todas as superfícies declaradas continuam declaradas",
+    faltando.length === 0 && inesperadas.length === 0,
+    `⛔ nenhuma superfície some por falta de dado do paciente`
+    + (faltando.length ? ` · SUMIU: ${faltando.join(", ")}` : "")
+    + (inesperadas.length ? ` · NÃO DECLARADA NA PROVA: ${inesperadas.join(", ")}` : ""));
 
   confere("⛔ nenhum campo de Paciente bloqueia terapia",
     P.TODOS_OS_CAMPOS_P.every((c) => c.bloqueiaTerapia === false),

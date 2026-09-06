@@ -22,6 +22,7 @@ import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
 type Props = {
@@ -125,20 +126,20 @@ export default function SuperficieE({
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
-    vazio: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
+    vazio: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
     grupo: { gap: ESPACO.sm },
-    formulacao: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize },
+    formulacao: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     verbo: {
-      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize,
+      ...PAPEL.legenda, color: tema.cores.textSecondary,
       fontStyle: "italic",
     },
-    resolve: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    resolve: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     acao: {
       backgroundColor: tema.cores.surface, borderRadius: RAIO.botao,
       borderWidth: 2, borderColor: tema.cores.border, padding: ESPACO.sm, gap: ESPACO.xs,
     },
     acaoTitulo: {
-      color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "700",
+      ...PAPEL.micro, color: tema.cores.textSecondary,
     },
     novaAcao: {
       alignSelf: "flex-start", paddingHorizontal: ESPACO.md, paddingVertical: ESPACO.sm,
@@ -146,6 +147,6 @@ const criarEstilos = (tema: Tema) =>
       borderWidth: 2, borderColor: tema.cores.border,
     },
     novaAcaoTexto: {
-      color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "700",
+      ...PAPEL.tituloDeSecao, color: tema.cores.text,
     },
   });

@@ -59,11 +59,23 @@ console.log(`universo: ${sups.length} superfície(s) · ${S.pendenciasVigentes()
  * transversais**: `paciente` e `laboratorio`. Eles ⛔ não são etapas, e é por isso
  * que ⛔ não têm letra.
  */
-const comLetra = sups.filter((s) => !s.painel);
+/**
+ * ⚠️⚠️ E ONZE DESDE 2026-09-05 — **PD-36**, os dois destinos hemorrágicos.
+ *
+ * ⚠️ `hic` e `hsa` ⛔ **não são etapas** ⛔ e ⛔ não são painéis: são **destinos**,
+ * alcançados a partir de Destino quando a Imagem identifica hemorragia ou
+ * suspeita de HSA. ⛔ O paciente hemorrágico ⛔ não percorre o fluxo de
+ * trombólise, ⛔ e por isso eles ⛔ não entram na barra de etapas.
+ *
+ * ⚠️ A conta continua separando as três espécies — ⛔ somar tudo num total
+ * deixaria um destino virar etapa em silêncio.
+ */
+const comLetra = sups.filter((s) => !s.painel && !s.destino);
 const paineis = sups.filter((s) => s.painel);
-confere("são nove superfícies: sete etapas e dois painéis",
-  sups.length === 9 && comLetra.length === 7 && paineis.length === 2,
-  "§7.15 fixou sete janelas clínicas; P-09 acrescentou Paciente e Laboratório como painéis");
+const destinos = sups.filter((s) => s.destino);
+confere("são onze superfícies: sete etapas, dois painéis e dois destinos",
+  sups.length === 11 && comLetra.length === 7 && paineis.length === 2 && destinos.length === 2,
+  "§7.15 fixou sete janelas clínicas; P-09 acrescentou Paciente e Laboratório como painéis; PD-36 acrescentou HIC e HSA como destinos");
 
 /**
  * ⛔⛔ ⛔ NENHUMA LETRA NA APRESENTAÇÃO — autor, 2026-08-30.
@@ -122,6 +134,13 @@ const ORDEM_APROVADA = [
   ["correcoes", "Correções"],
   ["reperfusao", "Reperfusão"],
   ["destino", "Destino"],
+  /**
+   * ⚠️ Os destinos vêm por ÚLTIMO ⛔ e ⛔ isso ⛔ não é sequência clínica: eles
+   * ⛔ nem aparecem na barra de etapas. A posição aqui é só a ordem em que
+   * estão declarados no arquivo (PD-36).
+   */
+  ["hic", "AVC hemorrágico (HIC)"],
+  ["hsa", "Hemorragia subaracnóidea (HSA)"],
 ];
 confere("a ordem de apresentação é a aprovada",
   sups.length === ORDEM_APROVADA.length
@@ -138,7 +157,20 @@ confere("a ordem de apresentação é a aprovada",
  * ⚠️ `painel` entrou em 2026-08-29 e ⛔ **não** é sequência: ela diz que a
  * superfície ⛔ não é etapa — o oposto de `proxima`/`requer`.
  */
-const CHAVES_PERMITIDAS = ["id", "letra", "titulo", "resumo", "fontes", "painel"];
+/**
+ * ⚠️⚠️ `destino` ENTROU AQUI EM 2026-09-05 — ⛔ e ⛔ **não** é campo de sequência.
+ *
+ * ⚠️ Esta lista existe para barrar `proxima`, `anterior`, `requer`, `depende` —
+ * qualquer coisa que transforme ordem de leitura em **fluxo obrigatório** (E-11).
+ *
+ * ⚠️ `destino`, como `painel`, é **classificação de espécie**: diz *o que a
+ * superfície é*, ⛔ e ⛔ não *o que vem depois dela*. ⛔ Ele ⛔ não nomeia outra
+ * superfície, ⛔ não ordena, ⛔ não condiciona abertura — `hic` e `hsa` continuam
+ * abrindo a partir de qualquer lugar, como todas as outras. ⚠️ Acrescentar aqui
+ * uma chave que **aponte para outra superfície** seria a violação que a trava
+ * persegue; esta ⛔ não aponta para ⛔ nenhuma.
+ */
+const CHAVES_PERMITIDAS = ["id", "letra", "titulo", "resumo", "fontes", "painel", "destino"];
 confere("nenhuma superfície declara vizinho ou pré-requisito",
   sups.every((s) => Object.keys(s).every((k) => CHAVES_PERMITIDAS.includes(k))),
   "E-11: campo de sequência transformaria apresentação em fluxo obrigatório");

@@ -57,20 +57,46 @@ export type Cores = {
   debt: string;
   /** Fundo da tela. */
   bg: string;
-  /** Cards e superfícies elevadas. */
+  /** Cards — o primeiro degrau acima do fundo. */
   surface: string;
+  /**
+   * ⚠️⚠️ O SEGUNDO DEGRAU — para conteúdo **dentro** de um card.
+   *
+   * ⚠️ Nasceu em 2026-09-05 para acabar com o *card dentro de card*: quando um
+   * bloco precisa se separar do card que o contém, ele muda de **degrau**, ⛔ e
+   * ⛔ não ganha mais uma borda. ⛔ Três molduras aninhadas é o que dá aparência
+   * de protótipo.
+   */
+  surfaceElevated: string;
   /** Bordas sutis. */
   border: string;
-  /** Texto principal. */
+  /** Texto principal. ⚠️ É o `textPrimary` do design system — o nome é histórico. */
   text: string;
   /** Texto secundário, legendas. */
   textSecondary: string;
+  /**
+   * ⚠️⚠️ INFORMATIVO — ⛔ e ⛔ **não** `primary`.
+   *
+   * ⛔ `primary` é **ação**: o que o dedo aperta. `info` é **contexto**: o que a
+   * tela explica ⛔ sem pedir nada. Usar a cor de ação para informar treina o
+   * médico a tocar no que ⛔ não é tocável (e vice-versa, que é pior).
+   */
+  info: string;
+  /**
+   * ⚠️ DESABILITADO — ⛔ e ⛔ nunca o único sinal de que algo ⛔ não está
+   * disponível. ⚠️ Cor sozinha ⛔ não comunica estado (E-15): quem depende dela
+   * ⛔ não enxerga a diferença. Vem sempre com texto ⛔ ou ícone.
+   *
+   * ⛔ Fora do piso de 4,5:1 de propósito — WCAG isenta controle desabilitado, ⛔ e
+   * forçar contraste alto faria o desabilitado competir com o ativo.
+   */
+  disabled: string;
 };
 
 const CORES_CLARO: Cores = {
-  primary: "#1E6FD9",
+  primary: "#1A6BD5",
   onPrimary: "#FFFFFF",
-  critical: "#DC2626",
+  critical: "#D82222",
   onCritical: "#FFFFFF",
   // Escurecidos em relação ao plano (#16A34A e #D97706), que como TEXTO davam
   // 3,15:1 e 3,04:1 sobre a superfície clara — reprova. O plano só garantia o
@@ -78,11 +104,25 @@ const CORES_CLARO: Cores = {
   success: "#15803D",
   warning: "#B45309",
   debt: "#6D28D9",
-  bg: "#FFFFFF",
-  surface: "#F8FAFC",
-  border: "#E2E8F0",
+  /**
+   * ⚠️⚠️ FUNDO CINZA, CARD BRANCO — invertido em 2026-09-05, ⛔ e ⛔ não por gosto.
+   *
+   * ⛔ Antes: fundo branco ⛔ e card cinza-claro. O card ficava **mais escuro** que
+   * a tela, ⛔ o que lê como afundado, ⛔ e ⛔ não como elevado — e obrigava borda
+   * em tudo para separar. ⚠️ Fundo cinza com card branco é o padrão das
+   * referências ⛔ e o que deixa o card se destacar **sem moldura**.
+   *
+   * ⚠️ Trocar isto foi seguro porque o tema claro ⛔ ainda ⛔ não é usado: o app
+   * está fixo no escuro (`theme.ts`) até a migração dos 52 arquivos com hex cru.
+   */
+  bg: "#F2F4F7",
+  surface: "#FFFFFF",
+  surfaceElevated: "#F8FAFC",
+  border: "#DBE0E7",
   text: "#0F172A",
-  textSecondary: "#64748B",
+  textSecondary: "#5A6678",
+  info: "#0E7490",
+  disabled: "#A3AEBF",
 };
 
 const CORES_ESCURO: Cores = {
@@ -109,10 +149,18 @@ const CORES_ESCURO: Cores = {
   // legibilidade sem aviso.
   bg: "#292E38",
   surface: "#383E4A",
+  /**
+   * ⚠️ O segundo degrau no escuro. ⛔ Clarear mais aproximaria de `border` ⛔ e a
+   * separação sumiria; ⛔ escurecer o faria voltar para o `bg`.
+   */
+  surfaceElevated: "#3F4654",
   border: "#565E6C",
   text: "#F1F5F9",
   // Clareado junto com o fundo: #94A3B8 dava 4,19:1 na superfície nova.
   textSecondary: "#AAB6C6",
+  /** ⚠️ Ciano, ⛔ e ⛔ não o azul de `primary`: informar ⛔ não é convidar a tocar. */
+  info: "#67E8F9",
+  disabled: "#7A8496",
 };
 
 // ── Tipografia ───────────────────────────────────────────────────────────────
