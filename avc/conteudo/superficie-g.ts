@@ -24,6 +24,7 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
+import { PA_POS_REPERFUSAO } from "./antihipertensivos";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · OS DOIS TIPOS — E A DIFERENÇA ENTRE ELES É DE AUTORIDADE
@@ -189,10 +190,28 @@ export const MONITORIZACAO_POS_IVT = {
    * ⚠️ Gatilho pressórico — ⛔ a frequência AUMENTA; ⛔ ela ⛔ não muda de fase.
    * ⚠️ A conduta anti-hipertensiva **operacional** é de F-19, ⛔ e ⛔ não daqui.
    */
+  /**
+   * ⚠️⚠️ ⛔ OS NÚMEROS VÊM DE `PA_POS_REPERFUSAO` — **U-01 fechado**, 2026-09-07.
+   *
+   * ⛔ Eram literais aqui, ⛔ e o **mesmo** 180/105 vivia noutra constante como
+   * alvo terapêutico. ⚠️ Uma verdade, ⛔ dois consumidores — ⛔ e ⛔ este é o
+   * **gatilho de frequência**, ⛔ e ⛔ não o alvo.
+   */
+  /**
+   * ⚠️⚠️ ⛔ **A REFERÊNCIA, ⛔ E ⛔ NÃO OS NÚMEROS** — ⛔ e ⛔ a diferença é o que
+   * ⛔ uma prova consegue medir.
+   *
+   * ⛔ A primeira versão copiava `PA_POS_REPERFUSAO.pas` para um campo local.
+   * ⚠️ A mutação que devolveu os literais `180` ⛔ e `105` **sobreviveu**: ⛔ o
+   * valor batia (⛔ é o mesmo número) ⛔ e o nome ⛔ ainda aparecia no arquivo.
+   *
+   * ⚠️⚠️ ⛔ Guardando o **objeto**, a prova compara **identidade** — ⛔ e ⛔ um
+   * literal ⛔ nunca é a mesma referência. ⛔ U-01 fica fechado por execução,
+   * ⛔ e ⛔ não por varredura de texto.
+   */
   gatilhoPressorico: {
-    pasAcimaDe: 180,
-    padAcimaDe: 105,
-    conduta: "Aumentar a frequência das medidas e tratar para manter em ou abaixo desses níveis.",
+    origem: PA_POS_REPERFUSAO,
+    conduta: PA_POS_REPERFUSAO.consumidores.gatilhoDeFrequencia.frase,
   },
   /** ⚠️ Procedimentos a ADIAR — ⛔ e a fonte condiciona: *"if it can be safely"*. */
   adiar: {

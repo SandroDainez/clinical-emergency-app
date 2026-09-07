@@ -19,6 +19,8 @@
  */
 
 import { destinoDaImagem } from "./derivacoes-c";
+import { PA_POS_REPERFUSAO } from "../conteudo/antihipertensivos";
+import { reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 /**
  * ⚠️⚠️ A DIREÇÃO É UMA SÓ. G lê de F a **ação** registrada — ⛔ e ⛔ NADA de G
  * volta para F. ⛔ Reimplementar a leitura aqui daria duas verdades sobre o
@@ -189,6 +191,120 @@ export function monitorizacaoPosIvt(estado: EstadoAvc): typeof MONITORIZACAO_POS
   return pertinenciaDaMonitorizacao(estado).pertinente ? MONITORIZACAO_POS_IVT : undefined;
 }
 
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * 3b · O CONTROLE PRESSÓRICO PÓS-IVT
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ── ⚠️⚠️ ⛔ O QUE ESTA DERIVAÇÃO RESPONDE, ⛔ E ⛔ SÓ ISSO ─────────────────
+ *
+ * ⚠️ Escopo dado pelo autor, 2026-09-07 (**item 1**):
+ *
+ * > *"A PA vigente está ⛔ ou ⛔ não dentro do alvo pressórico aplicável a este
+ * >  contexto pós-IVT?"*
+ *
+ * ⛔ ⛔ Ela ⛔ **não** diz o que tratar, ⛔ com que fármaco, ⛔ com que
+ * intensidade, ⛔ nem o que vai acontecer. ⚠️ ⛔ E ⛔ **não** diz que a PA está
+ * *"controlada"*: ⛔ é o estado da **medida atual**, ⛔ e ⛔ não da evolução.
+ *
+ * ── ⚠️⚠️ ⛔ *"DENTRO DO ALVO AGORA"* ⛔ NÃO É *"24 h CONTROLADAS"* ─────────
+ *
+ * ⚠️ Regra do autor (**item 8**): ⛔ uma PA 170/98 agora significa
+ * `dentro_do_alvo` — ⛔ e ⛔ **não** *"PA controlada nas últimas 24 horas"*.
+ * ⛔ Afirmar manutenção exigiria a **série inteira** do período, ⛔ e ⛔ o app
+ * ⛔ não a tem.
+ *
+ * ⛔ ⛔ É a regra permanente da Fase 7 aplicada ao tempo: **estado intermediário
+ * ⛔ nunca é evidência concluída**.
+ */
+export type EstadoPressoricoPosIvt =
+  /** ⚠️ Houve IVT, ⛔ e ⛔ o horário ⛔ não foi registrado — ⛔ sem janela, ⛔ sem regra. */
+  | "sem_horario_ivt"
+  /** ⚠️ ⛔ Passadas 24 h: a recomendação graduada ⛔ **deixa de definir** este alvo. */
+  | "fora_da_janela"
+  /** ⚠️ ⛔ Nenhuma aferição completa — ⛔ e ⛔ ausência ⛔ não é normalidade (**§0.2**). */
+  | "sem_pa"
+  /** ⚠️ Aferição começada ⛔ e ⛔ não terminada (Fase 7) — ⛔ nem dentro, ⛔ nem fora. */
+  | "afericao_incompleta"
+  /** ⚠️ ⛔ As **duas** metades estritamente abaixo do alvo. */
+  | "dentro_do_alvo"
+  | "acima_do_alvo";
+
+export type LeituraPressoricaPosIvt = {
+  readonly estado: EstadoPressoricoPosIvt;
+  readonly pas?: number;
+  readonly pad?: number;
+  /** ⚠️ O alvo **deste contexto** — ⛔ e ⛔ nunca *"a meta"* genérica. */
+  readonly alvo: { readonly pas: number; readonly pad: number; readonly frase: string };
+  readonly contexto: string;
+  readonly fonte: string;
+  readonly cor: string;
+  readonly loe: string;
+  /** ⚠️ Horas desde o início da IVT — `undefined` ⛔ quando o horário falta. */
+  readonly horasDesdeIvt?: number;
+};
+
+/** ⚠️ A janela em que **F-04** define este alvo — ⛔ e ⛔ ela é da fonte. */
+const HORAS_DO_ALVO_POS_IVT = 24;
+
+/**
+ * ⚠️⚠️ ⛔ DEVOLVE `undefined` QUANDO ⛔ NÃO HÁ CONTEXTO PÓS-IVT — ⛔ e ⛔ isso
+ * ⛔ não é um estado: ⛔ é a ausência da pergunta. ⛔ Aplicar o alvo pós-IVT a
+ * quem ⛔ não recebeu trombólise seria usar a regra fora do contexto que a
+ * fonte define (**item 6**).
+ */
+export function estadoPressoricoPosIvt(
+  estado: EstadoAvc,
+  agoraMs: number
+): LeituraPressoricaPosIvt | undefined {
+  const p = pertinenciaDaMonitorizacao(estado);
+  if (!p.pertinente || !p.acao) return undefined;
+
+  const c = PA_POS_REPERFUSAO.consumidores.alvoTerapeuticoPosIvt;
+  const base = {
+    alvo: { pas: PA_POS_REPERFUSAO.pas, pad: PA_POS_REPERFUSAO.pad, frase: c.frase },
+    contexto: c.contexto,
+    fonte: c.fonte,
+    cor: c.cor,
+    loe: c.loe,
+  } as const;
+
+  /** ⚠️⚠️ ⛔ SEM O INÍCIO, ⛔ NENHUMA JANELA — ⛔ e ⛔ nenhum substituto. */
+  if (p.acao.inicioMs === undefined) return { ...base, estado: "sem_horario_ivt" };
+
+  const horasDesdeIvt = (agoraMs - p.acao.inicioMs) / 3_600_000;
+  if (horasDesdeIvt >= HORAS_DO_ALVO_POS_IVT) {
+    return { ...base, estado: "fora_da_janela", horasDesdeIvt };
+  }
+
+  /**
+   * ⚠️⚠️ ⛔ A AFERIÇÃO PELA METADE ⛔ NÃO CLASSIFICA — regra da Fase 7, ⛔ e ⛔ ela
+   * vale igual aqui: ⛔ meia medida ⛔ não é nova normalidade, ⛔ não é ausência
+   * de medida ⛔ e ⛔ não é resolução.
+   */
+  if (reavaliacaoPressoricaIncompleta(estado) !== undefined) {
+    return { ...base, estado: "afericao_incompleta", horasDesdeIvt };
+  }
+
+  /** ⚠️ ⛔ E as duas metades vêm da **mesma** aferição (**D-120**). */
+  const pa = ultimaPressaoCompleta(estado);
+  if (pa === undefined) return { ...base, estado: "sem_pa", horasDesdeIvt };
+
+  /**
+   * ⚠️⚠️ ⛔ **ESTRITAMENTE ABAIXO**, ⛔ e ⛔ as **duas** condições. ⛔ Trocar `<`
+   * por `≤` incluiria ⛔ exatamente 180/105 no alvo — ⛔ e há prova de fronteira
+   * para 179/104 · 180/104 · 179/105 · 180/105 · 181/106.
+   */
+  const dentro = pa.pas < PA_POS_REPERFUSAO.pas && pa.pad < PA_POS_REPERFUSAO.pad;
+  return {
+    ...base,
+    estado: dentro ? "dentro_do_alvo" : "acima_do_alvo",
+    pas: pa.pas,
+    pad: pa.pad,
+    horasDesdeIvt,
+  };
+}
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 4 · A LEITURA DA SUPERFÍCIE

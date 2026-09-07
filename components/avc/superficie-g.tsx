@@ -30,12 +30,14 @@ import {
 } from "../../avc/conteudo/superficie-g";
 import {
   contextoOperacional,
+  estadoPressoricoPosIvt,
   faseDaMonitorizacao,
   monitorizacaoPosIvt,
   pertinenciaDaMonitorizacao,
   saidaDeFluxo,
 } from "../../avc/nucleo/derivacoes-g";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import type { Relogio } from "../../avc/nucleo/relogio";
@@ -83,6 +85,38 @@ function SeloDaTabela() {
   );
 }
 
+/**
+ * ⚠️⚠️ ⛔ CADA ESTADO NOMEIA **A AFERIÇÃO ATUAL** — ⛔ e ⛔ nenhum deles fala do
+ * período. ⛔ *"Dentro do alvo na aferição atual"* ⛔ é a frase inteira; ⛔ cortar
+ * *"na aferição atual"* transformaria uma medida num período (item 2).
+ */
+const FRASE_DA_PA: Readonly<Record<string, string>> = {
+  dentro_do_alvo: "Dentro do alvo na aferição atual",
+  acima_do_alvo: "Acima do alvo na aferição atual",
+  afericao_incompleta: "Aferição incompleta — complete para classificar",
+  sem_pa: "Nenhuma pressão arterial registrada",
+  sem_horario_ivt: "Sem o horário da trombólise, a janela não é conhecida",
+  fora_da_janela: "Fora da janela de 24 horas em que esta regra se aplica",
+};
+
+/** ⚠️ ⛔ Símbolo ⛔ e palavra — ⛔ e ⛔ nenhum ✓ fora de *dentro do alvo*. */
+const SIMBOLO_DA_PA: Readonly<Record<string, EstadoClinico>> = {
+  dentro_do_alvo: "favoravel",
+  acima_do_alvo: "corrigivel",
+  afericao_incompleta: "andamento",
+  sem_pa: "verificar",
+  sem_horario_ivt: "verificar",
+  fora_da_janela: "ausente",
+};
+
+/** ⚠️ ⛔ O que aparece no lugar do número quando ⛔ não há aferição completa. */
+const SEM_VALOR_DE_PA: Readonly<Record<string, string>> = {
+  afericao_incompleta: "aferição pela metade",
+  sem_pa: "não informada",
+  sem_horario_ivt: "—",
+  fora_da_janela: "—",
+};
+
 export default function SuperficieG({
   estado,
   agora,
@@ -98,6 +132,14 @@ export default function SuperficieG({
   const pertinencia = useMemo(() => pertinenciaDaMonitorizacao(estado), [estado]);
   const tabela = useMemo(() => monitorizacaoPosIvt(estado), [estado]);
   const fase = useMemo(() => faseDaMonitorizacao(estado, agora), [estado, agora]);
+  /**
+   * ⚠️⚠️ ⛔ O CONTROLE PRESSÓRICO VEM PRONTO DO NÚCLEO — Fase 8, 2026-09-07.
+   *
+   * ⛔ A tela ⛔ não compara número ⛔ nenhum: `<` ⛔ ou `≤`, as duas metades, a
+   * janela de 24 h ⛔ e o contexto ⛔ são decisão clínica, ⛔ e vivem em
+   * `estadoPressoricoPosIvt()` — ⛔ com prova de fronteira.
+   */
+  const pressao = useMemo(() => estadoPressoricoPosIvt(estado, agora), [estado, agora]);
   const saida = useMemo(() => saidaDeFluxo(estado), [estado]);
   const contexto = useMemo(() => contextoOperacional(estado), [estado]);
   /**
@@ -310,6 +352,44 @@ export default function SuperficieG({
             )}
 
             {/**
+              * ── ⚠️⚠️ ⛔ O CONTROLE PRESSÓRICO — ⛔ A MEDIDA, ⛔ E ⛔ NÃO O PERÍODO ──
+              *
+              * ⚠️ Regra do autor, 2026-09-07 (**item 2**): ⛔ uma PA adequada
+              * **agora** ⛔ não autoriza escrever *"controlada por 24 h"*
+              * ⛔ nem *"controle mantido"*. ⚠️ ⛔ Afirmar manutenção exigiria a
+              * **série inteira** do período, ⛔ e o app ⛔ não a tem.
+              *
+              * ⛔ ⛔ Por isso o rótulo diz **"na aferição atual"** — ⛔ e ⛔ ele
+              * ⛔ não é enfeite: ⛔ é o que separa um estado de medida de uma
+              * afirmação sobre a evolução.
+              */}
+            {pressao ? (
+              <View style={e.pa} testID={`avc-g-pa-${pressao.estado}`}>
+                <View style={e.paLinha}>
+                  <Text style={e.paRotulo}>{tr("PA atual")}</Text>
+                  <Text style={e.paValor} testID="avc-g-pa-valor">
+                    {pressao.pas !== undefined && pressao.pad !== undefined
+                      ? `${pressao.pas}/${pressao.pad} mmHg`
+                      : tr(SEM_VALOR_DE_PA[pressao.estado] ?? "—")}
+                  </Text>
+                </View>
+                <Text style={e.paEstado} testID="avc-g-pa-estado">
+                  {ESTADOS[SIMBOLO_DA_PA[pressao.estado]].simbolo}{" "}
+                  {tr(FRASE_DA_PA[pressao.estado])}
+                </Text>
+                {/**
+                  * ⚠️⚠️ ⛔ A REGRA VIGENTE, ⛔ COM CONTEXTO ⛔ E GRAU — ⛔ e ⛔ nunca
+                  * *"Meta PA"* (item 1). ⛔ O número sozinho apagaria **quando**
+                  * ⛔ ele vale, ⛔ e ⛔ há quatro estatutos pressóricos diferentes.
+                  */}
+                <Text style={e.paRegra} testID="avc-g-pa-regra">
+                  {tr(pressao.alvo.frase)} · {tr(pressao.contexto)} · {tr("COR")}{" "}
+                  {pressao.cor} · {tr("LOE")} {pressao.loe}
+                </Text>
+              </View>
+            ) : null}
+
+            {/**
               * ⚠️⚠️ AS TRÊS FASES SEMPRE VISÍVEIS — decisão do autor.
               *
               * ⚠️ Ver 15 → 30 → 60 ajuda a antecipar o que vem. ⛔ Sem horário,
@@ -369,8 +449,8 @@ export default function SuperficieG({
             <View style={e.linha}>
               <Text style={e.linhaChave}>{tr("Pressão arterial")}</Text>
               <Text style={e.linhaValor}>
-                {tr("Acima de")} {tabela.gatilhoPressorico.pasAcimaDe}/
-                {tabela.gatilhoPressorico.padAcimaDe}: {tr(tabela.gatilhoPressorico.conduta)}
+                {tr("Acima de")} {tabela.gatilhoPressorico.origem.pas}/
+                {tabela.gatilhoPressorico.origem.pad}: {tr(tabela.gatilhoPressorico.conduta)}
               </Text>
             </View>
           </View>
@@ -548,6 +628,14 @@ const criarEstilos = (tema: Tema) =>
     },
     seloTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
+    /** ⚠️ ⛔ O bloco pressórico — ⛔ densidade da tabela, ⛔ e ⛔ sem cara de veredito. */
+    pa: { gap: 2, paddingVertical: ESPACO.xs },
+    paLinha: { flexDirection: "row", alignItems: "baseline", gap: ESPACO.xs },
+    paRotulo: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    paValor: { ...PAPEL.metrica, color: tema.cores.text, flexShrink: 1 },
+    paEstado: { ...PAPEL.textoPrincipal, color: tema.cores.text, flexShrink: 1 },
+    /** ⚠️ ⛔ A regra vigente quebra em linhas — ⛔ cortada, ⛔ ela perde o contexto. */
+    paRegra: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
     mon: {
       backgroundColor: tema.cores.surface,
       borderRadius: RAIO.botao,

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**85 de 99 travas com declaração completa.**
+**86 de 100 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -127,6 +127,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que uma aferição **pela metade** ⛔ NÃO derrube o bloqueio pressórico, ⛔ não substitua a última completa ⛔ e ⛔ não libere o portão; · que PAS ⛔ e PAD de uma aferição ⛔ **nunca** se completem com a metade de outra (**D-120**); · que **⛔ nenhum** estado de ação resolva bloqueio — ⛔ nem `Realizada`; · que o ciclo glicêmico mantenha o degrau da fonte: corrigir ⛔ não reavalia; · que a ordem temporal decida, ⛔ e ⛔ não o valor.
 - **NÃO PROMETE:** qual anti-hipertensivo usar — ⛔ **F-19 proíbe hierarquia**, ⛔ e ⛔ esta trava ⛔ não inventa uma.
 - **UNIVERSO:** `avc/nucleo/{derivacoes,derivacoes-d,derivacoes-e,portao-ivt}.ts` × `avc/conteudo/superficie-e.ts` × a tela de Correções. ── ⚠️⚠️ ⛔ O DEFEITO QUE ESTA TRAVA NASCEU PARA FECHAR ──────────────────── ⛔ Medido no mapeamento da Fase 7, 2026-09-07: com **198/112** bloqueando ⛔ e uma nova aferição contendo **só a PAS**, `bloqueiosCorrigiveis()` **parava de acusar**. ⚠️ ⛔ O médico digita 170 de sistólica, ⛔ é interrompido antes da diastólica, ⛔ e o app **destrava** — ⛔ sobre uma aferição que ⛔ não existe. ⚠️ Regra do autor: *"Medida parcial ⛔ não é nova normalidade, ⛔ não é ausência de medida ⛔ e ⛔ não é resolução."*
+
+## `test:avc-fase8` → `scripts/prova-avc-fase8-pos-reperfusao.cjs`
+
+- **PROMETE:** · que `<180/105` seja **estritamente abaixo**, ⛔ e ⛔ nas duas metades — ⛔ com fronteiras medidas uma a uma; · que o alvo pós-IVT ⛔ **só** valha no contexto que **F-04** define; · que aferição incompleta ⛔ e ausência de PA ⛔ **não** classifiquem; · que *"dentro do alvo"* ⛔ **nunca** vire *"24 h controladas"*; · que o **180/105** tenha **uma** fonte de verdade ⛔ e dois consumidores com semânticas declaradas (**U-01**); · que **F-04** ⛔ e **F-19** ⛔ não se fundam numa hierarquia terapêutica.
+- **NÃO PROMETE:** que a PA esteja clinicamente bem manejada — ⛔ isso é do médico. ⛔ Aqui se mede **a relação entre a medida vigente ⛔ e o alvo do contexto**, ⛔ e ⛔ nada além.
+- **UNIVERSO:** `avc/nucleo/derivacoes-g.ts` × `avc/conteudo/{superficie-g, antihipertensivos}.ts` × a tela do Destino. ── ⚠️⚠️ A REGRA PERMANENTE, APLICADA AO TEMPO ──────────────────────────── ⚠️ *"Estado intermediário ⛔ nunca é evidência concluída"* (autor, Fase 7). ⛔ Aqui: ⛔ trombólise registrada ≠ pós-reperfusão concluído · ⛔ PA medida uma vez ≠ controle mantido por 24 h · ⛔ tempo decorrido parcial ≠ período completo.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

@@ -250,6 +250,29 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Sin esa información",
   "Registrar 0":
     "Registrar 0",
+  /* ── ⚠️ O CONTROLE PRESSÓRICO PÓS-IVT — Fase 8, 2026-09-07 ───────────── */
+  "PA atual": "PA actual",
+  /**
+   * ⚠️⚠️ ⛔ *"na aferição atual"* ⛔ FAZ PARTE DA FRASE — ⛔ e ⛔ não é enfeite.
+   * ⛔ Sem ⛔ ele, uma medida vira um período, ⛔ e o app afirmaria controle
+   * sustentado que ⛔ não pode provar.
+   */
+  "Dentro do alvo na aferição atual": "Dentro del objetivo en la medición actual",
+  "Acima do alvo na aferição atual": "Por encima del objetivo en la medición actual",
+  "Aferição incompleta — complete para classificar":
+    "Medición incompleta — complétela para clasificar",
+  "Nenhuma pressão arterial registrada": "Ninguna presión arterial registrada",
+  "Sem o horário da trombólise, a janela não é conhecida":
+    "Sin la hora de la trombólisis, la ventana no se conoce",
+  "Fora da janela de 24 horas em que esta regra se aplica":
+    "Fuera de la ventana de 24 horas en que esta regla se aplica",
+  "aferição pela metade": "medición a la mitad",
+  "não informada": "no informada",
+  /** ⚠️ **U-01** — o mesmo número, ⛔ e ⛔ duas frases que ⛔ não se trocam. */
+  "Manter abaixo de 180 por 105 mmHg": "Mantener por debajo de 180 por 105 mmHg",
+  "Acima destes níveis, durante a monitorização pós-trombólise":
+    "Por encima de estos niveles, durante la monitorización post-trombólisis",
+
   /* ── ⚠️ O CICLO DE CORREÇÕES — Fase 7, 2026-09-07 ────────────────────── */
   /**
    * ⚠️⚠️ ⛔ *"Nova aferição incompleta"* ⛔ NÃO é *"PA corrigida"* ⛔ nem

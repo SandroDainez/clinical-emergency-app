@@ -39,6 +39,89 @@ async function registrarTrombolise(page: Page, comHorario: boolean) {
 }
 
 test.describe("AVC · Destino", () => {
+
+  /* ══ ⚠️⚠️ O CONTROLE PRESSÓRICO PÓS-IVT — GESTO REAL, Fase 8 ═════════════ */
+
+  /**
+   * ── ⚠️⚠️ ⛔ O QUE ESTE TESTE PROVA ────────────────────────────────────────
+   *
+   * ⚠️ ⛔ Que o app **interpreta** a relação entre a PA vigente ⛔ e o alvo do
+   * contexto — ⛔ e ⛔ que ⛔ ele **para aí**: ⛔ uma medida adequada ⛔ agora
+   * ⛔ **não** vira *"controle mantido por 24 h"*.
+   *
+   * ⛔ ⛔ É a regra permanente da Fase 7 aplicada ao tempo: **estado
+   * intermediário ⛔ nunca é evidência concluída**.
+   */
+  test("PA pós-IVT · acima → dentro do alvo, ⛔ e ⛔ NUNCA «controlada por 24 h»",
+    async ({ page }) => {
+      await abrirG(page);
+      await registrarTrombolise(page, true);
+
+      /** ⚠️ 1 · acima do alvo. */
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-num-caixa-pas").fill("182");
+      await page.getByTestId("avc-num-caixa-pad").fill("106");
+
+      await page.getByTestId("avc-aba-destino").click();
+      await expect(page.getByTestId("avc-g-pa-acima_do_alvo")).toBeVisible();
+      await expect(page.getByTestId("avc-g-pa-valor")).toHaveText("182/106 mmHg");
+      await expect(page.getByTestId("avc-g-pa-estado")).toContainText(/Acima do alvo na aferição atual/i);
+      /** ⚠️ ⛔ E a regra vigente vem com contexto ⛔ e grau — ⛔ nunca *«Meta PA»*. */
+      await expect(page.getByTestId("avc-g-pa-regra"))
+        .toContainText(/180 por 105.*24 horas.*COR 1/is);
+      /** ⚠️ ⛔ E a fase temporal da Table 7 continua visível. */
+      await expect(page.getByTestId("avc-g-fases")).toBeVisible();
+
+      /**
+       * ⚠️⚠️ 2 · A FRONTEIRA — ⛔ **180/104 ⛔ NÃO é dentro**. ⛔ O alvo é
+       * ⛔ *estritamente* abaixo, ⛔ e ⛔ as duas metades contam.
+       */
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-nova-medida-pressao").click();
+      await page.getByTestId("avc-num-caixa-pas").fill("180");
+      await page.getByTestId("avc-num-caixa-pad").fill("104");
+
+      await page.getByTestId("avc-aba-destino").click();
+      await expect(page.getByTestId("avc-g-pa-acima_do_alvo")).toBeVisible();
+
+      /** ⚠️ 3 · agora sim, dentro. */
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-nova-medida-pressao").click();
+      await page.getByTestId("avc-num-caixa-pas").fill("176");
+      await page.getByTestId("avc-num-caixa-pad").fill("98");
+
+      await page.getByTestId("avc-aba-destino").click();
+      await expect(page.getByTestId("avc-g-pa-dentro_do_alvo")).toBeVisible();
+      await expect(page.getByTestId("avc-g-pa-valor")).toHaveText("176/98 mmHg");
+
+      /**
+       * ⚠️⚠️ ⛔ E A TELA ⛔ NÃO AFIRMA O PERÍODO. ⛔ Uma aferição ⛔ não prova
+       * 24 horas de controle — ⛔ e ⛔ afirmar isso seria a mentira mais cara
+       * desta fase.
+       */
+      const conteudo = page.getByTestId("avc-superficie-g-conteudo");
+      await expect(conteudo).not.toContainText(/controlada nas últimas|controle mantido|24 ?h controlad/i);
+      await expect(page.getByTestId("avc-g-pa-estado"))
+        .toContainText(/na aferição atual/i);
+    });
+
+  /**
+   * ⚠️⚠️ ⛔ E A AFERIÇÃO PELA METADE ⛔ NÃO CLASSIFICA — ⛔ a regra da Fase 7
+   * ⛔ vale igual aqui.
+   */
+  test("PA pós-IVT · meia aferição ⛔ não é dentro ⛔ nem fora", async ({ page }) => {
+    await abrirG(page);
+    await registrarTrombolise(page, true);
+
+    await page.getByTestId("avc-aba-estabilizacao").click();
+    await page.getByTestId("avc-num-caixa-pas").fill("176");
+
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-g-pa-afericao_incompleta")).toBeVisible();
+    await expect(page.getByTestId("avc-g-pa-dentro_do_alvo")).toHaveCount(0);
+    await expect(page.getByTestId("avc-g-pa-acima_do_alvo")).toHaveCount(0);
+  });
+
   /**
    * ⚠️⚠️ A DECISÃO CENTRAL, NA TELA: a ausência de grau é ESCRITA.
    */

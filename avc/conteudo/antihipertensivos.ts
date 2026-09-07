@@ -195,6 +195,54 @@ export type Alvo = {
   readonly apoioSemGrau?: true;
 };
 
+/**
+ * ── ⚠️⚠️ **U-01 FECHADO** — ⛔ o mesmo número, ⛔ duas semânticas ─────────
+ *
+ * ⚠️ A revisão transversal registrou, ⛔ e ⛔ a Fase 8 executa:
+ *
+ * > *"🔁 **U-01 · Duplicação de limiar pressórico:** `>180/105` aparece em
+ * >  §4.3 rec. 7 (**alvo pós-IVT**) ⛔ e na Table 7 (**gatilho de aumentar
+ * >  frequência de medida**). Mesmo número, funções diferentes. ⛔ **Fonte
+ * >  única de verdade, dois consumidores.**"*
+ *
+ * ⛔ Antes eram **duas constantes independentes**: `gatilhoPressorico` em
+ * `superficie-g.ts` ⛔ e o texto de `apos_ivt` aqui. ⚠️ Corrigir uma ⛔ e ⛔ não
+ * a outra deixaria as duas discordando ⛔ em silêncio.
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ CADA CONSUMIDOR CARREGA A **SUA** SEMÂNTICA ────────────────
+ *
+ * ⛔ ⛔ Um ⛔ não pode usar a frase do outro: *"aumentar a frequência das
+ * medidas"* ⛔ não é *"o alvo terapêutico é"*, ⛔ e trocar as duas faria a tela
+ * prometer conduta onde a fonte pede vigilância — ⛔ ou o inverso.
+ */
+export const PA_POS_REPERFUSAO = {
+  pas: 180,
+  pad: 105,
+  /**
+   * ⚠️⚠️ ⛔ **ESTRITAMENTE ABAIXO** — ⛔ `<`, ⛔ e ⛔ nunca `≤`. ⚠️ A fonte
+   * escreve *"maintain BP **below** 180/105"*; ⛔ virar `≤` incluiria
+   * ⛔ exatamente 180/105 no alvo, ⛔ e ⛔ há prova de fronteira para isso.
+   */
+  comparacao: "estritamente_abaixo",
+  consumidores: {
+    /** ⚠️ **F-04** · §4.3 rec. 7 — ⛔ o que se quer alcançar. */
+    alvoTerapeuticoPosIvt: {
+      fonte: "F-04",
+      cor: "1",
+      loe: "B-R",
+      contexto: "Nas primeiras 24 horas após a trombólise",
+      frase: "Manter abaixo de 180 por 105 mmHg",
+    },
+    /** ⚠️ **F-15** · Table 7 — ⛔ o que se faz quando ⛔ ele é ultrapassado. */
+    gatilhoDeFrequencia: {
+      fonte: "F-15",
+      localizacao: "Table 7 · p. e358",
+      contexto: "Acima destes níveis, durante a monitorização pós-trombólise",
+      frase: "Aumentar a frequência das medidas e tratar para manter em ou abaixo desses níveis.",
+    },
+  },
+} as const;
+
 export const ALVOS_PRESSORICOS: readonly Alvo[] = [
   {
     id: "antes_ivt",
