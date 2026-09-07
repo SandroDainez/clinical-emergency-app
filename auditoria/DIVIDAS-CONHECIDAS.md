@@ -4610,3 +4610,58 @@ separada, ⛔ e ⛔ não efeito colateral de uma migration de segurança.
 ⚠️ Mudança visível de produto na Fase 4: hoje a tela de histórico lista as
 sessões de **todos**; depois, ⛔ só as suas. Isso ⛔ **é** a correção do P0, ⛔ e ⛔ não
 um dano colateral dela.
+
+---
+
+## D-124 — ⏸️ ABERTA · O MODELO ESTRUTURADO DE ACHADOS NEUROLÓGICOS
+
+**Registrada em 2026-09-07**, na Fase 4, **a pedido do autor** (item 10) — e
+registrada porque ele decidiu **não** construí-la agora, e não porque ninguém
+pensou nela.
+
+### O que existe hoje
+
+A Avaliação AVC pergunta o exame por **dois** caminhos, e eles respondem
+perguntas diferentes:
+
+| Campo | O que ele é | Fonte |
+|---|---|---|
+| `deficit_focal` | *há* déficit focal — sim / não / incerto | F-13 |
+| `lateralidade` | de que lado, derivado dos itens motores | F-17 |
+| os onze `t4_*` | o **quadro de incapacitância** da Table 4 | F-17 |
+| `nihss_calculado` | a escala, item a item | F-17 |
+
+⛔ **Nenhum deles descreve o achado.** Não há "hemiparesia à direita, grau 3,
+braquial > crural" em lugar nenhum do módulo: o app sabe que há déficit, sabe de
+que lado, sabe quanto pontua e sabe o que a Table 4 diz sobre incapacitância —
+⛔ e ⛔ não sabe **o que o médico viu**.
+
+### Por que ela não foi construída na Fase 4
+
+⚠️ A regra da fase era **compor o que existe**, e um modelo de achados é
+**produzir fato novo**. O autor foi explícito: *"⛔ não fazer automaticamente
+`t4_* marcado → deficit_focal = sim`"*, e *"⛔ nenhuma inferência nova em
+⛔ nenhuma direção"*.
+
+⚠️⚠️ E há uma razão de fonte, ⛔ não ⛔ só de escopo: **F-13 e F-17 ⛔ não
+descrevem achados**. F-13 diz que a resposta negativa ⛔ não exclui AVC; F-17
+lista itens de escala e o quadro da Table 4. ⛔ Um vocabulário de achados —
+território, grau, distribuição — ⛔ não sai de ⛔ nenhuma delas, ⛔ e escrevê-lo
+por conta própria seria **E-31**.
+
+### O que ela precisa para fechar
+
+⛔ Na ordem, ⛔ e ⛔ nenhum passo pode trocar de lugar com outro:
+
+1. **fonte transcrita** que autorize o vocabulário do achado;
+2. **casa declarada** — ⛔ e ⛔ ela ⛔ não pode ser a fase visual: *"fase visual
+   ⛔ não é casa de dados"* (autor, 2026-09-07);
+3. **consumidores declarados** em `CONSUMIDORES` — ⛔ ter fonte ⛔ não é ter
+   autorização (**D-124 herda a regra de `consumidores.ts`**);
+4. **prova discriminatória** ⛔ e **mutação** ⛔ antes do primeiro consumo.
+
+### O que ela ⛔ NÃO pode virar
+
+⛔ ⛔ Não pode virar caixa de texto livre para achado clínico (**§0.3**), ⛔ não
+pode preencher `deficit_focal` sozinha ⛔ e ⛔ não pode alimentar incapacitância,
+elegibilidade ⛔ ou ⛔ qualquer veredito ⛔ sem passar pelos quatro passos acima.
