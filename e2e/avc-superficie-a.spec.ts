@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { superficie } from "../avc/conteudo/superficies";
 
 import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
 import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA } from "./helpers";
@@ -165,7 +166,10 @@ test.describe("Superfície A — estabilização", () => {
      */
     const pendencia = page.getByTestId("avc-pendencia-reavaliar_deficit_pos_glicemia");
     await expect(pendencia).toBeVisible();
-    await expect(pendencia).toContainText(/Abrir Neurológico/i);
+    /** ⚠️ O rótulo vem da fonte — ⛔ ver o comentário em "título da dona". */
+    await expect(pendencia).toContainText(
+      new RegExp(`Abrir ${superficie("neurologico").titulo}`, "i")
+    );
 
     // ⛔ E ⛔ não bloqueia: as superfícies continuam abrindo com ela aberta.
     for (const id of ["imagem", "reperfusao", "destino"]) {
@@ -827,12 +831,25 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
+    /**
+     * ⚠️⚠️ ⛔ O TÍTULO VEM DA **FONTE**, ⛔ e ⛔ não é redigitado aqui.
+     *
+     * ⛔ Estava escrito `"Neurológico"`, ⛔ e a renomeação da fase para
+     * *"Avaliação AVC"* (**C3**) quebrou o teste ⛔ sem que ⛔ nada de errado
+     * tivesse acontecido. ⚠️ O que ⛔ ele existe para pegar é o **slug vazando**
+     * — ⛔ e ⛔ isso ⛔ ele continua pegando, agora ⛔ sem quebrar a cada troca de
+     * rótulo.
+     */
     const pend = page.getByTestId("avc-pendencia-ultima_vez_bem");
-    await expect(pend).toContainText("Entrada e estabilização");
+    await expect(pend).toContainText(superficie("estabilizacao").titulo);
     await expect(pend, "identificador interno não é linguagem clínica")
       .not.toContainText("estabilizacao");
 
-    await expect(page.getByTestId("avc-pendencia-deficit_focal")).toContainText("Neurológico");
+    await expect(page.getByTestId("avc-pendencia-deficit_focal"))
+      .toContainText(superficie("neurologico").titulo);
+    await expect(page.getByTestId("avc-pendencia-deficit_focal"),
+      "identificador interno não é linguagem clínica")
+      .not.toContainText("neurologico");
     /**
      * ⛔ E a de imagem ⛔ não aparece: desde 2026-08-29 só é exibida a pendência
      * cujo campo existe, e a Superfície C ⛔ não foi construída (E-26, I-7).

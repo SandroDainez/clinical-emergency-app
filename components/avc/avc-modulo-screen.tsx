@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
+import { SEQUENCIA_OFICIAL, SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO, PRIORIDADE_DA_IMAGEM } from "../../avc/conteudo/superficie-c";
@@ -34,7 +34,7 @@ import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
-import { pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
+import { correcoesEhRelevante, pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
 import { ESTADOS, corDoEstado } from "../../design-system/estados-clinicos";
 import { destinoDaImagem, imagemSolicitadaEm, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
@@ -116,11 +116,6 @@ const COR_DO_EIXO: Readonly<Record<string, "info" | "primary" | "critical" | "de
   glicemia: "debt",
 };
 
-const COR_DO_ATALHO: Readonly<Record<string, "primary" | "info" | "warning">> = {
-  paciente: "primary",
-  laboratorio: "info",
-  correcoes: "warning",
-};
 
 const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   estabilizacao: { nome: "Estabilizar", icone: "estabilizar" },
@@ -147,6 +142,7 @@ import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
 import { TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
 import { TODOS_OS_CAMPOS_P } from "../../avc/conteudo/paciente";
+import { TODOS_OS_CAMPOS_L } from "../../avc/conteudo/laboratorio";
 import {
   abrirAtendimento,
   decorridoEmMinutos,
@@ -386,6 +382,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * — gesto que ⛔ não faz nada, ⛔ e ⛔ sem erro visível.
        */
       ["reperfusao", ACAO_DE_TROMBOLISE],
+      /**
+       * ⚠️⚠️ OS CAMPOS DO LABORATÓRIO LEVAM A **INVESTIGAÇÃO** — ⛔ e ⛔ não a
+       * uma fase própria, que ⛔ não existe mais (**C3**).
+       *
+       * ⛔ Sem esta linha, tocar *"Registrar o resultado dos exames de
+       * coagulação"* ⛔ não levaria a lugar ⛔ nenhum: gesto que ⛔ não faz nada,
+       * ⛔ e ⛔ sem erro visível — o mesmo defeito que a linha acima já
+       * documenta para a trombólise.
+       */
+      ["imagem", TODOS_OS_CAMPOS_L],
     ];
     const achado = donos.find(([, campos]) => campos.some((c) => c.id === campo));
     if (!achado) return;
@@ -732,7 +738,19 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       }
       navegacao={
         <PhaseNavigation
-          fases={SUPERFICIES.filter((sup) => !sup.painel && !sup.destino && sup.id !== "correcoes")
+          /**
+           * ⚠️⚠️ A BARRA É A **SEQUÊNCIA OFICIAL** — ⛔ e ⛔ ela vem do conteúdo,
+           * ⛔ e ⛔ não de um filtro escrito aqui (**I6**). ⛔ O filtro inline era
+           * uma segunda verdade sobre *"qual é o caminho"*.
+           *
+           * ⚠️ **Correções entra ⛔ só quando é relevante** — decisão **C3**: há
+           * bloqueio a corrigir, ⛔ ou já houve ação registrada que precisa
+           * continuar visível.
+           */
+          fases={[
+            ...SEQUENCIA_OFICIAL,
+            ...(correcoesEhRelevante(estado) ? [superficie("correcoes")] : []),
+          ]
             .map((sup) => ({
               id: sup.id,
               nome: CURTO[sup.id]?.nome ?? sup.titulo,
@@ -1258,44 +1276,24 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * corrigível, ela também aparece **contextual**, acima.
           */}
         {/**
-          * ⚠️ O título nomeia o grupo — ⛔ sem ele, três cards soltos ⛔ não
-          * dizem que são **outra coisa** que as fases da barra de baixo.
+          * ── ⚠️⚠️ O *"ACESSO RÁPIDO"* FOI REMOVIDO — 2026-09-06, decisão **C3**
+          *
+          * ⛔ Ele era um **segundo caminho**: três cartões (Paciente,
+          * Laboratório, Correções) ao lado da barra de fases, competindo com
+          * ela. ⚠️ A §61 do briefing é explícita: *"se houver qualquer outro
+          * caminho concorrente visível, a refatoração ⛔ ainda ⛔ não está
+          * concluída"*.
+          *
+          * ⚠️⚠️ ⛔ E ⛔ NADA FICOU INALCANÇÁVEL — ⛔ que é a única razão pela qual
+          * remover é seguro:
+          *
+          *   ⛔ **Paciente** virou a **primeira fase** da barra;
+          *   ⛔ **Laboratório** passou a viver dentro de **Investigação**, junto
+          *     com a imagem, ⛔ como o **§16** pede;
+          *   ⛔ **Correções** é alcançada **pelo problema que a exige** — que é
+          *     o fluxo condicional descrito em **C3**, ⛔ e ⛔ não uma fase fixa
+          *     que ficaria vazia na maioria dos atendimentos.
           */}
-        <Text style={s.auxTitulo}>{tr("Acesso rápido")}</Text>
-        <View style={s.auxiliares}>
-          {SUPERFICIES.filter((sup) => sup.painel || sup.id === "correcoes").map((sup) => {
-            const c = CURTO[sup.id];
-            const ativa = sup.id === estado.superficieVista;
-            return (
-              <Pressable
-                key={sup.id}
-                onPress={() => abrir(sup.id)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: ativa }}
-                accessibilityLabel={tr(sup.titulo)}
-                testID={`avc-aba-${sup.id}`}
-                style={[s.auxItem, ativa && s.auxItemAtivo]}
-              >
-                {/**
-                  * ⚠️ Ícone **colorido por assunto**, ⛔ e ⛔ não cinza: é o que
-                  * faz o olho achar *"Correções"* ⛔ sem ler os três nomes.
-                  */}
-                <Icone
-                  nome={c?.icone ?? "adiante"}
-                  tamanho={22}
-                  cor={COR_DO_ATALHO[sup.id] ? tema.cores[COR_DO_ATALHO[sup.id]] : tema.cores.primary}
-                />
-                <Text
-                  style={[s.auxNome, ativa && s.barraNomeAtivo]}
-                  numberOfLines={1}
-                  testID={`avc-rotulo-aba-${sup.id}`}
-                >
-                  {tr(c?.nome ?? sup.titulo)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
 
         {/**
           * ⚠️⚠️ A EXPANSÃO DO COCKPIT FOI **REMOVIDA** em 2026-09-06 — ⛔ e
@@ -1395,33 +1393,46 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onDesfazer={desfazer}
             onEscala={registrarEscala}
           />
-        ) : atual.id === "laboratorio" ? (
-          <SuperficieLaboratorio
-            estado={estado}
-            agora={agora}
-            onEscolherNaColeta={escolherNaInstancia}
-            onCorrigirNaColeta={corrigirNaInstanciaDaTela}
-            onMedirNaColeta={medirNaInstancia}
-            onHoraNaColeta={horaNaInstancia}
-            onDesfazerNaColeta={desfazerNaInstancia}
-            onNovaColeta={() => novaMedida(COLETA)}
-          />
         ) : atual.id === "imagem" ? (
-          <SuperficieC
-            estado={estado}
-            agora={agora}
-            onEscolher={escolher}
-            onHora={registrarHora}
-            onMedir={medir}
-            onDesfazer={desfazer}
-            onEscolherNoEstudo={escolherNaInstancia}
-            onMedirNoEstudo={medirNaInstancia}
-            onHoraNoEstudo={horaNaInstancia}
-            onCorrigirNoEstudo={corrigirNaInstanciaDaTela}
-            onDesfazerNoEstudo={desfazerNaInstancia}
-            onNovoEstudo={() => novaMedida(ESTUDO)}
-            onAbrirSuperficie={abrir}
-          />
+          /**
+           * ── ⚠️⚠️ INVESTIGAÇÃO = IMAGEM **+** LABORATÓRIO ─────────────────
+           *
+           * ⚠️ **§16** do briefing: a investigação tem **dois grandes blocos**,
+           * ⛔ e ⛔ eles ⛔ não são duas fases. ⛔ O laboratório era uma tela
+           * separada alcançada por um painel concorrente que ⛔ não existe mais.
+           *
+           * ⚠️⚠️ ⛔ E A ORDEM É CLÍNICA: a **imagem primeiro**, porque é ela que
+           * governa a classe inteira de reperfusão (**F-16 · COR 1 · LOE A**) —
+           * ⛔ e o laboratório ⛔ não pode atrasar a trombólise quando ⛔ não há
+           * razão para suspeitar de alteração (**rec. 10 · COR 2a**).
+           */
+          <>
+            <SuperficieC
+              estado={estado}
+              agora={agora}
+              onEscolher={escolher}
+              onHora={registrarHora}
+              onMedir={medir}
+              onDesfazer={desfazer}
+              onEscolherNoEstudo={escolherNaInstancia}
+              onMedirNoEstudo={medirNaInstancia}
+              onHoraNoEstudo={horaNaInstancia}
+              onCorrigirNoEstudo={corrigirNaInstanciaDaTela}
+              onDesfazerNoEstudo={desfazerNaInstancia}
+              onNovoEstudo={() => novaMedida(ESTUDO)}
+              onAbrirSuperficie={abrir}
+            />
+            <SuperficieLaboratorio
+              estado={estado}
+              agora={agora}
+              onEscolherNaColeta={escolherNaInstancia}
+              onCorrigirNaColeta={corrigirNaInstanciaDaTela}
+              onMedirNaColeta={medirNaInstancia}
+              onHoraNaColeta={horaNaInstancia}
+              onDesfazerNaColeta={desfazerNaInstancia}
+              onNovaColeta={() => novaMedida(COLETA)}
+            />
+          </>
         ) : atual.id === "seguranca" ? (
           <SuperficieD
             estado={estado}
@@ -1786,38 +1797,6 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "600",
     },
     navNomeAtivo: { color: tema.cores.primary },
-    aux: { flexDirection: "row", gap: ESPACO.xs },
-    /**
-     * ⚠️⚠️ CARDS, ⛔ E ⛔ NÃO PASTILHAS — 2026-09-06.
-     *
-     * ⛔ Relato do autor: *"esses botões têm que ter maior destaque para o
-     * usuário saber que fazem parte do fluxo; assim o usuário às vezes ⛔ nem
-     * sabe que tem que clicar aí"*. ⚠️ Ele descreveu o defeito com precisão:
-     * eram contornos de 30 px de altura, com texto de 11 px **cinza** — ⛔ a
-     * mesma aparência de uma etiqueta inerte.
-     *
-     * ⚠️ É o *"Acesso rápido"* das referências: card com fundo próprio, ícone
-     * colorido em cima ⛔ e nome em branco. ⛔ Alvo de 64 px, ⛔ e ⛔ não de 30.
-     */
-    auxItem: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: ESPACO.xs,
-      borderRadius: RAIO.botao,
-      borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-      backgroundColor: tema.cores.controlSurface,
-      paddingVertical: ESPACO.sm,
-      paddingHorizontal: ESPACO.xs,
-      minHeight: 64,
-    },
-    /** ⚠️ Ativo: contorno **e** fundo tingido — ⛔ a cor ⛔ não decide sozinha. */
-    auxItemAtivo: {
-      borderColor: tema.cores.primary,
-      backgroundColor: tema.cores.primaryTint,
-    },
-    auxNome: { ...PAPEL.rotuloDeMetrica, color: tema.cores.text },
 
     root: { flex: 1, backgroundColor: tema.cores.bg },
     /**
@@ -2054,9 +2033,6 @@ const criarEstilos = (tema: Tema) =>
       fontSize: TIPOGRAFIA.body.fontSize,
       fontWeight: "700",
     },
-    /** ⚠️ Linha auxiliar MUITO compacta — ⛔ e ainda a um toque. */
-    auxiliares: { flexDirection: "row", gap: ESPACO.sm },
-    auxTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, paddingBottom: ESPACO.xs },
     superficieTitulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.step.fontSize, fontWeight: "700" },
     superficieResumo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.body.fontSize },
     emConstrucao: { color: tema.cores.warning, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600", marginTop: ESPACO.sm },

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { GRUPOS_P, TODOS_OS_CAMPOS_P } from "../avc/conteudo/paciente";
-import { SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
+import { SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -50,8 +50,17 @@ test.describe("AVC · Paciente — painel de contexto", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
 
-    expect(SUPERFICIES_COM_ABA.length).toBe(9);
-    for (const sup of SUPERFICIES_COM_ABA) {
+    /**
+     * ⚠️⚠️ ⛔ SETE, ⛔ e ⛔ não nove — 2026-09-06, decisão **C3**.
+     *
+     * ⛔ Laboratório ⛔ e Correções saíram da **barra**, ⛔ e ⛔ não do app:
+     * ⛔ o laboratório é renderizado **dentro de Investigação** (**§16**), ⛔ e
+     * Correções é alcançada **pelo problema que a exige**. ⚠️ A §61 pede uma
+     * resposta ⛔ só para *"qual caminho o médico percorre"* — ⛔ e ⛔ um atalho
+     * ao lado da barra era uma segunda resposta.
+     */
+    expect(SEQUENCIA_OFICIAL.length).toBe(7);
+    for (const sup of SEQUENCIA_OFICIAL) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       await expect(page.getByTestId(`avc-superficie-${sup.id}`), `${sup.id} ⛔ não abriu`)
         .toBeVisible();

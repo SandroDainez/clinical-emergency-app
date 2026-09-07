@@ -53,6 +53,7 @@ execFileSync("npx", [
   path.join(appDir, "avc", "nucleo", "derivacoes-lab.ts"),
   path.join(appDir, "avc", "conteudo", "laboratorio.ts"),
   path.join(appDir, "avc", "conteudo", "campos.ts"),
+  path.join(appDir, "avc", "conteudo", "superficies.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
@@ -61,6 +62,7 @@ const I = require(path.join(tmp, "avc", "nucleo", "instancia.js"));
 const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-lab.js"));
 const L = require(path.join(tmp, "avc", "conteudo", "laboratorio.js"));
 const CAMPOS = require(path.join(tmp, "avc", "conteudo", "campos.js"));
+const SUP = require(path.join(tmp, "avc", "conteudo", "superficies.js"));
 
 const rel = R.relogioControlado(1_000_000);
 const vazio = E.abrirAtendimento(rel);
@@ -491,9 +493,27 @@ const c2 = I.nomeDaInstancia(L.COLETA, 2);
   let duas = reg(uma, c2, "coleta_hora", 950_000);
   duas = reg(duas, c2, "inr", 1.1);
   const p = D.pendenciasDoLaboratorio(duas);
+  /**
+   * ── ⚠️⚠️ ⛔ POR QUE ESTA CONFERÊNCIA MUDOU (2026-09-06, decisão **C3**) ────
+   *
+   * ⛔ Ela afirmava `dono === "laboratorio"`. ⚠️ O Laboratório **deixou de ser
+   * fase**: ⛔ ele vive dentro de **Investigação**, junto com a imagem
+   * (**§16**), ⛔ e o painel de acesso rápido que o alcançava era o caminho
+   * concorrente que a **§61** proíbe.
+   *
+   * ⚠️⚠️ **⛔ A GARANTIA ⛔ NÃO FOI AFROUXADA — ⛔ ela ficou mais forte.** ⛔ Antes
+   * a prova fixava um nome; ⛔ agora ⛔ ela exige o que **E-26** realmente pede:
+   * que a dona seja uma superfície **que existe ⛔ e é alcançável**. ⛔ Uma
+   * pendência apontando para uma fase removida da navegação é muro, ⛔ e ⛔ não
+   * tarefa — ⛔ e o `grep` do nome antigo ⛔ nunca teria pego isso.
+   */
+  const donaEhAlcancavel = (id) => {
+    const sup = SUP.SUPERFICIES.find((x) => x.id === id);
+    return sup !== undefined && sup.painel !== true && sup.destino !== true;
+  };
   confere("com a segunda coleta e ordem necessária, a pendência nasce",
-    p.length === 1 && p[0].dono === "laboratorio" && p[0].resolvePor.length > 0,
-    "E-26: e ela diz o que a resolve — informar o horário, ou que ⛔ não foi possível determinar");
+    p.length === 1 && p[0].resolvePor.length > 0 && donaEhAlcancavel(p[0].dono),
+    `E-26: ela diz o que a resolve, ⛔ e a dona ("${p[0]?.dono}") tem de estar na navegação`);
 
   /** ⚠️⚠️ Respondido "desconhecido", a pendência FECHA — e `sem_ordem` permanece. */
   const respondeu = reg(duas, c1, "coleta_hora", "nao_sei");

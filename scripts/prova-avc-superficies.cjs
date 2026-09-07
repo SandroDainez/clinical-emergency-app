@@ -73,9 +73,23 @@ console.log(`universo: ${sups.length} superfície(s) · ${S.pendenciasVigentes()
 const comLetra = sups.filter((s) => !s.painel && !s.destino);
 const paineis = sups.filter((s) => s.painel);
 const destinos = sups.filter((s) => s.destino);
-confere("são onze superfícies: sete etapas, dois painéis e dois destinos",
-  sups.length === 11 && comLetra.length === 7 && paineis.length === 2 && destinos.length === 2,
-  "§7.15 fixou sete janelas clínicas; P-09 acrescentou Paciente e Laboratório como painéis; PD-36 acrescentou HIC e HSA como destinos");
+/**
+ * ── ⚠️⚠️ ⛔ A CONTA MUDOU EM 2026-09-06 — decisão **C3** do autor ─────────
+ *
+ * ⛔ **Paciente deixou de ser painel ⛔ e virou a PRIMEIRA fase.** ⚠️ Ele vivia
+ * num bloco de *"acesso rápido"* ao lado da barra — ⛔ um caminho concorrente,
+ * ⛔ e é ⛔ exatamente isso que a **§61** do briefing proíbe.
+ *
+ * ⚠️ ⛔ O Laboratório continua painel, ⛔ mas por outra razão: ⛔ ele ⛔ não é
+ * alcançado por atalho ⛔ nenhum — ⛔ ele é **renderizado dentro de
+ * Investigação**, junto com a imagem (**§16**).
+ *
+ * ⛔ ⛔ A conta continua separando as três espécies: somar tudo num total
+ * deixaria um destino virar etapa em silêncio.
+ */
+confere("são onze superfícies: oito etapas, um painel e dois destinos",
+  sups.length === 11 && comLetra.length === 8 && paineis.length === 1 && destinos.length === 2,
+  `⛔ ${sups.length} superfície(s) · ${comLetra.length} etapa(s) · ${paineis.length} painel(éis) · ${destinos.length} destino(s)`);
 
 /**
  * ⛔⛔ ⛔ NENHUMA LETRA NA APRESENTAÇÃO — autor, 2026-08-30.
@@ -94,8 +108,8 @@ confere("⛔ NENHUMA superfície carrega letra de apresentação",
  * ⚠️ E ⛔ nenhum texto da tela pode continuar prometendo a letra — resíduo achado
  * na revisão visual de Correções.
  */
+const tela = lerFonte(path.join(appDir, "components", "avc", "avc-modulo-screen.tsx"));
 {
-  const tela = lerFonte(path.join(appDir, "components", "avc", "avc-modulo-screen.tsx"));
   confere("⛔ ⛔ NENHUM texto da tela promete 'a letra'",
     !/A letra indica|letra da superf/i.test(tela),
     "frase órfã é pior que letra: ela promete uma pista que ⛔ não existe mais");
@@ -105,9 +119,53 @@ confere("⛔ e ⛔ nenhuma carrega número no lugar",
   sups.every((s) => s.numero === undefined && s.ordem === undefined),
   "trocar letra por número seria trocar uma convenção arbitrária por outra");
 confere("a distinção painel × etapa SOBREVIVEU à remoção da letra",
-  paineis.length === 2 && paineis.every((s) => s.painel === true)
-  && comLetra.every((s) => s.painel === undefined),
+  paineis.every((s) => s.painel === true) && comLetra.every((s) => s.painel === undefined),
   "ela ⛔ nunca foi sobre a letra: é sobre ser ou ⛔ não ser passo do atendimento");
+
+/**
+ * ── ⚠️⚠️ ⛔ A SEQUÊNCIA OFICIAL, ⛔ E ⛔ NENHUMA OUTRA (**§53**, **§61**) ────
+ *
+ * ⚠️ *"Ao final, deve existir uma única resposta clara para a pergunta: qual é
+ * o caminho que o médico percorre dentro do módulo AVC?"*
+ *
+ * ⛔ Esta conferência é a resposta **executável** dessa pergunta. ⛔ Se alguém
+ * acrescentar uma etapa, remover outra ⛔ ou trocar a ordem, ⛔ ela quebra — ⛔ e
+ * o texto do briefing ⛔ deixaria de ser verdade ⛔ sem ⛔ ninguém notar.
+ *
+ * ⚠️⚠️ ⛔ **CORREÇÕES ⛔ NÃO ESTÁ AQUI, ⛔ e ⛔ isso é decisão, ⛔ e ⛔ não
+ * esquecimento:** ⛔ ela é **condicional** — ⛔ só existe quando há o que
+ * corrigir —, ⛔ e é alcançada **pelo problema que a exige**. ⛔ Como fase fixa,
+ * ⛔ ela ficaria vazia na maioria dos atendimentos.
+ */
+const SEQUENCIA_OFICIAL = [
+  "paciente",
+  "estabilizacao",
+  "neurologico",
+  "imagem",
+  "seguranca",
+  "reperfusao",
+  "destino",
+];
+{
+  const naBarra = comLetra.filter((s) => s.id !== "correcoes").map((s) => s.id);
+  confere("⚠️⚠️ a barra é a SEQUÊNCIA OFICIAL, ⛔ na ordem, ⛔ e ⛔ nada além",
+    naBarra.join(" → ") === SEQUENCIA_OFICIAL.join(" → "),
+    `⛔ ${naBarra.join(" → ")}`);
+
+  confere("⚠️ Correções é etapa, ⛔ e ⛔ NÃO entra na barra (fluxo condicional)",
+    comLetra.some((s) => s.id === "correcoes"),
+    "⛔ ela precisa existir como superfície para o problema levar até lá");
+}
+
+/**
+ * ⚠️⚠️ ⛔ E ⛔ NENHUM CAMINHO CONCORRENTE NA TELA — **§61** medida no código.
+ *
+ * ⛔ O bloco *"Acesso rápido"* punha três cartões ao lado da barra. ⚠️ Ele foi
+ * removido; ⛔ esta conferência impede que ⛔ ele volte ⛔ sem ⛔ ninguém decidir.
+ */
+confere("⛔ ⛔ NENHUM painel de atalho concorre com a barra de fases",
+  !/Acesso rápido/.test(tela) && !/auxiliares/.test(tela),
+  "⛔ §61: se houver qualquer outro caminho concorrente visível, a refatoração ⛔ não está concluída");
 
 confere("todo id é único",
   new Set(sups.map((s) => s.id)).size === sups.length,
@@ -128,8 +186,14 @@ const ORDEM_APROVADA = [
   ["paciente", "Paciente"],
   ["laboratorio", "Laboratório"],
   ["estabilizacao", "Entrada e estabilização"],
-  ["neurologico", "Neurológico"],
-  ["imagem", "Imagem"],
+  /**
+   * ⚠️ Títulos renomeados em 2026-09-06 (**C3**): *"Avaliação AVC"* ⛔ e
+   * *"Investigação"* são os nomes das fases no fluxo oficial. ⛔ Os **slugs**
+   * ⛔ não mudaram — **slug é identidade, título é apresentação**, ⛔ e mover a
+   * casa de dezesseis campos ⛔ não era necessário para renomear uma aba.
+   */
+  ["neurologico", "Avaliação AVC"],
+  ["imagem", "Investigação"],
   ["seguranca", "Segurança para trombólise"],
   ["correcoes", "Correções"],
   ["reperfusao", "Reperfusão"],

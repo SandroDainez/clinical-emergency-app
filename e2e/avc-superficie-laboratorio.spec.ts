@@ -13,9 +13,19 @@ import { fixarIdioma } from "./helpers";
  * ⚠️ As provas de ordem, unidade e pendência vivem em
  * `scripts/prova-avc-laboratorio.cjs`. Aqui mede-se o que só a tela mostra.
  */
+/**
+ * ⚠️⚠️ ⛔ O LABORATÓRIO ⛔ NÃO TEM MAIS ABA — 2026-09-06, decisão **C3**.
+ *
+ * ⛔ Ele era alcançado por um cartão numa faixa de *"acesso rápido"* ao lado da
+ * barra — ⛔ o caminho concorrente que a **§61** proíbe. ⚠️ Agora ⛔ ele é
+ * **renderizado dentro de Investigação**, junto com a imagem (**§16**).
+ *
+ * ⚠️ ⛔ O que esta spec protege ⛔ não mudou: é o comportamento da tela do
+ * laboratório. ⛔ O que mudou é **por onde se chega**.
+ */
 async function abrirLab(page: Page) {
   await page.goto("/modulos/avc");
-  await page.getByTestId("avc-aba-laboratorio").click();
+  await page.getByTestId("avc-aba-imagem").click();
   await expect(page.getByTestId("avc-superficie-laboratorio-conteudo")).toBeVisible();
 }
 
@@ -306,7 +316,7 @@ test.describe("AVC · Laboratório", () => {
   test("o painel inteiro aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
-    await page.getByTestId("avc-aba-laboratorio").click();
+    await page.getByTestId("avc-aba-imagem").click();
     await page.getByTestId("avc-nova-coleta").click();
 
     const conteudo = page.getByTestId("avc-superficie-laboratorio-conteudo");

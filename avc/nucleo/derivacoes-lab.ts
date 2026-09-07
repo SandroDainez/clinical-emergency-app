@@ -194,7 +194,16 @@ export function pendenciasDoLaboratorio(estado: EstadoAvc): readonly Pendencia[]
   return semHoraPerguntada.map((c) => ({
     id: `coleta_hora_${c.id}`,
     rotulo: c.procedencia ? `Horário da coleta — ${c.procedencia}` : "Horário da coleta",
-    dono: "laboratorio" as const,
+    /**
+     * ⚠️⚠️ ⛔ A DONA PASSOU A SER **INVESTIGAÇÃO** — 2026-09-06, decisão **C3**.
+     *
+     * ⛔ O laboratório era uma **fase própria**, alcançada por um painel que
+     * competia com a barra. ⚠️ Ele agora vive dentro de Investigação, junto com
+     * a imagem (**§16**) — ⛔ e uma pendência que apontasse para a fase antiga
+     * levaria a uma tela que ⛔ não está mais na navegação: muro, ⛔ e ⛔ não
+     * tarefa (**E-26**).
+     */
+    dono: "imagem" as const,
     campo: "coleta_hora",
     resolvePor: "Registrar o horário, ou que não foi possível determinar",
   }));

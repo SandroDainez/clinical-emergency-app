@@ -32,7 +32,7 @@ import { pendenciasVigentes } from "../conteudo/superficies";
 import { ameacasImediatas, estadoClinicoDoEixo } from "./ameacas-imediatas";
 import { pendenciasDaImagem } from "./derivacoes-c";
 import { bloqueiosCorrigiveis, pendenciasDaSeguranca } from "./derivacoes-d";
-import { pendenciasOriginadasEmE } from "./derivacoes-e";
+import { acoes, pendenciasOriginadasEmE } from "./derivacoes-e";
 import { pendenciasDoLaboratorio } from "./derivacoes-lab";
 import { pendenciasDerivadas } from "./derivacoes";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
@@ -208,6 +208,34 @@ export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
     if (porEstado !== 0) return porEstado;
     return PESO_DA_ORIGEM[x.origem] - PESO_DA_ORIGEM[y.origem];
   });
+}
+
+/**
+ * ── ⚠️⚠️ ⛔ QUANDO **CORREÇÕES** APARECE NA BARRA ──────────────────────────
+ *
+ * ⚠️ Decisão **C3** do autor: *"Correções ⛔ não deve ser fase fixa. Correções é
+ * um fluxo condicional acionado diretamente pelo problema que exige correção."*
+ *
+ * ── ⚠️⚠️ O BURACO QUE ISTO FECHA ──────────────────────────────────────────
+ *
+ * ⛔ Alcançá-la **⛔ só** pelo problema tem um efeito que ⛔ só apareceu ao migrar
+ * os testes: **⛔ resolvido o bloqueio, o problema some — ⛔ e Correções fica
+ * inalcançável**. ⚠️ O médico perderia o registro do anti-hipertensivo que
+ * ⛔ ele mesmo acabou de iniciar: a trilha continuaria lá, ⛔ e ⛔ sem porta
+ * (**E-09**, **E-26**).
+ *
+ * ⚠️ Por isso são **duas** razões para ⛔ ela existir na barra, ⛔ e a segunda é a
+ * que fecha o buraco:
+ *
+ *   ⛔ **há bloqueio corrigível** — ⛔ há o que corrigir agora;
+ *   ⛔ **há ação registrada** — ⛔ houve o que corrigir, ⛔ e o que se fez tem de
+ *      continuar visível.
+ *
+ * ⛔ ⛔ E ⛔ nenhuma das duas é *"sempre"*: ⛔ num atendimento ⛔ sem alteração
+ * corrigível, ⛔ ela ⛔ não ocupa espaço na sequência.
+ */
+export function correcoesEhRelevante(estado: EstadoAvc): boolean {
+  return bloqueiosCorrigiveis(estado).length > 0 || acoes(estado).length > 0;
 }
 
 /**

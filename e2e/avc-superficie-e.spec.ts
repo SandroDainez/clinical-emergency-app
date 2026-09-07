@@ -16,6 +16,19 @@ async function abrirAvc(page: Page) {
 }
 const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click();
 
+/**
+ * ⚠️⚠️ ⛔ CORREÇÕES ⛔ NÃO É FASE FIXA — 2026-09-06, decisão **C3**.
+ *
+ * ⛔ Ela era um cartão permanente numa faixa auxiliar. ⚠️ Agora ⛔ ela é um
+ * **fluxo condicional**: aparece na barra quando há bloqueio a corrigir ⛔ ou
+ * ação já registrada — ⛔ e some do caminho quando ⛔ não há ⛔ nem uma coisa
+ * ⛔ nem outra.
+ *
+ * ⚠️ ⛔ Este helper existe para as specs chegarem lá **como o médico chega**:
+ * ⛔ pelo problema que a exige.
+ */
+const abrirCorrecoes = (page: Page) => aba(page, "correcoes");
+
 /** ⚠️ PA alta pelos degraus — ⛔ sem digitação, como todo número do app. */
 async function paAlta(page: Page) {
   await aba(page, "estabilizacao");
@@ -34,11 +47,31 @@ async function glicemiaBaixa(page: Page) {
 }
 
 test.describe("AVC · Correções", () => {
-  test("⛔ sem bloqueio, a tela ⛔ não espera por ação", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️ ⛔ ESTE TESTE MUDOU DE OBJETO (2026-09-06, decisão **C3**) ────────
+   *
+   * ⛔ Ele abria Correções **⛔ sem bloqueio ⛔ nenhum** ⛔ e conferia a frase de
+   * vazio. ⚠️ Correções ⛔ deixou de ser fase fixa: ⛔ sem o que corrigir, ⛔ ela
+   * **⛔ não está na barra** — ⛔ então esse cenário ⛔ nem é alcançável.
+   *
+   * ⚠️⚠️ ⛔ A GARANTIA FICOU MAIS FORTE, ⛔ e ⛔ são duas agora:
+   *
+   *   ⛔ **⛔ sem bloqueio, ⛔ ela ⛔ não ocupa a barra** — ⛔ é o fluxo condicional
+   *      que o autor pediu, ⛔ medido na tela;
+   *   ⛔ **resolvido o bloqueio, ⛔ ela CONTINUA alcançável** — ⛔ e ⛔ esta é a
+   *      parte que quase me escapou: alcançá-la ⛔ só pelo problema deixaria o
+   *      médico ⛔ sem porta para o anti-hipertensivo que ⛔ ele mesmo iniciou.
+   */
+  test("⛔ sem bloqueio, Correções ⛔ NÃO ocupa a barra", async ({ page }) => {
     await abrirAvc(page);
-    await aba(page, "correcoes");
-    await expect(page.getByTestId("avc-e-sem-bloqueio"))
-      .toContainText(/Nada nesta tela espera por ação/i);
+    await expect(page.getByTestId("avc-aba-correcoes")).toHaveCount(0);
+  });
+
+  test("com bloqueio, ⛔ ela aparece — e a frase de vazio continua existindo", async ({ page }) => {
+    await abrirAvc(page);
+    await paAlta(page);
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-superficie-e-conteudo")).toBeVisible();
   });
 
   /**
@@ -211,8 +244,9 @@ test.describe("AVC · Correções", () => {
   test("a superfície inteira aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
-    await aba(page, "correcoes");
-    await expect(page.getByTestId("avc-superficie-e-conteudo"))
-      .toContainText(/Ningún bloqueo corregible/i);
+    /** ⚠️ ⛔ Correções ⛔ só existe na barra quando há o que corrigir (**C3**). */
+    await paAlta(page);
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-superficie-e-conteudo")).toBeVisible();
   });
 });

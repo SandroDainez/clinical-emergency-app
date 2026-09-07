@@ -74,7 +74,17 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
    */
   {
     id: "paciente",
-    painel: true,
+    /**
+     * ⚠️⚠️ ⛔ DEIXOU DE SER PAINEL EM 2026-09-06 — decisão **C3** do autor.
+     *
+     * ⛔ Paciente vivia num bloco de *"acesso rápido"* ao lado da barra: ⛔ um
+     * **caminho concorrente**, ⛔ e é ⛔ exatamente isso que a §61 do briefing
+     * proíbe — *"se houver qualquer outro caminho concorrente visível, a
+     * refatoração ⛔ ainda ⛔ não está concluída"*.
+     *
+     * ⚠️ ⛔ E ⛔ ela é a **primeira** fase do atendimento: peso, idade, mRS ⛔ e
+     * anticoagulante são o contexto que todas as decisões seguintes leem.
+     */
     titulo: "Paciente",
     resumo: "Identificação, dados basais, alergias, medicações e antecedentes.",
     fontes: ["F-07", "F-08", "F-09", "F-10", "F-16", "F-27"],
@@ -94,13 +104,25 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
   },
   {
     id: "neurologico",
-    titulo: "Neurológico",
+    /**
+     * ⚠️ *"Avaliação AVC"* — nome da fase no fluxo oficial (**C3**). ⛔ O slug
+     * ⛔ não muda: **slug é identidade, título é apresentação**.
+     */
+    titulo: "Avaliação AVC",
     resumo: "Déficit, NIHSS, incapacitância, funcionalidade prévia.",
     fontes: ["F-17", "F-14"],
   },
   {
     id: "imagem",
-    titulo: "Imagem",
+    /**
+     * ⚠️⚠️ *"Investigação"* — ⛔ e ⛔ o nome mudou porque o **conteúdo** mudou:
+     * ⛔ a fase passa a carregar imagem **e** laboratório, que o briefing
+     * (**§16**) trata como dois blocos de uma investigação só.
+     *
+     * ⛔ O slug segue `imagem` — ⛔ ele é a **casa** de dezesseis campos, ⛔ e
+     * renomeá-lo moveria fato clínico de lugar ⛔ sem necessidade ⛔ nenhuma.
+     */
+    titulo: "Investigação",
     resumo: "TC, exclusão de hemorragia, imagem vascular.",
     /**
      * ⚠️ QUATRO SLOTS, e ⛔ não um: a exclusão de hemorragia e a imagem vascular
@@ -209,7 +231,41 @@ export const SUPERFICIES: readonly Superficie[] = ORDEM_DE_APRESENTACAO.map((s) 
  * primeira mudança (**I6**). Quem pergunta *"quais superfícies o médico
  * alcança pela navegação?"* pergunta a esta lista.
  */
-export const SUPERFICIES_COM_ABA: readonly Superficie[] = SUPERFICIES.filter((s) => !s.destino);
+/**
+ * ⚠️⚠️ ⛔ A SEQUÊNCIA OFICIAL — **⛔ a única resposta** para *"qual caminho o
+ * médico percorre?"* (**§61** do briefing, decisão **C3**).
+ *
+ * ⛔ Ela existe aqui, ⛔ e ⛔ não como filtro escrito dentro do JSX, porque
+ * **três** consumidores precisam da mesma lista: a barra de fases, a prova das
+ * superfícies ⛔ e o e2e. ⚠️ Escrita três vezes, ⛔ bastaria uma delas aprender
+ * uma fase nova para as três divergirem (**I6**).
+ *
+ * ── ⚠️ O QUE FICA DE FORA, ⛔ E ⛔ POR QUÊ ──────────────────────────────────
+ *
+ * ⛔ **destinos** (HIC, HSA) — ⛔ o paciente hemorrágico ⛔ não percorre o fluxo
+ *    de trombólise; ⛔ eles são saídas, ⛔ e ⛔ não etapas.
+ * ⛔ **painéis** (Laboratório) — ⛔ ele é **renderizado dentro** de Investigação
+ *    (**§16**), ⛔ e ⛔ não alcançado por atalho.
+ * ⛔ **Correções** — ⛔ ela é **condicional**: ⛔ só existe quando há o que
+ *    corrigir, ⛔ e é alcançada **pelo problema que a exige** (**C3**). ⛔ Como
+ *    fase fixa, ⛔ ficaria vazia na maioria dos atendimentos.
+ */
+export const SEQUENCIA_OFICIAL: readonly Superficie[] = SUPERFICIES.filter(
+  (s) => !s.destino && !s.painel && s.id !== "correcoes"
+);
+
+/**
+ * ⚠️⚠️ ⛔ **DEPRECIADO** — ⛔ e o nome passou a mentir em 2026-09-06.
+ *
+ * ⛔ Ele significava *"toda superfície com aba"*, ⛔ e incluía Laboratório ⛔ e
+ * Correções — ⛔ que ⛔ **⛔ não têm mais aba ⛔ nenhuma**. ⚠️ Quem precisa da
+ * navegação usa `SEQUENCIA_OFICIAL`; ⛔ quem precisa de *"tudo que ⛔ não é
+ * destino"* — ⛔ e há usos legítimos, como varrer toda tela alcançável —
+ * continua aqui, ⛔ com o nome corrigido.
+ */
+export const SUPERFICIES_ALCANCAVEIS: readonly Superficie[] = SUPERFICIES.filter(
+  (s) => !s.destino
+);
 
 export function superficie(id: SuperficieId): Superficie {
   const achada = SUPERFICIES.find((s) => s.id === id);

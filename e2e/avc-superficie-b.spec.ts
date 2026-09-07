@@ -7,7 +7,7 @@ import {
   TODOS_OS_CAMPOS_B,
 } from "../avc/conteudo/superficie-b";
 import { ITENS_NIHSS } from "../avc/conteudo/nihss";
-import { SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
+import { SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -405,8 +405,17 @@ test.describe("AVC · Superfície B — Neurológico", () => {
      * **Paciente**: com ela **vazia** — ⛔ nada foi respondido lá neste teste —,
      * ⛔ nenhuma superfície deixa de abrir.
      */
-    expect(SUPERFICIES_COM_ABA.length).toBe(9);
-    for (const sup of SUPERFICIES_COM_ABA) {
+    /**
+     * ⚠️⚠️ ⛔ SETE, ⛔ e ⛔ não nove — 2026-09-06, decisão **C3**.
+     *
+     * ⛔ Laboratório ⛔ e Correções saíram da **barra**, ⛔ e ⛔ não do app:
+     * ⛔ o laboratório é renderizado **dentro de Investigação** (**§16**), ⛔ e
+     * Correções é alcançada **pelo problema que a exige**. ⚠️ A §61 pede uma
+     * resposta ⛔ só para *"qual caminho o médico percorre"* — ⛔ e ⛔ um atalho
+     * ao lado da barra era uma segunda resposta.
+     */
+    expect(SEQUENCIA_OFICIAL.length).toBe(7);
+    for (const sup of SEQUENCIA_OFICIAL) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       await expect(page.getByTestId(`avc-superficie-${sup.id}`), `${sup.id} não abriu`)
         .toBeVisible();

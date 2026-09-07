@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { SUPERFICIES, SUPERFICIES_COM_ABA } from "../avc/conteudo/superficies";
+import { SUPERFICIES, SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
 import { fixarIdioma } from "./helpers";
 
 /**
@@ -63,16 +63,33 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * `paciente` vem DEPOIS de quatro superfícies de propósito: é a prova de
      * que ele ⛔ não é passo 1 (**PD-29**).
      */
+    /**
+     * ⚠️⚠️ ⛔ A LISTA PERDEU `laboratorio` ⛔ e `correcoes` — 2026-09-06 (**C3**).
+     *
+     * ⛔ ⛔ Elas ⛔ não sumiram do app: o laboratório vive **dentro de
+     * Investigação** (**§16**) ⛔ e Correções é **condicional**, alcançada pelo
+     * problema que a exige. ⚠️ O que este teste mede é *"toda fase da barra
+     * abre, em qualquer ordem"* — ⛔ e ⛔ nenhuma das duas é fase da barra.
+     */
     const ordem = [
       "destino", "neurologico", "reperfusao", "estabilizacao",
-      "paciente", "seguranca", "imagem", "laboratorio", "correcoes",
+      "paciente", "seguranca", "imagem",
     ] as const;
     for (const id of ordem) {
       await page.getByTestId(`avc-aba-${id}`).click();
       await expect(page.getByTestId(`avc-superficie-${id}`)).toBeVisible();
     }
 
-    expect(SUPERFICIES_COM_ABA.length).toBe(9);
+    /**
+     * ⚠️⚠️ ⛔ SETE, ⛔ e ⛔ não nove — 2026-09-06, decisão **C3**.
+     *
+     * ⛔ Laboratório ⛔ e Correções saíram da **barra**, ⛔ e ⛔ não do app:
+     * ⛔ o laboratório é renderizado **dentro de Investigação** (**§16**), ⛔ e
+     * Correções é alcançada **pelo problema que a exige**. ⚠️ A §61 pede uma
+     * resposta ⛔ só para *"qual caminho o médico percorre"* — ⛔ e ⛔ um atalho
+     * ao lado da barra era uma segunda resposta.
+     */
+    expect(SEQUENCIA_OFICIAL.length).toBe(7);
   });
 
   /**
@@ -124,17 +141,33 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * marcado ⛔ só em Paciente e Laboratório, ⛔ e é isso que PD-29 afirma.
      * ⚠️ A posição na tela é **apresentação**; a espécie é do modelo.
      */
-    const secundarios = ["correcoes", "paciente", "laboratorio"];
-    const etapas = [...principais, "correcoes"];
-    const paineis = ["paciente", "laboratorio"];
+    const secundarios = ["correcoes", "laboratorio"];
 
-    /** ⚠️ AS NOVE EXISTEM ⛔ e todas são alcançáveis — ⛔ nenhuma sumiu no layout. */
+    /**
+     * ⚠️⚠️ ⛔ A BARRA TEM **SETE**, ⛔ e ⛔ ela É a sequência oficial — **§61**.
+     *
+     * ⛔ Eram nove abas: as seis clínicas mais Paciente, Laboratório ⛔ e
+     * Correções numa faixa auxiliar ao lado. ⚠️ Decisão **C3** do autor:
+     * ⛔ **Paciente virou a primeira fase**, ⛔ e os outros dois saíram da barra
+     * — ⛔ o painel auxiliar era o *"caminho concorrente"* que a §61 proíbe.
+     */
     const ordem = await page.locator('[data-testid^="avc-aba-"]')
       .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("avc-aba-", "")));
-    expect(ordem.length).toBe(9);
-    for (const id of [...etapas, ...paineis]) {
-      expect(ordem, `superfície inalcançável: ${id}`).toContain(id);
-    }
+    expect(ordem.sort(), "a barra é exatamente a sequência oficial")
+      .toEqual([...SEQUENCIA_OFICIAL.map((s) => s.id)].sort());
+
+    /**
+     * ⚠️⚠️ ⛔ E ⛔ NADA FICOU INALCANÇÁVEL — ⛔ que é a única razão pela qual
+     * remover as abas foi seguro.
+     *
+     * ⛔ A garantia antiga era *"existe uma aba"*. ⚠️ Ela ficou **mais forte**:
+     * agora o teste **chega lá**, ⛔ e ⛔ não confere a existência de um botão.
+     */
+    await page.getByTestId("avc-aba-imagem").click();
+    await expect(
+      page.getByTestId("avc-superficie-laboratorio-conteudo"),
+      "⛔ o Laboratório tem de viver dentro de Investigação (§16)"
+    ).toBeVisible();
 
     /**
      * ⚠️⚠️ PD-29 POR POSIÇÃO: os painéis vêm DEPOIS de todas as etapas.
@@ -152,15 +185,21 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      */
     const naBarra = await page.locator('[data-testid="avc-barra"] [data-testid^="avc-aba-"]')
       .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!.replace("avc-aba-", "")));
-    expect(naBarra.sort(), "a barra inferior tem exatamente as seis clínicas")
-      .toEqual([...principais].sort());
+    expect(naBarra.sort(), "a barra inferior é a sequência oficial")
+      .toEqual([...principais, "paciente"].sort());
     for (const id of secundarios) {
       expect(naBarra, `${id} ⛔ não pertence à navegação clínica`).not.toContain(id);
     }
 
-    /** ⚠️⚠️ E PD-29 CONTINUA NO MODELO: ⛔ só dois são painel. */
-    expect(SUPERFICIES.filter((s) => s.painel).map((s) => s.id).sort())
-      .toEqual(["laboratorio", "paciente"]);
+    /**
+     * ⚠️⚠️ **PD-29 CONTINUA NO MODELO**, ⛔ e ⛔ com ⛔ um painel a menos.
+     *
+     * ⛔ Paciente deixou de ser painel porque virou **fase** — ⛔ e ⛔ isso ⛔ não
+     * afrouxa PD-29: a distinção ⛔ nunca foi sobre quantos são, ⛔ e sim sobre
+     * **ser ⛔ ou ⛔ não ser passo do atendimento**.
+     */
+    expect(SUPERFICIES.filter((s) => s.painel).map((s) => s.id))
+      .toEqual(["laboratorio"]);
 
     /**
      * ⚠️⚠️ ⛔ NENHUM nome chega TRUNCADO ⛔ nem QUEBRADO — o contrato de 2026-08-30
@@ -171,7 +210,8 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * coluna, ⛔ e a quebra entre os dois ⛔ não é o nome quebrando.
      */
     const nomes = await page.locator('[data-testid^="avc-rotulo-aba-"]').allInnerTexts();
-    expect(nomes.length).toBe(9);
+    /** ⚠️ Sete rótulos — a sequência oficial (**C3**). */
+    expect(nomes.length).toBe(SEQUENCIA_OFICIAL.length);
     for (const t of nomes) {
       expect(t, `nome truncado: ${t}`).not.toMatch(/…|\.\.\./);
       expect(t.trim(), `nome em duas linhas: ${t}`).not.toMatch(/\n/);
@@ -272,7 +312,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    for (const sup of SUPERFICIES_COM_ABA) {
+    for (const sup of SEQUENCIA_OFICIAL) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       // ⚠️ O resumo é persistente porque o RELÓGIO é o único valor que muda
       // sozinho: escondê-lo numa superfície faria o médico trabalhar noutra sem
@@ -326,7 +366,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     // ⚠️ E-20: percorrer TODAS as superfícies não pode mudar nada — as pendências
     // continuam exatamente as mesmas, porque navegação não é fato clínico.
     const antes = await page.getByTestId("avc-pendencias").innerText();
-    for (const sup of SUPERFICIES_COM_ABA) {
+    for (const sup of SEQUENCIA_OFICIAL) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
     }
     const depois = await page.getByTestId("avc-pendencias").innerText();

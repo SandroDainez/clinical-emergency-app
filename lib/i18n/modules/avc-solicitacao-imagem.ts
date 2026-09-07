@@ -10,6 +10,8 @@ export const avcSolicitacaoImagemEs: Record<string, string> = {
   /** ⚠️ As ameaças imediatas — o eixo que deixou de afirmar o que não sabe. */
   "Medido": "Medido",
   "O que fazer agora": "Qué hacer ahora",
+  "Avaliação AVC": "Evaluación ACV",
+  "Investigação": "Investigación",
   /** ⚠️ O alfabeto de estados (C2) e os problemas ativos (§44). */
   "Favorável": "Favorable",
   "Corrigível": "Corregible",
