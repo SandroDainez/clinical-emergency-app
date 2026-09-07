@@ -22,7 +22,7 @@ import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_D } from "./superficie-d";
 import { TODOS_OS_CAMPOS_E } from "./superficie-e";
-import { ACAO_DE_TROMBOLISE } from "./superficie-f";
+import { ACAO_DE_TROMBOLISE, DECISAO_DE_PROSSEGUIR } from "./superficie-f";
 
 /**
  * TODOS os campos do módulo, de todas as casas.
@@ -57,6 +57,11 @@ export function todosOsCampos(): readonly Campo[] {
      * registro é uma **lista à mão**, ⛔ e lista à mão se esquece.
      */
     ...ACAO_DE_TROMBOLISE.map((c) => ({ ...c, casa: "reperfusao" as const })),
+    /**
+     * ⚠️⚠️ A DECISÃO ⛔ PRECISA estar no índice — ⛔ senão `irParaCampo` ⛔ não a
+     * encontra, ⛔ e o portão ⛔ apontaria para um campo inalcançável (**E-26**).
+     */
+    ...DECISAO_DE_PROSSEGUIR.map((c) => ({ ...c, casa: "reperfusao" as const })),
   ];
 }
 

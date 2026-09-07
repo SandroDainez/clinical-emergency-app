@@ -1611,6 +1611,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             agora={agora}
             onEscolher={escolher}
             onIrParaCampo={irParaCampo}
+            onAbrirSuperficie={abrir}
             onNovaTrombolise={() => novaMedida(TROMBOLISE_IV)}
             onEscolherNaInstancia={escolherNaInstancia}
             onHoraNaInstancia={medirNaInstancia}

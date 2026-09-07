@@ -64,7 +64,16 @@ const POR_SUPERFICIE = {
   L: mod("laboratorio").TODOS_OS_CAMPOS_L,
   /** ⚠️ F e G declaram campos FORA do padrão de grupos — entram aqui na mão
    *  porque ⛔ não há lista genérica para derivar. */
-  F: [...SF.ACAO_DE_TROMBOLISE, { id: SF.CAMPO_AGENTE.id, rotulo: SF.CAMPO_AGENTE.rotulo }],
+  /**
+   * ⚠️ ⛔ E a **decisão de prosseguir** entrou em 2026-09-07 (Fase 6): ⛔ ela é
+   * o gesto **prospectivo** que o portão governa — ⛔ e ⛔ ela ⛔ não é a
+   * administração, ⛔ que segue livre logo abaixo dela na tela.
+   */
+  F: [
+    ...SF.ACAO_DE_TROMBOLISE,
+    ...SF.DECISAO_DE_PROSSEGUIR,
+    { id: SF.CAMPO_AGENTE.id, rotulo: SF.CAMPO_AGENTE.rotulo },
+  ],
   G: SG.FATOS_OPERACIONAIS,
 };
 const TODOS = Object.entries(POR_SUPERFICIE)
@@ -151,6 +160,8 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
    */
   const LISTAS_RENDERIZADAS = {
     ACAO_DE_TROMBOLISE: SF.ACAO_DE_TROMBOLISE.map((c) => c.id),
+    /** ⚠️ A decisão prospectiva da Fase 6 — percorrida na Reperfusão. */
+    DECISAO_DE_PROSSEGUIR: SF.DECISAO_DE_PROSSEGUIR.map((c) => c.id),
     FATOS_OPERACIONAIS: SG.FATOS_OPERACIONAIS.map((c) => c.id),
     CAMPO_AGENTE: [SF.CAMPO_AGENTE.id],
   };

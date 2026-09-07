@@ -649,6 +649,96 @@ export const CAMPO_AGENTE = {
   nota: "A fonte recomenda os dois com a mesma força. Escolher não significa administrar.",
 } as const;
 
+/**
+ * ── ⚠️⚠️ A DECISÃO DE PROSSEGUIR — ⛔ o degrau que faltava ────────────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07, ⛔ depois de um erro **meu** de arquitetura:
+ *
+ * > *"o sistema pode bloquear uma decisão **prospectiva**, ⛔ mas ⛔ não pode
+ * >  bloquear o registro **retrospectivo** de um fato clínico já ocorrido."*
+ *
+ * ── ⚠️⚠️ ⛔ O ERRO QUE ISTO CORRIGE, ⛔ E ⛔ ELE ERA GRAVE ──────────────────
+ *
+ * ⛔ Eu pus o portão da IVT em `avc-nova-trombolise` — ⛔ que é o bloco
+ * **"Trombólise administrada"**, ⛔ ou seja, ⛔ o **registro de que aconteceu**.
+ * ⚠️ Seis e2e quebraram, ⛔ e ⛔ eles estavam certos: o app passava a **recusar
+ * documentar** uma trombólise já dada.
+ *
+ * ⛔ ⛔ E o preço ⛔ ia além da trilha: a monitorização da **Table 7** (Superfície
+ * G) nasce ⛔ **desse** registro. ⛔ Bloquear o registro parava a monitorização
+ * ⛔ de um paciente ⛔ que ⛔ já tinha recebido o trombolítico.
+ *
+ * ── ⚠️ OS QUATRO MOMENTOS, ⛔ E ⛔ ELES SÃO INDEPENDENTES ──────────────────
+ *
+ * ⛔ `motor recomenda` ≠ `médico decidiu` ≠ `medicação foi administrada` ≠
+ * `monitorização`. ⚠️ ⛔ Este campo é o **segundo**, ⛔ e ⛔ ele ⛔ nunca fala
+ * pelos outros três.
+ *
+ * ⚠️⚠️ ⛔ E *"⛔ não prosseguir"* É DECISÃO, ⛔ e ⛔ não ausência: ⛔ silêncio aqui
+ * ⛔ é *"⛔ ainda ⛔ não decidiu"*, ⛔ e ⛔ os dois ⛔ não podem colapsar
+ * (**E-37**).
+ */
+export const DECISAO_DE_PROSSEGUIR: readonly CampoDeclarado[] = [
+  {
+    id: "ivt_indicacao_confirmada",
+    temporalidade: "estado",
+    rotulo: "Decisão sobre prosseguir com a trombólise",
+    tipo: "escolha",
+    opcoes: ["Prosseguir com a trombólise", "Não prosseguir"],
+    /**
+     * ⚠️ **F-02** sustenta a existência do gesto: ⛔ é ⛔ ela que manda tratar
+     * ⛔ o mais rápido possível, ⛔ e ⛔ é ⛔ dela que a decisão é o passo
+     * operacional. ⛔ O campo ⛔ não traz número ⛔ nem corte — ⛔ ele registra
+     * **quem decidiu, ⛔ e quando**.
+     */
+    fonte: "F-02",
+    /**
+     * ⚠️⚠️ ⛔ `false`, ⛔ e ⛔ isso ⛔ não é contradição com o portão. ⛔ O portão
+     * governa **este gesto**; ⛔ ele ⛔ não retém terapia ⛔ nenhuma, ⛔ e ⛔ o
+     * registro do que foi administrado segue **sempre livre** (**E-49**).
+     */
+    bloqueiaTerapia: false,
+    nota: "Registra a decisão clínica de prosseguir. Não é a administração, e não substitui o registro do que foi feito.",
+  },
+];
+
+/**
+ * ── ⚠️⚠️ ⛔ COMO CADA DADO DA EVT SE MOSTRA — ⛔ e ⛔ isto é **DADO** ────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07 (**item 10**): a conclusão endovascular é
+ * `desconhecido`, ⛔ e ⛔ tem de **permanecer** desconhecida. ⛔ *"⛔ Não usar
+ * símbolo ✓ ⛔ ou ⛔. Preferir `?` ⛔ ou `·`."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELE MORA AQUI, ⛔ E ⛔ NÃO NO JSX — ⛔ porque a primeira trava que
+ * escrevi varria o **texto do bloco** ⛔ e a mutação *"usar ✓ no dado
+ * registrado"* **sobreviveu**: a lista era montada ⛔ acima do bloco, ⛔ fora do
+ * trecho varrido.
+ *
+ * ⛔ ⛔ Regra escrita em prosa se mede por leitura; ⛔ regra escrita em dado se
+ * mede por **execução**.
+ */
+export const ESTADO_DO_DADO_EVT = {
+  /** ⚠️ Há valor — ⛔ e o protocolo ⛔ não autoriza classificá-lo (`·`). */
+  registrados: { estado: "medido", rotulo: "Registrado" },
+  /**
+   * ── ⚠️⚠️ ⛔ *"Incerto"*, ⛔ E ⛔ NUNCA *"Não avaliado"* ────────────────────
+   *
+   * ⛔ Achado na revisão visual da Fase 6, 2026-09-07: ⛔ eu usava o **rótulo
+   * genérico** do estado `ausente`, ⛔ e a tela dizia *"Efeito de massa — Não
+   * avaliado"* ⛔ para um campo que o médico **respondeu** como *"Não sei"*.
+   *
+   * ⚠️⚠️ ⛔ É ⛔ exatamente o colapso que **E-37** proíbe. ⛔ E a palavra certa
+   * ⛔ já existia no projeto — `SAIDA_SEM_CONCLUSAO` usa **"Incerto"**, com o
+   * comentário que a justifica: *"olhei ⛔ e ⛔ não dá para afirmar" ⛔ não é
+   * "⛔ ainda ⛔ não perguntei"*.
+   *
+   * ⛔ ⛔ O símbolo continua neutro; ⛔ quem carrega o significado é a palavra.
+   */
+  semConclusao: { estado: "ausente", rotulo: "Incerto" },
+  /** ⚠️ **E-37**: falta perguntar (`?`). ⛔ ⛔ NÃO é lista de requisitos. */
+  naoPerguntados: { estado: "verificar", rotulo: "Não perguntado" },
+} as const;
+
 /** ⚠️ Doses sustentadas por F-09. ⛔ **Preparo e administração ⛔ NÃO entram aqui.** */
 export const DOSES = {
   alteplase: { mgPorKg: 0.9, maximoMg: 90, slot: "F-09" },

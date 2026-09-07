@@ -24,6 +24,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   ACAO_DE_TROMBOLISE,
+  DECISAO_DE_PROSSEGUIR,
+  ESTADO_DO_DADO_EVT,
   CAMPO_AGENTE,
   TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
@@ -44,7 +46,12 @@ import {
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { ESTADOS } from "../../design-system/estados-clinicos";
+import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
+import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
+import { informacaoParaAFrenteEndovascular } from "../../avc/nucleo/derivacoes-c";
+import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -55,11 +62,48 @@ import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 
+/**
+ * ⚠️⚠️ ⛔ CADA ESTADO TEM A SUA FRASE — ⛔ e ⛔ nenhum deles é *"desabilitado"*.
+ *
+ * ⛔ Pedido do autor (**item 5**): *"⛔ Não reduzir todos ao mesmo estado visual
+ * ⛔ ou à mesma ação"*. ⚠️ *"⛔ Não recomendada"* ⛔ e *"falta corrigir a pressão"*
+ * ⛔ são situações clínicas diferentes, ⛔ e o médico faz coisas diferentes ⛔ em
+ * cada uma.
+ */
+/**
+ * ⚠️⚠️ ⛔ O SÍMBOLO ACOMPANHA O TÍTULO — ⛔ e ⛔ vem do vocabulário dos **sete
+ * estados**, ⛔ e ⛔ não de um alfabeto novo desta tela (**§47**).
+ *
+ * ⛔ Cor sozinha ⛔ não é leitura (**E-15**), ⛔ e o item 3 do autor cobra
+ * ⛔ exatamente ⛔ isto: texto · símbolo · título · estrutura.
+ */
+const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
+  bloqueado_seguranca: ESTADOS.impede.simbolo,
+  bloqueado_corrigivel: ESTADOS.corrigivel.simbolo,
+  aguardando_reavaliacao: ESTADOS.andamento.simbolo,
+  nao_recomendada: ESTADOS.impede.simbolo,
+  informacao_incompleta: ESTADOS.verificar.simbolo,
+  sem_criterios: ESTADOS.ausente.simbolo,
+  liberado: ESTADOS.favoravel.simbolo,
+};
+
+const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
+  bloqueado_seguranca: "Contraindicação de segurança ativa",
+  bloqueado_corrigivel: "Há condição a corrigir antes",
+  aguardando_reavaliacao: "Correção registrada — falta a reavaliação",
+  nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
+  informacao_incompleta: "Faltam dados para concluir",
+  sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
+  liberado: "",
+};
+
 type Props = {
   estado: EstadoAvc;
   agora: number;
   onEscolher: (campo: string, valor: string) => void;
   onIrParaCampo: (campo: string) => void;
+  /** ⚠️ O portão leva à fase onde o bloqueio se resolve — ⛔ motivo sem destino é muro (**E-26**). */
+  onAbrirSuperficie: (id: SuperficieId) => void;
   onNovaTrombolise: () => void;
   onEscolherNaInstancia: (instancia: string, campo: string, valor: string) => void;
   onHoraNaInstancia: (instancia: string, campo: string, valor: number) => void;
@@ -71,6 +115,7 @@ export default function SuperficieF({
   agora,
   onEscolher,
   onIrParaCampo,
+  onAbrirSuperficie,
   onNovaTrombolise,
   onEscolherNaInstancia,
   onHoraNaInstancia,
@@ -140,6 +185,52 @@ export default function SuperficieF({
    * sobreviver à correção do dado (**E-43**).
    */
   const veredito = useMemo(() => vereditoDaTrombolise(estado), [estado]);
+  /**
+   * ── ⚠️⚠️ ⛔ O PORTÃO VEM PRONTO DO NÚCLEO — Fase 6, 2026-09-07 ────────────
+   *
+   * ⛔ Ele combina **duas camadas** que ⛔ não se misturam: o veredito (catálogo
+   * de recomendações) ⛔ e a segurança (cortes, contraindicações, corrigíveis).
+   * ⚠️ ⛔ Recompô-las aqui criaria uma segunda verdade sobre a mesma decisão —
+   * ⛔ e a regra clínica ⛔ envelheceria junto com o layout (**I6**).
+   */
+  const portao = useMemo(() => estadoDoPortaoIVT(estado), [estado]);
+  /** ⚠️ Quantas administrações já estão na trilha — ⛔ para medir discrepância. */
+  const administracoes = instanciasDe(estado, TROMBOLISE_IV).length;
+
+  /**
+   * ⚠️⚠️ ⛔ OS DADOS DA EVT — ⛔ derivados do dossiê, ⛔ e ⛔ nunca listados à mão.
+   *
+   * ⛔ Os três baldes vêm de `informacaoParaAFrenteEndovascular()`, ⛔ que
+   * ⛔ **já** distingue *registrado* · *sem conclusão* · *⛔ não perguntado*.
+   * ⚠️ ⛔ Achatá-los aqui apagaria ⛔ exatamente a diferença que **E-37** protege.
+   */
+  const dossie = useMemo(() => informacaoParaAFrenteEndovascular(estado), [estado]);
+  const DADOS_DA_EVT = useMemo(
+    () => [
+            ...dossie.registrados.map((id) => ({
+        id,
+        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
+        nome: ROTULO_CURTO[id] ?? id,
+        estado: ESTADO_DO_DADO_EVT.registrados.estado,
+        rotulo: ESTADO_DO_DADO_EVT.registrados.rotulo,
+      })),
+            ...dossie.semConclusao.map((id) => ({
+        id,
+        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
+        nome: ROTULO_CURTO[id] ?? id,
+        estado: ESTADO_DO_DADO_EVT.semConclusao.estado,
+        rotulo: ESTADO_DO_DADO_EVT.semConclusao.rotulo,
+      })),
+            ...dossie.naoPerguntados.map((id) => ({
+        id,
+        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
+        nome: ROTULO_CURTO[id] ?? id,
+        estado: ESTADO_DO_DADO_EVT.naoPerguntados.estado,
+        rotulo: ESTADO_DO_DADO_EVT.naoPerguntados.rotulo,
+      })),
+    ],
+    [dossie]
+  );
 
   return (
     <View style={e.raiz} testID="avc-superficie-f-conteudo">
@@ -273,6 +364,63 @@ export default function SuperficieF({
         </Text>
       </View>
 
+      {/**
+        * ── ⚠️⚠️ A AVALIAÇÃO ENDOVASCULAR — ⛔ SÍNTESE, ⛔ E ⛔ NUNCA VEREDITO ──
+        *
+        * ⚠️ Decisão do autor, 2026-09-07 (**itens 8 a 13**): a raia de EVT é
+        * **informativa**. ⛔ Ela mostra os fatos que já existem ⛔ e ⛔ para aí.
+        *
+        * ⛔ ⛔ **⛔ NÃO** escreve *elegível*, *⛔ não elegível*, *recomendada*,
+        * *contraindicada* ⛔ nem *candidata* — ⛔ e ⛔ isso ⛔ não é cautela
+        * retórica: **F-08** adverte que *"`EVT elegível = sim/não` ⛔ NÃO é fato
+        * armazenado"*, ⛔ e os critérios completos ⛔ ainda ⛔ não têm fonte
+        * transcrita no projeto.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO COMPETE COM O PORTÃO (item 13): a IVT tem
+        * **decisão operacional**; ⛔ a EVT tem **dados**. ⛔ Fabricar
+        * equivalência funcional entre as duas seria prometer uma decisão que
+        * ⛔ o motor ⛔ não sabe tomar.
+        *
+        * ⚠️ ⛔ Os símbolos ⛔ vêm dos sete estados, ⛔ e ⛔ **⛔ nenhum é ✓ ⛔ ou
+        * ⛔ ⛔** (item 10): `·` para o que está medido, `?` para o que ⛔ não foi
+        * perguntado, `—` para o que foi respondido ⛔ sem conclusão.
+        */}
+      <View style={e.grupo} testID="avc-f-evt-dossie">
+        <CabecalhoDeBloco titulo={tr("Avaliação endovascular")} testID="avc-f-bloco-evt" />
+        {/**
+          * ⚠️⚠️ ⛔ *"Dados **registrados relacionados à**"*, ⛔ e ⛔ não *"dados
+          * **disponíveis para** decisão"* — ⛔ ajuste do autor, 2026-09-07.
+          *
+          * ⛔ *"Disponíveis para decisão"* carrega conotação de **prontidão**:
+          * ⛔ sugere que o que está ali ⛔ já basta para decidir. ⚠️ ⛔ Não basta —
+          * ⛔ os critérios ⛔ não estão no motor. ⛔ A frase descreve o **estado
+          * epistemológico do sistema**, ⛔ e ⛔ nada além dele.
+          */}
+        <Text style={e.evtNota} testID="avc-f-evt-nota">
+          {tr("Dados registrados relacionados à avaliação endovascular. Critérios de elegibilidade ainda não incorporados ao motor.")}
+        </Text>
+
+        {DADOS_DA_EVT.map((linha) => (
+          <View key={linha.id} style={e.evtLinha} testID={`avc-f-evt-${linha.id}`}>
+            <Text style={e.evtSimbolo} accessibilityElementsHidden>
+              {ESTADOS[linha.estado].simbolo}
+            </Text>
+            <Text style={e.evtRotulo}>{tr(linha.nome)}</Text>
+            {/** ⚠️ ⛔ O rótulo do estado por extenso — ⛔ símbolo sozinho ⛔ não é legenda (**E-15**). */}
+            {/**
+              * ⚠️⚠️ ⛔ O RÓTULO É O DO **BALDE**, ⛔ e ⛔ não o genérico do estado.
+              *
+              * ⛔ *"Não sei"* respondido ⛔ não é *"Não avaliado"* — ⛔ e usar o
+              * rótulo genérico fazia a tela **afirmar que ⛔ ninguém olhou** um
+              * campo que o médico respondeu (**E-37**).
+              */}
+            <Text style={e.evtEstado} testID={`avc-f-evt-estado-${linha.id}`}>
+              {tr(linha.rotulo)}
+            </Text>
+          </View>
+        ))}
+      </View>
+
       {/* ── as duas raias, compactas, sempre visíveis ───────────────────── */}
       <View style={e.raias} testID="avc-f-raias">
         <Raia titulo={tr("Trombólise")} itens={itens} terapia="ivt" testID="avc-f-raia-ivt" />
@@ -357,6 +505,107 @@ export default function SuperficieF({
       </View>
 
       {/**
+        * ── ⚠️⚠️ ⛔ A DECISÃO — ⛔ O DEGRAU QUE O PORTÃO GOVERNA ─────────────
+        *
+        * ⚠️ ⛔ Quatro momentos, ⛔ e ⛔ eles ⛔ não falam um pelo outro:
+        * **motor recomenda** ≠ **médico decidiu** ≠ **medicação administrada**
+        * ≠ **monitorização**.
+        *
+        * ⚠️⚠️ ⛔ E A INFORMAÇÃO ⛔ NÃO FICA ATRÁS DO PORTÃO — pedido do autor:
+        * *"o médico pode precisar ver dose calculada ⛔ ou agente possível
+        * ⛔ **enquanto resolve um bloqueio**. O que fica travado é o gesto que
+        * transforma aquilo em decisão de tratar"*. ⛔ A dose ⛔ e o agente
+        * seguem visíveis, ⛔ acima.
+        */}
+      <View style={e.grupo} testID="avc-f-decisao-ivt">
+        <CabecalhoDeBloco titulo={tr("Decisão sobre prosseguir")} testID="avc-f-bloco-decisao" />
+
+        {!portao.liberado ? (
+          <View style={e.portao} testID="avc-f-portao">
+            {/**
+              * ⚠️⚠️ ⛔ TÍTULO + SÍMBOLO + TEXTO — ⛔ e ⛔ **⛔ nunca ⛔ só cor**
+              * (**E-15**, item 3 do autor). ⛔ Quem ⛔ não distingue vermelho de
+              * âmbar precisa ler o estado.
+              */}
+            <Text style={e.portaoTitulo} testID={`avc-f-portao-estado-${portao.estado}`}>
+              {SIMBOLO_DO_PORTAO[portao.estado]} {tr(TITULO_DO_PORTAO[portao.estado])}
+            </Text>
+
+            {portao.motivos.length === 0 && veredito.faltam.length > 0 ? (
+              <Text style={e.portaoFalta} testID="avc-f-portao-faltam">
+                {tr("Falta registrar")}: {veredito.faltam.map((i) => tr(acaoPendente(i))).join(" · ")}
+              </Text>
+            ) : null}
+
+            {/**
+              * ⚠️⚠️ ⛔ TODOS OS MOTIVOS, ⛔ E ⛔ NUM SÓ NÍVEL DE ATENÇÃO ⛔ NÃO:
+              * ⛔ o primeiro é o que **nomeia o estado**; ⛔ os outros seguem
+              * listados ⛔ porque ⛔ **⛔ não podem sumir** ⛔ só ⛔ por existir um
+              * bloqueio mais forte (item 4 do autor).
+              */}
+            {portao.motivos.map((m, i) => (
+              <View key={m.id} style={e.portaoMotivo} testID={`avc-f-portao-motivo-${m.id}`}>
+                <Text style={e.portaoNivel}>
+                  {i === 0 ? tr("Motivo principal") : tr("Também ativo")}
+                </Text>
+                <Text style={e.portaoRotulo}>{tr(m.rotulo)}</Text>
+                {m.dado ? (
+                  <Text style={e.portaoDado} testID={`avc-f-portao-dado-${m.id}`}>
+                    {tr(m.dado)}
+                  </Text>
+                ) : null}
+                <Text style={e.portaoFonte}>{m.fonte}</Text>
+                <Text style={e.portaoFalta}>{tr(m.oQueFalta)}</Text>
+                {m.leva ? (
+                  <Pressable
+                    style={e.portaoIr}
+                    accessibilityRole="button"
+                    testID={`avc-f-portao-ir-${m.id}`}
+                    onPress={() => (m.campo ? onIrParaCampo(m.campo) : onAbrirSuperficie(m.leva as SuperficieId))}
+                  >
+                    <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        {/**
+          * ⚠️ ⛔ O gesto ⛔ só aparece com o portão aberto. ⛔ Desabilitado com a
+          * razão ⛔ ao lado seria ⛔ o mesmo botão morto ⛔ com outra roupa — ⛔ e
+          * ⛔ a razão ⛔ já está escrita acima, ⛔ com o caminho para resolvê-la.
+          */}
+        {portao.liberado ? (
+          DECISAO_DE_PROSSEGUIR.map((campo) => (
+            <CampoDaSuperficie
+              key={campo.id}
+              campo={{ ...campo, casa: "reperfusao" }}
+              casaAtual="reperfusao"
+              bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
+              /**
+               * ⚠️ ⛔ A trava da Fase 5 pegou ⛔ este arquivo: literal
+               * `undefined` ⛔ é **campo cego**. ⛔ Aqui a decisão é `escolha`
+               * ⛔ e ⛔ nem usaria o número — ⛔ mas ⛔ o próximo campo deste bloco
+               * ⛔ pode ser numérico, ⛔ e ⛔ nasceria mudo.
+               */
+              numero={(() => {
+                const v = valorAtual(estado, campo.id)?.valor;
+                return typeof v === "number" ? v : undefined;
+              })()}
+              agora={agora}
+              detalheAberto={false}
+              onAlternarDetalhe={() => undefined}
+              onEscolher={onEscolher}
+              onMedir={() => undefined}
+              onHora={() => undefined}
+              onDesfazer={() => undefined}
+            />
+          ))
+        ) : null}
+      </View>
+
+      {/**
         * ⚠️⚠️ A AÇÃO DE TROMBÓLISE — ⛔ DECIDIR ⛔ NÃO É ADMINISTRAR.
         *
         * ⚠️ A cadeia é: recomendação → decisão do agente → **ação** → monitorização
@@ -395,6 +644,23 @@ export default function SuperficieF({
             ))}
           </View>
         ))}
+        {/**
+          * ── ⚠️⚠️ ⛔ ESTE GESTO É **DOCUMENTAÇÃO**, ⛔ E ⛔ NUNCA SE TRAVA ─────
+          *
+          * ⚠️ Regra do autor, 2026-09-07, ⛔ depois de eu ter travado ⛔ ele por
+          * engano:
+          *
+          * > *"o sistema pode bloquear uma decisão **prospectiva**, ⛔ mas
+          * >  ⛔ não pode bloquear o registro **retrospectivo** de um fato
+          * >  clínico já ocorrido."*
+          *
+          * ⛔ ⛔ Travá-lo fazia o app **recusar documentar** uma trombólise já
+          * dada — ⛔ e, ⛔ pior, ⛔ parava a monitorização da **Table 7**, que
+          * nasce ⛔ **deste** registro.
+          *
+          * ⚠️ ⛔ O portão governa a **decisão**, ⛔ acima. ⛔ Aqui ⛔ só se
+          * registra o que aconteceu.
+          */}
         <Pressable
           style={e.opcao}
           accessibilityRole="button"
@@ -403,6 +669,46 @@ export default function SuperficieF({
         >
           <Text style={e.opcaoTexto}>{tr("Registrar administração")}</Text>
         </Pressable>
+
+        {/**
+          * ⚠️⚠️ ⛔ E A DISCREPÂNCIA FICA **AUDITÁVEL**, ⛔ sem impedir ⛔ nada.
+          *
+          * ⛔ Registrar uma administração com o portão fechado ⛔ não é erro de
+          * uso: ⛔ o paciente pode ter chegado trombolisado, ⛔ ou o médico pode
+          * ter decidido com dado que o motor ⛔ ainda ⛔ não tem. ⚠️ O que o app
+          * deve é **dizer que houve divergência** — ⛔ e ⛔ nunca escondê-la
+          * ⛔ nem impedi-la.
+          */}
+        {administracoes > 0 && !portao.liberado ? (
+          <View style={e.discrepancia} testID="avc-f-discrepancia">
+            <Text style={e.discrepanciaTitulo}>
+              {SIMBOLO_DO_PORTAO[portao.estado]}{" "}
+              {tr("Administração registrada apesar de bloqueio identificado")}
+            </Text>
+            {/**
+              * ⚠️⚠️ ⛔ A DIVERGÊNCIA CARREGA **O QUE FOI DIVERGIDO** — ⛔ e ⛔ não
+              * ⛔ só que houve divergência.
+              *
+              * ⚠️ Exigência do autor (**item 4**): associar bloqueio ativo,
+              * horário, estado do portão ⛔ e motivos. ⛔ O **horário** ⛔ já vive
+              * na trilha do fato registrado (`ivt_inicio`), ⛔ e ⛔ repeti-lo
+              * aqui criaria uma segunda verdade sobre o mesmo instante (**I6**).
+              */}
+            <Text style={e.discrepanciaEstado} testID="avc-f-discrepancia-estado">
+              {tr(TITULO_DO_PORTAO[portao.estado])}
+            </Text>
+            {portao.motivos.map((m) => (
+              <Text
+                key={m.id}
+                style={e.discrepanciaMotivo}
+                testID={`avc-f-discrepancia-motivo-${m.id}`}
+              >
+                {tr(m.rotulo)}
+                {m.dado ? ` — ${tr(m.dado)}` : ""} · {m.fonte}
+              </Text>
+            ))}
+          </View>
+        ) : null}
       </View>
 
 
@@ -426,7 +732,13 @@ export default function SuperficieF({
         >
           <Text style={e.semRelogioTitulo}>{tr("Nenhum relógio iniciado")}</Text>
           <Text style={e.semRelogioTexto}>
-            {tr("Registrar os marcos de tempo em Entrada e estabilização.")}
+            {/**
+              * ⚠️ ⛔ Era *"em Entrada e estabilização"* — ⛔ e a cronologia mudou
+              * para a Avaliação AVC em **C7**. ⚠️ ⛔ O texto ⛔ agora ⛔ não
+              * codifica o nome da fase: ⛔ o toque leva ao campo, ⛔ e o nome
+              * ⛔ não pode mentir de novo na próxima migração.
+              */}
+            {tr("Registrar os marcos de tempo do atendimento.")}
           </Text>
         </Pressable>
       ) : null}
@@ -821,6 +1133,59 @@ function formatarRestante(min: number, tr: (pt: string) => string): string {
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    /** ⚠️ ⛔ O portão fala **ao lado** da ação — ⛔ e ⛔ nunca no lugar dela. */
+    portao: {
+      gap: ESPACO.xs,
+      padding: ESPACO.sm,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.surface,
+      marginBottom: ESPACO.sm,
+    },
+    portaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    portaoMotivo: { gap: 2, paddingTop: ESPACO.xs },
+    /** ⚠️ ⛔ A hierarquia é TEXTO, ⛔ e ⛔ não tamanho de fonte ⛔ nem cor. */
+    /** ⚠️ ⛔ A raia da EVT — ⛔ densa ⛔ e legível, ⛔ e ⛔ sem cara de decisão. */
+    evtNota: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1, marginBottom: ESPACO.xs },
+    evtLinha: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.xs, paddingVertical: 2 },
+    evtSimbolo: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary, width: 16 },
+    evtRotulo: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1, flexShrink: 1 },
+    evtEstado: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
+    portaoNivel: { ...PAPEL.legenda, color: tema.cores.textSecondary, textTransform: "uppercase", letterSpacing: 0.5 },
+    portaoRotulo: { ...PAPEL.textoPrincipal, color: tema.cores.text, flexShrink: 1 },
+    portaoDado: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "700" },
+    portaoFonte: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    portaoFalta: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
+    portaoIr: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
+      marginTop: ESPACO.xs,
+    },
+    portaoIrTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary, fontWeight: "700" },
+    /** ⚠️ ⛔ Bloqueado ⛔ e **legível** — ⛔ cinza sobre cinza esconde a razão. */
+    opcaoBloqueada: { borderStyle: "dashed", opacity: 0.6 },
+    /** ⚠️ ⛔ A divergência é **registro**, ⛔ e ⛔ não repreensão: ⛔ tom de aviso, ⛔ e ⛔ nada de vermelho de erro. */
+    discrepancia: {
+      gap: 2,
+      marginTop: ESPACO.xs,
+      padding: ESPACO.sm,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.surface,
+    },
+    discrepanciaTitulo: { ...PAPEL.textoPrincipal, color: tema.cores.warning, fontWeight: "700", flexShrink: 1 },
+    discrepanciaEstado: { ...PAPEL.legenda, color: tema.cores.text, flexShrink: 1 },
+    discrepanciaMotivo: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
+    opcaoTextoBloqueado: { color: tema.cores.textSecondary },
+
     raiz: { gap: ESPACO.md },
 
     /**

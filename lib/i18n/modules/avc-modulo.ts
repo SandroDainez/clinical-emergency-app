@@ -250,6 +250,52 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Sin esa información",
   "Registrar 0":
     "Registrar 0",
+  /* ── ⚠️ A DECISÃO ⛔ E A RAIA DA EVT — Fase 6, 2026-09-07 ─────────────── */
+  "Decisão sobre prosseguir": "Decisión sobre continuar",
+  "Decisão sobre prosseguir com a trombólise":
+    "Decisión sobre continuar con la trombólisis",
+  "Prosseguir com a trombólise": "Continuar con la trombólisis",
+  "Não prosseguir": "No continuar",
+  "Registra a decisão clínica de prosseguir. Não é a administração, e não substitui o registro do que foi feito.":
+    "Registra la decisión clínica de continuar. No es la administración, y no sustituye el registro de lo que se hizo.",
+  /** ⚠️ ⛔ Registro da divergência — ⛔ e ⛔ nunca repreensão. */
+  "Administração registrada apesar de bloqueio identificado":
+    "Administración registrada a pesar de un bloqueo identificado",
+  "Motivo principal": "Motivo principal",
+  "Também ativo": "También activo",
+  /** ⚠️⚠️ ⛔ Linguagem NEUTRA — ⛔ nem *elegível* ⛔ nem *⛔ não elegível* (**F-08**). */
+  "Avaliação endovascular": "Evaluación endovascular",
+  "Dados registrados relacionados à avaliação endovascular. Critérios de elegibilidade ainda não incorporados ao motor.":
+    "Datos registrados relacionados con la evaluación endovascular. Los criterios de elegibilidad aún no están incorporados al motor.",
+
+  /* ── ⚠️ O PORTÃO DA IVT — Fase 6, 2026-09-07 ─────────────────────────── */
+  "Contraindicação de segurança ativa":
+    "Contraindicación de seguridad activa",
+  "Há condição a corrigir antes":
+    "Hay una condición que corregir antes",
+  "Correção registrada — falta a reavaliação":
+    "Corrección registrada — falta la reevaluación",
+  "Faltam dados para concluir":
+    "Faltan datos para concluir",
+  "Falta registrar": "Falta registrar",
+  "Excluir hemorragia intracraniana na imagem":
+    "Excluir hemorragia intracraneal en la imagen",
+  /**
+   * ⚠️ ⛔ As duas frases da segurança ⛔ não corrigível ⛔ são diferentes de
+   * propósito: uma fala do **corte laboratorial** (F-10), a outra do
+   * **antecedente** (F-07). ⛔ Fundi-las apagaria de qual fonte veio o bloqueio.
+   */
+  "A fonte não descreve correção para este achado neste módulo":
+    "La fuente no describe corrección para este hallazgo en este módulo",
+  "A fonte não descreve correção para este achado":
+    "La fuente no describe corrección para este hallazgo",
+  "Glicemia corrigida, e o déficit ainda não foi reavaliado":
+    "Glucemia corregida, y el déficit aún no fue reevaluado",
+  "Um novo exame neurológico depois da correção":
+    "Un nuevo examen neurológico después de la corrección",
+  /** ⚠️ ⛔ Sem nome de fase: ⛔ a cronologia já mudou de casa uma vez (**C7**). */
+  "Registrar os marcos de tempo do atendimento.":
+    "Registrar los hitos de tiempo de la atención.",
   "Exame neurológico":
     "Examen neurológico",
   /** ⚠️ O bloco passou a se chamar assim em 2026-09-07 — **item 3** do autor. */
@@ -1625,8 +1671,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "A fonte não define este critério — ver slot F-31. Não é indisponibilidade de serviço.":
     "La fuente no define este criterio — ver slot F-31. No es indisponibilidad de servicio.",
   "Nenhum relógio iniciado": "Ningún reloj iniciado",
-  "Registrar os marcos de tempo em Entrada e estabilização.":
-    "Registrar los hitos de tiempo en Entrada y estabilización.",
   "Extensão da lesão em DWI, para a trombólise de início desconhecido.":
     "Extensión de la lesión en DWI, para la trombólisis de inicio desconocido.",
   "Ausência de alteração marcada no FLAIR — o segundo critério da mesma recomendação.":

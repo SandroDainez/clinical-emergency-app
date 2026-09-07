@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**83 de 97 travas com declaração completa.**
+**84 de 98 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -115,6 +115,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** ⛔ que os três degraus da investigação sigam separados, ⛔ e que ⛔ nenhum silêncio vire achado — · **solicitado ≠ realizado ≠ resultado**, ⛔ nos dois sentidos; · `sugerido` ⛔ e `em_andamento` são **derivados**, ⛔ e ⛔ não fatos; · TC ⛔ sem resultado ⛔ **não** é TC ⛔ sem hemorragia; · angio ⛔ sem resultado ⛔ **não** é ausência de oclusão; · INR ⛔ e plaquetas ⛔ não informados ⛔ **não** são normais; · os **quatro** analitos de **F-10** ficam no mesmo plano, ⛔ com consumidor declarado; · o **condicional** de F-10 sobrevive na tela — *"⛔ não atrasar… **⛔ se ⛔ não houver razão para suspeitar**"*.
 - **NÃO PROMETE:** que a imagem esteja clinicamente indicada neste paciente — ⛔ isso é do médico. ⛔ Aqui se mede **o que o app afirma a partir do que ⛔ ele tem**, ⛔ e ⛔ nada mais.
 - **UNIVERSO:** `avc/conteudo/{superficie-c,superficie-d,laboratorio,consumidores}.ts` × `avc/nucleo/{derivacoes-c,derivacoes-d,derivacoes-lab}.ts` × as telas da Investigação. ── ⚠️⚠️ ⛔ POR QUE ESTA CLASSE DE ERRO É A MAIS PERIGOSA DA FASE ────────── ⛔ O autor nomeou, 2026-09-07: *"exame solicitado virar exame realizado; exame realizado virar resultado conhecido; resultado ausente virar resultado negativo; campo vazio virar normalidade."* ⚠️ ⛔ Os quatro têm a **mesma forma**: ⛔ um degrau a menos de evidência ⛔ sendo lido como um degrau a mais. ⛔ E o preço é sempre o mesmo — ⛔ uma trombólise decidida sobre um exame que ⛔ ninguém viu.
+
+## `test:avc-fase6` → `scripts/prova-avc-fase6-portao.cjs`
+
+- **PROMETE:** ⛔ que a ação de administrar trombólise ⛔ só fique disponível quando ⛔ nenhuma das **duas** camadas estiver bloqueando — · segurança ⛔ **não corrigível** (imagem, cortes de F-10, itens de F-07); · bloqueio **corrigível** aberto (PA, glicemia); · correção **iniciada** ⛔ e ⛔ ainda ⛔ sem o fato que prova resolução; · **COR 3** que alcança o caso; ⛔ e que o **veredito ⛔ não seja deformado** para isso acontecer.
+- **NÃO PROMETE:** que a trombólise seja a conduta certa neste paciente — ⛔ isso é do médico. ⛔ Aqui se mede **⛔ o que o app deixa fazer**, ⛔ e ⛔ com base em quê.
+- **UNIVERSO:** `avc/nucleo/{portao-ivt,veredito-da-trombolise,derivacoes-d, derivacoes-e,derivacoes}.ts` × `avc/conteudo/consumidores.ts` × a tela de Reperfusão. ── ⚠️⚠️ ⛔ O FURO QUE ESTA TRAVA NASCEU PARA FECHAR ──────────────────────── ⛔ O mapeamento da Fase 6 mediu: com **INR 2,5**, o motor de segurança devolve `contraindicacao_nao_corrigivel` ⛔ e o veredito devolve `incompleta` com `contra: []`. ⚠️ ⛔ A contraindicação existia, estava classificada, ⛔ e ⛔ **ninguém a lia**. ⛔ ⛔ Um portão construído ⛔ só sobre o veredito deixaria esse paciente passar.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

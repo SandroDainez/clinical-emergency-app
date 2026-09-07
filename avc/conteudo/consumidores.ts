@@ -141,6 +141,57 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   plaquetas: ["derivacoes-d.ts", "derivacoes-lab.ts"],
   plaquetas_unidade: ["derivacoes-d.ts", "derivacoes-lab.ts"],
   inr: ["derivacoes-d.ts"],
+
+  /**
+   * ── ⚠️⚠️ OS INSUMOS DO **VEREDITO** ⛔ E DO **PORTÃO** — Fase 6, 2026-09-07 ─
+   *
+   * ⚠️ Pedido do autor (**item 13**): *"Declarar explicitamente os consumidores
+   * clínicos do portão ⛔ e do veredito. Incluir rotas: literais; indiretas;
+   * portadores; arrays/objetos de IDs."*
+   *
+   * ⚠️⚠️ ⛔ POR QUE **ESTES**, ⛔ E ⛔ NÃO A LISTA INTEIRA DO MÓDULO. ⛔ Declarar
+   * tudo esvaziaria a lista de significado — ⛔ está escrito no topo deste
+   * arquivo. ⚠️ O que entra aqui é o que alimenta **a decisão mais cara do
+   * módulo**: o que o app deixa ⛔ ou ⛔ não deixa administrar.
+   *
+   * ⛔ ⛔ As listas são **medidas**, ⛔ e ⛔ não desejadas: cada arquivo abaixo
+   * lê ⛔ mesmo o campo hoje. ⛔ A trava vira catraca — ⛔ o **próximo** leitor
+   * precisa se declarar antes.
+   */
+
+  /** ⚠️ As duas metades da aferição — ⛔ e ⛔ elas vêm sempre da mesma (**D-120**). */
+  pas: ["ameacas-imediatas.ts", "derivacoes.ts"],
+  pad: ["derivacoes.ts"],
+  /** ⚠️ Ameaça imediata (eixo D), corte de F-06 ⛔ e a série temporal da reavaliação. */
+  glicemia: ["ameacas-imediatas.ts", "derivacoes-d.ts", "derivacoes.ts"],
+
+  /**
+   * ⚠️⚠️ `deficit_focal` alimenta **quatro** leitores, ⛔ e o do portão é o mais
+   * novo: ⛔ ele é o fato que **fecha** o degrau glicêmico de F-06 —
+   * *"clinical deficits should be assessed **after correction of glucose**"*.
+   */
+  deficit_focal: ["derivacoes-b.ts", "derivacoes-e.ts", "derivacoes.ts", "portao-ivt.ts"],
+  nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts"],
+  nihss_informado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts"],
+
+  /** ⚠️ ⛔ A ação de correção — ⛔ e ⛔ ela ⛔ **nunca** resolve bloqueio sozinha. */
+  acao_tipo: ["derivacoes-e.ts"],
+  acao_estado: ["derivacoes-e.ts"],
+
+  /** ⚠️ O resultado da imagem — o único bloqueio de **classe** do módulo. */
+  estudo_resultado: ["derivacoes-c.ts"],
+  hipodensidade_clara: ["derivacoes-c.ts"],
+
+  /** ⚠️ Os antecedentes que a segurança interpreta (**F-07**, **F-30**). */
+  anticoagulante_em_uso: ["derivacoes-d.ts"],
+  antiagregante_em_uso: ["derivacoes-d.ts"],
+  doac_ultima_dose: ["derivacoes-d.ts"],
+  informacao_previa_cmb: ["derivacoes-d.ts"],
+
+  /** ⚠️ O julgamento do déficit — ⛔ e ⛔ ele é do médico, ⛔ não do motor. */
+  incapacitante_assumido: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes-f.ts"],
+  deficit_leve: ["apresentacao-f.ts", "derivacoes-f.ts"],
+  mrs_previo: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes-f.ts"],
   aptt: ["derivacoes-d.ts"],
   tp: ["derivacoes-d.ts"],
 

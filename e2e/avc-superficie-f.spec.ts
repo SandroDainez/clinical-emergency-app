@@ -21,6 +21,273 @@ async function abrirF(page: Page) {
 }
 
 test.describe("AVC · Reperfusão", () => {
+
+  /* ══ ⚠️⚠️ O PORTÃO DA IVT — GESTO REAL, Fase 6 ═══════════════════════════ */
+
+  /**
+   * ── ⚠️⚠️ ⛔ POR QUE ESTES TRÊS TESTES EXISTEM ─────────────────────────────
+   *
+   * ⚠️ Regra do autor, 2026-09-07: *"toda fase nova ⛔ ou refatorada precisa de
+   * pelo menos um teste que execute o **gesto real do médico**, ⛔ e ⛔ não
+   * apenas navegação ⛔ ou presença de elementos"*.
+   *
+   * ⛔ Ela nasceu de um defeito que passou verde por meses: o campo do pedido de
+   * imagem ⛔ não mostrava o horário registrado, ⛔ e o e2e que existia ⛔ só
+   * checava a navegação — ⛔ ele ⛔ **nunca gravou** o horário.
+   *
+   * ⚠️ ⛔ Aqui o gesto vai até o fim: bloqueia, corrige, ⛔ **ainda** bloqueia,
+   * reafere, ⛔ e ⛔ só então recalcula.
+   */
+  async function paAlta(page: Page) {
+    await page.getByTestId("avc-aba-estabilizacao").click();
+    await page.getByTestId("avc-num-caixa-pas").fill("198");
+    await page.getByTestId("avc-num-caixa-pad").fill("112");
+  }
+
+  test("⛔ INR 2,5 fecha o portão por SEGURANÇA, ⛔ e o veredito ⛔ não é deformado",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      /** ⚠️ O gesto: abrir coleta ⛔ e digitar o INR, como o médico faz. */
+      await page.getByTestId("avc-aba-imagem").click();
+      await page.getByTestId("avc-nova-coleta").click();
+      /** ⚠️ O INR usa o controle numérico com vírgula — ⛔ o mesmo da suíte do lab. */
+      await page.getByTestId("avc-numerico-inr").fill("2,5");
+      await page.getByTestId("avc-numerico-inr").blur();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-estado-bloqueado_seguranca")).toBeVisible();
+
+      /**
+       * ⚠️⚠️ ⛔ E O QUE FICA INDISPONÍVEL É A **DECISÃO**, ⛔ e ⛔ não o registro.
+       *
+       * ⛔ A primeira versão deste teste cobrava `avc-nova-trombolise`
+       * desabilitado — ⛔ e ⛔ ela codificava um **erro de arquitetura meu**:
+       * ⛔ aquele gesto é *"Trombólise administrada"*, ⛔ documentação de fato
+       * ocorrido, ⛔ e ⛔ travá-lo parava a monitorização da Table 7.
+       */
+      await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toHaveCount(0);
+
+      /** ⚠️ O motivo NOMEIA o INR — ⛔ botão cinza mudo é o que isto proíbe. */
+      await expect(page.getByTestId("avc-f-portao-dado-corte-inr")).toHaveText("2.5");
+
+      /**
+       * ⚠️⚠️ ⛔ E ⛔ NÃO foi preciso falsificar `nao_recomendada`: a tela ⛔ não
+       * escreve a frase do catálogo para um bloqueio de **segurança**.
+       */
+      await expect(page.getByTestId("avc-f-portao"))
+        .not.toContainText(/A diretriz não recomenda/i);
+    });
+
+  test("⛔ PA 198/112 · corrigir ⛔ não basta — o portão ⛔ só abre com nova aferição",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await paAlta(page);
+
+      /** ⚠️ 1 · bloqueado, ⛔ e com conserto. */
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-estado-bloqueado_corrigivel")).toBeVisible();
+      /** ⚠️ ⛔ A decisão prospectiva ⛔ não é oferecida — ⛔ o registro segue livre. */
+      await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toHaveCount(0);
+
+      /** ⚠️⚠️ 2 · TRATAMENTO REGISTRADO — ⛔ e ⛔ ele ⛔ **não** libera. */
+      await page.getByTestId("avc-aba-correcoes").click();
+      await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
+      await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-estado-aguardando_reavaliacao")).toBeVisible();
+      await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toHaveCount(0);
+
+      /** ⚠️ 3 · NOVA aferição adequada — ⛔ e ⛔ só agora o corrigível cai. */
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-nova-medida-pressao").click();
+      await page.getByTestId("avc-num-caixa-pas").fill("150");
+      await page.getByTestId("avc-num-caixa-pad").fill("90");
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-motivo-pressao_acima_da_meta")).toHaveCount(0);
+      /**
+       * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO VIROU *"liberado"* POR TABELA: ⛔ o veredito
+       * ⛔ ainda ⛔ não fechou critério, ⛔ e o portão passa a dizer **isso**.
+       */
+      await expect(page.getByTestId("avc-f-portao-estado-informacao_incompleta")).toBeVisible();
+    });
+
+  /**
+   * ── ⚠️⚠️ ⛔ O TESTE QUE IMPEDE O MEU ERRO DE VOLTAR ───────────────────────
+   *
+   * ⛔ Eu travei o registro da administração com o portão. ⚠️ ⛔ O autor:
+   *
+   * > *"o sistema pode bloquear uma decisão **prospectiva**, ⛔ mas ⛔ não pode
+   * >  bloquear o registro **retrospectivo** de um fato clínico já ocorrido.
+   * >  Caso contrário, você corrompe a verdade clínica ⛔ e ⛔ ainda quebra a
+   * >  monitorização subsequente."*
+   *
+   * ⚠️⚠️ ⛔ O CENÁRIO É REAL: paciente chega trombolisado de outro serviço, ⛔ com
+   * INR alterado ⛔ e ⛔ sem os dados que o motor pede. ⛔ O app **tem** de
+   * registrar — ⛔ e a **Table 7** (Superfície G) nasce ⛔ **desse** registro.
+   */
+  /**
+   * ── ⚠️⚠️ ⛔ O GESTO DA EVT — ⛔ dados ⛔ atravessam, ⛔ veredito ⛔ não nasce ──
+   *
+   * ⚠️ Exigência do autor (**item 14**): registrar oclusão, sítio ⛔ e ASPECTS
+   * na Investigação, ⛔ e conferir que **os mesmos dados** aparecem na raia
+   * endovascular da Reperfusão — ⛔ **sem** ⛔ nenhum veredito.
+   */
+  test("⛔ oclusão, sítio e ASPECTS atravessam para a raia da EVT ⛔ sem virar elegibilidade",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      /**
+       * ⚠️⚠️ ⛔ DOIS ESTUDOS, ⛔ e ⛔ isso é o fluxo REAL: cada modalidade responde
+       * o que ⛔ ela sabe responder. ⛔ O ASPECTS é da **TC sem contraste**; o
+       * sítio da oclusão, da **angio**. ⛔ Pedir os dois ao mesmo exame seria a
+       * tela inventando capacidade que a modalidade ⛔ não tem.
+       */
+      await page.getByTestId("avc-aba-imagem").click();
+      await page.getByTestId("avc-novo-estudo").click();
+      await page.getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste").click();
+      /**
+       * ⚠️ ⛔ O ASPECTS ⛔ só nasce depois do **resultado** — ⛔ achado de exame
+       * ⛔ sem laudo ⛔ não existe. ⛔ É a mesma escada da Fase 5: solicitado ≠
+       * realizado ≠ resultado.
+       */
+      await page.getByTestId("avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada").click();
+      /** ⚠️ O ASPECTS é `grandeza` — caixa digitável, ⛔ e ⛔ não o stepper do lab. */
+      await page.getByTestId("avc-num-caixa-aspects").fill("8");
+
+      await page.getByTestId("avc-novo-estudo").click();
+      await page.getByTestId("avc-opcao-estudo_modalidade-Angiotomografia").click();
+      /**
+       * ⚠️ O sítio é `recolhivel`: ⛔ onze opções ocupam 682 px num celular de
+       * 375, ⛔ e o que fica atrás do toque é a **lista**, ⛔ nunca a resposta.
+       */
+      await page.getByTestId("avc-abrir-sitio_oclusao").click();
+      await page.getByTestId("avc-opcao-sitio_oclusao-M1 da artéria cerebral média").click();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+
+      /** ⚠️ Os dados chegaram — ⛔ e ⛔ cada um com o seu estado. */
+      const dossie = page.getByTestId("avc-f-evt-dossie");
+      await expect(dossie).toBeVisible();
+      /**
+       * ⚠️⚠️ ⛔ AS PALAVRAS MUDARAM EM 2026-09-07, ⛔ e ⛔ por uma razão clínica:
+       * ⛔ o rótulo genérico do estado dizia *"Não avaliado"* ⛔ para um campo
+       * respondido como *"Não sei"* — ⛔ o colapso que **E-37** proíbe.
+       *
+       * ⚠️ ⛔ Agora cada balde tem a sua palavra: **Registrado** · **Incerto** ·
+       * **Não perguntado**.
+       */
+      await expect(page.getByTestId("avc-f-evt-estado-sitio_oclusao")).toHaveText(/Registrado/i);
+      await expect(page.getByTestId("avc-f-evt-estado-aspects")).toHaveText(/Registrado/i);
+      /** ⚠️⚠️ ⛔ E o que ⛔ ninguém respondeu ⛔ continua **⛔ não perguntado**. */
+      await expect(page.getByTestId("avc-f-evt-estado-efeito_de_massa"))
+        .toHaveText(/Não perguntado/i);
+
+      /**
+       * ⚠️⚠️ ⛔ E O TERCEIRO ESTADO, ⛔ QUE É O QUE QUASE SE PERDEU: responder
+       * *"Não sei"* ⛔ é **Incerto**, ⛔ e ⛔ nunca *"Não avaliado"*.
+       */
+      await page.getByTestId("avc-aba-imagem").click();
+      /**
+       * ⚠️ ⛔ Com **dois** estudos, o primeiro nasce recolhido — ⛔ e o efeito de
+       * massa é da TC, ⛔ não da angio. ⛔ Abrir ⛔ não é responder.
+       */
+      await page.getByTestId("avc-estudo-abrir-estudo_1").click();
+      await page.getByTestId("avc-opcao-efeito_de_massa-nao_sei").click();
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-evt-estado-efeito_de_massa"))
+        .toHaveText(/Incerto/i);
+
+      /**
+       * ⚠️⚠️ ⛔ E ⛔ NENHUM VEREDITO — ⛔ nem a palavra. ⛔ **F-08**:
+       * *"`EVT elegível = sim/não` ⛔ **NÃO** é fato armazenado"*.
+       */
+      await expect(dossie).not.toContainText(/eleg[íi]vel|candidat|recomendad|contraindicad/i);
+      await expect(dossie).toContainText(/ainda não incorporados ao motor/i);
+    });
+
+  test("⛔ chega JÁ trombolisado com bloqueio ativo: registra, monitoriza ⛔ e a divergência fica auditável",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      /** ⚠️ Uma contraindicação **⛔ não corrigível** ativa. */
+      await page.getByTestId("avc-aba-imagem").click();
+      await page.getByTestId("avc-nova-coleta").click();
+      await page.getByTestId("avc-numerico-inr").fill("2,5");
+      await page.getByTestId("avc-numerico-inr").blur();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      /** ⚠️ O portão está FECHADO — ⛔ e a decisão prospectiva ⛔ não é oferecida. */
+      await expect(page.getByTestId("avc-f-portao-estado-bloqueado_seguranca")).toBeVisible();
+      await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toHaveCount(0);
+
+      /** ⚠️⚠️ ⛔ E O REGISTRO DO QUE ACONTECEU SEGUE **LIVRE**. */
+      await expect(page.getByTestId("avc-nova-trombolise"))
+        .not.toHaveAttribute("aria-disabled", "true");
+      await page.getByTestId("avc-nova-trombolise").click();
+      await page.getByTestId("avc-opcao-ivt_estado-Iniciada").click();
+
+      /** ⚠️ A divergência aparece — ⛔ e ⛔ não impede ⛔ nada. */
+      await expect(page.getByTestId("avc-f-discrepancia"))
+        .toContainText(/Administração registrada apesar de bloqueio/i);
+
+      /**
+       * ⚠️⚠️ ⛔ E A MONITORIZAÇÃO NASCE NORMALMENTE — ⛔ era **isto** que o meu
+       * portão no lugar errado matava.
+       */
+      await page.getByTestId("avc-hora-ivt_inicio").click();
+      await page.getByTestId("avc-seletor-hora-m-menos").click();
+      await page.getByTestId("avc-seletor-hora-confirmar").click();
+
+      await page.getByTestId("avc-aba-destino").click();
+      await expect(page.getByTestId("avc-superficie-g-conteudo")).toBeVisible();
+      await expect(page.getByTestId("avc-superficie-g-conteudo"))
+        .toContainText(/monitoriza/i);
+    });
+
+  test("⛔ hipoglicemia · corrigir a glicemia ⛔ não reavalia o paciente",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-num-caixa-glicemia").fill("42");
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-estado-bloqueado_corrigivel")).toBeVisible();
+
+      /** ⚠️ Correção registrada. */
+      await page.getByTestId("avc-aba-correcoes").click();
+      await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
+      await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+
+      /** ⚠️⚠️ Glicemia normalizada — ⛔ e ⛔ **ainda** ⛔ não libera. */
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-num-caixa-glicemia").fill("110");
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-estado-aguardando_reavaliacao")).toBeVisible();
+      /**
+       * ⚠️ ⛔ F-06: *"clinical deficits **should be assessed after correction of
+       * glucose** to evaluate thrombolytic eligibility"*. ⛔ O motivo leva ao
+       * exame — ⛔ pendência ⛔ sem destino é muro (**E-26**).
+       */
+      await expect(page.getByTestId("avc-f-portao-ir-reavaliacao_neurologica")).toBeVisible();
+
+      /** ⚠️ O exame DEPOIS da correção — ⛔ e ⛔ é a **ordem** que fecha. */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await page.getByTestId("avc-opcao-deficit_focal-sim").click();
+
+      await page.getByTestId("avc-aba-reperfusao").click();
+      await expect(page.getByTestId("avc-f-portao-motivo-reavaliacao_neurologica")).toHaveCount(0);
+    });
+
   /**
    * ⚠️⚠️ A DECISÃO 2, MEDIDA NA TELA: as duas raias ⛔ NÃO somem ⛔ nem no
    * paciente vazio — é assim que a tela ⛔ não sugere sequência nem exclusão.
