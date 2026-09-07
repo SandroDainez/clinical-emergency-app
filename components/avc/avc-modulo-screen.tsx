@@ -147,6 +147,8 @@ import {
   abrirAtendimento,
   decorridoEmMinutos,
   definirRelogioClinico,
+  concluirEixo,
+  reabrirEixo,
   registrarFato,
   verSuperficie,
 } from "../../avc/nucleo/estado";
@@ -251,6 +253,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    */
   /** ⚠️ Lida pelo núcleo (I6) — ⛔ a tela ⛔ não interpreta fato por conta própria. */
   const imagemJaSolicitada = imagemSolicitadaEm(estado) !== undefined;
+
 
   const VITAIS = useMemo(() => {
     const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
@@ -671,6 +674,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * quando o estado muda, ⛔ e ⛔ é isso que as mantém verdadeiras.
    */
   const ameacas = useMemo(() => ameacasImediatas(estado), [estado]);
+  /**
+   * ⚠️⚠️ O PRÓXIMO EIXO **⛔ NÃO AVALIADO**, na ordem do ABCDE.
+   *
+   * ⛔ ⛔ Ele ⛔ não é o próximo *"alterado"* ⛔ nem o próximo *"pendente"*: é o
+   * próximo que **⛔ ninguém marcou como avaliado**. ⚠️ Progresso ⛔ e estado
+   * clínico são eixos diferentes (**item 1**), ⛔ e este segue o progresso.
+   */
+  const proximoEixo = ameacas.find((a) => !estado.eixosConcluidos.includes(a.id));
 
   const sinaisVitais: readonly SinalVital[] = VITAIS.map((v) => ({
     id: v.id,
@@ -924,14 +935,127 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * vazia (**E-37**).
                 */}
               <Text style={s.ameacaEstado} numberOfLines={2}>
-                {/** ⚠️ O achado tem precedência; ⛔ sem achado, o rótulo do estado. */}
+                {/**
+                  * ── ⚠️⚠️ CONCLUÍDO ⛔ E ⛔ SEM DADO — ajuste do autor, 2026-09-07
+                  *
+                  * ⛔ O card dizia **"⛔ Não avaliado"** ⛔ e **"Avaliação
+                  * concluída"** ⛔ uma linha abaixo da outra. ⚠️ ⛔ As duas são
+                  * verdadeiras — ⛔ eixos diferentes —, ⛔ mas juntas ⛔ se leem
+                  * como contradição.
+                  *
+                  * ⚠️⚠️ ⛔ E A FRASE ESCOLHIDA FALA DO **REGISTRO**, ⛔ e ⛔ NUNCA
+                  * DO PACIENTE. ⛔ *"Sem alterações"* ⛔ ou *"avaliado ⛔ sem
+                  * achados"* seriam **afirmação** — ⛔ exatamente o defeito da
+                  * PA 80/46 desenhada com ✓, ⛔ que o autor apontou em 09-06.
+                  * ⛔ *"⛔ Sem dados clínicos registrados"* diz ⛔ só o que houve:
+                  * ⛔ ninguém registrou ⛔ nada.
+                  *
+                  * ⚠️ ⛔ E ⛔ isto é **⛔ só apresentação**: o estado clínico
+                  * continua `ausente` no motor, ⛔ o símbolo continua `—`, ⛔ e
+                  * ⛔ nenhuma derivação percebe diferença.
+                  */}
                 {a.achado !== undefined
                   ? tr(a.achado)
-                  : tr(ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo)}
+                  : a.estado === "nao_avaliado" && estado.eixosConcluidos.includes(a.id)
+                    ? tr("Sem dados clínicos registrados")
+                    : tr(ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo)}
               </Text>
+              {/**
+                * ── ⚠️⚠️ O PROGRESSO, ⛔ E ⛔ ELE ⛔ NÃO DISPUTA COM O ESTADO ───
+                *
+                * ⚠️ Decisão do autor (**item 7**): *"O card deve mostrar
+                * prioritariamente o estado clínico mais relevante. O progresso
+                * pode aparecer em detalhe secundário."*
+                *
+                * ⚠️⚠️ ⛔ E ⛔ ELES ⛔ NÃO SE MISTURAM: *"avaliado"* ⛔ não quer
+                * dizer *"normal"*. ⛔ Um B **concluído** com hipoxemia ativa
+                * continua mostrando `!` — ⛔ a marca em cima é o **estado
+                * clínico**, ⛔ e ⛔ esta linha é ⛔ só o progresso.
+                */}
+              {/**
+                * ⚠️⚠️ ⛔ **⛔ SÓ QUANDO CONCLUÍDO** — ⛔ e ⛔ isso nasceu de olhar a
+                * tela renderizada.
+                *
+                * ⛔ A primeira versão mostrava *"Avaliado"* ⛔ ou *"A avaliar"*
+                * sempre, ⛔ e o resultado foi um card dizendo **"⛔ Não
+                * avaliado"** (estado clínico) ⛔ e **"Avaliado"** (progresso)
+                * ⛔ uma linha abaixo da outra. ⚠️ ⛔ Lidas juntas, ⛔ as duas
+                * parecem contradição — ⛔ e o médico ⛔ não tem por que saber
+                * que ⛔ elas falam de eixos diferentes.
+                *
+                * ⚠️ ⛔ Quando ⛔ ainda ⛔ não foi concluído, ⛔ o botão logo abaixo
+                * já diz *"Concluir"* — ⛔ e ⛔ repetir isso em prosa é ruído.
+                */}
+              {estado.eixosConcluidos.includes(a.id) ? (
+                <Text style={s.ameacaProgresso}>{tr("Avaliação concluída")}</Text>
+              ) : null}
             </Pressable>
           ))}
         </View>
+
+        {/**
+          * ── ⚠️⚠️ ⛔ CONCLUIR ⛔ E REABRIR — workflow, ⛔ e ⛔ NUNCA fato ──────
+          *
+          * ⚠️ Decisão do autor (**item 6**): *"'Concluir eixo' é estado de
+          * workflow/UI. ⛔ Não deve virar diagnóstico, ausência de alteração,
+          * fato clínico ⛔ ou derivação terapêutica."*
+          *
+          * ⛔ ⛔ Por isso ⛔ ele ⛔ **não** escreve na trilha: `concluirEixo`
+          * mexe ⛔ só em `eixosConcluidos`, ⛔ e há prova comparando `fatos`
+          * antes ⛔ e depois.
+          *
+          * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO BLOQUEIA ⛔ NADA (**item 3**): ⛔ qualquer eixo
+          * abre a qualquer momento. ⛔ O destaque do próximo é **orientação**,
+          * ⛔ e ⛔ não portão — *"se chegar um paciente com choque evidente,
+          * deve poder acessar C imediatamente"*.
+          */}
+        <View style={s.cockpitAcoes}>
+          {ameacas.map((a) => {
+            const concluido = estado.eixosConcluidos.includes(a.id);
+            return (
+              <Pressable
+                key={`concluir-${a.id}`}
+                style={({ pressed }) => [
+                  s.concluirEixo,
+                  concluido ? s.concluirEixoFeito : null,
+                  pressed ? s.pressionado : null,
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ checked: concluido }}
+                accessibilityLabel={`${tr(a.nome)}: ${tr(concluido ? "reabrir avaliação" : "marcar avaliação como concluída")}`}
+                testID={`avc-concluir-${a.id}`}
+                onPress={() =>
+                  setEstado((e) => (concluido ? reabrirEixo(e, a.id) : concluirEixo(e, a.id)))
+                }
+              >
+                <Text style={s.concluirEixoLetra}>{a.letra}</Text>
+                <Text style={s.concluirEixoTexto}>
+                  {tr(concluido ? "Reabrir" : "Concluir")}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/**
+          * ⚠️⚠️ O PRÓXIMO EIXO — ⛔ **destacado, ⛔ e ⛔ não aberto sozinho**.
+          *
+          * ⚠️ *"⛔ não abrir automaticamente ⛔ sem ação do usuário; ⛔ não
+          * impedir retorno ao eixo anterior"* (**item 4**).
+          */}
+        {proximoEixo === undefined ? null : (
+          <Pressable
+            style={({ pressed }) => [s.proximoEixo, pressed ? s.pressionado : null]}
+            accessibilityRole="button"
+            testID="avc-proximo-eixo"
+            onPress={() => irParaCampo(proximoEixo.campo)}
+          >
+            <Text style={s.proximoEixoTexto}>
+              {tr("Próximo")}: {proximoEixo.letra} · {tr(proximoEixo.nome)}
+            </Text>
+            <Text style={s.proximoEixoSeta}>{SETA}</Text>
+          </Pressable>
+        )}
 
         {/**
           * ── ⚠️⚠️ O QUE FAZER AGORA ────────────────────────────────────────
@@ -1834,6 +1958,49 @@ const criarEstilos = (tema: Tema) =>
      * ⚠️ O bloco de conduta — ⛔ ele se separa da grade por espaço ⛔ e por um
      * filete, ⛔ e ⛔ não por outro cartão dentro do cartão.
      */
+    /** ⚠️ O progresso é **secundário** — ⛔ ele ⛔ não compete com o estado clínico. */
+    ameacaProgresso: { ...PAPEL.micro, color: tema.cores.textSecondary },
+
+    /** ⚠️ A fileira de concluir — ⛔ uma por letra, ⛔ e ⛔ sem ordem imposta. */
+    cockpitAcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs, marginTop: ESPACO.sm },
+    concluirEixo: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.xs,
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+    /**
+     * ⚠️⚠️ ⛔ **CONCLUÍDO ⛔ NÃO É VERDE.** ⛔ Verde diria *"está bom"*, ⛔ e
+     * concluir ⛔ não afirma ⛔ nada sobre o paciente (**item 6**). ⛔ Ele é ⛔ só
+     * um botão em outro estado.
+     */
+    concluirEixoFeito: {
+      backgroundColor: tema.cores.surfaceElevated,
+      borderColor: tema.cores.border,
+    },
+    concluirEixoLetra: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    concluirEixoTexto: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+
+    proximoEixo: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      marginTop: ESPACO.xs,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      backgroundColor: tema.cores.primaryTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.primary,
+    },
+    proximoEixoTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.primary, flex: 1 },
+    proximoEixoSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
+
     condutas: { gap: ESPACO.xs, marginTop: ESPACO.sm },
     /** ⚠️ O mesmo retorno de toque do kit — ⛔ nunca reinventado por tela. */
     pressionado: { opacity: 0.65 },

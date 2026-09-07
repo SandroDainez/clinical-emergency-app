@@ -488,6 +488,37 @@ export type LeituraDaPressao = Leitura & {
   };
 };
 
+/**
+ * ── ⚠️⚠️ A PAM É **DERIVAÇÃO**, ⛔ E ⛔ NUNCA UM DADO DIGITADO ─────────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07 (**item 10**):
+ *
+ * > *"⛔ Nunca pedir ao usuário que informe PAM se PAS ⛔ e PAD estiverem
+ * >  disponíveis. Se faltar PAS ⛔ ou PAD, PAM fica indefinida."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELA VEM DA **MESMA AFERIÇÃO** — ⛔ herdando `pressaoArterial()`
+ * inteira, ⛔ e ⛔ não relendo `pas` ⛔ e `pad` por conta própria. ⛔ Duas
+ * leituras dariam a sistólica das 14h com a diastólica das 15h (**D-120**),
+ * ⛔ e a PAM de uma pressão que ⛔ nunca existiu.
+ *
+ * ── ⚠️ ⛔ POR QUE ⛔ NÃO HÁ FONTE `F-nn` AQUI ──────────────────────────────
+ *
+ * ⛔ ⛔ Ela ⛔ não é recomendação: é **aritmética** sobre dois fatos que já têm
+ * fonte. ⚠️ A fórmula — diastólica mais um terço da diferença — é definição de
+ * pressão arterial média, ⛔ e ⛔ não conduta clínica deste módulo. ⛔ Nenhum
+ * corte, ⛔ nenhuma meta ⛔ e ⛔ nenhum limiar nascem dela (**E-31**).
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO VIRA FATO: ⛔ persistir a PAM criaria um **segundo
+ * produtor** para algo que já se sabe de PAS ⛔ e PAD — ⛔ e ⛔ eles poderiam
+ * divergir. ⛔ Derivação ⛔ não se guarda.
+ */
+export function pressaoArterialMedia(estado: EstadoAvc): number | undefined {
+  const m = pressaoArterial(estado).medida;
+  if (m === undefined) return undefined;
+  /** ⚠️ Arredondada ao inteiro — ⛔ décimo de mmHg ⛔ não é medida de manguito. */
+  return Math.round(m.pad + (m.pas - m.pad) / 3);
+}
+
 export function pressaoArterial(estado: EstadoAvc): LeituraDaPressao {
   /**
    * ⚠️⚠️ AS DUAS METADES VÊM DA **MESMA AFERIÇÃO** (D-120), e ⛔ não do último

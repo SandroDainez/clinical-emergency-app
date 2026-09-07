@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**79 de 93 travas com declaração completa.**
+**81 de 95 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -91,6 +91,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que **⛔ nenhum campo de escopo `global`** seja lido por uma derivação do núcleo ⛔ sem estar declarado em `CONSUMIDORES`; · que **altura ⛔ não influencie ⛔ nada** no AVC — ⛔ nem derivação, ⛔ nem problema ativo, ⛔ nem pendência; · que **valor visual ⛔ não vire fato**: campo intocado devolve `undefined`, ⛔ e ⛔ o cálculo por peso ⛔ não consome fantasma.
 - **NÃO PROMETE:** que a leitura seja clinicamente correta — ⛔ isso é das provas de superfície. ⛔ Aqui se mede **quem lê o quê**, ⛔ e ⛔ não como.
 - **UNIVERSO:** `avc/conteudo/consumidores.ts` × `avc/nucleo/*.ts`. ── ⚠️⚠️ A REGRA, ⛔ E ⛔ POR QUE ⛔ NÃO É *"global ⛔ não se lê"* ──────────── ⛔ Minha primeira proposta era travar *"⛔ nenhuma derivação do AVC lê campo global"*. ⚠️ O autor apontou o furo em 2026-09-07: ⛔ isso proibiria **o peso de alimentar a dose do trombolítico**, ⛔ que é ⛔ exatamente para o que ⛔ ele existe. ⚠️ A regra dele: *"um campo só pode influenciar uma derivação clínica se essa dependência estiver explicitamente declarada ⛔ e testada"*. ⛔ Escopo diz **de quem é o dado**; ⛔ a lista diz **quem pode lê-lo**.
+
+## `test:avc-independencia` → `scripts/prova-avc-independencia-da-ui.cjs`
+
+- **PROMETE:** · que **⛔ nenhum arquivo do núcleo clínico** importe de `components/` ⛔ ou de `design-system/`; · que **⛔ nenhuma derivação** leia id de **grupo de tela**; · que as derivações da glicemia funcionem a partir de **fatos puros**, ⛔ sem ⛔ nenhuma tela carregada; · que a **série temporal** distinga medida inicial, correção ⛔ e reavaliação — ⛔ e ⛔ que mover a apresentação ⛔ não a toque.
+- **NÃO PROMETE:** que os cortes clínicos estejam certos (F-06, F-18 têm provas próprias), ⛔ nem que a tela esteja bonita.
+- **UNIVERSO:** `avc/nucleo/*.ts` × os fatos de `glicemia`. ── ⚠️⚠️ ⛔ O CASO **D** DO AUTOR (2026-09-07) ──────────────────────────── > *"Mover componente visual de D para outro ponto temporariamente em mutation >  test. Resultado: regras clínicas continuam funcionando, demonstrando que >  consumidores ⛔ não dependem da árvore de UI."* ⚠️⚠️ ⛔ E ⛔ ELA NASCEU ACHANDO UM DEFEITO MEU. ⛔ Ao escrevê-la descobri que **eu mesmo** havia acoplado o núcleo ao design system na Fase 1: `ameacas-imediatas.ts` ⛔ e `problemas-ativos.ts` importavam `EstadoClinico` de `design-system/`. ⛔ Mexer numa cor tocaria o grafo de quem decide conduta. ⛔ Eu ia escrever *"o núcleo ⛔ não depende de UI"* com a dependência dentro. ⚠️ A semântica dos estados foi para `lib/clinico/estados`; ⛔ o desenho ficou no design system. ⛔ Esta trava impede a volta.
+
+## `test:avc-cockpit` → `scripts/prova-avc-cockpit.cjs`
+
+- **PROMETE:** · que *"concluir eixo"* seja **workflow**, ⛔ e ⛔ nunca fato clínico; · que concluir **⛔ não** torne o eixo favorável; · que eixo alterado **continue alterado** depois de concluído; · que reabrir **⛔ não apague ⛔ nada**; · que ⛔ **nenhuma derivação** leia o progresso.
+- **NÃO PROMETE:** que a tela esteja bonita ⛔ nem que os cortes clínicos estejam certos — ⛔ isso é das provas de superfície ⛔ e do e2e.
+- **UNIVERSO:** `avc/nucleo/estado.ts` × `avc/nucleo/ameacas-imediatas.ts`. ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO EXISTE PARA IMPEDIR ───────────────────────── > *"⛔ Nunca usar 'concluído' como sinônimo de 'normal'."* — autor, 2026-09-07 ⛔ ⛔ É a tentação mais barata da tela: o médico marcou que avaliou, ⛔ então pinta-se ✓ ⛔ e a lista fica limpa. ⚠️ ⛔ É a **mesma família** do defeito que o autor apontou dois dias antes — ⛔ a PA 80/46 desenhada com ✓ —, ⛔ e ⛔ o dano é o mesmo: o app afirmando ausência de problema que ⛔ ninguém afirmou.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

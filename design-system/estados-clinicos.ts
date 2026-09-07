@@ -31,16 +31,20 @@
  * ⛔ ⛔ Não pinta ⛔ nada sozinho: **o símbolo ⛔ nunca sai sem o rótulo**, porque
  *    cor ⛔ e forma sozinhas ⛔ não são leitura (**E-15**).
  */
+import type { EstadoClinico } from "../lib/clinico/estados";
+import { ORDEM_DOS_ESTADOS } from "../lib/clinico/estados";
 import type { Tema } from "./theme";
 
-export type EstadoClinico =
-  | "favoravel"
-  | "corrigivel"
-  | "verificar"
-  | "impede"
-  | "andamento"
-  | "ausente"
-  | "medido";
+/**
+ * ⚠️⚠️ ⛔ O TIPO ⛔ E A ORDEM MORAM EM `lib/clinico/estados` — ⛔ e ⛔ não aqui.
+ *
+ * ⛔ Eu os havia posto neste arquivo, ⛔ e o núcleo clínico passou a importar do
+ * **design system**: mexer numa cor tocaria o grafo de quem decide conduta.
+ * ⚠️ Aqui fica ⛔ só **como ⛔ eles aparecem**; ⛔ o que ⛔ eles **são** é
+ * semântica, ⛔ e ⛔ é legível por qualquer módulo ⛔ sem tema ⛔ nenhum.
+ */
+export type { EstadoClinico };
+export { ORDEM_DOS_ESTADOS };
 
 export type DesenhoDoEstado = {
   /** ⚠️ ⛔ Uma marca de UM caractere — ⛔ e ⛔ ela ⛔ nunca depende de cor. */
@@ -84,16 +88,7 @@ export const ESTADOS: Readonly<Record<EstadoClinico, DesenhoDoEstado>> = {
   medido: { simbolo: "·", rotulo: "Medido", papel: "neutro" },
 };
 
-/** ⚠️ A ordem de urgência — ⛔ o que impede primeiro, o que ⛔ ninguém viu por último. */
-export const ORDEM_DOS_ESTADOS: readonly EstadoClinico[] = [
-  "impede",
-  "corrigivel",
-  "andamento",
-  "verificar",
-  "medido",
-  "favoravel",
-  "ausente",
-];
+
 
 /**
  * ⚠️ A cor do papel, no tema corrente. ⛔ Ela **acompanha** símbolo ⛔ e rótulo —

@@ -43,6 +43,7 @@ execFileSync(
     path.join(appDir, "avc", "conteudo", "campos.ts"),
     path.join(appDir, "avc", "conteudo", "consumidores.ts"),
     path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"),
+    path.join(appDir, "avc", "nucleo", "ameacas-imediatas.ts"),
   ],
   { cwd: appDir, stdio: "inherit" }
 );
@@ -52,6 +53,20 @@ const CONS = require(path.join(tmp, "avc", "conteudo", "consumidores.js"));
 const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
 const F = require(path.join(tmp, "avc", "nucleo", "derivacoes-f.js"));
+
+/** ⚠️ Procura o compilado ⛔ onde quer que o `rootDir` o tenha posto. */
+function achar(nome) {
+  const pilha = [tmp];
+  while (pilha.length > 0) {
+    const dir = pilha.pop();
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const alvo = path.join(dir, e.name);
+      if (e.isDirectory()) pilha.push(alvo);
+      else if (e.name === nome) return alvo;
+    }
+  }
+  throw new Error(`⛔ compilado ⛔ não encontrado: ${nome}`);
+}
 
 let ok = 0;
 let falhas = 0;
@@ -104,6 +119,97 @@ conf(
     violacoes.length === 0,
     `⛔ ${violacoes.join(" · ")} — declare o consumidor **antes** do código que lê`
   );
+}
+
+/* ══ ⚠️⚠️ CAMPO ⛔ SEM FONTE ⛔ NÃO ALIMENTA DERIVAÇÃO ⛔ NENHUMA ═════════ */
+{
+  /**
+   * ── ⚠️⚠️ **E-30 AO PÉ DA LETRA**, ⛔ e ⛔ a regra veio de um conflito real ──
+   *
+   * ⛔ Havia uma trava dizendo *"⛔ o AVC ⛔ não usa Glasgow — a fonte ⛔ não o
+   * menciona uma única vez"*. ⚠️ Em 2026-09-07 o autor pediu Glasgow, FC, FR ⛔ e
+   * temperatura na estabilização (**item 14**), ⛔ com a condição: *"⛔ sem
+   * consumidor inventado"*.
+   *
+   * ⚠️⚠️ ⛔ AS DUAS COISAS CONVIVEM, ⛔ e ⛔ esta conferência é o ponto exato onde:
+   * ⛔ **registrar** um sinal vital ⛔ não é **derivar conduta** dele. ⛔ O que a
+   * trava antiga protegia — ⛔ que ⛔ nenhuma recomendação nasça de um número
+   * ⛔ sem fonte transcrita — ⛔ continua inteiro, ⛔ e agora vale para **todos**
+   * os campos ⛔ sem slot, ⛔ e ⛔ não ⛔ só para Glasgow.
+   *
+   * ⚠️ ⛔ No dia em que uma fonte der corte para FC ⛔ ou temperatura, ⛔ o campo
+   * ganha `fonte: "F-nn"` ⛔ e o consumidor entra em `CONSUMIDORES` — ⛔ nessa
+   * ordem.
+   */
+  const semFonte = campos.filter(
+    (c) => !/^F-\d+$/.test(String(c.fonte)) && c.natureza === "administrativo"
+  );
+  conf(
+    "⚠️ há campos ⛔ sem slot de fonte a vigiar",
+    semFonte.length >= 4,
+    `⛔ ${semFonte.length} — trava sobre lista vazia fica verde ⛔ sem medir ⛔ nada`
+  );
+
+  const dirNucleo = path.join(appDir, "avc", "nucleo");
+  const arquivos = fs.readdirSync(dirNucleo).filter((f) => f.endsWith(".ts"));
+  /**
+   * ⚠️⚠️ ⛔ **DECLARADA**, ⛔ e ⛔ não proibida — ⛔ e a distinção veio de a trava
+   * ter pego o meu próprio código.
+   *
+   * ⛔ A primeira versão proibia **⛔ qualquer** leitura de campo ⛔ sem fonte.
+   * ⚠️ ⛔ Mas o eixo **E** precisa ler `temperatura` para **exibir** o valor —
+   * ⛔ e exibir ⛔ não é julgar. ⛔ A regra do autor ⛔ nunca foi *"⛔ não pode
+   * ler"*: é *"⛔ só influencia se estiver **declarado ⛔ e testado**"*.
+   *
+   * ⚠️ ⛔ E o que impede isso de virar escape: ⛔ a conferência abaixo, que
+   * exige que **⛔ nenhum campo ⛔ sem fonte produza estado de ameaça**.
+   */
+  const naoDeclarados = [];
+  for (const c of semFonte) {
+    const permitidos = CONS.CONSUMIDORES[c.id] ?? [];
+    for (const arq of arquivos) {
+      const fonte = lerFonte(path.join(dirNucleo, arq));
+      if (!fonte.includes(`"${c.id}"`)) continue;
+      if (permitidos.includes(arq)) continue;
+      naoDeclarados.push(`${c.id} lido em ${arq}`);
+    }
+  }
+  conf(
+    "⚠️⚠️ ⛔ NENHUM campo ⛔ SEM slot de fonte é lido ⛔ sem DECLARAÇÃO (**E-30**)",
+    naoDeclarados.length === 0,
+    `⛔ ${naoDeclarados.join(" · ")} — declare o consumidor **antes** do código que lê`
+  );
+
+  conf(
+    "⚠️ ⛔ e todo campo ⛔ sem fonte declara os seus consumidores (ainda que ⛔ nenhum)",
+    semFonte.every((c) => Array.isArray(CONS.CONSUMIDORES[c.id])),
+    `⛔ ${semFonte.filter((c) => !Array.isArray(CONS.CONSUMIDORES[c.id])).map((c) => c.id).join(" · ")}`
+  );
+
+  /**
+   * ── ⚠️⚠️ ⛔ E ⛔ NENHUM DELES ACENDE ─────────────────────────────────────
+   *
+   * ⛔ Esta é a conferência que impede *"declarar"* de virar permissão para
+   * derivar conduta. ⚠️ Um campo ⛔ sem corte transcrito pode ser **exibido**;
+   * ⛔ ele ⛔ **não** pode produzir ameaça — ⛔ isso seria limiar inventado
+   * (**E-31**).
+   */
+  {
+    const AM = require(achar("ameacas-imediatas.js"));
+    const relogio = R.relogioControlado(1_000_000);
+    let e = E.abrirAtendimento(relogio);
+    /** ⚠️ Valores que num módulo COM fonte acenderiam — ⛔ aqui ⛔ não podem. */
+    e = E.registrarFato(e, { campo: "temperatura", valor: 39 }, relogio);
+    e = E.registrarFato(e, { campo: "fc", valor: 180 }, relogio);
+    e = E.registrarFato(e, { campo: "fr", valor: 38 }, relogio);
+    e = E.registrarFato(e, { campo: "glasgow", valor: 6 }, relogio);
+    const acesos = AM.ameacasImediatas(e).filter((x) => x.estado === "ameaca");
+    conf(
+      "⚠️⚠️ ⛔ NENHUM campo ⛔ sem fonte produz **ameaça**, ⛔ nem no extremo",
+      acesos.length === 0,
+      `⛔ ${acesos.map((x) => `${x.letra}=${x.achado}`).join(" · ")} — temperatura 39, FC 180, FR 38 e Glasgow 6 ⛔ sem fonte ⛔ não podem acender`
+    );
+  }
 }
 
 /* ══ ⚠️⚠️ ALTURA ⛔ NÃO INFLUENCIA ⛔ NADA ═════════════════════════════ */

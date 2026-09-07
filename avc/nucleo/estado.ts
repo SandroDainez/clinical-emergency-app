@@ -23,6 +23,28 @@ export type EstadoAvc = {
   readonly relogiosClinicos: Readonly<Partial<Record<RelogioClinicoId, Instante>>>;
   /** Conveniência de interface, ⛔ NUNCA verdade clínica (§5.9-4). */
   readonly superficieVista: SuperficieId;
+  /**
+   * ── ⚠️⚠️ ⛔ QUAIS EIXOS DO ABCDE O MÉDICO MARCOU COMO AVALIADOS ──────────
+   *
+   * ⚠️⚠️ ⛔ **PROGRESSO DE AVALIAÇÃO, ⛔ E ⛔ NUNCA ESTADO CLÍNICO.** ⛔ Decisão
+   * do autor, 2026-09-07 (**item 6**): *"'Concluir eixo' é estado de
+   * workflow/UI. ⛔ Não deve virar diagnóstico, ausência de alteração, fato
+   * clínico ⛔ ou derivação terapêutica."*
+   *
+   * ⚠️ ⛔ Por isso ⛔ ele mora **aqui**, ⛔ e ⛔ **⛔ não em `fatos`**: a trilha é
+   * a memória do que aconteceu **com o paciente**, ⛔ e *"eu terminei de olhar
+   * o B"* ⛔ não aconteceu com o paciente. ⛔ Escrito lá, ⛔ ele apareceria na
+   * auditoria clínica como se fosse achado.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ POR QUE ⛔ NÃO É `useState` DA TELA: ⛔ o médico troca de fase o
+   * tempo todo, ⛔ e voltar à estabilização com todo o progresso zerado faria
+   * ⛔ ele reavaliar o que já tinha avaliado — ⛔ na emergência, isso é tempo
+   * que ⛔ não existe.
+   *
+   * ⛔ ⛔ **⛔ NENHUMA derivação pode lê-lo.** ⚠️ `prova-avc-cockpit` reprova
+   * quem tentar: *"concluído"* ⛔ não é insumo de conduta ⛔ nenhuma.
+   */
+  readonly eixosConcluidos: readonly string[];
 };
 
 export function abrirAtendimento(relogio: Relogio): EstadoAvc {
@@ -34,6 +56,8 @@ export function abrirAtendimento(relogio: Relogio): EstadoAvc {
     // ⛔ Ele NÃO substitui nenhum relógio clínico (E-21).
     relogiosClinicos: { t0_operacional: agora },
     superficieVista: "estabilizacao",
+    /** ⚠️ ⛔ Ninguém avaliou ⛔ nada ainda — ⛔ e vazio ⛔ não é "tudo normal". */
+    eixosConcluidos: [],
   };
 }
 
@@ -226,6 +250,32 @@ export function decorridoEmMinutos(
 }
 
 /** Troca a superfície vista. ⛔ Não altera nada clínico (E-20). */
+/**
+ * ⚠️⚠️ MARCA UM EIXO COMO AVALIADO — ⛔ e ⛔ **⛔ nenhum fato é escrito**.
+ *
+ * ⚠️ ⛔ Comparar `fatos` antes ⛔ e depois desta função tem de dar **idêntico**:
+ * ⛔ é ⛔ isso que separa progresso de achado, ⛔ e há prova nomeada medindo.
+ *
+ * ⚠️ Idempotente: concluir duas vezes ⛔ não duplica ⛔ nada.
+ */
+export function concluirEixo(estado: EstadoAvc, eixo: string): EstadoAvc {
+  if (estado.eixosConcluidos.includes(eixo)) return estado;
+  return { ...estado, eixosConcluidos: [...estado.eixosConcluidos, eixo] };
+}
+
+/**
+ * ⚠️⚠️ REABRE UM EIXO — ⛔ e ⛔ **⛔ não apaga ⛔ nada**.
+ *
+ * ⚠️ Decisão do autor (**item 5**): *"Ao reabrir: preservar fatos existentes;
+ * permitir nova medida; ⛔ não apagar conclusão anterior."*
+ *
+ * ⛔ ⛔ O que sai é ⛔ **só** a marca de progresso. ⚠️ Os fatos ⛔ continuam
+ * inteiros — ⛔ a trilha é append-only (§3.1), ⛔ e ⛔ nada aqui a toca.
+ */
+export function reabrirEixo(estado: EstadoAvc, eixo: string): EstadoAvc {
+  return { ...estado, eixosConcluidos: estado.eixosConcluidos.filter((x) => x !== eixo) };
+}
+
 export function verSuperficie(estado: EstadoAvc, superficie: SuperficieId): EstadoAvc {
   return { ...estado, superficieVista: superficie };
 }

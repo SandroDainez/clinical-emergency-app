@@ -178,6 +178,10 @@ const campos = [
      */
     "Insulina",
     "Anticonvulsivantes",
+    /** ⚠️ Monitorização ⛔ e acessos — o espanhol escreve igual. */
+    "Temperatura",
+    "Periférico",
+    "Central",
     "Leve",                      // "leve" tem a mesma forma nos dois idiomas
     "Incapacitante",             // idem
     "Bilateral",                 // idem

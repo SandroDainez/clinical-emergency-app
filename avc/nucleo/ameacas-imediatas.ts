@@ -30,7 +30,7 @@
  * ⛔ **⛔ Não afirma por ausência (E-23).** ⚠️ Eixo ⛔ não avaliado é
  * `nao_avaliado` — ⛔ e ⛔ nunca *"sem ameaça"*.
  */
-import type { EstadoClinico } from "../../design-system/estados-clinicos";
+import type { EstadoClinico } from "../../lib/clinico/estados";
 import type { EstadoAvc } from "./estado";
 import { numero } from "./leitura";
 import { oxigenio, pressaoArterial, suporteDeViaAerea } from "./derivacoes";
@@ -247,7 +247,16 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
     return {
       id: "pressao",
       letra: "C",
-      nome: "Pressão arterial",
+      /**
+       * ⚠️⚠️ **CIRCULAÇÃO**, ⛔ e ⛔ não *"Pressão arterial"* — decisão do autor
+       * (**item 10**): *"O C ⛔ não deve continuar representando apenas pressão
+       * arterial."*
+       *
+       * ⛔ O **achado** continua sendo o da PA, porque ⛔ é ⛔ ela que tem corte
+       * transcrito (F-04). ⚠️ O que muda é o **nome do eixo**: FC ⛔ e perfusão
+       * moram nele, ⛔ e chamá-lo de *"pressão"* diria que ⛔ ele ⛔ só vê pressão.
+       */
+      nome: "Circulação",
       /**
        * ⚠️⚠️ ⛔ **⛔ NUNCA `sem_ameaca`** — ⛔ e ⛔ é aqui que estava o defeito.
        *
@@ -271,6 +280,19 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
     };
   })();
 
+  /**
+   * ── ⚠️⚠️ ⛔ **D É NEUROLÓGICO**, ⛔ E A GLICEMIA É O QUE ACENDE DENTRO DELE ─
+   *
+   * ⚠️ Decisão **C1** do autor: o ABCDE clássico. ⛔ O eixo **D** deixou de se
+   * chamar *"Glicemia"* ⛔ e passou a ser *"Neurológico"* — ⛔ e ⛔ a glicemia
+   * ⛔ continua sendo **o mesmo fato**, com os mesmos cortes ⛔ e os mesmos
+   * consumidores.
+   *
+   * ⚠️⚠️ ⛔ O QUE MUDA É **⛔ SÓ O NOME DO EIXO ⛔ E O QUE ELE ABRIGA**: ⛔ o
+   * `id` continua `glicemia` porque ⛔ é ⛔ ela que tem corte transcrito, ⛔ e é
+   * ⛔ ela que o toque leva a resolver. ⛔ Glasgow ⛔ não entra no julgamento —
+   * ⛔ **⛔ nenhuma fonte deste módulo lhe dá corte** (**E-31**).
+   */
   const glicemia = ((): AmeacaImediata => {
     /**
      * ⚠️⚠️ ⛔ ELE ⛔ NÃO PERGUNTA MAIS À LISTA DE **BLOQUEIOS** — ⛔ e essa troca
@@ -293,7 +315,7 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
     return {
       id: "glicemia",
       letra: "D",
-      nome: "Glicemia",
+      nome: "Neurológico",
       estado:
         corte === undefined ? "nao_avaliado" : corte.pedeConduta ? "ameaca" : "medido",
       /** ⚠️ A natureza é da fonte — ⛔ a tela ⛔ não batiza faixa glicêmica. */
@@ -306,7 +328,35 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
     };
   })();
 
-  return [viaAerea, respiracao, pressao, glicemia];
+  /**
+   * ── ⚠️⚠️ **E · EXPOSIÇÃO** — ⛔ e ⛔ ele ⛔ NUNCA acende ─────────────────────
+   *
+   * ⚠️ Decisão do autor (**item 12**): *"Criar E de forma mínima ⛔ e útil.
+   * ⛔ Não preencher com conteúdo deduzido."*
+   *
+   * ⛔ ⛔ **⛔ Nenhuma fonte transcrita do AVC dá corte para temperatura.**
+   * ⚠️ Então ⛔ ele ⛔ só sabe dizer duas coisas: **medido** ⛔ ou **⛔ não
+   * avaliado** — ⛔ e ⛔ isso ⛔ não é um eixo fraco: ⛔ é a recusa a inventar
+   * limiar. ⛔ Um `E` que acendesse por 38,2 °C estaria emitindo conduta que
+   * ⛔ nenhuma fonte deste módulo escreve (**E-31**).
+   *
+   * ⛔ ⛔ Quando houver fonte — ⛔ e há, em sepse ⛔ e em pós-parada —, ⛔ ela
+   * entra com slot próprio ⛔ e o consumidor declarado.
+   */
+  const exposicao = ((): AmeacaImediata => {
+    const t = numero(estado, "temperatura");
+    return {
+      id: "exposicao",
+      letra: "E",
+      nome: "Exposição",
+      estado: t === undefined ? "nao_avaliado" : "medido",
+      campo: "temperatura",
+      valor: t === undefined ? undefined : String(t),
+      unidade: "°C",
+    };
+  })();
+
+  return [viaAerea, respiracao, pressao, glicemia, exposicao];
 }
 
 /**

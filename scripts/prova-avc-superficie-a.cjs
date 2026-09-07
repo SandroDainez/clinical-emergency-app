@@ -259,9 +259,26 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     bloqueantes.filter((id) => MARCAS.some((m) => id.includes(m))).length === 0,
     "peso e glicemia estão entre as doze marcas — não podem travar a terapia");
 
-  confere("todo campo declara a sua fonte",
-    C.TODOS_OS_CAMPOS_A.every((c) => typeof c.fonte === "string" && /^F-\d+$/.test(c.fonte)),
-    "E-30: a menor unidade auditável é a afirmação, e ela precisa de endereço");
+  /**
+   * ── ⚠️⚠️ **E-30**, ⛔ E A EXCEÇÃO QUE ⛔ NÃO É AFROUXAMENTO ────────────────
+   *
+   * ⛔ A regra: ⛔ toda **afirmação clínica** precisa de endereço de fonte.
+   * ⚠️ Os sinais vitais que entraram em 2026-09-07 — FC, FR, temperatura,
+   * Glasgow, monitorização, acessos — ⛔ **⛔ não afirmam ⛔ nada**: ⛔ eles são
+   * registrados ⛔ e exibidos, ⛔ e ⛔ **⛔ nenhuma fonte do AVC lhes dá corte**.
+   *
+   * ⚠️⚠️ ⛔ O QUE OS MANTÉM HONESTOS ⛔ NÃO É ESTA LINHA — ⛔ é
+   * `prova-avc-consumidores`, que reprova **qualquer** derivação lendo campo
+   * ⛔ sem slot. ⛔ Aqui basta exigir que ⛔ eles **declarem a natureza**:
+   * ⛔ inventar `F-04` para um deles seria pior que ⛔ não ter fonte ⛔ nenhuma.
+   */
+  const semSlot = C.TODOS_OS_CAMPOS_A.filter((c) => !/^F-\d+$/.test(String(c.fonte)));
+  confere("todo campo declara a sua fonte, ⛔ ou declara que ⛔ NÃO é afirmação clínica",
+    semSlot.every((c) => c.natureza === "administrativo"),
+    `E-30: a menor unidade auditável é a afirmação, e ela precisa de endereço — ${semSlot.filter((c) => c.natureza !== "administrativo").map((c) => c.id).join(", ")}`);
+  confere("⛔ e ⛔ NENHUM campo ⛔ sem fonte bloqueia terapia",
+    semSlot.every((c) => c.bloqueiaTerapia === false),
+    "⛔ campo que ⛔ não tem fonte ⛔ não pode travar ⛔ nada — seria bloqueio inventado");
 
   confere("nenhuma grandeza clínica usa caixa de texto",
     C.TODOS_OS_CAMPOS_A.every((c) => ["grandeza", "escolha", "hora", "multipla"].includes(c.tipo)),
@@ -831,10 +848,29 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     !origem.opcoes.some((o) => /balan/i.test(o)),
     "⛔ ninguém pesa em balança um AVC agudo na porta do PS — opção que ⛔ não acontece ocupa alvo e sugere caminho inexistente");
 
-  confere("⛔ o AVC ⛔ não usa Glasgow",
-    !JSON.stringify(C.TODOS_OS_CAMPOS_A).match(/glasgow/i)
-    || /não usa Glasgow/i.test(JSON.stringify(C.TODOS_OS_CAMPOS_A)),
-    "a fonte ⛔ não menciona Glasgow uma única vez, e o nível de consciência já entra pelo NIHSS (itens 1a-1c)");
+  /**
+   * ── ⚠️⚠️ ⛔ GLASGOW ENTROU — ⛔ E A REGRA QUE ISTO PROTEGIA CONTINUA ────────
+   *
+   * ⛔ Esta conferência dizia *"⛔ o AVC ⛔ não usa Glasgow"*, porque **a fonte
+   * ⛔ não o menciona uma única vez**. ⚠️ Em 2026-09-07 o autor pediu Glasgow na
+   * estabilização (**item 14**), ⛔ com a condição escrita: *"⛔ sem consumidor
+   * inventado"*.
+   *
+   * ⚠️⚠️ ⛔ AS DUAS COISAS CONVIVEM, ⛔ e a distinção é a que importa:
+   * **registrar** um número ⛔ não é **derivar conduta** dele. ⛔ O que a trava
+   * protegia — ⛔ que ⛔ nenhuma recomendação nasça de um valor ⛔ sem verbatim —
+   * ⛔ ⛔ não foi afrouxado: ⛔ ele virou **regra geral** em
+   * `prova-avc-consumidores`, ⛔ que reprova qualquer derivação lendo **qualquer**
+   * campo ⛔ sem slot de fonte.
+   *
+   * ⚠️ Aqui fica ⛔ só o que é de A: ⛔ se Glasgow existe, ⛔ ele ⛔ **não** tem
+   * fonte ⛔ e ⛔ **não** bloqueia terapia.
+   */
+  const glasgow = C.TODOS_OS_CAMPOS_A.find((c) => c.id === "glasgow");
+  confere("⛔ se Glasgow existe, ⛔ ele ⛔ NÃO tem fonte ⛔ e ⛔ NÃO bloqueia",
+    glasgow === undefined
+    || (!/^F-\d+$/.test(String(glasgow.fonte)) && glasgow.bloqueiaTerapia === false),
+    "a fonte ⛔ não menciona Glasgow uma única vez — ⛔ ele é registro, ⛔ e ⛔ nunca critério");
 }
 
 const K = require(path.join(tmp, "conteudo", "campo.js"));
@@ -846,13 +882,30 @@ const K = require(path.join(tmp, "conteudo", "campo.js"));
    * ⚠️⚠️ A LETRA APARECE **SÓ ONDE A CORRESPONDÊNCIA É REAL** — e ⛔ nenhum bloco
    * foi inventado para "completar a mnemônica".
    */
-  confere("os quatro blocos com correspondência real carregam a letra",
-    ["A · Via aérea", "B · Respiração e oxigenação", "C · Circulação e pressão arterial", "D · Glicemia"]
+  /**
+   * ── ⚠️⚠️ ⛔ O ABCDE CLÁSSICO — decisão **C1**, 2026-09-06 ─────────────────
+   *
+   * ⛔ Esta conferência exigia **quatro** blocos, ⛔ e proibia **E · Exposição**
+   * — ⛔ *"bloco vazio fingiria cobertura"*. ⚠️ O autor decidiu o contrário, ⛔ e
+   * a razão é do mundo, ⛔ e ⛔ não do app: **⛔ a letra ⛔ não pode significar uma
+   * coisa aqui ⛔ e outra no resto da medicina**. ⛔ `D` era a glicemia; ⛔ agora
+   * é o neurológico, ⛔ com a glicemia dentro como dado metabólico.
+   *
+   * ⚠️⚠️ ⛔ E **E ⛔ NÃO NASCEU VAZIO**: ⛔ ele carrega a temperatura, ⛔ que é
+   * fato registrável. ⛔ A regra contra fingir cobertura continua valendo —
+   * ⛔ e ⛔ é a conferência abaixo que a executa.
+   */
+  confere("os CINCO blocos do ABCDE clássico carregam a letra",
+    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico", "E · Exposição"]
       .every((t) => titulos.includes(t)),
     `⛔ moldura pela metade, sem dizer, seria pior que ⛔ nenhuma — ${titulos.join(" | ")}`);
-  confere("⛔ e ⛔ NÃO existe bloco 'E · Exposição' inventado",
-    titulos.every((t) => !/^E · /.test(t)),
+  confere("⛔ e ⛔ NENHUM bloco do ABCDE está VAZIO",
+    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico", "E · Exposição"]
+      .every((t) => K.camposDoGrupo(C.GRUPOS_A.find((g) => g.titulo === t)).length > 0),
     "*\"⛔ não force todo campo a caber em ABCDE\"* — bloco vazio fingiria cobertura");
+  confere("⛔ e o antigo eixo 'D · Glicemia' DESAPARECEU",
+    !titulos.includes("D · Glicemia"),
+    "⛔ item 17 do aceite: ⛔ o eixo antigo ⛔ não pode coexistir com o novo");
   confere("relógios e crise ficam FORA da mnemônica",
     titulos.includes("Relógios") && titulos.includes("Crise no início"),
     "⛔ nem tudo em A é ameaça imediata, e forçar a mnemônica esconderia isso");
@@ -861,9 +914,26 @@ const K = require(path.join(tmp, "conteudo", "campo.js"));
   const ids = (g) => K.camposDoGrupo(C.GRUPOS_A.find((x) => x.titulo === g)).map((c) => c.id);
   confere("via aérea e respiração ⛔ NÃO são o mesmo bloco",
     ids("A · Via aérea").includes("disfuncao_bulbar")
-    && ids("B · Respiração e oxigenação").includes("spo2")
+    && ids("B · Respiração").includes("spo2")
     && !ids("A · Via aérea").includes("spo2"),
     "via aérea é se ela está protegida; respiração é se a troca acontece");
+
+  /**
+   * ⚠️⚠️ ⛔ A GLICEMIA MUDOU DE **CARD**, ⛔ e ⛔ não de fato — item 5 do autor.
+   *
+   * ⛔ Mesmo `id`, mesma casa, mesma trilha. ⚠️ ⛔ E ⛔ ela ⛔ não pode aparecer
+   * em **dois** blocos: ⛔ isso seria um segundo produtor.
+   */
+  const blocosComGlicemia = C.GRUPOS_A
+    .filter((g) => K.camposDoGrupo(g).some((c) => c.id === "glicemia"))
+    .map((g) => g.titulo);
+  confere("⚠️⚠️ a glicemia é desenhada em **D · Neurológico**, ⛔ e em ⛔ NENHUM outro",
+    blocosComGlicemia.length === 1 && blocosComGlicemia[0] === "D · Neurológico",
+    `⛔ ${blocosComGlicemia.join(" | ") || "⛔ nenhum"} — dois blocos seriam dois produtores`);
+
+  confere("⚠️ ⛔ e a SpO₂ continua com um produtor só",
+    C.GRUPOS_A.filter((g) => K.camposDoGrupo(g).some((c) => c.id === "spo2")).length === 1,
+    "*\"⛔ não duplicar SpO₂ em outro produtor\"* — item 9 do autor");
   confere("⛔ e ⛔ NENHUM campo nasceu, sumiu ou trocou de superfície",
     C.TODOS_OS_CAMPOS_A.length >= 12
     && ["consciencia_rebaixada", "disfuncao_bulbar", "hipoxia", "spo2", "pas", "pad", "glicemia"]

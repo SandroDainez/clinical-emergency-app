@@ -667,7 +667,29 @@ test.describe("Superfície A — UX clínica", () => {
       "a prioridade precisa vir antes do primeiro bloco clínico")
       .toBeLessThan(tela.toUpperCase().indexOf("RELÓGIOS"));
 
-    const ordem = ["RELÓGIOS", "A · VIA AÉREA", "B · RESPIRAÇÃO E OXIGENAÇÃO", "C · CIRCULAÇÃO E PRESSÃO ARTERIAL", "D · GLICEMIA", "PESO", "CRISE NO INÍCIO", "FALTA RESPONDER"];
+    /**
+     * ⚠️⚠️ ⛔ O **ABCDE CLÁSSICO** — decisão **C1**, 2026-09-06.
+     *
+     * ⛔ Eram quatro blocos, ⛔ e `D` era a glicemia. ⚠️ Agora são cinco, ⛔ `D`
+     * é o neurológico ⛔ com a glicemia dentro, ⛔ e `E · Exposição` existe.
+     * ⛔ **Monitorização e acessos** entrou antes de `A`, porque instalar
+     * monitor ⛔ e pegar acesso precede avaliar.
+     *
+     * ⚠️ ⛔ O contrato deste teste ⛔ não mudou: **a ordem visual é a ordem
+     * clínica**, ⛔ e a prioridade vem antes de tudo.
+     */
+    const ordem = [
+      "RELÓGIOS",
+      "MONITORIZAÇÃO E ACESSOS",
+      "A · VIA AÉREA",
+      "B · RESPIRAÇÃO",
+      "C · CIRCULAÇÃO",
+      "D · NEUROLÓGICO",
+      "E · EXPOSIÇÃO",
+      "PESO",
+      "CRISE NO INÍCIO",
+      "FALTA RESPONDER",
+    ];
     const posicoes = ordem.map((t) => tela.toUpperCase().indexOf(t));
     expect(posicoes.every((p) => p >= 0), `faltou bloco: ${ordem.join(" | ")}`).toBe(true);
     expect(posicoes, "prioridade visual é prioridade clínica")

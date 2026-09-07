@@ -195,11 +195,37 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
 /* ══ ⚠️ ATENDIMENTO VAZIO: ⛔ NENHUM EIXO AFIRMA ⛔ NADA ══════════════════ */
 {
   const lista = A.ameacasImediatas(novo());
+  /**
+   * ⚠️⚠️ **CINCO** desde 2026-09-07 — decisão **C1**: o ABCDE clássico.
+   * ⛔ `D` deixou de ser *"Glicemia"* ⛔ e virou *"Neurológico"*; ⛔ `E ·
+   * Exposição` nasceu. ⛔ O fato da glicemia ⛔ não mudou.
+   */
   conf(
-    "⚠️ atendimento vazio deixa os quatro eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
-    lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
+    "⚠️ atendimento vazio deixa os CINCO eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
+    lista.length === 5 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
     `⛔ ${lista.map((a) => `${a.id}=${a.estado}`).join(" · ")}`
   );
+  conf(
+    "⚠️ as cinco letras do ABCDE estão lá, na ordem",
+    lista.map((a) => a.letra).join("") === "ABCDE",
+    `⛔ "${lista.map((a) => a.letra).join("")}"`
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ **E ⛔ NUNCA ACENDE** — ⛔ e ⛔ isso ⛔ não é eixo fraco: ⛔ é a recusa
+   * a inventar limiar. ⛔ Nenhuma fonte transcrita do AVC dá corte para
+   * temperatura, ⛔ e um `E` que acendesse por 38,2 °C emitiria conduta que
+   * ⛔ nenhuma fonte deste módulo escreve (**E-31**).
+   */
+  {
+    const quente = com(novo(), "temperatura", 39);
+    const e = eixo(quente, "exposicao");
+    conf(
+      "⚠️⚠️ temperatura 39 °C fica **medida**, ⛔ e ⛔ NÃO vira ameaça",
+      e.estado === "medido" && e.valor === "39" && e.achado === undefined,
+      `⛔ estado="${e.estado}" · achado=${JSON.stringify(e.achado)} — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
+    );
+  }
 }
 
 /* ══ ⚠️⚠️ O ✓ QUE MENTIA — autor, 2026-09-06 ════════════════════════════ */
@@ -313,4 +339,4 @@ if (falhas > 0) {
   console.log(`\n❌ AMEAÇAS IMEDIATAS — ${falhas} falha(s), ${ok} ok\n`);
   process.exit(1);
 }
-console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 4 eixos`);
+console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 5 eixos (ABCDE)`);

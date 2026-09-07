@@ -67,4 +67,41 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * ⛔ são fatos diferentes).
    */
   medicacoes_em_uso: [],
+
+  /**
+   * ── ⚠️⚠️ ⛔ A TRAVA PEGOU O MEU PRÓPRIO CÓDIGO (2026-09-07) ──────────────
+   *
+   * ⛔ Eu escrevi a regra *"⛔ nenhuma derivação lê campo ⛔ sem slot de fonte"*
+   * ⛔ e, na mesma sessão, fiz `ameacas-imediatas.ts` ler `temperatura` para
+   * desenhar o eixo **E**. ⚠️ A trava reprovou — ⛔ e ⛔ estava certa: ⛔ a
+   * dependência existe.
+   *
+   * ⚠️⚠️ ⛔ E A REGRA DO AUTOR ⛔ NÃO ERA *"⛔ não pode ler"*, ⛔ e sim: *"um campo
+   * só pode influenciar uma derivação se essa dependência estiver
+   * **explicitamente declarada ⛔ e testada**"*. ⛔ Então ⛔ ela se declara aqui.
+   *
+   * ⚠️⚠️ ⛔ E O QUE IMPEDE ISSO DE VIRAR ESCAPE FÁCIL: ⛔ o eixo **E ⛔ nunca
+   * acende**. ⛔ Sem corte transcrito, ⛔ ele ⛔ só sabe dizer `medido` ⛔ ou
+   * `nao_avaliado` — ⛔ e há prova nomeada para isso
+   * (*"temperatura 39 °C fica medida, ⛔ e ⛔ NÃO vira ameaça"*). ⛔ Ler para
+   * **exibir** ⛔ não é derivar conduta.
+   */
+  temperatura: ["ameacas-imediatas.ts"],
+
+  /**
+   * ⚠️ ⛔ Os outros sinais vitais da Fase 3 ⛔ ainda ⛔ não são lidos por
+   * ⛔ ninguém — ⛔ e a lista vazia é a declaração disso, executada.
+   */
+  fc: [],
+  fr: [],
+  glasgow: [],
+  monitorizacao: [],
+  acessos: [],
+
+  /**
+   * ⚠️ O único campo **⛔ não clínico** do módulo — nome ⛔ ou identificador
+   * local. ⛔ Ele ⛔ nunca teve consumidor, ⛔ e a condição do autor ao aprová-lo
+   * foi ⛔ exatamente essa: *"dado pessoal ⛔ não tem efeito sobre conduta"*.
+   */
+  identificacao: [],
 };

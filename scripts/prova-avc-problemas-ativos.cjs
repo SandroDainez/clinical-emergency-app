@@ -56,7 +56,12 @@ function achar(nome) {
 const P = require(achar("problemas-ativos.js"));
 const E = require(achar("estado.js"));
 const I = require(achar("instancia.js"));
-const EST = require(achar("estados-clinicos.js"));
+/**
+ * ⚠️ ⛔ A **semântica** dos estados mudou de casa em 2026-09-07: ⛔ ela saiu do
+ * `design-system/` (onde eu a havia posto, acoplando o núcleo ao desenho) ⛔ e
+ * foi para `lib/clinico/estados`. ⛔ O símbolo ⛔ e a cor ficaram lá.
+ */
+const EST = require(achar("estados.js"));
 
 const relogio = { agora: () => 1000000 };
 const novo = () => E.abrirAtendimento(relogio);
@@ -150,16 +155,17 @@ function conf(nome, cond, porque) {
 {
   const e = com(novo(), "glicemia", 40);
   const lista = P.problemasAtivos(e);
-  const forasteiros = lista.filter((p) => EST.ESTADOS[p.estado] === undefined);
+  const forasteiros = lista.filter((p) => !EST.ORDEM_DOS_ESTADOS.includes(p.estado));
   conf(
     "⚠️ todo estado pertence ao alfabeto único",
     forasteiros.length === 0,
     `⛔ ${forasteiros.map((p) => `${p.id}=${p.estado}`).join(" · ")}`
   );
   conf(
-    "⚠️ ⛔ e são SETE estados declarados, ⛔ nem mais ⛔ nem menos (C2)",
-    Object.keys(EST.ESTADOS).length === 7 && EST.ORDEM_DOS_ESTADOS.length === 7,
-    `⛔ ${Object.keys(EST.ESTADOS).length} estado(s) · ordem com ${EST.ORDEM_DOS_ESTADOS.length}`
+    "⚠️ ⛔ e são SETE estados na ordem de urgência, ⛔ nem mais ⛔ nem menos (C2)",
+    EST.ORDEM_DOS_ESTADOS.length === 7
+    && new Set(EST.ORDEM_DOS_ESTADOS).size === 7,
+    `⛔ ordem com ${EST.ORDEM_DOS_ESTADOS.length} · ${EST.ORDEM_DOS_ESTADOS.join(" → ")}`
   );
 }
 

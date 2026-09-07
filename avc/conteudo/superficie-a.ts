@@ -414,6 +414,130 @@ export const GLICEMIA_A: readonly CampoA[] = [
  * preenchendo o mesmo fato**, com o mesmo id e a mesma trilha. ⛔ Nenhuma segunda
  * versão.
  */
+/**
+ * ── ⚠️⚠️ OS CAMPOS DA FASE 3 — briefing **item 14** ───────────────────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07: *"Se inicialmente forem apenas fatos
+ * registrados, usar estado `· medido` quando apropriado."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ISSO É O ESSENCIAL DESTES QUATRO: ⛔ **⛔ nenhum tem consumidor
+ * clínico neste módulo**. ⛔ Nenhuma fonte transcrita do AVC dá corte para FC,
+ * FR, temperatura ⛔ ou Glasgow — ⛔ e inventar um seria conduta nascendo na
+ * tela (**E-31**).
+ *
+ * ⚠️ ⛔ Eles são **registrados ⛔ e exibidos**, ⛔ e ⛔ o app ⛔ não os classifica.
+ * ⛔ Intocados são `undefined`; ⛔ preenchidos aparecem como `· medido`, ⛔ que é
+ * ⛔ exatamente a recusa a emitir juízo ⛔ sem fonte.
+ *
+ * ⛔ ⛔ Quando houver fonte — sepse, choque, TCE —, ⛔ o consumidor entra em
+ * `CONSUMIDORES` **antes** do código que o lê.
+ */
+export const RESPIRACAO_EXTRA_A: readonly CampoA[] = [
+  {
+    id: "fr",
+    temporalidade: "afericao",
+    rotulo: "Frequência respiratória",
+    tipo: "grandeza",
+    unidade: "irpm",
+    faixa: { min: 4, max: 60, passo: 1 },
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.",
+  },
+];
+
+export const CIRCULACAO_EXTRA_A: readonly CampoA[] = [
+  {
+    id: "fc",
+    temporalidade: "afericao",
+    rotulo: "Frequência cardíaca",
+    tipo: "grandeza",
+    unidade: "bpm",
+    faixa: { min: 20, max: 220, passo: 1 },
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.",
+  },
+];
+
+/**
+ * ⚠️⚠️ GLASGOW **QUANTIFICA**, ⛔ e `consciencia_rebaixada` **decide via aérea**.
+ *
+ * ⛔ ⛔ Eles ⛔ não são o mesmo fato ⛔ e ⛔ não se substituem: a pergunta de A é
+ * *"há rebaixamento que ameace a via aérea?"* — ⛔ e ⛔ é ela que
+ * `suporteDeViaAerea` lê. ⚠️ Glasgow é a escala, ⛔ e ⛔ **⛔ nenhuma fonte deste
+ * módulo lhe dá corte**.
+ *
+ * ⛔ ⛔ Fundir os dois faria a via aérea depender de um número ⛔ sem
+ * recomendação transcrita — ⛔ e quebraria a leitura que já existe.
+ */
+export const NEUROLOGICO_A: readonly CampoA[] = [
+  {
+    id: "glasgow",
+    temporalidade: "afericao",
+    rotulo: "Escala de coma de Glasgow",
+    tipo: "grandeza",
+    unidade: "3–15",
+    faixa: { min: 3, max: 15, passo: 1 },
+    ajuda: "Registro do nível de consciência. A pergunta que decide suporte de via aérea é a do bloco A.",
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.",
+  },
+];
+
+export const EXPOSICAO_A: readonly CampoA[] = [
+  {
+    id: "temperatura",
+    temporalidade: "afericao",
+    rotulo: "Temperatura",
+    tipo: "grandeza",
+    unidade: "°C",
+    faixa: { min: 30, max: 43, passo: 1 },
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.",
+  },
+];
+
+/**
+ * ── ⚠️ MONITORIZAÇÃO ⛔ E ACESSOS — briefing **item 13** ──────────────────
+ *
+ * ⚠️ *"Esses itens ⛔ não devem bloquear o restante do atendimento."* ⛔ São
+ * **seleção múltipla** com saída declarada, ⛔ e ⛔ nenhum deles entra em
+ * derivação ⛔ nenhuma.
+ */
+export const SUPORTE_A: readonly CampoA[] = [
+  {
+    id: "monitorizacao",
+    temporalidade: "estado",
+    rotulo: "Monitorização instalada",
+    tipo: "multipla",
+    opcoes: ["ECG contínuo", "Oximetria", "Pressão arterial", "Temperatura", "Nenhuma", NAO_SEI],
+    exclusivas: ["Nenhuma", NAO_SEI],
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro operacional do atendimento. Não interfere em nenhuma recomendação.",
+  },
+  {
+    id: "acessos",
+    temporalidade: "estado",
+    rotulo: "Acessos obtidos",
+    tipo: "multipla",
+    opcoes: ["Periférico", "Central", "Intraósseo", "Nenhum", NAO_SEI],
+    exclusivas: ["Nenhum", NAO_SEI],
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro operacional do atendimento. Não interfere em nenhuma recomendação.",
+  },
+];
+
 export const PESO_A: readonly CampoA[] = [];
 
 /** CRISE NO INÍCIO — ⚠️ contexto, ⛔ nunca exclusão. */
@@ -464,10 +588,45 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
    * neurológica: o exame do déficit mora na superfície Neurológico, é muito mais
    * rico, e duplicá-lo aqui criaria ruído — decisão explícita do autor.
    */
+  /**
+   * ── ⚠️⚠️ O ABCDE CLÁSSICO — decisão **C1** do autor, 2026-09-06 ──────────
+   *
+   * ⛔ O bloco acima dizia que ⛔ **não** havia **E** ⛔ e que o **D** era a
+   * glicemia. ⚠️ O autor decidiu o contrário: **⛔ o ABCDE do atendimento é o
+   * que o médico lê à beira do leito**, ⛔ e ⛔ a letra ⛔ não pode significar
+   * uma coisa aqui ⛔ e outra no resto da medicina.
+   *
+   * ⚠️⚠️ ⛔ E A GLICEMIA **⛔ NÃO MUDOU DE FATO** — ⛔ ela mudou de **card**.
+   * ⛔ Mesmo `id`, mesma casa, mesma trilha, mesma série temporal, mesmos
+   * consumidores. ⛔ `prova-avc-independencia-da-ui` existe ⛔ exatamente para
+   * garantir que mover a apresentação ⛔ não toca em conduta ⛔ nenhuma.
+   *
+   * ⚠️ ⛔ **D aqui ⛔ não é a Avaliação AVC.** ⛔ Ele responde *"há problema
+   * neurológico ⛔ ou metabólico imediato a estabilizar?"*; ⛔ a caracterização
+   * do AVC — NIHSS, mRS, déficit incapacitante — continua na fase própria.
+   */
+  { id: "monitorizacao", titulo: "Monitorização e acessos", campos: SUPORTE_A },
   { id: "via-aerea", titulo: "A · Via aérea", campos: VIA_AEREA_A },
-  { id: "respiracao", titulo: "B · Respiração e oxigenação", campos: RESPIRACAO_A },
-  { id: "pressao", titulo: "C · Circulação e pressão arterial", campos: PRESSAO_A },
-  { id: "glicemia", titulo: "D · Glicemia", campos: GLICEMIA_A },
+  {
+    id: "respiracao",
+    titulo: "B · Respiração",
+    campos: [...RESPIRACAO_A, ...RESPIRACAO_EXTRA_A],
+  },
+  {
+    id: "pressao",
+    titulo: "C · Circulação",
+    campos: [...PRESSAO_A, ...CIRCULACAO_EXTRA_A],
+  },
+  {
+    id: "neurologico-inicial",
+    titulo: "D · Neurológico",
+    /**
+     * ⚠️⚠️ ⛔ GLASGOW **⛔ e** GLICEMIA — ⛔ e a glicemia vem de `GLICEMIA_A`,
+     * ⛔ que é o mesmo array de sempre. ⛔ Nenhum campo foi recriado.
+     */
+    campos: [...NEUROLOGICO_A, ...GLICEMIA_A],
+  },
+  { id: "exposicao", titulo: "E · Exposição", campos: EXPOSICAO_A },
   {
     id: "peso",
     titulo: "Peso",

@@ -27,7 +27,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { campoAparece, camposDoGrupo, valorDaOpcao } from "../../avc/conteudo/campo";
 import { GRUPOS_A, PRIORIDADE_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
-import { leiturasDaSuperficieA } from "../../avc/nucleo/derivacoes";
+import { leiturasDaSuperficieA, pressaoArterialMedia } from "../../avc/nucleo/derivacoes";
 import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
@@ -148,6 +148,8 @@ export default function SuperficieA({
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
+  /** ⚠️ Derivação pura — ⛔ e ⛔ `undefined` quando falta uma das metades. */
+  const pam = pressaoArterialMedia(estado);
 
   /** ⚠️ Rótulo por id — o painel de leituras nomeia os insumos que citou. */
   const rotuloDoCampo = useMemo(() => {
@@ -327,6 +329,32 @@ export default function SuperficieA({
               ) : null}
               <Secao titulo={grupo.titulo} />
             </View>
+
+            {/**
+              * ── ⚠️⚠️ A PAM — **DERIVADA**, ⛔ e ⛔ nunca digitada ────────────
+              *
+              * ⚠️ Decisão do autor (**item 10**): *"⛔ Nunca pedir ao usuário
+              * que informe PAM se PAS ⛔ e PAD estiverem disponíveis. Se faltar
+              * PAS ⛔ ou PAD, PAM fica indefinida."*
+              *
+              * ⛔ ⛔ Ela ⛔ **não é campo**: ⛔ não tem caixa, ⛔ não aceita toque
+              * ⛔ e ⛔ não vira fato. ⚠️ Persistir a PAM criaria um **segundo
+              * produtor** para algo que já se sabe de PAS ⛔ e PAD — ⛔ e ⛔ os
+              * dois poderiam divergir.
+              *
+              * ⚠️ ⛔ E ⛔ ela ⛔ não aparece quando ⛔ não há as duas metades:
+              * ⛔ ausência ⛔ não vira zero, ⛔ e ⛔ nem travessão com cara de
+              * medida.
+              */}
+            {grupo.id === "pressao" && pam !== undefined ? (
+              <View style={e.derivada} testID="avc-pam">
+                <Text style={e.derivadaRotulo}>{tr("Pressão arterial média")}</Text>
+                <Text style={e.derivadaValor}>{pam}</Text>
+                <Text style={e.derivadaUnidade}>{tr("mmHg")}</Text>
+                {/** ⚠️ ⛔ Ela diz de onde vem — ⛔ número ⛔ sem procedência ⛔ não se audita. */}
+                <Text style={e.derivadaNota}>{tr("calculada de PAS e PAD")}</Text>
+              </View>
+            ) : null}
 
             {/**
               * ⚠️⚠️ "NOVA MEDIDA" — o gesto explícito de §3.4. ⛔ Sem ele ⛔ não há
@@ -793,6 +821,26 @@ const criarEstilos = (tema: Tema) =>
     },
     desconhecidoOn: { color: tema.cores.text, fontWeight: "700" },
 
+    /**
+     * ⚠️ A linha da **derivada** — ⛔ e ⛔ ela ⛔ não parece campo de propósito:
+     * ⛔ sem caixa, ⛔ sem borda de controle, ⛔ sem alvo de toque. ⛔ O que ⛔ não
+     * se digita ⛔ não pode ter cara de coisa que se digita.
+     */
+    derivada: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      flexWrap: "wrap",
+      gap: ESPACO.xs,
+      paddingVertical: ESPACO.xs,
+    },
+    derivadaRotulo: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    derivadaValor: {
+      color: tema.cores.text,
+      fontSize: TIPOGRAFIA.step.fontSize,
+      fontWeight: "700",
+    },
+    derivadaUnidade: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    derivadaNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
     novaMedida: {
       alignSelf: "flex-start",
       minHeight: TOQUE.minimo,

@@ -26,8 +26,8 @@
  * ⛔ **⛔ Não inventa porta.** ⚠️ Todo problema diz **onde se resolve**
  *    (**E-26**) — ⛔ e quem ⛔ não sabe dizer ⛔ não entra na lista.
  */
-import type { EstadoClinico } from "../../design-system/estados-clinicos";
-import { ORDEM_DOS_ESTADOS } from "../../design-system/estados-clinicos";
+import type { EstadoClinico } from "../../lib/clinico/estados";
+import { ORDEM_DOS_ESTADOS } from "../../lib/clinico/estados";
 import { pendenciasVigentes } from "../conteudo/superficies";
 import { ameacasImediatas, estadoClinicoDoEixo } from "./ameacas-imediatas";
 import { pendenciasDaImagem } from "./derivacoes-c";
