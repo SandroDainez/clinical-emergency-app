@@ -34,14 +34,30 @@ import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
+/**
+ * ⚠️⚠️ O TOM DA LEITURA, NO ALFABETO ÚNICO — ⛔ e ⛔ ele ⛔ não é mais uma
+ * tabelinha local. ⛔ Havia **três cópias** deste mapa, uma por superfície, ⛔ e
+ * ⛔ nada obrigava as três a concordarem.
+ *
+ * ⚠️ `atencao` é situação clínica verdadeira (**corrigível**); `pendente` é
+ * falta responder (**verificar**); `informativo` é respondido ⛔ sem
+ * consequência — ⛔ e ⛔ ele ⛔ não ganha ✓, porque ✓ afirma que um critério
+ * está atendido, ⛔ e uma leitura informativa ⛔ não afirma isso.
+ */
+const ESTADO_DO_TOM: Readonly<Record<string, EstadoClinico>> = {
+  atencao: "corrigivel",
+  pendente: "verificar",
+  informativo: "medido",
+};
 const SIMBOLO_DO_TOM: Readonly<Record<string, string>> = {
-  atencao: "⚠",
-  pendente: "?",
-  informativo: "·",
+  atencao: ESTADOS[ESTADO_DO_TOM.atencao].simbolo,
+  pendente: ESTADOS[ESTADO_DO_TOM.pendente].simbolo,
+  informativo: ESTADOS[ESTADO_DO_TOM.informativo].simbolo,
 };
 import SeletorDeHora from "./seletor-de-hora";
 import {

@@ -37,6 +37,7 @@ import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
+import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { useTr } from "../../lib/use-tr";
 
 /**
@@ -223,7 +224,7 @@ function MarcaDeResposta({ respondido }: { respondido: boolean }) {
   const e = useEstilosDoTema(criarEstilos);
   return (
     <Text style={[e.marca, respondido && e.marcaAtiva]} accessibilityElementsHidden>
-      {respondido ? "✓" : "○"}
+      {ESTADOS[respondido ? "favoravel" : "ausente"].simbolo}
     </Text>
   );
 }
@@ -967,7 +968,7 @@ export function CampoDeHora({
        */}
       <View style={e.relogioLinha}>
         <Text style={[e.marca, respondido && e.marcaAtiva]} accessibilityElementsHidden>
-          {respondido ? "✓" : "○"}
+          {ESTADOS[respondido ? "favoravel" : "ausente"].simbolo}
         </Text>
         <Text style={e.relogioRotulo} numberOfLines={2}>
           {tr(campo.rotulo)}

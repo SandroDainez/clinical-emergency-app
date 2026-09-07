@@ -16,10 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { SUPERFICIES, pendenciasVigentes, superficie } from "../../avc/conteudo/superficies";
-import { pendenciasDerivadas } from "../../avc/nucleo/derivacoes";
-import { pendenciasDaImagem } from "../../avc/nucleo/derivacoes-c";
-import { pendenciasDaSeguranca } from "../../avc/nucleo/derivacoes-d";
+import { SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
 import { proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO, PRIORIDADE_DA_IMAGEM } from "../../avc/conteudo/superficie-c";
@@ -27,6 +24,7 @@ import { PRIORIDADE_A } from "../../avc/conteudo/superficie-a";
 import {
   ameacasImediatas,
   eixosNaoAvaliados,
+  estadoClinicoDoEixo,
   haAmeacaAberta,
 } from "../../avc/nucleo/ameacas-imediatas";
 import SuperficieD from "./superficie-d";
@@ -36,7 +34,9 @@ import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
+import { pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
+import { ESTADOS, corDoEstado } from "../../design-system/estados-clinicos";
 import { destinoDaImagem, imagemSolicitadaEm, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 import { Icone, type NomeDeIcone } from "./ui";
@@ -140,8 +140,6 @@ const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   laboratorio: { nome: "Laboratório", icone: "laboratorio" },
 };
 import { ACAO } from "../../avc/conteudo/superficie-e";
-import { pendenciasOriginadasEmE } from "../../avc/nucleo/derivacoes-e";
-import { pendenciasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
@@ -153,7 +151,6 @@ import {
   abrirAtendimento,
   decorridoEmMinutos,
   definirRelogioClinico,
-  pendenciasAbertas,
   registrarFato,
   verSuperficie,
 } from "../../avc/nucleo/estado";
@@ -287,38 +284,18 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
   // ⚠️ Pendências derivadas: dono numa superfície, ALCANCE GLOBAL (E-07).
   // Elas aparecem aqui independentemente de qual superfície está aberta.
-  const pendencias = useMemo(
-    () => [
-      /**
-       * ⚠️⚠️ AS DERIVADAS VÊM PRIMEIRO, e ⛔ não é ordem alfabética: elas nascem
-       * de algo que ACONTECEU com o paciente — uma glicemia corrigida sem exame
-       * depois —, enquanto as outras nascem de algo que ⛔ nunca foi informado.
-       * O que aconteceu pesa mais na varredura de quem está com pressa.
-       *
-       * ⚠️ E elas ⛔ NÃO passam por `pendenciasAbertas()`: aquilo mede campo
-       * vazio, e aqui o campo pode estar cheio — com o exame de ANTES da
-       * correção. Quem fecha esta é a ORDEM dos fatos, e ela já vem fechada
-       * (ausente da lista) quando o registro posterior existe.
-       */
-      ...pendenciasDerivadas(estado),
-      /**
-       * ⚠️ As pendências da imagem são **derivadas** e ⛔ não passam por
-       * `pendenciasAbertas()`: aquela mede campo vazio, e aqui o campo pode
-       * estar cheio — com *"realizada, resultado ainda ⛔ não disponível"*, que é
-       * resposta válida (**PD-22**) e ⛔ **não** fecha a tarefa.
-       */
-      ...pendenciasDaImagem(estado),
-      /** ⚠️ D ⛔ não possui fatos, e possui as próprias pendências (E-07). */
-      ...pendenciasDaSeguranca(estado),
-      /** ⚠️ E ORIGINA, mas a dona é B — ver `pendenciasOriginadasEmE`. */
-      ...pendenciasOriginadasEmE(estado),
-      ...pendenciasDoLaboratorio(estado),
-      // ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
-      // campo ainda não existe é muro, ⛔ não tarefa (E-26, I-7).
-      ...pendenciasAbertas(estado, pendenciasVigentes()),
-    ],
-    [estado]
-  );
+  /**
+   * ⚠️⚠️ A LISTA VEM DO **NÚCLEO** — ⛔ e ⛔ não é mais montada aqui.
+   *
+   * ⛔ Havia um `useMemo` de trinta linhas concatenando **seis** produtores de
+   * pendência, com a ordem clínica escrita em comentário. ⚠️ Regra que mora no
+   * JSX ⛔ não pode ser executada por trava ⛔ nenhuma — ⛔ e foi assim que a
+   * leitura das ameaças se perdeu ⛔ uma vez neste módulo.
+   *
+   * ⚠️ `problemasAtivos` junta ameaças, bloqueios ⛔ e pendências numa lista só,
+   * ordenada por urgência ⛔ e origem, ⛔ e uma prova executa essa ordem.
+   */
+  const problemas = useMemo(() => problemasAtivos(estado), [estado]);
 
   /**
    * ⚠️ ⛔ `informadosEmA` foi removido em 2026-09-06: contava campos preenchidos
@@ -876,13 +853,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               onPress={() => irParaCampo(a.campo)}
               accessibilityRole="button"
               accessibilityLabel={`${tr(a.nome)}: ${tr(
-                a.estado === "ameaca"
-                  ? "ameaça registrada"
-                  : a.estado === "sem_ameaca"
-                    ? "avaliado"
-                    : a.estado === "medido"
-                      ? "medido"
-                      : "ainda não avaliado"
+                ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo
               )}`}
               testID={`avc-ameaca-${a.id}`}
               style={[
@@ -904,22 +875,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   ]}
                 >
                   {/**
-                    * ⚠️⚠️ **`medido` ⛔ NÃO GANHA ✓** — 2026-09-06.
+                    * ⚠️⚠️ O SÍMBOLO VEM DO **ALFABETO ÚNICO** — 2026-09-06,
+                    * decisão **C2**.
                     *
-                    * ⛔ O ✓ é afirmação: *"avaliado, ⛔ e ⛔ sem ameaça"*. ⚠️ Com
-                    * **PA 80/46** ⛔ e **glicemia 579** na tela, ⛔ ele era uma
-                    * afirmação **falsa** — ⛔ e o autor a viu antes de mim.
-                    *
-                    * ⚠️ `·` diz o que o app realmente sabe: **há número**, ⛔ e a
-                    * fonte transcrita ⛔ não prescreve ⛔ nada para ele.
+                    * ⛔ Ele estava escrito à mão aqui ⛔ e na faixa compacta, ⛔ e
+                    * ⛔ nada garantia que os dois concordassem. ⚠️ Agora quem
+                    * traduz é o núcleo, ⛔ e quem desenha é `ESTADOS`.
                     */}
-                  {a.estado === "ameaca"
-                    ? "!"
-                    : a.estado === "sem_ameaca"
-                      ? "✓"
-                      : a.estado === "medido"
-                        ? "·"
-                        : "○"}
+                  {ESTADOS[estadoClinicoDoEixo(a.estado)].simbolo}
                 </Text>
                 <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
                   {a.letra}
@@ -943,13 +906,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * vazia (**E-37**).
                 */}
               <Text style={s.ameacaEstado} numberOfLines={2}>
-                {a.estado === "ameaca"
-                  ? tr(a.achado ?? "Ameaça registrada")
-                  : a.estado === "sem_ameaca"
-                    ? tr("Avaliado")
-                    : a.estado === "medido"
-                      ? tr("Medido")
-                      : tr("A avaliar")}
+                {/** ⚠️ O achado tem precedência; ⛔ sem achado, o rótulo do estado. */}
+                {a.achado !== undefined
+                  ? tr(a.achado)
+                  : tr(ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo)}
               </Text>
             </Pressable>
           ))}
@@ -1030,16 +990,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               onPress={() => irParaCampo(a.campo)}
               accessibilityRole="button"
               accessibilityLabel={`${tr(a.nome)}: ${
-                a.valor
-                  ?? tr(
-                    a.estado === "ameaca"
-                      ? "ameaça registrada"
-                      : a.estado === "sem_ameaca"
-                        ? "avaliado"
-                        : a.estado === "medido"
-                          ? "medido"
-                          : "ainda não avaliado"
-                  )
+                a.valor ?? tr(ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo)
               }`}
               testID={`avc-ameaca-${a.id}`}
               style={[s.eixoChip, a.estado === "ameaca" && s.ameacaAtiva]}
@@ -1051,13 +1002,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   a.estado === "sem_ameaca" && s.ameacaMarcaOk,
                 ]}
               >
-                {a.estado === "ameaca"
-                  ? "!"
-                  : a.estado === "sem_ameaca"
-                    ? "✓"
-                    : a.estado === "medido"
-                      ? "·"
-                      : "○"}
+                {ESTADOS[estadoClinicoDoEixo(a.estado)].simbolo}
               </Text>
               {/** ⚠️ Mesma cor de identidade da grade cheia — ⛔ e ⛔ não cinza. */}
               <Text style={[s.ameacaLetra, { color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }]}>
@@ -1404,7 +1349,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   ? [ESCOPO_DA_SINDROME[atual.id], atual.resumo].filter(Boolean).join(" · ")
                   : undefined
               }
-              pendentes={pendencias.filter((p) => p.dono === atual.id).length}
+              pendentes={problemas.filter((p) => p.dono === atual.id).length}
             />
           </View>
           {/** ⚠️ O ⓘ vive NA LINHA do título que explica — ⛔ nunca órfão. */}
@@ -1506,10 +1451,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onIrParaCampo={irParaCampo}
             onAbrirSuperficie={abrir}
             /**
-             * ⚠️ A MESMA lista que a tela já usa para as pendências — ⛔ e ⛔ não
-             * uma segunda apuração dentro da síntese (I6).
+             * ⚠️⚠️ ⛔ G RECEBE **PENDÊNCIAS**, ⛔ e ⛔ não a lista unificada — ⛔ e a
+             * distinção ⛔ não é acadêmica: a síntese do caso fala de *"o que
+             * falta responder"*, ⛔ e ⛔ não de *"o que está aberto"*. ⚠️ Uma
+             * ameaça de via aérea ⛔ não é pendência de síntese.
+             *
+             * ⚠️ As duas saem da **mesma** apuração (`familiasDePendencia`) —
+             * ⛔ e é isso que impede a segunda contagem que **I6** proíbe.
              */
-            pendencias={pendencias}
+            pendencias={pendenciasDoCaso(estado)}
             relogio={relogio}
           />
         ) : atual.id === "correcoes" ? (
@@ -1595,10 +1545,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         <Text style={s.blocoNota}>
           {tr("De todas as superfícies. O nome indica onde resolver.")}
         </Text>
-        {pendencias.length === 0 ? (
+        {problemas.length === 0 ? (
           <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>
         ) : (
-          pendencias.map((p) => (
+          problemas.map((p) => (
             <Pressable
               key={p.id}
               style={s.pendencia}
@@ -1606,7 +1556,25 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               testID={`avc-pendencia-${p.id}`}
               onPress={() => abrir(p.dono)}
             >
-              <Text style={s.pendenciaRotulo}>⚑ {tr(p.rotulo)}</Text>
+              {/**
+                * ⚠️⚠️ O SÍMBOLO DIZ **QUE TIPO** DE PROBLEMA É — ⛔ e ⛔ era um
+                * `⚑` fixo para todos.
+                *
+                * ⛔ Uma ameaça de via aérea ⛔ e um campo por responder recebiam
+                * a mesma bandeirinha. ⚠️ Agora `!` corrigível, `?` verificar,
+                * `⛔` impede — ⛔ e o rótulo escrito ao lado diz o mesmo, porque
+                * símbolo sozinho ⛔ não é leitura (**E-15**).
+                */}
+              <Text style={s.pendenciaRotulo}>
+                <Text style={{ color: corDoEstado(tema, p.estado) }}>
+                  {ESTADOS[p.estado].simbolo}
+                </Text>
+                {"  "}
+                {tr(p.rotulo)}
+              </Text>
+              {p.detalhe === undefined ? null : (
+                <Text style={s.pendenciaResolve}>{tr(p.detalhe)}</Text>
+              )}
               {/* ⚠️ E-26: pendência sem condição de resolução é muro, não tarefa. */}
               <Text style={s.pendenciaResolve}>{tr(p.resolvePor)}</Text>
               {/**

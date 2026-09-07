@@ -38,6 +38,7 @@ import { ITENS_NIHSS } from "../../avc/conteudo/nihss";
 import { comoAvaliarItem, oQueAvaliaItem } from "../../avc/conteudo/explicacoes";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
+import { ESTADOS } from "../../design-system/estados-clinicos";
 import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { BotaoDeInfo, DetalheDoCampo } from "./campos-clinicos";
@@ -123,7 +124,7 @@ export default function CampoDeEscala({
     <View style={[e.campo, total !== undefined && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
       <View style={e.topo}>
         <Text style={[e.marca, total !== undefined && e.marcaAtiva]} accessibilityElementsHidden>
-          {total !== undefined ? "✓" : "○"}
+          {ESTADOS[total !== undefined ? "favoravel" : "ausente"].simbolo}
         </Text>
         <Text style={e.rotulo}>{tr(campo.rotulo)}</Text>
         <BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />

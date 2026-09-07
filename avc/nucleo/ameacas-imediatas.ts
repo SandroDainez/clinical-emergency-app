@@ -30,6 +30,7 @@
  * ⛔ **⛔ Não afirma por ausência (E-23).** ⚠️ Eixo ⛔ não avaliado é
  * `nao_avaliado` — ⛔ e ⛔ nunca *"sem ameaça"*.
  */
+import type { EstadoClinico } from "../../design-system/estados-clinicos";
 import type { EstadoAvc } from "./estado";
 import { numero } from "./leitura";
 import { oxigenio, pressaoArterial, suporteDeViaAerea } from "./derivacoes";
@@ -63,6 +64,28 @@ import { CORTES_GLICEMICOS, type CorteGlicemico } from "../conteudo/correcao-gli
  * carrega ✓, porque ✓ é afirmação, ⛔ e o app ⛔ não tem como afirmar.
  */
 export type EstadoDaAmeaca = "nao_avaliado" | "sem_ameaca" | "medido" | "ameaca";
+
+/**
+ * ⚠️⚠️ A TRADUÇÃO PARA O ALFABETO ÚNICO DO APP — ⛔ e ⛔ ela mora AQUI, ⛔ e
+ * ⛔ não no JSX.
+ *
+ * ⛔ O símbolo de cada eixo estava escrito à mão em **dois** pontos da tela
+ * (grade cheia ⛔ e faixa compacta), ⛔ e ⛔ nada garantia que os dois
+ * concordassem. ⚠️ Agora há **⛔ um** lugar que decide, ⛔ e o desenho vem de
+ * `design-system/estados-clinicos`.
+ *
+ * ⚠️ *Ameaça* vira `corrigivel`, ⛔ e ⛔ **não** `impede`: ⛔ ela pede conduta
+ * **agora**, ⛔ e ⛔ não trava a navegação (**E-11**). ⛔ Quem impede uma ação é
+ * o veredito da terapia, ⛔ e ⛔ não a estabilização.
+ */
+export function estadoClinicoDoEixo(estado: EstadoDaAmeaca): EstadoClinico {
+  switch (estado) {
+    case "ameaca": return "corrigivel";
+    case "sem_ameaca": return "favoravel";
+    case "medido": return "medido";
+    case "nao_avaliado": return "ausente";
+  }
+}
 
 export type AmeacaImediata = {
   readonly id: string;

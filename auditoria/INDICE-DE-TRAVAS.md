@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**77 de 91 travas com declaração completa.**
+**78 de 92 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -79,6 +79,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhum `<Pressable>` do módulo AVC seja desenhado ⛔ sem **corpo** (preenchimento) ⛔ nem **borda** — as duas marcas que fazem um alvo se distinguir de um parágrafo.
 - **NÃO PROMETE:** que a cor seja bonita, que o alvo seja grande o bastante ⛔ nem que o rótulo diga a coisa certa. ⛔ Isso é `valida-contraste`, `valida-rotulos-clinicos` ⛔ e o olho do autor.
 - **UNIVERSO:** `components/avc/**.tsx`. ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE ───────────────────────────────────────── ⛔ O autor relatou **seis vezes**, entre 2026-09-05 ⛔ e 09-06, que os controles do módulo *"parecem texto ⛔ e ⛔ não botões"*. ⚠️ Nas **cinco** primeiras eu consertei ⛔ só o pedaço que aparecia na captura que ⛔ ele tinha mandado — ⛔ e ⛔ na captura seguinte havia outro. ⚠️⚠️ ⛔ ISSO ⛔ NÃO É UM PROBLEMA DE GOSTO: ⛔ é uma classe de defeito, ⛔ e classe de defeito se fecha com varredura, ⛔ e ⛔ não com remendo. ⚠️ Enquanto ⛔ nada varria, cada tela nova nascia com a chance de repetir o erro — ⛔ e o autor ⛔ é quem pagava, uma captura por vez. ── ⚠️ COMO ELA LÊ ───────────────────────────────────────────────────────── ⚠️ Para cada `<Pressable>`, ela junta os estilos citados no bloco de abertura (`e.foo`, `s.foo`) ⛔ e procura, nas declarações do próprio arquivo, `backgroundColor` ⛔ ou `border*`. ⛔ Sem ⛔ nenhum dos dois, é achado. ⚠️⚠️ ⛔ ELA ⛔ NÃO ENXERGA DENTRO DE COMPONENTE FILHO — ⛔ e é ⛔ por isso que a lista de EXCEÇÕES existe, ⛔ com o motivo escrito ⛔ e o filho nomeado. ⛔ Uma exceção ⛔ sem motivo é a trava sendo desligada em silêncio.
+
+## `test:avc-problemas` → `scripts/prova-avc-problemas-ativos.cjs`
+
+- **PROMETE:** · que ameaças, bloqueios ⛔ e pendências cheguem à tela numa **⛔ única** lista, ordenada por urgência ⛔ e origem; · que **todo** problema diga onde se resolve (**E-26**); · que o alfabeto de estados seja o do app, ⛔ e ⛔ não um símbolo local; · que a síntese do Destino continue recebendo **pendências**, ⛔ e ⛔ não a lista unificada.
+- **NÃO PROMETE:** que os cortes clínicos estejam certos — ⛔ isso é das provas de superfície, ⛔ e este módulo ⛔ não decide medicina ⛔ nenhuma.
+- **UNIVERSO:** `avc/nucleo/problemas-ativos.ts`. ── ⚠️⚠️ O QUE ORIGINOU ──────────────────────────────────────────────────── ⛔ A montagem vivia num `useMemo` de trinta linhas **dentro do JSX**, com a ordem clínica escrita em comentário. ⚠️⚠️ ⛔ Regra que mora no JSX ⛔ não pode ser executada por trava ⛔ nenhuma — ⛔ e foi exatamente assim que a leitura das ameaças se perdeu ⛔ uma vez neste módulo, afirmando o negativo numa via aérea comprometida.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 
