@@ -51,7 +51,7 @@
  */
 import type { EstadoAvc } from "./estado";
 import type { SuperficieId } from "./tipos";
-import { estadoDaReavaliacao } from "./derivacoes";
+import { estadoDaReavaliacao, reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 import { acoesDoBloqueio } from "./derivacoes-e";
 import { cortesLaboratoriais, itensMarcados, bloqueiosCorrigiveis } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
@@ -72,6 +72,14 @@ export type EstadoDoPortao =
   | "bloqueado_corrigivel"
   /** ⚠️⚠️ Correção **iniciada**, ⛔ e ⛔ ainda falta o fato que prova resolução. */
   | "aguardando_reavaliacao"
+  /**
+   * ⚠️⚠️ ⛔ A REAVALIAÇÃO COMEÇOU ⛔ E ⛔ NÃO TERMINOU — ⛔ meia aferição.
+   *
+   * ⛔ Estado **próprio**, ⛔ e ⛔ não a `informacao_incompleta` genérica da
+   * candidatura: ⛔ aquela fala do catálogo de recomendações; ⛔ **esta** é uma
+   * pendência específica da correção pressórica (decisão do autor, item 3).
+   */
+  | "afericao_incompleta"
   /** ⚠️ O catálogo tem **COR 3** que alcança este caso. */
   | "nao_recomendada"
   /** ⚠️ Falta dado que o próprio critério favorável exige. */
@@ -271,13 +279,62 @@ export function estadoDoPortaoIVT(estado: EstadoAvc): PortaoIVT {
    * ⛔ **depois** da correção. ⛔ `estadoDaReavaliacao()` ⛔ é quem sabe, ⛔ e
    * ⛔ ele lê a **ordem** dos fatos.
    */
+  /**
+   * ── ⚠️⚠️ ⛔ A AFERIÇÃO COMEÇADA ⛔ E ⛔ NÃO TERMINADA ──────────────────────
+   *
+   * ⚠️ *"Medida parcial ⛔ não é nova normalidade, ⛔ não é ausência de medida
+   * ⛔ e ⛔ não é resolução"* (autor, **item 13**). ⛔ Ela **mantém** o bloqueio
+   * ⛔ e diz **o que falta**.
+   */
+  const parcial = reavaliacaoPressoricaIncompleta(estado);
+  const ultimaCompleta = ultimaPressaoCompleta(estado);
+  if (parcial !== undefined) {
+    motivos.push({
+      id: "afericao_incompleta",
+      camada: "correcao",
+      rotulo: "Nova aferição incompleta",
+      /**
+       * ⚠️ ⛔ Mostra a metade que existe ⛔ e nomeia a que falta — ⛔ e ⛔ nunca
+       * as junta com a metade da aferição anterior (**D-120**).
+       */
+      dado: `PAS ${parcial.pas ?? "—"} · PAD ${parcial.pad ?? "—"}`,
+      fonte: "F-04",
+      oQueFalta:
+        parcial.pad === undefined
+          ? "A diastólica desta mesma aferição"
+          : "A sistólica desta mesma aferição",
+      leva: "estabilizacao",
+      campo: parcial.pad === undefined ? "pad" : "pas",
+    });
+    /**
+     * ⚠️⚠️ ⛔ E A ÚLTIMA MEDIDA VÁLIDA **⛔ NÃO É SOBRESCRITA** — ⛔ as duas
+     * informações coexistem (autor, **item 2**).
+     */
+    if (ultimaCompleta !== undefined) {
+      motivos.push({
+        id: "ultima_pressao_completa",
+        camada: "correcao",
+        rotulo: "Última aferição completa",
+        dado: `${ultimaCompleta.pas}/${ultimaCompleta.pad} mmHg`,
+        fonte: "F-04",
+        oQueFalta: "Continua sendo a pressão conhecida deste paciente",
+        leva: "estabilizacao",
+      });
+    }
+  }
+
   const reavaliacao = estadoDaReavaliacao(estado);
   if (reavaliacao === "corrigida_sem_exame") {
     motivos.push({
       id: "reavaliacao_neurologica",
       camada: "correcao",
       rotulo: "Glicemia corrigida, e o déficit ainda não foi reavaliado",
-      dado: reavaliacao,
+      /**
+       * ⚠️⚠️ ⛔ **SEM `dado`** — ⛔ e ⛔ isso é correção da revisão visual da
+       * Fase 7: ⛔ eu punha `reavaliacao` aqui, ⛔ e a tela mostrava
+       * *"— corrigida_sem_exame"*. ⛔ Identificador interno ⛔ não é linguagem
+       * clínica, ⛔ e o rótulo acima ⛔ já diz a mesma coisa em português.
+       */
       fonte: "F-06",
       oQueFalta: "Um novo exame neurológico depois da correção",
       leva: "neurologico",
@@ -292,6 +349,14 @@ export function estadoDoPortaoIVT(estado: EstadoAvc): PortaoIVT {
       ? "bloqueado_seguranca"
       : veredito.tipo === "nao_recomendada"
         ? "nao_recomendada"
+        /**
+         * ⚠️⚠️ ⛔ ANTES do corrigível ⛔ e do aguardando: ⛔ a aferição pela
+         * metade é ⛔ o que o médico tem de terminar **agora**, ⛔ e dizer
+         * *"corrija a pressão"* a quem ⛔ já está medindo ⛔ é a tela ⛔ não ter
+         * visto o gesto.
+         */
+        : parcial !== undefined
+        ? "afericao_incompleta"
         : reavaliacao === "corrigida_sem_exame" || (corrigiveis.length > 0 && algumEmAndamento)
           ? "aguardando_reavaliacao"
           : corrigiveis.length > 0

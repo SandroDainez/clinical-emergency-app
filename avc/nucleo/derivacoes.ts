@@ -13,7 +13,7 @@
  */
 
 import type { EstadoAvc } from "./estado";
-import { instanciaAberta, valorNaInstancia } from "./instancia";
+import { instanciaAberta, valorNaInstancia, instanciasDe } from "./instancia";
 import { valorAtual } from "./estado";
 import { numero, selecaoDe, ternario, VAZIOS } from "./leitura";
 import { NAO_SEI, SEM_ACHADOS } from "../conteudo/campo";
@@ -517,6 +517,80 @@ export function pressaoArterialMedia(estado: EstadoAvc): number | undefined {
   if (m === undefined) return undefined;
   /** ⚠️ Arredondada ao inteiro — ⛔ décimo de mmHg ⛔ não é medida de manguito. */
   return Math.round(m.pad + (m.pas - m.pad) / 3);
+}
+
+/**
+ * ── ⚠️⚠️ ⛔ TODAS AS AFERIÇÕES, ⛔ E ⛔ CADA UMA INTEIRA ────────────────────
+ *
+ * ⚠️ ⛔ Nasceu de um defeito medido no mapeamento da Fase 7, 2026-09-07:
+ *
+ * ⛔ Com **198/112** bloqueando ⛔ e uma nova aferição contendo **só a PAS**,
+ * `bloqueiosCorrigiveis()` **parava de acusar** — ⛔ porque ⛔ ele lia a
+ * instância **aberta**, ⛔ e meia medida ⛔ não forma `medida`.
+ *
+ * ⚠️⚠️ ⛔ O EFEITO CLÍNICO: o médico digita 170 de sistólica, ⛔ é interrompido
+ * antes da diastólica, ⛔ e o app **destrava** o que estava travado — ⛔ sobre
+ * uma aferição que ⛔ **não existe**.
+ *
+ * ⛔ ⛔ É a família de **D-120** pelo outro lado: lá se protegeu contra
+ * **misturar** metades; ⛔ aqui, contra **meia medida apagar um bloqueio**.
+ */
+export type AfericaoDePressao = {
+  readonly instancia: string;
+  readonly pas?: number;
+  readonly pad?: number;
+  /** ⚠️ ⛔ Só é aferição quando as **duas** metades existem. */
+  readonly completa: boolean;
+  /** ⚠️ Tem ⛔ alguma metade — ⛔ e ⛔ por isso ⛔ não é *"⛔ não perguntada"*. */
+  readonly iniciada: boolean;
+};
+
+export function afericoesDePressao(estado: EstadoAvc): readonly AfericaoDePressao[] {
+  return instanciasDe(estado, "pa").map((instancia) => {
+    const n = (campo: string) => {
+      const f = valorNaInstancia(estado, instancia, campo);
+      return typeof f?.valor === "number" ? f.valor : undefined;
+    };
+    const pas = n("pas");
+    const pad = n("pad");
+    return {
+      instancia,
+      pas,
+      pad,
+      completa: pas !== undefined && pad !== undefined,
+      iniciada: pas !== undefined || pad !== undefined,
+    };
+  });
+}
+
+/**
+ * ⚠️⚠️ A ÚLTIMA AFERIÇÃO **COMPLETA** — ⛔ e ⛔ é ⛔ ela que decide bloqueio.
+ *
+ * ⛔ ⛔ Ela ⛔ **nunca** se completa com a metade de outra: ⛔ juntar a PAS nova
+ * com a PAD antiga produziria uma **170/112 que ⛔ ninguém mediu** (**D-120**).
+ */
+export function ultimaPressaoCompleta(
+  estado: EstadoAvc
+): { readonly instancia: string; readonly pas: number; readonly pad: number } | undefined {
+  const completas = afericoesDePressao(estado).filter((a) => a.completa);
+  const u = completas[completas.length - 1];
+  return u === undefined ? undefined : { instancia: u.instancia, pas: u.pas as number, pad: u.pad as number };
+}
+
+/**
+ * ⚠️⚠️ A REAVALIAÇÃO **INICIADA ⛔ E ⛔ NÃO TERMINADA** — ⛔ e ⛔ ela ⛔ não é
+ * ausência de medida ⛔ nem nova normalidade.
+ *
+ * ⚠️ Regra do autor, 2026-09-07: *"Medida parcial ⛔ não é nova normalidade,
+ * ⛔ não é ausência de medida ⛔ e ⛔ não é resolução. É uma reavaliação
+ * incompleta, ⛔ e deve permanecer **bloqueante**."*
+ */
+export function reavaliacaoPressoricaIncompleta(
+  estado: EstadoAvc
+): AfericaoDePressao | undefined {
+  const todas = afericoesDePressao(estado);
+  const u = todas[todas.length - 1];
+  return u !== undefined && u.iniciada && !u.completa ? u : undefined;
 }
 
 export function pressaoArterial(estado: EstadoAvc): LeituraDaPressao {

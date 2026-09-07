@@ -250,6 +250,29 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Sin esa información",
   "Registrar 0":
     "Registrar 0",
+  /* ── ⚠️ O CICLO DE CORREÇÕES — Fase 7, 2026-09-07 ────────────────────── */
+  /**
+   * ⚠️⚠️ ⛔ *"Nova aferição incompleta"* ⛔ NÃO é *"PA corrigida"* ⛔ nem
+   * *"aguardando decisão"* — ⛔ decisão do autor (**item 4**). ⛔ Medida parcial
+   * ⛔ não é nova normalidade, ⛔ não é ausência de medida ⛔ e ⛔ não é resolução.
+   */
+  "Nova aferição incompleta": "Nueva medición incompleta",
+  "Nova aferição incompleta — complete para reavaliar":
+    "Nueva medición incompleta — complétela para reevaluar",
+  "A diastólica desta mesma aferição": "La diastólica de esta misma medición",
+  "A sistólica desta mesma aferição": "La sistólica de esta misma medición",
+  /** ⚠️ ⛔ A última completa ⛔ **não** é sobrescrita pela parcial (item 2). */
+  "Última aferição completa": "Última medición completa",
+  "Continua sendo a pressão conhecida deste paciente":
+    "Sigue siendo la presión conocida de este paciente",
+  "Problema detectado — ação corretiva ainda não registrada":
+    "Problema detectado — acción correctiva aún no registrada",
+  "Ação registrada — aguardando a reavaliação":
+    "Acción registrada — esperando la reevaluación",
+  "Há contraindicação de segurança, além do que se corrige aqui":
+    "Hay una contraindicación de seguridad, además de lo que se corrige aquí",
+  "Nada mais a corrigir aqui": "Nada más que corregir aquí",
+
   /* ── ⚠️ A DECISÃO ⛔ E A RAIA DA EVT — Fase 6, 2026-09-07 ─────────────── */
   "Decisão sobre prosseguir": "Decisión sobre continuar",
   "Decisão sobre prosseguir com a trombólise":

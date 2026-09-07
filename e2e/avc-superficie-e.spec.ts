@@ -47,6 +47,104 @@ async function glicemiaBaixa(page: Page) {
 }
 
 test.describe("AVC · Correções", () => {
+
+  /* ══ ⚠️⚠️ O CICLO INTEIRO — GESTO REAL, Fase 7 ═══════════════════════════ */
+
+  /**
+   * ── ⚠️⚠️ ⛔ O DEFEITO QUE ESTE TESTE IMPEDE DE VOLTAR ─────────────────────
+   *
+   * ⛔ Medido em 2026-09-07: com **198/112** bloqueando ⛔ e uma nova aferição
+   * contendo **só a PAS**, o bloqueio **desaparecia** — ⛔ o app destravava
+   * sobre uma aferição que ⛔ **não existe**.
+   *
+   * ⚠️ ⛔ O gesto vai até o fim: detecta, trata, ⛔ **ainda** bloqueia, mede
+   * ⛔ pela metade, ⛔ **continua** bloqueando, completa, ⛔ e ⛔ só então cai.
+   */
+  test("PA · o ciclo inteiro, ⛔ e meia aferição ⛔ NÃO destrava", async ({ page }) => {
+    await abrirAvc(page);
+    await paAlta(page);
+
+    /** ⚠️ 1 · problema detectado. */
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-e-ciclo-bloqueado_corrigivel")).toBeVisible();
+
+    /** ⚠️ 2 · ação corretiva registrada — ⛔ e ⛔ ela ⛔ NÃO resolve. */
+    await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
+    await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+    await expect(page.getByTestId("avc-e-ciclo-aguardando_reavaliacao")).toBeVisible();
+    await expect(page.getByTestId("avc-e-bloqueio-pressao_acima_da_meta")).toBeVisible();
+
+    /** ⚠️⚠️ 3 · NOVA aferição, ⛔ e ⛔ só a sistólica. */
+    await aba(page, "estabilizacao");
+    await page.getByTestId("avc-nova-medida-pressao").click();
+    await page.getByTestId("avc-num-caixa-pas").fill("170");
+
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-e-ciclo-afericao_incompleta")).toBeVisible();
+    /** ⚠️ ⛔ O bloqueio **⛔ não** sumiu. */
+    await expect(page.getByTestId("avc-e-bloqueio-pressao_acima_da_meta")).toBeVisible();
+    /** ⚠️⚠️ ⛔ E a última COMPLETA continua sendo 198/112 — ⛔ D-120. */
+    await expect(page.getByTestId("avc-e-ciclo-falta-ultima_pressao_completa"))
+      .toContainText("198/112");
+    await expect(page.getByTestId("avc-e-ciclo-falta-afericao_incompleta"))
+      .toContainText(/PAS 170/);
+
+    /** ⚠️⚠️ ⛔ E AS DUAS TELAS CONTAM A MESMA HISTÓRIA. */
+    await aba(page, "reperfusao");
+    await expect(page.getByTestId("avc-f-portao-estado-afericao_incompleta")).toBeVisible();
+    await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toHaveCount(0);
+
+    /** ⚠️ 4 · a diastólica **da mesma aferição** — ⛔ e ⛔ só agora fecha. */
+    await aba(page, "estabilizacao");
+    await page.getByTestId("avc-num-caixa-pad").fill("98");
+
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-e-bloqueio-pressao_acima_da_meta")).toHaveCount(0);
+
+    /** ⚠️⚠️ ⛔ E o portão atualizou ⛔ **sem o médico voltar para descobrir**. */
+    await expect(page.getByTestId("avc-e-ciclo-afericao_incompleta")).toHaveCount(0);
+    await aba(page, "reperfusao");
+    await expect(page.getByTestId("avc-f-portao-motivo-pressao_acima_da_meta")).toHaveCount(0);
+  });
+
+  /**
+   * ── ⚠️⚠️ ⛔ O CICLO GLICÊMICO TEM UM DEGRAU A MAIS, ⛔ E ⛔ ELE É DA FONTE ──
+   *
+   * ⛔ **F-06**: *"clinical deficits **should be assessed after correction of
+   * glucose** to evaluate thrombolytic eligibility"*. ⚠️ ⛔ Normalizar a
+   * glicemia ⛔ **não** reavalia o paciente.
+   */
+  test("glicemia · corrigir ⛔ não reavalia, ⛔ e a ORDEM é que fecha", async ({ page }) => {
+    await abrirAvc(page);
+    await glicemiaBaixa(page);
+
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-e-ciclo-bloqueado_corrigivel")).toBeVisible();
+
+    await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
+    await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+    await expect(page.getByTestId("avc-e-ciclo-aguardando_reavaliacao")).toBeVisible();
+
+    /** ⚠️ Glicemia normalizada — ⛔ e ⛔ **ainda** ⛔ não resolvido. */
+    await aba(page, "estabilizacao");
+    await page.getByTestId("avc-num-caixa-glicemia").fill("110");
+
+    await abrirCorrecoes(page);
+    await expect(page.getByTestId("avc-e-ciclo-aguardando_reavaliacao")).toBeVisible();
+    await expect(page.getByTestId("avc-e-ciclo-falta-reavaliacao_neurologica"))
+      .toContainText(/exame neurológico depois da correção/i);
+
+    await aba(page, "reperfusao");
+    await expect(page.getByTestId("avc-f-portao-estado-aguardando_reavaliacao")).toBeVisible();
+
+    /** ⚠️⚠️ ⛔ O exame **DEPOIS** da correção — ⛔ e ⛔ é a ordem que fecha. */
+    await aba(page, "neurologico");
+    await page.getByTestId("avc-opcao-deficit_focal-sim").click();
+
+    await aba(page, "reperfusao");
+    await expect(page.getByTestId("avc-f-portao-motivo-reavaliacao_neurologica")).toHaveCount(0);
+  });
+
   /**
    * ── ⚠️⚠️ ⛔ ESTE TESTE MUDOU DE OBJETO (2026-09-06, decisão **C3**) ────────
    *

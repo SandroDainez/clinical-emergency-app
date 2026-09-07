@@ -33,6 +33,8 @@ import {
   type PapelDoAgente,
 } from "../../avc/conteudo/antihipertensivos";
 import { bloqueiosComAcoes } from "../../avc/nucleo/derivacoes-e";
+import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
+import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
@@ -60,6 +62,35 @@ type Props = {
   onNovaAcao: (tipo: string) => void;
 };
 
+/**
+ * ⚠️⚠️ ⛔ AS FRASES DO CICLO — ⛔ e ⛔ elas ⛔ não repetem as da Reperfusão.
+ *
+ * ⛔ Lá o médico pergunta *"posso decidir?"*; ⛔ aqui ⛔ ele pergunta *"o que
+ * falta para eu ter resolvido?"*. ⚠️ Mesma regra, ⛔ duas perguntas.
+ */
+const TITULO_DO_CICLO: Readonly<Record<string, string>> = {
+  bloqueado_corrigivel: "Problema detectado — ação corretiva ainda não registrada",
+  aguardando_reavaliacao: "Ação registrada — aguardando a reavaliação",
+  afericao_incompleta: "Nova aferição incompleta — complete para reavaliar",
+  bloqueado_seguranca: "Há contraindicação de segurança, além do que se corrige aqui",
+  nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
+  informacao_incompleta: "Nada mais a corrigir aqui",
+  sem_criterios: "Nada mais a corrigir aqui",
+  liberado: "Nada mais a corrigir aqui",
+};
+
+/** ⚠️ ⛔ Símbolo ⛔ e palavra — ⛔ cor sozinha ⛔ não é leitura (**E-15**). */
+const SIMBOLO_DO_CICLO: Readonly<Record<string, EstadoClinico>> = {
+  bloqueado_corrigivel: "corrigivel",
+  aguardando_reavaliacao: "andamento",
+  afericao_incompleta: "andamento",
+  bloqueado_seguranca: "impede",
+  nao_recomendada: "impede",
+  informacao_incompleta: "favoravel",
+  sem_criterios: "favoravel",
+  liberado: "favoravel",
+};
+
 export default function SuperficieE({
   estado,
   agora,
@@ -71,6 +102,18 @@ export default function SuperficieE({
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const blocos = bloqueiosComAcoes(estado);
+  /**
+   * ── ⚠️⚠️ ⛔ O CICLO FECHA **AQUI**, ⛔ e ⛔ não na Reperfusão ─────────────
+   *
+   * ⚠️ Decisão do autor, 2026-09-07 (**item 11**): *"O médico ⛔ não deve
+   * precisar voltar manualmente à Reperfusão para descobrir se liberou. A tela
+   * deve mostrar o novo estado **imediatamente** após a reavaliação."*
+   *
+   * ⛔ ⛔ E ⛔ ela **⛔ não recalcula**: lê o mesmo `estadoDoPortaoIVT()` que a
+   * Reperfusão lê. ⛔ Duas somas da mesma regra é como as duas telas passam a
+   * discordar sobre o mesmo paciente (**I6**).
+   */
+  const portao = estadoDoPortaoIVT(estado);
 
   return (
     <View style={e.raiz} testID="avc-superficie-e-conteudo">
@@ -79,6 +122,29 @@ export default function SuperficieE({
           {tr("Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação.")}
         </Text>
       ) : null}
+
+      {/**
+        * ⚠️⚠️ ⛔ O ESTADO DO CICLO, ⛔ E ⛔ O QUE FALTA — ⛔ e ⛔ nunca um botão
+        * mudo (**item 12**).
+        *
+        * ⛔ *"Aguardando nova aferição"* ⛔ e *"Aguardando nova avaliação
+        * neurológica"* ⛔ são coisas diferentes, ⛔ e a frase vem do **motivo**
+        * que o núcleo já nomeia — ⛔ a tela ⛔ não a inventa.
+        */}
+      <View style={e.cicloEstado} testID={`avc-e-ciclo-${portao.estado}`}>
+        <Text style={e.cicloTitulo}>
+          {ESTADOS[SIMBOLO_DO_CICLO[portao.estado] ?? "ausente"].simbolo}{" "}
+          {tr(TITULO_DO_CICLO[portao.estado] ?? "")}
+        </Text>
+        {portao.motivos
+          .filter((m) => m.camada === "correcao")
+          .map((m) => (
+            <Text key={m.id} style={e.cicloFalta} testID={`avc-e-ciclo-falta-${m.id}`}>
+              {tr(m.rotulo)}
+              {m.dado ? ` — ${tr(m.dado)}` : ""} · {tr(m.oQueFalta)}
+            </Text>
+          ))}
+      </View>
 
       {blocos.map(({ bloqueio, acoes }) => {
         const acao = ACOES_DE_CORRECAO.find((a) => a.bloqueio === bloqueio.id);
@@ -398,6 +464,16 @@ const criarEstilos = (tema: Tema) =>
       textDecorationLine: "line-through",
     },
     erroCerto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    cicloEstado: {
+      gap: 2,
+      padding: ESPACO.sm,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      backgroundColor: tema.cores.surface,
+    },
+    cicloTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flexShrink: 1 },
+    cicloFalta: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
     vazio: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
     grupo: { gap: ESPACO.sm },
     formulacao: { ...PAPEL.textoPrincipal, color: tema.cores.text },

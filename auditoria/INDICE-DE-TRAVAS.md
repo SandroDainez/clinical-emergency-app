@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**84 de 98 travas com declaração completa.**
+**85 de 99 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -121,6 +121,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** ⛔ que a ação de administrar trombólise ⛔ só fique disponível quando ⛔ nenhuma das **duas** camadas estiver bloqueando — · segurança ⛔ **não corrigível** (imagem, cortes de F-10, itens de F-07); · bloqueio **corrigível** aberto (PA, glicemia); · correção **iniciada** ⛔ e ⛔ ainda ⛔ sem o fato que prova resolução; · **COR 3** que alcança o caso; ⛔ e que o **veredito ⛔ não seja deformado** para isso acontecer.
 - **NÃO PROMETE:** que a trombólise seja a conduta certa neste paciente — ⛔ isso é do médico. ⛔ Aqui se mede **⛔ o que o app deixa fazer**, ⛔ e ⛔ com base em quê.
 - **UNIVERSO:** `avc/nucleo/{portao-ivt,veredito-da-trombolise,derivacoes-d, derivacoes-e,derivacoes}.ts` × `avc/conteudo/consumidores.ts` × a tela de Reperfusão. ── ⚠️⚠️ ⛔ O FURO QUE ESTA TRAVA NASCEU PARA FECHAR ──────────────────────── ⛔ O mapeamento da Fase 6 mediu: com **INR 2,5**, o motor de segurança devolve `contraindicacao_nao_corrigivel` ⛔ e o veredito devolve `incompleta` com `contra: []`. ⚠️ ⛔ A contraindicação existia, estava classificada, ⛔ e ⛔ **ninguém a lia**. ⛔ ⛔ Um portão construído ⛔ só sobre o veredito deixaria esse paciente passar.
+
+## `test:avc-fase7` → `scripts/prova-avc-fase7-correcoes.cjs`
+
+- **PROMETE:** · que uma aferição **pela metade** ⛔ NÃO derrube o bloqueio pressórico, ⛔ não substitua a última completa ⛔ e ⛔ não libere o portão; · que PAS ⛔ e PAD de uma aferição ⛔ **nunca** se completem com a metade de outra (**D-120**); · que **⛔ nenhum** estado de ação resolva bloqueio — ⛔ nem `Realizada`; · que o ciclo glicêmico mantenha o degrau da fonte: corrigir ⛔ não reavalia; · que a ordem temporal decida, ⛔ e ⛔ não o valor.
+- **NÃO PROMETE:** qual anti-hipertensivo usar — ⛔ **F-19 proíbe hierarquia**, ⛔ e ⛔ esta trava ⛔ não inventa uma.
+- **UNIVERSO:** `avc/nucleo/{derivacoes,derivacoes-d,derivacoes-e,portao-ivt}.ts` × `avc/conteudo/superficie-e.ts` × a tela de Correções. ── ⚠️⚠️ ⛔ O DEFEITO QUE ESTA TRAVA NASCEU PARA FECHAR ──────────────────── ⛔ Medido no mapeamento da Fase 7, 2026-09-07: com **198/112** bloqueando ⛔ e uma nova aferição contendo **só a PAS**, `bloqueiosCorrigiveis()` **parava de acusar**. ⚠️ ⛔ O médico digita 170 de sistólica, ⛔ é interrompido antes da diastólica, ⛔ e o app **destrava** — ⛔ sobre uma aferição que ⛔ não existe. ⚠️ Regra do autor: *"Medida parcial ⛔ não é nova normalidade, ⛔ não é ausência de medida ⛔ e ⛔ não é resolução."*
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

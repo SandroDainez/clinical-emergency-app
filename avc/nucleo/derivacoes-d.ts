@@ -28,7 +28,7 @@ import type { EstadoAvc } from "./estado";
 import { valorAtual } from "./estado";
 import { instanciasDe, valorNaInstancia } from "./instancia";
 import { numero, respondeuDesconhecido, selecaoDe, ternario, type Leitura } from "./leitura";
-import { pressaoArterial } from "./derivacoes";
+import { pressaoArterial, ultimaPressaoCompleta } from "./derivacoes";
 import type { Pendencia } from "./tipos";
 import {
   CORTES_LABORATORIAIS,
@@ -382,8 +382,19 @@ export const CORTES_GLICEMIA = {
 export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrigivel[] {
   const abertos: BloqueioCorrigivel[] = [];
 
-  /** ⚠️ As duas metades vêm da MESMA aferição — D reusa a leitura de A (I6). */
-  const pa = pressaoArterial(estado).medida;
+  /**
+   * ── ⚠️⚠️ A **ÚLTIMA COMPLETA**, ⛔ E ⛔ NÃO A ABERTA — Fase 7, 2026-09-07 ──
+   *
+   * ⛔ Lia `pressaoArterial().medida`, ⛔ que olha a instância **aberta**. ⚠️ Com
+   * uma reavaliação contendo **só a PAS**, `medida` ficava `undefined` ⛔ e o
+   * bloqueio **desaparecia** — ⛔ o app destravava sobre uma aferição que
+   * ⛔ ⛔ não existe.
+   *
+   * ⚠️ ⛔ Agora o corte é lido da última aferição **inteira**. ⛔ Meia medida
+   * ⛔ não substitui a anterior ⛔ nem prova resolução (regra do autor,
+   * **item 13**), ⛔ e ⛔ nunca se completa com a metade de outra (**D-120**).
+   */
+  const pa = ultimaPressaoCompleta(estado);
   if (pa && (pa.pas >= LIMITE_PA_ANTES_DA_IVT.pas || pa.pad >= LIMITE_PA_ANTES_DA_IVT.pad)) {
     abertos.push({
       id: "pressao_acima_da_meta",

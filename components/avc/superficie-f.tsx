@@ -80,6 +80,7 @@ import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
   bloqueado_seguranca: ESTADOS.impede.simbolo,
   bloqueado_corrigivel: ESTADOS.corrigivel.simbolo,
+  afericao_incompleta: ESTADOS.andamento.simbolo,
   aguardando_reavaliacao: ESTADOS.andamento.simbolo,
   nao_recomendada: ESTADOS.impede.simbolo,
   informacao_incompleta: ESTADOS.verificar.simbolo,
@@ -90,6 +91,8 @@ const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
 const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   bloqueado_seguranca: "Contraindicação de segurança ativa",
   bloqueado_corrigivel: "Há condição a corrigir antes",
+  /** ⚠️ ⛔ Ela ⛔ não diz *"PA corrigida"* ⛔ nem *"aguardando decisão"* (item 4). */
+  afericao_incompleta: "Nova aferição incompleta — complete para reavaliar",
   aguardando_reavaliacao: "Correção registrada — falta a reavaliação",
   nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
   informacao_incompleta: "Faltam dados para concluir",

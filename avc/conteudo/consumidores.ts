@@ -160,8 +160,13 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    */
 
   /** ⚠️ As duas metades da aferição — ⛔ e ⛔ elas vêm sempre da mesma (**D-120**). */
-  pas: ["ameacas-imediatas.ts", "derivacoes.ts"],
-  pad: ["derivacoes.ts"],
+  /**
+   * ⚠️ ⛔ `portao-ivt.ts` entrou em 2026-09-07 (Fase 7): ⛔ ele nomeia **qual
+   * metade falta** na aferição incompleta, ⛔ para o toque levar ao campo certo
+   * (**E-26**). ⛔ Ele ⛔ não lê o valor — ⛔ quem lê é `derivacoes.ts`.
+   */
+  pas: ["ameacas-imediatas.ts", "derivacoes.ts", "portao-ivt.ts"],
+  pad: ["derivacoes.ts", "portao-ivt.ts"],
   /** ⚠️ Ameaça imediata (eixo D), corte de F-06 ⛔ e a série temporal da reavaliação. */
   glicemia: ["ameacas-imediatas.ts", "derivacoes-d.ts", "derivacoes.ts"],
 
