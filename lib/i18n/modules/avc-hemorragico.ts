@@ -415,7 +415,6 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Corrigir antes": "Corregir antes",
   "Registrar coleta": "Registrar recolección",
   "Registrar exame": "Registrar examen",
-  "Acesso rápido": "Acceso rápido",
   "Faltam": "Faltan",
   "itens": "ítems",
   /* ── ⚠️ estabilização primeiro ─────────────────────────────────────────── */
