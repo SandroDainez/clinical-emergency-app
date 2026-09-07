@@ -35,6 +35,7 @@
  */
 import type { CampoDeclarado } from "./campo";
 import { OPCOES_ESTADO_DA_ACAO } from "./superficie-e";
+import type { Territorio } from "./superficie-c";
 
 
 /** ⚠️ Os cinco relógios. ⛔ `onset_ou_lkw` ⛔ NÃO é a soma dos dois primeiros. */
@@ -51,6 +52,72 @@ export type JanelaDaRecomendacao = {
   readonly ateHoras: number;
   /** ⚠️ A frase da fonte. ⛔ **E-31**: ⛔ nenhum número clínico sem verbatim. */
   readonly verbatim: string;
+};
+
+/**
+ * ⚠️⚠️⚠️ OS CRITÉRIOS — ⛔ **a regra virou dado**.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ⛔ NÃO FICAM DENTRO DO MOTOR ──────────────────────────
+ *
+ * ⚠️ Regra do autor, 2026-09-07: *"⛔ Não codificar os cortes diretamente dentro
+ * de `vereditoDaTrombectomia()`. ⛔ Não inferir critério pelo `id`. ⛔ Não usar
+ * busca textual. A regra deve virar dado."*
+ *
+ * ⛔ ⛔ Um `if (rec.id === "evt_ant_1" && nihss >= 6)` esconderia o corte da
+ * conferência contra o PDF ⛔ e o deixaria envelhecer calado. ⚠️ Aqui o número
+ * fica **ao lado do verbatim de onde saiu** (**E-31**).
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ NÃO EXISTE MOLDE GERAL ────────────────────────────────────
+ *
+ * ⛔ ⛔ ⛔ **⛔ Nenhum `CRITERIOS_EVT_GERAIS`** sobrescrito por recomendação:
+ * ⚠️ ⛔ isso repetiria, na seleção de paciente, ⛔ exatamente o erro que as duas
+ * notas de generalização fundidas cometeriam. ⛔ Cada recomendação carrega o
+ * seu conjunto, inteiro.
+ */
+
+/**
+ * ⚠️ Faixa numérica. ⛔ `min`/`max` são **inclusivos**; os `…Exclusivo` existem
+ * porque a fonte escreve `<80`, ⛔ e ⛔ `≤79` ⛔ não é a mesma frase.
+ */
+export type CriterioDeFaixa = {
+  readonly min?: number;
+  readonly max?: number;
+  readonly minExclusivo?: number;
+  readonly maxExclusivo?: number;
+};
+
+/** ⚠️ Territórios que **esta** recomendação alcança. ⛔ Nenhum outro. */
+export type CriterioDeSitio = { readonly in: readonly Territorio[] };
+
+/**
+ * ⚠️⚠️ ⛔ A EXIGÊNCIA DE **AUSÊNCIA** — ⛔ e ⛔ ela ⛔ não é *"⛔ não perguntei"*.
+ *
+ * ⛔ A fonte pede *"without significant mass effect on imaging"*: ⛔ o achado
+ * **negado** satisfaz; o achado **afirmado** contradiz; ⛔ o silêncio ⛔ não
+ * resolve (**E-23**, **E-37**).
+ */
+export type CriterioDeAusencia = { readonly exigeAusencia: true };
+
+/**
+ * ⚠️⚠️ ⛔ A JANELA APONTA PARA A PRÓPRIA `janelas` DA RECOMENDAÇÃO — ⛔ e ⛔ NÃO
+ * repete as horas.
+ *
+ * ⛔ ⛔ Repetir `{ min: 0, max: 6 }` aqui criaria **duas fontes do mesmo
+ * número**, livres para divergir (**I6**). ⚠️ Este critério ⛔ só diz *"a janela
+ * desta recomendação é critério"*; ⛔ as horas continuam ⛔ onde sempre
+ * estiveram.
+ */
+export type CriterioDeJanela = { readonly usaJanelasDaRecomendacao: true };
+
+export type CriteriosDaRecomendacao = {
+  readonly sitio_da_oclusao?: CriterioDeSitio;
+  readonly nihss?: CriterioDeFaixa;
+  readonly mrs_previo?: CriterioDeFaixa;
+  readonly aspects?: CriterioDeFaixa;
+  readonly pc_aspects?: CriterioDeFaixa;
+  readonly idade?: CriterioDeFaixa;
+  readonly efeito_de_massa_ausente?: CriterioDeAusencia;
+  readonly janela?: CriterioDeJanela;
 };
 
 /** ⚠️ Insumos que uma recomendação pode exigir. ⛔ Nomes, ⛔ não valores. */
@@ -94,7 +161,22 @@ export type Insumo =
    * sobre **tenecteplase 0,4 mg/kg**: alteplase ⛔ não é "⛔ ainda ⛔ não sei",
    * é **outra terapia**, ⛔ e por isso CONTRADIZ.
    */
-  | "agente_e_tenecteplase";
+  | "agente_e_tenecteplase"
+  /**
+   * ⚠️⚠️⚠️ A JANELA COMO **INSUMO**, ⛔ e ⛔ não como enfeite.
+   *
+   * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (2026-09-07) ────────────────────────
+   *
+   * ⛔ ⛔ `janelas` existia no catálogo ⛔ e ⛔ **ninguém a consultava** para
+   * decidir: ⛔ só `apresentacao-f.ts` a lia, ⛔ para desenhar relógios. ⚠️ Um
+   * paciente de **30 horas** fechava a rec. 1 (*"within 6 hours"*) do mesmo
+   * jeito que um de duas.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO TRAZ UM SEGUNDO RELÓGIO: o número continua ⛔ só em
+   * `janelas`, ⛔ e a contagem continua ⛔ só em `ORIGEM_DO_MARCO`. ⛔ Este
+   * insumo é o **nome** da exigência, ⛔ para que a falta possa ser dita.
+   */
+  | "janela";
 
 /**
  * ⚠️⚠️ POR QUE CADA DADO IMPORTA — em linguagem clínica, ⛔ não de arquitetura.
@@ -114,6 +196,11 @@ export const MOTIVO_CLINICO: Readonly<Record<Insumo, string>> = {
   aspects: "Necessário para as recomendações de circulação anterior.",
   pc_aspects: "Necessário para as recomendações de oclusão basilar.",
   idade: "Necessário para as recomendações que delimitam faixa etária.",
+  /**
+   * ⚠️ ⛔ Ele ⛔ não pede *"a janela"*: pede o **marco** de onde ela conta.
+   * ⛔ Cada recomendação tem a sua, ⛔ e ⛔ não existe janela do módulo.
+   */
+  janela: "Necessário para saber se o caso ainda está dentro da janela de cada recomendação.",
   efeito_de_massa_ausente: "Leitura da imagem exigida por parte das recomendações de janela estendida.",
   deficit_incapacitante: "Distingue a população para quem a rapidez do tratamento foi estudada.",
   deficit_leve_nao_incapacitante:
@@ -222,11 +309,54 @@ export const ACAO_DE_TROMBOLISE: readonly CampoDeclarado[] = [
   },
 ];
 
+/**
+ * ── ⚠️⚠️ ⛔ O DOMÍNIO — ⛔ E ⛔ ELE É **ESTRUTURAL** ────────────────────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07:
+ *
+ * > *"`vereditoDaTrombectomia()` ⛔ só consolida recomendações cuja dimensão
+ * >  seja **elegibilidade/seleção do paciente**. Recomendações de técnica,
+ * >  dispositivo, anestesia, estratégia procedural ⛔ ou tratamento adjunto
+ * >  podem existir no catálogo, ⛔ mas ⛔ não podem alterar elegibilidade."*
+ *
+ * ⛔ ⛔ E ⛔ **não** se deduz do id ⛔ nem de busca textual: ⛔ um
+ * `id.startsWith("evt_tecnica_")` ⛔ seria a quinta varredura de texto desta
+ * sessão — ⛔ e a quarta passou verde sobre defeito real.
+ *
+ * ⚠️ ⛔ O caso que a separação protege: **§4.7.4 rec. 5** diz que *stent
+ * retrievers* ⛔ não beneficiam em vaso médio/distal. ⛔ Deixá-la entrar no
+ * veredito faria o app **negar candidatura por causa de um dispositivo**.
+ */
+export type DominioDaRecomendacao = "elegibilidade" | "tecnica" | "procedimento";
+
+/**
+ * ⚠️⚠️ ⛔ A NOTA DE GENERALIZAÇÃO — ⛔ e ⛔ ela é **da recomendação**, ⛔ e ⛔ não
+ * do módulo.
+ *
+ * ⛔ A guideline traz **duas**, com marcadores diferentes ⛔ e conteúdos
+ * diferentes: a `*` (rec. 3) fala de insuficiência renal ⛔ e expectativa de
+ * vida **<3 meses**; a `†` (rec. 4) fala de tortuosidade vascular, crises no
+ * início ⛔ e expectativa de vida **<6 meses**.
+ *
+ * ⚠️⚠️ ⛔ **⛔ NÃO É CONTRAINDICAÇÃO.** ⛔ *"Limited generalizability"* ⛔ não é
+ * *"⛔ não elegível"*: ⛔ é julgamento clínico necessário, ⛔ e ⛔ o veredito
+ * ⛔ não a usa para negar ⛔ nada.
+ */
+export type NotaDeGeneralizacao = {
+  /** ⚠️ O marcador da fonte — ⛔ e ⛔ ele identifica **qual** nota é. */
+  readonly marcador: "*" | "†";
+  readonly verbatim: string;
+};
+
 export type Recomendacao = {
   readonly id: string;
   readonly slot: string;
   readonly localizacao: string;
   readonly terapia: "ivt" | "evt";
+  /** ⚠️⚠️ ⛔ Obrigatório: ⛔ domínio ausente ⛔ não é *"elegibilidade"* — ⛔ é decisão ⛔ não tomada. */
+  readonly dominio: DominioDaRecomendacao;
+  /** ⚠️ ⛔ Só onde a fonte a escreve — ⛔ e ⛔ presa a **esta** recomendação. */
+  readonly generalizacao?: NotaDeGeneralizacao;
   /** ⚠️ Verbatim. ⛔ **`COR 3: No Benefit` ⛔ NÃO é "contraindicado"** — a fonte
    * escreveu *not recommended*, e converter inventaria força que ela ⛔ não deu. */
   readonly cor: string;
@@ -241,6 +371,26 @@ export type Recomendacao = {
    * fonte ⛔ não traz critério de paciente, ela é `PrincipioGeral`.
    */
   readonly exige: readonly Insumo[];
+  /**
+   * ⚠️⚠️⚠️ O QUE CADA INSUMO EXIGIDO PRECISA **VALER** — ⛔ e ⛔ sem ⛔ isto o
+   * motor conclui por **presença**.
+   *
+   * ⛔ ⛔ Ausente, a leitura cai na semântica antiga: *"o dado está lá?"*.
+   * ⚠️ ⛔ Isso é de propósito, ⛔ e ⛔ é o **§50**: as recomendações de **IVT**
+   * ⛔ não declaram `criterios`, ⛔ e ⛔ por isso ⛔ nenhuma delas muda de
+   * comportamento. ⛔ A camada é a mesma; a exigência é ⛔ só de quem a assume.
+   *
+   * ⚠️ ⛔ Há **prova** de que toda recomendação de elegibilidade de EVT declara
+   * os seus, ⛔ e de que ⛔ nenhum insumo exigido fica sem critério que o julgue.
+   */
+  readonly criterios?: CriteriosDaRecomendacao;
+  /**
+   * ⚠️⚠️ A FRASE INTEIRA DA FONTE — ⛔ e ⛔ ela é a **procedência dos números**.
+   *
+   * ⛔ **E-31**: ⛔ nenhum número clínico sem verbatim. ⛔ Com os cortes virando
+   * dado, cada `min`/`max` precisa de uma frase ao lado de onde conferi-lo.
+   */
+  readonly verbatim?: string;
   /** ⚠️ Dívida que impede concluir a correspondência. ⛔ Ver F-31, F-29. */
   readonly travadaPor?: string;
 };
@@ -313,6 +463,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-02",
     localizacao: "§4.6.1 rec. 1 · p. e353",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "faster treatment improves functional outcomes",
@@ -326,6 +477,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-02 / F-17",
     localizacao: "§4.6.1 rec. 8 · p. e353",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "3: No Benefit",
     loe: "B-R",
     verbo: "is not recommended",
@@ -344,6 +496,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-09",
     localizacao: "§4.6.2 rec. 1 · p. e357",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -362,6 +515,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-09",
     localizacao: "§4.6.2 rec. 2 · p. e357",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "3: No Benefit",
     loe: "A",
     verbo: "is not recommended",
@@ -382,6 +536,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-03",
     localizacao: "§4.6.3 rec. 1 · p. e359",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "2a",
     loe: "B-R",
     verbo: "can be beneficial",
@@ -400,6 +555,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-03",
     localizacao: "§4.6.3 rec. 2 · p. e359",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "2a",
     loe: "B-R",
     verbo: "can be beneficial",
@@ -426,6 +582,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-03",
     localizacao: "§4.6.3 rec. 3 · p. e359",
     terapia: "ivt",
+    dominio: "elegibilidade",
     cor: "2b",
     loe: "B-R",
     verbo: "may be beneficial",
@@ -448,6 +605,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-08",
     localizacao: "§4.7.2 rec. 1 · p. e368",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -455,13 +613,23 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 6, verbatim: "within 6 hours from onset of symptoms" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "aspects"],
+    verbatim:
+      "In patients with AIS from anterior circulation proximal LVO of the ICA or M1, presenting within 6 hours from onset of symptoms, with NIHSS score \u22656, prestroke mRS score of 0 to 1, and ASPECTS 3 to 10, EVT is recommended to improve functional clinical outcomes and reduce mortality.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      nihss: { min: 6 },
+      mrs_previo: { min: 0, max: 1 },
+      aspects: { min: 3, max: 10 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "aspects"],
   },
   {
     id: "evt_ant_2",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 2 · p. e368",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -474,13 +642,23 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "between 6 and 24 hours from onset of symptoms",
       },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "aspects"],
+    verbatim:
+      "In patients with AIS from anterior circulation proximal LVO of the ICA or M1 presenting between 6 and 24 hours from onset of symptoms, with NIHSS score \u22656, prestroke mRS score 0 to 1 and ASPECTS \u22656, EVT is recommended to improve functional clinical outcomes and reduce mortality.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      nihss: { min: 6 },
+      mrs_previo: { min: 0, max: 1 },
+      aspects: { min: 6 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "aspects"],
   },
   {
     id: "evt_ant_3",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 3 · p. e368",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -493,20 +671,43 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "between 6 and 24 hours from onset of symptoms",
       },
     ],
-    exige: [
-      "sitio_da_oclusao",
-      "nihss",
-      "mrs_previo",
-      "aspects",
-      "idade",
-      "efeito_de_massa_ausente",
-    ],
+    /**
+     * ── ⚠️⚠️ A NOTA `*` — ⛔ e ⛔ ela é **desta** recomendação ─────────────
+     *
+     * ⛔ Os ensaios que a sustentam (ANGEL-ASPECTS, SELECT2) **excluíram ⛔ ou
+     * sub-representaram** grupos específicos. ⚠️ ⛔ Isso ⛔ **não** é
+     * contraindicação: ⛔ é *"limited generalizability"*, ⛔ e a diferença é a
+     * diferença entre *"⛔ não trate"* ⛔ e *"julgue com cuidado"*.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO É A NOTA DA REC. 4: ⛔ aqui a expectativa de vida é
+     * **<3 meses** ⛔ e há insuficiência renal ⛔ e hipertensão refratária;
+     * ⛔ lá são **<6 meses**, tortuosidade ⛔ e estenose intracraniana.
+     */
+    generalizacao: {
+      marcador: "*",
+      verbatim:
+        "Limited generalizability in specific subpopulations: Specific patient groups were underrepresented or excluded in the trials supporting this recommendation. Consequently, the applicability of these findings is limited in individuals >80 years, those with renal failure, patients with refractory hypertension (SBP \u2265185 mm Hg or DBP \u2265110 mm Hg), comorbid psychiatric or medical illnesses that confound neurological assessments, or patients with a life expectancy <3 months.",
+    },
+    verbatim:
+      "In selected patients* with AIS from anterior circulation proximal LVO of the ICA or M1, presenting between 6 and 24 hours from onset of symptoms, with age <80 years, NIHSS score \u22656, prestroke mRS score 0 to 1, ASPECTS 3 to 5, and without significant mass effect on imaging, EVT is recommended to improve functional clinical outcomes and reduce mortality.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      /** ⚠️⚠️ *"age <80 years"* — ⛔ estrito, ⛔ e ⛔ `≤79` ⛔ não é a mesma frase. */
+      idade: { maxExclusivo: 80 },
+      nihss: { min: 6 },
+      mrs_previo: { min: 0, max: 1 },
+      aspects: { min: 3, max: 5 },
+      efeito_de_massa_ausente: { exigeAusencia: true },
+    },
+    exige: ["sitio_da_oclusao", "janela", "idade", "nihss", "mrs_previo", "aspects", "efeito_de_massa_ausente"],
   },
   {
     id: "evt_ant_4",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 4 · p. e368",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "2a",
     loe: "B-R",
     verbo: "is reasonable",
@@ -514,20 +715,41 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 6, verbatim: "within 6 hours from onset of symptoms" },
     ],
-    exige: [
-      "sitio_da_oclusao",
-      "nihss",
-      "mrs_previo",
-      "aspects",
-      "idade",
-      "efeito_de_massa_ausente",
-    ],
+    /**
+     * ── ⚠️⚠️ A NOTA `†` — ⛔ e ⛔ ela vem do **LASTE** ────────────────────
+     *
+     * ⛔ O ensaio de ASPECTS 0–2 excluiu ⛔ **outros** grupos: tortuosidade de
+     * vasos cervicais/cranianos, crises no início que impeçam NIHSS acurado,
+     * suspeita forte de estenose intracraniana ⛔ e expectativa de vida
+     * **<6 meses**.
+     *
+     * ⚠️⚠️ ⛔ Fundir com a nota `*` inventaria critério para as duas
+     * populações — ⛔ e ⛔ há mutação que mata a troca.
+     */
+    generalizacao: {
+      marcador: "†",
+      verbatim:
+        "Limited generalizability in specific subpopulations: Specific patient groups were underrepresented or excluded in the trials supporting this recommendation. Consequently, the applicability of these findings is limited in individuals >80 years, those with significant head and neck vessel tortuosity, comorbid psychiatric or medical conditions that confound neurological assessments, seizures at stroke onset that hinder accurate NIHSS evaluations, a strong suspicion of underlying intracranial stenosis, or a life expectancy <6 months.",
+    },
+    verbatim:
+      "In selected patients\u2020 with AIS from anterior circulation proximal LVO of the ICA or M1 presenting within 6 hours from onset of symptoms, with age <80 years, NIHSS score \u22656, prestroke mRS 0 to 1, ASPECTS 0 to 2, and without significant mass effect on imaging, EVT is reasonable to improve functional clinical outcomes and reduce mortality.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      idade: { maxExclusivo: 80 },
+      nihss: { min: 6 },
+      mrs_previo: { min: 0, max: 1 },
+      aspects: { min: 0, max: 2 },
+      efeito_de_massa_ausente: { exigeAusencia: true },
+    },
+    exige: ["sitio_da_oclusao", "janela", "idade", "nihss", "mrs_previo", "aspects", "efeito_de_massa_ausente"],
   },
   {
     id: "evt_ant_5",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 5 · p. e368",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "2a",
     loe: "B-NR",
     verbo: "is reasonable",
@@ -535,13 +757,34 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 6, verbatim: "within 6 hours from onset of symptoms" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo"],
+    /**
+     * ── ⚠️⚠️ ⛔ `aspects` FALTAVA, ⛔ E O VERBATIM O EXIGE ──────────────────
+     *
+     * > *"…with NIHSS score ≥6, **and ASPECTS ≥6**, who have a prestroke mRS
+     * >  score of 2, EVT is reasonable…"*
+     *
+     * ⛔ ⛔ Sem ⛔ ele, um paciente com **ASPECTS 2** fecharia esta recomendação
+     * — ⛔ um critério que a fonte ⛔ exige, ⛔ e que o motor ⛔ não cobrava.
+     * ⚠️ Achado na conferência da Fase 9 contra o PDF da AHA/ASA 2026.
+     */
+    verbatim:
+      "In patients with AIS from anterior circulation proximal LVO of the ICA or M1 presenting within 6 hours from onset of symptoms, with NIHSS score \u22656, and ASPECTS \u22656, who have a prestroke mRS score of 2, EVT is reasonable to improve functional clinical outcomes and reduce accumulated disability.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      nihss: { min: 6 },
+      aspects: { min: 6 },
+      /** ⚠️⚠️ *"a prestroke mRS score **of 2**"* — ⛔ exatamente 2. */
+      mrs_previo: { min: 2, max: 2 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "aspects"],
   },
   {
     id: "evt_ant_6",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 6 · p. e369",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "2b",
     loe: "B-NR",
     verbo: "might be reasonable",
@@ -549,13 +792,23 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 6, verbatim: "within 6 hours from onset of symptoms" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "aspects"],
+    verbatim:
+      "In patients with AIS from anterior circulation proximal LVO of the ICA or M1 presenting within 6 hours from onset of symptoms, with NIHSS score \u22656, and ASPECTS of \u22656, who have a prestroke mRS score of 3 to 4, EVT might be reasonable to improve functional clinical outcomes and reduce accumulated disability.",
+    criterios: {
+      sitio_da_oclusao: { in: ["ica", "m1"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      nihss: { min: 6 },
+      aspects: { min: 6 },
+      mrs_previo: { min: 3, max: 4 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "aspects"],
   },
   {
     id: "evt_m2_dominante",
     slot: "F-08",
     localizacao: "§4.7.2 rec. 7 · p. e369",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "2a",
     loe: "B-NR",
     verbo: "is reasonable, but the benefits are uncertain",
@@ -563,7 +816,17 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 6, verbatim: "within 6 hours from onset of symptoms" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "aspects"],
+    verbatim:
+      "In patients with AIS from occlusion of the dominant proximal M2 division of the MCA presenting within 6 hours from onset of symptoms with a prestroke mRS score of 0 to 1, NIHSS score of \u22656, and ASPECTS of \u22656, EVT is reasonable to improve functional outcomes, but the benefits are uncertain.",
+    criterios: {
+      /** ⚠️⚠️ **SÓ** M2 dominante — ⛔ a ⛔ não dominante é outra recomendação, ⛔ e COR 3. */
+      sitio_da_oclusao: { in: ["m2_dominante"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      mrs_previo: { min: 0, max: 1 },
+      nihss: { min: 6 },
+      aspects: { min: 6 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "aspects"],
   },
   {
     /**
@@ -575,14 +838,104 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-08",
     localizacao: "§4.7.2 rec. 8 · p. e369",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "3: No Benefit",
     loe: "A",
     verbo: "is not recommended",
     populacao:
       "M2 proximal NÃO dominante ou codominante · ACM distal · ACA · ACP",
+    /**
+     * ⚠️⚠️⚠️ A JANELA VEM DO **CABEÇALHO DA TABELA**, ⛔ e ⛔ isso é fonte.
+     *
+     * ── ⚠️⚠️ ⛔ EU DEIXEI VAZIO, ⛔ E O AUTOR CORRIGIU (2026-09-07) ─────────
+     *
+     * ⛔ ⛔ A **frase** da rec. 8 ⛔ não repete a janela, ⛔ e eu tratei ⛔ isso
+     * como ausência. ⚠️ ⛔ A linha ⛔ imediatamente acima dela na tabela é
+     * explícita, ⛔ e ⛔ ela é parte da recomendação, ⛔ não decoração.
+     *
+     * ⚠️⚠️ ⛔ E a consequência clínica era grande: ⛔ sem janela, um M2 ⛔ não
+     * dominante de **30 horas** recebia *"⛔ não recomendada para melhorar
+     * desfecho"* de uma recomendação que a fonte limita às **primeiras seis**.
+     */
+    janelas: [
+      {
+        marco: "symptom_onset",
+        ateHoras: 6,
+        verbatim:
+          "Thrombectomy 0 to 6 hours for nondominant proximal M2 division MCA, distal MCA, anterior cerebral artery, and posterior cerebral artery occlusions",
+      },
+    ],
+    verbatim:
+      "In patients with AIS from occlusion of the proximal nondominant or codominant division proximal M2 segment of the MCA, or distal MCA, anterior cerebral artery (ACA), or posterior cerebral artery (PCA), EVT is not recommended to improve functional outcomes.",
+    criterios: {
+      /**
+       * ⚠️⚠️ OS QUATRO TERRITÓRIOS DA FRASE, ⛔ e ⛔ nenhum a mais.
+       *
+       * ⛔ ⛔ Sem ⛔ isto, ela alcançava **M1** ⛔ e **basilar** — ⛔ e um paciente
+       * com ⛔ só o sítio anotado recebia veredito **negativo** por uma
+       * recomendação escrita para outra anatomia.
+       */
+      sitio_da_oclusao: { in: ["m2_nao_dominante", "acm_distal", "aca", "acp"] },
+      janela: { usaJanelasDaRecomendacao: true },
+    },
+    exige: ["sitio_da_oclusao", "janela"],
+  },
+  /**
+   * ── ⚠️⚠️ ⛔ RECOMENDAÇÃO DE **TÉCNICA**, ⛔ E ⛔ NÃO DE ELEGIBILIDADE ──────
+   *
+   * ⚠️ §4.7.4 rec. 5 · e373 — ⛔ e ⛔ ela é sobre **dispositivo**:
+   *
+   * > *"In patients with AIS from occlusion of medium or distal vessels of the
+   * >  anterior, middle (nondominant or codominant M2, M3), or posterior
+   * >  cerebral arteries, EVT **with stent retrievers** is of no benefit for
+   * >  improving functional outcomes."*
+   *
+   * ⚠️⚠️ ⛔ ELA ⛔ NÃO DUPLICA A REC. 8 DE §4.7.2, ⛔ e ⛔ a diferença é o
+   * sujeito: ⛔ aquela diz que **a EVT** ⛔ não beneficia naqueles sítios;
+   * ⛔ **esta** diz que **o stent retriever** ⛔ não beneficia. ⛔ Uma fala de
+   * candidatura, ⛔ a outra de **como** se faria.
+   *
+   * ⛔ ⛔ E ⛔ por isso `dominio: "tecnica"`: ⛔ deixá-la entrar no veredito faria
+   * o app **negar candidatura por causa de um dispositivo** — ⛔ e a fonte
+   * ⛔ não escreve isso.
+   */
+  {
+    id: "evt_tecnica_stent_retriever_distal",
+    slot: "F-08",
+    localizacao: "§4.7.4 rec. 5 · p. e373",
+    terapia: "evt",
+    dominio: "tecnica",
+    cor: "3: No Benefit",
+    loe: "A",
+    verbo: "is of no benefit for improving functional outcomes",
+    populacao:
+      "oclusão de vaso médio ou distal — M2 não dominante ou codominante, M3, cerebral anterior ou posterior",
     janelas: [],
+    verbatim:
+      "In patients with AIS from occlusion of medium or distal vessels of the anterior, middle (nondominant or codominant M2, M3), or posterior cerebral arteries, EVT with stent retrievers is of no benefit for improving functional outcomes.",
+    /**
+     * ⚠️⚠️⚠️ ELA **TEM** POPULAÇÃO — ⛔ o que ⛔ ela ⛔ não tem é veredito.
+     *
+     * ── ⚠️⚠️ ⛔ EU ERREI ⛔ ANTES, ⛔ E A GUARDA ME PEGOU (2026-09-07) ────────
+     *
+     * ⛔ ⛔ Eu escrevi `exige: []` raciocinando que *"ela ⛔ não seleciona
+     * paciente"*. ⚠️ ⛔ A prova da Superfície F derrubou isso, ⛔ e estava certa:
+     * ⛔ recomendação **negativa** com zero insumos sai `aplicavel` no estado
+     * **vazio** — ⛔ o app anunciaria *"stent retriever ⛔ não beneficia"* a
+     * ⛔ todo paciente, ⛔ inclusive a um sobre quem ⛔ nada se sabe.
+     *
+     * ⚠️⚠️ ⛔ A frase da fonte **nomeia territórios**, ⛔ e são ⛔ exatamente os
+     * quatro que o campo do laudo sabe descrever. ⛔ O `dominio: "tecnica"` a
+     * mantém fora do **veredito**; ⛔ o critério anatômico a mantém fora dos
+     * **pacientes de outra anatomia**. ⛔ São duas travas, ⛔ e ⛔ elas ⛔ não se
+     * substituem.
+     */
+    criterios: {
+      sitio_da_oclusao: { in: ["m2_nao_dominante", "acm_distal", "aca", "acp"] },
+    },
     exige: ["sitio_da_oclusao"],
   },
+
 
   // ── EVT · circulação posterior ─────────────────────────────────────────
   {
@@ -590,6 +943,7 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-08",
     localizacao: "§4.7.3 rec. 1 · p. e372",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -597,13 +951,24 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 24, verbatim: "within 24 hours from onset of symptoms" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "pc_aspects"],
+    verbatim:
+      "In patients with AIS, with basilar artery occlusion, a baseline mRS score of 0 to 1, NIHSS score \u226510 at presentation, and PC-ASPECTS \u22656 (mild ischemic damage), EVT within 24 hours from onset of symptoms is recommended to achieve better functional outcome and reduce mortality.",
+    criterios: {
+      sitio_da_oclusao: { in: ["basilar"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      mrs_previo: { min: 0, max: 1 },
+      /** ⚠️⚠️ **≥10** — ⛔ e ⛔ não o ≥6 da circulação anterior. */
+      nihss: { min: 10 },
+      pc_aspects: { min: 6 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "pc_aspects"],
   },
   {
     id: "evt_basilar_2",
     slot: "F-08",
     localizacao: "§4.7.3 rec. 2 · p. e372",
     terapia: "evt",
+    dominio: "elegibilidade",
     cor: "2b",
     loe: "B-R",
     verbo: "is not well established",
@@ -611,7 +976,17 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     janelas: [
       { marco: "symptom_onset", ateHoras: 24, verbatim: "within 24 hours" },
     ],
-    exige: ["sitio_da_oclusao", "nihss", "mrs_previo", "pc_aspects"],
+    verbatim:
+      "In patients with AIS, with basilar artery occlusion, a baseline mRS score of 0 to 1, NIHSS score 6 to 9 at presentation, and PC-ASPECTS \u22656 (mild ischemic damage) the effectiveness of EVT within 24 hours to improve functional outcomes and reduce mortality is not well established.",
+    criterios: {
+      sitio_da_oclusao: { in: ["basilar"] },
+      janela: { usaJanelasDaRecomendacao: true },
+      mrs_previo: { min: 0, max: 1 },
+      /** ⚠️⚠️ A FAIXA **6–9**, fechada dos dois lados — 10 é a COR 1. */
+      nihss: { min: 6, max: 9 },
+      pc_aspects: { min: 6 },
+    },
+    exige: ["sitio_da_oclusao", "janela", "nihss", "mrs_previo", "pc_aspects"],
   },
 ] as const;
 
@@ -629,6 +1004,19 @@ export const IVT_E_EVT_EM_PARALELO = {
   localizacao: "§4.7.1 recs. 1 e 2 · p. e368",
   cor: "1",
   loe: "A",
+  verbatim:
+    "In patients with AIS who are eligible for both IVT and EVT, IVT should be administered as rapidly as possible, without observation, to assess clinical response or delay in initiating EVT, to improve treatment times and clinical outcomes.",
+  /**
+   * ⚠️⚠️ A FRASE QUE A TELA MOSTRA **QUANDO AS DUAS ESTÃO INDICADAS** — ⛔ e ⛔ é
+   * ⛔ só aí que ela aparece.
+   *
+   * ⛔ ⛔ Permanente, ela viraria aviso de fundo ⛔ e pararia de ser lida.
+   * ⚠️ ⛔ No momento em que o médico tem **duas** indicações na tela, ela é a
+   * única coisa que impede o erro que a fonte nomeia: **esperar a resposta à
+   * trombólise antes de chamar a sala de hemodinâmica**.
+   */
+  frase:
+    "Não aguardar resposta clínica à trombólise para prosseguir com a trombectomia.",
 } as const;
 
 /**
@@ -702,42 +1090,6 @@ export const DECISAO_DE_PROSSEGUIR: readonly CampoDeclarado[] = [
   },
 ];
 
-/**
- * ── ⚠️⚠️ ⛔ COMO CADA DADO DA EVT SE MOSTRA — ⛔ e ⛔ isto é **DADO** ────────
- *
- * ⚠️ Decisão do autor, 2026-09-07 (**item 10**): a conclusão endovascular é
- * `desconhecido`, ⛔ e ⛔ tem de **permanecer** desconhecida. ⛔ *"⛔ Não usar
- * símbolo ✓ ⛔ ou ⛔. Preferir `?` ⛔ ou `·`."*
- *
- * ⚠️⚠️ ⛔ E ⛔ ELE MORA AQUI, ⛔ E ⛔ NÃO NO JSX — ⛔ porque a primeira trava que
- * escrevi varria o **texto do bloco** ⛔ e a mutação *"usar ✓ no dado
- * registrado"* **sobreviveu**: a lista era montada ⛔ acima do bloco, ⛔ fora do
- * trecho varrido.
- *
- * ⛔ ⛔ Regra escrita em prosa se mede por leitura; ⛔ regra escrita em dado se
- * mede por **execução**.
- */
-export const ESTADO_DO_DADO_EVT = {
-  /** ⚠️ Há valor — ⛔ e o protocolo ⛔ não autoriza classificá-lo (`·`). */
-  registrados: { estado: "medido", rotulo: "Registrado" },
-  /**
-   * ── ⚠️⚠️ ⛔ *"Incerto"*, ⛔ E ⛔ NUNCA *"Não avaliado"* ────────────────────
-   *
-   * ⛔ Achado na revisão visual da Fase 6, 2026-09-07: ⛔ eu usava o **rótulo
-   * genérico** do estado `ausente`, ⛔ e a tela dizia *"Efeito de massa — Não
-   * avaliado"* ⛔ para um campo que o médico **respondeu** como *"Não sei"*.
-   *
-   * ⚠️⚠️ ⛔ É ⛔ exatamente o colapso que **E-37** proíbe. ⛔ E a palavra certa
-   * ⛔ já existia no projeto — `SAIDA_SEM_CONCLUSAO` usa **"Incerto"**, com o
-   * comentário que a justifica: *"olhei ⛔ e ⛔ não dá para afirmar" ⛔ não é
-   * "⛔ ainda ⛔ não perguntei"*.
-   *
-   * ⛔ ⛔ O símbolo continua neutro; ⛔ quem carrega o significado é a palavra.
-   */
-  semConclusao: { estado: "ausente", rotulo: "Incerto" },
-  /** ⚠️ **E-37**: falta perguntar (`?`). ⛔ ⛔ NÃO é lista de requisitos. */
-  naoPerguntados: { estado: "verificar", rotulo: "Não perguntado" },
-} as const;
 
 /** ⚠️ Doses sustentadas por F-09. ⛔ **Preparo e administração ⛔ NÃO entram aqui.** */
 export const DOSES = {

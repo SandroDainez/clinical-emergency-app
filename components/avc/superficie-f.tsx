@@ -25,13 +25,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   ACAO_DE_TROMBOLISE,
   DECISAO_DE_PROSSEGUIR,
-  ESTADO_DO_DADO_EVT,
   CAMPO_AGENTE,
   TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
   PRINCIPIOS_GERAIS,
 } from "../../avc/conteudo/superficie-f";
 import {
+  ENFASE_DO_VEREDITO_EVT,
+  SELO_DO_VEREDITO_EVT,
   FALTAS_EM_PRIMEIRO_PLANO,
   faltasAgrupadas,
   itensDaTela,
@@ -42,6 +43,7 @@ import {
 } from "../../avc/nucleo/apresentacao-f";
 import {
   doseDerivada,
+  minutosDesdeCampoDoEstado,
   recomendacoesDoEstado,
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
@@ -50,7 +52,7 @@ import { ESTADOS } from "../../design-system/estados-clinicos";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
 import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
-import { informacaoParaAFrenteEndovascular } from "../../avc/nucleo/derivacoes-c";
+import { vereditoDaTrombectomia } from "../../avc/nucleo/veredito-da-trombectomia";
 import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { numeroCurto } from "../../avc/nucleo/formato";
@@ -135,19 +137,13 @@ export default function SuperficieF({
    * quando o marco ⛔ não foi registrado: zero é uma contagem, ausência ⛔ não é.
    */
   const minutosDesdeCampo = useMemo(
-    () => (campo: string) => {
-      const f = valorAtual(estado, campo);
-      const v = f?.valor;
-      return typeof v === "number" && Number.isFinite(v)
-        ? Math.max(0, Math.round((agora - v) / 60000))
-        : undefined;
-    },
+    () => (campo: string) => minutosDesdeCampoDoEstado(estado, campo, agora),
     [estado, agora]
   );
 
   const itens = useMemo(
-    () => itensDaTela(recomendacoesDoEstado(estado), minutosDesdeCampo),
-    [estado, minutosDesdeCampo]
+    () => itensDaTela(recomendacoesDoEstado(estado, agora), minutosDesdeCampo),
+    [estado, agora, minutosDesdeCampo]
   );
   const faltas = useMemo(() => faltasAgrupadas(itens), [itens]);
   const naFaixa = (f: Faixa) => itens.filter((i) => i.faixa === f);
@@ -197,43 +193,20 @@ export default function SuperficieF({
    * ⛔ e a regra clínica ⛔ envelheceria junto com o layout (**I6**).
    */
   const portao = useMemo(() => estadoDoPortaoIVT(estado), [estado]);
+
+  /**
+   * ⚠️⚠️ O VEREDITO DA EVT — ⛔ **outro motor**, ⛔ e ⛔ não outro ramo do da IVT.
+   *
+   * ⛔ ⛔ Ele **exige** `agora`: a janela é um dos critérios, ⛔ e ⛔ um veredito
+   * de trombectomia ⛔ sem relógio ⛔ não é veredito.
+   */
+  const vereditoEvt = useMemo(
+    () => vereditoDaTrombectomia(estado, agora),
+    [estado, agora]
+  );
   /** ⚠️ Quantas administrações já estão na trilha — ⛔ para medir discrepância. */
   const administracoes = instanciasDe(estado, TROMBOLISE_IV).length;
 
-  /**
-   * ⚠️⚠️ ⛔ OS DADOS DA EVT — ⛔ derivados do dossiê, ⛔ e ⛔ nunca listados à mão.
-   *
-   * ⛔ Os três baldes vêm de `informacaoParaAFrenteEndovascular()`, ⛔ que
-   * ⛔ **já** distingue *registrado* · *sem conclusão* · *⛔ não perguntado*.
-   * ⚠️ ⛔ Achatá-los aqui apagaria ⛔ exatamente a diferença que **E-37** protege.
-   */
-  const dossie = useMemo(() => informacaoParaAFrenteEndovascular(estado), [estado]);
-  const DADOS_DA_EVT = useMemo(
-    () => [
-            ...dossie.registrados.map((id) => ({
-        id,
-        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
-        nome: ROTULO_CURTO[id] ?? id,
-        estado: ESTADO_DO_DADO_EVT.registrados.estado,
-        rotulo: ESTADO_DO_DADO_EVT.registrados.rotulo,
-      })),
-            ...dossie.semConclusao.map((id) => ({
-        id,
-        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
-        nome: ROTULO_CURTO[id] ?? id,
-        estado: ESTADO_DO_DADO_EVT.semConclusao.estado,
-        rotulo: ESTADO_DO_DADO_EVT.semConclusao.rotulo,
-      })),
-            ...dossie.naoPerguntados.map((id) => ({
-        id,
-        /** ⚠️ O nome do dado — ⛔ e ⛔ ele ⛔ nunca é sobrescrito pelo rótulo do balde. */
-        nome: ROTULO_CURTO[id] ?? id,
-        estado: ESTADO_DO_DADO_EVT.naoPerguntados.estado,
-        rotulo: ESTADO_DO_DADO_EVT.naoPerguntados.rotulo,
-      })),
-    ],
-    [dossie]
-  );
 
   return (
     <View style={e.raiz} testID="avc-superficie-f-conteudo">
@@ -368,61 +341,178 @@ export default function SuperficieF({
       </View>
 
       {/**
-        * ── ⚠️⚠️ A AVALIAÇÃO ENDOVASCULAR — ⛔ SÍNTESE, ⛔ E ⛔ NUNCA VEREDITO ──
+        * ── ⚠️⚠️⚠️ A RAIA DA TROMBECTOMIA — ⛔ AGORA COM VEREDITO ────────────
         *
-        * ⚠️ Decisão do autor, 2026-09-07 (**itens 8 a 13**): a raia de EVT é
-        * **informativa**. ⛔ Ela mostra os fatos que já existem ⛔ e ⛔ para aí.
+        * ⚠️ Autorizada pelo autor em 2026-09-07, ⛔ **depois** de o motor
+        * passar pelos casos discriminatórios. ⛔ Até aqui esta raia era
+        * informativa ⛔ e dizia *"critérios ⛔ ainda ⛔ não incorporados ao
+        * motor"* — ⛔ frase que agora seria **falsa**.
         *
-        * ⛔ ⛔ **⛔ NÃO** escreve *elegível*, *⛔ não elegível*, *recomendada*,
-        * *contraindicada* ⛔ nem *candidata* — ⛔ e ⛔ isso ⛔ não é cautela
-        * retórica: **F-08** adverte que *"`EVT elegível = sim/não` ⛔ NÃO é fato
-        * armazenado"*, ⛔ e os critérios completos ⛔ ainda ⛔ não têm fonte
-        * transcrita no projeto.
+        * ── ⚠️⚠️ ⛔ A TELA ⛔ NÃO RECALCULA ⛔ NADA ──────────────────────────
         *
-        * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO COMPETE COM O PORTÃO (item 13): a IVT tem
-        * **decisão operacional**; ⛔ a EVT tem **dados**. ⛔ Fabricar
-        * equivalência funcional entre as duas seria prometer uma decisão que
-        * ⛔ o motor ⛔ não sabe tomar.
+        * ⚠️ Regra do autor: *"A tela ⛔ não pode recalcular: janela, NIHSS,
+        * ASPECTS, PC-ASPECTS, mRS, idade, sítio, efeito de massa, COR/LOE.
+        * ⛔ Tudo vem do núcleo."*
         *
-        * ⚠️ ⛔ Os símbolos ⛔ vêm dos sete estados, ⛔ e ⛔ **⛔ nenhum é ✓ ⛔ ou
-        * ⛔ ⛔** (item 10): `·` para o que está medido, `?` para o que ⛔ não foi
-        * perguntado, `—` para o que foi respondido ⛔ sem conclusão.
+        * ⛔ ⛔ Por isso ⛔ **⛔ nenhum** `valorAtual`, ⛔ **⛔ nenhuma**
+        * comparação numérica ⛔ e ⛔ **⛔ nenhum** `>=` moram neste bloco:
+        * ⛔ até o *"2h08"* ⛔ e o rótulo *"NIHSS"* vêm prontos em `fechouCom`.
+        * ⚠️ Uma segunda leitura do mesmo fato divergiria da primeira ⛔ no dia
+        * em que o NIHSS calculado passasse a existir (**I6**).
         */}
-      <View style={e.grupo} testID="avc-f-evt-dossie">
-        <CabecalhoDeBloco titulo={tr("Avaliação endovascular")} testID="avc-f-bloco-evt" />
-        {/**
-          * ⚠️⚠️ ⛔ *"Dados **registrados relacionados à**"*, ⛔ e ⛔ não *"dados
-          * **disponíveis para** decisão"* — ⛔ ajuste do autor, 2026-09-07.
-          *
-          * ⛔ *"Disponíveis para decisão"* carrega conotação de **prontidão**:
-          * ⛔ sugere que o que está ali ⛔ já basta para decidir. ⚠️ ⛔ Não basta —
-          * ⛔ os critérios ⛔ não estão no motor. ⛔ A frase descreve o **estado
-          * epistemológico do sistema**, ⛔ e ⛔ nada além dele.
-          */}
-        <Text style={e.evtNota} testID="avc-f-evt-nota">
-          {tr("Dados registrados relacionados à avaliação endovascular. Critérios de elegibilidade ainda não incorporados ao motor.")}
+      <View
+        style={[
+          e.veredito,
+          ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" && e.vereditoIndicada,
+          ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "contra" && e.vereditoContra,
+        ]}
+        testID="avc-f-evt"
+      >
+        <CabecalhoDeBloco titulo={tr("Trombectomia mecânica")} testID="avc-f-bloco-evt" />
+        <View style={e.vereditoTopo}>
+          {/**
+            * ⚠️⚠️ Símbolo **e** palavra (**E-15**), ⛔ e ⛔ o slug ⛔ **nunca**.
+            *
+            * ⛔ ⛔ *"contraindicada"* ⛔ NÃO aparece: COR 3 aqui é
+            * *"is not recommended … No Benefit"* — ⛔ ausência de benefício
+            * demonstrada, ⛔ e ⛔ não risco proibitivo.
+            */}
+          <Text
+            style={[
+              e.vereditoSelo,
+              ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" && e.vereditoSeloIndicada,
+              ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "contra" && e.vereditoSeloContra,
+            ]}
+            testID={`avc-f-evt-estado-${vereditoEvt.tipo}`}
+          >
+            {SELO_DO_VEREDITO_EVT[vereditoEvt.tipo].simbolo}{" "}
+            {tr(SELO_DO_VEREDITO_EVT[vereditoEvt.tipo].rotulo)}
+          </Text>
+        </View>
+        <Text style={e.vereditoFrase} testID="avc-f-evt-frase">
+          {tr(vereditoEvt.frase)}
         </Text>
 
-        {DADOS_DA_EVT.map((linha) => (
-          <View key={linha.id} style={e.evtLinha} testID={`avc-f-evt-${linha.id}`}>
-            <Text style={e.evtSimbolo} accessibilityElementsHidden>
-              {ESTADOS[linha.estado].simbolo}
+        {/**
+          * ⚠️⚠️ A MAIS FORTE PRIMEIRO, ⛔ e as demais **⛔ não somem**.
+          *
+          * ⚠️ Autor: *"Se mais de uma recomendação realmente se aplicar,
+          * preservar. ⛔ Não esconder sobreposição legítima ⛔ apenas para
+          * simplificar a tela."* ⛔ Em ⛔ exatamente 6 h, ⛔ duas COR 1
+          * alcançam o mesmo paciente — ⛔ e a fonte ⛔ não dá regra para
+          * excluir uma delas.
+          */}
+        {[...vereditoEvt.sustentam, ...vereditoEvt.semForca, ...vereditoEvt.contra].map((m, i) => (
+          <View
+            key={m.id}
+            style={[e.vereditoMotivo, i > 0 && e.evtMotivoSecundario]}
+            testID={`avc-f-evt-motivo-${m.id}`}
+          >
+            <Text style={e.vereditoGrau}>
+              {tr("COR")} {m.cor} · {tr("LOE")} {m.loe} · {m.localizacao}
             </Text>
-            <Text style={e.evtRotulo}>{tr(linha.nome)}</Text>
-            {/** ⚠️ ⛔ O rótulo do estado por extenso — ⛔ símbolo sozinho ⛔ não é legenda (**E-15**). */}
+            {/** ⚠️ Verbatim em inglês — ⛔ verbatim ⛔ não se traduz (§6.14). */}
+            <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+
             {/**
-              * ⚠️⚠️ ⛔ O RÓTULO É O DO **BALDE**, ⛔ e ⛔ não o genérico do estado.
+              * ⚠️⚠️ O FUNDAMENTO — ⛔ **⛔ só os fatos desta recomendação**.
               *
-              * ⛔ *"Não sei"* respondido ⛔ não é *"Não avaliado"* — ⛔ e usar o
-              * rótulo genérico fazia a tela **afirmar que ⛔ ninguém olhou** um
-              * campo que o médico respondeu (**E-37**).
+              * ⛔ ⛔ Autor: *"⛔ Não listar critérios de populações que foram
+              * descartadas."* ⚠️ A lista sai de `exige` da própria frase,
+              * ⛔ então um M1 ⛔ nunca exibe PC-ASPECTS.
               */}
-            <Text style={e.evtEstado} testID={`avc-f-evt-estado-${linha.id}`}>
-              {tr(linha.rotulo)}
-            </Text>
+            {m.fechouCom.length > 0 ? (
+              <View style={e.evtFatos} testID={`avc-f-evt-fatos-${m.id}`}>
+                {m.fechouCom.map((f) => (
+                  <Text
+                    key={f.insumo}
+                    style={e.evtFato}
+                    testID={`avc-f-evt-fato-${m.id}-${f.insumo}`}
+                  >
+                    {tr(f.rotulo)} {f.valor}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
+
+            {/**
+              * ⚠️⚠️⚠️ A NOTA DE GENERALIZAÇÃO — ⛔ **desta** recomendação, ⛔ e
+              * ⛔ **⛔ nunca** uma lista global de limitações da EVT.
+              *
+              * ⛔ ⛔ As duas notas da fonte citam grupos ⛔ e expectativas de
+              * vida **diferentes** (<3 meses × <6 meses). ⚠️ Uma caixa fixa
+              * de *"limitações"* aplicaria critério da população errada.
+              *
+              * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO É CONTRAINDICAÇÃO: *"limited
+              * generalizability"* pede **julgamento**, ⛔ e ⛔ não exclusão —
+              * por isso o rótulo diz ⛔ isso por extenso.
+              */}
+            {m.generalizacao ? (
+              <View style={e.evtGeneralizacao} testID={`avc-f-evt-generalizacao-${m.id}`}>
+                <Text style={e.evtGeneralizacaoRotulo}>
+                  {m.generalizacao.marcador}{" "}
+                  {tr("Generalização limitada — exige julgamento clínico, e não é exclusão")}
+                </Text>
+                <Text style={e.evtGeneralizacaoTexto}>{m.generalizacao.verbatim}</Text>
+              </View>
+            ) : null}
           </View>
         ))}
+
+        {/**
+          * ⚠️⚠️ O QUE FALTA, **NOMEADO ⛔ E RESOLVÍVEL** (**E-26**).
+          *
+          * ⛔ ⛔ Autor: *"⛔ Não cobrar dados de recomendações já contraditas."*
+          * ⚠️ O núcleo já filtra: ⛔ só entra o que falta a quem **⛔ ainda
+          * alcança** o caso.
+          */}
+        {vereditoEvt.faltam.length > 0 ? (
+          <View style={e.vereditoFaltas} testID="avc-f-evt-faltas">
+            {vereditoEvt.faltam.map((f) => (
+              <Pressable
+                key={f.insumo}
+                accessibilityRole="button"
+                accessibilityLabel={tr(acaoPendente(f.insumo))}
+                testID={`avc-f-evt-falta-${f.insumo}`}
+                onPress={() => onIrParaCampo(f.campos[0] ?? f.insumo)}
+                style={e.vereditoFaltaToque}
+              >
+                <Text style={e.vereditoFalta}>{tr(acaoPendente(f.insumo))}</Text>
+                <Text style={e.vereditoFaltaSeta}>{SETA}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        <Text style={e.vereditoRessalva} testID="avc-f-evt-ressalva">
+          {tr(vereditoEvt.ressalva)}
+        </Text>
       </View>
+
+      {/**
+        * ── ⚠️⚠️⚠️ AS DUAS INDICADAS AO MESMO TEMPO ────────────────────────
+        *
+        * ⚠️ ⛔ Esta faixa aparece ⛔ **⛔ só** quando as duas frentes estão de
+        * pé. ⛔ Permanente, ela viraria aviso de fundo ⛔ e pararia de ser
+        * lida — ⛔ e é ⛔ exatamente neste instante que o erro que a fonte
+        * nomeia acontece: **esperar a resposta à trombólise antes de chamar a
+        * hemodinâmica**.
+        *
+        * ⚠️ ⛔ E ⛔ ela ⛔ não sugere competição: as duas raias já são
+        * visualmente iguais, ⛔ e a frase fala de **ordem no tempo**, ⛔ não de
+        * escolha entre uma ⛔ e outra.
+        */}
+      {portao.liberado
+        && ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" ? (
+        <View style={e.paralelo} testID="avc-f-evt-sem-esperar">
+          <Text style={e.paraleloGrau}>
+            {tr("COR")} {IVT_E_EVT_EM_PARALELO.cor} · {tr("LOE")}{" "}
+            {IVT_E_EVT_EM_PARALELO.loe} · {IVT_E_EVT_EM_PARALELO.localizacao}
+          </Text>
+          <Text style={e.paraleloTexto}>{tr(IVT_E_EVT_EM_PARALELO.frase)}</Text>
+          <Text style={e.evtGeneralizacaoTexto}>{IVT_E_EVT_EM_PARALELO.verbatim}</Text>
+        </View>
+      ) : null}
 
       {/* ── as duas raias, compactas, sempre visíveis ───────────────────── */}
       <View style={e.raias} testID="avc-f-raias">
@@ -1255,6 +1345,39 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ A falta é dita como **ação**, ⛔ e ⛔ nunca como nome de campo. */
     vereditoFalta: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
     vereditoCorrigir: { ...PAPEL.textoSecundario, color: tema.cores.warning },
+
+    /**
+     * ⚠️⚠️ A CONCOMITANTE FICA **RECUADA**, ⛔ e ⛔ NÃO ESCONDIDA.
+     *
+     * ⚠️ Autor: *"A recomendação mais forte pode ser a principal, e as demais
+     * podem aparecer como contexto secundário."* ⛔ Sumir com elas apagaria
+     * sobreposição legítima — ⛔ em ⛔ exatamente 6 h, duas COR 1 alcançam o
+     * mesmo paciente.
+     */
+    evtMotivoSecundario: {
+      marginLeft: ESPACO.sm,
+      backgroundColor: tema.cores.surface,
+      borderLeftWidth: 2,
+      borderLeftColor: tema.cores.border,
+    },
+    /** ⚠️ Os fatos que fecharam, em linha — ⛔ e ⛔ sem estourar 375 px. */
+    evtFatos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm, marginTop: 2 },
+    evtFato: { ...PAPEL.micro, color: tema.cores.text },
+    /**
+     * ⚠️⚠️ ⛔ A NOTA ⛔ NÃO USA COR DE ALERTA.
+     *
+     * ⛔ ⛔ Vermelho ⛔ ou âmbar aqui leria como contraindicação — ⛔ e
+     * *"limited generalizability"* ⛔ é o oposto: pede **julgamento**.
+     */
+    evtGeneralizacao: {
+      marginTop: ESPACO.xs,
+      paddingTop: ESPACO.xs,
+      borderTopWidth: 1,
+      borderTopColor: tema.cores.border,
+      gap: 2,
+    },
+    evtGeneralizacaoRotulo: { ...PAPEL.micro, color: tema.cores.textSecondary, fontWeight: "700" },
+    evtGeneralizacaoTexto: { ...PAPEL.micro, color: tema.cores.textSecondary },
     /** ⚠️ ⛔ Nunca some, ⛔ e ⛔ nunca vira letra miúda ilegível. */
     vereditoRessalva: { ...PAPEL.legenda, color: tema.cores.textSecondary },
 

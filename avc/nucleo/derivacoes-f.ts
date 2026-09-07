@@ -25,9 +25,15 @@ import {
   DOSES,
   RECOMENDACOES,
   TROMBOLISE_IV,
+  type CriterioDeFaixa,
   type Insumo,
+  type JanelaDaRecomendacao,
   type Recomendacao,
 } from "../conteudo/superficie-f";
+import { rotuloClinico } from "../conteudo/rotulos-clinicos";
+import { grauDoRotulo } from "../conteudo/mrs";
+import { TERRITORIO_DA_OPCAO } from "../conteudo/superficie-c";
+import { ORIGEM_DO_MARCO, camposDoMarco } from "./apresentacao-f";
 
 export type Correspondencia =
   | "aplicavel"
@@ -417,10 +423,296 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
   }
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ O CRITÉRIO — ⛔ E ⛔ ELE ⛔ NÃO É A PRESENÇA DO DADO
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ESTA CAMADA FECHA (achado por execução, 2026-09-07)
+ *
+ * ⛔ ⛔ `valorDoInsumo()` responde *"há dado registrado?"*. ⚠️ Para a **IVT**
+ * ⛔ isso basta: os insumos dela são quase todos ternários — *"o déficit é
+ * incapacitante?"* tem sim, ⛔ não ⛔ e ⛔ não sei, ⛔ e cada um é uma resposta.
+ *
+ * ⚠️⚠️ ⛔ A **EVT** é o primeiro consumidor cujos critérios são **faixas
+ * numéricas ⛔ e territórios anatômicos**. ⛔ Ali a presença ⛔ não diz ⛔ nada:
+ * um M1 com NIHSS 14, ASPECTS 8 ⛔ e mRS 0 fechava **cinco** recomendações de
+ * populações que se excluem — mRS 2, mRS 3–4, M2 dominante ⛔ e M2 ⛔ não
+ * dominante entre elas. ⛔ E um paciente com ⛔ **só** *"basilar"* anotado
+ * recebia veredito **negativo** por uma recomendação de M2.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE A IVT ⛔ NÃO MUDA ─────────────────────────────────────
+ *
+ * ⛔ ⛔ ⛔ **⛔ Nenhuma** recomendação de IVT declara `criterios`. ⚠️ Sem
+ * critério declarado a leitura cai, intacta, na semântica antiga — ⛔ e ⛔ isso é
+ * o **§50** executado: a regra clínica que já funcionava ⛔ não se altera de
+ * carona. ⛔ Há prova disso.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️⚠️ O NÚMERO DE UM INSUMO — ⛔ e ⛔ **⛔ NEM TODO ⛔ ELE MORA COMO NÚMERO**.
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO MUDO (achado pelo e2e da Fase 9, 2026-09-07) ─────────
+ *
+ * ⛔ ⛔ `mrs_previo` é campo de **escolha**: o estado guarda
+ * `"0 · assintomático"`. ⚠️ Lido com `typeof v === "number"`, ⛔ ele devolvia
+ * `undefined` **para sempre** — ⛔ e ⛔ **⛔ nenhuma** das nove recomendações
+ * que exigem mRS ⛔ jamais fechou no app real.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ o gesto real foi o único a pegar: as provas gravavam o número
+ * cru, ⛔ medindo um formato que a tela ⛔ **nunca** produz.
+ *
+ * ⚠️ ⛔ Uma leitura só, ⛔ aqui — ⛔ para que o fundamento exiba ⛔ exatamente o
+ * número que o critério julgou (**I6**).
+ */
+function valorNumericoDoInsumo(estado: EstadoAvc, insumo: Insumo): number | undefined {
+  if (insumo === "nihss") {
+    const n = nihssCalculado(estado) ?? nihssInformado(estado);
+    return typeof n === "number" && Number.isFinite(n) ? n : undefined;
+  }
+  /** ⚠️⚠️ Escala com rótulo — ⛔ o grau sai da própria lista, ⛔ e ⛔ não de um `parseInt`. */
+  if (insumo === "mrs_previo") return grauDoRotulo(escolha(estado, "mrs_previo"));
+  const v = valorAtual(estado, insumo)?.valor;
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
+
+/** ⚠️ `min`/`max` inclusivos; os `…Exclusivo` existem porque a fonte diz `<80`. */
+function naFaixa(v: number, f: CriterioDeFaixa): boolean {
+  if (f.min !== undefined && v < f.min) return false;
+  if (f.max !== undefined && v > f.max) return false;
+  if (f.minExclusivo !== undefined && v <= f.minExclusivo) return false;
+  if (f.maxExclusivo !== undefined && v >= f.maxExclusivo) return false;
+  return true;
+}
+
+/**
+ * ⚠️⚠️ MINUTOS DESDE UM CAMPO DE HORA — ⛔ **um** relógio, ⛔ e ⛔ não dois.
+ *
+ * ⛔ ⛔ A tela de F tinha esta conta inline. ⛔ Duplicá-la aqui daria duas
+ * contagens livres para divergir num arredondamento (**I6**) — ⛔ por isso a
+ * tela passou a chamar **esta**.
+ *
+ * ⚠️ ⛔ Devolve `undefined`, ⛔ **nunca zero**, quando o marco ⛔ não foi
+ * registrado: zero é uma contagem; ausência ⛔ não é (**E-02**).
+ */
+export function minutosDesdeCampoDoEstado(
+  estado: EstadoAvc,
+  campo: string,
+  agoraMs: number
+): number | undefined {
+  const v = valorAtual(estado, campo)?.valor;
+  return typeof v === "number" && Number.isFinite(v)
+    ? Math.max(0, Math.round((agoraMs - v) / 60_000))
+    : undefined;
+}
+
+/**
+ * ⚠️⚠️ A JANELA COMO CRITÉRIO — ⛔ e ⛔ **nenhuma hora nova**.
+ *
+ * ⛔ Os números continuam ⛔ só em `janelas`; a contagem continua ⛔ só em
+ * `ORIGEM_DO_MARCO`. ⚠️ ⛔ E a **disjunção** da fonte é preservada: quando o
+ * marco aceita dois campos, ⛔ basta que **um** deles caia dentro — ⛔ escolher
+ * o mais conservador seria regra clínica que a fonte ⛔ não deu.
+ */
+function valorDaJanela(
+  estado: EstadoAvc,
+  janelas: readonly JanelaDaRecomendacao[],
+  agoraMs: number | undefined
+): ValorDoInsumo {
+  /**
+   * ⚠️⚠️ ⛔ SEM `agoraMs`, A JANELA É **AUSÊNCIA** — ⛔ e ⛔ nunca *"dentro"*.
+   *
+   * ⚠️ ⛔ A degradação é para o lado seguro **por construção**: ausente ⛔ nunca
+   * torna uma recomendação aplicável; ⛔ só a deixa potencial, nomeando a falta.
+   */
+  if (agoraMs === undefined || janelas.length === 0) return undefined;
+
+  let algumMarco = false;
+  for (const j of janelas) {
+    const origem = ORIGEM_DO_MARCO[j.marco];
+    if (origem.tipo !== "campo") continue;
+    for (const campo of camposDoMarco(j.marco)) {
+      const min = minutosDesdeCampoDoEstado(estado, campo, agoraMs);
+      if (min === undefined) continue;
+      algumMarco = true;
+      const de = Math.round((j.deHoras ?? 0) * 60);
+      const ate = Math.round(j.ateHoras * 60);
+      if (min >= de && min <= ate) return "satisfaz";
+    }
+  }
+  /** ⚠️ Marco registrado ⛔ e fora de toda janela é **resposta**, ⛔ não falta. */
+  return algumMarco ? "contradiz" : undefined;
+}
+
+/** ⚠️ O território que o laudo descreve. ⛔ `indeterminado` ⛔ não é resposta. */
+function territorioDoEstado(estado: EstadoAvc) {
+  const rotulo = escolha(estado, "sitio_oclusao");
+  if (rotulo === undefined) return undefined;
+  const t = TERRITORIO_DA_OPCAO[rotulo];
+  return t === undefined || t === "indeterminado" ? undefined : t;
+}
+
+/**
+ * ⚠️⚠️⚠️ A LEITURA DE UM INSUMO **DENTRO DE UMA RECOMENDAÇÃO**.
+ *
+ * ⛔ ⛔ O parâmetro `r` já existia na assinatura de `leiturasDasRecomendacoes` ⛔ e
+ * era **descartado** (`_r`). ⚠️ Era ⛔ exatamente ali que o critério cabia.
+ *
+ * ⚠️ ⛔ Três saídas, ⛔ e as três importam:
+ *   · **satisfaz**  — o dado existe ⛔ e cai no critério **desta** recomendação;
+ *   · **contradiz** — o dado existe ⛔ e está fora dele (⛔ é resposta, ⛔ não falta);
+ *   · `undefined`   — ⛔ o dado ⛔ não foi registrado (⛔ e ⛔ isso ⛔ não é um "não").
+ */
+export function valorDoInsumoNaRecomendacao(
+  estado: EstadoAvc,
+  r: Recomendacao,
+  insumo: Insumo,
+  agoraMs: number | undefined
+): ValorDoInsumo {
+  const c = r.criterios;
+  /** ⚠️ ⛔ Sem critério declarado, ⛔ nada muda — a IVT passa por aqui intacta. */
+  if (c === undefined) return valorDoInsumo(estado, insumo);
+
+  if (insumo === "janela" && c.janela !== undefined) {
+    return valorDaJanela(estado, r.janelas, agoraMs);
+  }
+
+  if (insumo === "sitio_da_oclusao" && c.sitio_da_oclusao !== undefined) {
+    const t = territorioDoEstado(estado);
+    if (t === undefined) return undefined;
+    return c.sitio_da_oclusao.in.includes(t) ? "satisfaz" : "contradiz";
+  }
+
+  const faixa =
+    insumo === "nihss" ? c.nihss
+    : insumo === "mrs_previo" ? c.mrs_previo
+    : insumo === "aspects" ? c.aspects
+    : insumo === "pc_aspects" ? c.pc_aspects
+    : insumo === "idade" ? c.idade
+    : undefined;
+
+  if (faixa !== undefined) {
+    const v = valorNumericoDoInsumo(estado, insumo);
+    if (v === undefined) return undefined;
+    return naFaixa(v, faixa) ? "satisfaz" : "contradiz";
+  }
+
+  /**
+   * ⚠️ `efeito_de_massa_ausente` já era lido por valor — ⛔ o critério ⛔ só
+   * torna a exigência **declarada**. ⛔ A conduta ⛔ não muda, ⛔ e ⛔ não deve.
+   */
+  return valorDoInsumo(estado, insumo);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ O FATO QUE FECHOU O CRITÉRIO — ⛔ COM VALOR, ⛔ E FORMATADO **AQUI**
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE A TELA ⛔ NÃO FORMATA ────────────────────────────────
+ *
+ * ⚠️ Regra do autor, 2026-09-07: *"A tela ⛔ não pode recalcular: janela, NIHSS,
+ * ASPECTS, PC-ASPECTS, mRS, idade, sítio, efeito de massa, COR/LOE. ⛔ Tudo vem
+ * do núcleo."*
+ *
+ * ⛔ ⛔ Uma tela que lesse `valorAtual(estado, "nihss_informado")` para escrever
+ * *"NIHSS 14"* teria **duas** leituras do mesmo fato — a do motor ⛔ e a dela.
+ * ⚠️ ⛔ Elas divergiriam ⛔ no dia em que o NIHSS calculado passasse a existir,
+ * ⛔ e a tela mostraria o número que o veredito ⛔ não usou (**I6**).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type FatoQueFechou = {
+  readonly insumo: Insumo;
+  /** ⚠️ Nome clínico do fato. ⛔ **⛔ Nunca** o slug. */
+  readonly rotulo: string;
+  /** ⚠️ O valor **como o médico o lê**. ⛔ Já formatado, ⛔ e ⛔ não um número cru. */
+  readonly valor: string;
+};
+
+/**
+ * ⚠️⚠️ *"2h08"* — ⛔ e ⛔ não *"128 min"* ⛔ nem *"2,13 h"*.
+ *
+ * ⛔ A janela da fonte é contada em horas; ⛔ minutos soltos obrigam o médico a
+ * dividir de cabeça ⛔ enquanto decide (**E-21**).
+ */
+function horasEMinutos(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}h${String(m).padStart(2, "0")}`;
+}
+
+/**
+ * ⚠️ O valor de um insumo, ⛔ já em linguagem clínica. ⛔ `undefined` quando ⛔ o
+ * fato ⛔ não está lá — ⛔ e ⛔ então ⛔ ele ⛔ não entra no fundamento.
+ */
+function valorLegivel(
+  estado: EstadoAvc,
+  r: Recomendacao,
+  insumo: Insumo,
+  agoraMs: number | undefined
+): string | undefined {
+  if (insumo === "sitio_da_oclusao") return escolha(estado, "sitio_oclusao");
+
+  if (insumo === "janela") {
+    if (agoraMs === undefined) return undefined;
+    for (const j of r.janelas) {
+      if (ORIGEM_DO_MARCO[j.marco].tipo !== "campo") continue;
+      for (const campo of camposDoMarco(j.marco)) {
+        const min = minutosDesdeCampoDoEstado(estado, campo, agoraMs);
+        if (min !== undefined) return horasEMinutos(min);
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * ⚠️⚠️ ⛔ A **AUSÊNCIA** SE DIZ POR EXTENSO — ⛔ e ⛔ não como *"efeito de
+   * massa: não"*, ⛔ que se lê como campo ⛔ não respondido.
+   */
+  if (insumo === "efeito_de_massa_ausente") {
+    return ternario(estado, "efeito_de_massa") === false
+      ? "Sem efeito de massa significativo"
+      : undefined;
+  }
+
+  const n = valorNumericoDoInsumo(estado, insumo);
+  return n === undefined ? undefined : String(n);
+}
+
+/**
+ * ⚠️⚠️⚠️ OS FATOS QUE FECHARAM **ESTA** RECOMENDAÇÃO — ⛔ e ⛔ SÓ ELES.
+ *
+ * ⛔ ⛔ Regra do autor: *"Mostrar ⛔ apenas fatos pertinentes à recomendação
+ * aplicada. ⛔ Não listar critérios de populações que foram descartadas."*
+ *
+ * ⚠️ Por isso a lista sai de `r.exige` — ⛔ o que **aquela** frase pede — ⛔ e
+ * ⛔ nunca de uma lista fixa de dados da EVT.
+ */
+export function fatosQueFecharam(
+  estado: EstadoAvc,
+  r: Recomendacao,
+  agoraMs: number | undefined
+): readonly FatoQueFechou[] {
+  const fatos: FatoQueFechou[] = [];
+  for (const insumo of r.exige) {
+    const valor = valorLegivel(estado, r, insumo, agoraMs);
+    if (valor === undefined) continue;
+    fatos.push({ insumo, rotulo: rotuloClinico(insumo), valor });
+  }
+  return fatos;
+}
+
+/**
+ * ⚠️⚠️ `agoraMs` é **opcional**, ⛔ e a omissão é segura por construção: ⛔ sem
+ * ele o insumo `janela` fica **ausente**, ⛔ e ausência ⛔ nunca torna uma
+ * recomendação aplicável — ⛔ só a deixa potencial, nomeando a falta.
+ *
+ * ⛔ Quem **decide** (o veredito da trombectomia) o **exige**; quem ⛔ só
+ * **lista** (a IVT, a tela de recomendações) pode ⛔ não ter relógio em mãos.
+ */
 export function recomendacoesDoEstado(
-  estado: EstadoAvc
+  estado: EstadoAvc,
+  agoraMs?: number
 ): readonly LeituraDaRecomendacao[] {
-  return leiturasDasRecomendacoes((_r, i) => valorDoInsumo(estado, i));
+  return leiturasDasRecomendacoes((r, i) =>
+    valorDoInsumoNaRecomendacao(estado, r, i, agoraMs)
+  );
 }
 
 

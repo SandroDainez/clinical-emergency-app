@@ -87,3 +87,29 @@ export const GRAUS_MRS_PREVIO: readonly GrauMrs[] = GRAUS_MRS.filter((g) => g.gr
 export function rotuloDoGrau(g: GrauMrs): string {
   return `${g.grau} · ${g.descritor}`;
 }
+
+/**
+ * ⚠️⚠️⚠️ O CAMINHO DE VOLTA — ⛔ rótulo gravado → **grau numérico**.
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO MUDO QUE ISTO FECHA (achado pelo e2e, 2026-09-07) ────
+ *
+ * ⛔ ⛔ `mrs_previo` é campo de **escolha**: o estado guarda
+ * `"0 · assintomático"`, ⛔ e ⛔ não o número `0`. ⚠️ ⛔ Todas as recomendações
+ * que exigem mRS o liam com `typeof v === "number"` — ⛔ e recebiam
+ * `undefined` **para sempre**. ⛔ Nenhuma delas ⛔ jamais fechou no app real.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ **⛔ nenhuma prova pegou**: elas gravavam o número cru no estado,
+ * ⛔ medindo um formato que a tela ⛔ **nunca** produz. ⛔ É o mesmo erro que
+ * `derivacoes-f.ts` já documenta para o Sim/Não — ⛔ *"injetavam o rótulo
+ * direto no estado, mediam o meu vazio, ⛔ não o do app"*.
+ *
+ * ⚠️ ⛔ A conversão sai da **própria lista**, ⛔ e ⛔ não de um `parseInt` no
+ * rótulo: ⛔ assim ⛔ ela ⛔ não passa a aceitar textos que ⛔ não são graus.
+ */
+export function grauDoRotulo(rotulo: string | undefined): number | undefined {
+  if (rotulo === undefined) return undefined;
+  const g = GRAUS_MRS.find((x) => rotuloDoGrau(x) === rotulo);
+  if (g === undefined) return undefined;
+  const n = Number(g.grau);
+  return Number.isFinite(n) ? n : undefined;
+}

@@ -45,7 +45,12 @@ export const ROTULO_CLINICO: Readonly<Record<string, string>> = {
   idade: "Idade",
   sitio_da_oclusao: "Sítio da oclusão",
   aspects: "ASPECTS",
-  pc_aspects: "pc-ASPECTS",
+  /**
+   * ⚠️ **PC-ASPECTS**, ⛔ e ⛔ não *"pc-ASPECTS"* — ⛔ a fonte escreve a sigla em
+   * caixa alta, ⛔ e ⛔ ela aparece **ao lado de "ASPECTS"** no fundamento do
+   * veredito. ⛔ Caixa inconsistente ali lê como duas coisas diferentes.
+   */
+  pc_aspects: "PC-ASPECTS",
   efeito_de_massa_ausente: "Ausência de efeito de massa",
   penumbra_salvavel: "Penumbra salvável",
   penumbra_por_perfusao_automatizada: "Penumbra por perfusão automatizada",
@@ -54,6 +59,12 @@ export const ROTULO_CLINICO: Readonly<Record<string, string>> = {
   peso: "Peso",
   nao_elegivel_a_evt: "Inelegibilidade à trombectomia",
   agente_e_tenecteplase: "Agente em consideração",
+  /**
+   * ⚠️ ⛔ *"Desde o início"*, ⛔ e ⛔ não *"Janela"*: ⛔ o que o médico lê no
+   * fundamento é o **tempo decorrido** (*"2h08"*), ⛔ e ⛔ não o nome do
+   * critério.
+   */
+  janela: "Desde o início",
 
   // ── campos de tela ────────────────────────────────────────────────────────
   hora_ultima_vez_bem: "Última vez visto bem",
@@ -83,7 +94,7 @@ export const ACAO_PENDENTE: Readonly<Record<string, string>> = {
   idade: "Informar a idade",
   sitio_da_oclusao: "Registrar o sítio da oclusão",
   aspects: "Registrar o ASPECTS do laudo",
-  pc_aspects: "Registrar o pc-ASPECTS do laudo",
+  pc_aspects: "Registrar o PC-ASPECTS do laudo",
   efeito_de_massa_ausente: "Registrar se há efeito de massa na imagem",
   penumbra_salvavel: "Registrar se há penumbra salvável",
   penumbra_por_perfusao_automatizada: "Registrar a perfusão automatizada",
@@ -92,6 +103,12 @@ export const ACAO_PENDENTE: Readonly<Record<string, string>> = {
   peso: "Informar o peso",
   nao_elegivel_a_evt: "Definir a elegibilidade à trombectomia",
   agente_e_tenecteplase: "Escolher o agente trombolítico em consideração",
+  /**
+   * ⚠️⚠️ ⛔ A JANELA SE RESOLVE **INFORMANDO O HORÁRIO**, ⛔ e ⛔ o genérico
+   * ⛔ não servia: o fallback produzia *"Registrar desde o início"*, ⛔ que
+   * ⛔ não é ação clínica ⛔ nem diz o que fazer. ⚠️ Visto na revisão de 375 px.
+   */
+  janela: "Informar o horário de início do déficit",
 
   hora_ultima_vez_bem: "Informar a última vez visto bem",
   hora_chegada: "Informar o horário de chegada",

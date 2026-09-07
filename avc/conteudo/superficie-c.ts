@@ -266,6 +266,19 @@ export const CAPACIDADES_DA_MODALIDADE: Readonly<Record<string, readonly string[
     "estudo_resultado",
     "hipodensidade_clara",
     "aspects",
+    /**
+     * ⚠️⚠️ PC-ASPECTS **DECLARADO**, ⛔ e ⛔ não herdado por ser *"parênquima"*.
+     *
+     * ⚠️ A fonte o descreve como escala de 10 pontos com **dedução por região**
+     * (ponte, mesencéfalo, tálamos, occipitais, hemisférios cerebelares) —
+     * ⛔ o mesmo construto do ASPECTS, ⛔ e os ensaios que o usam (ATTENTION,
+     * BAOCHE) selecionam por **TC sem contraste**.
+     *
+     * ⛔ ⛔ Se um dia PC-ASPECTS por RM ⛔ ou por CTA-SI for admitido, ⛔ ele
+     * entra **aqui, declarado, com a fonte que o admita** — ⛔ como este
+     * arquivo já exige para o ASPECTS.
+     */
+    "pc_aspects",
     "efeito_de_massa",
   ],
   [MODALIDADE.angioTc]: ["sitio_oclusao"],
@@ -352,6 +365,65 @@ export const OPCOES_SITIO_OCLUSAO: readonly string[] = [
   "Não especificado no laudo",
   NAO_SEI,
 ];
+
+/**
+ * ⚠️⚠️⚠️ O TERRITÓRIO ANATÔMICO — ⛔ o vocabulário que as recomendações usam,
+ * ⛔ e ⛔ **nunca** o rótulo em português.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ISTO EXISTE (achado por execução, 2026-09-07) ──────────
+ *
+ * ⛔ ⛔ O insumo `sitio_da_oclusao` respondia *"há sítio registrado?"*. ⚠️ Com
+ * ⛔ isso, um paciente com **M1** fechava a recomendação COR 3 escrita para
+ * **M2 ⛔ não dominante**, ⛔ e um paciente com ⛔ só *"basilar"* anotado recebia
+ * veredito **negativo** por ela. ⛔ ⛔ A presença do dado ⛔ não diz ⛔ nada sobre
+ * o território.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ POR QUE ELE MORA **AQUI**: ⛔ o mapa é conhecimento sobre **este
+ * campo** — ⛔ o que cada opção do laudo significa. ⚠️ Vizinho da lista, uma
+ * opção nova ⛔ sem território fica visível; longe dela, ⛔ nasceria um sítio que
+ * ⛔ nunca contradiz ⛔ nada.
+ *
+ * ⚠️ ⛔ Há **prova** de que as onze opções estão cobertas.
+ */
+export type Territorio =
+  | "ica"
+  | "m1"
+  | "m2_dominante"
+  | "m2_nao_dominante"
+  | "acm_distal"
+  | "aca"
+  | "acp"
+  | "basilar"
+  /** ⚠️⚠️ **Resposta**, ⛔ e ⛔ não ausência: o laudo diz que ⛔ não há oclusão. */
+  | "nenhuma"
+  /**
+   * ⚠️⚠️ ⛔ **INDETERMINADO** — ⛔ e ⛔ ele ⛔ NÃO contradiz ⛔ nem satisfaz.
+   *
+   * ⛔ *"Não especificado no laudo"* ⛔ e *"Não sei"* são **respostas diferentes**
+   * (**E-37**), ⛔ e a tela as distingue. ⛔ Para o critério anatômico, porém, as
+   * duas dizem a mesma coisa: ⛔ o território ⛔ não é determinável. ⛔ Tratá-las
+   * como *"não é M1"* excluiria alguém por silêncio (**E-23**).
+   */
+  | "indeterminado";
+
+export const TERRITORIO_DA_OPCAO: Readonly<Record<string, Territorio>> = {
+  "Artéria carótida interna": "ica",
+  "M1 da artéria cerebral média": "m1",
+  "M2 dominante da artéria cerebral média": "m2_dominante",
+  "M2 não dominante ou codominante": "m2_nao_dominante",
+  "Artéria cerebral média distal": "acm_distal",
+  "Artéria cerebral anterior": "aca",
+  "Artéria cerebral posterior": "acp",
+  /**
+   * ⚠️ ⛔ O rótulo diz *"ou circulação posterior"*, ⛔ e a fonte escreve
+   * *"basilar artery occlusion"*. ⛔ ACP tem opção **própria** logo acima —
+   * ⛔ então o que resta aqui é a basilar.
+   */
+  "Artéria basilar ou circulação posterior": "basilar",
+  "Nenhuma oclusão identificada": "nenhuma",
+  "Não especificado no laudo": "indeterminado",
+  [NAO_SEI]: "indeterminado",
+};
 
 /**
  * BLOCO 1 · A TOMOGRAFIA — o resultado, a suspeita de HSA e o horário.
@@ -547,6 +619,48 @@ export const ESTUDO_C: readonly CampoC[] = [
     fonte: "F-08",
     bloqueiaTerapia: false,
     nota: "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia.",
+  },
+  {
+    /**
+     * ⚠️⚠️⚠️ O PC-ASPECTS — ⛔ e ⛔ ele **⛔ NÃO EXISTIA COMO CAMPO**.
+     *
+     * ── ⚠️⚠️ ⛔ O DEFEITO (achado por execução, 2026-09-07) ────────────────
+     *
+     * ⛔ ⛔ As duas recomendações de **oclusão basilar** exigem `pc_aspects`,
+     * ⛔ e `CAMPOS_DO_INSUMO` apontava para um campo `pc_aspects` que ⛔ **⛔ não
+     * estava em ⛔ nenhuma superfície**. ⚠️ Consequência medida: as duas
+     * ⛔ **nunca fechavam** no app real — um paciente com basilar ⛔ jamais
+     * chegava a *"EVT recomendada"*, ⛔ e a pendência levava a um campo
+     * inexistente (**E-26**).
+     *
+     * ⚠️ ⛔ É o mesmo defeito mudo do `nihss` (id de **grupo**, ⛔ não de campo):
+     * ⛔ ler id inexistente ⛔ não quebra ⛔ nada — ⛔ devolve ausência, ⛔ que é
+     * resposta legítima.
+     *
+     * ── ⚠️⚠️ ⛔ INFORMADO, ⛔ E ⛔ NÃO CALCULADO ───────────────────────────
+     *
+     * ⛔ Mesma decisão do ASPECTS: a **Figure 2** ⛔ não foi transcrita
+     * (**D-111** · slot **F-28**), ⛔ e o app ⛔ não calcula. ⚠️ A ajuda traz a
+     * definição da fonte ⛔ porque a escala ⛔ **⛔ não é** a anterior:
+     *
+     * > *"the PC-ASPECTS is a 10-point scale… The pons and midbrain are worth
+     * >  2 points each…, thalami (1 point each), occipital lobes (1 point
+     * >  each), and cerebellar hemispheres (1 point each)"* — p. e372.
+     *
+     * ⛔ ⛔ Sem ⛔ isso, alguém registraria o ASPECTS anterior aqui.
+     */
+    id: "pc_aspects",
+    temporalidade: "afericao",
+    instanciaDe: ESTUDO,
+    rotulo: "PC-ASPECTS informado no laudo ou pela equipe",
+    tipo: "grandeza",
+    faixa: { min: 0, max: 10, passo: 1 },
+    /** ⚠️⚠️ **E-10** — ⛔ zero é escore, ⛔ e ⛔ não campo vazio. */
+    zeroValido: true,
+    ajuda: "Escala de 10 pontos da circulação posterior, diferente do ASPECTS anterior. Ponte e mesencéfalo valem 2 pontos cada, tálamos, lobos occipitais e hemisférios cerebelares 1 ponto cada. O app não calcula: registre o valor que vier do laudo ou da equipe.",
+    fonte: "F-08",
+    bloqueiaTerapia: false,
+    nota: "Escore da circulação posterior, informado por quem leu a imagem. Os cortes que a fonte usa pertencem às recomendações de oclusão basilar.",
   },
   {
     id: "efeito_de_massa",
@@ -895,6 +1009,8 @@ export const ROTULO_CURTO: Readonly<Record<string, string>> = {
   estudo_resultado: "Resultado",
   hipodensidade_clara: "Hipodensidade clara",
   aspects: "ASPECTS",
+  /** ⚠️ Subcadeia literal do rótulo completo — ⛔ nome curto ⛔ não se inventa (**E-29**). */
+  pc_aspects: "PC-ASPECTS",
   efeito_de_massa: "Efeito de massa",
   dwi_menor_que_um_terco: "Lesão em DWI menor que um terço",
   flair_sem_alteracao_marcada: "Ausência de alteração de sinal marcada no FLAIR",

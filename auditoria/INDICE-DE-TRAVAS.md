@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**86 de 100 travas com declaração completa.**
+**87 de 101 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -133,6 +133,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que `<180/105` seja **estritamente abaixo**, ⛔ e ⛔ nas duas metades — ⛔ com fronteiras medidas uma a uma; · que o alvo pós-IVT ⛔ **só** valha no contexto que **F-04** define; · que aferição incompleta ⛔ e ausência de PA ⛔ **não** classifiquem; · que *"dentro do alvo"* ⛔ **nunca** vire *"24 h controladas"*; · que o **180/105** tenha **uma** fonte de verdade ⛔ e dois consumidores com semânticas declaradas (**U-01**); · que **F-04** ⛔ e **F-19** ⛔ não se fundam numa hierarquia terapêutica.
 - **NÃO PROMETE:** que a PA esteja clinicamente bem manejada — ⛔ isso é do médico. ⛔ Aqui se mede **a relação entre a medida vigente ⛔ e o alvo do contexto**, ⛔ e ⛔ nada além.
 - **UNIVERSO:** `avc/nucleo/derivacoes-g.ts` × `avc/conteudo/{superficie-g, antihipertensivos}.ts` × a tela do Destino. ── ⚠️⚠️ A REGRA PERMANENTE, APLICADA AO TEMPO ──────────────────────────── ⚠️ *"Estado intermediário ⛔ nunca é evidência concluída"* (autor, Fase 7). ⛔ Aqui: ⛔ trombólise registrada ≠ pós-reperfusão concluído · ⛔ PA medida uma vez ≠ controle mantido por 24 h · ⛔ tempo decorrido parcial ≠ período completo.
+
+## `test:avc-fase9` → `scripts/prova-avc-fase9-evt.cjs`
+
+- **PROMETE:** que `vereditoDaTrombectomia()` responda **pelo critério da fonte**, ⛔ e ⛔ nunca pela presença do dado. Em quatro camadas: · **domínio** — ⛔ só recomendações de **elegibilidade** entram; técnica, dispositivo ⛔ e anestesia existem no catálogo ⛔ e ⛔ não mudam candidatura; ⛔ e o domínio é **estrutural**, ⛔ nunca deduzido do id ⛔ ou de texto; · **valor** — sítio anatômico, NIHSS, mRS, ASPECTS, PC-ASPECTS, idade ⛔ e **janela** são conferidos contra a faixa **daquela** recomendação, ⛔ com três saídas: satisfaz · contradiz · ⛔ ausente; · **população** — ⛔ um paciente de uma anatomia ⛔ NÃO alcança recomendação escrita para outra ⛔ apenas porque os mesmos campos estão preenchidos; · **hedges** — `*` ⛔ e `†` presas às suas recomendações, COR/LOE ⛔ e verbo verbatim preservados, ⛔ e *"No Benefit"* ⛔ nunca virando *"contraindicada"*.
+- **NÃO PROMETE:** que a indicação de EVT esteja clinicamente certa neste paciente — ⛔ isso é do médico. ⛔ Aqui se mede **o que o motor conclui a partir do que a fonte escreve**. ⛔ ⛔ E ⛔ **⛔ NÃO** promete ⛔ nada sobre a **tela**: ⛔ nenhuma conferência aqui abre um componente. ⚠️ Um veredito correto exibido com a palavra errada passaria verde por completo — ⛔ quem cobre isso é o teste de gesto real ⛔ e a revisão visual, ⛔ e ⛔ eles ⛔ ainda ⛔ não existem para a EVT. ⛔ ⛔ E ⛔ **⛔ NÃO** promete que a rec. 8 (COR 3) tenha janela: a frase da fonte ⛔ não traz ⛔ nenhuma, ⛔ e o cabeçalho da tabela traz *"0 to 6 hours"*. ⚠️ A divergência fica **registrada, ⛔ não harmonizada** (**§50**).
+- **UNIVERSO:** `avc/conteudo/superficie-f.ts` × `avc/nucleo/veredito-da-trombectomia.ts` × `avc/nucleo/derivacoes-f.ts`. ── ⚠️⚠️ ⛔ O QUE ESTA FASE **⛔ NÃO** FEZ, ⛔ E ⛔ POR QUÊ ────────────────── ⛔ ⛔ Ela ⛔ **não transcreveu** o catálogo EVT. ⚠️ A conferência contra o PDF da AHA/ASA 2026 (Prabhakaran et al · Stroke 2026;57:e316–e436) mostrou que as dez recomendações **já correspondiam** — mesmo COR, LOE, verbo, seção ⛔ e página. ⛔ Retranscrever teria refeito trabalho correto. ⚠️ ⛔ É a regra do projeto executada: **antes de declarar dívida, verificar por execução se o conteúdo já existe**.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

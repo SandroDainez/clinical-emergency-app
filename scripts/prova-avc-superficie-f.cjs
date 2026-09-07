@@ -266,8 +266,22 @@ confere("⚠️⚠️ o paralelismo IVT × EVT está declarado, com COR 1 · LOE
   C.IVT_E_EVT_EM_PARALELO.cor === "1" && C.IVT_E_EVT_EM_PARALELO.loe === "A",
   '⛔ *"a strategy to forgo (or skip) IVT to facilitate EVT is not recommended"*');
 
+/**
+ * ⚠️⚠️ A GUARDA MEDE **EXCLUSIVIDADE ENTRE TERAPIAS**, ⛔ e ⛔ não a palavra solta.
+ *
+ * ── ⚠️⚠️ ⛔ O FALSO ALARME (2026-09-07) ──────────────────────────────────
+ *
+ * ⛔ ⛔ `/exclusiv/i` acusou **`maxExclusivo`** — o limite superior de uma faixa
+ * numérica (*"age <80 years"*). ⚠️ ⛔ A palavra colide; ⛔ o sentido ⛔ não: um
+ * corte de idade ⛔ não diz ⛔ nada sobre IVT excluir EVT.
+ *
+ * ⚠️⚠️ ⛔ O que ⛔ não pode existir é um nome que **junte terapia e exclusão** —
+ * `evtExclusivo`, `exclusividadeIvt`, `apenas_ivt`. ⛔ É ⛔ isso que se mede
+ * agora, ⛔ e a trava ⛔ continua matando a violação real.
+ */
 confere("⚠️⚠️ ⛔ ⛔ e ⛔ NENHUMA exclusividade implícita entre as duas frentes",
-  !/exclusiv|ou_evt|apenas_ivt|somente_evt/i.test(fonteD + fonteC),
+  !/(ivt|evt)[A-Za-z_]*exclusiv|exclusiv[A-Za-z_]*(ivt|evt)|ou_evt|apenas_ivt|somente_evt/i
+    .test(fonteD + fonteC),
   "⛔ tratar uma como exclusão automática da outra contrariaria COR 1 · LOE A");
 
 const ivt = todas.filter((l) => l.terapia === "ivt" && l.correspondencia === "aplicavel");

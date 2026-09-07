@@ -407,6 +407,55 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
     "Ningún criterio de la guía alcanza este caso todavía",
   "Os critérios registrados sustentam a trombólise":
     "Los criterios registrados sustentan la trombólisis",
+  /* ── ⚠️⚠️ o veredito da TROMBECTOMIA — ⛔ outro motor, ⛔ outras frases ──── */
+  /* ── ⚠️ os sete selos da raia de EVT ─────────────────────────────────── */
+  "Trombectomia mecânica": "Trombectomía mecánica",
+  "EVT é razoável": "La TEV es razonable",
+  "EVT pode ser razoável": "La TEV puede ser razonable",
+  "Efetividade da EVT não bem estabelecida":
+    "Efectividad de la TEV no bien establecida",
+  /** ⚠️⚠️ *"No Benefit"* ⛔ não se traduz — ⛔ é o rótulo de COR da fonte. */
+  "EVT não recomendada para melhorar desfecho — No Benefit":
+    "TEV no recomendada para mejorar el desenlace — No Benefit",
+  "Nenhum critério implementado fecha este caso":
+    "Ningún criterio implementado cierra este caso",
+  /** ⚠️⚠️ ⛔ *"⛔ não é exclusão"* ⛔ precisa sobreviver à tradução (**E-45**). */
+  "Generalização limitada — exige julgamento clínico, e não é exclusão":
+    "Generalización limitada — exige juicio clínico, y no es exclusión",
+  "Não aguardar resposta clínica à trombólise para prosseguir com a trombectomia.":
+    "No aguardar la respuesta clínica a la trombólisis para proseguir con la trombectomía.",
+  "Sem efeito de massa significativo": "Sin efecto de masa significativo",
+  "Desde o início": "Desde el inicio",
+  "Informar o horário de início do déficit":
+    "Informar el horario de inicio del déficit",
+  "Registrar o PC-ASPECTS do laudo": "Registrar el PC-ASPECTS del informe",
+  /* ── ⚠️ o campo do PC-ASPECTS, ⛔ que ⛔ não existia ─────────────────────── */
+  "PC-ASPECTS informado no laudo ou pela equipe":
+    "PC-ASPECTS informado en el informe o por el equipo",
+  "Escala de 10 pontos da circulação posterior, diferente do ASPECTS anterior. Ponte e mesencéfalo valem 2 pontos cada, tálamos, lobos occipitais e hemisférios cerebelares 1 ponto cada. O app não calcula: registre o valor que vier do laudo ou da equipe.":
+    "Escala de 10 puntos de la circulación posterior, distinta del ASPECTS anterior. Protuberancia y mesencéfalo valen 2 puntos cada uno, tálamos, lóbulos occipitales y hemisferios cerebelosos 1 punto cada uno. La app no calcula: registre el valor que venga del informe o del equipo.",
+  "Escore da circulação posterior, informado por quem leu a imagem. Os cortes que a fonte usa pertencem às recomendações de oclusão basilar.":
+    "Puntaje de la circulación posterior, informado por quien leyó la imagen. Los cortes que la fuente usa pertenecen a las recomendaciones de oclusión basilar.",
+  "Os critérios registrados sustentam a trombectomia":
+    "Los criterios registrados sustentan la trombectomía",
+  "Os critérios registrados tornam a trombectomia razoável":
+    "Los criterios registrados hacen que la trombectomía sea razonable",
+  "Os critérios registrados tornam a trombectomia possivelmente razoável":
+    "Los criterios registrados hacen que la trombectomía sea posiblemente razonable",
+  /**
+   * ⚠️⚠️ *"⛔ não recomenda … por ausência de benefício"* — ⛔ e ⛔ **nunca**
+   * *"contraindicada"*. ⛔ A fonte diz **No Benefit**, ⛔ e o espanhol ⛔ não pode
+   * endurecer o que o português preservou.
+   */
+  "A diretriz não recomenda a trombectomia neste caso, por ausência de benefício":
+    "La guía no recomienda la trombectomía en este caso, por ausencia de beneficio",
+  /** ⚠️⚠️ ⛔ **⛔ Nem sim ⛔ nem não** — o hedge da fonte sobrevive à tradução. */
+  "A efetividade da trombectomia neste cenário não está bem estabelecida":
+    "La efectividad de la trombectomía en este escenario no está bien establecida",
+  "Necessário para saber se o caso ainda está dentro da janela de cada recomendação.":
+    "Necesario para saber si el caso aún está dentro de la ventana de cada recomendación.",
+  "oclusão de vaso médio ou distal — M2 não dominante ou codominante, M3, cerebral anterior ou posterior":
+    "oclusión de vaso mediano o distal — M2 no dominante o codominante, M3, cerebral anterior o posterior",
   "? Ainda não dá para concluir": "? Aún no es posible concluir",
   "· Sem critério aplicável ainda": "· Sin criterio aplicable todavía",
   "✓ Trombólise indicada": "✓ Trombólisis indicada",

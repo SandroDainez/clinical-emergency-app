@@ -131,13 +131,25 @@ test.describe("AVC · Reperfusão", () => {
    * registrar — ⛔ e a **Table 7** (Superfície G) nasce ⛔ **desse** registro.
    */
   /**
-   * ── ⚠️⚠️ ⛔ O GESTO DA EVT — ⛔ dados ⛔ atravessam, ⛔ veredito ⛔ não nasce ──
+   * ── ⚠️⚠️⚠️ ⛔ O GESTO DA EVT — ⛔ E ⛔ ESTA GARANTIA MUDOU EM 2026-09-07 ────
    *
-   * ⚠️ Exigência do autor (**item 14**): registrar oclusão, sítio ⛔ e ASPECTS
-   * na Investigação, ⛔ e conferir que **os mesmos dados** aparecem na raia
-   * endovascular da Reperfusão — ⛔ **sem** ⛔ nenhum veredito.
+   * ⛔ ⛔ Até a Fase 8 este teste exigia que a raia da EVT **⛔ não** emitisse
+   * veredito, ⛔ e conferia os três baldes de dados (*Registrado · Incerto ·
+   * ⛔ Não perguntado*). ⚠️ ⛔ A razão era exata: os critérios de EVT ⛔ ainda
+   * ⛔ não estavam no motor, ⛔ e **F-08** adverte que *"`EVT elegível =
+   * sim/⛔ não` ⛔ NÃO é fato armazenado"*.
+   *
+   * ⚠️⚠️ ⛔ Na **Fase 9** os critérios entraram como **dado** — sítio, NIHSS,
+   * mRS, ASPECTS, PC-ASPECTS, idade, efeito de massa ⛔ e janela —, ⛔ cada um
+   * conferido contra a faixa da **própria** recomendação. ⛔ O autor autorizou
+   * a raia com veredito.
+   *
+   * ⚠️⚠️ ⛔ ENTÃO O TESTE ⛔ NÃO FOI APAGADO: ⛔ ele passou a medir a **nova**
+   * garantia — ⛔ os dados ⛔ ainda atravessam da Investigação para a
+   * Reperfusão, ⛔ e agora eles **fecham um critério nomeado**, ⛔ com COR/LOE
+   * ⛔ e a frase da fonte ao lado.
    */
-  test("⛔ oclusão, sítio e ASPECTS atravessam para a raia da EVT ⛔ sem virar elegibilidade",
+  test("⛔ oclusão, sítio e ASPECTS atravessam ⛔ e fecham o critério, ⛔ com COR/LOE",
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
@@ -145,70 +157,72 @@ test.describe("AVC · Reperfusão", () => {
       /**
        * ⚠️⚠️ ⛔ DOIS ESTUDOS, ⛔ e ⛔ isso é o fluxo REAL: cada modalidade responde
        * o que ⛔ ela sabe responder. ⛔ O ASPECTS é da **TC sem contraste**; o
-       * sítio da oclusão, da **angio**. ⛔ Pedir os dois ao mesmo exame seria a
-       * tela inventando capacidade que a modalidade ⛔ não tem.
+       * sítio da oclusão, da **angio**.
        */
       await page.getByTestId("avc-aba-imagem").click();
       await page.getByTestId("avc-novo-estudo").click();
       await page.getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste").click();
-      /**
-       * ⚠️ ⛔ O ASPECTS ⛔ só nasce depois do **resultado** — ⛔ achado de exame
-       * ⛔ sem laudo ⛔ não existe. ⛔ É a mesma escada da Fase 5: solicitado ≠
-       * realizado ≠ resultado.
-       */
       await page.getByTestId("avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada").click();
-      /** ⚠️ O ASPECTS é `grandeza` — caixa digitável, ⛔ e ⛔ não o stepper do lab. */
       await page.getByTestId("avc-num-caixa-aspects").fill("8");
+      await page.getByTestId("avc-num-caixa-aspects").blur();
 
       await page.getByTestId("avc-novo-estudo").click();
       await page.getByTestId("avc-opcao-estudo_modalidade-Angiotomografia").click();
-      /**
-       * ⚠️ O sítio é `recolhivel`: ⛔ onze opções ocupam 682 px num celular de
-       * 375, ⛔ e o que fica atrás do toque é a **lista**, ⛔ nunca a resposta.
-       */
       await page.getByTestId("avc-abrir-sitio_oclusao").click();
       await page.getByTestId("avc-opcao-sitio_oclusao-M1 da artéria cerebral média").click();
 
       await page.getByTestId("avc-aba-reperfusao").click();
-
-      /** ⚠️ Os dados chegaram — ⛔ e ⛔ cada um com o seu estado. */
-      const dossie = page.getByTestId("avc-f-evt-dossie");
-      await expect(dossie).toBeVisible();
-      /**
-       * ⚠️⚠️ ⛔ AS PALAVRAS MUDARAM EM 2026-09-07, ⛔ e ⛔ por uma razão clínica:
-       * ⛔ o rótulo genérico do estado dizia *"Não avaliado"* ⛔ para um campo
-       * respondido como *"Não sei"* — ⛔ o colapso que **E-37** proíbe.
-       *
-       * ⚠️ ⛔ Agora cada balde tem a sua palavra: **Registrado** · **Incerto** ·
-       * **Não perguntado**.
-       */
-      await expect(page.getByTestId("avc-f-evt-estado-sitio_oclusao")).toHaveText(/Registrado/i);
-      await expect(page.getByTestId("avc-f-evt-estado-aspects")).toHaveText(/Registrado/i);
-      /** ⚠️⚠️ ⛔ E o que ⛔ ninguém respondeu ⛔ continua **⛔ não perguntado**. */
-      await expect(page.getByTestId("avc-f-evt-estado-efeito_de_massa"))
-        .toHaveText(/Não perguntado/i);
+      const raia = page.getByTestId("avc-f-evt");
+      await expect(raia).toBeVisible();
 
       /**
-       * ⚠️⚠️ ⛔ E O TERCEIRO ESTADO, ⛔ QUE É O QUE QUASE SE PERDEU: responder
-       * *"Não sei"* ⛔ é **Incerto**, ⛔ e ⛔ nunca *"Não avaliado"*.
+       * ⚠️⚠️ ⛔ SEM NIHSS, mRS ⛔ e RELÓGIO, o veredito ⛔ **⛔ NÃO** conclui —
+       * ⛔ e ⛔ ele **nomeia** o que falta, ⛔ com onde resolver (**E-26**).
        */
-      await page.getByTestId("avc-aba-imagem").click();
+      await expect(page.getByTestId("avc-f-evt-estado-incompleta")).toBeVisible();
+      await expect(page.getByTestId("avc-f-evt-falta-nihss")).toBeVisible();
+      await expect(page.getByTestId("avc-f-evt-falta-mrs_previo")).toBeVisible();
+      await expect(page.getByTestId("avc-f-evt-falta-janela")).toBeVisible();
+      /** ⚠️ ⛔ E o que **já** entrou ⛔ não é cobrado de novo. */
+      await expect(page.getByTestId("avc-f-evt-falta-sitio_da_oclusao")).toHaveCount(0);
+      await expect(page.getByTestId("avc-f-evt-falta-aspects")).toHaveCount(0);
+
       /**
-       * ⚠️ ⛔ Com **dois** estudos, o primeiro nasce recolhido — ⛔ e o efeito de
-       * massa é da TC, ⛔ não da angio. ⛔ Abrir ⛔ não é responder.
+       * ⚠️⚠️ ⛔ E ⛔ NENHUMA POPULAÇÃO ALHEIA É COBRADA: ⛔ o PC-ASPECTS é da
+       * basilar, ⛔ e o sítio ⛔ já a excluiu.
        */
-      await page.getByTestId("avc-estudo-abrir-estudo_1").click();
-      await page.getByTestId("avc-opcao-efeito_de_massa-nao_sei").click();
+      await expect(page.getByTestId("avc-f-evt-falta-pc_aspects")).toHaveCount(0);
+
+      /* ── ⚠️⚠️ completando o caso, o critério **fecha** ─────────────────── */
+
+      await page.getByTestId("avc-aba-neurologico").click();
+      await page.getByTestId("avc-hora-hora_inicio_observado").click();
+      await page.getByTestId("avc-seletor-hora-h-menos").click();
+      await page.getByTestId("avc-seletor-hora-confirmar").click();
+      await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
+      for (let i = 0; i < 14; i += 1) {
+        await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
+      }
+      await page.getByTestId("avc-abrir-mrs_previo").click();
+      await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
+
       await page.getByTestId("avc-aba-reperfusao").click();
-      await expect(page.getByTestId("avc-f-evt-estado-efeito_de_massa"))
-        .toHaveText(/Incerto/i);
+      await expect(page.getByTestId("avc-f-evt-estado-recomendada")).toBeVisible();
+      /** ⚠️ ⛔ E a força da fonte ⛔ vem junto — ⛔ veredito ⛔ sem COR/LOE ⛔ não se confere. */
+      await expect(page.getByTestId("avc-f-evt-motivo-evt_ant_1")).toContainText("COR 1");
+      await expect(page.getByTestId("avc-f-evt-motivo-evt_ant_1")).toContainText("LOE A");
+      /** ⚠️⚠️ ⛔ E os MESMOS dados da Investigação aparecem como **fundamento**. */
+      await expect(page.getByTestId("avc-f-evt-fatos-evt_ant_1"))
+        .toContainText(/M1 da artéria cerebral média/);
+      await expect(page.getByTestId("avc-f-evt-fatos-evt_ant_1")).toContainText("ASPECTS 8");
 
       /**
-       * ⚠️⚠️ ⛔ E ⛔ NENHUM VEREDITO — ⛔ nem a palavra. ⛔ **F-08**:
-       * *"`EVT elegível = sim/não` ⛔ **NÃO** é fato armazenado"*.
+       * ⚠️⚠️ ⛔ E a palavra *"contraindicada"* ⛔ **⛔ NUNCA** aparece: ⛔ COR 3
+       * nesta fonte é *not recommended* / *No Benefit*.
        */
-      await expect(dossie).not.toContainText(/eleg[íi]vel|candidat|recomendad|contraindicad/i);
-      await expect(dossie).toContainText(/ainda não incorporados ao motor/i);
+      await expect(raia).not.toContainText(/contraindicad/i);
+      /** ⚠️ ⛔ E a frase envelhecida **saiu** — ⛔ hoje ⛔ ela seria falsa. */
+      await expect(raia).not.toContainText(/ainda não incorporados ao motor/i);
     });
 
   test("⛔ chega JÁ trombolisado com bloqueio ativo: registra, monitoriza ⛔ e a divergência fica auditável",

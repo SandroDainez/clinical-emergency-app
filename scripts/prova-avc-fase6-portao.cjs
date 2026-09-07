@@ -384,98 +384,69 @@ function acao(e, rotuloDaAcao, estadoDaAcao, inst) {
   );
 }
 
-/* ══ ⚠️⚠️ 7 · A RAIA DA EVT — ⛔ SÍNTESE, ⛔ E ⛔ NUNCA VEREDITO ═══════════ */
+/* ══ ⚠️⚠️ 7 · A RAIA DA EVT — ⛔ AGORA VEREDITO, ⛔ E ⛔ SÓ DO MOTOR ═══════ */
 {
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ ESTA GARANTIA MUDOU DE FORMA — 2026-09-07 ─────────────────
+   *
+   * ⛔ ⛔ Na Fase 6 esta seção travava a raia como **informativa**: ⛔ proibia
+   * as palavras *elegível* ⛔ e *candidato*, ⛔ e exigia os três baldes de
+   * dados. ⚠️ ⛔ A razão era exata para **⛔ aquele** momento: os critérios de
+   * EVT ⛔ ainda ⛔ não estavam no motor, ⛔ e escrever *"recomendada"* ⛔ seria
+   * veredito inventado.
+   *
+   * ⚠️⚠️ ⛔ Na Fase 9 os critérios entraram — sítio, NIHSS, mRS, ASPECTS,
+   * PC-ASPECTS, idade, efeito de massa ⛔ e **janela**, cada um conferido
+   * contra a faixa da própria recomendação, ⛔ com prova de que ⛔ nenhuma
+   * população alcança recomendação de outra. ⛔ O autor autorizou a raia com
+   * veredito.
+   *
+   * ⚠️⚠️ ⛔ ENTÃO A TRAVA ⛔ NÃO FOI APAGADA: ⛔ ela passou a medir a **nova**
+   * condição — ⛔ a raia pode afirmar, ⛔ **⛔ desde que ⛔ nada seja afirmado
+   * fora do motor**. ⛔ Quem prova os critérios é `prova-avc-fase9-evt`.
+   */
   const DC = emT("avc", "nucleo", "derivacoes-c.js");
   const tela = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
 
   conf(
     "⚠️ a raia endovascular EXISTE na fase da reperfusão",
-    /avc-f-evt-dossie/.test(tela) && /informacaoParaAFrenteEndovascular/.test(tela),
+    /avc-f-evt\b/.test(tela) && /vereditoDaTrombectomia/.test(tela),
     "⛔ ⛔ sem ela, os dados de EVT ficam ⛔ só na Investigação, ⛔ longe da decisão"
   );
 
   /**
-   * ── ⚠️⚠️ ⛔ AS PALAVRAS QUE ⛔ NÃO PODEM APARECER ─────────────────────────
+   * ⚠️⚠️⚠️ ⛔ E ⛔ **⛔ NADA** SOBRE EVT É AFIRMADO FORA DO MOTOR.
    *
-   * ⛔ **F-08** adverte: *"`EVT elegível = sim/não` ⛔ **NÃO** é fato
-   * armazenado"*. ⚠️ ⛔ E os critérios completos ⛔ ainda ⛔ não têm fonte
-   * transcrita — ⛔ escrever *elegível* ⛔ seria inventar o veredito que a
-   * Fase 6 ⛔ foi proibida de emitir (item 9 do autor).
+   * ⛔ ⛔ A frase antiga — *"critérios de elegibilidade ⛔ ainda ⛔ não
+   * incorporados ao motor"* — ⛔ **saiu**: hoje ⛔ ela seria falsa. ⚠️ ⛔ E
+   * ⛔ nenhuma palavra de elegibilidade pode voltar **escrita à mão**: ⛔ o que
+   * a tela diz sai de `SELO_DO_VEREDITO_EVT`, ⛔ que é dado.
    */
   const PROIBIDAS = ["elegível", "elegivel", "não elegível", "candidata", "candidato"];
-  const bloco = (() => {
-    const i = tela.indexOf("avc-f-evt-dossie");
-    return i < 0 ? "" : tela.slice(i, tela.indexOf("avc-f-raias", i) + 1 || tela.length);
-  })();
-  const achadas = PROIBIDAS.filter((w) => bloco.toLowerCase().includes(w));
+  const achadas = PROIBIDAS.filter((w) => tela.toLowerCase().includes(w));
   conf(
-    "⚠️⚠️ ⛔ a raia da EVT ⛔ NUNCA escreve elegibilidade",
+    "⚠️⚠️ ⛔ a tela ⛔ NUNCA escreve elegibilidade à mão",
     achadas.length === 0,
-    `⛔ ${achadas.join(" · ")} — ⛔ sem fonte transcrita, ⛔ isso é veredito inventado`
+    `⛔ ${achadas.join(" · ")} — ⛔ o veredito sai do motor, ⛔ ou ⛔ não sai`
+  );
+  conf(
+    "⚠️⚠️ ⛔ e a nota *«ainda ⛔ não incorporados ao motor»* ⛔ NÃO ficou para trás",
+    !/ainda não incorporados ao motor/i.test(tela),
+    "⛔ os critérios **estão** no motor — ⛔ manter a frase seria mentir sobre o próprio app"
   );
 
   /**
-   * ⚠️⚠️ ⛔ E ⛔ NEM ✓ ⛔ NEM ⛔ (item 10 do autor): ⛔ conclusão `desconhecido`
-   * ⛔ **continua desconhecida**. ⛔ Os estados usados são `medido` · `ausente`
-   * · `verificar` — ⛔ `·`, `—` ⛔ e `?`.
+   * ⚠️⚠️ ⛔ E O DOSSIÊ DE IMAGEM CONTINUA ⛔ SEM CONCLUIR — ⛔ ele ⛔ não virou
+   * o veredito, ⛔ e ⛔ nem sumiu: ⛔ ele é a leitura da **Investigação**,
+   * ⛔ lida por `leiturasDaSuperficieC`.
    */
-  /**
-   * ⚠️⚠️ ⛔ MEDIDA POR **EXECUÇÃO**, ⛔ e ⛔ não por varredura de texto.
-   *
-   * ⛔ A primeira versão procurava `ESTADOS.favoravel` **no bloco do JSX** — ⛔ e
-   * a mutação *"usar ✓ no dado registrado"* **sobreviveu**, porque a lista é
-   * montada ⛔ acima do bloco. ⚠️ ⛔ Agora a regra é dado exportado, ⛔ e a
-   * conferência lê o dado.
-   */
-  const SF = emT("avc", "conteudo", "superficie-f.js");
-  const mapa = SF.ESTADO_DO_DADO_EVT;
-  const PROIBIDOS = ["favoravel", "impede", "corrigivel"];
-  conf(
-    "⚠️⚠️ ⛔ e ⛔ NENHUM dado da EVT usa juízo (✓, ⛔ ou !)",
-    mapa !== undefined
-    && Object.values(mapa).every((v) => !PROIBIDOS.includes(String(v.estado)))
-    && mapa.registrados.estado === "medido" && mapa.naoPerguntados.estado === "verificar",
-    `⛔ ${JSON.stringify(mapa)} — símbolo de juízo sobre dado ⛔ sem veredito é o veredito entrando pelo desenho`
-  );
-  conf(
-    "⚠️ ⛔ e a tela usa ESSE mapa, ⛔ e ⛔ não estados escritos à mão",
-    tela.includes("ESTADO_DO_DADO_EVT.registrados")
-    && !/estado: "(favoravel|impede|corrigivel)"/.test(tela),
-    "⛔ regra em prosa se mede por leitura; regra em dado se mede por execução"
-  );
-
-  /**
-   * ── ⚠️⚠️ ⛔ *"Não sei"* RESPONDIDO ⛔ NÃO É *"Não avaliado"* (**E-37**) ────
-   *
-   * ⛔ Achado na revisão visual: eu mostrava o **rótulo genérico** do estado
-   * `ausente` — ⛔ e a tela dizia *"Efeito de massa — Não avaliado"* ⛔ para um
-   * campo que o médico **respondeu** como incerto.
-   *
-   * ⚠️ ⛔ A prova estrutural ⛔ não pegava: ⛔ ela conferia o **nome do estado**,
-   * ⛔ e ⛔ não **a palavra que o médico lê**.
-   */
-  const ESTADOS_UI = emT("design-system", "estados-clinicos.js").ESTADOS;
-  conf(
-    "⚠️⚠️ ⛔ o balde *sem conclusão* ⛔ NÃO é rotulado como *não avaliado*",
-    mapa.semConclusao.rotulo !== ESTADOS_UI[mapa.semConclusao.estado].rotulo
-    && /incerto/i.test(mapa.semConclusao.rotulo),
-    `⛔ "${mapa.semConclusao.rotulo}" — respondido ⛔ e ⛔ não perguntado ⛔ são estados diferentes`
-  );
-  conf(
-    "⚠️ ⛔ e os TRÊS baldes têm rótulos distintos entre si",
-    new Set(Object.values(mapa).map((v) => v.rotulo)).size === 3,
-    `⛔ ${Object.values(mapa).map((v) => v.rotulo).join(" · ")}`
-  );
-
-  /** ⚠️ ⛔ E o motor segue ⛔ sem concluir, ⛔ com os dados presentes. */
   const s1 = I.nomeDaInstancia("estudo", 1);
   let comDados = CAMPOS.registrarComInstancia(vazio, { campo: "estudo_modalidade", valor: CAMPO.valorDaOpcao("Angiotomografia") }, rel, s1);
   comDados = CAMPOS.registrarComInstancia(comDados, { campo: "sitio_oclusao", valor: CAMPO.valorDaOpcao("M1 da artéria cerebral média") }, rel, s1);
   comDados = CAMPOS.registrarComInstancia(comDados, { campo: "aspects", valor: 8 }, rel, s1);
   const d = DC.informacaoParaAFrenteEndovascular(comDados);
   conf(
-    "⚠️⚠️ com sítio ⛔ e ASPECTS registrados, o dossiê ⛔ NÃO conclui",
+    "⚠️⚠️ com sítio ⛔ e ASPECTS registrados, o dossiê de imagem ⛔ NÃO conclui",
     d.conclusao === "desconhecido"
     && d.registrados.includes("sitio_oclusao") && d.registrados.includes("aspects"),
     `⛔ conclusao=${d.conclusao} registrados=[${d.registrados.join(", ")}] — ⛔ ter o dado ⛔ não é ter o critério`

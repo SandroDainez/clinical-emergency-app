@@ -20,6 +20,7 @@ import {
   type Marco,
 } from "../conteudo/superficie-f";
 import type { LeituraDaRecomendacao } from "./derivacoes-f";
+import type { TipoDoVereditoEvt } from "./veredito-da-trombectomia";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · OS MARCOS E OS CAMPOS QUE OS ALIMENTAM
@@ -310,6 +311,14 @@ export const CAMPOS_DO_INSUMO: Readonly<Record<Insumo, readonly string[]>> = {
   aspects: ["aspects"],
   pc_aspects: ["pc_aspects"],
   idade: ["idade"],
+  /**
+   * ⚠️⚠️ ⛔ OS MARCOS, ⛔ e ⛔ NÃO um relógio novo — ⛔ são os mesmos campos que
+   * `ORIGEM_DO_MARCO` já usa. ⛔ Quem toca a falta cai ⛔ onde a hora se anota.
+   *
+   * ⚠️ A EVT conta de `symptom_onset`; o par com `last_known_well` está aqui
+   * porque a disjunção `onset_ou_lkw` da IVT passa pelo mesmo insumo.
+   */
+  janela: ["hora_inicio_observado", "hora_ultima_vez_bem"],
   efeito_de_massa_ausente: ["efeito_de_massa"],
   deficit_incapacitante: ["incapacitante_assumido"],
   /** ⚠️ Duas propriedades, dois campos — ⛔ e a fonte pede as duas. */
@@ -393,6 +402,68 @@ export const PRIORIDADE_DE_PRODUTO_NATUREZA = {
   criterioPrimario: "quantas",
   papel: "desempate",
 } as const;
+
+/**
+ * ⚠️⚠️⚠️ OS SETE ESTADOS DA EVT **EM LINGUAGEM CLÍNICA** — ⛔ e ⛔ NENHUM SLUG.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE MORA AQUI, ⛔ E ⛔ NÃO NA TELA ────────────────────────
+ *
+ * ⛔ ⛔ Um `veredito.tipo === "razoavel" ? "…"` encadeado dentro do JSX é uma
+ * escada que o TypeScript ⛔ **não** confere: ⛔ um estado novo cai no `else`
+ * ⛔ e a tela mostra a frase de outro estado. ⚠️ `Record<TipoDoVereditoEvt, …>`
+ * ⛔ não compila sem os sete.
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ POR QUE CADA PALAVRA É ⛔ ESTA ───────────────────────────
+ *
+ * ⛔ ⛔ **⛔ NUNCA** *"contraindicada"* para COR 3. ⚠️ A fonte escreve
+ * *"is not recommended … No Benefit"* — ⛔ ausência de benefício ⛔ demonstrada,
+ * ⛔ e ⛔ não risco proibitivo. ⛔ As duas coisas mandam o médico para lugares
+ * diferentes, ⛔ e a segunda ⛔ é a que a fonte ⛔ não disse.
+ *
+ * ⛔ ⛔ E *"efetividade ⛔ não bem estabelecida"* ⛔ **⛔ não** é *"pode ser
+ * razoável"*: ⛔ a primeira é **⛔ nem sim ⛔ nem ⛔ não**; ⛔ a segunda é um
+ * **sim fraco**. ⚠️ ⛔ Colapsá-las transformaria a basilar com NIHSS 6–9 numa
+ * indicação que a fonte ⛔ não deu.
+ *
+ * ⚠️ Símbolo **e** palavra (**E-15**) — ⛔ a cor ⛔ nunca decide sozinha.
+ */
+export const SELO_DO_VEREDITO_EVT: Readonly<
+  Record<TipoDoVereditoEvt, { readonly simbolo: string; readonly rotulo: string }>
+> = {
+  recomendada: { simbolo: "✓", rotulo: "EVT recomendada" },
+  razoavel: { simbolo: "·", rotulo: "EVT é razoável" },
+  pode_ser_razoavel: { simbolo: "·", rotulo: "EVT pode ser razoável" },
+  efetividade_nao_estabelecida: {
+    simbolo: "?",
+    rotulo: "Efetividade da EVT não bem estabelecida",
+  },
+  /** ⚠️⚠️ *"para melhorar desfecho"* ⛔ é da frase da fonte, ⛔ e delimita o que ⛔ não se espera. */
+  nao_recomendada_sem_beneficio: {
+    simbolo: "✕",
+    rotulo: "EVT não recomendada para melhorar desfecho — No Benefit",
+  },
+  incompleta: { simbolo: "?", rotulo: "Faltam dados para concluir" },
+  sem_criterios: { simbolo: "—", rotulo: "Nenhum critério implementado fecha este caso" },
+};
+
+/**
+ * ⚠️⚠️ ⛔ QUAIS ESTADOS PINTAM DE **VERDE**, ⛔ e quais de **VERMELHO**.
+ *
+ * ⛔ ⛔ `pode_ser_razoavel` (**2b**) ⛔ **⛔ não** ganha verde: ⛔ um *sim fraco*
+ * com a mesma cor de um COR 1 ⛔ apagaria a gradação inteira da fonte na única
+ * coisa que se lê de longe.
+ */
+export const ENFASE_DO_VEREDITO_EVT: Readonly<
+  Record<TipoDoVereditoEvt, "favoravel" | "contra" | "neutra">
+> = {
+  recomendada: "favoravel",
+  razoavel: "favoravel",
+  pode_ser_razoavel: "neutra",
+  efetividade_nao_estabelecida: "neutra",
+  nao_recomendada_sem_beneficio: "contra",
+  incompleta: "neutra",
+  sem_criterios: "neutra",
+};
 
 export const PRIORIDADE_DE_PRODUTO: readonly Insumo[] = [
   "sitio_da_oclusao",
