@@ -538,6 +538,104 @@ confere("⚠️⚠️ ⛔ F ⛔ não declara campo ⛔ nenhum de A–E",
   !idsDeF.some((i) => ["incapacitante_assumido", "efeito_de_massa", "aspects", "nihss", "peso"].includes(i)),
   "⛔ um fato tem **uma** casa semântica — F lê, ⛔ e ⛔ não redeclara");
 
+
+/* ── ⚠️ o que este bloco precisa, compilado à parte ──────────────────────── */
+const { SC, INST, CAMPOSM, VAZIO, rel } = (() => {
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), "prova-f-sitio-"));
+  execFileSync("npx", [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+    "--rootDir", appDir, "--moduleResolution", "node", "--skipLibCheck", "--outDir", t,
+    path.join(appDir, "avc", "conteudo", "campos.ts"),
+  ], { cwd: appDir, stdio: "pipe" });
+  const m = (...p) => require(path.join(t, ...p));
+  const R = m("avc", "nucleo", "relogio.js");
+  const Est = m("avc", "nucleo", "estado.js");
+  const relogio = R.relogioControlado(2_000_000_000);
+  return {
+    SC: m("avc", "conteudo", "superficie-c.js"),
+    INST: m("avc", "nucleo", "instancia.js"),
+    CAMPOSM: m("avc", "conteudo", "campos.js"),
+    VAZIO: Est.abrirAtendimento(relogio),
+    rel: relogio,
+  };
+})();
+
+// ── ⚠️⚠️⚠️ 8b · O SÍTIO DA OCLUSÃO LIDO POR **TERRITÓRIO** ────────────────
+/**
+ * ── ⚠️⚠️ ⛔ O DEFEITO (auditoria final do módulo, 2026-09-07) ─────────────
+ *
+ * ⛔ ⛔ `valorDoInsumo("sitio_da_oclusao")` respondia `satisfaz` para
+ * **qualquer** string gravada. ⚠️ Medido:
+ *
+ *   · `"Não sei"` → **satisfaz** — ⛔ ignorância sustentando critério (**E-02**);
+ *   · `"Nenhuma oclusão identificada"` → **satisfaz** — ⛔ o laudo dizendo que
+ *     ⛔ **⛔ não há** oclusão sustentando *"há sítio de oclusão"*.
+ *
+ * ⛔ ⛔ A tela de recomendações lista os insumos que **sustentam** — ⛔ e ⛔ ela
+ * mostrava *"Sítio da oclusão"* como critério **atendido** num paciente cujo
+ * laudo ⛔ nega a oclusão. ⚠️ ⛔ Isso é negativa virando positiva.
+ *
+ * ⚠️⚠️ ⛔ A leitura por **território** já existia desde a Fase 9
+ * (`TERRITORIO_DA_OPCAO`), ⛔ e ⛔ era usada ⛔ só pelas recomendações de EVT.
+ * ⛔ O caminho cru ⛔ ficou para trás.
+ */
+{
+  const inst = INST.nomeDaInstancia(SC.ESTUDO, 1);
+  const comSitio = (rotulo) => {
+    let e2 = CAMPOSM.registrarComInstancia(
+      VAZIO, { campo: "estudo_modalidade", valor: CAMPO.valorDaOpcao("Angiotomografia") }, rel, inst);
+    return CAMPOSM.registrarComInstancia(
+      e2, { campo: "sitio_oclusao", valor: CAMPO.valorDaOpcao(rotulo) }, rel, inst);
+  };
+  const insumo = (rotulo) => D.valorDoInsumo(comSitio(rotulo), "sitio_da_oclusao");
+
+  confere("⚠️⚠️⚠️ ⛔ *«Não sei»* no sítio ⛔ NÃO satisfaz o critério",
+    insumo("Não sei") === undefined,
+    `⛔ ${insumo("Não sei")} — ⛔ ignorância ⛔ não é achado (**E-02**)`);
+
+  confere("⚠️⚠️⚠️ ⛔ *«Não especificado no laudo»* também ⛔ NÃO satisfaz",
+    insumo("Não especificado no laudo") === undefined,
+    `⛔ ${insumo("Não especificado no laudo")}`);
+
+  confere("⚠️⚠️⚠️ ⛔ *«Nenhuma oclusão identificada»* CONTRADIZ, ⛔ e ⛔ NÃO satisfaz",
+    insumo("Nenhuma oclusão identificada") === "contradiz",
+    `⛔ ${insumo("Nenhuma oclusão identificada")} — ⛔ o laudo NEGA a oclusão`);
+
+  confere("⚠️ ⛔ e um território real continua satisfazendo",
+    insumo("M1 da artéria cerebral média") === "satisfaz"
+    && insumo("Artéria basilar ou circulação posterior") === "satisfaz",
+    `⛔ M1=${insumo("M1 da artéria cerebral média")}`);
+
+  /** ⚠️⚠️ ⛔ E ⛔ NENHUMA recomendação é sustentada por ⛔ nenhuma das três. */
+  for (const rotulo of ["Não sei", "Não especificado no laudo", "Nenhuma oclusão identificada"]) {
+    const sustentadas = D.recomendacoesDoEstado(comSitio(rotulo))
+      .filter((l) => l.sustentam.includes("sitio_da_oclusao"))
+      .map((l) => l.id);
+    confere(`⚠️⚠️ ⛔ e *«${rotulo}»* ⛔ NÃO sustenta recomendação ⛔ nenhuma`,
+      sustentadas.length === 0,
+      `⛔ ${sustentadas.join(" · ")} — a tela mostraria o critério como ATENDIDO`);
+  }
+
+  /**
+   * ⚠️⚠️ ⛔ E A LEITURA É **UMA SÓ**: ⛔ o caminho cru ⛔ e o das recomendações
+   * de EVT ⛔ não podem discordar sobre o mesmo laudo (**I6**).
+   */
+  const divergentes = [];
+  for (const rotulo of SC.OPCOES_SITIO_OCLUSAO) {
+    const e = comSitio(rotulo);
+    const cru = D.valorDoInsumo(e, "sitio_da_oclusao");
+    const rec = C.RECOMENDACOES.find((r) => r.id === "evt_ant_1");
+    const porRec = D.valorDoInsumoNaRecomendacao(e, rec, "sitio_da_oclusao", undefined);
+    /** ⚠️ `contradiz` por território ALHEIO é da recomendação; ⛔ o cru ⛔ não sabe disso. */
+    if (cru === undefined && porRec !== undefined) divergentes.push(`${rotulo}: cru=${cru} rec=${porRec}`);
+    if (cru === "contradiz" && porRec !== "contradiz") divergentes.push(`${rotulo}: cru=${cru} rec=${porRec}`);
+  }
+  confere("⚠️⚠️ ⛔ o caminho cru ⛔ e o das recomendações ⛔ NÃO discordam sobre ausência ⛔ nem negativa",
+    divergentes.length === 0,
+    `⛔ ${divergentes.join(" · ")}`);
+}
+
+
 if (falhas.length) {
   console.log(`\n❌ SUPERFÍCIE F — ${falhas.length} falha(s), ${ok} ok\n`);
   falhas.forEach((f, i) => console.log(`  ${i + 1}. ${f}`));

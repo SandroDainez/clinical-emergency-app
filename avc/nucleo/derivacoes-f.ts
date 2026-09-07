@@ -374,8 +374,36 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
       return typeof v === "number" ? "satisfaz" : undefined;
     }
 
-    case "sitio_da_oclusao":
-      return escolha(estado, "sitio_oclusao") ? "satisfaz" : undefined;
+    /**
+     * ⚠️⚠️⚠️ LIDO POR **TERRITÓRIO**, ⛔ e ⛔ NÃO por "há string gravada".
+     *
+     * ── ⚠️⚠️ ⛔ O DEFEITO (auditoria final, 2026-09-07) ────────────────────
+     *
+     * ⛔ ⛔ Isto era `escolha(...) ? "satisfaz" : undefined` — ⛔ **qualquer**
+     * valor gravado satisfazia. ⚠️ Medido:
+     *
+     *   · `"Não sei"` → **satisfaz**: ⛔ ignorância sustentando critério (**E-02**);
+     *   · `"Nenhuma oclusão identificada"` → **satisfaz**: ⛔ o laudo que ⛔ **⛔
+     *     nega** a oclusão sustentando *"há sítio de oclusão"*.
+     *
+     * ⛔ ⛔ E a Superfície F **lista os insumos que sustentam** — ⛔ a tela
+     * mostrava *"Sítio da oclusão"* como critério **atendido** num paciente
+     * cujo laudo diz que ⛔ não há oclusão. ⛔ Negativa virando positiva.
+     *
+     * ⚠️⚠️ ⛔ A leitura correta ⛔ já existia desde a Fase 9
+     * (`territorioDoEstado`), ⛔ e ⛔ era usada ⛔ **só** pelas recomendações de
+     * EVT. ⛔ O caminho cru ficou para trás — ⛔ e ⛔ isso é a **I6** de novo:
+     * duas leituras do mesmo laudo, ⛔ discordando.
+     */
+    case "sitio_da_oclusao": {
+      const rotulo = escolha(estado, "sitio_oclusao");
+      if (rotulo === undefined) return undefined;
+      const t = TERRITORIO_DA_OPCAO[rotulo];
+      /** ⚠️ ⛔ *"Não sei"* ⛔ e *"Não especificado no laudo"* ⛔ não resolvem. */
+      if (t === undefined || t === "indeterminado") return undefined;
+      /** ⚠️⚠️ ⛔ E *"Nenhuma oclusão identificada"* é **resposta**: contradiz. */
+      return t === "nenhuma" ? "contradiz" : "satisfaz";
+    }
 
     /**
      * ⚠️⚠️ DOIS INSUMOS, porque o **método difere entre as recomendações**:
