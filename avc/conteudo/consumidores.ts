@@ -104,4 +104,60 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * foi ⛔ exatamente essa: *"dado pessoal ⛔ não tem efeito sobre conduta"*.
    */
   identificacao: [],
+
+  /**
+   * ── ⚠️⚠️ OS ONZE ACHADOS DA TABLE 4 — ⛔ ter fonte ⛔ NÃO é ter autorização ──
+   *
+   * ⚠️ A regra do autor, 2026-09-07:
+   *
+   * > *"⛔ Não permitir que um arquivo do núcleo simplesmente comece a ler
+   * >  `t4_*` porque o campo já possui fonte. Fonte + consumidor declarado +
+   * >  prova são requisitos distintos."*
+   *
+   * ⛔ Os `t4_*` ⛔ não são globais ⛔ e ⛔ não são ⛔ sem fonte — ⛔ eles têm
+   * **F-17, Table 4** —, ⛔ e ⛔ por isso escapavam das duas travas que já
+   * existiam. ⚠️ Estar nesta lista é o que **arma** a trava sobre ⛔ eles.
+   *
+   * ── ⚠️⚠️ ⛔ E A LISTA ⛔ NÃO PÔDE SAIR VAZIA (**§50**) ──────────────────────
+   *
+   * ⛔ O pedido dizia `consumidores clínicos permitidos = []`. ⚠️ A varredura
+   * mostrou que **`derivacoes-b.ts` já os lê**, ⛔ e com a fonte que autoriza:
+   * ⛔ os cortes `≥2` por item são da própria Table 4, transcritos.
+   *
+   * ⚠️ Declarar `[]` ⛔ não travaria ⛔ nada — ⛔ ela **apagaria** `achadosDosQuadros`
+   * ⛔ e a divergência do §2.8, ⛔ que o mesmo autor mandou **preservar** ⛔ na
+   * mesma mensagem. ⛔ Então a lista diz a verdade: ⛔ um consumidor, ⛔ o que já
+   * existia. ⚠️ O efeito pedido fica inteiro — ⛔ o **próximo** arquivo que
+   * ⛔ tentar ler ⛔ reprova.
+   *
+   * ── ⚠️⚠️ ⛔ E O QUE ESSE CONSUMIDOR ⛔ NÃO FAZ ─────────────────────────────
+   *
+   * ⛔ `achadosDosQuadros()` devolve `veredito: false` ⛔ e
+   * `conclusao: "desconhecido"` em **⛔ todas** as saídas — ⛔ há prova nomeada
+   * (*"os quadros ⛔ nunca emitem veredito"*). ⛔ Marcar um `t4_*` ⛔ não responde
+   * `deficit_focal`, ⛔ não decide incapacitância ⛔ e ⛔ não toca elegibilidade.
+   *
+   * ⚠️ ⛔ E a leitura corre no sentido **inverso** do que a regra teme: quem
+   * alimenta quem é o **NIHSS → `t4_*`** (`achadoDerivado`), ⛔ e ⛔ não o
+   * contrário.
+   *
+   * ── ⚠️ ⛔ QUANDO ISTO MUDAR ────────────────────────────────────────────────
+   *
+   * ⛔ Se algum `t4_*` passar a alimentar incapacitância, elegibilidade,
+   * reperfusão ⛔ ou ⛔ qualquer veredito, o caminho é o do autor, ⛔ nessa ordem:
+   * ⛔ **fonte que autoriza → consumidor declarado aqui → derivação → prova
+   * discriminatória → mutação**. ⛔ Ler primeiro ⛔ e declarar depois é
+   * ⛔ exatamente o que esta lista ⛔ não deixa.
+   */
+  t4_hemianopsia_completa: ["derivacoes-b.ts"],
+  t4_afasia_grave: ["derivacoes-b.ts"],
+  t4_extincao_grave: ["derivacoes-b.ts"],
+  t4_fraqueza_contra_gravidade: ["derivacoes-b.ts"],
+  t4_afasia_leve_isolada: ["derivacoes-b.ts"],
+  t4_paralisia_facial_isolada: ["derivacoes-b.ts"],
+  t4_fraqueza_cortical_mao: ["derivacoes-b.ts"],
+  t4_perda_hemimotora_leve: ["derivacoes-b.ts"],
+  t4_perda_hemissensitiva: ["derivacoes-b.ts"],
+  t4_perda_hemissensitivomotora_leve: ["derivacoes-b.ts"],
+  t4_hemiataxia_leve: ["derivacoes-b.ts"],
 };

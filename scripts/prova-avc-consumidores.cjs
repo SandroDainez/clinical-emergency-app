@@ -212,6 +212,121 @@ conf(
   }
 }
 
+/* ══ ⚠️⚠️ DECLARAR EM `CONSUMIDORES` É O QUE **ARMA** A TRAVA ════════════ */
+{
+  /**
+   * ── ⚠️⚠️ O BURACO QUE ISTO FECHA (autor, 2026-09-07) ─────────────────────
+   *
+   * ⛔ As duas varreduras acima cobrem **campo global** ⛔ e **campo ⛔ sem slot
+   * de fonte**. ⚠️ Os `t4_*` ⛔ não são ⛔ nem um ⛔ nem outro: ⛔ eles são de
+   * módulo ⛔ e têm **F-17**. ⛔ Uma derivação nova podia passar a lê-los ⛔ sem
+   * que ⛔ nada reclamasse — ⛔ e foi ⛔ exatamente isso que a mutação M3 mostrou,
+   * ⛔ passando verde.
+   *
+   * ⚠️ A regra do autor: *"⛔ possuir fonte clínica ⛔ não significa possuir
+   * autorização automática para alimentar ⛔ qualquer derivação. Fonte +
+   * consumidor declarado + prova são requisitos distintos."*
+   *
+   * ⚠️⚠️ ⛔ ENTÃO A TRAVA ⛔ NÃO É MAIS SOBRE ESCOPO ⛔ NEM SOBRE FONTE: **estar
+   * declarado aqui** é o que sujeita o campo à varredura, ⛔ seja ⛔ ele qual for.
+   */
+  const dirNucleo = path.join(appDir, "avc", "nucleo");
+  const arquivos = fs.readdirSync(dirNucleo).filter((f) => f.endsWith(".ts"));
+
+  const declarados = Object.keys(CONS.CONSUMIDORES);
+  conf(
+    "⚠️ há campos DECLARADOS a vigiar",
+    declarados.length >= 12,
+    `⛔ ${declarados.length} — trava sobre lista vazia fica verde ⛔ sem medir ⛔ nada`
+  );
+
+  const foraDaDeclaracao = [];
+  for (const id of declarados) {
+    const permitidos = CONS.CONSUMIDORES[id];
+    for (const arq of arquivos) {
+      const fonte = lerFonte(path.join(dirNucleo, arq));
+      if (!fonte.includes(`"${id}"`)) continue;
+      if (permitidos.includes(arq)) continue;
+      foraDaDeclaracao.push(`${id} lido em ${arq}`);
+    }
+  }
+  conf(
+    "⚠️⚠️ ⛔ NENHUM campo DECLARADO é lido fora do que a declaração permite",
+    foraDaDeclaracao.length === 0,
+    `⛔ ${foraDaDeclaracao.join(" · ")} — ter fonte ⛔ não é ter autorização`
+  );
+
+  /* ── ⚠️⚠️ OS ONZE ACHADOS DA TABLE 4, ⛔ E A ROTA INDIRETA ────────────── */
+  /**
+   * ⚠️⚠️ ⛔ POR CAMINHO EXPLÍCITO, ⛔ E ⛔ NÃO POR `achar()` — ⛔ e a conferência
+   * de vacuidade logo abaixo é quem apontou: há **dois** `nihss.js` na árvore
+   * compilada (`lib/` ⛔ e `avc/conteudo/`), ⛔ e a busca em profundidade
+   * devolvia o de `lib/`, ⛔ que ⛔ não exporta `ACHADOS_DERIVAVEIS`.
+   *
+   * ⛔ ⛔ Nome de arquivo ⛔ não é identidade. ⚠️ Sem a conferência *"cada portador
+   * carrega mesmo ids `t4_*`"*, a varredura teria rodado sobre um portador
+   * vazio ⛔ e passado verde.
+   */
+  const conteudo = (nome) => require(path.join(tmp, "avc", "conteudo", nome));
+  const B = conteudo("superficie-b.js");
+  const N = conteudo("nihss.js");
+  const T4 = [...B.IDS_ACHADOS_TIPICOS, ...B.IDS_ACHADOS_PODEM_NAO];
+
+  conf(
+    "⚠️ os onze achados da Table 4 estão no universo",
+    T4.length === 11 && T4.every((id) => String(id).startsWith("t4_")),
+    `⛔ ${T4.length} id(s) — ⛔ se a varredura perder os campos, ⛔ ela fica verde ⛔ sem medir`
+  );
+  conf(
+    "⚠️⚠️ ⛔ todo `t4_*` DECLARA os seus consumidores (**item 1**, autor)",
+    T4.every((id) => Array.isArray(CONS.CONSUMIDORES[id])),
+    `⛔ ${T4.filter((id) => !Array.isArray(CONS.CONSUMIDORES[id])).join(" · ")} — declaração ausente ⛔ não é "⛔ nenhum": é decisão ⛔ não tomada`
+  );
+
+  /**
+   * ── ⚠️⚠️ ⛔ E A VARREDURA POR LITERAL ⛔ NÃO ENXERGA O CONSUMIDOR REAL ─────
+   *
+   * ⛔ `derivacoes-b.ts` **⛔ não escreve `"t4_afasia_grave"` uma única vez**:
+   * ⛔ ele importa `IDS_ACHADOS_TIPICOS` ⛔ e espalha o array. ⚠️ Um `grep` por
+   * aspas diria que ⛔ ele ⛔ não lê ⛔ nada — ⛔ e a trava passaria verde sobre o
+   * único arquivo que de fato lê.
+   *
+   * ⚠️⚠️ ⛔ E é ⛔ por essa porta que a mutação entraria: importar o array
+   * ⛔ noutro arquivo do núcleo é ⛔ *ler os onze* ⛔ sem escrever ⛔ nenhum id.
+   * ⚠️ Então **os portadores contam como leitura**.
+   */
+  const PORTADORES = [
+    ["IDS_ACHADOS_TIPICOS", B],
+    ["IDS_ACHADOS_PODEM_NAO", B],
+    ["ACHADOS_TIPICOS_B", B],
+    ["ACHADOS_PODEM_NAO_B", B],
+    ["ACHADOS_DERIVAVEIS", N],
+  ];
+  const carrega = (v) =>
+    Array.isArray(v)
+    && v.some((x) => String(typeof x === "string" ? x : (x && (x.campo ?? x.id))).startsWith("t4_"));
+  conf(
+    "⚠️⚠️ ⛔ cada PORTADOR existe ⛔ e carrega mesmo ids `t4_*`",
+    PORTADORES.every(([nome, mod]) => carrega(mod[nome])),
+    `⛔ ${PORTADORES.filter(([n, m]) => !carrega(m[n])).map(([n]) => n).join(" · ")} — nome renomeado esvazia a varredura ⛔ sem ⛔ ninguém notar`
+  );
+
+  const nomes = PORTADORES.map(([nome]) => nome);
+  const porRota = [];
+  for (const arq of arquivos) {
+    const fonte = lerFonte(path.join(dirNucleo, arq));
+    const portador = nomes.find((n) => fonte.includes(n));
+    if (portador === undefined) continue;
+    const barrados = T4.filter((id) => !(CONS.CONSUMIDORES[id] ?? []).includes(arq));
+    if (barrados.length > 0) porRota.push(`${arq} lê ${barrados.length} \`t4_*\` via ${portador}`);
+  }
+  conf(
+    "⚠️⚠️ ⛔ NENHUM arquivo lê `t4_*` pela rota INDIRETA ⛔ sem declaração",
+    porRota.length === 0,
+    `⛔ ${porRota.join(" · ")} — **fonte + consumidor declarado + prova** são requisitos distintos (autor, **item 2**)`
+  );
+}
+
 /* ══ ⚠️⚠️ ALTURA ⛔ NÃO INFLUENCIA ⛔ NADA ═════════════════════════════ */
 {
   const dirNucleo = path.join(appDir, "avc", "nucleo");
