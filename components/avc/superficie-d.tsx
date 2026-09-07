@@ -306,7 +306,16 @@ export default function SuperficieD({
                       campo={campo}
                       casaAtual="seguranca"
                       bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-                      numero={undefined}
+                      /**
+                       * ⚠️ ⛔ Era `undefined` fixo — ⛔ a mesma classe do campo
+                       * cego achado na Fase 5. ⛔ Aqui ⛔ ela ⛔ ainda ⛔ não
+                       * mordia (⛔ os campos deste ramo ⛔ não são numéricos),
+                       * ⛔ **mas o primeiro que for** ⛔ nasceria mudo.
+                       */
+                      numero={(() => {
+                        const v = valorAtual(estado, campo.id)?.valor;
+                        return typeof v === "number" ? v : undefined;
+                      })()}
                       agora={agora}
                       detalheAberto={detalhes.aberto(campo.id)}
                       onAlternarDetalhe={() => detalhes.alternar(campo.id)}

@@ -106,6 +106,45 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   identificacao: [],
 
   /**
+   * ── ⚠️⚠️ ⛔ O aPTT ⛔ E O TP **TÊM** CONSUMIDOR — ⛔ e ⛔ eu mapeei errado ────
+   *
+   * ⛔ O mapeamento da Fase 5 disse *"⛔ ninguém os lê"*, ⛔ e o autor decidiu
+   * declará-los `[]` ⛔ e tirá-los do primeiro plano. ⚠️ ⛔ A varredura estava
+   * errada: ⛔ ela procurava o literal `"aptt"` nos arquivos do núcleo, ⛔ e a
+   * leitura é **pela chave do objeto** —
+   * `Object.keys(CORTES_LABORATORIAIS).map(corteDoAnalito)`.
+   *
+   * ⚠️⚠️ ⛔ É A MESMA ROTA INDIRETA DOS `t4_*`, ⛔ e ⛔ eu ⛔ não apliquei aqui a
+   * correção que ⛔ já tinha escrito lá. ⛔ A trava passou verde pelo mesmo
+   * buraco, ⛔ duas vezes.
+   *
+   * ── ⚠️⚠️ ⛔ E ⛔ ELES ⛔ NÃO SÃO SECUNDÁRIOS: A FONTE OS NOMEIA ─────────────
+   *
+   * ⛔ **F-10**, ⛔ na **mesma frase** que INR ⛔ e plaquetas:
+   *
+   * > *"patients with platelets <100,000/mm³, INR>1.7, **aPTT>40s, or PT>15s**
+   * >  … is unknown though may substantially increase risk of harm ⛔ and
+   * >  should not be administered"*
+   *
+   * ⚠️ ⛔ Os quatro cortes vêm juntos. ⛔ Pôr dois num bloco *"outros
+   * resultados"* esconderia metade de uma frase de segurança da trombólise —
+   * ⛔ e ⛔ é ⛔ por isso que **§50** manda preservar a regra clínica ⛔ e
+   * sinalizar o conflito ⛔ **antes** de alterar.
+   */
+  /**
+   * ⚠️ ⛔ Os quatro andam juntos porque a **frase** os traz juntos. ⛔ Declarar
+   * dois ⛔ e deixar dois de fora seria a trava medindo meia regra.
+   *
+   * ⛔ `plaquetas` também é lida por `derivacoes-lab.ts` — ⛔ ali para a
+   * comparabilidade entre coletas (unidade declarada), ⛔ e ⛔ não para o corte.
+   */
+  plaquetas: ["derivacoes-d.ts", "derivacoes-lab.ts"],
+  plaquetas_unidade: ["derivacoes-d.ts", "derivacoes-lab.ts"],
+  inr: ["derivacoes-d.ts"],
+  aptt: ["derivacoes-d.ts"],
+  tp: ["derivacoes-d.ts"],
+
+  /**
    * ── ⚠️⚠️ OS ONZE ACHADOS DA TABLE 4 — ⛔ ter fonte ⛔ NÃO é ter autorização ──
    *
    * ⚠️ A regra do autor, 2026-09-07:

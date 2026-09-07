@@ -325,6 +325,12 @@ export default function SuperficieC({
     );
   }
 
+  /** ⚠️ O valor numérico do fato — ⛔ e `undefined` ⛔ só quando ⛔ não há fato. */
+  function numeroDoCampo(id: string): number | undefined {
+    const v = valorAtual(estado, id)?.valor;
+    return typeof v === "number" ? v : undefined;
+  }
+
   return (
     <View style={e.raiz} testID="avc-superficie-c-conteudo">
       {/**
@@ -431,7 +437,23 @@ export default function SuperficieC({
               campo={{ ...campo, casa: "imagem" }}
               casaAtual="imagem"
               bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
-              numero={undefined}
+              /**
+               * ── ⚠️⚠️ ⛔ ERA `undefined` FIXO, ⛔ E O PEDIDO SUMIA ─────────────
+               *
+               * ⛔ Achado na revisão visual da Fase 5, 2026-09-07 — ⛔ e o
+               * defeito é de 06/09, ⛔ do commit de afordância.
+               *
+               * ⛔ `CampoDeHora` desenha o valor a partir de `gravado`, que vem
+               * ⛔ daqui como `numero`. ⚠️ Fixo em `undefined`, o campo dizia
+               * *"Informar horário"* **⛔ mesmo depois de o médico informar**:
+               * ⛔ o fato entrava na trilha ⛔ e a tela ⛔ não mudava.
+               *
+               * ⚠️⚠️ ⛔ E O PIOR ⛔ NÃO ERA O SUMIÇO: ⛔ era o médico registrar
+               * ⛔ **de novo**, ⛔ achando que ⛔ não tinha funcionado. ⛔ O card
+               * de prioridade ⛔ já sabia (⛔ ele passava a dizer *"Registrar o
+               * exame"*) — ⛔ e a tela do pedido discordava dele.
+               */
+              numero={numeroDoCampo(campo.id)}
               agora={agora}
               detalheAberto={detalhes.aberto(campo.id)}
               onAlternarDetalhe={() => detalhes.alternar(campo.id)}

@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ANALITOS_L, COLETA, COLETA_L } from "../../avc/conteudo/laboratorio";
+import { HEDGE_DO_COAGULOGRAMA } from "../../avc/conteudo/superficie-d";
 import { coletas, leiturasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
@@ -89,6 +90,23 @@ export default function SuperficieLaboratorio({
 
   return (
     <View style={e.raiz} testID="avc-superficie-laboratorio-conteudo">
+      {/**
+        * ── ⚠️⚠️ ⛔ O CONDICIONAL FICA VISÍVEL, ⛔ E ⛔ NÃO ATRÁS DE UM ⓘ ─────
+        *
+        * ⛔ A Investigação mostra os quatro analitos de **F-10** no mesmo
+        * plano — ⛔ e ⛔ é ⛔ exatamente ⛔ isso que pode ser lido como
+        * *"consiga os quatro antes de tratar"*. ⚠️ ⛔ A frase da fonte diz o
+        * contrário, ⛔ **com uma condição**, ⛔ e ⛔ ela ⛔ não pode virar
+        * etiqueta seca: *"⛔ não atrasa"* ⛔ sem o *"quando"* é permissão para
+        * ignorar coagulograma em paciente anticoagulado (**E-45**).
+        *
+        * ⚠️ ⛔ O texto vem de `HEDGE_DO_COAGULOGRAMA` — ⛔ uma cópia só,
+        * compartilhada com a Superfície D.
+        */}
+      <Text style={e.hedge} testID="avc-laboratorio-hedge">
+        {tr(HEDGE_DO_COAGULOGRAMA)}
+      </Text>
+
       {lista.length === 0 ? (
         <Text style={e.vazio} testID="avc-laboratorio-vazio">
           {tr("Nenhuma coleta registrada. Nada no atendimento espera por isto.")}
@@ -222,6 +240,11 @@ const criarEstilos = (tema: Tema) =>
     coleta: { gap: ESPACO.xs },
     identidade: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     vazio: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
+    /**
+     * ⚠️ ⛔ O condicional é texto corrido ⛔ e **quebra**: cortado, ⛔ ele vira o
+     * absoluto que ⛔ ele existe para negar.
+     */
+    hedge: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary, flexShrink: 1 },
     novaColeta: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,

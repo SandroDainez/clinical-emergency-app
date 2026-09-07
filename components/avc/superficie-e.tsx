@@ -118,7 +118,11 @@ export default function SuperficieE({
                     campo={{ ...campo, casa: "correcoes" }}
                     casaAtual="correcoes"
                     bruto={String(valorNaInstancia(estado, a.instancia, campo.id)?.valor ?? "")}
-                    numero={undefined}
+                    /** ⚠️ ⛔ Ver `superficie-d.tsx`: literal `undefined` ⛔ é campo cego esperando o primeiro campo numérico. */
+                    numero={(() => {
+                      const v = valorNaInstancia(estado, a.instancia, campo.id)?.valor;
+                      return typeof v === "number" ? v : undefined;
+                    })()}
                     agora={agora}
                     detalheAberto={detalhes.aberto(`${a.instancia}-${campo.id}`)}
                     onAlternarDetalhe={() => detalhes.alternar(`${a.instancia}-${campo.id}`)}

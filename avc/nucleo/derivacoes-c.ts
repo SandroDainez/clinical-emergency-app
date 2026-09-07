@@ -159,6 +159,64 @@ export function imagemSolicitadaEm(estado: EstadoAvc): number | undefined {
   return typeof v === "number" ? v : undefined;
 }
 
+/**
+ * ── ⚠️⚠️ ⛔ OS CINCO ESTADOS DO PEDIDO — **DERIVADOS**, ⛔ E ⛔ NÃO GRAVADOS ──
+ *
+ * ⚠️ Decisão do autor, 2026-09-07 (**Fase 5, item 3**):
+ *
+ * > *"⛔ Não criar novos fatos para sugerido ⛔ e em andamento. Derivar esses
+ * >  estados a partir dos fatos já existentes. ⛔ Não transformar estado visual
+ * >  em fato clínico novo."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELES SAEM DE **DOIS** FATOS, ⛔ e ⛔ de mais nenhum:
+ * `hora_solicitacao_imagem` (⛔ houve pedido) ⛔ e as instâncias de `estudo`
+ * (⛔ houve exame, ⛔ houve resultado).
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE *"solicitado"* ⛔ E *"em andamento"* ⛔ SÃO O MESMO ESTADO ──
+ *
+ * ⛔ O briefing listava os dois separados. ⚠️ ⛔ O app ⛔ **não tem fato** que os
+ * distinga: ⛔ entre *"pedi ⛔ e ⛔ ninguém começou"* ⛔ e *"pedi ⛔ e está
+ * rodando"* ⛔ não há registro ⛔ nenhum. ⛔ Inventar a diferença exigiria um
+ * campo novo — ⛔ que é ⛔ exatamente o que o item 3 proíbe.
+ *
+ * ⚠️ ⛔ Então `em_andamento` **é** o nome de *pedido registrado ⛔ e exame ⛔ ainda
+ * ⛔ não registrado*. ⛔ Um estado, ⛔ e ⛔ não dois com aparência de precisão.
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ NADA AQUI INFERE RESULTADO DE PEDIDO ─────────────────────────
+ *
+ * ⛔ Pedir ⛔ não é realizar, ⛔ realizar ⛔ não é ter laudo (**E-23**). ⛔ Os três
+ * degraus são lidos de fatos diferentes, ⛔ e a prova da Fase 5 mede ⛔ cada
+ * salto ⛔ que ⛔ não pode acontecer.
+ */
+export type SituacaoDoPedido =
+  /** ⚠️ ⛔ Nada pedido ⛔ e ⛔ nada registrado — a fonte indica, ⛔ e o app sugere. */
+  | "sugerido"
+  /** ⚠️ Pedido registrado, exame ⛔ ainda ⛔ não. */
+  | "em_andamento"
+  /** ⚠️ Exame registrado, ⛔ sem laudo — **PD-22**: ⛔ isso ⛔ não é campo vazio. */
+  | "realizado_sem_resultado"
+  /** ⚠️ Há resultado na trilha. */
+  | "resultado_disponivel";
+
+/**
+ * ⚠️ A situação do pedido de TC sem contraste — ⛔ a modalidade que a fonte
+ * manda fazer **antes** de qualquer reperfusão (**F-16**).
+ *
+ * ⚠️⚠️ ⛔ ELA ⛔ NÃO OLHA OUTRAS MODALIDADES: uma angio registrada ⛔ não faz a TC
+ * sem contraste existir — ⛔ é a mesma precisão que `tcsSemContraste()` protege.
+ */
+export function situacaoDoPedidoDeTc(estado: EstadoAvc): SituacaoDoPedido {
+  const tcs = tcsSemContraste(estado);
+  if (tcs.some((e) => e.resultado !== undefined)) return "resultado_disponivel";
+  if (tcs.length > 0) return "realizado_sem_resultado";
+  /**
+   * ⚠️⚠️ ⛔ O PEDIDO ⛔ SÓ CONTA COMO INSTANTE. ⛔ `imagemSolicitadaEm` recusa
+   * *"sem essa informação"* — ⛔ ignorância declarada sobre o horário ⛔ não é
+   * um pedido (**E-37**).
+   */
+  return imagemSolicitadaEm(estado) !== undefined ? "em_andamento" : "sugerido";
+}
+
 export function situacaoDaTcSemContraste(estado: EstadoAvc): SituacaoDaTc {
   const tcs = tcsSemContraste(estado);
   if (tcs.length === 0) return "nenhuma_registrada";

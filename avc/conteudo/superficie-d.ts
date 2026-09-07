@@ -448,6 +448,25 @@ export const CORTES_LABORATORIAIS = {
   tp: { campo: "tp", limite: 15, comparacao: "maior", unidade: "s" },
 } as const;
 
+/**
+ * ── ⚠️⚠️ O CONDICIONAL DE F-10, ⛔ NUMA CÓPIA SÓ — 2026-09-07 ─────────────
+ *
+ * ⛔ *"⛔ Não atrasar a trombólise esperando exames"* ⛔ **sozinho é falso**. ⚠️ A
+ * fonte condiciona: *"⛔ **if there is no reason to suspect an abnormal
+ * result**"*. ⛔ Sem o *quando*, o app mandaria ignorar coagulograma em
+ * paciente anticoagulado.
+ *
+ * ⚠️⚠️ ⛔ ELE VIVE AQUI PORQUE A INVESTIGAÇÃO PRECISA DELE. ⛔ A Fase 5 mostra
+ * os quatro analitos juntos, ⛔ e mostrar os quatro ⛔ sem o condicional soaria
+ * como *"consiga os quatro antes de tratar"* — ⛔ o atraso que a própria
+ * recomendação proíbe (**item 6** do autor).
+ *
+ * ⛔ ⛔ Uma frase, ⛔ um lugar: ⛔ escrita duas vezes, ⛔ a próxima correção
+ * acertaria ⛔ uma das cópias.
+ */
+export const HEDGE_DO_COAGULOGRAMA =
+  "A fonte diz para não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.";
+
 export const VERBO_DOS_CORTES =
   "is unknown though may substantially increase risk of harm and should not be administered";
 
@@ -495,7 +514,7 @@ export const FATOS_PROPRIOS_D: readonly CampoD[] = [
     rotulo: "Há razão para suspeitar de coagulação alterada",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
-    ajuda: "A fonte diz para não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.",
+    ajuda: HEDGE_DO_COAGULOGRAMA,
     fonte: "F-10",
     bloqueiaTerapia: false,
   },

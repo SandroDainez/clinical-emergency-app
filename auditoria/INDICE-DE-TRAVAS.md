@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**82 de 96 travas com declaração completa.**
+**83 de 97 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -109,6 +109,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** ⛔ que os fatos críticos mapeados em 2026-09-07 sigam inteiros — · `deficit_focal` intacto — id, casa, tipo ⛔ e **série temporal**; · `hora_ultima_vez_bem` intacto — ⛔ e o **vínculo com o relógio clínico**; · **dois** NIHSS, ⛔ e ⛔ nenhum corrigindo o outro; · `mrs_previo` **⛔ apenas emprestado** — a casa continua Paciente; · os **onze** `t4_*` preservados, ⛔ e ⛔ sem virar *"exame neurológico"*; · `incapacitante_assumido` preservado.
 - **NÃO PROMETE:** que a tela esteja bonita ⛔ nem que a ordem visual agrade — ⛔ isso é do e2e ⛔ e do olho do autor.
 - **UNIVERSO:** `avc/conteudo/*.ts` × `avc/nucleo/*.ts`. ── ⚠️⚠️ A REGRA DA FASE, NAS PALAVRAS DO AUTOR (2026-09-07) ────────────── > *"Composição visual pode atravessar casas; fonte de verdade ⛔ não."* ⚠️ ⛔ Esta trava existe para ser rodada **antes** de a interface antiga sair — ⛔ e ⛔ ela é o que autoriza removê-la.
+
+## `test:avc-fase5` → `scripts/prova-avc-fase5-investigacao.cjs`
+
+- **PROMETE:** ⛔ que os três degraus da investigação sigam separados, ⛔ e que ⛔ nenhum silêncio vire achado — · **solicitado ≠ realizado ≠ resultado**, ⛔ nos dois sentidos; · `sugerido` ⛔ e `em_andamento` são **derivados**, ⛔ e ⛔ não fatos; · TC ⛔ sem resultado ⛔ **não** é TC ⛔ sem hemorragia; · angio ⛔ sem resultado ⛔ **não** é ausência de oclusão; · INR ⛔ e plaquetas ⛔ não informados ⛔ **não** são normais; · os **quatro** analitos de **F-10** ficam no mesmo plano, ⛔ com consumidor declarado; · o **condicional** de F-10 sobrevive na tela — *"⛔ não atrasar… **⛔ se ⛔ não houver razão para suspeitar**"*.
+- **NÃO PROMETE:** que a imagem esteja clinicamente indicada neste paciente — ⛔ isso é do médico. ⛔ Aqui se mede **o que o app afirma a partir do que ⛔ ele tem**, ⛔ e ⛔ nada mais.
+- **UNIVERSO:** `avc/conteudo/{superficie-c,superficie-d,laboratorio,consumidores}.ts` × `avc/nucleo/{derivacoes-c,derivacoes-d,derivacoes-lab}.ts` × as telas da Investigação. ── ⚠️⚠️ ⛔ POR QUE ESTA CLASSE DE ERRO É A MAIS PERIGOSA DA FASE ────────── ⛔ O autor nomeou, 2026-09-07: *"exame solicitado virar exame realizado; exame realizado virar resultado conhecido; resultado ausente virar resultado negativo; campo vazio virar normalidade."* ⚠️ ⛔ Os quatro têm a **mesma forma**: ⛔ um degrau a menos de evidência ⛔ sendo lido como um degrau a mais. ⛔ E o preço é sempre o mesmo — ⛔ uma trombólise decidida sobre um exame que ⛔ ninguém viu.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

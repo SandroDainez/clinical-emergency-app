@@ -295,6 +295,21 @@ conf(
    * ⛔ noutro arquivo do núcleo é ⛔ *ler os onze* ⛔ sem escrever ⛔ nenhum id.
    * ⚠️ Então **os portadores contam como leitura**.
    */
+  const D = conteudo("superficie-d.js");
+  /**
+   * ── ⚠️⚠️ ⛔ O MESMO BURACO, ⛔ ACHADO DE NOVO — 2026-09-07, Fase 5 ─────────
+   *
+   * ⛔ `CORTES_LABORATORIAIS` é portador de **quatro** ids —
+   * `plaquetas · inr · aptt · tp` —, ⛔ e `derivacoes-d.ts` os lê por
+   * `Object.keys(...)`, ⛔ sem escrever ⛔ nenhum literal.
+   *
+   * ⚠️⚠️ ⛔ EU MAPEEI *"aPTT ⛔ e TP ⛔ não têm consumidor"* ⛔ e ⛔ estava errado:
+   * ⛔ a varredura por literal ⛔ não os via. ⛔ O autor decidiu declará-los `[]`
+   * ⛔ **sobre o meu mapa errado** — ⛔ e a fonte os nomeia na mesma frase que
+   * INR ⛔ e plaquetas (**F-10**).
+   *
+   * ⛔ ⛔ A correção ⛔ não é lembrar de olhar: ⛔ é o portador entrar aqui.
+   */
   const PORTADORES = [
     ["IDS_ACHADOS_TIPICOS", B],
     ["IDS_ACHADOS_PODEM_NAO", B],
@@ -302,6 +317,7 @@ conf(
     ["ACHADOS_PODEM_NAO_B", B],
     ["ACHADOS_DERIVAVEIS", N],
   ];
+  const PORTADORES_DE_ANALITO = [["CORTES_LABORATORIAIS", D]];
   const carrega = (v) =>
     Array.isArray(v)
     && v.some((x) => String(typeof x === "string" ? x : (x && (x.campo ?? x.id))).startsWith("t4_"));
@@ -311,19 +327,40 @@ conf(
     `⛔ ${PORTADORES.filter(([n, m]) => !carrega(m[n])).map(([n]) => n).join(" · ")} — nome renomeado esvazia a varredura ⛔ sem ⛔ ninguém notar`
   );
 
-  const nomes = PORTADORES.map(([nome]) => nome);
+  const ANALITOS = Object.keys(D.CORTES_LABORATORIAIS);
+  conf(
+    "⚠️⚠️ ⛔ o portador dos ANALITOS carrega os quatro cortes de **F-10**",
+    ANALITOS.length === 4
+    && ["plaquetas", "inr", "aptt", "tp"].every((k) => ANALITOS.includes(k))
+    && ANALITOS.every((k) => Array.isArray(CONS.CONSUMIDORES[k])),
+    `⛔ ${ANALITOS.join(" · ")} — ⛔ a fonte nomeia os quatro na MESMA frase`
+  );
+
+  /**
+   * ⚠️ ⛔ Cada grupo de portadores varre o **seu** universo de ids: um arquivo
+   * que importa `CORTES_LABORATORIAIS` lê os quatro analitos, ⛔ e ⛔ não os
+   * onze achados.
+   */
+  const GRUPOS = [
+    { nomes: PORTADORES.map(([n]) => n), ids: T4, rotulo: "`t4_*`" },
+    { nomes: PORTADORES_DE_ANALITO.map(([n]) => n), ids: ANALITOS, rotulo: "analito de F-10" },
+  ];
   const porRota = [];
-  for (const arq of arquivos) {
-    const fonte = lerFonte(path.join(dirNucleo, arq));
-    const portador = nomes.find((n) => fonte.includes(n));
-    if (portador === undefined) continue;
-    const barrados = T4.filter((id) => !(CONS.CONSUMIDORES[id] ?? []).includes(arq));
-    if (barrados.length > 0) porRota.push(`${arq} lê ${barrados.length} \`t4_*\` via ${portador}`);
+  for (const g of GRUPOS) {
+    for (const arq of arquivos) {
+      const fonte = lerFonte(path.join(dirNucleo, arq));
+      const portador = g.nomes.find((n) => fonte.includes(n));
+      if (portador === undefined) continue;
+      const barrados = g.ids.filter((id) => !(CONS.CONSUMIDORES[id] ?? []).includes(arq));
+      if (barrados.length > 0) {
+        porRota.push(`${arq} lê ${barrados.length} ${g.rotulo} via ${portador}`);
+      }
+    }
   }
   conf(
-    "⚠️⚠️ ⛔ NENHUM arquivo lê `t4_*` pela rota INDIRETA ⛔ sem declaração",
+    "⚠️⚠️ ⛔ NENHUM arquivo lê pela rota INDIRETA ⛔ sem declaração",
     porRota.length === 0,
-    `⛔ ${porRota.join(" · ")} — **fonte + consumidor declarado + prova** são requisitos distintos (autor, **item 2**)`
+    `⛔ ${porRota.join(" · ")} — **fonte + consumidor declarado + prova** são requisitos distintos`
   );
 }
 

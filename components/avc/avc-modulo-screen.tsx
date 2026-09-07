@@ -37,9 +37,9 @@ import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
 import { correcoesEhRelevante, pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
 import { ESTADOS, corDoEstado } from "../../design-system/estados-clinicos";
-import { destinoDaImagem, imagemSolicitadaEm, situacaoDaTcSemContraste } from "../../avc/nucleo/derivacoes-c";
+import { destinoDaImagem, situacaoDoPedidoDeTc } from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
-import { Icone, type NomeDeIcone } from "./ui";
+import { Icone, Secao, type NomeDeIcone } from "./ui";
 import {
   ClinicalHeader,
   ClinicalShell,
@@ -120,7 +120,20 @@ const COR_DO_EIXO: Readonly<Record<string, "info" | "primary" | "critical" | "de
 const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   estabilizacao: { nome: "Estabilizar", icone: "estabilizar" },
   neurologico: { nome: "Neuro", icone: "neuro" },
-  imagem: { nome: "Imagem", icone: "imagem" },
+  /**
+   * ── ⚠️⚠️ *"Investigação"*, ⛔ E ⛔ NÃO *"Imagem"* — Fase 5, 2026-09-07 ──────
+   *
+   * ⛔ O nome curto virou **mentira** quando a fase passou a carregar imagem
+   * ⛔ **e** laboratório: a aba prometia um assunto ⛔ e entregava dois.
+   *
+   * ⚠️⚠️ ⛔ E a revisão visual mostrou o sintoma: o cabeçalho da fase dizia
+   * *"Imagem"* ⛔ e ⛔ logo abaixo vinha o bloco *"Imagem"* — ⛔ **a mesma
+   * palavra duas vezes**, ⛔ uma como fase ⛔ e outra como bloco.
+   *
+   * ⛔ O slug segue `imagem`: ⛔ ele é a **casa** de dezesseis campos, ⛔ e
+   * renomeá-lo moveria fato clínico ⛔ sem necessidade ⛔ nenhuma.
+   */
+  imagem: { nome: "Investigação", icone: "imagem" },
   seguranca: { nome: "Segurança", icone: "seguranca" },
   /**
    * ⚠️⚠️ CORREÇÕES ⛔ NÃO ESTAVA NA LISTA DE SEIS DO AUTOR — ⛔ e ⛔ não foi
@@ -252,7 +265,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * fica com o que ⛔ **não tem eixo**: o NIHSS ⛔ e a imagem.
    */
   /** ⚠️ Lida pelo núcleo (I6) — ⛔ a tela ⛔ não interpreta fato por conta própria. */
-  const imagemJaSolicitada = imagemSolicitadaEm(estado) !== undefined;
+  /**
+   * ── ⚠️⚠️ ⛔ UM ESTADO DERIVADO, ⛔ E ⛔ NÃO O TERNÁRIO REPETIDO ────────────
+   *
+   * ⛔ A escolha da ação estava escrita **duas vezes** neste arquivo, com a
+   * mesma cadeia `resultado_pendente ? … : jaSolicitada ? … : …`. ⚠️ Duas
+   * cópias de uma regra ⛔ é como nasce a terceira tela oferecendo *"solicitar"*
+   * ⛔ para um exame já registrado.
+   *
+   * ⚠️ `situacaoDoPedidoDeTc()` é do **núcleo** (**I6**), ⛔ e ⛔ ela ⛔ não cria
+   * fato ⛔ nenhum: ⛔ sai de `hora_solicitacao_imagem` ⛔ e das instâncias de
+   * `estudo` (decisão do autor, Fase 5 · **item 3**).
+   */
+  const situacaoDoPedido = situacaoDoPedidoDeTc(estado);
+  /** ⚠️ O rótulo que a situação pede — ⛔ e ⛔ nenhuma tela decide sozinha. */
+  const ACAO_DA_SITUACAO = {
+    sugerido: PRIORIDADE_DA_IMAGEM.acaoSolicitar,
+    em_andamento: PRIORIDADE_DA_IMAGEM.acaoRegistrar,
+    realizado_sem_resultado: PRIORIDADE_DA_IMAGEM.acaoResultado,
+    resultado_disponivel: PRIORIDADE_DA_IMAGEM.acaoResultado,
+  } as const;
 
 
   const VITAIS = useMemo(() => {
@@ -1215,13 +1247,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             {tr(PRIORIDADE_DA_IMAGEM.titulo)}
           </Text>
           <Text style={s.imagemLinhaAcao}>
-            {tr(
-              situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
-                ? PRIORIDADE_DA_IMAGEM.acaoResultado
-                : imagemJaSolicitada
-                  ? PRIORIDADE_DA_IMAGEM.acaoRegistrar
-                  : PRIORIDADE_DA_IMAGEM.acaoSolicitar
-            )}
+            {tr(ACAO_DA_SITUACAO[situacaoDoPedido])}
           </Text>
         </Pressable>
       ) : (
@@ -1277,17 +1303,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
              */
             <View style={s.imagemAcoes}>
               <PrimaryAction
-                rotulo={
-                  situacaoDaTcSemContraste(estado) === "realizada_resultado_pendente"
-                    ? PRIORIDADE_DA_IMAGEM.acaoResultado
-                    : imagemJaSolicitada
-                      ? PRIORIDADE_DA_IMAGEM.acaoRegistrar
-                      : PRIORIDADE_DA_IMAGEM.acaoSolicitar
-                }
+                rotulo={ACAO_DA_SITUACAO[situacaoDoPedido]}
                 onPress={() =>
-                  situacaoDaTcSemContraste(estado) !== "nenhuma_registrada" || imagemJaSolicitada
-                    ? abrir("imagem")
-                    : irParaCampo("hora_solicitacao_imagem")
+                  situacaoDoPedido === "sugerido"
+                    ? irParaCampo("hora_solicitacao_imagem")
+                    : abrir("imagem")
                 }
                 testID="avc-prioridade-imagem-acao"
               />
@@ -1297,7 +1317,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * a TC pronta de outro serviço, ⛔ e essa saída ⛔ não pode
                 * depender de ⛔ ele ⛔ ter pedido primeiro.
                 */}
-              {situacaoDaTcSemContraste(estado) === "nenhuma_registrada" && !imagemJaSolicitada ? (
+              {situacaoDoPedido === "sugerido" ? (
                 <SecondaryAction
                   rotulo={PRIORIDADE_DA_IMAGEM.acaoAbrir}
                   onPress={() => abrir("imagem")}
@@ -1531,6 +1551,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * razão para suspeitar de alteração (**rec. 10 · COR 2a**).
            */
           <>
+            {/**
+              * ── ⚠️⚠️ ⛔ UMA FASE, ⛔ DUAS CASAS — Fase 5, 2026-09-07 ──────────
+              *
+              * ⛔ Imagem ⛔ e Laboratório ⛔ já eram desenhados juntos desde a
+              * Fase 3, ⛔ mas ⛔ **empilhados sem costura**: duas telas coladas,
+              * ⛔ e ⛔ nenhuma dizia onde uma acabava ⛔ e a outra começava.
+              *
+              * ⚠️ ⛔ Os dois cabeçalhos são **composição**, ⛔ e ⛔ não casa: os
+              * fatos da imagem seguem em `imagem`, ⛔ os do laboratório em
+              * `laboratorio` (**item 1** do autor). ⛔ Compor atravessa casa;
+              * ⛔ mover fonte de verdade ⛔ é outra coisa.
+              *
+              * ⚠️ ⛔ E ⛔ é `Secao` — ⛔ o mesmo componente que titula bloco na
+              * Avaliação AVC. ⛔ Padrão novo de card ⛔ nesta fase seria a
+              * Investigação parecendo outro app (**item 18**).
+              */}
+            <Secao titulo="Imagem" testID="avc-investigacao-imagem" />
             <SuperficieC
               estado={estado}
               agora={agora}
@@ -1546,6 +1583,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               onNovoEstudo={() => novaMedida(ESTUDO)}
               onAbrirSuperficie={abrir}
             />
+            <Secao titulo="Laboratório" testID="avc-investigacao-laboratorio" />
             <SuperficieLaboratorio
               estado={estado}
               agora={agora}

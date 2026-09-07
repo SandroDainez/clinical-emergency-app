@@ -63,6 +63,39 @@ test.describe("AVC · Superfície C — Imagem", () => {
    * último) ⛔ e a fronteira escrita, que é o que impede *"⛔ não temos angioTC"*
    * de ser lido como *"⛔ não há indicação de imagem vascular"*.
    */
+  /**
+   * ── ⚠️⚠️ ⛔ O PEDIDO REGISTRADO PRECISA **APARECER** — 2026-09-07 ─────────
+   *
+   * ⛔ Achado na revisão visual da Fase 5: o campo passava `numero={undefined}`
+   * fixo, ⛔ e dizia *"Informar horário"* ⛔ **mesmo depois de o médico
+   * informar**. ⚠️ O fato entrava na trilha ⛔ e a tela ⛔ não mudava.
+   *
+   * ⚠️⚠️ ⛔ E O CARD DE PRIORIDADE ⛔ JÁ SABIA — ⛔ ele passava a dizer
+   * *"Registrar o exame"* ⛔ enquanto o campo ⛔ ainda pedia o horário. ⛔ Duas
+   * telas discordando sobre o mesmo fato ensinam o médico a registrar **de
+   * novo**, ⛔ e ⛔ é assim que nasce um pedido duplicado na trilha.
+   *
+   * ⚠️ ⛔ A trava mede as **duas** telas ⛔ no mesmo teste: ⛔ separadas, ⛔ cada
+   * uma passaria ⛔ sozinha ⛔ e a divergência sobreviveria.
+   */
+  test("o pedido registrado APARECE no campo, ⛔ e as duas telas concordam", async ({ page }) => {
+    await abrirC(page);
+
+    const valor = page.getByTestId("avc-hora-valor-hora_solicitacao_imagem");
+    await expect(valor).toHaveText(/Informar horário/i);
+
+    await page.getByTestId("avc-hora-hora_solicitacao_imagem").click();
+    await page.getByTestId("avc-seletor-hora-m-menos").click();
+    await page.getByTestId("avc-seletor-hora-confirmar").click();
+
+    /** ⚠️ ⛔ O campo mostra o horário — ⛔ e ⛔ não segue pedindo. */
+    await expect(valor).toHaveText(/^✓ \d{1,2}:\d{2} ✎$/);
+
+    /** ⚠️⚠️ ⛔ E a outra tela conta a MESMA história. */
+    await page.getByTestId("avc-aba-estabilizacao").click();
+    await expect(page.getByTestId("avc-prioridade-imagem-acao")).toContainText(/Registrar o exame/i);
+  });
+
   test("a superfície separa juízo clínico de capacidade, e ⛔ sem imagem avançada", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
