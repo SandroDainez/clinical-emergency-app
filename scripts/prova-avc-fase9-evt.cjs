@@ -58,6 +58,11 @@ execFileSync(
     "--rootDir", appDir, "--outDir", tmp,
     path.join(appDir, "avc", "conteudo", "campos.ts"),
     path.join(appDir, "avc", "nucleo", "veredito-da-trombectomia.ts"),
+    /**
+     * ⚠️ O vocabulário visual entra no universo desta prova ⛔ porque a Fase 9
+     * passou a **prometer** que ⛔ nenhum estado da EVT usa o papel de `impede`.
+     */
+    path.join(appDir, "design-system", "estados-clinicos.ts"),
   ],
   { cwd: appDir, stdio: "inherit" }
 );
@@ -978,10 +983,10 @@ const M2D = "M2 dominante da artéria cerebral média";
   conf(
     "⚠️⚠️ *«efetividade ⛔ não bem estabelecida»* ⛔ NÃO se veste de recomendação",
     A.SELO_DO_VEREDITO_EVT.efetividade_nao_estabelecida.simbolo !== "✓"
-    && A.ENFASE_DO_VEREDITO_EVT.efetividade_nao_estabelecida === "neutra"
-    && A.ENFASE_DO_VEREDITO_EVT.pode_ser_razoavel === "neutra"
-    && A.ENFASE_DO_VEREDITO_EVT.recomendada === "favoravel"
-    && A.ENFASE_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio === "contra",
+    && A.PAPEL_DO_VEREDITO_EVT.efetividade_nao_estabelecida === "neutro"
+    && A.PAPEL_DO_VEREDITO_EVT.pode_ser_razoavel === "neutro"
+    && A.PAPEL_DO_VEREDITO_EVT.recomendada === "sucesso"
+    && A.PAPEL_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio === "atencao",
     "⛔ um *nem sim nem não* com a cor de um COR 1 apaga a gradação inteira"
   );
 }
@@ -1050,6 +1055,107 @@ const M2D = "M2 dominante da artéria cerebral média";
     "⚠️⚠️ ⛔ e ⛔ NENHUM critério de elegibilidade de EVT é irrespondível",
     semCampo.length === 0,
     `⛔ ${semCampo.join(" · ")} — ⛔ recomendação que ⛔ nunca fecha ⛔ não é recomendação`
+  );
+}
+
+/* ══ ⚠️⚠️⚠️ 6.13 · *No Benefit* ⛔ NÃO É BLOQUEIO DE SEGURANÇA ═══════════ */
+{
+  /**
+   * ── ⚠️⚠️ ⛔ DECISÃO DO AUTOR, 2026-09-07 ────────────────────────────────
+   *
+   * > *"COR 3: No Benefit ⛔ não deve usar o mesmo tratamento visual de
+   * >  bloqueio crítico/contraindicação… ⛔ O motor já distingue corretamente;
+   * >  a UI precisa preservar essa distinção também."*
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ELE ESTÁ CERTO SOBRE O QUE A COR DIZ: ⛔ o vermelho crítico do
+   * módulo é o de `impede` — ⛔ *"Contraindicação de segurança ativa"*, INR
+   * 2,5, plaquetas abaixo do corte. ⚠️ ⛔ Emprestá-lo a *"⛔ não recomendada
+   * **por ausência de benefício**"* faria a tela dizer, ⛔ pela cor, uma coisa
+   * que o texto ⛔ nega.
+   *
+   * ⚠️ ⛔ São **três** coisas diferentes, ⛔ e ⛔ agora as três se distinguem
+   * ⛔ sem ler: bloqueio de segurança · ⛔ ausência de benefício · efetividade
+   * ⛔ não estabelecida.
+   */
+  const A3 = emT("avc", "nucleo", "apresentacao-f.js");
+  const EC = emT("design-system", "estados-clinicos.js");
+  const TIPOS = ["recomendada", "razoavel", "pode_ser_razoavel",
+    "efetividade_nao_estabelecida", "nao_recomendada_sem_beneficio",
+    "incompleta", "sem_criterios"];
+
+  const mapa = A3.PAPEL_DO_VEREDITO_EVT ?? {};
+  conf(
+    "⚠️⚠️ os SETE estados da EVT declaram um **papel** do vocabulário compartilhado",
+    A3.PAPEL_DO_VEREDITO_EVT !== undefined
+    && TIPOS.every((t) => ["sucesso", "atencao", "acao", "critico", "neutro"].includes(mapa[t])),
+    `⛔ ${JSON.stringify(mapa)}`
+  );
+
+  /**
+   * ⚠️⚠️⚠️ ⛔ **⛔ NENHUM** ESTADO DA EVT É `critico` — ⛔ e ⛔ isso vale para
+   * os sete, ⛔ e ⛔ não ⛔ só para o que eu lembrei de conferir.
+   */
+  const criticos = TIPOS.filter((t) => mapa[t] === "critico");
+  conf(
+    "⚠️⚠️⚠️ ⛔ NENHUM estado da EVT usa o papel **crítico**",
+    criticos.length === 0,
+    `⛔ ${criticos.join(" · ")} — ⛔ crítico é o papel de *impede*, ⛔ e ⛔ EVT ⛔ não bloqueia ⛔ nada`
+  );
+  conf(
+    "⚠️⚠️ ⛔ e *No Benefit* usa **cautela**, ⛔ e ⛔ não sucesso ⛔ nem neutro puro",
+    mapa.nao_recomendada_sem_beneficio === "atencao",
+    `⛔ ${mapa.nao_recomendada_sem_beneficio} — ⛔ ausência de benefício ⛔ não é indiferença`
+  );
+  conf(
+    "⚠️⚠️ ⛔ e ⛔ ele ⛔ NÃO recebe o mesmo papel de `impede`",
+    mapa.nao_recomendada_sem_beneficio !== EC.ESTADOS.impede.papel,
+    `⛔ ${mapa.nao_recomendada_sem_beneficio} === ${EC.ESTADOS.impede.papel}`
+  );
+  /** ⚠️ ⛔ Nem o mesmo símbolo — ⛔ `⛔` é do bloqueio. */
+  conf(
+    "⚠️ ⛔ e ⛔ nem o SÍMBOLO de `impede`",
+    A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.simbolo !== EC.ESTADOS.impede.simbolo,
+    `⛔ ${A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.simbolo}`
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ E O BLOQUEIO DE SEGURANÇA DA IVT **CONTINUA CRÍTICO** — ⛔ atenuar
+   * ⛔ ele para *"harmonizar as raias"* seria o defeito espelhado.
+   */
+  conf(
+    "⚠️⚠️ ⛔ e o bloqueio de segurança da IVT ⛔ CONTINUA crítico",
+    EC.ESTADOS.impede.papel === "critico" && EC.ESTADOS.impede.simbolo === "⛔",
+    `⛔ ${JSON.stringify(EC.ESTADOS.impede)}`
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ E A TELA ⛔ NÃO USA O ESTILO CRÍTICO NA RAIA DA EVT.
+   *
+   * ⛔ `vereditoContra` ⛔ e `vereditoSeloContra` são os estilos **do veredito
+   * da IVT** (borda ⛔ e fundo `critical`). ⚠️ ⛔ Enquanto a raia da EVT os
+   * usava, ⛔ o *No Benefit* saía com a cara de um bloqueio.
+   */
+  const tela = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
+  const bloco = tela.slice(tela.indexOf('testID="avc-f-evt"'), tela.indexOf('avc-f-evt-sem-esperar'));
+  conf(
+    "⚠️⚠️⚠️ ⛔ a raia da EVT ⛔ NÃO usa os estilos críticos do veredito da IVT",
+    bloco.length > 200
+    && !/vereditoContra|vereditoSeloContra|criticalTint|cores\.critical/.test(bloco),
+    "⛔ o estilo crítico é o do bloqueio de segurança — ⛔ e a EVT ⛔ não bloqueia"
+  );
+
+  /** ⚠️⚠️ ⛔ E O TEXTO OBRIGATÓRIO ⛔ NÃO MUDOU — ⛔ o ajuste é ⛔ só de cor. */
+  conf(
+    "⚠️⚠️ ⛔ e o selo continua dizendo *«⛔ não recomendada para melhorar desfecho — No Benefit»*",
+    A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.rotulo
+      === "EVT não recomendada para melhorar desfecho — No Benefit",
+    `⛔ "${A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.rotulo}"`
+  );
+  const r8 = evt.find((r) => r.id === "evt_m2_nao_dominante");
+  conf(
+    "⚠️ ⛔ e a COR/LOE da fonte seguem intactas — **COR 3: No Benefit · LOE A**",
+    r8.cor === "3: No Benefit" && r8.loe === "A",
+    `⛔ ${r8 && r8.cor} · ${r8 && r8.loe}`
   );
 }
 

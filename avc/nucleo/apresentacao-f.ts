@@ -447,23 +447,57 @@ export const SELO_DO_VEREDITO_EVT: Readonly<
 };
 
 /**
- * ⚠️⚠️ ⛔ QUAIS ESTADOS PINTAM DE **VERDE**, ⛔ e quais de **VERMELHO**.
+ * ⚠️⚠️⚠️ O **PAPEL DE COR** DE CADA ESTADO — ⛔ e ⛔ ele vem do vocabulário
+ * compartilhado, ⛔ e ⛔ não de uma escala inventada aqui.
  *
- * ⛔ ⛔ `pode_ser_razoavel` (**2b**) ⛔ **⛔ não** ganha verde: ⛔ um *sim fraco*
- * com a mesma cor de um COR 1 ⛔ apagaria a gradação inteira da fonte na única
- * coisa que se lê de longe.
+ * ── ⚠️⚠️ ⛔ AJUSTE DO AUTOR, 2026-09-07 ─────────────────────────────────
+ *
+ * > *"COR 3: No Benefit ⛔ não deve usar o mesmo tratamento visual de bloqueio
+ * >  crítico/contraindicação… ⛔ O motor já distingue corretamente; a UI
+ * >  precisa preservar essa distinção também."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ O QUE A COR ESTAVA DIZENDO: ⛔ o vermelho `critico` deste módulo
+ * é o de `impede` — ⛔ *"Contraindicação de segurança ativa"*, INR 2,5,
+ * plaquetas abaixo do corte. ⛔ Emprestá-lo a *"⛔ não recomendada **por
+ * ausência de benefício**"* fazia a tela afirmar, ⛔ pela cor, ⛔ exatamente o
+ * que o texto ⛔ nega.
+ *
+ * ⚠️⚠️ ⛔ **⛔ NENHUM** ESTADO DA EVT É `critico`, ⛔ e ⛔ isso é estrutural:
+ * ⛔ a trombectomia ⛔ **⛔ não bloqueia ⛔ nada**. ⛔ Quem bloqueia é o portão
+ * da IVT, ⛔ e ⛔ ele continua crítico — ⛔ atenuá-lo para *"harmonizar as
+ * raias"* seria o defeito espelhado.
+ *
+ * ⚠️ ⛔ `atencao` ⛔ e ⛔ não `neutro`: ⛔ ausência de benefício demonstrada
+ * ⛔ não é indiferença. ⛔ E ⛔ `pode_ser_razoavel` (**2b**) ⛔ **⛔ não** ganha
+ * verde: ⛔ um *sim fraco* com a cor de um COR 1 apagaria a gradação inteira
+ * da fonte ⛔ na única coisa que se lê de longe.
  */
-export const ENFASE_DO_VEREDITO_EVT: Readonly<
-  Record<TipoDoVereditoEvt, "favoravel" | "contra" | "neutra">
+/**
+ * ⚠️⚠️ ⛔ A UNIÃO É **REESCRITA AQUI**, ⛔ e ⛔ isso ⛔ não é descuido.
+ *
+ * ⛔ ⛔ `prova-avc-independencia-da-ui` proíbe o núcleo de importar de
+ * `design-system/` — ⛔ e ⛔ ela está certa: o motor clínico ⛔ não pode
+ * depender do sistema de desenho, ⛔ nem por um `import type`.
+ *
+ * ⚠️ ⛔ A divergência fica travada **por execução**: `prova-avc-fase9-evt`
+ * carrega o `design-system` de verdade ⛔ e confere que todo papel daqui
+ * pertence ao vocabulário de lá, ⛔ e que o de *No Benefit* ⛔ **⛔ não** é o
+ * de `impede`.
+ */
+type PapelDeCor = "sucesso" | "atencao" | "acao" | "critico" | "neutro";
+
+export const PAPEL_DO_VEREDITO_EVT: Readonly<
+  Record<TipoDoVereditoEvt, PapelDeCor>
 > = {
-  recomendada: "favoravel",
-  razoavel: "favoravel",
-  pode_ser_razoavel: "neutra",
-  efetividade_nao_estabelecida: "neutra",
-  nao_recomendada_sem_beneficio: "contra",
-  incompleta: "neutra",
-  sem_criterios: "neutra",
+  recomendada: "sucesso",
+  razoavel: "sucesso",
+  pode_ser_razoavel: "neutro",
+  efetividade_nao_estabelecida: "neutro",
+  nao_recomendada_sem_beneficio: "atencao",
+  incompleta: "neutro",
+  sem_criterios: "neutro",
 };
+
 
 export const PRIORIDADE_DE_PRODUTO: readonly Insumo[] = [
   "sitio_da_oclusao",

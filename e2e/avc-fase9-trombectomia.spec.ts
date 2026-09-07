@@ -221,6 +221,97 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
       await expect(page.getByTestId("avc-f-evt-fatos-evt_ant_2")).toContainText(/7h/);
     });
 
+  /* ══ ⚠️⚠️⚠️ *No Benefit* ⛔ NÃO É BLOQUEIO DE SEGURANÇA ═══════════════ */
+
+  /**
+   * ── ⚠️⚠️ ⛔ POR QUE ISTO É e2e, ⛔ E ⛔ NÃO VARREDURA ────────────────────
+   *
+   * ⛔ ⛔ A trava estática recorta o arquivo da tela ⛔ e procura o estilo
+   * crítico. ⚠️ ⛔ Na primeira versão ⛔ ela recortava a partir do `testID`,
+   * ⛔ e o `style` ficava **acima** dele — ⛔ a mutação *"voltar
+   * `vereditoContra`"* passou **verde**. ⛔ Sexta varredura de texto a furar
+   * nesta sessão.
+   *
+   * ⚠️⚠️ ⛔ Aqui se mede **a cor que o navegador pintou**, ⛔ com o bloqueio de
+   * segurança da IVT ⛔ e o *No Benefit* da EVT **na mesma tela** — ⛔ e ⛔ sem
+   * ⛔ nenhum hexadecimal escrito no teste: ⛔ o que se afirma é que ⛔ elas
+   * ⛔ **⛔ não são a mesma**.
+   */
+  test("⛔ o *No Benefit* da EVT ⛔ NÃO se pinta como o bloqueio de segurança da IVT",
+    async ({ page }) => {
+      await abrir(page);
+
+      /** ⚠️ Uma contraindicação ⛔ **⛔ não corrigível** — o vermelho legítimo. */
+      await aba(page, "imagem");
+      await page.getByTestId("avc-nova-coleta").click();
+      await page.getByTestId("avc-numerico-inr").fill("2,5");
+      await page.getByTestId("avc-numerico-inr").blur();
+
+      /** ⚠️ E, ⛔ ao mesmo tempo, um M2 ⛔ não dominante dentro de 6 h. */
+      await aba(page, "neurologico");
+      await inicioHaHoras(page, 2);
+      await aba(page, "imagem");
+      await novoExame(page, "Angiotomografia");
+      await page.getByTestId("avc-abrir-sitio_oclusao").click();
+      await page.getByTestId("avc-opcao-sitio_oclusao-M2 não dominante ou codominante").click();
+
+      /**
+       * ⚠️⚠️ ⛔ E O VEREDITO DA **IVT** EM COR 3 — ⛔ *"mild non-disabling"*
+       * exige as **duas** propriedades, ⛔ e ⛔ é ⛔ ele que carrega o vermelho
+       * crítico que o autor mandou tirar da EVT.
+       */
+      await aba(page, "neurologico");
+      await page.getByTestId("avc-opcao-incapacitante_assumido-Não incapacitante").click();
+      await page.getByTestId("avc-opcao-deficit_leve-Leve").click();
+
+      await aba(page, "reperfusao");
+      await expect(page.getByTestId("avc-f-portao-estado-bloqueado_seguranca")).toBeVisible();
+      await expect(page.getByTestId("avc-f-veredito-tipo")).toContainText(/não recomenda/i);
+      await expect(page.getByTestId("avc-f-evt-estado-nao_recomendada_sem_beneficio"))
+        .toBeVisible();
+
+      const cor = (testId: string, prop: string) =>
+        page.getByTestId(testId).evaluate(
+          (el, p) => getComputedStyle(el as Element).getPropertyValue(p as string),
+          prop
+        );
+
+      /** ⚠️ O vermelho crítico, medido ⛔ onde ele é legítimo: o veredito da IVT. */
+      const bordaIvt = await cor("avc-f-veredito", "border-top-color");
+      const seloIvt = await cor("avc-f-veredito-tipo", "color");
+      /** ⚠️ A cautela, medida no portão — ⛔ que é `warning` por decisão da Fase 6. */
+      const bordaPortao = await cor("avc-f-portao", "border-top-color");
+      const bordaEvt = await cor("avc-f-evt", "border-top-color");
+      const seloEvt = await cor("avc-f-evt-estado-nao_recomendada_sem_beneficio", "color");
+
+      /**
+       * ⚠️⚠️⚠️ ⛔ NA MESMA TELA, AS TRÊS COISAS TÊM TRÊS TRATAMENTOS — ⛔ e ⛔ o
+       * do *No Benefit* ⛔ **⛔ não** é o do bloqueio.
+       */
+      expect(bordaEvt).not.toBe(bordaIvt);
+      expect(seloEvt).not.toBe(seloIvt);
+      /** ⚠️⚠️ ⛔ E ⛔ ele é o de **cautela** — ⛔ e ⛔ não uma cor inventada. */
+      expect(bordaEvt).toBe(bordaPortao);
+      /** ⚠️ ⛔ Nenhuma é transparente — ⛔ *"diferente"* por ausência ⛔ não vale. */
+      expect(bordaEvt).not.toMatch(/rgba\(0, 0, 0, 0\)/);
+      expect(bordaIvt).not.toMatch(/rgba\(0, 0, 0, 0\)/);
+
+      /**
+       * ⚠️⚠️ ⛔ E O TEXTO OBRIGATÓRIO CONTINUA INTEIRO — ⛔ o ajuste foi ⛔ só
+       * de cor.
+       */
+      const raia = page.getByTestId("avc-f-evt");
+      await expect(raia)
+        .toContainText(/EVT não recomendada para melhorar desfecho — No Benefit/);
+      await expect(page.getByTestId("avc-f-evt-motivo-evt_m2_nao_dominante"))
+        .toContainText("COR 3: No Benefit");
+      await expect(page.getByTestId("avc-f-evt-motivo-evt_m2_nao_dominante"))
+        .toContainText("LOE A");
+      await expect(raia).not.toContainText(/contraindicad/i);
+      /** ⚠️ ⛔ E o símbolo do bloqueio ⛔ NÃO é emprestado. */
+      await expect(raia).not.toContainText("⛔");
+    });
+
   /* ══ ⚠️⚠️⚠️ GESTO REAL · CIRCULAÇÃO POSTERIOR ════════════════════════ */
 
   test("basilar · NIHSS 12 · PC-ASPECTS 7 → COR 1 · ⛔ e NIHSS 7 vira *⛔ não bem estabelecida*",

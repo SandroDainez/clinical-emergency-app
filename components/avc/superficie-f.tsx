@@ -31,7 +31,7 @@ import {
   PRINCIPIOS_GERAIS,
 } from "../../avc/conteudo/superficie-f";
 import {
-  ENFASE_DO_VEREDITO_EVT,
+  PAPEL_DO_VEREDITO_EVT,
   SELO_DO_VEREDITO_EVT,
   FALTAS_EM_PRIMEIRO_PLANO,
   faltasAgrupadas,
@@ -361,12 +361,29 @@ export default function SuperficieF({
         * em que o NIHSS calculado passasse a existir (**I6**).
         */}
       <View
+        /**
+         * ⚠️⚠️ ⛔ O `testID` VEM **ANTES** DO `style` — ⛔ e ⛔ isso ⛔ não é
+         * estilo de código.
+         *
+         * ⛔ ⛔ A trava que promete *"a raia da EVT ⛔ não usa o estilo
+         * crítico"* recorta o texto **a partir do `testID`**. ⚠️ Com o `style`
+         * acima dele, a mutação *"voltar `vereditoContra`"* passou **verde**.
+         * ⛔ Sexta varredura de texto a furar nesta sessão.
+         */
+        testID="avc-f-evt"
         style={[
           e.veredito,
-          ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" && e.vereditoIndicada,
-          ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "contra" && e.vereditoContra,
+          PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" && e.vereditoIndicada,
+          /**
+           * ⚠️⚠️ **CAUTELA**, ⛔ e ⛔ NÃO o crítico do bloqueio de segurança.
+           *
+           * ⛔ ⛔ `vereditoContra` (borda ⛔ e fundo `critical`) é o estilo de
+           * *"Contraindicação de segurança ativa"*. ⚠️ ⛔ Usá-lo aqui fazia
+           * *"⛔ não recomendada **por ausência de benefício**"* ter a cara de
+           * um bloqueio — ⛔ a cor afirmando o que o texto ⛔ nega.
+           */
+          PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "atencao" && e.evtCautela,
         ]}
-        testID="avc-f-evt"
       >
         <CabecalhoDeBloco titulo={tr("Trombectomia mecânica")} testID="avc-f-bloco-evt" />
         <View style={e.vereditoTopo}>
@@ -380,8 +397,8 @@ export default function SuperficieF({
           <Text
             style={[
               e.vereditoSelo,
-              ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" && e.vereditoSeloIndicada,
-              ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "contra" && e.vereditoSeloContra,
+              PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" && e.vereditoSeloIndicada,
+              PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "atencao" && e.evtSeloCautela,
             ]}
             testID={`avc-f-evt-estado-${vereditoEvt.tipo}`}
           >
@@ -503,7 +520,7 @@ export default function SuperficieF({
         * escolha entre uma ⛔ e outra.
         */}
       {portao.liberado
-        && ENFASE_DO_VEREDITO_EVT[vereditoEvt.tipo] === "favoravel" ? (
+        && PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" ? (
         <View style={e.paralelo} testID="avc-f-evt-sem-esperar">
           <Text style={e.paraleloGrau}>
             {tr("COR")} {IVT_E_EVT_EM_PARALELO.cor} · {tr("LOE")}{" "}
@@ -1360,6 +1377,22 @@ const criarEstilos = (tema: Tema) =>
       borderLeftWidth: 2,
       borderLeftColor: tema.cores.border,
     },
+    /**
+     * ⚠️⚠️⚠️ ⛔ O ESTILO DE **CAUTELA** — ⛔ e ⛔ ele ⛔ NÃO é o crítico.
+     *
+     * ⛔ ⛔ `warning`, ⛔ e ⛔ não `critical`: ⛔ o vermelho deste módulo é o de
+     * `impede`, ⛔ reservado ao que **impede a ação** — hemorragia, INR acima
+     * do corte, plaquetas abaixo. ⚠️ *No Benefit* ⛔ não impede ⛔ nada: ⛔ ele
+     * diz que o benefício ⛔ não foi demonstrado ⛔ naquela anatomia.
+     *
+     * ⚠️ ⛔ E ⛔ **⛔ não** é neutro: ⛔ ausência de benefício ⛔ demonstrada
+     * ⛔ não é indiferença.
+     */
+    evtCautela: {
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.warningTint,
+    },
+    evtSeloCautela: { color: tema.cores.warning },
     /** ⚠️ Os fatos que fecharam, em linha — ⛔ e ⛔ sem estourar 375 px. */
     evtFatos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm, marginTop: 2 },
     evtFato: { ...PAPEL.micro, color: tema.cores.text },
