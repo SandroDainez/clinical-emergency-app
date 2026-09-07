@@ -34,6 +34,8 @@ const ARQ = {
   conteudoF: "avc/conteudo/superficie-f.ts",
   conteudoG: "avc/conteudo/superficie-g.ts",
   conteudoA: "avc/conteudo/superficie-a.ts",
+  /** ⚠️ A cronologia mora aqui desde **C7**, 2026-09-07. */
+  conteudoB: "avc/conteudo/superficie-b.ts",
   conteudoC: "avc/conteudo/superficie-c.ts",
   campos: "avc/conteudo/campos.ts",
   derivF: "avc/nucleo/derivacoes-f.ts",

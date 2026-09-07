@@ -42,163 +42,6 @@ export {
 
 import { camposDoGrupo, comCasa, EXCLUSIVAS_PADRAO, NAO_SEI, SEM_ACHADOS, SIM_NAO_INCERTO, SIM_NAO_NAO_SEI } from "./campo";
 
-/**
- * OS RELÓGIOS — coletados **separadamente**, ⛔ jamais fundidos.
- *
- * ⚠️ Decisão do autor em F-02: ⛔ não existe campo genérico de "hora do AVC".
- * A fonte usa seis formulações e conta janelas de quatro marcos distintos; um
- * campo único tornaria as recomendações de janela estendida incomputáveis.
- */
-/**
- * ⚠️ "HOUVE SONO ENTRE A ÚLTIMA VEZ BEM E O ACHADO" FOI REMOVIDO em 2026-08-28,
- * a pedido do autor usando o app. ⛔ Nenhuma derivação o consumia — ele existia
- * como preparação para o cenário de AVC ao acordar, que ⛔ não está construído.
- *
- * ⚠️ A CONSEQUÊNCIA FICA DECLARADA: quando a janela estendida entrar (F-03), o
- * cenário *wake-up* vai precisar de um marco próprio. ⛔ Ele ⛔ não volta como
- * este campo — volta com a regra temporal que o justifica, ou ⛔ não volta.
- *
- * ⚠️⚠️ **A REGRA CHEGOU** — 2026-08-31. A Superfície F passou a ler §4.6.3
- * rec. 2, que conta *"within 9 hours from the **midpoint of sleep**"*. O marco
- * volta como `hora_meio_do_sono`, ⛔ e ⛔ **não** como o campo removido: ⛔ não é
- * um sim/não sobre ter havido sono, é **um instante**, com relógio próprio.
- */
-
-/**
- * ⚠️⚠️ A PROCEDÊNCIA DO MEIO DO SONO É **INFORMADA**, ⛔ e isto é DADO.
- *
- * ⛔ Hoje ⛔ não existem `hora_inicio_sono` ⛔ nem `hora_despertar`, ⛔ então
- * ⛔ nada aqui calcula o ponto médio: o médico informa o instante, ⛔ e a origem
- * é a resposta dele.
- *
- * ⚠️⚠️ SE UM DIA HOUVER CÁLCULO a partir do intervalo de sono, ele será **outro
- * fato**, com procedência própria — ⛔ e ⛔ **jamais** sobrescreverá em silêncio
- * o valor informado (PD-17). ⛔ Derivar do último-visto-bem é proibido: a fonte
- * usa os dois como marcos DISTINTOS, na MESMA recomendação.
- */
-export const MEIO_DO_SONO_PROCEDENCIA = {
-  campo: "hora_meio_do_sono",
-  origem: "informado",
-  calculadoPor: null,
-  /**
-   * ⚠️ IDENTIFICADORES, ⛔ e ⛔ não prosa: declaração interna ⛔ não é texto de
-   * tela, ⛔ e frase em português dentro de dado entra na fila de tradução
-   * ⛔ sem ⛔ nunca ser lida por ⛔ ninguém.
-   */
-  naoDerivarDe: [
-    "hora_ultima_vez_bem",
-    "hora_inicio_observado",
-    "hora_reconhecimento",
-    "hora_chegada",
-  ],
-  /** ⚠️⚠️ Um cálculo futuro ⛔ NÃO substitui o informado (PD-17). */
-  calculoSubstituiOInformado: false,
-} as const;
-export const RELOGIOS_A: readonly CampoA[] = [
-  {
-    id: "hora_chegada",
-    temporalidade: "estavel",
-    rotulo: "Chegada ao pronto-socorro",
-    tipo: "hora",
-    relogio: "t0_operacional",
-    fonte: "F-11",
-    bloqueiaTerapia: false,
-    nota: "Referência de porta. Não substitui nenhum relógio clínico.",
-  },
-  {
-    id: "hora_ultima_vez_bem",
-    temporalidade: "estavel",
-    rotulo: "Última vez visto bem",
-    tipo: "hora",
-    relogio: "ultima_vez_bem",
-    fonte: "F-02",
-    bloqueiaTerapia: false,
-    aceitaDesconhecido: true,
-    nota: "Desconhecido é resposta, e tem consequência própria.",
-  },
-  {
-    id: "hora_inicio_observado",
-    temporalidade: "estavel",
-    rotulo: "Início observado do déficit",
-    tipo: "hora",
-    relogio: "inicio_observado",
-    fonte: "F-02",
-    // ⚠️ Também aceita desconhecido: o déficit pode ter sido ACHADO sem ninguém
-    // ter observado o início — e isso ⛔ não é a pergunta não ter sido feita.
-    aceitaDesconhecido: true,
-    bloqueiaTerapia: false,
-  },
-  {
-    id: "hora_reconhecimento",
-    temporalidade: "estavel",
-    rotulo: "Reconhecimento dos sintomas",
-    tipo: "hora",
-    relogio: "reconhecimento",
-    fonte: "F-03",
-    bloqueiaTerapia: false,
-    nota: "A fonte conta uma janela a partir deste marco, e ele não é o início.",
-  },
-  {
-    /**
-     * ⚠️⚠️ O CONTEXTO DE WAKE-UP — e ele VOLTA com a regra que o justifica.
-     *
-     * ⚠️ "Houve sono entre a última vez bem e o achado" foi removido em
-     * 2026-08-28 porque ⛔ nenhuma derivação o consumia, ⛔ e a nota daquela
-     * remoção fixou a condição de retorno: *"volta com a regra temporal que o
-     * justifica, ou ⛔ não volta"*. §4.6.3 rec. 2 chegou, e ela o consome.
-     *
-     * ⚠️⚠️ ⛔ E ⛔ NÃO VOLTA COM A FORMA ANTIGA. A fonte ⛔ não pergunta se houve
-     * sono — ela diz *"(a) **awake with stroke symptoms** within 9 hours from
-     * the midpoint of sleep"*. ⛔ Ter dormido ⛔ não é acordar com o déficit:
-     * quem dormiu ⛔ e teve o início testemunhado acordado ⛔ não é wake-up.
-     *
-     * ⚠️ Só o "Sim" abre o meio do sono. "Incerto" ⛔ não abre — ⛔ e isso ⛔ não
-     * esconde nada: a pergunta continua na tela, ⛔ e é ela que abre a seguinte.
-     */
-    id: "acordou_com_deficit",
-    temporalidade: "estavel",
-    rotulo: "Acordou com o déficit",
-    tipo: "escolha",
-    opcoes: SIM_NAO_INCERTO,
-    fonte: "F-03",
-    bloqueiaTerapia: false,
-    nota: "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.",
-  },
-  {
-    /**
-     * ⚠️⚠️ O QUINTO MARCO — semanticamente INDEPENDENTE dos outros quatro.
-     *
-     * ⛔ ⛔ Não é a última vez visto bem, ⛔ não é o início observado, ⛔ não é o
-     * reconhecimento ⛔ e ⛔ não é a chegada. §4.6.3 rec. 2 cita *midpoint of
-     * sleep* ⛔ **e** *last known well* na MESMA recomendação, com faixas
-     * diferentes — reaproveitar qualquer um dos outros tornaria as duas
-     * contagens uma só, que é o defeito que a Superfície F existe para impedir.
-     *
-     * ⚠️⚠️ APARECE SÓ NO CONTEXTO DE WAKE-UP — ⛔ e ⛔ NÃO por início desconhecido.
-     *
-     * ⛔ A condição era `hora_inicio_observado = nao_sei`, ⛔ e era ampla demais:
-     * início ⛔ não testemunhado inclui paciente que estava **acordado**, para
-     * quem perguntar "meio do sono" ⛔ não faz sentido ⛔ nenhum. ⚠️ Corrigido
-     * a pedido do autor, 2026-08-31.
-     *
-     * ⛔ ⛔ NÃO se infere wake-up de início desconhecido. O fato é perguntado.
-     *
-     * ⚠️ Isto segue sendo filtro de APRESENTAÇÃO: ⛔ não deriva critério clínico
-     * ⛔ nem decide recomendação — só escolhe quando a pergunta faz sentido.
-     */
-    id: "hora_meio_do_sono",
-    temporalidade: "estavel",
-    rotulo: "Meio do sono",
-    tipo: "hora",
-    relogio: "meio_do_sono",
-    fonte: "F-03",
-    bloqueiaTerapia: false,
-    /** ⚠️ E-02: "ninguém sabe dizer" é resposta, ⛔ e ⛔ não ausência. */
-    aceitaDesconhecido: true,
-    apareceQuando: { campo: "acordou_com_deficit", valor: "Sim" },
-    nota: "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.",
-  },
-] as const;
 
 /**
  * VIA AÉREA E OXIGENAÇÃO — o primeiro bloco depois dos relógios (§7.3).
@@ -569,7 +412,22 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
    * dado que corre sozinho. O autor foi explícito — *"⛔ não force todo campo a
    * caber em ABCDE"*.
    */
-  { id: "relogios", titulo: "Relógios", campos: RELOGIOS_A },
+  /**
+   * ── ⚠️⚠️ A CRONOLOGIA SAIU DAQUI — 2026-09-07, **C7** ────────────────────
+   *
+   * ⛔ Os cinco marcos ⛔ e o contexto de wake-up passaram para
+   * `superficie-b.ts`, ⛔ e ⛔ com ⛔ eles a **casa**: quem pergunta a hora do
+   * início ⛔ não está estabilizando o paciente, ⛔ está avaliando o AVC.
+   *
+   * ⚠️⚠️ ⛔ E A CASA TINHA DE IR JUNTO, ⛔ não ⛔ só o desenho. ⛔ A pendência
+   * `ultima_vez_bem` declara `dono:` ⛔ e é ⛔ ele que diz para ⛔ **onde**
+   * mandar o médico. ⛔ Deixar a casa aqui ⛔ e o campo lá mandaria ⛔ ele a uma
+   * tela que ⛔ já ⛔ não desenha o campo — pendência ⛔ sem mecanismo de
+   * resolução (**E-26**, **I-7**).
+   *
+   * ⛔ ⛔ Nada do campo mudou: id, tipo, `relogio`, fonte ⛔ e notas seguem
+   * ⛔ **idênticos**. ⚠️ O que mudou foi o endereço.
+   */
   /**
    * ── ⚠️⚠️ A MOLDURA ABCDE (autor, 2026-08-30) ─────────────────────────────
    *

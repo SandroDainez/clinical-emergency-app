@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_B, TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
-import { camposDoGrupo } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import {
   derivadoDaEscala,
   escalaPreenchida,
@@ -299,7 +299,23 @@ export default function SuperficieB({
 
             {fechado || resumindo ? null : (
               <>
-                {camposDoGrupo(grupo).map((campo) => {
+                {camposDoGrupo(grupo)
+                  /**
+                   * ── ⚠️⚠️ ⛔ O FILTRO VEIO COM A CRONOLOGIA — ⛔ e ⛔ a trava o
+                   * cobrou ────────────────────────────────────────────────
+                   *
+                   * ⛔ `hora_meio_do_sono` declara
+                   * `apareceQuando: { acordou_com_deficit, "Sim" }`, ⛔ e ⛔ a
+                   * Superfície A **obedecia**. ⚠️ ⛔ Migrar o campo ⛔ sem trazer
+                   * o filtro faria o marco aparecer **sempre** — ⛔ perguntando
+                   * o meio do sono de quem ⛔ não acordou com o déficit.
+                   *
+                   * ⛔ ⛔ Declarar ⛔ não é obedecer: a mutação **N28** apagava
+                   * ⛔ este filtro em A ⛔ e sobrevivia, porque a condição
+                   * seguia **escrita** no campo.
+                   */
+                  .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+                  .map((campo) => {
                   if (campo.tipo === "escala") {
                     return (
                       <CampoDeEscala

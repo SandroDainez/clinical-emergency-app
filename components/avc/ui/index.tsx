@@ -1356,8 +1356,26 @@ const criarEstilos = (tema: Tema) =>
      * margem no texto derrubava o título ⛔ e deixava o ícone órfão em cima.
      * ⚠️ O respiro entre grupos é do grupo, ⛔ e ⛔ não do título.
      */
-    secao: {},
-    secaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    /**
+     * ── ⚠️⚠️ ⛔ O TÍTULO ENCOLHE, ⛔ E ⛔ POR QUE ISSO É CLÍNICO ──────────────
+     *
+     * ⛔ Achado na revisão visual da Fase 4, 2026-09-07: *"Achados que podem
+     * ⛔ não ser claramente incapacitantes neste paciente"* desenhava uma caixa
+     * de **573 px numa tela de 375** ⛔ e ⛔ saía pela direita — ⛔ **sem** barra
+     * lateral ⛔ e ⛔ sem reticências. ⛔ O médico ⛔ não lia o resto ⛔ e ⛔ nem
+     * sabia que havia resto.
+     *
+     * ⚠️⚠️ ⛔ E O TÍTULO CORTADO AQUI ⛔ NÃO É COSMÉTICA: ⛔ é ⛔ ele que carrega
+     * o hedge da Table 4 — *"⛔ podem ⛔ **não** ser claramente incapacitantes
+     * ⛔ **neste paciente**"*. ⛔ Cortado em *"Achados que podem ⛔ não ser
+     * clar…"*, ⛔ o quadro vira lista normativa, ⛔ que é ⛔ exatamente o que
+     * **E-45** proíbe.
+     *
+     * ⚠️ ⛔ `flexShrink` no lugar de encurtar o texto: ⛔ o rótulo da fonte
+     * ⛔ continua inteiro, ⛔ e quebra em linhas.
+     */
+    secao: { flexShrink: 1 },
+    secaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flexShrink: 1 },
     secaoFilete: { width: 0, height: 0 },
 
     /**

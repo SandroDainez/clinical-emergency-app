@@ -49,10 +49,21 @@ execFileSync("npx", [
 const A = require(path.join(tmp, "avc", "nucleo", "apresentacao-f.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-f.js"));
 const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-f.js"));
+/**
+ * ⚠️⚠️ ⛔ O MARCO DO MEIO DO SONO MUDOU DE SUPERFÍCIE — **C7**, 2026-09-07.
+ *
+ * ⛔ A cronologia inteira passou de A para B. ⚠️ ⛔ As conferências abaixo ⛔ não
+ * foram relaxadas: ⛔ elas seguem exigindo ⛔ exatamente o mesmo do campo — hora,
+ * relógio próprio, desconhecido como resposta, ⛔ nenhuma pré-preenchida ⛔ e
+ * ⛔ nenhum cálculo. ⛔ O que mudou foi ⛔ **onde** procurá-lo.
+ */
 const SA = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
+const SB = require(path.join(tmp, "avc", "conteudo", "superficie-b.js"));
 
 const fonteTelaA = lerFonte(path.join(appDir, "components", "avc", "superficie-a.tsx"));
 const fonteSupA = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-a.ts"));
+const fonteSupB = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-b.ts"));
+const fonteTelaB = lerFonte(path.join(appDir, "components", "avc", "superficie-b.tsx"));
 const fonteDeriv = lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes.ts"));
 const fonteA = lerFonte(path.join(appDir, "avc", "nucleo", "apresentacao-f.ts"));
 const fonteTela = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
@@ -357,15 +368,15 @@ confere("há recomendações e insumos a arrumar",
 
 // ══ ⚠️⚠️ O MEIO DO SONO EM A: EXISTE, É INFORMADO, ⛔ E ⛔ NÃO É CALCULADO ══
 {
-  const campo = SA.TODOS_OS_CAMPOS_A.find((c) => c.id === "hora_meio_do_sono");
+  const campo = SB.TODOS_OS_CAMPOS_B.find((c) => c.id === "hora_meio_do_sono");
 
   confere("⚠️⚠️ o marco existe em A, como HORA e com relógio próprio",
     campo !== undefined && campo.tipo === "hora" && campo.relogio === "meio_do_sono",
     "⛔ ⛔ não é um sim/não sobre ter havido sono — é um INSTANTE");
 
   confere("⚠️⚠️ ⛔ e o relógio dele ⛔ NÃO é o de ⛔ nenhum outro marco",
-    new Set(SA.TODOS_OS_CAMPOS_A.filter((c) => c.relogio).map((c) => c.relogio)).size ===
-      SA.TODOS_OS_CAMPOS_A.filter((c) => c.relogio).length,
+    new Set(SB.TODOS_OS_CAMPOS_B.filter((c) => c.relogio).map((c) => c.relogio)).size ===
+      SB.TODOS_OS_CAMPOS_B.filter((c) => c.relogio).length,
     "⛔ dois campos com o mesmo relógio é a fusão que a Superfície F existe para impedir");
 
   /** ⚠️⚠️ E-02: desconhecido ⛔ NÃO é ausência de resposta. */
@@ -393,7 +404,7 @@ confere("há recomendações e insumos a arrumar",
    * symptoms"* — ⛔ e ⛔ ter dormido ⛔ não é acordar com o déficit.
    */
   {
-    const gatilho = SA.TODOS_OS_CAMPOS_A.find((c) => c.id === campo.apareceQuando.campo);
+    const gatilho = SB.TODOS_OS_CAMPOS_B.find((c) => c.id === campo.apareceQuando.campo);
     confere("⚠️⚠️ o gatilho é o FATO de wake-up, ⛔ e ⛔ não um relógio",
       campo.apareceQuando.campo === "acordou_com_deficit"
       && campo.apareceQuando.valor === "Sim",
@@ -418,17 +429,28 @@ confere("há recomendações e insumos a arrumar",
    * ⛔ e sobrevivia: o campo seguia declarando a condição, ⛔ e a tela mostrava
    * o campo sempre. Presença ⛔ não é efeito.
    */
-  confere("⚠️⚠️ a tela de A OBEDECE à condição, ⛔ e ⛔ não só a declara",
-    /\.filter\(\s*\(campo\)\s*=>\s*campoAparece\(/.test(fonteTelaA)
-    && /campoAparece/.test(fonteTelaA),
-    "⛔ condição declarada ⛔ e ⛔ não aplicada é ruído em A com aparência de decisão");
+  /**
+   * ⚠️⚠️ ⛔ E ELA PEGOU A MIGRAÇÃO — 2026-09-07. ⛔ A Superfície B ⛔ não
+   * filtrava por `campoAparece`: ⛔ o marco chegou lá ⛔ e passaria a aparecer
+   * **sempre**. ⚠️ ⛔ A primeira correção que escrevi aqui foi um `||` entre as
+   * duas telas — ⛔ que teria ficado verde com o defeito de pé. ⛔ A condição é
+   * cobrada de **quem desenha o campo**.
+   *
+   * ⚠️⚠️ ⛔ E A SEGUNDA VERSÃO TAMBÉM PASSOU VERDE SOBRE A MUTAÇÃO: ⛔ ela
+   * procurava `campoAparece` ⛔ no arquivo, ⛔ e o **import** bastava. ⛔ Trocar
+   * o filtro por `.filter(() => true)` sobreviveu. ⚠️ Agora ⛔ o que se cobra é
+   * a **chamada dentro do filtro**.
+   */
+  confere("⚠️⚠️ a tela que DESENHA o marco OBEDECE à condição, ⛔ e ⛔ não só a declara",
+    /\.filter\(\s*\([^)]*\)\s*=>\s*campoAparece\(/.test(fonteTelaB),
+    "⛔ condição declarada ⛔ e ⛔ não aplicada é ruído com aparência de decisão");
 
   confere("⚠️ ⛔ e ⛔ NENHUM outro campo de A ficou condicionado por acidente",
-    SA.TODOS_OS_CAMPOS_A.filter((c) => c.apareceQuando).length === 1,
+    SB.TODOS_OS_CAMPOS_B.filter((c) => c.apareceQuando).length === 1,
     "⛔ esconder campo por engano é pior que poluir: ⛔ ninguém procura o que ⛔ não sabe que existe");
 
   /** ⚠️⚠️ A PROCEDÊNCIA É DADO, ⛔ e o proibido é EXECUTÁVEL. */
-  const proc = SA.MEIO_DO_SONO_PROCEDENCIA;
+  const proc = SB.MEIO_DO_SONO_PROCEDENCIA;
   confere("⚠️⚠️ a procedência declara INFORMADO ⛔ e ⛔ nenhum cálculo",
     proc.origem === "informado" && proc.calculadoPor === null
     && ["hora_ultima_vez_bem", "hora_inicio_observado", "hora_reconhecimento", "hora_chegada"]
@@ -437,7 +459,7 @@ confere("há recomendações e insumos a arrumar",
 
   confere("⚠️⚠️ ⛔ e ⛔ NADA no app calcula este instante",
     !new RegExp("hora_meio_do_sono").test(fonteDeriv)
-    && !/hora_meio_do_sono\s*[,)]?\s*[:=][^;]*hora_(ultima_vez_bem|inicio_observado|reconhecimento|chegada)/.test(fonteSupA + fonteA),
+    && !/hora_meio_do_sono\s*[,)]?\s*[:=][^;]*hora_(ultima_vez_bem|inicio_observado|reconhecimento|chegada)/.test(fonteSupA + fonteSupB + fonteA),
     "⛔ derivar do último-visto-bem é exatamente o que a fonte proíbe ao citar os DOIS na mesma recomendação");
 
   confere("⚠️ se um dia houver cálculo, ele será OUTRO fato",

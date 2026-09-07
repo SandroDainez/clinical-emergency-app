@@ -51,12 +51,16 @@ test.describe("AVC · fluxos clínicos completos", () => {
     async ({ page }) => {
       await abrir(page);
 
-      // ── entrada: o relógio nasce em A ────────────────────────────────
-      await aba(page, "estabilizacao");
+      /**
+       * ── entrada: o relógio nasce na **Avaliação AVC** ────────────────
+       *
+       * ⚠️ Nascia em A; a cronologia migrou em **C7**, 2026-09-07. ⛔ O fluxo
+       * ⛔ não perdeu etapa: ⛔ ele ganhou uma aba a menos.
+       */
+      await aba(page, "neurologico");
       await informarHora(page, "hora_inicio_observado");
 
       // ── neurológico: o déficit incapacitante ──────────────────────────
-      await aba(page, "neurologico");
       await page.getByTestId("avc-opcao-incapacitante_assumido-Incapacitante").click();
 
       // ── reperfusão: a rapidez passa a corresponder ────────────────────
@@ -89,7 +93,7 @@ test.describe("AVC · fluxos clínicos completos", () => {
   test("B · acordou com o déficit → meio do sono e última vez bem, SEPARADOS",
     async ({ page }) => {
       await abrir(page);
-      await aba(page, "estabilizacao");
+      await aba(page, "neurologico");
 
       /** ⚠️⚠️ O marco só aparece no contexto — ⛔ e ⛔ não por início desconhecido. */
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
@@ -192,7 +196,7 @@ test.describe("AVC · fluxos clínicos completos", () => {
     await expect(page.getByTestId("avc-f-falta-dwi_menor_que_um_terco")).toHaveCount(1);
 
     // ── "Sem essa informação" no relógio ⛔ não faz o tempo correr ───────
-    await aba(page, "estabilizacao");
+    await aba(page, "neurologico");
     await page.getByTestId("avc-hora-desconhecido-hora_ultima_vez_bem").click();
     await aba(page, "reperfusao");
     await expect(page.getByTestId("avc-f-sem-relogio")).toBeVisible();

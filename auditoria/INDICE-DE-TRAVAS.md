@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**81 de 95 travas com declaração completa.**
+**82 de 96 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -103,6 +103,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que *"concluir eixo"* seja **workflow**, ⛔ e ⛔ nunca fato clínico; · que concluir **⛔ não** torne o eixo favorável; · que eixo alterado **continue alterado** depois de concluído; · que reabrir **⛔ não apague ⛔ nada**; · que ⛔ **nenhuma derivação** leia o progresso.
 - **NÃO PROMETE:** que a tela esteja bonita ⛔ nem que os cortes clínicos estejam certos — ⛔ isso é das provas de superfície ⛔ e do e2e.
 - **UNIVERSO:** `avc/nucleo/estado.ts` × `avc/nucleo/ameacas-imediatas.ts`. ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO EXISTE PARA IMPEDIR ───────────────────────── > *"⛔ Nunca usar 'concluído' como sinônimo de 'normal'."* — autor, 2026-09-07 ⛔ ⛔ É a tentação mais barata da tela: o médico marcou que avaliou, ⛔ então pinta-se ✓ ⛔ e a lista fica limpa. ⚠️ ⛔ É a **mesma família** do defeito que o autor apontou dois dias antes — ⛔ a PA 80/46 desenhada com ✓ —, ⛔ e ⛔ o dano é o mesmo: o app afirmando ausência de problema que ⛔ ninguém afirmou.
+
+## `test:avc-fase4` → `scripts/prova-avc-fase4-composicao.cjs`
+
+- **PROMETE:** ⛔ que os fatos críticos mapeados em 2026-09-07 sigam inteiros — · `deficit_focal` intacto — id, casa, tipo ⛔ e **série temporal**; · `hora_ultima_vez_bem` intacto — ⛔ e o **vínculo com o relógio clínico**; · **dois** NIHSS, ⛔ e ⛔ nenhum corrigindo o outro; · `mrs_previo` **⛔ apenas emprestado** — a casa continua Paciente; · os **onze** `t4_*` preservados, ⛔ e ⛔ sem virar *"exame neurológico"*; · `incapacitante_assumido` preservado.
+- **NÃO PROMETE:** que a tela esteja bonita ⛔ nem que a ordem visual agrade — ⛔ isso é do e2e ⛔ e do olho do autor.
+- **UNIVERSO:** `avc/conteudo/*.ts` × `avc/nucleo/*.ts`. ── ⚠️⚠️ A REGRA DA FASE, NAS PALAVRAS DO AUTOR (2026-09-07) ────────────── > *"Composição visual pode atravessar casas; fonte de verdade ⛔ não."* ⚠️ ⛔ Esta trava existe para ser rodada **antes** de a interface antiga sair — ⛔ e ⛔ ela é o que autoriza removê-la.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

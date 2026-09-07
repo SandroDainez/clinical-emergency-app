@@ -2,6 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { superficie } from "../avc/conteudo/superficies";
 
 import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
+/** ⚠️ A cronologia mora na Avaliação AVC desde **C7**, 2026-09-07. */
+import { TODOS_OS_CAMPOS_B } from "../avc/conteudo/superficie-b";
 import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA } from "./helpers";
 
 /**
@@ -22,6 +24,24 @@ async function abrirA(page: Page) {
   await page.goto("/modulos/avc");
   await page.getByTestId("avc-aba-estabilizacao").click();
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
+}
+
+/**
+ * ── ⚠️⚠️ A CRONOLOGIA MUDOU DE TELA — **C7**, 2026-09-07 ──────────────────
+ *
+ * ⛔ Os cinco marcos passaram para a **Avaliação AVC**, ⛔ e a Estabilização
+ * virou ABCDE. ⚠️ ⛔ Os testes de relógio abaixo ⛔ não mudaram de contrato:
+ * ⛔ eles seguem afirmando ⛔ exatamente as mesmas regras — *"agora" ⛔ nunca
+ * como default, desconhecido como resposta, ⛔ nenhum timestamp cru na tela*.
+ * ⛔ O que mudou foi **por qual aba se chega até ⛔ eles**.
+ *
+ * ⚠️ ⛔ Este arquivo continua se chamando *Superfície A* porque ⛔ é ⛔ ele que
+ * guarda a história desses defeitos, ⛔ e mover o texto perderia o porquê.
+ */
+async function abrirCronologia(page: Page) {
+  await page.goto("/modulos/avc");
+  await page.getByTestId("avc-aba-neurologico").click();
+  await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
 }
 
 /** Abre o ⓘ de uma leitura e devolve o painel de rastreabilidade. */
@@ -285,7 +305,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("nenhum timestamp cru aparece na tela", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     await informarHorario(page, "hora_chegada");
 
@@ -304,7 +324,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("registrar horário abre seletor de hora e minuto, e o marco recua", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     /**
      * ⚠️ Vazio convida à AÇÃO, com verbo — "Informar horário", ⛔ não a palavra
@@ -330,7 +350,7 @@ test.describe("Superfície A — UX clínica", () => {
   /** ⛔ O seletor de tempo ⛔ não pode ser barra deslizante (§7.5). */
   test("o seletor de horário não usa barra deslizante", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
     await page.getByTestId("avc-hora-hora_reconhecimento").click();
     const seletor = page.getByTestId("avc-seletor-hora");
     await expect(seletor).toBeVisible();
@@ -340,7 +360,7 @@ test.describe("Superfície A — UX clínica", () => {
   /** ⚠️ Cancelar ⛔ não pode gravar nada — o marco só existe se confirmado. */
   test("cancelar o seletor não registra horário", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
     await page.getByTestId("avc-hora-hora_inicio_observado").click();
     await page.getByTestId("avc-seletor-hora-m-menos").click();
     await page.getByTestId("avc-seletor-hora-cancelar").click();
@@ -436,7 +456,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("o minuto anda de um em um, e o teto se anuncia em vez de engolir o toque", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     await page.getByTestId("avc-hora-hora_reconhecimento").click();
     const minuto = page.getByTestId("avc-seletor-hora-m-numero");
@@ -469,7 +489,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("o seletor não repete o nome do marco", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     await page.getByTestId("avc-hora-hora_reconhecimento").click();
     const seletor = page.getByTestId("avc-seletor-hora");
@@ -484,7 +504,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("uma resposta pode ser desfeita, e a pendência reabre", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     const semInfo = page.getByTestId("avc-hora-desconhecido-hora_ultima_vez_bem");
     await semInfo.click();
@@ -663,9 +683,15 @@ test.describe("Superfície A — UX clínica", () => {
      * ⚠️⚠️ O contrato ⛔ nunca foi o cabeçalho: é que a **moldura de prioridade
      * vem antes de tudo**, ⛔ e ela continua vindo — pela frase, logo abaixo.
      */
+    /**
+     * ⚠️ Era *"RELÓGIOS"* o primeiro bloco clínico. ⛔ Com a cronologia na
+     * Avaliação AVC (**C7**), o primeiro é **Monitorização e acessos** —
+     * ⛔ instalar monitor ⛔ e pegar acesso precede avaliar. ⚠️ O contrato ⛔ não
+     * mudou: **a prioridade vem antes do primeiro bloco clínico**.
+     */
     expect(tela.toUpperCase().indexOf("AMEAÇAS IMEDIATAS"),
       "a prioridade precisa vir antes do primeiro bloco clínico")
-      .toBeLessThan(tela.toUpperCase().indexOf("RELÓGIOS"));
+      .toBeLessThan(tela.toUpperCase().indexOf("MONITORIZAÇÃO E ACESSOS"));
 
     /**
      * ⚠️⚠️ ⛔ O **ABCDE CLÁSSICO** — decisão **C1**, 2026-09-06.
@@ -678,8 +704,14 @@ test.describe("Superfície A — UX clínica", () => {
      * ⚠️ ⛔ O contrato deste teste ⛔ não mudou: **a ordem visual é a ordem
      * clínica**, ⛔ e a prioridade vem antes de tudo.
      */
+    /**
+     * ⚠️ *"RELÓGIOS"* saiu da lista em **C7**, 2026-09-07 — ⛔ e ⛔ não porque
+     * incomodava: ⛔ a cronologia ⛔ não é mais desenhada aqui. ⚠️ ⛔ A ausência
+     * ⛔ dela tem trava própria em `prova-avc-superficie-a` (*"a cronologia
+     * ⛔ não voltou para a Estabilização"*), ⛔ e a ordem dos demais segue
+     * cobrada **inteira**.
+     */
     const ordem = [
-      "RELÓGIOS",
       "MONITORIZAÇÃO E ACESSOS",
       "A · VIA AÉREA",
       "B · RESPIRAÇÃO",
@@ -757,7 +789,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("desconhecido é resposta no último-visto-bem, e resolve a pendência", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     const botao = page.getByTestId("avc-hora-desconhecido-hora_ultima_vez_bem");
     await expect(botao).toBeVisible();
@@ -778,7 +810,7 @@ test.describe("Superfície A — UX clínica", () => {
   /** ⚠️ A outra rota que o `resolvePor` promete: informar o horário. */
   test("informar o horário também resolve a pendência do último-visto-bem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toBeVisible();
     await informarHorario(page, "hora_ultima_vez_bem");
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
@@ -805,7 +837,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("nenhum horário real aparece antes de ação explícita", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     const tela = (await page.locator("body").innerText()).replace(/\s+/g, " ");
     expect(tela, "época em milissegundos jamais pode chegar ao médico")
@@ -821,14 +853,22 @@ test.describe("Superfície A — UX clínica", () => {
      * ⛔ não foi observado. Percorrê-lo aqui mediria um locator ausente, ⛔ que
      * ⛔ não é o mesmo que um campo mostrando hora inventada.
      */
-    const condicionais = TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora" && c.apareceQuando);
+    const condicionais = TODOS_OS_CAMPOS_B.filter((c) => c.tipo === "hora" && c.apareceQuando);
     expect(condicionais.length, "campo condicional novo precisa de conferência própria")
       .toBe(1);
     for (const campo of condicionais) {
       await expect(page.getByTestId(`avc-campo-${campo.id}`), campo.id).toHaveCount(0);
     }
 
-    for (const campo of TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora" && !c.apareceQuando)) {
+    /**
+     * ⚠️ ⛔ SÓ OS MARCOS — ⛔ e ⛔ isto ⛔ não afrouxa: `nihss_informado_hora`
+     * também é `tipo: "hora"`, ⛔ mas mora num bloco **recolhido** ⛔ e ⛔ não
+     * tem relógio. ⛔ Cobrá-lo aqui mediria um locator ausente, ⛔ que ⛔ não é
+     * o mesmo que um campo mostrando hora inventada.
+     */
+    for (const campo of TODOS_OS_CAMPOS_B.filter(
+      (c) => c.tipo === "hora" && c.relogio !== undefined && !c.apareceQuando
+    )) {
       await expect(page.getByTestId(`avc-hora-valor-${campo.id}`), campo.id)
         .not.toHaveText(/\d{1,2}:\d{2}/);
     }
@@ -851,7 +891,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("a pendência mostra o título da dona, nunca o slug", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     /**
      * ⚠️⚠️ ⛔ O TÍTULO VEM DA **FONTE**, ⛔ e ⛔ não é redigitado aqui.
@@ -863,9 +903,14 @@ test.describe("Superfície A — UX clínica", () => {
      * rótulo.
      */
     const pend = page.getByTestId("avc-pendencia-ultima_vez_bem");
-    await expect(pend).toContainText(superficie("estabilizacao").titulo);
+    /**
+     * ⚠️ A dona virou `neurologico` em **C7**: quem desenha o campo é quem
+     * resolve a pendência (**E-26**). ⛔ O contrato — **slug ⛔ não vaza** —
+     * ⛔ segue o mesmo, ⛔ e o título continua vindo da fonte.
+     */
+    await expect(pend).toContainText(superficie("neurologico").titulo);
     await expect(pend, "identificador interno não é linguagem clínica")
-      .not.toContainText("estabilizacao");
+      .not.toContainText("neurologico");
 
     await expect(page.getByTestId("avc-pendencia-deficit_focal"))
       .toContainText(superficie("neurologico").titulo);
@@ -896,7 +941,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("o seletor de relógio clínico não confirma sem interação explícita", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
 
     // 1 · abrir o picker de LKW
     await page.getByTestId("avc-hora-hora_ultima_vez_bem").click();
@@ -933,7 +978,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("o atalho Agora é interação explícita e habilita Confirmar", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
     await page.getByTestId("avc-hora-hora_inicio_observado").click();
     await esperaConfirmar(page, true);
     await page.getByTestId("avc-seletor-hora-agora").click();
@@ -951,7 +996,7 @@ test.describe("Superfície A — UX clínica", () => {
    */
   test("reabrir um horário já registrado nasce com Confirmar habilitado", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
+    await abrirCronologia(page);
     await informarHorario(page, "hora_reconhecimento");
 
     await page.getByTestId("avc-hora-hora_reconhecimento").click();

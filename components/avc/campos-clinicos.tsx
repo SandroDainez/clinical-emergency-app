@@ -33,6 +33,7 @@ import { definicaoDoAchado } from "../../avc/conteudo/explicacoes";
 import type { Leitura } from "../../avc/nucleo/leitura";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import SeletorDeHora from "./seletor-de-hora";
+import { LinhaDeRelogio, type NomeDeIcone } from "./ui";
 import { getPalette } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -858,6 +859,27 @@ export function CampoDeGrandeza({
  * é o caso do horário da tomografia, que é registro operacional e ⛔ jamais pode
  * virar marco de janela terapêutica (**E-21**).
  */
+/**
+ * ── ⚠️⚠️ O ÍCONE DO MARCO VEIO DA SUPERFÍCIE A — 2026-09-07, Fase 4 ────────
+ *
+ * ⛔ Ele morava em `superficie-a.tsx`, ⛔ onde a cronologia era desenhada. ⚠️ Com
+ * ⛔ ela na Avaliação AVC (**C7**), copiar o ramo para a outra tela repetiria
+ * ⛔ exatamente o que este arquivo existe para impedir — ⛔ e a próxima correção
+ * acertaria ⛔ **uma** das cópias.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELE É POR CAMPO, ⛔ NÃO POR TIPO: `nihss_informado_hora` ⛔ e o
+ * horário da tomografia ⛔ **não** são marcos ⛔ e ⛔ não ganham ícone — ⛔ dar um
+ * ⛔ a ⛔ eles sugeriria janela terapêutica ⛔ onde há registro operacional
+ * (**E-21**).
+ */
+const ICONE_DO_MARCO: Readonly<Record<string, NomeDeIcone>> = {
+  hora_chegada: "chegada",
+  hora_ultima_vez_bem: "ultimaVezBem",
+  hora_inicio_observado: "inicioObservado",
+  hora_reconhecimento: "reconhecimento",
+  hora_meio_do_sono: "meioDoSono",
+};
+
 export function CampoDeHora({
   campo,
   gravado,
@@ -959,6 +981,80 @@ export function CampoDeHora({
   ) : null;
 
   const respondido = gravado !== undefined || desconhecido;
+
+  /**
+   * ── ⚠️⚠️ O MARCO TEM APRESENTAÇÃO PRÓPRIA, ⛔ e ⛔ ela é a que já existia ──
+   *
+   * ⛔ `LinhaDeRelogio` carrega o trabalho de afordância de 2026-09-06 — ⛔ o
+   * sexto relato do autor sobre a mesma coisa: *"relógios ⛔ não se parecem
+   * botões, se parecem textos"*. ⚠️ Desenhar o marco pelo caminho genérico
+   * ⛔ desfaria ⛔ isso ⛔ em silêncio, ⛔ na fase que ⛔ só devia **recompor**.
+   *
+   * ⚠️ ⛔ O contrato de teste é o mesmo nos dois caminhos: `avc-hora-<id>`,
+   * `avc-hora-desconhecido-<id>` ⛔ e `avc-campo-<id>`.
+   */
+  const icone = ICONE_DO_MARCO[campo.id];
+  const seletor = editando ? (
+    <SeletorDeHora
+      rotulo={campo.rotulo}
+      instante={editando.instante}
+      selecionado={editando.selecionado}
+      agora={agora}
+      onMudar={(i, escolheuValor) =>
+        setEditando((atual) => ({
+          instante: i,
+          selecionado: escolheuValor || (atual?.selecionado ?? false),
+        }))
+      }
+      onConfirmar={() => {
+        /**
+         * ⚠️⚠️ `campo.relogio` DESCE COMO ESTÁ, inclusive `undefined` — ⛔ e ⛔ é
+         * ⛔ este repasse que acende o relógio clínico. ⛔ Sem ⛔ ele o fato é
+         * gravado ⛔ e o cabeçalho **apaga em silêncio**.
+         */
+        onHora(campo.id, editando.instante, campo.relogio);
+        setEditando(null);
+      }}
+      onCancelar={() => setEditando(null)}
+    />
+  ) : null;
+
+  if (icone !== undefined) {
+    return (
+      <View testID={`avc-campo-${campo.id}`}>
+        <LinhaDeRelogio
+          campo={campo.id}
+          icone={icone}
+          rotulo={campo.rotulo}
+          valor={
+            gravado !== undefined
+              ? `✓ ${horaDeExibicao(gravado, agora)} ✎`
+              : desconhecido
+                ? "Sem essa informação"
+                : "Informar horário"
+          }
+          estado={gravado !== undefined ? "registrado" : desconhecido ? "desconhecido" : "vazio"}
+          /** ⚠️ Realce ⛔ só enquanto o campo revelado segue vazio. */
+          destaque={campo.apareceQuando !== undefined && gravado === undefined}
+          onPress={() =>
+            setEditando(editando ? null : { instante: gravado ?? agora, selecionado: gravado !== undefined })
+          }
+          info={<BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />}
+        />
+        {/**
+          * ⚠️⚠️ A SUB-LINHA PERTENCE AO RELÓGIO ACIMA — ⛔ solta, ⛔ ela parecia
+          * ⛔ pertencer ⛔ ao de baixo, ⛔ e num campo de horário ⛔ isso troca o
+          * marco.
+          */}
+        {campo.aceitaDesconhecido ? (
+          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}</View>
+        ) : null}
+        {seletor}
+        {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
+      </View>
+    );
+  }
+
   return (
     <View style={[e.campo, respondido && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
       {/**
@@ -985,39 +1081,7 @@ export function CampoDeHora({
 
       {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
 
-      {editando ? (
-        <SeletorDeHora
-          rotulo={campo.rotulo}
-          instante={editando.instante}
-          // ⚠️ Qualquer movimento em hora/minuto — e o "Agora" nomeado — é
-          // interação explícita. ⛔ Abrir o seletor não é.
-          selecionado={editando.selecionado}
-          agora={agora}
-          /**
-           * ⚠️⚠️ O SEGUNDO ARGUMENTO PRESERVA A SELEÇÃO em vez de forçá-la.
-           *
-           * Mexer no **dia** ⛔ não é escolher o horário: se "Ontem" habilitasse
-           * Confirmar, o marco viraria *ontem, na hora em que a tela abriu* — o
-           * "agora como default silencioso" voltando por uma porta nova.
-           */
-          onMudar={(i, escolheuValor) =>
-            setEditando((atual) => ({
-              instante: i,
-              selecionado: escolheuValor || (atual?.selecionado ?? false),
-            }))
-          }
-          onConfirmar={() => {
-            /**
-             * ⚠️⚠️ `campo.relogio` DESCE COMO ESTÁ, inclusive `undefined`. Um campo
-             * sem relógio declarado ⛔ não define marco nenhum — e forçar um
-             * genérico aqui transformaria horário de exame em janela clínica.
-             */
-            onHora(campo.id, editando.instante, campo.relogio);
-            setEditando(null);
-          }}
-          onCancelar={() => setEditando(null)}
-        />
-      ) : null}
+      {seletor}
     </View>
   );
 }
@@ -1734,6 +1798,22 @@ export const criarEstilos = (tema: Tema) =>
      */
     campoDefinicao: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     // ── controle de hora ────────────────────────────────────────────────
+    /**
+     * ⚠️⚠️ ⛔ O RECUO É QUEM DIZ *"isto pertence ao relógio acima"* — ⛔ e ⛔ é a
+     * mesma medida que a Superfície A usava, ⛔ trazida junto com o ramo.
+     *
+     * ⛔ `marginTop` POSITIVO: a versão com `-ESPACO.xs` era inofensiva
+     * ⛔ enquanto a sub-linha era texto, ⛔ e virou **sobreposição** ⛔ assim que
+     * ⛔ ela ganhou corpo de botão (relato do autor, 2026-09-06).
+     */
+    subLinhaDoMarco: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      paddingLeft: ESPACO.md,
+      marginTop: ESPACO.xs,
+      marginBottom: ESPACO.sm,
+    },
     relogioLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, minHeight: TOQUE.minimo },
     relogioRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, flex: 1, minWidth: 120 },
     // ⚠️ `flexShrink` no VALOR e não no rótulo: entre encurtar "não informado"

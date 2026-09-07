@@ -32,7 +32,7 @@ test.describe("AVC · controle de data e hora", () => {
    */
   test("⛔ nenhum valor nasce selecionado, e mexer no DIA ⛔ não habilita confirmar", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirSeletor(page, "hora_ultima_vez_bem", "estabilizacao");
+    await abrirSeletor(page, "hora_ultima_vez_bem", "neurologico");
 
     await expect(valor(page)).toContainText(/não informado/i);
     await expect(page.getByTestId("avc-seletor-hora-confirmar"))
@@ -56,7 +56,7 @@ test.describe("AVC · controle de data e hora", () => {
 
   test("HOJE, ONTEM e TRÊS DIAS ATRÁS são representáveis", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirSeletor(page, "hora_ultima_vez_bem", "estabilizacao");
+    await abrirSeletor(page, "hora_ultima_vez_bem", "neurologico");
 
     // ── hoje ────────────────────────────────────────────────────────────
     /**
@@ -101,7 +101,7 @@ test.describe("AVC · controle de data e hora", () => {
    */
   test("⛔ o futuro continua inalcançável, mesmo pelo passo de dia", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirSeletor(page, "hora_ultima_vez_bem", "estabilizacao");
+    await abrirSeletor(page, "hora_ultima_vez_bem", "neurologico");
 
     await page.getByTestId("avc-seletor-data-hoje").click();
     // ⚠️ Hoje já é o teto: o `+` do dia ⛔ não pode avançar.
@@ -112,7 +112,7 @@ test.describe("AVC · controle de data e hora", () => {
 
   test("AGORA continua sendo ação nomeada, e escolhe o valor", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirSeletor(page, "hora_ultima_vez_bem", "estabilizacao");
+    await abrirSeletor(page, "hora_ultima_vez_bem", "neurologico");
 
     await page.getByTestId("avc-seletor-hora-agora").click();
     await expect(valor(page)).toHaveText(/^\d{2}:\d{2}$/);
@@ -157,7 +157,7 @@ test.describe("AVC · controle de data e hora", () => {
   test("o controle de data aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
-    await page.getByTestId("avc-aba-estabilizacao").click();
+    await page.getByTestId("avc-aba-neurologico").click();
     await page.getByTestId("avc-hora-hora_ultima_vez_bem").click();
 
     const data = page.getByTestId("avc-seletor-data");

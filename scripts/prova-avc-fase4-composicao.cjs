@@ -39,6 +39,7 @@ execFileSync(
     path.join(appDir, "avc", "conteudo", "campos.ts"),
     path.join(appDir, "avc", "nucleo", "derivacoes-b.ts"),
     path.join(appDir, "avc", "nucleo", "sintese-do-caso.ts"),
+    path.join(appDir, "avc", "conteudo", "superficies.ts"),
   ],
   { cwd: appDir, stdio: "inherit" }
 );
@@ -53,6 +54,7 @@ const E = emT(["avc", "nucleo", "estado.js"]);
 const R = emT(["avc", "nucleo", "relogio.js"]);
 const D = emT(["avc", "nucleo", "derivacoes.js"]);
 const DB = emT(["avc", "nucleo", "derivacoes-b.js"]);
+const SUP = emT(["avc", "conteudo", "superficies.js"]);
 
 let ok = 0;
 let falhas = 0;
@@ -133,10 +135,29 @@ const acha = (id) => campos.find((c) => c.id === id);
    * apresentação para a Fase 4 ⛔ não pode rompê-la.
    */
   const c = acha("hora_ultima_vez_bem");
+  /**
+   * ── ⚠️⚠️ ⛔ ESTA CONFERÊNCIA MUDOU, ⛔ E ⛔ POR QUÊ ────────────────────────
+   *
+   * ⛔ Ela exigia `casa === "estabilizacao"`. ⚠️ ⛔ Com **C7** a cronologia
+   * passou para a Avaliação AVC ⛔ e ⛔ a Estabilização **deixou de desenhá-la**
+   * — ⛔ manter a casa lá deixaria a pendência `ultima_vez_bem` apontando para
+   * uma tela ⛔ **sem o campo** (**E-26**).
+   *
+   * ⚠️⚠️ ⛔ E ⛔ O QUE ELA PROTEGIA CONTINUA PROTEGIDO, ⛔ inteiro: o que decide
+   * se o cabeçalho vê o horário ⛔ não é a casa — ⛔ é `relogio`, ⛔ e ⛔ ele
+   * ⛔ **não** mudou. ⛔ A casa entrou aqui como *"⛔ nada muda"*; ⛔ agora ⛔ ela
+   * diz **o que mudou**, ⛔ e ⛔ o `dono:` da pendência é conferido junto.
+   */
+  const pend = SUP.pendenciasVigentes().find((x) => x.id === "ultima_vez_bem");
   conf(
     "⚠️⚠️ o campo declara o relógio clínico `ultima_vez_bem`",
-    c !== undefined && c.relogio === "ultima_vez_bem" && c.casa === "estabilizacao",
+    c !== undefined && c.relogio === "ultima_vez_bem" && c.casa === "neurologico",
     `⛔ ${JSON.stringify(c && { relogio: c.relogio, casa: c.casa })} — ⛔ sem o vínculo, o cabeçalho para de ver o horário`
+  );
+  conf(
+    "⚠️⚠️ ⛔ e a PENDÊNCIA aponta para a tela que DESENHA o campo (**E-26**)",
+    pend !== undefined && pend.dono === c.casa,
+    `⛔ dono=${pend && pend.dono} · casa=${c && c.casa} — pendência ⛔ sem mecanismo de resolução é muro, ⛔ e ⛔ não tarefa`
   );
 
   /**
@@ -193,6 +214,75 @@ const acha = (id) => campos.find((c) => c.id === id);
     "⚠️⚠️ toda tela que desenha HORA repassa `campo.relogio`",
     semRepasse.length === 0,
     `⛔ ${semRepasse.join(" · ")} — ⛔ o fato grava ⛔ e o relógio ⛔ não acende: o cabeçalho apaga **em silêncio**`
+  );
+}
+
+/* ══ ⚠️⚠️ 2b · A CRONOLOGIA MIGRADA — ⛔ CONFERIDA NO MÓDULO INTEIRO ═════ */
+{
+  /**
+   * ── ⚠️⚠️ ⛔ VIERAM DE `prova-avc-superficie-a` — **C7**, 2026-09-07 ───────
+   *
+   * ⛔ Lá ⛔ elas varriam `TODOS_OS_CAMPOS_A`. ⚠️ ⛔ Aqui ⛔ elas varrem
+   * `todosOsCampos()`: ⛔ um relógio novo em **⛔ qualquer** casa cai nesta
+   * rede, ⛔ e ⛔ não ⛔ só na Estabilização. ⛔ Migração que ⛔ encolhe universo é
+   * ⛔ perda de cobertura disfarçada de mudança de endereço.
+   */
+  const horas = campos.filter((x) => x.tipo === "hora");
+  const marcos = horas.filter((x) => typeof x.relogio === "string");
+
+  conf(
+    "⚠️ há campos de hora a conferir",
+    horas.length >= 6 && marcos.length >= 5,
+    `⛔ ${horas.length} hora(s) · ${marcos.length} marco(s) — universo vazio fica verde ⛔ sem medir`
+  );
+  conf(
+    "⚠️ ⛔ todo campo cujo id começa por `hora_` é do tipo hora (**§7.5**)",
+    campos.filter((x) => String(x.id).startsWith("hora_")).every((x) => x.tipo === "hora"),
+    "⛔ horário do AVC usa picker, ⛔ nunca barra deslizante"
+  );
+  conf(
+    "⚠️ ⛔ e ⛔ nenhum campo de hora declara faixa",
+    horas.every((x) => x.faixa === undefined),
+    "⛔ faixa é da barra, ⛔ e horário ⛔ não usa barra"
+  );
+
+  const relogio = R.relogioControlado(2_500_000);
+  const vazio = E.abrirAtendimento(relogio);
+  conf(
+    "⚠️⚠️ ⛔ NENHUM campo de horário abre preenchido (**I-4**)",
+    horas.every((x) => E.valorAtual(vazio, x.id) === undefined),
+    "⛔ horário automático no último-visto-bem apaga a evolução do paciente"
+  );
+  conf(
+    "⚠️⚠️ cada MARCO tem relógio PRÓPRIO, ⛔ e ⛔ nenhum genérico (**F-02**, **E-36**)",
+    new Set(marcos.map((x) => x.relogio)).size === marcos.length
+    && !marcos.some((x) => /stroke|generic|avc_time/i.test(String(x.relogio))),
+    `⛔ ${marcos.map((x) => x.relogio).join(" · ")} — dois campos no mesmo relógio fundem duas contagens que a fonte mantém separadas`
+  );
+  conf(
+    "⚠️ o último-visto-bem aceita DESCONHECIDO, ⛔ e a chegada ⛔ NÃO (**E-02**)",
+    acha("hora_ultima_vez_bem").aceitaDesconhecido === true
+    && !acha("hora_chegada").aceitaDesconhecido,
+    "⛔ marcar por simetria inventaria uma resposta que ⛔ não existe clinicamente"
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ E A ESTABILIZAÇÃO ⛔ NÃO DESENHA MAIS ⛔ NENHUM HORÁRIO — ⛔ a outra
+   * metade da substituição. ⛔ Compor sem remover deixaria o mesmo marco em
+   * duas telas, ⛔ e o médico ⛔ não sabendo qual respondeu (**I6**).
+   */
+  conf(
+    "⚠️⚠️ a Estabilização ⛔ NÃO desenha ⛔ nenhum campo de hora",
+    A.GRUPOS_A.every((g) => CAMPO.camposDoGrupo(g).every((x) => x.tipo !== "hora")),
+    "⛔ o mesmo marco em duas telas é a duplicação que a casa semântica existe para matar"
+  );
+  conf(
+    "⚠️⚠️ ⛔ e a Avaliação AVC desenha os CINCO marcos, num bloco só",
+    (() => {
+      const g = B.GRUPOS_B.find((x) => x.id === "cronologia");
+      return g !== undefined && CAMPO.camposDoGrupo(g).filter((x) => x.tipo === "hora").length === 5;
+    })(),
+    "⛔ a cronologia migrada precisa estar **desenhada**, ⛔ e ⛔ não ⛔ só declarada"
   );
 }
 

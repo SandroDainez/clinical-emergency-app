@@ -81,6 +81,180 @@ export type CampoB = CampoDeclarado;
  * ⛔ nenhuma resposta daqui exclui AVC.
  */
 /**
+ * ── ⚠️⚠️ A CRONOLOGIA CHEGOU DE `superficie-a.ts` — 2026-09-07, **C7** ─────
+ *
+ * ⛔ O bloco veio **inteiro**, com os comentários que o explicam: ⛔ nenhum id,
+ * ⛔ nenhum `relogio`, ⛔ nenhuma fonte ⛔ e ⛔ nenhuma nota foi tocada. ⚠️ O que
+ * mudou foi a **casa** — ⛔ e ⛔ ela mudou porque `comCasa()` carimba o módulo.
+ *
+ * ⚠️⚠️ ⛔ POR QUE MIGRAR, ⛔ E ⛔ NÃO EMPRESTAR (⛔ como o mRS). ⛔ Emprestar é o
+ * que se faz quando **as duas** superfícies têm razão de desenhar o fato — ⛔ o
+ * mRS prévio é do paciente ⛔ e a Funcionalidade ⛔ só o consulta. ⚠️ Aqui a
+ * Estabilização ⛔ **deixa** de desenhar: ⛔ ela virou ABCDE. ⛔ Uma casa que
+ * ⛔ não desenha o próprio fato ⛔ não é casa — ⛔ é endereço morto, ⛔ e a
+ * pendência `ultima_vez_bem` apontaria para uma tela ⛔ sem o campo (**E-26**).
+ *
+ * ⚠️ ⛔ O `dono:` da pendência foi para `neurologico` no mesmo passo.
+ */
+/**
+ * OS RELÓGIOS — coletados **separadamente**, ⛔ jamais fundidos.
+ *
+ * ⚠️ Decisão do autor em F-02: ⛔ não existe campo genérico de "hora do AVC".
+ * A fonte usa seis formulações e conta janelas de quatro marcos distintos; um
+ * campo único tornaria as recomendações de janela estendida incomputáveis.
+ */
+/**
+ * ⚠️ "HOUVE SONO ENTRE A ÚLTIMA VEZ BEM E O ACHADO" FOI REMOVIDO em 2026-08-28,
+ * a pedido do autor usando o app. ⛔ Nenhuma derivação o consumia — ele existia
+ * como preparação para o cenário de AVC ao acordar, que ⛔ não está construído.
+ *
+ * ⚠️ A CONSEQUÊNCIA FICA DECLARADA: quando a janela estendida entrar (F-03), o
+ * cenário *wake-up* vai precisar de um marco próprio. ⛔ Ele ⛔ não volta como
+ * este campo — volta com a regra temporal que o justifica, ou ⛔ não volta.
+ *
+ * ⚠️⚠️ **A REGRA CHEGOU** — 2026-08-31. A Superfície F passou a ler §4.6.3
+ * rec. 2, que conta *"within 9 hours from the **midpoint of sleep**"*. O marco
+ * volta como `hora_meio_do_sono`, ⛔ e ⛔ **não** como o campo removido: ⛔ não é
+ * um sim/não sobre ter havido sono, é **um instante**, com relógio próprio.
+ */
+
+/**
+ * ⚠️⚠️ A PROCEDÊNCIA DO MEIO DO SONO É **INFORMADA**, ⛔ e isto é DADO.
+ *
+ * ⛔ Hoje ⛔ não existem `hora_inicio_sono` ⛔ nem `hora_despertar`, ⛔ então
+ * ⛔ nada aqui calcula o ponto médio: o médico informa o instante, ⛔ e a origem
+ * é a resposta dele.
+ *
+ * ⚠️⚠️ SE UM DIA HOUVER CÁLCULO a partir do intervalo de sono, ele será **outro
+ * fato**, com procedência própria — ⛔ e ⛔ **jamais** sobrescreverá em silêncio
+ * o valor informado (PD-17). ⛔ Derivar do último-visto-bem é proibido: a fonte
+ * usa os dois como marcos DISTINTOS, na MESMA recomendação.
+ */
+export const MEIO_DO_SONO_PROCEDENCIA = {
+  campo: "hora_meio_do_sono",
+  origem: "informado",
+  calculadoPor: null,
+  /**
+   * ⚠️ IDENTIFICADORES, ⛔ e ⛔ não prosa: declaração interna ⛔ não é texto de
+   * tela, ⛔ e frase em português dentro de dado entra na fila de tradução
+   * ⛔ sem ⛔ nunca ser lida por ⛔ ninguém.
+   */
+  naoDerivarDe: [
+    "hora_ultima_vez_bem",
+    "hora_inicio_observado",
+    "hora_reconhecimento",
+    "hora_chegada",
+  ],
+  /** ⚠️⚠️ Um cálculo futuro ⛔ NÃO substitui o informado (PD-17). */
+  calculoSubstituiOInformado: false,
+} as const;
+export const CRONOLOGIA_B: readonly CampoB[] = [
+  {
+    id: "hora_chegada",
+    temporalidade: "estavel",
+    rotulo: "Chegada ao pronto-socorro",
+    tipo: "hora",
+    relogio: "t0_operacional",
+    fonte: "F-11",
+    bloqueiaTerapia: false,
+    nota: "Referência de porta. Não substitui nenhum relógio clínico.",
+  },
+  {
+    id: "hora_ultima_vez_bem",
+    temporalidade: "estavel",
+    rotulo: "Última vez visto bem",
+    tipo: "hora",
+    relogio: "ultima_vez_bem",
+    fonte: "F-02",
+    bloqueiaTerapia: false,
+    aceitaDesconhecido: true,
+    nota: "Desconhecido é resposta, e tem consequência própria.",
+  },
+  {
+    id: "hora_inicio_observado",
+    temporalidade: "estavel",
+    rotulo: "Início observado do déficit",
+    tipo: "hora",
+    relogio: "inicio_observado",
+    fonte: "F-02",
+    // ⚠️ Também aceita desconhecido: o déficit pode ter sido ACHADO sem ninguém
+    // ter observado o início — e isso ⛔ não é a pergunta não ter sido feita.
+    aceitaDesconhecido: true,
+    bloqueiaTerapia: false,
+  },
+  {
+    id: "hora_reconhecimento",
+    temporalidade: "estavel",
+    rotulo: "Reconhecimento dos sintomas",
+    tipo: "hora",
+    relogio: "reconhecimento",
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "A fonte conta uma janela a partir deste marco, e ele não é o início.",
+  },
+  {
+    /**
+     * ⚠️⚠️ O CONTEXTO DE WAKE-UP — e ele VOLTA com a regra que o justifica.
+     *
+     * ⚠️ "Houve sono entre a última vez bem e o achado" foi removido em
+     * 2026-08-28 porque ⛔ nenhuma derivação o consumia, ⛔ e a nota daquela
+     * remoção fixou a condição de retorno: *"volta com a regra temporal que o
+     * justifica, ou ⛔ não volta"*. §4.6.3 rec. 2 chegou, e ela o consome.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ NÃO VOLTA COM A FORMA ANTIGA. A fonte ⛔ não pergunta se houve
+     * sono — ela diz *"(a) **awake with stroke symptoms** within 9 hours from
+     * the midpoint of sleep"*. ⛔ Ter dormido ⛔ não é acordar com o déficit:
+     * quem dormiu ⛔ e teve o início testemunhado acordado ⛔ não é wake-up.
+     *
+     * ⚠️ Só o "Sim" abre o meio do sono. "Incerto" ⛔ não abre — ⛔ e isso ⛔ não
+     * esconde nada: a pergunta continua na tela, ⛔ e é ela que abre a seguinte.
+     */
+    id: "acordou_com_deficit",
+    temporalidade: "estavel",
+    rotulo: "Acordou com o déficit",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    nota: "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.",
+  },
+  {
+    /**
+     * ⚠️⚠️ O QUINTO MARCO — semanticamente INDEPENDENTE dos outros quatro.
+     *
+     * ⛔ ⛔ Não é a última vez visto bem, ⛔ não é o início observado, ⛔ não é o
+     * reconhecimento ⛔ e ⛔ não é a chegada. §4.6.3 rec. 2 cita *midpoint of
+     * sleep* ⛔ **e** *last known well* na MESMA recomendação, com faixas
+     * diferentes — reaproveitar qualquer um dos outros tornaria as duas
+     * contagens uma só, que é o defeito que a Superfície F existe para impedir.
+     *
+     * ⚠️⚠️ APARECE SÓ NO CONTEXTO DE WAKE-UP — ⛔ e ⛔ NÃO por início desconhecido.
+     *
+     * ⛔ A condição era `hora_inicio_observado = nao_sei`, ⛔ e era ampla demais:
+     * início ⛔ não testemunhado inclui paciente que estava **acordado**, para
+     * quem perguntar "meio do sono" ⛔ não faz sentido ⛔ nenhum. ⚠️ Corrigido
+     * a pedido do autor, 2026-08-31.
+     *
+     * ⛔ ⛔ NÃO se infere wake-up de início desconhecido. O fato é perguntado.
+     *
+     * ⚠️ Isto segue sendo filtro de APRESENTAÇÃO: ⛔ não deriva critério clínico
+     * ⛔ nem decide recomendação — só escolhe quando a pergunta faz sentido.
+     */
+    id: "hora_meio_do_sono",
+    temporalidade: "estavel",
+    rotulo: "Meio do sono",
+    tipo: "hora",
+    relogio: "meio_do_sono",
+    fonte: "F-03",
+    bloqueiaTerapia: false,
+    /** ⚠️ E-02: "ninguém sabe dizer" é resposta, ⛔ e ⛔ não ausência. */
+    aceitaDesconhecido: true,
+    apareceQuando: { campo: "acordou_com_deficit", valor: "Sim" },
+    nota: "Informado por quem atende. O app não calcula este instante a partir de nenhum outro relógio.",
+  },
+] as const;
+
+/**
  * ⚠️ "EVOLUÇÃO DO DÉFICIT DESDE A PRIMEIRA AVALIAÇÃO" FOI REMOVIDO em 2026-08-29,
  * por decisão do autor — e o argumento é da SEQUÊNCIA, ⛔ não do texto:
  *
@@ -538,15 +712,56 @@ export const DECISAO_B: readonly CampoB[] = [
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
 const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
-  { id: "exame", titulo: "Exame neurológico", campos: EXAME_B },
-  { id: "nihss", titulo: "NIHSS", campos: [NIHSS_B[0]] },
+  /**
+   * ── ⚠️⚠️ OS QUATRO BLOCOS DA FASE 4 (autor, 2026-09-07) ──────────────────
+   *
+   * ⚠️ **Cronologia · Avaliação neurológica · Funcionalidade · NIHSS**, ⛔ nessa
+   * ordem. ⛔ Os grupos abaixo ⛔ não são quatro porque três deles ⛔ **não podem**
+   * ser fundidos ⛔ sem destruir conteúdo da fonte:
+   *
+   *   · ⛔ os dois quadros da Table 4 carregam **hedges opostos** —
+   *     *"typically"* × *"may not be… in an individual patient"* —, ⛔ e
+   *     achatá-los num bloco só apagaria a gradação (**E-45**);
+   *   · ⛔ o NIHSS de fora ⛔ **não** preenche achado ⛔ nenhum, ⛔ e a nota que
+   *     diz isso ⛔ só existe ⛔ enquanto ⛔ ele for um bloco.
+   *
+   * ⚠️⚠️ ⛔ E A COMPOSIÇÃO ⛔ NÃO MOVEU ⛔ NENHUMA FONTE DE VERDADE: ⛔ o mRS
+   * segue emprestado de **Paciente**. ⚠️ A única casa que mudou foi a da
+   * cronologia — ⛔ e ⛔ ela mudou porque a Estabilização **deixou de desenhá-la**
+   * (**C7**), ⛔ e ⛔ não para caber num bloco.
+   */
+
+  /* ── ⚠️ BLOCO 1 · CRONOLOGIA ───────────────────────────────────────────── */
   {
-    id: "nihss-de-fora",
-    titulo: "NIHSS trazido de fora",
-    campos: NIHSS_B.slice(1),
-    recolhido: true,
-    nota: "Informação recebida da regulação, do SAMU ou de outro serviço. Não preenche nenhum achado.",
+    id: "cronologia",
+    titulo: "Cronologia",
+    campos: CRONOLOGIA_B,
+    /**
+     * ⚠️⚠️ ⛔ A NOTA ⛔ NÃO PROMETE INTERVALO ⛔ NENHUM. ⛔ Os decorridos são
+     * derivados dos **relógios clínicos**, ⛔ e ⛔ eles ⛔ só existem depois de
+     * um horário informado — ⛔ escrever *"e os intervalos"* aqui prometeria
+     * cálculo sobre marco ⛔ que ⛔ ninguém deu (**E-23**).
+     */
+    nota: "Os marcos são coletados separadamente, e nenhum deles é derivado de outro.",
   },
+
+  /* ── ⚠️ BLOCO 2 · AVALIAÇÃO NEUROLÓGICA ────────────────────────────────── */
+  {
+    id: "exame",
+    /**
+     * ⚠️⚠️ *"Avaliação neurológica"*, ⛔ e ⛔ não *"Exame neurológico"* — pedido
+     * do autor, **item 3** de 2026-09-07: ⛔ o nome antigo, com os `t4_*`
+     * ⛔ logo abaixo, convidava a ler os onze achados como **exame**, ⛔ quando
+     * ⛔ eles são o quadro de **incapacitância** da Table 4.
+     *
+     * ⛔ ⛔ A leitura `exameNeurologico()` ⛔ e o id do grupo continuam iguais:
+     * ⛔ o que mudou é o rótulo ⛔ que o médico lê.
+     */
+    titulo: "Avaliação neurológica",
+    campos: EXAME_B,
+  },
+
+  /* ── ⚠️ BLOCO 3 · FUNCIONALIDADE ───────────────────────────────────────── */
   {
     id: "basal",
     titulo: "Funcionalidade prévia",
@@ -615,6 +830,28 @@ const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
     nota: "Podem não ser não significa não são. A fonte preserva a incerteza, e a avaliação individual permanece necessária.",
   },
   { id: "decisao", titulo: "Decisão clínica", campos: DECISAO_B },
+
+  /* ── ⚠️ BLOCO 4 · NIHSS ────────────────────────────────────────────────── */
+  /**
+   * ⚠️⚠️ ⛔ POR ÚLTIMO **POR PEDIDO**, ⛔ e ⛔ com uma ressalva registrada.
+   *
+   * ⛔ A ordem dos quatro blocos é do autor (**item 8**). ⚠️ ⛔ E há um efeito
+   * clínico que fica anotado ⛔ e ⛔ não corrigido por conta própria: a nota dos
+   * quadros cita *"NIHSS 0 a 5 na apresentação"*, ⛔ e ⛔ agora o médico lê a
+   * ressalva **antes** de ter a escala à mão.
+   *
+   * ⛔ ⛔ Isso ⛔ não quebra ⛔ nada — a derivação NIHSS → `t4_*` roda ⛔ quando o
+   * ⛔ preenchimento vier, ⛔ em ⛔ qualquer ordem. ⛔ É legibilidade, ⛔ e ⛔ é do
+   * autor decidir.
+   */
+  { id: "nihss", titulo: "NIHSS", campos: [NIHSS_B[0]] },
+  {
+    id: "nihss-de-fora",
+    titulo: "NIHSS trazido de fora",
+    campos: NIHSS_B.slice(1),
+    recolhido: true,
+    nota: "Informação recebida da regulação, do SAMU ou de outro serviço. Não preenche nenhum achado.",
+  },
 ];
 
 /**

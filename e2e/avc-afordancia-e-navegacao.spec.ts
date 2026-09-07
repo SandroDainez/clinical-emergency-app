@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { abrirModulo } from "./helpers";
 
@@ -33,6 +33,24 @@ async function temMolduraDeAlvo(loc: import("@playwright/test").Locator) {
   });
 }
 
+/**
+ * ── ⚠️⚠️ ⛔ ONDE OS RELÓGIOS ESTÃO — **C7**, 2026-09-07 ────────────────────
+ *
+ * ⛔ O módulo abre na **Estabilização**, ⛔ que virou ABCDE ⛔ e ⛔ já ⛔ não
+ * desenha ⛔ nenhum horário. ⚠️ ⛔ As duas travas abaixo medem a **afordância da
+ * linha de relógio** — ⛔ o sexto relato do autor sobre a mesma coisa —, ⛔ e
+ * ⛔ elas ⛔ não perderam alvo: ⛔ o alvo mudou de aba.
+ *
+ * ⚠️⚠️ ⛔ SEM ISTO ⛔ ELAS PASSARIAM POR **VACUIDADE** — ⛔ e ⛔ é ⛔ exatamente
+ * ⛔ contra ⛔ isso que a própria trava se protege, exigindo `> 2` relógios na
+ * tela ⛔ antes de conferir ⛔ qualquer um.
+ */
+async function abrirCronologia(page: Page) {
+  await abrirModulo(page, "avc");
+  await page.getByTestId("avc-aba-neurologico").click();
+  await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
+}
+
 test.describe("AVC — afordância e navegação", () => {
   test("o relógio do topo é um BOTÃO cheio, ⛔ e ⛔ não duas palavras soltas", async ({ page }) => {
     await abrirModulo(page, "avc");
@@ -49,7 +67,7 @@ test.describe("AVC — afordância e navegação", () => {
   });
 
   test("⛔ NENHUMA linha de relógio oferece a ação como texto solto", async ({ page }) => {
-    await abrirModulo(page, "avc");
+    await abrirCronologia(page);
 
     const valores = page.locator('[data-testid^="avc-hora-valor-"]');
     const quantos = await valores.count();
@@ -134,6 +152,69 @@ test.describe("AVC — afordância e navegação", () => {
     });
 
     expect(cortados, `⛔ rótulo(s) cortado(s) na tela: ${cortados.join(" | ")}`).toEqual([]);
+  });
+
+  /**
+   * ── ⚠️⚠️ ⛔ O TEXTO QUE SAI PELA DIREITA — 2026-09-07, revisão da Fase 4 ──
+   *
+   * ⛔ A trava acima mede corte por `numberOfLines`. ⚠️ ⛔ Este defeito é
+   * **outro**, ⛔ e ⛔ passou por baixo dela: *"Achados que podem ⛔ não ser
+   * claramente incapacitantes neste paciente"* desenhava uma caixa de
+   * **573 px numa tela de 375** ⛔ e ⛔ era clipada por um ancestral —
+   * ⛔ **sem** clamp, ⛔ sem reticências ⛔ e ⛔ sem barra lateral. ⛔ Nada
+   * denunciava: `scrollWidth === clientWidth`, porque a caixa **cresceu**.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ O QUE SUMIA ERA O HEDGE DA FONTE. ⛔ *"⛔ podem ⛔ não ser…
+   * ⛔ **neste paciente**"* cortado em *"…clar"* ⛔ transforma orientação em
+   * critério — ⛔ que é ⛔ exatamente o que **E-45** proíbe.
+   *
+   * ⚠️ ⛔ Varre **todas** as fases, ⛔ e ⛔ não uma: ⛔ o defeito é de layout,
+   * ⛔ e layout ⛔ não respeita fronteira de superfície.
+   */
+  test("⛔ NENHUM texto clínico sai pela borda da tela", async ({ page }) => {
+    await abrirModulo(page, "avc");
+
+    const abas = await page.locator('[data-testid^="avc-aba-"]').evaluateAll((els) =>
+      els.map((e) => e.getAttribute("data-testid") ?? "")
+    );
+    expect(abas.length, "⛔ sem fases, a varredura passaria por vacuidade").toBeGreaterThan(3);
+
+    const fora: string[] = [];
+    for (const aba of abas) {
+      await page.getByTestId(aba).click();
+      const vazados = await page.evaluate(() => {
+        const largura = document.documentElement.clientWidth;
+        /**
+         * ⚠️ ⛔ Rolagem horizontal DECLARADA ⛔ não é vazamento: a barra de
+         * fases rola de propósito. ⛔ O que se proíbe é o texto que sai
+         * ⛔ **sem** ⛔ ninguém poder alcançá-lo.
+         */
+        const rolaDeLado = (el: Element): boolean => {
+          let p: Element | null = el;
+          while (p && p !== document.body) {
+            const o = getComputedStyle(p).overflowX;
+            if (o === "auto" || o === "scroll") return true;
+            p = p.parentElement;
+          }
+          return false;
+        };
+        const achados: string[] = [];
+        for (const el of Array.from(document.querySelectorAll("div, span"))) {
+          const h = el as HTMLElement;
+          const txt = h.textContent?.trim() ?? "";
+          if (h.children.length > 0 || txt.length < 4) continue;
+          const b = h.getBoundingClientRect();
+          if (b.width === 0 || b.height === 0) continue;
+          if (b.right <= largura + 1) continue;
+          if (rolaDeLado(h)) continue;
+          achados.push(`${txt.slice(0, 40)} (${Math.round(b.right)}px > ${largura}px)`);
+        }
+        return achados;
+      });
+      for (const v of vazados) fora.push(`${aba}: ${v}`);
+    }
+
+    expect(fora, `⛔ texto fora da tela: ${fora.join(" | ")}`).toEqual([]);
   });
 
   test("⛔ NENHUMA caixa desenhada cobre outra", async ({ page }) => {
@@ -288,7 +369,7 @@ test.describe("AVC — afordância e navegação", () => {
      * ⛔ ele conta com o cartão **logo acima** para identificá-lo. ⛔ No rodapé,
      * o médico via um seletor ⛔ sem nome, ⛔ sem saber que marco editava.
      */
-    await abrirModulo(page, "avc");
+    await abrirCronologia(page);
 
     const texto = page.getByTestId("avc-hora-valor-hora_ultima_vez_bem");
     await texto.scrollIntoViewIfNeeded();

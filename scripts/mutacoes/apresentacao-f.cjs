@@ -109,19 +109,19 @@ module.exports = {
     /** ⚠️⚠️ O GATILHO DE WAKE-UP — ⛔ e ⛔ não início desconhecido. */
     {
       nome: "volta a aparecer por início não observado, sem sono",
-      arquivo: ARQ.conteudoA,
+      arquivo: ARQ.conteudoB,
       de: '    apareceQuando: { campo: "acordou_com_deficit", valor: "Sim" },',
       para: '    apareceQuando: { campo: "hora_inicio_observado", valor: "nao_sei" },',
     },
     {
       nome: "esconde o marco mesmo com acordou_com_deficit = Sim",
-      arquivo: ARQ.conteudoA,
+      arquivo: ARQ.conteudoB,
       de: '    apareceQuando: { campo: "acordou_com_deficit", valor: "Sim" },',
       para: '    apareceQuando: { campo: "acordou_com_deficit", valor: "Nao existe" },',
     },
     {
       nome: "o gatilho vira pergunta sobre ter dormido",
-      arquivo: ARQ.conteudoA,
+      arquivo: ARQ.conteudoB,
       de: '    rotulo: "Acordou com o déficit",',
       para: '    rotulo: "Houve sono antes do achado",',
     },

@@ -142,8 +142,14 @@ test.describe("AVC · cenários clínicos completos", () => {
     const c = { n: 0 };
     await abrirModulo(page);
 
-    /* 1 · parte de Estabilização — uma resposta que dá para conferir depois */
-    await tocar(page, "avc-aba-estabilizacao", c);
+    /**
+     * 1 · uma resposta que dá para conferir depois.
+     *
+     * ⚠️ Era em **Estabilização**; a cronologia passou para a Avaliação AVC em
+     * **C7**, 2026-09-07. ⛔ O contrato é o mesmo: **o fato sobrevive a sete
+     * trocas de fase**.
+     */
+    await tocar(page, "avc-aba-neurologico", c);
     await tocar(page, "avc-hora-desconhecido-hora_ultima_vez_bem", c);
     await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
       .toContainText(/Sem essa informação/i);
@@ -177,13 +183,13 @@ test.describe("AVC · cenários clínicos completos", () => {
      * ⚠️⚠️ ⛔ NADA FOI PERDIDO: o fato de Estabilização continua registrado
      * depois de sete trocas de fase.
      */
-    await tocar(page, "avc-aba-estabilizacao", c);
+    await tocar(page, "avc-aba-neurologico", c);
     await expect(page.getByTestId("avc-hora-valor-hora_ultima_vez_bem"))
       .toContainText(/Sem essa informação/i);
 
     /** ⚠️⚠️ E A FASE ATIVA CONTINUA VISÍVEL — ⛔ a barra ⛔ não deixa o médico perdido. */
-    await expect(page.getByTestId("avc-aba-estabilizacao")).toBeVisible();
-    await expect(page.getByTestId("avc-superficie-estabilizacao")).toBeVisible();
+    await expect(page.getByTestId("avc-aba-neurologico")).toBeVisible();
+    await expect(page.getByTestId("avc-superficie-neurologico")).toBeVisible();
   });
 
   /**
@@ -241,7 +247,8 @@ test.describe("AVC · cenários clínicos completos", () => {
     const c = { n: 0 };
     await abrirModulo(page);
 
-    await tocar(page, "avc-aba-estabilizacao", c);
+    /** ⚠️ A cronologia mora na Avaliação AVC desde **C7**. */
+    await tocar(page, "avc-aba-neurologico", c);
     await tocar(page, "avc-hora-desconhecido-hora_ultima_vez_bem", c);
 
     await tocar(page, "avc-aba-reperfusao", c);

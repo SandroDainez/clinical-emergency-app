@@ -51,7 +51,7 @@ module.exports = {
     /** ⚠️⚠️ CONTRATOS TRANSVERSAIS DO MÓDULO. */
     {
       nome: "dois campos passam a compartilhar relógio",
-      arquivo: ARQ.conteudoA,
+      arquivo: ARQ.conteudoB,
       de: '    relogio: "reconhecimento",',
       para: '    relogio: "ultima_vez_bem",',
     },

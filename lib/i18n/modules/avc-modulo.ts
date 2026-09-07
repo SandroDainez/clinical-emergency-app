@@ -69,7 +69,12 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Voltar": "Volver",
 
   // ── SUPERFÍCIE A · rótulos e notas de campo ─────────────────────────────
-  "Relógios": "Relojes",
+  /**
+   * ⚠️ *"Relógios"* saiu da Estabilização em 2026-09-07 (**C7**) e virou
+   * *"Cronologia"* na Avaliação AVC. ⛔ A chave antiga fica: a trava de chave
+   * órfã reprova sobra, ⛔ e a nova entra no bloco da Superfície B.
+   */
+  "Cronologia": "Cronología",
   "Estabilização": "Estabilización",
   "Peso": "Peso",
   "Chegada ao pronto-socorro": "Llegada a urgencias",
@@ -247,6 +252,11 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Registrar 0",
   "Exame neurológico":
     "Examen neurológico",
+  /** ⚠️ O bloco passou a se chamar assim em 2026-09-07 — **item 3** do autor. */
+  "Avaliação neurológica":
+    "Evaluación neurológica",
+  "Os marcos são coletados separadamente, e nenhum deles é derivado de outro.":
+    "Los hitos se recogen por separado, y ninguno se deriva de otro.",
   "Avaliação funcional":
     "Evaluación funcional",
   "Funcionalidade prévia":

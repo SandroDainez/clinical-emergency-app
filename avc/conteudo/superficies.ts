@@ -300,7 +300,16 @@ const TODAS_AS_PENDENCIAS: readonly Pendencia[] = [
   {
     id: "ultima_vez_bem",
     rotulo: "Última vez visto bem",
-    dono: "estabilizacao",
+    /**
+     * ⚠️⚠️ ⛔ `neurologico` DESDE 2026-09-07 (**C7**) — ⛔ e ⛔ isto ⛔ não é
+     * cosmético: `dono` é para **onde a pendência manda o médico**, ⛔ e a
+     * cronologia passou a ser desenhada na Avaliação AVC.
+     *
+     * ⛔ Deixá-lo em `estabilizacao` abriria uma pendência que leva a uma tela
+     * ⛔ **sem o campo** — muro, ⛔ e ⛔ não tarefa (**E-26** ⛔ e a invariante
+     * **I-7**: pendência ⛔ sem mecanismo de resolução REPROVA teste).
+     */
+    dono: "neurologico",
     campo: "hora_ultima_vez_bem",
     resolvePor: "Informar o horário, ou registrar que é desconhecido",
   },

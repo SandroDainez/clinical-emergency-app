@@ -148,7 +148,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
-      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-aba-neurologico").click();
       await expect(page.getByTestId("avc-campo-acordou_com_deficit")).toBeVisible();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
     });
@@ -162,7 +162,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
-      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-aba-neurologico").click();
       await page.getByTestId("avc-hora-desconhecido-hora_inicio_observado").click();
       await page.getByTestId("avc-opcao-acordou_com_deficit-nao").click();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
@@ -172,10 +172,10 @@ test.describe("AVC · Reperfusão", () => {
    * ⚠️⚠️ ⛔ E APARECE quando o início ⛔ NÃO foi observado — que é o recorte em
    * que perguntar pelo sono faz sentido.
    */
-  test("acordar COM O DÉFICIT revela o meio do sono em A", async ({ page }) => {
+  test("acordar COM O DÉFICIT revela o meio do sono na Avaliação AVC", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    await page.getByTestId("avc-aba-estabilizacao").click();
+    await page.getByTestId("avc-aba-neurologico").click();
     await page.getByTestId("avc-opcao-acordou_com_deficit-sim").click();
     await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toBeVisible();
   });
@@ -185,7 +185,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
-      await page.getByTestId("avc-aba-estabilizacao").click();
+      await page.getByTestId("avc-aba-neurologico").click();
       await page.getByTestId("avc-opcao-acordou_com_deficit-nao_sei").click();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
       await expect(page.getByTestId("avc-campo-acordou_com_deficit")).toBeVisible();

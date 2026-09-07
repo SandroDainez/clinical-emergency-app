@@ -307,7 +307,19 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     }
 
     expect(TODOS_OS_CAMPOS_B.length).toBeGreaterThan(15);
-    for (const campo of TODOS_OS_CAMPOS_B) {
+    /**
+     * ⚠️⚠️ ⛔ O CONDICIONAL SAI DA VARREDURA, ⛔ E ⛔ NÃO DA COBERTURA.
+     *
+     * ⛔ A cronologia chegou em **C7** trazendo `hora_meio_do_sono`, que
+     * ⛔ **só** existe na tela com `acordou_com_deficit = Sim`. ⚠️ Cobrá-lo aqui
+     * mediria um locator ausente — ⛔ que ⛔ não é o mesmo que campo sumido.
+     *
+     * ⛔ ⛔ Ele ⛔ não fica sem trava: `avc-superficie-f.spec` mede as **quatro**
+     * portas dele (⛔ sem contexto, início desconhecido, "Sim" ⛔ e "Incerto").
+     */
+    const condicionais = TODOS_OS_CAMPOS_B.filter((c) => c.apareceQuando);
+    expect(condicionais.length, "campo condicional novo precisa de conferência própria").toBe(1);
+    for (const campo of TODOS_OS_CAMPOS_B.filter((c) => !c.apareceQuando)) {
       await expect(page.getByTestId(`avc-campo-${campo.id}`), `${campo.id} sumiu da tela`)
         .toBeVisible();
     }

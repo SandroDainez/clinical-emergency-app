@@ -201,13 +201,21 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     m.size === 3 && m.has(10) && m.has(5) && m.has(2),
     "se os decorridos coincidissem, os marcos teriam sido fundidos");
 
-  confere("cada campo de hora aponta para UM relógio nomeado",
-    C.RELOGIOS_A.filter((c) => c.tipo === "hora").every((c) => typeof c.relogio === "string"),
-    "E-36: controle de tempo sem relógio nomeado é ambíguo onde o erro é caro");
-  const nomes = C.RELOGIOS_A.filter((c) => c.relogio).map((c) => c.relogio);
-  confere("nenhum relógio genérico do tipo 'stroke_time'",
-    new Set(nomes).size === nomes.length && !nomes.some((n) => /stroke|generic|avc_time/i.test(n)),
-    "F-02: campo genérico é exatamente o que a decisão do autor proíbe");
+  /**
+   * ── ⚠️⚠️ AS DUAS CONFERÊNCIAS DE `RELOGIOS_A` MUDARAM DE PROVA ──────────
+   *
+   * ⛔ *"cada campo de hora aponta para UM relógio nomeado"* ⛔ e *"⛔ nenhum
+   * relógio genérico"* varriam `C.RELOGIOS_A`. ⚠️ Com a cronologia migrada para
+   * a Avaliação AVC (**C7**, 2026-09-07), ⛔ a constante ⛔ não existe mais aqui
+   * — ⛔ e ⛔ elas foram para `prova-avc-fase4-composicao`, sobre `CRONOLOGIA_B`.
+   *
+   * ⚠️⚠️ ⛔ ELAS ⛔ NÃO FORAM AFROUXADAS: ⛔ a nova versão varre **todo campo
+   * `tipo: "hora"` do módulo**, ⛔ e ⛔ não ⛔ só os cinco marcos. ⛔ O que
+   * mudou foi o endereço, ⛔ e ⛔ o universo **cresceu**.
+   *
+   * ⛔ O que ficou aqui é o que continua sendo da Superfície A: os relógios
+   * clínicos **do estado**, ⛔ que ⛔ nenhuma migração de tela toca.
+   */
 }
 
 // ── 7 · correção de horário invalida derivações dependentes ────────────────
@@ -334,13 +342,14 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     })(),
     "F-06/F-23: valor real do paciente precisa ser registrável, não aproximável");
 
-  confere("campo de hora não declara faixa",
-    C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora").every((c) => c.faixa === undefined),
-    "§7.5: faixa é da barra, e horário não usa barra");
-
-  confere("horário não usa barra deslizante",
-    C.TODOS_OS_CAMPOS_A.filter((c) => c.id.startsWith("hora_")).every((c) => c.tipo === "hora"),
-    "§7.5: horário do AVC usa picker, nunca slider");
+  /**
+   * ⚠️⚠️ ⛔ MIGRADA PARA `prova-avc-fase4-composicao` — **C7**, 2026-09-07.
+   *
+   * ⛔ A conferência media os campos de hora **desta** superfície, ⛔ e a
+   * Estabilização ⛔ já ⛔ não tem ⛔ nenhum. ⚠️ ⛔ Ela ⛔ não foi apagada: ⛔ foi
+   * reescrita ⛔ lá sobre **todo campo `tipo: "hora"` do módulo** — universo
+   * ⛔ maior, ⛔ e ⛔ não menor.
+   */
 }
 
 // ── D-120 · AS DUAS METADES DE UMA AFERIÇÃO DE PA ─────────────────────────
@@ -462,27 +471,14 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     escolhas.every((c) => !("padrao" in c) && !("valorInicial" in c)),
     "I-3: padrão declarado no conteúdo reintroduziria a pré-marcação por baixo");
 
-  // I-4 · nenhum relógio abre preenchido
-  const horas = C.TODOS_OS_CAMPOS_A.filter((c) => c.tipo === "hora");
   /**
-   * ⚠️⚠️ QUATRO VIROU CINCO em 2026-08-31, DE PROPÓSITO.
+   * ⚠️⚠️ ⛔ MIGRADA PARA `prova-avc-fase4-composicao` — **C7**, 2026-09-07.
    *
-   * ⚠️ O número está travado justamente para um relógio novo ⛔ não entrar
-   * despercebido — e foi esta conferência que avisou. Entrou
-   * `hora_meio_do_sono`, marco próprio exigido por §4.6.3 rec. 2, que cita
-   * *midpoint of sleep* ⛔ **e** *last known well* na MESMA recomendação.
-   *
-   * ⛔ Subir o número ⛔ não é ceder à trava: é registrar que a lista mudou por
-   * uma regra da fonte, ⛔ e ⛔ não por descuido.
+   * ⛔ A conferência media os campos de hora **desta** superfície, ⛔ e a
+   * Estabilização ⛔ já ⛔ não tem ⛔ nenhum. ⚠️ ⛔ Ela ⛔ não foi apagada: ⛔ foi
+   * reescrita ⛔ lá sobre **todo campo `tipo: "hora"` do módulo** — universo
+   * ⛔ maior, ⛔ e ⛔ não menor.
    */
-  confere("nenhum campo de horário abre preenchido",
-    horas.length === 5 && horas.every((c) => E.valorAtual(vazio, c.id) === undefined),
-    "I-4: horário automático no último-visto-bem apaga a evolução do paciente");
-
-  /** ⚠️⚠️ ⛔ E ⛔ NENHUM relógio compartilha o nome de outro. */
-  confere("cada campo de horário tem RELÓGIO próprio",
-    new Set(horas.map((c) => c.relogio)).size === horas.length,
-    "dois campos no mesmo relógio fundem duas contagens que a fonte mantém separadas");
 
   /**
    * ⚠️ O ÚNICO relógio que nasce definido é o `t0_operacional` — é a abertura do
@@ -506,13 +502,14 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
 {
   const { rel, est: e0 } = novo();
 
-  confere("último-visto-bem aceita desconhecido como resposta",
-    C.TODOS_OS_CAMPOS_A.find((c) => c.id === "hora_ultima_vez_bem").aceitaDesconhecido === true,
-    "E-02: 'ninguém sabe dizer' tem consequência própria, e sem porta ele vira branco");
-
-  confere("chegada ao pronto-socorro NÃO aceita desconhecido",
-    !C.TODOS_OS_CAMPOS_A.find((c) => c.id === "hora_chegada").aceitaDesconhecido,
-    "marcar por simetria inventaria uma resposta que não existe clinicamente");
+  /**
+   * ⚠️⚠️ ⛔ MIGRADA PARA `prova-avc-fase4-composicao` — **C7**, 2026-09-07.
+   *
+   * ⛔ A conferência media os campos de hora **desta** superfície, ⛔ e a
+   * Estabilização ⛔ já ⛔ não tem ⛔ nenhum. ⚠️ ⛔ Ela ⛔ não foi apagada: ⛔ foi
+   * reescrita ⛔ lá sobre **todo campo `tipo: "hora"` do módulo** — universo
+   * ⛔ maior, ⛔ e ⛔ não menor.
+   */
 
   /**
    * ⚠️ AS DUAS ROTAS QUE A PENDÊNCIA PROMETE, medidas uma a uma. A promessa
@@ -906,9 +903,22 @@ const K = require(path.join(tmp, "conteudo", "campo.js"));
   confere("⛔ e o antigo eixo 'D · Glicemia' DESAPARECEU",
     !titulos.includes("D · Glicemia"),
     "⛔ item 17 do aceite: ⛔ o eixo antigo ⛔ não pode coexistir com o novo");
-  confere("relógios e crise ficam FORA da mnemônica",
-    titulos.includes("Relógios") && titulos.includes("Crise no início"),
+  confere("a crise fica FORA da mnemônica",
+    titulos.includes("Crise no início"),
     "⛔ nem tudo em A é ameaça imediata, e forçar a mnemônica esconderia isso");
+  /**
+   * ⚠️⚠️ ⛔ E OS RELÓGIOS ⛔ SAÍRAM DAQUI — **C7**, 2026-09-07.
+   *
+   * ⛔ A conferência antiga exigia o bloco *"Relógios"* nesta superfície. ⚠️ Ela
+   * ⛔ não foi apagada para ficar verde: ⛔ ela **inverteu**, ⛔ porque o
+   * comportamento inverteu. ⛔ Estabilização é ABCDE, ⛔ e um bloco de cronologia
+   * ⛔ aqui é ⛔ agora a **regressão**.
+   */
+  confere("⛔ e a cronologia ⛔ NÃO voltou para a Estabilização",
+    !titulos.includes("Relógios") && !titulos.includes("Cronologia")
+    && K.camposDoGrupo === K.camposDoGrupo
+    && C.GRUPOS_A.every((g) => K.camposDoGrupo(g).every((c) => c.tipo !== "hora")),
+    `⛔ ${titulos.join(" | ")} — a Estabilização ⛔ não desenha ⛔ nenhum horário`);
 
   /** ⚠️⚠️ VIA AÉREA E RESPIRAÇÃO SÃO PERGUNTAS DIFERENTES — letras diferentes. */
   const ids = (g) => K.camposDoGrupo(C.GRUPOS_A.find((x) => x.titulo === g)).map((c) => c.id);

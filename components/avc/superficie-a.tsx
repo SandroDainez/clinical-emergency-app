@@ -22,14 +22,13 @@
  * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { campoAparece, camposDoGrupo, valorDaOpcao } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import { GRUPOS_A, PRIORIDADE_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { leiturasDaSuperficieA, pressaoArterialMedia } from "../../avc/nucleo/derivacoes";
 import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
-import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
@@ -59,19 +58,16 @@ const SIMBOLO_DO_TOM: Readonly<Record<string, string>> = {
   pendente: ESTADOS[ESTADO_DO_TOM.pendente].simbolo,
   informativo: ESTADOS[ESTADO_DO_TOM.informativo].simbolo,
 };
-import SeletorDeHora from "./seletor-de-hora";
 import {
   Achados,
   Icone,
   LeiturasEmBlocos,
-  LinhaDeRelogio,
   Numero,
   Recolhido,
   Secao,
   Segmentado,
   type NomeDeIcone,
 } from "./ui";
-import { InfoToggle } from "./sistema";
 import { useFoco } from "./sistema/foco";
 
 type Props = {
@@ -105,7 +101,6 @@ type Props = {
  * ⛔ Bloco sem cor declarada fica neutro — ⛔ nada de improvisar cor nova no JSX.
  */
 const COR_DO_GRUPO: Readonly<Record<string, "critical" | "info" | "success" | "warning" | "debt" | "primary">> = {
-  relogios: "primary",
   "via-aerea": "info",
   respiracao: "info",
   pressao: "critical",
@@ -115,22 +110,12 @@ const COR_DO_GRUPO: Readonly<Record<string, "critical" | "info" | "success" | "w
 };
 
 const ICONE_DO_GRUPO: Readonly<Record<string, NomeDeIcone>> = {
-  relogios: "chegada",
   "via-aerea": "viaAerea",
   respiracao: "respiracao",
   pressao: "circulacao",
   glicemia: "glicemia",
   peso: "peso",
   crise: "crise",
-};
-
-/** ⚠️ Ícone por relógio — cada marco tem o seu, ⛔ e ⛔ nenhum divide símbolo. */
-const ICONE_DO_RELOGIO: Readonly<Record<string, NomeDeIcone>> = {
-  hora_chegada: "chegada",
-  hora_ultima_vez_bem: "ultimaVezBem",
-  hora_inicio_observado: "inicioObservado",
-  hora_reconhecimento: "reconhecimento",
-  hora_meio_do_sono: "meioDoSono",
 };
 
 export default function SuperficieA({
@@ -158,11 +143,6 @@ export default function SuperficieA({
     return m;
   }, []);
 
-  /** ⚠️ Qual relógio está aberto para edição — ⛔ e o seletor é o antigo. */
-  const [editando, setEditando] = useState<
-    { campo: string; relogio?: string; instante: number; selecionado: boolean } | undefined
-  >(undefined);
-
   /**
    * ⚠️⚠️ CAMPO COM INSTÂNCIA LÊ A **AFERIÇÃO ABERTA**, ⛔ e ⛔ não a trilha
    * inteira — ⛔ senão a sistólica da medida anterior apareceria na nova, a um
@@ -179,59 +159,7 @@ export default function SuperficieA({
     return grupo.campos.some((c) => valorAtual(estado, c.id) !== undefined);
   }
 
-  /** ⚠️ "Ninguém sabe dizer" — ⛔ diferente de ⛔ não ter sido perguntado (E-02). */
-  function marcadoDesconhecido(id: string): boolean {
-    return String(valorAtual(estado, id)?.valor ?? "") === "nao_sei";
-  }
 
-  /**
-   * ── ⚠️⚠️ O SELETOR NASCE **COLADO NO RELÓGIO QUE ELE EDITA** ────────────
-   *
-   * ⛔ Relato do autor, 2026-09-06: *"os botões ⛔ não funcionam"*. ⚠️ ⛔ E eles
-   * funcionavam: o toque abria o seletor — **a 2.596 px**, no fim da
-   * superfície, ⛔ fora de qualquer tela. ⛔ Medido, ⛔ e ⛔ não deduzido.
-   *
-   * ⚠️⚠️ ⛔ ABRIR ALGO QUE ⛔ NINGUÉM VÊ É O MESMO QUE ⛔ NÃO ABRIR — ⛔ e pior,
-   * porque ensina o médico a ⛔ não confiar no controle.
-   *
-   * ⚠️⚠️ ⛔ E HÁ UMA RAZÃO **CLÍNICA** ALÉM DA ERGONÔMICA: `SeletorDeHora` ⛔ não
-   * escreve o nome do marco na própria tela — ⛔ ele o entrega ⛔ só como rótulo
-   * acessível, ⛔ e o comentário dele diz por quê: *"o cartão do campo, logo
-   * acima, já diz de que marco se trata"*. ⛔ Renderizado no rodapé, esse
-   * *"logo acima"* ⛔ deixava de existir: ⛔ o médico via um seletor **sem nome**
-   * ⛔ e ⛔ nenhuma forma de saber se estava editando *última vez visto bem*
-   * ⛔ ou *chegada*. ⛔ Num módulo em que o marco decide a janela, ⛔ isso ⛔ não
-   * é ergonomia.
-   */
-  function seletorDoCampo(campoId: string) {
-    if (editando?.campo !== campoId) return null;
-    return (
-
-        <SeletorDeHora
-          rotulo={TODOS_OS_CAMPOS_A.find((c) => c.id === editando.campo)?.rotulo ?? editando.campo}
-          instante={editando.instante}
-          selecionado={editando.selecionado}
-          agora={agora}
-          onMudar={(i, escolheuValor) =>
-            setEditando((atual) =>
-              atual === undefined
-                ? atual
-                : {
-                    ...atual,
-                    instante: i,
-                    /** ⚠️ Mexer no DIA ⛔ não é escolher o horário. */
-                    selecionado: escolheuValor || atual.selecionado,
-                  }
-            )
-          }
-          onConfirmar={() => {
-            onHora(editando.campo, editando.instante, editando.relogio);
-            setEditando(undefined);
-          }}
-          onCancelar={() => setEditando(undefined)}
-        />
-    );
-  }
 
   return (
     <View
@@ -395,104 +323,6 @@ export default function SuperficieA({
                     {conteudo}
                   </View>
                 );
-
-              /* ── relógios ──────────────────────────────────────────────── */
-              if (campo.tipo === "hora") {
-                const desconhecido = marcadoDesconhecido(campo.id);
-                const instante = typeof fato?.valor === "number" ? fato.valor : undefined;
-                return comEtiqueta(
-                  <View key={campo.id} testID={`avc-campo-${campo.id}`}>
-                    <LinhaDeRelogio
-                      campo={campo.id}
-                      icone={ICONE_DO_RELOGIO[campo.id] ?? "chegada"}
-                      rotulo={campo.rotulo}
-                      /**
-                       * ⚠️ O MESMO texto de antes — `✓ HH:MM ✎` e "Informar
-                       * horário" —, porque é sobre ele que a suíte afirma.
-                       */
-                      valor={
-                        instante !== undefined
-                          ? `✓ ${horaDeExibicao(instante, agora)} ✎`
-                          : desconhecido
-                            ? "Sem essa informação"
-                            : "Informar horário"
-                      }
-                      estado={
-                        instante !== undefined
-                          ? "registrado"
-                          : desconhecido
-                            ? "desconhecido"
-                            : "vazio"
-                      }
-                      /** ⚠️ Realce ⛔ só enquanto o campo revelado segue vazio. */
-                      destaque={campo.apareceQuando !== undefined && instante === undefined}
-                      onPress={() =>
-                        setEditando({
-                          campo: campo.id,
-                          relogio: campo.relogio,
-                          instante: instante ?? agora,
-                          /** ⚠️⚠️ Abrir ⛔ NÃO é escolher — o gate de §0.2. */
-                          selecionado: instante !== undefined,
-                        })
-                      }
-                      /**
-                        * ⚠️⚠️ O ⓘ NA LINHA DO RÓTULO (PD-37) — ⛔ e ⛔ não numa
-                        * linha própria embaixo. ⛔ Solto, ⛔ ele ⛔ não dizia qual
-                        * relógio explicava; num campo de horário isso troca o
-                        * marco temporal.
-                        */
-                      info={
-                        <InfoToggle
-                          aberto={detalhes.aberto(campo.id)}
-                          onAlternar={() => detalhes.alternar(campo.id)}
-                          rotuloAcessivel={`${tr(campo.rotulo)}: ver explicação`}
-                          testID={`avc-info-${campo.id}`}
-                        />
-                      }
-                    />
-                    {/**
-                      * ⚠️⚠️ A SUB-LINHA PERTENCE AO RELÓGIO ACIMA.
-                      *
-                      * ⛔ Soltas, "Sem essa informação" e o ⓘ flutuavam entre
-                      * dois relógios ⛔ e pareciam pertencer ao **de baixo** —
-                      * ⛔ e num campo de horário isso troca o marco.
-                      */}
-                    <View style={e.subLinha}>
-                    {campo.aceitaDesconhecido ? (
-                      <Pressable
-                        style={e.desconhecidoCompacto}
-                        accessibilityRole="radio"
-                        /** ⚠️ `aria-checked` — ⛔ `selected` ⛔ não anuncia rádio. */
-                        accessibilityState={{ checked: desconhecido }}
-                        aria-checked={desconhecido}
-                        accessibilityLabel={`${tr(campo.rotulo)}: ${tr("Sem essa informação")}`}
-                        testID={`avc-hora-desconhecido-${campo.id}`}
-                        /** ⚠️ Tocar de novo DESFAZ — corrige, ⛔ e ⛔ não apaga. */
-                        onPress={() =>
-                          desconhecido ? onDesfazer(campo.id) : onEscolher(campo.id, "nao_sei")
-                        }
-                      >
-                        <Text style={[e.desconhecidoTexto, desconhecido ? e.desconhecidoOn : null]}>
-                          {desconhecido ? "✓ " : ""}
-                          {tr("Sem essa informação")}
-                        </Text>
-                      </Pressable>
-                    ) : null}
-                    </View>
-                    {seletorDoCampo(campo.id)}
-                    {/**
-                      * ⚠️ A revelação vem EMBAIXO do relógio que o ⓘ explica —
-                      * ⛔ inline, ⛔ e ⛔ nunca em modal: modal tiraria o médico da
-                      * tela para ler uma frase.
-                      */}
-                    {detalhes.aberto(campo.id) ? (
-                      <View style={e.explicacao} testID={`avc-explicacao-${campo.id}`}>
-                        <DetalheDoCampo campo={campo} />
-                      </View>
-                    ) : null}
-                  </View>
-                );
-              }
 
               /* ── escolhas ─────────────────────────────────────────────── */
               if (campo.tipo === "escolha" && campo.opcoes) {
