@@ -18,7 +18,7 @@
  * caractere em relação ao estado vazio.
  */
 
-import { destinoDaImagem } from "./derivacoes-c";
+import { destinoDaImagem, estudos, type Estudo } from "./derivacoes-c";
 import { PA_POS_REPERFUSAO } from "../conteudo/antihipertensivos";
 import { reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 /**
@@ -37,6 +37,7 @@ import {
   REGRAS_DE_DESTINO,
   type DestinoRecomendado,
   type RegraOperacional,
+  ANTITROMBOTICOS_POS_IVT,
 } from "../conteudo/superficie-g";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -339,5 +340,219 @@ export function leituraDaSuperficieG(estado: EstadoAvc): LeituraDaSuperficieG {
     saida: saidaDeFluxo(estado),
     monitorizacao: monitorizacaoPosIvt(estado),
     lacunaPosEvt: LACUNA_POS_EVT,
+  };
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ OS ANTITROMBÓTICOS PÓS-IVT — ⛔ ONDE O CASO ESTÁ, ⛔ E ⛔ NADA ALÉM
+ *
+ * ── ⚠️⚠️ ⛔ O DEGRAU QUE ESTA DERIVAÇÃO EXISTE PARA ⛔ NÃO PULAR ───────────
+ *
+ * ⚠️ Regra do autor, 2026-09-07, ao pé da letra:
+ *
+ * > *"Imagem solicitada ≠ imagem realizada. Imagem realizada ≠ resultado
+ * >  conhecido. Resultado conhecido sem hemorragia ≠ decisão automática de
+ * >  iniciar antitrombótico."*
+ *
+ * ⛔ ⛔ Por isso ⛔ **⛔ NENHUM** estado se chama *liberado*, *pode_iniciar* ⛔ ou
+ * *indicado*, ⛔ e ⛔ **⛔ nenhuma** conduta sai daqui. ⚠️ O mais longe que esta
+ * função vai é dizer *"o resultado está disponível"* — ⛔ e ⛔ a decisão
+ * terapêutica ⛔ continua sendo do médico.
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO CRIOU CAMPO DE IMAGEM ──────────────────────────
+ *
+ * ⛔ A imagem de controle ⛔ não é um exame de outra espécie: ⛔ é **um estudo
+ * posterior ao início da trombólise**. ⚠️ A instância de estudo já existe, com
+ * modalidade, hora ⛔ e resultado — ⛔ e a escada da Fase 5 já foi provada ⛔ ali.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type EstadoAntitrombotico =
+  /** ⚠️ ⛔ Sem trombólise, a regra ⛔ não se aplica. ⛔ Isso ⛔ não é pendência. */
+  | "fora_do_contexto_pos_ivt"
+  /** ⚠️ Dentro das 24 h, ⛔ e ⛔ nenhuma imagem de controle ⛔ ainda. */
+  | "antes_da_imagem_controle"
+  /** ⚠️⚠️ Passadas as 24 h ⛔ e ⛔ nada registrado — ⛔ **agora** está pendente. */
+  | "imagem_pendente"
+  /** ⚠️ Estudo posterior à IVT, ⛔ e o laudo ⛔ ainda ⛔ não veio. */
+  | "imagem_realizada_sem_resultado"
+  /** ⚠️⚠️ O laudo existe. ⛔ **⛔ E ⛔ SÓ ISSO.** */
+  | "resultado_disponivel"
+  /** ⚠️⚠️ §4.8 rec. 2 — ⛔ risco incerto, ⛔ e ⛔ nunca rotina. */
+  | "excecao_precoce_pode_ser_considerada";
+
+export type LeituraAntitrombotica = {
+  readonly estado: EstadoAntitrombotico;
+  readonly frase: string;
+  readonly ressalva: string;
+  /** ⚠️ O resultado **como foi registrado**. ⛔ ⛔ Nunca interpretado. */
+  readonly resultado?: string;
+  readonly horasDesdeIvt?: number;
+  /** ⚠️⚠️ COR/LOE ⛔ só quando há recomendação graduada em jogo. */
+  readonly cor?: string;
+  readonly loe?: string;
+  readonly verbatim?: string;
+  readonly localizacao?: string;
+  /**
+   * ⚠️⚠️⚠️ ⛔ A REGRA DOS 90 min CORRE **EM PARALELO**, ⛔ e ⛔ não substitui
+   * ⛔ nenhum estado. ⛔ Ela é `3: Harm`, ⛔ e a das 24 h é `2b`.
+   */
+  readonly aspirinaIvNosNoventaMin: boolean;
+};
+
+const RESSALVA_ANTITROMBOTICA =
+  "A ordem vem da Table 7. A decisão terapêutica é do médico.";
+
+const HORAS_DA_IMAGEM_DE_CONTROLE = MONITORIZACAO_POS_IVT.imagemDeControle.prazoHoras;
+
+const REC = (id: string) =>
+  ANTITROMBOTICOS_POS_IVT.recomendacoes.find((r) => r.id === id);
+
+/**
+ * ⚠️⚠️ O ESTUDO **POSTERIOR À TROMBÓLISE** — ⛔ e ⛔ a TC que a precedeu ⛔ não
+ * serve: ⛔ um exame anterior ⛔ não avalia uma infusão que veio depois dele.
+ *
+ * ⚠️ ⛔ Sem hora registrada, o estudo ⛔ **⛔ não** é assumido como de controle:
+ * ⛔ assumir daria por cumprida uma imagem que ⛔ ninguém datou (**E-23**).
+ *
+ * ── ⚠️⚠️ ⛔ E ⛔ ELE VEM DE `estudos()`, ⛔ DE C ─────────────────────────────
+ *
+ * ⛔ ⛔ Minha primeira versão varria as instâncias aqui, com `instanciasDe` ⛔ e
+ * `valorNaInstancia`. ⚠️ ⛔ A prova da Superfície G reprovou, ⛔ e estava certa:
+ * ⛔ **G lê, ⛔ e ⛔ não reimplementa** — ⛔ duas leituras do mesmo fato
+ * divergiriam no dia em que *"hora desconhecida"* ganhasse tratamento
+ * (**I6**). ⛔ A leitura já existia, ⛔ e já distingue `horaDesconhecida`.
+ */
+function estudoDeControle(
+  estado: EstadoAvc,
+  inicioIvtMs: number
+): Estudo | undefined {
+  const posteriores = estudos(estado).filter(
+    (x) => x.horaConhecida && x.hora !== undefined && x.hora >= inicioIvtMs
+  );
+  /** ⚠️ Entre dois estudos de controle, o que **tem laudo** responde. */
+  return posteriores.find((x) => x.resultado !== undefined) ?? posteriores[0];
+}
+
+export function estadoAntitromboticoPosIvt(
+  estado: EstadoAvc,
+  agoraMs: number
+): LeituraAntitrombotica {
+  const p = pertinenciaDaMonitorizacao(estado);
+  const inicio = p.pertinente ? p.acao?.inicioMs : undefined;
+
+  /**
+   * ⚠️⚠️ ⛔ SEM TROMBÓLISE ⛔ OU ⛔ SEM O HORÁRIO DELA, ⛔ a regra ⛔ não se
+   * aplica — ⛔ e ⛔ isso ⛔ **⛔ não** é o mesmo que estar pendente.
+   */
+  if (!p.pertinente || inicio === undefined) {
+    return {
+      estado: "fora_do_contexto_pos_ivt",
+      frase: "A ordem da imagem de controle vale após a trombólise.",
+      ressalva: RESSALVA_ANTITROMBOTICA,
+      aspirinaIvNosNoventaMin: false,
+    };
+  }
+
+  const minutosDesdeIvt = (agoraMs - inicio) / 60_000;
+  const horasDesdeIvt = minutosDesdeIvt / 60;
+
+  /**
+   * ⚠️⚠️⚠️ A REGRA DOS 90 min, ⛔ **calculada à parte** — ⛔ ela ⛔ não decide o
+   * estado, ⛔ e ⛔ o estado ⛔ não a encerra. ⛔ As duas janelas correm juntas.
+   */
+  const r90 = REC("aspirina_iv_90min");
+  const aspirinaIvNosNoventaMin =
+    r90 !== undefined && minutosDesdeIvt >= 0 && minutosDesdeIvt < r90.janela.minutos;
+
+  const base = { ressalva: RESSALVA_ANTITROMBOTICA, horasDesdeIvt, aspirinaIvNosNoventaMin };
+  const controle = estudoDeControle(estado, inicio);
+
+  /**
+   * ⚠️⚠️⚠️ A EXCEÇÃO VEM ANTES DOS DEGRAUS DA IMAGEM — ⛔ e ⛔ só dentro das
+   * 24 h: ⛔ ela é *"in the **first 24 hours** after IVT"*.
+   *
+   * ⛔ ⛔ E ⛔ ela ⛔ **⛔ não** nasce sozinha: ⛔ exige o julgamento
+   * **registrado**. ⚠️ Uma exceção oferecida a todo paciente vira rotina — ⛔ e
+   * a fonte a reserva a *"concomitant conditions"*.
+   */
+  const r24 = REC("antiagregante_24h_pos_ivt");
+  /**
+   * ⚠️⚠️ ⛔ `ternario()`, ⛔ e ⛔ **⛔ NÃO** `=== "Sim"`.
+   *
+   * ⛔ ⛔ O estado ⛔ nunca guarda `"Sim"`: a tela grava o valor de
+   * `valorDaOpcao()`, que é `"sim"`. ⚠️ ⛔ Comparar com o rótulo deixaria a
+   * exceção **⛔ nunca nascer** no app real — ⛔ e a prova só a pegou porque
+   * registra do jeito que a tela registra.
+   *
+   * ⚠️ ⛔ O defeito é o mesmo que `derivacoes-f.ts` ⛔ já documenta, ⛔ e a
+   * leitura correta ⛔ já existia em `leitura.ts`. ⛔ Escrever outra aqui teria
+   * sido a duplicação que a **I6** proíbe.
+   */
+  const julgamento = ternario(estado, "condicao_concomitante_antiagregante");
+  if (
+    r24 !== undefined
+    && minutosDesdeIvt < r24.janela.minutos
+    && julgamento === true
+    && controle?.resultado === undefined
+  ) {
+    return {
+      ...base,
+      estado: "excecao_precoce_pode_ser_considerada",
+      frase: r24.frase,
+      cor: r24.cor,
+      loe: r24.loe,
+      verbatim: r24.verbatim,
+      localizacao: r24.localizacao,
+    };
+  }
+
+  if (controle === undefined) {
+    /** ⚠️⚠️ ⛔ Antes do prazo ⛔ nada está atrasado — ⛔ e o nome diz isso. */
+    return horasDesdeIvt < HORAS_DA_IMAGEM_DE_CONTROLE
+      ? {
+          ...base,
+          estado: "antes_da_imagem_controle",
+          /**
+           * ⚠️⚠️ ⛔ ELA DIZ **ONDE O CASO ESTÁ**, ⛔ e ⛔ NÃO repete a ordem.
+           *
+           * ⛔ ⛔ Minha primeira versão devolvia ⛔ aqui o próprio texto da
+           * Table 7 — ⛔ e a tela mostrava a **mesma frase duas vezes
+           * seguidas**, ⛔ uma como estado ⛔ e outra como ordem. ⚠️ Visto na
+           * revisão de 375 px.
+           *
+           * ⚠️ ⛔ E ⛔ *"⛔ ainda ⛔ não registrada"* ⛔ é diferente de *"⛔ não
+           * feita"*: ⛔ o app sabe o que foi **anotado**, ⛔ e ⛔ não o que
+           * aconteceu no aparelho.
+           */
+          frase:
+            "Dentro das primeiras 24 horas após a trombólise. Imagem de controle ainda não registrada.",
+        }
+      : {
+          ...base,
+          estado: "imagem_pendente",
+          frase:
+            "Aguardando imagem de controle de 24 horas antes de considerar antiagregante ou anticoagulante.",
+        };
+  }
+
+  if (controle.resultado === undefined) {
+    return {
+      ...base,
+      estado: "imagem_realizada_sem_resultado",
+      frase: "Imagem realizada; resultado ainda não disponível.",
+    };
+  }
+
+  /**
+   * ⚠️⚠️⚠️ ⛔ **⛔ O RESULTADO, ⛔ E ⛔ NADA ALÉM DELE.**
+   *
+   * ⛔ ⛔ *"Sem hemorragia"* ⛔ **⛔ não** é *"pode iniciar"*. ⚠️ A frase abaixo
+   * ⛔ não contém verbo de conduta ⛔ de propósito, ⛔ e ⛔ há trava que o mede.
+   */
+  return {
+    ...base,
+    estado: "resultado_disponivel",
+    resultado: controle.resultado,
+    frase: "Resultado da imagem de controle registrado.",
   };
 }

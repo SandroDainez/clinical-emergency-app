@@ -426,6 +426,40 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
     "No aguardar la respuesta clínica a la trombólisis para proseguir con la trombectomía.",
   "Sem efeito de massa significativo": "Sin efecto de masa significativo",
   "Desde o início": "Desde el inicio",
+  /* ── ⚠️⚠️ FASE 10 · antitrombóticos pós-IVT ────────────────────────────── */
+  "Antitrombóticos pós-IVT": "Antitrombóticos pos-TIV",
+  "Antitrombóticos pós-trombólise": "Antitrombóticos pos-trombólisis",
+  "Ordem": "Orden",
+  "Aspirina é recomendada nas primeiras 48 horas do início do AVC.":
+    "La aspirina se recomienda en las primeras 48 horas del inicio del ACV.",
+  /**
+   * ⚠️⚠️ ⛔ *"risco incerto"* ⛔ e *"pode ser considerado"* ⛔ PRECISAM sobreviver
+   * à tradução (**E-45**): ⛔ nem *"seguro"* ⛔ nem *"contraindicado"*.
+   */
+  "Uso de antiagregante nas primeiras 24 horas após a trombólise: risco incerto. Pode ser considerado em situação concomitante selecionada.":
+    "Uso de antiagregante en las primeras 24 horas tras la trombólisis: riesgo incierto. Puede ser considerado en situación concomitante seleccionada.",
+  "Aspirina IV não deve ser administrada junto com a trombólise nem nos 90 minutos após o seu início, pelo risco de hemorragia.":
+    "La aspirina IV no debe administrarse junto con la trombólisis ni en los 90 minutos posteriores a su inicio, por el riesgo de hemorragia.",
+  "Há condição concomitante em que o antiagregante traria benefício substancial, ou em que suspendê-lo traria risco substancial":
+    "Hay condición concomitante en la que el antiagregante traería beneficio sustancial, o en la que suspenderlo traería riesgo sustancial",
+  "A fonte não lista quais condições são essas. A leitura é sua, e o app não a assume por você.":
+    "La fuente no lista cuáles son esas condiciones. La lectura es suya, y la app no la asume por usted.",
+  "Marcar Sim faz aparecer a recomendação de risco incerto (COR 2b, LOE B-NR). Não é autorização para iniciar antiagregante, e a decisão continua sendo do médico.":
+    "Marcar Sí hace aparecer la recomendación de riesgo incierto (COR 2b, LOE B-NR). No es autorización para iniciar antiagregante, y la decisión sigue siendo del médico.",
+  "A fonte traz seis recomendações sobre anticoagulantes, com forças opostas conforme o contexto. Nenhuma foi incorporada nesta fase, e o app não emite conduta anticoagulante.":
+    "La fuente trae seis recomendaciones sobre anticoagulantes, con fuerzas opuestas según el contexto. Ninguna fue incorporada en esta fase, y la app no emite conducta anticoagulante.",
+  "Dentro das primeiras 24 horas após a trombólise. Imagem de controle ainda não registrada.":
+    "Dentro de las primeras 24 horas tras la trombólisis. Imagen de control aún no registrada.",
+  "A ordem da imagem de controle vale após a trombólise.":
+    "El orden de la imagen de control rige tras la trombólisis.",
+  "A ordem vem da Table 7. A decisão terapêutica é do médico.":
+    "El orden viene de la Table 7. La decisión terapéutica es del médico.",
+  "Aguardando imagem de controle de 24 horas antes de considerar antiagregante ou anticoagulante.":
+    "Esperando la imagen de control de 24 horas antes de considerar antiagregante o anticoagulante.",
+  "Imagem realizada; resultado ainda não disponível.":
+    "Imagen realizada; resultado aún no disponible.",
+  "Resultado da imagem de controle registrado.":
+    "Resultado de la imagen de control registrado.",
   "Informar o horário de início do déficit":
     "Informar el horario de inicio del déficit",
   "Registrar o PC-ASPECTS do laudo": "Registrar el PC-ASPECTS del informe",

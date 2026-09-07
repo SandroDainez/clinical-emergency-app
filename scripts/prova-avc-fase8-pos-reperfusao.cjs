@@ -294,13 +294,40 @@ const em = (e, horas) => G.estadoPressoricoPosIvt(e, T0 + horas * 3_600_000);
     /ANTES de iniciar anticoagulante ou antiagregante/i.test(m.imagemDeControle.texto),
     "⛔ *«TC em 24 h»* ⛔ sem a ordem perde a razão de ser da regra"
   );
+  /**
+   * ── ⚠️⚠️⚠️ ESTA GUARDA MUDOU DE FORMA EM 2026-09-07 (Fase 10) ───────────
+   *
+   * ⛔ ⛔ Ela proibia a **palavra** *"aspirina"* em G. ⚠️ ⛔ Na Fase 8 ⛔ isso
+   * estava certo: a Table 7 dá a **ordem**, ⛔ e ⛔ nenhum agente — ⛔ escrever
+   * *"aspirina"* ⛔ ali ⛔ só poderia ser invenção.
+   *
+   * ⚠️⚠️ ⛔ Na Fase 10 a fonte passou a sustentar: **§4.8 recs. 1 ⛔ e 17**
+   * nomeiam a aspirina, ⛔ com verbatim, COR ⛔ e LOE. ⛔ A palavra deixou de
+   * ser invenção ⛔ e virou **transcrição**.
+   *
+   * ⚠️ ⛔ Então a trava passou a medir o que ⛔ ela sempre quis dizer:
+   * ⛔ **⛔ nenhum agente ⛔ sem procedência**. ⛔ Um nome de fármaco em G ⛔ só
+   * é legítimo dentro de uma recomendação que carregue `verbatim`, `cor` ⛔ e
+   * `loe` — ⛔ e ⛔ a de dose/regime continua proibida.
+   */
+  const AGENTES = /aspirina|clopidogrel|heparina|enoxaparina|varfarina|ticagrelor|dupla antiagrega/i;
+  const semProcedencia = (SG.ANTITROMBOTICOS_POS_IVT?.recomendacoes ?? []).filter(
+    (r) => AGENTES.test(`${r.frase} ${r.verbatim}`)
+      && !(r.verbatim && r.cor && r.loe && r.localizacao)
+  );
   conf(
-    "⚠️⚠️ ⛔ e ⛔ NENHUM antitrombótico específico foi inventado",
-    !/aspirina|clopidogrel|heparina|enoxaparina|dupla antiagrega/i.test(
+    "⚠️⚠️ ⛔ NENHUM agente é nomeado ⛔ sem verbatim, COR ⛔ e LOE",
+    semProcedencia.length === 0,
+    `⛔ ${semProcedencia.map((r) => r.id).join(" · ")} — ⛔ nome de fármaco ⛔ sem procedência é **E-31**`
+  );
+  /** ⚠️⚠️ ⛔ E DOSE/REGIME continuam proibidos — ⛔ a fonte ⛔ não os dá. */
+  conf(
+    "⚠️⚠️ ⛔ e ⛔ NENHUMA dose, posologia ⛔ ou regime foi inventado",
+    !/\b\d+\s*mg\b|\b\d+\s*x\s*ao dia|de \d+\/\d+ ?h\b/i.test(
       lerFonte(path.join(appDir, "avc", "conteudo", "superficie-g.ts"))
       + lerFonte(path.join(appDir, "avc", "nucleo", "derivacoes-g.ts"))
     ),
-    "⛔ a fonte dá a ORDEM, ⛔ e ⛔ não o agente — ⛔ preencher seria **E-31**"
+    "⛔ a fonte dá a ORDEM ⛔ e a força, ⛔ e ⛔ não o esquema — ⛔ preencher seria **E-31**"
   );
 }
 

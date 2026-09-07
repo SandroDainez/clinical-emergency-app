@@ -23,13 +23,17 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  ANTITROMBOTICOS_POS_IVT,
+  CAMPOS_ANTITROMBOTICOS,
   DESTINOS_RECOMENDADOS,
   FATOS_OPERACIONAIS,
   LACUNA_POS_EVT,
+  MONITORIZACAO_POS_IVT,
   REGRAS_DE_DESTINO,
 } from "../../avc/conteudo/superficie-g";
 import {
   contextoOperacional,
+  estadoAntitromboticoPosIvt,
   estadoPressoricoPosIvt,
   faseDaMonitorizacao,
   monitorizacaoPosIvt,
@@ -43,6 +47,8 @@ import type { SuperficieId } from "../../avc/nucleo/tipos";
 import type { Relogio } from "../../avc/nucleo/relogio";
 import { sinteseDoCaso } from "../../avc/nucleo/sintese-do-caso";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
+/** ⚠️ A conversão rótulo → valor gravado mora no conteúdo. ⛔ A tela ⛔ não a refaz. */
+import { valorDaOpcao } from "../../avc/conteudo/campo";
 import { ClinicalCard, SectionTitle, WarningCard } from "./sistema";
 import { ChecklistTimeline } from "./sistema/blocos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -50,6 +56,14 @@ import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco } from "./campos-clinicos";
+
+/**
+ * ⚠️⚠️ ⛔ LIDA DO CATÁLOGO, ⛔ e ⛔ NÃO reescrita na tela — ⛔ COR, LOE, seção e
+ * frase vêm do conteúdo, ⛔ ou a tela viraria a segunda fonte deles (**I6**).
+ */
+const ASPIRINA_IV = ANTITROMBOTICOS_POS_IVT.recomendacoes.find(
+  (r) => r.id === "aspirina_iv_90min"
+)!;
 
 type Props = {
   estado: EstadoAvc;
@@ -131,6 +145,15 @@ export default function SuperficieG({
 
   const pertinencia = useMemo(() => pertinenciaDaMonitorizacao(estado), [estado]);
   const tabela = useMemo(() => monitorizacaoPosIvt(estado), [estado]);
+  /**
+   * ⚠️⚠️ ⛔ `agora` é **obrigatório** aqui: as três janelas — 90 min, 24 h ⛔ e a
+   * imagem de controle — ⛔ não existem sem relógio.
+   */
+  const antitrombotico = useMemo(
+    () => estadoAntitromboticoPosIvt(estado, agora),
+    [estado, agora]
+  );
+  const tabelaPosIvt = MONITORIZACAO_POS_IVT;
   const fase = useMemo(() => faseDaMonitorizacao(estado, agora), [estado, agora]);
   /**
    * ⚠️⚠️ ⛔ O CONTROLE PRESSÓRICO VEM PRONTO DO NÚCLEO — Fase 8, 2026-09-07.
@@ -454,6 +477,125 @@ export default function SuperficieG({
               </Text>
             </View>
           </View>
+        </View>
+      ) : null}
+
+      {/**
+        * ── ⚠️⚠️⚠️ OS ANTITROMBÓTICOS PÓS-IVT ────────────────────────────────
+        *
+        * ⚠️ Regra do autor, 2026-09-07: *"Imagem solicitada ≠ imagem realizada.
+        * Imagem realizada ≠ resultado conhecido. Resultado conhecido sem
+        * hemorragia ≠ decisão automática de iniciar antitrombótico."*
+        *
+        * ⛔ ⛔ Por isso este bloco ⛔ **⛔ não tem botão de iniciar ⛔ nada**, ⛔ e
+        * ⛔ nenhuma das frases carrega verbo de conduta. ⚠️ Ele diz **onde o
+        * caso está**, ⛔ e a decisão terapêutica ⛔ continua sendo do médico.
+        *
+        * ⚠️ ⛔ Quatro coisas, ⛔ separadas: situação da imagem · a ordem da
+        * Table 7 · a exceção das 24 h · a aspirina IV dos 90 min.
+        */}
+      {antitrombotico.estado !== "fora_do_contexto_pos_ivt" ? (
+        <View style={e.grupo} testID="avc-g-antitromboticos">
+          <SectionTitle testID="avc-g-bloco-antitromboticos">Antitrombóticos pós-IVT</SectionTitle>
+
+          {/** ⚠️ 1 · onde o caso está. ⛔ Estado, ⛔ e ⛔ nunca conduta. */}
+          <View
+            testID={`avc-g-antitrombotico-estado-${antitrombotico.estado}`}
+            style={[
+              e.linha,
+              /**
+               * ⚠️⚠️ ⛔ A EXCEÇÃO USA **CAUTELA**, ⛔ e ⛔ nunca sucesso: ⛔ um
+               * fundo de *"tudo certo"* sobre *"risco incerto"* seria a cor
+               * dizendo o contrário do texto — ⛔ o mesmo defeito corrigido na
+               * raia da EVT.
+               */
+              antitrombotico.estado === "excecao_precoce_pode_ser_considerada"
+                && e.antitromboticoCautela,
+            ]}
+          >
+            <Text style={e.linhaValor} testID="avc-g-antitrombotico-frase">
+              {tr(antitrombotico.frase)}
+            </Text>
+            {/** ⚠️ ⛔ O resultado **como foi registrado** — ⛔ e ⛔ não interpretado. */}
+            {antitrombotico.resultado !== undefined ? (
+              <Text style={e.linhaChave} testID="avc-g-antitrombotico-resultado">
+                {tr(antitrombotico.resultado)}
+              </Text>
+            ) : null}
+            {/** ⚠️⚠️ COR/LOE ⛔ só quando há recomendação graduada em jogo. */}
+            {antitrombotico.cor !== undefined ? (
+              <Text style={e.antitromboticoGrau} testID="avc-g-antitrombotico-grau">
+                {tr("COR")} {antitrombotico.cor} · {tr("LOE")} {antitrombotico.loe} ·{" "}
+                {antitrombotico.localizacao}
+              </Text>
+            ) : null}
+          </View>
+
+          {/**
+            * ⚠️⚠️ 2 · A ORDEM DA TABLE 7 — ⛔ visível **sempre**, ⛔ e ⛔ não só
+            * quando falta imagem: ⛔ ela é a razão de o bloco existir.
+            */}
+          <View style={e.linha} testID="avc-g-antitrombotico-ordem">
+            <Text style={e.linhaChave}>{tr("Ordem")}</Text>
+            <Text style={e.linhaValor}>{tr(tabelaPosIvt.imagemDeControle.texto)}</Text>
+          </View>
+
+          {/**
+            * ⚠️⚠️⚠️ 3 · A ASPIRINA IV DOS 90 min — ⛔ **outra regra**, ⛔ com
+            * outra força ⛔ e outra janela. ⛔ Ela aparece ⛔ só dentro dos 90
+            * minutos, ⛔ e ⛔ não substitui ⛔ nenhum estado acima.
+            */}
+          {antitrombotico.aspirinaIvNosNoventaMin ? (
+            <View style={e.antitromboticoDano} testID="avc-g-antitrombotico-aspirina-iv">
+              <Text style={e.antitromboticoGrau}>
+                {tr("COR")} {ASPIRINA_IV.cor} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
+                {ASPIRINA_IV.localizacao}
+              </Text>
+              <Text style={e.linhaValor}>{tr(ASPIRINA_IV.frase)}</Text>
+            </View>
+          ) : null}
+
+          {/**
+            * ⚠️⚠️ 4 · O JULGAMENTO DA EXCEÇÃO — ⛔ e ⛔ ele ⛔ só é oferecido
+            * **dentro das 24 h**, ⛔ que é a janela da própria recomendação.
+            *
+            * ⛔ ⛔ Fora dela, perguntar seria convidar a uma exceção que a fonte
+            * ⛔ não abre.
+            */}
+          {antitrombotico.estado === "antes_da_imagem_controle"
+            || antitrombotico.estado === "excecao_precoce_pode_ser_considerada" ? (
+            <View testID="avc-g-antitrombotico-julgamento">
+              {CAMPOS_ANTITROMBOTICOS.map((campo) => (
+                <View key={campo.id} style={e.linha} testID={`avc-campo-${campo.id}`}>
+                  <Text style={e.linhaChave}>{tr(campo.rotulo)}</Text>
+                  <View style={e.antitromboticoOpcoes}>
+                    {(campo.opcoes ?? []).map((op) => (
+                      <Pressable
+                        key={op}
+                        accessibilityRole="button"
+                        testID={`avc-opcao-${campo.id}-${valorDaOpcao(op)}`}
+                        onPress={() => onEscolher(campo.id, valorDaOpcao(op))}
+                        style={e.antitromboticoOpcao}
+                      >
+                        <Text style={e.linhaValor}>{tr(op)}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <Text style={e.antitromboticoNota}>{tr(campo.nota ?? "")}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {/**
+            * ⚠️⚠️ A LACUNA DA ANTICOAGULAÇÃO — ⛔ **declarada**, ⛔ e ⛔ não
+            * silenciosa. ⛔ Sem ela, a palavra *"anticoagulante"* na ordem da
+            * Table 7 sugeriria um esquema que o app ⛔ não tem.
+            */}
+          <Text style={e.antitromboticoNota} testID="avc-g-antitrombotico-lacuna">
+            {tr(ANTITROMBOTICOS_POS_IVT.lacunaDaAnticoagulacao.texto)}
+          </Text>
+          <Text style={e.antitromboticoNota}>{tr(antitrombotico.ressalva)}</Text>
         </View>
       ) : null}
 
@@ -840,4 +982,37 @@ const criarEstilos = (tema: Tema) =>
     opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     opcaoTextoAtivo: { fontWeight: "700" },
     operacionalNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+
+    /**
+     * ⚠️⚠️ **CAUTELA**, ⛔ e ⛔ nunca sucesso: ⛔ *"risco incerto"* sobre fundo
+     * de *"tudo certo"* seria a cor negando o texto.
+     */
+    antitromboticoCautela: {
+      borderWidth: 1,
+      borderColor: tema.cores.warning,
+      backgroundColor: tema.cores.warningTint,
+      borderRadius: RAIO.botao,
+      padding: ESPACO.sm,
+    },
+    /** ⚠️⚠️ **Dano** — ⛔ e ⛔ este é o único bloco desta tela que o merece. */
+    antitromboticoDano: {
+      borderWidth: 1,
+      borderColor: tema.cores.critical,
+      backgroundColor: tema.cores.criticalTint,
+      borderRadius: RAIO.botao,
+      padding: ESPACO.sm,
+      gap: 2,
+    },
+    antitromboticoGrau: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize, fontWeight: "700" },
+    antitromboticoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
+    antitromboticoOpcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
+    /** ⚠️ Alvo de dedo, ⛔ e ⛔ não de mouse. */
+    antitromboticoOpcao: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+    },
   });

@@ -23,6 +23,7 @@ import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_D } from "./superficie-d";
 import { TODOS_OS_CAMPOS_E } from "./superficie-e";
 import { ACAO_DE_TROMBOLISE, DECISAO_DE_PROSSEGUIR } from "./superficie-f";
+import { CAMPOS_ANTITROMBOTICOS } from "./superficie-g";
 
 /**
  * TODOS os campos do módulo, de todas as casas.
@@ -62,6 +63,16 @@ export function todosOsCampos(): readonly Campo[] {
      * encontra, ⛔ e o portão ⛔ apontaria para um campo inalcançável (**E-26**).
      */
     ...DECISAO_DE_PROSSEGUIR.map((c) => ({ ...c, casa: "reperfusao" as const })),
+    /**
+     * ⚠️⚠️ E **G** ENTROU EM 2026-09-07 — ⛔ pelo mesmo vão de sempre.
+     *
+     * ⛔ O julgamento da condição concomitante precisa ser **respondível**:
+     * fora deste registro, `campoDoModulo` ⛔ não o encontra, `irParaCampo`
+     * ⛔ não navega até ele, ⛔ e a pendência apontaria para um campo
+     * inexistente (**E-26**) — ⛔ exatamente o defeito do `pc_aspects`, achado
+     * na Fase 9.
+     */
+    ...CAMPOS_ANTITROMBOTICOS,
   ];
 }
 

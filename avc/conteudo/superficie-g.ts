@@ -25,6 +25,8 @@
 
 import type { SuperficieId } from "../nucleo/tipos";
 import { PA_POS_REPERFUSAO } from "./antihipertensivos";
+import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
+import { comCasa } from "./campo";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · OS DOIS TIPOS — E A DIFERENÇA ENTRE ELES É DE AUTORIDADE
@@ -122,6 +124,173 @@ export const REGRAS_DE_DESTINO: readonly RegraOperacional[] = [
     populacao: "após trombólise intravenosa",
   },
 ];
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ 2b · OS ANTITROMBÓTICOS PÓS-IVT — TRÊS REGRAS, ⛔ E ⛔ NÃO UMA
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ⛔ NÃO EXISTE *"antiagregante proibido por 24 h"* ────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07: *"⛔ não implementar a regra simplificada
+ * `antiagregante proibido por 24 h`, ⛔ porque isso seria **mais forte que a
+ * fonte**."*
+ *
+ * ⛔ ⛔ E ⛔ ele está certo ao pé da letra: §4.8 rec. 2 escreve *"the risk … **is
+ * uncertain**"* ⛔ e *"use **might be considered**"*. ⚠️ ⛔ Isso ⛔ não é
+ * proibição ⛔ nem liberação — ⛔ é **incerteza declarada**, ⛔ e a diferença
+ * decide se um paciente com stent coronário recente fica ⛔ sem antiagregante
+ * por um dia.
+ *
+ * ── ⚠️⚠️ ⛔ AS TRÊS ⛔ NÃO SE FUNDEM ────────────────────────────────────────
+ *
+ *   · **48 h do início do AVC** · COR 1 · A — o pano de fundo. ⛔ Conta do
+ *     **AVC**, ⛔ e ⛔ não da trombólise.
+ *   · **24 h da IVT** · COR 2b · B-NR — a exceção, ⛔ com risco incerto.
+ *   · **90 min da IVT, aspirina IV** · COR 3: **Harm** · B-R — dano, ⛔ e
+ *     ⛔ **⛔ não** *"No Benefit"*.
+ *
+ * ⛔ ⛔ Janelas diferentes, marcos diferentes, forças diferentes. ⚠️ Achatá-las
+ * daria a uma delas a força da outra — ⛔ e a de 90 min é a única que a fonte
+ * classifica como **dano**.
+ *
+ * ── ⚠️⚠️⚠️ ⛔ E A ANTICOAGULAÇÃO ⛔ NÃO ENTROU — DE PROPÓSITO ──────────────
+ *
+ * ⛔ ⛔ §4.9 tem **seis** recomendações, ⛔ com forças **opostas**: `2a · A`
+ * para anticoagulação oral precoce em FA selecionada, ⛔ e `3: No Benefit · A`
+ * para anticoagulação precoce em AVC indiferenciado.
+ *
+ * ⚠️⚠️ ⛔ Transcrever **metade** seria pior do que ⛔ nenhuma: a tela diria
+ * *"⛔ não recomendada"* a um paciente com fibrilação atrial em quem a fonte
+ * diz *"is reasonable"*. ⛔ A Table 7 sustenta a **ordem** em relação à
+ * imagem — ⛔ e ⛔ não um esquema terapêutico.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** ⚠️ De onde a janela conta. ⛔ Os dois marcos ⛔ **⛔ não** são o mesmo. */
+export type MarcoAntitrombotico = "inicio_avc" | "inicio_ivt";
+
+export type RecomendacaoAntitrombotica = {
+  readonly id: string;
+  readonly slot: string;
+  readonly localizacao: string;
+  readonly cor: string;
+  readonly loe: string;
+  /** ⚠️ A frase da fonte, inteira. ⛔ **E-31**. */
+  readonly verbatim: string;
+  /** ⚠️ O que a tela mostra. ⛔ ⛔ Nunca *"seguro"*, *"liberado"*, *"rotina"*. */
+  readonly frase: string;
+  readonly janela: { readonly marco: MarcoAntitrombotico; readonly minutos: number };
+};
+
+export const ANTITROMBOTICOS_POS_IVT = {
+  slot: "F-15",
+  recomendacoes: [
+    {
+      id: "aas_48h",
+      slot: "F-15",
+      localizacao: "§4.8 rec. 1 · p. e376",
+      cor: "1",
+      loe: "A",
+      verbatim:
+        "In patients with AIS, administration of aspirin is recommended within 48 hours after stroke onset to reduce risk of death and dependency.",
+      /**
+       * ⚠️⚠️ ⛔ *"do início do AVC"* está na frase ⛔ de propósito: ⛔ sem isso,
+       * ⛔ ela seria lida como *"48 h da trombólise"* — ⛔ dois relógios
+       * diferentes, ⛔ e o app tem os dois na tela.
+       */
+      frase: "Aspirina é recomendada nas primeiras 48 horas do início do AVC.",
+      janela: { marco: "inicio_avc", minutos: 48 * 60 },
+    },
+    {
+      /**
+       * ⚠️⚠️⚠️ A EXCEÇÃO — ⛔ e o verbo dela é ***is uncertain***.
+       *
+       * ⛔ ⛔ *"⛔ Não chamar de: seguro; recomendado rotineiramente; liberado;
+       * contraindicado."* — autor, 2026-09-07. ⚠️ A frase abaixo obedece às
+       * quatro proibições ⛔ e ⛔ há trava que as mede.
+       */
+      id: "antiagregante_24h_pos_ivt",
+      slot: "F-15",
+      localizacao: "§4.8 rec. 2 · p. e378",
+      cor: "2b",
+      loe: "B-NR",
+      verbatim:
+        "In patients with AIS who have received IVT, the risk of antiplatelet therapy in the first 24 hours after IVT (with or without mechanical thrombectomy) is uncertain. Use might be considered in the presence of concomitant conditions for which such treatment given in the absence of IVT is known to provide substantial benefit or when withholding such treatment is known to cause substantial risk.",
+      frase:
+        "Uso de antiagregante nas primeiras 24 horas após a trombólise: risco incerto. Pode ser considerado em situação concomitante selecionada.",
+      janela: { marco: "inicio_ivt", minutos: 24 * 60 },
+    },
+    {
+      /**
+       * ⚠️⚠️⚠️ **COR 3: Harm** — ⛔ e ⛔ a rec. 18, logo abaixo dela na fonte,
+       * é `3: No Benefit`. ⛔ Achatar as duas em *"COR 3"* apagaria a diferença
+       * entre **⛔ não ajuda** ⛔ e **faz mal**.
+       *
+       * ⚠️ ⛔ E ⛔ ela é de via **intravenosa**: ⛔ ela ⛔ não fala da aspirina
+       * oral, ⛔ e ⛔ não é a regra das 24 h.
+       */
+      id: "aspirina_iv_90min",
+      slot: "F-15",
+      localizacao: "§4.8 rec. 17 · p. e380",
+      cor: "3: Harm",
+      loe: "B-R",
+      verbatim:
+        "In patients with AIS who are eligible for IVT, IV aspirin should not be administered concurrently or within 90 minutes after the start of IVT given the risk of hemorrhage.",
+      frase:
+        "Aspirina IV não deve ser administrada junto com a trombólise nem nos 90 minutos após o seu início, pelo risco de hemorragia.",
+      janela: { marco: "inicio_ivt", minutos: 90 },
+    },
+  ] as readonly RecomendacaoAntitrombotica[],
+
+  /**
+   * ⚠️⚠️ A LACUNA DECLARADA — ⛔ e ⛔ ela ⛔ **⛔ não** é falta de fonte.
+   *
+   * ⛔ A fonte **existe** ⛔ e foi lida. ⚠️ O que houve foi **decisão de
+   * escopo**: §4.9 entra inteira, ⛔ ou ⛔ não entra.
+   */
+  lacunaDaAnticoagulacao: {
+    referencia: "§4.9 Anticoagulants · p. e384",
+    ehLacunaDeFonte: false,
+    texto:
+      "A fonte traz seis recomendações sobre anticoagulantes, com forças opostas conforme o contexto. Nenhuma foi incorporada nesta fase, e o app não emite conduta anticoagulante.",
+  },
+} as const;
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️ 2c · O JULGAMENTO DA CONDIÇÃO CONCOMITANTE
+ *
+ * ⛔ ⛔ Ele ⛔ **⛔ NÃO** é `FatoOperacional`: aqueles são **disponibilidade do
+ * serviço**, com barreira G → F. ⚠️ Este é julgamento **clínico** do episódio,
+ * ⛔ e a fonte o deixa explicitamente para quem trata.
+ *
+ * ⚠️ ⛔ E ⛔ ele ⛔ não destrava ⛔ nada: responder *"Sim"* faz aparecer a
+ * recomendação **COR 2b com risco incerto** — ⛔ e ⛔ não uma autorização.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const GRUPO_ANTITROMBOTICO: readonly Grupo[] = comCasa("destino", [
+  {
+    id: "antitromboticos_pos_ivt",
+    titulo: "Antitrombóticos pós-trombólise",
+    campos: [
+    {
+      id: "condicao_concomitante_antiagregante",
+      temporalidade: "estado",
+      /** ⚠️ O rótulo carrega **as duas metades** da frase da fonte. */
+      rotulo:
+        "Há condição concomitante em que o antiagregante traria benefício substancial, ou em que suspendê-lo traria risco substancial",
+      tipo: "escolha",
+      opcoes: ["Sim", "Não", "Incerto"],
+      ajuda:
+        "A fonte não lista quais condições são essas. A leitura é sua, e o app não a assume por você.",
+      fonte: "F-15",
+      /** ⚠️⚠️ ⛔ Responder *"Não"* ⛔ NÃO bloqueia ⛔ nada — ⛔ e ⛔ *"Sim"* ⛔ não libera. */
+      bloqueiaTerapia: false,
+      nota: "Marcar Sim faz aparecer a recomendação de risco incerto (COR 2b, LOE B-NR). Não é autorização para iniciar antiagregante, e a decisão continua sendo do médico.",
+      } satisfies CampoDeclarado,
+    ],
+  },
+]);
+
+export const CAMPOS_ANTITROMBOTICOS: readonly Campo[] =
+  GRUPO_ANTITROMBOTICO.flatMap((g) => [...g.campos]);
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 3 · A MONITORIZAÇÃO PÓS-IVT

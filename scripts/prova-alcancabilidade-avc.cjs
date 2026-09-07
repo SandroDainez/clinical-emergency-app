@@ -74,7 +74,19 @@ const POR_SUPERFICIE = {
     ...SF.DECISAO_DE_PROSSEGUIR,
     { id: SF.CAMPO_AGENTE.id, rotulo: SF.CAMPO_AGENTE.rotulo },
   ],
-  G: SG.FATOS_OPERACIONAIS,
+  /**
+   * ⚠️⚠️ G TEM DUAS LISTAS, ⛔ e ⛔ elas ⛔ não são a mesma coisa:
+   *
+   *   · `FATOS_OPERACIONAIS` — **disponibilidade do serviço**, com barreira
+   *     G → F: ⛔ nenhum deles pode alcançar uma derivação de reperfusão;
+   *   · `CAMPOS_ANTITROMBOTICOS` — **julgamento clínico** do pós-IVT, que ⛔ não
+   *     tem essa barreira ⛔ porque ⛔ não é logística.
+   *
+   * ⚠️ ⛔ A segunda entrou em 2026-09-07 (Fase 10), ⛔ e esta trava a cobrou
+   * ⛔ no mesmo dia: o campo estava no registro do módulo ⛔ e ⛔ **⛔ não** numa
+   * superfície — ⛔ órfão, ⛔ e inalcançável pela varredura.
+   */
+  G: [...SG.FATOS_OPERACIONAIS, ...SG.CAMPOS_ANTITROMBOTICOS],
 };
 const TODOS = Object.entries(POR_SUPERFICIE)
   .flatMap(([sup, cs]) => cs.map((c) => ({ ...c, sup })));
@@ -163,6 +175,8 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
     /** ⚠️ A decisão prospectiva da Fase 6 — percorrida na Reperfusão. */
     DECISAO_DE_PROSSEGUIR: SF.DECISAO_DE_PROSSEGUIR.map((c) => c.id),
     FATOS_OPERACIONAIS: SG.FATOS_OPERACIONAIS.map((c) => c.id),
+    /** ⚠️ O julgamento da exceção das 24 h — percorrido no bloco antitrombótico. */
+    CAMPOS_ANTITROMBOTICOS: SG.CAMPOS_ANTITROMBOTICOS.map((c) => c.id),
     CAMPO_AGENTE: [SF.CAMPO_AGENTE.id],
   };
   /**
