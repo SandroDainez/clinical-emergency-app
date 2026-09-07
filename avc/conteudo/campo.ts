@@ -154,6 +154,29 @@ export type Temporalidade =
  */
 export type NaturezaDoCampo = "clinico" | "administrativo";
 
+/**
+ * ── ⚠️⚠️ O ESCOPO DO FATO — ⛔ de quem ⛔ ele é ────────────────────────────
+ *
+ * ⚠️ Decisão do autor, 2026-09-07:
+ *
+ * > *"`global` deve significar: o dado pertence ao **paciente**, ⛔ e ⛔ não
+ * >  exclusivamente ao módulo atual; persiste entre contextos; possui uma
+ * >  **única fonte de verdade**. ⛔ Não deve significar '⛔ não pode ser
+ * >  consumido pelo AVC'."*
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ISSO CORRIGE UMA PROPOSTA MINHA QUE ESTAVA ERRADA. ⛔ Eu ia travar
+ * *"⛔ nenhuma derivação do AVC lê campo global"* — ⛔ o que proibiria o peso de
+ * alimentar a dose do trombolítico, ⛔ que é ⛔ exatamente para o que ⛔ ele
+ * existe. ⛔ Escopo diz **de quem é o dado**, ⛔ e ⛔ não quem pode lê-lo.
+ *
+ * ── ⚠️ A TRAVA CERTA ──────────────────────────────────────────────────────
+ *
+ * ⚠️ *"Um campo só pode influenciar uma derivação clínica se essa dependência
+ * estiver **explicitamente declarada ⛔ e testada**."* — ⛔ e é `CONSUMIDORES`
+ * que a declara, campo a campo.
+ */
+export type EscopoDoCampo = "modulo" | "global";
+
 export type Campo = {
   readonly id: string;
   /**
@@ -177,6 +200,12 @@ export type Campo = {
   readonly temporalidade: Temporalidade;
   /** ⚠️ Ausente equivale a `"clinico"` — o caso comum. */
   readonly natureza?: NaturezaDoCampo;
+  /**
+   * ⚠️ Ausente equivale a `"modulo"` — ⛔ o fato nasce ⛔ e morre neste módulo.
+   * ⚠️ `"global"` é do **paciente**: persiste entre contextos, ⛔ e outros
+   * módulos podem lê-lo pela mesma fonte de verdade.
+   */
+  readonly escopo?: EscopoDoCampo;
   /**
    * ⚠️⚠️ ESTE CAMPO **QUALIFICA OUTRO**, e ⛔ não é medida independente.
    *

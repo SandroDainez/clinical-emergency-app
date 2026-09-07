@@ -467,7 +467,7 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
     ["suspeita_hsa", "sim"], ["suspeita_hsa", "nao"], ["suspeita_hsa", "nao_sei"],
     ["angio_realizada", C.ANGIO.naoRealizada], ["angio_realizada", C.ANGIO.indisponivel],
     ["suspeita_lvo", "sim"], ["efeito_de_massa", "sim"],
-    ["alergia_contraste", "sim"], ["alergia_contraste", "nao_sei"],
+    ["alergias", "Contraste iodado"], ["alergias", "Não sei"],
     ["sitio_oclusao", "M1 da artéria cerebral média"],
     ["aspects", 0], ["aspects", 10],
     ["imagem_avancada", "Tomografia de perfusão"],
@@ -685,21 +685,56 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
    * ver o que já se sabe.
    */
   confere("⛔ o campo de alergia ⛔ NÃO é desenhado em C",
-    C.CAMPOS_NA_TELA_C.every((c) => c.id !== "alergia_contraste"),
+    C.CAMPOS_NA_TELA_C.every((c) => c.id !== "alergias"),
     "a mesma pergunta em duas telas faz o médico duvidar da resposta que já deu");
   confere("⛔ mas a LEITURA dela continua na superfície",
-    D.leiturasDaSuperficieC(est).some((l) => l.id === "alergia_contraste"),
+    D.leiturasDaSuperficieC(est).some((l) => l.id === "alergias"),
     "*\"⛔ não esperar por creatinina é uma coisa; apagar informação relevante à ação contrastada é outra\"* — a decisão de 2026-08-29 sobrevive na leitura");
 
   const l = (e) => D.alergiaAContraste(e);
+  /**
+   * ⚠️⚠️ SELEÇÃO MÚLTIPLA GRAVA **RÓTULO**, ⛔ e ⛔ não slug — ⛔ e ⛔ é por isso
+   * que `escolhe()` ⛔ não serve aqui: ⛔ ele passa por `valorDaOpcao()`, ⛔ que
+   * converteria *"⛔ Não sei"* em `nao_sei`. ⚠️ A tela grava o rótulo inteiro,
+   * ⛔ e a prova tem de simular **o que a tela grava**.
+   */
+  const marca = (e, ...itens) => reg(e, "alergias", itens.join("\u001E"));
+  /**
+   * ⚠️⚠️ ⛔ AGORA É **SELEÇÃO MÚLTIPLA** — 2026-09-06 (**§3**).
+   *
+   * ⛔ `alergia_contraste` virou um item de `alergias`. ⚠️ A conferência ⛔ não
+   * afrouxou: ⛔ os quatro estados de **E-37** continuam tendo de ser
+   * distinguíveis, ⛔ e agora ⛔ eles nascem da **presença de itens**, ⛔ e ⛔ não
+   * de um ternário.
+   */
   confere("os quatro estados da alergia são distinguíveis",
     new Set([
       l(est).curto,
-      l(escolhe(est, "alergia_contraste", "Sim")).curto,
-      l(escolhe(est, "alergia_contraste", "Não")).curto,
-      l(escolhe(est, "alergia_contraste", "Não sei")).curto,
+      l(marca(est, "Contraste iodado")).curto,
+      l(marca(est, "Nenhuma")).curto,
+      l(marca(est, "Não sei")).curto,
     ]).size === 4,
     "E-37: ⛔ não perguntado, sim, não e desconhecido");
+
+  /**
+   * ── ⚠️⚠️ ⛔ O BUG DO `disfuncao_bulbar`, ⛔ NA PORTA DE ENTRADA ────────────
+   *
+   * ⛔ Marcar **penicilina** ⛔ não diz ⛔ nada sobre o contraste. ⚠️ Se a leitura
+   * voltasse a `ternario()`, ⛔ ela leria a string de seleção como *"⛔ não"* ⛔ e
+   * o app afirmaria **ausência de alergia a contraste** num paciente que ⛔ nunca
+   * foi perguntado sobre isso (**E-23**).
+   *
+   * ⛔ É ⛔ exatamente o que aconteceu com a via aérea em 2026-09-06, ⛔ e o aviso
+   * está escrito em `leitura.ts` desde então.
+   */
+  confere("⚠️⚠️ marcar OUTRA alergia ⛔ NÃO responde pelo contraste",
+    l(marca(est, "Penicilina ou betalactâmicos")).conclusao === "desconhecido",
+    `⛔ conclusão="${l(marca(est, "Penicilina ou betalactâmicos")).conclusao}" — seleção múltipla lida por ternário afirma o negativo`);
+
+  confere("⚠️ *\"⛔ Nenhuma\"* é achado negativo DECLARADO, ⛔ e ⛔ não silêncio",
+    l(marca(est, "Nenhuma")).conclusao === "nao"
+    && l(est).conclusao !== "nao",
+    "E-37: campo vazio ⛔ nunca é ausência");
   confere("⛔ nada espera pela alergia — ela nasce informativa, ⛔ nunca pendente",
     l(est).tom === "informativo",
     "'pendente' é vocabulário de coisa que falta, e aqui ⛔ não falta nada");

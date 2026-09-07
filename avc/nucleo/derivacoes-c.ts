@@ -31,6 +31,8 @@ import {
   ternario,
   type Leitura,
 } from "./leitura";
+import { ALERGIA_A_CONTRASTE, SEM_ALERGIA } from "../conteudo/paciente";
+import { NAO_SEI } from "../conteudo/campo";
 import type { Pendencia } from "./tipos";
 import {
   ESTUDO,
@@ -723,10 +725,37 @@ export function informacaoParaAFrenteEndovascular(estado: EstadoAvc): LeituraDoD
  * aqui seria conteúdo clínico sem fonte — **E-31**.
  */
 export function alergiaAContraste(estado: EstadoAvc): Leitura {
-  const insumos = ["alergia_contraste"];
+  const insumos = ["alergias"];
   const fonte = "F-16";
-  const valor = ternario(estado, "alergia_contraste");
-  const naoSei = respondeuDesconhecido(estado, "alergia_contraste");
+
+  /**
+   * ── ⚠️⚠️ ⛔ SELEÇÃO MÚLTIPLA, ⛔ E ⛔ NUNCA `ternario()` ────────────────────
+   *
+   * ⛔ O campo era `alergia_contraste`, uma escolha sim/⛔ não/⛔ não sei. ⚠️ Em
+   * 2026-09-06 ⛔ ele virou **um item** de `alergias` (**§3**, **§55**) — ⛔ e
+   * ler seleção múltipla por `ternario()` é o bug que já custou caro neste
+   * módulo: `disfuncao_bulbar` guardava cinco achados unidos por separador, ⛔ e
+   * a tela desenhava **✓ ⛔ sem disfunção** num paciente que engasgava.
+   *
+   * ⚠️⚠️ ⛔ O AVISO ESTÁ EM `leitura.ts`, em letras garrafais. ⛔ Aqui a leitura
+   * é por `selecaoDe()`, ⛔ e os três estados vêm da **presença dos itens**:
+   *
+   *   ⛔ *"Contraste iodado"* marcado → **sim**;
+   *   ⛔ *"⛔ Nenhuma"* marcada        → **⛔ não** (achado negativo declarado);
+   *   ⛔ *"⛔ Não sei"* marcada        → **desconhecido**;
+   *   ⛔ ⛔ nada marcado              → **⛔ não perguntado** (**E-37**).
+   *
+   * ⚠️⚠️ ⛔ E MARCAR *"Penicilina"* ⛔ NÃO RESPONDE PELO CONTRASTE: ⛔ o médico
+   * registrou **uma** alergia, ⛔ e ⛔ não afirmou que ⛔ não há outras. ⛔ Tratar
+   * isso como negativo seria afirmar por ausência (**E-23**).
+   */
+  const marcadas = selecaoDe(estado, "alergias");
+  const valor = marcadas.includes(ALERGIA_A_CONTRASTE)
+    ? true
+    : marcadas.includes(SEM_ALERGIA)
+      ? false
+      : undefined;
+  const naoSei = marcadas.includes(NAO_SEI);
 
   if (valor === true) {
     return {
@@ -889,6 +918,6 @@ export function leiturasDaSuperficieC(estado: EstadoAvc): readonly (Leitura & { 
     { id: "hipodensidade_clara", ...hipodensidadeClara(estado) },
     { id: "imagem_vascular", ...imagemVascular(estado) },
     { id: "frente_endovascular", ...informacaoParaAFrenteEndovascular(estado) },
-    { id: "alergia_contraste", ...alergiaAContraste(estado) },
+    { id: "alergias", ...alergiaAContraste(estado) },
   ];
 }

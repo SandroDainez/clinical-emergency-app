@@ -160,7 +160,12 @@ const TODOS = [
     "se o emprestado entrasse na lista própria, ele seria contado duas vezes e a casa deixaria de ser única");
 
   /** ⚠️ Os três que mudaram de casa em 2026-08-29, nomeados. */
-  for (const id of ["peso", "peso_origem", "mrs_previo", "alergia_contraste"]) {
+  /**
+   * ⚠️ `alergia_contraste` virou **um item** de `alergias` em 2026-09-06
+   * (**§3**, **§55**): o contraste é uma das alergias, ⛔ e ⛔ não outra
+   * pergunta. ⛔ A casa ⛔ não mudou.
+   */
+  for (const id of ["peso", "peso_origem", "mrs_previo", "alergias"]) {
     confere(`\`${id}\` mora em Paciente`,
       P.TODOS_OS_CAMPOS_P.some((c) => c.id === id),
       "mudou de casa em 2026-08-29, e a experiência de preenchimento ⛔ não mudou");
@@ -183,12 +188,12 @@ const TODOS = [
    */
   confere("a alergia a contraste é perguntada em UM lugar só",
     K.camposDoGrupo(C.GRUPOS_C.find((g) => g.id === "juizo"))
-      .every((c) => c.id !== "alergia_contraste")
-    && P.GRUPOS_P.some((g) => K.camposDoGrupo(g).some((c) => c.id === "alergia_contraste")),
+      .every((c) => c.id !== "alergias")
+    && P.GRUPOS_P.some((g) => K.camposDoGrupo(g).some((c) => c.id === "alergias")),
     "a mesma pergunta em duas telas faz duvidar da resposta que já foi dada");
   confere("⛔ e ⛔ NENHUMA superfície do módulo a desenha além de Paciente",
     [A.GRUPOS_A, B.GRUPOS_B, C.GRUPOS_C]
-      .every((gs) => gs.every((g) => K.camposDoGrupo(g).every((c) => c.id !== "alergia_contraste"))),
+      .every((gs) => gs.every((g) => K.camposDoGrupo(g).every((c) => c.id !== "alergias"))),
     "a trava vale para o módulo inteiro, e ⛔ não ⛔ só para C — ⛔ senão volta pela próxima superfície");
 }
 

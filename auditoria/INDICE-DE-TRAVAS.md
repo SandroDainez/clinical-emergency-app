@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**78 de 92 travas com declaração completa.**
+**79 de 93 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -85,6 +85,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que ameaças, bloqueios ⛔ e pendências cheguem à tela numa **⛔ única** lista, ordenada por urgência ⛔ e origem; · que **todo** problema diga onde se resolve (**E-26**); · que o alfabeto de estados seja o do app, ⛔ e ⛔ não um símbolo local; · que a síntese do Destino continue recebendo **pendências**, ⛔ e ⛔ não a lista unificada.
 - **NÃO PROMETE:** que os cortes clínicos estejam certos — ⛔ isso é das provas de superfície, ⛔ e este módulo ⛔ não decide medicina ⛔ nenhuma.
 - **UNIVERSO:** `avc/nucleo/problemas-ativos.ts`. ── ⚠️⚠️ O QUE ORIGINOU ──────────────────────────────────────────────────── ⛔ A montagem vivia num `useMemo` de trinta linhas **dentro do JSX**, com a ordem clínica escrita em comentário. ⚠️⚠️ ⛔ Regra que mora no JSX ⛔ não pode ser executada por trava ⛔ nenhuma — ⛔ e foi exatamente assim que a leitura das ameaças se perdeu ⛔ uma vez neste módulo, afirmando o negativo numa via aérea comprometida.
+
+## `test:avc-consumidores` → `scripts/prova-avc-consumidores.cjs`
+
+- **PROMETE:** · que **⛔ nenhum campo de escopo `global`** seja lido por uma derivação do núcleo ⛔ sem estar declarado em `CONSUMIDORES`; · que **altura ⛔ não influencie ⛔ nada** no AVC — ⛔ nem derivação, ⛔ nem problema ativo, ⛔ nem pendência; · que **valor visual ⛔ não vire fato**: campo intocado devolve `undefined`, ⛔ e ⛔ o cálculo por peso ⛔ não consome fantasma.
+- **NÃO PROMETE:** que a leitura seja clinicamente correta — ⛔ isso é das provas de superfície. ⛔ Aqui se mede **quem lê o quê**, ⛔ e ⛔ não como.
+- **UNIVERSO:** `avc/conteudo/consumidores.ts` × `avc/nucleo/*.ts`. ── ⚠️⚠️ A REGRA, ⛔ E ⛔ POR QUE ⛔ NÃO É *"global ⛔ não se lê"* ──────────── ⛔ Minha primeira proposta era travar *"⛔ nenhuma derivação do AVC lê campo global"*. ⚠️ O autor apontou o furo em 2026-09-07: ⛔ isso proibiria **o peso de alimentar a dose do trombolítico**, ⛔ que é ⛔ exatamente para o que ⛔ ele existe. ⚠️ A regra dele: *"um campo só pode influenciar uma derivação clínica se essa dependência estiver explicitamente declarada ⛔ e testada"*. ⛔ Escopo diz **de quem é o dado**; ⛔ a lista diz **quem pode lê-lo**.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

@@ -49,6 +49,7 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
   path.join(appDir, "avc", "conteudo", "paciente.ts"),
   path.join(appDir, "avc", "conteudo", "laboratorio.ts"),
+  path.join(appDir, "lib", "i18n", "index.ts"),
   path.join(appDir, "avc", "conteudo", "mrs.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
@@ -60,11 +61,66 @@ const P = require(path.join(tmp, "avc", "conteudo", "paciente.js"));
 const L = require(path.join(tmp, "avc", "conteudo", "laboratorio.js"));
 
 /**
- * ⚠️ O dicionário é lido SEM COMENTÁRIO: uma chave citada dentro de um comentário
- * satisfaria a busca e ⛔ não traduziria nada na tela (R-92).
+ * ── ⚠️⚠️ ⛔ ELA PERGUNTA AO `tr()` DE VERDADE — 2026-09-07 ─────────────────
+ *
+ * ⛔ Antes ⛔ ela lia **um arquivo**: `modules/avc-modulo.ts`. ⚠️ Isso amarrava a
+ * trava a ⛔ **onde** a tradução mora, ⛔ e ⛔ não a **se ela funciona**: uma
+ * opção traduzida num módulo novo reprovava mesmo estando certa, ⛔ e — pior —
+ * uma tradução num módulo **⛔ não registrado** na cadeia `??` de
+ * `lib/i18n/index.ts` passaria como se a tela fosse traduzir, ⛔ e ⛔ ela ⛔ não
+ * traduziria ⛔ nada.
+ *
+ * ⚠️ Perguntando ao `tr()` compilado, a trava mede **o que o médico vê**: ⛔ se
+ * o módulo ⛔ não estiver na cadeia, ⛔ a devolução vem em português ⛔ e a
+ * conferência reprova — ⛔ que é ⛔ exatamente o defeito que importa.
+ *
+ * ⚠️ `lerFonte` continua importado porque outras conferências deste arquivo
+ * ⛔ ainda leem texto-fonte.
  */
-const dicionario = lerFonte(path.join(appDir, "lib", "i18n", "modules", "avc-modulo.ts"));
-const temPar = (s) => dicionario.includes(`"${s}":`);
+const { tr } = require(path.join(tmp, "lib", "i18n", "index.js"));
+/**
+ * ⚠️ *"Tem par"* = o espanhol **difere** do português. ⛔ Devolver a própria
+ * string é o que `tr()` faz quando ⛔ não acha chave ⛔ nenhuma.
+ *
+ * ⚠️⚠️ ⛔ E há palavras iguais nos dois idiomas — *"Insulina"*,
+ * *"Anticonvulsivantes"*. ⛔ Para elas, exigir diferença seria exigir uma
+ * tradução errada: ⛔ a chave precisa **existir**, ⛔ e a devolução pode ser
+ * idêntica.
+ */
+/**
+ * ── ⚠️⚠️ ⛔ SÓ OS MÓDULOS **REGISTRADOS NA CADEIA** ────────────────────────
+ *
+ * ⛔ A primeira versão desta trava juntava **todo módulo importado**, ⛔ e
+ * aceitava a chave existir em qualquer um deles. ⚠️⚠️ ⛔ A mutação que **tira o
+ * módulo da cadeia `??`** — traduzido, importado, ⛔ e ⛔ nunca consultado —
+ * **passou verde**, ⛔ e eu já tinha escrito no comentário acima que ⛔ ela
+ * pegava esse caso. ⛔ O `||` desfazia a garantia que a frase prometia.
+ *
+ * ⚠️ Agora o universo é o **corpo do `tr()`**: um módulo cujo alias ⛔ não
+ * aparece ali ⛔ não traduz ⛔ nada na tela, ⛔ e ⛔ não conta aqui.
+ */
+const CHAVES = lerFonte(path.join(appDir, "lib", "i18n", "index.ts"));
+const CORPO_DO_TR = CHAVES.slice(CHAVES.indexOf("export function tr("));
+/**
+ * ⚠️ Os dois formatos convivem no arquivo: `{ ES_X }` ⛔ e `{ xEs as ES_X }`.
+ * ⛔ Um regex que exigisse `as` deixaria metade dos módulos de fora ⛔ e a trava
+ * reprovaria traduções que existem.
+ */
+const MODULOS_ES = [...CHAVES.matchAll(/import \{([^}]*)\} from "\.\/(modules\/[a-z0-9-]+|es-419)"/g)]
+  .map((m) => ({ alias: m[1].split(" as ").pop().trim(), arquivo: m[2] }))
+  .filter((m) => CORPO_DO_TR.includes(`${m.alias}[pt]`))
+  .map((m) => path.join(appDir, "lib", "i18n", `${m.arquivo}.ts`))
+  .filter((f) => fs.existsSync(f))
+  .map((f) => lerFonte(f))
+  .join("\n");
+
+/**
+ * ⚠️ *"Tem par"* = ⛔ o `tr()` devolve outra coisa **⛔ ou** a chave existe num
+ * módulo **da cadeia** — ⛔ e a segunda metade cobre ⛔ só as palavras que o
+ * espanhol escreve igual (*"Insulina"*), ⛔ para as quais exigir diferença
+ * seria exigir tradução errada.
+ */
+const temPar = (s) => tr(s, "es-419") !== s || MODULOS_ES.includes(`"${s}":`);
 
 /**
  * ⚠️ **Paciente** entrou em 2026-08-29 e traz ~40 opções novas — antecedentes e
@@ -115,6 +171,13 @@ const campos = [
  */
 {
   const IGUAIS_EM_ESPANHOL = [
+    /**
+     * ⚠️ Palavras que o espanhol escreve **igual** — ⛔ e declará-las é o que
+     * impede a exceção de virar permissão silenciosa para a próxima. ⛔ Exigir
+     * diferença aqui seria exigir uma tradução **errada**.
+     */
+    "Insulina",
+    "Anticonvulsivantes",
     "Leve",                      // "leve" tem a mesma forma nos dois idiomas
     "Incapacitante",             // idem
     "Bilateral",                 // idem
@@ -133,7 +196,7 @@ const campos = [
     orfas.length === 0,
     `a lista de exceções envelhece junto com os campos; exceção órfã vira permissão silenciosa para a próxima — ${orfas.join(" · ")}`);
   const espelhadas = opcoes
-    .filter((o) => dicionario.includes(`"${o}": "${o}"`))
+    .filter((o) => MODULOS_ES.includes(`"${o}": "${o}"`))
     .filter((o) => !IGUAIS_EM_ESPANHOL.includes(o));
   confere("⛔ NENHUMA opção aponta para a própria string portuguesa sem declaração",
     espelhadas.length === 0,
@@ -175,7 +238,7 @@ const campos = [
     "5 · grave",            // "grave" tem a mesma forma nos dois idiomas
   ];
   const identicos = rotulos
-    .filter((r) => dicionario.includes(`"${r}": "${r}"`))
+    .filter((r) => MODULOS_ES.includes(`"${r}": "${r}"`))
     .filter((r) => !IGUAIS_EM_ESPANHOL.includes(r));
   confere("⛔ nenhum grau do mRS aponta para a própria string portuguesa sem declaração",
     identicos.length === 0,

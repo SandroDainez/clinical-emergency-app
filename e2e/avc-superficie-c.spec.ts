@@ -308,12 +308,18 @@ test.describe("AVC · Superfície C — Imagem", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
-    // ⛔ A pergunta ⛔ NÃO aparece: ela mora no painel Paciente.
-    await expect(page.getByTestId("avc-campo-alergia_contraste")).toHaveCount(0);
+    /**
+     * ⚠️ `alergia_contraste` virou **um item** de `alergias` em 2026-09-06
+     * (**§3**, **§55**): o contraste é uma das alergias, ⛔ e ⛔ não outra
+     * pergunta. ⛔ O contrato deste teste ⛔ não mudou — **⛔ a pergunta mora em
+     * Paciente, ⛔ e a leitura continua em Investigação**.
+     */
+    // ⛔ A pergunta ⛔ NÃO aparece: ela mora na fase Paciente.
+    await expect(page.getByTestId("avc-campo-alergias")).toHaveCount(0);
     // ⚠️ A leitura continua: ler ⛔ não é coletar.
-    await expect(page.getByTestId("avc-leitura-curto-alergia_contraste")).toBeVisible();
+    await expect(page.getByTestId("avc-leitura-curto-alergias")).toBeVisible();
     // ⛔ E ⛔ nenhuma pendência nasce dela.
-    await expect(page.getByTestId("avc-pendencia-alergia_contraste")).toHaveCount(0);
+    await expect(page.getByTestId("avc-pendencia-alergias")).toHaveCount(0);
   });
 
   /**

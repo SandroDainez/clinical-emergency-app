@@ -79,6 +79,8 @@ export const IDENTIFICACAO_P: readonly CampoP[] = [
   },
   {
     id: "idade",
+    /** ⚠️ Do **paciente** — ⛔ e ⛔ nenhum módulo a recalcula. */
+    escopo: "global",
     rotulo: "Idade",
     tipo: "grandeza",
     temporalidade: "estavel",
@@ -109,6 +111,8 @@ export const IDENTIFICACAO_P: readonly CampoP[] = [
 export const BASAIS_P: readonly CampoP[] = [
   {
     id: "peso",
+    /** ⚠️ Do **paciente**: a dose por quilo o consome, ⛔ e ⛔ outros módulos também. */
+    escopo: "global",
     rotulo: "Peso",
     tipo: "grandeza",
     temporalidade: "estavel",
@@ -122,6 +126,40 @@ export const BASAIS_P: readonly CampoP[] = [
     fonte: "F-09",
     bloqueiaTerapia: false,
     nota: "A fonte diz para não atrasar a trombólise para obter peso exato. Peso estimado é resposta válida.",
+  },
+  {
+    /**
+     * ── ⚠️⚠️ ALTURA — ⛔ e a razão é **estrutural**, ⛔ e ⛔ não clínica ───────
+     *
+     * ⚠️ Decisão do autor, 2026-09-07:
+     *
+     * > *"Paciente deve funcionar como camada global de dados do atendimento,
+     * >  reutilizável pelos demais módulos do APP."*
+     *
+     * ⛔ ⛔ NENHUMA regra do AVC a consome — ⛔ e a trava `CONSUMIDORES` declara
+     * isso com uma lista **vazia**, ⛔ e a executa. ⚠️ Enquanto ⛔ não houver
+     * consumidor validado, ⛔ ela ⛔ não cria alerta, ⛔ não cria pendência,
+     * ⛔ não vira IMC ⛔ e ⛔ não aparece em problema ativo ⛔ nenhum.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ ela ⛔ NÃO É OBRIGATÓRIA PARA ⛔ NADA: campo intocado é
+     * `undefined` — ⛔ o valor visual do controle ⛔ nunca vira fato (§0.2).
+     */
+    id: "altura",
+    rotulo: "Altura",
+    tipo: "grandeza",
+    temporalidade: "estavel",
+    escopo: "global",
+    unidade: "cm",
+    faixa: { min: 100, max: 220, passo: 1 },
+    ajuda: "Dado do paciente, guardado para o atendimento. Nenhuma recomendação do AVC depende dele.",
+    /**
+     * ⚠️ ⛔ Sem slot de fonte porque ⛔ **nenhuma fonte deste módulo a menciona**
+     * — ⛔ e ⛔ é a natureza declarada que mantém **E-30** de pé para os outros.
+     */
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro do paciente. Nenhuma recomendação deste módulo é calculada a partir da altura.",
   },
   {
     id: "peso_origem",
@@ -147,14 +185,56 @@ export const BASAIS_P: readonly CampoP[] = [
  * inteiras: ⛔ nunca bloqueia a IVT, ⛔ nunca cria dependência de creatinina,
  * ⛔ nunca bloqueia superfície nenhuma.
  */
+/**
+ * ⚠️⚠️ ⛔ DE UMA PERGUNTA PARA UM BLOCO — 2026-09-06, briefing **§3**.
+ *
+ * ⛔ Havia **⛔ uma** pergunta: *"alergia a contraste?"*. ⚠️ Ela existia porque
+ * era a única com consumidor clínico (a leitura de C, antes da angiotomografia)
+ * — ⛔ e o resto da história alérgica do paciente ⛔ não tinha onde ser
+ * registrado.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE UM CAMPO SÓ, ⛔ E ⛔ NÃO DOIS ────────────────────────────
+ *
+ * ⛔ A saída fácil seria acrescentar `alergias` ⛔ e manter `alergia_contraste`.
+ * ⚠️ ⛔ Isso daria **dois lugares para o mesmo fato** — o que a **§55** proíbe,
+ * ⛔ e o que **I6** chama de duas verdades. ⛔ O contraste é ⛔ **uma** das
+ * alergias, ⛔ e ⛔ não outra pergunta.
+ *
+ * ── ⚠️⚠️ OS TRÊS ESTADOS (**§1.3**, **E-37**) ─────────────────────────────
+ *
+ * ⛔ *"⛔ Nunca interpretar campo vazio como ausência."*
+ *
+ *   ⛔ ⛔ nada marcado          → **⛔ não perguntado**;
+ *   ⛔ *"⛔ Nenhuma"* marcada   → **informado como ausente**;
+ *   ⛔ item marcado           → **informado como presente**.
+ *
+ * ⚠️ `exclusivas` é o que impede *"⛔ Nenhuma"* de conviver com *"Penicilina"* —
+ * ⛔ uma contradição que o médico ⛔ não deveria conseguir escrever.
+ *
+ * ⚠️⚠️ ⛔ E O AVISO QUE ESTA MUDANÇA CARREGA: ⛔ a leitura de C passou a ler
+ * **seleção múltipla**. ⛔ Lê-la por `ternario()` daria *"⛔ não há alergia"*
+ * para um paciente com três alergias marcadas — ⛔ que é ⛔ exatamente o bug do
+ * `disfuncao_bulbar`, ⛔ e ⛔ ele já custou caro neste módulo.
+ */
+export const ALERGIA_A_CONTRASTE = "Contraste iodado";
+export const SEM_ALERGIA = "Nenhuma";
+
 export const ALERGIAS_P: readonly CampoP[] = [
   {
-    id: "alergia_contraste",
-    rotulo: "Alergia prévia importante a contraste iodado",
-    tipo: "escolha",
+    id: "alergias",
+    rotulo: "Alergias conhecidas",
+    tipo: "multipla",
     temporalidade: "estavel",
-    opcoes: SIM_NAO_NAO_SEI,
-    ajuda: "Diz respeito apenas ao exame com contraste. Não interfere na trombólise.",
+    opcoes: [
+      "Penicilina ou betalactâmicos",
+      "Anti-inflamatório não esteroidal (AINE)",
+      ALERGIA_A_CONTRASTE,
+      "Outras",
+      SEM_ALERGIA,
+      NAO_SEI,
+    ],
+    exclusivas: [SEM_ALERGIA, NAO_SEI],
+    ajuda: "O contraste iodado diz respeito apenas ao exame com contraste. Nenhuma delas interfere na trombólise.",
     fonte: "F-16",
     bloqueiaTerapia: false,
     nota: "A fonte do AVC não define conduta para alergia a contraste. Este registro fica na trilha do atendimento, e o manejo é decisão clínica e institucional.",
@@ -231,6 +311,54 @@ export const MEDICACOES_P: readonly CampoP[] = [
     fonte: "F-07",
     bloqueiaTerapia: false,
     nota: "A fonte recomenda a trombólise mesmo em uso de antiagregante simples ou duplo, declarando o aumento de risco de hemorragia sintomática em comparação com não usar antiagregante.",
+  },
+  /**
+   * ── ⚠️⚠️ AS OUTRAS CLASSES — briefing **§3** ─────────────────────────────
+   *
+   * ⛔ O módulo perguntava **⛔ só** anticoagulante ⛔ e antiagregante, ⛔ e por
+   * uma razão boa: ⛔ são os dois que **decidem** — coagulograma, janela do
+   * DOAC, contraindicação. ⚠️ O resto da farmácia do paciente ⛔ não tinha onde
+   * ser registrado.
+   *
+   * ── ⚠️⚠️ ⛔ POR QUE ANTICOAGULANTE ⛔ NÃO ENTRA NESTA LISTA ────────────────
+   *
+   * ⛔ Juntar tudo num campo só seria **perder a decisão**: F-10 separa quem usa
+   * varfarina ⛔ ou heparina para dizer quando a trombólise pode começar antes
+   * do coagulograma, ⛔ e o DOAC tem janela própria com horário. ⚠️ Um chip
+   * *"anticoagulantes"* ⛔ não sustenta ⛔ nenhuma das duas regras.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É DUPLICIDADE (**§55**): ⛔ são **fatos diferentes**.
+   * ⛔ Aqui ⛔ nenhuma classe é lida por derivação ⛔ nenhuma — ⛔ é contexto de
+   * atendimento, ⛔ e a nota diz isso ao médico.
+   */
+  {
+    id: "medicacoes_em_uso",
+    /** ⚠️ A farmácia do paciente ⛔ não pertence a ⛔ um atendimento. */
+    escopo: "global",
+    rotulo: "Outras medicações de uso contínuo",
+    tipo: "multipla",
+    temporalidade: "estado",
+    opcoes: [
+      "Anti-hipertensivos",
+      "Hipoglicemiantes orais",
+      "Insulina",
+      "Anticonvulsivantes",
+      "Outras",
+      "Nenhuma",
+      NAO_SEI,
+    ],
+    exclusivas: ["Nenhuma", NAO_SEI],
+    ajuda: "Anticoagulantes e antiagregantes têm campo próprio acima, porque decidem conduta.",
+    /**
+     * ⚠️ Contexto de atendimento — ⛔ e ⛔ é por isso que a natureza é declarada:
+     * ⛔ sem ela, **E-30** exigiria um slot `F-nn` para um campo que ⛔ nenhuma
+     * fonte deste módulo menciona. ⛔ Declarar a natureza mantém a exigência de
+     * pé para os outros.
+     */
+    natureza: "administrativo",
+    fonte: "",
+    bloqueiaTerapia: false,
+    nota: "Registro de contexto. Nenhuma recomendação deste módulo é calculada a partir destas classes.",
   },
 ];
 
@@ -450,9 +578,10 @@ export const TODOS_OS_CAMPOS_P: readonly Campo[] = GRUPOS_P.flatMap((g) => [...g
  */
 export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
   peso_origem: NAO_SEI,
-  alergia_contraste: NAO_SEI,
+  alergias: NAO_SEI,
   anticoagulante_em_uso: NAO_SEI,
   antiagregante_em_uso: NAO_SEI,
+  medicacoes_em_uso: NAO_SEI,
   antecedentes_intracranianos: NAO_SEI,
   antecedentes_cardio_sistemicos: NAO_SEI,
   procedimentos_recentes: NAO_SEI,
