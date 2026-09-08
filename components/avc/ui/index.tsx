@@ -29,7 +29,8 @@ import {
   type GestoNumerico,
 } from "../../../avc/nucleo/rascunho-numerico";
 import { SETA } from "../../../design-system/afordancia";
-import { useEstilosDoTema, type Tema } from "../../../design-system/theme";
+import { tingir } from "../../../design-system/paleta-de-area";
+import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
@@ -70,6 +71,27 @@ export const ICONE = {
   destino: "home",
   adiante: "chevron-right",
   informacao: "info",
+  /**
+   * ── ⚠️ TRÊS NOMES NOVOS — 2026-09-08, para a cor por assunto ──────────────
+   *
+   * ⚠️ ⛔ Feather ⛔ não tem comprimido ⛔ nem alergia: os dois foram escolhidos
+   * pelo que o bloco **é**, ⛔ e ⛔ não por semelhança de desenho.
+   *
+   * ⛔ Nome inexistente ⛔ não quebra o build — ele desenha um quadrado vazio.
+   * ⚠️ Os três foram conferidos contra o glyphmap instalado.
+   */
+  alergia: "alert-octagon",
+  medicacao: "package",
+  antecedentes: "archive",
+  tempo: "clock",
+  monitorizacao: "monitor",
+  consulta: "phone",
+  /**
+   * ⚠️ ⛔ O MESMO DESENHO de `laboratorio`, ⛔ e ⛔ isso é escolha: ⛔ o Feather
+   * tem **um** termômetro. ⛔ Os dois blocos ⛔ nunca aparecem na mesma tela, ⛔ e
+   * o que se declara ⛔ aqui é o **nome** — ⛔ que é o que força reconhecimento.
+   */
+  exposicao: "thermometer",
 } as const;
 
 export type NomeDeIcone = keyof typeof ICONE;
@@ -97,6 +119,137 @@ export function Icone({
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
+ * 1b · O ASSUNTO DE CADA BLOCO — ⛔ cor ⛔ e ícone, ⛔ e ⛔ NUNCA estado
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️⚠️ ⛔ POR QUE ISTO EXISTE — pedido do autor, 2026-09-08.
+ *
+ * ⛔ ⛔ *"Está tudo da mesma cor, ⛔ não segue o padrão que solicitei quando
+ * refatoramos o app"* — ⛔ e, no dia seguinte, as **seis telas de referência**:
+ * ⛔ cada bloco com o seu ícone ⛔ e a sua cor.
+ *
+ * ⚠️⚠️ ⛔ E A REGRA ⛔ JÁ EXISTIA NO MÓDULO: `COR_DO_EIXO`, em
+ * `avc-modulo-screen.tsx`, nasceu do **mesmo relato** — *"quatro coisas da mesma
+ * cor misturando o visual"* — ⛔ e ⛔ ela ⛔ nunca passou dos quatro tiles do
+ * ABCDE. ⛔ O resto do módulo ficou com **uma cor só**: `getPalette("AVC")`.
+ * ⚠️ Esta tabela ⛔ não inventa padrão ⛔ nenhum — ⛔ ela **estende o que estava
+ * declarado ⛔ e parado**.
+ *
+ * ── ⚠️⚠️ AS TRÊS REGRAS ────────────────────────────────────────────────────
+ *
+ * ⛔ **1 · A cor diz o ASSUNTO, ⛔ e ⛔ nunca a resposta.** ⚠️ Ela ⛔ não muda
+ *    quando o médico responde; quem muda é o **símbolo** (○ ✓ ! ⛔) ⛔ e a borda.
+ *    ⛔ Palavra por palavra o que `COR_DO_EIXO` já dizia.
+ *
+ * ⛔ **2 · ⛔ NENHUM BLOCO É VERDE.** ⚠️ `success` é a cor de *"favorável ·
+ *    atendido"* nos sete estados. ⛔ Um bloco verde diria que **o bloco está
+ *    resolvido** — ⛔ e ⛔ ele ⛔ não está: ⛔ ele ⛔ nem foi respondido. ⚠️ ⛔ Foi
+ *    a única cor do tema deixada de fora, ⛔ e ⛔ é de propósito.
+ *
+ * ⛔ **3 · ⛔ Cor ⛔ nunca vem sozinha (E-15).** ⚠️ ⛔ Cada entrada traz **ícone
+ *    ⛔ e** o título fica ao lado. ⛔ Apague todas as cores ⛔ e ⛔ nada se perde.
+ *
+ * ── ⚠️ ⛔ E ⛔ NENHUM HEXADECIMAL NOVO ──────────────────────────────────────
+ *
+ * ⚠️ As cinco são **acentos do tema**, ⛔ já medidos ≥ 5,4:1 sobre `surface`.
+ * ⛔ Inventar tom novo aqui reprovaria `test:paleta` — ⛔ e, pior, criaria uma
+ * segunda paleta a manter em sincronia com a do tema.
+ */
+export type CorDeAssunto = "primary" | "info" | "critical" | "warning" | "debt";
+
+export type Assunto = { readonly icone: NomeDeIcone; readonly cor: CorDeAssunto };
+
+/**
+ * ⚠️⚠️ A CHAVE É O **id do bloco**, ⛔ e ⛔ não o título: título é apresentação
+ * ⛔ e ⛔ já mudou uma vez (*"Imagem"* → *"Investigação"*); ⛔ o id ⛔ é identidade.
+ *
+ * ⚠️ ⛔ Bloco ⛔ sem entrada ⛔ não é erro: ⛔ ele desenha como sempre desenhou.
+ * ⛔ A tabela cresce por **decisão**, ⛔ e ⛔ não por varredura.
+ */
+export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
+  /* ── Paciente — ⚠️ as cinco cores vieram das telas de referência ────────── */
+  /** ⚠️ Quem é. ⛔ Ciano informa, ⛔ e ⛔ não convida a tocar. */
+  identificacao: { icone: "paciente", cor: "info" },
+  /** ⚠️ Peso ⛔ e altura — ⛔ âmbar, ⛔ como o tile de peso da referência. */
+  basais: { icone: "peso", cor: "warning" },
+  /**
+   * ⚠️⚠️ ⛔ VERMELHO, ⛔ e ⛔ isso ⛔ não colide com *"impede"*.
+   *
+   * ⛔ ⛔ Alergia é **dano**, ⛔ e é o assunto do bloco — ⛔ não o veredito sobre
+   * ele. ⚠️ ⛔ É o mesmo que `COR_DO_EIXO` já faz com `pressao: "critical"`.
+   */
+  alergias: { icone: "alergia", cor: "critical" },
+  /** ⚠️ ⛔ O roxo das drogas na referência. */
+  medicacoes: { icone: "medicacao", cor: "debt" },
+  /** ⚠️ O que ⛔ já existia **antes deste AVC**. */
+  comorbidades: { icone: "antecedentes", cor: "primary" },
+
+  /* ── Estabilização ────────────────────────────────────────────────────────
+   *
+   * ⚠️⚠️⚠️ ⛔ ESTAS SEIS ⛔ NÃO SÃO NOVAS — ⛔ elas **vieram de casa**.
+   *
+   * ⛔ Elas moravam em `COR_DO_GRUPO` ⛔ e `ICONE_DO_GRUPO`, ⛔ dentro de
+   * `superficie-a.tsx`, ⛔ desde 2026-09-06 — ⛔ escritas para o relato *"tudo
+   * muito cinza ainda, tudo fica parecido ⛔ e confunde"*. ⚠️ ⛔ E ⛔ elas
+   * ⛔ **nunca saíram daquela tela**: ⛔ as outras seis superfícies ficaram
+   * ⛔ exatamente como estavam.
+   *
+   * ⚠️⚠️ ⛔ Os valores ⛔ não foram revistos ⛔ ao mudar de casa: ⛔ eles ⛔ já
+   * tinham sido olhados pelo autor. ⛔ Mudar cor ⛔ e endereço no mesmo passo
+   * tornaria impossível saber qual dos dois mexeu na tela.
+   */
+  "via-aerea": { icone: "viaAerea", cor: "info" },
+  respiracao: { icone: "respiracao", cor: "info" },
+  pressao: { icone: "circulacao", cor: "critical" },
+  /**
+   * ── ⚠️⚠️⚠️ `glicemia` ⛔ NÃO ATRAVESSOU — ⛔ e ⛔ ela ⛔ não foi esquecida ───
+   *
+   * ⛔ ⛔ `COR_DO_GRUPO` trazia uma entrada `glicemia` ⛔ que ⛔ **⛔ não pintava
+   * ⛔ nada**: ⛔ `glicemia` é **campo**, ⛔ e ⛔ não grupo — ⛔ e ⛔ os campos dela
+   * moram ⛔ dentro de `neurologico-inicial` (`[...NEUROLOGICO_A,
+   * ...GLICEMIA_A]`) ⛔ desde alguma fusão anterior.
+   *
+   * ⚠️⚠️ ⛔ Ela sobreviveu ⛔ porque entrada órfã ⛔ não quebra ⛔ nada. ⛔ Quem a
+   * achou foi `prova-avc-cor-do-assunto`, ⛔ na primeira execução — ⛔ e ⛔ é
+   * ⛔ exatamente para isso que a conferência de órfãs existe.
+   */
+  "neurologico-inicial": { icone: "neuro", cor: "debt" },
+  exposicao: { icone: "exposicao", cor: "primary" },
+  /** ⚠️ ⛔ O MESMO âmbar de `basais`: ⛔ é o **mesmo peso**, ⛔ em outra tela. */
+  peso: { icone: "peso", cor: "warning" },
+  crise: { icone: "crise", cor: "warning" },
+  monitorizacao: { icone: "monitorizacao", cor: "primary" },
+
+  /* ── Avaliação AVC (neurológico) ─────────────────────────────────────────
+   *
+   * ⚠️ ⛔ O roxo se repete ⛔ aqui, ⛔ e ⛔ não por falta de cor: ⛔ esta tela **é**
+   * o cérebro, ⛔ e o módulo ⛔ já é roxo no hub (`AREA_PALETTE.AVC`).
+   */
+  cronologia: { icone: "tempo", cor: "info" },
+  exame: { icone: "neuro", cor: "debt" },
+  nihss: { icone: "neuro", cor: "debt" },
+  "nihss-de-fora": { icone: "neuro", cor: "debt" },
+  decisao: { icone: "ultimaVezBem", cor: "debt" },
+  basal: { icone: "paciente", cor: "info" },
+  funcional: { icone: "paciente", cor: "info" },
+  /** ⚠️ Sangramento cerebral prévio ⛔ é dano — ⛔ o mesmo critério de `alergias`. */
+  "antecedentes-intracranianos": { icone: "neuro", cor: "critical" },
+  "antecedentes-sistemicos": { icone: "circulacao", cor: "primary" },
+  procedimentos: { icone: "seguranca", cor: "warning" },
+  microssangramentos: { icone: "seguranca", cor: "critical" },
+
+  /* ── Segurança ⛔ e laboratório ───────────────────────────────────────────*/
+  juizo: { icone: "seguranca", cor: "warning" },
+  consultas: { icone: "consulta", cor: "primary" },
+  coleta: { icone: "laboratorio", cor: "info" },
+};
+
+export function assuntoDoBloco(id: string | undefined): Assunto | undefined {
+  return id === undefined ? undefined : ASSUNTO_DO_BLOCO[id];
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
  * 2 · SEÇÃO — filete, ⛔ e ⛔ NÃO barra preenchida
  * ────────────────────────────────────────────────────────────────────────── */
 
@@ -104,12 +257,50 @@ export function Icone({
  * ⚠️ A barra roxa cheia dava a cada bloco o peso de um título de tela. ⛔ Com
  * seis blocos, ⛔ nenhum deles era hierarquia — eram seis pesos iguais.
  */
-export function Secao({ titulo, testID }: { titulo: string; testID?: string }) {
+export function Secao({
+  titulo,
+  testID,
+  assunto,
+}: {
+  titulo: string;
+  testID?: string;
+  /**
+   * ⚠️⚠️ ⛔ O **id do bloco** — ⛔ mesma chave, mesmo selo ⛔ e mesma cor do
+   * `CabecalhoDeBloco`. ⛔ Duas formas de cabeçalho ⛔ não podem ser dois
+   * vocabulários de cor: ⛔ é a **mesma tabela** que serve as duas.
+   */
+  assunto?: string;
+}) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
+  const tema = useTheme();
+  const a = assuntoDoBloco(assunto);
+  const cor = a === undefined ? undefined : tema.cores[a.cor];
   return (
     <View style={e.secao} testID={testID}>
-      <Text style={e.secaoTitulo}>{tr(titulo)}</Text>
+      <View style={e.secaoLinha}>
+        {a === undefined || cor === undefined ? null : (
+          <View
+            style={[e.secaoSelo, { backgroundColor: tingir(cor, tema.cores.surface, 0.14) }]}
+            /**
+             * ⚠️⚠️ ⛔ SEM `testID` QUANDO A SEÇÃO ⛔ NÃO TEM UM — ⛔ e ⛔ não um
+             * literal de reserva: ⛔ as superfícies A, B ⛔ e D põem o `testID` na
+             * **View de fora**, ⛔ então um `"secao-selo"` fixo daria ⛔ dezenas
+             * de nós com a mesma identidade ⛔ e ⛔ nenhum teste conseguiria
+             * apontar para um ⛔ deles.
+             */
+            testID={testID === undefined ? undefined : `${testID}-selo`}
+          >
+            <Icone nome={a.icone} tamanho={15} cor={cor} />
+          </View>
+        )}
+        <Text style={e.secaoTitulo}>{tr(titulo)}</Text>
+      </View>
+      {/**
+        * ⚠️ ⛔ O filete segue **sem tamanho** — ⛔ ele foi zerado por decisão em
+        * 2026, ⛔ e ⛔ a cor por assunto ⛔ não é motivo para reabrir aquilo:
+        * ⛔ quem passou a dizer de que assunto é o bloco é o **selo**.
+        */}
       <View style={e.secaoFilete} />
     </View>
   );
@@ -1375,6 +1566,15 @@ const criarEstilos = (tema: Tema) =>
      * ⛔ continua inteiro, ⛔ e quebra em linhas.
      */
     secao: { flexShrink: 1 },
+    /** ⚠️ Selo ⛔ e título na mesma linha — ⛔ o selo ⛔ nunca fica sozinho (**E-15**). */
+    secaoLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm },
+    secaoSelo: {
+      width: 26,
+      height: 26,
+      borderRadius: RAIO.botao,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     secaoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flexShrink: 1 },
     secaoFilete: { width: 0, height: 0 },
 

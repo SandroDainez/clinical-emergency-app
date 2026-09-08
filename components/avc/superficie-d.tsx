@@ -256,16 +256,19 @@ export default function SuperficieD({
                 onPress={() => alternar(grupo.id)}
               >
                 <View style={e.cabecalhoNome} testID={`avc-bloco-${grupo.id}`}>
-                  <Secao titulo={grupo.titulo} />
+                  <Secao titulo={grupo.titulo} assunto={grupo.id} />
                 </View>
                 <View style={fechado ? null : e.giradoParaBaixo}>
                   <Icone nome="adiante" tamanho={14} />
                 </View>
               </Pressable>
             ) : (
+              /**
+               * ⚠️ ⛔ O ícone solto saiu: ⛔ quem desenha ícone ⛔ e cor ⛔ agora é
+               * o **selo do assunto**, ⛔ igual em todas as superfícies.
+               */
               <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
-                <Icone nome="seguranca" tamanho={14} />
-                <Secao titulo={grupo.titulo} />
+                <Secao titulo={grupo.titulo} assunto={grupo.id} />
               </View>
             )}
             {/**

@@ -31,7 +31,7 @@ import { leiturasDaSuperficieA, pressaoArterialMedia } from "../../avc/nucleo/de
 import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
-import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
+import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { useTr } from "../../lib/use-tr";
@@ -60,13 +60,11 @@ const SIMBOLO_DO_TOM: Readonly<Record<string, string>> = {
 };
 import {
   Achados,
-  Icone,
   LeiturasEmBlocos,
   Numero,
   Recolhido,
   Secao,
   Segmentado,
-  type NomeDeIcone,
 } from "./ui";
 import { useFoco } from "./sistema/foco";
 
@@ -83,40 +81,19 @@ type Props = {
 };
 
 /**
- * ⚠️ O ícone de cada bloco é DECLARADO, ⛔ e ⛔ não escolhido no meio do JSX.
- * ⛔ Bloco sem ícone declarado simplesmente ⛔ não ganha um — ⛔ nada de
- * improvisar símbolo para um grupo novo.
+ * ── ⚠️⚠️⚠️ AS DUAS TABELAS DESTE BLOCO MUDARAM DE CASA — 2026-09-08 ─────────
+ *
+ * ⛔ `COR_DO_GRUPO` ⛔ e `ICONE_DO_GRUPO` moravam ⛔ aqui, ⛔ e ⛔ serviam ⛔ só
+ * esta tela. ⚠️ Elas ⛔ agora são `ASSUNTO_DO_BLOCO`, em `./ui` — ⛔ **a mesma
+ * tabela para o módulo inteiro**.
+ *
+ * ⚠️⚠️ ⛔ O MOTIVO ⛔ NÃO FOI ARRUMAÇÃO: ⛔ o autor voltou em 2026-09-08 com o
+ * ⛔ mesmo relato de 2026-09-06 — *"está tudo da mesma cor"* — ⛔ olhando
+ * ⛔ **outra** superfície. ⚠️ A correção existia ⛔ e ⛔ não alcançava as demais,
+ * ⛔ porque ⛔ ela estava trancada dentro deste arquivo.
+ *
+ * ⚠️ ⛔ Os seis valores atravessaram **sem revisão** — ⛔ ver a nota na tabela.
  */
-/**
- * ⚠️⚠️ A COR DO BLOCO — acrescentada em 2026-09-06.
- *
- * ⛔ Relato do autor: *"tudo muito cinza ainda, tudo fica parecido ⛔ e
- * confunde"*. ⚠️ Nas referências, cada domínio tem a sua cor de reconhecimento
- * — ⛔ e é ela que deixa o olho achar *"pressão"* ⛔ sem ler todos os títulos.
- *
- * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO É COR-COMO-ESTADO (**E-15**): ⛔ ela ⛔ não diz se está
- * bom ⛔ ou ruim, ⛔ nem muda quando o valor muda. ⛔ Ela identifica **de que
- * assunto se trata**, ⛔ e o título escrito ao lado diz o mesmo.
- *
- * ⛔ Bloco sem cor declarada fica neutro — ⛔ nada de improvisar cor nova no JSX.
- */
-const COR_DO_GRUPO: Readonly<Record<string, "critical" | "info" | "success" | "warning" | "debt" | "primary">> = {
-  "via-aerea": "info",
-  respiracao: "info",
-  pressao: "critical",
-  glicemia: "debt",
-  peso: "warning",
-  crise: "warning",
-};
-
-const ICONE_DO_GRUPO: Readonly<Record<string, NomeDeIcone>> = {
-  "via-aerea": "viaAerea",
-  respiracao: "respiracao",
-  pressao: "circulacao",
-  glicemia: "glicemia",
-  peso: "peso",
-  crise: "crise",
-};
 
 export default function SuperficieA({
   estado,
@@ -129,7 +106,6 @@ export default function SuperficieA({
 }: Props) {
   const tr = useTr();
   const foco = useFoco();
-  const tema = useTheme();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
@@ -248,14 +224,7 @@ export default function SuperficieA({
               * preenchida, ⛔ nenhum era hierarquia — eram seis pesos iguais.
               */}
             <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
-              {ICONE_DO_GRUPO[grupo.id] ? (
-                <Icone
-                  nome={ICONE_DO_GRUPO[grupo.id]}
-                  tamanho={18}
-                  cor={COR_DO_GRUPO[grupo.id] ? tema.cores[COR_DO_GRUPO[grupo.id]] : undefined}
-                />
-              ) : null}
-              <Secao titulo={grupo.titulo} />
+              <Secao titulo={grupo.titulo} assunto={grupo.id} />
             </View>
 
             {/**

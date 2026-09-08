@@ -174,7 +174,7 @@ export default function SuperficieB({
               }
             >
               <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
-                <Secao titulo={grupo.titulo} />
+                <Secao titulo={grupo.titulo} assunto={grupo.id} />
                 {recolhivel ? (
                   <Text style={e.abrir}>{aberto ? "⌃" : "⌄"}</Text>
                 ) : null}

@@ -109,10 +109,20 @@ export default function SuperficiePaciente({
                   titulo={grupo.titulo}
                   aberto={!fechado}
                   testID={`avc-bloco-${grupo.id}`}
+                  assunto={grupo.id}
                 />
               </Pressable>
             ) : (
-              <CabecalhoDeBloco titulo={grupo.titulo} testID={`avc-bloco-${grupo.id}`} />
+              /**
+                * ⚠️⚠️ ⛔ O `assunto` É O **id do grupo** — ⛔ e ⛔ é ele que traz
+                * ícone ⛔ e cor. ⛔ Cinco blocos brancos idênticos era o relato do
+                * autor: *"está tudo da mesma cor"*.
+                */
+              <CabecalhoDeBloco
+                titulo={grupo.titulo}
+                testID={`avc-bloco-${grupo.id}`}
+                assunto={grupo.id}
+              />
             )}
             {grupo.nota ? (
               <Text style={e.grupoNota} testID={`avc-grupo-nota-${grupo.id}`}>

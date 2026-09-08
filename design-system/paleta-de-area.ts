@@ -166,6 +166,20 @@ function mistura(cor: string, fundo: string, p: number): string {
   return "#" + c.map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * ⚠️⚠️ TINGIR — a MESMA mistura, aberta para quem tem a cor na mão.
+ *
+ * ⛔ As três derivações acima recebem uma **etiqueta de área** e vão buscar a cor
+ * na paleta. ⚠️ Quem já tem a cor — um acento do tema, por exemplo — não tinha
+ * como tingir sem reescrever a função, ⛔ e reescrevê-la seria a segunda cópia
+ * que este arquivo inteiro existe para impedir.
+ *
+ * ⚠️ ⛔ Ela ⛔ não escolhe cor ⛔ nenhuma: recebe as duas ⛔ e devolve a mistura.
+ */
+export function tingir(cor: string, fundo: string, proporcao: number): string {
+  return mistura(cor, fundo, proporcao);
+}
+
 /** O fundo do card: a cor da categoria a 7% sobre a superfície do tema. */
 export function fundoDoCard(areaLabel: string, surface: string): string {
   return mistura(getPalette(areaLabel).accent, surface, TINGIMENTO);

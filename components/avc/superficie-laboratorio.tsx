@@ -131,6 +131,7 @@ export default function SuperficieLaboratorio({
                 titulo={`${tr("Coleta")} ${i + 1}`}
                 testID={`avc-coleta-cabecalho-${coleta.id}`}
                 aberto={!fechada}
+                assunto="coleta"
               />
             </Pressable>
 

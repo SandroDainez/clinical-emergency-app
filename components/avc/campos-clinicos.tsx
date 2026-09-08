@@ -33,9 +33,9 @@ import { definicaoDoAchado } from "../../avc/conteudo/explicacoes";
 import type { Leitura } from "../../avc/nucleo/leitura";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import SeletorDeHora from "./seletor-de-hora";
-import { LinhaDeRelogio, type NomeDeIcone } from "./ui";
-import { getPalette } from "../../design-system/paleta-de-area";
-import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { assuntoDoBloco, Icone, LinhaDeRelogio, type NomeDeIcone } from "./ui";
+import { getPalette, tingir } from "../../design-system/paleta-de-area";
+import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
@@ -98,9 +98,16 @@ export function CabecalhoDeBloco({
   titulo,
   testID,
   aberto,
+  assunto,
 }: {
   titulo: string;
   testID?: string;
+  /**
+   * ⚠️⚠️ ⛔ O **id do bloco**, ⛔ e ⛔ ele é quem traz cor ⛔ e ícone
+   * (`ASSUNTO_DO_BLOCO`). ⛔ Sem ele o cabeçalho desenha ⛔ exatamente como
+   * sempre desenhou — ⛔ a tabela cresce por decisão, ⛔ e ⛔ não por varredura.
+   */
+  assunto?: string;
   /**
    * ⚠️⚠️ SÓ PARA CABEÇALHO QUE ABRE E FECHA — e aí ele é **obrigatório**.
    *
@@ -126,9 +133,29 @@ export function CabecalhoDeBloco({
    * ⚠️ ⛔ A diferença de forma é a informação: **o que tem moldura, abre**.
    */
   const abrivel = aberto !== undefined;
+  /**
+   * ⚠️⚠️⚠️ ⛔ O SELO DO ASSUNTO — ⛔ ícone na cor do bloco, ⛔ e ⛔ o fundo é a
+   * **mesma cor** a 14% sobre o card. ⛔ Duas cores para o mesmo assunto seriam
+   * duas coisas a manter em sincronia (a doutrina de `paleta-de-area`).
+   *
+   * ⚠️ ⛔ E ⛔ ele ⛔ não substitui o título: ⛔ o nome do bloco fica ⛔ ao lado,
+   * ⛔ e ⛔ é ⛔ ele quem diz o que é (**E-15**).
+   */
+  const tema = useTheme();
+  const a = assuntoDoBloco(assunto);
+  const cor = a === undefined ? undefined : tema.cores[a.cor];
   return (
     <View style={[e.blocoCabecalho, abrivel && e.blocoCabecalhoAbrivel]} testID={testID}>
-      <View style={e.blocoBarra} />
+      {a === undefined || cor === undefined ? (
+        <View style={e.blocoBarra} />
+      ) : (
+        <View
+          style={[e.blocoSelo, { backgroundColor: tingir(cor, tema.cores.surface, 0.14) }]}
+          testID={`${testID ?? "bloco"}-selo`}
+        >
+          <Icone nome={a.icone} tamanho={15} cor={cor} />
+        </View>
+      )}
       <Text style={e.blocoTitulo}>{tr(titulo)}</Text>
       {aberto === undefined ? null : (
         <Text style={e.blocoEstado} testID={`${testID ?? "bloco"}-estado`}>
@@ -1732,6 +1759,21 @@ export const criarEstilos = (tema: Tema) =>
     },
     /** ⛔ Sem barra de acento: ⛔ não há mais faixa em que ela se apoie. */
     blocoBarra: { width: 0, height: 0 },
+    /**
+     * ⚠️⚠️ ⛔ O SELO ⛔ NÃO É A BARRA DE ACENTO QUE SAIU DAQUI.
+     *
+     * ⛔ A barra era uma **faixa vertical** que precisava de uma faixa em que se
+     * apoiar, ⛔ e ⛔ ela ⛔ não tinha mais. ⚠️ O selo é **quadrado ⛔ e carrega
+     * ícone**: ⛔ ele ⛔ não depende de faixa ⛔ nenhuma, ⛔ e ⛔ diz **de que
+     * assunto é o bloco** — ⛔ que é informação, ⛔ e ⛔ não acabamento.
+     */
+    blocoSelo: {
+      width: 26,
+      height: 26,
+      borderRadius: RAIO.botao,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     blocoTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flex: 1 },
     /** ⚠️ Só quem abre ganha moldura — ⛔ e é a moldura que convida o toque. */
     /**
