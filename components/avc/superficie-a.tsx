@@ -442,7 +442,16 @@ export default function SuperficieA({
               * ⛔ ausência ⛔ não vira zero, ⛔ e ⛔ nem travessão com cara de
               * medida.
               */}
-            {grupo.id === "pressao" && pam !== undefined ? (
+            {/**
+              * ⚠️⚠️ ⛔ RECOLHIDO É **RECOLHIDO** — 2026-09-08, revisão em 375 px.
+              *
+              * ⛔ ⛔ A PAM ⛔ e o *"Nova medida"* ficavam ⛔ na tela com o eixo
+              * fechado: ⛔ eles ⛔ não são campo, ⛔ e ⛔ escaparam do recorte.
+              * ⚠️ ⛔ Um bloco *"fechado"* que continua mostrando derivada ⛔ e
+              * botão de gesto ⛔ não está fechado — ⛔ e desmente o resumo
+              * ⛔ logo acima.
+              */}
+            {!aberto ? null : grupo.id === "pressao" && pam !== undefined ? (
               <View style={e.derivada} testID="avc-pam">
                 <Text style={e.derivadaRotulo}>{tr("Pressão arterial média")}</Text>
                 <Text style={e.derivadaValor}>{pam}</Text>
@@ -457,7 +466,7 @@ export default function SuperficieA({
               * como distinguir *"o paciente foi medido de novo"* de *"aquele
               * valor ⛔ nunca foi verdade"*.
               */}
-            {grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
+            {aberto && grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
               <Pressable
                 style={e.novaMedida}
                 accessibilityRole="button"

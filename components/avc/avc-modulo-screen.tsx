@@ -1136,7 +1136,24 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * ⚠️ ⛔ Ausência é **neutra** ⛔ e escrita — ⛔ nunca âmbar, ⛔ nunca
                 * vazia (**E-37**).
                 */}
-              <Text style={s.ameacaEstado} numberOfLines={2}>
+              {/**
+                * ── ⚠️⚠️⚠️ ⛔ SEM CORTE — 2026-09-08, revisão em 375 px ────────
+                *
+                * ⛔ ⛔ Havia `numberOfLines={2}`, ⛔ e a frase de C precisava de
+                * **três**: *"a fonte diz para baixar a pressão antes de
+                * iniciar a trombólise, para…"* — ⛔ o corte comia
+                * ⛔ **«reduzir complicações hemorrágicas»**, ⛔ que é o
+                * **porquê** da conduta.
+                *
+                * ⚠️⚠️ ⛔ Medido, ⛔ e ⛔ não olhado: `scrollHeight` 102 contra
+                * `clientHeight` 34.
+                *
+                * ⚠️ ⛔ Frase de fonte ⛔ não se trunca — ⛔ é a mesma regra do
+                * *"nome clínico ⛔ nunca trunca"*: ⛔ quem cede espaço é a
+                * moldura, ⛔ e ⛔ não o que a fonte diz. ⛔ O tile cresce, ⛔ e a
+                * grade acompanha.
+                */}
+              <Text style={s.ameacaEstado}>
                 {/**
                   * ── ⚠️⚠️ CONCLUÍDO ⛔ E ⛔ SEM DADO — ajuste do autor, 2026-09-07
                   *
@@ -2207,7 +2224,25 @@ const criarEstilos = (tema: Tema) =>
      * filete, ⛔ e ⛔ não por outro cartão dentro do cartão.
      */
     /** ⚠️ O progresso é **secundário** — ⛔ ele ⛔ não compete com o estado clínico. */
-    ameacaProgresso: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ PROGRESSO ⛔ NÃO PODE PARECER CLÍNICA — 2026-09-08 ──────────
+     *
+     * ⛔ ⛔ Na revisão em 375 px, *"Não avaliado"* (clínica) ⛔ e *"Em
+     * andamento"* (progresso) ficavam com o **mesmo peso ⛔ e a mesma cor**,
+     * ⛔ uma embaixo da outra — ⛔ e ⛔ o médico ⛔ não tinha como saber que ⛔ são
+     * coisas de naturezas diferentes.
+     *
+     * ⚠️ `PAPEL.micro` ⛔ já diz de si mesmo: *"o menor degrau — selo, aba,
+     * marcador. ⛔ **⛔ Nunca para conteúdo clínico**"*. ⚠️ A caixa alta ⛔ e o
+     * espaçamento **fecham a diferença** — ⛔ é o mesmo idioma que o app usa
+     * para etiqueta ⛔ que ⛔ não é achado.
+     */
+    ameacaProgresso: {
+      ...PAPEL.micro,
+      color: tema.cores.textSecondary,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+    },
 
     /** ⚠️ A fileira de concluir — ⛔ uma por letra, ⛔ e ⛔ sem ordem imposta. */
     cockpitAcoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs, marginTop: ESPACO.sm },
