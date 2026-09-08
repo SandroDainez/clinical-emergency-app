@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**91 de 105 travas com declaração completa.**
+**92 de 106 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -665,6 +665,12 @@ _não executa script em scripts/ (e2e, playwright)_
 ## `build:web:teste`
 
 _não executa script em scripts/ (e2e, playwright)_
+
+## `test:ambiente:teste` → `scripts/prova-ambiente-coerente.cjs`
+
+- **PROMETE:** · que ⛔ toda `EXPO_PUBLIC_*` citada no código do app esteja **classificada** — ⛔ ou ela decide o primeiro quadro, ⛔ ou ⛔ não decide, ⛔ e ⛔ o motivo fica escrito. ⛔ Variável nova ⛔ sem classificação **reprova**; · que ⛔ toda variável que **decide o primeiro quadro** ⛔ e que o ambiente do build define apareça, com o mesmo valor, ⛔ dentro do bundle do cliente; · que ⛔ nenhuma delas apareça no bundle quando o ambiente do build **⛔ não a define** — ⛔ conferível para quem declara `assinatura`; · o **canário do Supabase**: `guarda-cobertura` no HTML pré-renderizado ⛔ **↔** a forma do módulo `supabase` no bundle. ⛔ Os dois lados têm de dizer a mesma coisa sobre haver backend.
+- **NÃO PROMETE:** que o valor esteja **certo** — ⛔ isso é configuração, ⛔ e ⛔ não coerência. ⛔ E ⛔ **⛔ não** promete achar divergência de variável ⛔ sem `assinatura` no caso "ambiente vazio, bundle sujo": ⛔ ⛔ não dá para provar a ausência de um literal que ⛔ ninguém sabe qual é. ⚠️ ⛔ Para essas, quem avisa é o canário.
+- **UNIVERSO:** `dist/` (⛔ ou o diretório passado como argumento) × o ambiente que o build enxergou × as cinco pastas de código do app. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA — ⛔ MEDIDO, 2026-09-08 ───────────── ⛔ ⛔ `EXPO_PUBLIC_*` é **inlinada na transformação**, ⛔ e por isso entra no cache do Metro (`$TMPDIR/metro-cache`). ⚠️⚠️ ⛔ **A chave desse cache ⛔ não inclui o valor da variável**: ⛔ o módulo ⛔ não mudou de conteúdo, ⛔ então o Metro devolve a transformação antiga ⛔ com o literal antigo. ⛔ O **pré-render** avalia `process.env` ⛔ na hora de renderizar, ⛔ sem passar por esse cache. ⚠️⚠️ ⛔ Resultado: **⛔ o mesmo artefato nasce com duas verdades** ⛔ sempre que o cache foi aquecido sob ⛔ outro ambiente. ⛔ Medido nos dois sentidos: ⛔ cache sem env → export **com** env, ⛔ sem `--clear` pré-render **vê** Supabase · bundle `null` ⛔ cache com env → export **sem** env, ⛔ sem `--clear` pré-render ⛔ **não** vê · bundle `createClient(<url>)` ⛔ ⛔ O segundo é o pior: ⛔ um build feito **de propósito sem ambiente** embarca a URL do Supabase. ⚠️ ⛔ `EXPO_NO_DOTENV=1` sozinho ⛔ **⛔ não** protege disso. ⚠️ A correção é `--clear` em ⛔ todo export; ⛔ esta trava é o que garante que ⛔ ela continue lá — ⛔ e que a classe inteira, ⛔ e ⛔ não o Supabase, siga conferida.
 
 ## `test:e2e`
 
