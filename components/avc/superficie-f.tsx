@@ -48,6 +48,15 @@ import {
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+/**
+ * ⚠️⚠️ ⛔ A LEITURA DO PESO — ⛔ e ⛔ ela é a **mesma função** de sempre.
+ *
+ * ⛔ ⛔ `peso()` é núcleo, ⛔ e ⛔ nunca pertenceu a tela ⛔ nenhuma. ⚠️ O que
+ * mudou em 2026-09-08 foi **onde ⛔ ela é apresentada** (**D-126**): ⛔ ela
+ * saiu da Estabilização junto com o campo, ⛔ e ⛔ não coube em Paciente, que
+ * ⛔ não tem painel de leituras por decisão.
+ */
+import { peso as leituraDoPeso } from "../../avc/nucleo/derivacoes";
 import { ESTADOS } from "../../design-system/estados-clinicos";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
@@ -605,11 +614,44 @@ export default function SuperficieF({
               </Text>
             </>
           ) : (
-            <Text style={e.doseVazia} testID="avc-f-dose-vazia">
-              {tr(
-                "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso."
+            <>
+              <Text style={e.doseVazia} testID="avc-f-dose-vazia">
+                {tr(
+                  "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso."
+                )}
+              </Text>
+              {/**
+                * ── ⚠️⚠️⚠️ **D-126** · A LEITURA DO PESO MORA ⛔ AQUI ────────
+                *
+                * ⚠️ Decisão do autor, 2026-09-08: *"a casa natural é
+                * Reperfusão, porque é ⛔ ali que o peso passa a ter
+                * consequência terapêutica na dose do trombolítico"*.
+                *
+                * ⛔ ⛔ O **fato** continua em Paciente; ⛔ o que aparece ⛔ aqui é
+                * a **interpretação**, ⛔ e ⛔ ela aparece ⛔ quando o fato se
+                * torna relevante — ⛔ que é ⛔ exatamente o instante em que
+                * ⛔ não há dose por falta de peso.
+                *
+                * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO CRIA CONSUMIDOR ⛔ NOVO: ⛔ a Reperfusão
+                * ⛔ já exige `peso` (`exige: ["peso"]`, ⛔ e `pesoKg` no cálculo).
+                * ⛔ A regra de dose ⛔ não foi tocada.
+                *
+                * ⚠️⚠️ ⛔ E ⛔ **⛔ SÓ QUANDO FALTA**: ⛔ com o peso informado a
+                * mesma função devolve *"Peso informado…"*, ⛔ que ⛔ ao lado de
+                * *"Sem peso registrado…"* seriam **duas frases se
+                * contradizendo** na mesma caixa. ⛔ Medido na primeira
+                * execução, ⛔ e ⛔ não previsto.
+                *
+                * ⚠️ ⛔ E ⛔ ela ⛔ não bloqueia: a frase da fonte é
+                * *"⛔ **não atrasar** terapia tempo-dependente"* — ⛔ é o
+                * contrário de portão.
+                */}
+              {leituraDoPeso(estado).conclusao !== "desconhecido" ? null : (
+                <Text style={e.doseNaoAtrasa} testID="avc-f-leitura-peso">
+                  {tr(leituraDoPeso(estado).curto)}
+                </Text>
               )}
-            </Text>
+            </>
           )}
         </View>
       </View>
@@ -1612,6 +1654,11 @@ const criarEstilos = (tema: Tema) =>
     },
     doseValor: { ...PAPEL.dose, color: tema.cores.text },
     doseSub: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    /**
+     * ⚠️ **Atenção**, ⛔ e ⛔ não crítico: ⛔ a frase pede para **⛔ não parar**,
+     * ⛔ e pintá-la de vermelho a leria como impedimento.
+     */
+    doseNaoAtrasa: { ...PAPEL.textoSecundario, color: tema.cores.warning },
     doseVazia: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
 
     principio: {

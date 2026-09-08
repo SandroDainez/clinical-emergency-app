@@ -4699,7 +4699,7 @@ ambiente**, ⛔ e ⛔ não silenciar a regra.
 
 ---
 
-## D-126 — ⏸️ ABERTA · A LEITURA DO PESO FICOU ⛔ SEM TELA
+## D-126 — ✅ FECHADA · A LEITURA DO PESO FICOU ⛔ SEM TELA
 
 **Estado:** ⏸️ **ABERTA**, criada em 2026-09-08 pela própria mudança que a
 originou — ⛔ e registrada no mesmo passo, ⛔ e ⛔ não descoberta depois.
@@ -4731,4 +4731,44 @@ decisão de composição, ⛔ e ⛔ não consequência mecânica de mover um cam
    resposta;
 2. **e2e** que prove a frase na tela escolhida;
 3. ⛔ e ⛔ nenhuma segunda cópia: ⛔ a leitura é ⛔ uma, ⛔ e ⛔ ela vem do núcleo.
+
+**FECHADA em 2026-09-08, no mesmo dia**, por decisão do autor: *"a casa natural
+é **Reperfusão**, porque é ⛔ ali que o peso passa a ter consequência
+terapêutica na dose do trombolítico. ⛔ O fato continua em Paciente; a
+interpretação clínica aparece ⛔ quando o fato se torna relevante."*
+
+⚠️ **⛔ Só a apresentação se moveu.** ⛔ `peso()` continua em
+`avc/nucleo/derivacoes.ts`; ⛔ o fato continua em Paciente; ⛔ e ⛔ **nenhum
+consumidor novo nasceu** — a Reperfusão ⛔ já exigia o peso (`exige: ["peso"]`,
+⛔ e `pesoKg` no cálculo). ⛔ A regra de dose ⛔ não foi tocada.
+
+⚠️⚠️ ⛔ E ⛔ ela aparece **⛔ só quando falta**: ⛔ com o peso informado a mesma
+função devolve *"Peso informado…"*, ⛔ que ⛔ ao lado de *"Sem peso
+registrado…"* seriam duas frases se contradizendo na mesma caixa. ⛔ Medido na
+primeira execução, ⛔ e ⛔ não previsto.
+
+Trava: `e2e/avc-leitura-do-peso` (5 garantias) — ⛔ peso único em Paciente,
+⛔ Estabilização ⛔ sem campo ⛔ nem leitura, Reperfusão com a frase ⛔ quando
+falta, ⛔ sem ⛔ ela quando ⛔ não falta, ⛔ e ⛔ nenhum bloqueio novo.
+
+---
+
+## D-127 — ⏸️ ABERTA · O CONTROLE DE PESO EM PACIENTE ⛔ NÃO SEGUE O PADRÃO NOVO
+
+**Estado:** ⏸️ **ABERTA**, registrada em 2026-09-08 a pedido do autor, ⛔ com a
+instrução de ⛔ **não** misturar com a Estabilização: *"deixar peso com um
+controle diferente vai ficar visualmente inconsistente quando você revisar a
+primeira tela. ⛔ Só ⛔ não misturaria isso neste commit."*
+
+**O que é.** Em Paciente o número é desenhado por `NumericStepper`
+(`avc-grandeza-*`); ⛔ na Estabilização, pelo `Numero` de `components/avc/ui`
+(`avc-num-*`), ⛔ que em 2026-09-08 ganhou o padrão responsivo — ⛔ rótulo em
+linha própria, limites com largura reservada, ⛔ e trilho começando ⛔ e
+terminando no mesmo x em ⛔ todos os campos.
+
+**O que ela precisa para fechar:** ⛔ o controle de peso em Paciente reutiliza o
+mesmo componente, ⛔ e o e2e mede — ⛔ como na Estabilização — que ⛔ os sliders
+da tela começam ⛔ e terminam no mesmo x em 375 px.
+
+⚠️ ⛔ Commit isolado, ⛔ de ajuste visual.
 
