@@ -4772,3 +4772,37 @@ da tela começam ⛔ e terminam no mesmo x em 375 px.
 
 ⚠️ ⛔ Commit isolado, ⛔ de ajuste visual.
 
+
+---
+
+## D-128 — ⏸️ ABERTA · `build:web` PRODUZ UM `dist` QUE A SUÍTE ⛔ NÃO CONSEGUE DIRIGIR
+
+**Estado:** ⏸️ **ABERTA**, descoberta em 2026-09-08 **por queda**, ⛔ e ⛔ não
+por leitura: 26 testes de AVC falharam com *"element was detached from the
+DOM"*, ⛔ e a causa ⛔ não era o código — era o **build**.
+
+**O que é.** São dois builds, ⛔ e ⛔ eles ⛔ não são intercambiáveis:
+
+| script | dotenv | Supabase inlinado | `/modulos/avc` |
+| --- | --- | --- | --- |
+| `build:web` | lê `.env.local` | ✅ | ⛔ redireciona para `/` ⛔ sem sessão |
+| `build:web:teste` | `EXPO_NO_DOTENV=1` | ⛔ | ✅ abre |
+
+⚠️⚠️ ⛔ A suíte roda contra `dist/`, ⛔ e ⛔ nada no repositório diz **qual dos
+dois** a produziu. ⛔ Quem reconstrói com `build:web` antes de rodar o e2e vê a
+suíte inteira do AVC cair ⛔ com um erro que ⛔ **⛔ não menciona autenticação**
+— ⛔ e ⛔ o instinto é procurar o defeito na última mudança de código.
+
+⚠️ ⛔ É a mesma família do que já está na memória do autor — *"dev server antigo
+quebra a suíte"*: ⛔ o artefato errado ⛔ falha ⛔ como se fosse regressão.
+
+**O que ela precisa para fechar:** ⛔ que o artefato **se declare**. ⛔ Uma
+marca no `dist` dizendo por qual script ⛔ ele saiu, ⛔ e uma trava no
+`globalSetup` do Playwright que **⛔ para a suíte** ⛔ quando o `dist` ⛔ não é o
+de teste — ⛔ com a frase que diz o que rodar.
+
+⚠️ ⛔ Guarda que ⛔ não morde ⛔ não é guarda: ⛔ a trava tem de ser provada
+⛔ construindo com `build:web` ⛔ e vendo a suíte **recusar rodar**, ⛔ em vez de
+cair em 26 lugares.
+
+⚠️ ⛔ Commit isolado, ⛔ de infraestrutura de teste.

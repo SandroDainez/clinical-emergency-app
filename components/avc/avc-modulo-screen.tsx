@@ -151,6 +151,11 @@ import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/c
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import {
+  CAMPO_DA_ORIGEM_DO_GLASGOW,
+  CAMPO_DE_ITEM_GLASGOW,
+  ORIGEM_DO_GLASGOW,
+} from "../../avc/conteudo/glasgow";
 import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
 import { TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
@@ -604,6 +609,60 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * for refeito depois, a escala é reconfirmada e o novo total entra como novo
    * fato — os dois convivem, e a evolução fica legível (§3.1).
    */
+  /**
+   * ── ⚠️⚠️⚠️ O GLASGOW PELA CALCULADORA — 2026-09-08 ──────────────────────
+   *
+   * ⚠️ Pedido do autor: *"a calculadora coloca no APP o resultado"*. ⛔ Um
+   * gesto só, ⛔ como o NIHSS: ⛔ um fato por componente, ⛔ o total, ⛔ e a
+   * **origem**.
+   *
+   * ⚠️⚠️ ⛔ A ORIGEM É GRAVADA JUNTO, ⛔ e ⛔ não deduzida depois: *"⛔ não
+   * misturar origens silenciosamente"*. ⛔ Deduzir *"calculado"* de
+   * `E+V+M === total` mentiria quando o médico calcula 11 ⛔ e depois digita 11.
+   *
+   * ⛔ ⛔ E ⛔ nada é apagado: a trilha é append-only, ⛔ então o total que veio
+   * antes continua ⛔ lá, ⛔ com a origem que ⛔ ele tinha.
+   */
+  function registrarGlasgow(pontos: Record<string, number>, total: number) {
+    setEstado((e) => {
+      let proximo = e;
+      for (const [item, ponto] of Object.entries(pontos)) {
+        proximo = registrarFato(
+          proximo,
+          { campo: CAMPO_DE_ITEM_GLASGOW(item), valor: ponto },
+          relogio
+        );
+      }
+      proximo = registrarFato(proximo, { campo: "glasgow", valor: total }, relogio);
+      return registrarFato(
+        proximo,
+        { campo: CAMPO_DA_ORIGEM_DO_GLASGOW, valor: ORIGEM_DO_GLASGOW.calculado },
+        relogio
+      );
+    });
+  }
+
+  /**
+   * ⚠️⚠️ O TOTAL **DIGITADO** — ⛔ e ⛔ ele registra a **sua** origem.
+   *
+   * ⛔ ⛔ Sem isto, digitar por cima de um Glasgow calculado deixaria a trilha
+   * dizendo *"calculado"* sobre um número que ⛔ ninguém calculou.
+   *
+   * ⚠️ ⛔ E ⛔ os componentes **⛔ não são apagados**: *"registrar a nova origem
+   * ⛔ sem apagar silenciosamente a trilha anterior"*. ⛔ Divergência entre
+   * total ⛔ e componentes fica **visível**, ⛔ e ⛔ não corrigida sozinha.
+   */
+  function medirGlasgow(campo: string, valor: number) {
+    setEstado((e) => {
+      const comTotal = registrarFato(e, { campo, valor }, relogio);
+      return registrarFato(
+        comTotal,
+        { campo: CAMPO_DA_ORIGEM_DO_GLASGOW, valor: ORIGEM_DO_GLASGOW.informado },
+        relogio
+      );
+    });
+  }
+
   function registrarEscala(pontos: Record<string, number>, total: number) {
     setEstado((e) => {
       let proximo = e;
@@ -1747,6 +1806,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             eixosAbertos={eixosAbertos}
             onAlternarEixo={alternarEixo}
             onConcluirEixo={concluirOuReabrirEixo}
+            pontosDoGlasgow={Object.fromEntries(
+              ["e", "v", "m"]
+                .map((id) => [id, valorAtualDoEstado(estado, CAMPO_DE_ITEM_GLASGOW(id))?.valor])
+                .filter(([, p]) => typeof p === "number") as [string, number][]
+            )}
+            onRegistrarGlasgow={registrarGlasgow}
+            onMedirGlasgow={medirGlasgow}
+            /**
+             * ⚠️ ⛔ A origem sai da **trilha**, ⛔ e ⛔ não de uma dedução: o
+             * fato mais recente de `glasgow_origem` diz por qual caminho o
+             * número entrou.
+             */
+            origemDoGlasgow={
+              typeof valorAtualDoEstado(estado, CAMPO_DA_ORIGEM_DO_GLASGOW)?.valor === "string"
+                ? String(valorAtualDoEstado(estado, CAMPO_DA_ORIGEM_DO_GLASGOW)?.valor)
+                : undefined
+            }
             onEscolher={escolher}
             onMedir={medir}
             onHora={registrarHora}

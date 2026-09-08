@@ -39,6 +39,7 @@ import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
 import { eixoDoGrupo } from "./ui";
+import CalculadoraDeGlasgow from "./calculadora-de-glasgow";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
@@ -107,6 +108,29 @@ type Props = {
    * ⛔ ele ⛔ não afirma normalidade, ⛔ e ⛔ mexe ⛔ só em `eixosConcluidos`.
    */
   onConcluirEixo: (eixo: string) => void;
+  /**
+   * ── ⚠️⚠️⚠️ A CALCULADORA DE GLASGOW — 2026-09-08 ────────────────────────
+   *
+   * ⚠️ ⛔ Os pontos **já registrados**, ⛔ por componente — ⛔ é ⛔ isso que faz
+   * a calculadora reabrir mostrando o que o médico escolheu.
+   */
+  pontosDoGlasgow: Readonly<Record<string, number>>;
+  onRegistrarGlasgow: (pontos: Record<string, number>, total: number) => void;
+  /**
+   * ⚠️⚠️ ⛔ O TOTAL DIGITADO TEM **CAMINHO PRÓPRIO**, ⛔ e ⛔ não é o `onMedir`
+   * comum: ⛔ ele grava também a **origem**, ⛔ para a trilha ⛔ não dizer
+   * *"calculado"* sobre um número que ⛔ ninguém calculou.
+   */
+  onMedirGlasgow: (campo: string, valor: number) => void;
+  /**
+   * ⚠️⚠️ ⛔ A ORIGEM DO TOTAL, **⛔ LIDA NA TELA** — exigência do autor:
+   * *"⛔ não misturar origens silenciosamente"*.
+   *
+   * ⛔ ⛔ Gravar a origem ⛔ e ⛔ não mostrá-la ⛔ ainda seria silêncio: quem lê
+   * *"Glasgow 9"* ⛔ não saberia se ⛔ alguém somou E · V · M ⛔ ou digitou o
+   * número. ⚠️ É o mesmo papel de `peso_origem` na Reperfusão (**E-14**).
+   */
+  origemDoGlasgow?: string;
 };
 
 /**
@@ -163,6 +187,10 @@ export default function SuperficieA({
   eixosAbertos,
   onAlternarEixo,
   onConcluirEixo,
+  pontosDoGlasgow,
+  onRegistrarGlasgow,
+  onMedirGlasgow,
+  origemDoGlasgow,
 }: Props) {
   const tr = useTr();
   const foco = useFoco();
@@ -555,7 +583,18 @@ export default function SuperficieA({
               /* ── números ──────────────────────────────────────────────── */
               if (campo.tipo === "grandeza" && campo.faixa) {
                 return comEtiqueta(
-                  <View key={campo.id} testID={`avc-campo-${campo.id}`} style={e.linhaNumero}>
+                  /**
+                   * ── ⚠️⚠️⚠️ A PILHA, ⛔ E ⛔ NÃO A LINHA — 2026-09-08 ──────
+                   *
+                   * ⛔ ⛔ `linhaNumero` é **`row`**. ⚠️ Pendurar a calculadora
+                   * ⛔ nela espremeu a barra do Glasgow de **249 px para 60**
+                   * — medido pela suíte, ⛔ e ⛔ não visto de olho.
+                   *
+                   * ⚠️ ⛔ Então o controle segue ⛔ na sua linha, ⛔ e ⛔ o que é
+                   * **do Glasgow** desce ⛔ por baixo dela.
+                   */
+                  <View key={campo.id} testID={`avc-campo-${campo.id}`} style={e.pilhaNumero}>
+                    <View style={e.linhaNumero}>
                     <Numero
                       /**
                        * ⚠️⚠️ A BARRA VIVE **AQUI**, ⛔ e ⛔ não no ASPECTS.
@@ -572,7 +611,16 @@ export default function SuperficieA({
                       unidade={campo.unidade}
                       faixa={campo.faixa}
                       gravado={typeof fato?.valor === "number" ? fato.valor : undefined}
-                      onMedir={onMedir}
+                      /**
+                       * ⚠️⚠️ ⛔ O GLASGOW GRAVA TAMBÉM A **ORIGEM** — 2026-09-08.
+                       *
+                       * ⛔ ⛔ Digitar por cima de um total calculado deixaria a
+                       * trilha dizendo *"calculado"* sobre um número que
+                       * ⛔ ninguém calculou. ⚠️ ⛔ Os componentes **⛔ não são
+                       * apagados**: a divergência fica **visível**, ⛔ e ⛔ não
+                       * corrigida sozinha.
+                       */
+                      onMedir={campo.id === "glasgow" ? onMedirGlasgow : onMedir}
                       onDesfazer={onDesfazer}
                     />
                     <Recolhido
@@ -583,6 +631,28 @@ export default function SuperficieA({
                     >
                       <DetalheDoCampo campo={campo} />
                     </Recolhido>
+                    </View>
+                    {/**
+                      * ── ⚠️⚠️⚠️ A CALCULADORA, ⛔ LOGO ABAIXO DO CAMPO ────────
+                      *
+                      * ⚠️ Pedido do autor: *"neurológico ao clicar tem que
+                      * abrir calculadora para o usuário escolher os números"*.
+                      *
+                      * ⛔ ⛔ E o **valor direto continua**: ⛔ a caixa ⛔ e a
+                      * barra seguem ⛔ acima. ⚠️ São **dois caminhos**, ⛔ e ⛔ o
+                      * app registra por qual ⛔ deles o número entrou.
+                      */}
+                    {campo.id !== "glasgow" || !origemDoGlasgow ? null : (
+                      <Text style={e.origem} testID="avc-glasgow-origem">
+                        {tr(origemDoGlasgow)}
+                      </Text>
+                    )}
+                    {campo.id !== "glasgow" ? null : (
+                      <CalculadoraDeGlasgow
+                        pontos={pontosDoGlasgow}
+                        onRegistrar={onRegistrarGlasgow}
+                      />
+                    )}
                   </View>
                 );
               }
@@ -852,6 +922,8 @@ const criarEstilos = (tema: Tema) =>
     },
     concluirNoEixoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ A coluna que guarda a linha ⛔ e o que vem **abaixo** dela. */
+    pilhaNumero: { gap: ESPACO.xs },
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
     /**
      * ⚠️⚠️ ⛔ SEM PUXÃO NEGATIVO — corrigido em 2026-09-06, relato do autor:
