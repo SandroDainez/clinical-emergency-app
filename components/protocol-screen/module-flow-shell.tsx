@@ -6,13 +6,13 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
   type ScrollViewProps,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
 import { useTr } from "../../lib/use-tr";
 import { TEMAS } from "../../design-system/tokens";
+import { useDimensoesDaJanela, useLarguraDaJanela } from "../../lib/dimensoes-da-janela";
 
 type HeroMetric = {
   label: string;
@@ -130,7 +130,7 @@ export function RailDeModulo({
   titulo?: string;
 }) {
   const tr = useTr();
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const lateral = width >= 920;
 
   const lista = (
@@ -228,7 +228,7 @@ export function ModuleFlowHero({
   visualStyle = "classic",
 }: ModuleFlowHeroProps) {
   const tr = useTr();
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const compact = width < 760;
   const phone = width < 430;
   const narrowPhone = width < 390;
@@ -415,7 +415,7 @@ export function ModuleFinishPanel({
   visualStyle = "classic",
 }: ModuleFinishPanelProps) {
   const tr = useTr();
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const compact = width < 760;
   const phone = width < 430;
   const isRsiVisual = visualStyle === "isr";
@@ -534,7 +534,7 @@ export function ModuleFlowLayout({
   visualStyle = "classic",
 }: ModuleFlowLayoutProps) {
   const tr = useTr();
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useDimensoesDaJanela();
   const useSidebar = width >= 920;
   const compact = width < 760;
   const narrowPhone = width < 390;

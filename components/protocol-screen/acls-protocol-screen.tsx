@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { METAS_POR_ESTADO_POS_ROSC } from "../../lib/metas-pos-parada";
 import { OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
 import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../../lib/fv-fina";
@@ -39,6 +39,7 @@ import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 import { useTr } from "../../lib/use-tr";
+import { useLarguraDaJanela } from "../../lib/dimensoes-da-janela";
 
 type AclsProtocolScreenProps = {
   actionButtonLabel: string;
@@ -174,7 +175,7 @@ function AclsProtocolScreen({
 }: AclsProtocolScreenProps) {
   const tr = useTr();
   const ACLS_COPY = getCopy();
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const mobileHeroCompact = width < 560;
   // Mantém a tela acordada durante toda a reanimação (não apaga/bloqueia sozinha).
   useScreenWakeLock(true);

@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   CALC_TOOLS,
   CALC_GROUPS,
@@ -20,6 +20,7 @@ import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 import { RailDeModulo } from "./module-flow-shell";
 import { TEMAS } from "../../design-system/tokens";
+import { useLarguraDaJanela } from "../../lib/dimensoes-da-janela";
 
 const TONE: Record<Tone, { bg: string; border: string; text: string }> = {
   green: { bg: "#11261b", border: "#22c55e", text: "#86efac" },
@@ -30,7 +31,7 @@ const TONE: Record<Tone, { bg: string; border: string; text: string }> = {
 };
 
 export default function ClinicalCalculatorsScreen({ onVoltar }: { onVoltar?: () => void }) {
-  const { width: larguraDaTela } = useWindowDimensions();
+  const larguraDaTela = useLarguraDaJanela();
   const tr = useTr();
   const [toolId, setToolId] = useState<string>(CALC_TOOLS[0].id);
   const [values, setValues] = useState<Record<string, string>>({});

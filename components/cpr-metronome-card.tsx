@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { useLarguraDaJanela } from "../lib/dimensoes-da-janela";
 
 type FeedbackMode = "off" | "haptic" | "sound";
 
@@ -36,7 +37,7 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const beatPulse = useRef(new Animated.Value(1)).current;
   const visAnim = useRef(new Animated.Value(active ? 1 : 0)).current;
   const loopRef = useRef<Animated.CompositeAnimation | null>(null);
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const insets = useSafeAreaInsets();
   const isMobile = width < 600;
 

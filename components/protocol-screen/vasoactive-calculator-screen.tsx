@@ -9,7 +9,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import {
-  useWindowDimensions,
   Modal,
   Pressable,
   ScrollView,
@@ -46,6 +45,7 @@ import { TEMAS } from "../../design-system/tokens";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "../../lib/dobutamina";
+import { useLarguraDaJanela } from "../../lib/dimensoes-da-janela";
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
 type Association = {
@@ -213,7 +213,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
 }
 
 export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: () => void }) {
-  const { width: larguraDaTela } = useWindowDimensions();
+  const larguraDaTela = useLarguraDaJanela();
   const tr = useTr();
   const params = useLocalSearchParams<{
     from_module?: string;

@@ -7,7 +7,6 @@ import {
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 import {
@@ -81,6 +80,7 @@ import {
   faixaPorUnidadeDe,
   type FaixaDeEntrada,
 } from "../../lib/faixas-de-entrada";
+import { useDimensoesDaJanela } from "../../lib/dimensoes-da-janela";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -1921,7 +1921,8 @@ function calculateResult(tr: (pt: string) => string, args: {
 
 export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: () => void }) {
   const tr = useTr();
-  useWindowDimensions();
+  /** ⚠️ Assina o redimensionamento — ⛔ o valor ⛔ não é usado ⛔ aqui. */
+  useDimensoesDaJanela();
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
   const guidelineStatus = moduleGuidelines.length
     ? moduleGuidelines[0]

@@ -1,9 +1,10 @@
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import LanguageSelector from "./language-selector";
 import { tr as trBase } from "../lib/i18n";
 import { useLanguage } from "../lib/language-context";
+import { useLarguraDaJanela } from "../lib/dimensoes-da-janela";
 
 type Props = { onEnter: () => void };
 
@@ -83,7 +84,7 @@ export default function IntroLanding({ onEnter }: Props) {
   const { locale } = useLanguage();
   const tr = (pt: string) => trBase(pt, locale);
 
-  const { width } = useWindowDimensions();
+  const width = useLarguraDaJanela();
   const isWide = width >= 860;
   const cardBasis = isWide ? "48%" : "100%";
 
