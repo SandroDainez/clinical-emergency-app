@@ -329,6 +329,28 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const problemas = useMemo(() => problemasAtivos(estado), [estado]);
 
   /**
+   * ⚠️⚠️⚠️ NA PRIMEIRA TELA, ⛔ SÓ AS PENDÊNCIAS **DELA** — 2026-09-07.
+   *
+   * ⛔ ⛔ Relato do autor: *"as pendências do atendimento só devem aparecer do
+   * que tem nessa tela, porque como ela é a primeira seria impossível aparecer
+   * outras pendências"*.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ A REGRA GERAL ⛔ NÃO MUDOU: nas outras seis superfícies o
+   * alcance segue **global** (**§5.5**, **E-07**) — ⛔ o médico ⛔ não perde de
+   * vista o que falta enquanto trabalha noutra frente.
+   *
+   * ⛔ ⛔ O que muda é ⛔ só a **abertura**: uma lista de tarefas de seis fases
+   * adiante, ⛔ antes de o atendimento ter começado, ⛔ não orienta — ⛔ ela
+   * confunde.
+   */
+  const pendenciasVisiveis = useMemo(
+    () => estado.superficieVista === "paciente"
+      ? problemas.filter((p) => p.dono === "paciente")
+      : problemas,
+    [problemas, estado.superficieVista]
+  );
+
+  /**
    * ⚠️ ⛔ `informadosEmA` foi removido em 2026-09-06: contava campos preenchidos
    * da Superfície A ⛔ e ⛔ nunca era lido. ⚠️ O que ele prometia — *"ver o que
    * falta"* — hoje é dito pelo cabeçalho da fase (*"N a resolver aqui"*) ⛔ e
@@ -761,14 +783,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * que **E-23** existe para impedir.
            */
           marcador={`${tr("Atendimento aberto há")} ${abertoHaMin ?? 0} ${tr("min")}`}
-          relogio={{
-            rotulo: "Última vez bem",
-            valor:
-              lkwMin === undefined
-                ? undefined
-                : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
-            onTocar: () => irParaCampo("hora_ultima_vez_bem"),
-          }}
+          /**
+           * ⚠️⚠️⚠️ ⛔ O RELÓGIO ⛔ NÃO ABRE O ATENDIMENTO — 2026-09-07.
+           *
+           * ⚠️ Decisão do autor, na inspeção clínica: *"isso aqui sai daqui
+           * também"*.
+           *
+           * ⛔ ⛔ *"Definir · Última vez bem"* era a coisa **mais chamativa** da
+           * primeira tela — botão azul, ⛔ acima do título —, ⛔ e a cronologia
+           * mora na **Avaliação AVC** desde a Fase 4. ⚠️ ⛔ A abertura pergunta
+           * *quem é o paciente*; ⛔ o marco temporal vem depois.
+           *
+           * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO SOME DO ATENDIMENTO: ⛔ o relógio segue no
+           * cabeçalho das **seis** superfícies seguintes, ⛔ com a mesma
+           * contagem ⛔ e o mesmo toque — ⛔ perder o tempo de vista é o defeito
+           * que **§7.8** proíbe, ⛔ e ⛔ ele ⛔ não foi reintroduzido.
+           */
+          relogio={
+            estado.superficieVista === "paciente"
+              ? undefined
+              : {
+                  rotulo: "Última vez bem",
+                  valor:
+                    lkwMin === undefined
+                      ? undefined
+                      : `${Math.floor(lkwMin / 60)}h${String(lkwMin % 60).padStart(2, "0")}`,
+                  onTocar: () => irParaCampo("hora_ultima_vez_bem"),
+                }
+          }
           onSair={voltarUmPasso}
           /**
            * ⚠️ O rótulo diz **para onde** volta — ⛔ quem lê *"Voltar"* num app
@@ -1145,6 +1187,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             </View>
           )}
       </View>
+      ) : estado.superficieVista === "paciente" ? (
+        /**
+         * ⚠️⚠️⚠️ ⛔ NA PRIMEIRA TELA, ⛔ NEM A FAIXA COMPACTA — 2026-09-07.
+         *
+         * ⚠️ Decisão do autor, na inspeção clínica: *"isso aqui também deve
+         * estar na página de estabilização"*.
+         *
+         * ⛔ ⛔ Os cinco eixos A/B/C/D/E são o trabalho da **Estabilização**.
+         * ⚠️ Na abertura ⛔ eles ⛔ **⛔ não têm o que resumir** — ⛔ nada foi
+         * avaliado ⛔ ainda —, ⛔ e cinco cards de *"— não avaliado"* ocupavam
+         * o topo antes da primeira pergunta sobre **quem é o paciente**.
+         *
+         * ⚠️⚠️ ⛔ E O CONTEXTO PERSISTENTE ⛔ NÃO SE PERDE: ⛔ ele reaparece nas
+         * **seis** superfícies seguintes, ⛔ como já reaparecia — ⛔ PA ⛔ e
+         * glicemia ⛔ não somem do atendimento.
+         */
+        null
       ) : (
         /**
          * ⚠️⚠️ A FORMA COMPACTA CARREGA **OS QUATRO EIXOS**, ⛔ e ⛔ não ⛔ só as
@@ -1234,6 +1293,18 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          * faz o médico concluir que o toque ⛔ não funcionou.
          */
         : estado.superficieVista === "imagem" ? null
+        /**
+         * ⚠️⚠️ ⛔ E EM **PACIENTE** TAMBÉM ⛔ NÃO — 2026-09-07.
+         *
+         * ⛔ ⛔ A primeira tela do atendimento abria com *"Solicitar a
+         * tomografia"* por cima dos dados basais. ⚠️ ⛔ A prioridade da imagem
+         * é real, ⛔ e ⛔ ela ⛔ não é a pergunta desta tela: ⛔ aqui se responde
+         * **quem é o paciente**.
+         *
+         * ⚠️ ⛔ Ela ⛔ não some do atendimento — ⛔ aparece nas seis superfícies
+         * seguintes, ⛔ como já aparecia.
+         */
+        : estado.superficieVista === "paciente" ? null
         : estado.superficieVista !== "estabilizacao" ? (
         <Pressable
           onPress={() => abrir("imagem")}
@@ -1344,6 +1415,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * ⚠️⚠️ ⛔ E O RELÓGIO ⛔ NÃO DEPENDE DELA: ele vive no **cabeçalho fixo**,
         * fora do ScrollView. ⛔ Descer a grade ⛔ não esconde o tempo (§7.8).
         */}
+      {/**
+        * ⚠️⚠️ ⛔ O RESUMO ⛔ NÃO ABRE O ATENDIMENTO — 2026-09-07.
+        *
+        * ⛔ ⛔ *"Escala e imagem"* mostrava NIHSS ⛔ e imagem **na primeira
+        * tela**, ⛔ antes de existir escala ⛔ ou imagem. ⚠️ ⛔ Um resumo de
+        * ⛔ nada, ocupando a abertura.
+        */}
+      {estado.superficieVista === "paciente" ? null : (
       <View style={s.cartao} testID="avc-resumo">
         <CardHeader
           /**
@@ -1372,6 +1451,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         />
         <VitalGrid vitais={sinaisVitais} />
       </View>
+      )}
 
       <View style={s.cockpit} testID="avc-cockpit-detalhe">
         {/**
@@ -1504,14 +1584,38 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         </View>
 
         {atual.id === "paciente" ? (
-          <SuperficiePaciente
-            estado={estado}
-            agora={agora}
-            onEscolher={escolher}
-            onMedir={medir}
-            onHora={registrarHora}
-            onDesfazer={desfazer}
-          />
+          <>
+            <SuperficiePaciente
+              estado={estado}
+              agora={agora}
+              onEscolher={escolher}
+              onMedir={medir}
+              onHora={registrarHora}
+              onDesfazer={desfazer}
+            />
+            {/**
+              * ⚠️⚠️⚠️ O PRÓXIMO PASSO — ⛔ e ⛔ ele é **sugestão**, ⛔ não porta.
+              *
+              * ⚠️ Decisão do autor, 2026-09-07: *"⛔ não bloquear o médico de
+              * navegar manualmente, ⛔ mas a progressão normal deve respeitar
+              * essa ordem"*.
+              *
+              * ⛔ ⛔ Por isso ⛔ ele ⛔ **⛔ não** condiciona a ⛔ nada estar
+              * preenchido: ⛔ *"Paciente concluído"* ⛔ não significa paciente
+              * normal — ⛔ significa que os dados basais foram revistos. ⛔ E a
+              * barra inferior continua levando a ⛔ qualquer fase (**E-11**).
+              */}
+            <Pressable
+              style={({ pressed }) => [s.proximoEixo, pressed ? s.pressionado : null]}
+              accessibilityRole="button"
+              accessibilityLabel={tr("Próximo: Estabilização")}
+              testID="avc-paciente-proximo"
+              onPress={() => abrir("estabilizacao")}
+            >
+              <Text style={s.proximoEixoTexto}>{tr("Próximo: Estabilização")}</Text>
+              <Text style={s.proximoEixoSeta}>›</Text>
+            </Pressable>
+          </>
         ) : atual.id === "estabilizacao" ? (
           <SuperficieA
             estado={estado}
@@ -1716,13 +1820,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * global** (§5.5, E-07), para o médico ⛔ não perder de vista o que falta
           * enquanto trabalha noutra frente. O que faltava era DIZER isso.
           */}
+        {/**
+          * ⚠️⚠️ ⛔ A NOTA ⛔ NÃO PODE MENTIR: ⛔ em Paciente a lista é ⛔ só
+          * desta tela, ⛔ e dizer *"de todas as superfícies"* ⛔ ali faria o
+          * médico concluir que ⛔ não há mais ⛔ nada pendente no atendimento.
+          */}
         <Text style={s.blocoNota}>
-          {tr("De todas as superfícies. O nome indica onde resolver.")}
+          {estado.superficieVista === "paciente"
+            ? tr("Desta tela. As demais superfícies mostram as suas.")
+            : tr("De todas as superfícies. O nome indica onde resolver.")}
         </Text>
-        {problemas.length === 0 ? (
+        {pendenciasVisiveis.length === 0 ? (
           <Text style={s.vazio}>{tr("Nenhuma pendência aberta")}</Text>
         ) : (
-          problemas.map((p) => (
+          pendenciasVisiveis.map((p) => (
             <Pressable
               key={p.id}
               style={s.pendencia}

@@ -316,29 +316,49 @@ const acha = (id) => campos.find((c) => c.id === id);
   );
 }
 
-/* ══ ⚠️⚠️ 4 · mRS ⛔ APENAS EMPRESTADO ════════════════════════════════ */
+/* ══ ⚠️⚠️ 4 · mRS — ⛔ UMA CASA, ⛔ E ⛔ ELA MUDOU ══════════════════════ */
 {
   /**
-   * ⚠️⚠️ ⛔ *"Composição visual pode atravessar casas; fonte de verdade ⛔ não."*
+   * ── ⚠️⚠️⚠️ ⛔ ESTA GARANTIA MUDOU DE FORMA — 2026-09-07 ─────────────────
    *
-   * ⛔ O mRS é **desenhado** em Neurológico ⛔ e **mora** em Paciente. ⚠️ A
-   * diferença entre as duas listas é ⛔ exatamente isso: `TODOS_OS_CAMPOS_B` é
-   * *"de quem é o fato"*; `CAMPOS_NA_TELA_B` é *"o que o médico vê aqui"*.
+   * ⛔ ⛔ Ela dizia: *"o mRS **mora** em Paciente ⛔ e é **desenhado** em
+   * Neurológico"* — ⛔ empréstimo, ⛔ e ⛔ a Fase 4 existia para provar que
+   * **compor ⛔ não é mover**.
+   *
+   * ⚠️⚠️ ⛔ Na inspeção clínica de 2026-09-07 o autor tirou a **funcionalidade
+   * prévia** da primeira tela. ⛔ E um campo emprestado cuja **dona ⛔ não o
+   * desenha mais** fica **inalcançável** pelo *«Resolver ›»*, ⛔ que navega
+   * pela casa (**E-26**). ⛔ Ele ⛔ não podia continuar emprestado.
+   *
+   * ⚠️⚠️ ⛔ O QUE ⛔ NÃO MUDOU, ⛔ e ⛔ é o coração da Fase 4: ⛔ **⛔ UMA casa
+   * só**. ⛔ Antes era Paciente; ⛔ agora é Neurológico — ⛔ e ⛔ nunca as duas.
    */
   conf(
-    "⚠️⚠️ `mrs_previo` mora em **Paciente**",
-    acha("mrs_previo")?.casa === "paciente",
+    "⚠️⚠️⚠️ `mrs_previo` mora na **Avaliação AVC**",
+    acha("mrs_previo")?.casa === "neurologico",
     `⛔ casa="${acha("mrs_previo")?.casa}"`
   );
   conf(
-    "⚠️ ⛔ e ⛔ NÃO é campo próprio de Neurológico",
-    B.TODOS_OS_CAMPOS_B.every((c) => c.id !== "mrs_previo"),
-    "⛔ contado como próprio, ⛔ ele teria **duas casas** — a duplicação com outro nome"
+    "⚠️⚠️ ⛔ e ⛔ NÃO é mais campo de Paciente — ⛔ UMA casa, ⛔ e ⛔ não duas",
+    P.TODOS_OS_CAMPOS_P.every((c) => c.id !== "mrs_previo"),
+    "⛔ em duas casas, ⛔ ele teria dois donos — ⛔ e dois donos divergem"
   );
   conf(
-    "⚠️ ⛔ e ⛔ ele **É** desenhado lá, por empréstimo",
+    "⚠️ ⛔ e ⛔ ele **É** desenhado na Avaliação AVC",
     B.CAMPOS_NA_TELA_B.some((c) => c.id === "mrs_previo"),
-    "⛔ ler ⛔ não é coletar — ⛔ e compor ⛔ não é mover"
+    "⛔ mudar de casa ⛔ não pode ser sumir da tela"
+  );
+  /**
+   * ⚠️⚠️ ⛔ E O EMPRÉSTIMO CONTINUA EXISTINDO COMO MECANISMO — ⛔ o **peso**
+   * segue emprestado pela Estabilização. ⛔ A Fase 4 provou que *"compor ⛔ não
+   * é mover"*, ⛔ e ⛔ isso segue verdadeiro: ⛔ o que mudou foi **este** fato,
+   * ⛔ e ⛔ não a regra.
+   */
+  conf(
+    "⚠️⚠️ ⛔ e o empréstimo segue vivo — o **peso** ainda é composto fora da casa",
+    A.CAMPOS_NA_TELA_A.some((c) => c.id === "peso")
+    && acha("peso")?.casa === "paciente",
+    `⛔ casa do peso="${acha("peso")?.casa}"`
   );
 }
 

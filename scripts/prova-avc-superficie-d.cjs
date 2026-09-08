@@ -142,13 +142,24 @@ const marca = (e, campo, ...opcoes) => {
   confere("⛔ e ⛔ NENHUM repete id do Laboratório",
     idsDeD.every((id) => !L.TODOS_OS_CAMPOS_L.some((c) => c.id === id)),
     "os cortes são lidos de lá, e ⛔ não copiados para cá");
-  confere("todo item do mapa aponta para campo que EXISTE na casa dele",
-    S.ITENS_DE_SEGURANCA.every((i) => idsDeP.includes(i.campo)),
+  /**
+   * ⚠️⚠️ ⛔ O MAPA APONTA PARA O **MÓDULO**, ⛔ e ⛔ não para uma tela — 2026-09-07.
+   *
+   * ⛔ ⛔ Os antecedentes que ele lê mudaram de casa: saíram de **Paciente**
+   * ⛔ e foram para a **Avaliação AVC**, ⛔ quando a primeira tela deixou de
+   * abrir com contraindicações. ⚠️ ⛔ A garantia ⛔ não mudou — ⛔ o item
+   * ⛔ **⛔ não pode** apontar para campo inexistente —, ⛔ mas ⛔ ela ⛔ nunca
+   * foi sobre **qual tela** desenha o fato.
+   */
+  const CAMPOS_DO_MODULO = CAMPOS.todosOsCampos();
+  const doModulo = (id) => CAMPOS_DO_MODULO.find((c) => c.id === id);
+  confere("todo item do mapa aponta para campo que EXISTE no módulo",
+    S.ITENS_DE_SEGURANCA.every((i) => doModulo(i.campo) !== undefined),
     "item apontando para campo inexistente é trava medindo o nada");
-  confere("e toda opção do mapa EXISTE na lista do campo de Paciente",
+  confere("e toda opção do mapa EXISTE na lista do campo dono",
     S.ITENS_DE_SEGURANCA.every((i) => {
-      const campo = P.TODOS_OS_CAMPOS_P.find((c) => c.id === i.campo);
-      return campo && campo.opcoes.includes(i.opcao);
+      const campo = doModulo(i.campo);
+      return campo && (campo.opcoes ?? []).includes(i.opcao);
     }),
     "⚠️ casar por rótulo exige que o rótulo seja o MESMO: melhorar o texto de um lado quebraria a interpretação em silêncio");
   /** ⚠️ §7.3 — ⛔ só a consulta recolhe; o juízo decide agora. */

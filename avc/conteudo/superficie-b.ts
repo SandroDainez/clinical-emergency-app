@@ -63,7 +63,13 @@
 import type { SuperficieId } from "../nucleo/tipos";
 import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
 import { camposDoGrupo, comCasa, NAO_SEI, SIM_NAO_INCERTO } from "./campo";
-import { CAMPO_DO_PACIENTE } from "./paciente";
+import {
+  ANTECEDENTES_INTRACRANIANOS_P,
+  ANTECEDENTES_SISTEMICOS_P,
+  FUNCIONAL_PREVIA_P,
+  MICROSSANGRAMENTOS_P,
+  PROCEDIMENTOS_P,
+} from "./paciente";
 
 /**
  * ⚠️ O que se ESCREVE aqui — a **casa** ⛔ não entra: ela é carimbada por
@@ -765,19 +771,68 @@ const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
   {
     id: "basal",
     titulo: "Funcionalidade prévia",
-    campos: BASAL_B,
     /**
-     * ⚠️ O mRS prévio mora em **Paciente** desde 2026-08-29 e continua **aqui**,
-     * com o mesmo controle recolhível e os mesmos descritores — decisão do
-     * autor: *"muda a propriedade, ⛔ não a experiência que já ficou boa na B."*
+     * ⚠️⚠️⚠️ O mRS PASSOU A SER **PRÓPRIO DAQUI** — 2026-09-07.
+     *
+     * ⛔ ⛔ Ele morou em **Paciente** desde 2026-08-29 ⛔ e era **emprestado**
+     * por esta superfície. ⚠️ Na inspeção clínica o autor tirou a
+     * funcionalidade prévia da primeira tela — ⛔ e um campo emprestado cuja
+     * dona ⛔ não o renderiza mais fica **inalcançável** pelo *«Resolver ›»*,
+     * ⛔ que navega pela casa (**E-26**).
+     *
+     * ⚠️ ⛔ Ele ⛔ não ganhou uma segunda casa: ⛔ **mudou** de casa. ⛔ A
+     * declaração saiu de `GRUPOS_P`, ⛔ e ⛔ há trava que reprova a duplicação.
      */
-    emprestados: [CAMPO_DO_PACIENTE("mrs_previo")],
+    campos: [...BASAL_B, ...FUNCIONAL_PREVIA_P],
   },
   {
     id: "funcional",
     titulo: "Avaliação funcional",
     campos: FUNCIONAL_B,
     nota: "Esta é a pergunta principal do julgamento. Os quadros abaixo são orientação da fonte, sob ela.",
+  },
+  /* ── ⚠️⚠️⚠️ BLOCO 4 · O QUE VEIO DA PRIMEIRA TELA ────────────────────────
+   *
+   * ⛔ ⛔ Estes quatro moravam em **Paciente**, ⛔ e ocupavam a abertura do
+   * atendimento com listas de **contraindicação à trombólise** (slot **F-07**):
+   * hemorragia intracraniana prévia, neurocirurgia nos últimos 14 dias,
+   * endocardite, microssangramentos.
+   *
+   * ⚠️ Decisão do autor na inspeção clínica de 2026-09-07: *"isso tem que ter
+   * no app, ⛔ mas na parte de avaliação neurológica ⛔ e ⛔ não na primeira
+   * tela"*.
+   *
+   * ⚠️⚠️ ⛔ O CONTEÚDO ⛔ NÃO FOI TOCADO: as constantes seguem declaradas em
+   * `paciente.ts`, ⛔ com o verbatim ⛔ e o slot de fonte intactos. ⛔ O que
+   * mudou foi a **composição** ⛔ e a **casa** — ⛔ e a casa é o que faz o
+   * *«Resolver ›»* chegar aqui.
+   *
+   * ⚠️ ⛔ Os quatro nascem **recolhidos**: são conteúdo de **exceção**,
+   * respondido com *"nenhum destes"* na maioria dos atendimentos.
+   * ────────────────────────────────────────────────────────────────────── */
+  {
+    id: "antecedentes-intracranianos",
+    titulo: "Antecedentes intracranianos",
+    campos: ANTECEDENTES_INTRACRANIANOS_P,
+    recolhido: true,
+  },
+  {
+    id: "antecedentes-sistemicos",
+    titulo: "Antecedentes cardíacos e sistêmicos",
+    campos: ANTECEDENTES_SISTEMICOS_P,
+    recolhido: true,
+  },
+  {
+    id: "procedimentos",
+    titulo: "Procedimentos e sangramentos recentes",
+    campos: PROCEDIMENTOS_P,
+    recolhido: true,
+  },
+  {
+    id: "microssangramentos",
+    titulo: "Microssangramentos cerebrais",
+    campos: MICROSSANGRAMENTOS_P,
+    recolhido: true,
   },
   {
     id: "achados-tipicos",
@@ -897,10 +952,20 @@ export const IDS_ACHADOS_PODEM_NAO = ACHADOS_PODEM_NAO_B.map((c) => c.id);
 export const VOCABULARIO_PROPRIO_B: readonly { id: string; motivo: string }[] = [
   { id: "lateralidade", motivo: "lado do corpo não é resposta binária" },
   /**
-   * ⚠️ `mrs_previo` SAIU desta lista em 2026-08-29: ele mudou de casa para
-   * **Paciente**, e a declaração de vocabulário próprio mora com o fato, ⛔ não
-   * com a tela que o desenha. Ver `VOCABULARIO_PROPRIO_P`.
+   * ⚠️⚠️ `mrs_previo` **VOLTOU** em 2026-09-07 — ⛔ e a ida ⛔ e a volta contam
+   * a mesma regra: **a declaração de vocabulário próprio mora com o fato**,
+   * ⛔ e ⛔ não com a tela que o desenha. ⛔ Ele saiu daqui quando mudou de casa
+   * para Paciente; ⛔ voltou quando a funcionalidade prévia saiu da abertura.
    */
+  { id: "mrs_previo", motivo: "escala com grau 0 válido (E-10), e o rótulo traz o descritor" },
+  /**
+   * ⚠️ Vieram de Paciente junto com os blocos de contraindicação: ⛔ o valor
+   * gravado é o próprio rótulo, ⛔ e ⛔ `ternario()` os leria como `false`.
+   */
+  { id: "informacao_previa_cmb", motivo: "três estados com classe de recomendação própria" },
+  { id: "antecedentes_intracranianos", motivo: "cada item é um antecedente nomeado pela fonte, e nenhum é sim ou não" },
+  { id: "antecedentes_cardio_sistemicos", motivo: "cada item é um antecedente nomeado pela fonte, e nenhum é sim ou não" },
+  { id: "procedimentos_recentes", motivo: "as janelas da fonte estão no rótulo de cada item" },
   { id: "nihss_informado_origem", motivo: "procedência muda a confiança sem mudar o número (E-03)" },
   { id: "incapacitante_assumido", motivo: "as três decisões de §2.8-6, e Incerto é decisão" },
   { id: "deficit_leve", motivo: "leve/não leve/incerto é julgamento clínico, e a fonte não define por escore" },

@@ -25,8 +25,19 @@ async function irParaD(page: Page) {
   await page.getByTestId("avc-aba-seguranca").click();
   await expect(page.getByTestId("avc-superficie-d-conteudo")).toBeVisible();
 }
-async function abrirPaciente(page: Page) {
-  await page.getByTestId("avc-aba-paciente").click();
+/**
+ * ⚠️⚠️⚠️ ⛔ OS ANTECEDENTES MUDARAM DE CASA — 2026-09-07.
+ *
+ * ⛔ ⛔ Eles moravam em **Paciente** ⛔ e ocupavam a abertura do atendimento
+ * com contraindicações à trombólise (slot **F-07**). ⚠️ ⛔ Na inspeção clínica
+ * o autor os mandou para a **Avaliação AVC** — ⛔ e ⛔ é ⛔ lá que este teste
+ * passa a respondê-los.
+ *
+ * ⚠️ ⛔ A garantia que ⛔ ele mede ⛔ **⛔ não** mudou: ⛔ o item registrado numa
+ * casa é **interpretado** pela Superfície D, ⛔ e ⛔ D ⛔ não o redeclara.
+ */
+async function abrirAntecedentes(page: Page) {
+  await page.getByTestId("avc-aba-neurologico").click();
 }
 const ITEM = (campo: string, op: string) => `avc-item-${campo}-${op}`;
 
@@ -50,7 +61,7 @@ test.describe("AVC · Superfície D — Segurança", () => {
     await expect(conteudo).not.toContainText(/elegív|elegib|pode trombolisar|não pode trombolisar|candidato a trombólise/i);
 
     // ⚠️ E ⛔ nem depois de marcar o item mais grave que existe.
-    await abrirPaciente(page);
+    await abrirAntecedentes(page);
     await page.getByTestId("avc-bloco-abrir-antecedentes-sistemicos").click();
     await page.getByTestId(ITEM("antecedentes_cardio_sistemicos", "Endocardite infecciosa")).click();
     await irParaD(page);
@@ -65,7 +76,7 @@ test.describe("AVC · Superfície D — Segurança", () => {
   test("cada item mostra o VERBO da fonte, e a gradação ⛔ não é achatada", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirD(page);
-    await abrirPaciente(page);
+    await abrirAntecedentes(page);
     await page.getByTestId("avc-bloco-abrir-antecedentes-intracranianos").click();
     await page.getByTestId(ITEM("antecedentes_intracranianos", "Neoplasia intracraniana intra-axial")).click();
     await page.getByTestId(ITEM("antecedentes_intracranianos", "Lesão medular aguda nos últimos 3 meses")).click();
@@ -99,7 +110,7 @@ test.describe("AVC · Superfície D — Segurança", () => {
   test("intra-axial e extra-axial caem em blocos DIFERENTES", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirD(page);
-    await abrirPaciente(page);
+    await abrirAntecedentes(page);
     await page.getByTestId("avc-bloco-abrir-antecedentes-intracranianos").click();
     await page.getByTestId(ITEM("antecedentes_intracranianos", "Neoplasia intracraniana intra-axial")).click();
     await page.getByTestId(ITEM("antecedentes_intracranianos", "Neoplasia intracraniana extra-axial")).click();
@@ -122,7 +133,12 @@ test.describe("AVC · Superfície D — Segurança", () => {
     // ⛔ E ⛔ não afirma ausência de exposição.
     await expect(leitura).not.toContainText(/sem exposição|não usa/i);
 
-    await abrirPaciente(page);
+    /**
+     * ⚠️⚠️ ⛔ O DOAC é **medicação basal**, ⛔ e ⛔ ele ⛔ NÃO mudou de casa:
+     * ⛔ segue em **Paciente**, ⛔ com os anticoagulantes. ⛔ Só os
+     * antecedentes/contraindicações foram para a Avaliação AVC.
+     */
+    await page.getByTestId("avc-aba-paciente").click();
     await page.getByTestId("avc-hora-desconhecido-doac_ultima_dose").click();
     await irParaD(page);
 

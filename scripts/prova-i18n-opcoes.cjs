@@ -192,6 +192,15 @@ const campos = [
     "SAMU",                      // sigla de serviço, ⛔ não se traduz
     "/mm³",                      // unidade
     "mil/mm³ (×10³/µL)",         // unidade
+    /**
+     * ⚠️ Antecedentes crônicos (2026-09-07) — ⛔ termos latinos ⛔ ou de grafia
+     * idêntica nos dois idiomas. ⛔ Exigir diferença aqui seria exigir
+     * tradução **errada**.
+     */
+    "Diabetes mellitus",         // latim, idêntico
+    "Dislipidemia",              // idêntico
+    "Asma",                      // idêntico
+    "Etilismo",                  // idêntico
   ];
   const opcoes = [...new Set(campos.flatMap((c) => c.opcoes ?? []))];
   /** ⚠️ R-1: declaração sobre opção que ⛔ não existe mais é desculpa órfã. */

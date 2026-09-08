@@ -14,6 +14,20 @@ import { abrirModulo } from "./helpers";
 test.describe("AVC · cockpit ABCDE", () => {
   test("os cinco eixos aparecem, na ordem", async ({ page }) => {
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     /**
      * ⚠️ Pelos `testID` dos botões de concluir — ⛔ um por eixo, ⛔ na ordem em
      * que o cockpit os desenha. ⛔ Ler a letra pelo texto casava com qualquer
@@ -31,6 +45,20 @@ test.describe("AVC · cockpit ABCDE", () => {
 
   test("concluir um eixo ⛔ NÃO o torna favorável", async ({ page }) => {
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     /** ⚠️ Hipoxemia declarada — o eixo B acende. */
     await page.getByTestId("avc-opcao-hipoxia-sim").click();
     const b = page.getByTestId("avc-ameaca-respiracao");
@@ -50,6 +78,20 @@ test.describe("AVC · cockpit ABCDE", () => {
 
   test("o próximo eixo é DESTACADO, ⛔ e ⛔ não aberto sozinho", async ({ page }) => {
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     await expect(page.getByTestId("avc-proximo-eixo")).toContainText("Via aérea");
 
     await page.getByTestId("avc-concluir-via_aerea").click();
@@ -65,6 +107,20 @@ test.describe("AVC · cockpit ABCDE", () => {
      * imediatamente"* — autor, 2026-09-07.
      */
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     await page.getByTestId("avc-concluir-pressao").click();
     await expect(page.getByTestId("avc-ameaca-pressao")).toContainText("Avaliação concluída");
     await expect(
@@ -75,6 +131,20 @@ test.describe("AVC · cockpit ABCDE", () => {
 
   test("reabrir preserva o dado registrado", async ({ page }) => {
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     await page.getByTestId("avc-num-caixa-glicemia").fill("48");
     const d = page.getByTestId("avc-ameaca-glicemia");
     await expect(d).toContainText("48");
@@ -89,6 +159,20 @@ test.describe("AVC · cockpit ABCDE", () => {
 
   test("completar E ⛔ não cria ameaça", async ({ page }) => {
     await abrirModulo(page, "avc");
+  /**
+   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+   * ⛔ não.
+   */
+  await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
+     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
+     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
+     * ⛔ não.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
     await page.getByTestId("avc-num-caixa-temperatura").fill("39");
     const e = page.getByTestId("avc-ameaca-exposicao");
     await expect(e).toContainText("39");

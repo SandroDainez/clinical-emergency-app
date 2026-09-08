@@ -426,6 +426,25 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
     "No aguardar la respuesta clínica a la trombólisis para proseguir con la trombectomía.",
   "Sem efeito de massa significativo": "Sin efecto de masa significativo",
   "Desde o início": "Desde el inicio",
+  /* ── ⚠️⚠️ antecedentes crônicos — contexto, ⛔ e ⛔ não critério ────────── */
+  "Antecedentes crônicos": "Antecedentes crónicos",
+  "Diabetes mellitus": "Diabetes mellitus",
+  "Dislipidemia": "Dislipidemia",
+  "Asma": "Asma",
+  "Tabagismo atual": "Tabaquismo actual",
+  "Etilismo": "Etilismo",
+  "Demência": "Demencia",
+  "Próximo: Estabilização": "Siguiente: Estabilización",
+  "Desta tela. As demais superfícies mostram as suas.":
+    "De esta pantalla. Las demás superficies muestran las suyas.",
+  "Hipertensão arterial": "Hipertensión arterial",
+  "Doença arterial coronariana": "Enfermedad arterial coronaria",
+  /** ⚠️ ⛔ *"há mais de 3 meses"* ⛔ PRECISA sobreviver: ⛔ o AVC recente é contraindicação. */
+  "AVC ou AIT prévio, há mais de 3 meses": "ACV o AIT previo, hace más de 3 meses",
+  "Contexto do paciente. Nada aqui altera a decisão de reperfusão — as condições que a afetam são registradas na Avaliação AVC.":
+    "Contexto del paciente. Nada aquí altera la decisión de reperfusión — las condiciones que la afectan se registran en la Evaluación del ACV.",
+  "Registro de contexto, sem fonte normativa. Nenhuma derivação clínica lê este campo.":
+    "Registro de contexto, sin fuente normativa. Ninguna derivación clínica lee este campo.",
   /* ── ⚠️⚠️ FASE 10 · antitrombóticos pós-IVT ────────────────────────────── */
   "Antitrombóticos pós-IVT": "Antitrombóticos pos-TIV",
   "Antitrombóticos pós-trombólise": "Antitrombóticos pos-trombólisis",

@@ -526,46 +526,105 @@ export const FUNCIONAL_PREVIA_P: readonly CampoP[] = [
   },
 ];
 
+/**
+ * ⚠️⚠️⚠️ AS COMORBIDADES CRÔNICAS — ⛔ e ⛔ elas **⛔ NÃO EXISTIAM**.
+ *
+ * ── ⚠️⚠️ ⛔ O QUE A INSPEÇÃO CLÍNICA MOSTROU (autor, 2026-09-07) ──────────
+ *
+ * > *"só quero antecedentes como DM, HAS, outros antecedentes crônicos como
+ * >  DPOC, asma entre outros"*
+ *
+ * ⛔ ⛔ E ⛔ **⛔ nenhum** campo do módulo os tinha. ⚠️ Os quatro blocos de
+ * *"antecedentes"* que ocupavam esta tela eram listas de **contraindicação à
+ * trombólise** (slot **F-07**): hemorragia intracraniana prévia, neurocirurgia
+ * nos últimos 14 dias, endocardite, microssangramentos. ⛔ Elas respondem
+ * *"pode trombolisar?"*, ⛔ e ⛔ não *"quem é este paciente?"*.
+ *
+ * ── ⚠️⚠️⚠️ ⛔ POR QUE ELE É **ADMINISTRATIVO**, ⛔ E ⛔ NÃO CLÍNICO ────────
+ *
+ * ⛔ ⛔ A AHA/ASA ⛔ **⛔ não publica** lista de comorbidades. ⚠️ Declarar este
+ * campo como clínico faria o app afirmar uma seleção que ⛔ nenhuma fonte
+ * sustenta (**E-31**).
+ *
+ * ⚠️ ⛔ Ele é **contexto**, como `medicacoes_em_uso` — ⛔ e ⛔ há trava: os
+ * `CONSUMIDORES` dele são `[]`, ⛔ e ⛔ **⛔ nenhuma** derivação pode lê-lo.
+ * ⛔ Um chip de *"hipertensão"* ⛔ não decide ⛔ nada.
+ *
+ * ⚠️ ⛔ A ordem das opções segue a relevância no contexto do AVC — ⛔ e ⛔ isso
+ * é **apresentação**, ⛔ não hierarquia clínica.
+ */
+export const COMORBIDADES_P: readonly CampoP[] = [
+  {
+    id: "comorbidades",
+    /** ⚠️ Do **paciente**, ⛔ e ⛔ não deste episódio. */
+    escopo: "global",
+    temporalidade: "estado",
+    rotulo: "Antecedentes crônicos",
+    tipo: "multipla",
+    opcoes: [
+      "Hipertensão arterial",
+      "Diabetes mellitus",
+      "Fibrilação atrial",
+      "Dislipidemia",
+      /**
+       * ⚠️⚠️ ⛔ *"há mais de 3 meses"* ⛔ NO RÓTULO, ⛔ e ⛔ de propósito: ⛔ o AVC
+       * isquêmico **nos últimos 3 meses** é **contraindicação**, ⛔ e mora na
+       * Avaliação AVC. ⛔ Sem a marca temporal, o médico registraria o mesmo
+       * fato em dois lugares com sentidos opostos.
+       */
+      "AVC ou AIT prévio, há mais de 3 meses",
+      "Doença arterial coronariana",
+      "Insuficiência cardíaca",
+      "Doença renal crônica",
+      "DPOC",
+      "Asma",
+      "Tabagismo atual",
+      "Etilismo",
+      "Demência",
+      "Nenhum destes",
+      NAO_SEI,
+    ],
+    ajuda: "Contexto do paciente. Nada aqui altera a decisão de reperfusão — as condições que a afetam são registradas na Avaliação AVC.",
+    /**
+     * ⚠️⚠️ **`administrativo`**, ⛔ e ⛔ NÃO um slot de fonte clínica — ⛔ o
+     * mesmo de `medicacoes_em_uso`. ⚠️ ⛔ Dar-lhe um slot (F-07, por exemplo)
+     * faria a lista parecer transcrita da diretriz, ⛔ que ⛔ não a publica.
+     */
+    fonte: "administrativo",
+    bloqueiaTerapia: false,
+    nota: "Registro de contexto, sem fonte normativa. Nenhuma derivação clínica lê este campo.",
+  },
+];
+
 const GRUPOS_P_DECLARADOS: readonly GrupoDeclarado[] = [
   { id: "identificacao", titulo: "Identificação", campos: IDENTIFICACAO_P },
   { id: "basais", titulo: "Dados basais", campos: BASAIS_P },
   { id: "alergias", titulo: "Alergias", campos: ALERGIAS_P },
   { id: "medicacoes", titulo: "Medicações em uso", campos: MEDICACOES_P },
   /**
-   * ⚠️⚠️ OS TRÊS BLOCOS DE ANTECEDENTE NASCEM RECOLHIDOS — medido em 375×812:
-   * abertos, eles somavam **2.226 px** dos 4.630 da superfície, quase metade
-   * dela, para listas que a maioria dos pacientes responde com "nenhum destes".
+   * ⚠️⚠️⚠️ ⛔ CINCO GRUPOS SAÍRAM DAQUI EM 2026-09-07 — ⛔ e ⛔ eles ⛔ não
+   * foram apagados: ⛔ mudaram de casa para a **Avaliação AVC**.
    *
-   * ⚠️ **§7.3 permite, e a razão ⛔ não é contagem** (que E-35 proíbe como
-   * critério): é **espécie de conteúdo**. Antecedente é conteúdo de **exceção**,
-   * consultado quando existe — o mesmo argumento do "NIHSS trazido de fora" na
-   * Superfície B. O cabeçalho declara o que guarda, e ⛔ nada aqui muda decisão
-   * imediata.
+   * ⛔ ⛔ Antecedentes intracranianos · antecedentes cardíacos e sistêmicos ·
+   * procedimentos e sangramentos recentes · microssangramentos ·
+   * funcionalidade prévia (mRS).
    *
-   * ⛔ E ⛔ NÃO SE RECOLHE O QUE DECIDE AGORA: identificação, dados basais,
-   * alergias, medicações em uso, microssangramentos e funcionalidade prévia
-   * nascem **abertos**. A prova confere isso bloco a bloco.
+   * ⚠️ ⛔ Os quatro primeiros são listas do slot **F-07**, de **contraindicação
+   * à trombólise**; ⛔ o mRS é lido pelo motor da **trombectomia**. ⛔ Nenhum
+   * deles responde *"quem é este paciente"* — ⛔ e a primeira tela do
+   * atendimento ⛔ não pode abrir com três fases adiante.
+   *
+   * ⚠️ ⛔ As constantes continuam **exportadas daqui**, ⛔ com o verbatim
+   * intacto: ⛔ o que mudou foi a **composição**, ⛔ e ⛔ não o conteúdo.
+   * ⛔ `superficie-b.ts` as importa ⛔ e as declara com casa `neurologico`.
    */
   {
-    id: "antecedentes-intracranianos",
-    titulo: "Antecedentes intracranianos",
-    campos: ANTECEDENTES_INTRACRANIANOS_P,
+    id: "comorbidades",
+    titulo: "Antecedentes crônicos",
+    campos: COMORBIDADES_P,
+    /** ⚠️ Recolhido: lista longa, ⛔ e ⛔ nada aqui decide agora. */
     recolhido: true,
   },
-  {
-    id: "antecedentes-sistemicos",
-    titulo: "Antecedentes cardíacos e sistêmicos",
-    campos: ANTECEDENTES_SISTEMICOS_P,
-    recolhido: true,
-  },
-  {
-    id: "procedimentos",
-    titulo: "Procedimentos e sangramentos recentes",
-    campos: PROCEDIMENTOS_P,
-    recolhido: true,
-  },
-  { id: "microssangramentos", titulo: "Microssangramentos cerebrais", campos: MICROSSANGRAMENTOS_P },
-  { id: "funcional-previa", titulo: "Funcionalidade prévia", campos: FUNCIONAL_PREVIA_P },
 ];
 
 export const GRUPOS_P: readonly Grupo[] = comCasa("paciente", GRUPOS_P_DECLARADOS);
@@ -582,11 +641,11 @@ export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
   anticoagulante_em_uso: NAO_SEI,
   antiagregante_em_uso: NAO_SEI,
   medicacoes_em_uso: NAO_SEI,
-  antecedentes_intracranianos: NAO_SEI,
-  antecedentes_cardio_sistemicos: NAO_SEI,
-  procedimentos_recentes: NAO_SEI,
-  informacao_previa_cmb: NAO_SEI,
-  mrs_previo: NAO_SEI,
+  comorbidades: NAO_SEI,
+  /**
+   * ⚠️⚠️ ⛔ OS CINCO SAÍRAM em 2026-09-07 — ⛔ e a saída sem conclusão
+   * acompanha o fato, ⛔ e ⛔ não a tela. ⛔ Ver `SAIDA_SEM_CONCLUSAO_B`.
+   */
 };
 
 /**
@@ -598,8 +657,11 @@ export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
 export const VOCABULARIO_PROPRIO_P: readonly { id: string; motivo: string }[] = [
   { id: "peso_origem", motivo: "origem muda a confiança sem mudar o número (E-14)" },
   { id: "antiagregante_em_uso", motivo: "simples e dupla são forças diferentes na fonte" },
-  { id: "informacao_previa_cmb", motivo: "três estados com classe de recomendação própria" },
-  { id: "mrs_previo", motivo: "escala com grau 0 válido (E-10), e o rótulo traz o descritor" },
+  /**
+   * ⚠️⚠️ `informacao_previa_cmb` ⛔ e `mrs_previo` SAÍRAM em 2026-09-07, ⛔ com
+   * os fatos: ⛔ eles mudaram de casa para a **Avaliação AVC**. ⛔ Ver
+   * `VOCABULARIO_PROPRIO_B`.
+   */
 ];
 
 /**

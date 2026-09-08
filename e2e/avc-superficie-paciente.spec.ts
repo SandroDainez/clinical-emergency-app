@@ -20,7 +20,19 @@ async function abrirPaciente(page: Page) {
 }
 
 test.describe("AVC · Paciente — painel de contexto", () => {
-  test("os nove blocos abrem, e a tela declara que ⛔ não é porta", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ ERAM NOVE, ⛔ E VIRARAM CINCO — 2026-09-07 ─────────────────
+   *
+   * ⛔ ⛔ Os três de **antecedente/contraindicação**, o CMB ⛔ e a funcionalidade
+   * prévia mudaram de casa para a **Avaliação AVC**: ⛔ eles respondem *"pode
+   * trombolisar?"*, ⛔ e ⛔ não *"quem é este paciente?"*.
+   *
+   * ⚠️ ⛔ E entrou **um**: os antecedentes crônicos (HAS, DM, DPOC), ⛔ que
+   * ⛔ **⛔ não existiam** em campo ⛔ nenhum do módulo.
+   *
+   * ⚠️⚠️ ⛔ A GARANTIA CENTRAL ⛔ NÃO MUDOU: ⛔ a tela ⛔ não é porta.
+   */
+  test("os cinco blocos basais abrem, ⛔ e a tela declara que ⛔ não é porta", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirPaciente(page);
 
@@ -28,15 +40,21 @@ test.describe("AVC · Paciente — painel de contexto", () => {
       await expect(page.getByTestId(`avc-grupo-${grupo.id}`)).toBeVisible();
     }
     /**
-     * ⚠️ Os três de antecedente nascem FECHADOS: o cabeçalho existe, o campo ⛔ não.
-     * Abertos, eles somavam quase metade dos 4.630 px da superfície.
+     * ⚠️ ⛔ O de antecedentes crônicos nasce FECHADO: ⛔ o cabeçalho existe,
+     * ⛔ o campo ⛔ não. ⛔ Lista longa aberta na abertura é ⛔ exatamente o que
+     * se veio remover.
      */
-    for (const id of ["antecedentes-intracranianos", "antecedentes-sistemicos", "procedimentos"]) {
-      await expect(page.getByTestId(`avc-bloco-abrir-${id}`)).toHaveAttribute("aria-expanded", "false");
-    }
-    await expect(page.getByTestId("avc-campo-antecedentes_intracranianos")).toHaveCount(0);
-    await page.getByTestId("avc-bloco-abrir-antecedentes-intracranianos").click();
-    await expect(page.getByTestId("avc-campo-antecedentes_intracranianos")).toBeVisible();
+    await expect(page.getByTestId("avc-bloco-abrir-comorbidades"))
+      .toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByTestId("avc-campo-comorbidades")).toHaveCount(0);
+    await page.getByTestId("avc-bloco-abrir-comorbidades").click();
+    await expect(page.getByTestId("avc-campo-comorbidades")).toBeVisible();
+
+    /** ⚠️⚠️ ⛔ E ⛔ NENHUMA contraindicação sobrou ⛔ aqui. */
+    await expect(page.getByTestId("avc-grupo-antecedentes-intracranianos")).toHaveCount(0);
+    await expect(page.getByTestId("avc-grupo-microssangramentos")).toHaveCount(0);
+    await expect(page.getByTestId("avc-grupo-funcional-previa")).toHaveCount(0);
+
     await expect(page.getByTestId("avc-paciente-nao-e-porta"))
       .toContainText(/Nada aqui é obrigatório para seguir/i);
   });
@@ -98,13 +116,24 @@ test.describe("AVC · Paciente — painel de contexto", () => {
     await page.goto("/modulos/avc");
     await page.getByTestId("avc-aba-neurologico").click();
 
-    await expect(page.getByTestId("avc-emprestado-mrs_previo")).toBeVisible();
+    /**
+     * ⚠️⚠️ ⛔ ELE ⛔ NÃO É MAIS **EMPRESTADO** — 2026-09-07: ⛔ mudou de casa
+     * para a Avaliação AVC quando a funcionalidade prévia saiu da abertura.
+     * ⚠️ ⛔ Emprestado cuja dona ⛔ não o desenha ⛔ mais fica inalcançável pelo
+     * *«Resolver ›»* (**E-26**).
+     */
+    await expect(page.getByTestId("avc-campo-mrs_previo")).toBeVisible();
     await page.getByTestId("avc-abrir-mrs_previo").click();
     await expect(page.getByTestId("avc-campo-mrs_previo")).toContainText(/incapacidade moderada/i);
     await page.getByTestId("avc-opcao-mrs_previo-3 · incapacidade moderada").click();
 
-    // ⚠️ E o mesmo fato aparece na casa dele.
+    /**
+     * ⚠️⚠️ ⛔ E A CASA DELE **É ESTA** — 2026-09-07. ⛔ O fato ⛔ não aparece
+     * mais em Paciente: ⛔ ele ⛔ não ganhou uma segunda casa, ⛔ ele **mudou**.
+     */
     await page.getByTestId("avc-aba-paciente").click();
+    await expect(page.getByTestId("avc-campo-mrs_previo")).toHaveCount(0);
+    await page.getByTestId("avc-aba-neurologico").click();
     await expect(page.getByTestId("avc-campo-mrs_previo")).toContainText(/incapacidade moderada/i);
   });
 
@@ -182,7 +211,11 @@ test.describe("AVC · Paciente — painel de contexto", () => {
      * folha de estilo, ⛔ não a tradução.
      */
     await expect(conteudo).toContainText(/Medicaciones en uso/i);
-    await expect(conteudo).toContainText(/Antecedentes intracraneales/i);
+    /**
+     * ⚠️ ⛔ *"Antecedentes intracraneales"* saiu desta tela em 2026-09-07.
+     * ⛔ O que ficou de antecedente ⛔ aqui são os **crônicos**.
+     */
+    await expect(conteudo).toContainText(/Antecedentes crónicos/i);
     await expect(conteudo).toContainText("Warfarina u otro antagonista de la vitamina K");
     await expect(conteudo).toContainText(/Nada aquí es obligatorio/i);
   });

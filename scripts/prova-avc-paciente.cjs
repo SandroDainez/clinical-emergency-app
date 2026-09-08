@@ -43,12 +43,34 @@ execFileSync("npx", [
   path.join(appDir, "avc", "conteudo", "superficie-b.ts"),
   path.join(appDir, "avc", "conteudo", "superficie-c.ts"),
   path.join(appDir, "avc", "conteudo", "superficies.ts"),
+  path.join(appDir, "avc", "conteudo", "consumidores.ts"),
 ], { cwd: appDir, stdio: "pipe" });
 
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
 const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
 const K = require(path.join(tmp, "avc", "conteudo", "campo.js"));
 const P = require(path.join(tmp, "avc", "conteudo", "paciente.js"));
+const CONS = require(path.join(tmp, "avc", "conteudo", "consumidores.js"));
+
+/**
+ * ⚠️⚠️ O CAMPO PELA CONSTANTE, ⛔ e ⛔ NÃO pela tela — 2026-09-07.
+ *
+ * ⛔ ⛔ `CAMPO_DO_PACIENTE` ⛔ só enxerga o que `GRUPOS_P` ainda **desenha**.
+ * ⚠️ Cinco fatos mudaram de casa para a Avaliação AVC, ⛔ e as garantias sobre
+ * o **conteúdo** deles (verbatim, pares de **E-06**, slot F-07) continuam
+ * valendo — ⛔ elas são do fato, ⛔ e ⛔ não da tela que o compõe.
+ */
+const TODAS_AS_CONSTANTES_P = [
+  ...P.IDENTIFICACAO_P, ...P.BASAIS_P, ...P.ALERGIAS_P, ...P.MEDICACOES_P,
+  ...P.COMORBIDADES_P, ...P.ANTECEDENTES_INTRACRANIANOS_P,
+  ...P.ANTECEDENTES_SISTEMICOS_P, ...P.PROCEDIMENTOS_P,
+  ...P.MICROSSANGRAMENTOS_P, ...P.FUNCIONAL_PREVIA_P,
+];
+const campoP = (id) => {
+  const achado = TODAS_AS_CONSTANTES_P.find((c) => c.id === id);
+  if (!achado) throw new Error(`campoP: id desconhecido "${id}"`);
+  return achado;
+};
 const A = require(path.join(tmp, "avc", "conteudo", "superficie-a.js"));
 const B = require(path.join(tmp, "avc", "conteudo", "superficie-b.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-c.js"));
@@ -72,11 +94,22 @@ const TODOS = [
 // ── 0 · O UNIVERSO EXISTE ────────────────────────────────────────────────
 {
   confere("o universo de campos de Paciente foi carregado",
-    Array.isArray(P.TODOS_OS_CAMPOS_P) && P.TODOS_OS_CAMPOS_P.length >= 12,
+    Array.isArray(P.TODOS_OS_CAMPOS_P) && P.TODOS_OS_CAMPOS_P.length >= 10,
     "trava que roda sobre lista vazia fica verde sem medir nada (R-1)");
-  confere("os nove blocos de Paciente existem",
-    P.GRUPOS_P.length === 9,
-    "identificação · basais · alergias · medicações · três de antecedentes · CMB · funcionalidade prévia");
+  /**
+   * ⚠️⚠️⚠️ ⛔ ERAM NOVE, ⛔ E VIRARAM CINCO — 2026-09-07, inspeção clínica.
+   *
+   * ⛔ ⛔ Saíram os três de **antecedente/contraindicação** (slot F-07), o CMB
+   * ⛔ e a funcionalidade prévia. ⚠️ ⛔ Nenhum deles responde *"quem é este
+   * paciente"* — ⛔ e a abertura do atendimento vinha carregada de três fases
+   * adiante. ⛔ Eles mudaram de casa para a **Avaliação AVC**.
+   *
+   * ⚠️ ⛔ E entrou **um**: `comorbidades` — ⛔ os antecedentes crônicos (HAS,
+   * DM, DPOC) que ⛔ **⛔ não existiam** em campo ⛔ nenhum do módulo.
+   */
+  confere("⚠️⚠️ os CINCO blocos basais de Paciente existem",
+    P.GRUPOS_P.length === 5,
+    `identificação · basais · alergias · medicações · antecedentes crônicos — ${P.GRUPOS_P.map((g) => g.id).join(", ")}`);
   const ids = P.TODOS_OS_CAMPOS_P.map((c) => c.id);
   confere("⛔ nenhum id duplicado dentro de Paciente",
     new Set(ids).size === ids.length,
@@ -95,11 +128,14 @@ const TODOS = [
    * ⛔ Medicações em uso ⛔ NÃO entra aqui: anticoagulante é a primeira coisa que
    * a segurança da trombólise pergunta.
    */
-  confere("⛔ SÓ os três blocos de antecedente nascem recolhidos",
-    JSON.stringify(recolhidos) === JSON.stringify([
-      "antecedentes-intracranianos", "antecedentes-sistemicos", "procedimentos",
-    ]),
-    `§7.3: identificação, basais, alergias, medicações, CMB e funcionalidade prévia decidem agora e ⛔ não podem nascer escondidos — ${recolhidos.join(", ")}`);
+  /**
+   * ⚠️⚠️ ⛔ AGORA É **UM SÓ**: os três de antecedente saíram para a Avaliação
+   * AVC, ⛔ e ⛔ lá nascem recolhidos pela mesma razão. ⛔ O que ficou é
+   * `comorbidades` — ⛔ lista longa, ⛔ e ⛔ nada ali decide agora.
+   */
+  confere("⚠️⚠️ ⛔ SÓ o bloco de antecedentes crônicos nasce recolhido",
+    JSON.stringify(recolhidos) === JSON.stringify(["comorbidades"]),
+    `§7.3: identificação, basais, alergias ⛔ e medicações decidem agora ⛔ e ⛔ não podem nascer escondidos — ${recolhidos.join(", ")}`);
 }
 
 // ── 1 · PROPRIEDADE ÚNICA · ⛔ NENHUM ID EM DUAS CASAS ────────────────────
@@ -143,9 +179,18 @@ const TODOS = [
    */
   const emprestados = [...A.GRUPOS_A, ...B.GRUPOS_B, ...C.GRUPOS_C]
     .flatMap((g) => g.emprestados ?? []);
+  /**
+   * ⚠️⚠️ ⛔ ERAM TRÊS, ⛔ E VIRARAM DOIS em 2026-09-07: ⛔ o `mrs_previo`
+   * deixou de ser **emprestado** ⛔ e passou a ser **próprio** da Avaliação
+   * AVC, ⛔ quando a funcionalidade prévia saiu da primeira tela.
+   *
+   * ⛔ ⛔ Emprestado cuja dona ⛔ não o desenha mais ficaria **inalcançável**
+   * pelo *«Resolver ›»* (**E-26**) — ⛔ por isso ⛔ ele mudou de casa, ⛔ e ⛔ não
+   * ⛔ só de tela.
+   */
   confere("as superfícies tomam campos emprestados",
-    emprestados.length >= 3,
-    "peso, origem do peso e mRS prévio mudaram de casa e continuam nas telas onde eram respondidos");
+    emprestados.length >= 2,
+    "peso e origem do peso mudaram de casa e continuam nas telas onde eram respondidos");
 
   const naoSaoOMesmo = emprestados.filter((c) => P.CAMPO_DO_PACIENTE(c.id) !== c);
   confere("todo campo emprestado é o MESMO objeto da casa dele",
@@ -165,11 +210,20 @@ const TODOS = [
    * (**§3**, **§55**): o contraste é uma das alergias, ⛔ e ⛔ não outra
    * pergunta. ⛔ A casa ⛔ não mudou.
    */
-  for (const id of ["peso", "peso_origem", "mrs_previo", "alergias"]) {
+  /** ⚠️ ⛔ `mrs_previo` saiu desta lista em 2026-09-07 — ⛔ mudou de casa. */
+  for (const id of ["peso", "peso_origem", "alergias"]) {
     confere(`\`${id}\` mora em Paciente`,
       P.TODOS_OS_CAMPOS_P.some((c) => c.id === id),
       "mudou de casa em 2026-08-29, e a experiência de preenchimento ⛔ não mudou");
   }
+  /**
+   * ⚠️⚠️⚠️ ⛔ E O mRS AGORA MORA NA **AVALIAÇÃO AVC** — ⛔ e ⛔ em ⛔ uma casa
+   * só. ⛔ Ele esteve em Paciente entre 2026-08-29 ⛔ e 2026-09-07.
+   */
+  confere("⚠️⚠️ `mrs_previo` mora na Avaliação AVC, ⛔ e ⛔ NÃO em Paciente",
+    B.TODOS_OS_CAMPOS_B.some((c) => c.id === "mrs_previo" && c.casa === "neurologico")
+    && !P.TODOS_OS_CAMPOS_P.some((c) => c.id === "mrs_previo"),
+    "⛔ a funcionalidade prévia saiu da abertura, ⛔ e o fato foi junto — ⛔ sem ganhar uma segunda casa");
   confere("e os que seguem emprestados continuam DESENHADOS nas telas de origem",
     K.camposDoGrupo(A.GRUPOS_A.find((g) => g.id === "peso")).some((c) => c.id === "peso")
     && K.camposDoGrupo(B.GRUPOS_B.find((g) => g.id === "basal")).some((c) => c.id === "mrs_previo"),
@@ -343,7 +397,14 @@ const TODOS = [
     "cada campo de texto novo é uma porta de entrada de conteúdo sem fonte; ⛔ nenhum entra sem decisão");
 
   /** ⚠️ A exceção de fonte é do campo administrativo, e ⛔ não de todos. */
-  const semFonte = TODOS.filter((c) => !/^F-\d+$/.test(String(c.fonte)));
+  /**
+   * ⚠️⚠️ `administrativo` é **slot declarado**, ⛔ e ⛔ não ausência de slot —
+   * ⛔ o mesmo de `medicacoes_em_uso`. ⚠️ Ele diz *"⛔ isto ⛔ não é afirmação
+   * clínica"*, ⛔ e a trava abaixo confere que ⛔ ninguém o lê.
+   */
+  const semFonte = TODOS.filter(
+    (c) => !/^F-\d+$/.test(String(c.fonte)) && String(c.fonte) !== "administrativo"
+  );
   confere("⛔ SÓ o campo administrativo pode ⛔ não ter slot de fonte",
     semFonte.every((c) => c.natureza === "administrativo"),
     `E-30: afirmação clínica sem endereço de fonte ⛔ não entra — ${semFonte.map((c) => c.id).join(", ")}`);
@@ -374,21 +435,75 @@ const TODOS = [
    * valor clínico, e **E-19** proíbe pergunta que a fonte ⛔ não sustenta. Os
    * antecedentes daqui são **exatamente** os que Table 8 e F-10 nomeiam.
    */
-  const antecedentes = ["antecedentes_intracranianos", "antecedentes_cardio_sistemicos", "procedimentos_recentes"];
+  /**
+   * ⚠️⚠️ ⛔ OS TRÊS SAÍRAM DA TELA PACIENTE em 2026-09-07 — ⛔ e a garantia
+   * ⛔ **⛔ não** saiu com eles: as constantes seguem declaradas ⛔ aqui, ⛔ com
+   * verbatim ⛔ e slot intactos, ⛔ e a Avaliação AVC as compõe.
+   *
+   * ⛔ ⛔ Por isso a leitura é da **constante**, ⛔ e ⛔ não de
+   * `CAMPO_DO_PACIENTE` — ⛔ que ⛔ só enxerga o que a tela de Paciente ainda
+   * desenha.
+   */
+  const DOS_ANTECEDENTES = [
+    ...P.ANTECEDENTES_INTRACRANIANOS_P,
+    ...P.ANTECEDENTES_SISTEMICOS_P,
+    ...P.PROCEDIMENTOS_P,
+  ];
   confere("os três blocos de antecedentes apontam para F-07",
-    antecedentes.every((id) => P.CAMPO_DO_PACIENTE(id).fonte === "F-07"),
+    DOS_ANTECEDENTES.length === 3 && DOS_ANTECEDENTES.every((c) => c.fonte === "F-07"),
     "E-19: antecedente sem fonte é comorbidade inventada com cara de critério");
   confere("e ⛔ nenhum deles é campo de texto",
-    antecedentes.every((id) => P.CAMPO_DO_PACIENTE(id).tipo === "multipla"),
+    DOS_ANTECEDENTES.every((c) => c.tipo === "multipla"),
     "lista aberta de comorbidade é a porta de entrada de conteúdo sem fonte");
+  /**
+   * ⚠️⚠️⚠️ ⛔ E ⛔ ELES ⛔ NÃO ESTÃO MAIS NA PRIMEIRA TELA.
+   *
+   * ⛔ ⛔ São contraindicação à trombólise; ⛔ a abertura do atendimento
+   * pergunta **quem é o paciente**.
+   */
+  const naTelaP = new Set(P.TODOS_OS_CAMPOS_P.map((c) => c.id));
+  confere("⚠️⚠️ ⛔ e ⛔ NENHUM deles é mais renderizado em Paciente",
+    DOS_ANTECEDENTES.every((c) => !naTelaP.has(c.id)),
+    "⛔ contraindicação na primeira tela é três fases adiante");
+
+  /**
+   * ⚠️⚠️⚠️ ⛔ A EXCEÇÃO DE **E-19**, DECLARADA — ⛔ e ⛔ ela é estreita.
+   *
+   * ⛔ ⛔ `comorbidades` é uma pergunta que a fonte ⛔ **⛔ não sustenta**: a
+   * AHA/ASA ⛔ não publica lista de comorbidades. ⚠️ ⛔ O que **E-19** proíbe é
+   * *"comorbidade inventada **com cara de critério**"* — ⛔ e a cara de
+   * critério é o que se mede aqui.
+   *
+   * ⚠️ ⛔ Ela pode existir ⛔ **⛔ enquanto** for `administrativo`, ⛔ sem
+   * consumidor ⛔ e ⛔ sem bloqueio. ⛔ Ganhar um slot clínico, um leitor ⛔ ou
+   * `bloqueiaTerapia` a transforma ⛔ exatamente no que **E-19** proíbe.
+   */
+  const com = campoP("comorbidades");
+  confere("⚠️⚠️⚠️ `comorbidades` é **administrativo**, ⛔ e ⛔ NÃO tem cara de critério",
+    com.fonte === "administrativo" && com.bloqueiaTerapia === false && com.tipo === "multipla",
+    `⛔ fonte=${com.fonte} bloqueia=${com.bloqueiaTerapia} tipo=${com.tipo} — ⛔ sem fonte, ⛔ ela ⛔ não pode decidir`);
+  confere("⚠️⚠️ ⛔ e ⛔ NENHUMA derivação a consome",
+    Array.isArray(CONS.CONSUMIDORES.comorbidades) && CONS.CONSUMIDORES.comorbidades.length === 0,
+    `⛔ ${JSON.stringify(CONS.CONSUMIDORES.comorbidades)}`);
+  /** ⚠️ ⛔ E ⛔ ela ⛔ não repete um antecedente que já é critério em outra casa. */
+  const rotulosF07 = new Set(DOS_ANTECEDENTES.flatMap((c) => c.opcoes ?? []));
+  /**
+   * ⚠️ ⛔ *"Nenhum destes"* ⛔ e *"Não sei"* são **saídas de ausência**, ⛔ e
+   * ⛔ não itens clínicos: ⛔ toda lista múltipla do módulo as tem.
+   */
+  const GENERICAS = new Set(["Nenhum destes", "Nenhuma", "Não sei"]);
+  const repetidas = (com.opcoes ?? []).filter((o) => rotulosF07.has(o) && !GENERICAS.has(o));
+  confere("⚠️⚠️ ⛔ e ⛔ NENHUMA opção dela repete um item de contraindicação",
+    repetidas.length === 0,
+    `⛔ ${repetidas.join(" · ")} — o mesmo fato em duas casas é duas verdades (I6)`);
 
   /** ⚠️ Os pares de E-06 sobrevivem como itens SEPARADOS. */
-  const intra = P.CAMPO_DO_PACIENTE("antecedentes_intracranianos").opcoes;
+  const intra = campoP("antecedentes_intracranianos").opcoes;
   confere("neoplasia extra-axial e intra-axial são itens SEPARADOS",
     intra.includes("Neoplasia intracraniana extra-axial")
     && intra.includes("Neoplasia intracraniana intra-axial"),
     "E-06: mesma palavra, sentidos opostos na fonte — juntá-las destrói a distinção que ela fez questão de escrever");
-  const proc = P.CAMPO_DO_PACIENTE("procedimentos_recentes").opcoes;
+  const proc = campoP("procedimentos_recentes").opcoes;
   confere("as janelas da fonte estão no rótulo, e os pares de E-06 são separados",
     proc.includes("Neurocirurgia nos últimos 14 dias")
     && proc.includes("Neurocirurgia entre 14 dias e 3 meses")
@@ -399,7 +514,7 @@ const TODOS = [
 
 // ── 9 · 🚫 #3 · A PERGUNTA DO CMB ⛔ NÃO INDUZ RESSONÂNCIA ────────────────
 {
-  const cmb = P.CAMPO_DO_PACIENTE("informacao_previa_cmb");
+  const cmb = campoP("informacao_previa_cmb");
   confere("a pergunta do CMB é sobre INFORMAÇÃO PRÉVIA",
     /informação prévia/i.test(cmb.rotulo),
     "🚫 #3 e R6.2: *\"CMB presente?\"* induz a ressonância que a rec. 11 (COR 1) manda ⛔ NÃO obter");

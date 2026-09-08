@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**88 de 102 travas com declaração completa.**
+**89 de 103 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -145,6 +145,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o app diga **em que ponto do fluxo pós-trombólise o caso está**, ⛔ sem transformar ⛔ nenhum degrau em conclusão: · a **ordem** da Table 7 — imagem de controle em 24 h **antes** de iniciar anticoagulante ⛔ ou antiagregante — continua sendo ⛔ só ordem; · a **exceção** de §4.8 rec. 2 (**COR 2b · LOE B-NR**) aparece com o *"risco incerto"* da fonte, ⛔ e ⛔ nunca como rotina ⛔ nem como proibição; · a **aspirina IV nos 90 min** (§4.8 rec. 17 · **COR 3: Harm**) vive separada, ⛔ e ⛔ não é absorvida pela regra das 24 h; · resultado ⛔ sem hemorragia ⛔ **⛔ não** inicia ⛔ nada.
 - **NÃO PROMETE:** que a conduta antitrombótica esteja certa neste paciente — ⛔ isso é do médico. ⛔ E ⛔ **⛔ não** promete ⛔ nenhum esquema terapêutico: ⛔ agente, dose, horário ⛔ e regime ⛔ **⛔ não existem** neste módulo, ⛔ e a Table 7 ⛔ não os sustenta. ⛔ ⛔ E ⛔ **⛔ NÃO** promete ⛔ nada sobre **anticoagulação**: §4.9 tem seis recomendações, ⛔ com forças opostas (2a para FA selecionada · 3: No Benefit para anticoagulação precoce indiferenciada). ⚠️ ⛔ Incorporar ⛔ **metade** delas seria pior do que ⛔ nenhuma — a tela diria *"⛔ não recomendada"* a um paciente com FA em quem a fonte diz *"is reasonable"*.
 - **UNIVERSO:** `avc/conteudo/superficie-g.ts` × `avc/nucleo/derivacoes-g.ts` × a instância de estudo da Superfície C. ── ⚠️⚠️ ⛔ O QUE ESTA FASE **⛔ NÃO** CRIOU, ⛔ E ⛔ POR QUÊ ──────────────── ⛔ ⛔ **⛔ Nenhum campo novo de imagem.** ⚠️ O mapeamento por execução mostrou que a instância de **estudo** já existe, com `estudo_modalidade`, `estudo_hora` ⛔ e `estudo_resultado` — ⛔ e a escada *solicitado ≠ realizado ≠ resultado* ⛔ já foi provada na Fase 5. ⛔ A imagem de controle ⛔ não é um exame de outra espécie: ⛔ é **um estudo posterior ao início da trombólise**. ⚠️ ⛔ É a regra do projeto executada: **antes de declarar dívida, verificar por execução se o conteúdo já existe, ⛔ onde está ⛔ e quem o consome**.
+
+## `test:avc-abertura` → `scripts/prova-avc-abertura.cjs`
+
+- **PROMETE:** · que `abrirAtendimento()` abra em **`paciente`**, ⛔ e ⛔ não na segunda fase; · que a sequência oficial comece em Paciente ⛔ e siga para Estabilização; · que a superfície Paciente contenha **⛔ só dados basais** — ⛔ e ⛔ nenhuma das listas de **contraindicação** (F-07), que são leitura de segurança; · que ⛔ **⛔ nenhum fato fique duplicado** ao ser movido: ⛔ ele tem uma casa, ⛔ e ⛔ o `Resolver ›` leva ⛔ até ⛔ ela; · que os **consumidores** dos fatos movidos continuem lendo.
+- **NÃO PROMETE:** que a composição visual esteja bonita — ⛔ isso é a revisão de 375 px. ⛔ E ⛔ **⛔ não** promete que abrir em Paciente vire **porta**: ⛔ nada ali bloqueia navegar para ⛔ qualquer outra fase (**E-11**).
+- **UNIVERSO:** `avc/nucleo/estado.ts` × `avc/conteudo/paciente.ts` × `avc/conteudo/superficie-b.ts` × `avc/conteudo/superficies.ts`. ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (inspeção clínica, 2026-09-07) ──────── ⛔ ⛔ A barra inferior mostrava **Paciente** como primeira fase, ⛔ e o módulo abria em **Estabilização**. ⚠️ ⛔ O fluxo começava na segunda fase — ⛔ e a ordem mental do médico (*quem é o paciente → está estável? → é AVC?*) começava pelo meio. ⛔ ⛔ E a primeira tela vinha carregada de **contraindicações à trombólise**: hemorragia intracraniana prévia, neurocirurgia recente, microssangramentos. ⚠️ ⛔ Elas ⛔ não são *"quem é o paciente"* — ⛔ são leitura de segurança da reperfusão, ⛔ três fases adiante.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 

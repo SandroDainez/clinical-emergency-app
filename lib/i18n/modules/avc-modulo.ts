@@ -417,6 +417,11 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Registro del examen. No es criterio de elegibilidad en esta superficie.",
   "Uma vez determinado que o déficit é incapacitante, a fonte diz que atrasar a trombólise é potencialmente prejudicial.":
     "Una vez determinado que el déficit es discapacitante, la fuente dice que retrasar la trombólisis es potencialmente perjudicial.",
+  /* ── ⚠️ motivos de vocabulário próprio que vieram de Paciente (2026-09-07) ── */
+  "cada item é um antecedente nomeado pela fonte, e nenhum é sim ou não":
+    "cada ítem es un antecedente nombrado por la fuente, y ninguno es sí o no",
+  "as janelas da fonte estão no rótulo de cada item":
+    "las ventanas de la fuente están en la etiqueta de cada ítem",
   "lado do corpo não é resposta binária":
     "el lado del cuerpo no es respuesta binaria",
   "a trajetória tem quatro estados, e nenhum é sim/não":

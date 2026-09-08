@@ -256,6 +256,13 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("estabilização aparece antes da prioridade de imagem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    /**
+     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e ⛔ lá ⛔ não
+     * há ⛔ nem eixos ⛔ nem prioridade de imagem, ⛔ por decisão do autor.
+     * ⚠️ A **ordem entre os dois** é o que este teste mede, ⛔ e ⛔ ela ⛔ não
+     * mudou: ⛔ ele navega até onde os dois existem.
+     */
+    await page.getByTestId("avc-aba-estabilizacao").click();
 
     const estabilizacao = page.getByTestId("avc-ameacas-imediatas");
     const imagem = page.getByTestId("avc-prioridade-imagem");
@@ -309,10 +316,22 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     expect(await posicao(), "⛔ a fase abriu, ⛔ mas o olho ficou na tela anterior").toBe(0);
   });
 
-  test("o resumo persistente acompanha todas as superfícies", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ ESTA GARANTIA MUDOU DE FORMA — 2026-09-07 ──────────────────
+   *
+   * ⛔ ⛔ Ela dizia *"acompanha **todas** as superfícies"*. ⚠️ ⛔ Na inspeção
+   * clínica o autor tirou o resumo ⛔ e o relógio da **abertura**: ⛔ na
+   * primeira tela ⛔ eles ⛔ não têm o que resumir — ⛔ nada foi registrado
+   * ⛔ ainda — ⛔ e ocupavam o topo antes da primeira pergunta.
+   *
+   * ⚠️⚠️ ⛔ O QUE **§7.8** PROTEGE CONTINUA PROTEGIDO: ⛔ o médico ⛔ não pode
+   * trabalhar numa fase ⛔ sem ver o tempo correr. ⛔ Da segunda superfície em
+   * diante, ⛔ o resumo está ⛔ em todas — ⛔ e é ⛔ isso que se mede.
+   */
+  test("o resumo persistente acompanha todas as superfícies, ⛔ exceto a abertura", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    for (const sup of SEQUENCIA_OFICIAL) {
+    for (const sup of SEQUENCIA_OFICIAL.filter((x) => x.id !== "paciente")) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       // ⚠️ O resumo é persistente porque o RELÓGIO é o único valor que muda
       // sozinho: escondê-lo numa superfície faria o médico trabalhar noutra sem
@@ -365,10 +384,21 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
 
     // ⚠️ E-20: percorrer TODAS as superfícies não pode mudar nada — as pendências
     // continuam exatamente as mesmas, porque navegação não é fato clínico.
+    /**
+     * ⚠️⚠️ ⛔ A LEITURA É NA **MESMA SUPERFÍCIE** — 2026-09-07.
+     *
+     * ⛔ ⛔ Comparar a lista da **abertura** com a de outra tela ⛔ não mede
+     * **E-20**: ⛔ desde 2026-09-07 a primeira tela mostra ⛔ só as pendências
+     * ⛔ dela, ⛔ e as outras seguem globais. ⚠️ ⛔ A diferença seria de
+     * **filtro**, ⛔ e ⛔ não de fato registrado — ⛔ o teste acusaria o que ⛔ não
+     * quis medir.
+     */
+    await page.getByTestId("avc-aba-destino").click();
     const antes = await page.getByTestId("avc-pendencias").innerText();
     for (const sup of SEQUENCIA_OFICIAL) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
     }
+    await page.getByTestId("avc-aba-destino").click();
     const depois = await page.getByTestId("avc-pendencias").innerText();
     expect(depois).toBe(antes);
   });

@@ -67,6 +67,14 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * ⛔ são fatos diferentes).
    */
   medicacoes_em_uso: [],
+  /**
+   * ⚠️⚠️⚠️ **⛔ VAZIO, ⛔ E ⛔ ISSO É A TRAVA** — ⛔ não uma pendência.
+   *
+   * ⛔ ⛔ A AHA/ASA ⛔ não publica lista de comorbidades. ⚠️ Um chip de
+   * *"hipertensão"* ⛔ ou *"diabetes"* ⛔ **⛔ não pode** alimentar decisão
+   * ⛔ nenhuma — ⛔ e a lista vazia arma a varredura que reprova quem tentar.
+   */
+  comorbidades: [],
 
   /**
    * ── ⚠️⚠️ ⛔ A TRAVA PEGOU O MEU PRÓPRIO CÓDIGO (2026-09-07) ──────────────

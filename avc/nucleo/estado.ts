@@ -55,7 +55,23 @@ export function abrirAtendimento(relogio: Relogio): EstadoAvc {
     // ⚠️ O t₀ operacional é a chegada (§0.1) e nasce com o atendimento.
     // ⛔ Ele NÃO substitui nenhum relógio clínico (E-21).
     relogiosClinicos: { t0_operacional: agora },
-    superficieVista: "estabilizacao",
+    /**
+     * ⚠️⚠️⚠️ O ATENDIMENTO COMEÇA EM **PACIENTE** — 2026-09-07.
+     *
+     * ⛔ ⛔ Ele abria em `estabilizacao` ⛔ enquanto a barra inferior mostrava
+     * **Paciente** como primeira fase. ⚠️ ⛔ O fluxo começava na **segunda**
+     * fase, ⛔ e a ordem mental do médico — *quem é o paciente → está estável?
+     * → é AVC ⛔ e qual a gravidade?* — começava pelo meio.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ **⛔ NÃO** FAZ DE PACIENTE UMA PORTA (**E-11**):
+     * ⛔ nada ali bloqueia, ⛔ e toda superfície segue alcançável a um toque.
+     * ⛔ Muda **onde se começa**, ⛔ e ⛔ não o que se pode alcançar.
+     *
+     * ⚠️ ⛔ Há trava que confere que este id é o **primeiro** da
+     * `SEQUENCIA_OFICIAL` — ⛔ abertura ⛔ e barra ⛔ não podem voltar a
+     * discordar.
+     */
+    superficieVista: "paciente",
     /** ⚠️ ⛔ Ninguém avaliou ⛔ nada ainda — ⛔ e vazio ⛔ não é "tudo normal". */
     eixosConcluidos: [],
   };
