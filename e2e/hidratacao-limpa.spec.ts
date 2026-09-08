@@ -41,6 +41,15 @@ const ROTAS = [
   "/modulos/drogas-vasoativas",
   "/modulos/correcoes-eletroliticas",
   "/modulos/ritmos-acls",
+  /**
+   * ⚠️⚠️ ⛔ AS DUAS QUE ENTRARAM COM A UI 2.0 NO PRÉ-RENDER (2026-09-08).
+   *
+   * ⛔ ⛔ Elas estão entre as **sete** rotas cujo HTML de build mudou quando o
+   * padrão de ambiente passou a ler `PADRAO`. ⚠️ ⛔ Rota que muda de primeiro
+   * quadro é ⛔ exatamente onde uma divergência nova nasceria.
+   */
+  "/modulos/bradicardia-acls",
+  "/modulos/taquicardia-acls",
 ] as const;
 
 /**
