@@ -15,6 +15,7 @@
  * NIHSS total como classificador (🚫 do Bloco 3).
  */
 
+import { criseNoInicio } from "./derivacoes";
 import type { EstadoAvc } from "./estado";
 import {
   numero,
@@ -828,5 +829,10 @@ export function leiturasDaSuperficieB(estado: EstadoAvc): readonly (Leitura & { 
     { id: "nihss", ...nihssRegistrado(estado) },
     { id: "divergencia_escala", ...divergenciaDaEscala(estado) },
     { id: "funcionalidade_previa", ...funcionalidadePrevia(estado) },
+    /**
+     * ⚠️ ⛔ VEIO DA SUPERFÍCIE A em 2026-09-08, ⛔ junto com o campo: ⛔ leitura
+     * ⛔ e campo ⛔ não podem morar em telas diferentes.
+     */
+    { id: "crise", ...criseNoInicio(estado) },
   ];
 }

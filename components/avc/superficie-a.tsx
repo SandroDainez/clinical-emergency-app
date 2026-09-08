@@ -33,9 +33,12 @@ import { alternarItem, itensSelecionados } from "../../avc/nucleo/selecao";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
+import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
+import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
 /**
@@ -78,6 +81,13 @@ type Props = {
   /** ⚠️ Desfazer é operação de primeira classe (§7.16) — ⛔ não apaga, corrige. */
   onDesfazer: (campo: string) => void;
   onNovaMedida: (tipo: string) => void;
+  /**
+   * ⚠️⚠️ ⛔ A SAÍDA DO BLOCO *"Corrigir agora"* — ⛔ e ⛔ ela é **da dona da
+   * navegação**, ⛔ e ⛔ não desta tela: ⛔ a Superfície A ⛔ nunca soube abrir
+   * outra superfície, ⛔ e ⛔ passar a saber daria a ela duas
+   * responsabilidades.
+   */
+  onAbrirCorrecoes: () => void;
 };
 
 /**
@@ -103,12 +113,19 @@ export default function SuperficieA({
   onHora,
   onDesfazer,
   onNovaMedida,
+  onAbrirCorrecoes,
 }: Props) {
   const tr = useTr();
   const foco = useFoco();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
+  /**
+   * ⚠️ ⛔ A MESMA lista que o cockpit usa para acender o eixo — ⛔ e ⛔ não uma
+   * segunda leitura do estado: ⛔ duas fontes sobre *"há bloqueio?"* dariam a
+   * tela acesa com o bloco fechado, ⛔ ou o contrário.
+   */
+  const corrigiveis = bloqueiosCorrigiveis(estado);
   /** ⚠️ Derivação pura — ⛔ e ⛔ `undefined` quando falta uma das metades. */
   const pam = pressaoArterialMedia(estado);
 
@@ -142,6 +159,52 @@ export default function SuperficieA({
       style={e.raiz}
       testID="avc-superficie-a-conteudo"
     >
+      {/**
+        * ── ⚠️⚠️⚠️ CORRIGIR AGORA — pedido do autor, 2026-09-08 ───────────────
+        *
+        * ⛔ ⛔ *"Hoje a tela identifica risco, ⛔ mas precisa ajudar o médico a
+        * agir."* ⚠️ Até aqui a Estabilização acendia o eixo ⛔ e mandava
+        * *"Abrir Correções"* — ⛔ a conduta com dose estava **uma navegação
+        * adiante**, ⛔ no meio de um plantão.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ NÃO É CONTEÚDO NOVO: ⛔ o desenho é o **mesmo componente**
+        * que Correções desenha, lendo os **mesmos objetos** (F-19 para os
+        * agentes, `TRATAMENTOS_GLICEMICOS`, `ALVOS_GLICEMICOS`,
+        * `ERROS_A_EVITAR`). ⛔ Mudou Correções, muda aqui — ⛔ sem ninguém
+        * lembrar de sincronizar.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ **⛔ NADA É REGISTRADO AQUI**: ⛔ o bloco mostra ⛔ e leva.
+        * ⛔ Quem grava que a correção foi feita é a **Correções**, com o gesto
+        * explícito do médico — ⛔ e ⛔ é por isso que o atalho continua sendo a
+        * saída (**E-09**).
+        *
+        * ⚠️ ⛔ Ele só existe quando **há bloqueio ativo**: ⛔ oferecer agentes
+        * anti-hipertensivos a quem ⛔ não tem pressão alta seria a tela
+        * ensinando a tratar o que ⛔ não existe.
+        */}
+      {corrigiveis.length === 0 ? null : (
+        <View style={e.corrigirAgora} testID="avc-a-corrigir-agora">
+          <Text style={e.corrigirTitulo}>{tr("Corrigir agora")}</Text>
+          {corrigiveis.map((b) => (
+            <View key={b.id} style={e.corrigirItem} testID={`avc-a-corrigir-${b.id}`}>
+              {/** ⚠️ ⛔ O risco ⛔ e o alvo são a **formulação da fonte**. */}
+              <Text style={e.corrigirRisco}>{tr(b.formulacao)}</Text>
+              {b.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-a-" /> : null}
+              {b.id === "glicemia_alterada" ? <CondutaGlicemica prefixo="avc-a-" /> : null}
+              <Pressable
+                accessibilityRole="button"
+                testID={`avc-a-registrar-${b.id}`}
+                onPress={onAbrirCorrecoes}
+                style={({ pressed }) => [e.corrigirSaida, pressed ? e.pressionado : null]}
+              >
+                <Text style={e.corrigirSaidaTexto}>
+                  {tr("Registrar e acompanhar em Correções")}
+                </Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      )}
       {/**
         * ⚠️⚠️ ESTABILIZAÇÃO PRIMEIRO — moldura de **prioridade**, ⛔ e ⛔ não conduta.
         *
@@ -549,6 +612,28 @@ const criarEstilos = (tema: Tema) =>
      * ⚠️ O ⓘ fica NA LINHA do campo. ⛔ Abaixo, ele ocupava uma faixa inteira
      * ⛔ e parecia um controle solto, ⛔ sem dono.
      */
+    corrigirAgora: {
+      backgroundColor: tema.cores.surface,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: tema.cores.warning,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+    },
+    corrigirTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.warning },
+    corrigirItem: { gap: ESPACO.xs },
+    corrigirRisco: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    corrigirSaida: {
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+      paddingHorizontal: ESPACO.md,
+    },
+    corrigirSaidaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
+    pressionado: { opacity: 0.7 },
     linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
     /**

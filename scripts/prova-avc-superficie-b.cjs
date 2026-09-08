@@ -57,6 +57,11 @@ execFileSync("npx", [
 const R = require(path.join(tmp, "avc", "nucleo", "relogio.js"));
 const E = require(path.join(tmp, "avc", "nucleo", "estado.js"));
 const D = require(path.join(tmp, "avc", "nucleo", "derivacoes-b.js"));
+/**
+ * ⚠️ `criseNoInicio()` mora em `derivacoes.ts` — ⛔ ela é núcleo, ⛔ e ⛔ núcleo
+ * ⛔ não muda de arquivo quando o campo muda de tela.
+ */
+const DNUC = require(path.join(tmp, "avc", "nucleo", "derivacoes.js"));
 const C = require(path.join(tmp, "avc", "conteudo", "superficie-b.js"));
 const N = require(path.join(tmp, "avc", "conteudo", "nihss.js"));
 const X = require(path.join(tmp, "avc", "conteudo", "explicacoes.js"));
@@ -158,8 +163,9 @@ const reg = (est, campo, valor, rel) => E.registrarFato(est, { campo, valor }, r
 {
   const { est } = novo();
   const todas = D.leiturasDaSuperficieB(est);
+  /** ⚠️ **11** desde 2026-09-08: a leitura da crise veio da Superfície A. */
   confere("as leituras existem e declaram insumos e fonte",
-    todas.length === 10 && todas.every((l) => l.insumos.length > 0 && /^F-\d+$/.test(l.fonte)),
+    todas.length === 11 && todas.every((l) => l.insumos.length > 0 && /^F-\d+$/.test(l.fonte)),
     "E-22: conclusão opaca não entra no módulo");
   const negativas = todas.filter((l) => l.conclusao === "nao").map((l) => l.id);
   confere("com o estado vazio, ⛔ nenhuma leitura conclui 'não'",
@@ -880,4 +886,25 @@ if (falhas.length) {
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}`));
   process.exit(1);
 }
+/* ══ ⚠️⚠️ A CRISE NO INÍCIO — ⛔ contexto, ⛔ nunca exclusão ═══════════════ */
+
+/**
+ * ⚠️ ⛔ VEIO DE `prova-avc-superficie-a` em 2026-09-08, ⛔ junto com o campo.
+ * ⛔ A regra clínica ⛔ não mudou uma vírgula; ⛔ mudou a tela que a abriga.
+ */
+{
+  const { rel, est } = novo();
+  const comCrise = reg(est, "crise_no_inicio", "sim", rel);
+  const l = DNUC.criseNoInicio(comCrise);
+  confere("crise no início ⛔ não exclui AVC",
+    l.conclusao === "sim" && /não exclui/i.test(l.texto),
+    "F-24: crise no início é mimetizador possível — a recomendação de anticonvulsivante é para crise APÓS o AVC");
+  confere("crise no início ⛔ não indica anticonvulsivante por si",
+    /não .*indica anticonvulsivante|não indica/i.test(l.texto),
+    "profilaxia é COR 3: No Benefit");
+  confere("⚠️ e o campo mora **aqui**, com a casa carimbada",
+    C.TODOS_OS_CAMPOS_B.some((c) => c.id === "crise_no_inicio" && c.casa === "neurologico"),
+    "⛔ mudar de tela sem mudar de casa daria duas verdades sobre o mesmo fato");
+}
+
 console.log(`✅ PROVA DA SUPERFÍCIE B — ${ok}/${ok} conferências`);

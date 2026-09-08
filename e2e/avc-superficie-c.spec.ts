@@ -91,8 +91,14 @@ test.describe("AVC · Superfície C — Imagem", () => {
     /** ⚠️ ⛔ O campo mostra o horário — ⛔ e ⛔ não segue pedindo. */
     await expect(valor).toHaveText(/^✓ \d{1,2}:\d{2} ✎$/);
 
-    /** ⚠️⚠️ ⛔ E a outra tela conta a MESMA história. */
-    await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ E a outra tela conta a MESMA história.
+     *
+     * ⚠️ ⛔ *"A outra tela"* deixou de ser a Estabilização em 2026-09-08 — ⛔ a
+     * prioridade da imagem saiu de lá. ⛔ A frase é a **mesma**
+     * (`ACAO_DA_SITUACAO`), com o **mesmo** `testID`, ⛔ na faixa compacta.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
     await expect(page.getByTestId("avc-prioridade-imagem-acao")).toContainText(/Registrar o exame/i);
   });
 

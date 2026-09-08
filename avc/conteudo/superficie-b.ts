@@ -717,6 +717,26 @@ export const DECISAO_B: readonly CampoB[] = [
  *
  * ⛔ Reordenar isto por conveniência de layout é mudar prioridade clínica.
  */
+/**
+ * CRISE NO INÍCIO — ⚠️ contexto, ⛔ nunca exclusão.
+ *
+ * ⚠️ ⛔ Veio de `superficie-a.ts` em 2026-09-08, ⛔ sem uma vírgula de mudança:
+ * ⛔ mudar o texto ⛔ e a casa no mesmo passo tornaria impossível saber qual dos
+ * dois mexeu na tela.
+ */
+export const CRISE_B: readonly CampoB[] = [
+  {
+    id: "crise_no_inicio",
+    temporalidade: "estavel",
+    rotulo: "Crise convulsiva no início do quadro",
+    tipo: "escolha",
+    opcoes: SIM_NAO_INCERTO,
+    fonte: "F-24",
+    bloqueiaTerapia: false,
+    nota: "Contexto e possível mimetizador. Não exclui AVC.",
+  },
+] as const;
+
 const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
   /**
    * ── ⚠️⚠️ OS QUATRO BLOCOS DA FASE 4 (autor, 2026-09-07) ──────────────────
@@ -907,6 +927,20 @@ const GRUPOS_B_DECLARADOS: readonly GrupoDeclarado[] = [
     recolhido: true,
     nota: "Informação recebida da regulação, do SAMU ou de outro serviço. Não preenche nenhum achado.",
   },
+  /**
+   * ── ⚠️⚠️⚠️ A CRISE VEIO DA ESTABILIZAÇÃO — 2026-09-08 ───────────────────
+   *
+   * ⚠️ Decisão do autor: *"crise no início pertence mais claramente à
+   * Avaliação AVC"*. ⛔ Na Estabilização ⛔ ela ⛔ nunca foi ameaça imediata —
+   * ⛔ o próprio comentário de lá dizia *"é contexto, ⛔ e ⛔ não muda conduta
+   * imediata"*, ⛔ e ⛔ mesmo assim ocupava a tela que existe para o ABCDE.
+   *
+   * ⚠️⚠️ ⛔ E É AQUI QUE ELA **DECIDE ALGUMA COISA**: ⛔ mimetizador é
+   * pergunta de **avaliação**, ⛔ ao lado do déficit focal ⛔ e da cronologia.
+   *
+   * ⛔ O `id` ⛔ não mudou — ⛔ a trilha do fato atravessa inteira.
+   */
+  { id: "crise", titulo: "Crise no início", campos: CRISE_B },
 ];
 
 /**

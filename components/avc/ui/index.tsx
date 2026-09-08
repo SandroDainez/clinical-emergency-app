@@ -216,8 +216,14 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
    */
   "neurologico-inicial": { icone: "neuro", cor: "debt" },
   exposicao: { icone: "exposicao", cor: "primary" },
-  /** ⚠️ ⛔ O MESMO âmbar de `basais`: ⛔ é o **mesmo peso**, ⛔ em outra tela. */
-  peso: { icone: "peso", cor: "warning" },
+  /**
+   * ⚠️ ⛔ `peso` SAIU DA TABELA em 2026-09-08: ⛔ o grupo deixou de existir na
+   * Estabilização, ⛔ e entrada que aponta para bloco inexistente é cor que
+   * ⛔ ninguém vê. ⛔ Quem achou foi `prova-avc-cor-do-assunto`, ⛔ na primeira
+   * execução depois da mudança — ⛔ pela segunda vez.
+   *
+   * ⚠️ ⛔ O peso continua com selo **em Paciente**, ⛔ dentro de `basais`.
+   */
   crise: { icone: "crise", cor: "warning" },
   monitorizacao: { icone: "monitorizacao", cor: "primary" },
 
@@ -700,6 +706,22 @@ export function Numero({
 
   return (
     <View style={e.numRaiz} testID={testID ?? `avc-num-${campo}`}>
+    {/**
+      * ── ⚠️⚠️⚠️ O RÓTULO EM **LINHA PRÓPRIA** — 2026-09-08 ──────────────────
+      *
+      * ⛔ ⛔ Ele dividia a linha com o controle, com `flex: 1`. ⚠️ Consequência
+      * medida pelo autor em 375 px: *"os campos com slider estão com larguras
+      * diferentes"* — ⛔ *"SpO₂"* ⛔ e *"Escala de coma de Glasgow"* empurravam
+      * a caixa para pontos diferentes, ⛔ e ⛔ nada alinhava com ⛔ nada.
+      *
+      * ⚠️⚠️ ⛔ E ⛔ NÃO É NOVIDADE NESTE REPOSITÓRIO: `barra-utilizavel.spec`
+      * ⛔ já registrava a **mesma** causa em três módulos — *"quando o rótulo
+      * divide a linha com o controle (…) sobra uma bolinha"*.
+      *
+      * ⚠️ ⛔ Com o rótulo fora da linha, ⛔ **toda** geometria abaixo passa a ser
+      * idêntica em ⛔ todos os campos: ⛔ caixa, unidade ⛔ e `−/+` começam no
+      * mesmo x, ⛔ porque ⛔ nenhum deles depende do comprimento do nome.
+      */}
     <View style={e.num}>
       {rotuloOculto ? null : <Text style={e.numRotulo}>{tr(rotulo)}</Text>}
       <View style={e.numGrupo}>
@@ -1757,16 +1779,50 @@ const criarEstilos = (tema: Tema) =>
      */
     achadoTextoOn: { color: tema.cores.text },
 
-    numRaiz: { paddingVertical: ESPACO.xs },
-    num: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /**
+     * ⚠️⚠️⚠️ ⛔ `flex: 1` — ⛔ e ⛔ é ⛔ isto que faz o trilho existir.
+     *
+     * ⛔ ⛔ Medido em 375 px: o hospedeiro (`linhaNumero`, em `superficie-a`) é
+     * uma **linha**, ⛔ e o controle nascia `flex: 0 0 auto` — **172 px** de
+     * 343 disponíveis, ⛔ com o slider ficando com **104**.
+     *
+     * ⚠️ ⛔ É o defeito que `barra-utilizavel.spec` registra em três módulos:
+     * *"o `NumericStepper` estava CORRETO; o que quebra é o hospedeiro"*.
+     * ⛔ Corrigir ⛔ aqui, ⛔ e ⛔ não em cada tela, é o que impede a quarta.
+     */
+    numRaiz: { paddingVertical: ESPACO.xs, flex: 1, minWidth: 0 },
+    /**
+     * ⚠️⚠️ **COLUNA**, ⛔ e ⛔ não linha — 2026-09-08. ⛔ Ver o comentário no
+     * `Numero`: rótulo dividindo a linha com o controle é a causa medida das
+     * larguras desiguais.
+     */
+    num: { flexDirection: "column", alignItems: "stretch", gap: ESPACO.xs },
     /** ⚠️ Os extremos escritos: a barra ⛔ não pode ser um trilho sem escala. */
     numBarra: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     numSlider: { flex: 1, height: 36 },
-    numLimite: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    /**
+     * ⚠️⚠️ ⛔ LARGURA **RESERVADA**, ⛔ e ⛔ não largura do texto.
+     *
+     * ⛔ ⛔ `"3"` ⛔ e `"800"` ocupavam larguras diferentes na mesma linha do
+     * slider, ⛔ e o `flex: 1` do trilho absorvia restos diferentes: ⛔ cada
+     * campo tinha um trilho de tamanho próprio. ⚠️ Com largura fixa, ⛔ todos
+     * começam ⛔ e terminam no mesmo x — ⛔ que é o pedido do autor.
+     *
+     * ⚠️ 30 px comportam **três dígitos** em `PAPEL.micro`; ⛔ a maior faixa do
+     * módulo é `800`.
+     */
+    numLimite: {
+      ...PAPEL.micro,
+      color: tema.cores.textSecondary,
+      width: 30,
+      textAlign: "center",
+      flexShrink: 0,
+    },
     corDaBarraViva: { color: tema.cores.primary },
     corDaBarraMorta: { color: tema.cores.controlBorder },
     corDoPolegarMorto: { color: tema.cores.textSecondary },
-    numRotulo: { ...PAPEL.textoPrincipal, flex: 1, minWidth: 0, color: tema.cores.text },
+    /** ⚠️ ⛔ Sem `flex`: ⛔ ele ⛔ não divide mais linha com controle ⛔ nenhum. */
+    numRotulo: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     numGrupo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     numCaixa: {
       backgroundColor: tema.cores.bg,

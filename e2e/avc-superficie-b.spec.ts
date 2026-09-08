@@ -657,4 +657,48 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     // ⚠️ E-45 também em espanhol: o hedge ⛔ não pode sumir na tradução.
     await expect(page.getByTestId("avc-grupo-achados-podem-nao")).toContainText(/pueden no ser/i);
   });
+
+  /* ══ ⚠️⚠️⚠️ A CRISE NO INÍCIO — ⛔ veio da Estabilização ═══════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ OS DOIS TESTES ABAIXO VIERAM DE `avc-superficie-a.spec` em
+   * 2026-09-08, ⛔ junto com o campo. ⚠️ Decisão do autor: *"crise no início
+   * pertence mais claramente à Avaliação AVC"*.
+   *
+   * ⛔ A garantia clínica ⛔ não mudou uma vírgula; ⛔ mudou a tela.
+   */
+  test("⛔ os três vazios da crise são distinguíveis olhando", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirB(page);
+
+    const naoSei = page.getByTestId("avc-opcao-crise_no_inicio-nao_sei");
+    const nao = page.getByTestId("avc-opcao-crise_no_inicio-nao");
+
+    /** ⛔ 1 · ⛔ não perguntado: ⛔ nenhuma opção marcada, ⛔ e a leitura o diz. */
+    await expect(naoSei).toHaveAttribute("aria-checked", "false");
+    await expect(nao).toHaveAttribute("aria-checked", "false");
+    await expect(page.getByTestId("avc-leitura-curto-crise"))
+      .toContainText(/ainda não informada/i);
+
+    /** ⚠️ 2 · *"⛔ não sei"* é **resposta** — ⛔ e ⛔ não vira *"não"*. */
+    await naoSei.click();
+    await expect(naoSei).toHaveAttribute("aria-checked", "true");
+    await expect(nao).toHaveAttribute("aria-checked", "false");
+
+    /** ⚠️ 3 · a negativa é a terceira coisa, ⛔ e move a leitura. */
+    await nao.click();
+    await expect(nao).toHaveAttribute("aria-checked", "true");
+    await expect(naoSei).toHaveAttribute("aria-checked", "false");
+    await expect(page.getByTestId("avc-leitura-curto-crise")).toContainText(/Sem crise/i);
+  });
+
+  test("⛔ crise no início é contexto, ⛔ e ⛔ não exclui AVC", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirB(page);
+    await page.getByTestId("avc-opcao-crise_no_inicio-sim").click();
+    await expect(page.getByTestId("avc-leitura-curto-crise")).toContainText(/não exclui AVC/i);
+    /** ⛔ E a superfície continua inteira — ⛔ a crise ⛔ não encerra ⛔ nada. */
+    await expect(page.getByTestId("avc-campo-deficit_focal")).toBeVisible();
+  });
+
 });

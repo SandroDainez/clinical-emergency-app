@@ -440,6 +440,12 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Próximo: Estabilização": "Siguiente: Estabilización",
   "Desta tela. As demais superfícies mostram as suas.":
     "De esta pantalla. Las demás superficies muestran las suyas.",
+  /** ⚠️ A irmã da de cima — ⛔ a lista por progressão, 2026-09-08. */
+  "Até esta fase. As seguintes mostram as suas.":
+    "Hasta esta fase. Las siguientes muestran las suyas.",
+  /** ⚠️ O bloco *"Corrigir agora"* da Estabilização — 2026-09-08. */
+  "Corrigir agora": "Corregir ahora",
+  "Registrar e acompanhar em Correções": "Registrar y acompañar en Correcciones",
   "Hipertensão arterial": "Hipertensión arterial",
   "Doença arterial coronariana": "Enfermedad arterial coronaria",
   /** ⚠️ ⛔ *"há mais de 3 meses"* ⛔ PRECISA sobreviver: ⛔ o AVC recente é contraindicação. */

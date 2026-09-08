@@ -129,7 +129,14 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
      * que ⛔ ela governa — ⛔ e a lista é **escrita à mão**, ⛔ então ⛔ ela ⛔ não
      * acompanha sozinha.
      */
-    fontes: ["F-17", "F-14", "F-07", "F-27"],
+    /**
+     * ⚠️⚠️ ⛔ **F-24 ENTROU** em 2026-09-08, ⛔ junto com `crise_no_inicio`.
+     *
+     * ⛔ ⛔ Ela ⛔ nunca esteve declarada na Estabilização, ⛔ onde o campo
+     * morava — ⛔ a tela governava-se por uma fonte que ⛔ não listava.
+     * ⚠️ ⛔ A lista é escrita à mão, ⛔ e ⛔ é assim que ela envelhece.
+     */
+    fontes: ["F-17", "F-14", "F-07", "F-24", "F-27"],
   },
   {
     id: "imagem",

@@ -46,7 +46,6 @@ import {
   InfoToggle,
   PhaseNavigation,
   PrimaryAction,
-  SecondaryAction,
   ScreenHeader,
   WarningCard,
 } from "./sistema";
@@ -343,12 +342,51 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * adiante, ⛔ antes de o atendimento ter começado, ⛔ não orienta — ⛔ ela
    * confunde.
    */
-  const pendenciasVisiveis = useMemo(
-    () => estado.superficieVista === "paciente"
-      ? problemas.filter((p) => p.dono === "paciente")
-      : problemas,
-    [problemas, estado.superficieVista]
-  );
+  /**
+   * ── ⚠️⚠️⚠️ POR **PROGRESSÃO**, ⛔ e ⛔ não por tela — 2026-09-08 ───────────
+   *
+   * ⚠️ Decisão do autor: *"na fase atual, mostrar ⛔ apenas pendências de fases
+   * anteriores + fase atual"*. ⛔ A regra antiga era um caso particular disto —
+   * ⛔ Paciente é a primeira fase, ⛔ então *"⛔ só as dela"* ⛔ e *"até ⛔ ela"*
+   * davam a mesma lista.
+   *
+   * ⛔ ⛔ O DEFEITO QUE ISTO FECHA: a Estabilização abria com **TC**, **última
+   * vez visto bem** ⛔ e **déficit neurológico** na lista — ⛔ três fases
+   * adiante, ⛔ enquanto o médico ⛔ ainda decide se o paciente respira.
+   *
+   * ── ⚠️⚠️ CORREÇÕES ⛔ NÃO ESTÁ NA SEQUÊNCIA, ⛔ E ENTRA MESMO ASSIM ────────
+   *
+   * ⛔ Ela é **condicional** (**C3**): ⛔ existe ⛔ só quando há o que corrigir.
+   * ⚠️ ⛔ E é ⛔ exatamente por isso que ⛔ ela ⛔ não precisa de porteiro
+   * ⛔ aqui: uma pendência com `dono === "correcoes"` **⛔ só nasce** de
+   * bloqueio corrigível ativo, de correção iniciada ⛔ ou de acompanhamento
+   * ⛔ já derivado. ⛔ A existência dela **é** a condição.
+   *
+   * ── ⚠️ E O QUE ⛔ NÃO ESTÁ NA SEQUÊNCIA ⛔ NEM É CORREÇÕES ─────────────────
+   *
+   * ⚠️ Passa. ⛔ Falhar **aberto** é a escolha: ⛔ esconder uma pendência cujo
+   * dono este filtro ⛔ não reconhece seria apagá-la do atendimento, ⛔ e o
+   * preço do erro contrário é ⛔ só ruído.
+   */
+  const pendenciasVisiveis = useMemo(() => {
+    const ordem = SEQUENCIA_OFICIAL.map((sup) => sup.id);
+    const atual = ordem.indexOf(estado.superficieVista);
+    if (atual === -1) return problemas;
+    return problemas.filter((p) => {
+      if (p.dono === "correcoes") return true;
+      const i = ordem.indexOf(p.dono);
+      return i === -1 || i <= atual;
+    });
+  }, [problemas, estado.superficieVista]);
+
+  /**
+   * ⚠️⚠️ ⛔ A NOTA SEGUE A LISTA, ⛔ e ⛔ nunca a contradiz: ⛔ dizer *"de todas
+   * as superfícies"* sobre uma lista filtrada faria o médico concluir que
+   * ⛔ não há mais ⛔ nada pendente no atendimento.
+   */
+  const pendenciasSaoParciais =
+    SEQUENCIA_OFICIAL.map((sup) => sup.id).indexOf(estado.superficieVista) !== -1
+    && pendenciasVisiveis.length < problemas.length;
 
   /**
    * ⚠️ ⛔ `informadosEmA` foi removido em 2026-09-06: contava campos preenchidos
@@ -799,8 +837,19 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * contagem ⛔ e o mesmo toque — ⛔ perder o tempo de vista é o defeito
            * que **§7.8** proíbe, ⛔ e ⛔ ele ⛔ não foi reintroduzido.
            */
+          /**
+           * ⚠️⚠️ ⛔ E A ESTABILIZAÇÃO ENTROU NA MESMA REGRA — 2026-09-08.
+           *
+           * ⛔ ⛔ *"Última vez visto bem"* é **cronologia**, ⛔ e a cronologia
+           * mora na Avaliação AVC desde a Fase 4. ⚠️ ⛔ Na tela do ABCDE ⛔ ele
+           * era o botão mais chamativo — ⛔ azul, ⛔ no cabeçalho — ⛔ acima de
+           * via aérea ⛔ e oxigenação.
+           *
+           * ⚠️ ⛔ O relógio segue nas **cinco** superfícies seguintes, ⛔ com a
+           * mesma contagem ⛔ e o mesmo toque (**§7.8**).
+           */
           relogio={
-            estado.superficieVista === "paciente"
+            estado.superficieVista === "paciente" || estado.superficieVista === "estabilizacao"
               ? undefined
               : {
                   rotulo: "Última vez bem",
@@ -1304,8 +1353,24 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          * ⚠️ ⛔ Ela ⛔ não some do atendimento — ⛔ aparece nas seis superfícies
          * seguintes, ⛔ como já aparecia.
          */
+        /**
+         * ── ⚠️⚠️⚠️ ⛔ E SAIU DA **ESTABILIZAÇÃO** TAMBÉM — 2026-09-08 ────────
+         *
+         * ⚠️ Decisão do autor, na inspeção clínica: *"Estabilização deve
+         * conter ⛔ apenas dados ⛔ e condutas de estabilização imediata"*.
+         *
+         * ⛔ ⛔ O card grande **⛔ era exclusivo desta tela** — ⛔ com
+         * *"Solicitar a tomografia"* ⛔ e *"Já foi feita"* por cima do ABCDE.
+         * ⚠️ ⛔ Os dois botões ⛔ nunca fizeram ⛔ nada **aqui**: ⛔ um leva ao
+         * campo do pedido ⛔ e o outro à Investigação — ⛔ que é onde a imagem
+         * mora, ⛔ e onde ⛔ eles continuam inteiros.
+         *
+         * ⚠️ ⛔ A prioridade ⛔ não some do atendimento: ⛔ a linha compacta
+         * segue nas outras cinco superfícies.
+         */
         : estado.superficieVista === "paciente" ? null
-        : estado.superficieVista !== "estabilizacao" ? (
+        : estado.superficieVista === "estabilizacao" ? null
+        : (
         <Pressable
           onPress={() => abrir("imagem")}
           accessibilityRole="button"
@@ -1317,87 +1382,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <Text style={s.imagemLinhaTexto} numberOfLines={2}>
             {tr(PRIORIDADE_DA_IMAGEM.titulo)}
           </Text>
-          <Text style={s.imagemLinhaAcao}>
+          {/**
+            * ── ⚠️⚠️⚠️ ⛔ O `testID` DA AÇÃO ATRAVESSOU — 2026-09-08 ──────────
+            *
+            * ⛔ ⛔ Ele vivia no **card grande**, ⛔ que era exclusivo da
+            * Estabilização ⛔ e ⛔ saiu de lá. ⚠️ ⛔ A **frase** que ele carrega —
+            * *"Solicitar"* × *"Registrar o exame"* — ⛔ é a mesma, ⛔ vem da
+            * mesma `ACAO_DA_SITUACAO`, ⛔ e ⛔ é ela que as travas medem.
+            *
+            * ⚠️ ⛔ Mudar o `testID` junto com o lugar apagaria a continuidade da
+            * garantia: ⛔ pareceria trava nova, ⛔ e é a **mesma**.
+            */}
+          <Text style={s.imagemLinhaAcao} testID="avc-prioridade-imagem-acao">
             {tr(ACAO_DA_SITUACAO[situacaoDoPedido])}
           </Text>
         </Pressable>
-      ) : (
-        <WarningCard
-          nivel="risco"
-          titulo={PRIORIDADE_DA_IMAGEM.chamada}
-          texto={`${tr(PRIORIDADE_DA_IMAGEM.titulo)} · ${tr(PRIORIDADE_DA_IMAGEM.porque)} (COR ${PRIORIDADE_DA_IMAGEM.cor} · LOE ${PRIORIDADE_DA_IMAGEM.loe})`}
-          testID="avc-prioridade-imagem"
-          acao={
-            /**
-             * ⚠️⚠️ A AÇÃO SEGUE A SITUAÇÃO DERIVADA — ⛔ e ⛔ não é fixa.
-             *
-             * ⛔ *"Registrar a imagem"* no primeiro segundo do atendimento
-             * pressupõe uma imagem que ⛔ ainda ⛔ não existe. ⚠️ O que se faz no
-             * início é **solicitar**.
-             *
-             * ⚠️⚠️ ⛔ E O APP ⛔ NÃO AFIRMA QUE ELA ⛔ NÃO FOI FEITA (**E-23**): ele
-             * sabe ⛔ apenas que ⛔ nada está na trilha. ⛔ Por isso oferece as
-             * **duas** saídas — o paciente pode ter chegado com a TC pronta.
-             */
-            /**
-             * ⚠️⚠️ **UM** BOTÃO, ⛔ e ⛔ não três — corrigido em 2026-09-06 por
-             * auditoria.
-             *
-             * ⛔ **O defeito:** havia *"Solicitar a tomografia"*, *"Já foi feita
-             * — registrar"* ⛔ e *"Registrar o resultado"*. ⚠️ Três rótulos que
-             * prometiam coisas diferentes ⛔ e faziam **exatamente a mesma**:
-             * `abrir("imagem")`. ⛔ Nada era solicitado, ⛔ nada era pré-marcado,
-             * ⛔ nenhum campo recebia foco.
-             *
-             * ⚠️⚠️ É o mesmo critério que este arquivo já aplica ao atalho do
-             * paciente: *"um botão que alterna ⛔ nada seria um controle
-             * mentiroso"*.
-             *
-             * ⚠️ A instrução clínica — **solicitar** — vive no **título** do
-             * card, que é onde ela é verdadeira. O botão nomeia o que o toque
-             * faz: leva à Imagem. ⛔ Quando houver campo de *"solicitada às
-             * HH:MM"*, ⛔ aí sim cabe um segundo botão que **registre** algo.
-             */
-            /**
-             * ⚠️⚠️ AGORA SÃO **DUAS** AÇÕES, ⛔ e ⛔ elas fazem coisas
-             * **diferentes** — que é a condição que o comentário acima já
-             * exigia para a segunda existir.
-             *
-             * ⛔ Enquanto ⛔ não havia campo de *"solicitada às HH:MM"*, três
-             * rótulos diferentes chamavam o mesmo `abrir("imagem")`, ⛔ e ⛔ isso
-             * era um controle mentiroso. ⚠️ ⛔ Agora **solicitar** leva ao campo
-             * do pedido, ⛔ e **registrar** leva ao exame — ⛔ dois lugares, ⛔ e
-             * ⛔ dois fatos distintos.
-             *
-             * ⚠️ ⛔ E a ordem segue o mundo: ⛔ no início do atendimento ⛔ não há
-             * imagem, ⛔ há um pedido a fazer.
-             */
-            <View style={s.imagemAcoes}>
-              <PrimaryAction
-                rotulo={ACAO_DA_SITUACAO[situacaoDoPedido]}
-                onPress={() =>
-                  situacaoDoPedido === "sugerido"
-                    ? irParaCampo("hora_solicitacao_imagem")
-                    : abrir("imagem")
-                }
-                testID="avc-prioridade-imagem-acao"
-              />
-              {/**
-                * ⚠️⚠️ **E-23** — o app sabe que ⛔ nada está na trilha, ⛔ e ⛔ não
-                * que o exame ⛔ não foi feito. ⛔ O paciente pode ter chegado com
-                * a TC pronta de outro serviço, ⛔ e essa saída ⛔ não pode
-                * depender de ⛔ ele ⛔ ter pedido primeiro.
-                */}
-              {situacaoDoPedido === "sugerido" ? (
-                <SecondaryAction
-                  rotulo={PRIORIDADE_DA_IMAGEM.acaoAbrir}
-                  onPress={() => abrir("imagem")}
-                  testID="avc-prioridade-imagem-registrar"
-                />
-              ) : null}
-            </View>
-          }
-        />
       )}
 
       {/**
@@ -1422,7 +1421,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * tela**, ⛔ antes de existir escala ⛔ ou imagem. ⚠️ ⛔ Um resumo de
         * ⛔ nada, ocupando a abertura.
         */}
-      {estado.superficieVista === "paciente" ? null : (
+      {/**
+        * ⚠️⚠️ ⛔ E DA **ESTABILIZAÇÃO** TAMBÉM — 2026-09-08. ⛔ NIHSS ⛔ e imagem
+        * são resumo de **duas fases adiante**; ⛔ na tela do ABCDE ⛔ eles
+        * competem com o que mata em minutos.
+        */}
+      {estado.superficieVista === "paciente" || estado.superficieVista === "estabilizacao" ? null : (
       <View style={s.cartao} testID="avc-resumo">
         <CardHeader
           /**
@@ -1620,6 +1624,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <SuperficieA
             estado={estado}
             agora={agora}
+            /**
+             * ⚠️ ⛔ A Superfície A ⛔ não navega — ⛔ quem navega é o dono da
+             * navegação. ⛔ Ela ⛔ só pede a saída de *"Corrigir agora"*.
+             */
+            onAbrirCorrecoes={() => abrir("correcoes")}
             onEscolher={escolher}
             onMedir={medir}
             onHora={registrarHora}
@@ -1825,9 +1834,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * desta tela, ⛔ e dizer *"de todas as superfícies"* ⛔ ali faria o
           * médico concluir que ⛔ não há mais ⛔ nada pendente no atendimento.
           */}
-        <Text style={s.blocoNota}>
+        <Text style={s.blocoNota} testID="avc-pendencias-nota">
           {estado.superficieVista === "paciente"
             ? tr("Desta tela. As demais superfícies mostram as suas.")
+            : pendenciasSaoParciais
+            ? tr("Até esta fase. As seguintes mostram as suas.")
             : tr("De todas as superfícies. O nome indica onde resolver.")}
         </Text>
         {pendenciasVisiveis.length === 0 ? (

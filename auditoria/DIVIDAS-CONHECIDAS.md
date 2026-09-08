@@ -4697,3 +4697,38 @@ existe — ⛔ ele vai passar no meio do ruído.
 apaga o aviso ⛔ **e** a capacidade de avisar. ⚠️ O que falta é **declarar o
 ambiente**, ⛔ e ⛔ não silenciar a regra.
 
+---
+
+## D-126 — ⏸️ ABERTA · A LEITURA DO PESO FICOU ⛔ SEM TELA
+
+**Estado:** ⏸️ **ABERTA**, criada em 2026-09-08 pela própria mudança que a
+originou — ⛔ e registrada no mesmo passo, ⛔ e ⛔ não descoberta depois.
+
+**O que aconteceu.** O peso saiu da Estabilização a pedido do autor (*"peso e
+origem do peso ⛔ já pertencem à tela Paciente"*). ⚠️ O **campo** ⛔ não se
+perdeu — ⛔ ele é desenhado em Paciente, ⛔ que é a casa dele. ⛔ O que ficou sem
+tela foi a **leitura** `peso()`: *"Peso ⛔ não informado — ⛔ não atrasar a
+trombólise por causa ⛔ dele"*.
+
+⛔ ⛔ Ela era mostrada no painel de leituras da Superfície A. ⛔ Paciente
+⛔ **⛔ não tem painel de leituras**, ⛔ e ⛔ isso é decisão declarada: *"aqui se
+registra ⛔ quem é o paciente, ⛔ e a interpretação de cada fato pertence à
+superfície que o consome"*.
+
+### ⚠️⚠️ POR QUE ⛔ NÃO FOI RESOLVIDO NO MESMO COMMIT
+
+⛔ ⛔ A leitura ⛔ não é sobre *"quem é o paciente"*: ⛔ ela é sobre **⛔ não
+atrasar a reperfusão**. ⚠️ A casa natural ⛔ dela é a **Reperfusão**, ⛔ onde o
+peso é consumido para a dose — ⛔ e pôr uma leitura numa superfície nova é
+decisão de composição, ⛔ e ⛔ não consequência mecânica de mover um campo.
+
+⚠️ ⛔ A função `peso()` **continua existindo ⛔ e testada** em
+`avc/nucleo/derivacoes.ts`; ⛔ o que falta é ⛔ uma tela chamá-la.
+
+### O que ela precisa para fechar
+
+1. **decisão do autor** sobre a casa — Reperfusão é a hipótese, ⛔ e ⛔ não a
+   resposta;
+2. **e2e** que prove a frase na tela escolhida;
+3. ⛔ e ⛔ nenhuma segunda cópia: ⛔ a leitura é ⛔ uma, ⛔ e ⛔ ela vem do núcleo.
+

@@ -110,12 +110,25 @@ test.describe("AVC · abertura do atendimento", () => {
       await expect(bloco).not.toContainText(/tomografia|NIHSS|glicemia|coagula/i);
 
       /**
-       * ⚠️⚠️ ⛔ E O ALCANCE GLOBAL **⛔ NÃO FOI REVOGADO** — ⛔ nas outras
-       * superfícies o bloco segue transversal (**E-07**).
+       * ── ⚠️⚠️⚠️ ⛔ O ALCANCE VIROU **PROGRESSÃO** — 2026-09-08 ──────────────
+       *
+       * ⛔ ⛔ A garantia era *"nas outras superfícies o bloco segue
+       * transversal"*. ⚠️ ⛔ Ela ⛔ não foi apagada para ficar verde: ⛔ o autor
+       * a **estreitou por decisão** — *"na fase atual, mostrar ⛔ apenas
+       * pendências de fases anteriores + fase atual"*.
+       *
+       * ⚠️⚠️ ⛔ O QUE CONTINUA VALENDO, ⛔ e é o que importa: ⛔ a pendência
+       * ⛔ **⛔ não some do atendimento** — ⛔ ela aparece na casa dela. ⛔ Uma
+       * lista filtrada que apagasse pendência seria pior que uma lista longa.
        */
       await aba(page, "estabilizacao");
+      await expect(page.getByTestId("avc-pendencias-nota"))
+        .not.toContainText(/De todas as superfícies/i);
       await expect(page.getByTestId("avc-pendencias"))
-        .toContainText(/De todas as superfícies/i);
+        .not.toContainText(/Tomografia/i);
+
+      await aba(page, "imagem");
+      await expect(page.getByTestId("avc-pendencias")).toContainText(/Tomografia/i);
     });
 
   /* ══ ⚠️⚠️⚠️ 3 · PROGRESSÃO PACIENTE → ESTABILIZAÇÃO ═════════════════ */

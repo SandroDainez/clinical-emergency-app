@@ -93,19 +93,38 @@ test.describe("AVC · Paciente — painel de contexto", () => {
    * **uma** trilha. É o que o autor formulou como *"propriedade do fato ⛔ não é
    * local de preenchimento"*.
    */
-  test("o peso preenchido em A aparece em Paciente — mesmo fato", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O EMPRÉSTIMO ACABOU — 2026-09-08 ────────────────────────────
+   *
+   * ⛔ ⛔ O peso era desenhado **nas duas telas**, com a etiqueta *"Do painel
+   * Paciente"* na Estabilização. ⚠️ Decisão do autor, na inspeção clínica:
+   * *"peso e origem do peso ⛔ já pertencem à tela Paciente"*.
+   *
+   * ⚠️⚠️ ⛔ A GARANTIA VIROU A SUA METADE VERDADEIRA: ⛔ o fato tem **uma casa
+   * ⛔ e uma tela**, ⛔ e ⛔ ele ⛔ não sumiu do atendimento ao sair da outra.
+   */
+  test("⛔ o peso é preenchido em Paciente — ⛔ e ⛔ em nenhuma outra tela", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+
     await page.getByTestId("avc-aba-estabilizacao").click();
-
-    // ⚠️ Na A ele aparece EMPRESTADO, com a etiqueta de onde mora.
-    await expect(page.getByTestId("avc-emprestado-peso")).toContainText(/Do painel Paciente/i);
-    await page.getByTestId("avc-num-caixa-peso").fill("78");
-
-    await page.getByTestId("avc-aba-paciente").click();
-    // ⛔ E lá ele ⛔ não é emprestado: é a casa dele.
+    await expect(page.getByTestId("avc-campo-peso")).toHaveCount(0);
     await expect(page.getByTestId("avc-emprestado-peso")).toHaveCount(0);
+
+    /**
+     * ⚠️ ⛔ Em Paciente o número é desenhado por `NumericStepper`
+     * (`avc-grandeza-*`), ⛔ e ⛔ não pelo `Numero` da Estabilização — ⛔ os dois
+     * controles ⛔ ainda ⛔ não são o mesmo componente, ⛔ e ⛔ isso está
+     * **relatado**, ⛔ e ⛔ não escondido.
+     */
+    await page.getByTestId("avc-aba-paciente").click();
+    await expect(page.getByTestId("avc-campo-peso")).toHaveCount(1);
+    await expect(page.getByTestId("avc-grandeza-peso")).toBeVisible();
+    /** ⚠️ O gesto real do controle de Paciente: o degrau grande. */
+    await page.getByTestId("avc-degrau-peso-mais-10").click();
     await expect(page.getByTestId("avc-campo-peso")).not.toContainText(/não informado/i);
+    /** ⛔ E ⛔ lá ⛔ ele ⛔ não é emprestado: ⛔ é a casa dele. */
+    await expect(page.getByTestId("avc-emprestado-peso")).toHaveCount(0);
   });
 
   /**

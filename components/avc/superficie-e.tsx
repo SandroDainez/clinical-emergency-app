@@ -19,40 +19,23 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ACAO_E, ACOES_DE_CORRECAO } from "../../avc/conteudo/superficie-e";
-import {
-  ALVOS_GLICEMICOS,
-  CORTES_GLICEMICOS,
-  ERROS_A_EVITAR,
-  PERGUNTA_QUE_DECIDE,
-  TRATAMENTOS_GLICEMICOS,
-} from "../../avc/conteudo/correcao-glicemica";
-import {
-  AGENTES_ANTI_HIPERTENSIVOS,
-  ALERTA_DO_ESMOLOL,
-  ALVOS_PRESSORICOS,
-  type PapelDoAgente,
-} from "../../avc/conteudo/antihipertensivos";
 import { bloqueiosComAcoes } from "../../avc/nucleo/derivacoes-e";
 import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
+import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 
 /**
- * ⚠️ O papel em palavras — ⛔ e ⛔ ele ⛔ não é ranking. ⚠️ *"Preferencial"* aqui
- * significa **estava na tabela de 2019**, ⛔ e ⛔ não *"funciona melhor"*.
+ * ⚠️ ⛔ `PAPEL_EM_PALAVRAS` mudou de casa em 2026-09-08: ⛔ ele é do **desenho**
+ * dos agentes, ⛔ e o desenho mora em `conduta-da-fonte.tsx`, ⛔ que as duas
+ * telas chamam.
  */
-const PAPEL_EM_PALAVRAS: Readonly<Record<PapelDoAgente, string>> = {
-  preferencial_2019: "Na tabela da AHA/ASA de 2019",
-  alternativa: "Alternativa",
-  historico_br: "Prática histórica brasileira",
-  reserva: "Reserva para caso grave ou refratário",
-};
 
 type Props = {
   estado: EstadoAvc;
@@ -218,68 +201,22 @@ export default function SuperficieE({
               * labetalol, ⛔ e a de 2026 ⛔ não lista fármaco algum"* ⛔ não são a
               * mesma afirmação.
               */}
-            {bloqueio.id === "pressao_acima_da_meta" ? (
-              <View style={e.terapeutica} testID="avc-e-terapeutica-pressao">
-                <Text style={e.terapeuticaTitulo}>{tr("Agentes intravenosos")}</Text>
-                <Text style={e.terapeuticaNota}>
-                  {tr("A diretriz vigente dá alvos e não nomeia fármaco. Cada agente abaixo traz a sua própria procedência, e a escolha é do médico.")}
-                </Text>
-
-                {AGENTES_ANTI_HIPERTENSIVOS.map((ag) => (
-                  <View key={ag.id} style={e.agente} testID={`avc-e-agente-${ag.id}`}>
-                    <View style={e.agenteTopo}>
-                      <Text style={e.agenteNome}>{tr(ag.nome)}</Text>
-                      <Text style={e.agentePapel}>{tr(PAPEL_EM_PALAVRAS[ag.papel])}</Text>
-                    </View>
-                    {/**
-                      * ⚠️ ⛔ Sem dose, ⛔ nenhuma é inventada: o bloco simplesmente
-                      * ⛔ não a mostra, ⛔ e a procedência diz por quê.
-                      */}
-                    {ag.dose ? <Text style={e.agenteDose}>{tr(ag.dose)}</Text> : null}
-                    {ag.titulacao ? <Text style={e.agenteLinha}>{tr(ag.titulacao)}</Text> : null}
-                    {ag.maximo ? (
-                      <Text style={e.agenteLinha}>{tr("Máximo")}: {tr(ag.maximo)}</Text>
-                    ) : null}
-                    {ag.quando ? (
-                      <Text style={e.agenteLinha}>{tr("Quando")}: {tr(ag.quando)}</Text>
-                    ) : null}
-                    {ag.cautela ? (
-                      <Text style={e.agenteCautela}>{tr("Cautela")}: {tr(ag.cautela)}</Text>
-                    ) : null}
-                    <Text style={e.agenteFonte}>{tr(ag.procedencia)}</Text>
-                  </View>
-                ))}
-
-                {/**
-                  * ⚠️⚠️ O ALERTA DO ESMOLOL — o achado de segurança deste slot.
-                  * ⛔ Ele fica **junto dos agentes**, ⛔ e ⛔ não numa nota de
-                  * rodapé: quem lê a dose do esmolol precisa ler isto ⛔ ali.
-                  */}
-                <View style={e.alerta} testID="avc-e-alerta-esmolol">
-                  <Text style={e.alertaTitulo}>{tr(ALERTA_DO_ESMOLOL.titulo)}</Text>
-                  <Text style={e.alertaTexto}>{tr(ALERTA_DO_ESMOLOL.texto)}</Text>
-                </View>
-
-                {/**
-                  * ⚠️⚠️ OS ALVOS, com a força de cada um — ⛔ e ⛔ eles ⛔ não
-                  * colapsam: 185/110 é **porta de entrada**; 180/105 é
-                  * **manutenção**; ⛔ e `<140` aparece com **dano declarado**
-                  * depois de recanalização.
-                  */}
-                <Text style={e.terapeuticaTitulo}>{tr("Alvos pressóricos")}</Text>
-                {ALVOS_PRESSORICOS.map((alvo) => (
-                  <View key={alvo.id} style={e.alvo} testID={`avc-e-alvo-${alvo.id}`}>
-                    <Text style={e.alvoGrau}>
-                      {alvo.apoioSemGrau
-                        ? tr("Texto de apoio da diretriz, sem grau de recomendação")
-                        : `${tr("COR")} ${alvo.cor} · ${tr("LOE")} ${alvo.loe}`}
-                    </Text>
-                    <Text style={e.alvoValor}>{tr(alvo.valor)}</Text>
-                    <Text style={e.alvoContexto}>{tr(alvo.contexto)}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
+            {/**
+              * ── ⚠️⚠️ COMO CORRIGIR — F-19, ⛔ e ⛔ só para a pressão ────────────
+              *
+              * ⚠️ Pedido do autor em 2026-09-06: *"contraindicações corrigíveis
+              * PA ⛔ e glicemia ⛔ e maneira de corrigir, o que usar ⛔ e doses"*.
+              *
+              * ⚠️⚠️ ⛔ O DESENHO MUDOU DE ARQUIVO em 2026-09-08, ⛔ e ⛔ não de
+              * conteúdo: ⛔ ele ⛔ agora é `CondutaDaPressao`, ⛔ que a
+              * **Estabilização** também chama. ⛔ Duas telas montando o mesmo
+              * bloco com JSX próprio divergiriam no primeiro campo novo.
+              *
+              * ⚠️ ⛔ O `prefixo` mantém os `testID` que as travas desta tela
+              * ⛔ já mediam — ⛔ mudar de arquivo ⛔ não pode custar a
+              * continuidade de garantia ⛔ nenhuma.
+              */}
+            {bloqueio.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-e-" /> : null}
 
             {/**
               * ── ⚠️⚠️ F-18 · A GLICEMIA ⛔ NÃO CONTRAINDICA ────────────────────
@@ -294,74 +231,13 @@ export default function SuperficieE({
               * ⛔ não desaprende lendo uma faixa — ⛔ precisa ler que aquilo
               * mudou, ⛔ e o que ficou no lugar.
               */}
-            {bloqueio.id === "glicemia_alterada" ? (
-              <View style={e.terapeutica} testID="avc-e-terapeutica-glicemia">
-                <View style={e.pergunta} testID="avc-e-pergunta-glicemia">
-                  <Text style={e.perguntaGrau}>
-                    {tr("COR")} {PERGUNTA_QUE_DECIDE.cor}
-                  </Text>
-                  <Text style={e.perguntaTexto}>{tr(PERGUNTA_QUE_DECIDE.pergunta)}</Text>
-                  <Text style={e.perguntaRamo}>
-                    {tr("Se persiste")}: {tr(PERGUNTA_QUE_DECIDE.sePersiste)}
-                  </Text>
-                  <Text style={e.perguntaRamo}>
-                    {tr("Se desaparece")}: {tr(PERGUNTA_QUE_DECIDE.seDesaparece)}
-                  </Text>
-                </View>
-
-                <Text style={e.terapeuticaTitulo}>{tr("Como corrigir")}</Text>
-                {TRATAMENTOS_GLICEMICOS.map((t) => (
-                  <View key={t.id} style={e.agente} testID={`avc-e-glicemia-${t.id}`}>
-                    <Text style={e.agenteNome}>{tr(t.nome)}</Text>
-                    {/**
-                      * ⚠️ ⛔ Sem dose, ⛔ nenhuma é inventada — ⛔ e no caso da
-                      * insulina **a ausência é a informação**.
-                      */}
-                    {t.dose ? <Text style={e.agenteDose}>{tr(t.dose)}</Text> : null}
-                    <Text style={e.agenteLinha}>{tr(t.quando)}</Text>
-                    {t.cautela ? (
-                      <Text style={e.agenteCautela}>{tr(t.cautela)}</Text>
-                    ) : null}
-                    <Text style={e.agenteFonte}>{tr(t.procedencia)}</Text>
-                  </View>
-                ))}
-
-                <Text style={e.terapeuticaTitulo}>{tr("O que cada faixa significa")}</Text>
-                {CORTES_GLICEMICOS.map((c) => (
-                  <View key={c.id} style={e.alvo} testID={`avc-e-corte-${c.id}`}>
-                    <Text style={e.alvoValor}>{tr(c.faixa)}</Text>
-                    <Text style={e.alvoContexto}>
-                      {tr(c.natureza)} — {tr(c.conduta)}
-                    </Text>
-                    {/** ⚠️ ⛔ O que ⛔ **não** é fica escrito, ⛔ e ⛔ não implícito. */}
-                    <Text style={e.alvoNaoE}>{tr(c.naoE)}</Text>
-                  </View>
-                ))}
-
-                <Text style={e.terapeuticaTitulo}>{tr("Alvos glicêmicos")}</Text>
-                {ALVOS_GLICEMICOS.map((a) => (
-                  <View key={a.id} style={e.alvo} testID={`avc-e-alvo-glicemia-${a.id}`}>
-                    <Text style={e.alvoGrau}>
-                      {a.cor === "—" ? tr("Manejo hospitalar") : `${tr("COR")} ${a.cor}`}
-                    </Text>
-                    <Text style={e.alvoValor}>{tr(a.valor)}</Text>
-                    <Text style={e.alvoContexto}>{tr(a.contexto)}</Text>
-                  </View>
-                ))}
-
-                <View style={e.alerta} testID="avc-e-erros-glicemia">
-                  <Text style={e.alertaTitulo}>
-                    {tr("Leituras antigas que hoje estão erradas")}
-                  </Text>
-                  {ERROS_A_EVITAR.map((x) => (
-                    <View key={x.errado} style={e.erro}>
-                      <Text style={e.erroErrado}>{tr(x.errado)}</Text>
-                      <Text style={e.erroCerto}>{tr(x.correto)}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : null}
+            {/**
+              * ── ⚠️⚠️ F-18 · A GLICEMIA ⛔ NÃO CONTRAINDICA ────────────────────
+              *
+              * ⚠️ Mesmo movimento da pressão: ⛔ o desenho vive em
+              * `CondutaGlicemica`, ⛔ e a Estabilização chama o **mesmo**.
+              */}
+            {bloqueio.id === "glicemia_alterada" ? <CondutaGlicemica prefixo="avc-e-" /> : null}
 
             {acao ? (
               <Pressable

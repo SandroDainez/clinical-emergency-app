@@ -635,8 +635,19 @@ export function leiturasDaSuperficieA(estado: EstadoAvc): readonly (Leitura & { 
     { id: "glicemia", ...glicemia(estado) },
     { id: "reavaliacao_glicemia", ...reavaliacaoAposCorrecao(estado) },
     { id: "pressao", ...pressaoArterial(estado) },
-    { id: "peso", ...peso(estado) },
-    { id: "crise", ...criseNoInicio(estado) },
+    /**
+     * ── ⚠️⚠️⚠️ DUAS LEITURAS SAÍRAM DAQUI — 2026-09-08 ────────────────────
+     *
+     * ⛔ ⛔ `peso` ⛔ e `crise` seguiram os campos que ⛔ elas leem: o peso mora
+     * em **Paciente** (⛔ e o empréstimo saiu desta tela), ⛔ e a crise passou
+     * a morar na **Avaliação AVC**.
+     *
+     * ⚠️ ⛔ Leitura sobre campo que ⛔ não está na tela é resumo de ⛔ nada —
+     * ⛔ foi o mesmo defeito de *"Escala e imagem"* na abertura.
+     *
+     * ⚠️ ⛔ As **funções** continuam onde estavam: `peso()` ⛔ e
+     * `criseNoInicio()` são núcleo, ⛔ e ⛔ núcleo ⛔ não pertence a tela.
+     */
   ];
 }
 

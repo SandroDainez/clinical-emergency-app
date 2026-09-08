@@ -120,8 +120,9 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
 {
   const { rel, est } = novo();
   const leituras = D.leiturasDaSuperficieA(est);
+  /** ⚠️ **6** desde 2026-09-08 — ⛔ peso ⛔ e crise saíram desta tela. */
   confere("sem peso, as demais leituras continuam existindo",
-    leituras.length === 8,
+    leituras.length === 6,
     "peso ausente não pode suprimir a superfície");
   confere("peso ausente é desconhecido e declara que não atrasa",
     D.peso(est).conclusao === "desconhecido" && /não atrasa/i.test(D.peso(est).texto),
@@ -159,20 +160,21 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     "§4.1 rec.2 · COR 1 · C-LD");
 }
 
-// ── 5 · crise no início é contexto, não exclusão ───────────────────────────
+// ── 5 · ⛔ a crise SAIU daqui, e as leituras encolheram com ela ────────────
+/**
+ * ⚠️⚠️ ⛔ AS TRÊS CONFERÊNCIAS CLÍNICAS DA CRISE **⛔ NÃO FORAM APAGADAS**:
+ * ⛔ elas foram para `prova-avc-superficie-b`, ⛔ junto com o campo. ⚠️ O que
+ * fica ⛔ aqui é a garantia de que ⛔ ela ⛔ não voltou — ⛔ e de que a lista de
+ * leituras acompanhou.
+ */
 {
-  const { rel, est } = novo();
-  const comCrise = reg(est, "crise_no_inicio", "sim", rel);
-  const l = D.criseNoInicio(comCrise);
-  confere("crise no início não exclui AVC",
-    l.conclusao === "sim" && /não exclui/i.test(l.texto),
-    "F-24: crise no início é mimetizador possível — a recomendação de anticonvulsivante é para crise APÓS o AVC");
-  confere("crise no início não indica anticonvulsivante por si",
-    /não .*indica anticonvulsivante|não indica/i.test(l.texto),
-    "profilaxia é COR 3: No Benefit");
-  confere("as demais leituras seguem disponíveis com crise presente",
-    D.leiturasDaSuperficieA(comCrise).length === 8,
-    "crise não pode encerrar a superfície");
+  const { est } = novo();
+  confere("⚠️⚠️ as leituras de A encolheram para **6** — ⛔ peso ⛔ e crise saíram",
+    D.leiturasDaSuperficieA(est).length === 6,
+    "⛔ leitura sobre campo que ⛔ não está na tela é resumo de ⛔ nada");
+  confere("⚠️ ⛔ e ⛔ NENHUMA delas é sobre peso ⛔ ou crise",
+    D.leiturasDaSuperficieA(est).every((l) => l.id !== "peso" && l.id !== "crise"),
+    "⛔ elas seguiram os campos que leem");
 }
 
 // ── 6 · relógios permanecem distintos ──────────────────────────────────────
@@ -836,14 +838,23 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     "removido a pedido do autor em 2026-08-28; o cenário de AVC ao acordar volta com a regra temporal que o justifica, ⛔ ou não volta");
 
   /**
-   * ⚠️ `CAMPOS_NA_TELA_A` e ⛔ não `TODOS_OS_CAMPOS_A`: desde 2026-08-29 o peso
-   * **mora em Paciente** e é **desenhado aqui**. A pergunta desta conferência é
-   * sobre o que o médico VÊ, e ⛔ não sobre de quem é o fato.
+   * ── ⚠️⚠️ A CONFERÊNCIA DA BALANÇA MUDOU DE PROVA — 2026-09-08 ────────────
+   *
+   * ⛔ ⛔ Ela lia `CAMPOS_NA_TELA_A`, ⛔ e o peso ⛔ deixou de ser desenhado
+   * ⛔ aqui: o empréstimo saiu da Estabilização a pedido do autor. ⚠️ A regra
+   * ⛔ não morreu — ⛔ ela foi para `prova-avc-paciente`, ⛔ que é onde o campo
+   * ⛔ agora aparece.
+   *
+   * ⚠️ ⛔ O que fica **aqui** é a garantia de que ⛔ ele ⛔ não voltou.
    */
-  const origem = C.CAMPOS_NA_TELA_A.find((c) => c.id === "peso_origem");
-  confere("⛔ a origem do peso ⛔ não oferece balança",
-    !origem.opcoes.some((o) => /balan/i.test(o)),
-    "⛔ ninguém pesa em balança um AVC agudo na porta do PS — opção que ⛔ não acontece ocupa alvo e sugere caminho inexistente");
+  confere("⚠️⚠️ ⛔ o peso ⛔ NÃO é desenhado na Estabilização",
+    !C.CAMPOS_NA_TELA_A.some((c) => c.id === "peso" || c.id === "peso_origem"),
+    "⛔ o empréstimo voltou — ⛔ e com ele a etiqueta *«Do painel Paciente»* duas vezes na tela do ABCDE");
+
+  /** ⚠️ ⛔ E a crise também ⛔ não: ⛔ ela mora na Avaliação AVC desde 2026-09-08. */
+  confere("⚠️⚠️ ⛔ a crise no início ⛔ NÃO é desenhada na Estabilização",
+    !C.CAMPOS_NA_TELA_A.some((c) => c.id === "crise_no_inicio"),
+    "⛔ contexto de mimetizador ocupando a tela que existe para o ABCDE");
 
   /**
    * ── ⚠️⚠️ ⛔ GLASGOW ENTROU — ⛔ E A REGRA QUE ISTO PROTEGIA CONTINUA ────────
@@ -903,9 +914,17 @@ const K = require(path.join(tmp, "conteudo", "campo.js"));
   confere("⛔ e o antigo eixo 'D · Glicemia' DESAPARECEU",
     !titulos.includes("D · Glicemia"),
     "⛔ item 17 do aceite: ⛔ o eixo antigo ⛔ não pode coexistir com o novo");
-  confere("a crise fica FORA da mnemônica",
-    titulos.includes("Crise no início"),
-    "⛔ nem tudo em A é ameaça imediata, e forçar a mnemônica esconderia isso");
+  /**
+   * ⚠️⚠️ ⛔ INVERTIDA em 2026-09-08, ⛔ e ⛔ não apagada para ficar verde.
+   *
+   * ⛔ ⛔ Ela exigia *"Crise no início"* **dentro** de A, com o argumento de que
+   * ⛔ nem tudo ali é ameaça imediata. ⚠️ ⛔ O autor levou o argumento até o fim:
+   * ⛔ se ⛔ não é ameaça imediata, ⛔ **⛔ não é desta tela** — ⛔ e a crise foi
+   * para a Avaliação AVC.
+   */
+  confere("⚠️⚠️ ⛔ a crise ⛔ NÃO está mais na Estabilização",
+    !titulos.includes("Crise no início"),
+    "⛔ contexto de mimetizador ocupando a tela que existe para o ABCDE");
   /**
    * ⚠️⚠️ ⛔ E OS RELÓGIOS ⛔ SAÍRAM DAQUI — **C7**, 2026-09-07.
    *

@@ -74,7 +74,14 @@ test.describe("AVC — afordância e navegação", () => {
      * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
      * ⛔ não.
      */
-    await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ E ⛔ NÃO É MAIS NA ESTABILIZAÇÃO — 2026-09-08: *"Última vez visto
+     * bem"* é **cronologia**, ⛔ e saiu da tela do ABCDE a pedido do autor.
+     * ⚠️ ⛔ O relógio segue nas cinco superfícies seguintes (**§7.8**), ⛔ e a
+     * garantia — *"é botão, ⛔ e ⛔ não duas palavras soltas"* — ⛔ é medida
+     * ⛔ onde ⛔ ele vive.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
     const relogio = page.getByTestId("avc-relogio-do-topo");
     await expect(relogio).toBeVisible();
 
@@ -496,8 +503,16 @@ test.describe("AVC — afordância e navegação", () => {
     await page.getByTestId("avc-aba-estabilizacao").click();
     await expect(page.getByTestId("avc-ameacas-imediatas")).toBeVisible();
 
-    /** ⚠️ O gesto que o autor descreveu: tocar no card da imagem ⛔ e voltar. */
-    await page.getByTestId("avc-prioridade-imagem-registrar").click();
+    /**
+     * ⚠️ O gesto que o autor descreveu: tocar no card da imagem ⛔ e voltar.
+     *
+     * ⚠️⚠️ ⛔ O CARD GRANDE SAIU DA ESTABILIZAÇÃO em 2026-09-08 — ⛔ e com ⛔ ele
+     * o botão *"Já foi feita"*. ⚠️ O que leva à imagem ⛔ agora é a **linha
+     * compacta**, ⛔ que vive nas superfícies seguintes. ⛔ A garantia é sobre o
+     * **Voltar**, ⛔ e ⛔ não sobre qual toque levou lá.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
+    await page.getByTestId("avc-prioridade-imagem").click();
     await expect(page.getByTestId("avc-superficie-imagem")).toBeVisible();
 
     await page.getByTestId("avc-voltar").click();
@@ -530,10 +545,19 @@ test.describe("AVC — afordância e navegação", () => {
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
 
+    /**
+     * ⚠️⚠️ ⛔ A FRASE ATRAVESSOU DE TELA — 2026-09-08. ⛔ O card grande saiu da
+     * Estabilização; ⛔ a **mesma** `ACAO_DA_SITUACAO` ⛔ agora se lê na linha
+     * compacta das superfícies seguintes, ⛔ com o **mesmo** `testID`.
+     *
+     * ⚠️ ⛔ E o toque leva à **Investigação**, ⛔ que é onde o campo do pedido
+     * mora — ⛔ o mesmo destino de antes, ⛔ por um passo a menos.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
     const acao = page.getByTestId("avc-prioridade-imagem-acao");
     await expect(acao).toContainText("Solicitar");
 
-    await acao.click();
+    await page.getByTestId("avc-prioridade-imagem").click();
     /** ⚠️ ⛔ Ela leva ao campo do PEDIDO — ⛔ e ⛔ não a um exame que ⛔ não existe. */
     await expect(page.getByTestId("avc-campo-hora_solicitacao_imagem")).toBeVisible();
 

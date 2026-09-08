@@ -383,19 +383,22 @@ export const SUPORTE_A: readonly CampoA[] = [
 
 export const PESO_A: readonly CampoA[] = [];
 
-/** CRISE NO INÍCIO — ⚠️ contexto, ⛔ nunca exclusão. */
-export const CRISE_A: readonly CampoA[] = [
-  {
-    id: "crise_no_inicio",
-    temporalidade: "estavel",
-    rotulo: "Crise convulsiva no início do quadro",
-    tipo: "escolha",
-    opcoes: SIM_NAO_INCERTO,
-    fonte: "F-24",
-    bloqueiaTerapia: false,
-    nota: "Contexto e possível mimetizador. Não exclui AVC.",
-  },
-] as const;
+/**
+ * ── ⚠️⚠️⚠️ A CRISE MUDOU DE CASA — 2026-09-08 ─────────────────────────────
+ *
+ * ⛔ ⛔ `crise_no_inicio` morava ⛔ aqui, ⛔ e ⛔ agora mora em
+ * `superficie-b.ts` (**Avaliação AVC**). ⚠️ Decisão do autor, na inspeção
+ * clínica: *"crise no início pertence mais claramente à Avaliação AVC"*.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ NÃO É MUDANÇA VISUAL: ⛔ mudou o **dono** da pendência, ⛔ o
+ * destino do `Resolver ›` ⛔ e a lista de `fontes` das duas superfícies —
+ * ⛔ F-24 entrou em `neurologico` ⛔ e ⛔ nunca tinha sido declarada ⛔ aqui.
+ *
+ * ⚠️ ⛔ O **id ⛔ não mudou**, ⛔ então a trilha do fato atravessa inteira.
+ * ⛔ A derivação `criseNoInicio()` ⛔ também ⛔ não se moveu: ⛔ ela é núcleo,
+ * ⛔ e ⛔ núcleo ⛔ não pertence a tela ⛔ nenhuma. ⛔ O que mudou de lista foi a
+ * **leitura exibida**, de `leiturasDaSuperficieA` para a de B.
+ */
 
 /**
  * ⚠️ A ORDEM DESTE ARRANJO É A ORDEM DA TELA, e é clínica (§7.3).
@@ -485,18 +488,20 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
     campos: [...NEUROLOGICO_A, ...GLICEMIA_A],
   },
   { id: "exposicao", titulo: "E · Exposição", campos: EXPOSICAO_A },
-  {
-    id: "peso",
-    titulo: "Peso",
-    campos: PESO_A,
-    /**
-     * ⚠️ O peso mora em **Paciente** e é preenchido aqui — porque é aqui que ele
-     * costuma ser sabido, na chegada. Mesmo id, mesma trilha.
-     */
-    emprestados: [CAMPO_DO_PACIENTE("peso"), CAMPO_DO_PACIENTE("peso_origem")],
-  },
-  /** ⚠️ Também fora da mnemônica: é contexto, e ⛔ não ameaça imediata. */
-  { id: "crise", titulo: "Crise no início", campos: CRISE_A },
+  /**
+   * ── ⚠️⚠️⚠️ O PESO SAIU DA ESTABILIZAÇÃO — 2026-09-08 ────────────────────
+   *
+   * ⛔ ⛔ Ele **⛔ nunca foi daqui**: `PESO_A` sempre foi `[]`, ⛔ e o que a tela
+   * desenhava eram dois campos **emprestados** de Paciente — ⛔ com a etiqueta
+   * *"Do painel Paciente"* impressa duas vezes, ⛔ uma para cada campo.
+   *
+   * ⚠️ Decisão do autor, na inspeção clínica: *"peso e origem do peso ⛔ já
+   * pertencem à tela Paciente"*. ⛔ Retirar o empréstimo ⛔ não apaga fato
+   * ⛔ nenhum — ⛔ a casa ⛔ já era outra, ⛔ e o `Resolver ›` ⛔ já levava para lá.
+   *
+   * ⚠️ ⛔ `PESO_A` fica declarado ⛔ e vazio, ⛔ e ⛔ isso é de propósito: ⛔ ele é
+   * a prova de que ⛔ nenhum campo próprio morreu ⛔ aqui.
+   */
 ];
 
 /**

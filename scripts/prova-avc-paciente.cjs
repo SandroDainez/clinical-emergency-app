@@ -188,9 +188,25 @@ const TODOS = [
    * pelo *«Resolver ›»* (**E-26**) — ⛔ por isso ⛔ ele mudou de casa, ⛔ e ⛔ não
    * ⛔ só de tela.
    */
-  confere("as superfícies tomam campos emprestados",
-    emprestados.length >= 2,
-    "peso e origem do peso mudaram de casa e continuam nas telas onde eram respondidos");
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ HOJE ⛔ NÃO HÁ **⛔ NENHUM** EMPRÉSTIMO — 2026-09-08 ─────────
+   *
+   * ⛔ ⛔ Eram três; ⛔ o `mrs_previo` virou **próprio** da Avaliação AVC em
+   * 2026-09-07, ⛔ e o par do peso saiu da Estabilização em 2026-09-08.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ISSO ⛔ NÃO ESVAZIA ESTE BLOCO: ⛔ o mecanismo continua no
+   * `campo.ts` (`camposDoGrupo` soma `emprestados`), ⛔ e a regra que importa —
+   * *"o emprestado é o **mesmo objeto**, ⛔ e ⛔ não uma cópia com o mesmo id"* —
+   * ⛔ segue medida abaixo, ⛔ e volta a ter mordida no dia em que ⛔ alguém
+   * emprestar de novo.
+   *
+   * ⚠️ ⛔ Afirmar `>= 1` ⛔ aqui seria exigir que o app mantivesse um empréstimo
+   * ⛔ que ⛔ ninguém pediu — ⛔ a trava mandando na arquitetura, ⛔ e ⛔ não o
+   * contrário.
+   */
+  confere("⚠️⚠️ ⛔ nenhum campo de Paciente é desenhado por empréstimo",
+    emprestados.length === 0,
+    "⛔ voltou empréstimo: confira se a casa ⛔ ainda desenha o campo (**E-26**), ⛔ e atualize esta nota");
 
   const naoSaoOMesmo = emprestados.filter((c) => P.CAMPO_DO_PACIENTE(c.id) !== c);
   confere("todo campo emprestado é o MESMO objeto da casa dele",
@@ -224,10 +240,24 @@ const TODOS = [
     B.TODOS_OS_CAMPOS_B.some((c) => c.id === "mrs_previo" && c.casa === "neurologico")
     && !P.TODOS_OS_CAMPOS_P.some((c) => c.id === "mrs_previo"),
     "⛔ a funcionalidade prévia saiu da abertura, ⛔ e o fato foi junto — ⛔ sem ganhar uma segunda casa");
-  confere("e os que seguem emprestados continuam DESENHADOS nas telas de origem",
-    K.camposDoGrupo(A.GRUPOS_A.find((g) => g.id === "peso")).some((c) => c.id === "peso")
-    && K.camposDoGrupo(B.GRUPOS_B.find((g) => g.id === "basal")).some((c) => c.id === "mrs_previo"),
+  /**
+   * ⚠️⚠️ ⛔ O PESO SAIU DO EMPRÉSTIMO em 2026-09-08 — ⛔ decisão do autor:
+   * *"peso e origem do peso ⛔ já pertencem à tela Paciente"*.
+   *
+   * ⛔ ⛔ A conferência ⛔ não foi apagada: ⛔ ela virou **as duas metades**.
+   * ⚠️ O mRS segue emprestado ⛔ e desenhado em B, ⛔ que foi decisão explícita;
+   * ⛔ o peso ⛔ **⛔ não é mais desenhado** na Estabilização, ⛔ e é desenhado
+   * ⛔ aqui.
+   */
+  confere("⚠️ o mRS segue emprestado ⛔ e DESENHADO na Avaliação AVC",
+    K.camposDoGrupo(B.GRUPOS_B.find((g) => g.id === "basal")).some((c) => c.id === "mrs_previo"),
     "mudar a propriedade ⛔ não pode custar a experiência: o autor foi explícito sobre o mRS na B");
+  confere("⚠️⚠️ ⛔ e o peso ⛔ NÃO é mais desenhado na Estabilização",
+    A.GRUPOS_A.every((g) => K.camposDoGrupo(g).every((c) => c.id !== "peso" && c.id !== "peso_origem")),
+    "⛔ o empréstimo voltou — ⛔ e com ele a etiqueta *«Do painel Paciente»* na tela do ABCDE");
+  confere("⚠️ ⛔ e ele é desenhado **aqui**",
+    P.GRUPOS_P.some((g) => K.camposDoGrupo(g).some((c) => c.id === "peso")),
+    "⛔ tirar de uma tela sem estar na outra apagaria o campo do atendimento");
 
   /**
    * ⚠️⚠️ A ALERGIA A CONTRASTE DEIXOU DE SER EMPRESTADA — autor, 2026-08-30:
@@ -303,7 +333,8 @@ const TODOS = [
     DC.leiturasDaSuperficieC(vazio).length,
   ]);
   confere("as leituras de A, B e C EXISTEM com Paciente vazio",
-    leiturasVazio === JSON.stringify([DA.leiturasDaSuperficieA(vazio).length, 10, 6]),
+    /** ⚠️ **11** em B desde 2026-09-08: a leitura da crise veio da Superfície A. */
+    leiturasVazio === JSON.stringify([DA.leiturasDaSuperficieA(vazio).length, 11, 6]),
     "⛔ nenhuma superfície perde leitura por falta de dado de identificação");
 }
 
@@ -531,4 +562,25 @@ if (falhas.length) {
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}`));
   process.exit(1);
 }
+/* ══ ⚠️ A ORIGEM DO PESO ⛔ NÃO OFERECE BALANÇA ═══════════════════════════ */
+
+/**
+ * ⚠️⚠️ ⛔ VEIO DE `prova-avc-superficie-a` em 2026-09-08, ⛔ junto com o campo.
+ *
+ * ⛔ ⛔ Lá ela lia `CAMPOS_NA_TELA_A`; ⛔ o peso deixou de ser desenhado na
+ * Estabilização, ⛔ e uma conferência sobre o que o médico vê tem de morar
+ * ⛔ onde ele vê.
+ *
+ * ⛔ ⛔ Ninguém pesa em balança um AVC agudo na porta do PS — ⛔ opção que ⛔ não
+ * acontece ocupa alvo ⛔ e sugere caminho inexistente.
+ */
+{
+  const origem = P.GRUPOS_P.flatMap((g) => g.campos).find((c) => c.id === "peso_origem");
+  confere(
+    "⚠️⚠️ ⛔ a origem do peso ⛔ não oferece balança",
+    origem !== undefined && !origem.opcoes.some((o) => /balan/i.test(o)),
+    "⛔ opção que ⛔ não acontece ocupa alvo ⛔ e sugere caminho inexistente"
+  );
+}
+
 console.log(`✅ PROVA DA SUPERFÍCIE PACIENTE — ${ok}/${ok} conferências`);

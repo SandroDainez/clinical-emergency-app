@@ -262,7 +262,13 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      * ⚠️ A **ordem entre os dois** é o que este teste mede, ⛔ e ⛔ ela ⛔ não
      * mudou: ⛔ ele navega até onde os dois existem.
      */
-    await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ E ⛔ NÃO É MAIS NA ESTABILIZAÇÃO — 2026-09-08: ⛔ a prioridade da
+     * imagem saiu da tela do ABCDE a pedido do autor. ⚠️ **A ordem entre os
+     * dois** continua sendo o que se mede, ⛔ e ⛔ ela se mede ⛔ onde os dois
+     * existem — ⛔ na faixa compacta das superfícies seguintes.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
 
     const estabilizacao = page.getByTestId("avc-ameacas-imediatas");
     const imagem = page.getByTestId("avc-prioridade-imagem");
@@ -331,7 +337,14 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("o resumo persistente acompanha todas as superfícies, ⛔ exceto a abertura", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    for (const sup of SEQUENCIA_OFICIAL.filter((x) => x.id !== "paciente")) {
+    /**
+     * ⚠️ ⛔ **DUAS** exceções desde 2026-09-08: a abertura ⛔ e a Estabilização.
+     * ⛔ *"Escala e imagem"* resume NIHSS ⛔ e imagem — ⛔ duas fases adiante —,
+     * ⛔ e na tela do ABCDE ⛔ elas competiam com o que mata em minutos.
+     */
+    for (const sup of SEQUENCIA_OFICIAL.filter(
+      (x) => x.id !== "paciente" && x.id !== "estabilizacao"
+    )) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
       // ⚠️ O resumo é persistente porque o RELÓGIO é o único valor que muda
       // sozinho: escondê-lo numa superfície faria o médico trabalhar noutra sem

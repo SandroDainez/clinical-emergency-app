@@ -94,6 +94,16 @@ async function vazia(page: Page, campo: string) {
   await expect(page.getByTestId(`avc-num-caixa-${campo}`)).toHaveValue("");
 }
 
+/**
+ * ── ⚠️⚠️⚠️ ⛔ O EXEMPLO MUDOU DE CAMPO — 2026-09-08 ────────────────────────
+ *
+ * ⛔ ⛔ Estes testes usavam **peso** como grandeza de exemplo, ⛔ e o peso saiu
+ * da Estabilização (⛔ ele mora em Paciente). ⚠️ A garantia ⛔ nunca foi sobre
+ * peso: ⛔ é sobre o **controle numérico** — *"⛔ nenhuma grandeza nasce com
+ * valor"*, *"pode voltar a ⛔ não informado"*, *"dígito intermediário ⛔ não
+ * vira medida"*. ⛔ Ela vale para qualquer grandeza, ⛔ e ⛔ aqui passa a ser
+ * medida na **glicemia**, que é desta tela.
+ */
 test.describe("Superfície A — estabilização", () => {
   test("o fato entra no estado e a leitura recalcula à vista", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
@@ -184,6 +194,18 @@ test.describe("Superfície A — estabilização", () => {
      * alerta que rola para fora da tela. Ela tem dono e destino, e ⛔ não tranca
      * nada.
      */
+    /**
+     * ⚠️⚠️ ⛔ E ELA APARECE **NA CASA DELA** — 2026-09-08.
+     *
+     * ⛔ ⛔ A lista de pendências passou a respeitar a **progressão**: na
+     * Estabilização ⛔ só se mostram as fases até ⛔ ela. ⚠️ Esta pendência é da
+     * **Avaliação AVC** (`dono: "neurologico"`), ⛔ e é ⛔ lá que ⛔ ela se lê —
+     * ⛔ que é, aliás, ⛔ para onde o botão ⛔ dela ⛔ sempre levou.
+     *
+     * ⚠️ ⛔ A garantia ⛔ não mudou: ⛔ a reavaliação **vira pendência do
+     * atendimento**, com dono ⛔ e destino, ⛔ e ⛔ não tranca ⛔ nada.
+     */
+    await page.getByTestId("avc-aba-neurologico").click();
     const pendencia = page.getByTestId("avc-pendencia-reavaliar_deficit_pos_glicemia");
     await expect(pendencia).toBeVisible();
     /** ⚠️ O rótulo vem da fonte — ⛔ ver o comentário em "título da dona". */
@@ -205,48 +227,25 @@ test.describe("Superfície A — estabilização", () => {
     await expect(pendencia).toHaveCount(0);
   });
 
-  test("os três vazios são distinguíveis olhando", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️⚠️ TRÊS TESTES MUDARAM DE ARQUIVO — 2026-09-08 ──────────────────
+   *
+   * ⛔ ⛔ *"os três vazios são distinguíveis"* ⛔ e *"crise no início é
+   * contexto"* mediam o campo `crise_no_inicio`, ⛔ que passou a morar na
+   * **Avaliação AVC** — ⛔ eles foram para `avc-superficie-b.spec`.
+   *
+   * ⛔ ⛔ *"peso desconhecido ⛔ não bloqueia a superfície"* media a leitura do
+   * peso, ⛔ que saiu com o campo. ⚠️ A metade que **é desta tela** — *"⛔ nada
+   * ausente bloqueia o resto"* — ficou, ⛔ abaixo, medida no que sobrou.
+   */
+  test("⛔ campo ausente ⛔ NÃO bloqueia o resto da superfície", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-
-    const naoSei = page.getByTestId("avc-opcao-crise_no_inicio-nao_sei");
-    const nao = page.getByTestId("avc-opcao-crise_no_inicio-nao");
-
-    // 1 · não perguntado: nenhuma opção marcada, e a leitura o diz.
-    await expect(naoSei).toHaveAttribute("aria-checked", "false");
-    await expect(nao).toHaveAttribute("aria-checked", "false");
-    await expect(page.getByTestId("avc-leitura-curto-crise"))
-      .toContainText(/ainda não informada/i);
-
-    // 2 · "incerto" é RESPOSTA — a opção fica marcada, e ⛔ não vira "não".
-    await naoSei.click();
-    await expect(naoSei).toHaveAttribute("aria-checked", "true");
-    await expect(nao).toHaveAttribute("aria-checked", "false");
-
-    // 3 · a negativa é a terceira coisa, e move a leitura.
-    await nao.click();
-    await expect(nao).toHaveAttribute("aria-checked", "true");
-    await expect(naoSei).toHaveAttribute("aria-checked", "false");
-    await expect(page.getByTestId("avc-leitura-curto-crise")).toContainText(/Sem crise/i);
-  });
-
-  test("crise no início é contexto, e não exclui AVC", async ({ page }) => {
-    await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
-    await page.getByTestId("avc-opcao-crise_no_inicio-sim").click();
-    await expect(page.getByTestId("avc-leitura-curto-crise")).toContainText(/não exclui AVC/i);
-    // ⛔ E a superfície continua inteira — crise não encerra nada.
-    await expect(page.getByTestId("avc-campo-glicemia")).toBeVisible();
-  });
-
-  test("peso desconhecido não bloqueia a superfície", async ({ page }) => {
-    await fixarIdioma(page, "pt-BR");
-    await abrirA(page);
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não atrasar/i);
-    // Sem peso, todos os outros campos seguem utilizáveis.
+    /** ⚠️ ⛔ Sem glicemia, sem PA, sem ⛔ nada: os outros campos seguem vivos. */
     await page.getByTestId("avc-opcao-consciencia_rebaixada-sim").click();
     await expect(page.getByTestId("avc-leitura-curto-via_aerea"))
       .toContainText(/via aérea pode estar ameaçada/i);
+    await expect(page.getByTestId("avc-campo-glicemia")).toBeVisible();
   });
 
   test("a pressão é registrada sem definir candidatura", async ({ page }) => {
@@ -413,8 +412,8 @@ test.describe("Superfície A — UX clínica", () => {
      * número nasce na tela. ⚠️ Peso alimenta dose de tenecteplase — "70 kg" que
      * ⛔ ninguém pesou é a semente de uma dose errada.
      */
-    await vazia(page, "peso");
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
+    await vazia(page, "glicemia");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/ainda não informada/i);
 
     /**
      * ⚠️⚠️ E O GESTO QUE INFORMA MUDOU: era o primeiro toque no `+`; agora é
@@ -422,13 +421,13 @@ test.describe("Superfície A — UX clínica", () => {
      * ele partiria do piso da faixa e gravaria 30 kg como se alguém tivesse
      * pesado (§0.2, o mesmo motivo do "degrau que ⛔ não move ⛔ não registra").
      */
-    await expect(page.getByTestId("avc-num-mais-peso")).toBeDisabled();
+    await expect(page.getByTestId("avc-num-mais-glicemia")).toBeDisabled();
 
-    await informar(page, "peso", 78);
-    await expect(page.getByTestId("avc-num-caixa-peso")).toHaveValue("78");
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
+    await informar(page, "glicemia", 110);
+    await expect(page.getByTestId("avc-num-caixa-glicemia")).toHaveValue("110");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/Glicemia/i);
     /** ⚠️ Com valor, o ajuste fino passa a existir de verdade. */
-    await expect(page.getByTestId("avc-num-mais-peso")).toBeEnabled();
+    await expect(page.getByTestId("avc-num-mais-glicemia")).toBeEnabled();
   });
 
   /**
@@ -441,13 +440,13 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
 
-    await page.getByTestId("avc-num-caixa-peso").fill("7");
-    await expect(page.getByTestId("avc-leitura-curto-peso"),
+    await page.getByTestId("avc-num-caixa-glicemia").fill("7");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia"),
       "7 está fora da faixa: ⛔ não pode ser registrado")
-      .toContainText(/não informado/i);
+      .toContainText(/ainda não informada/i);
 
-    await page.getByTestId("avc-num-caixa-peso").fill("78");
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
+    await page.getByTestId("avc-num-caixa-glicemia").fill("78");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/Glicemia/i);
   });
 
   /**
@@ -535,21 +534,21 @@ test.describe("Superfície A — UX clínica", () => {
      * uma glicemia de 0 mg/dL na trilha porque alguém limpou o campo seria a
      * família do E-52.
      */
-    await vazia(page, "peso");
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
+    await vazia(page, "glicemia");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/ainda não informada/i);
 
-    await informar(page, "peso", 78);
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/Peso informado/i);
+    await informar(page, "glicemia", 110);
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/Glicemia/i);
 
-    await page.getByTestId("avc-num-caixa-peso").fill("");
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/não informado/i);
-    await vazia(page, "peso");
+    await page.getByTestId("avc-num-caixa-glicemia").fill("");
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/ainda não informada/i);
+    await vazia(page, "glicemia");
     /**
      * ⚠️ A UNIDADE SEM NÚMERO sugeria que existe número. ⛔ No controle novo a
      * caixa fica vazia com marcador "—", ⛔ e a unidade fica FORA dela — quem
      * afirma ausência é a leitura, ⛔ e ⛔ não a ausência de "kg" no texto.
      */
-    await expect(page.getByTestId("avc-leitura-curto-peso")).toContainText(/ainda não informado/i);
+    await expect(page.getByTestId("avc-leitura-curto-glicemia")).toContainText(/ainda não informada/i);
   });
 
   /**
@@ -718,8 +717,11 @@ test.describe("Superfície A — UX clínica", () => {
       "C · CIRCULAÇÃO",
       "D · NEUROLÓGICO",
       "E · EXPOSIÇÃO",
-      "PESO",
-      "CRISE NO INÍCIO",
+      /**
+       * ⚠️ ⛔ *"PESO"* ⛔ e *"CRISE NO INÍCIO"* saíram da lista em 2026-09-08 —
+       * ⛔ os dois deixaram de ser desenhados ⛔ aqui. ⚠️ ⛔ A ausência ⛔ deles
+       * tem trava própria em `avc-estabilizacao-composicao`.
+       */
       "FALTA RESPONDER",
     ];
     const posicoes = ordem.map((t) => tela.toUpperCase().indexOf(t));
@@ -732,13 +734,23 @@ test.describe("Superfície A — UX clínica", () => {
   test("alerta de atenção precede o meramente informativo", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirA(page);
-    // Via aérea ameaçada é atenção; a crise convulsiva ausente é informação.
+    /**
+     * ⚠️ Via aérea ameaçada é **atenção**; a glicemia medida ⛔ sem conduta é
+     * **informação**. ⛔ A crise saiu desta tela em 2026-09-08, ⛔ e o par
+     * atenção × informação passou a ser medido com o que ficou.
+     */
     await page.getByTestId("avc-opcao-consciencia_rebaixada-sim").click();
-    await page.getByTestId("avc-opcao-crise_no_inicio-nao").click();
+    await informar(page, "glicemia", 110);
 
-    const tela = await page.getByTestId("avc-superficie-a-conteudo").innerText();
-    expect(tela.indexOf("Via aérea pode estar ameaçada"))
-      .toBeLessThan(tela.indexOf("Sem crise convulsiva no início do quadro"));
+    /**
+     * ⚠️⚠️ ⛔ MEDIDO PELA **POSIÇÃO DOS NÓS**, ⛔ e ⛔ não por busca de texto:
+     * ⛔ *"Glicemia"* é ⛔ também o rótulo do campo, ⛔ lá em cima — ⛔ procurar
+     * a palavra achava o campo, ⛔ e ⛔ não a leitura.
+     */
+    const y = async (id: string) =>
+      (await page.getByTestId(id).boundingBox())?.y ?? -1;
+    expect(await y("avc-leitura-curto-via_aerea"), "atenção antes de informação")
+      .toBeLessThan(await y("avc-leitura-curto-glicemia"));
   });
 
   /**
@@ -778,8 +790,8 @@ test.describe("Superfície A — UX clínica", () => {
       }
 
       /** ⚠️ E o controle CONTINUA utilizável: digitar informa. */
-      await informar(page, "peso", 78);
-      await expect(page.getByTestId("avc-num-caixa-peso")).toHaveValue("78");
+      await informar(page, "glicemia", 110);
+      await expect(page.getByTestId("avc-num-caixa-glicemia")).toHaveValue("110");
     });
 
   /**
