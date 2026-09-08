@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**89 de 103 travas com declaração completa.**
+**91 de 105 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -151,6 +151,18 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** · que `abrirAtendimento()` abra em **`paciente`**, ⛔ e ⛔ não na segunda fase; · que a sequência oficial comece em Paciente ⛔ e siga para Estabilização; · que a superfície Paciente contenha **⛔ só dados basais** — ⛔ e ⛔ nenhuma das listas de **contraindicação** (F-07), que são leitura de segurança; · que ⛔ **⛔ nenhum fato fique duplicado** ao ser movido: ⛔ ele tem uma casa, ⛔ e ⛔ o `Resolver ›` leva ⛔ até ⛔ ela; · que os **consumidores** dos fatos movidos continuem lendo.
 - **NÃO PROMETE:** que a composição visual esteja bonita — ⛔ isso é a revisão de 375 px. ⛔ E ⛔ **⛔ não** promete que abrir em Paciente vire **porta**: ⛔ nada ali bloqueia navegar para ⛔ qualquer outra fase (**E-11**).
 - **UNIVERSO:** `avc/nucleo/estado.ts` × `avc/conteudo/paciente.ts` × `avc/conteudo/superficie-b.ts` × `avc/conteudo/superficies.ts`. ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (inspeção clínica, 2026-09-07) ──────── ⛔ ⛔ A barra inferior mostrava **Paciente** como primeira fase, ⛔ e o módulo abria em **Estabilização**. ⚠️ ⛔ O fluxo começava na segunda fase — ⛔ e a ordem mental do médico (*quem é o paciente → está estável? → é AVC?*) começava pelo meio. ⛔ ⛔ E a primeira tela vinha carregada de **contraindicações à trombólise**: hemorragia intracraniana prévia, neurocirurgia recente, microssangramentos. ⚠️ ⛔ Elas ⛔ não são *"quem é o paciente"* — ⛔ são leitura de segurança da reperfusão, ⛔ três fases adiante.
+
+## `test:avc-cor-do-assunto` → `scripts/prova-avc-cor-do-assunto.cjs`
+
+- **PROMETE:** · que `ASSUNTO_DO_BLOCO` seja a **única** casa da cor de bloco do módulo — ⛔ e que as tabelas locais que viviam em `superficie-a.tsx` ⛔ **não** tenham voltado; · que ⛔ **⛔ nenhum bloco seja verde**: `success` é a cor de *"favorável · atendido"* nos sete estados, ⛔ e um bloco verde diria que o bloco está resolvido ⛔ antes de ⛔ alguém responder ⛔ nada; · que ⛔ todo ícone declarado **exista** no vocabulário `ICONE` — ⛔ nome inexistente ⛔ não quebra o build: ⛔ ele desenha um **quadrado vazio**; · que ⛔ toda entrada aponte para um **bloco que existe** — ⛔ entrada órfã é cor que ⛔ ninguém vê, ⛔ e ⛔ ela envelhece em silêncio; · que ⛔ toda cor seja um **acento do tema**, ⛔ e ⛔ não hexadecimal novo.
+- **NÃO PROMETE:** que a cor **chegue à tela**. ⛔ Uma tabela certa ⛔ e um `style` que ⛔ não aplica é ⛔ exatamente o defeito que já apareceu seis vezes neste módulo — ⛔ quem mede isso é `e2e/avc-cor-do-assunto.spec.ts`, ⛔ que lê a **cor renderizada**.
+- **UNIVERSO:** `components/avc/ui/index.tsx` × `components/avc/superficie-a.tsx` × os grupos declarados em `avc/conteudo/`. ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA ────────────────────────────────────── ⛔ ⛔ A correção existia ⛔ e ⛔ não alcançava. Em **2026-09-06** o autor disse *"tudo muito cinza ainda, tudo fica parecido ⛔ e confunde"*, ⛔ e a resposta foi `COR_DO_GRUPO` + `ICONE_DO_GRUPO` — ⛔ **dentro de `superficie-a.tsx`**. ⚠️ Em **2026-09-08** ele voltou com o mesmo relato — *"está tudo da mesma cor"* — ⛔ olhando **outra** superfície. ⚠️⚠️ ⛔ Uma regra trancada num arquivo ⛔ não é regra do app: ⛔ é exceção de uma tela. ⛔ Esta trava existe para que ⛔ ela ⛔ não volte a se trancar.
+
+## `test:hidratacao` → `scripts/prova-hidratacao-estavel.cjs`
+
+- **PROMETE:** · que `useWindowDimensions` do `react-native` seja importado em **⛔ um único arquivo** — `lib/dimensoes-da-janela.ts`; · que esse arquivo continue **esperando a montagem na web**, ⛔ que é a propriedade inteira: ⛔ sem a espera ⛔ ele vira o import direto de novo, ⛔ só que com nome bonito.
+- **NÃO PROMETE:** que ⛔ nenhuma outra fonte de divergência exista — data, `Math. random`, `typeof window`. ⛔ Quem varre isso é o e2e `hidratacao-limpa`, ⛔ que abre as rotas ⛔ e escuta o erro do React.
+- **UNIVERSO:** `app/` × `components/` × `lib/` × `acls/`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (2026-09-08) ──────────────────────── ⛔ ⛔ **React #418 em ⛔ toda rota `/modulos/*`**, em produção. ⛔ `react-native-web` inicia `Dimensions` em **`width: 0`** ⛔ e ⛔ só a atualiza quando há DOM. ⚠️ ⛔ No pré-render do `expo export` ⛔ não há DOM — ⛔ então **toda** comparação `width < N` é verdadeira no HTML do build, ⛔ e ⛔ falsa no navegador de qualquer telefone real. ⛔ ⛔ O React descartava o HTML do build ⛔ e redesenhava tudo: ⛔ o app ⛔ parecia funcionar, ⛔ e a hidratação estava morta em ⛔ todos os módulos. ⚠️ ⛔ Nove chamadas ramificavam por largura. ⛔ Uma basta para o erro voltar.
 
 ## `test:avc-barra-solicitacao` → `scripts/prova-avc-barra-e-solicitacao.cjs`
 
