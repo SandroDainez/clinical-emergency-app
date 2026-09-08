@@ -18,6 +18,8 @@
  */
 
 import type { SuperficieId } from "../nucleo/tipos";
+/** ⚠️ A leitura da seleção múltipla mora no núcleo — ⛔ e ⛔ não se reescreve. */
+import { itensSelecionados } from "../nucleo/selecao";
 
 /** Como o campo é preenchido. ⛔ Nunca caixa de texto para valor clínico (§0.3). */
 export type TipoDeCampo =
@@ -335,7 +337,21 @@ export type Campo = {
    *
    * ⛔ Uma função aqui tornaria o conteúdo impossível de carregar numa trava.
    */
-  readonly apareceQuando?: { readonly campo: string; readonly valor: string };
+  /**
+   * ⚠️⚠️ DUAS FORMAS, ⛔ porque há dois tipos de campo:
+   *
+   *   · `valor` — igualdade, ⛔ para `escolha` (*"acordou com déficit = Sim"*);
+   *   · `algumDe` — **⛔ algum destes marcado**, ⛔ para `multipla`.
+   *
+   * ⛔ ⛔ A segunda entrou em 2026-09-07: `anticoagulante_em_uso` é múltipla,
+   * ⛔ e o valor gravado é uma **lista**. ⚠️ Comparar a lista por igualdade
+   * deixaria a condição eternamente falsa — ⛔ ou eternamente verdadeira, ⛔ que
+   * foi o que aconteceu: ⛔ o campo ⛔ nunca teve condição, ⛔ e a tela pedia a
+   * hora da última dose a quem marcara **"Nenhum"**.
+   */
+  readonly apareceQuando?:
+    | { readonly campo: string; readonly valor: string }
+    | { readonly campo: string; readonly algumDe: readonly string[] };
   readonly nota?: string;
 };
 
@@ -397,7 +413,21 @@ export function campoAparece(c: Campo, valorDe: (campo: string) => unknown): boo
    * que é `"sim"`. Comparar com o rótulo cru deixaria a condição eternamente
    * falsa, ⛔ e o campo ⛔ nunca apareceria — ⛔ sem erro ⛔ nenhum na tela.
    */
-  return valorDe(c.apareceQuando.campo) === valorDaOpcao(c.apareceQuando.valor);
+  const bruto = valorDe(c.apareceQuando.campo);
+  /**
+   * ⚠️⚠️ ⛔ LISTA MÚLTIPLA: **algum destes marcado**, ⛔ e ⛔ não igualdade.
+   *
+   * ⛔ ⛔ Os itens são comparados pelo **rótulo**, ⛔ que é o que a seleção
+   * grava — ⛔ e ⛔ há trava conferindo que cada rótulo declarado ⛔ existe nas
+   * opções do campo dono, ⛔ para uma melhoria de texto ⛔ não quebrar a
+   * condição em silêncio.
+   */
+  if ("algumDe" in c.apareceQuando) {
+    if (typeof bruto !== "string") return false;
+    const marcados = itensSelecionados(bruto);
+    return c.apareceQuando.algumDe.some((x) => marcados.includes(x));
+  }
+  return bruto === valorDaOpcao(c.apareceQuando.valor);
 }
 
 /**

@@ -87,7 +87,18 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
      */
     titulo: "Paciente",
     resumo: "Identificação, dados basais, alergias, medicações e antecedentes.",
-    fontes: ["F-07", "F-08", "F-09", "F-10", "F-16", "F-27"],
+    /**
+     * ⚠️⚠️ ⛔ **F-27 SAIU** em 2026-09-07 — ⛔ junto com o `mrs_previo`.
+     *
+     * ⛔ ⛔ A lista é escrita à mão, ⛔ e ⛔ ela ⛔ não acompanhou a mudança de
+     * casa: ⛔ a tela declarava governar-se por *"mRS — descritores
+     * operacionais"* ⛔ sem ter mRS ⛔ nenhum. ⚠️ Achado pelo autor, ⛔ olhando
+     * o rodapé da primeira tela.
+     *
+     * ⚠️ ⛔ As cinco que ficaram são reais: F-07 (antiagregante), F-08 (idade),
+     * F-09 (peso), F-10 (anticoagulante), F-16 (alergias).
+     */
+    fontes: ["F-07", "F-08", "F-09", "F-10", "F-16"],
   },
   {
     id: "laboratorio",
@@ -110,7 +121,15 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
      */
     titulo: "Avaliação AVC",
     resumo: "Déficit, NIHSS, incapacitância, funcionalidade prévia.",
-    fontes: ["F-17", "F-14"],
+    /**
+     * ⚠️⚠️ ⛔ **F-07 ⛔ e F-27 CHEGARAM** em 2026-09-07 — ⛔ com os quatro
+     * blocos de contraindicação ⛔ e com o mRS, ⛔ que saíram da primeira tela.
+     *
+     * ⛔ ⛔ Declarar a fonte é o que faz o ⓘ da fase dizer a verdade sobre o
+     * que ⛔ ela governa — ⛔ e a lista é **escrita à mão**, ⛔ então ⛔ ela ⛔ não
+     * acompanha sozinha.
+     */
+    fontes: ["F-17", "F-14", "F-07", "F-27"],
   },
   {
     id: "imagem",

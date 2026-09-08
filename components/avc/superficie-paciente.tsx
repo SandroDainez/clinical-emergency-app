@@ -25,7 +25,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_P } from "../../avc/conteudo/paciente";
-import { camposDoGrupo } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
@@ -122,7 +122,20 @@ export default function SuperficiePaciente({
 
             {fechado
               ? null
-              : camposDoGrupo(grupo).map((campo) => (
+              /**
+                * ⚠️⚠️⚠️ ⛔ A PERGUNTA DEPENDENTE — 2026-09-07.
+                *
+                * ⛔ ⛔ `campoAparece` ⛔ já existia ⛔ e ⛔ já era usado nas
+                * Superfícies **A** ⛔ e **B**. ⚠️ Esta tela ⛔ **nunca o
+                * chamou** — ⛔ e por isso pedia *"hora da última dose do
+                * anticoagulante"* a quem acabara de marcar **"Nenhum"**.
+                *
+                * ⚠️ ⛔ Sem condição declarada o campo aparece **sempre**:
+                * ⛔ o padrão ⛔ não é esconder.
+                */
+              : camposDoGrupo(grupo)
+                  .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+                  .map((campo) => (
                   <CampoDaSuperficie
                     key={campo.id}
                     campo={campo}

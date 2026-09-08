@@ -139,6 +139,11 @@ test.describe("AVC · Superfície D — Segurança", () => {
      * antecedentes/contraindicações foram para a Avaliação AVC.
      */
     await page.getByTestId("avc-aba-paciente").click();
+    /**
+     * ⚠️⚠️ ⛔ O anticoagulante vem antes — 2026-09-07: ⛔ a pergunta da última
+     * dose ⛔ só existe se há anticoagulante marcado.
+     */
+    await page.getByTestId("avc-item-anticoagulante_em_uso-Anticoagulante oral direto (DOAC)").click();
     await page.getByTestId("avc-hora-desconhecido-doac_ultima_dose").click();
     await irParaD(page);
 

@@ -305,6 +305,30 @@ export const MEDICACOES_P: readonly CampoP[] = [
   {
     id: "doac_ultima_dose",
     /**
+     * ⚠️⚠️⚠️ ⛔ A PERGUNTA ⛔ SÓ EXISTE SE HÁ ANTICOAGULANTE — 2026-09-07.
+     *
+     * ⛔ ⛔ Relato do autor: *"marquei que ⛔ não faz uso de anticoagulante ⛔ e
+     * embaixo pede hora da última dose"*.
+     *
+     * ⚠️ ⛔ E ⛔ isso ⛔ não é ⛔ só ruído: `doac_ultima_dose` é lido por
+     * `derivacoes-d.ts`, na segurança da trombólise. ⛔ Oferecer a pergunta a
+     * quem marcou **"Nenhum"** é convidar a registrar um horário que ⛔ não
+     * corresponde a ⛔ exposição ⛔ nenhuma.
+     *
+     * ⚠️⚠️ ⛔ *"Não sei"* ⛔ **⛔ não** entra na lista: ⛔ quem ⛔ não sabe se usa
+     * ⛔ não tem agente **nomeado** de que perguntar a última dose, ⛔ e a fonte
+     * conta as 48 h de uma exposição **conhecida**. ⛔ A pergunta reaparece
+     * assim que alguém nomear o anticoagulante.
+     */
+    apareceQuando: {
+      campo: "anticoagulante_em_uso",
+      algumDe: [
+        "Anticoagulante oral direto (DOAC)",
+        "Varfarina ou outro antagonista da vitamina K",
+        "Heparina ou heparina de baixo peso molecular",
+      ],
+    },
+    /**
      * ⚠️⚠️ **DATA E HORA**, e ⛔ não só hora — correção do autor, 2026-08-29:
      * *"Uma janela de 48 horas ⛔ não pode ser calculada com `08:00` sem data."*
      *

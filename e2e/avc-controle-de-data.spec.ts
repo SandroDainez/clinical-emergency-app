@@ -132,6 +132,16 @@ test.describe("AVC · controle de data e hora", () => {
     await page.goto("/modulos/avc");
     await page.getByTestId("avc-aba-paciente").click();
 
+    /**
+     * ⚠️⚠️ ⛔ O ANTICOAGULANTE VEM ANTES — 2026-09-07.
+     *
+     * ⛔ ⛔ A pergunta da **última dose** ⛔ só existe se há anticoagulante:
+     * ⛔ oferecê-la a quem marcou *"Nenhum"* convidava a registrar um horário
+     * que ⛔ não correspondia a exposição ⛔ nenhuma. ⚠️ ⛔ Este teste passa a
+     * fazer o gesto na ordem em que o médico o faz.
+     */
+    await page.getByTestId("avc-item-anticoagulante_em_uso-Anticoagulante oral direto (DOAC)").click();
+
     await page.getByTestId("avc-hora-desconhecido-doac_ultima_dose").click();
     await expect(page.getByTestId("avc-hora-desconhecido-doac_ultima_dose"))
       .toHaveAttribute("aria-checked", "true");
@@ -142,7 +152,20 @@ test.describe("AVC · controle de data e hora", () => {
    */
   test("o DOAC alcança anteontem sem dezenas de toques", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
-    await abrirSeletor(page, "doac_ultima_dose", "paciente");
+    await page.goto("/modulos/avc");
+    await page.getByTestId("avc-aba-paciente").click();
+    /**
+     * ⚠️⚠️ ⛔ O ANTICOAGULANTE VEM ANTES — 2026-09-07.
+     *
+     * ⛔ ⛔ A pergunta da **última dose** ⛔ só existe se há anticoagulante:
+     * ⛔ oferecê-la a quem marcou *"Nenhum"* convidava a registrar um horário
+     * que ⛔ não correspondia a exposição ⛔ nenhuma. ⚠️ ⛔ Este teste passa a
+     * fazer o gesto na ordem em que o médico o faz.
+     */
+    await page.getByTestId("avc-item-anticoagulante_em_uso-Anticoagulante oral direto (DOAC)").click();
+
+    await page.getByTestId("avc-hora-doac_ultima_dose").click();
+    await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
 
     await page.getByTestId("avc-seletor-data-ontem").click();
     await page.getByTestId("avc-seletor-data-escolher").click();

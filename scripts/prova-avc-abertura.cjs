@@ -285,6 +285,73 @@ function conf(nome, cond, porque) {
   );
 }
 
+/* ══ ⚠️⚠️⚠️ 6 · O RODAPÉ DE FONTES DIZ A VERDADE ═════════════════════ */
+{
+  /**
+   * ── ⚠️⚠️ ⛔ O DEFEITO (o autor, olhando o rodapé da 1ª tela) ────────────
+   *
+   * > *"embaixo na primeira tela aparece isso, está certo?"*
+   *
+   * ⛔ ⛔ ⛔ Não estava: a tela Paciente declarava governar-se por **F-27 ·
+   * mRS** ⛔ e por **F-08 · elegibilidade para trombectomia** ⛔ depois de os
+   * campos correspondentes terem mudado de casa. ⚠️ ⛔ A lista de fontes é
+   * **escrita à mão** — ⛔ e lista à mão ⛔ não acompanha sozinha.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ELA ⛔ NÃO PODE SER DERIVADA DOS CAMPOS: ⛔ Reperfusão ⛔ e
+   * Correções tiram fontes das **recomendações**, ⛔ e ⛔ não de campo ⛔ nenhum.
+   * ⛔ Por isso a trava é de **duas mãos**, ⛔ com teto congelado.
+   */
+  const campos = C.todosOsCampos();
+  const fontesDosCampos = (id) =>
+    [...new Set(campos.filter((c) => c.casa === id).map((c) => String(c.fonte)))]
+      .filter((f) => /^F-\d+$/.test(f)).sort();
+
+  /** ⚠️⚠️ ⛔ 1 · A primeira tela ⛔ NÃO declara fonte que ⛔ ninguém usa ⛔ lá. */
+  const decP = [...(S.superficie("paciente").fontes ?? [])].sort();
+  const orfasP = decP.filter((f) => !fontesDosCampos("paciente").includes(f));
+  conf(
+    "⚠️⚠️⚠️ ⛔ a primeira tela ⛔ NÃO declara fonte ÓRFÃ",
+    orfasP.length === 0,
+    `⛔ ${orfasP.join(" · ")} — declarar a fonte de um campo que saiu é o rodapé mentindo`
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ 2 · E O QUE ELA **DESENHA** ESTÁ DECLARADO — ⛔ nos dois lados da
+   * mudança de 2026-09-07.
+   */
+  for (const sup of ["paciente", "neurologico"]) {
+    const dec = new Set(S.superficie(sup).fontes ?? []);
+    const faltando = fontesDosCampos(sup).filter((f) => !dec.has(f));
+    /**
+     * ⚠️⚠️ ⛔ TETO CONGELADO — ⛔ o Neurológico ⛔ já devia F-02, F-03, F-11 ⛔ e
+     * F-13 **antes** desta mudança. ⛔ A dívida ⛔ não nasceu aqui, ⛔ e ⛔ ela
+     * ⛔ só pode **descer**.
+     */
+    const TETO = { paciente: 0, neurologico: 4 };
+    conf(
+      `⚠️⚠️ ⛔ ${sup} declara as fontes dos campos que desenha (teto ${TETO[sup]})`,
+      faltando.length <= TETO[sup],
+      `⛔ ${faltando.join(" · ")} — ${faltando.length} > ${TETO[sup]}`
+    );
+  }
+
+  /**
+   * ⚠️⚠️⚠️ ⛔ 3 · E AS QUE **MUDARAM DE CASA** ESTÃO NO LUGAR CERTO — ⛔ é a
+   * conferência que teria pego o defeito ⛔ no dia em que ⛔ ele nasceu.
+   */
+  const decN = new Set(S.superficie("neurologico").fontes ?? []);
+  conf(
+    "⚠️⚠️⚠️ ⛔ F-07 ⛔ e F-27 seguiram os fatos para a **Avaliação AVC**",
+    decN.has("F-07") && decN.has("F-27"),
+    `⛔ ${[...decN].join(" · ")} — a fonte mora com o fato, ⛔ e ⛔ não com a tela que ele deixou`
+  );
+  conf(
+    "⚠️ ⛔ e F-27 ⛔ NÃO ficou para trás em Paciente",
+    !decP.includes("F-27"),
+    `⛔ ${decP.join(" · ")}`
+  );
+}
+
 console.log("");
 console.log(`  medido: ${P.GRUPOS_P.length} grupos em Paciente · ${P.TODOS_OS_CAMPOS_P.length} campos · ${B.TODOS_OS_CAMPOS_B.length} campos em B`);
 if (falhas > 0) {
