@@ -428,6 +428,9 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Desde o início": "Desde el inicio",
   /* ── ⚠️⚠️ antecedentes crônicos — contexto, ⛔ e ⛔ não critério ────────── */
   "Antecedentes crônicos": "Antecedentes crónicos",
+  "Sexo": "Sexo",
+  "Registro de contexto. Nenhuma recomendação do AVC separa conduta por sexo.":
+    "Registro de contexto. Ninguna recomendación del ACV separa la conducta por sexo.",
   "Diabetes mellitus": "Diabetes mellitus",
   "Dislipidemia": "Dislipidemia",
   "Asma": "Asma",

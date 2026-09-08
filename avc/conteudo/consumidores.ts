@@ -75,6 +75,12 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * ⛔ nenhuma — ⛔ e a lista vazia arma a varredura que reprova quem tentar.
    */
   comorbidades: [],
+  /**
+   * ⚠️⚠️ ⛔ **⛔ VAZIO**, ⛔ e ⛔ pela mesma razão das comorbidades: ⛔ nenhuma
+   * recomendação da fonte separa conduta por sexo. ⛔ A lista vazia arma a
+   * varredura que reprova quem tentar derivar dele.
+   */
+  sexo: [],
 
   /**
    * ── ⚠️⚠️ ⛔ A TRAVA PEGOU O MEU PRÓPRIO CÓDIGO (2026-09-07) ──────────────

@@ -201,6 +201,7 @@ const campos = [
     "Dislipidemia",              // idêntico
     "Asma",                      // idêntico
     "Etilismo",                  // idêntico
+    "Masculino",                 // idêntico em espanhol (o feminino ⛔ não: "Femenino")
   ];
   const opcoes = [...new Set(campos.flatMap((c) => c.opcoes ?? []))];
   /** ⚠️ R-1: declaração sobre opção que ⛔ não existe mais é desculpa órfã. */

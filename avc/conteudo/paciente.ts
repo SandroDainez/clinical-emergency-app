@@ -99,6 +99,36 @@ export const IDENTIFICACAO_P: readonly CampoP[] = [
     bloqueiaTerapia: false,
     nota: "A fonte usa a idade em critérios de trombectomia. O corte pertence à superfície de reperfusão, e não a este registro.",
   },
+  /**
+   * ⚠️⚠️⚠️ O SEXO — ⛔ e ⛔ ele ⛔ **⛔ FALTAVA** (autor, 2026-09-07).
+   *
+   * ⛔ ⛔ `sexo` ⛔ já é **campo compartilhado do app** (`CAMPOS_COMPARTILHADOS`,
+   * ao lado de peso, altura ⛔ e idade), ⛔ com vocabulário ⛔ e tradução prontos
+   * das calculadoras. ⚠️ ⛔ O módulo AVC simplesmente ⛔ não o tinha.
+   *
+   * ── ⚠️⚠️ ⛔ POR QUE **⛔ ADMINISTRATIVO** ────────────────────────────────
+   *
+   * ⛔ ⛔ **⛔ Nenhuma** recomendação da AHA/ASA 2026 transcrita neste módulo
+   * separa conduta por sexo — ⛔ nem trombólise, ⛔ nem trombectomia, ⛔ nem
+   * pressão. ⚠️ Dar-lhe slot clínico faria o app sugerir um critério que a
+   * fonte ⛔ não escreveu (**E-31**).
+   *
+   * ⚠️ ⛔ Ele é **contexto do paciente** — ⛔ e ⛔ há trava: `CONSUMIDORES` ⛔ é
+   * `[]`, ⛔ e ⛔ nenhuma derivação pode lê-lo.
+   */
+  {
+    id: "sexo",
+    /** ⚠️ Do **paciente**, ⛔ e ⛔ não deste episódio. */
+    escopo: "global",
+    temporalidade: "estavel",
+    rotulo: "Sexo",
+    tipo: "escolha",
+    /** ⚠️ O mesmo vocabulário das calculadoras — ⛔ e ⛔ não um terceiro. */
+    opcoes: ["Masculino", "Feminino", NAO_SEI],
+    fonte: "administrativo",
+    bloqueiaTerapia: false,
+    nota: "Registro de contexto. Nenhuma recomendação do AVC separa conduta por sexo.",
+  },
 ] as const;
 
 /**
@@ -642,6 +672,7 @@ export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
   antiagregante_em_uso: NAO_SEI,
   medicacoes_em_uso: NAO_SEI,
   comorbidades: NAO_SEI,
+  sexo: NAO_SEI,
   /**
    * ⚠️⚠️ ⛔ OS CINCO SAÍRAM em 2026-09-07 — ⛔ e a saída sem conclusão
    * acompanha o fato, ⛔ e ⛔ não a tela. ⛔ Ver `SAIDA_SEM_CONCLUSAO_B`.

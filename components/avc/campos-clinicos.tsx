@@ -521,10 +521,29 @@ export function CampoDeMultipla({
       <View style={e.opcoes}>
         {(campo.opcoes ?? []).map((op) => {
           const ativa = estaSelecionado(bruto, op);
+          /**
+           * ⚠️⚠️⚠️ ⛔ *"Não sei"* TEM **UMA CARA SÓ** NO MÓDULO — 2026-09-07.
+           *
+           * ⛔ ⛔ O tratamento existia ⛔ e ⛔ era aplicado **⛔ só** nos campos de
+           * `escolha`. ⚠️ Na lista **múltipla** ⛔ ele ⛔ nunca chegou: o autor
+           * pôs as duas capturas lado a lado — ⛔ em *"Como o peso foi obtido"*
+           * o *"Não sei"* saía tracejado ⛔ e apagado; ⛔ em *"Alergias
+           * conhecidas"*, sólido ⛔ e branco, ⛔ **igual a «Penicilina»**.
+           *
+           * ⚠️ ⛔ A razão do estilo ⛔ já estava escrita ⛔ aqui: *"«Não sei»
+           * ⛔ não é uma resposta clínica, ⛔ e ⛔ não pode parecer uma"*. ⛔ Numa
+           * lista de alergias, ⛔ ele competia visualmente com um achado — ⛔ e
+           * ⛔ um dos seis ⛔ não é achado.
+           *
+           * ⚠️⚠️ ⛔ E *"Nenhuma"* ⛔ **⛔ NÃO** entra aqui: ⛔ *"nenhuma alergia
+           * conhecida"* é **resposta** — ⛔ alguém perguntou ⛔ e alguém
+           * respondeu. ⛔ Achatar as duas apagaria a distinção de **E-37**.
+           */
+          const ignorancia = valorDaOpcao(op) === "nao_sei";
           return (
             <Pressable
               key={op}
-              style={[e.opcao, ativa && e.opcaoAtiva]}
+              style={[e.opcao, ativa && e.opcaoAtiva, ignorancia && !ativa && e.opcaoNaoSei]}
               accessibilityRole="checkbox"
               aria-checked={ativa}
               testID={`avc-item-${campo.id}-${op}`}
@@ -536,7 +555,13 @@ export function CampoDeMultipla({
                 else onEscolher(campo.id, novo);
               }}
             >
-              <Text style={[e.opcaoTexto, ativa && e.opcaoTextoAtivo]}>
+              <Text
+                style={[
+                  e.opcaoTexto,
+                  ativa && e.opcaoTextoAtivo,
+                  ignorancia && !ativa && e.opcaoTextoNaoSei,
+                ]}
+              >
                 {ativa ? "☑ " : "☐ "}
                 {tr(op)}
               </Text>
