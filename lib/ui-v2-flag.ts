@@ -114,9 +114,29 @@ export function isUiV2Enabled(moduloId: string): boolean {
  * tanto a duplicação quanto a ausência de cabeçalho.
  */
 
-/** Somente a configuração de build — sem ler localStorage. */
+/**
+ * Somente a configuração de build — sem ler localStorage.
+ *
+ * ── ⚠️⚠️⚠️ ⛔ O PADRÃO AQUI ERA `off`, ⛔ E ⛔ ISSO ERA UM DEFEITO ──────────
+ *
+ * ⛔ ⛔ `isUiV2Enabled` (⛔ depois da montagem) usa `PADRAO = "all"`. ⛔ Esta
+ * função usava `DESLIGADO`. ⚠️ ⛔ As duas respondiam a **mesma** pergunta com
+ * respostas **opostas** — ⛔ e a consequência ⛔ não era cosmética:
+ *
+ *   · o HTML do build desenhava a UI **antiga**, ⛔ que ⛔ nenhum usuário vê;
+ *   · o primeiro quadro do cliente desenhava a antiga ⛔ também;
+ *   · ⛔ e ⛔ logo depois o efeito trocava **⛔ o módulo inteiro** pela nova.
+ *
+ * ⚠️⚠️ ⛔ Todo módulo pagava um **render descartado** ⛔ em cima de aparelho de
+ * plantão, ⛔ e o pré-render inteiro era desperdício: ⛔ ele descrevia uma tela
+ * que ⛔ ninguém ia usar.
+ *
+ * ⛔ Corrigido em 2026-09-08: ⛔ as duas leem `PADRAO`. ⚠️ ⛔ O que se vê ⛔ não
+ * muda — ⛔ a UI 2.0 ⛔ já era o padrão desde a Fase 8; ⛔ o que muda é que agora
+ * o build **desenha a mesma coisa** que o navegador.
+ */
 function habilitadoPorAmbiente(moduloId: string): boolean {
-  const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? DESLIGADO).trim().toLowerCase();
+  const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? PADRAO).trim().toLowerCase();
   if (!bruto || bruto === DESLIGADO || bruto === "false" || bruto === "0") return false;
   if (bruto === TUDO || bruto === "true" || bruto === "1") return true;
   return bruto.split(",").map((id) => id.trim()).includes(moduloId.toLowerCase());
