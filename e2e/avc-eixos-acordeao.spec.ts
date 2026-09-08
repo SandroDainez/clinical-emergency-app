@@ -101,6 +101,49 @@ test.describe("AVC · Estabilização — o acordeão dos eixos", () => {
       .toContainText(/Avaliação concluída/i);
   });
 
+  /* ══ ⚠️⚠️⚠️ 3b · *"PRÓXIMO"* É O **SEGUINTE**, ⛔ E ⛔ NÃO O PRIMEIRO ════ */
+
+  /**
+   * ── ⚠️⚠️ ⛔ O DEFEITO (inspeção em produção, 2026-09-08) ─────────────────
+   *
+   * ⛔ ⛔ A primeira versão abria *"o primeiro ⛔ não concluído da lista"* —
+   * ⛔ e ⛔ isso mandava para **trás**: concluir **B** com **A** aberto abria
+   * ⛔ **A**. ⚠️ ⛔ O médico concluía ⛔ e ⛔ não via movimento, ⛔ ou voltava.
+   */
+  test("⛔ concluir **B** abre **C**, ⛔ e ⛔ não volta para A", async ({ page }) => {
+    await abrirEstabilizacao(page);
+    await page.getByTestId("avc-ameaca-respiracao").click();
+    await page.getByTestId("avc-eixo-concluir-respiracao").click();
+
+    await expect(camposDe(page, "pressao").first(), "⛔ C não abriu").toBeVisible();
+    await expect(camposDe(page, "respiracao"), "⛔ B não fechou").toHaveCount(0);
+  });
+
+  /* ══ ⚠️⚠️⚠️ 3c · CONCLUÍDO **SE VÊ** ⛔ ABERTO ⛔ E FECHADO ══════════════ */
+
+  /**
+   * ⛔ ⛔ Relato do autor, em produção: *"respiração fica aberto ⛔ como se
+   * ⛔ não tivesse feito"*. ⚠️ ⛔ O único sinal era o texto do botão, ⛔ lá no
+   * fim do bloco — ⛔ e um eixo concluído **aberto** ficava idêntico a um
+   * ⛔ não concluído.
+   */
+  test("⛔ o eixo concluído diz que está concluído, ⛔ aberto ⛔ ou fechado",
+    async ({ page }) => {
+      await abrirEstabilizacao(page);
+      await expect(page.getByTestId("avc-eixo-selo-via-aerea")).toHaveCount(0);
+
+      await page.getByTestId("avc-eixo-concluir-via-aerea").click();
+      /** ⛔ Fechado: o selo está no cabeçalho. */
+      await expect(page.getByTestId("avc-eixo-selo-via-aerea")).toBeVisible();
+
+      /** ⛔ E aberto **também** — ⛔ que é onde ⛔ ele faltava. */
+      await page.getByTestId("avc-ameaca-via_aerea").click();
+      await expect(camposDe(page, "via-aerea").first()).toBeVisible();
+      await expect(page.getByTestId("avc-eixo-selo-via-aerea")).toBeVisible();
+      await expect(page.getByTestId("avc-eixo-concluir-via-aerea"))
+        .toContainText(/Reabrir/i);
+    });
+
   /* ══ ⚠️⚠️ 4 · ⛔ *"PRÓXIMO"* ⛔ NÃO EXISTE MAIS ══════════════════════════ */
 
   test("⛔ o atalho *«Próximo»* saiu da tela", async ({ page }) => {

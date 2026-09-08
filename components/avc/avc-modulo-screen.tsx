@@ -815,9 +815,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     setEstado((e) => (jaConcluido ? reabrirEixo(e, eixo) : concluirEixo(e, eixo)));
     if (jaConcluido) return;
     const grupo = grupoDoEixo(eixo);
-    const proximo = EIXOS_DA_ESTABILIZACAO.find(
-      (x) => x.eixo !== eixo && !estado.eixosConcluidos.includes(x.eixo)
-    )?.grupo;
+    /**
+     * ── ⚠️⚠️⚠️ *"PRÓXIMO"* É **O SEGUINTE NA ORDEM** — corrigido 2026-09-08 ──
+     *
+     * ⛔ ⛔ A primeira versão pegava *"o primeiro ⛔ não concluído da lista"* —
+     * ⛔ e ⛔ isso mandava para **trás**: concluir **B** com **A** em aberto
+     * abria **A**. ⚠️ ⛔ O médico concluía um eixo ⛔ e era devolvido ao
+     * anterior, ⛔ ou ⛔ não via movimento ⛔ nenhum.
+     *
+     * ⚠️ ⛔ Achado na inspeção clínica do autor, ⛔ em produção.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ se ⛔ não houver seguinte ⛔ não concluído, **⛔ nada abre**:
+     * ⛔ voltar ao começo ⛔ seria a mesma ida para trás, ⛔ com outro nome.
+     */
+    const daqui = EIXOS_DA_ESTABILIZACAO.findIndex((x) => x.eixo === eixo);
+    const proximo = EIXOS_DA_ESTABILIZACAO
+      .slice(daqui + 1)
+      .find((x) => !estado.eixosConcluidos.includes(x.eixo))?.grupo;
     setEixosAbertos((a) => {
       const semOAtual = a.filter((g) => g !== grupo);
       return proximo === undefined || semOAtual.includes(proximo)

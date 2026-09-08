@@ -451,6 +451,7 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Reabrir avaliação": "Reabrir evaluación",
   "Consciência rebaixada": "Consciencia deprimida",
   "Em andamento": "En curso",
+  "Concluída": "Concluida",
   "Sem dados clínicos registrados": "Sin datos clínicos registrados",
   "Hipertensão arterial": "Hipertensión arterial",
   "Doença arterial coronariana": "Enfermedad arterial coronaria",

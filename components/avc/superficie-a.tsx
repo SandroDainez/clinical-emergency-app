@@ -401,6 +401,24 @@ export default function SuperficieA({
                 style={({ pressed }) => [e.cabecalho, pressed ? e.pressionado : null]}
               >
                 <Secao titulo={grupo.titulo} assunto={grupo.id} />
+                {/**
+                  * ── ⚠️⚠️⚠️ O SELO DE CONCLUÍDO ⛔ NO CABEÇALHO — 2026-09-08 ──
+                  *
+                  * ⛔ ⛔ Relato do autor, em produção: *"respiração fica aberto
+                  * ⛔ como se ⛔ não tivesse feito"*. ⚠️ ⛔ Um eixo concluído
+                  * **aberto** ficava idêntico a um ⛔ não concluído — ⛔ o único
+                  * sinal era o texto do botão ⛔ lá no fim do bloco.
+                  *
+                  * ⚠️ ⛔ Aqui ⛔ ele aparece **aberto ⛔ ou fechado**, ⛔ e ⛔ ao
+                  * lado do nome: ⛔ é progresso, ⛔ e ⛔ por isso vem em caixa
+                  * alta, ⛔ como no tile — ⛔ e ⛔ **⛔ não** diz ⛔ nada sobre o
+                  * paciente.
+                  */}
+                {eixo !== undefined && estado.eixosConcluidos.includes(eixo) ? (
+                  <Text style={e.eixoConcluido} testID={`avc-eixo-selo-${grupo.id}`}>
+                    {tr("Concluída")}
+                  </Text>
+                ) : null}
                 <Text style={e.eixoSinal}>{aberto ? "▾" : "▸"}</Text>
               </Pressable>
             )}
@@ -813,6 +831,13 @@ const criarEstilos = (tema: Tema) =>
     pressionado: { opacity: 0.7 },
     /** ⚠️ ⛔ O sinal ⛔ não vai sozinho: o cabeçalho inteiro é o alvo do toque. */
     eixoSinal: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
+    /** ⚠️ Progresso, ⛔ e ⛔ não clínica — ⛔ o mesmo idioma do tile. */
+    eixoConcluido: {
+      ...PAPEL.micro,
+      color: tema.cores.textSecondary,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+    },
     /** ⚠️ Eco do registrado — ⛔ e por isso **secundário**, ⛔ e ⛔ não título. */
     eixoResumo: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     concluirNoEixo: {
