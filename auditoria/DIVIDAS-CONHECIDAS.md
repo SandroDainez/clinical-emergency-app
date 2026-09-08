@@ -4665,3 +4665,35 @@ por conta própria seria **E-31**.
 ⛔ ⛔ Não pode virar caixa de texto livre para achado clínico (**§0.3**), ⛔ não
 pode preencher `deficit_focal` sozinha ⛔ e ⛔ não pode alimentar incapacitância,
 elegibilidade ⛔ ou ⛔ qualquer veredito ⛔ sem passar pelos quatro passos acima.
+
+---
+
+## D-125 — ⏸️ ABERTA · O ESLINT ⛔ NÃO SABE QUE `scripts/*.cjs` É NODE
+
+**Estado:** ⏸️ **ABERTA**, registrada em 2026-09-08 pelo autor, com a instrução
+explícita de ⛔ **não** misturar com funcionalidade: *"tratar isso depois em
+commit isolado de configuração"*.
+
+**O que é, medido:** `npx eslint scripts/*.cjs` acusa
+`'__dirname' is not defined  no-undef` em **⛔ todo** arquivo da pasta —
+`valida-paleta.cjs` (bem anterior a esta sessão), `prova-avc-abertura.cjs`,
+`prova-hidratacao-estavel.cjs`, `prova-ambiente-coerente.cjs`. ⚠️ ⛔ Não é
+defeito de código: `__dirname` **existe** em CommonJS, ⛔ e é assim que ⛔ toda
+prova acha a raiz do repositório.
+
+**Onde fecha:** `eslint.config.js` precisa declarar o ambiente Node (`globals`
+de CommonJS) para `scripts/**/*.cjs`. ⛔ Hoje ele só ignora `dist/*`.
+
+### ⚠️⚠️ POR QUE ISTO IMPORTA, ⛔ E ⛔ NÃO É COSMÉTICO
+
+⛔ ⛔ **Erro que aparece sempre vira erro que ⛔ ninguém lê.** ⚠️ Com dezenas de
+provas acusando a mesma falha inexistente, o dia em que uma delas tiver um
+`no-undef` **de verdade** — ⛔ uma variável esquecida, ⛔ um `require` que ⛔ não
+existe — ⛔ ele vai passar no meio do ruído.
+
+### O que ela ⛔ NÃO pode virar
+
+⛔ ⛔ Não pode virar `/* eslint-disable no-undef */` no topo de cada prova: ⛔ isso
+apaga o aviso ⛔ **e** a capacidade de avisar. ⚠️ O que falta é **declarar o
+ambiente**, ⛔ e ⛔ não silenciar a regra.
+
