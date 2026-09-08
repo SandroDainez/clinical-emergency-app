@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirModulo } from "./helpers";
+import { abrirModulo, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * O QUE SE TOCA PARECE QUE SE TOCA — ⛔ e o "Voltar" volta UM PASSO.
@@ -412,6 +412,8 @@ test.describe("AVC — afordância e navegação", () => {
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
 
+    /** ⚠️ ⛔ Desde o acordeão, o eixo C nasce recolhido — ⛔ abrir é o caminho. */
+    await abrirEixosDaEstabilizacao(page);
     const caixa = page.getByTestId("avc-num-caixa-pas");
     await caixa.scrollIntoViewIfNeeded();
     /** ⚠️ ⛔ Intocado é **⛔ não informado** — ⛔ e ⛔ nunca o piso da faixa (§0.2). */

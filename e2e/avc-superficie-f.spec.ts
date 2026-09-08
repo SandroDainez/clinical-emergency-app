@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * PROMETE: que a Superfície F se COMPORTE na largura de celular como a proposta
@@ -40,6 +40,8 @@ test.describe("AVC · Reperfusão", () => {
    */
   async function paAlta(page: Page) {
     await page.getByTestId("avc-aba-estabilizacao").click();
+    /** ⚠️ ⛔ Desde o acordeão, o eixo C nasce recolhido. */
+    await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-num-caixa-pas").fill("198");
     await page.getByTestId("avc-num-caixa-pad").fill("112");
   }
@@ -104,7 +106,9 @@ test.describe("AVC · Reperfusão", () => {
       /** ⚠️ 3 · NOVA aferição adequada — ⛔ e ⛔ só agora o corrigível cai. */
       await page.getByTestId("avc-aba-estabilizacao").click();
       await page.getByTestId("avc-nova-medida-pressao").click();
-      await page.getByTestId("avc-num-caixa-pas").fill("150");
+      /** ⚠️ ⛔ Desde o acordeão, o eixo C nasce recolhido. */
+    await abrirEixosDaEstabilizacao(page);
+    await page.getByTestId("avc-num-caixa-pas").fill("150");
       await page.getByTestId("avc-num-caixa-pad").fill("90");
 
       await page.getByTestId("avc-aba-reperfusao").click();
@@ -271,6 +275,8 @@ test.describe("AVC · Reperfusão", () => {
       await page.goto("/modulos/avc");
 
       await page.getByTestId("avc-aba-estabilizacao").click();
+      /** ⚠️ ⛔ Desde o acordeão, o eixo D nasce recolhido. */
+      await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-glicemia").fill("42");
 
       await page.getByTestId("avc-aba-reperfusao").click();
@@ -283,6 +289,8 @@ test.describe("AVC · Reperfusão", () => {
 
       /** ⚠️⚠️ Glicemia normalizada — ⛔ e ⛔ **ainda** ⛔ não libera. */
       await page.getByTestId("avc-aba-estabilizacao").click();
+      /** ⚠️ ⛔ Desde o acordeão, o eixo D nasce recolhido. */
+      await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-glicemia").fill("110");
 
       await page.getByTestId("avc-aba-reperfusao").click();

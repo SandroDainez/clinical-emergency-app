@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * PROMETE: que a Superfície G CHEGUE À TELA na largura de celular como a
@@ -59,6 +59,8 @@ test.describe("AVC · Destino", () => {
 
       /** ⚠️ 1 · acima do alvo. */
       await page.getByTestId("avc-aba-estabilizacao").click();
+      /** ⚠️ ⛔ Desde o acordeão, o eixo nasce recolhido — ⛔ abrir é o caminho. */
+      await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-pas").fill("182");
       await page.getByTestId("avc-num-caixa-pad").fill("106");
 
@@ -78,6 +80,8 @@ test.describe("AVC · Destino", () => {
        */
       await page.getByTestId("avc-aba-estabilizacao").click();
       await page.getByTestId("avc-nova-medida-pressao").click();
+      /** ⚠️ ⛔ Desde o acordeão, o eixo nasce recolhido — ⛔ abrir é o caminho. */
+      await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-pas").fill("180");
       await page.getByTestId("avc-num-caixa-pad").fill("104");
 
@@ -87,6 +91,8 @@ test.describe("AVC · Destino", () => {
       /** ⚠️ 3 · agora sim, dentro. */
       await page.getByTestId("avc-aba-estabilizacao").click();
       await page.getByTestId("avc-nova-medida-pressao").click();
+      /** ⚠️ ⛔ Desde o acordeão, o eixo nasce recolhido — ⛔ abrir é o caminho. */
+      await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-pas").fill("176");
       await page.getByTestId("avc-num-caixa-pad").fill("98");
 
@@ -114,6 +120,7 @@ test.describe("AVC · Destino", () => {
     await registrarTrombolise(page, true);
 
     await page.getByTestId("avc-aba-estabilizacao").click();
+    await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-num-caixa-pas").fill("176");
 
     await page.getByTestId("avc-aba-destino").click();

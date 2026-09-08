@@ -446,6 +446,12 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   /** ⚠️ O bloco *"Corrigir agora"* da Estabilização — 2026-09-08. */
   "Corrigir agora": "Corregir ahora",
   "Registrar e acompanhar em Correções": "Registrar y acompañar en Correcciones",
+  /** ⚠️ O acordeão dos eixos — 2026-09-08. */
+  "Concluir avaliação": "Concluir evaluación",
+  "Reabrir avaliação": "Reabrir evaluación",
+  "Consciência rebaixada": "Consciencia deprimida",
+  "Em andamento": "En curso",
+  "Sem dados clínicos registrados": "Sin datos clínicos registrados",
   "Hipertensão arterial": "Hipertensión arterial",
   "Doença arterial coronariana": "Enfermedad arterial coronaria",
   /** ⚠️ ⛔ *"há mais de 3 meses"* ⛔ PRECISA sobreviver: ⛔ o AVC recente é contraindicação. */

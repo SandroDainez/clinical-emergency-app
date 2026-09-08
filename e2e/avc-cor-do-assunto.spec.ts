@@ -109,7 +109,12 @@ test.describe("AVC · a cor diz o assunto", () => {
       await page.goto("/modulos/avc");
 
       await aba(page, "estabilizacao");
-      await expect(page.getByTestId("avc-bloco-via-aerea")).toBeVisible();
+      /**
+       * ⚠️ ⛔ Desde o acordeão (2026-09-08), o cabeçalho do eixo é um
+       * **controle**, ⛔ e o `testID` do bloco vive nele — ⛔ o selo continua
+       * ⛔ lá, aberto ⛔ ou fechado.
+       */
+      await expect(page.getByTestId("avc-eixo-abrir-via-aerea")).toBeVisible();
       const eixo = await fundoDe(page, "avc-bloco-monitorizacao");
 
       await aba(page, "neurologico");

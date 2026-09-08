@@ -225,3 +225,35 @@ const escapar = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  */
 export const HORA_EXIBIDA = /^(\d{2}\/\d{2} )?\d{2}:\d{2}$/;
 export const HORA_EXIBIDA_MARCADA = /^✓ (\d{2}\/\d{2} )?\d{2}:\d{2} ✎$/;
+
+/**
+ * ── ⚠️⚠️⚠️ ABRE OS CINCO EIXOS DA ESTABILIZAÇÃO — 2026-09-08 ───────────────
+ *
+ * ⛔ ⛔ Desde o acordeão, ⛔ só o **primeiro ⛔ não concluído** nasce aberto:
+ * ⛔ os outros quatro são cabeçalho ⛔ e resumo. ⚠️ ⛔ Um teste que vá **tocar
+ * campos** de mais de um eixo precisa abri-los — ⛔ e ⛔ é isso, ⛔ e ⛔ nada
+ * além disso, que este ajudante faz.
+ *
+ * ⚠️⚠️ ⛔ ELE ⛔ NÃO CONCLUI ⛔ NADA, ⛔ e ⛔ não registra fato: ⛔ abrir é UI.
+ * ⛔ Um ajudante que concluísse eixos para "facilitar" faria os testes medirem
+ * um atendimento que ⛔ ninguém conduziu.
+ *
+ * ⚠️ ⛔ E ⛔ ele é **idempotente**: ⛔ só toca no tile do eixo que está fechado,
+ * ⛔ então chamá-lo duas vezes ⛔ não fecha ⛔ o que ⛔ já estava aberto.
+ */
+const EIXOS_E_GRUPOS = [
+  ["via_aerea", "via-aerea"],
+  ["respiracao", "respiracao"],
+  ["pressao", "pressao"],
+  ["glicemia", "neurologico-inicial"],
+  ["exposicao", "exposicao"],
+] as const;
+
+export async function abrirEixosDaEstabilizacao(page: Page): Promise<void> {
+  for (const [eixo, grupo] of EIXOS_E_GRUPOS) {
+    const campos = page
+      .getByTestId(`avc-grupo-${grupo}`)
+      .locator('[data-testid^="avc-campo-"]');
+    if ((await campos.count()) === 0) await page.getByTestId(`avc-ameaca-${eixo}`).click();
+  }
+}

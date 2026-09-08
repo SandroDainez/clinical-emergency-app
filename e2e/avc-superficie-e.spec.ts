@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * PROMETE: que E se COMPORTE na tela como registro de **ações** — que ⛔ nada nela
@@ -32,6 +32,8 @@ const abrirCorrecoes = (page: Page) => aba(page, "correcoes");
 /** ⚠️ PA alta pelos degraus — ⛔ sem digitação, como todo número do app. */
 async function paAlta(page: Page) {
   await aba(page, "estabilizacao");
+  /** ⚠️ ⛔ Desde o acordeão, o eixo C nasce recolhido — ⛔ abrir é o caminho. */
+  await abrirEixosDaEstabilizacao(page);
   /**
    * ⚠️ A PA entra pelo controle NOVO da Superfície A — caixa digitável.
    * ⛔ O contrato que esta spec protege é de **Correções**; a A é só o meio.
@@ -43,6 +45,7 @@ async function paAlta(page: Page) {
 /** ⚠️ Glicemia abaixo do corte de tratamento — ⛔ pelo mesmo caminho da PA. */
 async function glicemiaBaixa(page: Page) {
   await aba(page, "estabilizacao");
+  await abrirEixosDaEstabilizacao(page);
   await page.getByTestId("avc-num-caixa-glicemia").fill("48");
 }
 

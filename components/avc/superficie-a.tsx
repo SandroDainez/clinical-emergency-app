@@ -38,6 +38,7 @@ import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinico
 import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
+import { eixoDoGrupo } from "./ui";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
@@ -88,6 +89,24 @@ type Props = {
    * responsabilidades.
    */
   onAbrirCorrecoes: () => void;
+  /**
+   * ── ⚠️⚠️⚠️ O ACORDEÃO — 2026-09-08 ──────────────────────────────────────
+   *
+   * ⛔ ⛔ Quais eixos estão **abertos**. ⚠️ ⛔ Isto é estado de **UI**, ⛔ e por
+   * isso ⛔ ele ⛔ não mora no atendimento: ⛔ abrir ⛔ e fechar ⛔ não registra
+   * ⛔ nem apaga fato ⛔ nenhum.
+   *
+   * ⚠️ ⛔ E ⛔ ele mora **acima desta tela** ⛔ porque os **tiles A–E** — que
+   * vivem no cromado do módulo — ⛔ também o comandam. ⛔ Duas cópias dariam
+   * tile aberto com bloco fechado.
+   */
+  eixosAbertos: readonly string[];
+  onAlternarEixo: (grupo: string) => void;
+  /**
+   * ⚠️⚠️ **Concluir** é estado de **progresso**, ⛔ e ⛔ não fato clínico:
+   * ⛔ ele ⛔ não afirma normalidade, ⛔ e ⛔ mexe ⛔ só em `eixosConcluidos`.
+   */
+  onConcluirEixo: (eixo: string) => void;
 };
 
 /**
@@ -105,6 +124,33 @@ type Props = {
  * ⚠️ ⛔ Os seis valores atravessaram **sem revisão** — ⛔ ver a nota na tabela.
  */
 
+/**
+ * ── ⚠️⚠️⚠️ O RESUMO DO EIXO RECOLHIDO — 2026-09-08 ─────────────────────────
+ *
+ * ⛔ ⛔ Relato do autor: *"o usuário pode preencher coisas ⛔ e depois ⛔ nem sabe
+ * o que preencheu"*. ⚠️ ⛔ Um bloco fechado ⛔ sem resumo é ⛔ exatamente isso.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO INTERPRETA ⛔ NADA: ⛔ **repete o que foi registrado**,
+ * ⛔ na ordem em que os campos aparecem. ⛔ Sem juízo, ⛔ sem faixa, ⛔ sem
+ * *"normal"* — ⛔ quem julga é o motor, ⛔ e ⛔ ele já fala pelo símbolo do tile.
+ *
+ * ⚠️ ⛔ Os rótulos são **curtos de propósito**: *"Pressão sistólica 200"* numa
+ * linha de resumo empurraria o resto para fora da tela em 375 px.
+ */
+const ROTULO_NO_RESUMO: Readonly<Record<string, string>> = {
+  spo2: "SpO₂",
+  fr: "FR",
+  fc: "FC",
+  glasgow: "Glasgow",
+  glicemia: "glicemia",
+  temperatura: "T",
+  consciencia_rebaixada: "Consciência rebaixada",
+  disfuncao_bulbar: "Disfunção bulbar",
+  hipoxia: "Hipoxemia",
+  monitorizacao: "Monitorização",
+  acessos: "Acessos",
+};
+
 export default function SuperficieA({
   estado,
   agora,
@@ -114,12 +160,57 @@ export default function SuperficieA({
   onDesfazer,
   onNovaMedida,
   onAbrirCorrecoes,
+  eixosAbertos,
+  onAlternarEixo,
+  onConcluirEixo,
 }: Props) {
   const tr = useTr();
   const foco = useFoco();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
+
+  /**
+   * ⚠️⚠️ ⛔ O RESUMO É **ECO**, ⛔ e ⛔ não leitura. ⛔ Ele lê o fato gravado ⛔ e
+   * escreve ⛔ o que está lá — ⛔ nada mais.
+   *
+   * ⚠️ ⛔ A PA sai composta (`200/120`) ⛔ porque a **composição já existe no
+   * núcleo**: `pressaoArterial()` devolve `medida: { pas, pad }`, ⛔ e a faixa
+   * de ameaças ⛔ já a escreve assim. ⛔ Inventar aqui um segundo jeito de
+   * escrever a mesma pressão daria duas notações para o mesmo fato.
+   */
+  function resumoDoEixo(grupo: (typeof GRUPOS_A)[number]): string {
+    const partes: string[] = [];
+    const ids = camposDoGrupo(grupo).map((c) => c.id);
+    const num = (id: string) => {
+      const v = valorAtual(estado, id)?.valor;
+      return typeof v === "number" ? v : undefined;
+    };
+
+    if (ids.includes("pas") && ids.includes("pad")) {
+      const pas = num("pas");
+      const pad = num("pad");
+      if (pas !== undefined && pad !== undefined) partes.push(`PA ${pas}/${pad} mmHg`);
+      else if (pas !== undefined) partes.push(`PAS ${pas} mmHg`);
+      else if (pad !== undefined) partes.push(`PAD ${pad} mmHg`);
+    }
+
+    for (const campo of camposDoGrupo(grupo)) {
+      if (campo.id === "pas" || campo.id === "pad") continue;
+      const bruto = valorAtual(estado, campo.id)?.valor;
+      if (bruto === undefined || bruto === "") continue;
+      const curto = tr(ROTULO_NO_RESUMO[campo.id] ?? campo.rotulo);
+      if (typeof bruto === "number") {
+        partes.push(`${curto} ${bruto}${campo.unidade ? ` ${tr(campo.unidade)}` : ""}`);
+      } else if (campo.tipo === "multipla") {
+        const itens = itensSelecionados(String(bruto));
+        if (itens.length > 0) partes.push(itens.map((i) => tr(i)).join(", "));
+      } else {
+        partes.push(`${curto}: ${tr(String(bruto))}`);
+      }
+    }
+    return partes.join(" · ");
+  }
   /**
    * ⚠️ ⛔ A MESMA lista que o cockpit usa para acender o eixo — ⛔ e ⛔ não uma
    * segunda leitura do estado: ⛔ duas fontes sobre *"há bloqueio?"* dariam a
@@ -259,6 +350,9 @@ export default function SuperficieA({
         const visiveis = camposDoGrupo(grupo).filter((campo) =>
           campoAparece(campo, (c) => valorAtual(estado, c)?.valor)
         );
+        /** ⚠️ ⛔ `undefined` = ⛔ não é eixo do ABCDE, ⛔ e ⛔ não recolhe. */
+        const eixo = eixoDoGrupo(grupo.id);
+        const aberto = eixo === undefined || eixosAbertos.includes(grupo.id);
         return (
           <View
             key={grupo.id}
@@ -286,9 +380,51 @@ export default function SuperficieA({
               * ⚠️⚠️ FILETE NO LUGAR DA BARRA CHEIA. ⛔ Com seis blocos de barra
               * preenchida, ⛔ nenhum era hierarquia — eram seis pesos iguais.
               */}
-            <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
-              <Secao titulo={grupo.titulo} assunto={grupo.id} />
-            </View>
+            {/**
+              * ── ⚠️⚠️⚠️ O CABEÇALHO DO EIXO ABRE ⛔ E FECHA — 2026-09-08 ─────
+              *
+              * ⚠️ ⛔ Só os **cinco eixos**: `Monitorização e acessos` ⛔ não é
+              * eixo do ABCDE, ⛔ e ⛔ continua sempre aberto — ⛔ instalar
+              * monitor ⛔ e pegar acesso precede avaliar.
+              */}
+            {eixo === undefined ? (
+              <View style={e.cabecalho} testID={`avc-bloco-${grupo.id}`}>
+                <Secao titulo={grupo.titulo} assunto={grupo.id} />
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                aria-expanded={aberto}
+                accessibilityLabel={`${tr(grupo.titulo)}: ${tr(aberto ? "recolher" : "abrir")}`}
+                testID={`avc-eixo-abrir-${grupo.id}`}
+                onPress={() => onAlternarEixo(grupo.id)}
+                style={({ pressed }) => [e.cabecalho, pressed ? e.pressionado : null]}
+              >
+                <Secao titulo={grupo.titulo} assunto={grupo.id} />
+                <Text style={e.eixoSinal}>{aberto ? "▾" : "▸"}</Text>
+              </Pressable>
+            )}
+
+            {/**
+              * ── ⚠️⚠️⚠️ O RESUMO DO EIXO FECHADO ───────────────────────────
+              *
+              * ⛔ ⛔ *"⛔ Nem sabe o que preencheu"* — ⛔ é a frase do autor, ⛔ e
+              * é a razão deste bloco. ⚠️ ⛔ Ele repete o registrado, ⛔ e ⛔ não
+              * interpreta.
+              *
+              * ⚠️⚠️ ⛔ E O ESTADO DE PROGRESSO ENTRA **DEPOIS DO PONTO**, ⛔ e
+              * ⛔ nunca no lugar do dado: *"Sem dados clínicos registrados ·
+              * Avaliação concluída"* diz as duas coisas ⛔ sem que uma
+              * signifique a outra.
+              */}
+            {eixo === undefined || aberto ? null : (
+              <Text style={e.eixoResumo} testID={`avc-eixo-resumo-${grupo.id}`} numberOfLines={3}>
+                {[
+                  resumoDoEixo(grupo) || tr("Sem dados clínicos registrados"),
+                  ...(estado.eixosConcluidos.includes(eixo) ? [tr("Avaliação concluída")] : []),
+                ].join(" · ")}
+              </Text>
+            )}
 
             {/**
               * ── ⚠️⚠️ A PAM — **DERIVADA**, ⛔ e ⛔ nunca digitada ────────────
@@ -332,7 +468,7 @@ export default function SuperficieA({
               </Pressable>
             ) : null}
 
-            {visiveis.map((campo) => {
+            {!aberto ? null : visiveis.map((campo) => {
               const fato = fatoDoCampo(campo);
               const bruto = String(fato?.valor ?? "");
 
@@ -484,6 +620,37 @@ export default function SuperficieA({
                 />
               );
             })}
+
+            {/**
+              * ── ⚠️⚠️⚠️ **CONCLUIR** MORA ⛔ DENTRO DO EIXO — 2026-09-08 ─────
+              *
+              * ⛔ ⛔ Eram cinco botões numa fileira ⛔ no topo, longe do que
+              * ⛔ eles concluíam. ⚠️ Decisão do autor: *"o botão `Concluir` fica
+              * dentro do próprio eixo, no final do bloco"*.
+              *
+              * ⚠️⚠️ ⛔ E ⛔ ELE ⛔ NÃO CRIA FATO: ⛔ mexe ⛔ só em
+              * `eixosConcluidos`, ⛔ e ⛔ **⛔ não infere normalidade** — ⛔ um
+              * eixo concluído ⛔ sem dado continua dizendo *"Sem dados clínicos
+              * registrados"*.
+              */}
+            {eixo === undefined || !aberto ? null : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ checked: estado.eixosConcluidos.includes(eixo) }}
+                accessibilityLabel={`${tr(grupo.titulo)}: ${tr(
+                  estado.eixosConcluidos.includes(eixo)
+                    ? "reabrir avaliação"
+                    : "marcar avaliação como concluída"
+                )}`}
+                testID={`avc-eixo-concluir-${grupo.id}`}
+                onPress={() => onConcluirEixo(eixo)}
+                style={({ pressed }) => [e.concluirNoEixo, pressed ? e.pressionado : null]}
+              >
+                <Text style={e.concluirNoEixoTexto}>
+                  {tr(estado.eixosConcluidos.includes(eixo) ? "Reabrir avaliação" : "Concluir avaliação")}
+                </Text>
+              </Pressable>
+            )}
           </View>
         );
       })}
@@ -605,6 +772,7 @@ const criarEstilos = (tema: Tema) =>
     cabecalho: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
       gap: ESPACO.sm,
       marginTop: ESPACO.md,
     },
@@ -634,6 +802,21 @@ const criarEstilos = (tema: Tema) =>
     },
     corrigirSaidaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
     pressionado: { opacity: 0.7 },
+    /** ⚠️ ⛔ O sinal ⛔ não vai sozinho: o cabeçalho inteiro é o alvo do toque. */
+    eixoSinal: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
+    /** ⚠️ Eco do registrado — ⛔ e por isso **secundário**, ⛔ e ⛔ não título. */
+    eixoResumo: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
+    concluirNoEixo: {
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.border,
+      backgroundColor: tema.cores.controlSurface,
+      marginTop: ESPACO.xs,
+    },
+    concluirNoEixoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
     /**

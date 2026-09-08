@@ -251,6 +251,45 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
   coleta: { icone: "laboratorio", cor: "info" },
 };
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * 1c · OS CINCO EIXOS — ⚠️ a ponte entre o **tile** e o **bloco**
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️⚠️ ⛔ POR QUE ESTA TABELA EXISTE — relato do autor, 2026-09-08.
+ *
+ * ⛔ ⛔ *"Os botões de cima A B C D E ⛔ não estão tendo sentido, ⛔ já que todos
+ * direcionam para o mesmo lugar (…) o usuário pode preencher coisas ⛔ e depois
+ * ⛔ nem sabe o que preencheu."*
+ *
+ * ⚠️ ⛔ Os tiles rolavam até uma seção de uma lista que **⛔ já estava inteira na
+ * tela** — ⛔ e ⛔ por isso ⛔ eles ⛔ não faziam ⛔ nada que a rolagem ⛔ não
+ * fizesse. ⚠️ ⛔ Agora ⛔ eles **abrem ⛔ e fecham** o eixo, ⛔ e ⛔ para isso é
+ * preciso ligar o **id da ameaça** ao **id do grupo**.
+ *
+ * ── ⚠️⚠️ ⛔ E OS DOIS IDS ⛔ NÃO SÃO IGUAIS — ⛔ e ⛔ isso ⛔ não é descuido ─────
+ *
+ * ⛔ O eixo **D** se chama `glicemia` na lista de ameaças ⛔ porque é ⛔ ela que
+ * tem **corte transcrito**, ⛔ e é ⛔ ela que acende; ⛔ o grupo se chama
+ * `neurologico-inicial` ⛔ porque abriga Glasgow **e** glicemia. ⚠️ ⛔ Casar os
+ * dois por nome quebraria ⛔ exatamente ⛔ aí — ⛔ e ⛔ em silêncio.
+ */
+export const EIXOS_DA_ESTABILIZACAO = [
+  { eixo: "via_aerea", grupo: "via-aerea" },
+  { eixo: "respiracao", grupo: "respiracao" },
+  { eixo: "pressao", grupo: "pressao" },
+  { eixo: "glicemia", grupo: "neurologico-inicial" },
+  { eixo: "exposicao", grupo: "exposicao" },
+] as const;
+
+export function grupoDoEixo(eixo: string): string | undefined {
+  return EIXOS_DA_ESTABILIZACAO.find((e) => e.eixo === eixo)?.grupo;
+}
+
+export function eixoDoGrupo(grupo: string): string | undefined {
+  return EIXOS_DA_ESTABILIZACAO.find((e) => e.grupo === grupo)?.eixo;
+}
+
 export function assuntoDoBloco(id: string | undefined): Assunto | undefined {
   return id === undefined ? undefined : ASSUNTO_DO_BLOCO[id];
 }

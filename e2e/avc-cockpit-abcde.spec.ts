@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { abrirModulo } from "./helpers";
+import { abrirModulo, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * O COCKPIT ABCDE — ⚠️ **progresso ⛔ NÃO é estado clínico**, na tela.
@@ -29,14 +29,25 @@ test.describe("AVC · cockpit ABCDE", () => {
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
     /**
-     * ⚠️ Pelos `testID` dos botões de concluir — ⛔ um por eixo, ⛔ na ordem em
-     * que o cockpit os desenha. ⛔ Ler a letra pelo texto casava com qualquer
-     * `A` solto da tela.
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
+     */
+    await abrirEixosDaEstabilizacao(page);
+    /**
+     * ⚠️ Pelos `testID` dos **tiles** — ⛔ um por eixo, ⛔ na ordem em que o
+     * cockpit os desenha. ⛔ Ler a letra pelo texto casava com qualquer `A`
+     * solto da tela.
+     *
+     * ⚠️⚠️ ⛔ ERA PELOS BOTÕES DE CONCLUIR, ⛔ e ⛔ eles saíram do cockpit em
+     * 2026-09-08: ⛔ *"o botão `Concluir` fica dentro do próprio eixo"*.
+     * ⛔ A garantia — **a ordem do ABCDE** — ⛔ não mudou; ⛔ mudou quem a
+     * carrega.
      */
     const ordem = await page
-      .locator('[data-testid^="avc-concluir-"]')
+      .locator('[data-testid^="avc-ameaca-"]:not([data-testid*="progresso"])')
       .evaluateAll((els) =>
-        els.map((e) => e.getAttribute("data-testid")!.replace("avc-concluir-", ""))
+        els.map((e) => e.getAttribute("data-testid")!.replace("avc-ameaca-", ""))
       );
     expect(ordem, "⛔ o ABCDE clássico, na ordem").toEqual([
       "via_aerea", "respiracao", "pressao", "glicemia", "exposicao",
@@ -59,12 +70,18 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não.
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
+     */
+    await abrirEixosDaEstabilizacao(page);
     /** ⚠️ Hipoxemia declarada — o eixo B acende. */
     await page.getByTestId("avc-opcao-hipoxia-sim").click();
     const b = page.getByTestId("avc-ameaca-respiracao");
     await expect(b).toContainText("O₂ suplementar");
 
-    await page.getByTestId("avc-concluir-respiracao").click();
+    await page.getByTestId("avc-eixo-concluir-respiracao").click();
 
     /**
      * ⚠️⚠️ ⛔ *"⛔ Nunca usar 'concluído' como sinônimo de 'normal'"* — ⛔ o
@@ -76,30 +93,39 @@ test.describe("AVC · cockpit ABCDE", () => {
     await expect(b, "⛔ favorável seria afirmar o que ⛔ ninguém afirmou").not.toContainText("✓");
   });
 
-  test("o próximo eixo é DESTACADO, ⛔ e ⛔ não aberto sozinho", async ({ page }) => {
-    await abrirModulo(page, "avc");
   /**
-   * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
-   * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
-   * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
-   * ⛔ não.
+   * ── ⚠️⚠️⚠️ ⛔ INVERTIDO — 2026-09-08, ⛔ e ⛔ não apagado ──────────────────
+   *
+   * ⛔ ⛔ Ele prometia *"o próximo eixo é **destacado**, ⛔ e ⛔ não aberto
+   * sozinho"*, ⛔ e media isso no atalho `avc-proximo-eixo`.
+   *
+   * ⚠️ Decisão do autor, na inspeção de 2026-09-08: *"concluir um eixo fecha o
+   * atual ⛔ e abre automaticamente o próximo ⛔ não concluído"*, ⛔ e
+   * *"remover o botão/linha `Próximo`, porque vira redundante"*.
+   *
+   * ⚠️⚠️ ⛔ Então a garantia ⛔ **⛔ virou o contrário do que dizia** — ⛔ e é
+   * ⛔ isso que se mede ⛔ agora: ⛔ concluir A **abre B**. ⛔ Quem cobre o
+   * acordeão inteiro é `avc-eixos-acordeao`.
    */
-  await page.getByTestId("avc-aba-estabilizacao").click();
+  test("⛔ concluir um eixo abre o **próximo**, ⛔ e o atalho antigo saiu",
+    async ({ page }) => {
+      await abrirModulo(page, "avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
     /**
-     * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e o cockpit
-     * ABCDE é o trabalho da **Estabilização**. ⛔ Este teste mede o cockpit,
-     * ⛔ então ⛔ ele navega até ⛔ ele: ⛔ a abertura mudou, ⛔ e a garantia
-     * ⛔ não.
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
      */
-    await page.getByTestId("avc-aba-estabilizacao").click();
-    await expect(page.getByTestId("avc-proximo-eixo")).toContainText("Via aérea");
+    await abrirEixosDaEstabilizacao(page);
 
-    await page.getByTestId("avc-concluir-via_aerea").click();
-    await expect(
-      page.getByTestId("avc-proximo-eixo"),
-      "⛔ concluído A, o destaque anda para B"
-    ).toContainText("Respiração");
-  });
+      await expect(page.getByTestId("avc-proximo-eixo")).toHaveCount(0);
+      await page.getByTestId("avc-eixo-concluir-via-aerea").click();
+
+      await expect(
+        page.getByTestId("avc-grupo-respiracao").locator('[data-testid^="avc-campo-"]').first(),
+        "⛔ concluído A, B abre"
+      ).toBeVisible();
+    });
 
   test("⛔ NENHUMA ordem é imposta: C conclui ⛔ sem A ⛔ nem B", async ({ page }) => {
     /**
@@ -121,7 +147,13 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não.
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
-    await page.getByTestId("avc-concluir-pressao").click();
+    /**
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
+     */
+    await abrirEixosDaEstabilizacao(page);
+    await page.getByTestId("avc-eixo-concluir-pressao").click();
     await expect(page.getByTestId("avc-ameaca-pressao")).toContainText("Avaliação concluída");
     await expect(
       page.getByTestId("avc-ameaca-via_aerea"),
@@ -145,12 +177,26 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não.
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
+     */
+    await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-num-caixa-glicemia").fill("48");
     const d = page.getByTestId("avc-ameaca-glicemia");
     await expect(d).toContainText("48");
 
-    await page.getByTestId("avc-concluir-glicemia").click();
-    await page.getByTestId("avc-concluir-glicemia").click();
+    /**
+     * ⚠️⚠️ ⛔ CONCLUIR **FECHA O EIXO** desde 2026-09-08 — ⛔ então o botão de
+     * reabrir ⛔ não está mais na tela logo depois. ⚠️ ⛔ O caminho passou a ser
+     * o do médico: ⛔ abrir o eixo pelo tile, ⛔ e ⛔ então reabrir a avaliação.
+     *
+     * ⛔ A garantia ⛔ não mudou: **reabrir ⛔ não apaga medida**.
+     */
+    await page.getByTestId("avc-eixo-concluir-neurologico-inicial").click();
+    await page.getByTestId("avc-ameaca-glicemia").click();
+    await page.getByTestId("avc-eixo-concluir-neurologico-inicial").click();
 
     await expect(d, "⛔ reabrir é gesto de tela — ⛔ ele ⛔ não apaga medida")
       .toContainText("48");
@@ -173,6 +219,12 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não.
      */
     await page.getByTestId("avc-aba-estabilizacao").click();
+    /**
+     * ⚠️⚠️ ⛔ O `Concluir` mora **dentro do eixo** desde 2026-09-08 — ⛔ e um
+     * eixo recolhido ⛔ não tem botão. ⚠️ ⛔ Abrir é pré-condição ⛔ aqui, ⛔ e
+     * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
+     */
+    await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-num-caixa-temperatura").fill("39");
     const e = page.getByTestId("avc-ameaca-exposicao");
     await expect(e).toContainText("39");

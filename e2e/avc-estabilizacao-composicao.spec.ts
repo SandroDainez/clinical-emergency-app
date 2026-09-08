@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * PROMETE: que a **Estabilização** contenha ⛔ só estabilização — ⛔ e que ⛔ ela
@@ -34,6 +34,12 @@ async function abrirEstabilizacao(page: Page) {
   await page.goto("/modulos/avc");
   await aba(page, "estabilizacao");
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
+  /**
+   * ⚠️ ⛔ Desde o acordeão (2026-09-08), ⛔ só o primeiro eixo nasce aberto.
+   * ⛔ Estes testes medem **a composição** da tela — ⛔ e o que ⛔ ela ⛔ não
+   * carrega —, ⛔ então ⛔ eles precisam de tudo à vista.
+   */
+  await abrirEixosDaEstabilizacao(page);
 }
 
 /** ⚠️ Registrar um número **pelo gesto da caixa** — ⛔ e ⛔ não por estado interno. */

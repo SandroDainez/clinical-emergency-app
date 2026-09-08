@@ -4,7 +4,7 @@ import { superficie } from "../avc/conteudo/superficies";
 import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
 /** ⚠️ A cronologia mora na Avaliação AVC desde **C7**, 2026-09-07. */
 import { TODOS_OS_CAMPOS_B } from "../avc/conteudo/superficie-b";
-import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA } from "./helpers";
+import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA, abrirEixosDaEstabilizacao } from "./helpers";
 
 /**
  * PROMETE: que a Superfície A tenha COMPORTAMENTO, não apenas campos.
@@ -20,10 +20,21 @@ import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA } from "./helpers";
  * slot de fonte atrás do ⓘ. Onde o teste antes lia o texto longo direto, agora
  * ele ABRE o ⓘ — porque é lá que E-22 e E-30 continuam sendo cumpridos.
  */
+/**
+ * ── ⚠️⚠️⚠️ ⛔ ELE ABRE OS CINCO EIXOS — 2026-09-08 ─────────────────────────
+ *
+ * ⛔ ⛔ Desde o acordeão, ⛔ só o primeiro ⛔ não concluído nasce aberto. ⚠️ ⛔ Os
+ * testes deste arquivo medem **o conteúdo** de cada eixo — ⛔ e ⛔ para tocar
+ * campo é preciso ⛔ ele estar na tela.
+ *
+ * ⚠️ ⛔ Quem mede o **acordeão em si** é `avc-eixos-acordeao`; ⛔ aqui ⛔ ele é
+ * pré-condição, ⛔ e ⛔ não a garantia.
+ */
 async function abrirA(page: Page) {
   await page.goto("/modulos/avc");
   await page.getByTestId("avc-aba-estabilizacao").click();
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
+  await abrirEixosDaEstabilizacao(page);
 }
 
 /**
@@ -279,6 +290,8 @@ test.describe("Superfície A — estabilização", () => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
     await page.getByTestId("avc-aba-estabilizacao").click();
+    /** ⚠️ ⛔ O eixo D nasce recolhido desde o acordeão — ⛔ abrir é pré-condição. */
+    await abrirEixosDaEstabilizacao(page);
     await expect(page.getByTestId("avc-campo-glicemia")).toContainText(/Glucemia/);
     await expect(page.getByTestId("avc-leitura-curto-glicemia"))
       .toContainText(/Glucemia aún no informada/i);
@@ -1068,6 +1081,7 @@ test.describe("Superfície A — UX clínica", () => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
     await page.getByTestId("avc-aba-estabilizacao").click();
+    await abrirEixosDaEstabilizacao(page);
 
     // ⚠️ Antes da primeira medida, ⛔ não há o que suceder: o gesto ⛔ não aparece.
     await expect(page.getByTestId("avc-nova-medida-pressao")).toHaveCount(0);

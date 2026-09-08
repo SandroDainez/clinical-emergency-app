@@ -150,7 +150,8 @@ import { ACAO } from "../../avc/conteudo/superficie-e";
 import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
-import { TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
+import { camposDoGrupo } from "../../avc/conteudo/campo";
 import { TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
 import { TODOS_OS_CAMPOS_C } from "../../avc/conteudo/superficie-c";
 import { TODOS_OS_CAMPOS_P } from "../../avc/conteudo/paciente";
@@ -162,6 +163,7 @@ import {
   concluirEixo,
   reabrirEixo,
   registrarFato,
+  valorAtual as valorAtualDoEstado,
   verSuperficie,
 } from "../../avc/nucleo/estado";
 import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
@@ -173,6 +175,7 @@ import SuperficieLaboratorio from "./superficie-laboratorio";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { getPalette } from "../../design-system/paleta-de-area";
+import { EIXOS_DA_ESTABILIZACAO, grupoDoEixo } from "./ui";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, LARGURA, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -773,7 +776,64 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * próximo que **⛔ ninguém marcou como avaliado**. ⚠️ Progresso ⛔ e estado
    * clínico são eixos diferentes (**item 1**), ⛔ e este segue o progresso.
    */
-  const proximoEixo = ameacas.find((a) => !estado.eixosConcluidos.includes(a.id));
+  /**
+   * ── ⚠️⚠️⚠️ O ACORDEÃO DOS EIXOS — 2026-09-08 ─────────────────────────────
+   *
+   * ⛔ ⛔ Relato do autor: *"os botões de cima A B C D E ⛔ não estão tendo
+   * sentido, ⛔ já que todos direcionam para o mesmo lugar"*. ⚠️ ⛔ Eles
+   * rolavam até uma seção de uma lista **⛔ já inteira na tela**.
+   *
+   * ⚠️⚠️ ⛔ AGORA ⛔ ELES ABREM ⛔ E FECHAM — ⛔ e o estado mora **aqui** porque
+   * ⛔ ele é comandado dos **dois lados**: pelo tile, ⛔ neste cromado, ⛔ e pelo
+   * cabeçalho do bloco, ⛔ dentro da Superfície A. ⛔ Duas cópias dariam tile
+   * aberto com bloco fechado.
+   *
+   * ⚠️ ⛔ Estado de **UI**: ⛔ abrir ⛔ e fechar ⛔ não grava ⛔ nem apaga fato.
+   */
+  const primeiroNaoConcluido = EIXOS_DA_ESTABILIZACAO
+    .find((x) => !estado.eixosConcluidos.includes(x.eixo))?.grupo;
+  /**
+   * ⚠️ ⛔ Nasce com **⛔ um** aberto — ⛔ o primeiro ⛔ não concluído —, ⛔ e ⛔ o
+   * médico abre quantos quiser depois. ⛔ Forçar um por vez esconderia coisa
+   * que ⛔ ele quer comparar.
+   */
+  const [eixosAbertos, setEixosAbertos] = useState<readonly string[]>(
+    primeiroNaoConcluido === undefined ? [] : [primeiroNaoConcluido]
+  );
+
+  function alternarEixo(grupo: string) {
+    setEixosAbertos((a) => (a.includes(grupo) ? a.filter((g) => g !== grupo) : [...a, grupo]));
+  }
+
+  /**
+   * ⚠️⚠️ CONCLUIR: ⛔ fecha o atual ⛔ e abre o **próximo ⛔ não concluído** —
+   * decisão do autor. ⚠️ **Reabrir** ⛔ não move ⛔ ninguém: ⛔ quem reabre quer
+   * olhar ⛔ aquele eixo, ⛔ e ⛔ não ser levado a outro.
+   */
+  function concluirOuReabrirEixo(eixo: string) {
+    const jaConcluido = estado.eixosConcluidos.includes(eixo);
+    setEstado((e) => (jaConcluido ? reabrirEixo(e, eixo) : concluirEixo(e, eixo)));
+    if (jaConcluido) return;
+    const grupo = grupoDoEixo(eixo);
+    const proximo = EIXOS_DA_ESTABILIZACAO.find(
+      (x) => x.eixo !== eixo && !estado.eixosConcluidos.includes(x.eixo)
+    )?.grupo;
+    setEixosAbertos((a) => {
+      const semOAtual = a.filter((g) => g !== grupo);
+      return proximo === undefined || semOAtual.includes(proximo)
+        ? semOAtual
+        : [...semOAtual, proximo];
+    });
+  }
+
+  /** ⚠️ ⛔ Há algum fato registrado neste eixo? — ⛔ progresso, ⛔ e ⛔ não juízo. */
+  function eixoTemDado(eixo: string): boolean {
+    const grupo = GRUPOS_A.find((g) => g.id === grupoDoEixo(eixo));
+    if (grupo === undefined) return false;
+    return camposDoGrupo(grupo).some(
+      (c) => valorAtualDoEstado(estado, c.id)?.valor !== undefined
+    );
+  }
 
   const sinaisVitais: readonly SinalVital[] = VITAIS.map((v) => ({
     id: v.id,
@@ -1002,7 +1062,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           {ameacas.map((a) => (
             <Pressable
               key={a.id}
-              onPress={() => irParaCampo(a.campo)}
+              /**
+               * ── ⚠️⚠️⚠️ O TILE **ABRE O EIXO** — 2026-09-08 ────────────────
+               *
+               * ⛔ ⛔ Ele rolava até o primeiro campo do eixo, ⛔ numa lista que
+               * ⛔ já estava inteira na tela: ⛔ *"todos direcionam para o mesmo
+               * lugar"*. ⚠️ ⛔ Agora ⛔ ele faz o que a rolagem ⛔ não faz.
+               *
+               * ⚠️⚠️ ⛔ E ⛔ TOCAR ⛔ AQUI ⛔ **⛔ NUNCA** CONCLUI: ⛔ abrir é UI,
+               * ⛔ concluir é progresso, ⛔ e o botão de concluir mora **dentro**
+               * do eixo. ⛔ Misturar os dois faria o app afirmar que o médico
+               * avaliou o que ⛔ ele ⛔ só abriu.
+               *
+               * ⚠️ ⛔ Eixo ⛔ sem grupo (⛔ nenhum hoje) cairia na rolagem
+               * antiga — ⛔ e ⛔ não num gesto morto.
+               */
+              onPress={() => {
+                const grupo = grupoDoEixo(a.id);
+                if (grupo === undefined) irParaCampo(a.campo);
+                else alternarEixo(grupo);
+              }}
               accessibilityRole="button"
               accessibilityLabel={`${tr(a.nome)}: ${tr(
                 ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo
@@ -1109,8 +1188,28 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * ⚠️ ⛔ Quando ⛔ ainda ⛔ não foi concluído, ⛔ o botão logo abaixo
                 * já diz *"Concluir"* — ⛔ e ⛔ repetir isso em prosa é ruído.
                 */}
+              {/**
+                * ── ⚠️⚠️⚠️ PROGRESSO ⛔ EM LINHA PRÓPRIA — 2026-09-08 ─────────
+                *
+                * ⚠️ Exigência do autor: *"⛔ não usar «concluído» como sinônimo
+                * de normal/favorável (…) ⛔ se o eixo tiver risco, o símbolo/
+                * estado clínico continua vindo do motor"*.
+                *
+                * ⛔ ⛔ Por isso ⛔ ele ⛔ nunca substitui a linha de cima: ⛔ a
+                * clínica é do motor, ⛔ e ⛔ esta ⛔ aqui diz ⛔ apenas em que pé
+                * está o **trabalho**.
+                *
+                * ⛔ ⛔ *"Em andamento"* ⛔ não é juízo: é *há fato registrado
+                * ⛔ neste eixo ⛔ e ⛔ ele ⛔ não foi dado por concluído*.
+                */}
               {estado.eixosConcluidos.includes(a.id) ? (
-                <Text style={s.ameacaProgresso}>{tr("Avaliação concluída")}</Text>
+                <Text style={s.ameacaProgresso} testID={`avc-ameaca-progresso-${a.id}`}>
+                  {tr("Avaliação concluída")}
+                </Text>
+              ) : eixoTemDado(a.id) ? (
+                <Text style={s.ameacaProgresso} testID={`avc-ameaca-progresso-${a.id}`}>
+                  {tr("Em andamento")}
+                </Text>
               ) : null}
             </Pressable>
           ))}
@@ -1132,33 +1231,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * ⛔ e ⛔ não portão — *"se chegar um paciente com choque evidente,
           * deve poder acessar C imediatamente"*.
           */}
-        <View style={s.cockpitAcoes}>
-          {ameacas.map((a) => {
-            const concluido = estado.eixosConcluidos.includes(a.id);
-            return (
-              <Pressable
-                key={`concluir-${a.id}`}
-                style={({ pressed }) => [
-                  s.concluirEixo,
-                  concluido ? s.concluirEixoFeito : null,
-                  pressed ? s.pressionado : null,
-                ]}
-                accessibilityRole="button"
-                accessibilityState={{ checked: concluido }}
-                accessibilityLabel={`${tr(a.nome)}: ${tr(concluido ? "reabrir avaliação" : "marcar avaliação como concluída")}`}
-                testID={`avc-concluir-${a.id}`}
-                onPress={() =>
-                  setEstado((e) => (concluido ? reabrirEixo(e, a.id) : concluirEixo(e, a.id)))
-                }
-              >
-                <Text style={s.concluirEixoLetra}>{a.letra}</Text>
-                <Text style={s.concluirEixoTexto}>
-                  {tr(concluido ? "Reabrir" : "Concluir")}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {/**
+          * ── ⚠️⚠️⚠️ A FILEIRA DE *"CONCLUIR"* SAIU DAQUI — 2026-09-08 ────────
+          *
+          * ⚠️ Decisão do autor: *"o botão `Concluir` fica dentro do próprio
+          * eixo, no final do bloco"*.
+          *
+          * ⛔ ⛔ Cinco botões no topo, longe do que concluíam, eram a mesma
+          * doença dos tiles: **outro caminho para a mesma coisa**, ⛔ e um
+          * caminho que dava para tocar ⛔ sem ter olhado o eixo.
+          *
+          * ⚠️ ⛔ O `testID` mudou de `avc-concluir-<eixo>` para
+          * `avc-eixo-concluir-<grupo>`: ⛔ o botão ⛔ agora é **do bloco**, ⛔ e
+          * a identidade acompanha o dono.
+          */}
 
         {/**
           * ⚠️⚠️ O PRÓXIMO EIXO — ⛔ **destacado, ⛔ e ⛔ não aberto sozinho**.
@@ -1166,19 +1252,17 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * ⚠️ *"⛔ não abrir automaticamente ⛔ sem ação do usuário; ⛔ não
           * impedir retorno ao eixo anterior"* (**item 4**).
           */}
-        {proximoEixo === undefined ? null : (
-          <Pressable
-            style={({ pressed }) => [s.proximoEixo, pressed ? s.pressionado : null]}
-            accessibilityRole="button"
-            testID="avc-proximo-eixo"
-            onPress={() => irParaCampo(proximoEixo.campo)}
-          >
-            <Text style={s.proximoEixoTexto}>
-              {tr("Próximo")}: {proximoEixo.letra} · {tr(proximoEixo.nome)}
-            </Text>
-            <Text style={s.proximoEixoSeta}>{SETA}</Text>
-          </Pressable>
-        )}
+        {/**
+          * ── ⚠️⚠️⚠️ ⛔ *"PRÓXIMO:"* SAIU — 2026-09-08 ─────────────────────────
+          *
+          * ⚠️ Decisão do autor: *"remover o botão/linha `Próximo`, porque vira
+          * redundante"*.
+          *
+          * ⛔ ⛔ Com o acordeão, **quem diz qual é o próximo é o eixo que está
+          * aberto** — ⛔ e concluir um já abre o seguinte. ⛔ Uma terceira voz
+          * dizendo a mesma coisa era ⛔ mais um caminho para o mesmo lugar,
+          * ⛔ que é ⛔ exatamente o defeito que esta mudança fecha.
+          */}
 
         {/**
           * ── ⚠️⚠️ O QUE FAZER AGORA ────────────────────────────────────────
@@ -1629,6 +1713,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
              * navegação. ⛔ Ela ⛔ só pede a saída de *"Corrigir agora"*.
              */
             onAbrirCorrecoes={() => abrir("correcoes")}
+            eixosAbertos={eixosAbertos}
+            onAlternarEixo={alternarEixo}
+            onConcluirEixo={concluirOuReabrirEixo}
             onEscolher={escolher}
             onMedir={medir}
             onHora={registrarHora}
