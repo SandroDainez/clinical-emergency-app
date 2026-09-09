@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**94 de 108 travas com declaração completa.**
+**95 de 109 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -55,6 +55,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que as três variantes tenham o texto do autor, que o aviso ⛔ não use cor de estado ⛔ nem símbolo, que ⛔ ele ⛔ não desenhe ⛔ sem saída clínica, que haja **⛔ um** `recomendacao` ⛔ por painel, que o disclaimer manual antigo ⛔ não coexista com ⛔ ele, que *«O julgamento é seu»* ⛔ e *«A leitura é sua»* ⛔ permaneçam, que a tela de coleta ⛔ não receba aviso, que `altoRisco` ⛔ e `calculoDose` ⛔ não fiquem colados, ⛔ e que aceite ⛔ e `ⓘ` leiam **⛔ a mesma** constante ⛔ com a versão subida.
 - **NÃO PROMETE:** que o aviso esteja **⛔ visualmente** legível ⛔ em 375 px — ⛔ isso é revisão de tela, ⛔ e ⛔ mora ⛔ no e2e. ⛔ E ⛔ **⛔ não** promete que ⛔ os onze pontos ⛔ sejam ⛔ os pontos ⛔ certos: ⛔ o mapa ⛔ foi decisão clínica do autor, ⛔ e ⛔ uma trava ⛔ não confere ⛔ julgamento clínico — ⛔ ela confere ⛔ que ⛔ o que foi decidido ⛔ **⛔ continua** ⛔ de pé.
 - **UNIVERSO:** `design-system/aviso-de-apoio-clinico.tsx`, as telas do AVC, `components/consent-screen.tsx` ⛔ e `lib/consentimento.ts`. ── ⚠️⚠️⚠️ ⛔ O QUE ⛔ ELA GUARDA ─────────────────────────────────────────── ⚠️ Decisão do autor, 2026-09-09: *"criar um padrão único de aviso de apoio à decisão clínica em todo o módulo AVC ⛔ e depois reutilizável nos demais módulos. ⛔ **⛔ Não espalhar textos diferentes escritos manualmente ⛔ em cada tela.**"* ⛔ ⛔ ⛔ **⛔ E ⛔ o risco ⛔ não é estético.** ⛔ Um disclaimer ⛔ que aparece ⛔ **⛔ sempre** ⛔ vira moldura da tela — ⛔ e ⛔ moldura ⛔ ninguém lê. ⚠️ ⛔ Por isso ⛔ metade destas conferências ⛔ mede ⛔ **⛔ onde ⛔ ele ⛔ não pode estar**.
+
+## `test:orfas-i18n` → `scripts/prova-sem-orfas-de-i18n.cjs`
+
+- **PROMETE:** que ⛔ nenhuma chave de tradução ⛔ que este arquivo lista como **aposentada** ⛔ continue ⛔ no dicionário — ⛔ e ⛔ que ⛔ nenhuma tela ⛔ volte a renderizá-la.
+- **NÃO PROMETE:** que ⛔ **⛔ toda** chave ⛔ sem consumidor ⛔ seja detectada. ⛔ O dicionário tem milhares de entradas, ⛔ e ⛔ muitas ⛔ pertencem a ⛔ outros módulos ⛔ ou ⛔ a caminhos ⛔ raros. ⚠️ ⛔ Esta trava guarda ⛔ **⛔ as que ⛔ foram deliberadamente aposentadas** — ⛔ que ⛔ são as ⛔ que ⛔ alguém ⛔ pode ressuscitar ⛔ por engano.
+- **UNIVERSO:** `lib/i18n/modules`, `components` ⛔ e `avc`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ISTO EXISTE PARA FECHAR ───────────────────────── ⛔ ⛔ Em 2026-09-09 o disclaimer manual *"Apoio ao julgamento clínico. A decisão permanece do médico."* ⛔ foi substituído ⛔ pelo componente único. ⚠️ ⛔ A **⛔ renderização** saiu ⛔ das três telas — ⛔ e a **⛔ chave de tradução ⛔ ficou**, ⛔ publicada ⛔ no bundle de produção. ⚠️⚠️ ⛔ ⛔ **⛔ Chave órfã ⛔ é ⛔ como a frase volta.** ⛔ Alguém procura o texto, ⛔ acha a chave, ⛔ e ⛔ conclui ⛔ que ⛔ ele ⛔ ainda é usado — ⛔ e ⛔ reusa. ⛔ Foi ⛔ medido ⛔ **⛔ no bundle**, ⛔ e ⛔ não ⛔ na fonte: ⛔ a página ⛔ não a mostrava, ⛔ e ⛔ ela ⛔ estava ⛔ lá.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

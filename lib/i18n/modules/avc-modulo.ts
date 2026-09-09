@@ -132,8 +132,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ⚠️ E-45: força verbal preservada — "recomendado", "não é recomendado para
   // melhorar desfecho funcional", "não exclui", "ainda não informada".
   "LEITURA DO SISTEMA": "LECTURA DEL SISTEMA",
-  "Apoio ao julgamento clínico. A decisão permanece do médico.":
-    "Apoyo al juicio clínico. La decisión permanece del médico.",
   "a partir de": "a partir de",
   "Suporte de via aérea e ventilação recomendados, conforme a necessidade":
     "Soporte de vía aérea y ventilación recomendados, según la necesidad",
