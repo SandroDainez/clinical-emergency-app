@@ -66,10 +66,40 @@
  */
 const fs = require("fs"), os = require("os"), path = require("path");
 const { execFileSync } = require("child_process");
-const app = "/Users/sandrodainez/Documents/clinical-emergency-app";
+/**
+ * ⚠️⚠️ ⛔ O CAMINHO SAI DO PRÓPRIO ARQUIVO — ⛔ e ⛔ não de onde ele morava.
+ *
+ * ⛔ Aqui havia ⛔ `/Users/sandrodainez/Documents/clinical-emergency-app`
+ * ⛔ escrito à mão. ⛔ Em 2026-09-09 o repositório ⛔ mudou de lugar ⛔ e ⛔ este
+ * instrumento ⛔ passou a apontar ⛔ para ⛔ uma pasta ⛔ que ⛔ **⛔ não existe
+ * mais** — ⛔ e ⛔ ele ⛔ **⛔ não está no `test:all`**, ⛔ então ⛔ ninguém
+ * ⛔ descobriria ⛔ até ⛔ precisar dele.
+ *
+ * ⚠️ ⛔ `__dirname` ⛔ acompanha ⛔ o arquivo ⛔ para ⛔ onde ⛔ ele for.
+ */
+const app = path.resolve(__dirname, "..");
 process.chdir(app);
 const { textosDoNo } = require(path.join(app, "scripts/lib/textos-do-no.cjs"));
-const arqs = fs.readdirSync(app).filter((f) => /-decision-tree\.ts$/.test(f)).sort();
+/**
+ * ⚠️⚠️⚠️ ⛔ UNIVERSO VAZIO ⛔ NÃO É ⛔ « ZERO FRASES PERDIDAS ».
+ *
+ * ⛔ O padrão era `-decision-tree.ts`. ⛔ O commit `bdf02c8` ⛔ apagou ⛔ as onze
+ * árvores ⛔ com esse nome, ⛔ e ⛔ sobraram ⛔ duas ⛔ com ⛔ **⛔ outro sufixo**
+ * (`acls-bradycardia-tree.ts`, `acls-tachycardia-tree.ts`). ⛔ Desde então ⛔ o
+ * instrumento ⛔ lia ⛔ **⛔ zero arquivos**, ⛔ relatava ⛔ « 0 frases perdidas »
+ * ⛔ e ⛔ saía ⛔ com código 0 — ⛔ um ⛔ **⛔ verde ⛔ sobre ⛔ o vazio**.
+ *
+ * ⚠️ ⛔ Agora ⛔ ele ⛔ **⛔ recusa** ⛔ medir ⛔ o nada.
+ */
+const arqs = fs.readdirSync(app).filter((f) => /-tree\.ts$/.test(f)).sort();
+if (arqs.length === 0) {
+  console.error(
+    "\n❌ RETRATO DE FRASES — universo VAZIO: nenhum arquivo `*-tree.ts` na raiz.\n" +
+      "   Um instrumento sem universo não mede nada, e relatar zeros seria pior\n" +
+      "   que não rodar. Confira se as árvores mudaram de nome ou de pasta."
+  );
+  process.exit(1);
+}
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "ret-"));
 try {
   execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
