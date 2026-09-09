@@ -1,9 +1,13 @@
 import {
+  ORDEM_DOS_NIVEIS,
+  deveTerminar,
+  getNivelDeFala,
   getSpeechIntensity,
   getSpeechInterruptPolicy,
   getSpeechPriority,
   getSpeechText,
   resolveSpeechKey,
+  type NivelDeFala,
   type SpeechIntensity,
   type SpeechInterruptPolicy,
 } from "./speech-map";
@@ -24,6 +28,10 @@ type SpeechQueueItem = {
   enqueuedAt: number;
   intensity: SpeechIntensity;
   interruptPolicy: SpeechInterruptPolicy;
+  /** ⚠️ Nível clínico: ordena ⛔ só entre cues ⛔ ainda válidos. */
+  nivel: NivelDeFala;
+  /** ⚠️ Declarado no cue: energia de choque ⛔ ou dose/via ⛔ não se corta no meio. */
+  mustFinish: boolean;
   priority: SpeechPriority;
   silent: boolean;
   stateId?: string;
@@ -32,6 +40,8 @@ type SpeechQueueItem = {
 type ActiveSpeechItem = {
   intensity: SpeechIntensity;
   interruptPolicy: SpeechInterruptPolicy;
+  nivel: NivelDeFala;
+  mustFinish: boolean;
   priority: SpeechPriority;
   key: string;
   stateId?: string;
@@ -49,6 +59,13 @@ type SpeechQueueDeps = {
 
 type SpeechQueue = {
   clear: () => void;
+  /**
+   * ⚠️⚠️⚠️ ⛔ SINCRONIZAR COM O ESTADO CLÍNICO — ⛔ e ⛔ não com a fila.
+   *
+   * ⛔ Decisão do autor, 2026-09-09: *"⛔ não sincronizar áudio com a fila;
+   * sincronizar áudio ⛔ com o ⛔ **⛔ estado clínico atual**."*
+   */
+  sincronizarComOEstado: (stateId: string) => void;
   enqueue: (item: {
     effect: SpeechQueueEffect;
     interrupt?: boolean;
@@ -114,24 +131,34 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
     return getResolvedKey(item) === "start_cpr";
   }
 
-  // Cues clínicos cujo aviso NÃO pode ser perdido por uma troca de estado:
-  // medicação, choque, análise de ritmo e ROSC. Eles permanecem válidos por
-  // alguns instantes após a transição automática (timer), então não devem ser
-  // descartados pelo state-binding — é o que fazia "perder" a adrenalina.
-  const STATE_INVARIANT_CUE_KEYS = new Set<string>([
-    "epinephrine_now",
-    "epinephrine_repeat",
-    "antiarrhythmic_now",
-    "antiarrhythmic_repeat",
-    "shock_biphasic_initial",
-    "shock_monophasic_initial",
-    "shock_escalated",
-    "analyze_rhythm",
-    "confirm_rosc",
-  ]);
+  /**
+   * ⚠️⚠️⚠️ ⛔ A PERGUNTA VEM ⛔ ANTES DA PRIORIDADE: ⛔ « ainda pertence ⛔ ao
+   * estado atual? »
+   *
+   * ⛔ Decisão do autor, 2026-09-09: *"Prioridade ⛔ e validade temporal ⛔ são
+   * dimensões diferentes. ⛔ Um `action` velho ⛔ continua sendo velho."*
+   *
+   * ⛔ ⛔ O conjunto ⛔ `STATE_INVARIANT_CUE_KEYS` ⛔ que morava aqui ⛔ era ⛔ uma
+   * ⛔ **⛔ lista de nomes** — ⛔ e ⛔ lista de casos ⛔ é ⛔ como nasce ⛔ o
+   * ⛔ caso seguinte. ⚠️ ⛔ Agora ⛔ a exceção ⛔ é ⛔ **⛔ declarada no cue**
+   * (`deveTerminar`), ⛔ e ⛔ vale ⛔ para ⛔ os dois momentos: ⛔ o cue que
+   * ⛔ ainda ⛔ não começou ⛔ e ⛔ o que ⛔ já está tocando.
+   *
+   * ⛔ ⛔ `analyze_rhythm` ⛔ e `confirm_rosc` ⛔ **⛔ perderam** ⛔ a invariância
+   * ⛔ que tinham: ⛔ eles são `critical`, ⛔ e ⛔ `critical` ⛔ interrompe ⛔ e
+   * ⛔ toca ⛔ **⛔ agora** — ⛔ não precisa ⛔ sobreviver ⛔ ao próprio estado
+   * ⛔ para ⛔ ser ouvido. ⛔ A adrenalina, ⛔ que foi ⛔ o caso ⛔ que criou ⛔ a
+   * lista, ⛔ continua protegida: ⛔ `epinephrine_now` ⛔ é ⛔ `mustFinish`.
+   */
+  function pertenceAoEstadoAtual(item: SpeechQueueItem) {
+    if (!item.stateId) {
+      return true;
+    }
+    return deps.getCurrentStateId() === item.stateId;
+  }
 
-  function isStateInvariantCue(item: SpeechQueueItem) {
-    return STATE_INVARIANT_CUE_KEYS.has(getResolvedKey(item));
+  function aindaVale(item: SpeechQueueItem) {
+    return pertenceAoEstadoAtual(item) || item.mustFinish;
   }
 
   function shouldSkipBySilencePolicy(item: SpeechQueueItem) {
@@ -192,7 +219,27 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
       return false;
     }
 
+    /**
+     * ⚠️⚠️⚠️ ⛔ `critical` NOVO ⛔ VENCE ⛔ **⛔ TUDO** — ⛔ inclusive `mustFinish`.
+     *
+     * ⛔ Decisão do autor: *"`mustFinish` ⛔ não pode bloquear ⛔ um novo
+     * `critical`; ⛔ nesse conflito, `critical` ⛔ vence."*
+     *
+     * ⛔ ⛔ E ⛔ isto vem ⛔ **⛔ antes** de `interruptPolicy === "never"`:
+     * ⛔ uma dose ⛔ que ⛔ não pudesse ser cortada ⛔ **⛔ nem por uma parada
+     * nova** ⛔ deixaria o app ⛔ falando o passado ⛔ durante a emergência
+     * ⛔ seguinte.
+     */
+    if (item.nivel === "critical") {
+      return true;
+    }
+
     if (item.interruptPolicy === "never") {
+      return false;
+    }
+
+    /** ⚠️ Fora do caso `critical`, ⛔ o que ⛔ deve terminar ⛔ termina. */
+    if (activeItem.mustFinish) {
       return false;
     }
 
@@ -231,7 +278,7 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
         continue;
       }
 
-      if (item.stateId && !isStateInvariantCue(item) && deps.getCurrentStateId() !== item.stateId) {
+      if (!aindaVale(item)) {
         continue;
       }
 
@@ -246,6 +293,8 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
       activeItem = {
         intensity: item.intensity,
         interruptPolicy: item.interruptPolicy,
+        nivel: item.nivel,
+        mustFinish: item.mustFinish,
         priority: item.priority,
         key: getResolvedKey(item),
         stateId: item.stateId,
@@ -273,7 +322,7 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
         continue;
       }
 
-      if (item.stateId && !isStateInvariantCue(item) && deps.getCurrentStateId() !== item.stateId) {
+      if (!aindaVale(item)) {
         activeItem = null;
         if (resolveInterruption) {
           resolveInterruption = null;
@@ -325,6 +374,8 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
     const queueItem: SpeechQueueItem = {
       effect: item.effect,
       enqueuedAt: getNow(),
+      nivel: getNivelDeFala(item.effect.key),
+      mustFinish: deveTerminar(item.effect.key),
       intensity: item.effect.intensity ?? clinicalIntensity,
       interruptPolicy:
         item.interrupt === true
@@ -343,10 +394,20 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
       interruptCurrentPlayback();
     }
 
-    if (queueItem.priority === "critical") {
-      queue.unshift(queueItem);
-    } else {
+    /**
+     * ⚠️⚠️ ORDEM ⛔ ENTRE OS VÁLIDOS: `critical > action > guidance > explanation`.
+     *
+     * ⛔ Inserção ⛔ **⛔ estável**: dentro do mesmo nível, ⛔ quem chegou antes
+     * ⛔ fala antes. ⛔ Um `unshift` para tudo que é crítico ⛔ inverteria ⛔ dois
+     * críticos ⛔ seguidos — ⛔ e ⛔ a ordem ⛔ entre eles ⛔ é clínica.
+     */
+    const posicao = queue.findIndex(
+      (naFila) => ORDEM_DOS_NIVEIS[naFila.nivel] > ORDEM_DOS_NIVEIS[queueItem.nivel]
+    );
+    if (posicao === -1) {
       queue.push(queueItem);
+    } else {
+      queue.splice(posicao, 0, queueItem);
     }
 
     await processQueue();
@@ -357,9 +418,47 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
     interruptCurrentPlayback();
   }
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ A TELA MUDOU: ⛔ o que era do estado anterior ⛔ **⛔ para**.
+   *
+   * ⛔ MEDIDO em produção (2026-09-09): a tela avançava ⛔ e o áudio seguia
+   * falando ⛔ o passo anterior ⛔ por ⛔ segundos. ⛔ Sem isto, ⛔ o descarte
+   * ⛔ só acontecia ⛔ quando o item ⛔ **⛔ saía da fila** — ⛔ tarde demais
+   * ⛔ para ⛔ o que ⛔ já estava ⛔ tocando.
+   *
+   * ⛔ ⛔ `mustFinish` ⛔ sobrevive ⛔ aqui — ⛔ energia ⛔ e dose ⛔ não se cortam
+   * ⛔ no meio. ⛔ Mas ⛔ um `critical` novo ⛔ passa ⛔ por cima ⛔ dele, ⛔ pelo
+   * caminho ⛔ do `enqueue`.
+   */
+  function sincronizarComOEstado(stateId: string) {
+    /**
+     * ⚠️⚠️ ⛔ QUEM DECIDE VALIDADE ⛔ É ⛔ **⛔ UM SÓ** — ⛔ `aindaVale`, ⛔ no
+     * desenfileiramento.
+     *
+     * ⛔ ⛔ Havia aqui ⛔ um `queue.filter` ⛔ que ⛔ descartava ⛔ os pendentes
+     * obsoletos ⛔ **⛔ de novo**. ⛔ Funcionava — ⛔ e ⛔ era ⛔ por isso ⛔ que
+     * ⛔ **⛔ nenhuma das duas** cópias ⛔ podia ser provada: ⛔ mutar ⛔ uma
+     * ⛔ deixava ⛔ a outra ⛔ segurando ⛔ o teste ⛔ verde.
+     *
+     * ⚠️ ⛔ O que ⛔ **⛔ só** este momento sabe ⛔ é ⛔ que a tela mudou
+     * ⛔ **⛔ agora** — ⛔ e ⛔ por isso ⛔ ele cuida ⛔ do que ⛔ **⛔ já está
+     * tocando**, ⛔ que ⛔ o desenfileiramento ⛔ **⛔ nunca** alcançaria.
+     */
+    if (
+      activeItem &&
+      activeItem.stateId &&
+      activeItem.stateId !== stateId &&
+      !activeItem.mustFinish &&
+      deps.isOutputActive()
+    ) {
+      interruptCurrentPlayback();
+    }
+  }
+
   return {
     clear,
     enqueue,
+    sincronizarComOEstado,
     stop: clear,
   };
 }

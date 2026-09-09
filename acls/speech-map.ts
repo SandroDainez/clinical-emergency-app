@@ -264,6 +264,77 @@ function cueTemAudioGravado(key: string) {
   return !CUES_SEM_MP3.has(resolveSpeechKey(key));
 }
 
+/**
+ * ⚠️⚠️⚠️ VALIDADE ⛔ E PRIORIDADE ⛔ SÃO DIMENSÕES DIFERENTES.
+ *
+ * ⛔ Decisão do autor, 2026-09-09: *"Um `action` velho ⛔ continua sendo velho.
+ * ⛔ Primeiro pergunta-se ⛔ «ainda pertence ao estado atual?»; ⛔ só entre cues
+ * ⛔ ainda válidos ⛔ a prioridade decide ⛔ quem fala antes."*
+ *
+ * ⛔ ⛔ Por isso ⛔ o nível ⛔ **⛔ não** salva ⛔ um cue obsoleto: ⛔ ele ⛔ só
+ * ordena ⛔ os que ⛔ **⛔ ainda** valem. ⛔ Um `critical` do estado anterior
+ * ⛔ é ⛔ tão velho ⛔ quanto ⛔ um `explanation` ⛔ do estado anterior.
+ *
+ * ⚠️ O nível ⛔ é ⛔ **⛔ derivado** de `getClinicalSpeakPriority`, ⛔ e ⛔ não
+ * redigitado: a classificação clínica ⛔ já existia, ⛔ e ⛔ uma segunda tabela
+ * ⛔ seria ⛔ a segunda verdade.
+ */
+type NivelDeFala = "critical" | "action" | "guidance" | "explanation";
+
+const ORDEM_DOS_NIVEIS: Readonly<Record<NivelDeFala, number>> = {
+  critical: 0,
+  action: 1,
+  guidance: 2,
+  explanation: 3,
+};
+
+function getNivelDeFala(key: string): NivelDeFala {
+  switch (getClinicalSpeakPriority(key)) {
+    case "critical":
+      return "critical";
+    case "main":
+      return "action";
+    case "precue":
+      return "guidance";
+    default:
+      return "explanation";
+  }
+}
+
+/**
+ * ⚠️⚠️⚠️ ⛔ O QUE ⛔ NÃO PODE SER CORTADO NO MEIO — ⛔ e ⛔ por quê.
+ *
+ * ⛔ Decisão do autor: *"exceção ⛔ somente para conteúdo operacional cuja
+ * interrupção ⛔ possa tornar ⛔ a execução ⛔ insegura"*, ⛔ e ⛔ *"não criar
+ * exceções ⛔ por nome de tela/cue. ⛔ A exceção deve ser ⛔ **⛔ declarativa**
+ * ⛔ no próprio cue."*
+ *
+ * ⛔ ⛔ São ⛔ **⛔ dois** tipos de conteúdo, ⛔ e ⛔ nenhum outro:
+ * ⛔ **energia do choque** ⛔ e ⛔ **dose / concentração / via de fármaco**.
+ * ⛔ « Carregar bifásico em duzentos joules » ⛔ cortado ⛔ no « duzentos »
+ * ⛔ é ⛔ pior ⛔ que ⛔ silêncio.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ `mustFinish` ⛔ **⛔ não** ⛔ bloqueia ⛔ um `critical` novo:
+ * ⛔ nesse conflito, ⛔ `critical` ⛔ vence — ⛔ decisão do autor. ⛔ Uma dose
+ * ⛔ que ⛔ não pode ser interrompida ⛔ **⛔ nem por uma parada nova**
+ * ⛔ deixaria o app ⛔ falando ⛔ o passado ⛔ durante ⛔ a emergência ⛔ seguinte.
+ */
+const CUES_QUE_DEVEM_TERMINAR: ReadonlySet<string> = new Set<string>([
+  // energia do choque
+  "shock_biphasic_initial",
+  "shock_monophasic_initial",
+  "shock_escalated",
+  // dose / via de fármaco
+  "epinephrine_now",
+  "epinephrine_repeat",
+  "antiarrhythmic_now",
+  "antiarrhythmic_repeat",
+]);
+
+function deveTerminar(key: string): boolean {
+  return CUES_QUE_DEVEM_TERMINAR.has(resolveSpeechKey(key));
+}
+
 function isPreCueKey(key: string) {
   const resolvedKey = resolveSpeechKey(key);
   return ["prepare_rhythm", "prepare_shock", "prepare_epinephrine"].includes(resolvedKey);
@@ -376,8 +447,13 @@ export {
   getSpeechIntensity,
   getSpeechInterruptPolicy,
   getSpeechPriority,
+  getNivelDeFala,
+  deveTerminar,
+  ORDEM_DOS_NIVEIS,
   cueTemAudioGravado,
   getSpeechText,
   isPreCueKey,
   resolveSpeechKey,
 };
+
+export type { NivelDeFala };

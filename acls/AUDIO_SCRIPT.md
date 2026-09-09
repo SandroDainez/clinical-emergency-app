@@ -12,6 +12,36 @@ Os textos estão alinhados às **Diretrizes AHA 2025 (RCP e ACE)**. Não alterar
 | 2 | `assess_patient.mp3` | Checar pulso e respiração ao mesmo tempo. No máximo dez segundos. | Checagem de pulso/respiração |
 | 3 | `pulse_present_monitoring.mp3` | Pulso presente. Monitorar e reavaliar. | Pulso presente — sem PCR |
 | 4 | `start_cpr.mp3` | Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções. | Início da RCP |
+
+> ### ⏸️ A REGRAVAR — `start_cpr.mp3` (2026-09-09, **aguardando decisão do autor**)
+>
+> **Medido:** o MP3 atual tem **13,9 s**. Com a política de sincronização
+> (2026-09-09), todo cue do estado anterior **é cortado quando a tela muda** —
+> então, na prática, quase ninguém ouve o `start_cpr` até o fim: ele é
+> interrompido no meio da graduação.
+>
+> **Decisão do autor:** *"O áudio de início de RCP deve ser comando de plantão,
+> não explicação. Encurte o cue preservando apenas a ação necessária naquele
+> instante; detalhes permanecem na tela."*
+>
+> **Texto proposto — ⛔ NÃO aplicado, precisa de aprovação clínica + gravação:**
+>
+> > Iniciar RCP de alta qualidade agora. Cem a cento e vinte por minuto.
+>
+> ⛔ Profundidade, retorno do tórax, relação 30:2 e "minimizar interrupções"
+> ⛔ **permanecem na tela** — é onde já estão.
+>
+> ⚠️⚠️ **⛔ O texto em `speech-map.ts` NÃO foi alterado, de propósito.** O MP3 é
+> resolvido pelo NOME do cue, ⛔ não pelo texto: trocar o texto sem regravar
+> faria o app **declarar uma frase e falar outra**. ⛔ Isso já aconteceu neste
+> projeto — com **este mesmo cue** — e foi o que fez nascer
+> `scripts/valida-audio-vs-texto.cjs`. ⛔ Não se repete o defeito que gerou a
+> trava.
+>
+> **Para fechar:** aprovar o texto → gravar PT e ES (ElevenLabs, MP3 44,1 kHz
+> mono, mesmo formato) → substituir em `assets/audio/final-acls/` → atualizar
+> `speech-map.ts` → `npm run validate:audio-duracao`.
+
 | 5 | `resume_cpr.mp3` | Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora. | Após choque e após cada dose; ciclos de RCP |
 
 | 5b | `vascular_access.mp3` | Acesso: tentar veia primeiro. Se falhar, intraósseo. | 10 s após o início do 1º ciclo pós-choque (só no `rcp_1`) |

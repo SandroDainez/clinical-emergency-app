@@ -1690,6 +1690,164 @@ function testClinicalCaseAnalysisFlagsDelaysAndSuggestions() {
   );
 }
 
+/**
+ * ⚠️⚠️⚠️ POLÍTICA DE SINCRONIZAÇÃO COM O ESTADO CLÍNICO.
+ *
+ * ⛔ Decisão do autor, 2026-09-09: *"Prioridade ⛔ e validade temporal ⛔ são
+ * dimensões diferentes. ⛔ Um `action` velho ⛔ continua sendo velho. ⛔ Primeiro
+ * pergunta-se ⛔ «ainda pertence ao estado atual?»; ⛔ só entre cues ⛔ ainda
+ * válidos ⛔ a prioridade decide ⛔ quem fala antes."*
+ *
+ * ⛔ Estas quatro conferências ⛔ são ⛔ **⛔ a regra**, ⛔ e ⛔ não ⛔ a lista
+ * de telas ⛔ onde ⛔ ela apareceu.
+ */
+async function testPoliticaDeSincronizacaoComOEstado() {
+  function montar() {
+    let currentTime = 0;
+    let currentStateId = "inicio";
+    const eventos = [];
+    let terminarAtual = null;
+    const fila = speechQueue.createSpeechQueue({
+      getCurrentStateId: () => currentStateId,
+      isOutputActive: () => terminarAtual !== null,
+      play: (message, cueId) =>
+        new Promise((resolve) => {
+          eventos.push(`toca:${cueId}`);
+          terminarAtual = () => {
+            terminarAtual = null;
+            resolve();
+          };
+        }),
+      stop: () => {
+        if (terminarAtual) {
+          eventos.push("corta");
+          terminarAtual();
+        }
+      },
+      now: () => currentTime,
+      waitMs: async () => {},
+    });
+    return {
+      eventos,
+      fila,
+      estado: (id) => {
+        currentStateId = id;
+      },
+      terminar: () => terminarAtual?.(),
+      /**
+       * ⚠️ ⛔ Solta ⛔ tudo que ficou tocando. ⛔ Sem isto, ⛔ a fila fica
+       * ⛔ aguardando ⛔ uma promessa ⛔ que ⛔ nunca resolve — ⛔ e ⛔ o
+       * processo ⛔ sai ⛔ **⛔ com 0** ⛔ sem rodar ⛔ o resto. ⛔ Foi ⛔ assim
+       * ⛔ que ⛔ o guarda ⛔ de saída silenciosa ⛔ nasceu.
+       */
+      drenar: async () => {
+        for (let volta = 0; volta < 30; volta += 1) {
+          terminarAtual?.();
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      },
+      falar: (chave, stateId) =>
+        fila.enqueue({ effect: { type: "SPEAK", key: chave, cueId: chave }, stateId }),
+      sincronizar: (id) => {
+        currentStateId = id;
+        fila.sincronizarComOEstado(id);
+      },
+    };
+  }
+  const respirar = async () => {
+    for (let i = 0; i < 12; i += 1) await new Promise((r) => setTimeout(r, 0));
+  };
+
+  /* ══ 1 · CUE EM REPRODUÇÃO DO ESTADO ANTERIOR PARA NA TROCA ══════════ */
+  {
+    const c = montar();
+    void c.falar("start_cpr", "inicio");
+    await respirar();
+    assert.deepEqual(c.eventos, ["toca:start_cpr"]);
+
+    c.sincronizar("avaliar_ritmo");
+    await respirar();
+    assert.ok(
+      c.eventos.includes("corta"),
+      "⛔ a tela mudou e o áudio do estado anterior continuou falando — " +
+        "é a narração correndo atrás do médico"
+    );
+  
+    await c.drenar();
+  }
+
+  /* ══ 2 · CUE PENDENTE OBSOLETO É DESCARTADO ═════════════════════════ */
+  {
+    const c = montar();
+    void c.falar("start_cpr", "inicio");
+    await respirar();
+    void c.falar("prepare_rhythm", "avaliar_ritmo_preparo");
+    await respirar();
+
+    // a tela avança para além do estado do cue pendente
+    c.sincronizar("avaliar_ritmo");
+    c.terminar();
+    await respirar();
+
+    assert.ok(
+      !c.eventos.includes("toca:prepare_rhythm"),
+      "⛔ cue de estado que deixou de ser atual tocou atrasado — " +
+        "decisão do autor: cue de estado anterior que ainda não começou não deve tocar"
+    );
+  
+    await c.drenar();
+  }
+
+  /* ══ 3 · `mustFinish` SOBREVIVE À TROCA — MAS NÃO A UM `critical` ════ */
+  {
+    const c = montar();
+    void c.falar("epinephrine_now", "nao_chocavel_epinefrina");
+    await respirar();
+    assert.deepEqual(c.eventos, ["toca:epinephrine_now"]);
+
+    c.sincronizar("nao_chocavel_ciclo");
+    await respirar();
+    assert.ok(
+      !c.eventos.includes("corta"),
+      "⛔ dose de fármaco cortada no meio pela troca de tela — " +
+        "`mustFinish` existe exatamente para isso"
+    );
+
+    void c.falar("analyze_rhythm", "nao_chocavel_ciclo");
+    await respirar();
+    assert.ok(
+      c.eventos.includes("corta") && c.eventos.includes("toca:analyze_rhythm"),
+      "⛔ `mustFinish` bloqueou um `critical` novo — decisão do autor: " +
+        "nesse conflito, `critical` vence"
+    );
+  
+    await c.drenar();
+  }
+
+  /* ══ 4 · ORDEM ENTRE OS VÁLIDOS, E SÓ ENTRE ELES ════════════════════ */
+  {
+    const c = montar();
+    void c.falar("start_cpr", "inicio");           // action, começa a tocar
+    await respirar();
+    void c.falar("consider_airway", "inicio");     // explanation
+    void c.falar("prepare_rhythm", "inicio");      // guidance
+    await respirar();
+    c.terminar();                                   // start_cpr acaba
+    await respirar();
+    c.terminar();
+    await respirar();
+
+    const ordem = c.eventos.filter((e) => e.startsWith("toca:"));
+    assert.deepEqual(
+      ordem,
+      ["toca:start_cpr", "toca:prepare_rhythm", "toca:consider_airway"],
+      "⛔ entre cues do MESMO estado, a ordem é critical > action > guidance > explanation"
+    );
+  
+    await c.drenar();
+  }
+}
+
 async function testSpeechQueueSilencePolicy() {
   let currentTime = 0;
   let currentStateId = "rcp_2";
@@ -5719,6 +5877,7 @@ async function runAllTests() {
   await testVoiceSessionControllerDiscardsStaleTranscript();
   await testVoiceSessionControllerDoesNotAutoPlayStateOrientation();
   await testCriticalCueDoesNotWaitForTheLongCueToFinish();
+  await testPoliticaDeSincronizacaoComOEstado();
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
   testNonShockableEpinephrineRepeatUsesPureTimeWindow();
@@ -5777,8 +5936,33 @@ async function runAllTests() {
   testAclsDebriefExportOrderStability();
   testAclsOperationalIndicatorsPendingAndVoiceFriction();
   testVasoactiveFlow();
+  suiteConcluiu = true;
   console.log("Engine checks passed.");
 }
+
+/**
+ * ⚠️⚠️⚠️ SAIR EM SILÊNCIO ⛔ NÃO É PASSAR — ⛔ e ⛔ era possível ⛔ até hoje.
+ *
+ * ⛔ ACHADO em 2026-09-09, ⛔ ao mutar `deveTerminar`: a suíte terminou ⛔ com
+ * ⛔ **⛔ zero linhas** ⛔ de saída ⛔ e ⛔ **⛔ código 0**. ⛔ Um `await` sobre
+ * ⛔ uma promessa ⛔ que ⛔ nunca resolve ⛔ esvazia ⛔ o event loop, ⛔ e ⛔ o
+ * Node ⛔ encerra ⛔ o processo ⛔ **⛔ com sucesso** — ⛔ sem rodar ⛔ o resto
+ * ⛔ dos testes ⛔ e ⛔ sem ⛔ dizer ⛔ nada.
+ *
+ * ⛔ ⛔ O único sinal ⛔ era ⛔ a **⛔ ausência** ⛔ da linha final. ⚠️ ⛔ Ausência
+ * ⛔ ninguém lê. ⛔ Agora ⛔ ela ⛔ é ⛔ **⛔ erro**.
+ */
+let suiteConcluiu = false;
+process.on("exit", (codigo) => {
+  if (!suiteConcluiu && codigo === 0) {
+    console.error(
+      "\n❌ A suíte terminou SEM concluir e SEM erro.\n" +
+        "   Alguma etapa ficou aguardando uma promessa que nunca resolve — o Node\n" +
+        "   esvazia o event loop e sai com 0. Isso é suíte verde sem ter rodado."
+    );
+    process.exitCode = 1;
+  }
+});
 
 runAllTests()
   .catch((error) => {

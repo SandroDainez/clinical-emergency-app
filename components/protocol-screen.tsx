@@ -1009,11 +1009,25 @@ export default function ProtocolScreen({
     void voiceCaptureProviderRef.current.ensureReady?.();
   }, [encounterSummary.protocolId]);
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ O ÁUDIO SEGUE O ESTADO CLÍNICO, ⛔ E ⛔ NÃO A FILA.
+   *
+   * ⛔ Decisão do autor, 2026-09-09: *"⛔ não sincronizar áudio com a fila;
+   * sincronizar áudio ⛔ com o ⛔ **⛔ estado clínico atual**. ⛔ Isso é o que
+   * vai deixar o ACLS ⛔ parecer realmente vivo, ⛔ e ⛔ não ⛔ uma narração
+   * correndo ⛔ atrás da tela."*
+   *
+   * ⛔ ⛔ Aqui ⛔ é ⛔ **⛔ o único lugar** ⛔ que sabe ⛔ que a tela mudou ⛔ no
+   * instante ⛔ em que ⛔ ela muda. ⛔ A fila ⛔ sozinha ⛔ só descobriria ⛔ ao
+   * desenfileirar ⛔ o próximo item — ⛔ tarde demais ⛔ para ⛔ o que ⛔ já
+   * ⛔ está tocando.
+   */
   useEffect(() => {
     if (encounterSummary.protocolId !== "pcr_adulto") {
       return;
     }
 
+    speechQueueRef.current.sincronizarComOEstado(stateId);
     void voiceControllerRef.current?.syncTurn();
   }, [encounterSummary.protocolId, stateId]);
 
