@@ -63,6 +63,25 @@ const ISENTOS = {
    * é ⛔ o momento em que a pergunta ⛔ dela faz sentido.
    */
   "test:ambiente": "mede o dist de PRODUÇÃO; o test:all constrói o de teste, e para esse roda test:ambiente:teste",
+  /**
+   * ⚠️⚠️ ⛔ ELA PRECISA DE ⛔ **⛔ DUAS COISAS QUE ⛔ NÃO MORAM NO REPOSITÓRIO**
+   * — 2026-09-09.
+   *
+   * ⛔ ⛔ `test:e2e:producao` exige credencial de uma conta real
+   * (`E2E_CONTA_TESTE_*`) ⛔ e uma `E2E_BASE_URL` apontando para a **produção
+   * publicada**. ⛔ Nenhuma das duas pode entrar no `test:all`: ⛔ a suíte
+   * ⛔ tem que rodar ⛔ na máquina de quem ⛔ não tem a conta, ⛔ e ⛔ um portão
+   * que dispara contra produção ⛔ a cada rodada ⛔ escreve na produção.
+   *
+   * ⚠️ ⛔ E ⛔ a ausência ⛔ **⛔ não** fica sem guarda: quem confere ⛔ que a
+   * infraestrutura ⛔ continua íntegra — segredo fora do repo, projeto
+   * condicional, ⛔ nenhum teste que se auto-pula — ⛔ é
+   * `test:conta-de-teste`, ⛔ e ⛔ **⛔ esse ⛔ está** no agregador.
+   *
+   * ⛔ ⛔ Ela roda ⛔ **depois do deploy**, contra produção, ⛔ que é ⛔ o único
+   * momento em que a pergunta dela ⛔ faz sentido (**D-130**).
+   */
+  "test:e2e:producao": "exige credencial de conta real e produção publicada; a integridade da infraestrutura é guardada por test:conta-de-teste, que está no test:all (D-130)",
 };
 
 const alvo = scripts["test:all"];

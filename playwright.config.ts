@@ -5,6 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
  * versão que ⛔ não existe mais — ⛔ e o aviso de que o texto mudou se perderia.
  */
 import { VERSAO_DO_TEXTO } from "./lib/consentimento";
+import { CAMINHO_DO_ESTADO_AUTENTICADO, contaDeTesteConfigurada } from "./e2e/conta-de-teste";
 
 /**
  * E2E de não-regressão (Fase 0.2 do plano UI 2.0).
@@ -77,6 +78,39 @@ export default defineConfig({
     // Emergência é mobile-first: o contrato é validado no tamanho real de uso.
     ...devices["Pixel 7"],
   },
+  /**
+   * ⚠️⚠️ DOIS MUNDOS, ⛔ e ⛔ não um só com um "se" dentro.
+   *
+   * ⛔ `dist` é a suíte de sempre: `build:web:teste`, sem Supabase, 461 testes.
+   * ⛔ Ela ⛔ não muda — ⛔ nem quando a conta de teste existe.
+   *
+   * ⚠️ `autenticado` só **existe** quando as credenciais estão no ambiente.
+   * ⛔ Sem elas, o projeto ⛔ não é criado: `test:all` roda idêntico, ⛔ e
+   * ⛔ nenhum teste "pula" silenciosamente — ⛔ pulo verde é como uma validação
+   * inteira desaparece sem ninguém notar.
+   */
+  projects: [
+    {
+      name: "dist",
+      testIgnore: ["autenticado/**", "conta-de-teste.setup.ts"],
+    },
+    ...(contaDeTesteConfigurada()
+      ? [
+          { name: "autenticacao", testMatch: /conta-de-teste\.setup\.ts/ },
+          {
+            name: "autenticado",
+            testMatch: /autenticado\/.*\.spec\.ts/,
+            dependencies: ["autenticacao"],
+            /**
+             * ⚠️ O estado gravado carrega o consentimento **e** a sessão do
+             * Supabase. ⛔ Ele substitui o `storageState` global — por isso o
+             * setup roda **com** o global, para que o consentimento entre junto.
+             */
+            use: { storageState: CAMINHO_DO_ESTADO_AUTENTICADO },
+          },
+        ]
+      : []),
+  ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {

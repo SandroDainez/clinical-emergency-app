@@ -74,3 +74,10 @@ auditoria/camada-9-rastreabilidade.json
 
 # Página de revisão gerada por 'npm run revisao:padroes' — artefato, não fonte.
 auditoria/revisao/
+
+# ⚠️⚠️ ESTADO DE AUTENTICAÇÃO DO PLAYWRIGHT — ⛔ token vivo, ⛔ não artefato.
+# ⛔ O caminho oficial é /tmp (ver e2e/conta-de-teste.ts). Isto é a rede de
+# ⛔ segurança para o dia em que alguém gravar o storageState dentro da árvore.
+conta-de-teste.json
+*.storagestate
+playwright/.auth/

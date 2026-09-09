@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**96 de 110 travas com declaração completa.**
+**97 de 111 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -67,6 +67,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ *"conferido"* ⛔ exija **⛔ pessoa ⛔ e ⛔ data**; que ⛔ **⛔ nenhuma** página citada ⛔ seja tratada ⛔ como conferência; que ⛔ a definição fabricada da hipodensidade ⛔ **⛔ não volte** ⛔ à transcrição; ⛔ e que ⛔ a transcrição ⛔ **⛔ se declare** ⛔ intermediária.
 - **NÃO PROMETE:** que ⛔ o conteúdo ⛔ esteja **⛔ certo**. ⚠️ ⛔ Ela ⛔ **⛔ não lê o PDF** — ⛔ **⛔ nenhuma trava lê**. ⛔ O que ⛔ ela impede ⛔ é ⛔ que a ⛔ **⛔ ausência** ⛔ de conferência ⛔ passe ⛔ por conferência. ⛔ O trabalho ⛔ de abrir a fonte ⛔ continua ⛔ sendo ⛔ **⛔ humano**, ⛔ e ⛔ é ⛔ disso que ⛔ este arquivo ⛔ trata.
 - **UNIVERSO:** `avc/conteudo/conferencia.ts` ⛔ e `protocols/fontes-verbatim`. ── ⚠️⚠️⚠️ ⛔ POR QUE ⛔ ELA EXISTE ──────────────────────────────────────── ⛔ ⛔ Uma frase inventada ⛔ sobreviveu ⛔ transcrita **⛔ com página**, traduzida, renderizada ⛔ e ⛔ **⛔ exigida por uma trava verde**. ⚠️ ⛔ Cinco camadas ⛔ confirmando ⛔ umas às outras. ⛔ ⛔ ⛔ **⛔ Suíte verde ⛔ é coerência interna, ⛔ e ⛔ não fidelidade à fonte.** ⛔ As duas ⛔ se parecem ⛔ até ⛔ alguém abrir ⛔ o documento.
+
+## `test:conta-de-teste` → `scripts/prova-conta-de-teste.cjs`
+
+- **PROMETE:** que ⛔ nenhuma credencial entre no repositório, que o `storageState` autenticado — ⛔ que carrega **token vivo** — more ⛔ fora da árvore sincronizada, que o projeto autenticado ⛔ só exista quando o ambiente o declara (⛔ e por isso `test:all` ⛔ não muda), que a falta de credencial ⛔ **⛔ falhe**, ⛔ e ⛔ nunca ⛔ pule verde, que a validação autenticada ⛔ recuse cair ⛔ no `dist` local, ⛔ e que os testes autenticados ⛔ não criem conta, ⛔ não escrevam sessão clínica ⛔ e ⛔ não digitem dado que possa ser de gente.
+- **NÃO PROMETE:** que a conta ⛔ exista, que ⛔ ela esteja `ativo`, ⛔ nem que a senha esteja guardada num cofre — ⛔ isso é do dono da conta, ⛔ e ⛔ uma trava ⛔ não pode conferir ⛔ o que ⛔ não está no repositório. ⛔ E ⛔ não promete que a produção esteja ⛔ certa: ⛔ ela promete que ⛔ **⛔ se** a produção estiver errada, ⛔ a corrida autenticada ⛔ **⛔ falha** ⛔ em vez de medir a tela de login.
+- **UNIVERSO:** `e2e/conta-de-teste.ts`, `e2e/conta-de-teste.setup.ts`, `e2e/autenticado/`, `playwright.config.ts`, `.gitignore`, ⛔ e a árvore rastreada pelo git. ── ⚠️⚠️⚠️ ⛔ O QUE ⛔ ELA GUARDA ─────────────────────────────────────────── ⚠️ Pedido do autor, 2026-09-09: *"conta de teste dedicada para validação autenticada em produção (…) ⛔ não usar credenciais pessoais ⛔ nem dados clínicos reais."* ⛔ O risco ⛔ não é a suíte ficar vermelha. ⛔ É o contrário: ⛔ credencial commitada ⛔ passa despercebida ⛔ porque ⛔ **⛔ nada quebra** — ⛔ o teste fica ⛔ mais fácil de rodar, ⛔ e por isso ⛔ ninguém desfaz. ⛔ E ⛔ um projeto autenticado que ⛔ « pula » ⛔ quando falta a conta ⛔ some ⛔ do relatório ⛔ verde ⛔ sem ⛔ ninguém notar ⛔ que a validação ⛔ inteira ⛔ parou de rodar.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

@@ -4843,3 +4843,78 @@ subir a próxima mudança funcional:
 
 ⚠️ **⛔ Medir o bundle, ⛔ e ⛔ não a página** — ⛔ foi ⛔ assim que a chave
 órfã apareceu: ⛔ a tela ⛔ não a mostrava, ⛔ e ⛔ ela estava ⛔ lá.
+
+---
+
+## D-130 — ⏸️ ABERTA · A VALIDAÇÃO AUTENTICADA EXISTE, ⛔ MAS A CONTA ⛔ AINDA ⛔ NÃO
+
+**Data:** 2026-09-09 · **Pedido do autor:** *"conta de teste dedicada para
+validação autenticada em produção (…) ⛔ não usar credenciais pessoais ⛔ nem
+dados clínicos reais."*
+
+### ⚠️⚠️ O BURACO QUE ISTO FECHA
+
+⛔ A suíte de 461 testes roda contra o `dist` de `build:web:teste`, que
+⛔ **⛔ não** tem Supabase embutido. ⛔ Nesse artefato a guarda de
+`app/_layout.tsx` cai no ramo local ⛔ e ⛔ **⛔ nunca** resolve sessão, perfil
+⛔ nem `status`. ⚠️ Ela prova a **tela**; ⛔ ela ⛔ **⛔ não** prova a
+**produção** — ⛔ onde a mesma rota passa por `getSession`,
+`loadCurrentAppUser`, `status === 'ativo'` ⛔ e prova local.
+
+⛔ Foi ⛔ exatamente esse vão que produziu a **D-128**: um `dist` construído
+com `build:web` redirecionou `/modulos/avc` para `/`, ⛔ e 26 testes falharam
+por « element detached » — ⛔ o sintoma, ⛔ e ⛔ não a causa.
+
+### ⚠️ O QUE JÁ ESTÁ PRONTO (⛔ e conferido por trava)
+
+| peça | o que faz |
+| --- | --- |
+| `e2e/conta-de-teste.ts` | lê `E2E_CONTA_TESTE_EMAIL` / `E2E_CONTA_TESTE_SENHA` ⛔ só do ambiente; recusa `E2E_BASE_URL` ausente |
+| `e2e/conta-de-teste.setup.ts` | faz o login real, lê o **erro da tela** antes do timeout, prova a **rota clínica** e grava o `storageState` |
+| `e2e/autenticado/avc-superficies-reais.spec.ts` | 4 testes: a guarda deixa passar · as 7 fases renderizam · interação com dado sintético · capturas a 375 px |
+| `playwright.config.ts` | projeto `dist` (461, inalterado) ⛔ e projeto `autenticado`, que ⛔ **⛔ só existe** com credencial no ambiente |
+| `scripts/prova-conta-de-teste.cjs` | 20 conferências · 5 mutações provadas |
+| `testID` em `app/index.tsx` e `components/intro-landing.tsx` | a porta de entrada era alcançável ⛔ só por *placeholder traduzido* — ⛔ que muda em espanhol |
+
+⚠️ `npm run test:e2e` passou a ser `--project=dist`: ⛔ `test:all` ⛔ **⛔ não**
+pode disparar corrida contra produção ⛔ por ter uma variável de ambiente
+exportada no terminal.
+
+### ⛔ O QUE FALTA — ⛔ E ⛔ É DO DONO DA CONTA, ⛔ NÃO DA MÁQUINA
+
+⛔ ⛔ Eu ⛔ **⛔ não** crio conta ⛔ nem digito senha. Estes três passos são do
+autor:
+
+1. **Criar** o usuário no Supabase (Authentication → Users → *Add user*), com
+   e-mail próprio da conta — ⛔ **⛔ não** o pessoal — ⛔ e « Auto Confirm User »
+   ligado. Sugestão: `qa+avc@…`.
+2. **Aprovar**: a conta nasce `pendente`. No painel `/admin-users` (ou na
+   tabela `app_users`), pôr `status = 'ativo'` ⛔ e `role = 'user'` — ⛔ `admin`
+   ⛔ **⛔ não**: a validação tem que ver ⛔ a tela do médico.
+3. **Guardar a senha fora do repositório** ⛔ e exportar no terminal ⛔ na hora
+   de rodar. ⛔ Ela ⛔ **⛔ não** entra em `.env`, ⛔ fixture ⛔ nem exemplo —
+   `prova-conta-de-teste.cjs` recusa.
+
+### ⚠️ COMO RODAR, DEPOIS DISSO
+
+```
+E2E_BASE_URL=https://clinical-emergency-app.vercel.app \
+E2E_CONTA_TESTE_EMAIL='…' E2E_CONTA_TESTE_SENHA='…' \
+npm run test:e2e:producao
+```
+
+⛔ As capturas saem em `/tmp/playwright-clinical-emergency/telas-autenticadas/`
+— ⛔ fora da árvore, ⛔ pelo mesmo motivo do `outputDir` (iCloud).
+
+### ⚠️⚠️ O QUE ESTA INFRAESTRUTURA ⛔ NÃO PROMETE
+
+⛔ Ela ⛔ **⛔ não** substitui a revisão visual. ⛔ A ordem errada do aviso de
+alto risco foi pega ⛔ **⛔ olhando**, ⛔ e ⛔ não medindo — ⛔ o teste 4 existe
+⛔ só para ⛔ **⛔ produzir o material** dessa revisão, ⛔ e ⛔ ele ⛔ não julga
+aparência.
+
+⛔ E ⛔ ela ⛔ **⛔ não** escreve caso clínico: o AVC ⛔ não abre sessão no banco
+(`lib/open-clinical-module.ts` ⛔ só o faz para `pcr-adulto`) ⛔ e ⛔ o módulo
+⛔ não tem campo de identificação de paciente. ⚠️ **⛔ As duas coisas são
+conferidas por trava** — ⛔ se qualquer uma mudar, ⛔ a trava exige que esta
+decisão seja revista ⛔ **⛔ antes**.
