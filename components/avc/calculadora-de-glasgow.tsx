@@ -35,6 +35,19 @@
  *
  * ⛔ ⛔ **⛔ Não apaga o que veio antes.** ⚠️ Confirmar acrescenta uma origem
  * nova à trilha; ⛔ o total digitado antes continua ⛔ lá, marcado.
+ *
+ * ── ⚠️⚠️⚠️ ⛔ POR QUE SÃO **DUAS** PEÇAS — pedido do autor, 2026-09-09 ────
+ *
+ * ⛔ ⛔ *"A escala de Glasgow na avaliação tem que ter botão ⛔ **ao lado**
+ * para abrir a calculadora."*
+ *
+ * ⚠️ ⛔ O botão ⛔ e o painel ⛔ não moram mais ⛔ no mesmo lugar da tela: ⛔ o
+ * botão vai ⛔ **ao lado do número**, ⛔ e o painel abre ⛔ **por baixo do
+ * campo** — ⛔ ele tem quinze opções, ⛔ e ⛔ não cabe numa linha.
+ *
+ * ⚠️⚠️ ⛔ E ⛔ por isso o **aberto/fechado sai daqui**: ⛔ duas peças separadas
+ * ⛔ não podem cada uma ter o seu. ⛔ Quem guarda é a superfície — ⛔ é estado
+ * de **UI**, ⛔ como o acordeão dos eixos.
  */
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -45,6 +58,47 @@ import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
+/**
+ * ── ⚠️⚠️⚠️ O BOTÃO — ⛔ ele vive **⛔ ao lado do número** ────────────────────
+ *
+ * ⚠️ ⛔ Curto ⛔ de propósito: ⛔ ele divide a linha com a caixa, a unidade ⛔ e
+ * o `−/+`. ⛔ *"Calcular por E · V · M"* ⛔ ali dentro ⛔ ou quebra em três
+ * linhas ⛔ ou espreme a caixa — ⛔ e o nome inteiro da escala já está escrito
+ * ⛔ logo acima, ⛔ a um centímetro.
+ *
+ * ⚠️⚠️ ⛔ O **leitor de tela** ⛔ não perde ⛔ nada: `accessibilityLabel`
+ * continua dizendo a frase inteira. ⛔ Encurtar o que se **vê** ⛔ não é
+ * encurtar o que se **diz**.
+ */
+export function BotaoDaCalculadoraDeGlasgow({
+  aberta,
+  jaRegistrado,
+  onAlternar,
+}: {
+  aberta: boolean;
+  jaRegistrado: boolean;
+  onAlternar: () => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ expanded: aberta }}
+      accessibilityLabel={tr(
+        jaRegistrado ? "Rever os componentes do Glasgow" : "Calcular o Glasgow pelos componentes"
+      )}
+      testID="avc-glasgow-abrir"
+      onPress={onAlternar}
+      style={({ pressed }) => [e.abrir, pressed ? e.pressionado : null]}
+    >
+      <Text style={e.abrirTexto} numberOfLines={1}>
+        {tr(jaRegistrado ? "Rever" : "Calcular")}
+      </Text>
+    </Pressable>
+  );
+}
+
 type Props = {
   /**
    * ⚠️ Os pontos **já registrados**, por componente. ⛔ Vazio ⛔ não é zero —
@@ -53,12 +107,13 @@ type Props = {
   pontos: Readonly<Record<string, number>>;
   /** ⚠️ Grava a escala inteira: ⛔ um fato por componente, ⛔ mais o total. */
   onRegistrar: (pontos: Record<string, number>, total: number) => void;
+  /** ⚠️ ⛔ Fechar é da superfície — ⛔ o painel ⛔ não guarda o próprio aberto. */
+  onFechar: () => void;
 };
 
-export default function CalculadoraDeGlasgow({ pontos, onRegistrar }: Props) {
+export default function CalculadoraDeGlasgow({ pontos, onRegistrar, onFechar }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
-  const [aberta, setAberta] = useState(false);
   /**
    * ⚠️ RASCUNHO: ⛔ o que está sendo escolhido **agora**, por cima do que ⛔ já
    * foi registrado. ⛔ Só o *"Usar este total"* transforma rascunho em fato.
@@ -72,25 +127,6 @@ export default function CalculadoraDeGlasgow({ pontos, onRegistrar }: Props) {
    */
   const emEdicao: Record<string, number> = { ...pontos, ...rascunho };
   const total = totalDoGlasgow(emEdicao);
-  const jaRegistrado = totalDoGlasgow(pontos) !== undefined;
-
-  if (!aberta) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={tr(
-          jaRegistrado ? "Rever os componentes do Glasgow" : "Calcular o Glasgow pelos componentes"
-        )}
-        testID="avc-glasgow-abrir"
-        onPress={() => setAberta(true)}
-        style={({ pressed }) => [e.abrir, pressed ? e.pressionado : null]}
-      >
-        <Text style={e.abrirTexto}>
-          {tr(jaRegistrado ? "Rever E · V · M" : "Calcular por E · V · M")}
-        </Text>
-      </Pressable>
-    );
-  }
 
   return (
     <View style={e.painel} testID="avc-glasgow-calculadora">
@@ -154,7 +190,7 @@ export default function CalculadoraDeGlasgow({ pontos, onRegistrar }: Props) {
             if (total === undefined) return;
             onRegistrar({ ...emEdicao }, total);
             setRascunho({});
-            setAberta(false);
+            onFechar();
           }}
           style={({ pressed }) => [
             e.usar,
@@ -173,7 +209,7 @@ export default function CalculadoraDeGlasgow({ pontos, onRegistrar }: Props) {
           testID="avc-glasgow-fechar"
           onPress={() => {
             setRascunho({});
-            setAberta(false);
+            onFechar();
           }}
           style={({ pressed }) => [e.fechar, pressed ? e.pressionado : null]}
         >
@@ -186,6 +222,7 @@ export default function CalculadoraDeGlasgow({ pontos, onRegistrar }: Props) {
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    /** ⚠️ ⛔ Ele ocupa a sobra da linha da caixa — ⛔ e ⛔ nunca o trilho. */
     abrir: {
       minHeight: TOQUE.minimo,
       alignItems: "center",
@@ -193,7 +230,7 @@ const criarEstilos = (tema: Tema) =>
       borderRadius: RAIO.botao,
       borderWidth: 1,
       borderColor: tema.cores.primary,
-      paddingHorizontal: ESPACO.md,
+      paddingHorizontal: ESPACO.sm,
     },
     abrirTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary },
     painel: {

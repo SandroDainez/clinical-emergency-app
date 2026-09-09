@@ -625,6 +625,7 @@ export function Numero({
   rascunho: rascunhoDeFora,
   onRascunho,
   comBarra,
+  aoLado,
   testID,
 }: {
   campo: string;
@@ -679,6 +680,22 @@ export function Numero({
    * ⛔ a Superfície C ⛔ não pede.
    */
   comBarra?: boolean;
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O QUE ENTRA **⛔ AO LADO DO NÚMERO** — 2026-09-09 ───────────
+   *
+   * ⚠️ Pedido do autor sobre o Glasgow: *"tem que ter botão ⛔ ao lado para
+   * abrir a calculadora"*.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ ele entra **⛔ nesta linha**, ⛔ e ⛔ não na raiz do controle —
+   * ⛔ o motivo é medido, ⛔ e ⛔ não estético: `numRaiz` é `flex: 1`, ⛔ então
+   * ⛔ qualquer irmão dela **encolhe o trilho**. ⛔ Foi ⛔ assim que a barra do
+   * Glasgow caiu de **249 px para 60** em 2026-09-08, ⛔ e a suíte pegou.
+   *
+   * ⛔ ⛔ `numGrupo` ⛔ e `numBarra` são **irmãs numa coluna**: ⛔ o que entra
+   * ⛔ numa ⛔ não estreita a outra. ⚠️ ⛔ Por isso o botão cabe ⛔ aqui, ⛔ e a
+   * trava dos oito trilhos no mesmo x continua valendo.
+   */
+  aoLado?: ReactNode;
   testID?: string;
 }) {
   const tr = useTr();
@@ -803,6 +820,8 @@ export function Numero({
             <Text style={e.numPassoTexto}>−</Text>
           </Pressable>
         </View>
+        {/** ⚠️ ⛔ O convidado da linha — ⛔ ele preenche a sobra, ⛔ e ⛔ não a disputa. */}
+        {aoLado ? <View style={e.numAoLado}>{aoLado}</View> : null}
       </View>
     </View>
 
@@ -1564,8 +1583,33 @@ export function Recolhido({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ POR QUE ⛔ NÃO HÁ MAIS UM `<View>` EM VOLTA — 2026-09-09 ────
+   *
+   * ⚠️ Relato do autor, com captura: *"isso está confuso, foge do card"*, ⛔ e
+   * *"tem várias coisas fugindo dos cards"*.
+   *
+   * ⛔ ⛔ **O que acontecia.** Quase ⛔ todo `Recolhido` vive numa **linha**, ⛔ ao
+   * lado de um rótulo `flex: 1`. ⛔ Envolvido num `<View>` próprio, o texto
+   * aberto virava **irmão de flex**: ⛔ sem largura máxima ⛔ ele ⛔ não quebrava,
+   * esticava a linha para fora do cartão ⛔ e espremia o rótulo numa coluna de
+   * uma palavra — *"Glicemia / corrigida / — / reavaliar / o déficit / agora"*.
+   *
+   * ⚠️ Medido a 375 px, com a janela em 375: `disfuncao_bulbar` terminava em
+   * **1119 px**, `consciencia_rebaixada` em **1104**, `a-prioridade` em **976**.
+   * ⛔ ⛔ Isto ⛔ não era um bloco defeituoso — era **⛔ todo ⓘ que vive numa
+   * linha**.
+   *
+   * ⚠️⚠️ ⛔ **A correção.** ⛔ O botão ⛔ e o texto passam a ser **irmãos diretos
+   * da linha**, ⛔ e o texto pede `width: "100%"`. ⛔ Numa linha com
+   * `flexWrap: "wrap"` ⛔ isso o joga para a **linha de baixo, inteira** — ⛔ que
+   * é onde ⛔ ele sempre devia estar. ⛔ Numa coluna, ⛔ ele apenas empilha.
+   *
+   * ⛔ ⛔ É a mesma decisão do botão do Glasgow ⛔ e do painel E · V · M: ⛔ o
+   * gatilho cabe na linha, ⛔ o conteúdo ⛔ não.
+   */
   return (
-    <View>
+    <>
       <Pressable
         style={e.info}
         accessibilityRole="button"
@@ -1577,12 +1621,12 @@ export function Recolhido({
         <Icone nome="informacao" tamanho={13} />
       </Pressable>
       {aberto ? (
-        <View testID={`avc-info-texto-${id}`}>
+        <View style={e.infoBloco} testID={`avc-info-texto-${id}`}>
           {texto ? <Text style={e.infoTexto}>{tr(texto)}</Text> : null}
           {children}
         </View>
       ) : null}
-    </View>
+    </>
   );
 }
 
@@ -1592,6 +1636,15 @@ export function Recolhido({
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    /**
+     * ⚠️⚠️ ⛔ A LARGURA INTEIRA, ⛔ E ⛔ NÃO A SOBRA DA LINHA.
+     *
+     * ⛔ ⛔ `width: "100%"` numa linha com `flexWrap: "wrap"` ⛔ significa
+     * *"⛔ eu ⛔ não caibo ao lado — ⛔ me dê a linha de baixo"*. ⚠️ É ⛔ o que
+     * mantém o texto **dentro do cartão**, ⛔ e ⛔ o rótulo ⛔ com largura de
+     * rótulo.
+     */
+    infoBloco: { width: "100%" },
     corPadraoDeIcone: { color: tema.cores.textSecondary },
     corPlaceholder: { color: tema.cores.textSecondary },
 
@@ -1863,6 +1916,8 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ ⛔ Sem `flex`: ⛔ ele ⛔ não divide mais linha com controle ⛔ nenhum. */
     numRotulo: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     numGrupo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ A sobra da linha da caixa — ⛔ e ⛔ nunca a largura do trilho. */
+    numAoLado: { flex: 1, minWidth: 0 },
     numCaixa: {
       backgroundColor: tema.cores.bg,
       borderWidth: 2,
@@ -1904,7 +1959,8 @@ const criarEstilos = (tema: Tema) =>
      * borda dentro de outra borda.
      */
     corr: { paddingVertical: ESPACO.xs, gap: ESPACO.xs },
-    corrTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    corrTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     corrRotulo: { ...PAPEL.textoPrincipal, flex: 1, minWidth: 0, color: tema.cores.text },
     corrAjuda: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     corrValor: { ...PAPEL.metrica, color: tema.cores.text },

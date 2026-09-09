@@ -93,7 +93,58 @@ test.describe("AVC · Glasgow — a calculadora", () => {
       await expect(page.getByTestId("avc-num-caixa-glasgow")).toHaveValue("13");
     });
 
-  /* ══ ⚠️⚠️ 3 · O VALOR DIRETO CONTINUA ═══════════════════════════════ */
+  /* ══ ⚠️⚠️⚠️ 3 · O BOTÃO FICA **AO LADO**, ⛔ E ⛔ NÃO ABAIXO ═════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ PEDIDO DO AUTOR, 2026-09-09: *"a escala de Glasgow na avaliação
+   * tem que ter botão **⛔ ao lado** para abrir a calculadora"*.
+   *
+   * ⛔ ⛔ *"Ao lado"* ⛔ não é opinião — ⛔ é **geometria**, ⛔ e ⛔ por isso é
+   * medida: ⛔ o botão começa ⛔ à direita de onde a caixa termina, ⛔ e as
+   * duas se cruzam ⛔ na mesma altura.
+   *
+   * ⚠️ ⛔ E a trava que ⛔ **⛔ não** pode cair junto: ⛔ o trilho do Glasgow
+   * ⛔ continua do tamanho dos outros. ⛔ Foi ⛔ exatamente ⛔ isto que quebrou
+   * ⛔ na primeira tentativa — ⛔ o botão pendurado ⛔ como irmão do controle
+   * espremeu a barra de **249 px para 60**.
+   */
+  test("⛔ o botão fica **ao lado** do número, ⛔ e ⛔ não estreita o trilho",
+    async ({ page }) => {
+      await abrirD(page);
+
+      const caixa = await page.getByTestId("avc-num-caixa-glasgow").boundingBox();
+      const botao = await page.getByTestId("avc-glasgow-abrir").boundingBox();
+      if (!caixa || !botao) throw new Error("⛔ caixa ⛔ ou botão ⛔ fora da tela");
+
+      /** ⛔ À direita — ⛔ e ⛔ não embaixo. */
+      expect(botao.x, `⛔ o botão ⛔ não está à direita da caixa: ${JSON.stringify({ caixa, botao })}`)
+        .toBeGreaterThanOrEqual(caixa.x + caixa.width);
+
+      /** ⛔ Na mesma faixa de altura: as duas se **cruzam** verticalmente. */
+      const cruzam =
+        botao.y < caixa.y + caixa.height && caixa.y < botao.y + botao.height;
+      expect(cruzam, `⛔ o botão ⛔ não divide a linha com a caixa: ${JSON.stringify({ caixa, botao })}`)
+        .toBe(true);
+
+      /** ⚠️ ⛔ E o alvo continua tocável — ⛔ um botão de 20 px ⛔ não é botão. */
+      expect(botao.height, "⛔ alvo pequeno demais").toBeGreaterThanOrEqual(44);
+
+      /**
+       * ⚠️⚠️ ⛔ O TRILHO ⛔ NÃO ENCOLHEU: o do Glasgow ⛔ e o da glicemia — ⛔ o
+       * campo vizinho, ⛔ no mesmo bloco — ⛔ começam ⛔ e terminam ⛔ no mesmo x.
+       */
+      const trilhos = await page.evaluate(() =>
+        ["glasgow", "glicemia"].map((id) => {
+          const el = document.querySelector(`[data-testid="avc-num-barra-${id}"]`);
+          const r = el?.getBoundingClientRect();
+          return r ? { id, x: Math.round(r.x), fim: Math.round(r.right) } : { id, x: -1, fim: -1 };
+        })
+      );
+      expect(new Set(trilhos.map((t) => t.x)).size, `⛔ inícios diferentes: ${JSON.stringify(trilhos)}`).toBe(1);
+      expect(new Set(trilhos.map((t) => t.fim)).size, `⛔ fins diferentes: ${JSON.stringify(trilhos)}`).toBe(1);
+    });
+
+  /* ══ ⚠️⚠️ 4 · O VALOR DIRETO CONTINUA ═══════════════════════════════ */
 
   test("⛔ digitar o total direto continua funcionando", async ({ page }) => {
     await abrirD(page);
@@ -105,7 +156,7 @@ test.describe("AVC · Glasgow — a calculadora", () => {
     await expect(page.getByTestId("avc-glasgow-abrir")).toBeVisible();
   });
 
-  /* ══ ⚠️⚠️⚠️ 4 · AS DUAS ORIGENS SÃO DISTINGUÍVEIS ═══════════════════ */
+  /* ══ ⚠️⚠️⚠️ 5 · AS DUAS ORIGENS SÃO DISTINGUÍVEIS ═══════════════════ */
 
   /**
    * ⚠️⚠️ ⛔ EXIGÊNCIA DO AUTOR: *"⛔ não misturar origens silenciosamente"* ⛔ e
@@ -160,7 +211,7 @@ test.describe("AVC · Glasgow — a calculadora", () => {
       await expect(page.getByTestId("avc-glasgow-total")).toContainText("12");
     });
 
-  /* ══ ⚠️⚠️⚠️ 5 · ⛔ NENHUMA CONDUTA NOVA ═════════════════════════════ */
+  /* ══ ⚠️⚠️⚠️ 6 · ⛔ NENHUMA CONDUTA NOVA ═════════════════════════════ */
 
   /**
    * ⚠️⚠️ ⛔ ESTA É A TRAVA CLÍNICA DESTE ARQUIVO.

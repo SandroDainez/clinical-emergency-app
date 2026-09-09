@@ -22,10 +22,11 @@
  * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
+import { ROTULO_DO_CAMPO } from "../../avc/conteudo/rotulos";
 import { GRUPOS_A, PRIORIDADE_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import { leiturasDaSuperficieA, pressaoArterialMedia } from "../../avc/nucleo/derivacoes";
 import { instanciaAberta, valorNaInstancia } from "../../avc/nucleo/instancia";
@@ -39,7 +40,8 @@ import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
 import { eixoDoGrupo } from "./ui";
-import CalculadoraDeGlasgow from "./calculadora-de-glasgow";
+import CalculadoraDeGlasgow, { BotaoDaCalculadoraDeGlasgow } from "./calculadora-de-glasgow";
+import { totalDoGlasgow } from "../../avc/conteudo/glasgow";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
@@ -194,6 +196,16 @@ export default function SuperficieA({
 }: Props) {
   const tr = useTr();
   const foco = useFoco();
+  /**
+   * ⚠️⚠️ ⛔ ABERTO É **UI**, ⛔ e ⛔ não progresso — ⛔ a mesma separação do
+   * acordeão dos eixos: ⛔ abrir a calculadora ⛔ não afirma ⛔ nada sobre o
+   * paciente, ⛔ e ⛔ fechar ⛔ não apaga o que foi gravado.
+   *
+   * ⛔ ⛔ Ele vive **⛔ aqui** ⛔ porque o botão ⛔ e o painel são duas peças em
+   * dois lugares da tela: ⛔ o botão ⛔ ao lado do número, ⛔ o painel por
+   * baixo do campo.
+   */
+  const [glasgowAberto, setGlasgowAberto] = useState(false);
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
@@ -249,11 +261,14 @@ export default function SuperficieA({
   const pam = pressaoArterialMedia(estado);
 
   /** ⚠️ Rótulo por id — o painel de leituras nomeia os insumos que citou. */
-  const rotuloDoCampo = useMemo(() => {
-    const m: Record<string, string> = {};
-    for (const c of TODOS_OS_CAMPOS_A) m[c.id] = c.rotulo;
-    return m;
-  }, []);
+  /**
+   * ⚠️⚠️ ⛔ O DICIONÁRIO É **DO MÓDULO**, ⛔ e ⛔ não desta tela — 2026-09-09.
+   *
+   * ⛔ ⛔ Montado ⛔ só com os campos daqui, ⛔ ele deixava o insumo que vem de
+   * outra superfície ⛔ sem nome, ⛔ e a tela escrevia o `id` cru:
+   * *"deficit_focal, nihss_calculado"*. ⛔ Relatado pelo autor, ⛔ com captura.
+   */
+  const rotuloDoCampo = ROTULO_DO_CAMPO;
 
   /**
    * ⚠️⚠️ CAMPO COM INSTÂNCIA LÊ A **AFERIÇÃO ABERTA**, ⛔ e ⛔ não a trilha
@@ -426,7 +441,24 @@ export default function SuperficieA({
                 accessibilityLabel={`${tr(grupo.titulo)}: ${tr(aberto ? "recolher" : "abrir")}`}
                 testID={`avc-eixo-abrir-${grupo.id}`}
                 onPress={() => onAlternarEixo(grupo.id)}
-                style={({ pressed }) => [e.cabecalho, pressed ? e.pressionado : null]}
+                /**
+                 * ── ⚠️⚠️⚠️ ⛔ ELE É UM **BOTÃO**, ⛔ E PRECISA PARECER ────────
+                 *
+                 * ⛔ ⛔ A trava de afordância apontava ⛔ este cabeçalho: um
+                 * controle **⛔ sem preenchimento ⛔ nem borda** ⛔ é lido como
+                 * parágrafo. ⚠️ ⛔ É a queixa que o autor já fez **seis vezes**
+                 * — *"parecem texto ⛔ e ⛔ não botões"* — ⛔ e ⛔ ela entrou
+                 * ⛔ junto com o acordeão, ⛔ em 2026-09-08.
+                 *
+                 * ⚠️ ⛔ O cabeçalho **⛔ não tocável** (`Monitorização e
+                 * acessos`, ⛔ que ⛔ nunca recolhe) ⛔ segue ⛔ sem moldura —
+                 * ⛔ moldura ⛔ ali prometeria um toque que ⛔ não existe.
+                 */
+                style={({ pressed }) => [
+                  e.cabecalho,
+                  e.cabecalhoTocavel,
+                  pressed ? e.pressionado : null,
+                ]}
               >
                 <Secao titulo={grupo.titulo} assunto={grupo.id} />
                 {/**
@@ -622,6 +654,28 @@ export default function SuperficieA({
                        */
                       onMedir={campo.id === "glasgow" ? onMedirGlasgow : onMedir}
                       onDesfazer={onDesfazer}
+                      /**
+                       * ── ⚠️⚠️⚠️ ⛔ O BOTÃO **⛔ AO LADO** — 2026-09-09 ──────
+                       *
+                       * ⚠️ Pedido do autor: *"a escala de Glasgow na
+                       * avaliação tem que ter botão ⛔ ao lado para abrir a
+                       * calculadora"*.
+                       *
+                       * ⛔ ⛔ Ele entra na **linha da caixa**, ⛔ e ⛔ não como
+                       * irmão do controle: irmão de `numRaiz` ⛔ encolhe o
+                       * trilho — ⛔ foi ⛔ assim que a barra do Glasgow caiu
+                       * para 60 px ⛔ na véspera.
+                       */
+                      aoLado={
+                        campo.id !== "glasgow" ? undefined : (
+                          <BotaoDaCalculadoraDeGlasgow
+                            aberta={glasgowAberto}
+                            /** ⚠️ ⛔ A mesma soma da calculadora — ⛔ e ⛔ não uma segunda regra. */
+                            jaRegistrado={totalDoGlasgow(pontosDoGlasgow) !== undefined}
+                            onAlternar={() => setGlasgowAberto((v) => !v)}
+                          />
+                        )
+                      }
                     />
                     <Recolhido
                       id={campo.id}
@@ -647,10 +701,11 @@ export default function SuperficieA({
                         {tr(origemDoGlasgow)}
                       </Text>
                     )}
-                    {campo.id !== "glasgow" ? null : (
+                    {campo.id !== "glasgow" || !glasgowAberto ? null : (
                       <CalculadoraDeGlasgow
                         pontos={pontosDoGlasgow}
                         onRegistrar={onRegistrarGlasgow}
+                        onFechar={() => setGlasgowAberto(false)}
                       />
                     )}
                   </View>
@@ -785,9 +840,16 @@ export default function SuperficieA({
                   {l.sujeito ? `${tr(l.sujeito)} — ` : ""}
                   {tr(l.curto)}
                 </Text>
+                {/**
+                  * ⚠️⚠️ ⛔ SEM `texto` ⛔ AQUI — ⛔ e a ausência é a correção.
+                  *
+                  * ⛔ ⛔ O detalhe logo abaixo ⛔ já imprime `l.texto`. ⛔ Passá-lo
+                  * ⛔ também ao `Recolhido` escrevia **a mesma frase duas
+                  * vezes**, ⛔ uma ao lado do ⓘ ⛔ e outra embaixo — ⛔ relatado
+                  * pelo autor em 2026-09-09, ⛔ com captura.
+                  */}
                 <Recolhido
                   id={`leitura-${id}`}
-                  texto={l.texto}
                   aberto={detalhes.aberto(`leitura-${id}`)}
                   onAlternar={() => detalhes.alternar(`leitura-${id}`)}
                 />
@@ -854,8 +916,10 @@ const criarEstilos = (tema: Tema) =>
      * ficava alinhado com o ⓘ do resumo da superfície, dois ⓘ empilhados na
      * mesma coluna — ⛔ e ⛔ nada dizia que eram conteúdos diferentes.
      */
-    prioridadeLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
-    prioridadeTexto: { flexShrink: 1 },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    prioridadeLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, flexWrap: "wrap" },
+    /** ⚠️ ⛔ `minWidth: 0` ⛔ deixa a frase **quebrar** ⛔ em vez de esticar a linha. */
+    prioridadeTexto: { flex: 1, flexShrink: 1, minWidth: 0 },
     prioridadeFrase: {
       color: tema.cores.text,
       fontSize: TIPOGRAFIA.caption.fontSize,
@@ -872,6 +936,16 @@ const criarEstilos = (tema: Tema) =>
       justifyContent: "space-between",
       gap: ESPACO.sm,
       marginTop: ESPACO.md,
+    },
+    /** ⚠️ ⛔ Corpo ⛔ e borda — ⛔ o que separa um botão de um parágrafo. */
+    cabecalhoTocavel: {
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.xs,
+      minHeight: TOQUE.minimo,
     },
     /**
      * ⚠️ O ⓘ fica NA LINHA do campo. ⛔ Abaixo, ele ocupava uma faixa inteira
@@ -921,7 +995,8 @@ const criarEstilos = (tema: Tema) =>
       marginTop: ESPACO.xs,
     },
     concluirNoEixoTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
-    linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    linhaNumero: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     /** ⚠️ ⛔ A coluna que guarda a linha ⛔ e o que vem **abaixo** dela. */
     pilhaNumero: { gap: ESPACO.xs },
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
@@ -950,7 +1025,8 @@ const criarEstilos = (tema: Tema) =>
       marginTop: ESPACO.xs,
       marginBottom: ESPACO.sm,
     },
-    leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     leituraTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     leituraDetalhe: {
       color: tema.cores.textSecondary,
@@ -969,7 +1045,8 @@ const criarEstilos = (tema: Tema) =>
     },
 
     pergunta: { gap: ESPACO.xs, paddingVertical: ESPACO.xs },
-    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     perguntaTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 
     /**

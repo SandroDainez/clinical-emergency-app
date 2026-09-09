@@ -453,8 +453,13 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Em andamento": "En curso",
   "Concluída": "Concluida",
   /** ⚠️ A calculadora de Glasgow — 2026-09-08. */
-  "Calcular por E · V · M": "Calcular por E · V · M",
-  "Rever E · V · M": "Revisar E · V · M",
+  /**
+   * ⚠️ ⛔ Curtos ⛔ porque dividem a linha com a caixa do número — ⛔ e ⛔ o
+   * nome inteiro da escala está escrito ⛔ logo acima. ⛔ A frase inteira
+   * continua ⛔ no `accessibilityLabel`, ⛔ logo abaixo.
+   */
+  "Calcular": "Calcular",
+  "Rever": "Revisar",
   "Calcular o Glasgow pelos componentes": "Calcular el Glasgow por los componentes",
   "Rever os componentes do Glasgow": "Revisar los componentes del Glasgow",
   "Escolha E, V e M para somar": "Elija E, V y M para sumar",
@@ -462,6 +467,10 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Fechar sem usar": "Cerrar sin usar",
   "Calculado pelos componentes": "Calculado por los componentes",
   "Informado diretamente": "Informado directamente",
+  /** ⚠️ Nomes dos insumos que ⛔ não são `Campo` declarado — ⛔ 2026-09-09. */
+  "Origem do Glasgow": "Origen del Glasgow",
+  "NIHSS somado pelos itens": "NIHSS sumado por los ítems",
+  "NIHSS informado diretamente": "NIHSS informado directamente",
   "Sem dados clínicos registrados": "Sin datos clínicos registrados",
   "Hipertensão arterial": "Hipertensión arterial",
   "Doença arterial coronariana": "Enfermedad arterial coronaria",
