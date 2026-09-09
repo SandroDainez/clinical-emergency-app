@@ -2889,6 +2889,99 @@ async function testVoiceSessionControllerDoesNotAutoPlayStateOrientation() {
   controller.dispose();
 }
 
+/**
+ * ⚠️⚠️ CUE CRÍTICO ⛔ NÃO ESPERA A LOCUÇÃO ANTERIOR TERMINAR.
+ *
+ * ⛔ MEDIDO em produção (2026-09-09), no mesmo relógio da tela: a tela mostrou
+ * « Qual é o ritmo? » aos 13 712 ms ⛔ e `analyze_rhythm` — que é
+ * `prioridade=critical, interrupção=always` — ⛔ só começou aos 30 299 ms.
+ * ⛔ **16 587 ms de atraso.**
+ *
+ * ⚠️⚠️ ⛔ E ⛔ o defeito ⛔ **⛔ não** estava na fila de prioridade: medida
+ * isolada, ⛔ ela interrompeu ⛔ e tocou ⛔ o cue crítico ⛔ em ⛔ **0 ms**.
+ * ⛔ O que atrasa ⛔ é ⛔ **⛔ a fila de ANTES** — a cadeia de promessas de
+ * `enqueueOutput` (`voice-session-controller.ts`), ⛔ que ⛔ `await`ava
+ * ⛔ **⛔ a reprodução inteira** ⛔ de cada cue ⛔ antes de ⛔ sequer ⛔ entregar
+ * ⛔ o próximo ⛔ à fila. ⛔ Um cue que ⛔ não está ⛔ na fila ⛔ **⛔ não pode
+ * interromper nada** — ⛔ a política `always` ⛔ nunca teve ⛔ a chance ⛔ de agir.
+ *
+ * ⚠️ ⛔ Por isso ⛔ a asserção ⛔ **⛔ não** é « tocou ⛔ em algum momento »:
+ * ⛔ ele ⛔ **⛔ tocava** — ⛔ 16 s depois. ⛔ A asserção ⛔ é ⛔ **⛔ ordem**:
+ * ⛔ o cue crítico ⛔ tem de ser ⛔ entregue ⛔ **⛔ antes** de a locução longa
+ * ⛔ terminar.
+ */
+async function testCriticalCueDoesNotWaitForTheLongCueToFinish() {
+  const entregues = [];
+  let resolverLocucaoLonga;
+
+  const context = {
+    stateId: "inicio",
+    stateType: "action",
+    documentationActions: [],
+    allowedIntents: [],
+    baseHints: [],
+    pendingConfirmationHints: [],
+    presentationMessage: "Iniciar RCP",
+    presentationCueId: "start_cpr",
+  };
+
+  const controller = voiceSessionController.createAclsVoiceSessionController({
+    provider: {
+      id: "fake",
+      isAvailable: () => true,
+      stop: () => {},
+      captureOnce: async () => ({ kind: "error", error: "no_speech", message: "none" }),
+    },
+    getContext: () => context,
+    onRuntimeStateChange: () => {},
+    onVoiceEvent: () => {},
+    onExecuteCommand: async () => "same_state",
+    playOutput: async (message, cueId) => {
+      entregues.push(cueId);
+      // `start_cpr` dura 13,9 s no app. Aqui ele fica pendente até o teste soltar.
+      if (cueId === "start_cpr") {
+        await new Promise((resolve) => {
+          resolverLocucaoLonga = resolve;
+        });
+      }
+    },
+    stopOutput: () => {},
+    isOutputActive: () => false,
+    waitMs: async () => {},
+  });
+
+  // 1 · a locução longa começa e NÃO termina
+  void controller.handleEffects([
+    { type: "play_audio_cue", cueId: "start_cpr", message: "Iniciar RCP de alta qualidade agora" },
+  ]);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(entregues, ["start_cpr"], "a locução longa deveria ter começado");
+
+  // 2 · o estado clínico muda — o médico já está em outra tela
+  context.stateId = "avaliar_ritmo";
+  context.presentationMessage = "Qual é o ritmo?";
+  context.presentationCueId = "analyze_rhythm";
+
+  // 3 · chega o cue CRÍTICO do estado novo
+  void controller.handleEffects([
+    { type: "play_audio_cue", cueId: "analyze_rhythm", message: "Qual é o ritmo?" },
+  ]);
+  for (let volta = 0; volta < 20; volta += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  // ⚠️⚠️ A INVARIANTE: ele foi ENTREGUE, com a locução longa AINDA tocando.
+  assert.ok(
+    entregues.includes("analyze_rhythm"),
+    "⛔ cue crítico (`analyze_rhythm`, critical/always) ficou preso atrás de uma " +
+      "locução de 13,9 s — medido em produção: 16 587 ms de atraso. Quem decide " +
+      "interromper é a fila de prioridade, e ela só decide sobre o que recebe."
+  );
+
+  resolverLocucaoLonga?.();
+  controller.dispose();
+}
+
 function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   resetClock();
   engine.resetSession();
@@ -5625,6 +5718,7 @@ async function runAllTests() {
   await testVoiceSessionControllerHalfDuplexTurn();
   await testVoiceSessionControllerDiscardsStaleTranscript();
   await testVoiceSessionControllerDoesNotAutoPlayStateOrientation();
+  await testCriticalCueDoesNotWaitForTheLongCueToFinish();
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
   testNonShockableEpinephrineRepeatUsesPureTimeWindow();

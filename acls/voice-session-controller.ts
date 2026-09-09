@@ -119,6 +119,15 @@ class AclsVoiceSessionController {
   private currentStateId: string | null = null;
   private currentToken: VoiceSessionTurnToken | null = null;
   private speechQueue: Promise<void> = Promise.resolve();
+  /**
+   * ⚠️⚠️ ENTREGAS EM VOO — ⛔ e ⛔ não uma segunda fila.
+   *
+   * ⛔ Isto ⛔ não serializa ⛔ nada: serve ⛔ só para o half-duplex saber
+   * ⛔ que há fala a caminho antes de abrir o microfone. ⛔ A ORDEM ⛔ e ⛔ a
+   * INTERRUPÇÃO ⛔ são decididas ⛔ pela fila de prioridade, ⛔ que é ⛔ quem
+   * conhece `critical` ⛔ e `interrupt=always`.
+   */
+  private pendingDeliveries: Promise<void>[] = [];
   private confirmationTimeout: ReturnType<typeof setTimeout> | null = null;
   private disposed = false;
   // Set to true when enableMode() is called so syncTurn() re-speaks current
@@ -298,32 +307,66 @@ class AclsVoiceSessionController {
     this.justEnabledMode = false;
   }
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ ELE ENTREGA, ⛔ E ⛔ **⛔ NÃO** ESPERA TOCAR.
+   *
+   * ⛔ MEDIDO em produção (2026-09-09), no relógio da tela: « Qual é o ritmo? »
+   * apareceu aos 13 712 ms ⛔ e `analyze_rhythm` — `critical` ⛔ e
+   * `interrupção=always` — ⛔ só começou aos **30 299 ms**. ⛔ 16,6 s.
+   *
+   * ⚠️ ⛔ E a fila de prioridade ⛔ **⛔ não** era a culpada: medida ⛔ isolada,
+   * ⛔ ela interrompeu ⛔ o cue anterior ⛔ e tocou o crítico ⛔ em ⛔ **0 ms**.
+   * ⛔ O `await this.enqueueOutput(...)` ⛔ que morava aqui ⛔ segurava ⛔ **⛔ a
+   * reprodução inteira** ⛔ de cada cue ⛔ antes de entregar o próximo — ⛔ e
+   * ⛔ um cue que ⛔ **⛔ não está na fila** ⛔ não pode ⛔ interromper ⛔ nada.
+   * ⛔ A política `always` ⛔ nunca teve ⛔ a chance ⛔ de agir.
+   *
+   * ⚠️⚠️ ⛔ O half-duplex ⛔ **⛔ não** foi afrouxado: o microfone continua
+   * fechado antes de falar (`provider.stop()`), ⛔ e `waitForOutputToSettle`
+   * ⛔ passou a esperar ⛔ **⛔ as entregas em voo** ⛔ além de `isOutputActive`
+   * — ⛔ que é a garantia real, ⛔ e ⛔ não o efeito colateral ⛔ de uma cadeia
+   * de promessas.
+   */
   async handleEffects(effects: EngineEffect[]) {
     const currentStateId = this.getContext().stateId;
-    const currentToken = this.currentToken;
 
     for (const effect of effects) {
       if (effect.type !== "speak" && effect.type !== "play_audio_cue") {
         continue;
       }
 
-      await this.enqueueOutput(async () => {
-        this.debug("effect_audio_start", {
-          stateId: currentStateId,
-          type: effect.type,
-          message: effect.message,
-          cueId: effect.type === "play_audio_cue" ? effect.cueId : undefined,
-        });
-        await this.deps.playOutput(
-          effect.message,
-          effect.type === "play_audio_cue" ? effect.cueId : undefined
-        );
-        this.debug("effect_audio_end", {
-          stateId: currentStateId,
-          type: effect.type,
-        });
-      });
+      /** ⚠️ Half-duplex: o microfone fecha ⛔ antes de qualquer fala sair. */
+      this.deps.provider.stop();
+
+      this.trackDelivery(
+        (async () => {
+          this.debug("effect_audio_start", {
+            stateId: currentStateId,
+            type: effect.type,
+            message: effect.message,
+            cueId: effect.type === "play_audio_cue" ? effect.cueId : undefined,
+          });
+          await this.deps.playOutput(
+            effect.message,
+            effect.type === "play_audio_cue" ? effect.cueId : undefined
+          );
+          this.debug("effect_audio_end", {
+            stateId: currentStateId,
+            type: effect.type,
+          });
+        })()
+      );
     }
+  }
+
+  /** ⚠️ Registra uma entrega em voo ⛔ sem encadeá-la na anterior. */
+  private trackDelivery(entrega: Promise<void>) {
+    const rastreada = entrega.catch(() => undefined) as Promise<void>;
+    this.pendingDeliveries.push(rastreada);
+    void rastreada.then(() => {
+      this.pendingDeliveries = this.pendingDeliveries.filter((p) => p !== rastreada);
+    });
+    return rastreada;
   }
 
   private getContext() {
@@ -446,6 +489,16 @@ class AclsVoiceSessionController {
 
   private async waitForOutputToSettle() {
     await this.speechQueue.catch(() => undefined);
+
+    /**
+     * ⚠️⚠️ ⛔ FALA A CAMINHO ⛔ TAMBÉM É FALA. ⛔ Entre `playOutput` ser chamado
+     * ⛔ e o áudio ⛔ de facto ⛔ começar, `isOutputActive()` ⛔ ainda é `false`
+     * — ⛔ e ⛔ era ⛔ a cadeia de promessas ⛔ que ⛔ acidentalmente ⛔ cobria
+     * essa janela. ⛔ Agora ⛔ ela é coberta ⛔ de propósito.
+     */
+    while (this.pendingDeliveries.length > 0) {
+      await Promise.all(this.pendingDeliveries);
+    }
 
     while (this.deps.isOutputActive()) {
       await (this.deps.waitMs ?? defaultWait)(100);
