@@ -4918,3 +4918,43 @@ aparência.
 ⛔ não tem campo de identificação de paciente. ⚠️ **⛔ As duas coisas são
 conferidas por trava** — ⛔ se qualquer uma mudar, ⛔ a trava exige que esta
 decisão seja revista ⛔ **⛔ antes**.
+
+### ⚠️ DEPLOY DE 2026-09-09 — ⛔ INFRAESTRUTURA DE TESTE, ⛔ NÃO MUDANÇA CLÍNICA
+
+**Regra declarada pelo autor ao autorizar:** *"esse deploy é infraestrutura de
+teste, ⛔ não mudança clínica."* ⛔ Ele sobe ⛔ porque a infraestrutura
+autenticada ⛔ **⛔ depende** dos `testID` para começar a fechar uma lacuna já
+vista várias vezes — ⛔ e esperar o próximo deploy funcional ⛔ prolongaria
+⛔ uma limitação conhecida ⛔ sem ganho.
+
+- **Deploy:** `j9p41qshb` · commits `33fbd7a` + `9f191db` · alias
+  `clinical-emergency-app.vercel.app`
+- **Antes:** `test:all` verde (463 e2e · 111 travas · 65 instrumentos)
+- **Antes:** ⛔ os `testID` ⛔ **⛔ não** mudam layout ⛔ nem texto — ⛔ medido,
+  ⛔ e ⛔ não afirmado: produção anterior (`443f0d8`) como *antes*, o artefato
+  publicado como *depois*, a 375 px → texto da landing **idêntico** (2939
+  chars), texto do formulário **idêntico** (262 chars), geometria dos campos
+  **idêntica ao pixel** (`x:43 y:347 w:289 h:44` / `y:403`). ⛔ O diff dos dois
+  arquivos de tela contém ⛔ **⛔ só** linhas `testID`.
+- **Antes:** ⛔ nenhuma credencial no repositório (as únicas ocorrências são
+  `'…'` na documentação ⛔ e um comentário); leitura ⛔ só de `process.env`;
+  `storageState` em `/tmp`, ⛔ ausente da árvore ⛔ e ⛔ do `dist`.
+- **Depois:** HTTP 200 em `/`, `/modulos/avc`, `/admin-users`, `/paywall`;
+  `test:ambiente` verde no `dist` de produção (11 conferências);
+  hidratação + primeiro quadro + porta de entrada → **38 verdes** contra
+  produção; governança ⛔ segue fora do runtime (0 ocorrências).
+
+#### ⛔ O QUE ⛔ **⛔ NÃO** FOI VALIDADO — ⛔ e ⛔ por quê
+
+⛔ 10 specs de **módulo clínico** (`avc-abertura`, `conteudo-chega-a-tela`)
+⛔ falham contra produção: a guarda devolve `/modulos/avc` para a landing.
+⚠️ ⛔ Isto ⛔ **⛔ não é regressão**: ⛔ os ⛔ **⛔ mesmos 10** falham contra a
+produção **⛔ anterior** (`28k5v8xm8` = `443f0d8`) — ⛔ conferido, ⛔ e ⛔ não
+suposto. ⛔ É ⛔ exatamente a lacuna (**D-128**) que a conta de teste existe
+para fechar.
+
+⛔ ⛔ **⛔ A LACUNA ⛔ CONTINUA ⛔ ABERTA.** ⛔ A infraestrutura está pronta;
+⛔ a **⛔ prova** ⛔ não. ⛔ Ela ⛔ só se fecha ⛔ quando o **⛔ primeiro login
+real em produção** passar — ⛔ marco separado, ⛔ depois da conta QA criada
+⛔ com `role='user'`. ⛔ Até lá, « produção autenticada validada ⛔ apenas
+indiretamente » ⛔ **⛔ continua de pé**.
