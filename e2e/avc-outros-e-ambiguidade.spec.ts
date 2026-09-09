@@ -517,4 +517,156 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
         ).toHaveCount(1);
       }
     });
+
+  /* ══ ⚠️⚠️⚠️ 12 · ZERO É DADO, ⛔ E PEDIDO ⛔ NÃO É EXAME ═════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ PROVA **⛔ A** — pedida pelo autor ⛔ antes do deploy: *"registrar
+   * `NIHSS = 0` ⛔ e provar que `Escala e imagem` aparece — ⛔ **⛔ zero é dado
+   * clínico, ⛔ não ausência**"*.
+   *
+   * ⛔ ⛔ ⛔ É ⛔ o erro clássico ⛔ da condição: ⛔ `if (valor)` ⛔ em vez de
+   * `valor === undefined` ⛔ faria ⛔ o zero ⛔ sumir ⛔ junto com ⛔ a
+   * ausência. ⚠️ ⛔ E ⛔ **⛔ zero ⛔ é ⛔ a população da Table 4** (0–5) —
+   * ⛔ o módulo ⛔ tem `zeroValido` ⛔ no conteúdo ⛔ exatamente ⛔ por isso
+   * (**E-10**).
+   */
+  test("⛔ NIHSS **0** faz o resumo aparecer — ⛔ com `0`, ⛔ e ⛔ nunca travessão",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-neurologico").click();
+
+      await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
+      /** ⛔ O gesto do médico: ⛔ o botão que registra **zero** ⛔ como resposta. */
+      await page.getByTestId("avc-grandeza-zero-nihss_informado").click();
+
+      await page.getByTestId("avc-aba-imagem").click();
+      const resumo = page.getByTestId("avc-resumo");
+      await expect(
+        resumo,
+        "⛔ zero foi lido como ausência — ⛔ o erro que `zeroValido` existe para impedir"
+      ).toHaveCount(1);
+      /**
+       * ⚠️⚠️ ⛔ MEDIDO **⛔ NA PEÇA**, ⛔ e ⛔ não no texto colado — 2026-09-09.
+       *
+       * ⛔ ⛔ `innerText` ⛔ do cartão ⛔ devolve *"NIHSS00–42"*: ⛔ o valor
+       * ⛔ **⛔ 0** ⛔ e a faixa ⛔ **⛔ 0–42** ⛔ ficam grudados, ⛔ e ⛔ `\b0\b`
+       * ⛔ não casa. ⚠️ ⛔ O `0` ⛔ **⛔ está lá** — ⛔ quem errou ⛔ foi a
+       * medida.
+       *
+       * ⛔ ⛔ A peça tem `testID` próprio: ⛔ medir ⛔ **⛔ ela** ⛔ diz ⛔ o que
+       * ⛔ se quer saber ⛔ sem depender ⛔ de como ⛔ o DOM ⛔ junta texto.
+       */
+      const peca = page.getByTestId("avc-vital-nihss");
+      await expect(peca).toContainText("NIHSS");
+      await expect(
+        peca,
+        "⛔ zero virou travessão — ⛔ ausência ⛔ e ⛔ resposta ⛔ viraram a mesma coisa"
+      ).not.toContainText("—");
+      const texto = (await peca.innerText()).replace(/\s+/g, " ");
+      expect(texto, `⛔ a peça do NIHSS ⛔ não mostra o zero: ${texto}`).toMatch(/(^|[^0-9])0([^0-9]|$)/);
+    });
+
+  /**
+   * ⚠️⚠️ ⛔ PROVA **⛔ B** — ⛔ e ⛔ ela mede ⛔ **⛔ a regra**, ⛔ e ⛔ não ⛔ a
+   * expectativa inicial.
+   *
+   * ⛔ ⛔ O pedido do autor ⛔ era provar que ⛔ o bloco aparecesse ⛔ *"com
+   * linguagem de solicitação"*. ⚠️ ⛔ A medida mostrou ⛔ que ⛔ a linguagem
+   * ⛔ **⛔ já existe**, ⛔ e ⛔ noutro canal: ⛔ a linha compacta ⛔ passa de
+   * *"Solicitar a tomografia"* ⛔ para *"Registrar o exame"* ⛔ quando ⛔ o
+   * pedido é registrado.
+   *
+   * ⛔ ⛔ ⛔ **⛔ Decisão do autor, ⛔ depois da medida:** ⛔ o resumo ⛔ **⛔ não**
+   * aparece ⛔ só com o pedido. ⚠️ *"O pedido tem um canal próprio, o exame
+   * tem outro estado, ⛔ e ⛔ o resumo ⛔ não vira ⛔ depósito de estados
+   * incompletos."*
+   *
+   * ⛔ ⛔ **⛔ Pedido ⛔ não é exame; ⛔ exame ⛔ não é laudo.** ⛔ Os três
+   * degraus ⛔ ficam medidos ⛔ abaixo, ⛔ em ordem.
+   */
+  test("⛔ pedido ⛔ não é exame, ⛔ exame ⛔ não é laudo — ⛔ e o resumo respeita isso",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-imagem").click();
+
+      /* ── 1 · ⛔ só o PEDIDO ────────────────────────────────────────── */
+      await page.getByTestId("avc-hora-hora_solicitacao_imagem").click();
+      await page.getByText("Agora", { exact: true }).click();
+      await page.getByText("Confirmar", { exact: true }).click();
+      await expect(page.getByTestId("avc-hora-valor-hora_solicitacao_imagem")).toContainText(/\d/);
+
+      await expect(
+        page.getByTestId("avc-resumo"),
+        "⛔ pedido ⛔ não é achado: ⛔ o resumo mostraria `Imagem —` ⛔ ao lado de um pedido"
+      ).toHaveCount(0);
+
+      /* ── 2 · ⛔ e a linha compacta **⛔ reconhece** o pedido ────────── */
+      await page.getByTestId("avc-aba-neurologico").click();
+      const acao = page.getByTestId("avc-prioridade-imagem-acao");
+      await expect(acao, "⛔ o pedido registrado ⛔ não mudou a chamada").toContainText(
+        /Registrar o exame/i
+      );
+      /** ⚠️⚠️ ⛔ E ⛔ **⛔ nada** de laudo ⛔ neste degrau. */
+      await expect(
+        acao,
+        "⛔ pedido virou resultado ⛔ na linguagem da tela"
+      ).not.toContainText(/resultado|laudo/i);
+
+      /* ── 3 · ⛔ com o EXAME registrado, ⛔ o resumo **⛔ pode** existir ─ */
+      await page.getByTestId("avc-aba-imagem").click();
+      await page.getByTestId("avc-novo-estudo").click();
+
+      /**
+       * ⚠️⚠️ ⛔ O ESTUDO NASCE **⛔ SEM MODALIDADE** — ⛔ e ⛔ isso ⛔ é um
+       * degrau, ⛔ não ⛔ um detalhe.
+       *
+       * ⛔ ⛔ Medido: ⛔ com o estudo criado ⛔ e ⛔ ainda ⛔ sem modalidade, ⛔ a
+       * linha ⛔ **⛔ continua** dizendo *"Registrar o exame"* ⛔ e ⛔ o resumo
+       * ⛔ **⛔ ainda ⛔ não existe**. ⚠️ ⛔ Faz sentido: ⛔ um estudo ⛔ sem
+       * modalidade ⛔ **⛔ não é ⛔ uma tomografia** — ⛔ e ⛔ o módulo ⛔ recusa
+       * ⛔ chamá-lo ⛔ assim.
+       */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await expect(
+        page.getByTestId("avc-prioridade-imagem-acao"),
+        "⛔ estudo sem modalidade ⛔ virou tomografia"
+      ).toContainText(/Registrar o exame/i);
+      await expect(page.getByTestId("avc-resumo")).toHaveCount(0);
+
+      await page.getByTestId("avc-aba-imagem").click();
+      await page
+        .getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste")
+        .click();
+      await expect(
+        page.getByTestId("avc-resumo"),
+        "⛔ com exame registrado, ⛔ o resumo ⛔ tem o que resumir"
+      ).toHaveCount(1);
+      /** ⛔ E ⛔ ainda ⛔ **⛔ sem** laudo: ⛔ a chamada pede ⛔ o resultado. */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await expect(page.getByTestId("avc-prioridade-imagem-acao")).toContainText(
+        /Registrar o resultado/i
+      );
+      await page.getByTestId("avc-aba-imagem").click();
+
+      /* ── 4 · ⛔ com o RESULTADO, ⛔ o texto evolui ⛔ sem confundir ──── */
+      await page
+        .getByTestId("avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada")
+        .click();
+      /**
+       * ⚠️ ⛔ A linha compacta ⛔ **⛔ não existe ⛔ na Investigação** — ⛔ ela é
+       * o atalho ⛔ *para* a imagem, ⛔ e ⛔ dentro dela ⛔ seria ⛔ um atalho
+       * ⛔ para ⛔ onde ⛔ já se está. ⛔ Medir ⛔ noutra aba.
+       */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await expect(page.getByTestId("avc-prioridade-imagem-acao")).toContainText(
+        /Ver o resultado/i
+      );
+      await expect(
+        page.getByTestId("avc-prioridade-imagem-acao"),
+        "⛔ com o resultado registrado, ⛔ a tela ⛔ ainda manda registrá-lo"
+      ).not.toContainText(/Registrar o resultado/i);
+    });
 });
