@@ -20,6 +20,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ACAO_E, ACOES_DE_CORRECAO } from "../../avc/conteudo/superficie-e";
 import { bloqueiosComAcoes } from "../../avc/nucleo/derivacoes-e";
+import { problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
@@ -86,6 +87,12 @@ export default function SuperficieE({
   const detalhes = useDetalhes();
   const blocos = bloqueiosComAcoes(estado);
   /**
+   * ⚠️⚠️ ⛔ O QUE O CABEÇALHO CONTA — ⛔ e ⛔ é ⛔ ele que a tela ⛔ tem de
+   * honrar. ⛔ Mesma função, ⛔ mesmo dono: ⛔ duas somas da mesma pergunta ⛔ é
+   * como duas telas passam a discordar sobre o mesmo paciente (**I6**).
+   */
+  const enviadosParaCa = problemasAtivos(estado).filter((p) => p.dono === "correcoes");
+  /**
    * ── ⚠️⚠️ ⛔ O CICLO FECHA **AQUI**, ⛔ e ⛔ não na Reperfusão ─────────────
    *
    * ⚠️ Decisão do autor, 2026-09-07 (**item 11**): *"O médico ⛔ não deve
@@ -100,11 +107,56 @@ export default function SuperficieE({
 
   return (
     <View style={e.raiz} testID="avc-superficie-e-conteudo">
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ DUAS VERDADES SOBRE *"RESOLVER AQUI"* — 2026-09-09 ─────
+        *
+        * ⚠️ Relato do autor, ⛔ com captura: *"aqui aparece 1 a resolver mas
+        * ⛔ não indica que tem que resolver, ficou ambíguo"*.
+        *
+        * ⛔ ⛔ ⛔ **A tela dizia três coisas, ⛔ e duas contradiziam a primeira:**
+        * *"1 a resolver aqui"* ⛔ no cabeçalho, *"Nada nesta tela espera por
+        * ação"* ⛔ no corpo, *"✓ Nada mais a corrigir aqui"* ⛔ no rodapé.
+        *
+        * ⛔ ⛔ **⛔ Por quê.** O cabeçalho conta `problemasAtivos` com dono
+        * `correcoes`; ⛔ o corpo desenhava ⛔ **⛔ só** `bloqueiosCorrigiveis`.
+        * ⚠️ ⛔ São **duas definições** de *"o que se resolve aqui"* — ⛔ e a
+        * hiperglicemia cai ⛔ exatamente ⛔ no vão: ⛔ ela ⛔ **⛔ não bloqueia**
+        * a trombólise, ⛔ e mesmo assim a fonte manda agir ⛔ e a ameaça a
+        * **manda para cá** (`leva: "correcoes"`).
+        *
+        * ⚠️⚠️ ⛔ Quem estava incompleto era o **corpo**: ⛔ o médico foi
+        * enviado ⛔ para uma tela que ⛔ então lhe dizia que ⛔ não tinha ⛔ nada
+        * a fazer. ⛔ *"⛔ Nenhum bloqueio"* ⛔ continua verdade — ⛔ e ⛔ agora
+        * ⛔ ela ⛔ não é dita ⛔ como se fosse *"⛔ nada a fazer"*.
+        */}
       {blocos.length === 0 ? (
         <Text style={e.vazio} testID="avc-e-sem-bloqueio">
-          {tr("Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação.")}
+          {tr(
+            enviadosParaCa.length === 0
+              ? "Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação."
+              : "Nenhum bloqueio da trombólise registrado. O que está abaixo pede conduta, e não trava a reperfusão."
+          )}
         </Text>
       ) : null}
+
+      {/**
+        * ⚠️ ⛔ E ⛔ o que foi mandado para cá **aparece** — ⛔ com a frase da
+        * **fonte**, ⛔ e ⛔ a mesma conduta que a Estabilização mostra. ⛔ A tela
+        * ⛔ não redige, ⛔ e ⛔ não recalcula.
+        */}
+      {blocos.length > 0
+        ? null
+        : enviadosParaCa.map((p) => (
+            <View key={p.id} style={e.enviado} testID={`avc-e-enviado-${p.id}`}>
+              <Text style={e.enviadoRotulo}>{tr(p.rotulo)}</Text>
+              {p.detalhe ? <Text style={e.enviadoDetalhe}>{tr(p.detalhe)}</Text> : null}
+              <Text style={e.enviadoDetalhe}>{tr(p.resolvePor)}</Text>
+              {p.campo === "glicemia" ? <CondutaGlicemica prefixo="avc-e-" /> : null}
+              {p.campo === "pas" || p.campo === "pad" ? (
+                <CondutaDaPressao prefixo="avc-e-" />
+              ) : null}
+            </View>
+          ))}
 
       {/**
         * ⚠️⚠️ ⛔ O ESTADO DO CICLO, ⛔ E ⛔ O QUE FALTA — ⛔ e ⛔ nunca um botão
@@ -117,7 +169,20 @@ export default function SuperficieE({
       <View style={e.cicloEstado} testID={`avc-e-ciclo-${portao.estado}`}>
         <Text style={e.cicloTitulo}>
           {ESTADOS[SIMBOLO_DO_CICLO[portao.estado] ?? "ausente"].simbolo}{" "}
-          {tr(TITULO_DO_CICLO[portao.estado] ?? "")}
+          {/**
+            * ⚠️⚠️ ⛔ *"NADA MAIS A CORRIGIR"* É SOBRE O **PORTÃO** — 2026-09-09.
+            *
+            * ⛔ ⛔ Com uma hiperglicemia mandada para cá, essa frase ⛔ ao lado
+            * de *"1 a resolver aqui"* ⛔ lia-se como **contradição**. ⚠️ ⛔ Ela
+            * ⛔ não estava errada: ⛔ ela respondia **⛔ outra pergunta** — ⛔ a
+            * da trombólise —, ⛔ e ⛔ não dizia ⛔ qual.
+            */}
+          {tr(
+            (TITULO_DO_CICLO[portao.estado] ?? "") === "Nada mais a corrigir aqui" &&
+              enviadosParaCa.length > 0
+              ? "Nada mais bloqueia a trombólise"
+              : TITULO_DO_CICLO[portao.estado] ?? ""
+          )}
         </Text>
         {portao.motivos
           .filter((m) => m.camada === "correcao")
@@ -351,6 +416,17 @@ const criarEstilos = (tema: Tema) =>
     cicloTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text, flexShrink: 1 },
     cicloFalta: { ...PAPEL.legenda, color: tema.cores.textSecondary, flexShrink: 1 },
     vazio: { ...PAPEL.textoPrincipal, color: tema.cores.textSecondary },
+    /** ⚠️ ⛔ O que foi mandado para cá — ⛔ cartão, ⛔ e ⛔ não parágrafo solto. */
+    enviado: {
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.card,
+      padding: ESPACO.md,
+      gap: ESPACO.xs,
+    },
+    enviadoRotulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    enviadoDetalhe: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     grupo: { gap: ESPACO.sm },
     formulacao: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     verbo: {

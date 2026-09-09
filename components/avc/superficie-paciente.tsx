@@ -25,14 +25,15 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_P } from "../../avc/conteudo/paciente";
-import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
+import { CAMPO_DE_OUTROS, campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO } from "../../design-system/tokens";
+import { ESPACO, RAIO } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
+import { Icone } from "./ui";
 
 type Props = {
   estado: EstadoAvc;
@@ -72,9 +73,30 @@ export default function SuperficiePaciente({
         * que aparece primeiro é lida como etapa obrigatória — e o médico com um
         * paciente instável hesita antes de pular.
         */}
-      <Text style={e.aviso} testID="avc-paciente-nao-e-porta">
-        {tr("Nada aqui é obrigatório para seguir. Todas as superfícies abrem com este painel vazio.")}
-      </Text>
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ DESTACADA — pedido do autor, 2026-09-09 ───────────────
+        *
+        * ⛔ ⛔ *"Isso aqui tem que estar destacado para ver ⛔ sem procurar."*
+        *
+        * ⚠️ ⛔ Ela era `legenda` em cinza secundário — ⛔ **⛔ o menor ⛔ e mais
+        * apagado texto da tela**, ⛔ dizendo a coisa mais libertadora que o
+        * módulo tem para dizer. ⛔ Quem chega com um paciente instável
+        * ⛔ precisa ler ⛔ isso **⛔ antes** de começar a preencher, ⛔ e ⛔ não
+        * depois de procurar.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ **⛔ sem pintar a tela** — ⛔ é a regra que o próprio autor
+        * fixou em 2026-09-05, ⛔ ao recusar a faixa ciano da prioridade:
+        * *"`primary` = ação · `warning`/`critical` = risco · `info` =
+        * contexto ⛔ quando realmente ajuda a identificar · neutro =
+        * estrutura"*. ⛔ ⛔ Isto ⛔ não é risco ⛔ nem ação: ⛔ é estrutura.
+        * ⚠️ ⛔ O destaque vem de **superfície ⛔ e tipografia**, ⛔ como ⛔ lá.
+        */}
+      <View style={e.aviso} testID="avc-paciente-nao-e-porta">
+        <Icone nome="informacao" tamanho={16} />
+        <Text style={e.avisoTexto}>
+          {tr("Nada aqui é obrigatório para seguir. Todas as superfícies abrem com este painel vazio.")}
+        </Text>
+      </View>
 
       {GRUPOS_P.map((grupo) => {
         const fechado = grupo.recolhido === true && !abertos.includes(grupo.id);
@@ -151,6 +173,16 @@ export default function SuperficiePaciente({
                     campo={campo}
                     casaAtual="paciente"
                     bruto={bruto(campo.id)}
+                    /**
+                     * ⚠️ ⛔ O texto de *"Outros"* vem da **trilha**, ⛔ e ⛔ não
+                     * de um rascunho de tela — ⛔ por isso ⛔ ele volta ⛔ quando
+                     * o médico reabre o bloco.
+                     */
+                    textoDeOutros={
+                      campo.opcaoDeOutros === undefined
+                        ? undefined
+                        : bruto(CAMPO_DE_OUTROS(campo.id)) || undefined
+                    }
                     numero={numeroGravado(campo.id)}
                     agora={agora}
                     detalheAberto={detalhes.aberto(campo.id)}
@@ -175,5 +207,17 @@ const criarEstilos = (tema: Tema) =>
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
     grupoNota: { ...PAPEL.micro, color: tema.cores.textSecondary },
-    aviso: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    aviso: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: ESPACO.sm,
+      backgroundColor: tema.cores.controlSurface,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+    },
+    /** ⚠️ ⛔ Tamanho de leitura, ⛔ e ⛔ não de rodapé. */
+    avisoTexto: { ...PAPEL.textoSecundario, color: tema.cores.text, flex: 1, minWidth: 0 },
   });

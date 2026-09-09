@@ -353,6 +353,15 @@ export type Campo = {
     | { readonly campo: string; readonly valor: string }
     | { readonly campo: string; readonly algumDe: readonly string[] };
   readonly nota?: string;
+  /**
+   * ⚠️ ⛔ A opção que **abre a caixa de texto** — ⛔ escrita ⛔ por extenso,
+   * ⛔ e ⛔ não adivinhada: *"Outras"* ⛔ em alergias, *"Outros"* ⛔ em
+   * antecedentes. ⛔ Adivinhar por prefixo quebraria ⛔ no dia em que alguém
+   * escrevesse *"Outro achado"*.
+   *
+   * ⛔ ⛔ Proibida ⛔ em campo com consumidor — ⛔ ver `CAMPO_DE_OUTROS`.
+   */
+  readonly opcaoDeOutros?: string;
 };
 
 /**
@@ -448,6 +457,34 @@ export function comCasa(casa: SuperficieId, grupos: readonly GrupoDeclarado[]): 
  * vezes, bastaria mudar um deles para a derivação passar a contar "Nenhum
  * desses" como achado presente — negativa virando positiva em silêncio.
  */
+/**
+ * ── ⚠️⚠️⚠️ ⛔ *"OUTROS"* QUE SE PODE **ESCREVER** — 2026-09-09 ─────────────
+ *
+ * ⚠️ Pedido do autor: *"onde tem outros tem que ter opção de adicionar quais
+ * outras o usuário quiser adicionar **escrevendo**"*.
+ *
+ * ⛔ ⛔ Uma opção *"Outras"* ⛔ sem lugar para dizer **quais** ⛔ é uma pergunta
+ * ⛔ que ⛔ não aceita a resposta. ⛔ `alergias` ⛔ e `medicacoes_em_uso`
+ * ⛔ já ofereciam ⛔ a opção — ⛔ e ⛔ engoliam o conteúdo dela.
+ *
+ * ── ⚠️⚠️⚠️ ⛔ ONDE ⛔ ELE **⛔ NÃO** PODE EXISTIR ─────────────────────────
+ *
+ * ⛔ ⛔ **⛔ Em campo que alguém lê para decidir.** ⚠️ `anticoagulante_em_uso`
+ * alimenta `derivacoes-d.ts`; `antecedentes_intracranianos`,
+ * `procedimentos_recentes` ⛔ e `antecedentes_cardio_sistemicos` viram
+ * **contraindicações** ⛔ em `superficie-d.ts`, ⛔ opção por opção, ⛔ com fonte
+ * ⛔ e COR.
+ *
+ * ⚠️⚠️ ⛔ Ali, *"outro anticoagulante: edoxabana"* digitado ⛔ **⛔ pareceria
+ * registrado ⛔ e seria invisível ao portão**. ⛔ É o pior defeito possível
+ * ⛔ neste módulo: ⛔ o médico registra, a tela aceita, ⛔ e a decisão ⛔ não vê.
+ * ⛔ ⛔ Naquelas listas ⛔ a transcrição é **exaustiva ⛔ de propósito**.
+ *
+ * ⛔ ⛔ Por isso a trava: `opcaoDeOutros` ⛔ só ⛔ em campo cujos
+ * `CONSUMIDORES` ⛔ são **⛔ vazios**.
+ */
+export const CAMPO_DE_OUTROS = (id: string) => `${id}_outros`;
+
 export const SEM_ACHADOS = "Nenhum desses";
 export const NAO_SEI = "Não sei";
 export const EXCLUSIVAS_PADRAO = [SEM_ACHADOS, NAO_SEI] as const;

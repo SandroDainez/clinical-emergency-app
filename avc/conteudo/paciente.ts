@@ -252,6 +252,8 @@ export const SEM_ALERGIA = "Nenhuma";
 export const ALERGIAS_P: readonly CampoP[] = [
   {
     id: "alergias",
+    /** ⚠️ ⛔ Sem consumidor — ⛔ por isso pode aceitar texto livre. */
+    opcaoDeOutros: "Outras",
     rotulo: "Alergias conhecidas",
     tipo: "multipla",
     temporalidade: "estavel",
@@ -387,6 +389,8 @@ export const MEDICACOES_P: readonly CampoP[] = [
    */
   {
     id: "medicacoes_em_uso",
+    /** ⚠️ ⛔ Sem consumidor — ⛔ por isso pode aceitar texto livre. */
+    opcaoDeOutros: "Outras",
     /** ⚠️ A farmácia do paciente ⛔ não pertence a ⛔ um atendimento. */
     escopo: "global",
     rotulo: "Outras medicações de uso contínuo",
@@ -610,6 +614,8 @@ export const FUNCIONAL_PREVIA_P: readonly CampoP[] = [
 export const COMORBIDADES_P: readonly CampoP[] = [
   {
     id: "comorbidades",
+    /** ⚠️ ⛔ Sem consumidor — ⛔ por isso pode aceitar texto livre. */
+    opcaoDeOutros: "Outros",
     /** ⚠️ Do **paciente**, ⛔ e ⛔ não deste episódio. */
     escopo: "global",
     temporalidade: "estado",
@@ -635,6 +641,8 @@ export const COMORBIDADES_P: readonly CampoP[] = [
       "Tabagismo atual",
       "Etilismo",
       "Demência",
+      /** ⚠️ ⛔ E aqui ⛔ ele aceita ser **escrito** — ⛔ ver `opcaoDeOutros`. */
+      "Outros",
       "Nenhum destes",
       NAO_SEI,
     ],

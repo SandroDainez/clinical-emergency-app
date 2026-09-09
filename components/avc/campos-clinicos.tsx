@@ -20,7 +20,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
-import { opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
+import { CAMPO_DE_OUTROS, opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
 import { alternarItem, estaSelecionado, itensSelecionados } from "../../avc/nucleo/selecao";
 import {
   arredondaAoPasso,
@@ -264,6 +264,17 @@ type PropsDeCampo = {
   detalheAberto: boolean;
   onAlternarDetalhe: () => void;
   onEscolher: (campo: string, valor: string) => void;
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O QUE FOI **ESCRITO** EM *"OUTROS"* — 2026-09-09 ───────────
+   *
+   * ⚠️ Pedido do autor: *"onde tem outros tem que ter opção de adicionar
+   * quais outras o usuário quiser adicionar **escrevendo**"*.
+   *
+   * ⛔ ⛔ Ele vem de fora ⛔ porque é **fato na trilha**, ⛔ e ⛔ não rascunho de
+   * tela: mora em `CAMPO_DE_OUTROS(campo.id)`, ⛔ e ⛔ volta ⛔ quando o médico
+   * reabre.
+   */
+  textoDeOutros?: string;
   /**
    * ⚠️⚠️ O VALOR QUE A ESCALA DERIVA — decisão do autor, 2026-08-29, opção (a).
    *
@@ -517,6 +528,64 @@ export function CampoDeEscolha({
 }
 
 /**
+ * ── ⚠️⚠️⚠️ A CAIXA DE *"OUTROS"* ⛔ — 2026-09-09 ─────────────────────────────
+ *
+ * ⚠️ Pedido do autor: *"onde tem outros tem que ter opção de adicionar quais
+ * outras o usuário quiser adicionar **escrevendo**"*.
+ *
+ * ── ⚠️⚠️ ⛔ O QUE ⛔ ELA **⛔ NÃO** FAZ ─────────────────────────────────────
+ *
+ * ⛔ ⛔ **⛔ Não vira conduta.** ⚠️ ⛔ Ela ⛔ só existe ⛔ em campo cujos
+ * `CONSUMIDORES` são **vazios** — ⛔ há trava medindo ⛔ isso. ⛔ O que se
+ * escreve ⛔ aqui é **contexto do paciente**, ⛔ e ⛔ nenhuma recomendação
+ * ⛔ deste módulo nasce dele.
+ *
+ * ⛔ ⛔ **⛔ Não grava a cada tecla.** ⚠️ A trilha é append-only: ⛔ um fato por
+ * letra encheria o histórico com o **caminho** até a frase, ⛔ e ⛔ nenhuma
+ * dessas letras é a informação. ⛔ Grava ⛔ ao sair do campo.
+ *
+ * ⛔ ⛔ **⛔ Não apaga sozinha.** ⚠️ Esvaziar o texto ⛔ é `onDesfazer` — ⛔ o
+ * campo volta a *"ninguém escreveu"*, ⛔ que ⛔ não é o mesmo que *"escreveu
+ * nada"* (**E-37**).
+ */
+function CaixaDeOutros({
+  campo,
+  texto,
+  onGravar,
+  onApagar,
+}: {
+  campo: string;
+  texto: string | undefined;
+  onGravar: (texto: string) => void;
+  onApagar: () => void;
+}) {
+  const tr = useTr();
+  const e = useEstilosDoTema(criarEstilos);
+  /** ⚠️ ⛔ Rascunho ⛔ enquanto se digita — ⛔ o fato ⛔ só nasce ⛔ no `blur`. */
+  const [rascunho, setRascunho] = useState<string | undefined>(undefined);
+  const mostrado = rascunho ?? texto ?? "";
+  return (
+    <TextInput
+      style={e.outrosCaixa}
+      value={mostrado}
+      onChangeText={setRascunho}
+      onBlur={() => {
+        const limpo = mostrado.trim();
+        setRascunho(undefined);
+        if (limpo === (texto ?? "")) return;
+        if (limpo === "") onApagar();
+        else onGravar(limpo);
+      }}
+      multiline
+      placeholder={tr("Escreva quais")}
+      placeholderTextColor={e.corPlaceholderOutros.color}
+      accessibilityLabel={tr("Escreva quais")}
+      testID={`avc-outros-${campo}`}
+    />
+  );
+}
+
+/**
  * SELEÇÃO MÚLTIPLA — achados que COEXISTEM no mesmo paciente (§7.6).
  *
  * ⚠️ A caixa (☑/☐) ⛔ não é enfeite: ela diz, ANTES do toque, que aqui se marca
@@ -530,10 +599,18 @@ export function CampoDeMultipla({
   onAlternarDetalhe,
   onEscolher,
   onDesfazer,
+  textoDeOutros,
 }: PropsDeCampo) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const marcados = itensSelecionados(bruto);
+  /**
+   * ⚠️ ⛔ A caixa aparece ⛔ **⛔ só** quando *"Outros"* está marcado — ⛔ e ⛔ o
+   * campo declara **qual** opção é essa, ⛔ em vez de a tela adivinhar por
+   * prefixo.
+   */
+  const pedeTexto =
+    campo.opcaoDeOutros !== undefined && marcados.includes(campo.opcaoDeOutros);
   return (
     <View style={[e.campo, marcados.length > 0 && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
       <View style={e.campoTopo}>
@@ -597,9 +674,23 @@ export function CampoDeMultipla({
         })}
       </View>
 
+      {pedeTexto ? (
+        <CaixaDeOutros
+          campo={campo.id}
+          texto={textoDeOutros}
+          onGravar={(t) => onEscolher(CAMPO_DE_OUTROS(campo.id), t)}
+          onApagar={() => onDesfazer(CAMPO_DE_OUTROS(campo.id))}
+        />
+      ) : null}
+
       {marcados.length > 0 ? (
         <Text style={e.campoAjuda} testID={`avc-multipla-resumo-${campo.id}`}>
           {marcados.map((m) => tr(m)).join(" · ")}
+          {/**
+            * ⚠️ ⛔ O escrito entra ⛔ no resumo — ⛔ senão *"Outros"* ⛔ ficaria
+            * ⛔ no lugar da coisa, ⛔ que é o defeito que ⛔ ele veio corrigir.
+            */}
+          {pedeTexto && textoDeOutros ? `: ${textoDeOutros}` : ""}
         </Text>
       ) : null}
     </View>
@@ -1236,6 +1327,7 @@ export function CampoDaSuperficie({
   empilhado,
   nomeDaCasa,
   emCorrecao,
+  textoDeOutros,
   onEntrarEmCorrecao,
   onCancelarCorrecao,
   onNovaMedida,
@@ -1272,6 +1364,8 @@ export function CampoDaSuperficie({
    * estavam, e ⛔ nenhuma regra nova vaza para elas.
    */
   emCorrecao?: boolean;
+  /** ⚠️ ⛔ O texto de *"Outros"*, ⛔ quando o campo aceita ⛔ um. */
+  textoDeOutros?: string;
   onEntrarEmCorrecao?: () => void;
   onCancelarCorrecao?: () => void;
   onNovaMedida?: () => void;
@@ -1323,6 +1417,7 @@ export function CampoDaSuperficie({
         onAlternarDetalhe={onAlternarDetalhe}
         onEscolher={onEscolher}
         onDesfazer={onDesfazer}
+        textoDeOutros={textoDeOutros}
       />
     ) : campo.tipo === "numerico" ? (
       <CampoNumerico
@@ -1735,6 +1830,19 @@ export function PainelDeLeituras({
 export const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     grupo: { gap: ESPACO.xs },
+    /** ⚠️ ⛔ A caixa de *"Outros"* — 2026-09-09. ⛔ Ela **⛔ é** um campo, ⛔ e parece. */
+    outrosCaixa: {
+      ...PAPEL.textoPrincipal,
+      color: tema.cores.text,
+      backgroundColor: tema.cores.bg,
+      borderWidth: 2,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+    },
+    corPlaceholderOutros: { color: tema.cores.textSecondary },
     /**
      * ⚠️ O TÍTULO DE BLOCO DEIXOU DE SER LEGENDA. Faixa com a cor da área, barra
      * de accent e tipo maior: o degrau de hierarquia que a varredura precisa.

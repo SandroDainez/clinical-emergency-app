@@ -219,4 +219,51 @@ test.describe("AVC · o cartão segura o que está dentro dele", () => {
         `⛔ o toque ⛔ não levou até o campo: antes ${JSON.stringify(antes)}, depois ${JSON.stringify(depois)}, janela ${altura}`
       ).toBe(true);
     });
+
+  /* ══ ⚠️⚠️⚠️ 6 · A FRASE QUE LIBERTA ⛔ SE VÊ ⛔ SEM PROCURAR ═════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ PEDIDO DO AUTOR, 2026-09-09: *"isso aqui tem que estar destacado
+   * para ver ⛔ sem procurar"*.
+   *
+   * ⛔ ⛔ *"Nada aqui é obrigatório para seguir"* ⛔ é a coisa mais libertadora
+   * que o módulo diz — ⛔ e ⛔ ela estava ⛔ no **menor ⛔ e mais apagado** texto
+   * da tela. ⚠️ ⛔ Quem chega com um paciente instável ⛔ precisa lê-la
+   * ⛔ **⛔ antes** de começar a preencher.
+   */
+  test("⛔ *«nada aqui é obrigatório»* aparece ⛔ sem rolar, ⛔ em tamanho de leitura",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-paciente").click();
+
+      const aviso = page.getByTestId("avc-paciente-nao-e-porta");
+      await expect(aviso).toBeVisible();
+
+      /** ⛔ **⛔ Sem rolar**: ⛔ ela cabe na primeira tela. */
+      const caixa = await aviso.boundingBox();
+      const altura = page.viewportSize()!.height;
+      expect(
+        caixa!.y >= 0 && caixa!.y + caixa!.height <= altura,
+        `⛔ é preciso rolar para achá-la: ${JSON.stringify(caixa)} em ${altura} px`
+      ).toBe(true);
+
+      /**
+       * ⚠️ ⛔ E ⛔ em tamanho de **leitura**: ⛔ 13 px ⛔ ou menos ⛔ é rodapé,
+       * ⛔ e ⛔ rodapé ⛔ não é destaque.
+       */
+      const px = await aviso.evaluate((el) => {
+        const t = el.querySelector("div, span") ?? el;
+        return parseFloat(getComputedStyle(t as Element).fontSize);
+      });
+      expect(px, `⛔ tamanho de rodapé: ${px} px`).toBeGreaterThanOrEqual(14);
+
+      /** ⚠️ ⛔ E ⛔ ela tem **corpo** — ⛔ texto solto ⛔ não é destaque. */
+      const temMoldura = await aviso.evaluate((el) => {
+        const c = getComputedStyle(el);
+        const fundo = c.backgroundColor !== "rgba(0, 0, 0, 0)" && c.backgroundColor !== "transparent";
+        return fundo || parseFloat(c.borderTopWidth) > 0;
+      });
+      expect(temMoldura, "⛔ a frase ⛔ não tem fundo ⛔ nem borda").toBe(true);
+    });
 });

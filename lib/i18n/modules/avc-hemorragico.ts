@@ -469,6 +469,12 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Informado diretamente": "Informado directamente",
   /** ⚠️ Nomes dos insumos que ⛔ não são `Campo` declarado — ⛔ 2026-09-09. */
   "Origem do Glasgow": "Origen del Glasgow",
+  /** ⚠️ *"Outros"* que se escreve, ⛔ e as frases que o desambiguam — 2026-09-09. */
+  "Escreva quais": "Escriba cuáles",
+  "Outros": "Otros",
+  "Nada mais bloqueia a trombólise": "Nada más bloquea la trombólisis",
+  "Nenhum bloqueio da trombólise registrado. O que está abaixo pede conduta, e não trava a reperfusão.":
+    "Ningún bloqueo de la trombólisis registrado. Lo que está abajo pide conducta, y no traba la reperfusión.",
   "NIHSS somado pelos itens": "NIHSS sumado por los ítems",
   "NIHSS informado diretamente": "NIHSS informado directamente",
   "Sem dados clínicos registrados": "Sin datos clínicos registrados",
