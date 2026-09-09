@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**97 de 111 travas com declaração completa.**
+**98 de 112 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -692,9 +692,11 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que as ferramentas ausentes deveriam existir, nem que os limiares sem fonte aberta estejam certos — APACHE II segue sem a figura do Knaus.
 - **UNIVERSO:** as 15 ferramentas de clinical-calculators-engine.ts. Validação estrutural das calculadoras clínicas. POR QUE ESTE SCRIPT EXISTE -------------------------- Cada calculadora do app cita, no próprio código, a publicação primária que a define. Nenhuma estava conferida contra ela — a citação existia, a verificação não. Conferir 15 artigos inteiros é caro e, na prática, não acontece. Mas quase toda publicação de escore declara um INVARIANTE verificável: a faixa que o escore pode assumir. E o invariante é sensível — a faixa só fecha se todos os pesos estiverem certos. Exemplo real: o APACHE II vai de 0 a 71 (Knaus 1985). Se a creatinina não dobrasse na insuficiência renal aguda, o máximo daria 67. Se o Glasgow fosse pontuado como as demais variáveis (teto 4 em vez de 12), daria 63. Se a idade parasse em 5 pontos, daria 70. Um único peso errado quebra o teste. O QUE ELE PROVA E O QUE NÃO PROVA --------------------------------- Prova que o conjunto de pesos fecha na faixa publicada. NÃO prova que cada faixa individual de cada variável está no ponto certo — para isso é preciso o texto completo com as tabelas. É bem mais do que "a citação está no comentário", e bem menos do que uma auditoria completa. O relatório diz exatamente qual das duas coisas cada calculadora recebeu. COMO ESTENDER ------------- Acrescente uma entrada em INVARIANTES com a faixa e a fonte. Se a publicação não declarar faixa, registre `faixa: null` com o motivo: o script conta como PENDENTE em vez de fingir cobertura.
 
-## `build:web:teste`
+## `build:web:teste` → `scripts/sela-artefato.cjs`
 
-_não executa script em scripts/ (e2e, playwright)_
+- **PROMETE:** que ⛔ todo `dist/` produzido pelos scripts de build ⛔ carregue `artefato.json` ⛔ declarando script, modo ⛔ e ⛔ se o backend está embutido; ⛔ e que ⛔ o selo ⛔ **⛔ não** seja aceito ⛔ na palavra: ⛔ ele é ⛔ **⛔ conferido contra o próprio artefato** ⛔ antes de ser escrito.
+- **NÃO PROMETE:** que ⛔ o build esteja ⛔ **⛔ certo** para o que se quer fazer com ele — ⛔ isso ⛔ quem decide ⛔ é ⛔ quem consome (a suíte, o deploy). ⛔ Aqui ⛔ só ⛔ se ⛔ **⛔ declara a verdade**, ⛔ conferida.
+- **UNIVERSO:** `dist/` ⛔ (ou o diretório passado como 2º argumento). ── ⚠️⚠️ ⛔ POR QUE ⛔ O SELO ⛔ É ⛔ MEDIDO, ⛔ E ⛔ NÃO ⛔ ANOTADO ─────────── ⛔ Um selo ⛔ que ⛔ apenas copiasse ⛔ o argumento ⛔ da linha de comando ⛔ seria ⛔ **⛔ um papel dizendo o que a gente quis** — ⛔ e ⛔ o dia em que o ⛔ script mudasse ⛔ sem o argumento mudar, ⛔ ele ⛔ mentiria ⛔ com ⛔ toda a autoridade ⛔ de ⛔ um metadado. ⚠️ ⛔ Por isso ⛔ ele ⛔ **⛔ recusa** ⛔ selar ⛔ quando ⛔ o que se declara ⛔ contradiz ⛔ o que se mede. Uso:  node scripts/sela-artefato.cjs <teste|producao> [dist]
 
 ## `test:ambiente:teste` → `scripts/prova-ambiente-coerente.cjs`
 

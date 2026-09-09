@@ -4775,7 +4775,7 @@ da tela começam ⛔ e terminam no mesmo x em 375 px.
 
 ---
 
-## D-128 — ⏸️ ABERTA · `build:web` PRODUZ UM `dist` QUE A SUÍTE ⛔ NÃO CONSEGUE DIRIGIR
+## D-128 — ✅ FECHADA · `build:web` PRODUZ UM `dist` QUE A SUÍTE ⛔ NÃO CONSEGUE DIRIGIR
 
 **Estado:** ⏸️ **ABERTA**, descoberta em 2026-09-08 **por queda**, ⛔ e ⛔ não
 por leitura: 26 testes de AVC falharam com *"element was detached from the
@@ -4958,3 +4958,64 @@ para fechar.
 real em produção** passar — ⛔ marco separado, ⛔ depois da conta QA criada
 ⛔ com `role='user'`. ⛔ Até lá, « produção autenticada validada ⛔ apenas
 indiretamente » ⛔ **⛔ continua de pé**.
+
+---
+
+## D-128 · FECHAMENTO — 2026-09-09 · O ARTEFATO PASSA A DIZER COMO NASCEU
+
+### ⚠️ A CAUSA EXATA
+
+⛔ `npm run build:web` ⛔ e `npm run build:web:teste` ⛔ produzem ⛔ **⛔ o mesmo
+`dist/`** — ⛔ mesmo nome, ⛔ mesmos arquivos, ⛔ mesma cara. ⛔ A diferença é
+⛔ **⛔ invisível de fora**: o primeiro inlina as credenciais do Supabase; o
+segundo ⛔ não (`EXPO_NO_DOTENV=1`).
+
+⛔ ⛔ Com backend embutido, a guarda de `app/_layout.tsx` resolve sessão ⛔ e
+⛔ **⛔ devolve `/modulos/*` para `/`**. ⚠️ A suíte então mede ⛔ **⛔ a tela de
+login** ⛔ achando que mede o módulo — ⛔ e falha com « element was detached from
+the DOM », ⛔ que é ⛔ o sintoma ⛔ e ⛔ **⛔ não** a causa. ⛔ 26 testes vermelhos
+em 2026-09-08, ⛔ e ⛔ horas ⛔ procurando defeito ⛔ onde ⛔ não havia.
+
+### ⚠️⚠️ O CONTRATO NOVO DO ARTEFATO
+
+⛔ `dist/artefato.json`, escrito pelos dois scripts de build:
+
+```json
+{ "versaoDoContrato": 1, "script": "build:web:teste", "modo": "teste",
+  "backendEmbutido": false, "geradoEm": "...", "commit": "..." }
+```
+
+⚠️⚠️ ⛔ **O selo ⛔ não é aceito na palavra.** `scripts/sela-artefato.cjs`
+⛔ **⛔ mede** o artefato ⛔ e ⛔ **⛔ recusa selar** ⛔ quando o declarado
+contradiz o medido. ⛔ Decisão do autor: *"⛔ não usar heurística baseada só em
+presença de arquivos ⛔ ou nome de pasta"* — ⛔ então o que se mede são
+⛔ **⛔ duas propriedades do próprio artefato**, ⛔ as mesmas ⛔ que
+`prova-ambiente-coerente.cjs` ⛔ já usava como canário (⛔ de propósito ⛔ as
+mesmas: ⛔ duas medidas ⛔ da mesma coisa ⛔ seriam a segunda verdade):
+
+1. o pré-render desenhou `guarda-cobertura`? (⛔ só desenha com backend)
+2. o bundle do cliente construiu o cliente Supabase de verdade?
+
+⛔ Artefato ⛔ com ⛔ **⛔ duas verdades** (os lados discordam) ⛔ não recebe selo
+⛔ nenhum — ⛔ é o defeito de cache do Metro, ⛔ e ⛔ tem trava própria.
+
+### ⚠️ QUEM CONFERE, E QUANDO
+
+⛔ `e2e/global-setup.ts` roda ⛔ **⛔ antes de qualquer teste** ⛔ e exige
+`modo: "teste"` ⛔ com `backendEmbutido: false`. ⛔ Com `E2E_BASE_URL` ⛔ ele
+⛔ **⛔ não** confere: ⛔ ali a suíte mede ⛔ um servidor remoto, ⛔ e o `dist`
+local ⛔ não participa.
+
+⛔ `scripts/serve-dist.cjs` recusa subir ⛔ sem `dist/` — ⛔ o `webServer` do
+Playwright sobe ⛔ **⛔ antes** do `globalSetup`, ⛔ e ⛔ sem isso a falha vinha
+como « Timed out waiting 60000ms », ⛔ que ⛔ não diz ⛔ que faltou ⛔ rodar o
+build.
+
+### ⚠️ AS QUATRO MUTAÇÕES
+
+| mutação | o que a suíte diz |
+| --- | --- |
+| selo de produção (⛔ o comportamento antigo da D-128) | « encontrado: modo « producao » (build:web), backend embutido = true · exigido: modo « teste » » |
+| selo ausente | « `dist/` sem `artefato.json` — build antigo, ou export feito à mão » |
+| `dist/` ausente | « NÃO HÁ O QUE SERVIR · encontrado: nenhum diretório · exigido: um export web selado » |
+| export incompleto (⛔ sem `entry-*.js`) | « não parece um export do Expo: falta `_expo/static/js/web` » |

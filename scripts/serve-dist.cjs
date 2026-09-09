@@ -14,6 +14,27 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..", "dist");
 const PORT = Number(process.argv[2] || process.env.PORT || 4173);
 
+/**
+ * ⚠️⚠️ ⛔ SERVIR O NADA ⛔ VIRA « TIMEOUT », ⛔ E ⛔ TIMEOUT ⛔ NÃO EXPLICA NADA.
+ *
+ * ⛔ O `webServer` do Playwright sobe ⛔ **⛔ antes** do `globalSetup`. ⛔ Com
+ * `dist/` ausente, ⛔ este processo subia ⛔ e ⛔ respondia 404 ⛔ para sempre —
+ * ⛔ e a suíte morria ⛔ com « Timed out waiting 60000ms from config.webServer »,
+ * ⛔ que ⛔ **⛔ não diz** ⛔ que ⛔ faltou ⛔ rodar ⛔ o build. ⛔ Sessenta
+ * segundos ⛔ para ⛔ uma mensagem ⛔ que ⛔ não ajuda.
+ *
+ * ⚠️ ⛔ Recusar ⛔ na hora ⛔ custa ⛔ zero ⛔ e ⛔ diz ⛔ o que fazer.
+ */
+if (!fs.existsSync(ROOT)) {
+  console.error(
+    `\n❌ NÃO HÁ O QUE SERVIR\n\n` +
+      `   encontrado ...... nenhum diretório em ${ROOT}\n` +
+      `   exigido ......... um export web selado\n\n` +
+      `   Rode \`npm run build:web:teste\` antes da suíte.\n`
+  );
+  process.exit(1);
+}
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",

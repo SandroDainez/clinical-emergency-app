@@ -19,6 +19,12 @@ import { CAMINHO_DO_ESTADO_AUTENTICADO, contaDeTesteConfigurada } from "./e2e/co
 export default defineConfig({
   testDir: "./e2e",
   /**
+   * ⚠️⚠️ ⛔ D-128 — a suíte confere ⛔ **⛔ que `dist` é este** ⛔ antes de medir.
+   * ⛔ Ver `e2e/global-setup.ts`: os dois builds produzem artefatos idênticos
+   * ⛔ por fora ⛔ e ⛔ incompatíveis ⛔ por dentro.
+   */
+  globalSetup: "./e2e/global-setup.ts",
+  /**
    * ⚠️⚠️ ARTEFATOS FORA DO REPOSITÓRIO — e ⛔ não é arrumação.
    *
    * ⛔ O repositório vive em `~/Documents`, sincronizado pelo iCloud. O
