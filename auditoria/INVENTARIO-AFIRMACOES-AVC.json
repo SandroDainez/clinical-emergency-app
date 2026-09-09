@@ -1,0 +1,1661 @@
+[
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "A bula contraindica em estenose aórtica avançada",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "Ataque opcional de 500 microgramas por quilo em 1 minuto, seguido de 50 microgramas por quilo por minuto",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "1 minuto"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "O Manual de Rotinas do Ministério da Saúde de 2013 — a mesma fonte do metoprolol e do nitroprussiato desta lista — descreve manutenção até 3 mg por quilo por minuto. Isso equivale a 3.000 microgramas por quilo por minuto, cerca de dez vezes o teto de 300, acima do qual a bula declara que a segurança não foi estudada. A divergência é deste número, e não do manual inteiro.",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "3 mg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "Não manter a sistólica abaixo de 140 mmHg por 72 horas",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "140 mmHg",
+      "72 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "Não reduzir a sistólica abaixo de 140 mmHg de rotina",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "140 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/antihipertensivos.ts",
+    "frase": "Sistólica aproximadamente entre 140 e 180 mmHg",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "180 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/conferencia.ts",
+    "frase": "PDF AHA/ASA 2026. A definição por comparação com a substância branca contralateral não existe na Table 8 (e364–e367) e não é sustentada pela guideline. A fonte usa frank hypodensity, explicada no apoio como severe hypoattenuation as seen with subacute stroke. A cláusula fabricada foi removida da transcrição, com histórico preservado.",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/conferencia.ts",
+    "frase": "AHA/ASA 2022 HIC, Figure 2 (Management of anticoagulant-related hemorrhage). INR 1,3-1,9 -> 4-F PCC 10-20 IU/kg; INR >=2,0 -> 4-F PCC 25-50 IU/kg; ambos -> IV Vitamin K. O texto do app corresponde; nada foi alterado. O número não aparece na transcrição porque vive numa FIGURA, que fontes-verbatim não transcreve — o auditor vai continuar apontando, e é este registro que responde por ele.",
+    "tipos": [
+      "definição",
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/conferencia.ts",
+    "frase": "AHA/ASA 2022 HIC, Figure 2. Classe 2b para INR 1,3-1,9; Classe 1 para INR >=2,0; Classe 1 para vitamina K IV. Corresponde ao que o app exibe.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": ",\n} as const;\n\n                                                                           \nexport type TratamentoGlicemico = {\n  readonly id: string;\n  readonly nome: string;\n  readonly dose?: string;\n  readonly quando: string;\n  readonly cautela?: string;\n  readonly procedencia: string;\n};\n\nexport const TRATAMENTOS_GLICEMICOS: readonly TratamentoGlicemico[] = [\n  {\n    id: ",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": "25 mL por via endovenosa, lentamente, o que corresponde a 12,5 g",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": "Não existe dose fixa recomendada para o acidente vascular cerebral. A necessidade depende de resistência insulínica, diabetes prévio, peso, função renal, potássio, alimentação, corticoide, catecolaminas, cetoacidose, estado hiperosmolar e velocidade de queda da glicemia",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": ",\n  },\n];\n\n   \n                                                                      \n              \n   \nexport type AlvoGlicemico = {\n  readonly id: string;\n  readonly valor: string;\n  readonly contexto: string;\n  readonly cor: string;\n  readonly loe: string;\n  readonly fonte: string;\n};\n\nexport const ALVOS_GLICEMICOS: readonly AlvoGlicemico[] = [\n  {\n    id: ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": "Igual ou acima de 180 mg/dL em duas medidas em 24 horas",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "180 mg/dL",
+      "24 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/correcao-glicemica.ts",
+    "frase": "Glicemia acima de 400 é contraindicação absoluta",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/aha-asa-2026-avc-isquemico.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/aha-asa-2022-hic.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/aha-asa-2023-hsa.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/bulas-br-tromboliticos.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/fontes-br-anti-hipertensivos.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/seguranca-definicoes-operacionais.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/imagem-definicoes-operacionais.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": ";\n\n                                                       \nexport type NivelLOE = ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Alvo 140 mmHg mantendo faixa 130 a 150 na HIC leve a moderada com PAS 150 a 220. Descer abaixo de 130 é potencialmente danoso.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "140 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC leve a moderada com PAS entre 150 e 220 mmHg, baixar a PAS para um alvo de 140 mmHg, mantendo a faixa de 130 a 150 mmHg, é seguro e pode ser razoável.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "220 mmHg",
+      "140 mmHg",
+      "150 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC leve a moderada com PAS acima de 150 mmHg, baixar a PAS para menos de 130 mmHg é potencialmente danoso.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "150 mmHg",
+      "130 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "INR ≥2,0: 4F-PCC 25 a 50 UI/kg (Classe 1). INR 1,3 a 1,9: 4F-PCC 10 a 20 UI/kg (Classe 2b). Vitamina K IV em ambos (Classe 1).",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "50 UI",
+      "20 UI"
+    ],
+    "estado": "⚠️ ÂNCORA AUSENTE na transcrição: 50 UI, 20 UI"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC por varfarina com INR ≥2,0, usar 4F-PCC em vez de plasma, seguido de vitamina K IV. A dose de 4F-PCC varia com o INR (Figura 2).",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Se idarucizumabe indisponível: aPCC ou PCCs (Classe 2b), e/ou terapia de substituição renal (Classe 2b).",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC por HBPM, protamina IV pode ser considerada para reverter parcialmente o efeito.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC por aspirina que exige neurocirurgia de emergência, transfusão de plaquetas pode ser considerada.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Osmoterapia em bolus pode ser considerada para reduzir a PIC transitoriamente.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Cerebelar com deterioração, compressão de tronco/hidrocefalia ou volume ≥15 mL: remoção cirúrgica imediata (COR 1). Supratentorial e HIV têm indicações mais fracas.",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC supratentorial em deterioração, craniotomia para evacuação pode ser considerada como medida de salvamento.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na HIC supratentorial em coma, com grande desvio de linha média ou PIC refratária, craniectomia descompressiva pode ser considerada para reduzir mortalidade.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "In patients with spontaneous ICH, treating hypoglycemia (<40–60 mg/dL, 2.2–3.3 mmol/L) is recommended to reduce mortality.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Tratar hipoglicemia (<40 a 60 mg/dL) para reduzir mortalidade.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "In patients with spontaneous ICH, treating moderate to severe hyperglycemia (>180–200 mg/dL, >10.0–11.1 mmol/L) is reasonable to improve outcomes.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "200 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Tratar hiperglicemia moderada a grave (>180 a 200 mg/dL) é razoável.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "200 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "In nonambulatory patients with spontaneous ICH, initiating low-dose UFH or LMWH prophylaxis at 24 to 48 hours from ICH onset may be reasonable to optimize the benefits of preventing thrombosis relative to the risk of HE.",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Heparina profilática em dose baixa 24 a 48 horas após o início pode ser razoável.",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "48 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Para prevenção de recorrência, alvo de longo prazo PAS 130 mmHg e PAD 80 mmHg.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "130 mmHg",
+      "80 mmHg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-intracerebral.ts",
+    "frase": "Na fibrilação atrial, se for reanticoagular, iniciar por volta de 7 a 8 semanas após a HIC pode ser considerado.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-subaracnoidea.ts",
+    "frase": ";\nimport type { ClasseCOR, Direcao, NivelLOE, Recomendacao } from ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-subaracnoidea.ts",
+    "frase": ";\n\nexport type { ClasseCOR, Direcao, NivelLOE, Recomendacao } from ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-subaracnoidea.ts",
+    "frase": "Nimodipino enteral precoce (COR 1). Manter euvolemia. Estatina e magnésio de rotina não são recomendados. Aumento hemodinâmico profilático é danoso.",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-subaracnoidea.ts",
+    "frase": "§8.3, rec. 1, p. e339 (dose in supportive text, p. e340)",
+    "tipos": [
+      "dose",
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/hemorragia-subaracnoidea.ts",
+    "frase": "In patients with aSAH, early initiation of enteral nimodipine is beneficial in preventing DCI and improving functional outcomes. [Supportive text: \\\"Continued enteral administration at a dose of 60 mg 6 times a day can be beneficial...\\\"]",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "60 mg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/laboratorio.ts",
+    "frase": "A fonte usa o INR entre os limiares de decisão da trombólise. O corte pertence à superfície de segurança, e não a este registro.",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/laboratorio.ts",
+    "frase": "A fonte expressa o limiar em plaquetas por mm³. O valor fica registrado na unidade informada, e a conversão existe apenas para comparação.",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/laboratorio.ts",
+    "frase": "Os limiares que a fonte usa para decidir pertencem à superfície de segurança. Aqui se registra o que o laudo diz.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/nihss.ts",
+    "frase": "], corte: 2 },\n     \n                                                                              \n                                                                               \n                                                                                \n     \n  { campo: ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "A fonte usa a idade em critérios de trombectomia. O corte pertence à superfície de reperfusão, e não a este registro.",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "A fonte do AVC não define conduta para alergia a contraste. Este registro fica na trilha do atendimento, e o manejo é decisão clínica e institucional.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "A fonte considera exposição recente a DOAC como as últimas 48 horas, e diz que a segurança da trombólise nesse cenário é desconhecida. Ela não contraindica, e o horário desconhecido não é exposição confirmada nem ausência de exposição.",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [
+      "48 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "Lista da Table 8 da fonte. Ela não traz classe de recomendação em nenhuma célula, e declara a própria faixa mais restritiva como não sustentada por evidência clínica. O que cada achado significa é interpretado na superfície de segurança.",
+    "tipos": [
+      "definição",
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "Lista da Table 8 da fonte, que não traz classe de recomendação em nenhuma célula. O que cada achado significa é interpretado na superfície de segurança.",
+    "tipos": [
+      "definição",
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "As janelas são as da própria fonte, e o mesmo antecedente muda de sentido conforme a janela. O que cada um significa é interpretado na superfície de segurança.",
+    "tipos": [
+      "definição",
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "Descritores do Quadro 4 das diretrizes da SBACV. A versão brasileira do mRS é culturalmente adaptada, e a avaliação estruturada melhora a concordância entre avaliadores (Cincura 2009). A fonte do AVC não nomeia valor de corte.",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/paciente.ts",
+    "frase": "Contexto do paciente. Nada aqui altera a decisão de reperfusão — as condições que a afetam são registradas na Avaliação AVC.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/rotulos-clinicos.ts",
+    "frase": ",\n     \n                                                                          \n                                                                       \n              \n     \n  janela: ",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "A escala recomendada no AVC é o NIHSS, e o nível de consciência entra nela pelos itens 1a, 1b e 1c. A fonte não define corte e não usa Glasgow no AVC isquêmico.",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "A fonte nomeia disfunção bulbar como um dos dois gatilhos para suporte de via aérea, junto com o rebaixamento de consciência. Ela não lista sinais nem define corte.",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "Considere avaliação clínica e oximetria. A AHA/ASA recomenda O₂ quando há hipóxia visando SpO₂ >94%, mas não define um corte numérico único para caracterizar hipóxia.",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [
+      "94%"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "A meta de 94% vale para quem tem hipóxia. A fonte não define corte numérico de hipóxia.",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [
+      "94%"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "Registrada aqui. A meta depende do contexto de reperfusão, que esta superfície não define.",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "Desconhecida não é normal. A fonte manda tratar abaixo de 60 mg/dL, e define hiperglicemia grave tipicamente acima de 400 mg/dL, tratada como possível mimetizador.",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL",
+      "400 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-a.ts",
+    "frase": "Os blocos abaixo seguem a ordem do ABCDE onde há correspondência com o que esta tela registra. O que não corresponde fica em bloco próprio.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "Referência de porta. Não substitui nenhum relógio clínico.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "A fonte conta uma janela a partir deste marco, e ele não é o início.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "A fonte conta uma janela desde o meio do sono para quem acorda com os sintomas. Ter dormido não basta: o déficit precisa estar presente ao acordar.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "A fonte recomenda medir o déficit com escala de gravidade, preferencialmente o NIHSS. Ela não define critério de suspeita, e esta resposta não exclui AVC.",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "Informação clínica recebida. Fica registrada com origem e horário, ao lado do que for medido aqui.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "Não existe corte de escore que defina leve. O julgamento é seu.",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "Contexto e possível mimetizador. Não exclui AVC.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "Podem não ser não significa não são. A fonte preserva a incerteza, e a avaliação individual permanece necessária.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-b.ts",
+    "frase": "leve/não leve/incerto é julgamento clínico, e a fonte não define por escore",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Exclui hemorragia intracraniana antes de iniciar qualquer reperfusão, e mede a carga isquêmica.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Momento em que a imagem foi pedida. Registro operacional: não é marco de janela terapêutica e não afirma que o exame foi feito.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "A fonte recomenda imagem cerebral de emergência na avaliação inicial, antes de iniciar intervenções de reperfusão. Registrar o pedido não substitui registrar o exame nem o seu resultado.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Momento em que o exame foi feito. Não é marco de janela terapêutica.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Hipodensidade franca corresponde a hipoatenuação grave na tomografia, semelhante à observada em AVC subagudo.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Critério da recomendação de janela estendida por início desconhecido.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Ausência de estudo de perfusão não significa ausência de penumbra.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Exigido pela recomendação de janela estendida em wake-up e 4,5 a 9 horas. A recomendação de 4,5 a 24 horas não qualifica o método.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [
+      "9 horas",
+      "24 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-c.ts",
+    "frase": "Disponibilidade do recurso não altera indicação clínica nem equivale a contraindicação.",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "o risco de dano é provavelmente baixo, e o benefício provavelmente supera o risco; a fonte diz que deve ser considerado",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "o risco de dano é provavelmente baixo; a fonte diz que deve ser considerado",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "deve ser considerado, porque o benefício provavelmente supera o risco",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "provavelmente tem mais benefício que risco na maioria dos pacientes, e a fonte diz que deve ser considerado",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "pode ser considerado, com avaliação cuidadosa e em conjunto com neurocirurgia e neurointensivismo",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "Registra a dúvida clínica sobre o diagnóstico. Na incerteza diagnóstica, e salvo contraindicações absolutas, o risco de dano com a trombólise é baixo.",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-d.ts",
+    "frase": "A fonte diz que, salvo contraindicações absolutas, o risco de dano com a trombólise é baixo na incerteza diagnóstica.",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-e.ts",
+    "frase": "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-e.ts",
+    "frase": "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-e.ts",
+    "frase": "Esta tela registra ações. Ela não conclui que a pressão ou a glicemia foram corrigidas: isso é uma nova aferição em Entrada e estabilização.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "Necessário para saber se o caso ainda está dentro da janela de cada recomendação.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "Leitura da imagem exigida por parte das recomendações de janela estendida.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "A recomendação de dose de 0,4 mg/kg só alcança quem considera tenecteplase.",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "0,4 mg/kg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "Critério de tecido viável para a janela de 4,5 a 24 horas.",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [
+      "24 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "A fonte não define este critério — ver slot F-31. Não é indisponibilidade de serviço.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ";\n  readonly verbatim: string;\n};\n\nexport type Recomendacao = {\n  readonly id: string;\n  readonly slot: string;\n  readonly localizacao: string;\n  readonly terapia: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ";\n  readonly cor: string;\n  readonly loe: string;\n  readonly verbo: string;\n                                                     \n  readonly pressupoe: string;\n  readonly janelas: readonly JanelaDaRecomendacao[];\n};\n\nexport const PRINCIPIOS_GERAIS: readonly PrincipioGeral[] = [\n  {\n    id: ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "adulto elegível a IVT — dose de 0,4 mg/kg de tenecteplase",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [
+      "0,4 mg/kg"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ",\n        deHoras: 4.5,\n        ateHoras: 9,\n        verbatim: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ",\n        deHoras: 4.5,\n        ateHoras: 24,\n        verbatim: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      nihss: { min: 6 },\n      mrs_previo: { min: 0, max: 1 },\n      aspects: { min: 3, max: 10 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ",\n        deHoras: 6,\n        ateHoras: 24,\n        verbatim: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      nihss: { min: 6 },\n      mrs_previo: { min: 0, max: 1 },\n      aspects: { min: 6 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ",\n        deHoras: 6,\n        ateHoras: 24,\n        verbatim: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n                                                                                   \n      idade: { maxExclusivo: 80 },\n      nihss: { min: 6 },\n      mrs_previo: { min: 0, max: 1 },\n      aspects: { min: 3, max: 5 },\n      efeito_de_massa_ausente: { exigeAusencia: true },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      idade: { maxExclusivo: 80 },\n      nihss: { min: 6 },\n      mrs_previo: { min: 0, max: 1 },\n      aspects: { min: 0, max: 2 },\n      efeito_de_massa_ausente: { exigeAusencia: true },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      nihss: { min: 6 },\n      aspects: { min: 6 },\n                                                                      \n      mrs_previo: { min: 2, max: 2 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      nihss: { min: 6 },\n      aspects: { min: 6 },\n      mrs_previo: { min: 3, max: 4 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      mrs_previo: { min: 0, max: 1 },\n      nihss: { min: 6 },\n      aspects: { min: 6 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": ",\n        ateHoras: 6,\n        verbatim:\n          ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      mrs_previo: { min: 0, max: 1 },\n                                                                  \n      nihss: { min: 10 },\n      pc_aspects: { min: 6 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "] },\n      janela: { usaJanelasDaRecomendacao: true },\n      mrs_previo: { min: 0, max: 1 },\n                                                                         \n      nihss: { min: 6, max: 9 },\n      pc_aspects: { min: 6 },\n    },\n    exige: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-f.ts",
+    "frase": "A fonte recomenda os dois com a mesma força. Escolher não significa administrar.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-g.ts",
+    "frase": "Uso de antiagregante nas primeiras 24 horas após a trombólise: risco incerto. Pode ser considerado em situação concomitante selecionada.",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [
+      "24 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "conteudo/superficie-g.ts",
+    "frase": ",\n  cor: null,\n  loe: null,\n  semGrauNaFonte: true,\n                                                                              \n  oQueSeMede: [",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-g.ts",
+    "frase": "A fonte atual não publica tabela de monitorização pós-trombectomia equivalente à Table 7 pós-trombólise.",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-g.ts",
+    "frase": "Não realizar trombectomia aqui é indisponibilidade operacional. Não torna o paciente inelegível, e não satisfaz nenhum critério clínico.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/superficie-g.ts",
+    "frase": "Ausência de perfusão automatizada torna aquela via de seleção indisponível aqui. Não torna o paciente inelegível.",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/ameacas-imediatas.ts",
+    "frase": ");\n    const corte = corteGlicemico(g);\n    return {\n      id: ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/ameacas-imediatas.ts",
+    "frase": ",\n      estado:\n        corte === undefined ? ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/ameacas-imediatas.ts",
+    "frase": ",\n                                                                              \n      achado: corte?.pedeConduta ? corte.natureza : undefined,\n      conduta: corte?.pedeConduta ? corte.conduta : undefined,\n      leva: corte?.pedeConduta ? ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/apresentacao-f.ts",
+    "frase": ", motivo: origem.motivo }];\n  }\n\n  const campos = camposDoMarco(janela.marco);\n  const comValor = campos\n    .map((campo) => ({ campo, min: minutosDesdeCampo(campo) }))\n    .filter((x): x is { campo: string; min: number } => typeof x.min === ",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/apresentacao-f.ts",
+    "frase": " as const,\n    decorridosMin: x.min,\n    restantesMin: Math.round(janela.ateHoras * 60) - x.min,\n    campo: x.campo,\n  }));\n}\n\n   \n                                                                                \n                                                                               \n                     \n   \nfunction rotuloDoCampo(campo: string, padrao: string): string {\n  if (campo === ",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/apresentacao-f.ts",
+    "frase": "],\n     \n                                                                             \n                                                                              \n    \n                                                                             \n                                                                      \n     \n  janela: [",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": ";\nimport {\n  IDS_ACHADOS_PODEM_NAO,\n  IDS_ACHADOS_TIPICOS,\n  POPULACAO_TABLE4,\n} from ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": ";\n  return total >= POPULACAO_TABLE4.nihssMin && total <= POPULACAO_TABLE4.nihssMax\n    ? ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": " | undefined {\n  const regra = ACHADOS_DERIVAVEIS.find((r) => r.campo === campo);\n  if (!regra) return undefined;\n  const pontos = regra.itens.map((i) => pontoDoItem(estado, i));\n  if (pontos.some((p) => p === undefined)) return undefined;\n  return pontos.some((p) => (p as number) >= regra.corte) ? ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "A fonte não define critério de suspeita, e esta resposta não exclui AVC",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Há um NIHSS informado por fora e um calculado aqui",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Um total trazido de fora não diz quais itens pontuaram, e por isso não preenche nenhum achado. O exame aqui é o que deriva",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Contexto clínico estruturado, e a fonte não nomeia valor de corte",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Contexto clínico estruturado. O peso da informação muda conforme a terapia considerada, e a fonte não nomeia valor de corte",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": ", ...IDS_ACHADOS_TIPICOS, ...IDS_ACHADOS_PODEM_NAO];\n  const contexto = contextoDaTable4(estado);\n  const base = { conclusao: ",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "O quadro da fonte foi escrito para NIHSS 0 a 5 na apresentação, o NIHSS ainda não foi registrado, e nada aqui espera por ele",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Podem não ser não significa não são, e a avaliação funcional individual permanece necessária",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-b.ts",
+    "frase": "Com o NIHSS preenchido item a item, os achados que a fonte define por corte de item passam a vir da escala",
+    "tipos": [
+      "definição",
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-c.ts",
+    "frase": "A fonte lista este achado entre as contraindicações que ela mesma chama de absolutas, e declara essa faixa como não sustentada por evidência clínica. A decisão sobre a reperfusão não é tomada nesta superfície",
+    "tipos": [
+      "contraindicação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-c.ts",
+    "frase": "Registro do que o serviço tem. Nada no atendimento espera por um exame que não está disponível aqui",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-c.ts",
+    "frase": "Diz respeito apenas ao exame com contraste, e não interfere na trombólise. A fonte do AVC não define conduta para este caso",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": " };\n    }\n    return classifica(base, comparaveis, corte.limite, ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": " };\n  return classifica(base, valores, corte.limite, corte.comparacao);\n}\n\nfunction classifica(\n  base: { id: string; limite: number; verbo: string },\n  valores: readonly number[],\n  limite: number,\n  comparacao: ",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Última dose de anticoagulante direto ainda não registrada",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Horário da última dose de anticoagulante direto desconhecido",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "A fonte lista o horário entre os fatores da análise individual, e não define o instante de referência da janela de 48 horas. O aplicativo não calcula essa janela",
+    "tipos": [
+      "definição",
+      "janela temporal"
+    ],
+    "ancoras": [
+      "48 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "A fonte diz que a segurança da trombólise nesta situação é desconhecida, e que ela pode ser considerada após análise individual de risco e benefício. O aplicativo não classifica a janela de 48 horas, porque a fonte não define o instante de referência",
+    "tipos": [
+      "definição",
+      "janela temporal"
+    ],
+    "ancoras": [
+      "48 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Registrar a unidade do laudo, sem a qual o valor não se compara ao corte",
+    "tipos": [
+      "corte"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Horário da última dose de anticoagulante direto",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-d.ts",
+    "frase": "Registrar o horário é clinicamente útil, e não classifica a janela de 48 horas: a fonte não define o instante de referência, e o aplicativo não calcula",
+    "tipos": [
+      "definição",
+      "janela temporal"
+    ],
+    "ancoras": [
+      "48 horas"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-f.ts",
+    "frase": " && c.janela !== undefined) {\n    return valorDaJanela(estado, r.janelas, agoraMs);\n  }\n\n  if (insumo === ",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-g.ts",
+    "frase": "A ordem vem da Table 7. A decisão terapêutica é do médico.",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-g.ts",
+    "frase": ");\n  if (\n    r24 !== undefined\n    && minutosDesdeIvt < r24.janela.minutos\n    && julgamento === true\n    && controle?.resultado === undefined\n  ) {\n    return {\n      ...base,\n      estado: ",
+    "tipos": [
+      "janela temporal"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes-g.ts",
+    "frase": ",\n      frase: r24.frase,\n      cor: r24.cor,\n      loe: r24.loe,\n      verbatim: r24.verbatim,\n      localizacao: r24.localizacao,\n    };\n  }\n\n  if (controle === undefined) {\n                                                                            \n    return horasDesdeIvt < HORAS_DA_IMAGEM_DE_CONTROLE\n      ? {\n          ...base,\n          estado: ",
+    "tipos": [
+      "força de recomendação",
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Os dois gatilhos que a fonte nomeia foram perguntados, e ao menos um ficou incerto. Sem eles não se conclui que não há indicação",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Hipoglicemia: abaixo de 60 mg/dL, a fonte manda tratar",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "A fonte define hiperglicemia grave tipicamente acima de 400 mg/dL e a trata como possível mimetizador. Corrigir a alteração glicêmica e reavaliar o déficit depois da correção",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "400 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Entre os dois extremos que a fonte nomeia para o AVC agudo: acima de 60 mg/dL, que é o limite abaixo do qual ela manda tratar, e abaixo do valor que ela tipicamente define como hiperglicemia grave",
+    "tipos": [
+      "definição",
+      "unidade/intervalo"
+    ],
+    "ancoras": [
+      "60 mg/dL"
+    ],
+    "estado": "âncoras presentes na transcrição"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Houve crise convulsiva no início: é contexto, e não exclui AVC",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Crise no início entra como contexto e possível mimetizador — não exclui AVC nem indica anticonvulsivante por si",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "PA registrada — a meta depende da reperfusão, ainda não definida",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/derivacoes.ts",
+    "frase": "Pressão registrada — o significado depende do contexto de reperfusão, ainda não definido",
+    "tipos": [
+      "definição"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/portao-ivt.ts",
+    "frase": ",\n        rotulo: m.verbo,\n        dado: `COR ${m.cor} · LOE ${m.loe}`,\n        fonte: m.slot,\n           \n                                                                              \n                                                                               \n                                                                               \n                   \n           \n        oQueFalta: ",
+    "tipos": [
+      "força de recomendação"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "nucleo/portao-ivt.ts",
+    "frase": ",\n        dado: `${ultimaCompleta.pas}/${ultimaCompleta.pad} mmHg`,\n        fonte: ",
+    "tipos": [
+      "unidade/intervalo"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  }
+]

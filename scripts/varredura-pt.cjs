@@ -104,8 +104,41 @@ const BY_KEY_SOURCES = new Set([
 /**
  * Português que NÃO é texto de tela e por isso não entra na tradução.
  * Cada entrada precisa do motivo — sem isso a lista vira gaveta de exceção.
+ *
+ * ── ⚠️⚠️⚠️ O QUE ESTA LISTA **NÃO** PODE ISENTAR — regra do autor, 2026-09-09
+ *
+ * `NAO_E_TELA` só vale para arquivo **internamente classificado**: registro de
+ * auditoria, prompt interno, log ou erro técnico.
+ *
+ * ⛔ **NUNCA** pode isentar:
+ *   · rótulos                    · leituras clínicas
+ *   · ajudas                     · recomendações
+ *   · mensagens de decisão       · textos do consentimento
+ *   · qualquer string renderizável ao usuário
+ *
+ * ⚠️ A regra existe porque a isenção é a saída fácil: um texto que não traduz
+ * some do radar do espanhol, e um médico que usa o app em ES lê um vazio onde
+ * havia conduta. A lista deve ser difícil de crescer, e cada entrada carrega
+ * o motivo escrito por quem a pôs.
+ *
+ * ⛔ Há trava medindo isto: `scripts/prova-conferencia-com-a-fonte.cjs`.
  */
 const NAO_E_TELA = new Set([
+  // ── ⚠️⚠️⚠️ REGISTRO DE CONFERÊNCIA COM A FONTE — 2026-09-09 ─────────────
+  //
+  // As `nota` de `CONFERENCIAS` são o RASTRO DA AUDITORIA: dizem quem abriu o
+  // PDF, quando, o que achou lá e o que ficou pendente. Elas nunca chegam à
+  // tela — quem as lê é a próxima pessoa que for conferir a fonte.
+  //
+  // ⚠️ E traduzi-las seria PIOR que inútil: a nota da hipodensidade cita a
+  // frase fabricada EM INGLÊS para registrar o que foi removido. Uma versão
+  // "em espanhol" desse registro criaria uma segunda narrativa do mesmo
+  // achado, e é exatamente disso que este arquivo veio proteger o módulo.
+  //
+  // ⛔ Isto NÃO dispensa tradução de nada que o médico lê: o registro é
+  // interno, e o que ele descreve (rótulos, ajudas, leituras) continua
+  // varrido normalmente nos seus próprios arquivos.
+  "avc/conteudo/conferencia.ts",
   // Vitrine interna de componentes (rota /dev/ui-v2). Ferramenta de
   // desenvolvimento para validar a UI 2.0, não tela de atendimento.
   "app/dev/ui-v2.tsx",

@@ -1031,11 +1031,50 @@ em `pdftotext` **não é ausência no documento**.
 
 | item | núcleo do texto |
 |---|---|
-| TC com **hipodensidade extensa** | *"should not be administered"* — define: *"Clear hypodensity is when the degree of hypodensity is greater than the density of contralateral unaffected white matter"* |
+| TC com **hipodensidade extensa** | *"should not be administered"* — ⚠️ **a definição que estava aqui foi retirada em 2026-09-09: era fabricada.** Ver a nota abaixo desta tabela. |
 | TC com **hemorragia** | *"should not be administered to patients whose CT brain imaging reveals an acute intracranial hemorrhage"* |
 | TCE moderado-grave **< 14 dias** | *"likely contraindicated"* — com qualificadores: >30 min de inconsciência **e** ECG <13, **OU** hemorragia/contusão/fratura de crânio na imagem |
 | neurocirurgia **< 14 dias** | *"potentially harmful and should not be administered"* |
 | lesão medular aguda **< 3 meses** | *"likely contraindicated"* |
+
+> ### ⚠️⚠️⚠️ CORREÇÃO DE TRANSCRIÇÃO — 2026-09-09 · `corrigido_apos_conferencia`
+>
+> **O que estava escrito aqui, e foi removido:**
+>
+> > `define: "Clear hypodensity is when the degree of hypodensity is greater`
+> > `than the density of contralateral unaffected white matter"`
+>
+> **Por que saiu.** Conferência do autor (Sandro Dainez) **no PDF da AHA/ASA
+> 2026**, em 2026-09-09: a frase **não existe** na Table 8 — que ocupa
+> **e364–e367** e trata de outras situações e de gradientes qualitativos de
+> risco — **nem** é a definição sustentada pela guideline.
+>
+> **Ela errava duas vezes.** Inventava um critério quantitativo que a fonte não
+> dá; e **invertia o sentido** — hipodensidade é atenuação **menor**, e o texto
+> dizia **maior**.
+>
+> **O que a fonte diz**, na seção de IVT: `frank hypodensity`, explicada no
+> texto de suporte como `severe hypoattenuation as seen with subacute stroke`.
+> ⛔ **Isto não é reposto aqui como definição da Faixa 3**: o slot original não
+> correspondia a esse trecho, e trocar uma atribuição errada por outra seria
+> repetir o defeito. O que resta sustentado neste item é `should not be
+> administered`.
+>
+> **Possível mecanismo, e é hipótese.** A linha ~1321 deste mesmo arquivo traz
+> uma passagem **real** — análise exploratória do SELECT2 — com
+> *"severe CT hypodensity, **defined as** the lower 99% CI of the
+> **contralateral** thalamic gray matter"*. Ela contém *defined as* e
+> *contralateral*, os dois ingredientes da frase fabricada. Pode ter havido
+> contaminação. **Não confirmado.**
+>
+> **Por que este achado importa mais que o item.** A frase estava:
+> transcrita aqui com página, traduzida para o app, espelhada em espanhol,
+> renderizada em duas telas — e **protegida por uma trava verde que a exigia**.
+> Cinco camadas confirmando umas às outras, e nenhuma olhando o PDF.
+>
+> ⚠️ **Este arquivo não é a fonte.** É uma transcrição intermediária, e
+> transcrição também erra. Ver `avc/conteudo/conferencia.ts`.
+
 | neoplasia **intra-axial** | *"potentially harmful and should not be administered"* |
 | endocardite infecciosa | *"should not be administered"* |
 | **coagulopatia grave / plaquetopenia** | ver **F-10** — contém os cortes laboratoriais |

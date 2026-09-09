@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**95 de 109 travas com declaração completa.**
+**96 de 110 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -61,6 +61,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhuma chave de tradução ⛔ que este arquivo lista como **aposentada** ⛔ continue ⛔ no dicionário — ⛔ e ⛔ que ⛔ nenhuma tela ⛔ volte a renderizá-la.
 - **NÃO PROMETE:** que ⛔ **⛔ toda** chave ⛔ sem consumidor ⛔ seja detectada. ⛔ O dicionário tem milhares de entradas, ⛔ e ⛔ muitas ⛔ pertencem a ⛔ outros módulos ⛔ ou ⛔ a caminhos ⛔ raros. ⚠️ ⛔ Esta trava guarda ⛔ **⛔ as que ⛔ foram deliberadamente aposentadas** — ⛔ que ⛔ são as ⛔ que ⛔ alguém ⛔ pode ressuscitar ⛔ por engano.
 - **UNIVERSO:** `lib/i18n/modules`, `components` ⛔ e `avc`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ISTO EXISTE PARA FECHAR ───────────────────────── ⛔ ⛔ Em 2026-09-09 o disclaimer manual *"Apoio ao julgamento clínico. A decisão permanece do médico."* ⛔ foi substituído ⛔ pelo componente único. ⚠️ ⛔ A **⛔ renderização** saiu ⛔ das três telas — ⛔ e a **⛔ chave de tradução ⛔ ficou**, ⛔ publicada ⛔ no bundle de produção. ⚠️⚠️ ⛔ ⛔ **⛔ Chave órfã ⛔ é ⛔ como a frase volta.** ⛔ Alguém procura o texto, ⛔ acha a chave, ⛔ e ⛔ conclui ⛔ que ⛔ ele ⛔ ainda é usado — ⛔ e ⛔ reusa. ⛔ Foi ⛔ medido ⛔ **⛔ no bundle**, ⛔ e ⛔ não ⛔ na fonte: ⛔ a página ⛔ não a mostrava, ⛔ e ⛔ ela ⛔ estava ⛔ lá.
+
+## `test:conferencia` → `scripts/prova-conferencia-com-a-fonte.cjs`
+
+- **PROMETE:** que ⛔ *"conferido"* ⛔ exija **⛔ pessoa ⛔ e ⛔ data**; que ⛔ **⛔ nenhuma** página citada ⛔ seja tratada ⛔ como conferência; que ⛔ a definição fabricada da hipodensidade ⛔ **⛔ não volte** ⛔ à transcrição; ⛔ e que ⛔ a transcrição ⛔ **⛔ se declare** ⛔ intermediária.
+- **NÃO PROMETE:** que ⛔ o conteúdo ⛔ esteja **⛔ certo**. ⚠️ ⛔ Ela ⛔ **⛔ não lê o PDF** — ⛔ **⛔ nenhuma trava lê**. ⛔ O que ⛔ ela impede ⛔ é ⛔ que a ⛔ **⛔ ausência** ⛔ de conferência ⛔ passe ⛔ por conferência. ⛔ O trabalho ⛔ de abrir a fonte ⛔ continua ⛔ sendo ⛔ **⛔ humano**, ⛔ e ⛔ é ⛔ disso que ⛔ este arquivo ⛔ trata.
+- **UNIVERSO:** `avc/conteudo/conferencia.ts` ⛔ e `protocols/fontes-verbatim`. ── ⚠️⚠️⚠️ ⛔ POR QUE ⛔ ELA EXISTE ──────────────────────────────────────── ⛔ ⛔ Uma frase inventada ⛔ sobreviveu ⛔ transcrita **⛔ com página**, traduzida, renderizada ⛔ e ⛔ **⛔ exigida por uma trava verde**. ⚠️ ⛔ Cinco camadas ⛔ confirmando ⛔ umas às outras. ⛔ ⛔ ⛔ **⛔ Suíte verde ⛔ é coerência interna, ⛔ e ⛔ não fidelidade à fonte.** ⛔ As duas ⛔ se parecem ⛔ até ⛔ alguém abrir ⛔ o documento.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

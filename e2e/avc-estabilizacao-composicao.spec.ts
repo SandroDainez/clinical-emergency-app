@@ -148,6 +148,40 @@ test.describe("AVC · Estabilização — composição", () => {
   test("⛔ os oito sliders começam ⛔ e terminam no mesmo x",
     async ({ page }) => {
       await abrirEstabilizacao(page);
+
+      /**
+       * ── ⚠️⚠️⚠️ ⛔ MEDIR **⛔ ZERO** ⛔ NÃO É MEDIR — 2026-09-09 ────────────
+       *
+       * ⛔ ⛔ Esta conferência ⛔ falhou ⛔ **⛔ uma vez ⛔ em quatro rodadas
+       * completas**, ⛔ com o trilho da temperatura ⛔ em `x:50, fim:50` —
+       * ⛔ **⛔ largura zero** —, ⛔ enquanto ⛔ os outros sete ⛔ mediam 299.
+       *
+       * ⚠️⚠️ ⛔ Zero ⛔ **⛔ não é ⛔ «errado»**: ⛔ é ⛔ **⛔ não renderizado**.
+       * ⛔ O elemento existe ⛔ no DOM ⛔ e ⛔ ainda ⛔ não tem caixa — ⛔ e
+       * ⛔ `getBoundingClientRect` ⛔ devolve ⛔ zeros ⛔ sem reclamar.
+       *
+       * ⛔ ⛔ ⛔ **⛔ Uma trava que ⛔ às vezes ⛔ mede o que ⛔ não existe
+       * ⛔ grita ⛔ em dia aleatório ⛔ e ⛔ é ignorada ⛔ no dia seguinte** —
+       * ⛔ o mesmo padrão ⛔ dos 14 falsos positivos ⛔ do auditor, ⛔ na
+       * mesma tarde.
+       *
+       * ⚠️ ⛔ Então ⛔ ela **⛔ espera** ⛔ os oito terem caixa ⛔ antes de
+       * comparar. ⛔ Se ⛔ algum ⛔ nunca tiver, ⛔ ela ⛔ falha ⛔ **⛔ por
+       * isso**, ⛔ e ⛔ com ⛔ essa palavra.
+       */
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(
+              () =>
+                Array.from(document.querySelectorAll('[data-testid^="avc-num-barra-"]')).filter(
+                  (n) => (n as HTMLElement).getBoundingClientRect().width > 0
+                ).length
+            ),
+          { message: "⛔ trilho sem caixa: o layout ainda não assentou" }
+        )
+        .toBeGreaterThanOrEqual(8);
+
       const medidas = await page.evaluate(() =>
         Array.from(document.querySelectorAll('[data-testid^="avc-num-barra-"]')).map((n) => {
           const r = (n as HTMLElement).getBoundingClientRect();
@@ -155,6 +189,9 @@ test.describe("AVC · Estabilização — composição", () => {
         })
       );
       expect(medidas.length, "⛔ os controles numéricos sumiram").toBeGreaterThanOrEqual(8);
+      /** ⚠️ ⛔ E ⛔ nenhum deles ⛔ pode ter entrado ⛔ na conta ⛔ com zero. */
+      const semCaixa = medidas.filter((m) => m.fim - m.x === 0).map((m) => m.id);
+      expect(semCaixa, `⛔ trilho com largura zero: ${JSON.stringify(semCaixa)}`).toEqual([]);
       expect(new Set(medidas.map((m) => m.x)).size, `⛔ inícios diferentes: ${JSON.stringify(medidas)}`).toBe(1);
       expect(new Set(medidas.map((m) => m.fim)).size, `⛔ fins diferentes: ${JSON.stringify(medidas)}`).toBe(1);
 

@@ -55,6 +55,8 @@ const ISENTOS = {
     "2026-08-23 · MEDIÇÃO de cobertura do caminho guiado: varre as árvores e marca quais decisões oferecem o \"me guie pelos sinais\". É retrato para o autor decidir onde falta, não regra.",
   "mapa-de-fontes.cjs":
     "2026-08-23 · MEDIÇÃO sem código de saída: inventário de fontes por módulo.",
+  "auditoria-definicoes-clinicas.cjs":
+    "2026-09-09 · MEDIÇÃO sem código de saída, e a natureza dela é o ponto: ela compara o texto do app com a TRANSCRIÇÃO em fontes-verbatim, e a transcrição NÃO é a fonte — foi nela que a definição fabricada da hipodensidade morava, com página citada. Reprovar o build por divergência aqui trataria a transcrição como verdade, que é exatamente o defeito que este instrumento existe para expor. O que ela produz é uma LISTA para conferência humana contra o PDF; quem guarda o resultado dessa conferência é prova-conferencia-com-a-fonte.cjs, essa sim no test:all. Roda por npm run auditoria:definicoes.",
 };
 
 const todos = fs.readdirSync(path.join(RAIZ, "scripts")).filter(EH_INSTRUMENTO).sort();
