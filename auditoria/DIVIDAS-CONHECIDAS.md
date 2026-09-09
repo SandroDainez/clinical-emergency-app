@@ -4806,3 +4806,40 @@ de teste — ⛔ com a frase que diz o que rodar.
 cair em 26 lugares.
 
 ⚠️ ⛔ Commit isolado, ⛔ de infraestrutura de teste.
+
+---
+
+## D-129 — ⏸️ RETIDA · `ec053d3` e `e890c34` PRONTOS, ⛔ SEM DEPLOY POR AUSÊNCIA DE GANHO
+
+**Estado:** ⏸️ **RETIDA por decisão do autor**, 2026-09-09. ⛔ Não é dívida
+técnica: ⛔ é **⛔ trabalho pronto ⛔ e ⛔ deliberadamente não publicado**.
+
+**Produção está em `61ce4de`**, validado (HTTP 200 · 36/36 specs contra
+produção · aceite versionado conferido).
+
+| commit | o que é | afeta runtime? |
+| --- | --- | --- |
+| `ec053d3` | a chave órfã do disclaimer antigo sai do bundle | ⚠️ **sim, por subtração** — 1 string a menos nos JS publicados |
+| `e890c34` | governança de conferência + auditoria em lote | ⛔ **não** — documento, registro, instrumentos e uma spec |
+
+**Por que retidos.** ⛔ ⛔ Nenhum dos dois traz ganho para o médico:
+`ec053d3` remove texto que ⛔ nenhuma tela renderizava, ⛔ e `e890c34`
+⛔ não toca ⛔ em nada que ⛔ ele veja. ⚠️ **⛔ Todo deploy é uma chance de
+regressão**, ⛔ e ⛔ não se gasta ⛔ uma sem contrapartida.
+
+### ⚠️⚠️ O QUE FAZER NO PRÓXIMO DEPLOY FUNCIONAL
+
+⛔ ⛔ Eles ⛔ **⛔ pegam carona**, ⛔ e ⛔ **⛔ não** vão sozinhos. ⛔ Antes de
+subir a próxima mudança funcional:
+
+1. ⛔ confirmar que a branch contém `ec053d3` **e** `e890c34` como ancestrais
+   (`git merge-base --is-ancestor`);
+2. ⛔ rodar `test:all` — o portão inteiro, ⛔ e ⛔ não ⛔ só as specs tocadas;
+3. ⛔ conferir que a limpeza da chave órfã **⛔ continua**: `npm run
+   test:orfas-i18n`, ⛔ e ⛔ a ausência da string ⛔ **⛔ no bundle**;
+4. ⛔ conferir que a governança **⛔ segue fora do runtime clínico**:
+   `avc/conteudo/conferencia.ts` ⛔ não pode ser importado ⛔ por tela;
+5. ⛔ só então validar a mudança funcional nova, ⛔ normalmente.
+
+⚠️ **⛔ Medir o bundle, ⛔ e ⛔ não a página** — ⛔ foi ⛔ assim que a chave
+órfã apareceu: ⛔ a tela ⛔ não a mostrava, ⛔ e ⛔ ela estava ⛔ lá.
