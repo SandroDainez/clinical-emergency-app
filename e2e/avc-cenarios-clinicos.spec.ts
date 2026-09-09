@@ -179,7 +179,19 @@ test.describe("AVC · cenários clínicos completos", () => {
      */
 
     /* 4 · contexto expandido, e volta à Imagem */
-    await tocar(page, "avc-cockpit-faixa", c);
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ O RESUMO ⛔ SÓ EXISTE ⛔ COM CONTEÚDO — 2026-09-09 ─────────
+     *
+     * ⛔ ⛔ `avc-cockpit-faixa` ⛔ é o *"Ver paciente"* ⛔ **⛔ de dentro** do
+     * cartão *"Escala e imagem"*. ⚠️ ⛔ Ele deixou de existir ⛔ enquanto
+     * ⛔ nada foi medido — ⛔ relato do autor: *"⛔ nessa tela ⛔ ainda ⛔ não
+     * se calculou NIHSS ⛔ e ⛔ não tem resultado de imagem"*.
+     *
+     * ⚠️ ⛔ O caso ⛔ mede ⛔ que **⛔ o fato sobrevive a sete trocas de
+     * fase** — ⛔ e ⛔ isso ⛔ não depende ⛔ deste toque. ⛔ Navega ⛔ pela
+     * barra, ⛔ que ⛔ é o caminho ⛔ que ⛔ **⛔ sempre** existe.
+     */
+    await tocar(page, "avc-aba-paciente", c);
     await tocar(page, "avc-aba-imagem", c);
 
     /* 5 · Reperfusão */

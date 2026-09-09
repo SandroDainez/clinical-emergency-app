@@ -1725,7 +1725,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * são resumo de **duas fases adiante**; ⛔ na tela do ABCDE ⛔ eles
         * competem com o que mata em minutos.
         */}
-      {estado.superficieVista === "paciente" || estado.superficieVista === "estabilizacao" ? null : (
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ E AGORA A REGRA É **⛔ TER CONTEÚDO** — 2026-09-09 ───────
+        *
+        * ⚠️ Relato do autor, ⛔ em produção: *"⛔ não estou achando adequado
+        * porque ⛔ nessa tela ⛔ ainda ⛔ **⛔ não se calculou NIHSS** ⛔ e
+        * ⛔ também ⛔ **⛔ não tem resultado de imagem**. ⛔ A imagem ⛔ aqui
+        * ⛔ está sendo **solicitada**"*.
+        *
+        * ⛔ ⛔ ⛔ **⛔ As duas remoções anteriores ⛔ trataram o sintoma.**
+        * ⛔ Em 2026-09-07 ⛔ ele saiu ⛔ da abertura; ⛔ em 2026-09-08, ⛔ da
+        * Estabilização. ⚠️ ⛔ As duas vezes ⛔ o motivo escrito ⛔ foi ⛔ o
+        * **⛔ mesmo** — *"um resumo ⛔ de ⛔ nada"* —, ⛔ e ⛔ as duas vezes
+        * ⛔ a regra ⛔ foi presa ⛔ a ⛔ **⛔ qual tela**, ⛔ e ⛔ não ⛔ a
+        * ⛔ **⛔ ter o que resumir**. ⛔ Por isso ⛔ ele reapareceu ⛔ na
+        * terceira.
+        *
+        * ⚠️⚠️ ⛔ É ⛔ a mesma regra ⛔ que o autor fixou ⛔ para o
+        * `AvisoDeApoioClinico` ⛔ na véspera: ⛔ **⛔ não mostrar saída
+        * ⛔ onde ⛔ não há saída**. ⛔ Um resumo ⛔ com dois travessões
+        * ⛔ ocupa ⛔ o lugar ⛔ da tomografia ⛔ que ⛔ está sendo pedida.
+        *
+        * ⛔ ⛔ ⛔ **⛔ E ⛔ nada fica inalcançável:** ⛔ NIHSS mora ⛔ na
+        * Avaliação AVC ⛔ e a imagem ⛔ na Investigação, ⛔ ambas ⛔ na barra
+        * de fases. ⛔ O resumo ⛔ é ⛔ **⛔ atalho**, ⛔ e ⛔ não ⛔ porta.
+        */}
+      {estado.superficieVista === "paciente" ||
+      estado.superficieVista === "estabilizacao" ||
+      /** ⛔ Nada medido ⛔ ainda: ⛔ o resumo ⛔ não tem ⛔ o que resumir. */
+      sinaisVitais.every((v) => v.valor === undefined) ? null : (
       <View style={s.cartao} testID="avc-resumo">
         <CardHeader
           /**

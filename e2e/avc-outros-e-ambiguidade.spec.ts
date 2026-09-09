@@ -472,4 +472,49 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
         /Informação recebida da regulação, do SAMU ou de outro serviço/i
       );
     });
+
+  /* ══ ⚠️⚠️⚠️ 11 · RESUMO ⛔ SÓ COM O QUE RESUMIR ════════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, ⛔ em produção, 2026-09-09: *"⛔ nessa tela ⛔ ainda
+   * ⛔ **⛔ não se calculou NIHSS** ⛔ e ⛔ também ⛔ **⛔ não tem resultado de
+   * imagem**. ⛔ A imagem ⛔ aqui ⛔ está sendo **solicitada**"*.
+   *
+   * ⛔ ⛔ ⛔ **⛔ Terceira aparição ⛔ do mesmo defeito.** ⛔ O bloco ⛔ já tinha
+   * saído ⛔ da abertura (2026-09-07) ⛔ e ⛔ da Estabilização (2026-09-08),
+   * ⛔ com ⛔ **⛔ o mesmo motivo escrito** — *"um resumo de nada"*. ⚠️ ⛔ As
+   * duas correções ⛔ prenderam a regra ⛔ a ⛔ **⛔ qual tela**, ⛔ e ⛔ não a
+   * ⛔ **⛔ ter conteúdo** — ⛔ e ⛔ por isso ⛔ ele voltou.
+   *
+   * ⚠️ ⛔ Esta trava mede ⛔ a **⛔ regra**, ⛔ e ⛔ não ⛔ a lista de telas:
+   * ⛔ **⛔ sem nada medido, ⛔ sem resumo**; ⛔ com algo medido, ⛔ ele
+   * ⛔ aparece ⛔ **⛔ onde quer que seja**.
+   */
+  test("⛔ o resumo *«Escala e imagem»* ⛔ só existe ⛔ quando há o que resumir",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      /** ⛔ Nada registrado ⛔ ainda — ⛔ o resumo ⛔ não pode ⛔ ocupar a tela. */
+      for (const aba of ["neurologico", "imagem", "seguranca"]) {
+        await page.getByTestId(`avc-aba-${aba}`).click();
+        await expect(
+          page.getByTestId("avc-resumo"),
+          `⛔ resumo de nada ⛔ na aba ${aba}: ⛔ dois travessões ⛔ ocupando o lugar do que se pede`
+        ).toHaveCount(0);
+      }
+
+      /** ⚠️ ⛔ Agora ⛔ há NIHSS — ⛔ e ⛔ aí ⛔ ele **⛔ tem o que dizer**. */
+      await page.getByTestId("avc-aba-neurologico").click();
+      const caixa = page.getByTestId("avc-num-caixa-nihss_informado");
+      if (await caixa.count()) {
+        await caixa.fill("9");
+        await caixa.blur();
+        await page.getByTestId("avc-aba-imagem").click();
+        await expect(
+          page.getByTestId("avc-resumo"),
+          "⛔ com NIHSS registrado, ⛔ o resumo ⛔ tem conteúdo ⛔ e ⛔ deve aparecer"
+        ).toHaveCount(1);
+      }
+    });
 });

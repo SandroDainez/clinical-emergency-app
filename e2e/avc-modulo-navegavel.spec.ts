@@ -334,22 +334,88 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
    * trabalhar numa fase ⛔ sem ver o tempo correr. ⛔ Da segunda superfície em
    * diante, ⛔ o resumo está ⛔ em todas — ⛔ e é ⛔ isso que se mede.
    */
-  test("o resumo persistente acompanha todas as superfícies, ⛔ exceto a abertura", async ({ page }) => {
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ A REGRA MUDOU: **⛔ TER CONTEÚDO** — 2026-09-09 ──────────────
+   *
+   * ⛔ ⛔ Esta trava exigia o resumo ⛔ **⛔ em toda superfície** ⛔ menos duas,
+   * ⛔ e justificava ⛔ com **§7.8** — *"o relógio é o único valor que muda
+   * sozinho"*. ⚠️ ⛔ Mas o relógio ⛔ **⛔ saiu daqui**: ⛔ ele vive ⛔ no
+   * cabeçalho fixo, ⛔ fora do `ScrollView`. ⛔ A justificativa ⛔ envelheceu
+   * ⛔ antes ⛔ da asserção.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ o defeito ⛔ voltou ⛔ **⛔ três vezes** ⛔ porque ⛔ a regra
+   * ⛔ era ⛔ **⛔ lista de telas**: ⛔ tirou-se da abertura, ⛔ depois da
+   * Estabilização, ⛔ e ⛔ ele reapareceu ⛔ na Investigação ⛔ com ⛔ dois
+   * travessões ⛔ ao lado da tomografia ⛔ **⛔ sendo pedida**.
+   *
+   * ⛔ ⛔ Agora ⛔ ela mede ⛔ o que ⛔ importa: ⛔ **⛔ com conteúdo, ⛔ ele
+   * acompanha**; ⛔ sem, ⛔ **⛔ não existe** — ⛔ e ⛔ isso ⛔ vale ⛔ em
+   * ⛔ qualquer tela.
+   */
+  test("o resumo acompanha as superfícies ⛔ quando há o que resumir", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
-    /**
-     * ⚠️ ⛔ **DUAS** exceções desde 2026-09-08: a abertura ⛔ e a Estabilização.
-     * ⛔ *"Escala e imagem"* resume NIHSS ⛔ e imagem — ⛔ duas fases adiante —,
-     * ⛔ e na tela do ABCDE ⛔ elas competiam com o que mata em minutos.
-     */
+
+    /** ⛔ 1 · ⛔ sem ⛔ nada medido, ⛔ ele ⛔ não ocupa ⛔ tela ⛔ nenhuma. */
     for (const sup of SEQUENCIA_OFICIAL.filter(
       (x) => x.id !== "paciente" && x.id !== "estabilizacao"
     )) {
       await page.getByTestId(`avc-aba-${sup.id}`).click();
-      // ⚠️ O resumo é persistente porque o RELÓGIO é o único valor que muda
-      // sozinho: escondê-lo numa superfície faria o médico trabalhar noutra sem
-      // vê-lo correr (§7.8).
-      await expect(page.getByTestId("avc-resumo")).toBeVisible();
+      await expect(
+        page.getByTestId("avc-resumo"),
+        `⛔ resumo de nada em ${sup.id}`
+      ).toHaveCount(0);
+    }
+
+    /** ⚠️ 2 · ⛔ com o NIHSS registrado, ⛔ ele **⛔ acompanha**. */
+    await page.getByTestId("avc-aba-neurologico").click();
+    /**
+     * ⚠️ ⛔ O NIHSS ⛔ **⛔ de fora** ⛔ mora ⛔ no seu próprio bloco recolhido —
+     * ⛔ o mesmo ⛔ que deixou de ser oferecido ⛔ dentro do *"calculado
+     * aqui"* ⛔ em 2026-09-09. ⛔ Abrir ⛔ é ⛔ o gesto do médico.
+     */
+    const deFora = page.getByTestId("avc-bloco-abrir-nihss-de-fora");
+    await expect(deFora, "⛔ o bloco do NIHSS de fora saiu de B").toBeVisible();
+    await deFora.scrollIntoViewIfNeeded();
+    await deFora.click();
+    /**
+     * ⚠️ ⛔ O campo ⛔ nasce ⛔ com o bloco: ⛔ esperar ⛔ **⛔ ele**, ⛔ e ⛔ não
+     * ⛔ um instante. ⛔ A escala do NIHSS ⛔ abre inteira ⛔ desde
+     * 2026-09-09 ⛔ e ⛔ empurra ⛔ o bloco ⛔ para baixo.
+     */
+    /**
+     * ⚠️⚠️ ⛔ `avc-grandeza-*`, ⛔ e ⛔ não `avc-num-caixa-*` — 2026-09-09.
+     *
+     * ⛔ ⛔ O NIHSS de fora ⛔ usa `NumericStepper`, ⛔ e ⛔ não o `Numero` da
+     * Estabilização. ⚠️ ⛔ É ⛔ exatamente ⛔ a inconsistência ⛔ registrada
+     * ⛔ como **D-127** — ⛔ dois controles numéricos ⛔ no mesmo módulo —, ⛔ e
+     * ⛔ ela aparece ⛔ aqui ⛔ como ⛔ dois `testID` diferentes ⛔ para
+     * ⛔ *"a caixa do número"*.
+     *
+     * ⛔ ⛔ ⛔ **⛔ Medido**, ⛔ e ⛔ não suposto: ⛔ duas tentativas ⛔ anteriores
+     * ⛔ erraram ⛔ o seletor ⛔ por adivinhação.
+     */
+    /**
+     * ⚠️⚠️ ⛔ O **⛔ GESTO DO MÉDICO**, ⛔ e ⛔ não um `fill` — 2026-09-09.
+     *
+     * ⛔ ⛔ `avc-grandeza-nihss_informado` ⛔ é o **⛔ contêiner** do
+     * `NumericStepper`, ⛔ e ⛔ não um `<input>`. ⚠️ ⛔ O degrau de **+10**
+     * ⛔ é ⛔ o caminho ⛔ que ⛔ a tela oferece — ⛔ e ⛔ o que ⛔ esta trava
+     * precisa ⛔ é ⛔ **⛔ um NIHSS registrado**, ⛔ por ⛔ qualquer via ⛔ que o
+     * médico ⛔ tenha.
+     */
+    const degrau = page.getByTestId("avc-degrau-nihss_informado-mais-10");
+    await expect(degrau, "⛔ o cenário mudou: ⛔ o NIHSS informado saiu de B").toBeVisible();
+    await degrau.click();
+
+    for (const sup of SEQUENCIA_OFICIAL.filter(
+      (x) => x.id !== "paciente" && x.id !== "estabilizacao"
+    )) {
+      await page.getByTestId(`avc-aba-${sup.id}`).click();
+      await expect(
+        page.getByTestId("avc-resumo"),
+        `⛔ com conteúdo, ⛔ o resumo ⛔ tem de acompanhar — ⛔ faltou em ${sup.id}`
+      ).toBeVisible();
     }
   });
 
