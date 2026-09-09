@@ -15,7 +15,7 @@
 import type { EstadoAvc } from "./estado";
 import { instanciaAberta, valorNaInstancia, instanciasDe } from "./instancia";
 import { valorAtual } from "./estado";
-import { numero, selecaoDe, ternario, VAZIOS } from "./leitura";
+import { numero, selecaoDe, ternario, tudoRespondidoComIncerteza, VAZIOS } from "./leitura";
 import { NAO_SEI, SEM_ACHADOS } from "../conteudo/campo";
 import type { Leitura } from "./leitura";
 import type { Pendencia, Vazio } from "./tipos";
@@ -61,6 +61,28 @@ export function suporteDeViaAerea(estado: EstadoAvc): Leitura {
   }
   if (consc === undefined || bulbar === undefined) {
     // ⚠️ E-23: um dos dois em branco ⛔ não permite concluir que não há indicação.
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ RESPONDIDO *"⛔ NÃO SEI"* ⛔ NÃO É *"⛔ NÃO AVALIADO"* ──────
+     *
+     * ⚠️ Relato do autor, 2026-09-09: *"aqui aponta algo que ⛔ **⛔ já foi
+     * feito** como pendência"*.
+     *
+     * ⛔ ⛔ A conclusão ⛔ **⛔ não muda** — ⛔ *"Incerto"* continua ⛔ não
+     * autorizando dizer que ⛔ não há indicação. ⚠️ ⛔ O que muda é ⛔ a tela
+     * parar de **acusá-lo** de ⛔ não ter olhado, ⛔ e ⛔ parar de contar ⛔ isso
+     * ⛔ em *"Falta responder"*.
+     */
+    if (tudoRespondidoComIncerteza(estado, insumos)) {
+      return {
+        conclusao: "desconhecido",
+        tom: "informativo",
+        curto: "Via aérea sem definição — respondida como incerta",
+        texto:
+          "Os dois gatilhos que a fonte nomeia foram perguntados, e ao menos um ficou incerto. Sem eles não se conclui que não há indicação",
+        insumos,
+        fonte,
+      };
+    }
     return { conclusao: "desconhecido", tom: "pendente", curto: "Via aérea ainda não avaliada", texto: "Consciência ou função bulbar ainda não avaliadas", insumos, fonte };
   }
   return { conclusao: "nao", tom: "informativo", curto: "Sem sinais de via aérea ameaçada", texto: "Sem os dois gatilhos que a fonte nomeia para suporte de via aérea", insumos, fonte };

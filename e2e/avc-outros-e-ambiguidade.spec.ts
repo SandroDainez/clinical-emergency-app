@@ -127,4 +127,48 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
         await expect(corpo).toContainText(/Hiperglicemia/i);
       }
     });
+
+  /* ══ ⚠️⚠️⚠️ 4 · RESPONDIDO ⛔ NÃO É PENDENTE ═══════════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09, ⛔ com captura de *"Falta responder ·
+   * 1 · ⛔ Via aérea ⛔ ainda ⛔ não avaliada"*: *"aqui aponta algo que ⛔ **⛔ já
+   * foi feito** como pendência"*.
+   *
+   * ⛔ ⛔ *"Incerto"* ⛔ e *"Não sei"* ⛔ **⛔ são respostas** — ⛔ alguém
+   * perguntou ⛔ e ⛔ alguém respondeu (**E-37**). ⚠️ ⛔ A conclusão continua
+   * impossível (**E-23**), ⛔ e ⛔ é ⛔ isso que ⛔ esta trava separa: ⛔ o que o
+   * app **⛔ não pode concluir** ⛔ do que ⛔ ele **⛔ acusa de ⛔ não ter sido
+   * feito**.
+   */
+  test("⛔ responder *«incerto»* tira da lista de *«falta responder»*",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await abrirEixosDaEstabilizacao(page);
+
+      const corpo = page.getByTestId("avc-superficie-a-conteudo");
+
+      /** ⛔ Antes: ⛔ ninguém perguntou — ⛔ e ⛔ isso **⛔ é** pendência. */
+      await expect(corpo).toContainText(/Via aérea ainda não avaliada/i);
+
+      /** ⛔ Agora o médico responde ⛔ os dois — ⛔ e ⛔ um deles ⛔ com incerteza. */
+      await page.getByTestId("avc-campo-consciencia_rebaixada").scrollIntoViewIfNeeded();
+      await page.getByTestId("avc-opcao-consciencia_rebaixada-nao_sei").click();
+      await page.getByTestId("avc-campo-disfuncao_bulbar").scrollIntoViewIfNeeded();
+      await page.getByTestId("avc-item-disfuncao_bulbar-Nenhum desses").click();
+
+      /**
+       * ⚠️⚠️ ⛔ ELE RESPONDEU. ⛔ A tela ⛔ **⛔ não pode** seguir dizendo que
+       * ⛔ ele ⛔ não avaliou.
+       */
+      await expect(
+        corpo,
+        "⛔ respondido como incerto ⛔ continua sendo acusado de ⛔ não avaliado"
+      ).not.toContainText(/Via aérea ainda não avaliada/i);
+
+      /** ⛔ E o que ⛔ ela diz ⛔ é a verdade: ⛔ perguntado, ⛔ e ⛔ sem definição. */
+      await expect(corpo).toContainText(/respondida como incerta/i);
+    });
 });

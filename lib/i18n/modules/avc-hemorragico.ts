@@ -471,6 +471,11 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Origem do Glasgow": "Origen del Glasgow",
   /** ⚠️ *"Outros"* que se escreve, ⛔ e as frases que o desambiguam — 2026-09-09. */
   "Escreva quais": "Escriba cuáles",
+  /** ⚠️ Respondido como incerto ⛔ não é ⛔ não avaliado — 2026-09-09. */
+  "Via aérea sem definição — respondida como incerta":
+    "Vía aérea sin definición — respondida como incierta",
+  "Os dois gatilhos que a fonte nomeia foram perguntados, e ao menos um ficou incerto. Sem eles não se conclui que não há indicação":
+    "Los dos gatillos que la fuente nombra fueron preguntados, y al menos uno quedó incierto. Sin ellos no se concluye que no hay indicación",
   "Outros": "Otros",
   "Nada mais bloqueia a trombólise": "Nada más bloquea la trombólisis",
   "Nenhum bloqueio da trombólise registrado. O que está abaixo pede conduta, e não trava a reperfusão.":

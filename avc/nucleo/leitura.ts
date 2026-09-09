@@ -88,6 +88,51 @@ export function numero(estado: EstadoAvc, campo: string): number | undefined {
  * "Direito" e "Esquerdo" em "não" com a mesma cara de resposta legítima. As
  * provas de superfície conferem que isso não acontece.
  */
+/**
+ * ── ⚠️⚠️⚠️ *"⛔ NÃO PERGUNTADO"* ⛔ NÃO É *"⛔ NÃO SEI"* — 2026-09-09 ───────
+ *
+ * ⚠️ Relato do autor, ⛔ com captura de *"Falta responder · 1 · ⛔ Via aérea
+ * ⛔ ainda ⛔ não avaliada"*: *"aqui aponta algo que ⛔ **⛔ já foi feito**
+ * como pendência"*.
+ *
+ * ⛔ ⛔ **⛔ Os dois vazios ⛔ já eram dois** — `VAZIOS` os lista **separados**
+ * desde sempre. ⚠️ Mas as leituras ⛔ os achatavam ⛔ num `undefined` só, ⛔ e
+ * ⛔ então diziam *"⛔ ainda ⛔ não avaliada"* ⛔ sobre uma pergunta que o
+ * médico **⛔ tinha respondido** — ⛔ com *"Incerto"*, ⛔ que ⛔ é uma resposta
+ * clínica ⛔ legítima ⛔ e ⛔ frequente ⛔ na porta.
+ *
+ * ⚠️⚠️ ⛔ É a mesma distinção de **E-37**, ⛔ que o módulo ⛔ já defende ⛔ nos
+ * chips: *"«nenhuma alergia conhecida» é **resposta** — ⛔ alguém perguntou
+ * ⛔ e ⛔ alguém respondeu"*.
+ *
+ * ⛔ ⛔ **⛔ O que ⛔ isto ⛔ NÃO muda:** ⛔ a conclusão. ⚠️ *"Incerto"* ⛔ continua
+ * ⛔ **⛔ não** permitindo concluir ⛔ que ⛔ não há indicação (**E-23**) — ⛔ o
+ * que muda é a tela ⛔ parar de **acusar o médico** de ⛔ não ter olhado.
+ */
+export function respondidoComoIncerto(estado: EstadoAvc, campo: string): boolean {
+  const f = valorAtual(estado, campo);
+  /** ⛔ `nao_perguntado` é a trilha dizendo que o campo foi **desfeito**. */
+  return f !== undefined && String(f.valor) === "nao_sei";
+}
+
+/**
+ * ⚠️ ⛔ De **todos** os insumos de uma leitura: ⛔ alguém respondeu *"⛔ não
+ * sei"*, ⛔ e ⛔ ninguém deixou ⛔ em branco?
+ */
+export function tudoRespondidoComIncerteza(
+  estado: EstadoAvc,
+  insumos: readonly string[]
+): boolean {
+  let houveIncerto = false;
+  for (const c of insumos) {
+    const f = valorAtual(estado, c);
+    /** ⛔ Em branco ⛔ **⛔ manda**: ⛔ uma pergunta ⛔ sem resposta ⛔ é pendência. */
+    if (f === undefined || String(f.valor) === "nao_perguntado") return false;
+    if (String(f.valor) === "nao_sei") houveIncerto = true;
+  }
+  return houveIncerto;
+}
+
 export function ternario(estado: EstadoAvc, campo: string): boolean | undefined {
   const f = valorAtual(estado, campo);
   if (!f) return undefined;
