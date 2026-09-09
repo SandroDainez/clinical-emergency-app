@@ -103,6 +103,7 @@ export default function IntroLanding({ onEnter }: Props) {
             <View style={s.navRight}>
               <LanguageSelector compact />
               <Pressable
+                testID="intro-entrar"
                 onPress={onEnter}
                 style={({ pressed }) => [s.navCta, pressed && s.pressed]}>
                 <Text style={s.navCtaText}>{tr("Entrar")}</Text>

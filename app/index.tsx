@@ -159,6 +159,7 @@ export default function Index() {
         ) : null}
 
         <TextInput
+          testID="entrada-email"
           style={styles.input}
           value={email}
           onChangeText={(value) => { setEmail(value); resetError(); }}
@@ -170,6 +171,7 @@ export default function Index() {
           returnKeyType="next"
         />
         <PasswordInput
+          testID="entrada-senha"
           inputStyle={styles.input}
           value={password}
           onChangeText={(value) => { setPassword(value); resetError(); }}
@@ -179,10 +181,11 @@ export default function Index() {
           onSubmitEditing={() => { void handleSubmit(); }}
         />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text testID="entrada-erro" style={styles.error}>{error}</Text> : null}
         {info ? <Text style={styles.info}>{info}</Text> : null}
 
         <Pressable
+          testID="entrada-enviar"
           style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed, isSubmitting && styles.buttonDisabled]}
           onPress={() => { void handleSubmit(); }}
           disabled={isSubmitting}>
