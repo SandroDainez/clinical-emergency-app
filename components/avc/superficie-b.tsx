@@ -24,6 +24,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_B, TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
 import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
+import { ROTULO_DO_CAMPO } from "../../avc/conteudo/rotulos";
+import { useFoco } from "./sistema/foco";
 import {
   derivadoDaEscala,
   escalaPreenchida,
@@ -115,11 +117,15 @@ export default function SuperficieB({
   const leituras = leiturasDaSuperficieB(estado);
   const detalhes = useDetalhes();
 
-  const rotuloDoCampo = useMemo(() => {
-    const m: Record<string, string> = {};
-    for (const c of TODOS_OS_CAMPOS_B) m[c.id] = c.rotulo;
-    return m;
-  }, []);
+  /**
+   * ⚠️⚠️ ⛔ O DICIONÁRIO É **DO MÓDULO**, ⛔ e ⛔ não desta tela — 2026-09-09.
+   *
+   * ⛔ ⛔ Montado ⛔ só com os campos daqui, ⛔ ele deixava o insumo que vem de
+   * outra superfície ⛔ sem nome, ⛔ e a tela escrevia o `id` cru:
+   * *"deficit_focal, nihss_calculado"*. ⛔ Relatado pelo autor, ⛔ com captura.
+   */
+  const foco = useFoco();
+  const rotuloDoCampo = ROTULO_DO_CAMPO;
 
   function numeroGravado(id: string): number | undefined {
     const f = valorAtual(estado, id);
@@ -151,7 +157,28 @@ export default function SuperficieB({
         const fechado = recolhivel && !aberto && !resumindo;
 
         return (
-          <View key={grupo.id} style={e.grupo} testID={`avc-grupo-${grupo.id}`}>
+          <View
+            key={grupo.id}
+            style={e.grupo}
+            testID={`avc-grupo-${grupo.id}`}
+            /**
+             * ── ⚠️⚠️⚠️ A FIAÇÃO DE FOCO QUE FALTAVA ⛔ AQUI — 2026-09-09 ─────
+             *
+             * ⚠️ Relato do autor: *"quando clico em abrir nessas pendências
+             * ⛔ não abre ⛔ nada"* — ⛔ com três cartões dizendo *"Abrir
+             * Avaliação AVC"*, ⛔ tirados **⛔ de dentro** da Avaliação AVC.
+             *
+             * ⛔ ⛔ A Estabilização registra os seus grupos desde 2026-09-06,
+             * ⛔ e é ⛔ por isso que ⛔ **⛔ lá** o toque leva até o campo.
+             * ⛔ Aqui ⛔ nada registrava, ⛔ então `rolarAte` procurava um nó
+             * ⛔ que ⛔ ninguém tinha declarado ⛔ e ⛔ desistia ⛔ em silêncio.
+             *
+             * ⚠️⚠️ ⛔ Uma correção que vale ⛔ **⛔ só numa tela** ⛔ não é
+             * correção do app — ⛔ é a mesma lição do dicionário de rótulos,
+             * ⛔ no mesmo dia.
+             */
+            ref={(n) => foco.registrarGrupo(camposDoGrupo(grupo).map((c) => c.id), n)}
+          >
             {/**
               * ⚠️ FILETE no lugar da barra cheia — ⛔ e o cabeçalho segue
               * anunciando o que guarda: ⛔ ele ⛔ não mente sobre o conteúdo.
@@ -489,7 +516,8 @@ const criarEstilos = (tema: Tema) =>
       fontWeight: "600",
     },
     pergunta: { gap: ESPACO.xs, paddingVertical: ESPACO.xs },
-    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     perguntaTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     grupo: { gap: ESPACO.xs },
     grupoTitulo: {

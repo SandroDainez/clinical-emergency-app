@@ -722,7 +722,8 @@ const criarEstilos = (tema: Tema) =>
       borderLeftWidth: 3, borderLeftColor: tema.cores.border,
       gap: 2,
     },
-    itemTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    itemTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     itemRotulo: {
       flex: 1, minWidth: 0,
       color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize, fontWeight: "700",

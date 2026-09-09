@@ -52,6 +52,7 @@ import {
   achadosDaModalidade,
 } from "../../avc/conteudo/superficie-c";
 import { opcaoDoValor } from "../../avc/conteudo/campo";
+import { ROTULO_DO_CAMPO } from "../../avc/conteudo/rotulos";
 import { destinoDaImagem, estudos, leiturasDaSuperficieC } from "../../avc/nucleo/derivacoes-c";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
@@ -204,8 +205,13 @@ export default function SuperficieC({
   const detalhes = useDetalhes();
 
   const rotuloDoCampo = useMemo(() => {
-    const m: Record<string, string> = {};
-    for (const c of TODOS_OS_CAMPOS_C) m[c.id] = c.rotulo;
+    /**
+     * ⚠️⚠️ ⛔ A BASE É **DO MÓDULO** — 2026-09-09. ⛔ Só com os campos daqui, o
+     * insumo vindo de outra superfície ficava ⛔ sem nome ⛔ e a tela escrevia
+     * o `id` cru. ⚠️ ⛔ O que C acrescenta ⛔ por cima ⛔ continua ⛔ logo abaixo:
+     * ⛔ exame ⛔ não é campo, ⛔ e a modalidade sozinha ⛔ não o identifica.
+     */
+    const m: Record<string, string> = { ...ROTULO_DO_CAMPO };
     /**
      * ⚠️⚠️ COMO O PAINEL DE LEITURAS NOMEIA UM EXAME — e por que ⛔ não basta a
      * modalidade.
@@ -1174,9 +1180,16 @@ export default function SuperficieC({
                     ? `: ${l.estudos.map((i) => rotuloDoCampo[i] ?? i).join(" · ")}`
                     : ""}
                 </Text>
+                {/**
+                  * ⚠️⚠️ ⛔ SEM `texto` ⛔ AQUI — ⛔ e a ausência é a correção.
+                  *
+                  * ⛔ ⛔ O detalhe logo abaixo ⛔ já imprime `l.texto`. ⛔ Passá-lo
+                  * ⛔ também ao `Recolhido` escrevia **a mesma frase duas
+                  * vezes**, ⛔ uma ao lado do ⓘ ⛔ e outra embaixo — ⛔ relatado
+                  * pelo autor em 2026-09-09, ⛔ com captura.
+                  */}
                 <Recolhido
                   id={`leitura-${id}`}
-                  texto={l.texto}
                   aberto={detalhes.aberto(`leitura-${id}`)}
                   onAlternar={() => detalhes.alternar(`leitura-${id}`)}
                 />
@@ -1207,7 +1220,8 @@ const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     raiz: { gap: ESPACO.md },
     grupo: { gap: ESPACO.xs },
-    cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     /**
      * ⚠️⚠️ ⛔ SÓ O CABEÇALHO QUE **RECOLHE** VIRA BOTÃO — 2026-09-06.
      *
@@ -1263,7 +1277,8 @@ const criarEstilos = (tema: Tema) =>
     resumoPendente: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
     pergunta: { gap: ESPACO.xs, paddingVertical: ESPACO.xs },
-    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+    perguntaTopo: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     perguntaTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 
     /** ⚠️ Recuada e colada ao relógio — ⛔ ela ⛔ não flutua entre dois. */
@@ -1319,7 +1334,9 @@ const criarEstilos = (tema: Tema) =>
     },
     grupoNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.micro.fontSize },
 
-    leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ⛔ `wrap` ⛔ para o texto do ⓘ cair **⛔ na linha de baixo, inteiro** — ⛔ 2026-09-09. */
+
+    leituraLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs , flexWrap: "wrap" },
     leituraTexto: { flex: 1, color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     leituraDetalhe: {
       color: tema.cores.textSecondary,

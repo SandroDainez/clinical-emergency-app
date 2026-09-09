@@ -33,6 +33,11 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
+/** ⚠️ ⛔ Qualquer nó que saiba se medir — ⛔ é ⛔ tudo que a barra precisa. */
+type NoMedivel = {
+  measureInWindow: (cb: (x: number, y: number, largura: number, altura: number) => void) => void;
+};
+
 import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { ESPACO, LARGURA, RAIO, TOQUE } from "../../../design-system/tokens";
@@ -288,6 +293,10 @@ export function PhaseNavigation({
   const e = useEstilosDoTema(estilos);
   const trilho = useRef<ScrollView | null>(null);
   const posicoes = useRef<Record<string, { x: number; largura: number }>>({});
+  /** ⚠️ ⛔ O nó de cada aba — ⛔ medido no momento, ⛔ e ⛔ não guardado por evento. */
+  const nos = useRef<Record<string, NoMedivel | null>>({});
+  /** ⚠️ ⛔ Quanto a barra já rolou — ⛔ `measureInWindow` ⛔ não sabe disso. */
+  const rolagemAtual = useRef(0);
 
   /**
    * ⚠️⚠️ A BARRA ⛔ NÃO ANDA SOZINHA — exigência do autor, 2026-09-05.
@@ -299,11 +308,73 @@ export function PhaseNavigation({
    *
    * ⚠️ Traz a ativa para a área visível a cada troca, ⛔ e ⛔ não a cada render.
    */
+  /**
+   * ⚠️⚠️⚠️ ⛔ E `onLayout` ⛔ NÃO SERVE ⛔ PARA ISSO — 2026-09-09.
+   *
+   * ⛔ ⛔ `posicoes` era preenchido por `onLayout`, ⛔ e `sistema/foco.tsx`
+   * ⛔ já documenta, medido no navegador, que ⛔ **⛔ ele nunca dispara nessas
+   * Views**: react-native-web o implementa sobre `ResizeObserver`. ⚠️ Com o
+   * dicionário vazio, este efeito ⛔ desistia ⛔ **⛔ sempre** — a barra ⛔ nunca
+   * rolou, ⛔ e ⛔ o comentário acima descrevia uma correção que ⛔ não
+   * acontecia.
+   *
+   * ⛔ ⛔ Foi o que a captura do autor mostrou em Correções: a aba marcada
+   * existia, ⛔ **⛔ a 504 px numa janela de 375**.
+   *
+   * ⚠️ `measureInWindow` é chamado **agora**, ⛔ quando a geometria é real —
+   * ⛔ e é o mesmo caminho que já resolveu o foco de campo.
+   */
   useEffect(() => {
-    const alvo = posicoes.current[atual];
-    if (!alvo || !trilho.current) return;
-    trilho.current.scrollTo({ x: Math.max(0, alvo.x - 24), animated: true });
-  }, [atual]);
+    const item = nos.current[atual];
+    if (!item) return;
+    /**
+     * ⚠️⚠️ ⛔ `offsetLeft` ⛔ É A MEDIDA QUE **⛔ EXISTE ⛔ AQUI**.
+     *
+     * ⛔ ⛔ Tentei `measureInWindow` primeiro — ⛔ ele resolve o foco de campo
+     * ⛔ neste mesmo app. ⚠️ Mas ⛔ no `ScrollView` da web ⛔ ele ⛔ não
+     * responde, ⛔ e a trava mediu de novo **⛔ 505 px numa janela de 375**.
+     *
+     * ⚠️ ⛔ `offsetLeft` é a distância até o contêiner rolável — ⛔ exatamente
+     * a coordenada que `scrollTo` espera, ⛔ **⛔ sem conta ⛔ nenhuma**.
+     *
+     * ⛔ ⛔ Fora do navegador ⛔ ele ⛔ não existe, ⛔ e ⛔ aí a medida do RN
+     * ⛔ assume — ⛔ o app ⛔ não deixa de funcionar ⛔ em nenhum dos dois.
+     */
+    const comoNo = item as unknown as { offsetLeft?: number };
+    if (typeof comoNo.offsetLeft === "number") {
+      /**
+       * ⚠️⚠️ ⛔ PELO NÓ ROLÁVEL, ⛔ E ⛔ NÃO POR `scrollTo`.
+       *
+       * ⛔ ⛔ `ScrollView.scrollTo` ⛔ não moveu a barra ⛔ aqui — ⛔ medido três
+       * vezes, ⛔ a aba marcada ⛔ ficou ⛔ em **503 px numa janela de 375**.
+       * ⚠️ ⛔ `getScrollableNode()` devolve a `div` que realmente rola, ⛔ e
+       * ⛔ nela `scrollLeft` ⛔ é ⛔ só uma atribuição.
+       *
+       * ⚠️ ⛔ Num quadro seguinte, ⛔ porque a aba ⛔ pode ter acabado de
+       * nascer — ⛔ é o caso de **Correções**, ⛔ que entra ⛔ na lista ⛔ no
+       * mesmo quadro em que ⛔ vira a atual.
+       */
+      const rolavel = (
+        trilho.current as unknown as { getScrollableNode?: () => { scrollLeft?: number } | null }
+      )?.getScrollableNode?.();
+      const alvo = Math.max(0, comoNo.offsetLeft - 24);
+      if (rolavel && typeof rolavel.scrollLeft === "number") {
+        rolavel.scrollLeft = alvo;
+        requestAnimationFrame(() => {
+          rolavel.scrollLeft = alvo;
+        });
+        return;
+      }
+      trilho.current?.scrollTo({ x: alvo, animated: true });
+      return;
+    }
+    (item as NoMedivel).measureInWindow?.((xItem) => {
+      trilho.current?.scrollTo({
+        x: Math.max(0, rolagemAtual.current + xItem - 24),
+        animated: true,
+      });
+    });
+  }, [atual, fases.length]);
 
   /**
    * ⚠️⚠️ ROLÁVEL NA HORIZONTAL — corrigido em 2026-09-05 **na captura**.
@@ -331,6 +402,10 @@ export function PhaseNavigation({
       showsHorizontalScrollIndicator={false}
       style={e.nav}
       contentContainerStyle={e.navConteudo}
+      scrollEventThrottle={16}
+      onScroll={(ev) => {
+        rolagemAtual.current = ev.nativeEvent.contentOffset.x;
+      }}
       testID="avc-barra"
     >
       {fases.map((f) => {
@@ -341,12 +416,25 @@ export function PhaseNavigation({
             onPress={() => onAbrir(f.id)}
             accessibilityRole="button"
             accessibilityState={{ selected: ativa }}
+            /**
+             * ⚠️⚠️ ⛔ `aria-selected` **EXPLÍCITO** — ⛔ e ⛔ não decoração.
+             *
+             * ⛔ ⛔ Medido no navegador: o `accessibilityState` sozinho ⛔ não
+             * chega ao atributo, ⛔ e a barra dizia **onde o médico está**
+             * ⛔ só por cor ⛔ e sublinhado. ⚠️ ⛔ Cor ⛔ não é estado que se
+             * possa ler, ⛔ nem por leitor de tela ⛔ nem por trava — ⛔ é a
+             * mesma correção do `aria-checked` do Glasgow (2026-09-08).
+             */
+            aria-selected={ativa}
             accessibilityLabel={tr(f.nome)}
             testID={`avc-aba-${f.id}`}
             style={e.navItem}
-            onLayout={(ev) => {
-              const { x, width } = ev.nativeEvent.layout;
-              posicoes.current[f.id] = { x, largura: width };
+            /**
+             * ⚠️ ⛔ O nó, ⛔ e ⛔ não a posição: ⛔ quem mede é o efeito, ⛔ no
+             * momento em que precisa — ⛔ ver o comentário do `useEffect`.
+             */
+            ref={(n) => {
+              nos.current[f.id] = n as unknown as NoMedivel | null;
             }}
           >
             <View>

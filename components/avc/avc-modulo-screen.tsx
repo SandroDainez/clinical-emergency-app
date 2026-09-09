@@ -1014,10 +1014,41 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * bloqueio a corrigir, ⛔ ou já houve ação registrada que precisa
            * continuar visível.
            */
-          fases={[
-            ...SEQUENCIA_OFICIAL,
-            ...(correcoesEhRelevante(estado) ? [superficie("correcoes")] : []),
-          ]
+          /**
+           * ── ⚠️⚠️⚠️ A BARRA ⛔ NUNCA NEGA ONDE VOCÊ ESTÁ — 2026-09-09 ──────
+           *
+           * ⚠️ Relato do autor, ⛔ com captura de sete abas ⛔ e **⛔ nenhuma
+           * marcada**: *"de acordo com a página que eu estiver aberta essa
+           * barra deve marcar para eu saber onde estou"*.
+           *
+           * ⛔ ⛔ **O caminho que produz isso.** ⛔ Ele tocou *"Abrir
+           * Correções"* numa pendência de **hiperglicemia**. ⚠️ Mas
+           * hiperglicemia ⛔ **⛔ não é bloqueio** — ⛔ a própria transcrição diz
+           * *"não bloqueia a trombólise isoladamente"* —, ⛔ então
+           * `bloqueiosCorrigiveis` está vazio, ⛔ e ⛔ sem ação registrada
+           * `correcoesEhRelevante` é **falso**. ⛔ A aba ⛔ não entrava na
+           * lista, ⛔ e a barra passou a marcar **⛔ nada** ⛔ com ⛔ ele parado
+           * ⛔ em cima da tela.
+           *
+           * ⚠️⚠️ ⛔ E a regra ⛔ não é *"consertar Correções"*: ⛔ **⛔ qualquer**
+           * superfície fora da lista faz o mesmo — `laboratorio` faz ⛔ sempre.
+           * ⛔ Uma barra que ⛔ não marca ⛔ não é uma barra incompleta: ⛔ ela
+           * **⛔ mente** sobre a tela aberta.
+           *
+           * ⛔ ⛔ Por isso a atual entra por último ⛔ quando ⛔ não estiver lá —
+           * ⛔ e ⛔ isso ⛔ não afrouxa a decisão **C3**: ⛔ o critério de
+           * *relevância* segue mandando em ⛔ quem **aparece ⛔ sem você estar
+           * nela**.
+           */
+          fases={(() => {
+            const listadas = [
+              ...SEQUENCIA_OFICIAL,
+              ...(correcoesEhRelevante(estado) ? [superficie("correcoes")] : []),
+            ];
+            return listadas.some((s) => s.id === estado.superficieVista)
+              ? listadas
+              : [...listadas, superficie(estado.superficieVista)];
+          })()
             .map((sup) => ({
               id: sup.id,
               nome: CURTO[sup.id]?.nome ?? sup.titulo,
@@ -2044,7 +2075,43 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               style={s.pendencia}
               accessibilityRole="button"
               testID={`avc-pendencia-${p.id}`}
-              onPress={() => abrir(p.dono)}
+              /**
+               * ── ⚠️⚠️⚠️ *"CLICO EM ABRIR ⛔ E ⛔ NÃO ABRE ⛔ NADA"* — 2026-09-09 ──
+               *
+               * ⛔ ⛔ `abrir(p.dono)` sozinho ⛔ é **inerte quando o dono é a
+               * tela onde ⛔ ele já está** — ⛔ e a própria `abrir` diz ⛔ isso:
+               * *"abrir a superfície em que já se está ⛔ não empilha"*.
+               * ⚠️ ⛔ Na captura do autor, **três** pendências ofereciam
+               * *"Abrir Avaliação AVC"* ⛔ com ⛔ ele **⛔ dentro** da Avaliação
+               * AVC: ⛔ o botão prometia uma viagem ⛔ e ⛔ não saía do lugar.
+               *
+               * ⚠️⚠️ ⛔ E ⛔ isto ⛔ **⛔ já tinha sido corrigido** — ⛔ para os
+               * cards de prioridade, em 2026-09-06, ⛔ e o cabeçalho de
+               * `sistema/foco.tsx` guarda o relato: *"clico nos cards ⛔ e ⛔ não
+               * abre ⛔ nada"*. ⛔ O painel de pendências ⛔ ficou para trás,
+               * ⛔ chamando ⛔ a metade antiga.
+               *
+               * ⛔ ⛔ `ProblemaAtivo` ⛔ já carregava o campo — *"o campo a focar
+               * ao chegar lá"*. ⚠️ ⛔ Ele existia, ⛔ e ⛔ ninguém o lia.
+               *
+               * ⚠️⚠️ ⛔ E O DESTINO CONTINUA SENDO O **`dono`**, ⛔ e ⛔ não a
+               * casa do campo. ⛔ A primeira tentativa chamou `irParaCampo`
+               * ⛔ direto ⛔ e a trava ⛔ pegou: a pendência da hiperglicemia
+               * ⛔ diz *"Abrir **Correções**"* ⛔ e ⛔ tem `campo: "glicemia"`,
+               * ⛔ que é declarado ⛔ **⛔ na Estabilização** — ⛔ o botão passou
+               * a levar ⛔ para o lugar errado, ⛔ contra o que ⛔ ele mesmo
+               * escreve. ⚠️ **⛔ O rótulo é a promessa**; ⛔ o campo é ⛔ só
+               * ⛔ onde parar depois de chegar.
+               */
+              onPress={() => {
+                if (p.dono !== estado.superficieVista) {
+                  abrir(p.dono);
+                  if (p.campo) rolarAte(p.campo);
+                  return;
+                }
+                /** ⛔ Já está ⛔ na tela: ⛔ o que resta ⛔ é ⛔ levar até o campo. */
+                if (p.campo) rolarAte(p.campo);
+              }}
             >
               {/**
                 * ⚠️⚠️ O SÍMBOLO DIZ **QUE TIPO** DE PROBLEMA É — ⛔ e ⛔ era um
