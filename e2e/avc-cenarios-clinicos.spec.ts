@@ -157,6 +157,13 @@ test.describe("AVC · cenários clínicos completos", () => {
     /* 2 · parte do NIHSS — ⛔ sem confirmar a escala */
     await tocar(page, "avc-aba-neurologico", c);
     await tocar(page, "avc-escala-abrir-nihss_calculado", c);
+    /**
+     * ⚠️⚠️ ⛔ A ESCALA ABRE **INTEIRA** DESDE 2026-09-09 — ⛔ e ⛔ o modo foco
+     * ⛔ virou ⛔ uma escolha. ⚠️ ⛔ O avanço automático ⛔ **⛔ continua
+     * existindo ⛔ nele**, ⛔ e ⛔ é ⛔ isso que ⛔ estas três linhas ⛔ ainda
+     * medem — ⛔ agora ⛔ entrando ⛔ no modo ⛔ de propósito.
+     */
+    await tocar(page, "avc-escala-ver-todos-nihss_calculado", c);
     await tocar(page, "avc-escala-opcao-1a-0", c);
     /** ⚠️ O avanço é automático: o foco já está no item 2. */
     await expect(page.getByTestId("avc-escala-progresso-nihss_calculado"))

@@ -81,7 +81,21 @@ test.describe("AVC — afordância e navegação", () => {
      * garantia — *"é botão, ⛔ e ⛔ não duas palavras soltas"* — ⛔ é medida
      * ⛔ onde ⛔ ele vive.
      */
-    await page.getByTestId("avc-aba-neurologico").click();
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ E ⛔ SAIU DA **⛔ AVALIAÇÃO AVC** TAMBÉM — 2026-09-09 ──────
+     *
+     * ⚠️ Decisão do autor: *"na aba neuro podemos tirar isso da barra ⛔ já
+     * que tem ⛔ ao longo da aba para preenchimento"*.
+     *
+     * ⛔ ⛔ ⛔ ⛔ É ⛔ a conclusão ⛔ do raciocínio ⛔ que trouxe o campo ⛔ para
+     * lá: ⛔ se a cronologia **mora** ⛔ na Avaliação AVC, ⛔ o atalho ⛔ no
+     * cabeçalho ⛔ leva ⛔ **⛔ para a própria tela**.
+     *
+     * ⚠️ ⛔ A garantia ⛔ **⛔ não mudou** — *"é botão, ⛔ e ⛔ não duas
+     * palavras soltas"* —, ⛔ e ⛔ ela é medida ⛔ **⛔ onde ⛔ ele vive**:
+     * ⛔ agora ⛔ na Investigação.
+     */
+    await page.getByTestId("avc-aba-imagem").click();
     const relogio = page.getByTestId("avc-relogio-do-topo");
     await expect(relogio).toBeVisible();
 

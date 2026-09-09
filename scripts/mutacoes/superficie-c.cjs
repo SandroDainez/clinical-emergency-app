@@ -119,23 +119,23 @@ module.exports = {
      * grupo fechado parecendo vazio enquanto guardava resposta.
      */
     {
-      nome: "a hipodensidade clara perde o nome curto do resumo",
+      nome: "a hipodensidade franca perde o nome curto do resumo",
       arquivo: ARQ.conteudoC,
-      de: '  hipodensidade_clara: "Hipodensidade clara",\n',
+      de: '  hipodensidade_clara: "Hipodensidade franca",\n',
       para: "",
     },
 
     /**
      * ⚠️⚠️ O RÓTULO CURTO VIRA REDAÇÃO NOVA.
      *
-     * ⛔ *"Isquemia precoce"* ⛔ não é recorte de *"Hipodensidade clara na
+     * ⛔ *"Isquemia precoce"* ⛔ não é recorte de *"Hipodensidade franca na
      * tomografia"*: é **outro nome clínico**, nascido na camada de
      * apresentação, ⛔ sem fonte ⛔ e sem dono (**E-29**, **E-31**).
      */
     {
       nome: "o rótulo curto deixa de ser recorte e vira nome novo",
       arquivo: ARQ.conteudoC,
-      de: '  hipodensidade_clara: "Hipodensidade clara",',
+      de: '  hipodensidade_clara: "Hipodensidade franca",',
       para: '  hipodensidade_clara: "Isquemia precoce",',
     },
 

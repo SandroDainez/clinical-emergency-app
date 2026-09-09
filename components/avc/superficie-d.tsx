@@ -58,6 +58,7 @@ import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 
 type Props = {
   estado: EstadoAvc;
@@ -339,6 +340,18 @@ export default function SuperficieD({
         * *"likely contraindicated"* e *"should not be administered"* cairiam na
         * mesma caixa e sairiam com a mesma força.
         */}
+      {/**
+        * ⚠️⚠️ ⛔ `recomendacao` ⛔ **⛔ uma vez**, ⛔ e ⛔ só ⛔ se a Table 8
+        * ⛔ tiver ⛔ interpretado ⛔ alguma coisa. ⛔ Segurança ⛔ vazia ⛔ é
+        * ⛔ tela de coleta — ⛔ e ⛔ campo de coleta ⛔ não leva disclaimer.
+        */}
+      <AvisoDeApoioClinico
+        variante="recomendacao"
+        ha={ORDEM.some(({ estado: q }) => itensPorEstado(estado, q).length > 0)}
+        tr={tr}
+        testID="avc-aviso-leituras"
+      />
+
       {ORDEM.map(({ estado: qual, titulo, recolhido }) => {
         const itens = itensPorEstado(estado, qual);
         if (itens.length === 0) return null;

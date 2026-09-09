@@ -380,20 +380,42 @@ test.describe("AVC · Superfície C — Imagem", () => {
   });
 
   /**
-   * ⚠️⚠️ HIPODENSIDADE CLARA — o único achado de TC com critério transcrito, e a
-   * definição precisa estar **visível**, ⛔ não atrás do ⓘ.
+   * ⚠️⚠️ HIPODENSIDADE FRANCA — a explicação precisa estar **visível**, ⛔ não
+   * atrás do ⓘ.
+   *
+   * ── ⚠️⚠️⚠️ ⛔ ESTA TRAVA EXIGIA A FRASE **⛔ ERRADA** — 2026-09-09 ─────────
+   *
+   * ⛔ ⛔ Ela media `/substância branca contralateral/` — ⛔ e ⛔ essa
+   * comparação ⛔ **⛔ não existe na diretriz**. ⚠️ Conferência do autor ⛔ no
+   * PDF da AHA/ASA 2026: ⛔ a definição ⛔ era inventada, ⛔ e ⛔ com o sentido
+   * ⛔ **⛔ invertido**.
+   *
+   * ⚠️⚠️ ⛔ ⛔ **⛔ A trava ⛔ estava verde ⛔ guardando o erro.** ⛔ É ⛔ o pior
+   * estado possível de uma trava: ⛔ ela ⛔ não ⛔ só deixava passar — ⛔ ela
+   * ⛔ **⛔ exigia** ⛔ que continuasse. ⛔ Trocar a frase ⛔ sem trocar a trava
+   * ⛔ teria feito ⛔ a suíte ⛔ recusar a correção.
+   *
+   * ⛔ ⛔ O que ⛔ ela deve garantir ⛔ é o que ⛔ sempre quis: ⛔ que o médico
+   * ⛔ leia **⛔ o que o termo significa**, ⛔ na tela, ⛔ antes de responder.
+   * ⛔ Agora ⛔ a frase medida ⛔ é ⛔ a da fonte.
    */
-  test("a hipodensidade clara traz a definição da fonte, e ⛔ não conclui", async ({ page }) => {
+  test("a hipodensidade franca traz a explicação da fonte, e ⛔ não conclui", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
     await exameComAchados(page, MODALIDADE.tcSemContraste);
     const campo = page.getByTestId("avc-campo-hipodensidade_clara");
-    await expect(campo).toContainText(/substância branca contralateral/i);
+    await expect(campo).toContainText(/hipoatenuação grave/i);
+    await expect(campo).toContainText(/subagudo/i);
+    /** ⚠️⚠️ ⛔ E a invenção ⛔ **⛔ não pode voltar** — ⛔ em direção ⛔ nenhuma. */
+    await expect(
+      campo,
+      "⛔ a diretriz ⛔ não define hipodensidade por comparação com a substância branca"
+    ).not.toContainText(/substância branca/i);
 
     await page.getByTestId(OPCAO("hipodensidade_clara", "sim")).click();
     const leitura = page.getByTestId("avc-leitura-curto-hipodensidade_clara");
-    await expect(leitura).toContainText(/Hipodensidade clara registrada/i);
+    await expect(leitura).toContainText(/Hipodensidade franca registrada/i);
     // ⛔ E a tela ⛔ NÃO decide sobre trombólise.
     const conteudo = page.getByTestId("avc-superficie-c-conteudo");
     await expect(conteudo).not.toContainText(/não elegív|está contraindicad|não trombolis/i);

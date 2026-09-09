@@ -464,8 +464,25 @@ export const CORTES_LABORATORIAIS = {
  * ⛔ ⛔ Uma frase, ⛔ um lugar: ⛔ escrita duas vezes, ⛔ a próxima correção
  * acertaria ⛔ uma das cópias.
  */
+/**
+ * ── ⚠️⚠️⚠️ ⛔ A LINHA CLICÁVEL É **⛔ OBJETIVA** — 2026-09-09 ────────────────
+ *
+ * ⚠️ Decisão do autor: *"tudo aqui fala «a fonte diz», mas tem que ter coisa
+ * objetiva, ⛔ só para o usuário responder… ⛔ onde é clicável para decisões,
+ * temos que ter coisas claras ⛔ e objetivas que ajudem o usuário a tomar
+ * decisões"*.
+ *
+ * ⛔ ⛔ ⛔ **⛔ E ⛔ a procedência ⛔ não se perde** — ⛔ ela ⛔ **⛔ muda de
+ * camada**: `ajuda` ⛔ é a linha ⛔ ao lado dos botões, ⛔ onde ⛔ ele decide;
+ * `nota` ⛔ é o que abre ⛔ no ⓘ, ⛔ onde *"a fonte diz"* ⛔ é ⛔ exatamente ⛔ o
+ * que ⛔ se quer ler. ⚠️ ⛔ Das **⛔ 52** ocorrências ⛔ do módulo, ⛔ **⛔ 5**
+ * estavam ⛔ na camada da decisão.
+ *
+ * ⛔ ⛔ *"A fonte diz para ⛔ não atrasar"* ⛔ é ⛔ uma frase ⛔ sobre um
+ * documento. ⛔ *"⛔ Não atrasar"* ⛔ é ⛔ uma frase ⛔ sobre ⛔ este paciente.
+ */
 export const HEDGE_DO_COAGULOGRAMA =
-  "A fonte diz para não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.";
+  "Não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.";
 
 export const VERBO_DOS_CORTES =
   "is unknown though may substantially increase risk of harm and should not be administered";
@@ -492,7 +509,7 @@ export const FATOS_PROPRIOS_D: readonly CampoD[] = [
     rotulo: "Há incerteza diagnóstica ou suspeita de simulador de AVC",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
-    ajuda: "Registra a dúvida clínica sobre o diagnóstico. A fonte declara risco baixo de dano com a trombólise nesta situação.",
+    ajuda: "Registra a dúvida clínica sobre o diagnóstico. Na incerteza diagnóstica, e salvo contraindicações absolutas, o risco de dano com a trombólise é baixo.",
     fonte: F07,
     bloqueiaTerapia: false,
     nota: "A fonte diz que, salvo contraindicações absolutas, o risco de dano com a trombólise é baixo na incerteza diagnóstica.",
@@ -532,9 +549,37 @@ export const FATOS_PROPRIOS_D: readonly CampoD[] = [
      * *"if the GI/GU bleeding has been treated and risk modified/reduced"*.
      */
     rotulo: "O sangramento foi tratado e o risco foi reduzido",
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ ELE SÓ EXISTE SE **⛔ HOUVER SANGRAMENTO** — 2026-09-09 ────
+     *
+     * ⚠️ Relato do autor: *"aqui afirma sangramentos, o que ⛔ não tem ⛔ em
+     * nenhum lugar afirmando isso"*.
+     *
+     * ⛔ ⛔ ⛔ **⛔ E a pergunta ⛔ pressupunha.** ⛔ Ela aparecia ⛔ sempre —
+     * ⛔ inclusive ⛔ num paciente ⛔ em que ⛔ ninguém registrou sangramento
+     * ⛔ nenhum. ⚠️ ⛔ Perguntar *"o sangramento foi tratado?"* ⛔ é **afirmar
+     * que ⛔ há sangramento**, ⛔ e ⛔ afirmar ⛔ o que ⛔ não se observou ⛔ é o
+     * defeito que **E-23** existe para impedir.
+     *
+     * ⚠️⚠️ ⛔ A condição da fonte é **⛔ literalmente** essa: *"⛔ **⛔ if** the
+     * GI/GU bleeding has been treated and risk modified/reduced"*. ⛔ O `if`
+     * ⛔ estava ⛔ na transcrição ⛔ e ⛔ não ⛔ estava na tela.
+     *
+     * ⛔ ⛔ ⛔ **⛔ Os dois sangramentos entram**: o recente (21 dias) ⛔ e o
+     * remoto ⛔ e estável — ⛔ porque ⛔ a pergunta ⛔ faz sentido ⛔ para quem
+     * teve ⛔ **⛔ algum**, ⛔ e ⛔ omitir o segundo ⛔ esconderia a condição de
+     * quem ⛔ ela ⛔ pode beneficiar.
+     */
+    apareceQuando: {
+      campo: "procedimentos_recentes",
+      algumDe: [
+        "Sangramento gastrointestinal ou geniturinário nos últimos 21 dias",
+        "Sangramento gastrointestinal ou geniturinário remoto e estável",
+      ],
+    },
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
-    ajuda: "A fonte cita esta condição para o sangramento gastrointestinal ou geniturinário recente.",
+    ajuda: "Sangramento tratado e risco reduzido mudam o peso deste antecedente na decisão.",
     fonte: F07,
     bloqueiaTerapia: false,
   },

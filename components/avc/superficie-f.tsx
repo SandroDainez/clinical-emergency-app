@@ -71,6 +71,7 @@ import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 
 /**
@@ -243,6 +244,20 @@ export default function SuperficieF({
         ]}
         testID="avc-f-veredito"
       >
+        {/**
+          * ── ⚠️⚠️⚠️ ⛔ `altoRisco` ⛔ ONDE SE DECIDE ⛔ REPERFUNDIR ──────────
+          *
+          * ⚠️ ⛔ Esta é a decisão ⛔ de maior consequência ⛔ do módulo:
+          * ⛔ trombolisar ⛔ ou ⛔ não. ⛔ O aviso ⛔ acompanha o **veredito**,
+          * ⛔ e ⛔ o `calculoDose` ⛔ fica ⛔ lá embaixo, ⛔ colado ⛔ ao número
+          * — ⛔ separados ⛔ por função, ⛔ e ⛔ **⛔ não empilhados**.
+          */}
+        <AvisoDeApoioClinico
+          variante="altoRisco"
+          ha
+          tr={tr}
+          testID="avc-f-aviso-alto-risco"
+        />
         <View style={e.vereditoTopo}>
           <Text
             style={[
@@ -601,6 +616,17 @@ export default function SuperficieF({
                 * ⛔ não é uma prescrição — miligramas **de quê** é parte do
                 * número, ⛔ e ⛔ não explicação dele.
                 */}
+              {/**
+                * ⚠️⚠️ ⛔ `calculoDose` ⛔ **⛔ colado ⛔ ao número** — ⛔ e ⛔ ele
+                * ⛔ só existe ⛔ porque ⛔ há dose calculada ⛔ nesta tela.
+                * ⛔ Sem `dose`, ⛔ este ramo ⛔ inteiro ⛔ não renderiza.
+                */}
+              <AvisoDeApoioClinico
+                variante="calculoDose"
+                ha
+                tr={tr}
+                testID="avc-f-aviso-calculo-dose"
+              />
               <Text style={e.doseValor} testID="avc-f-dose-valor">
                 {tr(dose.agente === "alteplase" ? "Alteplase" : "Tenecteplase")}{" "}
                 {dose.totalMg} {tr("mg")}

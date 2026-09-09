@@ -364,11 +364,35 @@ export default function SuperficieB({
                          * entidades. ⚠️ O que muda é que a escolha passa a ser
                          * **oferecida onde a decisão acontece**.
                          */
-                        aoInformarTotal={() =>
-                          setAbertos((a) =>
-                            a.includes("nihss-de-fora") ? a : [...a, "nihss-de-fora"]
-                          )
-                        }
+                        /**
+                         * ── ⚠️⚠️⚠️ ⛔ A ALTERNATIVA SAIU DAQUI — 2026-09-09 ──
+                         *
+                         * ⚠️ Relato do autor: *"aqui está misturando as coisas,
+                         * medido local com outro serviço"*, ⛔ e ⛔ logo depois:
+                         * *"aqui ⛔ já tem de outro serviço"*.
+                         *
+                         * ⛔ ⛔ ⛔ **⛔ E ⛔ ele tem razão ⛔ nas duas.** ⛔ O cartão
+                         * ⛔ se chama *"NIHSS calculado **⛔ aqui**"* ⛔ e trazia,
+                         * ⛔ dentro dele, ⛔ um botão de borda inteira dizendo
+                         * *"⛔ já tenho o total, medido **⛔ em outro
+                         * serviço**"*. ⚠️ ⛔ Duas procedências ⛔ no mesmo
+                         * cartão ⛔ é ⛔ exatamente o que este módulo separa
+                         * ⛔ desde 2026-08-29.
+                         *
+                         * ⚠️⚠️ ⛔ E ⛔ o botão ⛔ **⛔ não preenchia ⛔ nada**:
+                         * ⛔ ele ⛔ só **abria o bloco «NIHSS trazido de fora»**
+                         * — ⛔ que existe ⛔ logo abaixo, ⛔ com título próprio
+                         * ⛔ e a frase *"informação recebida da regulação, do
+                         * SAMU ou de outro serviço"*.
+                         *
+                         * ⛔ ⛔ ⛔ **⛔ Isto revoga uma decisão anterior**, ⛔ e
+                         * ⛔ por isso fica escrito: ⛔ a versão de 2026-08-29
+                         * pedia a alternativa *"no mesmo lugar"* ⛔ para ⛔ ela
+                         * ⛔ não sumir. ⚠️ ⛔ Ela ⛔ não some — ⛔ o bloco ⛔ está
+                         * ⛔ a uma linha, ⛔ visível ⛔ e nomeado. ⛔ O que
+                         * ⛔ havia ⛔ eram **⛔ dois** convites ⛔ para o mesmo
+                         * lugar, ⛔ e ⛔ um ⛔ deles ⛔ dentro do cartão errado.
+                         */
                       />
                     );
                   }

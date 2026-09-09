@@ -168,9 +168,31 @@ export const AGENTES_ANTI_HIPERTENSIVOS: readonly AgenteAntiHipertensivo[] = [
  */
 export const ALERTA_DO_ESMOLOL = {
   id: "esmolol_dose_historica",
-  titulo: "Não utilizar esmolol a 3 mg por quilo por minuto",
+  /**
+   * ⚠️ ⛔ A qual agente ⛔ ele pertence — ⛔ para a tela poder colá-lo
+   * ⛔ **⛔ no cartão dele**, ⛔ e ⛔ não numa nota solta (2026-09-09).
+   */
+  agente: "esmolol",
+  titulo: "Esmolol — não usar 3 mg por quilo por minuto",
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ A DESCONFIANÇA TEM **ESCOPO** — 2026-09-09 ─────────────────
+   *
+   * ⚠️ O autor perguntou se ⛔ não seria melhor *"tirar isso da fonte já que
+   * é errada"*.
+   *
+   * ⛔ ⛔ **⛔ E a fonte ⛔ não é errada** — ⛔ ela é a procedência de
+   * **metoprolol** ⛔ e **nitroprussiato** ⛔ nesta mesma lista. ⚠️ ⛔ O que
+   * ⛔ não se reproduz ⛔ é **⛔ este número**, ⛔ e ⛔ dizer *"o manual está
+   * errado"* ⛔ desqualificaria ⛔ um documento que o módulo ⛔ **⛔ ainda
+   * usa** — ⛔ incoerência que o médico veria ⛔ na linha seguinte.
+   *
+   * ⛔ ⛔ **⛔ E ⛔ não se apaga.** ⚠️ O número perigoso ⛔ existe ⛔ no mundo,
+   * ⛔ impresso, ⛔ e ⛔ o app ⛔ nunca ⛔ o ofereceu — ⛔ o que ⛔ ele oferece
+   * ⛔ é a **defesa** contra ⛔ ele. ⛔ Apagar o aviso ⛔ tiraria a defesa ⛔ e
+   * ⛔ deixaria o número ⛔ circulando.
+   */
   texto:
-    "Um manual brasileiro de 2013 descreve manutenção até 3 mg por quilo por minuto. Isso equivale a 3.000 microgramas por quilo por minuto, cerca de dez vezes o teto contemporâneo de 300, acima do qual a bula declara que a segurança não foi estudada.",
+    "O Manual de Rotinas do Ministério da Saúde de 2013 — a mesma fonte do metoprolol e do nitroprussiato desta lista — descreve manutenção até 3 mg por quilo por minuto. Isso equivale a 3.000 microgramas por quilo por minuto, cerca de dez vezes o teto de 300, acima do qual a bula declara que a segurança não foi estudada. A divergência é deste número, e não do manual inteiro.",
   fonte: "F-19",
 } as const;
 
@@ -183,6 +205,28 @@ export const ALERTA_DO_ESMOLOL = {
  */
 export type Alvo = {
   readonly id: string;
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O ALVO QUE A TELA MOSTRA **⛔ PRIMEIRO** — 2026-09-09 ───────
+   *
+   * ⚠️ Decisão do autor: *"⛔ não tem necessidade desse monte de alvos, vamos
+   * colocar o alvo mais bem aceito ⛔ e pronto, pode deixar o restante… como
+   * expansível para consulta"*.
+   *
+   * ⛔ ⛔ ⛔ **⛔ Nada foi apagado** — ⛔ e ⛔ isso ⛔ importa: os sete alvos
+   * ⛔ continuam ⛔ no módulo, ⛔ com COR, LOE ⛔ e contexto. ⚠️ ⛔ O que muda
+   * ⛔ é ⛔ **⛔ quantos** o médico atravessa ⛔ antes de achar ⛔ o que vale
+   * ⛔ agora.
+   *
+   * ⚠️⚠️ ⛔ E a marca é **⛔ do conteúdo**, ⛔ e ⛔ não da tela: ⛔ *"qual é o
+   * alvo principal"* ⛔ é pergunta clínica, ⛔ e ⛔ a apresentação ⛔ não
+   * ⛔ responde perguntas clínicas ⛔ sozinha (**E-31**).
+   *
+   * ⛔ ⛔ ⛔ **⛔ E ⛔ nada colapsa.** ⛔ 185/110 ⛔ é **porta de entrada**;
+   * 180/105 ⛔ é **manutenção**; `<140` ⛔ aparece ⛔ com **dano declarado**.
+   * ⛔ Esconder ⛔ atrás de um toque ⛔ não é achatar — ⛔ achatar seria dizer
+   * ⛔ que ⛔ são o mesmo.
+   */
+  readonly principal?: boolean;
   readonly valor: string;
   readonly contexto: string;
   readonly cor: string;
@@ -246,6 +290,13 @@ export const PA_POS_REPERFUSAO = {
 export const ALVOS_PRESSORICOS: readonly Alvo[] = [
   {
     id: "antes_ivt",
+    /**
+     * ⚠️ ⛔ **COR 1 · LOE B-NR**, ⛔ e ⛔ é ⛔ ele que este painel serve: ⛔ o
+     * bloqueio que traz o médico ⛔ até aqui ⛔ é *"a fonte diz para baixar a
+     * pressão **⛔ antes de iniciar a trombólise**"*. ⛔ O alvo principal ⛔ é
+     * ⛔ o da pergunta que ⛔ ele está fazendo.
+     */
+    principal: true,
     valor: "Abaixo de 185 por 110 mmHg",
     contexto: "Antes de iniciar a trombólise intravenosa",
     cor: "1",

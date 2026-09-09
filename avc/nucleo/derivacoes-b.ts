@@ -628,7 +628,25 @@ export function decisaoDoMedico(estado: EstadoAvc): Leitura {
   if (incerto) {
     return {
       conclusao: "desconhecido",
-      tom: "pendente",
+      /**
+       * ── ⚠️⚠️⚠️ ⛔ RESPONDIDO **⛔ NÃO É** PENDENTE — 2026-09-09 ────────────
+       *
+       * ⚠️ Relato do autor, ⛔ com captura: *"mesmo depois de marcado aparece
+       * como se ⛔ não estivesse marcado"* — ⛔ *"Incerto"* escolhido, ⛔ e o
+       * bloco dizendo *"Falta responder · 1"*.
+       *
+       * ⛔ ⛔ ⛔ **O `texto` ⛔ aqui ⛔ já dizia a coisa certa** — *"Incerto fica
+       * registrado como resposta"* —, ⛔ e o `tom` dizia o contrário.
+       * ⚠️ ⛔ E ⛔ os dois ramos estavam **⛔ trocados**: quem ⛔ **⛔ respondeu**
+       * caía em `pendente`, ⛔ e quem ⛔ **⛔ nunca foi perguntado** caía em
+       * `informativo`.
+       *
+       * ⛔ ⛔ **⛔ A conclusão ⛔ não muda**: `desconhecido` ⛔ continua
+       * `desconhecido`, ⛔ e ⛔ nada passa a ser afirmado (**E-23**). ⛔ O que
+       * muda ⛔ é a tela ⛔ parar de **cobrar** ⛔ uma resposta que ⛔ ela
+       * ⛔ **⛔ tem**.
+       */
+      tom: "informativo",
       curto: "Déficit assumido como incerto pelo médico",
       texto: "Incerto é uma das três decisões que a spec prevê, fica registrada como decisão, e não bloqueia o atendimento",
       insumos,

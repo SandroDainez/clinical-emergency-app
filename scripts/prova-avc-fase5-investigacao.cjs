@@ -362,7 +362,21 @@ const escolheE = (e, inst, campo, rotulo) => regE(e, inst, campo, CAMPO.valorDaO
    * ⚠️⚠️ ⛔ UMA CÓPIA SÓ — ⛔ e ⛔ a trava conta. ⛔ A frase escrita duas vezes
    * faria a próxima correção acertar ⛔ uma delas, ⛔ e a outra seguiria na tela.
    */
+  /**
+   * ⚠️⚠️ ⛔ COMPARAÇÃO **⛔ SEM CAIXA** — 2026-09-09.
+   *
+   * ⛔ ⛔ A frase começava a sentença ⛔ com minúscula (*"A fonte diz para
+   * ⛔ **não** atrasar…"*) ⛔ e passou a **⛔ abrir** a sentença (*"⛔ **Não**
+   * atrasar…"*), ⛔ quando o autor pediu linguagem objetiva ⛔ na camada da
+   * decisão. ⚠️ ⛔ A busca literal ⛔ passou a contar **⛔ zero** cópias ⛔ e a
+   * trava caiu — ⛔ **⛔ sem ⛔ nenhuma cópia ter surgido ⛔ ou sumido**.
+   *
+   * ⚠️ ⛔ O que ⛔ ela garante ⛔ é *"⛔ existe **⛔ uma** cópia"*, ⛔ e ⛔ isso
+   * ⛔ não depende ⛔ de maiúscula. ⛔ Uma trava que quebra ⛔ por caixa
+   * ⛔ ensina ⛔ a ignorá-la.
+   */
   const FRASE = "não atrasar a trombólise esperando exames de coagulação";
+  const contem = (txt) => txt.toLowerCase().includes(FRASE.toLowerCase());
   const dirs = [
     ...fs.readdirSync(path.join(appDir, "avc", "conteudo")).map((f) => ["avc", "conteudo", f]),
     ...fs.readdirSync(path.join(appDir, "components", "avc"))
@@ -370,7 +384,7 @@ const escolheE = (e, inst, campo, rotulo) => regE(e, inst, campo, CAMPO.valorDaO
   ];
   const copias = dirs.filter((rel) => {
     const abs = path.join(appDir, ...rel);
-    return fs.statSync(abs).isFile() && lerFonte(abs).includes(FRASE);
+    return fs.statSync(abs).isFile() && contem(lerFonte(abs));
   });
   conf(
     "⚠️⚠️ ⛔ o condicional existe em UM lugar só",

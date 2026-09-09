@@ -32,7 +32,18 @@ import { armazenamentoLocal } from "./armazenamento-local";
  * ⛔ Trocar a redação do consentimento ⛔ sem tocar aqui deixa em vigor um aceite
  * dado sobre outro texto.
  */
-export const VERSAO_DO_TEXTO = "2026-09-05";
+/**
+ * ── ⚠️⚠️⚠️ ⛔ SUBIU EM 2026-09-09 — ⛔ e ⛔ **⛔ tinha** de subir ────────────
+ *
+ * ⛔ ⛔ O aceite ganhou o texto completo de **Uso clínico e limitações**.
+ * ⚠️ ⛔ Acrescentar texto ⛔ **⛔ sem** mudar a versão ⛔ deixaria ⛔ todo médico
+ * que ⛔ já aceitou ⛔ **⛔ nunca ler** ⛔ o que foi acrescentado — ⛔ e ⛔ o app
+ * registraria ⛔ um aceite ⛔ de ⛔ um texto ⛔ que ⛔ aquela pessoa ⛔ não viu.
+ *
+ * ⚠️ ⛔ É ⛔ exatamente ⛔ o que o comentário acima ⛔ já dizia: *"mudou o que se
+ * aceita"* — ⛔ e ⛔ desta vez ⛔ mudou.
+ */
+export const VERSAO_DO_TEXTO = "2026-09-09";
 
 const CHAVE = `consentimento-clinico:${VERSAO_DO_TEXTO}`;
 

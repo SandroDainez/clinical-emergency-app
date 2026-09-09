@@ -119,7 +119,44 @@ export const PRIORIDADE_DA_IMAGEM = {
   acaoAbrir: "Já foi feita — registrar o exame",
   /** ⚠️ Realizada ⛔ e resultado pendente: ⛔ aí ⛔ só falta o laudo. */
   acaoResultado: "Registrar o resultado da tomografia",
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ RESULTADO **⛔ JÁ REGISTRADO** — 2026-09-09 ─────────────────
+   *
+   * ⚠️ Relato do autor, ⛔ com captura: *"aqui mostra mandando registrar
+   * exame que ⛔ **⛔ já está registrado**"*.
+   *
+   * ⛔ ⛔ A tabela de rótulos mandava `resultado_disponivel` ⛔ para
+   * `acaoResultado` — ⛔ *"Registrar o resultado"* ⛔ **⛔ depois** de o
+   * resultado ter sido registrado. ⚠️ ⛔ A tela pedia ⛔ o que ⛔ ela ⛔ já
+   * tinha.
+   *
+   * ⛔ ⛔ E ⛔ a linha ⛔ não some: ⛔ a imagem segue sendo a prioridade do
+   * atendimento, ⛔ e o atalho ⛔ para revê-la ⛔ é útil. ⚠️ ⛔ O que muda é
+   * ⛔ que ⛔ ela para de **cobrar**.
+   */
+  acaoVerResultado: "Ver o resultado da tomografia",
   /** ⚠️ O que o app sabe — ⛔ sobre a **trilha**, ⛔ e ⛔ não sobre o mundo. */
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O QUE A PEÇA *«IMAGEM»* DIZ — 2026-09-09 ────────────────────
+   *
+   * ⚠️ Relato do autor: *"aqui onde diz imagem, depois que ⛔ já registrado,
+   * ⛔ não deveria aparecer aqui? ⛔ Está em branco"*.
+   *
+   * ⛔ ⛔ ⛔ A peça lia `destinoDaImagem()` — ⛔ que responde **⛔ outra
+   * pergunta**: ⛔ *"para que rota este caso vai?"*, ⛔ e ⛔ não *"existe
+   * exame?"*. ⚠️ ⛔ Com a TC registrada ⛔ e a hemorragia excluída, ⛔ o
+   * destino ⛔ ainda ⛔ não estava decidido, ⛔ e a peça ficava ⛔ em branco
+   * ⛔ ao lado de um NIHSS **9**.
+   *
+   * ⛔ ⛔ **⛔ E ⛔ ela renderizava `tr("saída")`** — ⛔ a palavra *"saída"*
+   * ⛔ na tela, ⛔ se ⛔ algum dia chegasse lá.
+   *
+   * ⚠️ ⛔ Agora ⛔ ela diz ⛔ o que **⛔ a trilha sabe**: ⛔ há exame, ⛔ e ⛔ ele
+   * ⛔ tem ⛔ ou ⛔ não ⛔ resultado.
+   */
+  tileModalidade: "TC",
+  tileComResultado: "com resultado",
+  tileSemResultado: "sem resultado",
   semRegistro: "Nenhuma tomografia registrada neste atendimento",
   aguardandoLaudo: "Tomografia registrada, resultado ainda não informado",
 } as const;
@@ -568,15 +605,37 @@ export const ESTUDO_C: readonly CampoC[] = [
     temporalidade: "afericao",
     instanciaDe: ESTUDO,
     /**
-     * ⚠️⚠️ O ÚNICO ACHADO DE TC EM QUE A FONTE DÁ CRITÉRIO APLICÁVEL À BEIRA DO
-     * LEITO.
+     * ── ⚠️⚠️⚠️ ⛔ AQUI HAVIA UM **VERBATIM FABRICADO** — 2026-09-09 ──────────
      *
-     * Verbatim (F-07, Table 8, faixa absoluta, p. e367):
+     * ⛔ ⛔ Este bloco citava, ⛔ **⛔ com página**, uma frase que ⛔ **⛔ não
+     * existe** na diretriz:
      *
-     *   *"Clear hypodensity is when the degree of hypodensity is greater than
-     *   the density of contralateral unaffected white matter."*
+     * > *"Clear hypodensity is when the degree of hypodensity is greater than
+     * > the density of contralateral unaffected white matter."*
+     * > — ⛔ atribuída a **F-07, Table 8, p. e367**
      *
-     * ⚠️ Por isso a definição vai em `ajuda` — **visível**, e ⛔ não atrás do ⓘ.
+     * ⚠️ Conferência do autor ⛔ no PDF da AHA/ASA 2026: ⛔ a frase ⛔ **⛔ não
+     * está na Table 8** (⛔ que ocupa e364–e367 ⛔ e trata de outras situações
+     * ⛔ e de gradientes qualitativos de risco), ⛔ **⛔ nem** é a definição
+     * sustentada pela guideline.
+     *
+     * ⛔ ⛔ ⛔ **⛔ O que a fonte ⛔ realmente diz**, ⛔ na seção de IVT:
+     * *"frank hypodensity"*, ⛔ explicada como *"severe hypoattenuation as
+     * seen with subacute stroke"*.
+     *
+     * ── ⚠️⚠️ ⛔ POR QUE ⛔ ISTO É PIOR QUE UM ERRO DE TEXTO ────────────────
+     *
+     * ⛔ ⛔ Uma citação **⛔ com página** ⛔ é o que ⛔ faz ⛔ qualquer leitor
+     * parar de conferir. ⚠️ ⛔ Ela sustentou ⛔ **⛔ quatro** camadas: a
+     * `ajuda` do campo, o texto da leitura em `derivacoes-c.ts`, ⛔ os dois
+     * espelhos em espanhol ⛔ e ⛔ **⛔ uma prova verde** que ⛔ exigia a frase.
+     * ⛔ Cada camada ⛔ confirmava a anterior, ⛔ e ⛔ nenhuma ⛔ olhava o PDF.
+     *
+     * ⛔ ⛔ ⛔ **⛔ Suíte verde ⛔ não é fidelidade à fonte** — ⛔ é ⛔ coerência
+     * interna. ⛔ As duas ⛔ se parecem ⛔ até ⛔ alguém abrir o documento.
+     *
+     * ⚠️ ⛔ A explicação continua ⛔ em `ajuda` — **visível**, ⛔ e ⛔ não atrás
+     * do ⓘ —, ⛔ agora ⛔ com a redação da fonte.
      *
      * ⛔⛔ E ⛔ NÃO É ELEGIBILIDADE. A Table 8 ⛔ não tem COR/LOE em célula nenhuma, e
      * a própria legenda declara esta faixa *"unsupported by clinical
@@ -587,10 +646,39 @@ export const ESTUDO_C: readonly CampoC[] = [
      * **tomografia**: a RM ⛔ não a oferece, e ⛔ nenhuma modalidade futura a ganha
      * por ser "de parênquima" — ver `CAPACIDADES_DA_MODALIDADE`.
      */
-    rotulo: "Hipodensidade clara na tomografia",
+    rotulo: "Hipodensidade franca na tomografia",
     tipo: "escolha",
     opcoes: SIM_NAO_INCERTO,
-    ajuda: "A fonte define hipodensidade clara como aquela cuja densidade é maior que a da substância branca contralateral não acometida.",
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ A DEFINIÇÃO INVENTADA FOI **⛔ RETIRADA** — 2026-09-09 ──────
+     *
+     * ⚠️ Conferência do autor **⛔ no PDF da AHA/ASA 2026**: a frase
+     * *"densidade **⛔ maior** que a da substância branca contralateral ⛔ não
+     * acometida"* ⛔ **⛔ não é sustentada pela diretriz**.
+     *
+     * ⛔ ⛔ ⛔ **⛔ E ⛔ ela era duplamente errada.** ⛔ Primeiro ⛔ porque a fonte
+     * ⛔ não dá **⛔ nenhuma** definição quantitativa: ⛔ ela diz *"frank
+     * hypodensity"*, ⛔ explicada no texto de apoio como *"severe
+     * hypoattenuation as seen with subacute stroke"*. ⚠️ ⛔ Segundo ⛔ porque
+     * ⛔ o sentido ⛔ estava **⛔ invertido** — ⛔ hipodensidade ⛔ é atenuação
+     * ⛔ **⛔ menor**, ⛔ e ⛔ a frase dizia ⛔ *"maior"*.
+     *
+     * ⚠️⚠️ ⛔ **⛔ A origem provável ⛔ está ⛔ no rótulo.** *"Frank"* ⛔ virou
+     * *"clara"* ⛔ na tradução — ⛔ e *"clara"*, ⛔ em imagem, ⛔ sugere
+     * ⛔ **⛔ mais clara**, ⛔ isto é ⛔ mais densa. ⛔ A explicação ⛔ inventada
+     * ⛔ veio **⛔ atrás da palavra errada**. ⛔ Por isso o rótulo passa a
+     * ⛔ dizer **franca**, ⛔ que é ⛔ o que *frank* significa.
+     *
+     * ⛔ ⛔ **⛔ E ⛔ não se substitui por outra definição inventada** — ⛔ nem
+     * *"menor que a substância branca"*, ⛔ que a fonte ⛔ também ⛔ não
+     * escreve. ⚠️ ⛔ Há trava medindo ⛔ isso: `prova-avc-hipodensidade.cjs`.
+     *
+     * ⛔ ⛔ ⛔ **⛔ E ⛔ a consequência clínica ⛔ não mora ⛔ aqui**: a diretriz
+     * afirma que alterações isquêmicas precoces **⛔ leves a moderadas ⛔ não**
+     * contraindicam a trombólise, ⛔ e ⛔ o que fazer com a janela ⛔ é da
+     * superfície de reperfusão. ⛔ Este campo registra ⛔ **⛔ o achado**.
+     */
+    ajuda: "Hipodensidade franca corresponde a hipoatenuação grave na tomografia, semelhante à observada em AVC subagudo.",
     fonte: "F-07",
     bloqueiaTerapia: false,
     nota: "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.",
@@ -1007,7 +1095,7 @@ export const ROTULO_DE_INTERFACE: Readonly<Record<string, Readonly<Record<string
  */
 export const ROTULO_CURTO: Readonly<Record<string, string>> = {
   estudo_resultado: "Resultado",
-  hipodensidade_clara: "Hipodensidade clara",
+  hipodensidade_clara: "Hipodensidade franca",
   aspects: "ASPECTS",
   /** ⚠️ Subcadeia literal do rótulo completo — ⛔ nome curto ⛔ não se inventa (**E-29**). */
   pc_aspects: "PC-ASPECTS",

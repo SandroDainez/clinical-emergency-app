@@ -611,7 +611,29 @@ test.describe("Superfície A — UX clínica", () => {
     const detalhe = await detalheDaLeitura(page, "via_aerea");
     await expect(detalhe).toContainText("F-23");
     await expect(detalhe).toContainText(/Nível de consciência rebaixado/i);
-    await expect(detalhe).toContainText(/decisão permanece do médico/i);
+  });
+
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ O AVISO SAIU DO DETALHE ⛔ E FOI PARA O **⛔ RODAPÉ** ────────
+   *
+   * ⚠️ Decisão do autor, 2026-09-09: *"`recomendacao` aparece **⛔ uma vez por
+   * bloco de leituras**… ⛔ e ⛔ não uma vez por leitura"*.
+   *
+   * ⛔ ⛔ ⛔ A asserção acima media *"decisão permanece do médico"* **⛔ dentro
+   * ⛔ do detalhe de ⛔ cada leitura** — ⛔ que é ⛔ exatamente ⛔ o que fazia a
+   * mesma frase aparecer ⛔ **⛔ cinco vezes** ⛔ nesta tela.
+   *
+   * ⚠️ ⛔ A garantia ⛔ **⛔ não morreu**: ⛔ ela mudou de lugar ⛔ e ⛔ de
+   * cardinalidade — ⛔ o recado ⛔ tem de estar ⛔ na tela, ⛔ **⛔ uma vez**.
+   */
+  test("⛔ o aviso de apoio aparece **uma vez**, no rodapé das leituras", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await abrirA(page);
+
+    /** ⚠️ ⛔ O painel dá ⛔ o seu próprio `testID` — ⛔ o do componente ⛔ é o padrão. */
+    const aviso = page.getByTestId("avc-aviso-leituras");
+    await expect(aviso).toHaveCount(1);
+    await expect(aviso).toContainText(/A decisão clínica final cabe ao médico responsável/i);
   });
 
   /**

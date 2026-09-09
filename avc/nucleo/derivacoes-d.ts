@@ -401,7 +401,7 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       estado: "bloqueio_corrigivel",
       fonte: "F-04",
       verbo: "should have their SBP lowered to <185 mm Hg and diastolic blood pressure (DBP) <110 mm Hg before IVT therapy is initiated to reduce hemorrhagic complications",
-      formulacao: "a fonte diz para baixar a pressão antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
+      formulacao: "Recomendação: controlar a pressão arterial antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
       instancia: pa.instancia,
       resolvePor: "Uma nova aferição de pressão arterial",
     });
@@ -414,7 +414,7 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       estado: "bloqueio_corrigivel",
       fonte: "F-06",
       verbo: "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
-      formulacao: "a fonte diz que a hipoglicemia abaixo de 60 mg/dL deve ser tratada para evitar complicações",
+      formulacao: "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
       resolvePor: "Uma nova glicemia",
     });
   }

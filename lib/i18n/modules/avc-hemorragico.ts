@@ -471,6 +471,48 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Origem do Glasgow": "Origen del Glasgow",
   /** ⚠️ *"Outros"* que se escreve, ⛔ e as frases que o desambiguam — 2026-09-09. */
   "Escreva quais": "Escriba cuáles",
+  /** ⚠️ O caminho de volta para fechar o ciclo — 2026-09-09. */
+  "Registrar nova medida": "Registrar nueva medida",
+  /** ⚠️ Um alvo na frente, os outros a um toque — 2026-09-09. */
+  "Ver os outros alvos e as fontes": "Ver los otros objetivos y las fuentes",
+  "Ocultar os outros alvos": "Ocultar los otros objetivos",
+  "Ver os agentes e as doses": "Ver los agentes y las dosis",
+  "Ocultar os agentes": "Ocultar los agentes",
+  /** ⚠️ A escala abre inteira; o modo foco vira escolha — 2026-09-09. */
+  "Um item por vez": "Un ítem por vez",
+  /**
+   * ⚠️⚠️ O AVISO DE APOIO À DECISÃO — ⛔ um componente, ⛔ e ⛔ não trinta
+   * frases. ⛔ As chaves vivem ⛔ aqui ⛔ porque ⛔ o design system ⛔ não
+   * conhece o `lib/i18n` — ⛔ é ⛔ isso que ⛔ o deixa reutilizável.
+   */
+  "Recomendação de apoio baseada nas fontes citadas. A decisão clínica final cabe ao médico responsável, conforme o contexto individual do paciente.":
+    "Recomendación de apoyo basada en las fuentes citadas. La decisión clínica final corresponde al médico responsable, según el contexto individual del paciente.",
+  "Apoio à decisão clínica. Confirme os dados do paciente, contraindicações e condições locais antes de executar a conduta. A decisão final e a execução cabem ao médico assistente.":
+    "Apoyo a la decisión clínica. Confirme los datos del paciente, contraindicaciones y condiciones locales antes de ejecutar la conducta. La decisión final y la ejecución corresponden al médico asistente.",
+  "Cálculo baseado nos dados registrados no atendimento. Confirme peso, concentração, unidade, dose e via antes da administração.":
+    "Cálculo basado en los datos registrados en la atención. Confirme peso, concentración, unidad, dosis y vía antes de la administración.",
+  "Uso clínico e limitações": "Uso clínico y limitaciones",
+  "Este aplicativo é uma ferramenta de apoio à decisão clínica baseada em literatura científica e diretrizes referenciadas. Não substitui avaliação médica, julgamento clínico, protocolos institucionais ou análise individual do paciente. As recomendações apresentadas devem ser interpretadas no contexto clínico e podem não contemplar todas as situações, contraindicações, exceções ou recursos disponíveis. A decisão diagnóstica e terapêutica final é do profissional responsável pelo atendimento.":
+    "Esta aplicación es una herramienta de apoyo a la decisión clínica basada en literatura científica y directrices referenciadas. No sustituye la evaluación médica, el juicio clínico, los protocolos institucionales ni el análisis individual del paciente. Las recomendaciones presentadas deben interpretarse en el contexto clínico y pueden no contemplar todas las situaciones, contraindicaciones, excepciones o recursos disponibles. La decisión diagnóstica y terapéutica final es del profesional responsable de la atención.",
+  /** ⚠️ Estado do exame na peça «Imagem» — 2026-09-09. */
+  "com resultado": "con resultado",
+  "sem resultado": "sin resultado",
+  /** ⚠️ A linha da decisão, objetiva — 2026-09-09. */
+  "Não atrasar a trombólise esperando exames de coagulação quando não há razão para suspeitar de resultado anormal.":
+    "No retrasar la trombólisis esperando exámenes de coagulación cuando no hay razón para sospechar un resultado anormal.",
+  "Registra a dúvida clínica sobre o diagnóstico. Na incerteza diagnóstica, e salvo contraindicações absolutas, o risco de dano com a trombólise é baixo.":
+    "Registra la duda clínica sobre el diagnóstico. En la incertidumbre diagnóstica, y salvo contraindicaciones absolutas, el riesgo de daño con la trombólisis es bajo.",
+  "Sangramento tratado e risco reduzido mudam o peso deste antecedente na decisão.":
+    "Sangrado tratado y riesgo reducido cambian el peso de este antecedente en la decisión.",
+  "Não existe corte de escore que defina leve. O julgamento é seu.":
+    "No existe punto de corte de puntaje que defina leve. El juicio es suyo.",
+  /** ⚠️ Resultado já registrado: a linha vira atalho, e não cobrança — 2026-09-09. */
+  "Ver o resultado da tomografia": "Ver el resultado de la tomografía",
+  /** ⚠️ O alerta do esmolol, colado ao cartão dele — 2026-09-09. */
+  "Esmolol — não usar 3 mg por quilo por minuto":
+    "Esmolol — no usar 3 mg por kilo por minuto",
+  "O Manual de Rotinas do Ministério da Saúde de 2013 — a mesma fonte do metoprolol e do nitroprussiato desta lista — descreve manutenção até 3 mg por quilo por minuto. Isso equivale a 3.000 microgramas por quilo por minuto, cerca de dez vezes o teto de 300, acima do qual a bula declara que a segurança não foi estudada. A divergência é deste número, e não do manual inteiro.":
+    "El Manual de Rutinas del Ministerio de Salud de Brasil de 2013 — la misma fuente del metoprolol y del nitroprusiato de esta lista — describe mantenimiento hasta 3 mg por kilo por minuto. Eso equivale a 3.000 microgramos por kilo por minuto, cerca de diez veces el techo de 300, por encima del cual el prospecto declara que la seguridad no fue estudiada. La divergencia es de este número, y no del manual entero.",
   /** ⚠️ Respondido como incerto ⛔ não é ⛔ não avaliado — 2026-09-09. */
   "Via aérea sem definição — respondida como incerta":
     "Vía aérea sin definición — respondida como incierta",

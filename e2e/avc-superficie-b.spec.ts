@@ -585,8 +585,12 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await abrirB(page);
 
     await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
-    /** ⚠️ A revisão mostra os quinze itens — é onde se confere todos de uma vez. */
-    await page.getByTestId("avc-escala-ver-todos-nihss_calculado").click();
+    /**
+     * ⚠️ ⛔ A escala **abre inteira** desde 2026-09-09 (pedido do autor: *"abrir
+     * ele todo, fica mais fácil de preencher"*). ⛔ O toque em *"ver todos"*
+     * ⛔ agora ⛔ **⛔ esconderia** os quatorze restantes — ⛔ ele virou o
+     * caminho ⛔ para o modo foco.
+     */
     /**
      * ⚠️ DUAS LINHAS, NESTA ORDEM: o que avalia, depois como testar. A primeira
      * é o que destrava quem ⛔ não usa a escala todo dia.

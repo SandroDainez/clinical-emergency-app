@@ -171,4 +171,305 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
       /** ⛔ E o que ⛔ ela diz ⛔ é a verdade: ⛔ perguntado, ⛔ e ⛔ sem definição. */
       await expect(corpo).toContainText(/respondida como incerta/i);
     });
+
+  /* ══ ⚠️⚠️⚠️ 5 · O GESTO ⛔ ESTÁ AO ALCANCE DO PROBLEMA ═════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09: *"quando direciono para cá ⛔ e clico
+   * ⛔ não acontece, ⛔ não abre opção para correção"*.
+   *
+   * ⛔ ⛔ **⛔ E o botão funcionava.** ⚠️ Medido ⛔ antes da correção: ⛔ ele
+   * criava a ação ⛔ normalmente, ⛔ e estava **⛔ 2948 px abaixo** do título
+   * do problema — ⛔ **⛔ 3,6 telas** de 812, ⛔ com o painel inteiro de
+   * agentes ⛔ e doses no meio.
+   *
+   * ⚠️⚠️ ⛔ **⛔ Um controle que ⛔ ninguém alcança ⛔ é um controle que ⛔ não
+   * existe.** ⛔ Por isso esta trava mede **distância**, ⛔ e ⛔ não
+   * existência: ⛔ *"o botão está ⛔ no DOM"* ⛔ já era verdade ⛔ enquanto ⛔ ele
+   * era inalcançável.
+   */
+  test("⛔ *«Registrar ação»* fica ⛔ ao alcance do problema que ⛔ ele resolve",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await abrirEixosDaEstabilizacao(page);
+
+      /** ⛔ 210 × 120 — ⛔ acima da meta de 185 × 110 ⛔ para a trombólise. */
+      for (const [id, v] of [["pas", "210"], ["pad", "120"]] as const) {
+        const c = page.getByTestId(`avc-num-caixa-${id}`);
+        await c.fill(v);
+        await c.blur();
+      }
+
+      const atalho = page.getByText(/Corrigir a pressão arterial/i).first();
+      if (await atalho.count()) await atalho.click();
+      else await page.getByText(/Abrir Correções/i).first().click();
+      await expect(page.getByTestId("avc-superficie-e-conteudo")).toBeVisible();
+
+      const bloco = await page
+        .getByTestId("avc-e-bloqueio-pressao_acima_da_meta")
+        .boundingBox();
+      const botao = await page
+        .getByTestId("avc-e-nova-acao-pressao_acima_da_meta")
+        .boundingBox();
+      expect(bloco, "⛔ o bloqueio da PA ⛔ não está na tela").not.toBeNull();
+      expect(botao, "⛔ o botão de registrar ação ⛔ não está na tela").not.toBeNull();
+
+      /**
+       * ⚠️ ⛔ Uma tela de distância, ⛔ e ⛔ não quatro: ⛔ quem lê o problema
+       * ⛔ tem de ver ⛔ o que fazer ⛔ sem atravessar a bula.
+       */
+      const distancia = botao!.y - bloco!.y;
+      expect(
+        distancia,
+        `⛔ o gesto está a ${Math.round(distancia)} px do problema — ⛔ fora de alcance`
+      ).toBeLessThan(812);
+
+      /** ⚠️ ⛔ E ⛔ ele **⛔ faz** alguma coisa: ⛔ o clique cria a ação. */
+      await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
+      await expect(page.locator('[data-testid^="avc-e-acao-"]')).toHaveCount(1);
+    });
+
+  /* ══ ⚠️⚠️⚠️ 6 · O ALERTA MORA ⛔ ONDE ⛔ ELE FAZ SENTIDO ═════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09: *"por que tem esse aviso aqui? ⛔ não
+   * entendi"*.
+   *
+   * ⛔ ⛔ O alerta do esmolol ficava **⛔ solto**, depois de ⛔ todos os agentes:
+   * a tela mostrava o esmolol ⛔ com a dose **⛔ certa** ⛔ e ⛔ então, ⛔ três
+   * cartões abaixo, ⛔ avisava contra ⛔ um número que ⛔ ela ⛔ **⛔ nunca
+   * ofereceu**.
+   *
+   * ⚠️ ⛔ Ele ⛔ **⛔ não** foi apagado — ⛔ o número perigoso existe ⛔ no mundo,
+   * ⛔ impresso, ⛔ e ⛔ o aviso ⛔ é a defesa contra ⛔ ele.
+   */
+  test("⛔ o alerta do esmolol fica **dentro** do cartão do esmolol",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await abrirEixosDaEstabilizacao(page);
+      for (const [id, v] of [["pas", "210"], ["pad", "120"]] as const) {
+        const c = page.getByTestId(`avc-num-caixa-${id}`);
+        await c.fill(v);
+        await c.blur();
+      }
+
+      /**
+       * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 — ⛔ o alerta
+       * mora ⛔ dentro do cartão do esmolol, ⛔ então ⛔ é preciso abrir a
+       * gaveta. ⛔ Ver ⛔ o alerta **⛔ quando se olha o esmolol** ⛔ é
+       * ⛔ exatamente ⛔ o ponto de ⛔ ele ter saído da nota solta.
+       */
+      await page.getByTestId("avc-a-agentes-abrir").first().click();
+
+      const alerta = page.getByTestId("avc-a-alerta-esmolol").first();
+      await expect(alerta).toBeVisible();
+
+      /** ⚠️⚠️ ⛔ **⛔ DENTRO** do cartão do esmolol — ⛔ medido ⛔ na árvore. */
+      const dentro = await alerta.evaluate((el) => {
+        const cartao = el.closest('[data-testid*="agente-esmolol"]');
+        if (cartao) return true;
+        /** ⛔ Sem testID no cartão, ⛔ o pai imediato tem de falar de esmolol. */
+        const pai = el.parentElement;
+        return !!pai && /esmolol/i.test(pai.innerText);
+      });
+      expect(
+        dentro,
+        "⛔ o alerta está solto — ⛔ ele avisa contra uma dose que ⛔ não está ⛔ ao lado"
+      ).toBe(true);
+
+      /** ⚠️ ⛔ E ⛔ ele diz **⛔ de quem** é a ressalva, ⛔ e ⛔ qual o escopo dela. */
+      await expect(alerta).toContainText(/Esmolol/i);
+      await expect(alerta).toContainText(/e não do manual inteiro/i);
+    });
+
+  /* ══ ⚠️⚠️⚠️ 7 · ⛔ NÃO PEDIR O QUE ⛔ JÁ FOI FEITO ══════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09: *"aqui mostra mandando registrar
+   * exame que ⛔ **⛔ já está registrado**"*.
+   *
+   * ⛔ ⛔ A tabela de rótulos mandava `resultado_disponivel` ⛔ para a **mesma**
+   * frase de `realizado_sem_resultado`: *"Registrar o resultado da
+   * tomografia"* — ⛔ **⛔ depois** de o resultado ter sido registrado. ⚠️ ⛔ A
+   * tela pedia ⛔ o que ⛔ ela ⛔ já tinha, ⛔ em vermelho.
+   */
+  test("⛔ com o resultado registrado, a linha da imagem ⛔ para de cobrar",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-imagem").click();
+      await expect(page.getByTestId("avc-superficie-c-conteudo")).toBeVisible();
+
+      /** ⛔ Antes de ⛔ qualquer registro, ⛔ ela cobra — ⛔ e ⛔ deve cobrar. */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await expect(page.getByTestId("avc-prioridade-imagem-acao")).not.toContainText(
+        /Ver o resultado/i
+      );
+
+      /** ⛔ Registra a TC ⛔ e o resultado, ⛔ pelo caminho do médico. */
+      await page.getByTestId("avc-aba-imagem").click();
+      const novoEstudo = page.getByTestId("avc-novo-estudo");
+      if (await novoEstudo.count()) await novoEstudo.click();
+
+      /**
+       * ⚠️ ⛔ A **modalidade primeiro** — ⛔ a decisão do exame ⛔ só existe
+       * ⛔ depois que o estudo diz **⛔ o que ⛔ ele é**. ⛔ Medido ⛔ na
+       * árvore: ⛔ sem modalidade, ⛔ o campo do resultado ⛔ nem nasce.
+       */
+      await page
+        .getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste")
+        .click();
+
+      const semHemorragia = page.getByTestId(
+        "avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada"
+      );
+      await expect(
+        semHemorragia,
+        "⛔ o cenário mudou: ⛔ a decisão do exame ⛔ não está ⛔ na tela"
+      ).toBeVisible();
+      await semHemorragia.click();
+
+      /**
+       * ⚠️⚠️ ⛔ AGORA ⛔ ELA ⛔ NÃO PODE MAIS MANDAR REGISTRAR — ⛔ e ⛔ nem ficar
+       * vermelha: ⛔ cor ⛔ tem de dizer ⛔ o mesmo que a palavra (**E-15**).
+       */
+      await page.getByTestId("avc-aba-neurologico").click();
+      const acao = page.getByTestId("avc-prioridade-imagem-acao");
+      await expect(
+        acao,
+        "⛔ manda registrar um resultado que ⛔ já está registrado"
+      ).not.toContainText(/Registrar o resultado/i);
+      await expect(acao).toContainText(/Ver o resultado/i);
+    });
+
+  /* ══ ⚠️⚠️⚠️ 8 · O ATALHO ⛔ NÃO LEVA AONDE ⛔ JÁ SE ESTÁ ════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ DECISÃO DO AUTOR, 2026-09-09: *"na aba neuro podemos tirar isso da
+   * barra ⛔ já que tem ⛔ ao longo da aba para preenchimento"*.
+   *
+   * ⛔ ⛔ *"Definir · Última vez bem"* ⛔ era o botão mais chamativo do
+   * cabeçalho ⛔ e levava ⛔ ao campo que está ⛔ **⛔ na própria tela**.
+   * ⚠️ ⛔ Paciente ⛔ e Estabilização ⛔ já tinham saído ⛔ pela mesma razão.
+   *
+   * ⛔ ⛔ **⛔ E ⛔ ele ⛔ não some do atendimento** — ⛔ é ⛔ isso que a segunda
+   * metade mede: **§7.8** proíbe perder o tempo de vista, ⛔ e ⛔ nas
+   * superfícies em que a cronologia ⛔ não mora ⛔ o relógio ⛔ continua.
+   */
+  test("⛔ o relógio sai da barra ⛔ onde o campo mora, ⛔ e ⛔ fica onde ⛔ não mora",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+
+      /** ⛔ Na Avaliação AVC ⛔ o campo está ⛔ na tela — ⛔ o atalho sobra. */
+      await page.getByTestId("avc-aba-neurologico").click();
+      await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
+      await expect(
+        page.getByTestId("avc-campo-hora_ultima_vez_bem"),
+        "⛔ o campo ⛔ não está ⛔ nesta tela — ⛔ aí o atalho ⛔ faria falta"
+      ).toBeVisible();
+      await expect(
+        page.getByText(/^Última vez bem$/),
+        "⛔ o cabeçalho ⛔ ainda oferece ir ⛔ para onde ⛔ já se está"
+      ).toHaveCount(0);
+
+      /** ⚠️ ⛔ E ⛔ onde a cronologia ⛔ não mora, ⛔ o relógio **⛔ continua**. */
+      await page.getByTestId("avc-aba-imagem").click();
+      await expect(page.getByTestId("avc-superficie-c-conteudo")).toBeVisible();
+      await expect(
+        page.getByText(/^Última vez bem$/).first(),
+        "⛔ perder o tempo de vista é o defeito que §7.8 proíbe"
+      ).toBeVisible();
+    });
+
+  /* ══ ⚠️⚠️⚠️ 9 · O BOTÃO ÂMBAR ⛔ FAZ ALGUMA COISA ══════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09: *"tem um botão em azul «corrigir
+   * pressão arterial» mas quando clica nele ⛔ nada acontece, ⛔ está ⛔ sem
+   * função"*.
+   *
+   * ⛔ ⛔ **⛔ O mesmo defeito das pendências, ⛔ noutro botão** — ⛔ e ⛔ eu
+   * ⛔ tinha consertado ⛔ **⛔ só uma das duas cópias** da regra. ⚠️ ⛔ Esta
+   * trava mede o botão ⛔ **⛔ de dentro das Correções**, ⛔ que é ⛔ onde ⛔ ele
+   * era inerte ⛔ e ⛔ onde ⛔ nenhuma trava olhava.
+   */
+  test("⛔ *«Corrigir a pressão arterial»* age ⛔ até de dentro das Correções",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-estabilizacao").click();
+      await abrirEixosDaEstabilizacao(page);
+      for (const [id, v] of [["pas", "210"], ["pad", "120"]] as const) {
+        const c = page.getByTestId(`avc-num-caixa-${id}`);
+        await c.fill(v);
+        await c.blur();
+      }
+
+      /** ⛔ Chega às Correções — ⛔ e ⛔ **⛔ fica** lá. */
+      await page.getByTestId("avc-cockpit-bloqueio-acao-pressao_acima_da_meta").click();
+      await expect(page.getByTestId("avc-superficie-e-conteudo")).toBeVisible();
+
+      /** ⛔ Vai para longe do bloco, ⛔ de propósito. */
+      await page.mouse.wheel(0, 4000);
+      await page.waitForTimeout(300);
+      const antes = await page
+        .getByTestId("avc-e-bloqueio-pressao_acima_da_meta")
+        .boundingBox();
+
+      /**
+       * ⚠️⚠️ ⛔ E TOCA ⛔ O MESMO BOTÃO **⛔ ESTANDO ⛔ NA TELA** — ⛔ era ⛔ aqui
+       * que ⛔ ele ⛔ não fazia ⛔ nada.
+       */
+      await page.getByTestId("avc-cockpit-bloqueio-acao-pressao_acima_da_meta").click();
+      await page.waitForTimeout(600);
+      const depois = await page
+        .getByTestId("avc-e-bloqueio-pressao_acima_da_meta")
+        .boundingBox();
+
+      expect(depois, "⛔ o bloco da PA sumiu").not.toBeNull();
+      const altura = page.viewportSize()!.height;
+      expect(
+        depois!.y >= -1 && depois!.y < altura,
+        `⛔ o botão ⛔ não levou até a correção: antes ${JSON.stringify(antes)}, depois ${JSON.stringify(depois)}`
+      ).toBe(true);
+    });
+
+  /* ══ ⚠️⚠️⚠️ 10 · ⛔ UMA PROCEDÊNCIA POR CARTÃO ═════════════════════ */
+
+  /**
+   * ⚠️⚠️ ⛔ RELATO DO AUTOR, 2026-09-09: *"aqui está misturando as coisas,
+   * medido local com outro serviço"* ⛔ e *"aqui ⛔ já tem de outro serviço"*.
+   *
+   * ⛔ ⛔ O cartão *"NIHSS calculado **⛔ aqui**"* ⛔ oferecia, ⛔ dentro dele,
+   * *"⛔ já tenho o total, medido **⛔ em outro serviço**"* — ⛔ duas
+   * procedências ⛔ no mesmo cartão, ⛔ que é ⛔ o que este módulo separa
+   * ⛔ desde 2026-08-29.
+   *
+   * ⚠️ ⛔ E a alternativa ⛔ **⛔ não sumiu**: ⛔ é ⛔ a segunda metade ⛔ que
+   * mede ⛔ isso — ⛔ o bloco próprio ⛔ continua ⛔ na tela, ⛔ nomeado.
+   */
+  test("⛔ o NIHSS de fora ⛔ não é oferecido dentro do NIHSS *«calculado aqui»*",
+    async ({ page }) => {
+      await fixarIdioma(page, "pt-BR");
+      await page.goto("/modulos/avc");
+      await page.getByTestId("avc-aba-neurologico").click();
+      const corpo = page.getByTestId("avc-superficie-b-conteudo");
+      await expect(corpo).toBeVisible();
+
+      await expect(
+        page.getByTestId("avc-escala-informar-total-nihss_calculado"),
+        "⛔ duas procedências ⛔ no mesmo cartão"
+      ).toHaveCount(0);
+
+      /** ⚠️ ⛔ E o caminho de fora ⛔ continua **⛔ existindo ⛔ e nomeado**. */
+      await expect(corpo).toContainText(/NIHSS trazido de fora/i);
+      await expect(corpo).toContainText(
+        /Informação recebida da regulação, do SAMU ou de outro serviço/i
+      );
+    });
 });

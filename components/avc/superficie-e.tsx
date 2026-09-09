@@ -24,13 +24,16 @@ import { problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
+import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
+import { useFoco } from "./sistema/foco";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
-import { ESPACO, RAIO } from "../../design-system/tokens";
+import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 
 /**
  * ⚠️ ⛔ `PAPEL_EM_PALAVRAS` mudou de casa em 2026-09-08: ⛔ ele é do **desenho**
@@ -44,6 +47,15 @@ type Props = {
   onEscolherNaAcao: (acao: string, campo: string, valor: string) => void;
   onDesfazerNaAcao: (acao: string, campo: string) => void;
   onNovaAcao: (tipo: string) => void;
+  /**
+   * ⚠️⚠️ ⛔ LEVA ATÉ **⛔ ONDE SE REGISTRA A NOVA AFERIÇÃO** — 2026-09-09.
+   *
+   * ⛔ ⛔ Relato do autor: a tela dizia *"Falta: uma nova aferição de pressão
+   * arterial"* ⛔ e ⛔ não dizia ⛔ onde. ⚠️ ⛔ Pendência ⛔ sem condição de
+   * resolução ⛔ é muro (**E-26**) — ⛔ e ⛔ dizer o que falta ⛔ sem o caminho
+   * ⛔ é a mesma coisa.
+   */
+  onReavaliar: (superficie: SuperficieId, campo: string) => void;
 };
 
 /**
@@ -81,10 +93,12 @@ export default function SuperficieE({
   onEscolherNaAcao,
   onDesfazerNaAcao,
   onNovaAcao,
+  onReavaliar,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
+  const foco = useFoco();
   const blocos = bloqueiosComAcoes(estado);
   /**
    * ⚠️⚠️ ⛔ O QUE O CABEÇALHO CONTA — ⛔ e ⛔ é ⛔ ele que a tela ⛔ tem de
@@ -155,6 +169,26 @@ export default function SuperficieE({
               {p.campo === "pas" || p.campo === "pad" ? (
                 <CondutaDaPressao prefixo="avc-e-" />
               ) : null}
+              {/**
+                * ⚠️⚠️ ⛔ E ⛔ AQUI TAMBÉM — ⛔ pedido do autor: *"esse mesmo
+                * caminho tem que verificar se existe em hipo ⛔ e
+                * hiperglicemias"*.
+                *
+                * ⛔ ⛔ A **hipo** ⛔ é bloqueio ⛔ e tem o ciclo acima. ⚠️ ⛔ A
+                * **hiper** ⛔ não bloqueia — ⛔ ela chega ⛔ aqui ⛔ como
+                * problema enviado, ⛔ e ⛔ ficava ⛔ sem caminho de volta
+                * ⛔ nenhum.
+                */}
+              {p.campo === undefined ? null : (
+                <Pressable
+                  style={e.reavaliar}
+                  accessibilityRole="button"
+                  testID={`avc-e-reavaliar-enviado-${p.id}`}
+                  onPress={() => onReavaliar("estabilizacao", p.campo as string)}
+                >
+                  <Text style={e.reavaliarTexto}>{tr("Registrar nova medida")}</Text>
+                </Pressable>
+              )}
             </View>
           ))}
 
@@ -197,7 +231,23 @@ export default function SuperficieE({
       {blocos.map(({ bloqueio, acoes }) => {
         const acao = ACOES_DE_CORRECAO.find((a) => a.bloqueio === bloqueio.id);
         return (
-          <View key={bloqueio.id} style={e.grupo} testID={`avc-e-bloqueio-${bloqueio.id}`}>
+          <View
+            key={bloqueio.id}
+            style={e.grupo}
+            testID={`avc-e-bloqueio-${bloqueio.id}`}
+            /**
+             * ── ⚠️⚠️⚠️ ⛔ O DESTINO DO BOTÃO ÂMBAR — 2026-09-09 ─────────────
+             *
+             * ⛔ ⛔ *"Corrigir a pressão arterial"* ⛔ precisa parar **⛔ aqui**,
+             * ⛔ e ⛔ não no topo da tela — ⛔ ainda mais ⛔ quando o médico
+             * ⛔ já está ⛔ nas Correções ⛔ e o toque ⛔ não mudava ⛔ nada.
+             *
+             * ⚠️ ⛔ Registrado ⛔ no mesmo mecanismo de foco dos campos: ⛔ o
+             * nome ⛔ é sintético (`correcao_<bloqueio>`) ⛔ porque ⛔ isto
+             * ⛔ **⛔ não** é um campo — ⛔ é ⛔ **⛔ um lugar**.
+             */
+            ref={(n) => foco.registrarGrupo([`correcao_${bloqueio.id}`], n)}
+          >
             <CabecalhoDeBloco
               titulo={acao?.rotulo ?? bloqueio.id}
               testID={`avc-e-bloco-${bloqueio.id}`}
@@ -216,6 +266,80 @@ export default function SuperficieE({
               {tr("O que faz este bloqueio cair")}: {tr(bloqueio.resolvePor)} —{" "}
               {tr("registrada em Entrada e estabilização")}
             </Text>
+
+            {/**
+              * ── ⚠️⚠️⚠️ ⛔ O GESTO ANTES DA REFERÊNCIA — 2026-09-09 ──────────
+              *
+              * ⚠️ Relato do autor: *"quando direciono para cá ⛔ e clico ⛔ não
+              * acontece, ⛔ não abre opção para correção"*.
+              *
+              * ⛔ ⛔ **⛔ E ⛔ ele funcionava.** ⚠️ Medido: o botão criava a ação
+              * ⛔ normalmente — ⛔ ele ⛔ só estava **⛔ 2948 px abaixo** do
+              * título do problema, ⛔ **⛔ 3,6 telas** de 812. ⛔ Entre os dois
+              * ⛔ havia o painel inteiro de agentes ⛔ e doses.
+              *
+              * ⚠️⚠️ ⛔ Um controle que ⛔ ninguém alcança ⛔ é um controle que
+              * ⛔ não existe — ⛔ e o relato *"⛔ não acontece ⛔ nada"* estava
+              * ⛔ **⛔ certo do ponto de vista de quem usa**.
+              *
+              * ⛔ ⛔ Agora o **gesto** vem logo depois do que faz o bloqueio
+              * cair, ⛔ e a **referência** (agentes, doses, alvos) fica abaixo
+              * — ⛔ ela é para consultar, ⛔ e ⛔ não para atravessar.
+              */}
+            {/**
+              * ── ⚠️⚠️⚠️ ⛔ E **⛔ ONDE** SE FECHA O CICLO — 2026-09-09 ────────
+              *
+              * ⚠️ *"Cliquei em registrar ação ⛔ e ⛔ nem sei o que aconteceu…
+              * ⛔ não me dá ⛔ onde tenho que registrar a nova aferição."*
+              *
+              * ⛔ ⛔ A tela dizia **⛔ o que falta** ⛔ e ⛔ parava aí. ⚠️ ⛔ O que
+              * fecha o bloqueio ⛔ **⛔ não acontece ⛔ aqui** — ⛔ acontece ⛔ na
+              * Estabilização, ⛔ e ⛔ o médico ⛔ tinha de descobrir ⛔ isso
+              * ⛔ sozinho.
+              *
+              * ⚠️ ⛔ Aparece ⛔ **⛔ depois** de haver ação registrada: ⛔ antes
+              * disso ⛔ o gesto seguinte ⛔ é registrar a ação, ⛔ e ⛔ dois
+              * botões ⛔ competindo ⛔ diriam ⛔ que ⛔ tanto faz.
+              */}
+            {/**
+              * ⚠️ ⛔ `altoRisco` ⛔ no bloco da **ação** — ⛔ aqui ⛔ o médico
+              * ⛔ registra ⛔ o que executou ⛔ no paciente. ⚠️ ⛔ O
+              * `calculoDose` ⛔ **⛔ não** entra ⛔ aqui: ⛔ ele mora ⛔ em
+              * `conduta-da-fonte`, ⛔ colado ⛔ ao número — ⛔ e ⛔ empilhar
+              * ⛔ os dois ⛔ é ⛔ o que o autor ⛔ proibiu.
+              */}
+            <AvisoDeApoioClinico
+              variante="altoRisco"
+              ha
+              tr={tr}
+              testID={`avc-e-aviso-alto-risco-${bloqueio.id}`}
+            />
+
+            {acao && acoes.length > 0 ? (
+              <Pressable
+                style={e.reavaliar}
+                accessibilityRole="button"
+                testID={`avc-e-reavaliar-${bloqueio.id}`}
+                onPress={() => onReavaliar(acao.reavaliaEm, acao.campoDaReavaliacao)}
+              >
+                <Text style={e.reavaliarTexto}>
+                  {tr("Registrar")} {tr(acao.resolvePor).toLowerCase()}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {acao ? (
+              <Pressable
+                style={e.novaAcao}
+                accessibilityRole="button"
+                testID={`avc-e-nova-acao-${bloqueio.id}`}
+                onPress={() => onNovaAcao(acao.rotulo)}
+              >
+                <Text style={e.novaAcaoTexto}>
+                  {acoes.length === 0 ? tr("Registrar ação") : tr("Registrar outra ação")}
+                </Text>
+              </Pressable>
+            ) : null}
 
             {/**
               * ⚠️⚠️ CADA AÇÃO É UMA INSTÂNCIA: duas intervenções antes da nova
@@ -304,18 +428,6 @@ export default function SuperficieE({
               */}
             {bloqueio.id === "glicemia_alterada" ? <CondutaGlicemica prefixo="avc-e-" /> : null}
 
-            {acao ? (
-              <Pressable
-                style={e.novaAcao}
-                accessibilityRole="button"
-                testID={`avc-e-nova-acao-${bloqueio.id}`}
-                onPress={() => onNovaAcao(acao.rotulo)}
-              >
-                <Text style={e.novaAcaoTexto}>
-                  {acoes.length === 0 ? tr("Registrar ação") : tr("Registrar outra ação")}
-                </Text>
-              </Pressable>
-            ) : null}
           </View>
         );
       })}
@@ -449,4 +561,19 @@ const criarEstilos = (tema: Tema) =>
     novaAcaoTexto: {
       ...PAPEL.tituloDeSecao, color: tema.cores.text,
     },
+    /** ⚠️ ⛔ O caminho de volta — ⛔ ação, ⛔ e ⛔ por isso `primary` (2026-09-09). */
+    reavaliar: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+    },
+    /** ⚠️ ⛔ `tituloDeSecao` ⛔ traz o peso — ⛔ `fontWeight` avulso ⛔ é o que
+     * a trava da tipografia proíbe, ⛔ e ⛔ com razão: peso solto ⛔ é como
+     * nasce uma escala paralela. */
+    reavaliarTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
   });

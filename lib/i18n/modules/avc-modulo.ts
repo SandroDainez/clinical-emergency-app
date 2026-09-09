@@ -923,25 +923,25 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escore informado por quem leu a imagem. Este aplicativo não calcula ASPECTS, e os cortes que a fonte usa pertencem à avaliação para trombectomia. Quando a escala for implementada, o valor calculado aqui e o valor informado vão conviver, como já acontece com o NIHSS.":
     "Puntaje informado por quien leyó la imagen. Esta aplicación no calcula ASPECTS, y los puntos de corte que usa la fuente pertenecen a la evaluación para trombectomía. Cuando la escala se implemente, el valor calculado aquí y el valor informado van a convivir, como ya ocurre con el NIHSS.",
 
-  // ── Hipodensidade clara (F-07) ──────────────────────────────────────────
+  // ── Hipodensidade franca (F-07) ──────────────────────────────────────────
   //
   // ⚠️ A definição é **tradução de apresentação** do verbatim de F-07, que segue
   // em inglês no arquivo de fontes (§6.14). A fonte clínica ⛔ não muda de idioma.
-  "Hipodensidade clara na tomografia": "Hipodensidad clara en la tomografía",
-  "A fonte define hipodensidade clara como aquela cuja densidade é maior que a da substância branca contralateral não acometida.":
-    "La fuente define hipodensidad clara como aquella cuya densidad es mayor que la de la sustancia blanca contralateral no afectada.",
-  "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.":
+  "Hipodensidade franca na tomografia": "Hipodensidad franca en la tomografía",
+    "A fonte lista este achado na faixa que ela mesma chama de contraindicações absolutas — e declara essa faixa como não sustentada por evidência clínica, sem classe de recomendação em nenhuma célula. O que fazer com a trombólise é decisão da superfície de reperfusão.":
     "La fuente lista este hallazgo en la franja que ella misma llama contraindicaciones absolutas — y declara esa franja como no sustentada por evidencia clínica, sin clase de recomendación en ninguna celda. Qué hacer con la trombólisis es decisión de la superficie de reperfusión.",
-  "Hipodensidade clara registrada na tomografia": "Hipodensidad clara registrada en la tomografía",
+  "Hipodensidade franca registrada na tomografia": "Hipodensidad franca registrada en la tomografía",
   "A fonte lista este achado entre as contraindicações que ela mesma chama de absolutas, e declara essa faixa como não sustentada por evidência clínica. A decisão sobre a reperfusão não é tomada nesta superfície":
     "La fuente lista este hallazgo entre las contraindicaciones que ella misma llama absolutas, y declara esa franja como no sustentada por evidencia clínica. La decisión sobre la reperfusión no se toma en esta superficie",
-  "Sem hipodensidade clara na tomografia": "Sin hipodensidad clara en la tomografía",
-  "Resposta registrada, comparando com a densidade da substância branca contralateral não acometida":
-    "Respuesta registrada, comparando con la densidad de la sustancia blanca contralateral no afectada",
-  "Hipodensidade clara em aberto": "Hipodensidad clara abierta",
+  "Sem hipodensidade franca na tomografia": "Sin hipodensidad franca en la tomografía",
+  "Resposta registrada. A fonte descreve hipoatenuação grave, como a observada em AVC subagudo":
+    "Respuesta registrada. La fuente describe hipoatenuación grave, como la observada en ictus subagudo",
+    "Hipodensidade franca em aberto": "Hipodensidad franca abierta",
   "Incerto fica registrado como resposta, e não vira ausência do achado":
     "Incierto queda registrado como respuesta, y no se convierte en ausencia del hallazgo",
-  "Hipodensidade clara ainda não avaliada": "Hipodensidad clara aún no evaluada",
+  "Hipodensidade franca ainda não avaliada": "Hipodensidad franca aún no evaluada",
+  "Hipodensidade franca corresponde a hipoatenuação grave na tomografia, semelhante à observada em AVC subagudo.":
+    "Hipodensidad franca corresponde a hipoatenuación grave en la tomografía, semejante a la observada en ictus subagudo.",
   "Ainda não perguntado é diferente de ausente, e nada no atendimento espera por esta resposta":
     "Aún no preguntado es diferente de ausente, y nada en la atención espera por esta respuesta",
 
@@ -1282,10 +1282,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Una nueva medición de presión arterial",
   "Uma nova glicemia":
     "Una nueva glucemia",
-  "a fonte diz para baixar a pressão antes de iniciar a trombólise, para reduzir complicações hemorrágicas":
-    "la fuente dice que se baje la presión antes de iniciar la trombólisis, para reducir complicaciones hemorrágicas",
-  "a fonte diz que a hipoglicemia abaixo de 60 mg/dL deve ser tratada para evitar complicações":
-    "la fuente dice que la hipoglucemia por debajo de 60 mg/dL debe tratarse para evitar complicaciones",
+  "Recomendação: controlar a pressão arterial antes de iniciar a trombólise, para reduzir complicações hemorrágicas":
+    "Recomendación: controlar la presión arterial antes de iniciar la trombólisis, para reducir complicaciones hemorrágicas",
+  "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações":
+    "Recomendación: tratar la hipoglucemia por debajo de 60 mg/dL, para evitar complicaciones",
   "Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação.":
     "Ningún bloqueo corregible registrado. Nada en esta pantalla espera por una acción.",
   "O que faz este bloqueio cair":
@@ -1830,7 +1830,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "por responder": "por responder",
   // ⚠️ Rótulos CURTOS do resumo — cada um é subconjunto do rótulo completo.
   "Resultado": "Resultado",
-  "Hipodensidade clara": "Hipodensidad clara",
+  "Hipodensidade franca": "Hipodensidad franca",
   "ASPECTS": "ASPECTS",
   "Efeito de massa": "Efecto de masa",
   "Lesão em DWI menor que um terço": "Lesión en DWI menor que un tercio",

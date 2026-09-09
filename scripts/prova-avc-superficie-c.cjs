@@ -930,13 +930,40 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
     "é o único achado de TC com critério operacional transcrito, e estava fora da Superfície C até 2026-08-29");
 
   /**
-   * ⚠️⚠️ A DEFINIÇÃO FICA **VISÍVEL**, e ⛔ não atrás do ⓘ. Ela é o que muda a
+   * ⚠️⚠️ A EXPLICAÇÃO FICA **VISÍVEL**, e ⛔ não atrás do ⓘ. Ela é o que muda a
    * RESPOSTA de quem ⛔ não tem o termo na cabeça — critério de §7.3 para texto
    * permanente. Escondida, o campo vira mais um sim/não adivinhado.
+   *
+   * ── ⚠️⚠️⚠️ ⛔ ESTA TRAVA EXIGIA UMA FRASE **⛔ FABRICADA** — 2026-09-09 ────
+   *
+   * ⛔ ⛔ Ela media `/substância branca contralateral/` ⛔ e citava, ⛔ como
+   * justificativa, um verbatim ⛔ atribuído a **F-07, Table 8, p. e367**.
+   * ⚠️ Conferência do autor ⛔ no PDF: ⛔ a frase ⛔ **⛔ não existe** ⛔ ali,
+   * ⛔ e ⛔ **⛔ não** é a definição sustentada pela guideline.
+   *
+   * ⛔ ⛔ ⛔ **⛔ Verde, ⛔ ela ⛔ exigia que o erro continuasse.** ⛔ Trocar o
+   * texto ⛔ sem trocar a trava ⛔ faria a suíte **⛔ recusar a correção**
+   * ⛔ e ⛔ acusar ⛔ quem corrigiu.
+   *
+   * ⚠️ ⛔ O que ⛔ ela sempre quis garantir ⛔ continua: ⛔ que a explicação
+   * ⛔ esteja **⛔ na linha da decisão**. ⛔ Muda ⛔ a frase medida — ⛔ agora
+   * ⛔ a da fonte: *"frank hypodensity"* / *"severe hypoattenuation as seen
+   * with subacute stroke"*.
    */
-  confere("a definição operacional está em `ajuda`, e ⛔ não só na nota",
-    /substância branca contralateral/i.test(campo?.ajuda ?? ""),
-    "F-07: *\"greater than the density of contralateral unaffected white matter\"* — é o único critério aplicável à beira do leito que a fonte dá sobre a TC");
+  confere("a explicação da fonte está em `ajuda`, e ⛔ não só na nota",
+    /hipoatenuação grave/i.test(campo?.ajuda ?? "") && /subagudo/i.test(campo?.ajuda ?? ""),
+    "AHA/ASA 2026, seção de IVT: *\"frank hypodensity\"*, explicada como *\"severe hypoattenuation as seen with subacute stroke\"*");
+
+  /**
+   * ⚠️⚠️ ⛔ E ⛔ A INVENÇÃO ⛔ NÃO VOLTA **⛔ POR ⛔ NENHUM DOS DOIS LADOS**.
+   *
+   * ⛔ ⛔ Decisão do autor: *"⛔ não tentar «corrigir» para uma definição
+   * quantitativa baseada em substância branca contralateral"*. ⛔ Trocar
+   * *maior* ⛔ por *menor* ⛔ seria ⛔ inventar de novo.
+   */
+  confere("⛔ nenhuma comparação com a substância branca na linha da decisão",
+    !/substância branca/i.test(campo?.ajuda ?? ""),
+    "⛔ a guideline ⛔ não dá critério quantitativo — ⛔ e a frase antiga ⛔ ainda invertia o sentido");
 
   confere("a nota declara que a faixa ⛔ não é sustentada por evidência",
     /não sustentada por evidência/i.test(campo?.nota ?? ""),

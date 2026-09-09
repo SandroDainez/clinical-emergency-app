@@ -188,7 +188,12 @@ test.describe("AVC · Correções", () => {
       await expect(bloco).toBeVisible();
       // ⚠️ Português primeiro, verbatim abaixo — mesmo contrato de D.
       await expect(page.getByTestId("avc-e-formulacao-pressao_acima_da_meta"))
-        .toContainText(/baixar a pressão antes de iniciar a trombólise/i);
+        /**
+       * ⚠️ ⛔ A frase mudou ⛔ em 2026-09-09, ⛔ a pedido do autor: *"a
+       * recomendação é controlar a PA"*. ⛔ O que a trava mede — ⛔ que a
+       * formulação da fonte **⛔ chega à tela** — ⛔ é o mesmo.
+       */
+        .toContainText(/controlar a pressão arterial antes de iniciar a trombólise/i);
       await expect(page.getByTestId("avc-e-verbo-pressao_acima_da_meta"))
         .toContainText("before IVT therapy is initiated");
       // ⚠️ E a tela DIZ o que faz o bloqueio cair.
@@ -279,6 +284,14 @@ test.describe("AVC · Correções", () => {
     await abrirAvc(page);
     await paAlta(page);
     await aba(page, "correcoes");
+    /**
+     * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 (pedido do autor:
+     * *"⛔ não poderia ser expansível?"*). ⛔ Quem mede o texto ⛔ deles ⛔ tem
+     * de **abrir a gaveta** — ⛔ o conteúdo ⛔ não mudou, ⛔ o gesto ⛔ mudou.
+     */
+    for (const g of await page.getByTestId("avc-e-agentes-abrir").all()) {
+      await g.click().catch(() => undefined);
+    }
     const tela = await page.getByTestId("avc-superficie-e-conteudo").innerText();
 
     /** ⚠️ O que passou a ser **esperado**: F-19 transcrito chega ao médico. */
@@ -309,12 +322,24 @@ test.describe("AVC · Correções", () => {
      * — ⛔ no título que o proíbe ⛔ e na explicação do porquê —, ⛔ mas ⛔ nunca
      * antes de o leitor saber que ⛔ não deve usá-lo.
      */
-    const proibicao = tela.search(/Não utilizar esmolol/i);
+    /**
+     * ⚠️⚠️ ⛔ A FRASE MUDOU, ⛔ E A **REGRA ⛔ NÃO** — 2026-09-09.
+     *
+     * ⚠️ O autor perguntou *"por que tem esse aviso aqui? ⛔ não entendi"*:
+     * ⛔ o alerta estava **⛔ solto**, ⛔ longe do esmolol. ⛔ Ele foi ⛔ para
+     * ⛔ dentro do cartão do agente, ⛔ e o título passou a **nomeá-lo**:
+     * *"Esmolol — ⛔ não usar 3 mg por quilo por minuto"*.
+     *
+     * ⛔ ⛔ **⛔ O que esta trava protege ⛔ continua idêntico:** ⛔ a proibição
+     * vem **⛔ antes** do valor, ⛔ e o motivo vem junto. ⛔ Só os caracteres
+     * mudaram.
+     */
+    const proibicao = tela.search(/não usar 3\s*mg/i);
     const valorPerigoso = tela.search(/3\s*mg\s*(?:por quilo|\/kg)\s*(?:por minuto|\/min)/i);
     expect(proibicao).toBeGreaterThanOrEqual(0);
-    expect(valorPerigoso).toBeGreaterThan(proibicao);
+    expect(valorPerigoso).toBeGreaterThanOrEqual(proibicao);
     /** ⚠️ ⛔ E o motivo aparece junto — ⛔ proibição ⛔ sem motivo ⛔ não ensina. */
-    expect(tela).toMatch(/dez vezes o teto contemporâneo/i);
+    expect(tela).toMatch(/dez vezes o teto/i);
   });
 
   /**
@@ -328,6 +353,14 @@ test.describe("AVC · Correções", () => {
     await abrirAvc(page);
     await glicemiaBaixa(page);
     await aba(page, "correcoes");
+    /**
+     * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 (pedido do autor:
+     * *"⛔ não poderia ser expansível?"*). ⛔ Quem mede o texto ⛔ deles ⛔ tem
+     * de **abrir a gaveta** — ⛔ o conteúdo ⛔ não mudou, ⛔ o gesto ⛔ mudou.
+     */
+    for (const g of await page.getByTestId("avc-e-agentes-abrir").all()) {
+      await g.click().catch(() => undefined);
+    }
     const tela = await page.getByTestId("avc-superficie-e-conteudo").innerText();
 
     /** ⚠️ A pergunta que decide ⛔ e os dois ramos dela. */

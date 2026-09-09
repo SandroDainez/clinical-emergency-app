@@ -47,6 +47,22 @@ const ISENTOS = {
   // `playwright --ui` abre uma janela interativa e fica esperando o humano.
   // Num pipeline, travaria para sempre. É a mesma suíte do test:e2e, que roda.
   "test:e2e:ui": "variante interativa do test:e2e — abre janela e aguarda o humano; a suíte roda em test:e2e",
+  /**
+   * ⚠️⚠️ ⛔ ELA MEDE **⛔ OUTRO ARTEFATO** — 2026-09-09.
+   *
+   * ⛔ ⛔ `prova-ambiente-coerente` lê o `dist`, ⛔ e ⛔ o `test:all` constrói
+   * ⛔ o **de teste** (`build:web:teste`, `EXPO_NO_DOTENV=1`). ⚠️ ⛔ Quem
+   * corresponde a ⛔ esse `dist` ⛔ é `test:ambiente:teste` — ⛔ e ⛔ ele **⛔ está**
+   * ⛔ no agregador.
+   *
+   * ⛔ ⛔ Pôr `test:ambiente` ⛔ aqui faria a trava medir um `dist` que ⛔ o
+   * pipeline ⛔ não produziu: ⛔ ⛔ ou vermelha ⛔ sem defeito, ⛔ ou verde ⛔ sem
+   * medir — ⛔ e ⛔ as duas ⛔ são piores que ⛔ ausente.
+   *
+   * ⚠️ ⛔ Ela roda ⛔ **antes do deploy**, ⛔ contra o build de produção, ⛔ que
+   * é ⛔ o momento em que a pergunta ⛔ dela faz sentido.
+   */
+  "test:ambiente": "mede o dist de PRODUÇÃO; o test:all constrói o de teste, e para esse roda test:ambiente:teste",
 };
 
 const alvo = scripts["test:all"];

@@ -862,14 +862,6 @@ export default function SuperficieA({
                     {tr("Insumos")}: {l.insumos.map((i) => tr(rotuloDoCampo[i] ?? i)).join(", ")} ·{" "}
                     {tr("slot")} {l.fonte}
                   </Text>
-                  {/**
-                    * ⚠️⚠️ A FRASE QUE DIZ DE QUEM É A DECISÃO — ⛔ e ela ⛔ não é
-                    * decorativa: o painel compartilhado a carrega em TODA
-                    * leitura, ⛔ e omiti-la faria a tela parecer que conclui.
-                    */}
-                  <Text style={e.leituraFonte}>
-                    {tr("Apoio ao julgamento clínico. A decisão permanece do médico.")}
-                  </Text>
                 </View>
               ) : null}
             </View>

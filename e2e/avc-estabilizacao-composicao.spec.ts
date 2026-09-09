@@ -189,6 +189,13 @@ test.describe("AVC · Estabilização — composição", () => {
       const bloco = page.getByTestId("avc-a-corrigir-agora");
       await expect(bloco).toBeVisible();
       await expect(page.getByTestId("avc-a-terapeutica-pressao")).toBeVisible();
+      /**
+       * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 (*"⛔ não poderia
+       * ser expansível ⛔ ao invés de ficar tudo aberto na tela?"*). ⛔ A dose
+       * ⛔ continua ⛔ na tela — ⛔ **⛔ a um toque** —, ⛔ e ⛔ é ⛔ o toque que
+       * ⛔ mudou, ⛔ e ⛔ não a garantia.
+       */
+      await page.getByTestId("avc-a-agentes-abrir").first().click();
       /** ⚠️ O agente ⛔ e a dose, ⛔ como F-19 os escreve. */
       await expect(page.getByTestId("avc-a-agente-labetalol")).toContainText(/10 a 20 mg/);
       /** ⚠️⚠️ ⛔ E a procedência: **a diretriz vigente ⛔ não nomeia fármaco**. */

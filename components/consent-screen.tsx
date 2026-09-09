@@ -25,6 +25,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../design-system/theme";
 import { useTr } from "../lib/use-tr";
+import { USO_CLINICO_E_LIMITACOES } from "../design-system/aviso-de-apoio-clinico";
 
 export type ConsentScreenProps = {
   onAccept: () => void;
@@ -59,6 +60,27 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
             {tr(
               "Este aplicativo é uma ferramenta de apoio educacional e à decisão clínica, baseada em diretrizes vigentes. Serve ao estudo e à prática — não substitui o julgamento clínico, a avaliação individualizada do paciente nem os protocolos da sua instituição."
             )}
+          </Text>
+
+          {/**
+            * ── ⚠️⚠️⚠️ ⛔ **⛔ USO CLÍNICO E LIMITAÇÕES** — 2026-09-09 ─────────
+            *
+            * ⚠️ Decisão do autor: *"reutilizar o aceite versionado ⛔ já
+            * existente… ⛔ **⛔ não criar segundo aceite**. Acrescentar ⛔ nele
+            * o texto completo de Uso clínico e limitações"*.
+            *
+            * ⛔ ⛔ ⛔ **⛔ E ⛔ o texto vem ⛔ do design system**, ⛔ da mesma
+            * constante que o `ⓘ` permanente lê. ⚠️ ⛔ Duas cópias
+            * ⛔ divergiriam ⛔ no dia em que ⛔ alguém corrigisse ⛔ uma — ⛔ e o
+            * médico ⛔ teria **⛔ aceitado um texto ⛔ e lido outro**.
+            *
+            * ⚠️⚠️ ⛔ **⛔ E ⛔ a versão do aceite subiu.** ⛔ `VERSAO_DO_TEXTO`
+            * ⛔ é ⛔ o que faz a chave de consentimento mudar: ⛔ acrescentar
+            * texto ⛔ sem subir a versão ⛔ deixaria ⛔ quem ⛔ já aceitou
+            * ⛔ **⛔ nunca ler** ⛔ o que foi acrescentado.
+            */}
+          <Text style={e.corpo} testID="consentimento-uso-clinico">
+            {tr(USO_CLINICO_E_LIMITACOES)}
           </Text>
 
           <View style={e.alerta}>

@@ -39,6 +39,7 @@ import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, RAIO } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 
 type Variante = "hic" | "hsa";
 
@@ -123,6 +124,17 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
       {variante === "hic" ? (
         <View style={e.grupo} testID="avc-hem-reversao">
           <SectionTitle testID="avc-hem-bloco-reversao">Reversão por agente</SectionTitle>
+          {/**
+            * ⚠️⚠️ ⛔ `altoRisco` ⛔ na conduta de reversão, ⛔ e `calculoDose`
+            * ⛔ **⛔ colado ⛔ à regra de dosagem** — ⛔ separados ⛔ por
+            * função, ⛔ e ⛔ não empilhados.
+            */}
+          <AvisoDeApoioClinico
+            variante="altoRisco"
+            ha
+            tr={tr}
+            testID="avc-hem-aviso-alto-risco"
+          />
           <Text style={e.resumo}>
             {tr("Suspender o anticoagulante e reverter o mais rápido possível. O agente depende do anticoagulante em uso.")}
           </Text>
@@ -130,6 +142,17 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
             <ClinicalCard key={r.id} testID={`avc-hem-reversao-${r.id}`}>
               <Text style={e.agente}>{tr(r.agente)}</Text>
               <Text style={e.frase}>{tr(r.conduta)}</Text>
+              {/**
+                * ⚠️⚠️ ⛔ `calculoDose` ⛔ **⛔ colado ⛔ à regra de dosagem**, ⛔ e
+                * ⛔ **⛔ não** empilhado ⛔ sob o `altoRisco` ⛔ lá em cima —
+                * ⛔ exigência do autor, ⛔ e ⛔ a trava mede ⛔ isso.
+                */}
+              <AvisoDeApoioClinico
+                variante="calculoDose"
+                ha
+                tr={tr}
+                testID="avc-hem-aviso-calculo-dose"
+              />
               {/**
                 * ⚠️⚠️ ⛔ ISTO ⛔ NÃO É UMA DOSE — é uma **regra de dosagem**.
                 *

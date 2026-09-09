@@ -37,7 +37,11 @@ import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
 import { correcoesEhRelevante, pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
 import { ESTADOS, corDoEstado } from "../../design-system/estados-clinicos";
-import { destinoDaImagem, situacaoDoPedidoDeTc } from "../../avc/nucleo/derivacoes-c";
+import {
+  destinoDaImagem,
+  situacaoDaTcSemContraste,
+  situacaoDoPedidoDeTc,
+} from "../../avc/nucleo/derivacoes-c";
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 import { Icone, Secao, type NomeDeIcone } from "./ui";
 import {
@@ -185,6 +189,7 @@ import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, LARGURA, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { AcessoAoUsoClinico } from "../../design-system/aviso-de-apoio-clinico";
 
 /**
  * ⚠️ A cor da área vem da paleta do design system — a mesma que pinta o card do
@@ -290,13 +295,25 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     sugerido: PRIORIDADE_DA_IMAGEM.acaoSolicitar,
     em_andamento: PRIORIDADE_DA_IMAGEM.acaoRegistrar,
     realizado_sem_resultado: PRIORIDADE_DA_IMAGEM.acaoResultado,
-    resultado_disponivel: PRIORIDADE_DA_IMAGEM.acaoResultado,
+    /**
+     * ⚠️⚠️ ⛔ E ⛔ AQUI ⛔ ELA **⛔ NÃO COBRA** — 2026-09-09. ⛔ As duas linhas
+     * eram ⛔ a mesma frase, ⛔ e a de baixo mandava *"registrar o
+     * resultado"* ⛔ **⛔ depois** de ⛔ ele ter sido registrado.
+     */
+    resultado_disponivel: PRIORIDADE_DA_IMAGEM.acaoVerResultado,
   } as const;
 
 
   const VITAIS = useMemo(() => {
     const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
-    const img = destinoDaImagem(estado);
+    /**
+     * ⚠️⚠️ ⛔ A PERGUNTA DA PEÇA É *"EXISTE EXAME?"* — 2026-09-09.
+     *
+     * ⛔ ⛔ Ela lia `destinoDaImagem()`, ⛔ que responde *"para que rota este
+     * caso vai?"*. ⚠️ ⛔ São perguntas diferentes, ⛔ e ⛔ por isso a peça
+     * ficava ⛔ em branco ⛔ com a TC ⛔ já registrada.
+     */
+    const tc = situacaoDaTcSemContraste(estado);
     return [
       {
         id: "nihss",
@@ -306,6 +323,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         icone: "neuro" as const,
         acento: "success" as const,
         valor: typeof nihss === "number" ? String(nihss) : undefined,
+        unidadeDinamica: undefined as string | undefined,
       },
       {
         /** ⚠️ Estado da imagem — ⛔ e ⛔ não um veredito sobre reperfusão. */
@@ -315,7 +333,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         campo: "estudo_modalidade",
         icone: "imagem" as const,
         acento: "info" as const,
-        valor: img === undefined ? undefined : tr("saída"),
+        /** ⚠️ ⛔ O valor curto ⛔ é a **modalidade**; o estado vai ⛔ na unidade. */
+        valor:
+          tc === "nenhuma_registrada" ? undefined : tr(PRIORIDADE_DA_IMAGEM.tileModalidade),
+        unidadeDinamica:
+          tc === "realizada_resultado_registrado"
+            ? tr(PRIORIDADE_DA_IMAGEM.tileComResultado)
+            : tc === "realizada_resultado_pendente"
+              ? tr(PRIORIDADE_DA_IMAGEM.tileSemResultado)
+              : undefined,
       },
     ];
   }, [estado, tr]);
@@ -514,6 +540,31 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     /** ⚠️ Por `abrir`, ⛔ e ⛔ não por fora: ir a um campo ⛔ também deixa rastro. */
     if (estado.superficieVista !== achado[0]) abrir(achado[0]);
     rolarAte(campo);
+  }
+
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ IR ATÉ ONDE SE RESOLVE — **⛔ uma regra só** — 2026-09-09 ────
+   *
+   * ⚠️ Relato do autor: *"tem um botão em azul «corrigir pressão arterial»
+   * mas quando clica nele ⛔ nada acontece, ⛔ está ⛔ sem função"*.
+   *
+   * ⛔ ⛔ ⛔ **O mesmo defeito das pendências, ⛔ noutro botão.** `abrir(id)` é
+   * **⛔ inerte** quando ⛔ já se está ⛔ na tela: ⛔ o card âmbar oferecia
+   * *"Corrigir a pressão arterial"* ⛔ com o médico **⛔ dentro** das
+   * Correções, ⛔ e ⛔ não saía do lugar.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ eu ⛔ tinha corrigido ⛔ isso **⛔ na pendência**, ⛔ inline —
+   * ⛔ ou seja, ⛔ **⛔ escrevi a regra duas vezes ⛔ e consertei ⛔ só uma
+   * cópia**. ⛔ Este arquivo ⛔ já avisa, ⛔ vinte linhas acima: *"duas cópias
+   * de uma regra é como nasce a terceira tela"*. ⛔ Nasceu.
+   *
+   * ⛔ ⛔ Agora ⛔ ela é **⛔ uma**, ⛔ e ⛔ quem chama ⛔ diz ⛔ só ⛔ onde ⛔ e
+   * ⛔ até que ponto.
+   */
+  function irAteOndeResolve(dono: SuperficieId, alvo: string | undefined) {
+    if (estado.superficieVista !== dono) abrir(dono);
+    /** ⛔ Já estando ⛔ lá, ⛔ o que resta ⛔ é ⛔ levar até o ponto. */
+    if (alvo) rolarAte(alvo);
   }
 
   function escolher(campo: string, valor: string) {
@@ -912,7 +963,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     id: v.id,
     rotulo: v.rotulo,
     valor: v.valor,
-    unidade: v.unidade,
+    /** ⚠️ ⛔ A unidade da imagem ⛔ carrega o **estado** do exame (2026-09-09). */
+    unidade: v.unidadeDinamica ?? v.unidade,
     icone: v.icone,
     acento: v.acento,
     onTocar: () => irParaCampo(v.campo),
@@ -981,8 +1033,28 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * ⚠️ ⛔ O relógio segue nas **cinco** superfícies seguintes, ⛔ com a
            * mesma contagem ⛔ e o mesmo toque (**§7.8**).
            */
+          /**
+           * ── ⚠️⚠️⚠️ ⛔ E A AVALIAÇÃO AVC ENTROU NA MESMA REGRA — 2026-09-09 ──
+           *
+           * ⚠️ Decisão do autor: *"na aba neuro podemos tirar isso da barra
+           * ⛔ já que tem ⛔ ao longo da aba para preenchimento"*.
+           *
+           * ⛔ ⛔ ⛔ E ⛔ é a conclusão do próprio raciocínio que trouxe o campo
+           * para cá: ⛔ *"a cronologia mora na Avaliação AVC desde a Fase 4"*.
+           * ⚠️ ⛔ Se ⛔ ele mora **⛔ aqui**, ⛔ o botão azul no cabeçalho ⛔ é o
+           * atalho para ⛔ **⛔ a própria tela** — ⛔ um controle que promete
+           * levar ⛔ aonde ⛔ já se está.
+           *
+           * ⚠️⚠️ ⛔ E **§7.8 ⛔ continua respeitado**: ⛔ perder o tempo de
+           * vista ⛔ é o defeito que ⛔ ele proíbe, ⛔ e ⛔ aqui o campo do marco
+           * ⛔ está **⛔ na tela**, ⛔ com a contagem ⛔ ao lado. ⛔ O relógio
+           * segue no cabeçalho das **quatro** superfícies em que a cronologia
+           * ⛔ **⛔ não** mora.
+           */
           relogio={
-            estado.superficieVista === "paciente" || estado.superficieVista === "estabilizacao"
+            estado.superficieVista === "paciente" ||
+            estado.superficieVista === "estabilizacao" ||
+            estado.superficieVista === "neurologico"
               ? undefined
               : {
                   rotulo: "Última vez bem",
@@ -1581,9 +1653,25 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           accessibilityRole="button"
           accessibilityLabel={tr(PRIORIDADE_DA_IMAGEM.chamada)}
           testID="avc-prioridade-imagem"
-          style={s.imagemLinha}
+          style={[
+            s.imagemLinha,
+            situacaoDoPedido === "resultado_disponivel" ? s.imagemLinhaResolvida : null,
+          ]}
         >
-          <Icone nome="imagem" tamanho={18} cor={tema.cores.critical} />
+          {/**
+            * ⚠️ ⛔ Vermelho ⛔ é cobrança. ⛔ Com o resultado ⛔ já registrado
+            * ⛔ nada está pendente — ⛔ e a cor ⛔ tem de dizer ⛔ o mesmo que a
+            * palavra (**E-15**).
+            */}
+          <Icone
+            nome="imagem"
+            tamanho={18}
+            cor={
+              situacaoDoPedido === "resultado_disponivel"
+                ? tema.cores.textSecondary
+                : tema.cores.critical
+            }
+          />
           <Text style={s.imagemLinhaTexto} numberOfLines={2}>
             {tr(PRIORIDADE_DA_IMAGEM.titulo)}
           </Text>
@@ -1598,7 +1686,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             * ⚠️ ⛔ Mudar o `testID` junto com o lugar apagaria a continuidade da
             * garantia: ⛔ pareceria trava nova, ⛔ e é a **mesma**.
             */}
-          <Text style={s.imagemLinhaAcao} testID="avc-prioridade-imagem-acao">
+          <Text
+            style={[
+              s.imagemLinhaAcao,
+              situacaoDoPedido === "resultado_disponivel" ? s.imagemLinhaAcaoResolvida : null,
+            ]}
+            testID="avc-prioridade-imagem-acao"
+          >
             {tr(ACAO_DA_SITUACAO[situacaoDoPedido])}
           </Text>
         </Pressable>
@@ -1693,7 +1787,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             acao={
               <PrimaryAction
                 rotulo={b.id === "pressao_acima_da_meta" ? "Corrigir a pressão arterial" : "Corrigir a glicemia"}
-                onPress={() => abrir("correcoes")}
+                onPress={() => irAteOndeResolve("correcoes", `correcao_${b.id}`)}
                 testID={`avc-cockpit-bloqueio-acao-${b.id}`}
               />
             }
@@ -1988,6 +2082,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               const inst = proximaInstancia(estado, ACAO);
               setEstado((e) => registrarComInstancia(e, { campo: "acao_tipo", valor: tipo }, relogio, inst));
             }}
+            /** ⚠️ ⛔ A mesma regra dos outros dois botões — ⛔ uma só. */
+            onReavaliar={(sup, campo) => irAteOndeResolve(sup, campo)}
           />
         ) : atual.id === "hic" ? (
           <SuperficieHemorragica variante="hic" />
@@ -2103,15 +2199,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                * escreve. ⚠️ **⛔ O rótulo é a promessa**; ⛔ o campo é ⛔ só
                * ⛔ onde parar depois de chegar.
                */
-              onPress={() => {
-                if (p.dono !== estado.superficieVista) {
-                  abrir(p.dono);
-                  if (p.campo) rolarAte(p.campo);
-                  return;
-                }
-                /** ⛔ Já está ⛔ na tela: ⛔ o que resta ⛔ é ⛔ levar até o campo. */
-                if (p.campo) rolarAte(p.campo);
-              }}
+              onPress={() => irAteOndeResolve(p.dono, p.campo)}
             >
               {/**
                 * ⚠️⚠️ O SÍMBOLO DIZ **QUE TIPO** DE PROBLEMA É — ⛔ e ⛔ era um
@@ -2174,6 +2262,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           ))
         )}
       </View>
+
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ `ⓘ USO CLÍNICO E LIMITAÇÕES` — 2026-09-09 ──────────────
+        *
+        * ⚠️ Exigência do autor: *"permanentemente acessível… ⛔ **⛔ sem
+        * obrigar o médico a fechar modal repetitivo ⛔ durante uma
+        * emergência**"*.
+        *
+        * ⛔ ⛔ ⛔ **⛔ No fim da tela, ⛔ e ⛔ recolhido.** ⛔ Um modal ⛔ que
+        * reabre ⛔ é ⛔ obstáculo ⛔ entre ⛔ o médico ⛔ e ⛔ o paciente;
+        * ⛔ **⛔ aqui** ⛔ ele está ⛔ sempre disponível ⛔ e ⛔ **⛔ nunca ⛔ no
+        * caminho**. ⚠️ ⛔ E ⛔ o texto ⛔ é ⛔ o **⛔ mesmo** do aceite.
+        */}
+      <AcessoAoUsoClinico tr={tr} testID="avc-uso-clinico" />
     </ScrollView>
     </ProvedorDeFoco>
     </ClinicalShell>
@@ -2371,6 +2473,12 @@ const criarEstilos = (tema: Tema) =>
       paddingHorizontal: ESPACO.md,
       paddingVertical: ESPACO.sm,
     },
+    /** ⚠️ ⛔ Resolvida: ⛔ atalho, ⛔ e ⛔ não cobrança — 2026-09-09. */
+    imagemLinhaResolvida: {
+      backgroundColor: tema.cores.controlSurface,
+      borderColor: tema.cores.controlBorder,
+    },
+    imagemLinhaAcaoResolvida: { color: tema.cores.textSecondary },
     imagemLinhaTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text, flex: 1 },
     imagemLinhaAcao: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical, flexShrink: 0 },
     /** ⚠️ Solicitar ⛔ e registrar são **dois** gestos — ⛔ empilhados, ⛔ e ⛔ sem disputa. */

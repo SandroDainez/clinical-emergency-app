@@ -98,6 +98,21 @@ export type AcaoDeCorrecao = {
   readonly resolvePor: string;
   /** ⚠️ De qual superfície vem a nova aferição. */
   readonly reavaliaEm: SuperficieId;
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ **⛔ ONDE** SE REGISTRA A NOVA AFERIÇÃO — 2026-09-09 ────────
+   *
+   * ⚠️ Relato do autor: *"cliquei em registrar ação ⛔ e ⛔ nem sei o que
+   * aconteceu… ⛔ não me dá ⛔ onde tenho que registrar a nova aferição de
+   * pressão"*.
+   *
+   * ⛔ ⛔ `resolvePor` ⛔ já dizia **⛔ o quê** (*"uma nova aferição de pressão
+   * arterial"*) ⛔ e `reavaliaEm` ⛔ já dizia **⛔ em que tela**. ⚠️ ⛔ Faltava
+   * ⛔ o **campo**, ⛔ que é ⛔ o que transforma a frase ⛔ num caminho.
+   *
+   * ⛔ ⛔ Dizer o que falta ⛔ sem dizer ⛔ onde ⛔ é a definição de **muro**,
+   * ⛔ e **E-26** ⛔ existe ⛔ contra ⛔ isso.
+   */
+  readonly campoDaReavaliacao: string;
 };
 
 export const ACOES_DE_CORRECAO: readonly AcaoDeCorrecao[] = [
@@ -108,9 +123,26 @@ export const ACOES_DE_CORRECAO: readonly AcaoDeCorrecao[] = [
     bloqueio: "pressao_acima_da_meta",
     fonte: "F-04",
     verbo: "should have their SBP lowered to <185 mm Hg and diastolic blood pressure (DBP) <110 mm Hg before IVT therapy is initiated to reduce hemorrhagic complications",
-    formulacao: "a fonte diz para baixar a pressão antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
+    /**
+     * ── ⚠️⚠️⚠️ ⛔ *"RECOMENDAÇÃO"*, ⛔ E ⛔ NÃO *"A FONTE DIZ"* — 2026-09-09 ──
+     *
+     * ⚠️ Pedido do autor: *"isso poderia ser escrito de outra forma, por
+     * exemplo ⛔ a recomendação é controlar a PA"*.
+     *
+     * ⛔ ⛔ *"A fonte diz para baixar…"* ⛔ é **discurso indireto**: ⛔ ele
+     * conta ⛔ que alguém recomendou, ⛔ em vez de recomendar. ⚠️ ⛔ Num
+     * cartão âmbar ⛔ que existe ⛔ para o médico **⛔ agir**, ⛔ isso custa
+     * uma leitura inteira.
+     *
+     * ⚠️⚠️ ⛔ E a **procedência ⛔ não se perde ⛔ com a mudança**: ⛔ o
+     * `verbo` verbatim aparece ⛔ logo abaixo, ⛔ entre aspas, ⛔ e o slot
+     * (**{fonte}**) ⛔ está declarado ⛔ no mesmo objeto. ⛔ Atribuir ⛔ é
+     * papel da **fonte citada**, ⛔ e ⛔ não de um prefixo tímido.
+     */
+    formulacao: "Recomendação: controlar a pressão arterial antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
     resolvePor: "Uma nova aferição de pressão arterial",
     reavaliaEm: "estabilizacao",
+    campoDaReavaliacao: "pas",
   },
   {
     id: "correcao_glicemica",
@@ -118,9 +150,10 @@ export const ACOES_DE_CORRECAO: readonly AcaoDeCorrecao[] = [
     bloqueio: "glicemia_alterada",
     fonte: "F-06",
     verbo: "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
-    formulacao: "a fonte diz que a hipoglicemia abaixo de 60 mg/dL deve ser tratada para evitar complicações",
+    formulacao: "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
     resolvePor: "Uma nova glicemia",
     reavaliaEm: "estabilizacao",
+    campoDaReavaliacao: "glicemia",
   },
 ];
 

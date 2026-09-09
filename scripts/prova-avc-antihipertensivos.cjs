@@ -27,7 +27,26 @@ const { lerFonte } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
 const conteudo = lerFonte(path.join(appDir, "avc", "conteudo", "antihipertensivos.ts"));
-const tela = lerFonte(path.join(appDir, "components", "avc", "superficie-e.tsx"));
+/**
+ * ── ⚠️⚠️⚠️ A TELA MUDOU DE ARQUIVO, ⛔ E ESTA TRAVA ⛔ NÃO SEGUIU ──────────
+ *
+ * ⛔ ⛔ Em 2026-09-08 o desenho da conduta saiu de `superficie-e.tsx` para
+ * `conduta-da-fonte.tsx`, ⛔ para a Estabilização ⛔ e as Correções lerem
+ * ⛔ **⛔ o mesmo**. ⚠️ Esta prova continuou lendo ⛔ só o arquivo antigo — ⛔ e
+ * ⛔ passou a acusar **⛔ quatro falhas** ⛔ sobre frases que ⛔ **⛔ estavam ⛔ na
+ * tela**, ⛔ só que ⛔ noutro arquivo.
+ *
+ * ⚠️⚠️ ⛔ Uma trava vermelha por endereço errado ⛔ é pior que trava ⛔ nenhuma:
+ * ⛔ ela treina ⛔ quem a lê ⛔ a ignorá-la. ⛔ Ficou vermelha ⛔ um dia inteiro
+ * ⛔ sem ⛔ ninguém ⛔ ver.
+ *
+ * ⛔ ⛔ **A lição, ⛔ e ⛔ ela ⛔ não é sobre este arquivo:** ⛔ quando o desenho
+ * muda de casa, ⛔ a trava que o mede ⛔ **⛔ vai junto** — ⛔ é a mesma regra
+ * que vale para o fato clínico.
+ */
+const tela =
+  lerFonte(path.join(appDir, "components", "avc", "superficie-e.tsx")) +
+  lerFonte(path.join(appDir, "components", "avc", "conduta-da-fonte.tsx"));
 
 let falhas = 0;
 let ok = 0;

@@ -349,16 +349,32 @@ const acha = (id) => campos.find((c) => c.id === id);
     "⛔ mudar de casa ⛔ não pode ser sumir da tela"
   );
   /**
-   * ⚠️⚠️ ⛔ E O EMPRÉSTIMO CONTINUA EXISTINDO COMO MECANISMO — ⛔ o **peso**
-   * segue emprestado pela Estabilização. ⛔ A Fase 4 provou que *"compor ⛔ não
-   * é mover"*, ⛔ e ⛔ isso segue verdadeiro: ⛔ o que mudou foi **este** fato,
-   * ⛔ e ⛔ não a regra.
+   * ── ⚠️⚠️⚠️ ⛔ O EMPRÉSTIMO DO PESO **⛔ ACABOU** — 2026-09-08 ──────────────
+   *
+   * ⛔ ⛔ Esta trava exigia que o **peso** ⛔ ainda fosse desenhado ⛔ na
+   * Estabilização, ⛔ como exemplo vivo de *"compor ⛔ não é mover"*.
+   *
+   * ⚠️ ⛔ Ele saiu ⛔ **⛔ por decisão do autor**: *"remover visualmente… peso ⛔ e
+   * origem do peso"* ⛔ da Estabilização, ⛔ e a **leitura** dele foi para a
+   * Reperfusão (**D-126**). ⛔ A trava ficou exigindo ⛔ o que ⛔ ele tinha
+   * mandado tirar — ⛔ vermelha ⛔ por estar desatualizada, ⛔ e ⛔ não por
+   * defeito.
+   *
+   * ⚠️⚠️ ⛔ **⛔ E ⛔ a regra ⛔ não morreu com o exemplo.** ⛔ O que a Fase 4
+   * provou ⛔ é que **casa ⛔ e tela são coisas diferentes** — ⛔ e ⛔ isso ⛔ se
+   * mede ⛔ na identidade do fato, ⛔ que ⛔ é o que continua ⛔ aqui: ⛔ o peso
+   * ⛔ **⛔ não** está ⛔ na tela de A, ⛔ e a casa dele ⛔ **⛔ continua**
+   * `paciente`. ⛔ Sair da tela ⛔ não mudou ⛔ de quem ⛔ ele é.
+   *
+   * ⛔ ⛔ Medido em 2026-09-09: ⛔ **⛔ nenhum** campo da tela de A tem casa de
+   * fora — ⛔ o mecanismo existe ⛔ e ⛔ hoje ⛔ não tem exemplo vivo. ⛔ Afirmar
+   * ⛔ um exemplo ⛔ que ⛔ não existe ⛔ é ⛔ o que deixava esta trava mentir.
    */
   conf(
-    "⚠️⚠️ ⛔ e o empréstimo segue vivo — o **peso** ainda é composto fora da casa",
-    A.CAMPOS_NA_TELA_A.some((c) => c.id === "peso")
+    "⚠️⚠️ ⛔ o peso saiu da tela de A ⛔ e ⛔ NÃO mudou de casa",
+    !A.CAMPOS_NA_TELA_A.some((c) => c.id === "peso")
     && acha("peso")?.casa === "paciente",
-    `⛔ casa do peso="${acha("peso")?.casa}"`
+    `⛔ na tela A=${A.CAMPOS_NA_TELA_A.some((c) => c.id === "peso")} · casa do peso="${acha("peso")?.casa}"`
   );
 }
 

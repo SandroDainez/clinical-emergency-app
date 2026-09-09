@@ -1,3 +1,4 @@
+import { useState } from "react";
 /**
  * A CONDUTA COMO A FONTE ESCREVE — ⚠️ **um desenho só**, ⛔ duas telas.
  *
@@ -28,7 +29,7 @@
  * conduta foi feita"*). ⛔ E ⛔ não escreve conduta ⛔ nenhuma: ⛔ todo texto vem
  * de `antihipertensivos.ts` ⛔ e `correcao-glicemica.ts` (**E-31**).
  */
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   AGENTES_ANTI_HIPERTENSIVOS,
@@ -45,8 +46,9 @@ import {
 } from "../../avc/conteudo/correcao-glicemica";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
-import { ESPACO, RAIO } from "../../design-system/tokens";
+import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · PRESSÃO — F-19 dá os agentes; F-04 dá os alvos
@@ -55,6 +57,28 @@ import { useTr } from "../../lib/use-tr";
 export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
+  /** ⚠️ ⛔ Estado de **⛔ tela**: ⛔ ver mais alvos ⛔ não registra ⛔ nada (**E-20**). */
+  const [todosOsAlvos, setTodosOsAlvos] = useState(false);
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ OS AGENTES NASCEM **⛔ FECHADOS** — 2026-09-09 ──────────────
+   *
+   * ⚠️ Pergunta do autor: *"isso ⛔ não poderia ser expansível ⛔ ao invés de
+   * ficar tudo aberto na tela?"*.
+   *
+   * ⛔ ⛔ São **⛔ oito** agentes, ⛔ cada um com dose, titulação, teto, quando,
+   * cautela ⛔ e procedência. ⚠️ ⛔ É a **bula** do painel — ⛔ e ⛔ era ⛔ ela
+   * que empurrava *"Registrar ação"* ⛔ para **⛔ 2948 px** abaixo do
+   * problema, ⛔ no relato da mesma tarde.
+   *
+   * ⚠️⚠️ ⛔ **⛔ Fechados ⛔ não é escondidos**, ⛔ e a distinção ⛔ é o número
+   * ⛔ na etiqueta: ⛔ o médico ⛔ vê ⛔ que ⛔ há oito ⛔ antes de decidir abrir.
+   *
+   * ⛔ ⛔ E a ressalva que **⛔ não pode** ficar atrás de toque ⛔ nenhum —
+   * *"a diretriz vigente dá alvos ⛔ e ⛔ não nomeia fármaco"* — ⛔ segue
+   * ⛔ **⛔ fora**, ⛔ acima do botão: ⛔ ela ⛔ não é detalhe ⛔ dos agentes,
+   * ⛔ ela ⛔ é o **estatuto** ⛔ deles.
+   */
+  const [agentesAbertos, setAgentesAbertos] = useState(false);
   return (
     <View style={e.terapeutica} testID={`${prefixo}terapeutica-pressao`}>
       <Text style={e.terapeuticaTitulo}>{tr("Agentes intravenosos")}</Text>
@@ -69,7 +93,52 @@ export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
         {tr("A diretriz vigente dá alvos e não nomeia fármaco. Cada agente abaixo traz a sua própria procedência, e a escolha é do médico.")}
       </Text>
 
-      {AGENTES_ANTI_HIPERTENSIVOS.map((ag) => (
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ O `altoRisco` **⛔ ENCABEÇA** A CONDUTA — 2026-09-09 ────
+        *
+        * ⛔ ⛔ ⛔ **⛔ Corrigido ⛔ pela captura, ⛔ e ⛔ não pela medida.** ⛔ Ele
+        * estava ⛔ **⛔ depois** dos agentes, ⛔ colado ⛔ em *"Alvos
+        * pressóricos"* — ⛔ e ⛔ lia ⛔ como ⛔ se ⛔ falasse ⛔ **⛔ dos alvos**.
+        * ⚠️ ⛔ A trava de overflow ⛔ passou; ⛔ a ⛔ de sentido ⛔ é ⛔ o olho.
+        *
+        * ⚠️ ⛔ *"Confirme… ⛔ **⛔ antes de executar** a conduta"* ⛔ tem de vir
+        * ⛔ **⛔ antes** ⛔ da conduta. ⛔ Depois ⛔ dela ⛔ é ⛔ conselho ⛔ que
+        * ⛔ chega tarde.
+        */}
+      <AvisoDeApoioClinico
+        variante="altoRisco"
+        ha
+        tr={tr}
+        testID={`${prefixo}aviso-alto-risco`}
+      />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: agentesAbertos }}
+        testID={`${prefixo}agentes-abrir`}
+        onPress={() => setAgentesAbertos((v) => !v)}
+        style={({ pressed }) => [e.maisAlvos, pressed ? { opacity: 0.7 } : null]}
+      >
+        <Text style={e.maisAlvosTexto}>
+          {agentesAbertos
+            ? tr("Ocultar os agentes")
+            : `${tr("Ver os agentes e as doses")} · ${AGENTES_ANTI_HIPERTENSIVOS.length}`}
+        </Text>
+      </Pressable>
+
+      {/**
+        * ⚠️⚠️ ⛔ `calculoDose` ⛔ **⛔ junto do número**, ⛔ e ⛔ só quando ⛔ ele
+        * está ⛔ na tela: ⛔ com a gaveta fechada ⛔ **⛔ não há dose exibida**,
+        * ⛔ e ⛔ um aviso sobre conferir dose ⛔ ali ⛔ qualificaria ⛔ o vazio.
+        */}
+      <AvisoDeApoioClinico
+        variante="calculoDose"
+        ha={agentesAbertos}
+        tr={tr}
+        testID={`${prefixo}aviso-calculo-dose`}
+      />
+
+      {!agentesAbertos ? null : AGENTES_ANTI_HIPERTENSIVOS.map((ag) => (
         <View key={ag.id} style={e.agente} testID={`${prefixo}agente-${ag.id}`}>
           <View style={e.agenteTopo}>
             <Text style={e.agenteNome}>{tr(ag.nome)}</Text>
@@ -84,35 +153,95 @@ export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
             <Text style={e.agenteCautela}>{tr("Cautela")}: {tr(ag.cautela)}</Text>
           ) : null}
           <Text style={e.agenteFonte}>{tr(ag.procedencia)}</Text>
+          {/**
+            * ── ⚠️⚠️⚠️ O ALERTA MORA ⛔ NO CARTÃO DELE — 2026-09-09 ──────────
+            *
+            * ⚠️ Relato do autor: *"por que tem esse aviso aqui? ⛔ não
+            * entendi"*.
+            *
+            * ⛔ ⛔ ⛔ Ele estava **⛔ solto**, depois de ⛔ todos os agentes: a
+            * tela mostrava o esmolol com a dose **⛔ certa** ⛔ e ⛔ então, três
+            * cartões abaixo, avisava para ⛔ não usar ⛔ um número que ⛔ ela
+            * ⛔ **⛔ nunca ofereceu**. ⚠️ ⛔ Ler um alerta sobre uma dose que
+            * ⛔ não está ⛔ na tela ⛔ é ler um ⛔ não-sequitur — ⛔ e ⛔ o autor
+            * ⛔ leu ⛔ exatamente ⛔ isso.
+            *
+            * ⚠️⚠️ ⛔ E ⛔ ele **⛔ não some**: o número perigoso existe ⛔ no
+            * mundo, ⛔ num manual que ⛔ este módulo **⛔ cita** — ⛔ apagar o
+            * aviso ⛔ deixaria o número circulando ⛔ e o médico ⛔ sem defesa.
+            */}
+          {ALERTA_DO_ESMOLOL.agente !== ag.id ? null : (
+            <View style={e.alerta} testID={`${prefixo}alerta-esmolol`}>
+              <Text style={e.alertaTitulo}>{tr(ALERTA_DO_ESMOLOL.titulo)}</Text>
+              <Text style={e.alertaTexto}>{tr(ALERTA_DO_ESMOLOL.texto)}</Text>
+            </View>
+          )}
         </View>
       ))}
-
-      {/**
-        * ⚠️⚠️ O ALERTA DO ESMOLOL fica **junto dos agentes**, ⛔ e ⛔ não numa
-        * nota de rodapé: quem lê a dose do esmolol precisa ler isto ⛔ ali.
-        */}
-      <View style={e.alerta} testID={`${prefixo}alerta-esmolol`}>
-        <Text style={e.alertaTitulo}>{tr(ALERTA_DO_ESMOLOL.titulo)}</Text>
-        <Text style={e.alertaTexto}>{tr(ALERTA_DO_ESMOLOL.texto)}</Text>
-      </View>
 
       {/**
         * ⚠️⚠️ OS ALVOS ⛔ NÃO COLAPSAM: 185/110 é **porta de entrada**;
         * 180/105 é **manutenção**; ⛔ e `<140` aparece com **dano declarado**
         * depois de recanalização.
         */}
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ UM ALVO ⛔ NA FRENTE, ⛔ SEIS A UM TOQUE — 2026-09-09 ────
+        *
+        * ⚠️ Decisão do autor: *"⛔ não tem necessidade desse monte de alvos,
+        * vamos colocar o alvo mais bem aceito ⛔ e pronto, pode deixar o
+        * restante… como expansível para consulta"*.
+        *
+        * ⛔ ⛔ **⛔ Nada some.** ⚠️ Sete alvos ⛔ empilhados ⛔ faziam o médico
+        * atravessar **⛔ seis** ⛔ para achar ⛔ o que vale ⛔ agora — ⛔ e o que
+        * vale agora ⛔ é ⛔ o da pergunta que ⛔ o trouxe aqui: **⛔ antes da
+        * trombólise**.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ **⛔ não colapsa ⛔ nada**: ⛔ 185/110 ⛔ é porta de
+        * entrada, 180/105 ⛔ é manutenção, `<140` ⛔ tem **dano declarado** —
+        * ⛔ continuam ⛔ sete, ⛔ com COR ⛔ e LOE. ⛔ Esconder ⛔ atrás de um
+        * toque ⛔ não é dizer ⛔ que ⛔ são o mesmo.
+        */}
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ O AVISO MORA **⛔ AQUI**, ⛔ e ⛔ não nas telas ────────────
+        *
+        * ⚠️ Decisão do autor, 2026-09-09: *"o aviso acompanha ⛔ o produtor da
+        * saída clínica, ⛔ não a tela hospedeira"*.
+        *
+        * ⛔ ⛔ ⛔ Este desenho ⛔ é ⛔ **⛔ o mesmo** ⛔ na Estabilização ⛔ e ⛔ nas
+        * Correções. ⛔ Colado ⛔ nas telas, ⛔ o aviso apareceria ⛔ **⛔ duas
+        * vezes ⛔ ou ⛔ nenhuma** — ⛔ e ⛔ foi ⛔ este arquivo ⛔ que decidiu ⛔ a
+        * regra ⛔ para os outros dez pontos.
+        */}
       <Text style={e.terapeuticaTitulo}>{tr("Alvos pressóricos")}</Text>
-      {ALVOS_PRESSORICOS.map((alvo) => (
-        <View key={alvo.id} style={e.alvo} testID={`${prefixo}alvo-${alvo.id}`}>
-          <Text style={e.alvoGrau}>
-            {alvo.apoioSemGrau
-              ? tr("Texto de apoio da diretriz, sem grau de recomendação")
-              : `${tr("COR")} ${alvo.cor} · ${tr("LOE")} ${alvo.loe}`}
-          </Text>
-          <Text style={e.alvoValor}>{tr(alvo.valor)}</Text>
-          <Text style={e.alvoContexto}>{tr(alvo.contexto)}</Text>
-        </View>
-      ))}
+      {(todosOsAlvos ? ALVOS_PRESSORICOS : ALVOS_PRESSORICOS.filter((a) => a.principal)).map(
+        (alvo) => (
+          <View key={alvo.id} style={e.alvo} testID={`${prefixo}alvo-${alvo.id}`}>
+            <Text style={e.alvoGrau}>
+              {alvo.apoioSemGrau
+                ? tr("Texto de apoio da diretriz, sem grau de recomendação")
+                : `${tr("COR")} ${alvo.cor} · ${tr("LOE")} ${alvo.loe}`}
+            </Text>
+            <Text style={e.alvoValor}>{tr(alvo.valor)}</Text>
+            <Text style={e.alvoContexto}>{tr(alvo.contexto)}</Text>
+          </View>
+        )
+      )}
+      {/** ⚠️ ⛔ O número ⛔ na etiqueta: ⛔ o médico sabe **⛔ quanto** há atrás. */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: todosOsAlvos }}
+        testID={`${prefixo}alvos-todos`}
+        onPress={() => setTodosOsAlvos((v) => !v)}
+        style={({ pressed }) => [e.maisAlvos, pressed ? { opacity: 0.7 } : null]}
+      >
+        <Text style={e.maisAlvosTexto}>
+          {todosOsAlvos
+            ? tr("Ocultar os outros alvos")
+            : `${tr("Ver os outros alvos e as fontes")} · ${
+                ALVOS_PRESSORICOS.filter((a) => !a.principal).length
+              }`}
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -142,7 +271,33 @@ export function CondutaGlicemica({ prefixo }: { prefixo: string }) {
         </Text>
       </View>
 
+      {/**
+        * ⚠️ ⛔ `altoRisco` ⛔ no bloco da **conduta** — ⛔ aqui começa ⛔ o que
+        * ⛔ se executa ⛔ no paciente.
+        */}
+      <AvisoDeApoioClinico
+        variante="altoRisco"
+        ha
+        tr={tr}
+        testID={`${prefixo}aviso-alto-risco-glicemia`}
+      />
+
       <Text style={e.terapeuticaTitulo}>{tr("Como corrigir")}</Text>
+      {/**
+        * ⚠️⚠️ ⛔ `calculoDose` ⛔ **⛔ só se houver dose ⛔ exibida**.
+        *
+        * ⛔ ⛔ ⛔ E ⛔ aqui ⛔ isso ⛔ **⛔ não é sempre**: a insulina ⛔ entra
+        * ⛔ **⛔ sem dose** ⛔ de propósito — *"⛔ não existe dose fixa
+        * recomendada para o AVC"* —, ⛔ e ⛔ um caso em que ⛔ **⛔ nenhum**
+        * tratamento trouxesse número ⛔ deixaria o aviso ⛔ qualificando ⛔ o
+        * vazio.
+        */}
+      <AvisoDeApoioClinico
+        variante="calculoDose"
+        ha={TRATAMENTOS_GLICEMICOS.some((t) => t.dose !== undefined)}
+        tr={tr}
+        testID={`${prefixo}aviso-calculo-dose-glicemia`}
+      />
       {TRATAMENTOS_GLICEMICOS.map((t) => (
         <View key={t.id} style={e.agente} testID={`${prefixo}glicemia-${t.id}`}>
           <Text style={e.agenteNome}>{tr(t.nome)}</Text>
@@ -249,6 +404,17 @@ const criarEstilos = (tema: Tema) =>
     alvoGrau: { ...PAPEL.micro, color: tema.cores.textSecondary },
     alvoValor: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     alvoContexto: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
+    /** ⚠️ ⛔ O acesso ao resto — ⛔ discreto, ⛔ e ⛔ visivelmente tocável. */
+    maisAlvos: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+    },
+    maisAlvosTexto: { ...PAPEL.textoSecundario, color: tema.cores.primary, fontWeight: "700" },
     alvoNaoE: { ...PAPEL.textoSecundario, color: tema.cores.info },
     pergunta: {
       backgroundColor: tema.cores.primaryTint,

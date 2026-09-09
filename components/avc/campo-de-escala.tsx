@@ -112,8 +112,28 @@ export default function CampoDeEscala({
    * ⛔ apenas **quantos itens a tela mostra por vez**.
    */
   const [foco, setFoco] = useState(0);
-  /** ⚠️ A revisão: a lista inteira, para conferir ⛔ ou corrigir qualquer item. */
-  const [verTodos, setVerTodos] = useState(false);
+  /**
+   * ── ⚠️⚠️⚠️ ⛔ ABRE **⛔ INTEIRA** — decisão do autor, 2026-09-09 ──────────
+   *
+   * ⚠️ *"O NIHSS ⛔ não pode ser no mesmo padrão do Glasgow? ⛔ Quando clicar
+   * para abrir, abrir ⛔ ele todo, fica mais fácil de preencher do que ir
+   * clicando item a item."*
+   *
+   * ⛔ ⛔ ⛔ **⛔ E ⛔ é o mesmo médico ⛔ que pediu o modo foco**, ⛔ em
+   * 2026-08-29 — ⛔ e ⛔ isso ⛔ não é contradição: ⛔ lá ⛔ ele reclamava de
+   * uma escala que ⛔ **⛔ não abria**; ⛔ aqui ⛔ ele reclama de ⛔ **⛔ quinze
+   * toques** ⛔ para atravessar ⛔ o que ⛔ ele ⛔ já sabe responder.
+   *
+   * ⚠️⚠️ ⛔ O modo foco ⛔ **⛔ não foi removido** — ⛔ ele vira ⛔ o
+   * ⛔ **⛔ outro** botão. ⛔ Quem quiser um item por vez ⛔ tem ⛔ um toque de
+   * distância; ⛔ quem quiser preencher ⛔ direto ⛔ não paga ⛔ pedágio
+   * ⛔ nenhum.
+   *
+   * ⛔ ⛔ **⛔ E ⛔ nada da semântica muda**: ⛔ ordem, critérios, valores,
+   * rascunho ⛔ e a gravação ⛔ em **gesto único** ⛔ continuam idênticos —
+   * ⛔ muda ⛔ **⛔ quantos itens a tela mostra ⛔ ao abrir**.
+   */
+  const [verTodos, setVerTodos] = useState(true);
 
   const emEdicao = { ...pontos, ...rascunho };
   const respondidos = ITENS_NIHSS.filter((v) => emEdicao[v.id] !== undefined).length;
@@ -207,7 +227,12 @@ export default function CampoDeEscala({
               onPress={() => setVerTodos((v) => !v)}
             >
               <Text style={e.acaoTexto}>
-                {verTodos ? tr("Voltar ao item") : tr("Ver todos")}
+                {/**
+                  * ⚠️ ⛔ *"Voltar ao item"* ⛔ pressupunha que ⛔ se veio ⛔ de
+                  * lá. ⛔ Agora a escala **abre inteira**, ⛔ e o outro modo
+                  * ⛔ é ⛔ uma escolha, ⛔ e ⛔ não um retorno.
+                  */}
+                {verTodos ? tr("Um item por vez") : tr("Ver todos")}
               </Text>
             </Pressable>
           </View>

@@ -1202,9 +1202,6 @@ export default function SuperficieC({
                     {tr("Insumos")}: {l.insumos.map((i) => tr(rotuloDoCampo[i] ?? i)).join(", ")} ·{" "}
                     {tr("slot")} {l.fonte}
                   </Text>
-                  <Text style={e.leituraFonte}>
-                    {tr("Apoio ao julgamento clínico. A decisão permanece do médico.")}
-                  </Text>
                 </View>
               ) : null}
             </View>

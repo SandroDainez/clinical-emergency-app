@@ -34,6 +34,7 @@ import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/th
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../../design-system/aviso-de-apoio-clinico";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · ÍCONES — uma biblioteca só, ⛔ e ⛔ NENHUM emoji
@@ -1547,6 +1548,29 @@ export function LeiturasEmBlocos({
           {aberto ? info.map((l) => renderItem(l.id)) : null}
         </View>
       ) : null}
+
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ **⛔ UM** AVISO POR PAINEL — 2026-09-09 ────────────────
+        *
+        * ⚠️ Decisão do autor: *"`recomendacao` aparece **⛔ uma vez por bloco
+        * de leituras**, ⛔ no rodapé do bloco, ⛔ e ⛔ não uma vez por
+        * leitura"*.
+        *
+        * ⛔ ⛔ ⛔ **⛔ E ⛔ antes ⛔ era uma vez ⛔ por leitura.** ⛔ Na
+        * Estabilização ⛔ isso ⛔ punha ⛔ *"Apoio ao julgamento clínico. A
+        * decisão permanece do médico."* ⛔ **⛔ cinco vezes ⛔ na mesma tela**
+        * — ⛔ e ⛔ frase repetida ⛔ cinco vezes ⛔ é frase que ⛔ ninguém lê.
+        *
+        * ⚠️⚠️ ⛔ E ⛔ ele ⛔ **⛔ só existe ⛔ se houver leitura**: ⛔ um painel
+        * ⛔ vazio ⛔ ainda ⛔ não recomendou ⛔ nada, ⛔ e ⛔ um disclaimer
+        * ⛔ sozinho ⛔ ali ⛔ qualificaria ⛔ o silêncio.
+        */}
+      <AvisoDeApoioClinico
+        variante="recomendacao"
+        ha={leituras.length > 0}
+        tr={tr}
+        testID="avc-aviso-leituras"
+      />
     </View>
   );
 }

@@ -21,6 +21,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
 import { CAMPO_DE_OUTROS, opcaoDoValor, valorDaOpcao } from "../../avc/conteudo/campo";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { alternarItem, estaSelecionado, itensSelecionados } from "../../avc/nucleo/selecao";
 import {
   arredondaAoPasso,
@@ -1816,13 +1817,30 @@ export function PainelDeLeituras({
                   {tr("a partir de")}:{" "}
                   {l.insumos.map((i) => tr(rotuloDoCampo[i] ?? i)).join(", ")} · {l.fonte}
                 </Text>
-                <Text style={e.detalheTexto}>
-                  {tr("Apoio ao julgamento clínico. A decisão permanece do médico.")}
-                </Text>
               </View>
             ) : null}
           </View>
         ))}
+      {/**
+        * ── ⚠️⚠️⚠️ ⛔ **⛔ UM** AVISO POR PAINEL — 2026-09-09 ────────────────
+        *
+        * ⚠️ Decisão do autor: *"`recomendacao` aparece **⛔ uma vez por bloco
+        * de leituras**… ⛔ e ⛔ não uma vez por leitura"*.
+        *
+        * ⛔ ⛔ ⛔ Antes, a frase *"Apoio ao julgamento clínico. A decisão
+        * permanece do médico."* ⛔ vinha ⛔ **⛔ colada ⛔ em cada leitura** —
+        * ⛔ e ⛔ um painel com cinco alertas ⛔ a repetia ⛔ cinco vezes.
+        *
+        * ⚠️ ⛔ E ⛔ **⛔ só ⛔ se houver leitura**: ⛔ painel vazio ⛔ ainda
+        * ⛔ não recomendou ⛔ nada.
+        */}
+      <AvisoDeApoioClinico
+        variante="recomendacao"
+        ha={leituras.length > 0}
+        tr={tr}
+        testID="avc-aviso-leituras"
+      />
+
     </View>
   );
 }

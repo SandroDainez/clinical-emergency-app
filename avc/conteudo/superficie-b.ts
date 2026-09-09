@@ -699,7 +699,7 @@ export const DECISAO_B: readonly CampoB[] = [
     rotulo: "Déficit leve, na avaliação do médico",
     tipo: "escolha",
     opcoes: ["Leve", "Não leve", "Incerto"],
-    ajuda: "A fonte não define leve por escore. A leitura é sua.",
+    ajuda: "Não existe corte de escore que defina leve. O julgamento é seu.",
     fonte: "F-17",
     bloqueiaTerapia: false,
     nota: "A recomendação de não trombolisar exige déficit leve E não incapacitante. O NIHSS isolado não determina nenhum dos dois.",

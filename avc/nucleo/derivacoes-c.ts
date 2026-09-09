@@ -483,7 +483,25 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
   if (incerto) {
     return {
       conclusao: "desconhecido",
-      tom: "pendente",
+      /**
+       * ── ⚠️⚠️⚠️ ⛔ RESPONDIDO **⛔ NÃO É** PENDENTE — 2026-09-09 ────────────
+       *
+       * ⚠️ Relato do autor, ⛔ com captura: *"mesmo depois de marcado aparece
+       * como se ⛔ não estivesse marcado"* — ⛔ *"Incerto"* escolhido, ⛔ e o
+       * bloco dizendo *"Falta responder · 1"*.
+       *
+       * ⛔ ⛔ ⛔ **O `texto` ⛔ aqui ⛔ já dizia a coisa certa** — *"Incerto fica
+       * registrado como resposta"* —, ⛔ e o `tom` dizia o contrário.
+       * ⚠️ ⛔ E ⛔ os dois ramos estavam **⛔ trocados**: quem ⛔ **⛔ respondeu**
+       * caía em `pendente`, ⛔ e quem ⛔ **⛔ nunca foi perguntado** caía em
+       * `informativo`.
+       *
+       * ⛔ ⛔ **⛔ A conclusão ⛔ não muda**: `desconhecido` ⛔ continua
+       * `desconhecido`, ⛔ e ⛔ nada passa a ser afirmado (**E-23**). ⛔ O que
+       * muda ⛔ é a tela ⛔ parar de **cobrar** ⛔ uma resposta que ⛔ ela
+       * ⛔ **⛔ tem**.
+       */
+      tom: "informativo",
       curto: "Suspeita clínica de hemorragia subaracnóidea em aberto",
       texto: "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento",
       insumos,
@@ -541,7 +559,7 @@ export function hipodensidadeClara(estado: EstadoAvc): Leitura {
     return {
       conclusao: "sim",
       tom: "atencao",
-      curto: "Hipodensidade clara registrada na tomografia",
+      curto: "Hipodensidade franca registrada na tomografia",
       texto: "A fonte lista este achado entre as contraindicações que ela mesma chama de absolutas, e declara essa faixa como não sustentada por evidência clínica. A decisão sobre a reperfusão não é tomada nesta superfície",
       insumos,
       fonte,
@@ -551,8 +569,17 @@ export function hipodensidadeClara(estado: EstadoAvc): Leitura {
     return {
       conclusao: "nao",
       tom: "informativo",
-      curto: "Sem hipodensidade clara na tomografia",
-      texto: "Resposta registrada, comparando com a densidade da substância branca contralateral não acometida",
+      curto: "Sem hipodensidade franca na tomografia",
+      /**
+       * ⚠️⚠️ ⛔ **⛔ O SEGUNDO CONSUMIDOR DA DEFINIÇÃO INVENTADA** — 2026-09-09.
+       *
+       * ⛔ ⛔ A frase *"comparando com a densidade da substância branca
+       * contralateral"* ⛔ repetia ⛔ aqui ⛔ o que a `ajuda` do campo dizia,
+       * ⛔ e ⛔ o autor conferiu ⛔ no PDF: ⛔ a diretriz ⛔ **⛔ não** define
+       * assim. ⚠️ ⛔ Achado ⛔ ao procurar ⛔ outros consumidores ⛔ do mesmo
+       * erro — ⛔ e ⛔ ele existia.
+       */
+      texto: "Resposta registrada. A fonte descreve hipoatenuação grave, como a observada em AVC subagudo",
       insumos,
       fonte,
     };
@@ -560,8 +587,26 @@ export function hipodensidadeClara(estado: EstadoAvc): Leitura {
   if (incerto) {
     return {
       conclusao: "desconhecido",
-      tom: "pendente",
-      curto: "Hipodensidade clara em aberto",
+      /**
+       * ── ⚠️⚠️⚠️ ⛔ RESPONDIDO **⛔ NÃO É** PENDENTE — 2026-09-09 ────────────
+       *
+       * ⚠️ Relato do autor, ⛔ com captura: *"mesmo depois de marcado aparece
+       * como se ⛔ não estivesse marcado"* — ⛔ *"Incerto"* escolhido, ⛔ e o
+       * bloco dizendo *"Falta responder · 1"*.
+       *
+       * ⛔ ⛔ ⛔ **O `texto` ⛔ aqui ⛔ já dizia a coisa certa** — *"Incerto fica
+       * registrado como resposta"* —, ⛔ e o `tom` dizia o contrário.
+       * ⚠️ ⛔ E ⛔ os dois ramos estavam **⛔ trocados**: quem ⛔ **⛔ respondeu**
+       * caía em `pendente`, ⛔ e quem ⛔ **⛔ nunca foi perguntado** caía em
+       * `informativo`.
+       *
+       * ⛔ ⛔ **⛔ A conclusão ⛔ não muda**: `desconhecido` ⛔ continua
+       * `desconhecido`, ⛔ e ⛔ nada passa a ser afirmado (**E-23**). ⛔ O que
+       * muda ⛔ é a tela ⛔ parar de **cobrar** ⛔ uma resposta que ⛔ ela
+       * ⛔ **⛔ tem**.
+       */
+      tom: "informativo",
+      curto: "Hipodensidade franca em aberto",
       texto: "Incerto fica registrado como resposta, e não vira ausência do achado",
       insumos,
       fonte,
@@ -570,7 +615,7 @@ export function hipodensidadeClara(estado: EstadoAvc): Leitura {
   return {
     conclusao: "desconhecido",
     tom: "informativo",
-    curto: "Hipodensidade clara ainda não avaliada",
+    curto: "Hipodensidade franca ainda não avaliada",
     texto: "Ainda não perguntado é diferente de ausente, e nada no atendimento espera por esta resposta",
     insumos,
     fonte,

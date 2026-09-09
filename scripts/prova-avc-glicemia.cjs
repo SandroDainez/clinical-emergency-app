@@ -27,14 +27,46 @@ const { lerFonte } = require("./lib/fonte.cjs");
 
 const appDir = path.resolve(__dirname, "..");
 const conteudo = lerFonte(path.join(appDir, "avc", "conteudo", "correcao-glicemica.ts"));
-const tela = lerFonte(path.join(appDir, "components", "avc", "superficie-e.tsx"));
+/**
+ * ── ⚠️⚠️⚠️ A TELA MUDOU DE ARQUIVO, ⛔ E ESTA TRAVA ⛔ NÃO SEGUIU ──────────
+ *
+ * ⛔ ⛔ Mesma história da prova dos anti-hipertensivos, ⛔ no mesmo dia: em
+ * 2026-09-08 o desenho da conduta saiu de `superficie-e.tsx` para
+ * `conduta-da-fonte.tsx`, ⛔ para a Estabilização ⛔ e as Correções lerem
+ * ⛔ **⛔ o mesmo**. ⚠️ ⛔ As duas provas continuaram lendo ⛔ só o endereço
+ * antigo ⛔ e ficaram **vermelhas por endereço**, ⛔ não por defeito.
+ *
+ * ⚠️⚠️ ⛔ **⛔ Duas ⛔ ao mesmo tempo ⛔ não é coincidência ⛔ — é padrão.**
+ * ⛔ Quando o desenho muda de casa, ⛔ **⛔ toda** trava que o mede vai junto:
+ * ⛔ é a mesma regra que já vale para o fato clínico, ⛔ aplicada ao que mede
+ * o fato.
+ */
+const tela =
+  lerFonte(path.join(appDir, "components", "avc", "superficie-e.tsx")) +
+  lerFonte(path.join(appDir, "components", "avc", "conduta-da-fonte.tsx"));
 /**
  * ⚠️ ⛔ Sem o cabeçalho de imports: lá os nomes aparecem em ordem alfabética,
  * ⛔ e comparar posições no arquivo inteiro mediria a ordem do `import`, ⛔ e
  * ⛔ não a ordem em que a tela **desenha**. ⚠️ Bug desta própria trava, na
  * primeira execução.
  */
-const corpoDaTela = tela.slice(tela.lastIndexOf("export default function"));
+/**
+ * ── ⚠️⚠️⚠️ O CORPO DE **⛔ QUEM DESENHA**, ⛔ e ⛔ não o arquivo — 2026-09-09 ──
+ *
+ * ⛔ ⛔ A ordem que ⛔ importa ⛔ é a que o médico **⛔ lê**: a pergunta que
+ * decide ⛔ antes da tabela de faixas. ⚠️ Medida ⛔ no arquivo inteiro, ⛔ ela
+ * caía ⛔ no **bloco de imports** — ⛔ onde `CORTES_GLICEMICOS` vem ⛔ antes de
+ * `PERGUNTA_QUE_DECIDE` ⛔ por ordem alfabética, ⛔ e ⛔ nada disso ⛔ chega à
+ * tela.
+ *
+ * ⚠️ ⛔ Então a medida começa ⛔ no componente que desenha a glicemia.
+ */
+const inicioDoDesenho = (() => {
+  const i = tela.indexOf("export function CondutaGlicemica");
+  if (i >= 0) return i;
+  return tela.lastIndexOf("export default function");
+})();
+const corpoDaTela = tela.slice(inicioDoDesenho);
 /** ⚠️ ⛔ Sem os comentários: eles CITAM o erro para proibi-lo. */
 const semComentarios = conteudo.replace(/\/\*\*[^]*?\*\//g, "").replace(/\/\/.*$/gm, "");
 

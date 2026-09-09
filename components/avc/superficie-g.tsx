@@ -55,6 +55,7 @@ import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
+import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco } from "./campos-clinicos";
 
 /**
@@ -203,6 +204,16 @@ export default function SuperficieG({
       {sintese.condutas.length > 0 ? (
         <View style={e.grupo} testID="avc-g-sintese-conduta">
           <SectionTitle testID="avc-g-bloco-conduta">Conduta</SectionTitle>
+          {/**
+            * ⚠️ ⛔ `recomendacao`: ⛔ Destino ⛔ recomenda encaminhamento
+            * ⛔ e unidade, ⛔ e ⛔ isso ⛔ é interpretação — ⛔ não coleta.
+            */}
+          <AvisoDeApoioClinico
+            variante="recomendacao"
+            ha
+            tr={tr}
+            testID="avc-g-aviso-recomendacao"
+          />
           {/**
             * ⚠️⚠️ A LINHA DO TEMPO DAS REFERÊNCIAS — ⛔ e ⛔ ela ⛔ não achata a
             * distinção que esta superfície existe para manter.
