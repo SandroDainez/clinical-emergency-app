@@ -5211,7 +5211,7 @@ declara uma — ⛔ inventar ⛔ uma para a glicemia ⛔ seria ⛔ mecanismo ⛔
 
 ---
 
-## D-134 — ⏸️ ABERTA · A MEDIDA ANTERIOR ⛔ NÃO TEM ONDE SER VISTA
+## D-134 — ✅ FECHADA · A MEDIDA ANTERIOR ⛔ NÃO TEM ONDE SER VISTA
 
 **Data:** 2026-09-10 · nasceu ⛔ ao provar ⛔ a D-133.
 
@@ -5284,3 +5284,55 @@ abre** (`NOME_DA_AFERICAO`, no conteúdo) — ⛔ « Nova aferição de pressão
 correção — ⛔ ela ⛔ **⛔ não trava a trombólise** (**F-06**). ⛔ O que ela ganhou
 ⛔ é ⛔ **⛔ poder ser remedida ⛔ sem apagar** ⛔ a medida anterior. ⛔ A mutação
 ⛔ que a transforma em bloqueio ⛔ **⛔ reprova**.
+
+---
+
+## D-134 · FECHAMENTO — 2026-09-10 · O HISTÓRICO É JANELA, ⛔ NÃO FONTE
+
+### ⚠️ O QUE FOI FEITO
+
+⛔ `historicoDeAfericoes(estado, tipo)` ⛔ em `avc/nucleo/instancia.ts`:
+⛔ **⛔ leitura pura** ⛔ que agrupa ⛔ os fatos ⛔ que ⛔ **⛔ já existiam** ⛔ por
+instância, ⛔ devolvendo ⛔ ordem (1ª, 2ª), ⛔ quem é ⛔ **⛔ a atual**, ⛔ os
+valores, ⛔ o instante de registro ⛔ e ⛔ — ⛔ quando houve correção — ⛔ **⛔ o
+valor originalmente registrado**.
+
+⛔ ⛔ Ele ⛔ **⛔ não** cria estrutura nova, ⛔ **⛔ não** toca `valorAtual`, ⛔ e
+⛔ **⛔ não** ordena por relógio clínico. ⛔ Nenhum id interno sai dele: ⛔ o que
+o médico lê ⛔ é ⛔ **⛔ ordem**, ⛔ e ⛔ não `pa_2`.
+
+⚠️ ⛔ Na tela ⛔ é ⛔ **⛔ genérico**: nasce de `instanciaDe`, ⛔ então ⛔ a mesma
+peça serve ⛔ PA, ⛔ glicemia ⛔ e ⛔ o que vier — ⛔ e ⛔ **⛔ não** há uma tela
+para cada. ⛔ Compacto por padrão (« 2 medidas · Ver histórico »), ⛔ **⛔ abaixo**
+da medida atual — ⛔ o presente ⛔ é ⛔ o que decide.
+
+### ⚠️⚠️ O CUIDADO QUE O AUTOR PEDIU, ⛔ VIRADO EM TRAVA
+
+⛔ *"Histórico visível ⛔ não pode virar «segunda fonte da verdade»."*
+
+⛔ `prova-historico-de-afericoes.cjs` ⛔ varre ⛔ os módulos de derivação
+(`derivacoes-*`, `portao-*`, `ameacas-*`, `veredito-*`) ⛔ e ⛔ **⛔ reprova**
+⛔ se ⛔ **⛔ qualquer um** ⛔ importar ⛔ o histórico — ⛔ e ⛔ confere ⛔ também
+⛔ que ⛔ o universo ⛔ da varredura ⛔ **⛔ não está vazio**, ⛔ senão ⛔ a
+conferência ⛔ passaria ⛔ sem medir nada.
+
+### ⚠️ UM AJUSTE QUE A REVISÃO A 375 px PEGOU
+
+⛔ ⛔ A primeira versão ⛔ desenhava o histórico ⛔ **⛔ acima** ⛔ da medida
+atual — ⛔ o passado ⛔ antes do presente. ⛔ Medição ⛔ não pega isso; ⛔ olho
+⛔ pega.
+
+### ⚠️ ZERO — ⛔ e por que a prova dele ⛔ **⛔ não** é e2e
+
+⛔ ⛔ A glicemia tem faixa **20–800**: ⛔ zero ⛔ **⛔ não é registrável** ali,
+⛔ e ⛔ isso é conteúdo clínico correto. ⛔ Forçar o gesto ⛔ testaria ⛔ um estado
+⛔ que ⛔ o app ⛔ recusa ⛔ por desenho. ⚠️ ⛔ O que se prova ⛔ é ⛔ que ⛔ **⛔ o
+leitor** ⛔ não trata ⛔ `0` ⛔ como ausência — ⛔ no módulo puro.
+
+### ⚠️ MUTAÇÕES
+
+| mutação | resultado |
+| --- | --- |
+| histórico volta a mostrar ⛔ só o último valor | ✔ reprova |
+| o valor original da correção some | ✔ reprova |
+| a correção deixa de ser vista como correção | ✔ reprova |

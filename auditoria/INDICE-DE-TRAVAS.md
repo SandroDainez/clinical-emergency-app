@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**100 de 114 travas com declaração completa.**
+**101 de 115 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -85,6 +85,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que uma **nova glicemia** abra ⛔ **⛔ instância nova**, ⛔ deixando a anterior ⛔ intacta na trilha; que **corrigir** ⛔ permaneça ⛔ gesto separado, ⛔ na ⛔ **⛔ mesma** instância; que ⛔ a leitura corrente ⛔ siga sendo ⛔ a última medida; ⛔ e que ⛔ **⛔ zero** ⛔ continue ⛔ sendo ⛔ valor ⛔ registrável.
 - **NÃO PROMETE:** que a hiperglicemia ganhe ciclo — ⛔ ela ⛔ **⛔ não bloqueia** a trombólise (**F-06**), ⛔ e ⛔ instância ⛔ não é ⛔ bloqueio. ⛔ Promete ⛔ só que ⛔ ela pode ser ⛔ **⛔ remedida** ⛔ sem apagar ⛔ a medida anterior.
 - **UNIVERSO:** `avc/nucleo/estado.ts`, `avc/nucleo/instancia.ts` ⛔ e a declaração `instanciaDe` do campo `glicemia` em `avc/conteudo/superficie-a.ts`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ELA FECHA ────────────────────────────────────── ⛔ ⛔ `F-06` manda tratar abaixo de 60, ⛔ e a ação de correção declara que o bloqueio cai por ⛔ *"Uma nova glicemia"*. ⛔ Só que ⛔ o campo ⛔ **⛔ não tinha instância**: ⛔ « nova glicemia » ⛔ e ⛔ « corrigir a glicemia » ⛔ eram ⛔ **⛔ o mesmo gesto**. ⚠️⚠️ ⛔ Consequência clínica: ⛔ o app ⛔ destravaria ⛔ a trombólise ⛔ sobre um número ⛔ que ⛔ **⛔ apagou** ⛔ o 38 ⛔ que motivou ⛔ a correção — ⛔ e ⛔ a trilha ⛔ diria ⛔ que ⛔ a glicemia ⛔ **⛔ sempre foi** 96.
+
+## `test:historico-afericoes` → `scripts/prova-historico-de-afericoes.cjs`
+
+- **PROMETE:** que o histórico ⛔ agrupe ⛔ **⛔ o que já está na trilha** — ⛔ uma linha por instância, ⛔ na ordem em que foram medidas, ⛔ com a última marcada como atual; que ⛔ **⛔ correção**, ⛔ na mesma instância, ⛔ **⛔ não** crie linha nova ⛔ e ⛔ **⛔ preserve o valor originalmente registrado**; que ⛔ `0` ⛔ apareça ⛔ como ⛔ **⛔ dado**, ⛔ e ⛔ não como ausência; que ⛔ **⛔ nenhum id interno** de instância ⛔ saia daqui; ⛔ e — ⛔ a mais importante — ⛔ que ⛔ **⛔ nenhum módulo de derivação clínica ⛔ o importe**.
+- **NÃO PROMETE:** nada sobre ⛔ **⛔ como a tela desenha**. ⛔ Isso é `e2e/avc-historico-de-afericoes.spec.ts`, ⛔ com gesto real.
+- **UNIVERSO:** `avc/nucleo/instancia.ts` ⛔ e ⛔ os módulos de derivação de `avc/`. ── ⚠️⚠️⚠️ ⛔ O QUE ELA IMPEDE ───────────────────────────────────────────── ⛔ Decisão do autor, 2026-09-10: *"histórico visível ⛔ não pode virar «segunda fonte da verdade». ⛔ Ele é uma ⛔ **janela de auditoria** sobre os fatos ⛔ já existentes. ⛔ O motor clínico ⛔ continua derivando ⛔ exatamente como deriva hoje. ⛔ Isso evita ⛔ criar uma arquitetura paralela ⛔ só para mostrar o passado."* ⚠️ ⛔ O dia em que ⛔ uma derivação ⛔ ler ⛔ `historicoDeAfericoes` ⛔ para decidir conduta, ⛔ o app passa a ter ⛔ **⛔ dois caminhos** ⛔ até o mesmo fato — ⛔ e ⛔ os dois ⛔ vão divergir.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

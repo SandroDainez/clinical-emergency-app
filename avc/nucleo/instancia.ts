@@ -114,3 +114,98 @@ export function valorNaInstancia(
   const daInstancia = estado.fatos.filter((f) => f.instancia === instancia && f.campo === campo);
   return daInstancia.length > 0 ? daInstancia[daInstancia.length - 1] : undefined;
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * O HISTÓRICO — ⚠️ uma JANELA sobre os fatos, ⛔ e ⛔ não uma segunda verdade
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️⚠️⚠️ ⛔ D-134 — *"um histórico clínico preservado ⛔ mas ⛔ invisível ⛔ ainda
+ * é ⛔ meio histórico"* (autor, 2026-09-10).
+ *
+ * ⛔ ⛔ A trilha ⛔ **⛔ já guardava** ⛔ tudo: ⛔ ao provar a **D-133** ⛔ eu fui
+ * procurar ⛔ a glicemia anterior ⛔ na tela ⛔ e ⛔ **⛔ não achei onde olhar**.
+ * ⛔ O fato existia; ⛔ o médico ⛔ é que ⛔ não o alcançava.
+ *
+ * ── ⚠️⚠️ ⛔ O QUE ISTO ⛔ **⛔ NÃO** É ──────────────────────────────────────
+ *
+ * ⛔ ⛔ **⛔ Não é fonte de derivação.** ⛔ Decisão do autor: *"histórico visível
+ * ⛔ não pode virar ⛔ «segunda fonte da verdade». ⛔ Ele é ⛔ uma janela de
+ * auditoria ⛔ sobre os fatos ⛔ já existentes. ⛔ O motor clínico ⛔ continua
+ * derivando ⛔ exatamente ⛔ como deriva hoje."*
+ *
+ * ⛔ ⛔ Por isso ⛔ ele ⛔ **⛔ não toca** `valorAtual`, ⛔ **⛔ não** ordena por
+ * relógio clínico ⛔ e ⛔ **⛔ não** decide nada: ⛔ ele ⛔ agrupa ⛔ o que já está
+ * lá ⛔ e ⛔ devolve ⛔ para ⛔ **⛔ ser lido**. ⛔ Nenhum módulo de derivação
+ * ⛔ pode importá-lo — ⛔ `scripts/prova-historico-de-afericoes.cjs` ⛔ confere.
+ *
+ * ⛔ ⛔ **⛔ Não expõe id interno.** ⛔ `glicemia_2` ⛔ é nome de máquina.
+ * ⛔ O que sai daqui ⛔ é ⛔ **⛔ ordem** — ⛔ 1ª, 2ª — ⛔ e ⛔ quem é ⛔ a atual.
+ *
+ * ⛔ ⛔ **⛔ Não é genérico ⛔ para além de `instanciaDe`.** ⛔ Ele serve ⛔ **⛔ toda**
+ * aferição que declare instância ⛔ — ⛔ e ⛔ **⛔ só** elas —, ⛔ que é o que
+ * ⛔ evita ⛔ uma tela para a PA ⛔ e ⛔ outra para a glicemia.
+ */
+export type ValorNoHistorico = {
+  readonly campo: string;
+  /** ⚠️ O valor que **vale** nesta medida — depois de correções, se houve. */
+  readonly valor: FatoRegistrado["valor"];
+  /**
+   * ⚠️⚠️ ⛔ O QUE FOI REGISTRADO ⛔ **⛔ ANTES** ⛔ DA CORREÇÃO — ⛔ e ⛔ `undefined`
+   * ⛔ quando ⛔ não houve. ⛔ Mostrar ⛔ só o corrigido ⛔ esconderia ⛔ que houve
+   * erro, ⛔ que é ⛔ exatamente ⛔ o que a trilha append-only ⛔ existe ⛔ para ⛔ não
+   * deixar acontecer (§3.4).
+   */
+  readonly valorOriginal: FatoRegistrado["valor"] | undefined;
+};
+
+export type MedidaNoHistorico = {
+  /** ⚠️ 1ª, 2ª, 3ª — ⛔ e ⛔ nunca `pa_2`. */
+  readonly ordem: number;
+  readonly atual: boolean;
+  readonly valores: readonly ValorNoHistorico[];
+  /** ⚠️ Instante de REGISTRO. ⛔ Relógio clínico ⛔ é outra coisa, ⛔ e pode faltar. */
+  readonly registradaEm: number | undefined;
+  readonly corrigida: boolean;
+};
+
+/** ⚠️ O marcador de « nova medida » ⛔ não é uma grandeza — ⛔ ele ⛔ não se exibe. */
+const EH_MARCADOR = (campo: string) => campo.endsWith("_nova_medida");
+
+/**
+ * ⚠️ Todas as medidas de um tipo, ⛔ da mais antiga ⛔ para a mais nova.
+ *
+ * ⛔ A **última** ⛔ é a atual — ⛔ a mesma que `valorAtual` devolve, ⛔ porque é
+ * ⛔ a mesma trilha ⛔ lida ⛔ da mesma forma.
+ */
+export function historicoDeAfericoes(
+  estado: EstadoAvc,
+  tipo: string
+): readonly MedidaNoHistorico[] {
+  const instancias = instanciasDe(estado, tipo);
+  return instancias.map((instancia, i) => {
+    const fatos = fatosDaInstancia(estado, instancia).filter((f) => !EH_MARCADOR(f.campo));
+    const campos: string[] = [];
+    for (const f of fatos) if (!campos.includes(f.campo)) campos.push(f.campo);
+
+    const valores = campos.map((campo) => {
+      const doCampo = fatos.filter((f) => f.campo === campo);
+      const ultimo = doCampo[doCampo.length - 1];
+      const houveCorrecao = doCampo.some((f) => f.tipo === "correcao");
+      const primeiro = doCampo[0];
+      return {
+        campo,
+        valor: ultimo.valor,
+        valorOriginal: houveCorrecao ? primeiro.valor : undefined,
+      };
+    });
+
+    return {
+      ordem: i + 1,
+      atual: i === instancias.length - 1,
+      valores,
+      registradaEm: fatos[0]?.horaRegistro,
+      corrigida: fatos.some((f) => f.tipo === "correcao"),
+    };
+  });
+}

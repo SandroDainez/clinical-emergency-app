@@ -23,6 +23,8 @@
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
 import { nomeDaNovaAfericao } from "../../avc/conteudo/campos";
+import { historicoDeAfericoes } from "../../avc/nucleo/instancia";
+import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -283,6 +285,20 @@ export default function SuperficieA({
   }
 
   /** ⚠️ ⛔ Só oferece "nova medida" quando já existe uma medida para suceder. */
+  const [historicoAberto, setHistoricoAberto] = useState<Record<string, boolean>>({});
+
+  /**
+   * ⚠️ O nome do campo vem do CONTEÚDO do grupo — ⛔ a tela ⛔ não rebatiza.
+   * ⛔ (`rotuloDoCampo` já existe neste arquivo ⛔ e ⛔ é ⛔ **⛔ um mapa**, ⛔ não
+   * uma função — ⛔ daí o nome próprio.)
+   */
+  function rotuloDaGrandeza(
+    grupo: { campos: readonly { id: string; rotulo?: string }[] },
+    campo: string
+  ): string {
+    return grupo.campos.find((c) => c.id === campo)?.rotulo ?? campo;
+  }
+
   function haMedidaAberta(grupo: { campos: readonly { id: string }[] }): boolean {
     return grupo.campos.some((c) => valorAtual(estado, c.id) !== undefined);
   }
@@ -802,6 +818,80 @@ export default function SuperficieA({
             })}
 
             {/**
+              * ⚠️⚠️⚠️ ⛔ O HISTÓRICO — ⛔ D-134, 2026-09-10.
+              *
+              * ⛔ ⛔ *"Um histórico clínico preservado ⛔ mas ⛔ invisível ⛔ ainda
+              * é ⛔ meio histórico"* (autor). ⛔ A trilha ⛔ **⛔ já guardava** as
+              * medidas anteriores; ⛔ ao provar a **D-133** ⛔ eu fui procurar a
+              * glicemia anterior ⛔ na tela ⛔ e ⛔ **⛔ não achei onde olhar**.
+              *
+              * ⚠️ ⛔ Compacto ⛔ por padrão: ⛔ « 2 medidas » ⛔ abre ⛔ e fecha.
+              * ⛔ Tabela permanente ⛔ ocuparia ⛔ a tela ⛔ do plantão ⛔ com o
+              * passado, ⛔ e ⛔ o que ⛔ decide ⛔ é ⛔ o presente.
+              *
+              * ⛔ ⛔ E ⛔ ele é ⛔ **⛔ genérico**: ⛔ nasce ⛔ de `instanciaDe`,
+              * ⛔ então ⛔ serve ⛔ a PA, ⛔ à glicemia ⛔ e ⛔ ao que vier — ⛔ e
+              * ⛔ **⛔ não** ⛔ é ⛔ uma tela ⛔ para cada.
+              */}
+            {!aberto
+              ? null
+              : [...new Set(grupo.campos.map((c) => c.instanciaDe).filter(Boolean))]
+                  .map((tipo) => ({ tipo: tipo as string, medidas: historicoDeAfericoes(estado, tipo as string) }))
+                  .filter((h) => h.medidas.length > 1)
+                  .map(({ tipo, medidas }) => (
+                    <View key={`hist-${tipo}`} style={e.historico} testID={`avc-historico-${tipo}`}>
+                      <Pressable
+                        style={({ pressed }) => [e.historicoAbrir, pressed ? { opacity: 0.7 } : null]}
+                        accessibilityRole="button"
+                        testID={`avc-historico-abrir-${tipo}`}
+                        onPress={() =>
+                          setHistoricoAberto((h) => ({ ...h, [tipo]: !h[tipo] }))
+                        }
+                      >
+                        <Text style={e.historicoResumo}>
+                          {medidas.length} {tr("medidas")}
+                        </Text>
+                        <Text style={e.historicoAcao}>
+                          {historicoAberto[tipo] ? tr("Ocultar histórico") : tr("Ver histórico")}
+                        </Text>
+                      </Pressable>
+
+                      {!historicoAberto[tipo] ? null : (
+                        <View style={e.historicoLista}>
+                          {[...medidas].reverse().map((m) => (
+                            <View
+                              key={m.ordem}
+                              style={e.historicoLinha}
+                              testID={`avc-historico-${tipo}-${m.ordem}`}
+                            >
+                              <Text style={m.atual ? e.historicoAtual : e.historicoAnterior}>
+                                {m.atual ? tr("Medida atual") : `${m.ordem}ª ${tr("medida")}`}
+                                {m.registradaEm === undefined
+                                  ? ""
+                                  : ` · ${horaDeExibicao(m.registradaEm, agora)}`}
+                              </Text>
+                              {m.valores.map((v) => (
+                                <Text key={v.campo} style={e.historicoValor}>
+                                  {tr(rotuloDaGrandeza(grupo, v.campo))}: {String(v.valor)}
+                                  {v.valorOriginal === undefined
+                                    ? ""
+                                    : /**
+                                        * ⚠️⚠️ ⛔ A CORREÇÃO ⛔ APARECE, ⛔ E ⛔ O VALOR
+                                        * ⛔ ORIGINAL ⛔ **⛔ TAMBÉM**. ⛔ Mostrar só o
+                                        * corrigido ⛔ esconderia ⛔ que houve erro (§3.4).
+                                        */
+                                      ` · ${tr("corrigido de")} ${String(v.valorOriginal)}`}
+                                </Text>
+                              ))}
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  ))}
+
+
+            {/**
               * ── ⚠️⚠️⚠️ **CONCLUIR** MORA ⛔ DENTRO DO EIXO — 2026-09-08 ─────
               *
               * ⛔ ⛔ Eram cinco botões numa fileira ⛔ no topo, longe do que
@@ -1121,6 +1211,38 @@ const criarEstilos = (tema: Tema) =>
       borderWidth: 2,
       borderColor: tema.cores.controlBorder,
     },
+    /**
+     * ⚠️⚠️ ⛔ D-134 — ⛔ o histórico ⛔ é ⛔ **⛔ secundário ⛔ por desenho**:
+     * ⛔ o que decide ⛔ é ⛔ a medida atual, ⛔ que fica ⛔ acima ⛔ e ⛔ maior.
+     */
+    historico: { gap: 4 },
+    /**
+     * ⚠️⚠️ ⛔ CORPO E BORDA — ⛔ a trava de afordância mordeu, ⛔ e ⛔ estava certa.
+     *
+     * ⛔ ⛔ Eu tinha feito ⛔ texto puro ⛔ num `Pressable`, ⛔ mirando ⛔ « compacto ».
+     * ⚠️ ⛔ Mas ⛔ *"tocável que ⛔ não parece tocável"* ⛔ é ⛔ **⛔ o relato que o
+     * autor fez ⛔ seis vezes**. ⛔ Compacto ⛔ é ⛔ **⛔ ocupar pouco**, ⛔ e ⛔ não
+     * ⛔ **⛔ parecer inerte** — ⛔ uma linha ⛔ com moldura ⛔ ocupa ⛔ a mesma linha.
+     */
+    historicoAbrir: {
+      alignSelf: "flex-start",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.md,
+      backgroundColor: tema.cores.controlSurface,
+      borderRadius: RAIO.botao,
+      borderWidth: 2,
+      borderColor: tema.cores.controlBorder,
+    },
+    historicoResumo: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    historicoAcao: { ...PAPEL.legenda, color: tema.cores.primary },
+    historicoLista: { gap: ESPACO.xs, paddingLeft: ESPACO.sm },
+    historicoLinha: { gap: 2 },
+    historicoAtual: { ...PAPEL.micro, color: tema.cores.text },
+    historicoAnterior: { ...PAPEL.micro, color: tema.cores.textSecondary },
+    historicoValor: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     novaMedidaTexto: {
       color: tema.cores.text,
       fontSize: TIPOGRAFIA.body.fontSize,
