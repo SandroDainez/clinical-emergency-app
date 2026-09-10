@@ -204,8 +204,10 @@ test.describe("AVC · Reperfusão", () => {
       await page.getByTestId("avc-seletor-hora-h-menos").click();
       await page.getByTestId("avc-seletor-hora-confirmar").click();
       await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
-      for (let i = 0; i < 14; i += 1) {
-        await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
+      /** ⚠️ Gesto real: o degrau parte, o `+` acerta (D-127). */
+      await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
+      for (let i = 0; i < 4; i += 1) {
+        await page.getByTestId("avc-num-mais-nihss_informado").click();
       }
       await page.getByTestId("avc-abrir-mrs_previo").click();
       await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();

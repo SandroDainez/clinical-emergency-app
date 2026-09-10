@@ -286,7 +286,19 @@ test.describe("AVC · Estabilização — composição", () => {
       const corpo = page.locator("body");
       /** ⛔ ⛔ Nenhum fármaco, ⛔ nenhuma dose, ⛔ nenhum alvo inventado. */
       await expect(corpo).not.toContainText(/Labetalol|Nicardipino|Noradrenalina|dipirona|paracetamol/i);
-      await expect(corpo).not.toContainText(/\b\d+\s*mg\b/);
+      /**
+       * ⚠️⚠️⚠️ ⛔ `mg/dL` É **⛔ CONCENTRAÇÃO**, ⛔ E ⛔ NUNCA DOSE — D-127.
+       *
+       * ⛔ ⛔ O padrão antigo (`\b\d+\s*mg\b`) ⛔ casava com ⛔ « 50mg/dL »
+       * ⛔ depois que ⛔ o degrau `+50` ⛔ passou a ficar ⛔ **⛔ colado** ⛔ à
+       * unidade da glicemia ⛔ no fluxo de texto. ⚠️ ⛔ Falso positivo: ⛔ na tela
+       * ⛔ **⛔ ninguém** ⛔ lê ⛔ « 50 mg » ⛔ ali.
+       *
+       * ⚠️ ⛔ O `(?!\/)` ⛔ **⛔ não afrouxa** ⛔ a trava: ⛔ dose ⛔ nunca se
+       * escreve ⛔ « 10 mg/dL ». ⛔ Ela continua ⛔ pegando ⛔ « Labetalol 10 mg »
+       * — ⛔ provado ⛔ por mutação.
+       */
+      await expect(corpo).not.toContainText(/\b\d+\s*mg\b(?!\/)/);
     });
 
   /* ══ ⚠️⚠️⚠️ 10 · ⛔ NADA É REGISTRADO SOZINHO ══════════════════════════ */

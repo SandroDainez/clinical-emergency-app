@@ -638,6 +638,21 @@ export default function SuperficieA({
                        * gesto grosso que leva perto em ⛔ um movimento.
                        */
                       comBarra
+                      /**
+                       * ⚠️⚠️⚠️ ⛔ MESMO GESTO ⛔ QUE EM PACIENTE — D-127, 2026-09-09.
+                       *
+                       * ⛔ ⛔ Sem isto, ⛔ o **⛔ mesmo** `tipo: "grandeza"` ⛔ do
+                       * conteúdo ⛔ continuava ⛔ com ⛔ **⛔ dois gestos**: ⛔ Peso
+                       * ⛔ com degraus ⛔ e ⛔ PAS ⛔ sem. ⚠️ ⛔ E ⛔ era ⛔ **⛔ aqui**
+                       * ⛔ que a conta ⛔ do dedo ⛔ doía mais — ⛔ o próprio
+                       * comentário ⛔ acima ⛔ diz ⛔ « ~150 toques ⛔ até uma
+                       * sistólica de 190 ».
+                       *
+                       * ⛔ ⛔ Quem decide ⛔ se há degrau ⛔ é ⛔ **⛔ a faixa**,
+                       * ⛔ campo a campo: ⛔ em SpO₂ ⛔ o ±50 ⛔ some sozinho,
+                       * ⛔ porque ⛔ é maior ⛔ que a faixa inteira.
+                       */
+                      degraus
                       campo={campo.id}
                       rotulo={campo.rotulo}
                       unidade={campo.unidade}

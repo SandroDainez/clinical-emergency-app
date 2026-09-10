@@ -146,7 +146,8 @@ test.describe("AVC · fluxos clínicos completos", () => {
        * controle antigo continua. ⛔ Migrar esta linha teria sido tratar B como
        * se ela tivesse mudado.
        */
-      for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
+      await page.getByTestId("avc-grandeza-zero-nihss_informado").click();
+      for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-num-mais-nihss_informado").click();
 
       await aba(page, "reperfusao");
       /** ⚠️⚠️ O NIHSS ATRAVESSOU: ⛔ ele some da lista de faltas. */

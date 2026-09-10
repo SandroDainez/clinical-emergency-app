@@ -21,6 +21,7 @@ import Slider from "@react-native-community/slider";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { valorDaOpcao } from "../../../avc/conteudo/campo";
+import { arredondaAoPasso } from "../../../avc/nucleo/formato";
 import {
   proximoPasso,
   temPartida,
@@ -626,6 +627,7 @@ export function Numero({
   rascunho: rascunhoDeFora,
   onRascunho,
   comBarra,
+  degraus,
   aoLado,
   testID,
 }: {
@@ -681,6 +683,26 @@ export function Numero({
    * ⛔ a Superfície C ⛔ não pede.
    */
   comBarra?: boolean;
+  /**
+   * ⚠️⚠️⚠️ OS DEGRAUS GRANDES — ⛔ D-127, 2026-09-09.
+   *
+   * ⛔ Eles moravam ⛔ **⛔ no outro controle numérico** do módulo
+   * (`campos-clinicos.tsx` → `NumericStepper`), ⛔ e ⛔ era ⛔ essa a divergência:
+   * ⛔ o mesmo `tipo: "grandeza"` ⛔ do conteúdo ⛔ nascia ⛔ com ⛔ **⛔ dois
+   * gestos diferentes** ⛔ conforme ⛔ a superfície ⛔ que o desenhava — ⛔ Peso
+   * ⛔ sem caixa digitável ⛔ e ⛔ com degraus, ⛔ PAS ⛔ com caixa ⛔ e ⛔ sem
+   * degraus.
+   *
+   * ⚠️ A REGRA que os deriva ⛔ é ⛔ do dedo, ⛔ e ⛔ não da estética: uma PAS de
+   * 198 ⛔ a partir do piso ⛔ são **13 toques** de +10, ⛔ e glicemia 240 ⛔ a
+   * partir de 20 ⛔ são **22**. ⛔ Com o degrau de 50 ⛔ caem para ⛔ quatro ⛔ e
+   * cinco. ⛔ Em SpO₂ ⛔ e NIHSS ⛔ ele ⛔ não entra: ⛔ 50 é mais ⛔ que a faixa
+   * inteira, ⛔ e botão que ⛔ nunca move ⛔ é ruído ⛔ com cara de opção.
+   *
+   * ⛔ ⛔ E ⛔ **⛔ nenhum deles ⛔ é valor predeterminado**: ⛔ são MOVIMENTOS
+   * relativos, ⛔ e por isso ⛔ não reintroduzem ⛔ a partida ⛔ que §0.2 proíbe.
+   */
+  degraus?: boolean;
   /**
    * ── ⚠️⚠️⚠️ ⛔ O QUE ENTRA **⛔ AO LADO DO NÚMERO** — 2026-09-09 ───────────
    *
@@ -744,6 +766,31 @@ export function Numero({
   const semPartida = !temPartida(gravado, rascunho, faixa);
 
   /**
+   * ⚠️⚠️ ⛔ ARREDONDADOS AO PASSO — ⛔ sem isto, `0,1 × 10` vira
+   * `1.0000000000000002` ⛔ e o degrau do INR ⛔ sai com dezesseis casas ⛔ no
+   * rótulo ⛔ **⛔ e no `testID`**.
+   */
+  const degrausDaFaixa = !degraus
+    ? []
+    : ((faixa.max - faixa.min) / faixa.passo >= 150
+        ? [-faixa.passo * 50, -faixa.passo * 10, faixa.passo * 10, faixa.passo * 50]
+        : [-faixa.passo * 10, faixa.passo * 10]
+      )
+        .map((d) => arredondaAoPasso(d, faixa.passo))
+        .filter((d) => Math.abs(d) < faixa.max - faixa.min);
+
+  /**
+   * ⚠️⚠️ ⛔ DEGRAU QUE ⛔ NÃO MOVE ⛔ NÃO REGISTRA — ⛔ e ⛔ isto ⛔ não é polimento.
+   *
+   * ⛔ Com o campo intocado ⛔ o polegar está no `min`, ⛔ e « −10 » ali ⛔ cairia
+   * de volta ⛔ no `min` ⛔ e ⛔ o gravaria: ⛔ um toque ⛔ para BAIXO ⛔ registraria
+   * ⛔ **peso 30 kg** ⛔ como se ⛔ alguém tivesse medido.
+   */
+  const baseDoDegrau = gravado ?? (rascunho !== undefined ? Number(rascunho) : undefined) ?? faixa.min;
+  const naoMove = (d: number) =>
+    Math.min(faixa.max, Math.max(faixa.min, baseDoDegrau + d)) === baseDoDegrau;
+
+  /**
    * ⚠️⚠️ ONDE O POLEGAR DA BARRA FICA QUANDO ⛔ NADA FOI MEDIDO.
    *
    * ⛔ Ele **precisa** de um número para ser desenhado — ⛔ e esse número ⛔ NÃO
@@ -781,6 +828,50 @@ export function Numero({
       */}
     <View style={e.num}>
       {rotuloOculto ? null : <Text style={e.numRotulo}>{tr(rotulo)}</Text>}
+      {degrausDaFaixa.length === 0 ? null : (
+        <View style={e.numDegraus}>
+          {degrausDaFaixa.map((d) => (
+            <Pressable
+              key={d}
+              style={[e.numDegrau, naoMove(d) ? e.numDegrauInerte : null]}
+              accessibilityRole="button"
+              disabled={naoMove(d)}
+              accessibilityLabel={`${tr(rotulo)} ${d > 0 ? tr("mais") : tr("menos")} ${Math.abs(d)}`}
+              testID={`avc-degrau-${campo}-${d > 0 ? "mais" : "menos"}-${Math.abs(d)}`}
+              /**
+               * ⚠️⚠️⚠️ ⛔ O DEGRAU PARTE DO PISO; ⛔ o `+` fino ⛔ **⛔ não**.
+               *
+               * ⛔ ⛔ Regressão medida em 2026-09-10, ⛔ na migração da D-127:
+               * ⛔ delegar para `ajustou` ⛔ fazia o degrau ⛔ herdar a inércia
+               * ⛔ do `−/+` (`semPartida`), ⛔ e ⛔ **⛔ o primeiro toque ⛔ num
+               * campo intocado ⛔ não registrava nada** — ⛔ o peso ⛔ nunca
+               * entrava, ⛔ e a leitura da Reperfusão ⛔ não saía (⛔ D-126).
+               *
+               * ⚠️ ⛔ E ⛔ os dois ⛔ são diferentes ⛔ **⛔ por decisão**: ⛔ um
+               * `+1` ⛔ partindo do nada ⛔ gravaria ⛔ o piso da faixa ⛔ como se
+               * fosse medida (§0.2). ⛔ Um degrau ⛔ é ⛔ **⛔ movimento
+               * declarado** — ⛔ « +50 a partir do piso » ⛔ é gesto, ⛔ e
+               * ⛔ `naoMove` ⛔ já barra ⛔ o que ⛔ não sairia do lugar.
+               *
+               * ⛔ ⛔ Arredonda ao passo ⛔ antes de gravar: ⛔ `1,4 + 0,1` ⛔ em
+               * ponto flutuante ⛔ é `1.5000000000000002`, ⛔ e ⛔ esse número
+               * ⛔ entraria na trilha ⛔ como **medida**.
+               */
+              onPress={() =>
+                aplicar({
+                  tipo: "arrastou",
+                  valor: arredondaAoPasso(
+                    Math.min(faixa.max, Math.max(faixa.min, baseDoDegrau + d)),
+                    faixa.passo
+                  ),
+                })
+              }
+            >
+              <Text style={e.numDegrauTexto}>{`${d > 0 ? "+" : "−"}${Math.abs(d)}`}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
       <View style={e.numGrupo}>
         <TextInput
           style={[e.numCaixa, alerta ? e.numCaixaAlerta : null]}
@@ -1963,6 +2054,38 @@ const criarEstilos = (tema: Tema) =>
     },
     numCaixaAlerta: { borderColor: tema.cores.critical, color: tema.cores.critical },
     numUnidade: { ...PAPEL.legenda, color: tema.cores.textSecondary, minWidth: 42, flexShrink: 0 },
+    /**
+     * ⚠️⚠️ ⛔ OS DEGRAUS — D-127. ⛔ Mesma geometria ⛔ que tinham ⛔ no controle
+     * antigo (`campos-clinicos.tsx`), ⛔ de propósito: ⛔ a unificação ⛔ é ⛔ para
+     * ⛔ **⛔ apagar a divergência**, ⛔ e ⛔ não ⛔ para ⛔ inventar ⛔ um terceiro
+     * visual.
+     */
+    numDegraus: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm, marginBottom: ESPACO.xs },
+    numDegrau: {
+      /**
+       * ⚠️⚠️⚠️ ⛔ RESPONSIVO — ⛔ e ⛔ é ⛔ **⛔ isto** ⛔ que fecha a D-127.
+       *
+       * ⛔ ⛔ Com `minWidth: 72` fixo, ⛔ os quatro degraus ⛔ somavam ⛔ 312 px
+       * (4×72 + 3×8 de gap) ⛔ e ⛔ **⛔ não cabiam** ⛔ nos 306 px ⛔ do cartão de
+       * Paciente — ⛔ quebravam ⛔ para duas linhas. ⛔ Nos 317 px ⛔ de
+       * Estabilização ⛔ cabiam. ⚠️ ⛔ Medido em 375 px: ⛔ **⛔ 259 px ⛔ de
+       * altura ⛔ contra ⛔ 168** ⛔ para ⛔ o mesmo controle.
+       *
+       * ⚠️ ⛔ `flex: 1` ⛔ os faz ⛔ dividir ⛔ a largura ⛔ que houver, ⛔ em vez de
+       * exigir ⛔ uma que ⛔ talvez ⛔ não exista. ⛔ O `minWidth` ⛔ vira ⛔ piso de
+       * toque, ⛔ e ⛔ não ⛔ medida de layout.
+       */
+      flex: 1,
+      minHeight: TOQUE.minimo, minWidth: 64,
+      justifyContent: "center", alignItems: "center",
+      paddingHorizontal: ESPACO.sm,
+      backgroundColor: tema.cores.controlSurface, borderRadius: RAIO.botao,
+      borderWidth: 2, borderColor: tema.cores.controlBorder,
+    },
+    numDegrauTexto: { ...PAPEL.micro, color: tema.cores.text },
+    /** ⚠️ Desabilitado se vê, ⛔ não some: botão que some muda o alvo debaixo do dedo. */
+    numDegrauInerte: { opacity: 0.35 },
+
     numPasso: { gap: 2 },
     numPassoBotao: {
       backgroundColor: tema.cores.controlSurface,

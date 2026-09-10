@@ -4753,7 +4753,7 @@ falta, ⛔ sem ⛔ ela quando ⛔ não falta, ⛔ e ⛔ nenhum bloqueio novo.
 
 ---
 
-## D-127 — ⏸️ ABERTA · O CONTROLE DE PESO EM PACIENTE ⛔ NÃO SEGUE O PADRÃO NOVO
+## D-127 — ✅ FECHADA · O CONTROLE DE PESO EM PACIENTE ⛔ NÃO SEGUE O PADRÃO NOVO
 
 **Estado:** ⏸️ **ABERTA**, registrada em 2026-09-08 a pedido do autor, ⛔ com a
 instrução de ⛔ **não** misturar com a Estabilização: *"deixar peso com um
@@ -5019,3 +5019,55 @@ build.
 | selo ausente | « `dist/` sem `artefato.json` — build antigo, ou export feito à mão » |
 | `dist/` ausente | « NÃO HÁ O QUE SERVIR · encontrado: nenhum diretório · exigido: um export web selado » |
 | export incompleto (⛔ sem `entry-*.js`) | « não parece um export do Expo: falta `_expo/static/js/web` » |
+
+---
+
+## D-127 · FECHAMENTO — 2026-09-10 · UM CONTROLE NUMÉRICO SÓ
+
+### ⚠️ A CAUSA
+
+⛔ O **⛔ mesmo** `tipo: "grandeza"` do conteúdo ⛔ tinha ⛔ **⛔ dois
+renderizadores**: `campos-clinicos.tsx` (→ `NumericStepper`, ⛔ 8 superfícies)
+⛔ e `Numero` (⛔ 2 superfícies). ⛔ Resultado, ⛔ medido a 375 px ⛔ **antes**:
+
+| | cartão | controle | caixa digitável | degraus |
+| --- | --- | --- | --- | --- |
+| Peso (Paciente) | 343 × **255** | `x=36`, 306 px | ⛔ não | ✅ |
+| PAS (Estabilização) | 343 × **116** | `x=16`, 317 px | ✅ | ⛔ não |
+
+⛔ Dois gestos, ⛔ duas geometrias, ⛔ **⛔ duas famílias de `testID`** — ⛔ e foi
+⛔ isso que custou ⛔ quatro tentativas de seletor ⛔ numa prova.
+
+### ⚠️⚠️ A UNIFICAÇÃO
+
+⛔ ⛔ Fica o `Numero`: ⛔ ele já carrega ⛔ o contrato de ausência, ⛔ a caixa com
+o teclado do sistema ⛔ e ⛔ o `aoLado` ⛔ da calculadora. ⛔ Os **degraus**
+⛔ foram para dentro dele ⛔ — ⛔ com a mesma regra derivada da faixa ⛔ e ⛔ os
+mesmos `testID` — ⛔ e ⛔ **⛔ saíram** de `campos-clinicos.tsx`. ⛔ Estabilização
+passou a declarar `degraus`. ⛔ Depois: **207 px × 168 px**, ⛔ mesma composição.
+
+### ⚠️ AS DUAS REGRESSÕES QUE O GESTO REAL PEGOU
+
+1. ⛔ **O degrau parou de funcionar em campo intocado.** ⛔ Delegar para
+   `ajustou` ⛔ fez o degrau ⛔ herdar a inércia do `−/+` (`semPartida`) — ⛔ e o
+   peso ⛔ nunca entrava (⛔ quebrou a **D-126**). ⚠️ ⛔ Os dois ⛔ são diferentes
+   ⛔ por decisão: ⛔ `+1` do nada ⛔ gravaria o piso ⛔ como medida; ⛔ um degrau
+   ⛔ é ⛔ **movimento declarado**.
+2. ⛔ **Os quatro degraus ⛔ não cabiam** ⛔ nos 306 px de Paciente (⛔ 4×72 + 24
+   = 312) ⛔ e quebravam ⛔ para duas linhas. ⛔ `flex: 1` ⛔ com `minWidth`
+   ⛔ como ⛔ piso de toque ⛔ resolve ⛔ nos dois cartões.
+
+### ⚠️ O QUE MUDOU NOS TESTES, ⛔ E ⛔ POR QUÊ
+
+⛔ `avc-grandeza-${id}` ⛔ **⛔ continua** ⛔ sendo a raiz. ⛔ O que sumiu ⛔ foi
+`avc-grandeza-${id}-mais/-menos` — ⛔ eram ⛔ **⛔ internos do `NumericStepper`**.
+⛔ As provas passaram a compor ⛔ o gesto real: ⛔ o degrau parte, ⛔ o `+` acerta.
+
+⛔ ⛔ E ⛔ o valor ⛔ agora mora ⛔ no `value` ⛔ de um `TextInput`: ⛔ `innerText`
+⛔ não o vê. ⛔ Quem lia texto ⛔ passou a ler ⛔ `toHaveValue`. ⛔ Para o leitor
+de tela ⛔ nada mudou.
+
+⚠️⚠️ ⛔ **A trava de dose foi ⛔ corrigida, ⛔ e ⛔ não afrouxada.** ⛔ Com o degrau
+`+50` ⛔ colado a `mg/dL` ⛔ no fluxo de texto, `\b\d+\s*mg\b` ⛔ passou a casar
+⛔ com « 50mg/dL ». ⛔ O `(?!\/)` ⛔ exclui ⛔ **⛔ concentração**, ⛔ que ⛔ nunca é
+dose — ⛔ e ⛔ « Labetalol 10 mg » ⛔ continua sendo pego (⛔ conferido).

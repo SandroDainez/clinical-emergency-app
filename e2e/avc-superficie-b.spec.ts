@@ -511,7 +511,8 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
 
     // Chega "NIHSS 12" da regulação.
-    for (let i = 0; i < 12; i += 1) await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
+    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
+    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-num-mais-nihss_informado").click();
     await page.getByTestId("avc-opcao-nihss_informado_origem-Regulação").click();
 
     await expect(page.getByTestId("avc-leitura-curto-nihss"))
@@ -525,7 +526,15 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await preencherEscala(page, { "9": 2, "5a": 3, "6a": 4 });
     await ajustarDerivados(page);
     await expect(page.getByTestId("avc-escala-valor-nihss_calculado")).toHaveText("9");
-    await expect(page.getByTestId("avc-campo-nihss_informado")).toContainText("12");
+    /**
+     * ⚠️⚠️ ⛔ O NÚMERO MORA NA **CAIXA**, ⛔ e ⛔ não no texto — ⛔ D-127.
+     *
+     * ⛔ ⛔ Com o controle unificado, ⛔ o valor ⛔ é ⛔ `value` ⛔ de um
+     * `TextInput`: ⛔ `innerText` ⛔ **⛔ não o enxerga**. ⚠️ ⛔ Ler o texto ⛔ do
+     * cartão ⛔ mediria ⛔ a moldura ⛔ e ⛔ não ⛔ a medida. ⛔ Para o leitor de
+     * tela ⛔ nada mudou: ⛔ a caixa ⛔ tem `accessibilityLabel` ⛔ e ⛔ valor.
+     */
+    await expect(page.getByTestId("avc-num-caixa-nihss_informado")).toHaveValue("12");
     await expect(page.getByTestId("avc-leitura-curto-nihss"))
       .toContainText(/informado por fora e um calculado aqui/i);
 

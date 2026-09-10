@@ -32,9 +32,8 @@ import {
 import { opcoesQueContam } from "../../avc/conteudo/nihss";
 import { definicaoDoAchado } from "../../avc/conteudo/explicacoes";
 import type { Leitura } from "../../avc/nucleo/leitura";
-import { NumericStepper } from "../ui-v2/numeric-stepper";
 import SeletorDeHora from "./seletor-de-hora";
-import { assuntoDoBloco, Icone, LinhaDeRelogio, type NomeDeIcone } from "./ui";
+import { assuntoDoBloco, Icone, LinhaDeRelogio, Numero, type NomeDeIcone } from "./ui";
 import { getPalette, tingir } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -751,45 +750,6 @@ export function CampoDeGrandeza({
    */
   const valor = rascunho ?? gravado ?? faixa.min;
 
-  /**
-   * ⚠️ OS DEGRAUS SAEM DA FAIXA, ⛔ nunca de uma lista escrita à mão: um campo
-   * novo nasce com degraus proporcionais ao que ele mede, em vez de herdar os
-   * de outro campo por descuido. O segundo degrau só aparece quando a faixa é
-   * larga o bastante para justificá-lo — em SpO₂ (50 a 100) ele seria maior que
-   * metade da barra.
-   */
-  const passos = (faixa.max - faixa.min) / faixa.passo;
-  /**
-   * ⚠️ O DEGRAU MAIOR ENTRA ONDE O PERCURSO É LONGO, e a conta é do dedo, ⛔ não
-   * da estética: uma PAS de 198 a partir do piso da barra são **13 toques** de
-   * +10, e glicemia 240 a partir de 20 são **22**. Com o degrau de 50 caem para
-   * quatro e cinco, ⛔ sem tocar na barra uma vez.
-   *
-   * ⛔ Ele ⛔ não entra em SpO₂ nem no NIHSS: ali 50 é mais que a faixa inteira,
-   * e botão que ⛔ nunca move é ruído com cara de opção.
-   */
-  /**
-   * ⚠️⚠️ ARREDONDADOS AO PASSO — sem isto, `0,1 × 10` vira `1.0000000000000002`
-   * e o degrau do INR sai com dezesseis casas no rótulo **e no testID**.
-   */
-  const degraus = (passos >= 150
-    ? [-faixa.passo * 50, -faixa.passo * 10, faixa.passo * 10, faixa.passo * 50]
-    : [-faixa.passo * 10, faixa.passo * 10]
-  )
-    .map((d) => arredondaAoPasso(d, faixa.passo))
-    .filter((d) => Math.abs(d) < faixa.max - faixa.min);
-
-  /**
-   * ⚠️⚠️ DEGRAU QUE ⛔ NÃO MOVE ⛔ NÃO REGISTRA — e isto ⛔ não é polimento.
-   *
-   * Com o campo intocado o polegar está no `min`, e "−10" ali cairia de volta
-   * no `min` e o gravaria: um toque para BAIXO registraria **peso 30 kg** ou
-   * **glicemia 20** como se alguém tivesse medido. É o mesmo motivo pelo qual o
-   * `−` do `NumericStepper` nasce desabilitado no mínimo.
-   */
-  const naoMove = (d: number) =>
-    Math.min(faixa.max, Math.max(faixa.min, valor + d)) === valor;
-
   return (
     <View style={[e.campo, gravado !== undefined && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
       <View style={e.campoTopo}>
@@ -802,98 +762,62 @@ export function CampoDeGrandeza({
       {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
 
       {/**
-       * ⚠️⚠️ OS DEGRAUS GRANDES — relato do autor em 2026-08-28: *"não precisa
-       * ter de deslizar, não funcional"*.
-       *
-       * ── O DEFEITO QUE ISTO FECHA ────────────────────────────────────────
-       *
-       * O passo fino é 1 **por decisão clínica**: com passo 10 o médico ⛔ não
-       * conseguiria registrar glicemia 55, e o valor real atravessaria o limite
-       * `<60` da fonte por limitação de controle. Só que com passo 1 a PA de
-       * 198 mmHg fica a 138 toques do piso da barra — e a barra, no dedo, num
-       * plantão, ⛔ não é um controle preciso. O resultado prático era **arrastar
-       * ou desistir**.
-       *
-       * Os degraus grandes ⛔ não substituem o passo fino: eles levam perto, e o
-       * −/+ do `NumericStepper` acerta o número. ⚠️ E ⛔ nenhum deles é um valor
-       * predeterminado — são MOVIMENTOS relativos, e por isso ⛔ não reintroduzem
-       * a partida que §0.2 proíbe.
-       */}
-      <View style={e.degraus}>
-        {degraus.map((d) => (
-          <Pressable
-            key={d}
-            style={[e.degrau, naoMove(d) && e.degrauInerte]}
-            accessibilityRole="button"
-            disabled={naoMove(d)}
-            accessibilityLabel={`${tr(campo.rotulo)} ${d > 0 ? tr("mais") : tr("menos")} ${Math.abs(d)}`}
-            testID={`avc-degrau-${campo.id}-${d > 0 ? "mais" : "menos"}-${Math.abs(d)}`}
-            onPress={() => {
-              const base = rascunho ?? gravado ?? faixa.min;
-              /**
-               * ⚠️⚠️ ARREDONDA AO PASSO ANTES DE GRAVAR. `1,4 + 0,1` em ponto
-               * flutuante é `1.5000000000000002`, e esse número entraria na
-               * trilha como **medida** — um valor que ⛔ ninguém digitou, num
-               * campo que a Superfície D compara com um corte.
-               */
-              const alvo = arredondaAoPasso(
-                Math.min(faixa.max, Math.max(faixa.min, base + d)),
-                faixa.passo
-              );
-              setRascunho(undefined);
-              onMedir(campo.id, alvo);
-            }}
-          >
-            <Text style={e.degrauTexto}>
-              {d > 0 ? "+" : "−"}
-              {numeroCurto(Math.abs(d), faixa.passo)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/**
-       * ⚠️⚠️ `style={e.stepper}` ⛔ NÃO É AJUSTE FINO — é o conserto de um defeito
-       * de layout que ROUBA CLIQUE, encontrado pelo e2e da Superfície B em
-       * 2026-08-28.
-       *
-       * ── O DEFEITO ───────────────────────────────────────────────────────
-       *
-       * O `wrapper` do `NumericStepper` declara `flexBasis: "100%"` — correto
-       * onde ele nasceu, dentro de uma linha, para ocupar a largura inteira e
-       * quebrar. Dentro de uma COLUNA, `flexBasis: 100%` passa a valer sobre a
-       * ALTURA: o controle inchou para 250 px, ultrapassou o cartão do campo
-       * (268 px medidos, conteúdo até 403 px), e o bloco seguinte passou a
-       * ficar POR CIMA do que sobrou.
-       *
-       * ⚠️ O efeito clínico: o "Registrar 0" existia, estava visível, e ⛔ não
-       * recebia o toque — o Playwright ficou 60 s tentando clicar e o texto do
-       * bloco de baixo interceptando. É exatamente a queixa do autor — *"tem que
-       * ficar procurando onde tem que clicar"* — com uma causa medível.
-       *
-       * ⛔ Consertado AQUI e ⛔ não no `NumericStepper`: lá o `flexBasis: 100%`
-       * está certo para os consumidores em linha, e mudá-lo mexeria no layout
-       * de todos os módulos do app sem necessidade.
-       */}
-      <NumericStepper
-        style={e.stepper}
-        valor={valor}
-        min={faixa.min}
-        max={faixa.max}
-        passo={faixa.passo}
+        * ⚠️⚠️⚠️ ⛔ UM CONTROLE NUMÉRICO SÓ ⛔ NO MÓDULO — D-127, 2026-09-09.
+        *
+        * ⛔ ⛔ Aqui havia ⛔ `NumericStepper` ⛔ mais uma cópia própria dos
+        * degraus. ⛔ Em Estabilização, ⛔ o **⛔ mesmo** `tipo: "grandeza"` ⛔ do
+        * conteúdo ⛔ era desenhado ⛔ pelo `Numero` — ⛔ com caixa digitável ⛔ e
+        * ⛔ sem degraus. ⚠️ ⛔ Medido em 375 px: ⛔ o controle de Peso começava em
+        * ⛔ `x=36` ⛔ com 306 px, ⛔ o de PAS ⛔ em `x=16` ⛔ com 317 — ⛔ e ⛔ o
+        * cartão de Peso ⛔ tinha ⛔ **⛔ 255 px** ⛔ de altura ⛔ contra ⛔ 116.
+        * ⛔ Dois gestos, ⛔ duas geometrias, ⛔ duas famílias de `testID`.
+        *
+        * ⚠️ ⛔ O `Numero` ⛔ é quem fica: ⛔ ele já carrega ⛔ o contrato de
+        * ausência (⛔ intocado mostra `—`, ⛔ apagar desfaz, ⛔ `−/+` inertes ⛔ sem
+        * partida), ⛔ a caixa digitável ⛔ com o teclado do sistema, ⛔ e ⛔ o
+        * `aoLado` ⛔ que ⛔ pendura a calculadora ⛔ **⛔ sem espremer a barra**.
+        * ⛔ Os degraus ⛔ foram ⛔ **⛔ para dentro dele**, ⛔ com a mesma regra ⛔ e
+        * ⛔ os mesmos `testID` — ⛔ e ⛔ **⛔ deixaram de existir aqui**, ⛔ porque
+        * ⛔ duas cópias ⛔ de uma regra ⛔ é ⛔ como nasce ⛔ a terceira.
+        *
+        * ⛔ ⛔ O rótulo ⛔ vai oculto: ⛔ `campoTopo` ⛔ já o escreveu ⛔ acima, ⛔ e
+        * ⛔ repeti-lo ⛔ ao lado da caixa ⛔ foi ⛔ **⛔ a causa medida** ⛔ das
+        * larguras diferentes ⛔ que o autor ⛔ relatou ⛔ em 2026-09-08.
+        */}
+      <Numero
+        campo={campo.id}
+        rotulo={campo.rotulo}
+        rotuloOculto
         unidade={campo.unidade}
-        naoInformado={naoInformado}
-        // ⚠️ Já traduzido: o componente é `ui-v2` puro e ⛔ não tem `tr()`.
-        textoAusente={tr("não informado")}
-        onChange={(v) => setRascunho(v)}
-        onConfirmar={(v) => {
-          /** ⚠️ Ver `confirmacaoExplicita`: em correção o toque ⛔ não grava. */
-          if (confirmacaoExplicita) {
-            setRascunho(v);
+        faixa={faixa}
+        gravado={gravado}
+        onMedir={onMedir}
+        onDesfazer={onDesfazer}
+        comBarra
+        degraus
+        commitOnConfirm={confirmacaoExplicita}
+        /**
+         * ⚠️⚠️ ⛔ O RASCUNHO DO `Numero` É **⛔ TEXTO**; ⛔ o daqui é ⛔ **⛔ número**
+         * — ⛔ e ⛔ a ponte ⛔ entre os dois ⛔ **⛔ não pode ⛔ ser ⛔ `Number(t)`
+         * ⛔ e pronto**.
+         *
+         * ⛔ ⛔ Digitando `178`, ⛔ os estados intermediários ⛔ são `1` ⛔ e `17`.
+         * ⛔ Aceitá-los ⛔ como rascunho ⛔ faria ⛔ « Confirmar correção » ⛔ gravar
+         * ⛔ uma PAS de 1 ⛔ se o dedo saísse ⛔ no meio ⛔ da digitação.
+         *
+         * ⚠️ ⛔ Então ⛔ só vira rascunho ⛔ o que ⛔ **⛔ cai dentro da faixa** —
+         * ⛔ a mesma regra ⛔ que o `Numero` ⛔ aplica ⛔ para gravar.
+         */
+        rascunho={rascunho === undefined ? undefined : String(rascunho)}
+        onRascunho={(texto) => {
+          if (texto === undefined || texto === "") {
+            setRascunho(undefined);
             return;
           }
-          setRascunho(undefined);
-          onMedir(campo.id, v);
+          const n = Number(texto);
+          setRascunho(
+            Number.isFinite(n) && n >= faixa.min && n <= faixa.max ? n : undefined
+          );
         }}
         testID={`avc-grandeza-${campo.id}`}
       />

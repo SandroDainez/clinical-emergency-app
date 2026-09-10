@@ -57,16 +57,35 @@ async function inicioHaHoras(page: Page, horas: number) {
  * fechar por engano um bloco ⛔ já aberto.
  */
 async function abrirNihssDeFora(page: Page) {
-  if (await page.getByTestId("avc-grandeza-nihss_informado-mais").count() === 0) {
+  if (await page.getByTestId("avc-num-mais-nihss_informado").count() === 0) {
     await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
   }
 }
 
-/** ⚠️ O NIHSS de fora mora na Superfície B, ⛔ que ⛔ não foi reescrita. */
+/**
+ * ⚠️⚠️⚠️ ⛔ O GESTO REAL, ⛔ E ⛔ NÃO UM `fill` — ⛔ D-127, 2026-09-10.
+ *
+ * ⛔ ⛔ O `+` fino ⛔ nasce **⛔ inerte** ⛔ num campo intocado: ⛔ um `+1`
+ * ⛔ partindo do nada ⛔ gravaria ⛔ o piso da faixa ⛔ como se fosse ⛔ medida
+ * (§0.2). ⚠️ ⛔ Quem **⛔ parte** ⛔ é ⛔ o degrau — ⛔ que é ⛔ movimento
+ * declarado — ⛔ ou ⛔ « Registrar 0 », ⛔ onde o zero ⛔ é resposta.
+ *
+ * ⛔ ⛔ É ⛔ assim ⛔ que ⛔ o médico faz: ⛔ o degrau ⛔ leva perto ⛔ em um toque,
+ * ⛔ o `+` ⛔ acerta o número.
+ */
 async function nihssDeFora(page: Page, quantos: number) {
   await abrirNihssDeFora(page);
-  for (let i = 0; i < quantos; i += 1) {
-    await page.getByTestId("avc-grandeza-nihss_informado-mais").click();
+  let falta = quantos;
+  while (falta >= 10) {
+    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
+    falta -= 10;
+  }
+  if (falta > 0 && quantos < 10) {
+    /** ⚠️ ⛔ Abaixo de um degrau, ⛔ o zero ⛔ é a partida — ⛔ e ⛔ ele é válido aqui. */
+    await page.getByTestId("avc-grandeza-zero-nihss_informado").click();
+  }
+  for (let i = 0; i < falta; i += 1) {
+    await page.getByTestId("avc-num-mais-nihss_informado").click();
   }
 }
 
@@ -74,7 +93,7 @@ async function nihssDeFora(page: Page, quantos: number) {
 async function baixarNihss(page: Page, quantos: number) {
   await abrirNihssDeFora(page);
   for (let i = 0; i < quantos; i += 1) {
-    await page.getByTestId("avc-grandeza-nihss_informado-menos").click();
+    await page.getByTestId("avc-num-menos-nihss_informado").click();
   }
 }
 
