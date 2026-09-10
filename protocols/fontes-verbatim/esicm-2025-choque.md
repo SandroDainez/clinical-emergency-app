@@ -12,7 +12,18 @@
 > **Procedência:** ⛔ **fonte complementar operacional**, ⛔ no padrão de
 > **F-18** e **F-19**. ⛔ A **fonte-mãe** do contexto AVC ⛔ continua sendo a
 > **AHA/ASA 2026** (**F-05**).
-> **Transcrito em:** 2026-09-10 · ⏳ **aguarda conferência clínica do autor**.
+> **Transcrito em:** 2026-09-10.
+>
+> ## ⚠️⚠️⚠️ DOIS EIXOS DE ESTADO — ⛔ e ⛔ eles ⛔ **⛔ não se substituem**
+>
+> | eixo | estado | o que significa |
+> |---|---|---|
+> | **fidelidade ao PDF** | ✅ **conferida** em 2026-09-10 | ⛔ cada afirmação ⛔ foi checada ⛔ contra a página; ⛔ duas divergências ⛔ **⛔ do documento** ⛔ e ⛔ três rebaixamentos meus ⛔ estão registrados ⛔ na §D |
+> | **aplicabilidade ao AVC isquêmico** | ⏳ **pendente de revisão clínica** | ⛔ ⛔ **⛔ NADA aqui ⛔ está validado ⛔ para o AVC ⛔ em bloco.** ⛔ A aplicabilidade ⛔ é ⛔ **⛔ passo a passo**, ⛔ e ⛔ está classificada ⛔ em `auditoria/MAPA-C2-CHOQUE.md` |
+>
+> ⛔ ⛔ Decisão do autor, 2026-09-10: ⛔ *"não promova F-32 como «validado para
+> AVC» em bloco"*. ⛔ Uma diretriz ⛔ de UTI ⛔ conferida ⛔ **⛔ não é** ⛔ uma
+> diretriz ⛔ de AVC ⛔ aprovada.
 
 ---
 
