@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**98 de 112 travas com declaração completa.**
+**99 de 113 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -73,6 +73,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ nenhuma credencial entre no repositório, que o `storageState` autenticado — ⛔ que carrega **token vivo** — more ⛔ fora da árvore sincronizada, que o projeto autenticado ⛔ só exista quando o ambiente o declara (⛔ e por isso `test:all` ⛔ não muda), que a falta de credencial ⛔ **⛔ falhe**, ⛔ e ⛔ nunca ⛔ pule verde, que a validação autenticada ⛔ recuse cair ⛔ no `dist` local, ⛔ e que os testes autenticados ⛔ não criem conta, ⛔ não escrevam sessão clínica ⛔ e ⛔ não digitem dado que possa ser de gente.
 - **NÃO PROMETE:** que a conta ⛔ exista, que ⛔ ela esteja `ativo`, ⛔ nem que a senha esteja guardada num cofre — ⛔ isso é do dono da conta, ⛔ e ⛔ uma trava ⛔ não pode conferir ⛔ o que ⛔ não está no repositório. ⛔ E ⛔ não promete que a produção esteja ⛔ certa: ⛔ ela promete que ⛔ **⛔ se** a produção estiver errada, ⛔ a corrida autenticada ⛔ **⛔ falha** ⛔ em vez de medir a tela de login.
 - **UNIVERSO:** `e2e/conta-de-teste.ts`, `e2e/conta-de-teste.setup.ts`, `e2e/autenticado/`, `playwright.config.ts`, `.gitignore`, ⛔ e a árvore rastreada pelo git. ── ⚠️⚠️⚠️ ⛔ O QUE ⛔ ELA GUARDA ─────────────────────────────────────────── ⚠️ Pedido do autor, 2026-09-09: *"conta de teste dedicada para validação autenticada em produção (…) ⛔ não usar credenciais pessoais ⛔ nem dados clínicos reais."* ⛔ O risco ⛔ não é a suíte ficar vermelha. ⛔ É o contrário: ⛔ credencial commitada ⛔ passa despercebida ⛔ porque ⛔ **⛔ nada quebra** — ⛔ o teste fica ⛔ mais fácil de rodar, ⛔ e por isso ⛔ ninguém desfaz. ⛔ E ⛔ um projeto autenticado que ⛔ « pula » ⛔ quando falta a conta ⛔ some ⛔ do relatório ⛔ verde ⛔ sem ⛔ ninguém notar ⛔ que a validação ⛔ inteira ⛔ parou de rodar.
+
+## `test:unidade-de-dose` → `scripts/prova-unidade-de-dose.cjs`
+
+- **PROMETE:** que ⛔ massa por **volume** (`mg/dL`, `mg/mL`, `mg/L`, `mcg/mL`) ⛔ seja lida como CONCENTRAÇÃO ⛔ e ⛔ nunca acuse dose; ⛔ e que ⛔ massa pura ⛔ ou por **peso/tempo** (`mg`, `mg/kg`, `mcg/kg`, `mcg/kg/min`, `mg/kg/h`, `mg/min`) ⛔ continue sendo DOSE. ⛔ Promete também que ⛔ o desconhecido ⛔ caia ⛔ **⛔ do lado do barulho**, ⛔ e ⛔ não do silêncio.
+- **NÃO PROMETE:** que a dose esteja **⛔ certa** — ⛔ isso é conteúdo clínico, ⛔ e tem outras travas. ⛔ Aqui ⛔ só se decide ⛔ **⛔ o que É dose**.
+- **UNIVERSO:** `avc/nucleo/unidade-clinica.ts`. ── ⚠️⚠️⚠️ ⛔ O FALSO CONSERTO QUE ELA IMPEDE ────────────────────────────── ⛔ 2026-09-10: para matar ⛔ um falso positivo (« 50mg/dL », ⛔ nascido do degrau colado à unidade), ⛔ eu escrevi ⛔ `(?!\/)` — *"ignore o que tem barra"*. ⚠️⚠️ ⛔ Isso ⛔ **⛔ apagaria** ⛔ `alteplase 0,9 mg/kg`, ⛔ `tenecteplase 0,4 mg/kg` ⛔ e ⛔ `mcg/kg/min` — ⛔ doses ⛔ que ⛔ **⛔ estão no conteúdo deste módulo**. ⛔ ⛔ ⛔ **⛔ Falso positivo ⛔ barulhento ⛔ trocado ⛔ por ⛔ falso negativo ⛔ silencioso** ⛔ é ⛔ o pior negócio ⛔ que uma trava clínica ⛔ pode fazer. ⚠️ ⛔ Esta prova ⛔ existe ⛔ para ⛔ que ⛔ ele ⛔ não se repita ⛔ **⛔ por conveniência**.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

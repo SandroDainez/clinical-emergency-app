@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { dosesNoTexto } from "../avc/nucleo/unidade-clinica";
 
 import { fixarIdioma } from "./helpers";
 
@@ -118,7 +119,14 @@ test.describe("AVC · Fase 10 — antitrombóticos pós-IVT", () => {
 
       /** ⚠️⚠️ ⛔ E ⛔ NENHUMA palavra de liberação ⛔ ou de prescrição apareceu. */
       await expect(bloco).not.toContainText(/liberad|pode iniciar|indicado iniciar|autorizad/i);
-      await expect(bloco).not.toContainText(/\b\d+\s*mg\b/);
+      /**
+       * ⚠️ ⛔ Dose, ⛔ e ⛔ não concentração — ⛔ a mesma classificação nomeada
+       * ⛔ que a Estabilização usa (`avc/nucleo/unidade-clinica.ts`).
+       */
+      expect(
+        dosesNoTexto(await bloco.innerText()),
+        "⛔ este bloco não prescreve: nenhuma DOSE pode aparecer nele"
+      ).toEqual([]);
       /** ⚠️ ⛔ E a ordem continua visível, ⛔ e ⛔ não some com o laudo. */
       await expect(page.getByTestId("avc-g-antitrombotico-ordem")).toBeVisible();
       /** ⚠️⚠️ ⛔ E a lacuna da anticoagulação é **declarada**, ⛔ e ⛔ não calada. */

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
+import { dosesNoTexto } from "../avc/nucleo/unidade-clinica";
 
 /**
  * PROMETE: que a **Estabilização** contenha ⛔ só estabilização — ⛔ e que ⛔ ela
@@ -287,18 +288,22 @@ test.describe("AVC · Estabilização — composição", () => {
       /** ⛔ ⛔ Nenhum fármaco, ⛔ nenhuma dose, ⛔ nenhum alvo inventado. */
       await expect(corpo).not.toContainText(/Labetalol|Nicardipino|Noradrenalina|dipirona|paracetamol/i);
       /**
-       * ⚠️⚠️⚠️ ⛔ `mg/dL` É **⛔ CONCENTRAÇÃO**, ⛔ E ⛔ NUNCA DOSE — D-127.
+       * ⚠️⚠️⚠️ ⛔ « TEM BARRA » ⛔ **⛔ NÃO** ⛔ É ⛔ « É CONCENTRAÇÃO » — 2026-09-10.
        *
-       * ⛔ ⛔ O padrão antigo (`\b\d+\s*mg\b`) ⛔ casava com ⛔ « 50mg/dL »
-       * ⛔ depois que ⛔ o degrau `+50` ⛔ passou a ficar ⛔ **⛔ colado** ⛔ à
-       * unidade da glicemia ⛔ no fluxo de texto. ⚠️ ⛔ Falso positivo: ⛔ na tela
-       * ⛔ **⛔ ninguém** ⛔ lê ⛔ « 50 mg » ⛔ ali.
+       * ⛔ ⛔ Para matar ⛔ o falso positivo « 50mg/dL » (⛔ o degrau `+50` ⛔ colado
+       * ⛔ à unidade da glicemia), ⛔ a primeira correção ⛔ foi ⛔ `(?!\/)`.
+       * ⚠️⚠️ ⛔ Ela ⛔ **⛔ apagaria** ⛔ `alteplase 0,9 mg/kg`,
+       * ⛔ `tenecteplase 0,4 mg/kg` ⛔ e ⛔ `mcg/kg/min` — ⛔ doses ⛔ que ⛔ estão
+       * ⛔ **⛔ no conteúdo deste módulo**. ⛔ Falso positivo barulhento ⛔ trocado
+       * ⛔ por ⛔ falso negativo ⛔ **⛔ silencioso**.
        *
-       * ⚠️ ⛔ O `(?!\/)` ⛔ **⛔ não afrouxa** ⛔ a trava: ⛔ dose ⛔ nunca se
-       * escreve ⛔ « 10 mg/dL ». ⛔ Ela continua ⛔ pegando ⛔ « Labetalol 10 mg »
-       * — ⛔ provado ⛔ por mutação.
+       * ⚠️ ⛔ Quem decide ⛔ agora ⛔ é ⛔ `classificarUnidade` — ⛔ tabela nomeada,
+       * ⛔ provada ⛔ por `npm run test:unidade-de-dose`.
        */
-      await expect(corpo).not.toContainText(/\b\d+\s*mg\b(?!\/)/);
+      expect(
+        dosesNoTexto(await corpo.innerText()),
+        "⛔ nenhuma DOSE pode aparecer nesta superfície — concentração (mg/dL) não conta"
+      ).toEqual([]);
     });
 
   /* ══ ⚠️⚠️⚠️ 10 · ⛔ NADA É REGISTRADO SOZINHO ══════════════════════════ */

@@ -5067,7 +5067,30 @@ passou a declarar `degraus`. ⛔ Depois: **207 px × 168 px**, ⛔ mesma composi
 ⛔ não o vê. ⛔ Quem lia texto ⛔ passou a ler ⛔ `toHaveValue`. ⛔ Para o leitor
 de tela ⛔ nada mudou.
 
-⚠️⚠️ ⛔ **A trava de dose foi ⛔ corrigida, ⛔ e ⛔ não afrouxada.** ⛔ Com o degrau
-`+50` ⛔ colado a `mg/dL` ⛔ no fluxo de texto, `\b\d+\s*mg\b` ⛔ passou a casar
-⛔ com « 50mg/dL ». ⛔ O `(?!\/)` ⛔ exclui ⛔ **⛔ concentração**, ⛔ que ⛔ nunca é
-dose — ⛔ e ⛔ « Labetalol 10 mg » ⛔ continua sendo pego (⛔ conferido).
+### ⚠️⚠️⚠️ ⛔ A TRAVA DE DOSE — ⛔ E ⛔ O FALSO CONSERTO QUE ⛔ QUASE ENTROU
+
+⛔ Com o degrau `+50` ⛔ colado a `mg/dL` ⛔ no fluxo de texto, `\b\d+\s*mg\b`
+⛔ passou a casar ⛔ com « 50mg/dL ». ⛔ Minha primeira correção ⛔ foi ⛔ `(?!\/)`
+— *"ignore o que tem barra"* — ⛔ e ⛔ eu a defendi ⛔ com a frase
+⛔ *"concentração nunca é dose"*.
+
+⛔ ⛔ ⛔ **A frase estava certa; ⛔ a regra, ⛔ não.** ⛔ « Tem barra » ⛔ ≠ ⛔ « é
+concentração ». ⚠️⚠️ ⛔ Recusada pelo autor, ⛔ 2026-09-10, ⛔ com os
+contraexemplos: ⛔ `alteplase 0,9 mg/kg`, ⛔ `tenecteplase 0,25 mg/kg`,
+⛔ `mcg/kg/min`. ⛔ **⛔ E ⛔ elas estão ⛔ no conteúdo ⛔ deste módulo** —
+`superficie-f.ts` ⛔ traz `0,4 mg/kg` ⛔ e `antihipertensivos.ts` traz
+`mcg/kg/min`. ⛔ A trava ⛔ teria ⛔ **⛔ parado de ver ⛔ as doses ⛔ que mais
+importam ⛔ num módulo de AVC**.
+
+⛔ ⛔ ⛔ **⛔ Falso positivo ⛔ barulhento ⛔ trocado ⛔ por ⛔ falso negativo
+⛔ silencioso** ⛔ é ⛔ o pior negócio ⛔ que uma trava clínica ⛔ faz.
+
+⚠️ ⛔ O que decide agora ⛔ é ⛔ `avc/nucleo/unidade-clinica.ts`: ⛔ **⛔ tabelas
+nomeadas** ⛔ de denominador ⛔ de **volume** (concentração) ⛔ e de
+⛔ **peso/tempo** (dose), ⛔ e ⛔ a expressão ⛔ é ⛔ **⛔ derivada delas**.
+⛔ Denominador ⛔ não classificado ⛔ cai ⛔ **⛔ do lado do barulho** — ⛔ uma
+trava ⛔ que erra ⛔ para o ruído ⛔ é recuperável; ⛔ para o silêncio, ⛔ não.
+
+⛔ `npm run test:unidade-de-dose` — ⛔ 24 conferências, ⛔ 2 mutações. ⛔ A
+mutação ⛔ que ⛔ volta ⛔ à regra ampla ⛔ reprova ⛔ nomeando ⛔ o que ⛔ se perdeu:
+⛔ « mg/kg », « mcg/kg », « mcg/kg/min », « mg/kg/h ».
