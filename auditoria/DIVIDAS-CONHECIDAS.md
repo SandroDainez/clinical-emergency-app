@@ -4668,7 +4668,7 @@ elegibilidade ⛔ ou ⛔ qualquer veredito ⛔ sem passar pelos quatro passos ac
 
 ---
 
-## D-125 — ⏸️ ABERTA · O ESLINT ⛔ NÃO SABE QUE `scripts/*.cjs` É NODE
+## D-125 — ✅ FECHADA · O ESLINT ⛔ NÃO SABE QUE `scripts/*.cjs` É NODE
 
 **Estado:** ⏸️ **ABERTA**, registrada em 2026-09-08 pelo autor, com a instrução
 explícita de ⛔ **não** misturar com funcionalidade: *"tratar isso depois em
@@ -5094,3 +5094,92 @@ trava ⛔ que erra ⛔ para o ruído ⛔ é recuperável; ⛔ para o silêncio, 
 ⛔ `npm run test:unidade-de-dose` — ⛔ 24 conferências, ⛔ 2 mutações. ⛔ A
 mutação ⛔ que ⛔ volta ⛔ à regra ampla ⛔ reprova ⛔ nomeando ⛔ o que ⛔ se perdeu:
 ⛔ « mg/kg », « mcg/kg », « mcg/kg/min », « mg/kg/h ».
+
+---
+
+## D-125 · FECHAMENTO — 2026-09-10 · OS INSTRUMENTOS SÃO NODE
+
+### ⚠️ A CAUSA
+
+⛔ `eslint-config-expo` descreve **o app**: React Native, navegador, bundler.
+⛔ Nele, `__dirname`, `require`, `module` e `process` ⛔ **⛔ não existem**.
+⛔ `scripts/**` ⛔ é ⛔ **⛔ Node puro**, ⛔ onde todos existem — ⛔ e
+`npx eslint scripts/prova-unidade-de-dose.cjs` ⛔ acusava
+« '__dirname' is not defined ».
+
+⚠️ ⛔ Falso positivo ⛔ em ferramenta ⛔ tem um custo específico: ⛔ ele ⛔ ensina
+⛔ a ⛔ **⛔ ignorar a ferramenta**.
+
+### ⚠️ A REGRA APLICADA
+
+```js
+{
+  files: ['scripts/**' + '/*.cjs'],
+  languageOptions: { sourceType: 'commonjs', globals: { ...globals.node } },
+}
+```
+
+⛔ ⛔ **⛔ Nenhuma regra foi afrouxada.** ⛔ O bloco declara ⛔ apenas ⛔ o
+⛔ **⛔ ambiente** — ⛔ quais nomes ⛔ já existem ⛔ antes ⛔ de o arquivo começar.
+⛔ `no-undef` ⛔ segue ligada.
+
+⛔ ⛔ O escopo ⛔ é ⛔ **⛔ a natureza do arquivo**, ⛔ e ⛔ não a pasta: ⛔ `.cjs`
+⛔ é CommonJS ⛔ por extensão. ⛔ Um `.ts` ⛔ dentro de `scripts/` ⛔ **⛔ não**
+entra ⛔ neste bloco.
+
+### ⚠️ AS DUAS PROVAS
+
+| | antes | depois |
+| --- | --- | --- |
+| script Node válido | ⛔ 1 erro (`__dirname` is not defined) | ✅ **0 achados** |
+| nome que ninguém definiu | — | ✅ **`no-undef` pega** |
+
+⛔ E ⛔ a pasta inteira, ⛔ com o ambiente declarado: ⛔ **0 erros**, ⛔ 81
+avisos (`no-unused-vars` ⛔ e afins) ⛔ em 148 arquivos — ⛔ ⛔ nenhum erro real
+⛔ estava escondido ⛔ atrás ⛔ do falso positivo.
+
+### ⛔ O QUE ⛔ **⛔ NÃO** MUDOU — ⛔ e é honesto dizer
+
+⛔ `npm run lint` ⛔ **⛔ continua ⛔ não cobrindo** `scripts/`: ⛔ `expo lint`
+⛔ tem seu próprio conjunto de arquivos. ⛔ O bloco ⛔ serve a quem linta o
+arquivo — ⛔ editor, CI, invocação direta — ⛔ mas ⛔ **⛔ o portão ⛔ não o
+exercita**. ⛔ Ver **D-132**.
+
+---
+
+## D-131 — ⏸️ ABERTA · O CENSO DIZ MAIS DO QUE MEDE
+
+**Data:** 2026-09-10 · **Observação do autor:** *"a frase «65 instrumentos em
+scripts/» está semanticamente mais ampla do que o universo real que ele mede.
+(…) é exatamente o tipo de frase que pode virar falsa sensação de cobertura."*
+
+⛔ `censo-de-instrumentos.cjs` conta ⛔ apenas ⛔ os prefixos
+`valida-`, `auditoria-`, `mapa-`, `censo-`. ⛔ Os **47 `prova-*`** ⛔ ficam
+⛔ **⛔ fora** do universo dele — ⛔ e ⛔ a pasta tem ⛔ **148** arquivos `.cjs`.
+
+⚠️ ⛔ **⛔ Não há buraco de cobertura hoje**: ⛔ conferido, ⛔ os 47 `prova-*`
+⛔ estão ⛔ todos referenciados ⛔ no `package.json`, ⛔ e ⛔ `test:pipeline`
+⛔ exige ⛔ que ⛔ toda trava ⛔ esteja ⛔ no `test:all` ⛔ ou ⛔ isenta ⛔ com
+motivo. ⛔ O defeito ⛔ é ⛔ **⛔ da frase**, ⛔ e ⛔ não ⛔ da rede.
+
+**Caminho:** ⛔ ou o censo ⛔ diz ⛔ o que mede (« 65 instrumentos ⛔ de
+verificação de fonte »), ⛔ ou ⛔ amplia ⛔ o universo ⛔ para ⛔ incluir ⛔ as
+provas. ⛔ **⛔ Ampliar ⛔ é melhor**, ⛔ se ⛔ não duplicar ⛔ o que ⛔ o pipeline
+⛔ já garante.
+
+---
+
+## D-132 — ⏸️ ABERTA · O PORTÃO ⛔ NÃO LINTA OS INSTRUMENTOS
+
+**Data:** 2026-09-10 · nasceu ⛔ ao fechar ⛔ a **D-125**.
+
+⛔ Com o ambiente Node declarado, `npx eslint 'scripts/**'` ⛔ roda limpo de
+erros — ⛔ mas ⛔ `npm run lint` (⛔ `expo lint`) ⛔ **⛔ não inclui** ⛔ a pasta.
+⛔ Então ⛔ a configuração ⛔ está certa ⛔ e ⛔ **⛔ ninguém ⛔ a exercita ⛔ no
+portão**.
+
+⚠️ ⛔ Fechar isto ⛔ significa ⛔ triar ⛔ **81 avisos** ⛔ (`no-unused-vars` ⛔ e
+afins) ⛔ em 148 arquivos — ⛔ trabalho real, ⛔ e ⛔ **⛔ decisão do autor**,
+⛔ porque ⛔ aviso que entra ⛔ no portão ⛔ e ⛔ ninguém trata ⛔ vira ⛔ ruído ⛔ que
+ensina ⛔ a ignorar ⛔ o portão — ⛔ exatamente ⛔ o custo ⛔ que a D-125 ⛔ acabou
+⛔ de remover.
