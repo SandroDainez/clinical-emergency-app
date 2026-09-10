@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**101 de 115 travas com declaração completa.**
+**102 de 116 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -91,6 +91,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que o histórico ⛔ agrupe ⛔ **⛔ o que já está na trilha** — ⛔ uma linha por instância, ⛔ na ordem em que foram medidas, ⛔ com a última marcada como atual; que ⛔ **⛔ correção**, ⛔ na mesma instância, ⛔ **⛔ não** crie linha nova ⛔ e ⛔ **⛔ preserve o valor originalmente registrado**; que ⛔ `0` ⛔ apareça ⛔ como ⛔ **⛔ dado**, ⛔ e ⛔ não como ausência; que ⛔ **⛔ nenhum id interno** de instância ⛔ saia daqui; ⛔ e — ⛔ a mais importante — ⛔ que ⛔ **⛔ nenhum módulo de derivação clínica ⛔ o importe**.
 - **NÃO PROMETE:** nada sobre ⛔ **⛔ como a tela desenha**. ⛔ Isso é `e2e/avc-historico-de-afericoes.spec.ts`, ⛔ com gesto real.
 - **UNIVERSO:** `avc/nucleo/instancia.ts` ⛔ e ⛔ os módulos de derivação de `avc/`. ── ⚠️⚠️⚠️ ⛔ O QUE ELA IMPEDE ───────────────────────────────────────────── ⛔ Decisão do autor, 2026-09-10: *"histórico visível ⛔ não pode virar «segunda fonte da verdade». ⛔ Ele é uma ⛔ **janela de auditoria** sobre os fatos ⛔ já existentes. ⛔ O motor clínico ⛔ continua derivando ⛔ exatamente como deriva hoje. ⛔ Isso evita ⛔ criar uma arquitetura paralela ⛔ só para mostrar o passado."* ⚠️ ⛔ O dia em que ⛔ uma derivação ⛔ ler ⛔ `historicoDeAfericoes` ⛔ para decidir conduta, ⛔ o app passa a ter ⛔ **⛔ dois caminhos** ⛔ até o mesmo fato — ⛔ e ⛔ os dois ⛔ vão divergir.
+
+## `test:alvo-pressorico` → `scripts/prova-alvo-pressorico.cjs`
+
+- **PROMETE:** que ⛔ sem trombólise registrada ⛔ o alvo seja ⛔ o de **antes da IVT**; que ⛔ com trombólise ⛔ dentro das 24 h ⛔ o alvo seja ⛔ o **pós-IVT**; que ⛔ passadas as 24 h ⛔ a lista fique ⛔ **⛔ vazia** — ⛔ a fonte ⛔ não publica alvo ⛔ para essa fase, ⛔ e ⛔ inventar seria E-31; que ⛔ mais de um aplicável ⛔ apareça ⛔ **⛔ inteiro**, ⛔ sem precedência inventada; ⛔ e que ⛔ os alvos ⛔ **⛔ fora de alcance** ⛔ estejam ⛔ **⛔ declarados ⛔ com motivo**.
+- **NÃO PROMETE:** que os alvos de trombectomia funcionem — ⛔ eles ⛔ **⛔ não são deriváveis** ⛔ hoje (**D-135**), ⛔ e ⛔ esta trava ⛔ conferе ⛔ que ⛔ eles ⛔ **⛔ continuam fora**, ⛔ com o motivo escrito.
+- **UNIVERSO:** `avc/nucleo/alvo-pressorico.ts` ⛔ e `avc/conteudo/antihipertensivos.ts`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ELA FECHA ────────────────────────────────────── ⛔ ⛔ O alvo « principal » era ⛔ **⛔ fixo**: *"Abaixo de 185/110 — antes de iniciar a trombólise"*. ⚠️ ⛔ O médico que ⛔ **⛔ já trombolisou** ⛔ via, como principal, ⛔ um número ⛔ **⛔ de antes** — ⛔ e ⛔ tinha de expandir ⛔ seis outros ⛔ para achar ⛔ o dele.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

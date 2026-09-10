@@ -167,7 +167,7 @@ export default function SuperficieE({
               <Text style={e.enviadoDetalhe}>{tr(p.resolvePor)}</Text>
               {p.campo === "glicemia" ? <CondutaGlicemica prefixo="avc-e-" /> : null}
               {p.campo === "pas" || p.campo === "pad" ? (
-                <CondutaDaPressao prefixo="avc-e-" />
+                <CondutaDaPressao prefixo="avc-e-" estado={estado} agora={agora} />
               ) : null}
               {/**
                 * ⚠️⚠️ ⛔ E ⛔ AQUI TAMBÉM — ⛔ pedido do autor: *"esse mesmo
@@ -405,7 +405,7 @@ export default function SuperficieE({
               * ⛔ já mediam — ⛔ mudar de arquivo ⛔ não pode custar a
               * continuidade de garantia ⛔ nenhuma.
               */}
-            {bloqueio.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-e-" /> : null}
+            {bloqueio.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-e-" estado={estado} agora={agora} /> : null}
 
             {/**
               * ── ⚠️⚠️ F-18 · A GLICEMIA ⛔ NÃO CONTRAINDICA ────────────────────

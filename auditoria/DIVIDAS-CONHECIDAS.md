@@ -5336,3 +5336,27 @@ leitor** ⛔ não trata ⛔ `0` ⛔ como ausência — ⛔ no módulo puro.
 | histórico volta a mostrar ⛔ só o último valor | ✔ reprova |
 | o valor original da correção some | ✔ reprova |
 | a correção deixa de ser vista como correção | ✔ reprova |
+
+---
+
+## D-135 — ⏸️ ABERTA · O APP ⛔ NÃO REGISTRA QUE A TROMBECTOMIA FOI FEITA
+
+**Data:** 2026-09-10 · nasceu ao derivar o alvo pressórico por fase.
+
+⛔ ⛔ Três alvos de `ALVOS_PRESSORICOS` ⛔ **⛔ não são deriváveis**:
+⛔ `antes_evt`, ⛔ `durante_evt` ⛔ e ⛔ `harm_pos_recanalizacao`. ⛔ Todos
+dependem de ⛔ **⛔ a trombectomia ter sido feita** — ⛔ e ⛔ de ⛔ **⛔ quando** —,
+⛔ ou de ⛔ **⛔ recanalização bem-sucedida**.
+
+⚠️ ⛔ O módulo registra ⛔ a ⛔ **⛔ elegibilidade** (`vereditoDaTrombectomia`),
+⛔ e ⛔ **⛔ elegível ⛔ não é ⛔ feito** — ⛔ mesma regra de ⛔ *pedido ⛔ ≠ exame
+⛔ ≠ laudo*. ⛔ Presumir ⛔ seria ⛔ **E-31**.
+
+⛔ `sem_beneficio_pos_ivt` ⛔ fica fora ⛔ por outro motivo: ⛔ ele pede
+*"gravidade leve a moderada"*, ⛔ e ⛔ o módulo ⛔ **⛔ não transcreveu o corte**.
+
+⛔ Os quatro estão declarados em `FORA_DE_ALCANCE`, ⛔ com motivo, ⛔ e
+⛔ `prova-alvo-pressorico.cjs` ⛔ reprova ⛔ se algum deles ⛔ for devolvido.
+
+**Caminho:** registrar a execução da trombectomia (⛔ como a IVT já é: instância,
+estado, horário) ⛔ e ⛔ o desfecho de recanalização. ⛔ Aí os três entram sozinhos.

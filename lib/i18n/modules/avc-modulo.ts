@@ -1141,6 +1141,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Ver histórico": "Ver historial",
   "Ocultar histórico": "Ocultar historial",
   "corrigido de": "corregido de",
+  /** ⚠️ Fase sem alvo publicado pela fonte — resposta, não vazio. */
+  "A fonte não publica alvo pressórico para esta fase. Os alvos das fases anteriores seguem abaixo, para consulta.":
+    "La fuente no publica objetivo de presión para esta fase. Los objetivos de las fases anteriores siguen abajo, para consulta.",
   "Nova aferição aberta pelo médico": "Nueva medición abierta por el médico",
   "Identificação, dados basais, alergias, medicações e antecedentes.":
     "Identificación, datos basales, alergias, medicaciones y antecedentes.",

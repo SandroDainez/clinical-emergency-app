@@ -1,3 +1,5 @@
+import { alvosPressoricosAplicaveis } from "../../avc/nucleo/alvo-pressorico";
+import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { useState } from "react";
 /**
  * A CONDUTA COMO A FONTE ESCREVE — ⚠️ **um desenho só**, ⛔ duas telas.
@@ -54,11 +56,28 @@ import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico"
  * 1 · PRESSÃO — F-19 dá os agentes; F-04 dá os alvos
  * ────────────────────────────────────────────────────────────────────────── */
 
-export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
+export function CondutaDaPressao({
+  prefixo,
+  estado,
+  agora,
+}: {
+  prefixo: string;
+  /**
+   * ⚠️⚠️⚠️ ⛔ O PAINEL PASSOU A DEPENDER DO ESTADO — 2026-09-10.
+   *
+   * ⛔ ⛔ Antes ⛔ ele era ⛔ **⛔ puro**: sempre o mesmo alvo « principal ».
+   * ⚠️ ⛔ E ⛔ era ⛔ **⛔ esse** ⛔ o defeito — ⛔ o alvo ⛔ depende ⛔ da fase, ⛔ e
+   * ⛔ quem trombolisou ⛔ via ⛔ o número ⛔ de antes.
+   */
+  estado: EstadoAvc;
+  agora: number;
+}) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   /** ⚠️ ⛔ Estado de **⛔ tela**: ⛔ ver mais alvos ⛔ não registra ⛔ nada (**E-20**). */
   const [todosOsAlvos, setTodosOsAlvos] = useState(false);
+  /** ⚠️ Os que valem AGORA — ⛔ lista, ⛔ e ⛔ não vencedor (⛔ sem precedência inventada). */
+  const aplicaveis = alvosPressoricosAplicaveis(estado, agora);
   /**
    * ── ⚠️⚠️⚠️ ⛔ OS AGENTES NASCEM **⛔ FECHADOS** — 2026-09-09 ──────────────
    *
@@ -213,7 +232,10 @@ export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
         * regra ⛔ para os outros dez pontos.
         */}
       <Text style={e.terapeuticaTitulo}>{tr("Alvos pressóricos")}</Text>
-      {(todosOsAlvos ? ALVOS_PRESSORICOS : ALVOS_PRESSORICOS.filter((a) => a.principal)).map(
+      {(todosOsAlvos
+        ? ALVOS_PRESSORICOS
+        : ALVOS_PRESSORICOS.filter((a) => aplicaveis.includes(a.id))
+      ).map(
         (alvo) => (
           <View key={alvo.id} style={e.alvo} testID={`${prefixo}alvo-${alvo.id}`}>
             <Text style={e.alvoGrau}>
@@ -225,6 +247,20 @@ export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
             <Text style={e.alvoContexto}>{tr(alvo.contexto)}</Text>
           </View>
         )
+      )}
+      {/**
+        * ⚠️⚠️ ⛔ FASE SEM ALVO PUBLICADO ⛔ É ⛔ **⛔ RESPOSTA**, ⛔ e ⛔ não vazio.
+        *
+        * ⛔ ⛔ Passadas as 24 h da trombólise, ⛔ a fonte ⛔ **⛔ não publica**
+        * ⛔ alvo de fase. ⛔ Uma lista vazia ⛔ sem explicação ⛔ pareceria ⛔ tela
+        * quebrada; ⛔ inventar um número ⛔ seria ⛔ **⛔ E-31**.
+        */}
+      {todosOsAlvos || aplicaveis.length > 0 ? null : (
+        <Text style={e.alvoContexto} testID={`${prefixo}sem-alvo-de-fase`}>
+          {tr(
+            "A fonte não publica alvo pressórico para esta fase. Os alvos das fases anteriores seguem abaixo, para consulta."
+          )}
+        </Text>
       )}
       {/** ⚠️ ⛔ O número ⛔ na etiqueta: ⛔ o médico sabe **⛔ quanto** há atrás. */}
       <Pressable
@@ -238,7 +274,7 @@ export function CondutaDaPressao({ prefixo }: { prefixo: string }) {
           {todosOsAlvos
             ? tr("Ocultar os outros alvos")
             : `${tr("Ver os outros alvos e as fontes")} · ${
-                ALVOS_PRESSORICOS.filter((a) => !a.principal).length
+                ALVOS_PRESSORICOS.filter((a) => !aplicaveis.includes(a.id)).length
               }`}
         </Text>
       </Pressable>
