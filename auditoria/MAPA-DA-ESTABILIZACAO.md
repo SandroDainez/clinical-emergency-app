@@ -98,15 +98,64 @@ EVT planejada) ⛔ e ⛔ é ⛔ a mais estreita do documento.
 
 ### C2 · Choque / hipotensão ⛔ **FORA DO MÓDULO HOJE**
 
-⛔ ⛔ **⛔ Nenhuma fonte transcrita aqui dá limiar inferior de PA.** ⛔ O comentário
-do núcleo é explícito: ⛔ *"o app ⛔ não vai passar a acender por hipotensão:
-⛔ nenhuma fonte transcrita aqui dá limiar inferior, ⛔ e inventá-lo seria a
-conduta nascendo na tela (**E-31**)"*.
+⚠️⚠️ ⛔ **CORREÇÃO DE 2026-09-10** — ⛔ a primeira versão deste mapa dizia que
+⛔ *"nenhuma fonte transcrita dá limiar inferior"* ⛔ e ⛔ parou aí. ⛔ Está
+⛔ **⛔ incompleto**: ⛔ o **reconhecimento** ⛔ **⛔ já tem fonte**, ⛔ e ⛔ com
+⛔ grau máximo.
 
-⛔ Uma PA de **80/46** ⛔ hoje ⛔ **⛔ não acende**. ⚠️ ⛔ Isso é ⛔ **⛔ decisão
-registrada**, ⛔ e ⛔ não esquecimento — ⛔ mas ⛔ é ⛔ uma ameaça real ⛔ que a
-estabilização ⛔ deveria tratar. **Slot novo** ⛔ necessário: acesso, volume,
-vasopressor/inotrópico por perfil, ⛔ com fonte complementar.
+| # | | |
+|---|---|---|
+| 1 | **fatos** | `pas` · `pad` · `fc` |
+| 2 | **critério de ameaça** | ⛔ **⛔ nenhum corte numérico** — ⛔ e ⛔ isso ⛔ **⛔ é da fonte**, ⛔ não omissão nossa |
+| 3 | **conduta (fonte-mãe)** | **F-05 · §4.3 rec. 1 · COR 1 · LOE C-LD · p. e350** — *"In patients with AIS, **hypotension and hypovolemia should be corrected** to maintain systemic perfusion levels necessary to support organ function."* |
+| 4 | **operacional** | ⛔ **NÃO EXISTE** — ⛔ a AHA/ASA ⛔ manda corrigir ⛔ e ⛔ **⛔ não diz como**, ⛔ nem a partir de quanto |
+| 5 | **parâmetros** | ⛔ nenhum |
+| 6 | **reavaliar** | ⛔ não declarado |
+| 7 | **resolução** | ⛔ não declarada |
+| 8 | **bloqueia?** | ⛔ nem alerta — ⛔ uma PA de **80/46** ⛔ hoje ⛔ **⛔ não acende** |
+
+⚠️ ⛔ O comentário do núcleo ⛔ continua correto ⛔ no que afirma: ⛔ *"o app
+⛔ não vai passar a acender por hipotensão: ⛔ nenhuma fonte transcrita aqui dá
+⛔ limiar inferior, ⛔ e inventá-lo seria a conduta nascendo na tela (**E-31**)"*.
+⛔ O que ⛔ ele ⛔ **⛔ não diz** ⛔ é ⛔ que a **⛔ obrigação de corrigir** ⛔ tem
+⛔ COR 1. ⛔ O buraco ⛔ **⛔ não é de fonte** — ⛔ é ⛔ **⛔ de operacionalização**.
+
+### ⚠️⚠️⚠️ O SLOT DE CHOQUE — ⛔ decisão do autor, 2026-09-10
+
+⛔ **Fonte-mãe do contexto:** ⛔ AHA/ASA 2026 (**F-05**) — ⛔ ela ⛔ **⛔ já
+sustenta** ⛔ o reconhecimento ⛔ e ⛔ a obrigação de corrigir.
+
+⛔ **Fonte complementar operacional:** ⛔ **ESICM 2025 — *circulatory shock and
+hemodynamic monitoring***, ⛔ no padrão ⛔ de F-18/F-19 (⛔ procedência separada).
+
+⛔ ⛔ O slot ⛔ tem de ⛔ **⛔ separar sete coisas**, ⛔ e ⛔ **⛔ nenhuma delas ⛔ pode
+ser ⛔ deduzida ⛔ da outra**:
+
+| passo | o que precisa vir da fonte |
+|---|---|
+| **1 · reconhecimento** | ⛔ critérios **clínicos de hipoperfusão**, ⛔ e ⛔ **⛔ não** «PAS abaixo de X» |
+| **2 · tipo de choque** | ⛔ como distinguir (⛔ inclusive ecocardiografia, ⛔ se a fonte a usar) |
+| **3 · *fluid responsiveness*** | ⛔ como avaliar ⛔ **⛔ antes** de infundir |
+| **4 · fluidos** | ⛔ quando indicados, ⛔ e ⛔ em que volume |
+| **5 · vasopressor / inotrópico** | ⛔ qual, ⛔ por perfil, ⛔ com dose e via |
+| **6 · reavaliação** | ⛔ o que se remede, ⛔ e ⛔ em que intervalo |
+| **7 · estabilizado o suficiente** | ⛔ o critério para ⛔ **⛔ seguir o fluxo do AVC** |
+
+⛔ ⛔ **⛔ Duas proibições explícitas do autor:** ⛔ **⛔ não** importar
+automaticamente ⛔ algoritmo de **sepse** ⛔ para todo choque; ⛔ **⛔ não** criar
+limiar numérico de hipotensão ⛔ por conveniência.
+
+### ⛔ O QUE EU ⛔ **⛔ NÃO POSSO** FAZER SOZINHO
+
+⛔ ⛔ **⛔ Não tenho o PDF da ESICM 2025**, ⛔ e ⛔ o contrato do módulo ⛔ proíbe
+⛔ número clínico ⛔ antes da transcrição verbatim ⛔ **⛔ com página**. ⛔ Escrever
+⛔ de memória ⛔ é ⛔ exatamente ⛔ o que produziu ⛔ a definição fabricada ⛔ da
+hipodensidade — ⛔ que sobreviveu ⛔ transcrita, ⛔ traduzida, ⛔ renderizada ⛔ e
+⛔ **⛔ exigida por uma trava verde**.
+
+⚠️ ⛔ O caminho ⛔ é ⛔ o mesmo ⛔ de **F-18**, ⛔ que nasceu ⛔ de ⛔ *"revisão
+clínica do autor, entregue em 2026-09-06"* ⛔ e ⛔ foi ⛔ **⛔ conferida** ⛔ contra
+a AHA/ASA. ⛔ Preciso ⛔ do documento.
 
 ---
 
@@ -208,3 +257,106 @@ do módulo (**§spec**) ⛔ proíbe ⛔ número clínico ⛔ antes da ⛔ transc
 verbatim ⛔ com página. ⛔ O caminho ⛔ é ⛔ o mesmo ⛔ de F-18/F-19: ⛔ você escolhe
 ⛔ a fonte, ⛔ ela é transcrita ⛔ com procedência própria, ⛔ e ⛔ só então ⛔ vira
 tela.
+
+---
+
+# Transições entre módulos — ⚠️ **sub-rotina clínica**, ⛔ e ⛔ não link
+
+⛔ **Decisão do autor, 2026-09-10.** ⛔ Documentado aqui; ⛔ **⛔ nenhum código**.
+
+## A forma
+
+```
+problema detectado
+  → estabilização mínima NO MÓDULO ATUAL
+    → se houver indicação clínica → oferecer continuidade em módulo especializado
+      → ao concluir ou sair → RETORNO ao ponto exato de origem
+```
+
+⚠️⚠️ ⛔ *"O médico sai temporariamente do fluxo do AVC, resolve aquela
+necessidade, ⛔ e quando termina ⛔ volta **⛔ exatamente** para o ponto em que
+estava, ⛔ com todo o estado preservado."*
+
+## As transições previstas
+
+| origem | gatilho clínico | destino |
+|---|---|---|
+| Estabilização · **A** | ameaça de via aérea **com indicação de intubação** | **ISR** |
+| **ISR** concluída | via aérea definitiva estabelecida | **Ventilação mecânica** |
+| pós-intubação | necessidade de sedação/analgesia contínua | **Sedação / analgesia** |
+| Estabilização · **C2** | choque / hipotensão | **Drogas vasoativas / hemodinâmica** |
+| Estabilização · **C1** | HAS grave, quando aplicável | **Anti-hipertensivo / vasoativas** |
+| **qualquer fase** | deterioração para PCR | **PCR / ACLS** |
+
+## As regras — ⛔ e ⛔ elas existem para isto ⛔ não virar emaranhado
+
+1. ⛔ **O módulo de origem ⛔ NUNCA depende do destino** ⛔ para concluir ⛔ a sua
+   própria lógica mínima. ⛔ Se o ISR ⛔ não existir, ⛔ o AVC ⛔ **⛔ continua
+   sabendo** ⛔ que há ameaça de via aérea ⛔ e ⛔ o que fazer ⛔ naquele nível.
+   ⚠️ ⛔ É a **D-104** ⛔ virada do avesso: ⛔ lá ⛔ o link morreu ⛔ e ⛔ levou a
+   orientação junto; ⛔ aqui ⛔ a orientação ⛔ **⛔ vive sem o link**.
+2. ⛔ **Transição aparece ⛔ por indicação clínica real** ⛔ e estado compatível —
+   ⛔ **⛔ nunca** ⛔ como menu genérico.
+3. ⛔ **O contexto vai junto**: peso, sinais vitais, fármacos já usados,
+   oxigenação, via aérea, decisões anteriores. ⛔ **⛔ Sem redigitar.**
+4. ⛔ **⛔ Não duplicar fatos** ⛔ já registrados.
+5. ⛔ **Transição é ⛔ navegação/workflow**, ⛔ e ⛔ **⛔ NÃO fonte clínica**.
+   ⚠️ ⛔ Ela ⛔ **⛔ não deriva nada**, ⛔ do mesmo jeito que ⛔ o histórico de
+   aferições ⛔ é janela ⛔ e ⛔ não fonte (**D-134**).
+6. ⛔ **⛔ Não misturar conteúdo do destino ⛔ dentro da origem** ⛔ além do
+   ⛔ mínimo ⛔ de estabilização.
+
+# O retorno — ⚠️ **⛔ obrigatório**, ⛔ com checkpoint
+
+⛔ **Decisão do autor:** ⛔ *"não pode ser «abre outro módulo e se vira»"*.
+
+## O que cada transição registra
+
+| campo | por quê |
+|---|---|
+| **módulo de origem** | para onde voltar |
+| **superfície/fase de origem** | ⛔ voltar ao módulo ⛔ **⛔ não é** ⛔ voltar ao ponto |
+| **ponto exato do fluxo** | ⛔ scroll, ⛔ eixo aberto, ⛔ campo em foco |
+| **motivo da saída** | ⛔ o problema que ⛔ **⛔ justificou** ⛔ sair |
+| **contexto clínico carregado** | ⛔ o que foi levado, ⛔ para ⛔ não redigitar |
+| **resultado do módulo especializado** | ⛔ o que aconteceu lá |
+| **estado de resolução ao retornar** | ⛔ resolvido · ⛔ parcial · ⛔ pendente |
+
+## As regras do retorno
+
+- ⛔ **⛔ nada de reiniciar** ⛔ o módulo de origem;
+- ⛔ **⛔ nada de perder** ⛔ scroll, ⛔ fase ⛔ ou pendências;
+- ⛔ fatos novos ⛔ entram ⛔ no **contexto compartilhado**;
+- ⛔ o workflow de retorno ⛔ **⛔ não vira fonte clínica**;
+- ⛔ o destino ⛔ **⛔ não reescreve** ⛔ fatos antigos ⛔ da origem — ⚠️ ⛔ é a mesma
+  regra ⛔ de ⛔ *nova medida ⛔ ≠ correção* (**D-133**);
+- ⛔ ⛔ **⛔ se o problema ⛔ NÃO estiver resolvido**, ⛔ o AVC ⛔ volta ⛔ **⛔ mostrando
+  a pendência ⛔ ainda ativa**.
+
+## ⚠️ Exemplos, ponta a ponta
+
+```
+AVC · Estabilização → ameaça de via aérea → ISR → VM → volta à Estabilização
+     e o AVC já sabe: houve intubação · qual dispositivo · via aérea confirmada
+     · ventilação iniciada · sedação/vasoativas se houve · e se a ameaça
+     ficou resolvida, parcial ou pendente
+
+AVC · Estabilização → choque → vasoativas/hemodinâmica → volta ao MESMO ponto
+
+AVC → PCR/ACLS → ROSC → volta ao fluxo do AVC no ponto clinicamente adequado
+```
+
+## ⚠️⚠️ O que já existe no repositório, e ⛔ o que falta
+
+⛔ ⛔ `lib/open-clinical-module.ts` ⛔ **⛔ já** abre módulo clínico ⛔ com sessão
+⛔ e evento — ⛔ mas ⛔ **⛔ só ⛔ para `pcr-adulto`**, ⛔ e ⛔ **⛔ sem retorno**:
+⛔ ele faz `router.push`, ⛔ e ⛔ **⛔ não registra** ⛔ origem, ⛔ ponto ⛔ nem
+motivo.
+
+⛔ ⛔ **⛔ Não existe** ⛔ hoje: ⛔ contexto compartilhado entre módulos, ⛔ pilha
+de retorno, ⛔ checkpoint de ponto exato, ⛔ nem ⛔ estado de resolução ⛔ na volta.
+
+⚠️ ⛔ É ⛔ **⛔ arquitetura nova**, ⛔ e ⛔ ela ⛔ **⛔ não deve nascer** ⛔ junto com
+⛔ o slot de choque: ⛔ uma coisa é ⛔ **⛔ conteúdo clínico**, ⛔ a outra é
+⛔ **⛔ workflow**. ⛔ Misturá-las ⛔ faria ⛔ a transcrição ⛔ esperar ⛔ pela
+navegação.
