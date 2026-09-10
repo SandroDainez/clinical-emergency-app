@@ -272,7 +272,21 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
        */
       estado: b ? "ameaca" : m ? "medido" : "nao_avaliado",
       achado: b?.formulacao,
-      conduta: b ? "Abrir Correções — a fonte traz os agentes e as doses" : undefined,
+      /**
+       * ⚠️⚠️⚠️ ⛔ CONDUTA ⛔ É ⛔ O QUE FAZER; ⛔ **⛔ NÃO** ⛔ É ⛔ ONDE IR.
+       *
+       * ⛔ ⛔ Aqui morava ⛔ « Abrir Correções — a fonte traz os agentes e as
+       * doses » — ⛔ **⛔ navegação ⛔ escrita ⛔ no núcleo**, ⛔ ocupando ⛔ o
+       * lugar ⛔ da conduta. ⚠️ ⛔ Enquanto ⛔ a tela ⛔ não dizia ⛔ o destino,
+       * ⛔ isso ⛔ funcionava ⛔ — ⛔ e ⛔ escondia ⛔ que ⛔ a glicemia,
+       * ⛔ cuja conduta ⛔ é ⛔ **⛔ clínica ⛔ de verdade**, ⛔ ficava ⛔ sem
+       * caminho ⛔ nenhum (⛔ relato do autor, 2026-09-10).
+       *
+       * ⚠️ ⛔ Agora ⛔ o destino ⛔ é desenhado ⛔ do `leva`, ⛔ e ⛔ este campo
+       * ⛔ volta ⛔ a ser ⛔ conduta — ⛔ com ⛔ **⛔ o rótulo que o conteúdo ⛔ já
+       * dá ⛔ à ação** (`ACOES_DE_CORRECAO`), ⛔ e ⛔ não ⛔ uma frase nova.
+       */
+      conduta: b ? "Tratamento anti-hipertensivo" : undefined,
       leva: b ? "correcoes" : undefined,
       campo: "pas",
       valor: m ? `${m.pas}/${m.pad}` : undefined,

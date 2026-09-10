@@ -5183,3 +5183,45 @@ afins) ⛔ em 148 arquivos — ⛔ trabalho real, ⛔ e ⛔ **⛔ decisão do au
 ⛔ porque ⛔ aviso que entra ⛔ no portão ⛔ e ⛔ ninguém trata ⛔ vira ⛔ ruído ⛔ que
 ensina ⛔ a ignorar ⛔ o portão — ⛔ exatamente ⛔ o custo ⛔ que a D-125 ⛔ acabou
 ⛔ de remover.
+
+---
+
+## D-133 — ⏸️ ABERTA · A GLICEMIA ⛔ NÃO TEM INSTÂNCIA, ⛔ E A PA TEM
+
+**Data:** 2026-09-10 · nasceu ao corrigir a reavaliação da PA.
+
+⛔ `pas` ⛔ e `pad` ⛔ declaram `instanciaDe: "pa"` — ⛔ uma nova aferição ⛔ é
+⛔ **⛔ uma instância nova**, ⛔ e a anterior ⛔ fica na trilha. ⛔ `glicemia`
+⛔ **⛔ não declara** ⛔ instância ⛔ nenhuma.
+
+⛔ ⛔ Consequência: ⛔ para a PA, ⛔ « nova aferição » ⛔ e ⛔ « corrigir a
+aferição » ⛔ são ⛔ gestos ⛔ **⛔ distintos**; ⛔ para a glicemia, ⛔ são
+⛔ **⛔ o mesmo gesto** — ⛔ reescrever o campo. ⚠️ ⛔ E ⛔ a hipoglicemia
+⛔ **⛔ é bloqueio** ⛔ com ciclo de reavaliação (`resolvePor: "Uma nova
+glicemia"`), ⛔ então ⛔ o app pede ⛔ uma nova medida ⛔ num campo ⛔ que ⛔ não
+sabe ⛔ distinguir ⛔ nova ⛔ de ⛔ corrigida.
+
+⚠️ ⛔ Por isso ⛔ `irAteOndeResolve` ⛔ abre instância ⛔ **⛔ só** onde o conteúdo
+declara uma — ⛔ inventar ⛔ uma para a glicemia ⛔ seria ⛔ mecanismo ⛔ nascendo
+⛔ na tela.
+
+**Caminho:** declarar `instanciaDe` para a glicemia, ⛔ como a PA tem — ⛔ e
+⛔ conferir ⛔ o que isso muda ⛔ no ciclo da hipoglicemia ⛔ e ⛔ na leitura da
+última medida.
+
+---
+
+## D-134 — ⏸️ ABERTA · A MEDIDA ANTERIOR ⛔ NÃO TEM ONDE SER VISTA
+
+**Data:** 2026-09-10 · nasceu ⛔ ao provar ⛔ a D-133.
+
+⛔ Depois da nova aferição, ⛔ a tela mostra ⛔ **⛔ só a instância corrente**.
+⛔ Procurei ⛔ e ⛔ **⛔ não há superfície** ⛔ que liste ⛔ as aferições
+anteriores: ⛔ nem marca de instância, ⛔ nem histórico do campo.
+
+⚠️⚠️ ⛔ A trilha ⛔ é append-only ⛔ e ⛔ o fato ⛔ continua lá — ⛔ mas ⛔ **⛔ o
+médico ⛔ não consegue vê-lo**. ⛔ « Preservar como fato histórico » ⛔ tem duas
+metades, ⛔ e ⛔ só ⛔ uma ⛔ está feita.
+
+⛔ ⛔ Isto ⛔ **⛔ não foi medido ⛔ como defeito de produção** — ⛔ é ⛔ observação
+⛔ de quem ⛔ foi procurar ⛔ a prova ⛔ e ⛔ não achou onde olhar.

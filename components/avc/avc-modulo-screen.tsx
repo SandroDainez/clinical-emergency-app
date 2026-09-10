@@ -151,7 +151,7 @@ const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   laboratorio: { nome: "Laboratório", icone: "laboratorio" },
 };
 import { ACAO } from "../../avc/conteudo/superficie-e";
-import { corrigirNaInstancia, registrarComInstancia } from "../../avc/conteudo/campos";
+import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../../avc/conteudo/campos";
 import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
@@ -561,7 +561,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ ⛔ Agora ⛔ ela é **⛔ uma**, ⛔ e ⛔ quem chama ⛔ diz ⛔ só ⛔ onde ⛔ e
    * ⛔ até que ponto.
    */
+  /**
+   * ⚠️⚠️⚠️ « REGISTRAR UMA NOVA AFERIÇÃO » ⛔ TEM DE **⛔ ABRIR** A AFERIÇÃO.
+   *
+   * ── ⛔ O DEFEITO, MEDIDO EM 2026-09-10 ────────────────────────────────────
+   *
+   * ⛔ ⛔ O botão levava ⛔ à Estabilização ⛔ e ⛔ parava ali: ⛔ o médico chegava
+   * ⛔ num campo ⛔ mostrando ⛔ **⛔ 183** — ⛔ o valor ⛔ **⛔ velho** — ⛔ com
+   * ⛔ « Nova medida » ⛔ e ⛔ « Corrigir » ⛔ lado a lado, ⛔ e ⛔ tinha de
+   * ⛔ descobrir sozinho ⛔ qual dos dois ⛔ era o certo.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ escolher errado ⛔ **⛔ corrompe a trilha**: ⛔ « Corrigir »
+   * ⛔ reescreve ⛔ a aferição ⛔ original ⛔ — ⛔ passa a dizer ⛔ que a PA
+   * ⛔ **⛔ sempre foi** 170 — ⛔ apagando ⛔ o 183 ⛔ que ⛔ motivou ⛔ a conduta.
+   * ⛔ O portão ⛔ até destravaria, ⛔ e ⛔ destravaria ⛔ sobre ⛔ uma história
+   * ⛔ que ⛔ não aconteceu.
+   *
+   * ⚠️ Decisão do autor, 2026-09-10: *"`onReavaliar` deve abrir diretamente uma
+   * nova aferição, ⛔ preservando a medida anterior ⛔ como fato histórico.
+   * ⛔ «Corrigir» ⛔ continua existindo ⛔ apenas ⛔ para erro de
+   * digitação/registro, ⛔ não como caminho de reavaliação ⛔ após tratamento."*
+   *
+   * ⛔ ⛔ Quem sabe ⛔ se um campo ⛔ tem instância ⛔ é ⛔ **⛔ o conteúdo**
+   * (`instanciaDe`), ⛔ e ⛔ não um mapa ⛔ escrito aqui. ⛔ Campo ⛔ sem
+   * instância ⛔ (glicemia) ⛔ **⛔ não** ganha ⛔ uma inventada: ⛔ ele ⛔ navega
+   * ⛔ como antes, ⛔ e ⛔ a assimetria ⛔ fica ⛔ registrada ⛔ em ⛔ **D-133**.
+   */
   function irAteOndeResolve(dono: SuperficieId, alvo: string | undefined) {
+    const grupo = alvo ? campoDoModulo(alvo)?.instanciaDe : undefined;
+    if (grupo) novaMedida(grupo);
     if (estado.superficieVista !== dono) abrir(dono);
     /** ⛔ Já estando ⛔ lá, ⛔ o que resta ⛔ é ⛔ levar até o ponto. */
     if (alvo) rolarAte(alvo);
@@ -1506,6 +1534,35 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                       </Text>
                       {/** ⚠️ A conduta VEM DA FONTE — ⛔ a tela ⛔ não a redige. */}
                       <Text style={s.condutaFrase}>{tr(a.conduta ?? "")}</Text>
+                      {/**
+                        * ⚠️⚠️⚠️ ⛔ O DESTINO, ⛔ DITO — ⛔ e ⛔ não adivinhado.
+                        *
+                        * ⛔ Relato do autor, 2026-09-10: ⛔ a hiperglicemia
+                        * ⛔ *"nem aparece como correção para eu fazer"*.
+                        * ⚠️ ⛔ Medido: ⛔ **⛔ ela aparece** ⛔ na superfície de
+                        * Correções — ⛔ o que ⛔ não aparecia ⛔ era ⛔ **⛔ que
+                        * existe uma superfície**.
+                        *
+                        * ⛔ ⛔ A linha da PA ⛔ dizia ⛔ « Abrir Correções — a
+                        * fonte traz os agentes e as doses » ⛔ porque ⛔ a
+                        * ⛔ **⛔ conduta dela**, ⛔ no conteúdo, ⛔ é ⛔ escrita
+                        * assim. ⛔ A da glicemia ⛔ é ⛔ conduta clínica ⛔ de
+                        * verdade — ⛔ e ⛔ o médico ⛔ ficava ⛔ sem saber ⛔ que
+                        * havia ⛔ para onde ir.
+                        *
+                        * ⚠️ ⛔ Agora ⛔ o destino ⛔ é ⛔ **⛔ desenhado do `leva`**,
+                        * ⛔ e ⛔ não ⛔ redigido dentro da conduta: ⛔ a fonte
+                        * ⛔ escreve ⛔ o que fazer, ⛔ e a tela ⛔ escreve ⛔ onde.
+                        * ⛔ Isso ⛔ **⛔ não** iguala ⛔ PA ⛔ e ⛔ hiperglicemia:
+                        * ⛔ a hiper ⛔ segue ⛔ sem ciclo de correção — ⛔ ela ⛔ não
+                        * bloqueia ⛔ a trombólise (**F-06**). ⛔ O que ⛔ se iguala
+                        * ⛔ é ⛔ **⛔ a descoberta do caminho**.
+                        */}
+                      {a.leva === undefined ? null : (
+                        <Text style={s.condutaDestino} testID={`avc-conduta-destino-${a.id}`}>
+                          {tr("Abrir")} {tr(superficie(a.leva as SuperficieId).titulo)}
+                        </Text>
+                      )}
                     </View>
                     <Text style={s.condutaSeta}>{SETA}</Text>
                   </Pressable>
@@ -2596,6 +2653,8 @@ const criarEstilos = (tema: Tema) =>
     condutaTexto: { flex: 1, minWidth: 0, gap: 2 },
     condutaEixo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
     condutaFrase: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    /** ⚠️ ⛔ O destino ⛔ é secundário ⛔ à conduta: ⛔ ele informa, ⛔ não compete. */
+    condutaDestino: { ...PAPEL.legenda, color: tema.cores.primary, marginTop: 2 },
     condutaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
 
     /* ── ⚠️ ESTABILIZAÇÃO PRIMEIRO ──────────────────────────────────────── */
