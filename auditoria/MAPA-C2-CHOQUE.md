@@ -15,6 +15,7 @@ contexto AVC) ⛔ e **ESICM 2025 · F-32** (⛔ complementar operacional,
 | 🟨 **ESICM ⚠** | sustentado pela ESICM, ⛔ mas ⛔ **⛔ dependente de contextualização** ⛔ para AVC |
 | 🟥 **lacuna** | ⛔ **⛔ lacuna operacional** — ⛔ ninguém diz ⛔ como |
 | 🟪 **farmaco** | ⛔ **⛔ necessita fonte farmacológica complementar** |
+| 🟧 **regra derivada** | ⛔ **⛔ decisão clínica do autor**, ⛔ integrando ⛔ F-05 ⛔ + ⛔ ESICM — ⛔ **⛔ não é ⛔ frase literal** ⛔ de ⛔ uma recomendação só. ⚠️ ⛔ Precisa ⛔ **⛔ dizer ⛔ isso ⛔ de si** ⛔ na tela |
 
 ⚠️⚠️ ⛔ **⛔ DUAS PROIBIÇÕES ⛔ QUE ATRAVESSAM ⛔ O MAPA INTEIRO:**
 ⛔ **⛔ não transportar** ⛔ meta de séptico, cardiogênico, hemorrágico ⛔ ou ⛔ TCE
@@ -46,15 +47,26 @@ de AVC**. ⛔ Ela ⛔ manda corrigir ⛔ e ⛔ **⛔ não diz** ⛔ a partir de 
 ⛔ ⛔ A definição ⛔ é ⛔ **⛔ geral**, ⛔ não populacional — ⛔ ela ⛔ descreve ⛔ o que
 choque **⛔ é**, ⛔ e ⛔ isso ⛔ não muda ⛔ por o paciente ⛔ ter AVC.
 
-### 🟨 ESICM ⚠ · **⛔ estado mental alterado**
+### 🟧 regra derivada · **⛔ estado mental alterado** — ⛔ RESOLVIDO 2026-09-10
+
 ⚠️⚠️ ⛔ **⛔ O SINAL ⛔ COLIDE ⛔ COM ⛔ A DOENÇA.** ⛔ *"Altered mental status"*
 ⛔ é ⛔ sinal de hipoperfusão ⛔ na ESICM — ⛔ e ⛔ **⛔ é ⛔ o próprio AVC** ⛔ no
-paciente ⛔ que está ⛔ na porta. ⛔ Usá-lo ⛔ como gatilho de choque ⛔ no AVC
-⛔ **⛔ acenderia ⛔ em ⛔ todo mundo**.
+paciente ⛔ que está ⛔ na porta. ⛔ Usá-lo ⛔ como gatilho isolado ⛔ **⛔ acenderia
+⛔ em ⛔ todo mundo**. ⛔ A ESICM ⛔ **⛔ não trata** ⛔ dessa colisão — ⛔ ela ⛔ não
+escreve ⛔ sobre AVC.
 
-⛔ ⛔ A ESICM ⛔ **⛔ não trata** ⛔ dessa colisão — ⛔ ela ⛔ não escreve ⛔ sobre AVC.
-⚠️ ⛔ **⛔ Decisão clínica ⛔ do autor**, ⛔ e ⛔ **⛔ não minha**: ⛔ o sinal entra,
-⛔ sai, ⛔ ou entra ⛔ só na presença ⛔ dos outros?
+⛔ **⛔ Decisão do autor:**
+
+> ⛔ **⛔ Não usar ⛔ como ⛔ gatilho ⛔ ISOLADO** ⛔ de choque no AVC.
+> ⛔ Contribui para a suspeita ⛔ **⛔ apenas se**:
+> - ⛔ for ⛔ **⛔ novo ⛔ ou ⛔ desproporcional** ⛔ ao déficit neurológico conhecido; ⛔ **⛔ ou**
+> - ⛔ vier ⛔ **⛔ acompanhado** ⛔ de outros sinais de hipoperfusão/hemodinâmica.
+>
+> ⛔ O reconhecimento ⛔ **⛔ deve ser ⛔ multimodal**.
+
+⚠️ ⛔ Isto ⛔ **⛔ conversa** ⛔ com a rec. 2 (⛔ *"multiple markers"*) ⛔ e ⛔ com o
+*Expert opinion* ⛔ (⛔ p. 1977) — ⛔ mas ⛔ **⛔ a ⛔ cláusula ⛔ do ⛔ «novo ⛔ ou
+desproporcional» ⛔ é ⛔ do autor**, ⛔ e ⛔ **⛔ não ⛔ está ⛔ na ESICM**.
 
 ### 🟨 ESICM ⚠ · **⛔ diurese**
 ⛔ Exige ⛔ sonda ⛔ e ⛔ **⛔ tempo** — ⛔ e ⛔ o AVC tem ⛔ **⛔ porta-agulha**
@@ -81,8 +93,17 @@ respond to initial therapy**"* — ⛔ o que já ⛔ **⛔ atrasa** ⛔ o gatilh
 ⛔ **F-11** ⛔ dá ⛔ tempos-alvo ⛔ porta-imagem ⛔ e ⛔ porta-agulha.
 
 ⛔ ⛔ **⛔ A ESICM ⛔ não conhece ⛔ esse relógio.** ⛔ Ela é ⛔ de UTI, ⛔ onde
-⛔ **⛔ não há** ⛔ janela de reperfusão correndo. ⛔ Contextualizar ⛔ aqui ⛔ é
-⛔ decidir ⛔ **⛔ o que ⛔ cede** — ⛔ e ⛔ isso ⛔ é ⛔ do autor.
+⛔ **⛔ não há** ⛔ janela de reperfusão correndo.
+
+### 🟧 regra derivada · ⛔ RESOLVIDO 2026-09-10
+
+> ⛔ **⛔ NÃO criar ⛔ gate obrigatório** ⛔ antes da reperfusão.
+> ⛔ O eco ⛔ **⛔ pode ser precoce** ⛔ se houver ⛔ **⛔ instabilidade ⛔ E ⛔ dúvida
+> sobre o mecanismo ⛔ do choque**, ⛔ preferencialmente ⛔ **⛔ em paralelo**,
+> ⛔ **⛔ sem atrasar ⛔ TC / IVT / EVT**.
+
+⚠️ ⛔ Ou seja: ⛔ o eco ⛔ é ⛔ **⛔ oferta**, ⛔ e ⛔ **⛔ nunca ⛔ portão**. ⛔ A tela
+⛔ **⛔ não pode** ⛔ condicionar ⛔ o avanço ⛔ a ele.
 
 ---
 
@@ -235,8 +256,8 @@ existe** — ⛔ e ⛔ puncionar ⛔ para obtê-lo ⛔ **⛔ atrasaria ⛔ a rep
 | **interpretação** | ⛔ *"estabilizado ⛔ o suficiente"* ⛔ **⛔ para reperfundir** |
 | **ação** | — |
 | **reavaliação** | — |
-| **condição para seguir** | 🟥 ⛔ **⛔ NÃO DEFINIDA ⛔ POR ⛔ NENHUMA DAS DUAS FONTES** |
-| **fonte** | — |
+| **condição para seguir** | 🟧 ⛔ **⛔ REGRA OPERACIONAL DERIVADA** — ⛔ ver abaixo |
+| **fonte** | ⛔ **⛔ integração** ⛔ AHA/ASA **F-05** ⛔ + ⛔ ESICM **F-32** — ⛔ **⛔ nenhuma frase literal** |
 
 ⛔ ⛔ A ESICM ⛔ **⛔ não define** ⛔ *"shock resolved"*. ⛔ O mais próximo ⛔ é
 ⛔ *"persistence of shock… typically detected by the absence of stabilization of
@@ -251,28 +272,75 @@ corrigido**.
 ⛔ *"só quando a ameaça estiver corrigida (…) é que o fluxo segue"* — ⛔ e ⛔ é
 ⛔ **⛔ exatamente ⛔ o que ⛔ nenhuma fonte ⛔ fornece**.
 
+### 🟧 regra derivada · ⛔ RESOLVIDO 2026-09-10
+
+⛔ **⛔ Decisão do autor.** ⛔ *"Estabilizado o suficiente"* ⛔ **⛔ NÃO significa
+⛔ normalização.** ⛔ Significa ⛔ **⛔ os sete ⛔ ao mesmo tempo**:
+
+| # | condição |
+|---|---|
+| 1 | ⛔ ameaça imediata ⛔ **⛔ reconhecida** |
+| 2 | ⛔ tratamento apropriado ⛔ **⛔ iniciado** |
+| 3 | ⛔ reavaliação ⛔ **⛔ realizada** |
+| 4 | ⛔ **⛔ ausência** ⛔ de deterioração hemodinâmica ⛔ progressiva |
+| 5 | ⛔ perfusão ⛔ **⛔ clinicamente aceitável ⛔ ou ⛔ em melhora** |
+| 6 | ⛔ suporte necessário ⛔ **⛔ estabilizado**, ⛔ sem escalada rápida |
+| 7 | ⛔ **⛔ nenhuma** ⛔ intervenção imediata essencial ⛔ ainda pendente |
+
+⛔ ⛔ Cumpridas, ⛔ o fluxo do AVC ⛔ **⛔ prossegue**, ⛔ com ⛔ monitorização ⛔ e
+⛔ reavaliação ⛔ **⛔ em paralelo**.
+
+⚠️⚠️⚠️ ⛔ **⛔ DUAS COISAS ⛔ QUE ⛔ ESTA REGRA ⛔ PROÍBE:**
+
+⛔ **⛔ 1 ·** ⛔ **⛔ NÃO criar ⛔ meta numérica universal ⛔ de PAM/PAS** ⛔ para
+⛔ esta saída. ⛔ Nenhuma ⛔ das ⛔ sete condições ⛔ é ⛔ um número — ⛔ e ⛔ pôr um
+⛔ seria ⛔ transportar ⛔ meta de outra população (⛔ **§ Passo 5**).
+
+⛔ **⛔ 2 ·** ⛔ **⛔ NÃO apresentá-la ⛔ como frase de fonte.** ⛔ Ela ⛔ **⛔ integra**
+⛔ F-05 (⛔ *corrigir* ⛔ hipotensão/hipovolemia) ⛔ com ⛔ a lógica de reavaliação
+⛔ da ESICM — ⛔ e ⛔ **⛔ não está escrita ⛔ em ⛔ nenhuma ⛔ das duas**. ⚠️ ⛔ Na
+tela ⛔ ela ⛔ tem de ⛔ **⛔ dizer isso ⛔ de si mesma**, ⛔ como ⛔ o app ⛔ já faz
+⛔ com ⛔ *"decisão assumida"* ⛔ e ⛔ com ⛔ o aviso de apoio.
+
 ---
 
 # Resumo
 
 | passo | 🟩 F-05 | 🟦 ESICM ✔ | 🟨 ESICM ⚠ | 🟥 lacuna | 🟪 farmaco |
 |---|---|---|---|---|---|
-| 1 · reconhecer | ✅ | definição · hipotensão não requerida | estado mental · diurese | | |
-| 2 · classificar | | | eco × relógio da reperfusão | | |
+| 1 · reconhecer | ✅ | definição · hipotensão não requerida | diurese | | 🟧 estado mental: novo/desproporcional **ou** com outros sinais |
+| 2 · classificar | | | | | 🟧 eco é oferta, **nunca portão** |
 | 3 · responsividade | | avaliar antes · dinâmicas > estáticas · contra VCI isolada | PLR × cabeceira | **17,18,20,21,22 escopadas a ventilado** | |
 | 4 · fluidos | | prova 200–500 mL · julgar por CO/PP | | | tipo e volume |
 | 5 · PA / vasopressor | ✅ corrigir | monitorizar · individualizar | | **nenhuma meta de AVC** | qual · dose · titulação |
 | 6 · reavaliar | | CRT · temperatura · *mottling* | ScvO₂ · Pv-aCO₂ (⛔ cateter) | frequência | |
-| 7 · seguir | | | | **critério inexistente** | |
+| 7 · seguir | | | | | 🟧 **as sete condições**, sem número |
 
 ## O que este mapa ⛔ **⛔ não** decide
 
-⛔ ⛔ Três perguntas ⛔ são ⛔ **⛔ clínicas ⛔ e ⛔ do autor**, ⛔ e ⛔ eu ⛔ **⛔ não
-as respondo**:
+⛔ ⛔ As três perguntas clínicas ⛔ foram ⛔ **⛔ respondidas pelo autor ⛔ em
+2026-09-10** ⛔ e ⛔ estão ⛔ marcadas ⛔ 🟧 ⛔ nos passos **1**, **2** ⛔ e ⛔ **7**.
 
-1. ⛔ **Estado mental alterado** ⛔ entra como gatilho de choque ⛔ num paciente
-   ⛔ cujo ⛔ **⛔ diagnóstico ⛔ é** ⛔ alteração neurológica?
-2. ⛔ **O eco** ⛔ cabe ⛔ dentro ⛔ do relógio porta-agulha, ⛔ ou ⛔ só ⛔ depois
-   ⛔ da decisão de reperfusão?
-3. ⛔ **O que é ⛔ «estabilizado o suficiente»** ⛔ para seguir? ⛔ Nenhuma fonte
-   ⛔ diz — ⛔ e ⛔ **⛔ sem isso ⛔ o Passo 7 ⛔ não fecha**.
+⛔ **⛔ O que ⛔ continua ⛔ em aberto ⛔ é ⛔ farmacológico**, ⛔ e ⛔ **⛔ só**:
+
+| 🟪 | falta | por quê |
+|---|---|---|
+| vasopressor | ⛔ qual · ⛔ dose · ⛔ titulação | ⛔ escopo declarado da ESICM |
+| inotrópico | ⛔ qual · ⛔ dose | ⛔ *"not pharmacological treatments"* |
+| fluido | ⛔ tipo | ⛔ *"addressed in other recommendations of ESICM"* |
+| fluido | ⛔ volume total | ⛔ idem — ⛔ só ⛔ a **⛔ prova** (200–500 mL) ⛔ está aqui |
+
+⚠️ ⛔ E ⛔ **⛔ uma lacuna ⛔ que ⛔ não é farmacológica** ⛔ e ⛔ segue de pé:
+⛔ a ⛔ **⛔ frequência ⛔ da reavaliação** (⛔ Passo 6) — ⛔ *"no evidence in the
+literature"*, ⛔ dito ⛔ pela própria ESICM.
+
+## Estado do mapa
+
+⛔ ⛔ **⛔ Fechado ⛔ para o que ⛔ as duas fontes ⛔ sustentam** ⛔ e ⛔ para as
+⛔ três regras derivadas. ⛔ **⛔ Não implementável ⛔ ainda**: ⛔ o **Passo 5**
+⛔ (⛔ vasopressor) ⛔ é ⛔ o único ⛔ com ⛔ intervenção ⛔ que ⛔ **⛔ não tem ⛔ como
+ser ⛔ executada** ⛔ sem a fonte farmacológica.
+
+⚠️ ⛔ Os passos ⛔ **1, 2, 3, 4, 6 ⛔ e ⛔ 7** ⛔ estão ⛔ **⛔ completos** ⛔ o
+bastante ⛔ para virar tela — ⛔ com ⛔ o Passo 4 ⛔ limitado ⛔ à ⛔ **⛔ prova de
+volume**, ⛔ e ⛔ **⛔ sem** ⛔ prescrever ⛔ tipo ⛔ nem ⛔ volume total.
