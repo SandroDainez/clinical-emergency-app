@@ -412,9 +412,35 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
     && /não informada/i.test(D.pressaoArterial(soSistolica).curto),
     "era exatamente isto que a leitura por campo fazia: 168 da medida nova com 114 da antiga");
 
-  confere("⛔ só `pas` e `pad` declaram aferição composta hoje",
-    C.TODOS_OS_CAMPOS_A.filter((c) => c.instanciaDe).map((c) => c.id).join(",") === "pas,pad",
-    "⛔ nenhum motor genérico nasce antes de Laboratório e Imagem o exigirem (§9.1)");
+  /**
+   * ⚠️⚠️⚠️ §9.1 ⛔ CONTINUA VALENDO — ⛔ e ⛔ agora ⛔ ela é ⛔ **⛔ uma regra**,
+   * ⛔ e ⛔ não ⛔ um par congelado.
+   *
+   * ⛔ ⛔ Isto dizia ⛔ `=== "pas,pad"`. ⚠️ ⛔ Quando a **D-133** deu instância à
+   * glicemia — ⛔ pelo ciclo da hipoglicemia (**F-06**), ⛔ e ⛔ **⛔ não** por
+   * simetria —, ⛔ a trava reprovou. ⛔ Ela estava ⛔ **⛔ certa em existir**:
+   * ⛔ o que §9.1 proíbe ⛔ é ⛔ o mecanismo ⛔ **⛔ se espalhar sozinho**.
+   *
+   * ⚠️ ⛔ Então ⛔ o que se mede ⛔ passou a ser: ⛔ **⛔ toda aferição com
+   * instância ⛔ está ⛔ nomeada ⛔ no conteúdo** (`NOME_DA_AFERICAO`) — ⛔ e
+   * ⛔ vice-versa. ⛔ Campo novo ⛔ que declare instância ⛔ **⛔ sem passar por
+   * lá** ⛔ reprova; ⛔ nome ⛔ sem campo ⛔ também.
+   *
+   * ⛔ ⛔ Uma lista só, ⛔ no conteúdo — ⛔ e ⛔ não ⛔ uma segunda ⛔ aqui dentro.
+   */
+  {
+    const comInstancia = [...new Set(
+      C.TODOS_OS_CAMPOS_A.filter((c) => c.instanciaDe).map((c) => c.instanciaDe)
+    )].sort();
+    const nomeadas = Object.keys(CAMPOS.NOME_DA_AFERICAO).sort();
+    confere(
+      "⛔ toda aferição com instância está NOMEADA no conteúdo, e vice-versa",
+      comInstancia.join(",") === nomeadas.join(","),
+      `⛔ declaradas nos campos: [${comInstancia}] ⛔ × nomeadas: [${nomeadas}] — ` +
+        "⛔ nenhum motor genérico nasce antes de Laboratório e Imagem o exigirem (§9.1), " +
+        "⛔ e ⛔ instância que ninguém nomeia ⛔ vira botão mudo na tela"
+    );
+  }
 }
 
 // ── travas de fidelidade adicionais ────────────────────────────────────────

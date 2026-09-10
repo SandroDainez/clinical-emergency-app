@@ -79,7 +79,7 @@ test.describe("AVC · Destino", () => {
        * ⛔ *estritamente* abaixo, ⛔ e ⛔ as duas metades contam.
        */
       await page.getByTestId("avc-aba-estabilizacao").click();
-      await page.getByTestId("avc-nova-medida-pressao").click();
+      await page.getByTestId("avc-nova-medida-pa").click();
       /** ⚠️ ⛔ Desde o acordeão, o eixo nasce recolhido — ⛔ abrir é o caminho. */
       await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-pas").fill("180");
@@ -90,7 +90,7 @@ test.describe("AVC · Destino", () => {
 
       /** ⚠️ 3 · agora sim, dentro. */
       await page.getByTestId("avc-aba-estabilizacao").click();
-      await page.getByTestId("avc-nova-medida-pressao").click();
+      await page.getByTestId("avc-nova-medida-pa").click();
       /** ⚠️ ⛔ Desde o acordeão, o eixo nasce recolhido — ⛔ abrir é o caminho. */
       await abrirEixosDaEstabilizacao(page);
       await page.getByTestId("avc-num-caixa-pas").fill("176");

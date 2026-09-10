@@ -5186,7 +5186,7 @@ ensina ⛔ a ignorar ⛔ o portão — ⛔ exatamente ⛔ o custo ⛔ que a D-12
 
 ---
 
-## D-133 — ⏸️ ABERTA · A GLICEMIA ⛔ NÃO TEM INSTÂNCIA, ⛔ E A PA TEM
+## D-133 — ✅ FECHADA · A GLICEMIA ⛔ NÃO TEM INSTÂNCIA, ⛔ E A PA TEM
 
 **Data:** 2026-09-10 · nasceu ao corrigir a reavaliação da PA.
 
@@ -5225,3 +5225,62 @@ metades, ⛔ e ⛔ só ⛔ uma ⛔ está feita.
 
 ⛔ ⛔ Isto ⛔ **⛔ não foi medido ⛔ como defeito de produção** — ⛔ é ⛔ observação
 ⛔ de quem ⛔ foi procurar ⛔ a prova ⛔ e ⛔ não achou onde olhar.
+
+---
+
+## D-133 · FECHAMENTO — 2026-09-10 · A GLICEMIA GANHA INSTÂNCIA, ⛔ PELO MOTIVO DELA
+
+### ⚠️ O MODELO ESCOLHIDO — ⛔ e ⛔ por que ⛔ **⛔ não** é cópia da PA
+
+⛔ ⛔ Na PA, a instância nasceu para amarrar ⛔ **⛔ duas metades** (`pas`/`pad`)
+⛔ de uma mesma aferição (**D-120**): ⛔ sem ela, a leitura ⛔ podia compor ⛔ uma
+PA ⛔ que ⛔ nunca existiu. ⛔ A glicemia ⛔ é ⛔ **⛔ um número só** — ⛔ esse
+defeito ⛔ ali ⛔ **⛔ não existe**.
+
+⚠️⚠️ ⛔ O motivo aqui ⛔ é ⛔ **⛔ o ciclo da hipoglicemia**: `F-06` manda tratar
+abaixo de 60, ⛔ e `ACOES_DE_CORRECAO` declara que o bloqueio cai por *"Uma nova
+glicemia"*. ⛔ Sem instância, ⛔ « nova glicemia » ⛔ e ⛔ « corrigir a glicemia »
+⛔ eram ⛔ **⛔ o mesmo gesto**, ⛔ e ⛔ o app destravaria a trombólise ⛔ sobre um
+número ⛔ que ⛔ **⛔ apagou** ⛔ o 38 ⛔ que motivou ⛔ a correção.
+
+⛔ `instanciaDe: "glicemia"` ⛔ é declarado ⛔ **⛔ no conteúdo**
+(`avc/conteudo/superficie-a.ts`), ⛔ e ⛔ `valorAtual` ⛔ segue lendo ⛔ o último
+fato do campo — ⛔ hipo ⛔ e hiper ⛔ derivam ⛔ exatamente como antes.
+
+### ⚠️ O FLUXO DA HIPOGLICEMIA, PONTA A PONTA
+
+| passo | o que a tela diz |
+| --- | --- |
+| glicemia 38 | *"Corrigir imediatamente, repetir a glicemia e reavaliar o déficit"* · **Abrir Correções** |
+| Correções | bloqueio `glicemia_alterada` com ciclo |
+| registrar ação → Realizada | *"Ação registrada — aguardando a reavaliação · Falta: uma nova glicemia"* |
+| « Registrar uma nova glicemia » | Estabilização, ⛔ caixa ⛔ **⛔ vazia** |
+| registrar 96 | a recomendação sai |
+
+### ⚠️⚠️ A MEDIDA ANTERIOR SOBREVIVE — ⛔ provado no módulo puro
+
+⛔ ⛔ Sem tela de histórico (**D-134**), ⛔ a prova ⛔ não pode ser visual.
+`scripts/prova-instancia-de-glicemia.cjs` ⛔ mede a trilha: ⛔ duas glicemias ⛔ =
+⛔ **duas instâncias**; ⛔ o fato ⛔ com ⛔ **38** ⛔ continua lá; ⛔ a leitura
+corrente ⛔ é a última; ⛔ **corrigir** ⛔ fica na ⛔ **⛔ mesma** instância ⛔ e ⛔ o
+valor errado ⛔ permanece marcado; ⛔ e ⛔ **zero** ⛔ continua ⛔ sendo valor.
+
+### ⚠️ UM DEFEITO QUE A MUDANÇA REVELOU
+
+⛔ ⛔ O botão « Nova medida » ⛔ era desenhado ⛔ **⛔ por grupo visual**, ⛔ pegando
+⛔ a primeira instância que achasse. ⛔ Isso ⛔ **⛔ já era ambíguo** ⛔ em
+C · Circulação (⛔ o grupo tem `fc`), ⛔ e ⛔ virou defeito ⛔ em D · Neurológico:
+⛔ um « Nova medida » ⛔ solto ⛔ **⛔ acima do Glasgow** ⛔ para abrir ⛔ uma
+⛔ glicemia.
+
+⚠️ ⛔ Agora ⛔ é ⛔ **⛔ um botão por aferição**, ⛔ e ⛔ cada um ⛔ **⛔ nomeia o que
+abre** (`NOME_DA_AFERICAO`, no conteúdo) — ⛔ « Nova aferição de pressão » ⛔ e
+⛔ « Nova glicemia », ⛔ ecoando ⛔ o `resolvePor` ⛔ das ações. ⛔ O `testID`
+⛔ passou a ser ⛔ `avc-nova-medida-<instância>` ⛔ (era `<grupo>`).
+
+### ⚠️ A HIPERGLICEMIA ⛔ NÃO MUDOU DE NATUREZA
+
+⛔ Instância ⛔ **⛔ não é** bloqueio. ⛔ A hiper ⛔ continua ⛔ sem ciclo de
+correção — ⛔ ela ⛔ **⛔ não trava a trombólise** (**F-06**). ⛔ O que ela ganhou
+⛔ é ⛔ **⛔ poder ser remedida ⛔ sem apagar** ⛔ a medida anterior. ⛔ A mutação
+⛔ que a transforma em bloqueio ⛔ **⛔ reprova**.

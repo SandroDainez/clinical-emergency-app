@@ -231,6 +231,32 @@ export const GLICEMIA_A: readonly CampoA[] = [
   {
     id: "glicemia",
     temporalidade: "afericao",
+    /**
+     * ⚠️⚠️⚠️ INSTÂNCIA — ⛔ D-133, 2026-09-10. ⛔ E ⛔ **⛔ pelo motivo dela**,
+     * ⛔ e ⛔ não ⛔ por simetria com a pressão.
+     *
+     * ⛔ ⛔ Na PA, a instância nasceu ⛔ para ⛔ amarrar ⛔ **⛔ duas metades**
+     * (`pas` ⛔ e `pad`) ⛔ de ⛔ uma mesma aferição (**D-120**) — ⛔ a leitura
+     * ⛔ podia compor ⛔ uma PA ⛔ que ⛔ nunca existiu. ⛔ A glicemia ⛔ é ⛔ **⛔ um
+     * número só**: ⛔ esse defeito ⛔ ali ⛔ **⛔ não existe**.
+     *
+     * ⚠️⚠️ ⛔ O motivo aqui ⛔ é ⛔ **⛔ o ciclo da hipoglicemia**. ⛔ `F-06` manda
+     * tratar abaixo de 60, ⛔ e `ACOES_DE_CORRECAO` ⛔ declara que o bloqueio cai
+     * por ⛔ *"Uma nova glicemia"*. ⛔ Sem instância, ⛔ « nova glicemia » ⛔ e
+     * ⛔ « corrigir a glicemia » ⛔ eram ⛔ **⛔ o mesmo gesto** — ⛔ reescrever o
+     * campo —, ⛔ e ⛔ o app ⛔ destravaria ⛔ a trombólise ⛔ sobre ⛔ um número
+     * ⛔ que ⛔ **⛔ apagou** ⛔ o 38 ⛔ que motivou ⛔ a correção.
+     *
+     * ⛔ ⛔ « Aquele valor ⛔ nunca foi verdade » (correção) ⛔ e ⛔ « o paciente
+     * foi medido de novo » (nova aferição) ⛔ são ⛔ afirmações clínicas
+     * ⛔ **⛔ diferentes**, ⛔ e ⛔ a trilha ⛔ tem de ⛔ saber ⛔ qual das duas
+     * ⛔ aconteceu.
+     *
+     * ⚠️ ⛔ A hiperglicemia ⛔ **⛔ não** ganha ciclo ⛔ com isto: ⛔ ela ⛔ não
+     * bloqueia ⛔ a trombólise (**F-06**). ⛔ Ela ⛔ apenas ⛔ passa a poder ⛔ ser
+     * ⛔ **⛔ remedida** ⛔ sem ⛔ apagar ⛔ a medida ⛔ anterior.
+     */
+    instanciaDe: "glicemia",
     rotulo: "Glicemia capilar",
     tipo: "grandeza",
     unidade: "mg/dL",

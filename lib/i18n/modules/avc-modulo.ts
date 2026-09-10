@@ -1131,6 +1131,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escolher data": "Elegir fecha",
   "Data": "Fecha",
   "Nova medida": "Nueva medición",
+  /** ⚠️ D-133: cada botão de nova aferição NOMEIA o que abre. */
+  "Nova aferição de pressão": "Nueva medición de presión",
+  "Nova glicemia": "Nueva glucemia",
   "Nova aferição aberta pelo médico": "Nueva medición abierta por el médico",
   "Identificação, dados basais, alergias, medicações e antecedentes.":
     "Identificación, datos basales, alergias, medicaciones y antecedentes.",

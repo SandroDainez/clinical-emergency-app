@@ -22,6 +22,7 @@
  * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
+import { nomeDaNovaAfericao } from "../../avc/conteudo/campos";
 import { useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -544,16 +545,28 @@ export default function SuperficieA({
               * como distinguir *"o paciente foi medido de novo"* de *"aquele
               * valor ⛔ nunca foi verdade"*.
               */}
-            {aberto && grupo.campos.some((c) => c.instanciaDe) && haMedidaAberta(grupo) ? (
-              <Pressable
-                style={e.novaMedida}
-                accessibilityRole="button"
-                testID={`avc-nova-medida-${grupo.id}`}
-                onPress={() => onNovaMedida(grupo.campos.find((c) => c.instanciaDe)!.instanciaDe!)}
-              >
-                <Text style={e.novaMedidaTexto}>{tr("Nova medida")}</Text>
-              </Pressable>
-            ) : null}
+            {/**
+              * ⚠️⚠️ ⛔ UM BOTÃO ⛔ POR AFERIÇÃO, ⛔ E ⛔ CADA UM ⛔ DIZ ⛔ O QUE ABRE
+              * — ⛔ D-133, 2026-09-10.
+              *
+              * ⛔ ⛔ Era ⛔ **⛔ um por grupo**, ⛔ pegando ⛔ a primeira instância
+              * que achasse. ⛔ Em C ⛔ isso ⛔ já era ambíguo (⛔ `fc` mora lá), ⛔ e
+              * ⛔ em D ⛔ passou a desenhar ⛔ « Nova medida » ⛔ **⛔ acima do
+              * Glasgow** ⛔ para abrir ⛔ uma ⛔ **⛔ glicemia**.
+              */}
+            {!aberto || !haMedidaAberta(grupo)
+              ? null
+              : [...new Set(grupo.campos.map((c) => c.instanciaDe).filter(Boolean))].map((tipo) => (
+                  <Pressable
+                    key={tipo as string}
+                    style={e.novaMedida}
+                    accessibilityRole="button"
+                    testID={`avc-nova-medida-${tipo}`}
+                    onPress={() => onNovaMedida(tipo as string)}
+                  >
+                    <Text style={e.novaMedidaTexto}>{tr(nomeDaNovaAfericao(tipo as string))}</Text>
+                  </Pressable>
+                ))}
 
             {!aberto ? null : visiveis.map((campo) => {
               const fato = fatoDoCampo(campo);

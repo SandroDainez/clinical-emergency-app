@@ -33,6 +33,34 @@ import { CAMPOS_ANTITROMBOTICOS } from "./superficie-g";
  * `Cannot access '...' before initialization` — a ordem de inicialização depende
  * do bundler, e ⛔ não do que está escrito no arquivo.
  */
+/**
+ * ⚠️⚠️⚠️ O NOME DE CADA AFERIÇÃO — ⛔ D-133, 2026-09-10.
+ *
+ * ⛔ ⛔ O botão de nova medida ⛔ dizia ⛔ apenas ⛔ « Nova medida », ⛔ e ⛔ ele é
+ * desenhado ⛔ **⛔ por grupo visual**. ⚠️ ⛔ Isso ⛔ já era ambíguo ⛔ em
+ * C · Circulação — ⛔ o grupo tem `pas`, `pad` ⛔ **⛔ e `fc`** —, ⛔ e ⛔ virou
+ * defeito ⛔ quando ⛔ a glicemia ⛔ ganhou instância: ⛔ o botão ⛔ apareceu ⛔ em
+ * D · Neurológico, ⛔ **⛔ acima do Glasgow**, ⛔ sem dizer ⛔ do que ⛔ era a
+ * medida.
+ *
+ * ⚠️ ⛔ A regra ⛔ é ⛔ **⛔ nomear o que se abre**, ⛔ sempre — ⛔ e ⛔ não
+ * ⛔ « nomear ⛔ quando o grupo ⛔ for misto », ⛔ que ⛔ seria ⛔ uma lista de
+ * casos ⛔ esperando ⛔ o próximo.
+ *
+ * ⛔ ⛔ O nome ⛔ mora ⛔ **⛔ no conteúdo**, ⛔ junto do conceito de instância, ⛔ e
+ * ⛔ ecoa ⛔ o `resolvePor` ⛔ das ações de correção — ⛔ o médico ⛔ lê ⛔ a mesma
+ * coisa ⛔ nos dois lugares.
+ */
+export const NOME_DA_AFERICAO: Readonly<Record<string, string>> = {
+  pa: "Nova aferição de pressão",
+  glicemia: "Nova glicemia",
+};
+
+/** ⚠️ Sem nome declarado ⛔ o botão ⛔ não some — ⛔ ele fica genérico ⛔ e visível. */
+export function nomeDaNovaAfericao(tipo: string): string {
+  return NOME_DA_AFERICAO[tipo] ?? "Nova medida";
+}
+
 export function todosOsCampos(): readonly Campo[] {
   return [
     ...TODOS_OS_CAMPOS_P,

@@ -659,7 +659,7 @@ test.describe("Superfície A — UX clínica", () => {
     await informar(page, "pad", 112);
     await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue(String(pas1));
 
-    await page.getByTestId("avc-nova-medida-pressao").click();
+    await page.getByTestId("avc-nova-medida-pa").click();
 
     /** ⛔⛔ OS DOIS CONTROLES VOLTAM VAZIOS — ⛔ nem PAS ⛔ nem PAD herdam. */
     await vazia(page, "pas");
@@ -682,7 +682,7 @@ test.describe("Superfície A — UX clínica", () => {
     const glic = 112;
     await informar(page, "glicemia", glic);
 
-    await page.getByTestId("avc-nova-medida-pressao").click();
+    await page.getByTestId("avc-nova-medida-pa").click();
     /**
      * ⛔ A glicemia ⛔ NÃO tem instância, e ⛔ não pode ser zerada por uma nova
      * aferição de pressão: são fatos independentes.
@@ -1106,15 +1106,15 @@ test.describe("Superfície A — UX clínica", () => {
     await abrirEixosDaEstabilizacao(page);
 
     // ⚠️ Antes da primeira medida, ⛔ não há o que suceder: o gesto ⛔ não aparece.
-    await expect(page.getByTestId("avc-nova-medida-pressao")).toHaveCount(0);
+    await expect(page.getByTestId("avc-nova-medida-pa")).toHaveCount(0);
 
     /** CONTRATO (ainda válido): as duas metades pertencem à MESMA aferição. */
     await informar(page, "pas", 178);
     await informar(page, "pad", 96);
     // ⚠️ Com uma medida registrada, o gesto existe.
-    await expect(page.getByTestId("avc-nova-medida-pressao")).toBeVisible();
+    await expect(page.getByTestId("avc-nova-medida-pa")).toBeVisible();
 
-    await page.getByTestId("avc-nova-medida-pressao").click();
+    await page.getByTestId("avc-nova-medida-pa").click();
     // ⛔ A medida nova nasce VAZIA: ela ⛔ não herda a metade da anterior.
     await expect(page.getByTestId("avc-leitura-curto-pressao"))
       .toContainText(/ainda não informada/i);

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**99 de 113 travas com declaração completa.**
+**100 de 114 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -79,6 +79,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ massa por **volume** (`mg/dL`, `mg/mL`, `mg/L`, `mcg/mL`) ⛔ seja lida como CONCENTRAÇÃO ⛔ e ⛔ nunca acuse dose; ⛔ e que ⛔ massa pura ⛔ ou por **peso/tempo** (`mg`, `mg/kg`, `mcg/kg`, `mcg/kg/min`, `mg/kg/h`, `mg/min`) ⛔ continue sendo DOSE. ⛔ Promete também que ⛔ o desconhecido ⛔ caia ⛔ **⛔ do lado do barulho**, ⛔ e ⛔ não do silêncio.
 - **NÃO PROMETE:** que a dose esteja **⛔ certa** — ⛔ isso é conteúdo clínico, ⛔ e tem outras travas. ⛔ Aqui ⛔ só se decide ⛔ **⛔ o que É dose**.
 - **UNIVERSO:** `avc/nucleo/unidade-clinica.ts`. ── ⚠️⚠️⚠️ ⛔ O FALSO CONSERTO QUE ELA IMPEDE ────────────────────────────── ⛔ 2026-09-10: para matar ⛔ um falso positivo (« 50mg/dL », ⛔ nascido do degrau colado à unidade), ⛔ eu escrevi ⛔ `(?!\/)` — *"ignore o que tem barra"*. ⚠️⚠️ ⛔ Isso ⛔ **⛔ apagaria** ⛔ `alteplase 0,9 mg/kg`, ⛔ `tenecteplase 0,4 mg/kg` ⛔ e ⛔ `mcg/kg/min` — ⛔ doses ⛔ que ⛔ **⛔ estão no conteúdo deste módulo**. ⛔ ⛔ ⛔ **⛔ Falso positivo ⛔ barulhento ⛔ trocado ⛔ por ⛔ falso negativo ⛔ silencioso** ⛔ é ⛔ o pior negócio ⛔ que uma trava clínica ⛔ pode fazer. ⚠️ ⛔ Esta prova ⛔ existe ⛔ para ⛔ que ⛔ ele ⛔ não se repita ⛔ **⛔ por conveniência**.
+
+## `test:instancia-glicemia` → `scripts/prova-instancia-de-glicemia.cjs`
+
+- **PROMETE:** que uma **nova glicemia** abra ⛔ **⛔ instância nova**, ⛔ deixando a anterior ⛔ intacta na trilha; que **corrigir** ⛔ permaneça ⛔ gesto separado, ⛔ na ⛔ **⛔ mesma** instância; que ⛔ a leitura corrente ⛔ siga sendo ⛔ a última medida; ⛔ e que ⛔ **⛔ zero** ⛔ continue ⛔ sendo ⛔ valor ⛔ registrável.
+- **NÃO PROMETE:** que a hiperglicemia ganhe ciclo — ⛔ ela ⛔ **⛔ não bloqueia** a trombólise (**F-06**), ⛔ e ⛔ instância ⛔ não é ⛔ bloqueio. ⛔ Promete ⛔ só que ⛔ ela pode ser ⛔ **⛔ remedida** ⛔ sem apagar ⛔ a medida anterior.
+- **UNIVERSO:** `avc/nucleo/estado.ts`, `avc/nucleo/instancia.ts` ⛔ e a declaração `instanciaDe` do campo `glicemia` em `avc/conteudo/superficie-a.ts`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ELA FECHA ────────────────────────────────────── ⛔ ⛔ `F-06` manda tratar abaixo de 60, ⛔ e a ação de correção declara que o bloqueio cai por ⛔ *"Uma nova glicemia"*. ⛔ Só que ⛔ o campo ⛔ **⛔ não tinha instância**: ⛔ « nova glicemia » ⛔ e ⛔ « corrigir a glicemia » ⛔ eram ⛔ **⛔ o mesmo gesto**. ⚠️⚠️ ⛔ Consequência clínica: ⛔ o app ⛔ destravaria ⛔ a trombólise ⛔ sobre um número ⛔ que ⛔ **⛔ apagou** ⛔ o 38 ⛔ que motivou ⛔ a correção — ⛔ e ⛔ a trilha ⛔ diria ⛔ que ⛔ a glicemia ⛔ **⛔ sempre foi** 96.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 
