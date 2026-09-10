@@ -74,7 +74,7 @@ tipo e volume de fluido ⛔ NÃO estão aqui.** ⛔ São ⛔ **⛔ lacuna de fon
 
 ### 1.3 · Lactato — rec. 3 · **UGPS** / Ungraded evidence / Strong agreement
 
-> "Lactate levels are typically increased (>2 mmol/L) in shock states."
+> "Lactate levels are typically increased (> 2 mmol/L) in shock states"
 
 ### ⛔ Expert opinion (p. 1977) — ⛔ **⛔ NÃO é recomendação**
 
@@ -108,10 +108,15 @@ Ungraded evidence / Strong agreement
 > measurement of the veno-arterial difference in carbon dioxide partial pressure
 > (Pv-aCO₂) should be performed."
 
-**Rec. 8 — razão Pv-aCO₂/Ca-vO₂ · *"one may consider"***
+**Rec. 8 — razão Pv-aCO₂/Ca-vO₂ · *"one may consider"* · ⛔ acordo ⛔ ver §D-1**
 > "In patients with a central venous catheter and an arterial catheter, one may
 > consider performing serial measurements of the ratio of Pv-aCO₂ over the
-> arterio-venous difference in oxygen content (Pv-aCO₂/Ca-vO₂)."
+> arterio-venous difference in **oxygen partial content** (Pv-aCO₂/Ca-vO₂)."
+
+⚠️ ⛔ **⛔ CORRIGIDO na conferência de 2026-09-10.** ⛔ Eu havia escrito *"oxygen
+content"* — ⛔ que é ⛔ o que a **Fig. 1** ⛔ e ⛔ o **Abstract** dizem. ⛔ A
+⛔ **⛔ caixa de recomendação** (p. 1978) ⛔ diz *"oxygen ⛔ **partial** content"*.
+⛔ Vale ⛔ a caixa. ⛔ Ver ⛔ **§D-1**.
 
 ### Microcirculação — Question 1.3 · rec. 9 · **UGPS** · p. 1979
 > "When feasible, the assessment of microcirculation may be considered as an
@@ -162,6 +167,12 @@ as a target ⛔ but viewed as a consequence of the adequacy of overall treatment
 > we recommend targeting an initial mean arterial pressure ≥80 mmHg.**"
 
 **Rec. 44** — > "Targeting an initial MAP of ≥ 65 mmHg may be considered in patients with **cardiogenic shock**."
+
+> ⚠️⚠️ ⛔ **⛔ ATENÇÃO À REC. 43.** ⛔ Ela contém ⛔ *"**we recommend** targeting
+> an initial mean arterial pressure ≥80 mmHg"* — ⛔ mas ⛔ a **⛔ natureza da
+> afirmação** ⛔ é ⛔ **⛔ Ungraded good practice statement**, ⛔ como ⛔ todas as
+> recs. 38–44. ⛔ O verbo ⛔ *"recommend"* ⛔ **⛔ dentro** ⛔ do texto ⛔ **⛔ não a
+> transforma** ⛔ em recomendação GRADE forte. ⛔ Ver **§D-4**.
 
 ### ⚠️⚠️⚠️ ⛔ A ADVERTÊNCIA QUE O AUTOR PEDIU, ⛔ E ⛔ ELA SE SUSTENTA NO TEXTO
 
@@ -231,8 +242,14 @@ diretriz ⛔ **⛔ não faz** ⛔ essa ponte.
 | **26** | "We **suggest against** the use of changes in **IVC diameter alone**… to assess fluid responsiveness." | **Suggest against** / Moderate · ⛔ *Weak agreement* |
 
 ⚠️ ⛔ O **PLR** ⛔ é ⛔ o único teste ⛔ com ⛔ **Strong + High** ⛔ que ⛔ vale ⛔ com
-⛔ **⛔ e ⛔ sem** ⛔ respiração espontânea — ⛔ e ⛔ o texto (p. 1986) ⛔ o chama de
-⛔ *"the functional test of choice"*, ⛔ com ⛔ AUROC agrupada ⛔ de ⛔ **0,94**.
+⛔ **⛔ e ⛔ sem** ⛔ respiração espontânea (rec. 17).
+
+> ⛔ ⛔ **⛔ E ⛔ o que vem a seguir ⛔ NÃO é recomendação.** ⛔ *Consensus on
+> science*, ⛔ p. 1986: *"From the pooled AUROC of 0.94 [0.92–0.97] retrieved
+> from 4 studies (…) the following can be concluded: **the PLR is the functional
+> test of choice** for assessing fluid responsiveness in ICU patients with shock
+> (…)"*. ⛔ **⛔ Corrigido na conferência**: ⛔ eu havia citado ⛔ isso ⛔ **⛔ colado
+> à recomendação**, ⛔ como se ⛔ a reforçasse ⛔ com a mesma força. ⛔ Ver **§D-3**.
 
 ---
 
@@ -279,3 +296,130 @@ vasopressor, inotrópico ou volume/tipo de fluido, ⛔ marque como lacuna de fon
 ⛔ ⛔ Fechar estas lacunas ⛔ exige ⛔ **⛔ outra fonte**, ⛔ com ⛔ procedência
 própria — ⛔ provavelmente ⛔ a que o autor ⛔ já antecipou: ⛔ farmacologia
 operacional de vasopressor/inotrópico.
+
+---
+
+# ⚠️⚠️⚠️ CONFERÊNCIA CONTRA O PDF — 2026-09-10
+
+⛔ Auditoria ⛔ **⛔ afirmação por afirmação**, ⛔ pedida pelo autor ⛔ antes de
+promover o estado. ⛔ Regra aplicada: ⛔ *"se qualquer trecho do markdown estiver
+⛔ **⛔ mais forte** que o PDF, ⛔ rebaixe"*.
+
+**Estado após a conferência:** ⏳ **⛔ aguarda conferência clínica do autor** —
+⛔ **⛔ NÃO promovido**. ⛔ O que se conferiu aqui ⛔ foi ⛔ **⛔ fidelidade ao
+PDF**, ⛔ e ⛔ **⛔ não** ⛔ adequação clínica ao AVC.
+
+## A · O quadro completo — 44 afirmações localizadas, 5 domínios
+
+| rec. | questão | p. | natureza | força | certeza | acordo |
+|---|---|---|---|---|---|---|
+| 1 | 1.1 | 1975 | **definição** | ungraded | ungraded | forte |
+| 2 | 1.1 | 1975 | UGPS | ungraded | ungraded | forte |
+| 3 | 1.1 | 1975 | UGPS | ungraded | ungraded | forte |
+| 4 | 1.2 | 1978 | UGPS | ungraded | ungraded | forte |
+| 5 | 1.2 | 1978 | UGPS | ungraded | ungraded | forte |
+| 6 | 1.2 | 1978 | UGPS | ungraded | ungraded | forte |
+| 7 | 1.2 | 1978 | UGPS | ungraded | ungraded | forte |
+| **8** | 1.2 | 1978 | UGPS | ungraded | ungraded | ⛔ **⛔ DIVERGE — §D-1** |
+| 9 | 1.3 | 1979 | UGPS | ungraded | ungraded | forte |
+| 10 | 2.1 | 1980 | UGPS | ungraded | ungraded | forte |
+| 11 | 2.1 | 1980 | UGPS | ungraded | ungraded | forte |
+| 12 | 2.2 | 1983 | UGPS | ungraded | ungraded | forte |
+| 13 | 2.3 | 1984 | **definição** | ungraded | ⛔ **baixa** | forte |
+| 14 | 2.3 | 1984 | UGPS | ungraded | ungraded | forte |
+| 15 | 2.3 | 1984 | UGPS | ungraded | ungraded | forte |
+| **16** | 2.4 | 1985 | **GRADE** | **forte** | **alta** | forte |
+| **17** | 2.4 | 1985 | **GRADE** | **forte** | **alta** | forte |
+| **18** | 2.4 | 1985 | **GRADE** | **forte** | moderada | forte |
+| **19** | 2.4 | 1985 | ⛔ **sem recomendação** | — | baixa | forte |
+| **20** | 2.4 | 1985 | **GRADE** | **forte** | **alta** | forte |
+| **21** | 2.4 | 1985 | **GRADE** | *suggest against* | moderada | forte |
+| **22** | 2.4 | 1985 | **GRADE** | fraca | moderada | forte |
+| **23** | 2.4 | 1985 | ⛔ **sem recomendação** | — | baixa | forte |
+| **24** | 2.4 | 1985 | ⛔ **sem recomendação** | — | baixa | forte |
+| **25** | 2.4 | 1985 | ⛔ **sem recomendação** | — | baixa | forte |
+| **26** | 2.4 | 1985 | **GRADE** | *suggest against* | moderada | ⛔ **fraco** |
+| 27 | 3.1 | 1987 | UGPS | ungraded | ungraded | forte |
+| 28 | 3.1 | 1987 | UGPS | ungraded | ungraded | forte |
+| 29 | 3.1 | 1987 | UGPS | ungraded | ungraded | forte |
+| 30 | 3.2 | 1991 | UGPS | ungraded | ungraded | forte |
+| **31** | 3.2 | 1991 | UGPS + 2 *Remarks* | ungraded | ungraded | ⛔ **⛔ DIVERGE — §D-2** |
+| 32 | 3.2 | 1991 | UGPS | ungraded | ungraded | forte |
+| 33 | 3.2 | 1991 | UGPS | ungraded | ungraded | forte |
+| **34** | 3.2 | 1991 | **GRADE** | fraca | ⛔ **baixa** | forte |
+| 35 | 3.2 | 1991 | UGPS | ungraded | ungraded | forte |
+| 36 | 3.3 | 1993 | UGPS | ungraded | ungraded | forte |
+| 37 | 3.3 | 1993 | UGPS | ungraded | ungraded | forte |
+| 38 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+| 39 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+| 40 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+| 41 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+| 42 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+| **43** | 3.4 | 1994 | UGPS | ungraded | ungraded | forte · ⛔ **§D-4** |
+| 44 | 3.4 | 1994 | UGPS | ungraded | ungraded | forte |
+
+⚠️⚠️ ⛔ **⛔ A LEITURA QUE ESTA TABELA OBRIGA:** ⛔ de 44 afirmações,
+⛔ **⛔ 11 são GRADE** ⛔ (incluindo ⛔ 4 *"sem recomendação"*), ⛔ **⛔ 2 são
+definição** ⛔ e ⛔ **⛔ 31 são UGPS**. ⛔ E ⛔ **⛔ todas as 11 GRADE** ⛔ estão em
+⛔ **⛔ dois lugares só**: ⛔ responsividade a fluidos ⛔ e ⛔ a escolha do eco.
+⛔ **⛔ Nenhuma meta pressórica ⛔ é GRADE.**
+
+## D · DIVERGÊNCIAS ENCONTRADAS
+
+### D-1 · Rec. 8 — ⛔ o PDF ⛔ **⛔ discorda de si mesmo** ⛔ em duas coisas
+
+| | Fig. 1 (p. 1976) | caixa Recommendations 1.2 (p. 1978) |
+|---|---|---|
+| texto | *"oxygen content"* | *"oxygen **partial** content"* |
+| acordo | ⛔ ícone **⛔ VERMELHO = fraco** | *"Strong agreement"* |
+
+⛔ ⛔ **⛔ Não é erro meu ⛔ nem do autor** — ⛔ é ⛔ **⛔ do documento**.
+⚠️ ⛔ **⛔ Conduta adotada:** ⛔ texto ⛔ = ⛔ o da **⛔ caixa de recomendação**
+(⛔ é ⛔ ela ⛔ que carrega ⛔ o número ⛔ e ⛔ a natureza); ⛔ acordo ⛔ =
+⛔ **⛔ o mais fraco dos dois** (⛔ fraco), ⛔ pela regra de ⛔ rebaixar.
+
+### D-2 · Rec. 31 — ⛔ **⛔ a mesma divergência**, ⛔ outra vez
+
+| | Fig. 4 (p. 1988) | caixa Recommendations 3.2 (p. 1991) |
+|---|---|---|
+| acordo | ⛔ ícone **⛔ VERMELHO = fraco** | *"Strong agreement"* |
+
+⛔ Trata-se da termodiluição transpulmonar / PAC ⛔ em SDRA moderada a grave.
+⚠️ ⛔ **⛔ Adotado o mais fraco.** ⛔ ⛔ Duas ocorrências ⛔ **⛔ não são coincidência
+suficiente** ⛔ para concluir ⛔ qual dos dois lados ⛔ erra — ⛔ e ⛔ concluir ⛔ seria
+⛔ escolher ⛔ por conveniência.
+
+### D-3 · ⛔ *"The functional test of choice"* — ⛔ **⛔ rebaixado por mim**
+
+⛔ ⛔ Eu havia colado ⛔ essa frase ⛔ e ⛔ o AUROC de **0,94** ⛔ logo abaixo ⛔ da
+rec. 17, ⛔ como se ⛔ fossem ⛔ parte dela. ⛔ **⛔ Não são.** ⛔ São
+⛔ ***Consensus on science*** (p. 1986) — ⛔ e ⛔ *consensus on science* ⛔ **⛔ não
+é recomendação**. ⛔ Marcado ⛔ como tal ⛔ no corpo.
+
+### D-4 · Rec. 43 — ⛔ *"we recommend"* ⛔ **⛔ dentro** ⛔ de uma UGPS
+
+⛔ ⛔ O texto ⛔ da rec. 43 ⛔ diz ⛔ *"**we recommend** targeting an initial mean
+arterial pressure ≥80 mmHg"* ⛔ — ⛔ e ⛔ a etiqueta ⛔ da afirmação ⛔ é
+⛔ **⛔ Ungraded good practice statement**.
+
+⚠️⚠️ ⛔ Isto ⛔ é ⛔ **⛔ armadilha de leitura**: ⛔ quem varrer ⛔ o texto ⛔ por
+⛔ *"we recommend"* ⛔ vai promover ⛔ uma UGPS ⛔ a ⛔ recomendação forte.
+⛔ ⛔ **⛔ E ⛔ é ⛔ justamente ⛔ a meta de ⛔ TCE**, ⛔ a mais tentadora ⛔ de
+⛔ transportar ⛔ para o AVC.
+
+## E · O QUE ⛔ NÃO ESTÁ TRANSCRITO, ⛔ e ⛔ é declarado
+
+⛔ Recs. **30, 32, 33** (⛔ termodiluição / PAC / dispositivos menos invasivos)
+⛔ estão ⛔ **⛔ nomeadas ⛔ e ⛔ não citadas verbatim**: ⛔ são ⛔ escolha de
+⛔ dispositivo ⛔ de UTI, ⛔ fora do ⛔ que a Estabilização do AVC ⛔ precisa
+⛔ decidir. ⚠️ ⛔ Se ⛔ virarem tela, ⛔ **⛔ transcrever antes**.
+
+⛔ Domínio 4 (⛔ ecocardiografia ⛔ em detalhe) ⛔ e ⛔ pressão intra-abdominal
+⛔ **⛔ não** foram varridos ⛔ além do que aparece ⛔ nas Figs. 4 e 5.
+
+## F · O QUE A CONFERÊNCIA ⛔ **⛔ NÃO** DIZ
+
+⛔ ⛔ Ela ⛔ **⛔ não** diz ⛔ que a ESICM ⛔ se aplica ⛔ ao AVC. ⛔ Ela diz ⛔ que ⛔ o
+que está escrito aqui ⛔ **⛔ corresponde ⛔ ao PDF**. ⚠️ ⛔ A pergunta clínica —
+⛔ *"o que ⛔ desta diretriz de UTI ⛔ vale ⛔ para ⛔ um AVC ⛔ na porta"* —
+⛔ **⛔ é do autor**, ⛔ e ⛔ é ⛔ ela ⛔ que ⛔ promove ⛔ o estado.
