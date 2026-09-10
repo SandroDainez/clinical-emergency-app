@@ -59,6 +59,9 @@ const BR_GLI = "protocols/fontes-verbatim/fontes-br-correcao-glicemica.md";
 const BR_MRS = "protocols/fontes-verbatim/mrs-br.md";
 const SEG_DEF = "protocols/fontes-verbatim/seguranca-definicoes-operacionais.md";
 const IMG_DEF = "protocols/fontes-verbatim/imagem-definicoes-operacionais.md";
+const ESICM_CHOQUE = "protocols/fontes-verbatim/esicm-2025-choque.md";
+const CHOQUE_ABERTAS = "protocols/fontes-verbatim/choque-fontes-abertas.md";
+const CPTW386 = "protocols/fontes-verbatim/einstein-cptw386-choque.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -164,6 +167,28 @@ export const SLOTS: readonly SlotDeFonte[] = [
   { id: "S-06", assunto: "HSA · Convulsões (fenitoína COR 3: Harm)", estado: "transcrito", arquivo: HSA },
   { id: "S-07", assunto: "HSA · Complicações (volume, TEV, glicemia)", estado: "transcrito", arquivo: HSA },
   { id: "S-08", assunto: "HSA · Sistemas de cuidado e transferência", estado: "transcrito", arquivo: HSA },
+
+  /**
+   * ⚠️⚠️ RAMO C2 — CHOQUE na Estabilização do AVC.
+   *
+   * ⚠️ F-32 tem DOIS EIXOS DE ESTADO e eles não se substituem: fidelidade ao
+   * PDF conferida em 2026-09-10; aplicabilidade ao AVC isquêmico PENDENTE, e
+   * classificada passo a passo em `auditoria/MAPA-C2-CHOQUE.md`.
+   * "Transcrito" aqui significa transcrito, e nunca "validado para o AVC".
+   *
+   * ⚠️ F-33 TRANSCRITO em 2026-09-10 do PDF do pathway CPTW386.1 — mesma
+   * regra do F-32: transcrito não é validado para o AVC. O documento não cita
+   * AVC isquêmico em nenhuma das 8 páginas.
+   *
+   * ⚠️ F-34 e F-35 seguem ABERTOS — nenhum texto transcrito. Enquanto assim,
+   * nada que eles sustentariam entra em tela: nem tipo de fluido, nem dose,
+   * nem titulação. F-35 não tem sequer fonte candidata, e o motivo está
+   * declarado no arquivo.
+   */
+  { id: "F-32", assunto: "Choque circulatório e monitorização hemodinâmica", estado: "transcrito", arquivo: ESICM_CHOQUE },
+  { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
+  { id: "F-34", assunto: "Escolha do fluido de ressuscitação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35", assunto: "Vasopressor — dose inicial e titulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {

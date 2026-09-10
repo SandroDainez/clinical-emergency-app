@@ -222,6 +222,33 @@
     "estado": "sem âncora numérica — conferir por leitura"
   },
   {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/esicm-2025-choque.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/choque-fontes-abertas.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/einstein-cptw386-choque.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
     "arquivo": "conteudo/hemorragia-intracerebral.ts",
     "frase": ";\n\n                                                       \nexport type NivelLOE = ",
     "tipos": [

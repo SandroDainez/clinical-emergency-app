@@ -192,6 +192,13 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Anti-hipertensivo IV operacional": "Antihipertensivo IV operativo",
   "Preparo do trombolítico": "Preparación del trombolítico",
   "Terapêutica anticonvulsiva": "Terapéutica anticonvulsiva",
+  // ── ramo C2 · choque (F-32 a F-35) ──────────────────────────────────────
+  "Choque circulatório e monitorização hemodinâmica":
+    "Choque circulatorio y monitorización hemodinámica",
+  "Choque no adulto — pathway operacional por mecanismo":
+    "Choque en el adulto — vía operativa por mecanismo",
+  "Escolha do fluido de ressuscitação": "Elección del fluido de reanimación",
+  "Vasopressor — dose inicial e titulação": "Vasopresor — dosis inicial y titulación",
 
   // ── UX clínica da Superfície A (correções visuais de 2026-08-28) ────────
   //

@@ -5360,3 +5360,67 @@ dependem de ⛔ **⛔ a trombectomia ter sido feita** — ⛔ e ⛔ de ⛔ **⛔
 
 **Caminho:** registrar a execução da trombectomia (⛔ como a IVT já é: instância,
 estado, horário) ⛔ e ⛔ o desfecho de recanalização. ⛔ Aí os três entram sozinhos.
+
+---
+
+## D-136 — ⏸️ ABERTA · 41.560 CARACTERES `⛔` ESPÚRIOS EM 295 ARQUIVOS
+
+**Data:** 2026-09-10 · **Decisão do autor:** *"eu não limparia agora (…) isso é
+dívida mecânica separada. Vale registrar e fazer depois com uma prova que
+garanta «só remoção do caractere, nenhuma outra alteração de conteúdo»."*
+
+O caractere `⛔` (U+26D4) aparece inserido **onde deveria haver espaço**, no
+meio das frases, em documentação, comentários de código e mensagens de teste.
+Frases como *"⛔ ⛔ ⛔ **⛔ ISTO ⛔ NÃO É UMA TRAVA.**"* mostram que não é
+convenção da casa: é ruído.
+
+| medida | valor |
+|---|---|
+| arquivos versionados atingidos | 295 |
+| ocorrências | 41.560 |
+| por extensão | 141 `.ts` · 77 `.cjs` · 35 `.md` · 28 `.tsx` · 9 `.sql` |
+| piores arquivos | `INDICE-DE-TRAVAS.md` (1.587) · `DIVIDAS-CONHECIDAS.md` (1.469) |
+
+### ⚠️ ALCANCE CLÍNICO: NENHUM — e isto foi medido, não suposto
+
+- fora de comentário, o caractere só vive em **mensagens de falha de teste** e
+  no campo `motivo` de `SEM_SAIDA_DECLARADA`, que uma prova lê e a tela não;
+- as tabelas de i18n têm o caractere **apenas nos comentários**, nunca dentro
+  de string traduzida;
+- o bundle publicado em `dist/` tem **zero** ocorrências.
+
+➜ Por isso é dívida **mecânica**, e não defeito clínico. Nada que o médico lê
+carrega o caractere.
+
+### O que já foi limpo
+
+Três arquivos, na frente do C2, com prova de que só linhas contaminadas
+mudaram (commit `4bb8244`):
+
+| arquivo | removidos | linhas alteradas sem `⛔` |
+|---|---|---|
+| `auditoria/MAPA-C2-CHOQUE.md` | 920 | 0 |
+| `auditoria/MAPA-DA-ESTABILIZACAO.md` | 553 | 0 |
+| `protocols/fontes-verbatim/esicm-2025-choque.md` | 533 | 0 |
+
+### Caminho — e a prova que o autor exigiu
+
+A limpeza em massa só vale com trava que garanta **"só remoção do caractere,
+nenhuma outra alteração de conteúdo"**. O formato já usado e aprovado:
+
+1. para cada arquivo, comparar linha a linha contra `HEAD`;
+2. **reprovar** se alguma linha alterada não continha `⛔` no original;
+3. **reprovar** se a contagem de linhas mudar;
+4. **reprovar** se algum bloco de verbatim em fonte estrangeira for tocado;
+5. mutação fiel: reintroduzir uma alteração de conteúdo junto com a remoção,
+   e a trava tem de reprovar.
+
+⚠️ **Cuidado descoberto na limpeza dos três primeiros.** Remover o caractere
+deixa espaço sobrando dentro de negrito (`** não**`), e uma regex ingênua para
+consertar isso **come o espaço depois de um fecha-negrito legítimo**
+(`**conferida** em` → `**conferida**em`) e **apaga indentação de diagrama
+ASCII**. Ambos aconteceram, foram revertidos por `git checkout`, e são
+exatamente o que a trava do item 2 pega.
+
+⚠️ **Não** limpar `scripts/*.cjs` e `*.ts` na mesma passada dos `.md` sem rodar
+o `test:all` depois: mensagens de falha de teste mudam de string.

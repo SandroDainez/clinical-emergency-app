@@ -305,6 +305,35 @@ oxigenação, via aérea, decisões anteriores. **Sem redigitar.**
 aferições é janela e não fonte (**D-134**).
 6. **Não misturar conteúdo do destino dentro da origem** além do
 mínimo de estabilização.
+7. ⚠️ **O destino não decide clínica que é da origem.** Regra do autor,
+2026-09-10, nascida do módulo de vasoativas.
+
+## ⚠️ A regra 7, por extenso — o caso das drogas vasoativas
+
+O módulo de vasoativas, hoje, é **calculadora de preparo**:
+`protocols/drogas_vasoativas.json` vai de introdução a selecionar droga,
+selecionar preparo e selecionar modo. Ele responde **aritmética**.
+
+Ele **não pode virar motor de escolha clínica** só porque é para onde o
+fluxo aponta quando alguém precisa de vasoativo.
+
+| decide | quem |
+|---|---|
+| **se** há indicação de vasoativo | **módulo de origem** (C2) |
+| **qual** droga | **módulo de origem** (C2) |
+| preparo, concentração, velocidade de infusão | **drogas vasoativas** |
+| retorno ao ponto exato de origem | obrigatório, § *O retorno* |
+
+⚠️ **O código antigo violava isto.** No `shock-decision-tree.ts` removido em
+`bdf02c8`, sete nós apontavam para `drogas-vasoativas` com o motivo
+*"Titulação de vasopressor e inotrópico"*. **Titulação é decisão clínica**,
+não conta de preparo. Ao reconstruir, o motivo da transição passa a ser
+preparo e velocidade; a titulação fica no módulo que decidiu a droga.
+
+⚠️ A regra é **geral**, e não sobre vasoativas. Todo módulo-ferramenta —
+calculadora, conversor, tabela de preparo — recebe uma decisão já tomada e
+devolve o fluxo. Se ele começa a escolher, virou fonte clínica sem slot,
+que é o que o **E-29** proíbe.
 
 # O retorno — ⚠️ **obrigatório**, com checkpoint
 

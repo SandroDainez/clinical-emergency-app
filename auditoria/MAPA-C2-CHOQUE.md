@@ -367,3 +367,92 @@ ser executada** sem a fonte farmacológica.
 ⚠️ Os passos **1, 2, 3, 4, 6 e 7** estão **completos** o
 bastante para virar tela — com o Passo 4 limitado à **prova de
 volume**, e **sem** prescrever tipo nem volume total.
+
+---
+
+# Atualização 2026-09-10 · a ordem de fontes, e o que mudou
+
+## Os slots do C2 estão registrados
+
+`avc/conteudo/fontes.ts` passa a declarar quatro slots deste ramo:
+
+| slot | assunto | estado |
+|---|---|---|
+| **F-32** | choque circulatório e monitorização hemodinâmica (ESICM 2025) | transcrito · fidelidade conferida · **aplicabilidade ao AVC pendente** |
+| **F-33** | choque no adulto, pathway operacional por mecanismo (Einstein CPTW386.1) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
+| **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia parte 1) | ⛔ **aberto** |
+| **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · candidata anotada, não lida: Bloom 2023 |
+
+O que cada slot aberto deve responder, e os cuidados de transcrição de cada
+um, estão em `protocols/fontes-verbatim/choque-fontes-abertas.md`.
+
+## O Passo 2 vira o eixo da arquitetura
+
+Decisão do autor: `reconhecer choque → classificar mecanismo provável →
+abrir tratamento correspondente`. O Passo 2 deixa de ser informativo e passa
+a ser **quem abre o Passo 5**.
+
+Consequência direta: **não haverá uma fonte farmacológica única de choque**.
+A dose virá por mecanismo — cardiogênico de fonte cardiogênica, hemorrágico
+de fonte própria, obstrutivo de fonte própria, distributivo de fonte
+específica só se realmente necessária. A ordem de ataque é F-33, depois F-34,
+e só então as fontes por subtipo.
+
+## O F-33 está transcrito — e o que ele **não** deu
+
+`protocols/fontes-verbatim/einstein-cptw386-choque.md`, 8 páginas do PDF do
+pathway CPTW386.1. O documento **não cita AVC isquêmico uma única vez**.
+
+⚠️⚠️⚠️ **O Passo 5 continua sem dose, e agora isso está provado.** A escalada
+de vasopressor do documento (noradrenalina → vasopressina → adrenalina, com
+corticoide no 2º vasopressor) vive **dentro da seção de sepse**, e mesmo lá
+**não traz dose de início nem esquema de titulação**. O único mcg/kg/min do
+documento inteiro é o gatilho de **linha arterial** (noradrenalina > 0,3 a
+0,5), que é indicação de monitorização.
+
+➜ F-35 continua **aberto**. Candidata anotada, não lida: Bloom JE et al.,
+*State of Shock: Contemporary Vasopressor and Inotrope Use in Cardiogenic
+Shock*, J Am Heart Assoc 2023 — referência 11 do próprio pathway.
+
+⚠️ **Tipo de fluido também não veio.** O único nomeado é *soro ringer lactato*,
+e está na seção de sepse. F-34 continua **aberto**.
+
+## O inventário do transporte antigo, e o erro que ele revelou
+
+`auditoria/MAPA-CPTW386-EINSTEIN.md` traz o que o app transportou deste
+pathway, recuperado de `bdf02c8^:shock-decision-tree.ts`, nos seis eixos
+pedidos, com quatro divergências contra o F-32 já marcadas. **Não é
+transcrição** e não autoriza tela.
+
+⚠️⚠️ **O erro de população, e ele é grave.** O transporte antigo escrevia
+que a meta de **PAM 90–100 mmHg** valia para *"lesão cerebral grave"*. O PDF
+diz outra coisa: a meta é para *"pacientes neurológicos agudos **com
+hipertensão intracraniana (suspeita ou confirmada)**"*. *"Sem lesão cerebral
+grave"* é a **exclusão de outra linha**, a que permite tolerar PAM < 65. Duas
+linhas independentes foram fundidas em uma, e a população mudou.
+
+⚠️ Duas divergências contra o F-32 que este mapa herda:
+
+- o pathway carrega **PAS < 90 ou queda ≥ 40** (e **PAM < 60**) no gatilho de
+  reconhecimento, e o F-32 define choque **sem número**. Fica o F-32.
+  ⚠️ Ressalva de fidelidade: o próprio pathway relativiza o número na mesma
+  tabela — *"a presença de hipotensão arterial não é obrigatória para o
+  diagnóstico de choque"*;
+- o pathway traz **PAM ≥ 65** sob o título *"metas hemodinâmicas gerais"*, e o
+  F-32 escopa por população. ⚠️ Ressalva de fidelidade: o pathway **também**
+  traz asterisco dizendo *"as metas podem variar de acordo com o contexto
+  clínico"*. O transporte antigo perdeu o asterisco. Fica o F-32.
+
+## Transição para vasoativas
+
+O Passo 5, quando existir, decide **se** e **qual**. Preparo, concentração e
+velocidade vão para o módulo de vasoativas, que devolve o fluxo ao ponto de
+origem. Regra 7 do contrato de transições, em
+`auditoria/MAPA-DA-ESTABILIZACAO.md`.
+
+## Vista e não usada
+
+Existe uma declaração europeia de **agosto de 2026** sobre **critérios
+diagnósticos** de choque cardiogênico. É específica de cardiogênico e é
+diagnóstica. ⛔ **Não serve** para preencher a farmacologia do Passo 5, não
+abriu slot, e nenhuma linha deste mapa saiu dela.
