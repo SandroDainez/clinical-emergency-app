@@ -67,8 +67,9 @@ não com "o que eu faço?".
 | | |
 |---|---|
 | **origem** | F-35b · anafilaxia por contraste |
-| **estado** | **2 · integração de fontes necessária** |
-| **por que não é «inexistente»** | ⛔ nenhuma busca específica foi feita. A resposta pode nascer da combinação entre a fonte de contraste (ACR + AAAAI 2025) e a fonte-mãe do AVC (F-05 / F-16, imagem e tempos-alvo) |
+| **estado** | **1 · fonte clínica incompleta** — ⚠️ **medido em 2026-09-11**, com o F-35b lido |
+| **o que a leitura mediu** | a fonte manda *"stopping the ICM infusion (if ongoing)"* e ⛔ **nada diz** sobre o exame, o laudo ou a janela de reperfusão. Busca registrada: *stroke* aparece **0 vezes** no documento |
+| **próximo passo** | **estado 2** — integrar com **F-16**, **F-11** e **F-08**, já transcritas |
 | ⚠️ **o que está em jogo** | interromper pode custar a definição de oclusão de grande vaso; continuar pode custar o paciente |
 
 ## LF-02 · A trombectomia continua depois da reação ao contraste?
@@ -76,35 +77,38 @@ não com "o que eu faço?".
 | | |
 |---|---|
 | **origem** | F-35b |
-| **estado** | **2 · integração de fontes necessária** |
-| **fontes a combinar** | fonte de contraste **+** F-08 (elegibilidade para trombectomia) **+** F-11 (tempos-alvo) |
-| ⚠️ **agravante** | a trombectomia usa **mais** contraste, e o procedimento é longo |
+| **estado** | **1 · fonte clínica incompleta, POR ESCOPO** — ⚠️ e a leitura **agravou** |
+| **o que a leitura mediu** | ⛔ o documento **exclui explicitamente** contraste **intra-arterial**, e a trombectomia **é** intra-arterial. ⚠️ Não é que a fonte se cale: ela **se declara fora** |
+| **próximo passo** | ⚠️ pode exigir **fonte nova**, e não só integração |
 
 ## LF-03 · Reexposição a contraste com o relógio do AVC correndo
 
 | | |
 |---|---|
 | **origem** | F-35b |
-| **estado** | **2 · integração de fontes necessária** |
-| **nota** | a fonte de contraste provavelmente cobre pré-medicação e reexposição **eletiva**; o AVC ⛔ não tem tempo de pré-medicação. ⚠️ A combinação com os tempos-alvo do AVC pode resolver, ou pode levar ao estado 4 |
+| **estado** | **1 · fonte clínica incompleta** — ⚠️ **confirmado na leitura** |
+| **o que a leitura mediu** | o regime é **prednisona 13 h, 7 h e 1 h antes**, e glicocorticoide *"take several hours to work"*. ⛔ A fonte ⛔ não trata de emergência com janela terapêutica |
+| **próximo passo** | ⚠️ provável **estado 4** — decisão operacional derivada |
 
 ## LF-04 · Sangramento extracraniano pós-trombolítico
 
 | | |
 |---|---|
 | **origem** | F-35c |
-| **estado** | **1 · fonte clínica incompleta** — ⚠️ **a confirmar na leitura** |
-| ⛔ **não concluir ausência** | ordem do autor: *"pode ter orientação em fontes de trombólise/reversão, mesmo que Yaghi não cubra"* |
-| **onde procurar, quando for a hora** | bula dos trombolíticos (o app já tem **F-20**, `bulas-br-tromboliticos.md`) · fontes de reversão de fibrinolítico · hemostasia em sangramento maior |
+| **estado** | **1 · fonte clínica incompleta** — ✅ **confirmado com busca registrada** |
+| **busca feita** | 2026-09-11, na camada de texto do PDF completo do F-35c: *extracranial*, *systemic bleeding*, *gastrointestinal*, *retroperitoneal*, *puncture site*, *orolingual*, *angioedema*, *major bleeding* — **0 ocorrências cada** |
+| ⚠️ **o que a busca NÃO prova** | ela foi **dentro desta fonte**, e ⛔ **não na literatura**. ⛔ Continua proibido concluir ausência |
+| **onde procurar** | **F-20**, `bulas-br-tromboliticos.md`, que o app já tem · fontes de reversão de fibrinolítico · hemostasia em sangramento maior |
 
 ## LF-05 · Tenecteplase na complicação hemorrágica
 
 | | |
 |---|---|
 | **origem** | F-35c |
-| **estado** | ⛔ **busca própria pendente** — ⚠️ **não classificar ainda** |
-| ⛔ **não declarar lacuna irredutível** | ordem do autor: *"precisa de busca própria antes de declarar lacuna irredutível"* |
-| **por que é plausível haver fonte** | a tenecteplase tem uso consolidado em IAM há décadas, com literatura de complicação hemorrágica própria; e o app já tem **F-20** com as bulas brasileiras |
+| **estado** | ⛔ **busca própria pendente** — ⚠️ **continua sem classificação** |
+| **o que a leitura do F-35c mediu** | o documento é de **alteplase**, e a tenecteplase ⛔ não aparece como agente de conduta |
+| ⚠️ **o que isso NÃO prova** | que o documento seja de alteplase ⛔ **não prova** que nada exista para tenecteplase. ⛔ A busca própria ⛔ **não foi feita** |
+| **por que é plausível haver fonte** | uso consolidado em IAM há décadas, com literatura de complicação hemorrágica própria; e o app já tem **F-20** |
 
 ---
 
