@@ -219,9 +219,23 @@ fonte para ela é trabalho desperdiçado — pior, empurra para inventar.
 | **LF-04** | sangramento **extracraniano** pós-trombolítico | F-35c |
 | **LF-05** | **tenecteplase** na complicação hemorrágica | F-35c |
 
-⚠️ **LF-01 a LF-03 não seriam respondidas nem com os PDFs em mãos.** A conduta
-da anafilaxia tem fonte de duas sociedades; o que não existe é o que fazer com
-a **janela de reperfusão** enquanto a reação acontece.
+⚠️⚠️ **Correção de 2026-09-11.** Eu havia escrito que essas perguntas *"não
+seriam respondidas nem com os PDFs em mãos"*. ⛔ Isso é **afirmação de ausência
+sem busca**, e o autor a vetou.
+
+**As três estão no estado 2 · integração de fontes necessária.** A resposta pode
+nascer da combinação entre a fonte de contraste e as fontes de imagem e
+tempos-alvo do AVC — **F-05**, **F-08**, **F-11** e **F-16** — que o app **já
+tem transcritas**.
+
+⚠️ **LF-04 e LF-05 também não concluem ausência.** Ordem do autor: o
+extracraniano *"pode ter orientação em fontes de trombólise/reversão, mesmo que
+Yaghi não cubra"* — e o app já tem **F-20**, as bulas brasileiras dos
+trombolíticos. A tenecteplase *"precisa de busca própria antes de declarar
+lacuna irredutível"*.
+
+➜ Os quatro estados e a classificação corrente estão em
+`auditoria/LACUNA-DE-FLUXO.md`.
 
 # ESTADO
 

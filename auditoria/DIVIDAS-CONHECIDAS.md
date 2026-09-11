@@ -5494,7 +5494,7 @@ que fazer com a sequência do AVC depois que a complicação acontece."*
 |---|---|---|
 | lacuna de **fonte** | não há documento, ou há e não foi transcrito | conseguir e transcrever |
 | lacuna de **tratamento** | a fonte foi lida e **não responde** | outra fonte, ou decisão clínica |
-| ⚠️ lacuna de **fluxo** | a conduta está clara — falta saber **o que acontece com o AVC depois** | ⛔ **decisão de produto**, e nenhuma fonte |
+| ⚠️ lacuna de **fluxo** | a conduta está clara — falta saber **o que acontece com o AVC depois** | percorrer os **quatro estados** (ver abaixo) |
 
 ⚠️ Lacuna de fluxo ⛔ **não se fecha lendo melhor**. Procurar fonte para ela é
 trabalho desperdiçado e, pior, empurra para **inventar**. Sintoma: a pergunta
@@ -5510,9 +5510,28 @@ começa com **"e agora?"**, e não com "o que eu faço?".
 | LF-04 | sangramento **extracraniano** pós-trombolítico | F-35c |
 | LF-05 | **tenecteplase** na complicação hemorrágica | F-35c |
 
-⚠️ **LF-01 a LF-03 não seriam respondidas nem com os PDFs em mãos**: a conduta
-da anafilaxia tem fonte de duas sociedades; o que não existe é o que fazer com a
-**janela de reperfusão** enquanto a reação acontece.
+### ⚠️⚠️⚠️ CORREÇÃO SEMÂNTICA — 2026-09-11
+
+A primeira versão dizia que essas perguntas *"não existem em nenhuma fonte"*.
+⛔ **Sem busca que provasse.** Ordem do autor: *"Não declarar que uma pergunta
+«não existe em nenhuma fonte» sem busca específica que prove isso."*
+
+⚠️ É a regra do número clínico estendida à **afirmação de ausência** — e a
+negativa é **mais perigosa** que a positiva, porque **encerra a busca**.
+
+**Toda lacuna de fluxo carrega um destes quatro estados**, e ⛔ nenhum deles é
+"não existe":
+
+| estado | significa |
+|---|---|
+| **1 · fonte clínica incompleta** | a fonte da complicação não responde à continuidade do fluxo |
+| **2 · integração de fontes necessária** | a resposta pode nascer da **combinação** de diretrizes diferentes |
+| **3 · evidência não localizada** | ✅ busca **feita e registrada**, nada adequado encontrado |
+| **4 · decisão operacional derivada** | as fontes delimitam o problema, ⛔ não dão regra; o autor assume e **declara** |
+
+**Classificação atual:** LF-01, LF-02 e LF-03 estão no estado **2**;
+LF-04 no estado **1**, a confirmar na leitura; **LF-05 sem classificação —
+busca própria pendente**.
 
 **Regra de manejo:** lacuna de fluxo aberta ⛔ não bloqueia a transcrição da
 fonte, ⚠️ mas bloqueia a **tela** daquele ponto do fluxo — pelo mesmo motivo que

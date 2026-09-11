@@ -37,8 +37,17 @@ O documento é de **alteplase**. O app oferece **alteplase e tenecteplase**
 (F-09, F-20, Superfície F).
 
 ⛔ **Cada afirmação transcrita declara o agente.** Se a fonte só fala de
-alteplase, isso é **lacuna de agente** — `LF-05` — e se fecha por **decisão
-clínica declarada**, ⛔ nunca por analogia entre trombolíticos.
+alteplase, isso é **lacuna de agente** — `LF-05`.
+
+⚠️⚠️ **E ⛔ não se declara lacuna irredutível sem busca própria.** Ordem do
+autor, 2026-09-11: a complicação hemorrágica da tenecteplase *"precisa de busca
+própria antes de declarar lacuna irredutível"*. A tenecteplase tem uso
+consolidado em IAM há décadas, com literatura própria de sangramento — ⛔ é
+implausível que nada exista, e **eu não procurei**.
+
+➜ Só depois da busca, e **com a busca registrada**, é que se decide entre
+estado **3** (evidência não localizada) e estado **4** (decisão operacional
+derivada). Ver `auditoria/LACUNA-DE-FLUXO.md`.
 
 ## ⚠️⚠️ O SANGRAMENTO EXTRACRANIANO
 
@@ -47,7 +56,14 @@ retroperitoneal, sítio de punção.
 
 ➜ **Ordem do autor:** se a fonte ⛔ **não cobrir**, isso vira **slot separado**,
 e ⛔ **não** se fecha com diretriz de trauma — regra 1 do sangramento.
-Registrado como `LF-04` até a leitura decidir.
+
+⚠️⚠️ **Mas ⛔ não concluir ausência.** Ordem do autor, 2026-09-11: o sangramento
+extracraniano *"pode ter orientação em fontes de trombólise/reversão, mesmo que
+Yaghi não cubra"*. ➜ Antes de declarar lacuna, **procurar** — e o app já tem
+**F-20**, `bulas-br-tromboliticos.md`, que é o primeiro lugar a olhar.
+
+Registrado como `LF-04`, estado **1 · fonte clínica incompleta**, a confirmar
+na leitura.
 
 ## ⛔ O que NÃO se transporta para cá
 

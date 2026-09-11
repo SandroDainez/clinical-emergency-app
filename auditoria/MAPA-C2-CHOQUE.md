@@ -290,7 +290,8 @@ corrigido**.
 
 ⚠️⚠️ **Este é o passo que o contrato da Estabilização exige** —
 *"só quando a ameaça estiver corrigida (…) é que o fluxo segue"* — e é
-**exatamente o que nenhuma fonte fornece**.
+**exatamente o que nenhuma das fontes transcritas fornece** — afirmação
+limitada ao que foi lido, e ⛔ não ao que existe no mundo.
 
 ### 🟧 regra derivada · RESOLVIDO 2026-09-10
 
@@ -856,3 +857,46 @@ caixa só, o politraumatizado, o sangramento digestivo e o paciente que recebeu
 alteplase — três causas, três tratamentos, e um deles **causado pelo próprio
 app**. ➜ Por isso **F-35c** (pós-trombólise) e **F-35g** (hipovolêmico não
 hemorrágico) são slots **separados**.
+
+
+---
+
+# ⚠️⚠️⚠️ Regra R-AUSENCIA · afirmação de ausência exige busca
+
+Fixada pelo autor em 2026-09-11, depois de eu escrever que certas perguntas
+*"não existem em nenhuma fonte"* sem ter procurado.
+
+> ⛔ **Não declarar que algo «não existe em nenhuma fonte» sem busca específica
+> que prove isso.**
+
+⚠️ É a regra do número clínico estendida à **afirmação negativa**. Dizer *"não
+há fonte"* é uma afirmação como qualquer outra, e afirmação sem medida é
+palpite.
+
+⚠️⚠️ **E a negativa é mais perigosa que a positiva**, porque ela **encerra a
+busca**. Um número errado alguém contesta; um *"não existe"* faz todo mundo
+parar de procurar — inclusive a próxima sessão.
+
+## O que se pode dizer, e como
+
+| ⛔ proibido | ✅ permitido |
+|---|---|
+| *"não existe fonte para isso"* | *"nenhuma das fontes **transcritas** responde"* |
+| *"nenhuma diretriz cobre"* | *"busca em «X» nas bases «Y», em «data», não encontrou"* |
+| *"isso não tem resposta"* | *"estado 2: pode nascer da combinação de F-nn e F-mm"* |
+
+⚠️ A coluna da direita é **verificável**. A da esquerda ⛔ não é.
+
+## Os quatro estados
+
+Toda lacuna de fluxo carrega um deles, e ⛔ nenhum é "não existe":
+**1 · fonte clínica incompleta** · **2 · integração de fontes necessária** ·
+**3 · evidência não localizada, com a busca registrada** ·
+**4 · decisão operacional derivada, assumida e declarada**.
+
+➜ `auditoria/LACUNA-DE-FLUXO.md`.
+
+⚠️ E o limite operacional da categoria, palavras do autor: *"uma lacuna de fluxo
+aberta pode coexistir com a transcrição da fonte, mas impede transformar aquele
+ponto em decisão automática de tela."* ➜ O app pode mostrar, informar e
+perguntar; ⛔ não pode **decidir sozinho** ali.

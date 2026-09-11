@@ -46,8 +46,11 @@ esta fonte**, e é por isso que têm categoria própria.
 | **LF-02** | ⛔ **continuidade da trombectomia?** ⚠️ e ela usa **mais** contraste |
 | **LF-03** | ⛔ **reexposição a contraste** com o relógio do AVC correndo |
 
-⚠️ A conduta da anafilaxia tem fonte de duas sociedades. O que ⛔ não existe é o
-que fazer com a **janela de reperfusão** enquanto a reação acontece.
+⚠️ A conduta da anafilaxia tem fonte de duas sociedades. O que falta é a
+**continuidade do fluxo do AVC** enquanto a reação acontece — e isso está no
+estado **2 · integração de fontes necessária**, ⛔ e não em "não existe".
+A combinação a tentar é com **F-05**, **F-08**, **F-11** e **F-16**, já
+transcritas. Ver `auditoria/LACUNA-DE-FLUXO.md`.
 
 ## O que já existe no app
 
