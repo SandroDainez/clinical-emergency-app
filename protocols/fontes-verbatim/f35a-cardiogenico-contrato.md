@@ -6,7 +6,7 @@
 
 | eixo | estado |
 |---|---|
-| **fidelidade documental** | ⛔ **nada transcrito** — nenhum PDF obtido |
+| **fidelidade documental** | ⛔ **nada transcrito** — o PDF do ACC 2025 é *Free Access*, mas o `jacc.org` recusa agente automático |
 | **aplicabilidade ao AVC isquêmico** | ⏳ pendente, e já se sabe que **exigirá qualificação** |
 
 ---
@@ -21,7 +21,7 @@ o que segue é identificação e disponibilidade, e nada mais.
 
 | # | documento | natureza | escopo pelo título | acesso |
 |---|---|---|---|---|
-| **1** | **Sinha SS, Morrow DA, Kapur NK, Kataria R, Roswell RO.** *2025 Concise Clinical Guidance: An ACC Expert Consensus Statement on the Evaluation and Management of Cardiogenic Shock.* **J Am Coll Cardiol. 2025;85(16):1618–1641.** DOI 10.1016/j.jacc.2025.02.018 · PMID 40100174 | *expert consensus statement* de sociedade (**ACC**) | avaliação **e manejo** do choque cardiogênico | ⛔ **fechado** — `is_oa: false`, sem cópia aberta |
+| **1** | **Sinha SS, Morrow DA, Kapur NK, Kataria R, Roswell RO.** *2025 Concise Clinical Guidance: An ACC Expert Consensus Statement on the Evaluation and Management of Cardiogenic Shock.* **J Am Coll Cardiol. 2025;85(16):1618–1641.** DOI 10.1016/j.jacc.2025.02.018 · PMID 40100174 | *expert consensus statement* de sociedade (**ACC**) | avaliação **e manejo** do choque cardiogênico | ⚠️ **Free Access no JACC** · ⛔ inacessível a agente automático (parede anti-bot) — ver §1.5 |
 | **2** | **van Diepen S et al.** *Contemporary Management of Cardiogenic Shock: A Scientific Statement From the American Heart Association.* **Circulation. 2017;136:e232–e268.** DOI 10.1161/CIR.0000000000000525 | *scientific statement* (**AHA**) | manejo contemporâneo | ✅ aberto no editor · ⛔ download automático bloqueado (HTTP 403) |
 | **3** | **Chioncel O et al.** *Epidemiology, pathophysiology and contemporary management of cardiogenic shock — a position statement from the Heart Failure Association of the ESC.* **Eur J Heart Fail. 2020;22:1315–1341.** DOI 10.1002/ejhf.1922 | *position statement* (**HFA-ESC**) | epidemiologia, fisiopatologia e manejo | ✅ aberto no editor · ⛔ download bloqueado (403). Repositórios só têm **submittedVersion** |
 | **4** | **Kanwar MK et al.** *Heart failure related cardiogenic shock: An ISHLT consensus conference content summary.* **J Heart Lung Transplant. 2024;43(2):189–203.** DOI 10.1016/j.healun.2023.09.014 · PMID 38069920 | *consensus conference* (**ISHLT**) | ⚠️ **só cardiogênico relacionado a insuficiência cardíaca**, dito no próprio título | PMC só com **author manuscript** |
@@ -38,7 +38,8 @@ droga. Pode voltar como leitura de apoio, nunca como procedência.
 
 **Primeira escolha: o ACC 2025 (documento 1).** É o mais recente, é de
 sociedade, e o título declara **avaliação e manejo** — as duas metades que o
-Passo 5 precisa. ⛔ Está fechado, e não há cópia aberta.
+Passo 5 precisa. Está marcado como **Free Access** no JACC; o que impede a
+obtenção é a **parede anti-bot**, e não o direito de leitura (§1.5).
 
 **Segunda escolha, se o ACC 2025 não for obtido: o par AHA 2017 + HFA-ESC
 2020** (documentos 2 e 3). Há uma razão de continuidade: são **exatamente as
@@ -68,7 +69,48 @@ apresenta aquela parte como estado da arte. Isso ⛔ não contamina a seção de
 vasopressor e inotrópico, que é o que o Passo 5 precisa — mas a separação tem
 de estar escrita.
 
-## 1.5 · O que falta para destravar
+## 1.5 · ⚠️⚠️ TENTATIVA DE OBTENÇÃO DO ACC 2025 — registro do que foi tentado
+
+**Correção de uma afirmação minha.** Eu escrevi que o ACC 2025 estava
+*"fechado"*, apoiado no `is_oa: false` do Unpaywall. O autor apontou que o JACC
+o marca como **Free Access**, e ele está certo: **as duas coisas são
+verdadeiras ao mesmo tempo**.
+
+> O Unpaywall registra **licença aberta**, e não **leitura livre**. Um artigo
+> *free to read* sem licença aberta aparece como `is_oa: false`.
+
+➜ Regra para as próximas buscas: ⛔ **`is_oa: false` não significa
+«inacessível»**. Significa "sem licença aberta". A leitura pode estar liberada
+mesmo assim, e é preciso checar a página do editor.
+
+### Rotas tentadas em 2026-09-10, e o resultado
+
+| rota | resultado |
+|---|---|
+| `jacc.org/doi/...` (WebFetch) | **HTTP 403** |
+| `jacc.org/doi/reader/...` | **HTTP 403** |
+| `jacc.org/doi/epdf/...` | **HTTP 403** |
+| `sciencedirect.com/science/article/pii/S0735109725004188` | **HTTP 403** |
+| API TDM da Elsevier (sem chave) | HTTP 400 |
+| **navegador da sessão** em `jacc.org` | ⛔ **parede anti-bot** — *"Executando verificação de segurança… proteção contra bots maliciosos"* |
+| `acc.org`, página do documento | HTTP 200, mas ⛔ **sem PDF** — remete de volta ao `jacc.org` |
+| PMC · Europe PMC | ⛔ não indexado |
+
+### ⛔ Por que a busca parou aqui
+
+O `jacc.org` serve uma **verificação anti-bot**. ⛔ Contornar detecção de bot
+**não é uma opção**, e isso **não muda** porque o conteúdo é livre para leitura.
+A restrição é sobre o **método de acesso**, e não sobre o direito de ler.
+
+➜ **Quem destrava é uma pessoa num navegador comum.** Abrir
+`https://www.jacc.org/doi/10.1016/j.jacc.2025.02.018`, a verificação passa, e
+salvar o PDF.
+
+⚠️ ⛔ **Não cair para o plano B ainda.** Ordem do autor: o ACC 2025 é a melhor
+fonte e está oficialmente marcado como acesso livre. AHA 2017 e HFA-ESC 2020
+continuam como plano B, e ⛔ não foram lidos.
+
+## 1.6 · O que falta para destravar
 
 Um PDF da **versão publicada**. ⛔ *SubmittedVersion* e *author manuscript*
 **não servem** para este projeto: a paginação difere da publicada e o texto
@@ -101,6 +143,27 @@ tratamento.**
 ⚠️ O item **10** carrega a ressalva *"se realmente constarem"* porque já
 aconteceu duas vezes: o F-32 e o F-33 **não tinham** dose, e só a leitura
 provou. ⛔ Não presumir que um documento de manejo traz posologia.
+
+---
+
+# 2b · ⚠️ COMO TRANSCREVER ESTE DOCUMENTO
+
+Instruções do autor, 2026-09-10, e elas antecipam o formato do ACC:
+
+1. **confirmar que é a *Version of Record*** antes de transcrever uma linha;
+2. **separar, e nunca misturar:** definição · consenso · algoritmo · tabela ·
+   texto de suporte. São naturezas diferentes e carregam pesos diferentes;
+3. ⛔ **não assumir força GRADE se o documento não usar GRADE.** Um *expert
+   consensus statement* da ACC pode não emitir COR/LOE nem GRADE. Se não
+   emitir, registrar **"sem graduação declarada"** — e ⛔ nunca traduzir a
+   linguagem do texto em um grau que o documento não deu;
+4. **manter os dois eixos separados** — fidelidade documental × aplicabilidade
+   ao AVC.
+
+⚠️ O item 3 é o mesmo cuidado do **§D-4 do F-32**: lá, um *"we recommend"*
+dentro do texto de um *good practice statement* **não** o transformava em
+recomendação forte. Aqui o risco é o espelho: um documento **sem** graduação
+sendo lido como se tivesse.
 
 ---
 
@@ -190,8 +253,10 @@ receber o paciente.
 
 # 6 · A ORDEM DE TRABALHO
 
-1. ✅ **identificar a fonte** — feito, §1;
-2. ⛔ **obter o PDF da versão publicada** — **bloqueio atual**;
+1. ✅ **identificar a fonte** — feito, §1. A principal é o **ACC 2025**;
+2. ⛔ **obter o PDF da versão publicada** — **bloqueio atual**, e ele é de
+   **método de acesso**, não de direito: o documento é *Free Access* e o
+   `jacc.org` recusa agentes automáticos. Ver §1.5;
 3. ⛔ transcrever verbatim, com página;
 4. ⛔ conferir população e força, recomendação a recomendação;
 5. ⛔ montar o mapa F-35a;

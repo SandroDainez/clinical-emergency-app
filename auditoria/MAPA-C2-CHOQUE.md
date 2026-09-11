@@ -612,7 +612,7 @@ com os treze itens de escopo a mapear e as proibições de transporte.
 
 | candidata | natureza | acesso |
 |---|---|---|
-| **ACC 2025** · Sinha SS et al., JACC 85(16):1618–1641 | *expert consensus statement* (ACC) | ⛔ fechado |
+| **ACC 2025** · Sinha SS et al., JACC 85(16):1618–1641 | *expert consensus statement* (ACC) | ⚠️ **Free Access**, mas o `jacc.org` recusa agente automático |
 | **AHA 2017** · van Diepen S et al., Circulation 136:e232–e268 | *scientific statement* | aberto no editor, download bloqueado |
 | **HFA-ESC 2020** · Chioncel O et al., Eur J Heart Fail 22:1315–1341 | *position statement* | idem |
 | ISHLT 2024 · Kanwar MK et al. | *consensus conference* | ⚠️ escopo **só IC-relacionado** |
@@ -633,3 +633,21 @@ qualificação — que é exatamente por que os dois eixos existem separados.
 
 ➜ Na transcrição, **cada recomendação declara** se é de IAM-CS, IC-CS, misto ou
 cardiogênico em geral.
+
+
+---
+
+# ⚠️ Regra de busca de fonte · `is_oa: false` não é «inacessível»
+
+Aprendida em 2026-09-10, ao errar com o ACC 2025.
+
+O **Unpaywall** registra **licença aberta**, e não **leitura livre**. Um artigo
+*free to read* sem licença aberta aparece como `is_oa: false`. Eu li isso como
+"fechado" e o autor corrigiu: o JACC marca o documento como **Free Access**.
+
+➜ **Checar a página do editor antes de declarar uma fonte inacessível.**
+
+⚠️ E há um segundo aprendizado, de outra natureza: **leitura livre não implica
+obtenção automática**. O `jacc.org` serve verificação anti-bot, e ⛔ contorná-la
+não é opção — nem quando o conteúdo é livre. A restrição é de **método de
+acesso**, não de direito. Quem destrava é uma pessoa num navegador comum.
