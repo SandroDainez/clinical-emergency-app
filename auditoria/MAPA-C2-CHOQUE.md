@@ -729,3 +729,39 @@ independentes apareceram, uma de cada rota:**
 
 ➜ **Regra:** tabela de dose se confere por **duas rotas independentes**, e toda
 discrepância se investiga. Nenhuma sozinha é confiável.
+
+
+---
+
+# ⚠️⚠️⚠️ As sete regras que ficam do F-35a
+
+Fixadas pelo autor em 2026-09-10, ao fechar o F-35a documentalmente. Valem para
+**todo o Passo 5**, e não só para o cardiogênico.
+
+| # | regra |
+|---|---|
+| **1** | **Faixa de dose ≠ esquema de titulação.** Ter faixa não é ter titulação |
+| **2** | ⛔ **Não inventar passo, intervalo ou alvo de titulação.** A fonte tem faixa e não tem esquema; preencher seria fabricar |
+| **3** | Noradrenalina é escolha inicial razoável para a **maioria dos hipotensos com choque cardiogênico** — ⛔ **não é default universal de todo choque** |
+| **4** | **Choque cardiogênico normotenso permanece possível** — e tem pior desfecho. ⛔ Não usar PA como gatilho de exclusão |
+| **5** | A **classificação inicial pode usar o fenótipo de cabeceira do Einstein** (F-33) quando for mais aplicável que o perfil por cateter |
+| **6** | **Hemodinâmica invasiva é refinamento, ⛔ nunca pré-requisito** para reconhecer o mecanismo |
+| **7** | **Aplicabilidade ao AVC fica separada de fidelidade documental**, sempre |
+
+⚠️ A regra **5** registra uma inversão que a leitura do ACC 2025 produziu: neste
+passo específico, o **pathway institucional é mais operacional** que a diretriz
+de sociedade, porque o ACC separa perfis por PCWP e pressão de átrio direito, e
+isso não existe na porta do AVC.
+
+⚠️ A regra **6** é a mesma decisão já tomada para o eco — oferta, nunca portão —
+agora estendida ao cateter, e com respaldo do próprio ACC 2025: *"the initial
+suspicion and diagnosis of CS does not require invasive hemodynamics"*.
+
+## Estado do Passo 5
+
+⛔ **Não implementar o Passo 5 inteiro.** O F-35a está documentalmente fechado,
+e **F-35b, c e d continuam abertos**. O portão do mecanismo continua valendo:
+sem mecanismo caracterizado, ⛔ nenhuma droga por padrão.
+
+Levantamento de candidatas para b, c e d em
+`auditoria/MAPA-F35BCD-CANDIDATAS.md` — ⛔ identificação apenas, nada transcrito.

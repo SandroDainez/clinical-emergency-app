@@ -101,10 +101,10 @@ depois caracteriza.
 
 | sub-slot | mecanismo | estado | candidata |
 |---|---|---|---|
-| **F-35a** | cardiogênico | ⛔ aberto · **fonte identificada**, PDF não obtido | **ACC 2025** (Sinha SS et al., JACC 85(16):1618–1641) como 1ª escolha; **AHA 2017** + **HFA-ESC 2020** como 2ª. Contrato completo em `f35a-cardiogenico-contrato.md` |
-| **F-35b** | hipovolêmico / hemorrágico | ⛔ aberto | nenhuma |
-| **F-35c** | obstrutivo | ⛔ aberto | nenhuma |
-| **F-35d** | distributivo não séptico | ⛔ aberto | nenhuma |
+| **F-35a** | cardiogênico | ✅ **transcrito** 2026-09-10 · aplicabilidade ao AVC pendente | **ACC 2025** · Sinha SS et al., JACC 85(16):1618–1641. Verbatim em `acc-2025-choque-cardiogenico.md`, mapa em `auditoria/MAPA-F35A-CARDIOGENICO.md` |
+| **F-35b** | hipovolêmico / hemorrágico | ⛔ aberto · **candidata identificada** | Rossaint R et al., trauma, Crit Care 2023 — ⚠️ **lacuna de população**: o sangramento do C2 é pós-trombólise |
+| **F-35c** | obstrutivo | ⛔ aberto · **candidatas identificadas** | ⚠️ é família: **TEP** (AHA/ACC multissocietária **2026**, com COR/LOE), tamponamento (ESC 2015), pneumotórax (BTS 2023) — ⚠️ os dois últimos **não são farmacológicos** |
+| **F-35d** | distributivo não séptico | ⛔ aberto · **candidatas identificadas** | **anafilaxia** (WAO 2020, já declarada no app; EAACI 2021) · crise adrenal (Endocrine Society 2016) · ⛔ neurogênico: recomendo **não abrir** |
 | **—** | distributivo séptico | ⛔ **fora de escopo** | o app já tem SSC 2026 no módulo de sepse, e ⛔ não se transporta para cá |
 
 ⚠️⚠️ **Bloom 2023 foi REBAIXADO em 2026-09-10.** É uma **revisão em revista**,
@@ -156,3 +156,25 @@ transporte, e **mesmo assim não traz dose**.
 - ⛔ não importar a dose que o módulo de sepse já tem;
 - ⛔ não deduzir dose a partir da calculadora de preparo em
   `protocols/drogas_vasoativas.json`, que responde aritmética, não indicação.
+
+
+---
+
+# ⚠️ Levantamento de candidatas para F-35b, c e d — 2026-09-10
+
+Quadro completo em `auditoria/MAPA-F35BCD-CANDIDATAS.md`.
+⛔ **Identificação apenas. Nenhum documento foi lido.**
+
+Três achados que mudam o desenho antes de qualquer transcrição:
+
+1. ⛔ **Nem todo mecanismo termina em droga.** Tamponamento e pneumotórax
+   hipertensivo se tratam com **procedimento**. Para eles o Passo 5 aponta para
+   a descompressão, e não para um vasoativo.
+2. ⚠️⚠️ **Dois mecanismos são causados pelo próprio módulo:** o hemorrágico,
+   pela trombólise ou anticoagulação, e o anafilático, pelo contraste iodado da
+   angioTC. Não são "choque em paciente com AVC" — são **complicação da conduta
+   que o app recomenda**. Merecem prioridade.
+3. ⚠️ **A melhor fonte do levantamento inteiro é a de TEP** (AHA/ACC
+   multissocietária 2026): é a mais recente e a única com **COR e LOE** — grau
+   formal que nem o ACC 2025 do F-35a tem — e inclui a **ACEP**, o que a torna
+   diretriz de porta.
