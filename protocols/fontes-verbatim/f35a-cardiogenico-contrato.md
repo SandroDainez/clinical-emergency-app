@@ -110,7 +110,43 @@ salvar o PDF.
 fonte e está oficialmente marcado como acesso livre. AHA 2017 e HFA-ESC 2020
 continuam como plano B, e ⛔ não foram lidos.
 
-## 1.6 · O que falta para destravar
+## 1.6 · ⚠️⚠️⚠️ ESTADO: AGUARDANDO O PDF · ordem do autor, 2026-09-10
+
+> **"Não tentar mais acesso automatizado nem contornar anti-bot. Aguardar o PDF
+> do ACC 2025 obtido manualmente no navegador comum."**
+
+⛔ **A busca automatizada está ENCERRADA para este slot.** Não repetir as rotas
+da §1.5. O registro delas existe para que ninguém as tente de novo, e não como
+lista de pendências.
+
+⚠️ Distinção aceita pelo autor e incorporada ao vocabulário do projeto:
+
+> **`Free Access` no editor ≠ Open Access com licença reutilizável.**
+> Leitura liberada não implica obtenção automática, nem reuso.
+
+### ✅ A LISTA DE EXECUÇÃO — quando o arquivo chegar
+
+Ordem do autor, na ordem dele:
+
+1. **confirmar que é o artigo publicado correto** — título, autores, JACC
+   2025;85(16):1618–1641, DOI 10.1016/j.jacc.2025.02.018, e a marca de
+   *Version of Record* se a cópia a trouxer;
+2. **transcrever verbatim**, com página;
+3. **mapear os 13 itens** da §2;
+4. **registrar população, escopo e ausência/presença de graduação formal**;
+5. ⛔ **não inventar GRADE / COR / LOE se o documento não declarar** — ver §2b;
+6. **separar fidelidade documental de aplicabilidade ao AVC**;
+7. **só depois** montar o mapa F-35a.
+
+⛔ Sem código e sem deploy em nenhuma das sete etapas.
+
+### Onde deixar o arquivo
+
+Qualquer lugar; `~/Downloads` é o caminho já usado e eu encontro sozinho.
+⚠️ Serve **a versão publicada**. ⛔ *SubmittedVersion*, *author manuscript* e
+página HTML **não servem**: a paginação difere e o contrato exige página.
+
+## 1.7 · O que falta para destravar
 
 Um PDF da **versão publicada**. ⛔ *SubmittedVersion* e *author manuscript*
 **não servem** para este projeto: a paginação difere da publicada e o texto
