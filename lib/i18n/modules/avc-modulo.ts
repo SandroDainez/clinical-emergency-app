@@ -198,7 +198,13 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Choque no adulto — pathway operacional por mecanismo":
     "Choque en el adulto — vía operativa por mecanismo",
   "Escolha do fluido de ressuscitação em adulto crítico": "Elección del fluido de reanimación en adulto crítico",
-  "Vasopressor — dose inicial e titulação": "Vasopresor — dosis inicial y titulación",
+  "Choque cardiogênico — agentes vasoativos e faixas de dose":
+    "Choque cardiogénico — agentes vasoactivos y rangos de dosis",
+  "Choque hipovolêmico e hemorrágico — vasoativo":
+    "Choque hipovolémico y hemorrágico — vasoactivo",
+  "Choque obstrutivo — vasoativo": "Choque obstructivo — vasoactivo",
+  "Choque distributivo não séptico — vasoativo":
+    "Choque distributivo no séptico — vasoactivo",
 
   // ── UX clínica da Superfície A (correções visuais de 2026-08-28) ────────
   //

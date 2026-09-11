@@ -381,7 +381,8 @@ volume**, e **sem** prescrever tipo nem volume total.
 | **F-32** | choque circulatório e monitorização hemodinâmica (ESICM 2025) | transcrito · fidelidade conferida · **aplicabilidade ao AVC pendente** |
 | **F-33** | choque no adulto, pathway operacional por mecanismo (Einstein CPTW386.1) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
 | **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia **Parte 1, 2024** — Arabi et al., ICM 50(6):813–831) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
-| **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · é uma **família por mecanismo** (F-35a…d), não uma fonte única |
+| **F-35a** | choque cardiogênico — agentes e faixas de dose (ACC 2025) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
+| **F-35b · c · d** | hipovolêmico/hemorrágico · obstrutivo · distributivo não séptico | ⛔ **abertos**, sem candidata |
 
 O que cada slot aberto deve responder, e os cuidados de transcrição de cada
 um, estão em `protocols/fontes-verbatim/choque-fontes-abertas.md`.
@@ -651,3 +652,80 @@ O **Unpaywall** registra **licença aberta**, e não **leitura livre**. Um artig
 obtenção automática**. O `jacc.org` serve verificação anti-bot, e ⛔ contorná-la
 não é opção — nem quando o conteúdo é livre. A restrição é de **método de
 acesso**, não de direito. Quem destrava é uma pessoa num navegador comum.
+
+
+---
+
+# Passo 5 · o que o F-35a entregou, e o que continua faltando
+
+`auditoria/MAPA-F35A-CARDIOGENICO.md` responde os treze itens do contrato.
+
+## ✅ A novidade real: faixas de dose com procedência
+
+O F-32 não tinha dose. O F-33 não tinha dose. **O ACC 2025 tem faixas** — as
+primeiras deste ramo inteiro. Tabela 2 do documento, 11 agentes em 6 classes.
+
+⛔ **Mas não tem esquema de titulação.** Há faixa, e não há passo, intervalo
+nem alvo. Quem transformar faixa em titulação está inventando.
+
+## ⚠️⚠️ Três etiquetas que acompanham qualquer uso dessas faixas
+
+1. **consenso de especialistas, sem graduação formal** — o ACC 2025 ⛔ não usa
+   GRADE, ⛔ não emite COR e ⛔ não emite LOE, e diz isso de si mesmo;
+2. o documento declara **não haver consenso claro** sobre o agente de primeira
+   linha, e a Cochrane que ele cita achou **evidência insuficiente**;
+3. noradrenalina é *"a reasonable first choice"* **para quem está hipotenso** —
+   ⛔ não "a droga do choque cardiogênico".
+
+## ⚠️⚠️⚠️ A população, e ela é o inverso da nossa
+
+> *"The principal focus of this document applies to patients **hospitalized due
+> to CS** secondary to AMI (AMI-CS) or HF (HF-CS)."* — Assumption 2, p. 1620
+
+O paciente do C2 é hospitalizado **por AVC** e **desenvolve** choque. ⛔ O
+documento não menciona AVC como população; *stroke* aparece só como **desfecho**.
+
+➜ Aplicar ao AVC é **analogia de mecanismo**, decisão do autor, e ⛔ nunca
+leitura direta da fonte.
+
+## ⛔ O que não se transporta, conferido contra o documento
+
+| proibição | o que ela barra |
+|---|---|
+| meta do cardiogênico para todo choque | **MAP >60–65 mmHg** (p. 1635) |
+| estratégia de IAM para não isquêmico | **Figura 7** inteira |
+| UTI tardia para a porta do AVC | **Tabela 3**, que diz "in the Intensive Care Unit" no título |
+| — | **níveis 1/2/3 de centro**: o próprio documento diz que não há consenso |
+
+## ✅ Onde a fonte CONVERGE com o que o C2 já decidiu
+
+- **hipoperfusão define choque, irrespective of blood pressure** — terceira
+  fonte independente dizendo o mesmo, com F-32 rec. 2 e F-33;
+- **o eco não é pré-requisito** para suspeitar nem diagnosticar — o C2 já tinha
+  decidido que eco é oferta, nunca portão;
+- **CS normotenso existe** e tem pior desfecho — reforça a proibição de usar
+  limiar de PA como gatilho.
+
+## ⚠️ Onde o F-33 é mais operacional que a fonte de sociedade
+
+O ACC separa os perfis congestivos por **PCWP e pressão de átrio direito** —
+hemodinâmica invasiva, que não existe na porta do AVC. O **F-33** tem os quatro
+perfis **de cabeceira** que operacionalizam o mesmo sem cateter.
+
+➜ Neste passo específico, **pathway institucional e diretriz de sociedade se
+complementam**, e o pathway é o mais aplicável.
+
+## ⚠️ A conferência de unidades — e a regra que ficou
+
+O autor pediu conferência visual antes de transcrever. **Duas falhas
+independentes apareceram, uma de cada rota:**
+
+| rota | acertou | errou |
+|---|---|---|
+| camada de texto | o dígito (dobutamina 2–10) | a unidade — **μ** vira **m** em toda a tabela |
+| minha leitura visual da página inteira | a unidade | o dígito (li 2–20) |
+
+⛔ Aceitar a extração teria multiplicado a tabela por **mil**.
+
+➜ **Regra:** tabela de dose se confere por **duas rotas independentes**, e toda
+discrepância se investiga. Nenhuma sozinha é confiável.

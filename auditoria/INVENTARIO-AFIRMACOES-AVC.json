@@ -258,6 +258,24 @@
     "estado": "sem âncora numérica — conferir por leitura"
   },
   {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/acc-2025-choque-cardiogenico.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "Choque cardiogênico — agentes vasoativos e faixas de dose",
+    "tipos": [
+      "dose"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
     "arquivo": "conteudo/hemorragia-intracerebral.ts",
     "frase": ";\n\n                                                       \nexport type NivelLOE = ",
     "tipos": [

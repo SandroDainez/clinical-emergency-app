@@ -63,6 +63,7 @@ const ESICM_CHOQUE = "protocols/fontes-verbatim/esicm-2025-choque.md";
 const CHOQUE_ABERTAS = "protocols/fontes-verbatim/choque-fontes-abertas.md";
 const CPTW386 = "protocols/fontes-verbatim/einstein-cptw386-choque.md";
 const ESICM_FLUIDOS = "protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md";
+const ACC_CARDIOGENICO = "protocols/fontes-verbatim/acc-2025-choque-cardiogenico.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -186,13 +187,24 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * 11 são de "adult critically ill patients in general"; as outras oito são
    * de população nomeada, e as duas de TCE INVERTEM a regra geral — R-TCE.
    *
-   * ⚠️ F-35 segue ABERTO, e é uma FAMÍLIA por mecanismo (F-35a…d), não um
-   * slot único. Enquanto assim, nem dose nem titulação entram em tela.
+   * ⚠️ F-35 é uma FAMÍLIA por mecanismo, e não um slot único. F-35a foi
+   * TRANSCRITO em 2026-09-10 (ACC 2025) e traz FAIXAS DE DOSE — as primeiras
+   * com procedência neste ramo. ⛔ NÃO traz esquema de titulação.
+   *
+   * ⚠️⚠️ O ACC 2025 ⛔ NÃO usa GRADE, ⛔ NÃO emite COR e ⛔ NÃO emite LOE: é
+   * consenso de especialistas. E a população dele é AMI-CS/HF-CS HOSPITALIZADO
+   * POR CAUSA DO CHOQUE — o oposto do paciente do C2, hospitalizado por AVC.
+   *
+   * ⛔ F-35b, c e d seguem ABERTOS, sem candidata. E o portão do mecanismo
+   * vale para todos: sem mecanismo caracterizado, nenhuma droga por padrão.
    */
   { id: "F-32", assunto: "Choque circulatório e monitorização hemodinâmica", estado: "transcrito", arquivo: ESICM_CHOQUE },
   { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
   { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "transcrito", arquivo: ESICM_FLUIDOS },
-  { id: "F-35", assunto: "Vasopressor — dose inicial e titulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35a", assunto: "Choque cardiogênico — agentes vasoativos e faixas de dose", estado: "transcrito", arquivo: ACC_CARDIOGENICO },
+  { id: "F-35b", assunto: "Choque hipovolêmico e hemorrágico — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35c", assunto: "Choque obstrutivo — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35d", assunto: "Choque distributivo não séptico — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {
