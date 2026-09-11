@@ -95,20 +95,27 @@ não com "o que eu faço?".
 | | |
 |---|---|
 | **origem** | F-35c |
-| **estado** | **1 · fonte clínica incompleta** — ✅ **confirmado com busca registrada** |
-| **busca feita** | 2026-09-11, na camada de texto do PDF completo do F-35c: *extracranial*, *systemic bleeding*, *gastrointestinal*, *retroperitoneal*, *puncture site*, *orolingual*, *angioedema*, *major bleeding* — **0 ocorrências cada** |
-| ⚠️ **o que a busca NÃO prova** | ela foi **dentro desta fonte**, e ⛔ **não na literatura**. ⛔ Continua proibido concluir ausência |
-| **onde procurar** | **F-20**, `bulas-br-tromboliticos.md`, que o app já tem · fontes de reversão de fibrinolítico · hemostasia em sangramento maior |
+| **estado** | **3 · evidência não localizada** — ⚠️ **para MANEJO**, e ⛔ não para o assunto |
+| **busca 1** | dentro do F-35c, 2026-09-11: 8 termos de sangramento extracraniano, **0 ocorrências cada** |
+| **busca 2** | **PubMed**, E-utilities, 2026-09-11, **4 estratégias** — ver `auditoria/BUSCAS-LF04-LF05-E-ANAFILAXIA.md` |
+| **o que existe** | ✅ **Romoli M et al.**, *Fibrinogen Depletion Coagulopathy Predicts Major Bleeding After Thrombolysis*, Stroke 2022;53(12):3671–3678 · ✅ **Rose D et al.**, Stroke 2023;54(5):1192–1204, com desfecho *"other extracranial hemorrhage"* — **os dois abertos** |
+| ⛔ **o que NÃO existe na busca** | documento de **manejo**. Os dois são de **risco, predição e incidência** |
+| ⚠️ **redação obrigatória** | *"busca não localizou documento de manejo"* — ⛔ **nunca** *"não existe"* |
+| ⚠️ **pista de mecanismo** | os dois apontam para **depleção de fibrinogênio** — o **mesmo eixo** que o F-35c usa no intracraniano. ⛔ Não autoriza transporte; autoriza suspeitar de base comum |
 
 ## LF-05 · Tenecteplase na complicação hemorrágica
 
 | | |
 |---|---|
 | **origem** | F-35c |
-| **estado** | ⛔ **busca própria pendente** — ⚠️ **continua sem classificação** |
-| **o que a leitura do F-35c mediu** | o documento é de **alteplase**, e a tenecteplase ⛔ não aparece como agente de conduta |
-| ⚠️ **o que isso NÃO prova** | que o documento seja de alteplase ⛔ **não prova** que nada exista para tenecteplase. ⛔ A busca própria ⛔ **não foi feita** |
-| **por que é plausível haver fonte** | uso consolidado em IAM há décadas, com literatura de complicação hemorrágica própria; e o app já tem **F-20** |
+| **estado** | **3 · evidência não localizada** — ⚠️ **para MANEJO** |
+| **busca feita** | **PubMed**, E-utilities, 2026-09-11, **3 estratégias** — 19, 23 e 11 resultados |
+| **o que existe** | **Rose D, … Yaghi S, … Mac Grory B.** *Complications of Intravenous Tenecteplase Versus Alteplase*, Stroke 2023;54(5):1192–1204 · ✅ aberto · ⚠️ **Yaghi é coautor**, o mesmo do F-35c |
+| **o que ela dá** | RR de sICH da tenecteplase × alteplase = **0,89** (IC 95% 0,65–1,23; I²=0%), 16 estudos comparativos |
+| ⛔ **o que ela NÃO dá** | **como tratar** |
+| ⚠️⚠️ **a pergunta mudou** | ⛔ a busca não distingue **ausência de evidência** de **ausência de diferença**. Se os dois agentes não diferem em sICH, pode ⛔ não haver conduta própria a procurar |
+| **caminho para fechar** | **ler o Rose 2023** e decidir como **estado 4 · decisão operacional derivada**, declarada como tal |
+| ⚠️ argumento fisiopatológico, que ⛔ não fecha sozinho | a reversão do F-35c é guiada por **fibrinogênio**, e ⛔ não pelo fármaco. Se a coagulopatia medida for a mesma, a conduta **poderia** ser a mesma — e *poderia* é o limite do que a busca autoriza |
 
 ---
 

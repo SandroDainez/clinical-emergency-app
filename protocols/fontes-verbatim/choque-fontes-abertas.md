@@ -208,3 +208,58 @@ Três achados que mudam o desenho antes de qualquer transcrição:
    multissocietária 2026): é a mais recente e a única com **COR e LOE** — grau
    formal que nem o ACC 2025 do F-35a tem — e inclui a **ACEP**, o que a torna
    diretriz de porta.
+
+
+---
+
+# ⚠️⚠️ F-36 · Anafilaxia geral — PROPOSTA DE SLOT NOVO, 2026-09-11
+
+## Por que ele precisa existir
+
+Ao conferir a fonte de anafilaxia do app, a pedido do autor, apareceu que ela
+⛔ **não está à altura do contrato**:
+
+| medida | resultado |
+|---|---|
+| verbatim de anafilaxia em `protocols/fontes-verbatim/` | ⛔ **não existe** |
+| o que o metadado declara | *"Anafilaxia — **síntese** (WAO / EAACI / prática de emergência)"*, com `ano: null`, URL genérica, ⛔ **sem DOI e sem página** |
+| módulo de anafilaxia nesta branch | ⛔ **removido** em `bdf02c8`, como o de choque — sobrou só a tradução ES |
+| fonte real do **broncoespasmo** | ⚠️ **StatPearls**, e ⛔ não a WAO |
+
+⚠️⚠️ ⛔ **Eu havia afirmado que o broncodilatador "provavelmente vive na WAO
+2020" do app.** Estava errado nas duas metades: o módulo não existe aqui, e o
+conteúdo que existia vinha de StatPearls.
+
+## Candidatas, já verificadas em 2026-09-10
+
+| documento | acesso |
+|---|---|
+| **Cardona V et al.** *World Allergy Organization Anaphylaxis Guidance 2020.* World Allergy Organ J. 2020;13:100472 | ✅ aberto, versão publicada |
+| **Muraro A et al.** *EAACI guidelines: Anaphylaxis (2021 update).* Allergy. 2022;77:357–377 | ✅ aberto · ⚠️ mais recente |
+
+## O que este slot deve responder — e é o que o F-35b declara fora do escopo
+
+1. tratamento das reações **leve e moderada**;
+2. **broncoespasmo** — beta-2, ipratrópio, magnésio;
+3. suporte respiratório complementar;
+4. anafilaxia refratária.
+
+⚠️ **Nenhum conflito detectado** entre o conteúdo que o app tinha e o consenso
+de contraste, nas duas frentes que se tocam: os dois põem a **adrenalina em
+primeira linha**, e os dois dizem que inalatório e anti-H1 ⛔ **não a
+substituem**.
+
+⛔ **Não remendar o F-35b** com conteúdo de procedência fraca. ➜ Abrir slot
+próprio, com fonte de sociedade e verbatim.
+
+## ⚠️ O que preservar do conteúdo removido
+
+O arquivo `bdf02c8^:lib/broncoespasmo-anafilaxia.ts` é **exemplar em disciplina
+de procedência**, e separa três naturezas que ⛔ não podem se misturar ao
+reconstruir:
+
+| afirmação | natureza |
+|---|---|
+| beta-2 **e ipratrópio em primeira linha** | ✅ citação da fonte |
+| **magnésio 2 g em 20 min** no refratário | ⚠️ indicação da anafilaxia, **dose emprestada da asma grave**, com aval da fonte |
+| *"nenhum substitui ou atrasa a adrenalina"* | ⚠️⚠️ **inferência clínica**, ⛔ não citação — e o arquivo declara isso |

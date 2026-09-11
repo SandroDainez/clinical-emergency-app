@@ -5536,3 +5536,37 @@ busca própria pendente**.
 **Regra de manejo:** lacuna de fluxo aberta ⛔ não bloqueia a transcrição da
 fonte, ⚠️ mas bloqueia a **tela** daquele ponto do fluxo — pelo mesmo motivo que
 um slot aberto bloqueia: o app ⛔ não afirma o que não sabe.
+
+
+---
+
+## ⚠️⚠️⚠️ GATE DE TRANSCRIÇÃO — obrigatório a partir de 2026-09-11
+
+**Ordem do autor:** *"toda transcrição passa por gate: contrato item a item →
+cobertura encontrada → lacuna explícita → só então «fonte transcrita»."*
+
+| etapa | exige |
+|---|---|
+| **1 · contrato item a item** | a lista de itens **escrita antes** de abrir o PDF |
+| **2 · cobertura encontrada** | conferir a transcrição **contra a lista**, item por item |
+| **3 · lacuna explícita** | cada item não coberto vira lacuna **nomeada**, com o tipo certo — fonte, tratamento ou fluxo |
+| **4 · «fonte transcrita»** | só depois dos três |
+
+⚠️ **Nasceu de um erro real:** a conferência da lista do autor encontrou que o
+**F-35c estava incompleto** — faltava a seção de monitorização inteira, com
+local de cuidado, esquema e meta pressórica. ⛔ Eu tinha declarado a fonte
+transcrita **antes** de conferir contra a lista.
+
+⚠️⚠️ **E a frase que o gate protege**, do autor:
+
+> **«fonte transcrita» ⛔ não significa «problema clínico resolvido».**
+
+➜ Por isso o registro passa a distinguir **dois estados por slot**:
+
+| estado | significa |
+|---|---|
+| **transcrição documental fechada** | a fonte foi lida, conferida e o contrato cumprido |
+| **slot clínico completo** | ⛔ **só** quando as lacunas do slot estiverem **classificadas** |
+
+**Hoje:** F-35b e F-35c têm a **transcrição fechada** e o **slot clínico ⛔ não
+completo** — LF-01 a LF-05 abertas.
