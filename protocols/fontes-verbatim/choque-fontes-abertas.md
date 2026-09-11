@@ -91,36 +91,66 @@ como *"população não declarada"*, nunca como *"vale para todos"*.
 
 ---
 
-## F-35 · Dose inicial e titulação de vasopressor — ⚠️ **UMA FAMÍLIA, NÃO UMA FONTE**
+## F-35 · A família por mecanismo — ⚠️ **reordenada em 2026-09-10**
 
-**Decisão do autor, 2026-09-10:** F-35 não é um slot único. É uma **família de
-slots por mecanismo**, porque o C2 entra em **choque indiferenciado** e só
-depois caracteriza.
+⚠️⚠️⚠️ **O contrato do Passo 5 mudou.** ⛔ Não é *"vasopressor por mecanismo"*.
+É:
 
-`reconhecer choque → caracterizar mecanismo provável → tratamento específico`
+```
+mecanismo → intervenção causal prioritária → suporte hemodinâmico adjuvante,
+            se necessário → reavaliação
+```
 
-| sub-slot | mecanismo | estado | candidata |
+⚠️ Em **tamponamento** e **pneumotórax hipertensivo** a intervenção é
+**procedimento**, e ⛔ não droga. Em **anafilaxia**, a adrenalina é a
+**intervenção causal**, e ⛔ não o suporte.
+
+| # | sub-slot | mecanismo | estado · candidata |
 |---|---|---|---|
-| **F-35a** | cardiogênico | ✅ **transcrito** 2026-09-10 · aplicabilidade ao AVC pendente | **ACC 2025** · Sinha SS et al., JACC 85(16):1618–1641. Verbatim em `acc-2025-choque-cardiogenico.md`, mapa em `auditoria/MAPA-F35A-CARDIOGENICO.md` |
-| **F-35b** | hipovolêmico / hemorrágico | ⛔ aberto · **candidata identificada** | Rossaint R et al., trauma, Crit Care 2023 — ⚠️ **lacuna de população**: o sangramento do C2 é pós-trombólise |
-| **F-35c** | obstrutivo | ⛔ aberto · **candidatas identificadas** | ⚠️ é família: **TEP** (AHA/ACC multissocietária **2026**, com COR/LOE), tamponamento (ESC 2015), pneumotórax (BTS 2023) — ⚠️ os dois últimos **não são farmacológicos** |
-| **F-35d** | distributivo não séptico | ⛔ aberto · **candidatas identificadas** | **anafilaxia** (WAO 2020, já declarada no app; EAACI 2021) · crise adrenal (Endocrine Society 2016) · ⛔ neurogênico: recomendo **não abrir** |
-| **—** | distributivo séptico | ⛔ **fora de escopo** | o app já tem SSC 2026 no módulo de sepse, e ⛔ não se transporta para cá |
+| — | **F-35a** | cardiogênico | ✅ **transcrito** · ACC 2025 |
+| **1** | **F-35b** | **anafilaxia por contraste** | ⛔ aberto · **ACR + AAAAI**, *Radiology* 2025;315(2):e240100 |
+| **2** | **F-35c** | **hemorragia pós-trombólise / anticoagulação** | ⛔ aberto · **Yaghi S et al., AHA/ASA**, *Stroke* 2017;48(12):e343–e361 ✅ aberto |
+| **3** | **F-35d** | TEP com instabilidade | ⛔ aberto · AHA/ACC multissocietária **2026**, *Circulation* 153(12):e977–e1051 |
+| **4** | **F-35e** | tamponamento | ⛔ aberto · ESC 2015 (Adler) — ⚠️ conduta é **drenagem** |
+| **5** | **F-35f** | pneumotórax hipertensivo | ⛔ aberto · BTS 2023 — ⚠️ conduta é **descompressão** |
+| **6** | **F-35g** | hipovolemia **não** hemorrágica | ⛔ aberto · sem candidata firme |
+| **7** | **F-35h** | crise adrenal | ⛔ aberto · Endocrine Society 2016 |
+| — | neurogênico | ⛔ **sem slot** | exige trauma raquimedular, que não é via do AVC |
+| — | distributivo **séptico** | ⛔ **fora de escopo** | o app já tem SSC 2026 no módulo de sepse, e ⛔ não se transporta para cá |
 
-⚠️⚠️ **Bloom 2023 foi REBAIXADO em 2026-09-10.** É uma **revisão em revista**,
-e não documento de sociedade com processo de consenso declarado. ⛔ Não serve
-como procedência de um slot que vai sustentar escolha de droga. Pode voltar
-como leitura de apoio.
+### ⚠️⚠️ Os dois primeiros são complicações que o PRÓPRIO MÓDULO provoca
 
-⚠️ E vale a razão original: nenhuma fonte de um mecanismo vira o F-35 inteiro.
-Adotar a cardiogênica como única repetiria, ao contrário, o erro que a
-proibição do séptico evita — um mecanismo governando todos.
+| slot | provocado por |
+|---|---|
+| **F-35b** | **contraste iodado** da angioTC, que o app manda pedir |
+| **F-35c** | **alteplase ou tenecteplase**, que o app manda administrar |
 
-⚠️⚠️⚠️ **O PORTÃO DA FAMÍLIA**, decidido pelo autor em 2026-09-10: cada
-sub-slot só alimenta o Passo 5 quando **aquele mecanismo estiver razoavelmente
-caracterizado**. Com mecanismo incerto, o C2 permanece no ramo de choque **não
-classificado** e ⛔ **não escolhe droga «por padrão»**. Um default viraria
-conduta, e conduta sem mecanismo é chute com aparência de protocolo.
+⚠️ Um app que recomenda uma intervenção e ⛔ **não sabe tratar a complicação
+dela** tem um buraco que nenhuma outra fonte fecha. Por isso vêm antes.
+
+➜ Levantamento completo dos dois em
+`auditoria/MAPA-F35BC-CONTRASTE-E-TROMBOLISE.md`.
+
+### ⚠️⚠️⚠️ AS TRÊS REGRAS DO SANGRAMENTO
+
+1. ⛔ **não usar guideline de trauma para hemorragia pós-trombólise**;
+2. **procurar fonte específica** de complicação hemorrágica da trombólise no AVC
+   — ✅ encontrada: **Yaghi 2017**;
+3. ⛔ **não tratar "hemorrágico" como entidade única** se a causa e o tratamento
+   forem diferentes.
+
+⚠️ A regra 3 quebrou o slot antigo. *"Choque hemorrágico"* juntava numa caixa só
+o politraumatizado, o sangramento digestivo e o paciente que recebeu alteplase —
+três causas, três tratamentos, e um deles **causado pelo próprio app**.
+➜ **F-35c** e **F-35g** são slots separados, e a diretriz de trauma ⛔ não entra
+em nenhum dos dois sem decisão clínica.
+
+### ⚠️ Duas ressalvas já registradas sobre o F-35c
+
+- **é de 2017** — declaração de desatualização obrigatória;
+- ⚠️⚠️ **é de ALTEPLASE**, e o app também usa **tenecteplase**. ⛔ Não presumir
+  equivalência entre trombolíticos: é a mesma classe de erro que a **R-TCE**
+  barra. Declarar o agente em cada afirmação transcrita.
 
 ### Por que a família, e não uma fonte só
 

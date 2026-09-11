@@ -200,11 +200,17 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escolha do fluido de ressuscitação em adulto crítico": "Elección del fluido de reanimación en adulto crítico",
   "Choque cardiogênico — agentes vasoativos e faixas de dose":
     "Choque cardiogénico — agentes vasoactivos y rangos de dosis",
-  "Choque hipovolêmico e hemorrágico — vasoativo":
-    "Choque hipovolémico y hemorrágico — vasoactivo",
-  "Choque obstrutivo — vasoativo": "Choque obstructivo — vasoactivo",
-  "Choque distributivo não séptico — vasoativo":
-    "Choque distributivo no séptico — vasoactivo",
+  "Anafilaxia por contraste iodado — reconhecer e tratar":
+    "Anafilaxia por contraste yodado — reconocer y tratar",
+  "Hemorragia após trombólise ou anticoagulação":
+    "Hemorragia tras trombólisis o anticoagulación",
+  "Tromboembolismo pulmonar com instabilidade":
+    "Tromboembolismo pulmonar con inestabilidad",
+  "Tamponamento cardíaco — drenagem": "Taponamiento cardíaco — drenaje",
+  "Pneumotórax hipertensivo — descompressão":
+    "Neumotórax a tensión — descompresión",
+  "Hipovolemia não hemorrágica": "Hipovolemia no hemorrágica",
+  "Crise adrenal": "Crisis adrenal",
 
   // ── UX clínica da Superfície A (correções visuais de 2026-08-28) ────────
   //

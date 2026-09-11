@@ -765,3 +765,94 @@ sem mecanismo caracterizado, ⛔ nenhuma droga por padrão.
 
 Levantamento de candidatas para b, c e d em
 `auditoria/MAPA-F35BCD-CANDIDATAS.md` — ⛔ identificação apenas, nada transcrito.
+
+
+---
+
+# ⚠️⚠️⚠️ O CONTRATO DO PASSO 5 — REESCRITO em 2026-09-10
+
+## O que ele deixou de ser
+
+⛔ **"Vasopressor por mecanismo"** era o desenho errado. Ele fazia o app
+perguntar *"qual droga eu dou?"*, e essa não é a pergunta da estabilização.
+
+## O que ele é
+
+```
+mecanismo → intervenção causal prioritária → suporte hemodinâmico adjuvante,
+            se necessário → reavaliação
+```
+
+**Palavras do autor, 2026-09-10:** *"o app não pergunta «qual droga eu dou?», e
+sim «o que está matando esse paciente agora e qual é a intervenção
+prioritária?»"*
+
+⚠️ A mudança é **estrutural**, e não de redação. O suporte hemodinâmico deixa
+de ser o destino do Passo 5 e passa a ser **adjuvante condicional** — vem
+*depois* da intervenção causal, e **só se necessário**.
+
+## A tabela do contrato
+
+| mecanismo | **intervenção causal prioritária** | suporte adjuvante |
+|---|---|---|
+| **cardiogênico** | tratar a causa (reperfusão no IAM, arritmia, valvopatia) | vasoativo / inotrópico **±** suporte mecânico |
+| **TEP** | **reperfusão / terapia específica** | ± suporte |
+| **tamponamento** | **drenagem / pericardiocentese** | — |
+| **pneumotórax hipertensivo** | **descompressão** | — |
+| **anafilaxia** | **adrenalina** | + suporte |
+| **hipovolêmico / hemorrágico** | **controle da causa** | + reposição apropriada |
+
+⚠️⚠️ **Em dois mecanismos a coluna de suporte é vazia**, e isso é informação,
+não omissão: tamponamento e pneumotórax hipertensivo se resolvem com
+**procedimento**. Um vasoativo ali é, na melhor hipótese, ponte de minutos — e,
+na pior, o motivo de alguém não drenar.
+
+⚠️ Na **anafilaxia**, a adrenalina **é a intervenção causal**, e ⛔ não o
+suporte adjuvante. Tratá-la como "o vasopressor da anafilaxia" inverteria a
+natureza da conduta.
+
+## O que o contrato novo preserva
+
+Tudo que já estava decidido continua valendo:
+
+- **o portão do mecanismo** — sem mecanismo caracterizado, ⛔ nenhuma
+  intervenção por padrão;
+- **as sete regras do F-35a** — faixa não é titulação, e as outras seis;
+- **a regra 7 das transições** — o módulo de vasoativas é executor de preparo e
+  velocidade, ⛔ nunca decisor da droga;
+- **reavaliação por evento**, sem intervalo inventado.
+
+---
+
+# A FAMÍLIA F-35 · reordenada por prioridade clínica
+
+Ordem do autor, 2026-09-10. ⚠️ A ordem **não** é alfabética nem por frequência:
+é por **plausibilidade no fluxo do AVC**, e os dois primeiros são complicações
+que **o próprio módulo provoca**.
+
+| # | slot | mecanismo | estado |
+|---|---|---|---|
+| — | **F-35a** | cardiogênico | ✅ transcrito |
+| **1** | **F-35b** | **anafilaxia por contraste** | ⛔ aberto · candidata identificada |
+| **2** | **F-35c** | **hemorragia pós-trombólise / anticoagulação** | ⛔ aberto · candidata identificada |
+| **3** | **F-35d** | TEP | ⛔ aberto · candidata identificada |
+| **4** | **F-35e** | tamponamento | ⛔ aberto |
+| **5** | **F-35f** | pneumotórax hipertensivo | ⛔ aberto |
+| **6** | **F-35g** | hipovolêmico **não** hemorrágico | ⛔ aberto |
+| **7** | **F-35h** | crise adrenal | ⛔ aberto |
+| — | neurogênico | ⛔ **não abrir** | exige trauma raquimedular, que não é via do AVC |
+
+## ⚠️⚠️⚠️ As três regras do sangramento
+
+Ordem do autor, e elas desfazem um agrupamento que eu tinha feito:
+
+1. ⛔ **não usar guideline de trauma para hemorragia pós-trombólise**;
+2. **procurar fonte específica** de complicação hemorrágica da trombólise no AVC;
+3. ⛔ **não tratar "hemorrágico" como entidade única** se a causa e o tratamento
+   forem diferentes.
+
+⚠️ A regra 3 é a que quebra o slot antigo. *"Choque hemorrágico"* juntava, numa
+caixa só, o politraumatizado, o sangramento digestivo e o paciente que recebeu
+alteplase — três causas, três tratamentos, e um deles **causado pelo próprio
+app**. ➜ Por isso **F-35c** (pós-trombólise) e **F-35g** (hipovolêmico não
+hemorrágico) são slots **separados**.

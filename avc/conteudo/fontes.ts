@@ -195,16 +195,29 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * consenso de especialistas. E a população dele é AMI-CS/HF-CS HOSPITALIZADO
    * POR CAUSA DO CHOQUE — o oposto do paciente do C2, hospitalizado por AVC.
    *
-   * ⛔ F-35b, c e d seguem ABERTOS, sem candidata. E o portão do mecanismo
-   * vale para todos: sem mecanismo caracterizado, nenhuma droga por padrão.
+   * ⚠️⚠️ CONTRATO DO PASSO 5, reescrito em 2026-09-10: ⛔ NÃO é "vasopressor
+   * por mecanismo". É `mecanismo → intervenção causal prioritária → suporte
+   * hemodinâmico adjuvante, se necessário → reavaliação`. Em tamponamento e
+   * pneumotórax hipertensivo a intervenção é PROCEDIMENTO, e ⛔ não droga.
+   *
+   * ⛔ F-35b a F-35h seguem ABERTOS, na ordem de prioridade do autor — os dois
+   * primeiros são complicações que o PRÓPRIO MÓDULO provoca: anafilaxia pelo
+   * contraste da angioTC, e hemorragia pelo trombolítico.
+   *
+   * ⛔ Choque neurogênico ⛔ NÃO tem slot: exige trauma raquimedular, que não é
+   * via do AVC. E o portão do mecanismo vale para todos.
    */
   { id: "F-32", assunto: "Choque circulatório e monitorização hemodinâmica", estado: "transcrito", arquivo: ESICM_CHOQUE },
   { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
   { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "transcrito", arquivo: ESICM_FLUIDOS },
   { id: "F-35a", assunto: "Choque cardiogênico — agentes vasoativos e faixas de dose", estado: "transcrito", arquivo: ACC_CARDIOGENICO },
-  { id: "F-35b", assunto: "Choque hipovolêmico e hemorrágico — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
-  { id: "F-35c", assunto: "Choque obstrutivo — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
-  { id: "F-35d", assunto: "Choque distributivo não séptico — vasoativo", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35b", assunto: "Anafilaxia por contraste iodado — reconhecer e tratar", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35d", assunto: "Tromboembolismo pulmonar com instabilidade", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35e", assunto: "Tamponamento cardíaco — drenagem", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35f", assunto: "Pneumotórax hipertensivo — descompressão", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35g", assunto: "Hipovolemia não hemorrágica", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35h", assunto: "Crise adrenal", estado: "aberto", arquivo: CHOQUE_ABERTAS },
 ] as const;
 
 export function slot(id: string): SlotDeFonte | undefined {
