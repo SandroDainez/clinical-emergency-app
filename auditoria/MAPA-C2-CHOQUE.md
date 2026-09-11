@@ -580,3 +580,56 @@ autorizada pela própria diretriz, e não por adaptação nossa.
 
 No TCE, as recs. 4 e 9 **invertem** as recs. 1 e 7. Quem tratar AVC como
 equivalente a TCE troca o fluido preferido nas duas comparações.
+
+
+---
+
+# Passo 5 · o portão do mecanismo — decidido em 2026-09-10
+
+Regra do autor, e ela é de **arquitetura**:
+
+> Cada sub-slot da família F-35 só alimenta o Passo 5 quando **aquele
+> mecanismo estiver razoavelmente caracterizado**. Se o mecanismo estiver
+> incerto, o C2 permanece no ramo de **choque não classificado** e ⛔ **não
+> escolhe droga «por padrão»**.
+
+| estado do Passo 2 | o que o Passo 5 faz |
+|---|---|
+| mecanismo caracterizado | abre o tratamento daquele mecanismo |
+| mecanismo incerto | ⛔ nenhuma droga · reconhece a ameaça, segue caracterizando, e diz o que falta para decidir |
+
+⚠️ Isto fecha o modo de falha mais provável de uma tela de choque: oferecer
+noradrenalina como default porque é o vasopressor mais comum. O default viraria
+conduta, e conduta sem mecanismo é chute com aparência de protocolo.
+
+⚠️ E é o **estado intermediário** aplicado ao choque: *"provavelmente
+cardiogênico"* ⛔ não é *"cardiogênico"*.
+
+## F-35a · fonte identificada, PDF não obtido
+
+Contrato completo em `protocols/fontes-verbatim/f35a-cardiogenico-contrato.md`,
+com os treze itens de escopo a mapear e as proibições de transporte.
+
+| candidata | natureza | acesso |
+|---|---|---|
+| **ACC 2025** · Sinha SS et al., JACC 85(16):1618–1641 | *expert consensus statement* (ACC) | ⛔ fechado |
+| **AHA 2017** · van Diepen S et al., Circulation 136:e232–e268 | *scientific statement* | aberto no editor, download bloqueado |
+| **HFA-ESC 2020** · Chioncel O et al., Eur J Heart Fail 22:1315–1341 | *position statement* | idem |
+| ISHLT 2024 · Kanwar MK et al. | *consensus conference* | ⚠️ escopo **só IC-relacionado** |
+
+⚠️ **Bloom 2023 foi rebaixado**: é revisão, não documento de sociedade.
+
+⚠️⚠️ **Declaração de desatualização obrigatória** se o slot fechar com AHA 2017
+ou HFA-ESC 2020: a seção de **suporte circulatório mecânico** nasce marcada
+como possivelmente desatualizada. Não contamina vasopressor e inotrópico, mas
+a separação tem de estar escrita.
+
+## A armadilha específica deste sub-slot
+
+Muita literatura de choque cardiogênico é de **IAM complicado por choque**, e
+isso ⛔ não é automaticamente igual a um paciente com AVC que desenvolve choque
+cardiogênico. A fonte pode estar correta e a aplicação ainda precisar de
+qualificação — que é exatamente por que os dois eixos existem separados.
+
+➜ Na transcrição, **cada recomendação declara** se é de IAM-CS, IC-CS, misto ou
+cardiogênico em geral.

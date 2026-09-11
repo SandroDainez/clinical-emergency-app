@@ -101,16 +101,26 @@ depois caracteriza.
 
 | sub-slot | mecanismo | estado | candidata |
 |---|---|---|---|
-| **F-35a** | cardiogênico | ⛔ aberto | Bloom JE, Chan W, Kaye DM, Stub D. *State of Shock: Contemporary Vasopressor and Inotrope Use in Cardiogenic Shock.* J Am Heart Assoc. 2023;12:e029787 — **ref. 11 do CPTW386.1**. Não lida. |
+| **F-35a** | cardiogênico | ⛔ aberto · **fonte identificada**, PDF não obtido | **ACC 2025** (Sinha SS et al., JACC 85(16):1618–1641) como 1ª escolha; **AHA 2017** + **HFA-ESC 2020** como 2ª. Contrato completo em `f35a-cardiogenico-contrato.md` |
 | **F-35b** | hipovolêmico / hemorrágico | ⛔ aberto | nenhuma |
 | **F-35c** | obstrutivo | ⛔ aberto | nenhuma |
 | **F-35d** | distributivo não séptico | ⛔ aberto | nenhuma |
 | **—** | distributivo séptico | ⛔ **fora de escopo** | o app já tem SSC 2026 no módulo de sepse, e ⛔ não se transporta para cá |
 
-⚠️⚠️ **Bloom 2023 não vira o F-35 inteiro.** Ele pode ser excelente para
-cardiogênico e **não responde** por hipovolêmico, obstrutivo ou distributivo.
-Adotá-lo como fonte única repetiria, ao contrário, o erro que a proibição do
-séptico evita: um mecanismo governando todos.
+⚠️⚠️ **Bloom 2023 foi REBAIXADO em 2026-09-10.** É uma **revisão em revista**,
+e não documento de sociedade com processo de consenso declarado. ⛔ Não serve
+como procedência de um slot que vai sustentar escolha de droga. Pode voltar
+como leitura de apoio.
+
+⚠️ E vale a razão original: nenhuma fonte de um mecanismo vira o F-35 inteiro.
+Adotar a cardiogênica como única repetiria, ao contrário, o erro que a
+proibição do séptico evita — um mecanismo governando todos.
+
+⚠️⚠️⚠️ **O PORTÃO DA FAMÍLIA**, decidido pelo autor em 2026-09-10: cada
+sub-slot só alimenta o Passo 5 quando **aquele mecanismo estiver razoavelmente
+caracterizado**. Com mecanismo incerto, o C2 permanece no ramo de choque **não
+classificado** e ⛔ **não escolhe droga «por padrão»**. Um default viraria
+conduta, e conduta sem mecanismo é chute com aparência de protocolo.
 
 ### Por que a família, e não uma fonte só
 
