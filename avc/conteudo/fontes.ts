@@ -62,6 +62,7 @@ const IMG_DEF = "protocols/fontes-verbatim/imagem-definicoes-operacionais.md";
 const ESICM_CHOQUE = "protocols/fontes-verbatim/esicm-2025-choque.md";
 const CHOQUE_ABERTAS = "protocols/fontes-verbatim/choque-fontes-abertas.md";
 const CPTW386 = "protocols/fontes-verbatim/einstein-cptw386-choque.md";
+const ESICM_FLUIDOS = "protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -180,14 +181,17 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * regra do F-32: transcrito não é validado para o AVC. O documento não cita
    * AVC isquêmico em nenhuma das 8 páginas.
    *
-   * ⚠️ F-34 e F-35 seguem ABERTOS — nenhum texto transcrito. Enquanto assim,
-   * nada que eles sustentariam entra em tela: nem tipo de fluido, nem dose,
-   * nem titulação. F-35 não tem sequer fonte candidata, e o motivo está
-   * declarado no arquivo.
+   * ⚠️ F-34 TRANSCRITO em 2026-09-10 (ESICM 2024, Parte 1). Mesma regra: o
+   * documento NÃO menciona AVC em nenhuma das 19 páginas. Só as recs. 1, 7 e
+   * 11 são de "adult critically ill patients in general"; as outras oito são
+   * de população nomeada, e as duas de TCE INVERTEM a regra geral — R-TCE.
+   *
+   * ⚠️ F-35 segue ABERTO, e é uma FAMÍLIA por mecanismo (F-35a…d), não um
+   * slot único. Enquanto assim, nem dose nem titulação entram em tela.
    */
   { id: "F-32", assunto: "Choque circulatório e monitorização hemodinâmica", estado: "transcrito", arquivo: ESICM_CHOQUE },
   { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
-  { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "transcrito", arquivo: ESICM_FLUIDOS },
   { id: "F-35", assunto: "Vasopressor — dose inicial e titulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
 ] as const;
 

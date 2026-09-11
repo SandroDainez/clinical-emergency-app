@@ -380,7 +380,7 @@ volume**, e **sem** prescrever tipo nem volume total.
 |---|---|---|
 | **F-32** | choque circulatório e monitorização hemodinâmica (ESICM 2025) | transcrito · fidelidade conferida · **aplicabilidade ao AVC pendente** |
 | **F-33** | choque no adulto, pathway operacional por mecanismo (Einstein CPTW386.1) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
-| **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia **Parte 1, 2024** — Arabi et al., ICM 50(6):813–831, DOI 10.1007/s00134-024-07369-9) | ⛔ **aberto** · PDF não obtido |
+| **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia **Parte 1, 2024** — Arabi et al., ICM 50(6):813–831) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
 | **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · é uma **família por mecanismo** (F-35a…d), não uma fonte única |
 
 O que cada slot aberto deve responder, e os cuidados de transcrição de cada
@@ -535,3 +535,48 @@ sobreviver até a tela.
 
 ⚠️ Também explica por que o eixo *aplicabilidade ao AVC* do F-34 **não fecha
 por leitura de fonte**: depende de decisão clínica do autor.
+
+
+---
+
+# Passo 4 · o fluido, depois do F-34
+
+`auditoria/MAPA-F34-FLUIDOS.md` responde as seis perguntas. O que isso muda
+neste mapa:
+
+| item do Passo 4 | antes | depois do F-34 |
+|---|---|---|
+| **prova de volume** (200–500 mL) | ✅ F-32 | inalterado |
+| **tipo de fluido** | 🟪 lacuna | ⚠️ **candidato**, por analogia de população |
+| **volume total** | 🟪 lacuna | 🟪 **continua lacuna** — é a Parte 2, outro documento |
+
+## O que entra como candidato, e sob qual etiqueta
+
+Só as três recomendações de *"adult critically ill patients in general"*:
+
+| rec. | conteúdo | certeza |
+|---|---|---|
+| 1 | cristaloide, e não albumina | moderate |
+| 7 | balanceado, e não salina isotônica | low |
+| 11 | isotônico, e não hipertônico de pequeno volume | very low |
+
+⚠️⚠️ **Todas condicionais.** Nenhuma recomendação forte no documento inteiro.
+
+⚠️⚠️ E a etiqueta importa tanto quanto o conteúdo: na tela, isto é *"o que a
+terapia intensiva sugere para adulto crítico em geral"*, e ⛔ **nunca**
+*"a diretriz do AVC manda"*. A F-05 declara que **ninguém comparou fluidos
+isotônicos no AVC**.
+
+## A ressalva operacional que não pode se perder
+
+Rec. 7, remark 2, p. 822: onde não há balanceado, *"isotonic saline is an
+acceptable alternative"*. A diretriz **autoriza** SF 0,9% por indisponibilidade.
+
+⚠️ Isso conversa direto com o precedente do **F-19**, em que o app recomendava
+fármacos sem apresentação no Brasil. Aqui a fonte já resolve: a alternativa é
+autorizada pela própria diretriz, e não por adaptação nossa.
+
+## A regra R-TCE ganhou terceira prova
+
+No TCE, as recs. 4 e 9 **invertem** as recs. 1 e 7. Quem tratar AVC como
+equivalente a TCE troca o fluido preferido nas duas comparações.

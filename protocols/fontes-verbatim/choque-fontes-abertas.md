@@ -34,156 +34,60 @@ tipo de fluido fora da sepse. Ver F-34 e F-35 abaixo.
 
 ---
 
-## F-34 · Escolha do fluido de ressuscitação
+## F-34 · ✅ FECHADO — transcrito em 2026-09-10
 
-### O documento — identificado em 2026-09-10
+Arabi YM et al. *ESICM clinical practice guideline on fluid therapy in adult
+critically ill patients. Part 1: the choice of resuscitation fluids.*
+Intensive Care Med. 2024;50(6):813–831. DOI 10.1007/s00134-024-07369-9.
 
-> **Arabi YM, Belley-Cote E, Carsetti A, et al.** *European Society of Intensive
-> Care Medicine clinical practice guideline on fluid therapy in adult critically
-> ill patients. **Part 1: the choice of resuscitation fluids.***
-> **Intensive Care Med. 2024;50(6):813–831.**
-> **DOI 10.1007/s00134-024-07369-9** · publicado em 21/05/2024.
+Verbatim em `protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md`.
+Mapa das seis perguntas em `auditoria/MAPA-F34-FLUIDOS.md`.
 
-⚠️ **São TRÊS partes, e só a Parte 1 pertence a este slot:**
+⚠️ **O que ele fechou:** primeira escolha em adulto crítico em geral;
+balanceado × salina por população; quando a albumina entra; o que evitar; as
+exceções neurológicas.
 
-| parte | assunto | pertence ao F-34? |
+⛔ **O que ele NÃO fechou:** volume, velocidade, bólus, meta hemodinâmica,
+osmoterapia para hipertensão intracraniana (fora do escopo declarado) e qual
+balanceado usar (lacuna de pesquisa declarada).
+
+⚠️⚠️ **E não fechou o AVC.** O documento não menciona AVC em nenhuma das 19
+páginas. As recs. 1, 7 e 11 entram por **analogia de população**, decisão do
+autor, e nunca como evidência de AVC.
+
+### A regra R-TCE saiu reforçada, com prova documental
+
+| | adulto crítico em geral | TCE |
 |---|---|---|
-| **Parte 1** (2024) | **escolha** do fluido de ressuscitação | ✅ **é este slot** |
-| Parte 2 (2025) | **volume** dos fluidos de ressuscitação | ⛔ não — ver o escopo abaixo |
-| Parte 3 (2025) | **retirada** de fluido na desescalada | ⛔ não |
+| albumina × cristaloide | **cristaloide** (rec. 1) | **salina isotônica** (rec. 4) |
+| balanceado × salina | **balanceado** (rec. 7) | **salina isotônica** (rec. 9) |
 
-⚠️ Correção de registro: eu havia escrito "ESICM 2025 · fluidoterapia parte 1".
-A Parte 1 é de **2024**; 2025 são as Partes 2 e 3.
+No TCE as duas recomendações gerais **se invertem**. A regra continua valendo
+para F-35a–d, e o texto operacional dela está preservado abaixo.
 
-### Estado
-
-| eixo | estado |
-|---|---|
-| **PDF em mãos** | ⛔ **NÃO** — varredura por nome, por conteúdo (Spotlight) e por DOI em `~/Literatura Medica`, `~/Downloads`, `~/Documents` e `~/Projetos`: ausente |
-| **acesso aberto** | ⛔ não — Springer exige assinatura; **não está no PMC** (consultado pelo conversor de identificadores: *"Identifier not found in PMC"*) |
-| **fidelidade ao PDF** | ⛔ **não conferida** — e não pode ser, sem o documento |
-| **aplicabilidade ao AVC isquêmico** | ⏳ pendente, recomendação por recomendação |
-
-⚠️⚠️ **Não se transcreve de resumo de página web.** Um resumo gerado por
-terceiro não é verbatim, não tem página e não distingue força de certeza. Seria
-exatamente o modo de falha que o projeto proíbe: número clínico de segunda mão.
-
-### Por que este slot existe
-
-O **F-32** se exime explicitamente, e aponta para cá:
-
-> *"other aspects of the fluid prescription (choice of resuscitation fluids, or
-> volume of resuscitation fluids) have been addressed in other recommendations
-> of ESICM"* — F-32, escopo declarado
-
-O **F-33** também não responde: o único fluido nomeado no CPTW386.1 inteiro é
-*"preferencialmente com soro ringer lactato"*, e está **dentro da seção de
-sepse**.
-
-### As seis perguntas que este slot deve responder — e só elas
-
-1. qual fluido pode ser recomendado como **primeira escolha** em adulto crítico;
-2. se **cristaloide balanceado** é preferido a **SF 0,9%**, e **em qual população**;
-3. **quando a albumina entra**;
-4. quais fluidos **devem ser evitados**;
-5. quais **exceções neurológicas** existem;
-6. o que é **diretamente aplicável ao AVC** e o que permanece **contextual**.
-
-### ⛔ O que este slot NÃO decide
-
-- ⛔ **volume total** de ressuscitação — é a **Parte 2**, outro documento;
-- ⛔ **velocidade** de infusão;
-- ⛔ **bólus** e seu tamanho;
-- ⛔ **meta hemodinâmica** de qualquer tipo.
-
-⚠️ **Uma exceção, e só uma:** se a própria Parte 1 trouxer um desses itens
-**para uma população aplicável**, ele é transcrito com a população declarada.
-O critério é o que a fonte diz, e não o que este contrato previu.
-
-### Ao transcrever — o que cada recomendação tem de carregar
-
-| campo | por quê |
-|---|---|
-| **página** | E-30: a menor unidade auditável é a afirmação |
-| **população** | é o que decide o transporte |
-| **força** (strong / conditional / UGPS / no recommendation) | força não se deduz do verbo |
-| **certeza** da evidência (GRADE) | separada da força |
-| **acordo** do painel | o F-32 tinha recomendação com acordo FRACO, e isso mudou a leitura |
-
-⚠️ *"We recommend"* **dentro do texto** de um *good practice statement* **não o
-transforma** em recomendação GRADE forte. Foi o §D-4 do F-32, e vale aqui.
-
-### ⚠️⚠️ A PERGUNTA 6 JÁ TEM METADE DA RESPOSTA — e ela vem da fonte-mãe
-
-Antes de abrir a ESICM, a **F-05** (AHA/ASA 2026, §4.3 rec. 1, COR 1 · LOE
-C-LD, p. e350) já manda corrigir:
-
-> "In patients with AIS, hypotension and hypovolemia should be corrected to
-> maintain systemic perfusion levels necessary to support organ function."
-
-E o *Supportive Text* da **mesma recomendação** declara a lacuna, na mesma
-página:
-
-> "**No studies have addressed the treatment of low BP** in patients with
-> stroke… **There are no data to guide volume and duration** of parenteral
-> fluid delivery. **No studies have compared different isotonic fluids.**"
-
-⚠️⚠️⚠️ **A última frase é decisiva para este slot.** A fonte do AVC afirma que
-**nenhum estudo comparou fluidos isotônicos entre si no AVC**. Isso fixa o
-teto do que o F-34 pode entregar:
-
-| pergunta | o que já se sabe, antes da ESICM |
-|---|---|
-| há indicação de corrigir hipovolemia no AVC? | ✅ **sim** — COR 1 · LOE C-LD |
-| a fonte do AVC diz **qual** fluido? | ⛔ **não**, e declara que ninguém comparou |
-| a fonte do AVC diz **quanto** e **por quanto tempo**? | ⛔ **não**, e declara a ausência de dados |
-
-➜ Consequência: qualquer preferência de fluido que o F-34 traga será
-**recomendação de adulto crítico em geral aplicada ao AVC por analogia de
-população**, e **nunca** evidência de AVC. Isso precisa ficar escrito na tela
-do dia em que virar tela — é a diferença entre *"a diretriz do AVC manda"* e
-*"a diretriz de terapia intensiva sugere, e o AVC não tem dado próprio"*.
-
-⚠️ E é o motivo pelo qual o eixo **aplicabilidade ao AVC** deste slot já nasce
-sabendo que **não vai fechar sozinho**: ele depende de decisão clínica do
-autor, não de leitura de fonte.
-
-### ⚠️⚠️⚠️ REGRA R-TCE · TCE NÃO É PROXY DE AVC
-
-**Regra explícita deste slot**, a pedido do autor em 2026-09-10, porque o erro
-**já aconteceu uma vez** (D-137).
+### ⚠️⚠️⚠️ REGRA R-TCE · TCE NÃO É PROXY DE AVC — permanece ativa
 
 > ⛔ **Uma recomendação para traumatismo cranioencefálico não vale para AVC
 > isquêmico só porque as duas populações são neurológicas.**
 
-O precedente que a justifica, registrado em dois documentos independentes:
+Três provas independentes, agora:
 
-| fonte | população | alvo |
+| fonte | população | conteúdo |
 |---|---|---|
 | F-32, rec. 43 (UGPS) | TCE com Glasgow ≤ 8 | PAM ≥ 80 mmHg |
 | F-33, p. 5 | neurológico agudo **com hipertensão intracraniana** | PAM 90–100 mmHg |
+| **F-34, recs. 4 e 9** | **TCE** | **inverte** a escolha de fluido das recs. 1 e 7 |
 
-Duas fontes, populações vizinhas, **números diferentes**, e **nenhuma é AVC
-isquêmico**. Se houvesse equivalência entre populações neurológicas, os dois
-números teriam de concordar. Não concordam.
+⚠️ A **D-137** mostrou a troca acontecendo **dentro da mesma fonte**.
 
-⚠️ E o erro do D-137 foi **mais sutil que este**: lá, "lesão cerebral grave"
-substituiu "hipertensão intracraniana" **dentro da mesma fonte**. Se a troca
-acontece entre duas linhas de uma página, acontece com muito mais facilidade
-entre dois documentos.
+**Aplicação:** recomendação escopada a TCE, sepse, trauma, queimado, cirúrgico,
+cirrose, lesão renal ou qualquer outra população nomeada → transcrever com a
+população declarada e marcar ⛔ **não transportável**. Só o que a fonte escopar
+a *"adult critically ill patients" em geral* entra como candidato, e mesmo
+assim a aplicabilidade continua pendente de revisão do autor.
 
-**Aplicação prática no F-34:**
-
-- recomendação de fluido escopada a **TCE** → transcrever com a população
-  declarada e marcar ⛔ **não transportável**;
-- o mesmo para **sepse**, **trauma**, **queimado**, **cirúrgico**, **DRC** e
-  qualquer outra população nomeada;
-- só o que a fonte escopar a **"adult critically ill patients" em geral** entra
-  como candidato ao AVC — e mesmo assim a aplicabilidade clínica continua
-  pendente de revisão do autor.
-
-⚠️ **O silêncio não é permissão.** Se a fonte não nomear população, isso se
-registra como *"população não declarada"*, e não como *"vale para todos"*.
+⚠️ **O silêncio não é permissão.** Fonte que não nomeia população registra-se
+como *"população não declarada"*, nunca como *"vale para todos"*.
 
 ---
 

@@ -249,6 +249,15 @@
     "estado": "sem âncora numérica — conferir por leitura"
   },
   {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
     "arquivo": "conteudo/hemorragia-intracerebral.ts",
     "frase": ";\n\n                                                       \nexport type NivelLOE = ",
     "tipos": [
