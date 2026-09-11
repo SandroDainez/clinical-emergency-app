@@ -268,6 +268,24 @@
   },
   {
     "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/f35b-contraste-contrato.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/f35c-trombolise-contrato.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
     "frase": "Choque cardiogênico — agentes vasoativos e faixas de dose",
     "tipos": [
       "dose"

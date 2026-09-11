@@ -168,6 +168,65 @@ diretriz de trauma — regra 1 do sangramento.
 ⚠️ As três são **lacunas de fluxo**, e não de leitura. Nenhuma se fecha
 escolhendo melhor a fonte; todas dependem de decisão clínica do autor.
 
+---
+
+# ⚠️⚠️ ESTADO DO ACESSO — 2026-09-11
+
+Ordem do autor: transcrever os dois. ⛔ **Os dois PDFs não foram obtidos.**
+
+| slot | documento | acesso |
+|---|---|---|
+| **F-35b** | ACR + AAAAI, *Radiology* 2025;315(2):e240100 | ⛔ `is_oa: false` · **nenhuma localização aberta registrada** · não está no PMC |
+| **F-35c** | Yaghi S et al., *Stroke* 2017;48(12):e343–e361 | ✅ **aberto no editor**, versão publicada · ⛔ `ahajournals.org` devolve **HTTP 403** a agente automático |
+
+⚠️ **Uma tentativa foi feita para o F-35c**, porque o Unpaywall registra a
+versão publicada como aberta no editor. O `ahajournals.org` recusou. ⛔ Parei
+aí, pela mesma regra do F-35a: leitura livre ⛔ não implica obtenção
+automática, e ⛔ não se contorna proteção de acesso.
+
+➜ **Quem destrava é uma pessoa num navegador comum**, salvando os PDFs:
+
+```
+https://www.ahajournals.org/doi/10.1161/STR.0000000000000152
+https://pubs.rsna.org/doi/10.1148/radiol.240100
+```
+
+⚠️ O do *Radiology* pode exigir acesso institucional — ele ⛔ **não** está
+marcado como aberto em lugar nenhum, diferente do caso do ACC 2025.
+
+---
+
+# ✅ O QUE FOI FEITO SEM OS PDFs
+
+## 1 · Os contratos de transcrição, escritos
+
+`protocols/fontes-verbatim/f35b-contraste-contrato.md` e
+`f35c-trombolise-contrato.md` — com as listas de itens do autor, item a item,
+para que a chegada dos arquivos não dependa de reconstruir o combinado.
+
+## 2 · A categoria «lacuna de fluxo», criada
+
+`auditoria/LACUNA-DE-FLUXO.md`. Ela **não** se fecha lendo melhor, e procurar
+fonte para ela é trabalho desperdiçado — pior, empurra para inventar.
+
+**Cinco lacunas de fluxo já registradas**, e nenhuma dependeu de ler as fontes:
+
+| id | pergunta | origem |
+|---|---|---|
+| **LF-01** | a angioTC continua depois da reação ao contraste? | F-35b |
+| **LF-02** | a trombectomia continua? ⚠️ e ela usa **mais** contraste | F-35b |
+| **LF-03** | reexposição a contraste com o relógio do AVC correndo | F-35b |
+| **LF-04** | sangramento **extracraniano** pós-trombolítico | F-35c |
+| **LF-05** | **tenecteplase** na complicação hemorrágica | F-35c |
+
+⚠️ **LF-01 a LF-03 não seriam respondidas nem com os PDFs em mãos.** A conduta
+da anafilaxia tem fonte de duas sociedades; o que não existe é o que fazer com
+a **janela de reperfusão** enquanto a reação acontece.
+
 # ESTADO
 
 ⛔ **Nada transcrito. Nenhum slot promovido.** Sem código e sem deploy.
+
+⚠️ Os dois mapas pedidos — `ameaça → intervenção causal → suporte →
+reavaliação → condição para seguir/transferir` — ⛔ **não podem ser montados
+sem as fontes**. Montá-los agora seria escrever conduta de memória.

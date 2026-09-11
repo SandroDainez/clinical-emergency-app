@@ -5480,3 +5480,40 @@ código — passou a ler a árvore de trabalho.
 O módulo `choque` continua sem tela. A aplicabilidade de qualquer meta ao AVC
 isquêmico continua **pendente de revisão clínica**. Nenhuma meta nova de AVC
 foi criada: o AVC segue com a rec. 38 do F-32 mais a F-05, **sem número**.
+
+
+---
+
+## ⚠️⚠️ LACUNA DE FLUXO — categoria de dívida criada em 2026-09-11
+
+**Ordem do autor:** *"«lacuna de fluxo» não é a mesma coisa que «lacuna de
+tratamento». Às vezes a conduta médica está clara, mas o app ainda não sabe o
+que fazer com a sequência do AVC depois que a complicação acontece."*
+
+| tipo | o que falta | quem resolve |
+|---|---|---|
+| lacuna de **fonte** | não há documento, ou há e não foi transcrito | conseguir e transcrever |
+| lacuna de **tratamento** | a fonte foi lida e **não responde** | outra fonte, ou decisão clínica |
+| ⚠️ lacuna de **fluxo** | a conduta está clara — falta saber **o que acontece com o AVC depois** | ⛔ **decisão de produto**, e nenhuma fonte |
+
+⚠️ Lacuna de fluxo ⛔ **não se fecha lendo melhor**. Procurar fonte para ela é
+trabalho desperdiçado e, pior, empurra para **inventar**. Sintoma: a pergunta
+começa com **"e agora?"**, e não com "o que eu faço?".
+
+**Cinco já registradas** em `auditoria/LACUNA-DE-FLUXO.md`:
+
+| id | pergunta | origem |
+|---|---|---|
+| LF-01 | a angioTC continua depois da reação ao contraste? | F-35b |
+| LF-02 | a trombectomia continua? ⚠️ e usa mais contraste | F-35b |
+| LF-03 | reexposição a contraste com o relógio do AVC correndo | F-35b |
+| LF-04 | sangramento **extracraniano** pós-trombolítico | F-35c |
+| LF-05 | **tenecteplase** na complicação hemorrágica | F-35c |
+
+⚠️ **LF-01 a LF-03 não seriam respondidas nem com os PDFs em mãos**: a conduta
+da anafilaxia tem fonte de duas sociedades; o que não existe é o que fazer com a
+**janela de reperfusão** enquanto a reação acontece.
+
+**Regra de manejo:** lacuna de fluxo aberta ⛔ não bloqueia a transcrição da
+fonte, ⚠️ mas bloqueia a **tela** daquele ponto do fluxo — pelo mesmo motivo que
+um slot aberto bloqueia: o app ⛔ não afirma o que não sabe.

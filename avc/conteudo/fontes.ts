@@ -64,6 +64,8 @@ const CHOQUE_ABERTAS = "protocols/fontes-verbatim/choque-fontes-abertas.md";
 const CPTW386 = "protocols/fontes-verbatim/einstein-cptw386-choque.md";
 const ESICM_FLUIDOS = "protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md";
 const ACC_CARDIOGENICO = "protocols/fontes-verbatim/acc-2025-choque-cardiogenico.md";
+const F35B_CONTRASTE = "protocols/fontes-verbatim/f35b-contraste-contrato.md";
+const F35C_TROMBOLISE = "protocols/fontes-verbatim/f35c-trombolise-contrato.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-02", assunto: "Janela para trombólise IV", estado: "transcrito", arquivo: AHA },
@@ -211,8 +213,8 @@ export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
   { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "transcrito", arquivo: ESICM_FLUIDOS },
   { id: "F-35a", assunto: "Choque cardiogênico — agentes vasoativos e faixas de dose", estado: "transcrito", arquivo: ACC_CARDIOGENICO },
-  { id: "F-35b", assunto: "Anafilaxia por contraste iodado — reconhecer e tratar", estado: "aberto", arquivo: CHOQUE_ABERTAS },
-  { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-35b", assunto: "Anafilaxia por contraste iodado — reconhecer e tratar", estado: "aberto", arquivo: F35B_CONTRASTE },
+  { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "aberto", arquivo: F35C_TROMBOLISE },
   { id: "F-35d", assunto: "Tromboembolismo pulmonar com instabilidade", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35e", assunto: "Tamponamento cardíaco — drenagem", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35f", assunto: "Pneumotórax hipertensivo — descompressão", estado: "aberto", arquivo: CHOQUE_ABERTAS },
