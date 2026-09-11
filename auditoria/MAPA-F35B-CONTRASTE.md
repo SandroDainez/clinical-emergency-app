@@ -67,6 +67,18 @@ criança <25–30 kg.
 | **oxigênio** | se sintoma respiratório |
 | anti-H1 / anti-H2 | ⚠️ só para manifestação **cutânea** |
 
+⚠️⚠️ **BRONCOESPASMO — a fonte NÃO dá broncodilatador.** Busca registrada em
+2026-09-11: *bronchodilator*, *albuterol*, *salbutamol*, *beta-agonist*,
+*beta2*, *inhaled* — **0 ocorrências cada**.
+
+O broncoespasmo aparece só como **achado**: moderado sem hipóxia, grave com
+hipóxia (Tabela 1), e entre os sinais respiratórios da anafilaxia (Tabela 2).
+O que a fonte dá para o eixo respiratório é **adrenalina** e **oxigênio**.
+
+⛔ **Ausência NESTA fonte, e ⛔ não na literatura.** ➜ O app já tem módulo de
+anafilaxia com a WAO 2020, que é onde o broncodilatador provavelmente vive.
+⚠️ **Conferir lá antes de abrir qualquer lacuna.**
+
 ⛔ **O que NÃO trata:**
 
 | ⛔ | por quê, pela fonte |

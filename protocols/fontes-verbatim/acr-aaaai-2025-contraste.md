@@ -242,7 +242,30 @@ lidas do render e cruzadas com a camada de texto, sem divergência.
 >
 > "H1 antihistamines should be used primarily for reactions limited to the skin."
 
-## 2.4 · Tratamento das reações leves e moderadas — ⛔ fora do escopo · p. 3
+## 2.4 · ⚠️⚠️ BRONCOESPASMO — busca registrada, e a fonte NÃO dá broncodilatador
+
+⚠️ Conferido em 2026-09-11, a pedido do autor, na camada de texto do PDF
+completo (113.171 caracteres):
+
+| termo | ocorrências |
+|---|---|
+| *bronchodilator* · *albuterol* · *salbutamol* · *beta-agonist* · *beta2* · *inhaled* | **0** cada |
+
+➜ ⛔ **O documento nomeia o broncoespasmo como ACHADO, e ⛔ não dá tratamento
+específico para ele.** Broncoespasmo aparece na **Tabela 1** como achado
+**moderado** (sem hipóxia) e **grave** (com hipóxia), e na **Tabela 2** entre os
+sinais respiratórios da anafilaxia.
+
+⚠️ O que a fonte dá para o eixo respiratório é: **adrenalina** como primeira
+linha, e *"supplemental oxygen may be necessary for patients with respiratory
+symptoms"*.
+
+⚠️⚠️ ⛔ **Isto NÃO é ausência na literatura** — é ausência **nesta fonte**, e a
+busca está registrada. O app **já tem** módulo de anafilaxia com a WAO 2020
+declarada, que é onde o broncodilatador provavelmente vive. ➜ Conferir lá antes
+de abrir qualquer lacuna.
+
+## 2.5 · Tratamento das reações leves e moderadas — ⛔ fora do escopo · p. 3
 
 > "Treatment of mild or moderate immediate reactions and non–immune mediated
 > reactions varies depending on the patient's symptoms and clinical

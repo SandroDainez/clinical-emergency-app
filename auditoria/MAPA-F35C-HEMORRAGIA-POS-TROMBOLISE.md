@@ -34,6 +34,49 @@ diagnosticada até 5–10 h.
 classificação (HI-1, HI-2, PH-1, PH-2 ou HIC remota) · variação de NIHSS ·
 **atribuição de causalidade** da piora.
 
+## 1b · ⚠️ ONDE, COM QUE FREQUÊNCIA, E COM QUE EXAMES
+
+⚠️ **Acrescentado em 2026-09-11**, ao conferir a lista do autor. ⛔ Faltava na
+primeira passagem — ver §D do arquivo-fonte.
+
+### Local e monitorização — 📖 **citação da diretriz de AVC**, ⛔ não do Yaghi
+
+| item | conteúdo |
+|---|---|
+| **local** | *"intensive care **or acute stroke unit**"* — ⛔ **não** é UTI obrigatória |
+| **duração** | pelo menos **24 h** após a infusão |
+| **PA + exame neurológico** | **15/15 min** nas primeiras 2 h · **30/30 min** nas 6 h seguintes · **60/60 min** nas 16 h seguintes |
+| **meta pressórica** | **<180/105 mmHg** por 24 h ⚠️ **conferir contra o F-04 antes de qualquer uso** |
+| **TC de urgência** | se **cefaleia, náusea, vômito ou piora neurológica** |
+| **antitrombóticos** | evitar antiagregante e anticoagulante por **24 h** |
+
+✅ **O esquema de monitorização confere com o F-19**, que o app já tem a partir
+da **SBDCV**. Duas fontes independentes, mesmo esquema.
+
+### ⚠️⚠️ A única sugestão PRÓPRIA do documento nesta seção
+
+> "If patients develop these symptoms during the alteplase infusion, **we suggest
+> stopping the infusion temporarily and resuming if the emergent CT shows no
+> ICH**."
+
+⚠️⚠️⚠️ **É o análogo, na trombólise, da pergunta da LF-01** — e aqui a fonte
+**responde**: interromper, imagear, **retomar se não houver hemorragia**.
+
+➜ ⛔ Não resolve a LF-01, que é sobre contraste e exame de imagem. ⚠️ Mas prova
+que uma fonte **pode** responder esse tipo de pergunta, e dá **modelo de forma**
+para a decisão do autor: *interromper → medir → retomar se negativo*.
+
+### Exames — ⛔ a fonte não publica painel
+
+| exame | para quê |
+|---|---|
+| **fibrinogênio** | colher **imediatamente**; alvo **≥150 mg/dL**; ⛔ não esperar resultado para transfundir |
+| **plaquetas** | limiar **<100.000/µL** como exceção que justifica transfundir |
+| **INR** | dose de PCC, **só em varfarina** |
+
+⚠️ Busca registrada: *aPTT* **0** · *complete blood* **0** · *neurocritical*
+**0**. ⛔ Ausência **nesta fonte**, e ⛔ não na literatura.
+
 ## 2 · INTERVENÇÃO CAUSAL PRIORITÁRIA — reverter a coagulopatia
 
 **Indicação:** sICH **dentro de 24 h** da alteplase **ou** com

@@ -145,7 +145,82 @@ documento — o que agrava a ressalva 1.
 ⚠️⚠️ A última oração é a ressalva do próprio documento. ⛔ **Não é
 recomendação de estender a monitorização** — é hipótese que pede estudo.
 
-## 2.2 · ⚠️ O limiar para reimagem — Tabela 5 e p. e350
+## 2.2 · ⚠️⚠️⚠️ MONITORIZAÇÃO APÓS A TROMBÓLISE — §*Monitoring After Thrombolytic Therapy*, p. e349
+
+⚠️ **Trecho acrescentado em 2026-09-11**, ao conferir a lista de itens do autor
+(exames · UTI). ⛔ **Faltava na primeira transcrição.** Ver §D-1.
+
+⚠️⚠️ **ATENÇÃO À NATUREZA.** A maior parte deste parágrafo é o documento
+**CITANDO a diretriz de AVC da AHA/ASA**, e ⛔ não emitindo recomendação
+própria. As duas coisas estão marcadas abaixo.
+
+### 📖 Citação da diretriz de AVC — ⛔ não é afirmação deste documento
+
+> "In patients who receive intravenous alteplase for acute ischemic stroke, the
+> American Heart Association (AHA)/American Stroke Association guidelines
+> **recommend close monitoring during and for at least 24 hours after the
+> infusion in an intensive care or acute stroke unit**. The recommended
+> monitoring includes **blood pressure measurement and neurological examination
+> every 15 minutes for the first 2 hours** after the alteplase infusion, **then
+> every 30 minutes for the next 6 hours, and then every hour for the next 16
+> hours**. Because an excessively high blood pressure may increase hemorrhagic
+> complications, **a blood pressure goal of <180/105 mm Hg is recommended for 24
+> hours after the infusion**. In addition, **an emergent brain computed
+> tomography (CT) is recommended if headache, nausea, vomiting, or neurological
+> worsening occurs** because these symptoms may herald ICH."
+
+⚠️ **Isto é o local de cuidado** que o autor pediu: *"intensive care **or acute
+stroke unit**"* — ⛔ e **não** UTI obrigatória.
+
+⚠️⚠️ **Confere com o que o app já tem.** O **F-19** transcreve o mesmo esquema
+a partir da **SBDCV**: 15/15 min por 2 h, 30/30 min por 6 h, 60/60 min até 24 h.
+✅ **Duas fontes independentes, mesmo esquema.**
+
+⚠️ E o **<180/105 mmHg por 24 h** precisa ser conferido contra o **F-04** (meta
+pressórica antes e depois da IVT) antes de qualquer uso — ⛔ não transportar
+daqui sem essa conferência.
+
+### ⚠️⚠️ A sugestão PRÓPRIA do documento — e ela toca o fluxo
+
+> "**If patients develop these symptoms during the alteplase infusion, we suggest
+> stopping the infusion temporarily and resuming if the emergent CT shows no
+> ICH.**"
+
+⚠️⚠️⚠️ **Este é o análogo, na trombólise, da pergunta que a LF-01 faz no
+contraste** — e aqui a fonte **responde**: interromper, imagear, e **retomar se
+não houver hemorragia**.
+
+➜ ⛔ Isso ⛔ **não** resolve a LF-01, que é sobre o **exame de imagem** e a
+reação ao **contraste**. ⚠️ Mas mostra que uma fonte **pode** responder esse
+tipo de pergunta, e é um **modelo de forma** para a decisão do autor.
+
+### 📖 Citação da diretriz de AVC · antitrombóticos nas 24 h
+
+> "Current AHA/American Stroke Association recommendations include **avoiding
+> antiplatelet agents or anticoagulants for 24 hours after the alteplase
+> infusion** (and after repeat neuroimaging confirms no asymptomatic blood
+> products) to mitigate the risk of hemorrhagic complications."
+
+## 2.3 · ⚠️ Exames — o que a fonte nomeia, e o que ela NÃO publica
+
+⛔ **Não há painel de exames publicado.** O documento nomeia exames **em
+contexto de conduta**, e ⛔ não como lista:
+
+| exame | onde aparece | para quê |
+|---|---|---|
+| **fibrinogênio** | Tabela 4 · p. e351 | **colher imediatamente**; alvo **≥150 mg/dL** ⚠️ e ⛔ não esperar o resultado para transfundir crioprecipitado |
+| **contagem de plaquetas** | Tabela 4 | limiar **<100.000/µL** como exceção que justifica transfundir |
+| **INR** | Tabela 4 | dose de PCC, **em quem usava varfarina** |
+
+⚠️⚠️ **A armadilha do fibrinogênio**, já transcrita na §3.5: é reagente de fase
+aguda; nível baixo ⛔ não se questiona, nível aparentemente normal **pode
+enganar**.
+
+⚠️ Busca registrada, 2026-09-11, na camada de texto do PDF completo
+(117.089 caracteres): *aPTT* **0** · *complete blood* **0** · *neurocritical*
+**0** · *intensive care* **1** (na citação acima).
+
+## 2.4 · ⚠️ O limiar para reimagem — Tabela 5 e p. e350
 
 > "Neurological deterioration in the setting of sICH may be less pronounced with
 > increasing stroke severity; therefore, **a lower threshold to trigger emergent
@@ -314,3 +389,28 @@ com a do módulo: AVC isquêmico agudo, tratado com trombolítico IV, que sangra
 |---|---|
 | **LF-04** · extracraniano | **1 · fonte clínica incompleta**, com **busca registrada dentro desta fonte**. ⛔ A busca na literatura ⛔ ainda não foi feita |
 | **LF-05** · tenecteplase | ⛔ **continua sem classificação** — a busca própria ⛔ não foi feita, e o documento ser de alteplase ⛔ não prova que nada exista para tenecteplase |
+
+
+---
+
+# ⚠️⚠️ §D · CORREÇÃO DA PRÓPRIA TRANSCRIÇÃO
+
+## D-1 · A seção de monitorização faltou na primeira passagem
+
+Ao conferir a lista de itens do autor — **exames** e **UTI** — encontrei que a
+primeira transcrição, de 2026-09-11, **não tinha** a seção *Monitoring After
+Thrombolytic Therapy* (p. e349).
+
+⚠️ **Como o erro apareceu:** eu li o documento por blocos de páginas e montei a
+transcrição pelos títulos que reconheci. A seção estava **dentro de
+«Diagnosis of sICH»**, e eu tinha transcrito dessa seção só a janela de 36 h e
+o limiar de reimagem.
+
+➜ **Regra que fica:** ⛔ transcrever por leitura de páginas ⛔ não garante
+cobertura. ⚠️ Conferir a transcrição **contra a lista de itens pedida**, item a
+item, antes de declarar a fonte transcrita — foi exatamente o que a conferência
+da lista do autor fez aparecer.
+
+⚠️ O que faltava era **material**: o local de cuidado, o esquema de
+monitorização, a meta pressórica das 24 h, o gatilho de TC de urgência, e a
+única sugestão do documento que **toca continuidade de fluxo**.
