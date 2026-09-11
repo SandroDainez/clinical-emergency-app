@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**102 de 116 travas com declaração completa.**
+**103 de 117 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -97,6 +97,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que ⛔ sem trombólise registrada ⛔ o alvo seja ⛔ o de **antes da IVT**; que ⛔ com trombólise ⛔ dentro das 24 h ⛔ o alvo seja ⛔ o **pós-IVT**; que ⛔ passadas as 24 h ⛔ a lista fique ⛔ **⛔ vazia** — ⛔ a fonte ⛔ não publica alvo ⛔ para essa fase, ⛔ e ⛔ inventar seria E-31; que ⛔ mais de um aplicável ⛔ apareça ⛔ **⛔ inteiro**, ⛔ sem precedência inventada; ⛔ e que ⛔ os alvos ⛔ **⛔ fora de alcance** ⛔ estejam ⛔ **⛔ declarados ⛔ com motivo**.
 - **NÃO PROMETE:** que os alvos de trombectomia funcionem — ⛔ eles ⛔ **⛔ não são deriváveis** ⛔ hoje (**D-135**), ⛔ e ⛔ esta trava ⛔ conferе ⛔ que ⛔ eles ⛔ **⛔ continuam fora**, ⛔ com o motivo escrito.
 - **UNIVERSO:** `avc/nucleo/alvo-pressorico.ts` ⛔ e `avc/conteudo/antihipertensivos.ts`. ── ⚠️⚠️⚠️ ⛔ O DEFEITO QUE ELA FECHA ────────────────────────────────────── ⛔ ⛔ O alvo « principal » era ⛔ **⛔ fixo**: *"Abaixo de 185/110 — antes de iniciar a trombólise"*. ⚠️ ⛔ O médico que ⛔ **⛔ já trombolisou** ⛔ via, como principal, ⛔ um número ⛔ **⛔ de antes** — ⛔ e ⛔ tinha de expandir ⛔ seis outros ⛔ para achar ⛔ o dele.
+
+## `test:escopo-meta-pressorica` → `scripts/prova-escopo-da-meta-pressorica.cjs`
+
+- **PROMETE:** que nenhum arquivo de runtime atribua a meta de **PAM 90–100 mmHg** a "lesão cerebral grave"; que toda ocorrência dessa meta venha acompanhada de "hipertensão intracraniana", que é o escopo literal da fonte (F-33 §4.2, p. 5); que a classificação do choque hemorrágico NÃO seja atribuída ao ATLS, que o documento não cita; que a afirmação de metas hemodinâmicas gerais carregue a ressalva do próprio documento de que as metas variam com o contexto clínico.
+- **NÃO PROMETE:** que os números estejam certos contra o PDF — isso é a transcrição F-33, e trava nenhuma substitui leitura. Também NÃO promete que o texto chegue ou não chegue à tela: mede o texto, não a renderização. A medição de alcance está em `auditoria/D-137-ESCOPO-DA-META-PRESSORICA.md`.
+- **UNIVERSO:** todos os arquivos versionados, EXCETO `auditoria/` e `protocols/fontes-verbatim/`. Esses dois precisam poder citar o texto errado — um para transcrever a fonte, o outro para documentar o defeito. Isentar por natureza do arquivo, e nunca por pasta de conveniência. ── ⚠️⚠️⚠️ O DEFEITO QUE ELA FECHA ──────────────────────────────────────── A fonte tem DUAS afirmações independentes na mesma página: 1. "Até hemostasia efetiva, deve-se tolerar PAM <65 mmHg em pacientes com sangramento ativo e SEM LESÃO CEREBRAL GRAVE" 2. "Para pacientes neurológicos agudos COM HIPERTENSÃO INTRACRANIANA (suspeita ou confirmada) : meta de PAM 90 a 100mmHg" O transporte antigo fundiu as duas e escreveu que 90–100 valia para "lesão cerebral grave". A exclusão da primeira virou a condição da segunda, e a população se ampliou de uma CONDIÇÃO para um UNIVERSO. ⚠️ Nenhuma trava pegava isso. A varredura de i18n exige que exista par PT/ES, e não olha o conteúdo — corrigir os dois lados juntos a mantém verde mesmo quando os dois lados estão errados.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

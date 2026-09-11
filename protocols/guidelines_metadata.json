@@ -710,16 +710,17 @@
         "choque"
       ],
       "key_recommendations_covered": [
-        "Hipoperfusão nas 3 janelas (pele, renal, neurológica) — hipotensão não é obrigatória para o diagnóstico",
+        "Hipoperfusão nas 3 janelas (pele, renal, neurológica) — hipotensão não é obrigatória para o diagnóstico; renal é diurese < 0,5 mL/kg/h ou < 30 mL/h",
         "Sinais laboratoriais: hiperlactatemia, acidose, SvcO₂ < 70% (SvO₂ < 65%), gap de PCO₂ > 6",
         "Perfil de cabeceira: frio/PP < 25/TEC > 3 s/SvcO₂ < 70% × quente/PP > 40/TEC < 3 s/SvcO₂ normal ou alta",
-        "Metas gerais: PAM ≥ 65, lactato < 2 mmol/L com queda ≥ 10%/h, Hb ≥ 7, SpO₂ > 90%, diurese > 0,5 mL/kg/h",
+        "Metas hemodinâmicas gerais: PAM ≥ 65, lactato < 2 mmol/L com queda ≥ 10%/h, Hb ≥ 7 g/dL, SpO₂ > 90%, diurese > 0,5 mL/kg/h — o próprio documento adverte que as metas podem variar conforme o contexto clínico e manda consultar as metas específicas de cada causa",
         "Linha arterial quando noradrenalina > 0,3–0,5 mcg/kg/min",
         "POCUS/RUSH quando a causa não é evidente, não há resposta ao manejo inicial ou há deterioração rápida",
         "IAM de VD não cursa com congestão pulmonar e responde a volume — exceção à regra de evitar volume",
         "Choque cardiogênico por subtipo: frio-úmido, frio-seco, normotenso, VD, bradiarritmia, valvopatias e obstrução dinâmica da VSVE",
         "Noradrenalina é o vasopressor de escolha no choque cardiogênico",
-        "Choque hemorrágico: classes I–IV, hipotensão permissiva (PAM 50) até a hemostasia, exceto lesão cerebral grave (PAM 90–100)",
+        "Choque hemorrágico: classes I–IV (tabela de Cannon, NEJM 2018, referenciada pelo pathway — NÃO é ATLS); meta de PAM ≥ 65; hipotensão permissiva com PAM-alvo 50 pode ser considerada em casos selecionados; até a hemostasia efetiva tolera-se PAM < 65 em sangramento ativo e SEM lesão cerebral grave",
+        "Paciente neurológico agudo COM hipertensão intracraniana (suspeita ou confirmada): meta de PAM 90–100 — escopo literal da fonte. NÃO é meta de lesão cerebral grave em geral e NÃO é meta de AVC isquêmico",
         "Hemorrágico: Hb-alvo 7–8 g/dL (9–10 no neurológico agudo), temperatura 35,7–37 °C, reposição de cálcio na transfusão maciça"
       ],
       "notes": "Pathway institucional, não diretriz de sociedade — declarado como adaptação brasileira, com a base internacional que ele próprio cita registrada na citação. NÃO foram transportados os acionamentos institucionais (Código H, Código IAM, Código TEP grave, Código Cirúrgico, PowerPlan, RAVA) nem a alocação obrigatória em UTI, que são operação de um hospital específico. A seção de sepse do documento é SSC 2021 e ficou de fora: o módulo de sepse do app já está em SSC 2026. Erros de unidade do próprio documento (\"Hb ≥ 7 g/L\", \"Hb 7 a 8 mg/dl\") foram corrigidos para g/dL ao transportar; o lactato, dado em mg/dL, foi convertido para mmol/L com o valor original entre parênteses. Documento aprovado em 04/2024, anterior ao DanGer Shock — a discussão de suporte circulatório mecânico no choque cardiogênico do IAM evoluiu depois."

@@ -306,7 +306,8 @@ aferições é janela e não fonte (**D-134**).
 6. **Não misturar conteúdo do destino dentro da origem** além do
 mínimo de estabilização.
 7. ⚠️ **O destino não decide clínica que é da origem.** Regra do autor,
-2026-09-10, nascida do módulo de vasoativas.
+2026-09-10, **confirmada por ele em revisão no mesmo dia**, nascida do módulo
+de vasoativas.
 
 ## ⚠️ A regra 7, por extenso — o caso das drogas vasoativas
 
@@ -329,6 +330,11 @@ fluxo aponta quando alguém precisa de vasoativo.
 *"Titulação de vasopressor e inotrópico"*. **Titulação é decisão clínica**,
 não conta de preparo. Ao reconstruir, o motivo da transição passa a ser
 preparo e velocidade; a titulação fica no módulo que decidiu a droga.
+
+⚠️ **Palavras do autor, 2026-09-10:** *"o módulo de vasoativas não decide qual
+droga usar. Ele é ferramenta. O fluxo clínico de choque decide «há indicação /
+qual agente», envia essa decisão ao módulo de vasoativas para preparo e
+velocidade, e depois recebe o resultado de volta."*
 
 ⚠️ A regra é **geral**, e não sobre vasoativas. Todo módulo-ferramenta —
 calculadora, conversor, tabela de preparo — recebe uma decisão já tomada e

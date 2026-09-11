@@ -5424,3 +5424,59 @@ exatamente o que a trava do item 2 pega.
 
 ⚠️ **Não** limpar `scripts/*.cjs` e `*.ts` na mesma passada dos `.md` sem rodar
 o `test:all` depois: mensagens de falha de teste mudam de string.
+
+---
+
+## D-137 — ✅ FECHADA · O ESCOPO DA META DE PAM 90–100 ESTAVA TROCADO
+
+**Data:** 2026-09-10 · **Ordem do autor:** *"abra uma correção clínica separada
+para os quatro transportes antigos divergentes, com prioridade para a meta de
+PAM 90–100 (…) Primeiro meça."*
+
+Nasceu da conferência do **F-33** contra o PDF do CPTW386.1. O app fundiu duas
+linhas independentes da fonte e, ao fundir, **trocou a população**: escreveu
+que a meta de PAM 90–100 valia para *"lesão cerebral grave"*, quando a fonte a
+atribui a *"pacientes neurológicos agudos **com hipertensão intracraniana**
+(suspeita ou confirmada)"*.
+
+⚠️ *"Sem lesão cerebral grave"* é a **exclusão** de outra linha — a que permite
+tolerar PAM < 65 no sangramento ativo. Virou condição de uma meta que não era
+dela.
+
+### A medição, feita ANTES da correção
+
+| pergunta | resposta |
+|---|---|
+| onde aparece no runtime | **dois carregadores**: `lib/i18n/modules/choque-einstein.ts` e `protocols/guidelines_metadata.json` |
+| é *user-facing*? | ⛔ **não** — zero emissores da chave PT; zero telas renderizam `key_recommendations_covered`; nenhuma tela pede o módulo `choque` |
+| deriva alguma decisão? | ⛔ **não** — texto e metadado, sem motor, sem portão, sem tela |
+| está em produção? | ⚠️ **sim**, no bundle servido (acentos escapados, por isso a busca literal falhava). **Distribuído, não renderizado** |
+| alguma trava exigia o texto errado? | ⛔ **nenhuma** — e essa era a fraqueza |
+
+➜ Medição completa em `auditoria/D-137-ESCOPO-DA-META-PRESSORICA.md`.
+
+### A correção
+
+Restaurou **o escopo da fonte**, sem interpretação nova: a meta voltou a ser
+**duas afirmações separadas**, a de 90–100 carregando a própria negativa
+(*"não é meta de AVC isquêmico nem de lesão cerebral grave em geral"*).
+Junto: a classificação hemorrágica deixou de ser atribuída ao **ATLS** e passou
+a citar **Cannon, NEJM 2018**; as metas gerais recuperaram a ressalva do
+documento; a janela renal recuperou o *"ou < 30 mL/h"*.
+
+### A trava — `test:escopo-meta-pressorica`
+
+Portão de **114 → 115** travas. Quatro mutações fiéis, restaurando o transporte
+antigo **exatamente**, e as quatro reprovam. Mais duas conferências
+anti-cegueira: a trava reprova se parar de encontrar o que mede.
+
+⚠️ Duas armadilhas da construção ficaram registradas: casar só a faixa
+`90–100` acusa **PAD 90–100** da pré-eclâmpsia, e a trava passou a perguntar
+qual parâmetro governa a faixa; e ler `git show :arquivo` mede o índice, não o
+código — passou a ler a árvore de trabalho.
+
+### O que ela **não** fechou
+
+O módulo `choque` continua sem tela. A aplicabilidade de qualquer meta ao AVC
+isquêmico continua **pendente de revisão clínica**. Nenhuma meta nova de AVC
+foi criada: o AVC segue com a rec. 38 do F-32 mais a F-05, **sem número**.

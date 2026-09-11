@@ -381,7 +381,7 @@ volume**, e **sem** prescrever tipo nem volume total.
 | **F-32** | choque circulatório e monitorização hemodinâmica (ESICM 2025) | transcrito · fidelidade conferida · **aplicabilidade ao AVC pendente** |
 | **F-33** | choque no adulto, pathway operacional por mecanismo (Einstein CPTW386.1) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
 | **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia parte 1) | ⛔ **aberto** |
-| **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · candidata anotada, não lida: Bloom 2023 |
+| **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · é uma **família por mecanismo** (F-35a…d), não uma fonte única |
 
 O que cada slot aberto deve responder, e os cuidados de transcrição de cada
 um, estão em `protocols/fontes-verbatim/choque-fontes-abertas.md`.
@@ -410,9 +410,23 @@ corticoide no 2º vasopressor) vive **dentro da seção de sepse**, e mesmo lá
 documento inteiro é o gatilho de **linha arterial** (noradrenalina > 0,3 a
 0,5), que é indicação de monitorização.
 
-➜ F-35 continua **aberto**. Candidata anotada, não lida: Bloom JE et al.,
-*State of Shock: Contemporary Vasopressor and Inotrope Use in Cardiogenic
-Shock*, J Am Heart Assoc 2023 — referência 11 do próprio pathway.
+➜ F-35 continua **aberto**, e a decisão do autor mudou a forma dele: **é uma
+família de slots por mecanismo**, não uma fonte única.
+
+| sub-slot | mecanismo | candidata |
+|---|---|---|
+| F-35a | cardiogênico | Bloom 2023, ref. 11 do próprio pathway — **não lida** |
+| F-35b | hipovolêmico / hemorrágico | nenhuma |
+| F-35c | obstrutivo | nenhuma |
+| F-35d | distributivo não séptico | nenhuma |
+
+⚠️⚠️ **Bloom 2023 não vira o F-35 inteiro.** Ele é de choque cardiogênico, e o
+C2 entra em **choque indiferenciado**. Adotá-lo como fonte única repetiria, ao
+contrário, o erro que a proibição do séptico evita: um mecanismo governando
+todos.
+
+✅ **Efeito prático bom:** o Passo 5 passa a poder fechar **por mecanismo**, e
+não tudo de uma vez. É o que a arquitetura do Passo 2 torna possível.
 
 ⚠️ **Tipo de fluido também não veio.** O único nomeado é *soro ringer lactato*,
 e está na seção de sepse. F-34 continua **aberto**.

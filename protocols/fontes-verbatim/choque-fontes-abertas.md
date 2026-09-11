@@ -63,14 +63,43 @@ hipertônica de pequeno volume.
 
 ---
 
-## F-35 · Dose inicial e titulação de vasopressor
+## F-35 · Dose inicial e titulação de vasopressor — ⚠️ **UMA FAMÍLIA, NÃO UMA FONTE**
 
-| | |
-|---|---|
-| **documento** | ⛔ nenhum adotado. **Candidata anotada, não lida:** Bloom JE, Chan W, Kaye DM, Stub D. *State of Shock: Contemporary Vasopressor and Inotrope Use in Cardiogenic Shock.* J Am Heart Assoc. 2023;12:e029787 — **referência 11 do próprio CPTW386.1** |
-| **estado** | ⛔ **ABERTO** |
+**Decisão do autor, 2026-09-10:** F-35 não é um slot único. É uma **família de
+slots por mecanismo**, porque o C2 entra em **choque indiferenciado** e só
+depois caracteriza.
 
-### Por que continua aberto, agora com prova
+`reconhecer choque → caracterizar mecanismo provável → tratamento específico`
+
+| sub-slot | mecanismo | estado | candidata |
+|---|---|---|---|
+| **F-35a** | cardiogênico | ⛔ aberto | Bloom JE, Chan W, Kaye DM, Stub D. *State of Shock: Contemporary Vasopressor and Inotrope Use in Cardiogenic Shock.* J Am Heart Assoc. 2023;12:e029787 — **ref. 11 do CPTW386.1**. Não lida. |
+| **F-35b** | hipovolêmico / hemorrágico | ⛔ aberto | nenhuma |
+| **F-35c** | obstrutivo | ⛔ aberto | nenhuma |
+| **F-35d** | distributivo não séptico | ⛔ aberto | nenhuma |
+| **—** | distributivo séptico | ⛔ **fora de escopo** | o app já tem SSC 2026 no módulo de sepse, e ⛔ não se transporta para cá |
+
+⚠️⚠️ **Bloom 2023 não vira o F-35 inteiro.** Ele pode ser excelente para
+cardiogênico e **não responde** por hipovolêmico, obstrutivo ou distributivo.
+Adotá-lo como fonte única repetiria, ao contrário, o erro que a proibição do
+séptico evita: um mecanismo governando todos.
+
+### Por que a família, e não uma fonte só
+
+A busca por diretriz de sociedade para farmacologia de **choque
+indiferenciado** não encontrou documento. As diretrizes são organizadas **por
+tipo de choque**. ⚠️ Isto **não** é lacuna de busca: é como a literatura está
+organizada, e a arquitetura do C2 já foi ajustada a isso.
+
+⛔ Enquanto **qualquer** sub-slot do mecanismo em questão estiver aberto, o
+Passo 5 **não vira tela para aquele mecanismo**. O app pode reconhecer a
+ameaça, caracterizar o mecanismo e dizer que há indicação de vasopressor.
+Não pode dizer quanto.
+
+⚠️ Isso permite fechar **por mecanismo**, e não tudo de uma vez — que é
+exatamente o que a arquitetura do Passo 2 torna possível.
+
+### A prova de que o F-33 não fecha isto
 
 Nem o F-32 nem o F-33 trazem dose inicial ou esquema de titulação de
 noradrenalina. No F-33 isso foi **medido no documento**: em 8 páginas não há um
@@ -80,19 +109,7 @@ noradrenalina. No F-33 isso foi **medido no documento**: em 8 páginas não há 
 (noradrenalina → vasopressina → adrenalina, com corticoide ao 2º vasopressor),
 mas ela vive **dentro da seção «RECOMENDAÇÕES E METAS CLÍNICAS EM PACIENTES
 COM SEPSE»**. ⛔ É algoritmo de sepse, está sob proibição explícita de
-transporte, e **mesmo assim não traz dose**. A busca por diretriz de sociedade para farmacologia de
-**choque indiferenciado** não encontrou documento: as diretrizes existentes são
-organizadas **por tipo de choque**, e a de choque séptico está sob proibição
-explícita de transporte automático.
-
-⚠️ Isto **não** é lacuna de busca. É como a literatura está organizada, e a
-consequência arquitetural já foi aceita: **o mecanismo decide o tratamento**,
-então a dose provavelmente virá de uma fonte por subtipo, não de uma fonte
-única de choque.
-
-⛔ Enquanto este slot estiver aberto, o Passo 5 do C2 **não vira tela**. O app
-pode reconhecer a ameaça, classificar o mecanismo e dizer que há indicação de
-vasopressor. Não pode dizer quanto.
+transporte, e **mesmo assim não traz dose**.
 
 ### ⚠️ O que este slot NÃO autoriza no lugar
 

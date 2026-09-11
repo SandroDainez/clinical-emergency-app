@@ -21,8 +21,14 @@ export const ES_CHOQUE_EINSTEIN: Record<string, string> = {
   "Estabilizar e fixar as metas": "Estabilizar y fijar las metas",
   "As metas valem para qualquer tipo de choque — o tipo define o tratamento, não o alvo.":
     "Las metas valen para cualquier tipo de choque — el tipo define el tratamiento, no el objetivo.",
-  "Metas hemodinâmicas gerais: PAM ≥ 65 mmHg; normalização do lactato (alvo < 2 mmol/L ≈ 18 mg/dL), com queda esperada ≥ 10% por hora.":
-    "Metas hemodinámicas generales: PAM ≥ 65 mmHg; normalización del lactato (objetivo < 2 mmol/L ≈ 18 mg/dL), con descenso esperado ≥ 10% por hora.",
+  /**
+   * ⚠️ D-137 · O ASTERISCO É DA FONTE e ⛔ não pode ser perdido: F-33 §3.1
+   * traz, sob a mesma tabela, "As metas podem variar de acordo com o contexto
+   * clínico. Consultar também as Metas Específicas para as várias causas de
+   * choque". Sem ele, meta condicional vira alvo universal.
+   */
+  "Metas hemodinâmicas gerais: PAM ≥ 65 mmHg; normalização do lactato (alvo < 2 mmol/L ≈ 18 mg/dL), com queda esperada ≥ 10% por hora. As metas podem variar conforme o contexto clínico — consultar também as metas específicas de cada causa de choque.":
+    "Metas hemodinámicas generales: PAM ≥ 65 mmHg; normalización del lactato (objetivo < 2 mmol/L ≈ 18 mg/dL), con descenso esperado ≥ 10% por hora. Las metas pueden variar según el contexto clínico — consultar también las metas específicas de cada causa de choque.",
   "Metas de oferta de O₂: hemoglobina ≥ 7 g/dL e saturação de pulso > 90%.":
     "Metas de aporte de O₂: hemoglobina ≥ 7 g/dL y saturación de pulso > 90%.",
   "Meta de reversão de disfunção orgânica: diurese > 0,5 mL/kg/h e melhora do estado neurológico atribuível ao choque.":
@@ -39,12 +45,23 @@ export const ES_CHOQUE_EINSTEIN: Record<string, string> = {
   // ── Hipovolêmico / hemorrágico ──
   "Ações: 2 acessos calibrosos; bólus inicial de 500–1000 mL de cristaloide; controlar a fonte (hemostasia/cirurgia); hemoderivados e protocolo de transfusão maciça se hemorrágico; reavaliar após cada alíquota.":
     "Acciones: 2 accesos de grueso calibre; bolo inicial de 500–1000 mL de cristaloide; controlar la fuente (hemostasia/cirugía); hemoderivados y protocolo de transfusión masiva si es hemorrágico; reevaluar tras cada alícuota.",
-  "Classificação do choque hemorrágico (ATLS): classe I até 750 mL (15%), FC < 100, PA normal · classe II 750–1500 mL (15–30%), FC 100–120, pressão de pulso estreita · classe III 1500–2000 mL (30–40%), FC 120–140, PA reduzida · classe IV acima de 2000 mL (> 40%), FC > 140, confusão e letargia.":
-    "Clasificación del choque hemorrágico (ATLS): clase I hasta 750 mL (15%), FC < 100, PA normal · clase II 750–1500 mL (15–30%), FC 100–120, presión de pulso estrecha · clase III 1500–2000 mL (30–40%), FC 120–140, PA reducida · clase IV más de 2000 mL (> 40%), FC > 140, confusión y letargia.",
+  "Classificação do choque hemorrágico (Cannon, N Engl J Med 2018 — a tabela referenciada pelo pathway; NÃO é ATLS): classe I até 750 mL (15%), FC < 100, PA normal · classe II 750–1500 mL (15–30%), FC 100–120, pressão de pulso estreita · classe III 1500–2000 mL (30–40%), FC 120–140, PA reduzida · classe IV acima de 2000 mL (> 40%), FC > 140, confusão e letargia.":
+    "Clasificación del choque hemorrágico (Cannon, N Engl J Med 2018 — la tabla referenciada por la vía clínica; NO es ATLS): clase I hasta 750 mL (15%), FC < 100, PA normal · clase II 750–1500 mL (15–30%), FC 100–120, presión de pulso estrecha · clase III 1500–2000 mL (30–40%), FC 120–140, PA reducida · clase IV más de 2000 mL (> 40%), FC > 140, confusión y letargia.",
   "Atenção: em boa parte dos pacientes a resposta compensatória mantém a PA normal até que 30% da volemia tenha sido perdida — PA normal não afasta hemorragia grave.":
     "Atención: en buena parte de los pacientes la respuesta compensatoria mantiene la PA normal hasta que se ha perdido el 30% de la volemia — una PA normal no descarta hemorragia grave.",
-  "Metas no hemorrágico até a hemostasia: hipotensão permissiva pode ser considerada em casos selecionados (PAM-alvo 50 mmHg), tolerando PAM < 65 no sangramento ativo — EXCETO em lesão cerebral grave, em que o alvo é PAM 90–100 mmHg.":
-    "Metas en el hemorrágico hasta la hemostasia: la hipotensión permisiva puede considerarse en casos seleccionados (PAM objetivo 50 mmHg), tolerando PAM < 65 en el sangrado activo — EXCEPTO en lesión cerebral grave, donde el objetivo es PAM 90–100 mmHg.",
+  /**
+   * ⚠️⚠️⚠️ D-137 · DUAS LINHAS, e ⛔ NUNCA uma. A fonte (F-33 §4.2, p. 5) tem
+   * duas afirmações independentes, e fundi-las TROCA A POPULAÇÃO:
+   *   · "sem lesão cerebral grave" é a EXCLUSÃO de quem tolera PAM < 65;
+   *   · "hipertensão intracraniana (suspeita ou confirmada)" é a CONDIÇÃO da
+   *     meta de 90–100.
+   * ⛔ "lesão cerebral grave" ⛔ NÃO é equivalente de "hipertensão
+   * intracraniana", e a meta de 90–100 ⛔ NÃO é meta de AVC.
+   */
+  "Meta no hemorrágico até a hemostasia: PAM ≥ 65 mmHg. Em casos selecionados a hipotensão permissiva pode ser considerada, com PAM-alvo de 50 mmHg; até a hemostasia efetiva, tolerar PAM < 65 mmHg em sangramento ativo e SEM lesão cerebral grave.":
+    "Meta en el hemorrágico hasta la hemostasia: PAM ≥ 65 mmHg. En casos seleccionados puede considerarse la hipotensión permisiva, con PAM objetivo de 50 mmHg; hasta la hemostasia efectiva, tolerar PAM < 65 mmHg en sangrado activo y SIN lesión cerebral grave.",
+  "Paciente neurológico agudo COM hipertensão intracraniana, suspeita ou confirmada: a meta é PAM 90–100 mmHg. Escopo da fonte — não é meta de AVC isquêmico nem de lesão cerebral grave em geral.":
+    "Paciente neurológico agudo CON hipertensión intracraneal, sospechada o confirmada: la meta es PAM 90–100 mmHg. Alcance de la fuente — no es meta de ACV isquémico ni de lesión cerebral grave en general.",
   "Hemoglobina-alvo 7–8 g/dL; em paciente neurológico agudo, 9–10 g/dL. Corrigir a coagulopatia guiada por tromboelastometria quando disponível.":
     "Hemoglobina objetivo 7–8 g/dL; en paciente neurológico agudo, 9–10 g/dL. Corregir la coagulopatía guiada por tromboelastometría cuando esté disponible.",
   "Manter temperatura entre 35,7 e 37 °C; repor cálcio durante a transfusão maciça (o protocolo-fonte usa cloreto de cálcio a cada 2 hemocomponentes — seguir o regime institucional); suspender anticoagulantes, antiagregantes e fibrinolíticos.":
