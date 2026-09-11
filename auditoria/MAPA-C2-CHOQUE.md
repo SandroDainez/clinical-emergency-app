@@ -380,7 +380,7 @@ volume**, e **sem** prescrever tipo nem volume total.
 |---|---|---|
 | **F-32** | choque circulatório e monitorização hemodinâmica (ESICM 2025) | transcrito · fidelidade conferida · **aplicabilidade ao AVC pendente** |
 | **F-33** | choque no adulto, pathway operacional por mecanismo (Einstein CPTW386.1) | ✅ **transcrito** em 2026-09-10 · aplicabilidade ao AVC pendente |
-| **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia parte 1) | ⛔ **aberto** |
+| **F-34** | escolha do fluido de ressuscitação (ESICM, fluidoterapia **Parte 1, 2024** — Arabi et al., ICM 50(6):813–831, DOI 10.1007/s00134-024-07369-9) | ⛔ **aberto** · PDF não obtido |
 | **F-35** | vasopressor — dose inicial e titulação | ⛔ **aberto** · é uma **família por mecanismo** (F-35a…d), não uma fonte única |
 
 O que cada slot aberto deve responder, e os cuidados de transcrição de cada
@@ -470,3 +470,68 @@ Existe uma declaração europeia de **agosto de 2026** sobre **critérios
 diagnósticos** de choque cardiogênico. É específica de cardiogênico e é
 diagnóstica. ⛔ **Não serve** para preencher a farmacologia do Passo 5, não
 abriu slot, e nenhuma linha deste mapa saiu dela.
+
+
+---
+
+# Regra R-TCE · TCE não é proxy de AVC
+
+⚠️ Promovida a **regra nomeada** em 2026-09-10, a pedido do autor, e vale para
+**todo** slot deste ramo — F-32, F-33, F-34 e a família F-35.
+
+> ⛔ **Uma recomendação para traumatismo cranioencefálico não vale para AVC
+> isquêmico só porque as duas populações são neurológicas.**
+
+A prova de que as populações não se equivalem está em duas fontes independentes
+que dão **números diferentes** para condições vizinhas:
+
+| fonte | população | alvo |
+|---|---|---|
+| F-32, rec. 43 (UGPS) | TCE com Glasgow ≤ 8 | PAM ≥ 80 mmHg |
+| F-33, p. 5 | neurológico agudo **com hipertensão intracraniana** | PAM 90–100 mmHg |
+
+Se houvesse equivalência, os dois números concordariam. Não concordam.
+
+⚠️ A **D-137** mostrou que a troca acontece até **dentro da mesma fonte**:
+"lesão cerebral grave" substituiu "hipertensão intracraniana" entre duas linhas
+da mesma página. Entre dois documentos é mais fácil, não menos.
+
+⚠️ **O silêncio não é permissão.** Fonte que não nomeia população registra-se
+como *"população não declarada"*, nunca como *"vale para todos"*.
+
+O texto operacional da regra, com a aplicação item a item, está em
+`protocols/fontes-verbatim/choque-fontes-abertas.md`, seção F-34.
+
+
+---
+
+# Passo 4 · o que a fonte-mãe já fecha sobre fluido, e o que ela não fecha
+
+Levantado em 2026-09-10, ao abrir o F-34, e **anterior** a qualquer leitura da
+ESICM.
+
+**F-05 · AHA/ASA 2026, §4.3 rec. 1 · COR 1 · LOE C-LD · p. e350**
+
+> "In patients with AIS, hypotension and hypovolemia should be corrected to
+> maintain systemic perfusion levels necessary to support organ function."
+
+**Supportive Text da mesma recomendação, mesma página** — contextual, sem
+força normativa:
+
+> "No studies have addressed the treatment of low BP in patients with stroke…
+> There are no data to guide volume and duration of parenteral fluid delivery.
+> **No studies have compared different isotonic fluids.**"
+
+| pergunta | estado, pela fonte-mãe |
+|---|---|
+| corrigir hipovolemia no AVC | ✅ **mandado**, COR 1 |
+| **qual** fluido | ⛔ a fonte diz que **ninguém comparou** |
+| **quanto** e **por quanto tempo** | ⛔ a fonte declara ausência de dados |
+
+⚠️⚠️ **Isto fixa o teto do F-34.** Qualquer preferência de fluido que a ESICM
+traga entra no AVC como **recomendação de adulto crítico em geral**, por
+analogia de população, e **nunca** como evidência de AVC. A distinção tem de
+sobreviver até a tela.
+
+⚠️ Também explica por que o eixo *aplicabilidade ao AVC* do F-34 **não fecha
+por leitura de fonte**: depende de decisão clínica do autor.

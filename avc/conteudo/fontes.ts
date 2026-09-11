@@ -187,7 +187,7 @@ export const SLOTS: readonly SlotDeFonte[] = [
    */
   { id: "F-32", assunto: "Choque circulatório e monitorização hemodinâmica", estado: "transcrito", arquivo: ESICM_CHOQUE },
   { id: "F-33", assunto: "Choque no adulto — pathway operacional por mecanismo", estado: "transcrito", arquivo: CPTW386 },
-  { id: "F-34", assunto: "Escolha do fluido de ressuscitação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
+  { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35", assunto: "Vasopressor — dose inicial e titulação", estado: "aberto", arquivo: CHOQUE_ABERTAS },
 ] as const;
 

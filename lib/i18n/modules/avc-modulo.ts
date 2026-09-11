@@ -197,7 +197,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Choque circulatorio y monitorización hemodinámica",
   "Choque no adulto — pathway operacional por mecanismo":
     "Choque en el adulto — vía operativa por mecanismo",
-  "Escolha do fluido de ressuscitação": "Elección del fluido de reanimación",
+  "Escolha do fluido de ressuscitação em adulto crítico": "Elección del fluido de reanimación en adulto crítico",
   "Vasopressor — dose inicial e titulação": "Vasopresor — dosis inicial y titulación",
 
   // ── UX clínica da Superfície A (correções visuais de 2026-08-28) ────────
