@@ -539,7 +539,14 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "within 4.5 hours of symptom onset or last known well",
       },
     ],
-    exige: ["deficit_leve_nao_incapacitante"],
+    /**
+     * ⚠️⚠️ A JANELA É **CRITÉRIO** (commit 5 · AVC-02, R2). ⛔ Sem isto a COR 3
+     * alcançava um déficit leve de **30 horas** do mesmo jeito que um de duas.
+     * ⛔ O marco é o que a frase da fonte declara — `onset_ou_lkw`, ⛔ com a
+     * disjunção preservada (basta um dentro; HR-1).
+     */
+    criterios: { janela: { usaJanelasDaRecomendacao: true } },
+    exige: ["deficit_leve_nao_incapacitante", "janela"],
   },
   {
     id: "ivt_agente",
@@ -613,7 +620,9 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "within 4.5 hours from symptom recognition",
       },
     ],
-    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"],
+    /** ⚠️ Janela como critério (commit 5) — ⛔ conta do **reconhecimento**, ⛔ e ⛔ de nenhum outro relógio. */
+    criterios: { janela: { usaJanelasDaRecomendacao: true } },
+    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],
   },
   {
     id: "ivt_wakeup_ou_45_9",
@@ -639,7 +648,13 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "4.5–9 hours from last known well",
       },
     ],
-    exige: ["penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt"],
+    /**
+     * ⚠️ Janela como critério (commit 5). ⛔ `midpoint_of_sleep` ⛔ não tem campo
+     * (lacuna declarada em `ORIGEM_DO_MARCO`); ⛔ a alternativa 4,5–9 h do LKW
+     * ⛔ é a que pode fechar. ⛔ F-31 continua travando a correspondência.
+     */
+    criterios: { janela: { usaJanelasDaRecomendacao: true } },
+    exige: ["penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt", "janela"],
     travadaPor: "F-31",
   },
   {
@@ -660,7 +675,9 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
         verbatim: "within 4.5 to 24 hours from symptom onset or last known well",
       },
     ],
-    exige: ["sitio_da_oclusao", "penumbra_salvavel", "nao_elegivel_a_evt"],
+    /** ⚠️ Janela como critério (commit 5): 4,5–24 h de `onset_ou_lkw`. ⛔ F-31 continua travando. */
+    criterios: { janela: { usaJanelasDaRecomendacao: true } },
+    exige: ["sitio_da_oclusao", "penumbra_salvavel", "nao_elegivel_a_evt", "janela"],
     travadaPor: "F-31",
   },
 

@@ -467,12 +467,18 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
  * dominante entre elas. ⛔ E um paciente com ⛔ **só** *"basilar"* anotado
  * recebia veredito **negativo** por uma recomendação de M2.
  *
- * ── ⚠️⚠️ ⛔ POR QUE A IVT ⛔ NÃO MUDA ─────────────────────────────────────
+ * ── ⚠️⚠️ ⛔ A IVT ⛔ E OS CRITÉRIOS — ⛔ revisto no commit 5 (2026-09-12) ────
  *
- * ⛔ ⛔ ⛔ **⛔ Nenhuma** recomendação de IVT declara `criterios`. ⚠️ Sem
- * critério declarado a leitura cai, intacta, na semântica antiga — ⛔ e ⛔ isso é
- * o **§50** executado: a regra clínica que já funcionava ⛔ não se altera de
- * carona. ⛔ Há prova disso.
+ * ⛔ Até o commit 5 **⛔ nenhuma** recomendação de IVT declarava `criterios`, ⛔ e
+ * ⛔ isso era o §50 executado ⛔ ao criar os critérios da EVT: ⛔ não alterar de
+ * carona. ⚠️ ⛔ A auditoria (AVC-02) mediu o preço: ⛔ a janela ⛔ nunca era
+ * insumo da IVT, ⛔ e um início há **72 h** fechava como um de duas.
+ *
+ * ⚠️ Agora as recomendações IVT **de elegibilidade** declaram
+ * `criterios.janela` — ⛔ **⛔ só a janela**, ⛔ e ⛔ nenhuma faixa numérica:
+ * ⛔ os demais insumos da IVT continuam ternários ⛔ e ⛔ continuam lidos por
+ * presença/resposta, ⛔ exatamente como antes. ⛔ Agente, posologia ⛔ e
+ * princípio ⛔ não declaram critério porque ⛔ não decidem candidatura.
  * ────────────────────────────────────────────────────────────────────────── */
 
 /**

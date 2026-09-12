@@ -420,9 +420,14 @@ confere("⚠️⚠️ ⛔ e a rec. 3 ⛔ NÃO qualifica o método",
     !rec3.exige.includes("penumbra_por_perfusao_automatizada"),
   '⛔ ela diz apenas *"with salvageable ischemic penumbra"* — impor o método inventaria critério');
 
+/**
+ * ⚠️ Desde o commit 5 (2026-09-12, AVC-02) a recomendação também exige a
+ * **janela** — ⛔ contada do reconhecimento. ⛔ Os dois componentes de RM
+ * continuam **separados**, ⛔ e ⛔ é ⛔ isso que esta conferência mede.
+ */
 confere("⚠️⚠️ RM: os DOIS componentes, separados",
   C.RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido").exige.sort().join() ===
-    ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"].sort().join(),
+    ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"].sort().join(),
   "⛔ um booleano apagaria **qual** dos dois falta — e que o segundo é uma **ausência**");
 
 /**

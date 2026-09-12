@@ -56,7 +56,8 @@ module.exports = {
     {
       nome: "recomendação clínica volta a ter exige vazio",
       arquivo: ARQ.conteudoF,
-      de: '    exige: ["deficit_leve_nao_incapacitante"],',
+      /** ⚠️ Desde o commit 5 (2026-09-12) a janela também é exigida — a âncora acompanha. */
+      de: '    exige: ["deficit_leve_nao_incapacitante", "janela"],',
       para: "    exige: [],",
     },
     {
@@ -71,20 +72,20 @@ module.exports = {
     {
       nome: "rec. 2 perde a exigência de perfusão automatizada",
       arquivo: ARQ.conteudoF,
-      de: '    exige: ["penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt"],',
-      para: '    exige: ["penumbra_salvavel", "nao_elegivel_a_evt"],',
+      de: '    exige: ["penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt", "janela"],',
+      para: '    exige: ["penumbra_salvavel", "nao_elegivel_a_evt", "janela"],',
     },
     {
       nome: "rec. 3 ganha exigência de método que a fonte não fez",
       arquivo: ARQ.conteudoF,
-      de: '    exige: ["sitio_da_oclusao", "penumbra_salvavel", "nao_elegivel_a_evt"],',
-      para: '    exige: ["sitio_da_oclusao", "penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt"],',
+      de: '    exige: ["sitio_da_oclusao", "penumbra_salvavel", "nao_elegivel_a_evt", "janela"],',
+      para: '    exige: ["sitio_da_oclusao", "penumbra_por_perfusao_automatizada", "nao_elegivel_a_evt", "janela"],',
     },
     {
       nome: "os dois componentes de RM viram um",
       arquivo: ARQ.conteudoF,
-      de: '    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada"],',
-      para: '    exige: ["dwi_menor_que_um_terco"],',
+      de: '    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],',
+      para: '    exige: ["dwi_menor_que_um_terco", "janela"],',
     },
 
     /** ⚠️⚠️ LEVE **E** ⛔ NÃO INCAPACITANTE — duas propriedades. */

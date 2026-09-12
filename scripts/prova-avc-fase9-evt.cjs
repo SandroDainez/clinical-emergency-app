@@ -798,13 +798,40 @@ const M2D = "M2 dominante da artéria cerebral média";
    * de comportamento. ⚠️ ⛔ Isto é o **§50** executado: a regra clínica que já
    * funcionava ⛔ não se altera de carona.
    */
-  const ivtComCriterios = SF.RECOMENDACOES.filter(
-    (r) => r.terapia === "ivt" && r.criterios !== undefined
+  /**
+   * ── ⚠️⚠️ REVISTO NO COMMIT 5 (2026-09-12 · AVC-02) ──────────────────────
+   *
+   * ⛔ A auditoria mediu o preço do §50 levado ao pé da letra: ⛔ sem
+   * `criterios.janela`, um início há **72 h** fechava a IVT como um de duas.
+   * ⚠️ Decisão do autor: ⛔ a janela é critério das recomendações IVT **de
+   * elegibilidade**, ⛔ e ⛔ **⛔ só ela** — ⛔ nenhuma faixa numérica entra de
+   * carona, ⛔ e agente/posologia/princípio ⛔ não declaram critério ⛔ nenhum.
+   * ⛔ É ⛔ isto que a guarda passa a medir.
+   */
+  const ivt = SF.RECOMENDACOES.filter((r) => r.terapia === "ivt");
+  const foraDaJanela = ivt.filter(
+    (r) => r.criterios !== undefined
+      && Object.keys(r.criterios).some((k) => k !== "janela")
   );
   conf(
-    "⚠️⚠️ ⛔ NENHUMA recomendação de IVT ganhou `criterios` de carona",
-    ivtComCriterios.length === 0,
-    `⛔ ${ivtComCriterios.map((r) => r.id).join(" · ")}`
+    "⚠️⚠️ ⛔ NENHUMA recomendação de IVT ganhou critério numérico de carona — ⛔ só a janela",
+    foraDaJanela.length === 0,
+    `⛔ ${foraDaJanela.map((r) => `${r.id}:${Object.keys(r.criterios).join("+")}`).join(" · ")}`
+  );
+  const elegSemJanela = ivt.filter(
+    (r) => r.dominio === "elegibilidade" && r.janelas.length > 0
+      && !(r.criterios?.janela && r.exige.includes("janela"))
+  );
+  conf(
+    "⚠️⚠️ ⛔ TODA recomendação IVT de elegibilidade com janela declara `criterios.janela` ⛔ e exige `janela`",
+    elegSemJanela.length === 0,
+    `⛔ ${elegSemJanela.map((r) => r.id).join(" · ")} — janela no catálogo ⛔ sem efeito decisório é AVC-02 de volta`
+  );
+  const naoEleg = ivt.filter((r) => r.dominio !== "elegibilidade" && r.criterios !== undefined);
+  conf(
+    "⚠️ ⛔ agente, posologia ⛔ e princípio ⛔ não declaram critério",
+    naoEleg.length === 0,
+    `⛔ ${naoEleg.map((r) => r.id).join(" · ")}`
   );
 }
 
