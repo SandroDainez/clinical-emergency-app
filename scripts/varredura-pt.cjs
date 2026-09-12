@@ -315,7 +315,22 @@ const NEUTRO = new RegExp(
  * e o que vai para a tela precisa de tradução — tenha acento ou não, tenha uma
  * palavra ou vinte.
  */
-const CAMPO_DE_TELA = /\b(label|title|value|summary|name|subtitle|question|intro|reason|customLabel|note|indication|category|genericName|text|placeholder|helperText|headerChamada)\s*:\s*$/;
+/**
+ * ⚠️⚠️ `assunto` entrou em 2026-09-11 pela **D-138**. O assunto de cada slot
+ * em `avc/conteudo/fontes.ts` É EXIBIDO na superfície, sob "Fontes que
+ * governam esta superfície" — e estava fora desta lista, caindo na heurística
+ * de idioma.
+ *
+ * ⛔ O efeito medido: "Anafilaxia geral — broncodilatador, adrenalina EV e
+ * volume" não tem um único acento nem palavra-pista, saiu da rede em silêncio,
+ * e iria para a tela do médico hispanofalante em português.
+ *
+ * ⚠️ Correção ESTREITA de propósito: em posição de campo de tela o literal vai
+ * para a tela, e isso basta — é a regra que o próprio bloco `naTela` já
+ * aplica. A parte da D-138 que segue aberta é o descarte por `PT_HINT` FORA de
+ * campo de tela reconhecido.
+ */
+const CAMPO_DE_TELA = /\b(label|title|value|summary|name|subtitle|question|intro|reason|customLabel|note|indication|category|genericName|text|placeholder|helperText|headerChamada|assunto)\s*:\s*$/;
 
 /**
  * ⚠️⚠️ `tr("…")` É A EVIDÊNCIA MAIS OBJETIVA QUE EXISTE — acrescentado em

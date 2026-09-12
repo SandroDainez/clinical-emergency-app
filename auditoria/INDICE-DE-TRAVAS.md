@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**103 de 117 travas com declaração completa.**
+**104 de 118 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -103,6 +103,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que nenhum arquivo de runtime atribua a meta de **PAM 90–100 mmHg** a "lesão cerebral grave"; que toda ocorrência dessa meta venha acompanhada de "hipertensão intracraniana", que é o escopo literal da fonte (F-33 §4.2, p. 5); que a classificação do choque hemorrágico NÃO seja atribuída ao ATLS, que o documento não cita; que a afirmação de metas hemodinâmicas gerais carregue a ressalva do próprio documento de que as metas variam com o contexto clínico.
 - **NÃO PROMETE:** que os números estejam certos contra o PDF — isso é a transcrição F-33, e trava nenhuma substitui leitura. Também NÃO promete que o texto chegue ou não chegue à tela: mede o texto, não a renderização. A medição de alcance está em `auditoria/D-137-ESCOPO-DA-META-PRESSORICA.md`.
 - **UNIVERSO:** todos os arquivos versionados, EXCETO `auditoria/` e `protocols/fontes-verbatim/`. Esses dois precisam poder citar o texto errado — um para transcrever a fonte, o outro para documentar o defeito. Isentar por natureza do arquivo, e nunca por pasta de conveniência. ── ⚠️⚠️⚠️ O DEFEITO QUE ELA FECHA ──────────────────────────────────────── A fonte tem DUAS afirmações independentes na mesma página: 1. "Até hemostasia efetiva, deve-se tolerar PAM <65 mmHg em pacientes com sangramento ativo e SEM LESÃO CEREBRAL GRAVE" 2. "Para pacientes neurológicos agudos COM HIPERTENSÃO INTRACRANIANA (suspeita ou confirmada) : meta de PAM 90 a 100mmHg" O transporte antigo fundiu as duas e escreveu que 90–100 valia para "lesão cerebral grave". A exclusão da primeira virou a condição da segunda, e a população se ampliou de uma CONDIÇÃO para um UNIVERSO. ⚠️ Nenhuma trava pegava isso. A varredura de i18n exige que exista par PT/ES, e não olha o conteúdo — corrigir os dois lados juntos a mantém verde mesmo quando os dois lados estão errados.
+
+## `test:varredura-sem-acento` → `scripts/prova-varredura-morde-sem-acento.cjs`
+
+- **PROMETE:** que `varredura-pt.cjs` **reprove** uma frase clínica em português, em campo de tela, escrita **sem um único acento e sem palavra-pista** do português. É mutação fiel: insere a frase, roda a varredura real, confere que ela morde, e desfaz.
+- **NÃO PROMETE:** que o classificador `isProse` esteja correto em geral. Ele continua descartando por heurística de idioma **fora** de campo de tela reconhecido, e essa parte da **D-138 segue aberta**. Esta trava fecha **um** buraco, o de campo de tela, e ⛔ não declara o auditor confiável.
+- **UNIVERSO:** `avc/conteudo/fontes.ts` (campo `assunto:`) e `scripts/varredura-pt.cjs`. ── ⚠️⚠️⚠️ O DEFEITO QUE ELA FECHA ──────────────────────────────────────── O assunto do **F-36** entrou no registro de fontes sem par PT/ES e a varredura devolveu **SEM TRADUÇÃO: 0**. A frase era "Anafilaxia geral — broncodilatador, adrenalina EV e volume" e ela **não tem um único acento**. Em `isProse`, fora de campo de tela reconhecido, vale `if (!PT_HINT.test(s)) return false;` — a frase sai da rede em silêncio, e iria para a tela do médico hispanofalante em português. ⚠️ O zero da varredura significava *"não olhei para esta frase"*, ⛔ e não *"está traduzida"*. É a **R-CONTROLE** aplicada a uma trava.
 
 ## `test:avc-superficie-d` → `scripts/prova-avc-superficie-d.cjs`
 

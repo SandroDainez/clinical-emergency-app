@@ -23,6 +23,22 @@ declaradamente fora de escopo**.
 Cada item abaixo nasce de uma **lacuna medida no F-35b**, com o trecho da
 fonte que a cria. ⛔ Nenhum item foi inventado.
 
+## ⚠️ Nota de enquadramento — broncoespasmo
+
+**Confirmado com o autor em 2026-09-11:**
+
+- ✅ o Wang 2025 **não é omisso** sobre broncodilatador;
+- ✅ ele **não operacionaliza** qual agente, qual dose e qual via;
+- ➜ portanto a lacuna é de **detalhamento farmacológico**, ⛔ **e não de
+  princípio terapêutico**.
+
+⚠️ A diferença muda o que o F-36 pode fazer: ele **preenche detalhe**, ⛔ e não
+**decide conduta**. O princípio — broncodilatador vem **depois** da adrenalina
+e **depois** da estabilização — já está fixado pelo Wang e ⛔ não se
+renegocia.
+
+---
+
 ## 1 · Broncodilatador — agente, dose e via
 
 **O F-35b posiciona, e não especifica.** p. 5:
@@ -128,7 +144,25 @@ questão de radiologia intervencionista. Se for o caso, vira slot próprio sob a
 | **3** | Muraro A, et al. *EAACI guidelines: Anaphylaxis (2021 update).* Allergy. 2022;77:357–377. DOI 10.1111/all.15032 | 2021 | diretriz da **EAACI** | ✅ aberto, versão publicada |
 | **4** | American College of Radiology. *ACR Manual on Contrast Media.* | atual | manual institucional de sociedade | a verificar |
 
-## ⚠️ Por que a nº 1 é a candidata principal, apesar de fechada
+## ⚠️⚠️ STATUS DAS CANDIDATAS — decisão do autor, 2026-09-11
+
+| decisão | |
+|---|---|
+| AAAAI/ACAAI 2023 | **candidata preferencial**, ⛔ **e não fonte principal definitiva** |
+| condição para virar principal | confirmar **escopo** e **cobertura dos seis itens** |
+| se ⛔ não houver PDF publicado acessível | usar **WAO 2020** ou **EAACI 2021** como alternativa documental |
+| ⛔ o que ⛔ não fazer | **forçar continuidade de procedência** — a preferência ⛔ não vale acesso impossível |
+
+⚠️⚠️ Isto corrige o que eu havia escrito. Eu tratei a continuidade de
+procedência como argumento **decisivo** (*"vale mais do que a facilidade de
+acesso"*). ⛔ Ela é **critério de desempate**, e ⛔ não licença para deixar o
+slot parado esperando um PDF que talvez não chegue.
+
+➜ Ordem prática: **confirmar cobertura primeiro**, escolher depois. Uma fonte
+preferencial que ⛔ não cobre os seis itens ⛔ não é preferencial coisa
+nenhuma.
+
+## ⚠️ Por que a nº 1 é a preferencial, apesar de fechada
 
 O **F-35b se apoia nela explicitamente**, e mais de uma vez:
 
@@ -137,8 +171,10 @@ O **F-35b se apoia nela explicitamente**, e mais de uma vez:
 > — F-35b, recs. 18 e 19
 
 ⚠️ Adotar outra fonte como principal criaria o risco de **conflito com a fonte
-específica do contraste**, que declaradamente segue esta. A continuidade de
-procedência vale mais do que a facilidade de acesso.
+específica do contraste**, que declaradamente segue esta. Por isso ela é
+**preferencial** — ⛔ e, pelo bloco acima, **preferência ⛔ não é obrigação**:
+se o PDF publicado não for acessível, WAO 2020 ou EAACI 2021 assumem, e a
+divergência com o Wang, se houver, ⛔ se registra em vez de se resolver.
 
 ⚠️ E é a mesma que o app já cita em `lib/adrenalina-ev-anafilaxia.ts` — hoje
 **sem verbatim**. Fechar o F-36 com ela resolveria as duas coisas de uma vez.
@@ -160,7 +196,7 @@ o consenso específico de contraste."*
 | o F-35b fala sobre o ponto | **F-35b** — fonte específica da exposição |
 | o F-35b é **silente** | F-36 entra, declarando que entrou |
 | o F-35b declara **fora de escopo** | F-36 entra, declarando que entrou |
-| as duas falam e **divergem** | ⛔ **registrar a divergência**, ⛔ não escolher em silêncio |
+| as duas falam e **divergem** | ⛔ **registrar a divergência explicitamente**, ⛔ **nunca resolvê-la em silêncio** |
 
 ⚠️ A última linha é a que importa. Divergência entre fonte geral e fonte
 específica é **achado**, ⛔ e não problema a ser resolvido por preferência.

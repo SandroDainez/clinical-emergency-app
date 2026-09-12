@@ -277,6 +277,15 @@
   },
   {
     "arquivo": "conteudo/fontes.ts",
+    "frase": "protocols/fontes-verbatim/f36-anafilaxia-geral-contrato.md",
+    "tipos": [
+      "verbatim com página"
+    ],
+    "ancoras": [],
+    "estado": "sem âncora numérica — conferir por leitura"
+  },
+  {
+    "arquivo": "conteudo/fontes.ts",
     "frase": "protocols/fontes-verbatim/aha-asa-2017-hemorragia-pos-alteplase.md",
     "tipos": [
       "verbatim com página"

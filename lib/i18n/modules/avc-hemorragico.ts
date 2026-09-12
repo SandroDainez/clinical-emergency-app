@@ -124,6 +124,25 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "HIC · Hemostáticos gerais (rFVIIa, TXA)": "HIC · Hemostáticos generales (rFVIIa, TXA)",
   "HIC · Glicemia — monitorização e alvos": "HIC · Glucemia — monitorización y objetivos",
   "HIC · Convulsões e antiepilépticos": "HIC · Convulsiones y antiepilépticos",
+  /**
+   * ⚠️⚠️ D-138 · AS OITO QUE A VARREDURA NÃO VIA. Todas as chaves abaixo são
+   * assuntos EXIBIDOS na superfície e estavam SEM par PT/ES. Escaparam porque
+   * ⛔ nenhuma tem acento — e `isProse` descartava por heurística de idioma
+   * antes de `assunto:` entrar em `CAMPO_DE_TELA`.
+   *
+   * ⚠️ Algumas são idênticas em PT e ES. Isso é par declarado, ⛔ e não
+   * ausência: a tradução existir e coincidir é informação.
+   */
+  "HIC · Cirurgia cerebelar (≥15 mL, COR 1)": "HIC · Cirugía cerebelosa (≥15 mL, COR 1)",
+  "HIC · Cirurgia supratentorial (MIS, craniotomia, craniectomia)":
+    "HIC · Cirugía supratentorial (MIS, craneotomía, craniectomía)",
+  "HIC · Hemorragia intraventricular e DVE": "HIC · Hemorragia intraventricular y DVE",
+  "HIC · PIC, osmoterapia, DVE, corticoide": "HIC · PIC, osmoterapia, DVE, corticoide",
+  "HIC · Temperatura": "HIC · Temperatura",
+  "HIC · Tromboprofilaxia (TEV)": "HIC · Tromboprofilaxis (TEV)",
+  "HSA · Hidrocefalia": "HSA · Hidrocefalia",
+  "HSA · Vasoespasmo/DCI (nimodipino, euvolemia, resgate)":
+    "HSA · Vasoespasmo/DCI (nimodipino, euvolemia, rescate)",
   "HIC · Local de cuidado e transferência": "HIC · Lugar de atención y traslado",
   "HIC · Prevenção secundária (PA, antitrombóticos)":
     "HIC · Prevención secundaria (PA, antitrombóticos)",

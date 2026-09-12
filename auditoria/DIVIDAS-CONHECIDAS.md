@@ -5634,3 +5634,71 @@ idênticas.
 
 ⚠️ **Correção imediata já feita:** a tradução do assunto do F-36 foi
 adicionada à mão. ⛔ Isso ⛔ não fecha a dívida — fecha o sintoma.
+
+---
+
+## D-138 · ANDAMENTO — 2026-09-11 · a mutação morde, e achou oito
+
+### A trava nova · `test:varredura-sem-acento`
+
+`scripts/prova-varredura-morde-sem-acento.cjs`. Portão de **115 → 116**.
+
+Ela insere uma **entrada de slot de verdade** com o assunto
+*"Anafilaxia grave, broncoespasmo e hipotensao"*, roda a varredura real,
+confere que reprova **citando a frase**, e desfaz byte a byte.
+
+### ⚠️⚠️ DUAS MUTAÇÕES MINHAS FORAM INFIÉIS ANTES DE UMA MORDER
+
+| # | o que eu fiz | por que não valia |
+|---|---|---|
+| 1 | frase *"…por anafilaxia, **com** broncoespasmo…"* | **"com" está em `PT_HINT`**. Mordeu pelo caminho que já funcionava, ⛔ não pelo que falha |
+| 2 | inseri `export const X = "frase"` | prefixo `= `, que ⛔ **não é campo de tela**. Testava posição que o defeito nunca percorreu |
+
+⚠️⚠️ A lição, e ela é da **R-CONTROLE**: **mutação que passa de primeira é
+suspeita**. As duas primeiras deram verde, e as duas estavam erradas — uma por
+conteúdo, outra por posição.
+
+➜ A frase final foi conferida **token a token** contra as 123 palavras-pista:
+`anafilaxia`, `grave`, `broncoespasmo`, `hipotensao` — nenhuma casa, e não há
+acento. Mesma assinatura do assunto do F-36 que escapou.
+
+### A correção, deliberadamente estreita
+
+Uma palavra: `assunto` entrou em `CAMPO_DE_TELA`. Em posição de campo de tela
+o bloco `naTela` já dispensa a heurística de idioma — o literal vai para a
+tela, e isso basta.
+
+⛔ **Nenhuma refatoração ampla**, por ordem do autor.
+
+### ⚠️⚠️⚠️ O QUE A CORREÇÃO ACHOU NA HORA — oito defeitos reais
+
+Assim que `assunto:` virou campo de tela, a varredura reprovou com **8**
+assuntos **exibidos na tela e sem par PT/ES**:
+
+| slot | assunto |
+|---|---|
+| H-06 | HIC · Temperatura |
+| H-08 | HIC · PIC, osmoterapia, DVE, corticoide |
+| H-09 | HIC · Tromboprofilaxia (TEV) |
+| H-10 | HIC · Cirurgia supratentorial (MIS, craniotomia, craniectomia) |
+| H-11 | HIC · Cirurgia cerebelar (≥15 mL, COR 1) |
+| H-12 | HIC · Hemorragia intraventricular e DVE |
+| S-03 | HSA · Vasoespasmo/DCI (nimodipino, euvolemia, resgate) |
+| S-05 | HSA · Hidrocefalia |
+
+⚠️⚠️ **Todos os oito são exatamente os assuntos HIC/HSA sem acento.** Os
+irmãos acentuados — *"HIC · Convulsões e antiepilépticos"*, *"HIC · Glicemia —
+monitorização e alvos"* — estavam traduzidos desde sempre, em
+`lib/i18n/modules/avc-hemorragico.ts`. É a confirmação mais limpa possível do
+diagnóstico: **o acento decidia quem entrava na rede**.
+
+➜ Os oito foram traduzidos.
+
+### ⚠️ O QUE SEGUE ABERTO — e é por isso que a D-138 não fecha
+
+⛔ O descarte por `PT_HINT` continua ativo **fora** de campo de tela
+reconhecido. Uma frase em português sem acento e sem palavra-pista, em posição
+que `CAMPO_DE_TELA` não lista, ⛔ continua saindo da rede em silêncio.
+
+⚠️ E a lista `CAMPO_DE_TELA` é **enumerada à mão**: cada campo novo de tela
+precisa ser lembrado. ⛔ Nada garante que o próximo será.
