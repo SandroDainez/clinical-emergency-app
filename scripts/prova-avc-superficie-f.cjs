@@ -230,6 +230,48 @@ confere("⚠️ a dose sai do peso, com o teto da fonte",
     D.doseDerivada("tenecteplase", 200, "medido").totalMg === 25,
   "0,9 mg/kg máx 90 · 0,25 mg/kg máx 25 (F-09)");
 
+/* ══ ⚠️⚠️ A DOSE ⛔ NÃO CARREGA LIXO DE PONTO FLUTUANTE ═══════════════════
+ *
+ * ⛔ Relato do autor, com captura (2026-09-12): *"ALTEPLASE OLHA O TANTO DE
+ * CASAS DECIMAIS, ISSO NEM DÁ PARA MEDIR NA PRÁTICA"* — a tela mostrava
+ * **`Alteplase 89.10000000000001 mg`** para 99 kg.
+ *
+ * ⚠️⚠️ ⛔ NÃO É ARREDONDAMENTO CLÍNICO, ⛔ e ⛔ esta trava ⛔ não o inventa:
+ * `99 × 0,9` **É** 89,1 em decimal. ⛔ O que apareceu na tela é o erro de
+ * representação binária do `double` — ⛔ artefato da máquina, ⛔ e ⛔ nunca um
+ * dado clínico. ⚠️ ⛔ Quantas casas **exibir** é decisão do autor; ⛔ que o
+ * número seja **o resultado da conta** ⛔ não é.
+ *
+ * ⚠️ O peso tem `passo: 1` (`paciente.ts`): o produto real tem no máximo
+ * **duas** casas (`kg × 0,25`). ⛔ Mais que isso, ⛔ na saída, ⛔ é lixo.
+ */
+const casasDecimais = (n) => {
+  const s = String(n);
+  const i = s.indexOf(".");
+  return i === -1 ? 0 : s.length - i - 1;
+};
+
+confere("⚠️⚠️ 99 kg de alteplase dá **89,1 mg**, ⛔ e ⛔ não `89.10000000000001`",
+  D.doseDerivada("alteplase", 99, "medido").totalMg === 89.1,
+  `⛔ ${D.doseDerivada("alteplase", 99, "medido").totalMg} — ⛔ número que ⛔ não se mede ⛔ não se administra`);
+
+const dosesSujas = [];
+for (let kg = 30; kg <= 200; kg++) {
+  for (const ag of ["alteplase", "tenecteplase"]) {
+    const total = D.doseDerivada(ag, kg, "medido").totalMg;
+    if (casasDecimais(total) > 2) dosesSujas.push(`${ag} ${kg}kg=${total}`);
+  }
+}
+confere("⚠️ ⛔ e ⛔ NENHUM peso da faixa (30–200 kg) produz mais de duas casas",
+  dosesSujas.length === 0,
+  `⛔ ${dosesSujas.slice(0, 3).join(" · ")}${dosesSujas.length > 3 ? ` … +${dosesSujas.length - 3}` : ""}`);
+
+/** ⚠️ ⛔ E o teto continua teto — ⛔ sanear ⛔ não pode cruzar o máximo da fonte. */
+confere("⚠️ o teto da fonte sobrevive ao saneamento",
+  D.doseDerivada("alteplase", 200, "medido").totalMg === 90
+    && D.doseDerivada("tenecteplase", 200, "medido").totalMg === 25,
+  "⛔ teto é número da fonte, ⛔ e ⛔ não resultado de conta");
+
 confere("⚠️⚠️ a ORIGEM do peso viaja com a dose",
   D.doseDerivada("alteplase", 70, "estimado").origemDoPeso === "estimado",
   "⛔ medido e estimado ⛔ não se confundem — a dose carrega de onde veio");

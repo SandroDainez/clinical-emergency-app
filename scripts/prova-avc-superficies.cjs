@@ -333,6 +333,54 @@ confere("id desconhecido é erro, não piso silencioso",
   })(),
   "a letra ⛔ não é mais id: aceitá-la devolveria a superfície errada calada");
 
+/* ══ ⚠️⚠️ TODA TELA QUE DESENHA CAMPOS OBEDECE À CONDIÇÃO DE APARIÇÃO ══════
+ *
+ * ── ⛔ O DEFEITO QUE ISTO MATA (inspeção clínica, 2026-09-12) ─────────────
+ *
+ * ⛔ Relato do autor, com captura da Superfície **Segurança**: *"O SANGRAMENTO
+ * FOI TRATADO, O RISCO FOI REDUZIDO (QUE SANGRAMENTO? ⛔ NÃO FOI DITO
+ * SANGRAMENTO ALGUM, ISSO EU JÁ HAVIA PEDIDO CORREÇÃO ⛔ E ⛔ NÃO FOI FEITA)"*.
+ *
+ * ⚠️⚠️ ⛔ E A CORREÇÃO **⛔ TINHA SIDO FEITA — PELA METADE**. O campo
+ * `sangramento_tratado` declara `apareceQuando` desde 2026-09-09; ⛔ a tela que
+ * o desenha ⛔ nunca chamou `campoAparece`. ⚠️ Condição declarada ⛔ e ⛔ não
+ * aplicada ⛔ é ruído com aparência de decisão — ⛔ e ⛔ é **a terceira vez** que
+ * a mesma classe aparece (Superfície A → B → Paciente → Segurança).
+ *
+ * ⛔ ⛔ A trava que existia media **⛔ uma tela** (`fonteTelaB`, em
+ * `prova-avc-apresentacao-f`). ⚠️ Uma trava que mede uma tela ⛔ não protege as
+ * outras cinco: ⛔ ela prova que **aquele** campo aparece certo, ⛔ e ⛔ nada
+ * sobre o próximo campo condicional que alguém escrever.
+ */
+{
+  const dirTelas = path.join(appDir, "components", "avc");
+  const telas = fs
+    .readdirSync(dirTelas)
+    .filter((f) => /^superficie-.*\.tsx$/.test(f))
+    .map((f) => ({ nome: f, fonte: lerFonte(path.join(dirTelas, f)) }))
+    /** ⚠️ ⛔ Só quem DESENHA campos de grupo — ⛔ quem ⛔ não desenha ⛔ não deve nada. */
+    .filter((t) => /camposDoGrupo\(\s*grupo\s*\)/.test(t.fonte));
+
+  confere(
+    "⚠️ há telas desenhando campos de grupo (⛔ senão esta trava mede o vazio)",
+    telas.length >= 4,
+    `⛔ ${telas.length} — ⛔ uma trava que ⛔ não encontra sujeito passa verde por engano`
+  );
+
+  /**
+   * ⚠️⚠️ ⛔ O QUE SE COBRA É A **CHAMADA DENTRO DO FILTRO**, ⛔ e ⛔ não o
+   * `import`: ⛔ importar `campoAparece` ⛔ e ⛔ não usá-lo ⛔ já sobreviveu a
+   * uma versão anterior desta mesma trava, noutro arquivo.
+   */
+  const APLICA = /\.filter\(\s*\([^)]*\)\s*=>\s*campoAparece\(/;
+  const desobedientes = telas.filter((t) => !APLICA.test(t.fonte)).map((t) => t.nome);
+  confere(
+    "⚠️⚠️ TODA tela que desenha campos de grupo FILTRA por `campoAparece`",
+    desobedientes.length === 0,
+    `⛔ ${desobedientes.join(" · ")} — ⛔ a condição vive no campo, ⛔ e quem obedece é quem desenha`
+  );
+}
+
 if (falhas.length) {
   console.error(`\n❌ PROVA DAS SUPERFÍCIES DO AVC — ${falhas.length} falha(s), ${ok} ok\n`);
   falhas.forEach((f, i) => console.error(`  ${i + 1}. ${f}`));

@@ -40,7 +40,7 @@ import { Pressable, Text, StyleSheet, View } from "react-native";
 
 import { GRUPOS_D, CORTES_LABORATORIAIS } from "../../avc/conteudo/superficie-d";
 import type { EstadoDeSeguranca } from "../../avc/conteudo/superficie-d";
-import { camposDoGrupo } from "../../avc/conteudo/campo";
+import { campoAparece, camposDoGrupo } from "../../avc/conteudo/campo";
 import { campoDoModulo } from "../../avc/conteudo/campos";
 import {
   cortesLaboratoriais,
@@ -283,7 +283,27 @@ export default function SuperficieD({
             ) : null}
             {fechado
               ? null
-              : camposDoGrupo(grupo).map((campo) =>
+              : camposDoGrupo(grupo)
+                  /**
+                   * ⚠️⚠️⚠️ ⛔ A CONDIÇÃO DE APARIÇÃO É **OBEDECIDA AQUI** — 2026-09-12.
+                   *
+                   * ⛔ Relato do autor, com captura: *"O SANGRAMENTO FOI TRATADO,
+                   * O RISCO FOI REDUZIDO (QUE SANGRAMENTO? ⛔ NÃO FOI DITO
+                   * SANGRAMENTO ALGUM, ISSO EU JÁ HAVIA PEDIDO CORREÇÃO ⛔ E
+                   * ⛔ NÃO FOI FEITA)"*.
+                   *
+                   * ⚠️⚠️ ⛔ E ELA TINHA SIDO FEITA **⛔ PELA METADE**:
+                   * `sangramento_tratado` declara `apareceQuando` desde
+                   * 2026-09-09, ⛔ e **esta tela** ⛔ nunca chamou `campoAparece`.
+                   * ⚠️ ⛔ Declarar ⛔ não é obedecer — ⛔ e quem obedece é **quem
+                   * desenha o campo** (A, B ⛔ e Paciente já obedeciam).
+                   *
+                   * ⛔ ⛔ Perguntar *"o sangramento foi tratado?"* ⛔ a quem ⛔ não
+                   * registrou sangramento ⛔ nenhum ⛔ **afirma** o sangramento
+                   * dentro da pergunta.
+                   */
+                  .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+                  .map((campo) =>
                   /**
                    * ⚠️ Três estados cabem em linha compacta; a seleção múltipla
                    * das consultas continua no componente antigo, que encapsula

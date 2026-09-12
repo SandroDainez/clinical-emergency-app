@@ -208,7 +208,26 @@ export function doseDerivada(
     maximoMg: d.maximoMg,
     pesoKg,
     origemDoPeso,
-    totalMg: Math.min(pesoKg * d.mgPorKg, d.maximoMg),
+    /**
+     * ⚠️⚠️⚠️ ⛔ SEM LIXO DE PONTO FLUTUANTE — 2026-09-12.
+     *
+     * ⛔ Relato do autor, com captura: *"ALTEPLASE OLHA O TANTO DE CASAS
+     * DECIMAIS, ISSO NEM DÁ PARA MEDIR NA PRÁTICA"* — a tela mostrava
+     * **`89.10000000000001 mg`** para 99 kg.
+     *
+     * ⚠️⚠️ ⛔ ISTO ⛔ NÃO É ARREDONDAMENTO CLÍNICO. `99 × 0,9` **É** 89,1 em
+     * decimal; ⛔ o rabo de casas é o erro de representação binária do
+     * `double` (`0,9` ⛔ não existe exato em base 2) — ⛔ artefato da máquina,
+     * ⛔ e ⛔ nunca um dado clínico. ⚠️ As seis casas preservadas são folga: ⛔ elas
+     * ⛔ não alcançam ⛔ nenhum produto real desta conta (peso tem `passo: 1`,
+     * ⛔ e o maior produto tem **duas** casas), ⛔ e ⛔ por isso ⛔ nenhum valor
+     * verdadeiro é alterado.
+     *
+     * ⛔ ⛔ **Quantas casas EXIBIR é decisão do autor** ⛔ e ⛔ não foi tomada
+     * aqui: ⛔ arredondar 15,625 para 15,6 ⛔ mudaria a dose, ⛔ e a fonte
+     * ⛔ não define arredondamento (Table 7 dá ⛔ só mg/kg ⛔ e teto).
+     */
+    totalMg: Math.min(Math.round(pesoKg * d.mgPorKg * 1e6) / 1e6, d.maximoMg),
     slot: d.slot,
   };
 }

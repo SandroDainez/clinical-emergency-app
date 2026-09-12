@@ -81,3 +81,55 @@ test.describe("AVC · Paciente — a pergunta que depende da resposta", () => {
     await expect(page.getByTestId(ITEM("Não sei"))).toHaveAttribute("aria-checked", "true");
   });
 });
+
+/**
+ * ── ⚠️⚠️ ⛔ A MESMA CLASSE, ⛔ OUTRA TELA — 2026-09-12 ─────────────────────
+ *
+ * ⛔ Relato do autor, com captura da Superfície **Segurança**: *"O SANGRAMENTO
+ * FOI TRATADO, O RISCO FOI REDUZIDO (QUE SANGRAMENTO? ⛔ NÃO FOI DITO
+ * SANGRAMENTO ALGUM, ISSO EU JÁ HAVIA PEDIDO CORREÇÃO ⛔ E ⛔ NÃO FOI FEITA)"*.
+ *
+ * ⚠️⚠️ ⛔ E A CORREÇÃO TINHA SIDO FEITA **⛔ PELA METADE**: o campo declara
+ * `apareceQuando` desde 2026-09-09, ⛔ e a tela que o desenha ⛔ nunca chamou
+ * `campoAparece`. ⛔ Perguntar *"o sangramento foi tratado?"* ⛔ a quem ⛔ não
+ * registrou sangramento ⛔ nenhum ⛔ é **afirmar** o sangramento na pergunta.
+ */
+const SANGRAMENTO = "avc-campo-sangramento_tratado";
+const GI_21D = "Sangramento gastrointestinal ou geniturinário nos últimos 21 dias";
+
+test.describe("AVC · Segurança — a pergunta que pressupunha o sangramento", () => {
+  test("⛔ sem antecedente de sangramento, a pergunta ⛔ NÃO existe", async ({ page }) => {
+    await abrir(page);
+    await page.getByTestId("avc-aba-seguranca").click();
+    await expect(page.getByTestId("avc-superficie-d-conteudo")).toBeVisible();
+
+    /** ⚠️ ⛔ O juízo de segurança está lá — ⛔ o que ⛔ não pode estar é a pressuposição. */
+    await expect(page.getByTestId("avc-campo-motivo_para_suspeitar_alteracao_coagulacao")).toBeVisible();
+    await expect(page.getByTestId(SANGRAMENTO)).toHaveCount(0);
+  });
+
+  /**
+   * ⚠️ O antecedente mora na Superfície **Neurológico**, no bloco recolhido
+   * *"Procedimentos e sangramentos recentes"* — ⛔ é lá que o médico o marca,
+   * ⛔ e a Segurança ⛔ só **lê**.
+   */
+  async function marcarSangramentoGI(page: Page) {
+    await page.getByTestId("avc-aba-neurologico").click();
+    await page.getByTestId("avc-bloco-abrir-procedimentos").click();
+    await page.getByTestId(`avc-item-procedimentos_recentes-${GI_21D}`).click();
+  }
+
+  test("⛔ e o sangramento REGISTRADO faz a pergunta aparecer", async ({ page }) => {
+    await abrir(page);
+    await marcarSangramentoGI(page);
+
+    await page.getByTestId("avc-aba-seguranca").click();
+    await expect(page.getByTestId(SANGRAMENTO)).toBeVisible();
+    await expect(page.getByTestId(SANGRAMENTO)).toContainText(/sangramento foi tratado/i);
+
+    /** ⚠️⚠️ ⛔ E desmarcar o antecedente a esconde de novo. */
+    await marcarSangramentoGI(page);
+    await page.getByTestId("avc-aba-seguranca").click();
+    await expect(page.getByTestId(SANGRAMENTO)).toHaveCount(0);
+  });
+});
