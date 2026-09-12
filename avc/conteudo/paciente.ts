@@ -286,6 +286,20 @@ export const ALERGIAS_P: readonly CampoP[] = [
  * de baixo peso é paciente real, e a permissão de iniciar antes do coagulograma
  * depende de **as duas** serem representáveis ao mesmo tempo.
  */
+/**
+ * ⚠️ Os rótulos das opções, **nomeados** (commit 7 · 2026-09-12): ⛔ a leitura
+ * de segurança precisa saber se há varfarina ⛔ ou heparina em uso — *"in
+ * patients without recent use of warfarin or heparin"* (Table 8) —, ⛔ e
+ * comparar com string solta em `derivacoes-d` seria uma segunda cópia do rótulo
+ * que envelhece em silêncio. ⛔ Nenhum vocabulário novo: são as mesmas opções.
+ */
+export const ANTICOAGULANTE = {
+  doac: "Anticoagulante oral direto (DOAC)",
+  varfarina: "Varfarina ou outro antagonista da vitamina K",
+  heparina: "Heparina ou heparina de baixo peso molecular",
+  nenhum: "Nenhum",
+} as const;
+
 export const MEDICACOES_P: readonly CampoP[] = [
   {
     id: "anticoagulante_em_uso",
@@ -293,10 +307,10 @@ export const MEDICACOES_P: readonly CampoP[] = [
     tipo: "multipla",
     temporalidade: "estado",
     opcoes: [
-      "Anticoagulante oral direto (DOAC)",
-      "Varfarina ou outro antagonista da vitamina K",
-      "Heparina ou heparina de baixo peso molecular",
-      "Nenhum",
+      ANTICOAGULANTE.doac,
+      ANTICOAGULANTE.varfarina,
+      ANTICOAGULANTE.heparina,
+      ANTICOAGULANTE.nenhum,
       NAO_SEI,
     ],
     exclusivas: ["Nenhum", NAO_SEI],

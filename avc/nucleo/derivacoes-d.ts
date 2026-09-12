@@ -29,7 +29,7 @@ import { valorAtual } from "./estado";
 import { instanciasDe, valorNaInstancia } from "./instancia";
 import { numero, respondeuDesconhecido, selecaoDe, ternario, type Leitura } from "./leitura";
 import { pressaoArterial, ultimaPressaoCompleta } from "./derivacoes";
-import type { Pendencia } from "./tipos";
+import type { Pendencia, SuperficieId } from "./tipos";
 import {
   CORTES_LABORATORIAIS,
   ITENS_DE_SEGURANCA,
@@ -41,6 +41,7 @@ import {
 import { COLETA, FATOR_PARA_MM3 } from "../conteudo/laboratorio";
 import { NAO_SEI } from "../conteudo/campo";
 import { campoDoModulo } from "../conteudo/campos";
+import { ANTICOAGULANTE } from "../conteudo/paciente";
 
 /** ⚠️ A leitura de UM item — e o verbo viaja junto, ⛔ sempre. */
 export type LeituraDeSeguranca = {
@@ -682,4 +683,277 @@ export function contagemPorEstado(estado: EstadoAvc): Readonly<Record<string, nu
   const m: Record<string, number> = {};
   for (const i of itensComModificacao(estado)) m[i.estado] = (m[i.estado] ?? 0) + 1;
   return m;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ A INCERTEZA **TIPADA** — R3 do plano de correção (commit 7 · 2026-09-12)
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (AVC-04, AVC-08) ────────────────────
+ *
+ * ⛔ O portão lia **um** estado negativo de segurança —
+ * `contraindicacao_nao_corrigivel` — ⛔ e tratava todo o resto como *"sem
+ * problema"*. ⚠️ Medido por execução:
+ *
+ *   · INR 2,5 numa coleta ⛔ e 1,0 noutra ⇒ `informacao_insuficiente`
+ *     (divergência) ⇒ portão **liberado** — ⛔ o estado mais incerto recebia o
+ *     tratamento menos restritivo;
+ *   · suspeita de coagulopatia registrada, ⛔ sem exame ⇒ pendência criada
+ *     ⛔ e portão **liberado**;
+ *   · varfarina registrada, INR pendente ⇒ ⛔ nada lia a varfarina;
+ *   · DOAC de hora desconhecida ⇒ liberado ⛔ sem ⛔ nenhum sinal de que a
+ *     fonte manda **julgar individualmente**.
+ *
+ * ── ⚠️⚠️ AS DUAS REGRAS DO AUTOR, ⛔ AS DUAS AO MESMO TEMPO ───────────────
+ *
+ * > *"INCERTEZA RELEVANTE ⛔ NÃO PODE VIRAR LIBERAÇÃO AUTOMÁTICA. Mas:
+ * >  AVALIAÇÃO INDIVIDUAL ⛔ NÃO PODE SER CONVERTIDA AUTOMATICAMENTE EM
+ * >  CONTRAINDICAÇÃO."*
+ *
+ * ⚠️ ⛔ Por isso a incerteza vira **tipo**, ⛔ e ⛔ não um booleano: ⛔ o efeito
+ * que cada leitura tem sobre a **ação** é declarado ⛔ aqui, ⛔ e o portão ⛔ só
+ * consome. ⛔ Nenhum corte ⛔ nem regra nova: ⛔ é reclassificação do que a fonte
+ * já diz.
+ *
+ *   · `impede` — conhecido ⛔ e impeditivo (corte cruzado; item que a fonte
+ *     declara ⛔ não corrigível);
+ *   · `impede_ate_reconciliar` — divergência entre coletas; plaquetas com valor
+ *     ⛔ e sem unidade. ⛔ O app ⛔ não elege (regra do Laboratório, 2026-08-30);
+ *   · `impede_ate_resultado` — desconhecido **clinicamente relevante**: exame
+ *     ⛔ não colhido **com** motivo de suspeita (rec. 10 é condicional), ⛔ ou
+ *     ⛔ com varfarina/heparina em uso (Table 8 retira ⛔ desses pacientes a
+ *     permissão de iniciar antes do resultado);
+ *   · `aguarda_juizo` — o **juízo** da rec. 10 ⛔ ainda ⛔ não foi respondido
+ *     (**HR-3**): ⛔ não é negativo, ⛔ não é contraindicação, ⛔ e ⛔ o que se
+ *     pede é a **pergunta**, ⛔ nunca o exame;
+ *   · `exige_julgamento` — a fonte manda **julgar individualmente**: DOAC
+ *     (*"safety is unknown … may be considered"*, F-30 aberta), CMB > 10
+ *     (2b), itens relativos da Table 8, GI/GU tratado. ⛔ **Nunca** vira
+ *     `impede` (**HR-4**), ⛔ e ⛔ nunca vira liberação automática;
+ *   · `condicao_resolutiva` — **E-47**: ⛔ sem suspeita ⛔ e ⛔ sem
+ *     varfarina/heparina registradas, ⛔ a IVT pode ser iniciada antes do
+ *     resultado, ⛔ com suspensão se vier alterado. ⛔ Não retém; **informa**;
+ *   · `informa` — risco aumentado declarado pela fonte; ⛔ não retém.
+ *
+ * ⛔ ⛔ `bloqueio_corrigivel` ⛔ e *"aguardando reavaliação"* continuam onde
+ * sempre estiveram (`bloqueiosCorrigiveis`, `estadoDaReavaliacao`) — ⛔ o
+ * portão já os lia certo.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type EfeitoNaAcao =
+  | "impede"
+  | "impede_ate_reconciliar"
+  | "impede_ate_resultado"
+  | "aguarda_juizo"
+  | "exige_julgamento"
+  | "condicao_resolutiva"
+  | "informa";
+
+export type ImpedimentoDeSeguranca = {
+  readonly id: string;
+  readonly efeito: EfeitoNaAcao;
+  /** ⚠️ Linguagem clínica — ⛔ nunca o id cru. */
+  readonly rotulo: string;
+  readonly dado?: string;
+  readonly fonte: string;
+  /** ⚠️ O que precisa acontecer — ⛔ e ⛔ nunca *"resolva o problema"* (**E-26**). */
+  readonly oQueFalta: string;
+  readonly leva: SuperficieId;
+  readonly campo?: string;
+};
+
+/**
+ * ⚠️ Varfarina ⛔ ou heparina **registradas** — ⛔ lido pelos rótulos nomeados em
+ * `paciente.ts`. ⛔ Não perguntado ⛔ não é *"não usa"* (**E-23**): ⛔ esta função
+ * responde ⛔ só *"há registro de uso?"*.
+ */
+export function usaVarfarinaOuHeparina(estado: EstadoAvc): boolean {
+  const marcados = selecaoDe(estado, "anticoagulante_em_uso");
+  return marcados.includes(ANTICOAGULANTE.varfarina) || marcados.includes(ANTICOAGULANTE.heparina);
+}
+
+/** ⚠️ Os exames que a frase da Table 8 chama de *"coagulation test results"*. */
+const TESTES_DE_COAGULACAO = ["inr", "aptt", "tp"] as const;
+
+export function impedimentosDeSeguranca(estado: EstadoAvc): readonly ImpedimentoDeSeguranca[] {
+  const lista: ImpedimentoDeSeguranca[] = [];
+  const rotuloDe = (campo: string) => campoDoModulo(campo)?.rotulo ?? campo;
+
+  /* ── 1 · os cortes de F-10 ─────────────────────────────────────────────── */
+  const cortes = cortesLaboratoriais(estado);
+  for (const c of cortes) {
+    if (c.estado === "contraindicacao_nao_corrigivel") {
+      lista.push({
+        id: `corte-${c.id}`,
+        efeito: "impede",
+        rotulo: rotuloDe(c.id),
+        dado: c.valor === undefined ? undefined : String(c.valor),
+        fonte: "F-10",
+        oQueFalta: "A fonte não descreve correção para este achado neste módulo",
+        leva: "laboratorio",
+        campo: c.id,
+      });
+    } else if (c.razao === "divergencia_entre_coletas") {
+      lista.push({
+        id: `divergencia-${c.id}`,
+        efeito: "impede_ate_reconciliar",
+        rotulo: rotuloDe(c.id),
+        dado: "Resultados discordantes entre coletas",
+        fonte: "F-10",
+        oQueFalta: "Corrigir o resultado da coleta que estiver errado, na mesma coleta",
+        leva: "laboratorio",
+        campo: c.id,
+      });
+    } else if (c.razao === "unidade_nao_declarada") {
+      lista.push({
+        id: `unidade-${c.id}`,
+        efeito: "impede_ate_reconciliar",
+        rotulo: rotuloDe(c.id),
+        dado: "Valor sem unidade declarada",
+        fonte: "F-10",
+        oQueFalta: "Registrar a unidade do laudo, sem a qual o valor não se compara ao corte",
+        leva: "laboratorio",
+        campo: "plaquetas_unidade",
+      });
+    }
+  }
+
+  /* ── 2 · o que ⛔ ainda ⛔ não foi colhido — ⛔ e ⛔ quando ⛔ isso importa ── */
+  const naoColhidos = cortes.filter((c) => c.estado === "nao_perguntado");
+  if (naoColhidos.length > 0) {
+    const fatoDoJuizo = valorAtual(estado, "motivo_para_suspeitar_alteracao_coagulacao");
+    const juizoRespondido =
+      fatoDoJuizo !== undefined && String(fatoDoJuizo.valor) !== "nao_perguntado";
+    const suspeita = ternario(estado, "motivo_para_suspeitar_alteracao_coagulacao");
+    const coagulacaoPendente = naoColhidos.some((c) =>
+      (TESTES_DE_COAGULACAO as readonly string[]).includes(c.id)
+    );
+
+    if (usaVarfarinaOuHeparina(estado) && coagulacaoPendente) {
+      /** ⚠️ Table 8: a permissão de iniciar antes do resultado é ⛔ só *"without recent use of warfarin or heparin"*. */
+      lista.push({
+        id: "coagulograma",
+        efeito: "impede_ate_resultado",
+        rotulo: "Exames de coagulação",
+        dado: "Varfarina ou heparina em uso",
+        fonte: "F-10",
+        oQueFalta: "Registrar o resultado dos exames de coagulação",
+        leva: "laboratorio",
+        campo: "inr",
+      });
+    } else if (suspeita === true) {
+      /** ⚠️ Rec. 10 (COR 2a): ⛔ não atrasar ⛔ **só** *"if there is no reason to suspect an abnormal result"*. */
+      lista.push({
+        id: "coagulograma",
+        efeito: "impede_ate_resultado",
+        rotulo: "Exames hematológicos e de coagulação",
+        dado: "Há motivo para suspeitar de alteração",
+        fonte: "F-10",
+        oQueFalta: "Registrar o resultado dos exames de coagulação",
+        leva: "laboratorio",
+        campo: "inr",
+      });
+    } else if (suspeita === false) {
+      /** ⚠️ **E-47**: ação iniciada sob condição resolutiva. ⛔ Informa; ⛔ não retém. */
+      lista.push({
+        id: "condicao_resolutiva_coagulograma",
+        efeito: "condicao_resolutiva",
+        rotulo: "Trombólise pode ser iniciada antes do resultado da coagulação",
+        dado: "Sem motivo para suspeitar; sem varfarina ou heparina registradas",
+        fonte: "F-10",
+        oQueFalta: "Suspender se o resultado vier alterado pelos cortes da fonte",
+        leva: "laboratorio",
+        campo: "inr",
+      });
+    } else if (juizoRespondido) {
+      /** ⚠️ *"Incerto"* é resposta (**E-02**) — ⛔ e ⛔ ela ⛔ não afasta a suspeita. */
+      lista.push({
+        id: "coagulograma",
+        efeito: "impede_ate_resultado",
+        rotulo: "Exames hematológicos e de coagulação",
+        dado: "Motivo para suspeitar de alteração: incerto",
+        fonte: "F-10",
+        oQueFalta: "Registrar o resultado dos exames de coagulação",
+        leva: "laboratorio",
+        campo: "inr",
+      });
+    } else {
+      /**
+       * ⚠️⚠️ **HR-3**: ⛔ não perguntado ⛔ não é negativo ⛔ nem contraindicação.
+       * ⛔ O que se pede é o **juízo** da rec. 10 — ⛔ uma pergunta —, ⛔ e
+       * ⛔ nunca o exame.
+       */
+      lista.push({
+        id: "juizo_coagulacao",
+        efeito: "aguarda_juizo",
+        rotulo: "Motivo para suspeitar de alteração da coagulação ainda não avaliado",
+        fonte: "F-10",
+        oQueFalta: "Responder se há motivo para suspeitar de alteração da coagulação",
+        leva: "seguranca",
+        campo: "motivo_para_suspeitar_alteracao_coagulacao",
+      });
+    }
+  }
+
+  /* ── 3 · o que a fonte manda julgar individualmente ────────────────────── */
+  const doac = exposicaoADoac(estado);
+  if (doac.individualizada) {
+    lista.push({
+      id: "doac",
+      efeito: "exige_julgamento",
+      rotulo: doac.curto,
+      fonte: "F-10",
+      oQueFalta: "Análise individual de risco e benefício: a fonte diz que a trombólise pode ser considerada",
+      leva: "seguranca",
+      campo: "doac_ultima_dose",
+    });
+  }
+  const cmb = microssangramentos(estado);
+  if (cmb.estado === "informacao_insuficiente") {
+    lista.push({
+      id: "cmb",
+      efeito: "exige_julgamento",
+      rotulo: cmb.curto,
+      fonte: "F-07",
+      oQueFalta: "Julgamento individual: a fonte classifica a utilidade como incerta",
+      leva: "seguranca",
+      campo: "informacao_previa_cmb",
+    });
+  }
+
+  /* ── 4 · os itens de F-07, ⛔ com o verbo da fonte ──────────────────────── */
+  for (const i of itensComModificacao(estado)) {
+    if (i.estado === "contraindicacao_nao_corrigivel") {
+      lista.push({
+        id: `item-${i.id}`,
+        efeito: "impede",
+        rotulo: i.rotulo,
+        dado: i.formulacao,
+        fonte: "F-07",
+        oQueFalta: "A fonte não descreve correção para este achado",
+        leva: "seguranca",
+      });
+    } else if (i.estado === "situacao_individualizada") {
+      lista.push({
+        id: `item-${i.id}`,
+        efeito: "exige_julgamento",
+        rotulo: i.rotulo,
+        dado: i.formulacao,
+        fonte: "F-07",
+        oQueFalta: "Julgamento individual: a fonte classifica como situação a considerar",
+        leva: "seguranca",
+      });
+    } else if (i.estado === "risco_aumentado") {
+      lista.push({
+        id: `item-${i.id}`,
+        efeito: "informa",
+        rotulo: i.rotulo,
+        dado: i.formulacao,
+        fonte: "F-07",
+        oQueFalta: "Risco declarado pela fonte; a trombólise não fica retida por ele",
+        leva: "seguranca",
+      });
+    }
+  }
+
+  return lista;
 }

@@ -129,6 +129,16 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
        */
       await page.getByTestId("avc-opcao-incapacitante_assumido-Incapacitante").click();
 
+      /**
+       * ⚠️⚠️ ⛔ O JUÍZO DA REC. 10 (HR-3, commit 7 · 2026-09-12): ⛔ *"⛔ não
+       * perguntado"* ⛔ não é *"sem motivo para suspeitar"*. ⛔ Sem a resposta, o
+       * portão da IVT diz que falta o **juízo** — ⛔ a pergunta, ⛔ nunca o exame
+       * — ⛔ e a faixa de *"⛔ não aguardar"* ⛔ não aparece. ⚠️ O médico responde
+       * *"⛔ não"*, ⛔ e a IVT segue sob condição resolutiva (E-47).
+       */
+      await aba(page, "seguranca");
+      await page.getByTestId("avc-opcao-motivo_para_suspeitar_alteracao_coagulacao-nao").click();
+
       // ── a imagem: o sítio e o ASPECTS ────────────────────────────────
       await aba(page, "imagem");
       await novoExame(page, "Angiotomografia");

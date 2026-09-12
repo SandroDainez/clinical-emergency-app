@@ -73,8 +73,7 @@ import type { EstadoAvc } from "./estado";
 import { barreiraDeReperfusao, type BarreiraDeReperfusao } from "./derivacoes-c";
 import {
   bloqueiosCorrigiveis,
-  cortesLaboratoriais,
-  itensMarcados,
+  impedimentosDeSeguranca,
   type BloqueioCorrigivel,
 } from "./derivacoes-d";
 import {
@@ -337,27 +336,52 @@ function avaliarCriterio(
 
     case "seguranca": {
       /**
-       * ⚠️⚠️ ⛔ SÓ O **IMPEDITIVO CONHECIDO** contradiz: corte de F-10 cruzado
-       * ⛔ ou item de F-07 que a fonte declara ⛔ não corrigível. ⛔ Exame ⛔ não
-       * colhido ⛔ não é impeditivo (🚫 marca 2), ⛔ e ⛔ julgamento individual
-       * ⛔ não é contraindicação — ⛔ os dois ganham estado próprio no commit 7.
+       * ⚠️⚠️ A SEGURANÇA **TIPADA** (R3, commit 7) — ⛔ e o critério ⛔ só traduz
+       * o efeito que D ⛔ já declarou:
+       *
+       *   · `impede` ⇒ **contradito** (corte cruzado, item ⛔ não corrigível);
+       *   · `impede_ate_reconciliar` · `impede_ate_resultado` · `aguarda_juizo`
+       *     ⇒ **ausente** — ⛔ falta o gesto que resolve, ⛔ e ⛔ ele é nomeado;
+       *   · `exige_julgamento` ⇒ **em_julgamento** — ⛔ nunca contradito
+       *     (**HR-4**), ⛔ e ⛔ nunca satisfeito por omissão;
+       *   · `condicao_resolutiva` · `informa` ⇒ ⛔ não retêm.
+       *
+       * ⛔ Exame ⛔ não colhido **sem** motivo de suspeita ⛔ não é impeditivo
+       * (🚫 marca 2) — ⛔ é **E-47**, ⛔ e o portão o mostra como condição.
        */
-      const cortes = cortesLaboratoriais(estado).filter(
-        (x) => x.estado === "contraindicacao_nao_corrigivel"
-      );
-      const itens = itensMarcados(estado).filter(
-        (x) => x.estado === "contraindicacao_nao_corrigivel"
-      );
-      if (cortes.length > 0 || itens.length > 0) {
-        const nomes = [
-          ...cortes.map((x) => `${x.id.toUpperCase()} ${x.valor ?? ""}`.trim()),
-          ...itens.map((x) => x.rotulo),
-        ];
+      const impedimentos = impedimentosDeSeguranca(estado);
+      const dado = (efeitos: readonly string[]) =>
+        impedimentos.filter((i) => efeitos.includes(i.efeito));
+      const impedem = dado(["impede"]);
+      if (impedem.length > 0) {
         return {
           ...b,
           estado: "contradito",
-          valor: nomes.join(" · "),
+          valor: impedem.map((i) => (i.dado ? `${i.rotulo} ${i.dado}` : i.rotulo)).join(" · "),
           oQueFalta: "Há impeditivo de segurança registrado",
+        };
+      }
+      const pendentes = dado(["impede_ate_reconciliar", "impede_ate_resultado", "aguarda_juizo"]);
+      if (pendentes.length > 0) {
+        const p = pendentes[0];
+        return {
+          ...b,
+          estado: "ausente",
+          valor: p.dado ? `${p.rotulo} — ${p.dado}` : p.rotulo,
+          oQueFalta: p.oQueFalta,
+          leva: p.leva,
+          campo: p.campo,
+        };
+      }
+      const julgamentos = dado(["exige_julgamento"]);
+      if (julgamentos.length > 0) {
+        return {
+          ...b,
+          estado: "em_julgamento",
+          valor: julgamentos.map((i) => i.rotulo).join(" · "),
+          oQueFalta: julgamentos[0].oQueFalta,
+          leva: julgamentos[0].leva,
+          campo: julgamentos[0].campo,
         };
       }
       return { ...b, estado: "satisfeito" };
@@ -536,6 +560,8 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
   }
   /** ⚠️ O campo vem do próprio critério (dado em `superficie-f`) — ⛔ este arquivo ⛔ não lê imagem. */
   if (classe.estado === "ausente" && classe.campo) nomear(classe.campo);
+  /** ⚠️ Segurança pendente (reconciliar · resultado · juízo) — ⛔ o campo vem do próprio impedimento. */
+  if (seguranca.estado === "ausente" && seguranca.campo) nomear(seguranca.campo);
 
   if (faltam.length > 0 || avaliados.some((c) => c.estado === "ausente")) {
     return {
@@ -545,6 +571,24 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
       sustentam: [],
       contra: [],
       faltam,
+      criteriosAvaliados: criterios,
+    };
+  }
+
+  /**
+   * ⚠️⚠️ ⛔ SÓ O JULGAMENTO INDIVIDUAL FALTA (**HR-4**): ⛔ nenhum dado está
+   * ausente, ⛔ nenhum contradito — ⛔ e ⛔ mesmo assim o app ⛔ não conclui
+   * *"indicada"*: ⛔ a fonte manda o médico ponderar, ⛔ e ⛔ isso ⛔ não se
+   * converte em liberação automática. ⛔ Também ⛔ não é *"faltam dados"*.
+   */
+  if (seguranca.estado === "em_julgamento") {
+    return {
+      ...comum,
+      tipo: "incompleta",
+      frase: "Ainda não dá para concluir: há situação que a fonte manda avaliar individualmente",
+      sustentam: rotasQueSustentam.map(motivo),
+      contra: [],
+      faltam: [],
       criteriosAvaliados: criterios,
     };
   }

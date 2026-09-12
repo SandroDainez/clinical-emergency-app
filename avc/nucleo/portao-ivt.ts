@@ -54,10 +54,9 @@ import type { SuperficieId } from "./tipos";
 import { estadoDaReavaliacao, reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 import { barreiraDeReperfusao } from "./derivacoes-c";
 import { acoesDoBloqueio } from "./derivacoes-e";
-import { cortesLaboratoriais, itensMarcados, bloqueiosCorrigiveis } from "./derivacoes-d";
+import { bloqueiosCorrigiveis, impedimentosDeSeguranca, type EfeitoNaAcao } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
 import { ESTADO_DA_ACAO } from "../conteudo/superficie-e";
-import { campoDoModulo } from "../conteudo/campos";
 
 /**
  * ⚠️⚠️ SETE ESTADOS, ⛔ E ⛔ NENHUM DELES É *"desabilitado"*.
@@ -90,6 +89,22 @@ export type EstadoDoPortao =
    * ⛔ nunca *"contraindicada"* — ⛔ e o motivo nomeia o critério.
    */
   | "nao_sustentada"
+  /**
+   * ── ⚠️⚠️ OS TRÊS ESTADOS DA INCERTEZA TIPADA (R3, commit 7) ─────────────
+   *
+   * ⚠️ *"Incerteza relevante ⛔ não pode virar liberação automática"* (autor).
+   * ⛔ Nenhum dos três é contraindicação; ⛔ cada um nomeia o gesto que resolve.
+   */
+  /** ⚠️ Coletas discordantes ⛔ ou plaquetas sem unidade — ⛔ o app ⛔ não elege. */
+  | "reconciliacao_pendente"
+  /** ⚠️ Exame ⛔ não colhido **com** motivo de suspeita, ⛔ ou com varfarina/heparina em uso. */
+  | "resultado_pendente"
+  /**
+   * ⚠️⚠️ A fonte manda **julgar individualmente** (DOAC, CMB > 10, itens
+   * relativos). ⛔ Não retém navegação ⛔ nem registro; ⛔ e ⛔ não é convertido em
+   * liberação automática (**HR-4**).
+   */
+  | "julgamento_individual_pendente"
   /** ⚠️ Falta dado que o próprio critério favorável exige. */
   | "informacao_incompleta"
   /** ⚠️ ⛔ Nenhum critério implementado fecha o caso. ⛔ Nem sim ⛔ nem não. */
@@ -115,6 +130,12 @@ export type MotivoDoPortao = {
    * qualquer reperfusão (**E-08**), ⛔ e que ⛔ ainda ⛔ não está na trilha.
    */
   readonly camada: "seguranca" | "correcao" | "veredito" | "classe";
+  /**
+   * ⚠️⚠️ O EFEITO TIPADO SOBRE A AÇÃO (R3) — ⛔ presente nos motivos de
+   * segurança. ⛔ `exige_julgamento` ⛔ nunca coexiste com `impede` no mesmo
+   * motivo, ⛔ e a prova dos críticos mede ⛔ isso.
+   */
+  readonly efeito?: EfeitoNaAcao;
   readonly rotulo: string;
   /** ⚠️ O valor que sustenta o bloqueio **agora**. */
   readonly dado?: string;
@@ -142,32 +163,22 @@ export type PortaoIVT = {
   readonly motivos: readonly MotivoDoPortao[];
 };
 
-/** ⚠️ O verbo do corte laboratorial já vem da fonte — ⛔ e ⛔ não se reescreve. */
-function motivoDoCorte(c: {
-  id: string;
-  valor?: number;
-  limite: number;
-  verbo: string;
-}): MotivoDoPortao {
+/**
+ * ⚠️ Os motivos de segurança vêm **prontos** de `impedimentosDeSeguranca()`
+ * (R3, commit 7) — ⛔ rótulo do campo, valor, fonte, o que falta ⛔ e o efeito
+ * tipado. ⛔ O portão ⛔ não reinterpreta ⛔ nenhum deles (**I6**).
+ */
+function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]): MotivoDoPortao {
   return {
-    id: `corte-${c.id}`,
+    id: i.id,
     camada: "seguranca",
-    /**
-     * ⚠️ ⛔ O rótulo do **campo**, ⛔ e ⛔ não o id cru: a tela mostrava
-     * *"inr — 2.5"*. ⛔ Identificador interno ⛔ não é linguagem clínica, ⛔ e a
-     * divergência é ⛔ exatamente o lugar onde ⛔ ela precisa ser lida.
-     */
-    rotulo: campoDoModulo(c.id)?.rotulo ?? c.id,
-    dado: c.valor === undefined ? undefined : String(c.valor),
-    fonte: "F-10",
-    /**
-     * ⚠️⚠️ ⛔ *"⛔ Nenhuma"* — ⛔ e ⛔ isso ⛔ não é desistência: o corte ⛔ **não é
-     * corrigível** neste módulo. ⛔ Escrever *"corrija o INR"* prometeria uma
-     * conduta que a fonte ⛔ não dá (**F-10 ⛔ não traz reversão**).
-     */
-    oQueFalta: "A fonte não descreve correção para este achado neste módulo",
-    leva: "laboratorio",
-    campo: c.id,
+    efeito: i.efeito,
+    rotulo: i.rotulo,
+    dado: i.dado,
+    fonte: i.fonte,
+    oQueFalta: i.oQueFalta,
+    leva: i.leva,
+    campo: i.campo,
   };
 }
 
@@ -237,28 +248,24 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
     });
   }
 
-  for (const c of cortesLaboratoriais(estado)) {
-    if (c.estado === "contraindicacao_nao_corrigivel") motivos.push(motivoDoCorte(c));
-  }
-
   /**
-   * ⚠️ Os itens de antecedentes ⛔ e procedimentos que a fonte classifica como
-   * ⛔ não corrigíveis — ⛔ eles já vêm interpretados, ⛔ com verbo ⛔ e origem.
+   * ⚠️⚠️ TODA a segurança de D, **tipada** (R3, commit 7): ⛔ cortes cruzados,
+   * itens ⛔ não corrigíveis, coletas discordantes, exames pendentes com
+   * suspeita ⛔ ou varfarina/heparina, juízo ⛔ não respondido, julgamento
+   * individual, condição resolutiva ⛔ e risco declarado. ⛔ O portão consome;
+   * ⛔ não reinterpreta.
    */
-  for (const i of itensMarcados(estado)) {
-    if (i.estado !== "contraindicacao_nao_corrigivel") continue;
-    motivos.push({
-      id: `item-${i.id}`,
-      camada: "seguranca",
-      rotulo: i.rotulo,
-      dado: i.formulacao,
-      fonte: "F-07",
-      oQueFalta: "A fonte não descreve correção para este achado",
-      leva: "seguranca",
-    });
-  }
+  const impedimentos = impedimentosDeSeguranca(estado);
+  for (const i of impedimentos) motivos.push(motivoDeSeguranca(i));
 
-  const seguranca = motivos.filter((m) => m.camada === "seguranca");
+  /** ⚠️ ⛔ Só o que **impede** nomeia o estado de segurança: achado de imagem ⛔ e `impede`. */
+  const seguranca = motivos.filter(
+    (m) => m.camada === "seguranca" && (m.efeito === undefined || m.efeito === "impede")
+  );
+  const reconciliar = impedimentos.some((i) => i.efeito === "impede_ate_reconciliar");
+  const resultadoPendente = impedimentos.some((i) => i.efeito === "impede_ate_resultado");
+  const juizoPendente = impedimentos.some((i) => i.efeito === "aguarda_juizo");
+  const julgamentoPendente = impedimentos.some((i) => i.efeito === "exige_julgamento");
 
   /* ── 2 · o que a diretriz desaconselha ───────────────────────────────── */
 
@@ -410,6 +417,15 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
         : veredito.tipo === "nao_sustentada"
         ? "nao_sustentada"
         /**
+         * ⚠️⚠️ A INCERTEZA RELEVANTE (R3) — ⛔ antes do corrigível: ⛔ tratar a
+         * PA ⛔ não reconcilia duas coletas ⛔ nem traz um resultado que ⛔ não
+         * foi colhido. ⛔ Nenhum dos dois libera.
+         */
+        : reconciliar
+        ? "reconciliacao_pendente"
+        : resultadoPendente
+        ? "resultado_pendente"
+        /**
          * ⚠️⚠️ ⛔ ANTES do corrigível ⛔ e do aguardando: ⛔ a aferição pela
          * metade é ⛔ o que o médico tem de terminar **agora**, ⛔ e dizer
          * *"corrija a pressão"* a quem ⛔ já está medindo ⛔ é a tela ⛔ não ter
@@ -421,7 +437,15 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
           ? "aguardando_reavaliacao"
           : corrigiveis.length > 0
             ? "bloqueado_corrigivel"
-            : veredito.tipo === "incompleta"
+            /**
+             * ⚠️⚠️ **HR-4**: julgamento individual pendente ⛔ não bloqueia
+             * navegação ⛔ nem registro, ⛔ mas ⛔ não é convertido em liberação
+             * automática. ⛔ E ⛔ nunca vira `bloqueado_seguranca`.
+             */
+            : julgamentoPendente
+            ? "julgamento_individual_pendente"
+            /** ⚠️ **HR-3**: o juízo da rec. 10 ⛔ ainda ⛔ não respondido é dado que falta — ⛔ a pergunta, ⛔ não o exame. */
+            : veredito.tipo === "incompleta" || juizoPendente
               ? "informacao_incompleta"
               : veredito.tipo === "sem_criterios"
                 ? "sem_criterios"

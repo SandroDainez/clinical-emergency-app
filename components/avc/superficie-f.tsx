@@ -96,6 +96,9 @@ const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
   aguardando_reavaliacao: ESTADOS.andamento.simbolo,
   nao_recomendada: ESTADOS.impede.simbolo,
   nao_sustentada: ESTADOS.impede.simbolo,
+  reconciliacao_pendente: ESTADOS.verificar.simbolo,
+  resultado_pendente: ESTADOS.andamento.simbolo,
+  julgamento_individual_pendente: ESTADOS.verificar.simbolo,
   informacao_incompleta: ESTADOS.verificar.simbolo,
   sem_criterios: ESTADOS.ausente.simbolo,
   liberado: ESTADOS.favoravel.simbolo,
@@ -118,6 +121,10 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
   /** ⚠️ D1: resposta **do aplicativo** — ⛔ nunca *"contraindicada"*; o motivo nomeia o critério. */
   nao_sustentada: "Os critérios registrados não sustentam a trombólise",
+  /** ⚠️ R3: incerteza relevante ⛔ não libera — ⛔ e ⛔ nenhum destes é contraindicação. */
+  reconciliacao_pendente: "Resultados discordantes — reconcilie antes de decidir",
+  resultado_pendente: "Exame pertinente ainda sem resultado",
+  julgamento_individual_pendente: "Situação que a fonte manda avaliar individualmente",
   informacao_incompleta: "Faltam dados para concluir",
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
@@ -858,6 +865,35 @@ export default function SuperficieF({
           * razão ⛔ ao lado seria ⛔ o mesmo botão morto ⛔ com outra roupa — ⛔ e
           * ⛔ a razão ⛔ já está escrita acima, ⛔ com o caminho para resolvê-la.
           */}
+        {/**
+          * ── ⚠️⚠️ E-47 · A CONDIÇÃO RESOLUTIVA **VISÍVEL** (R3, commit 7) ─────
+          *
+          * ⚠️ Portão aberto ⛔ não é silêncio: ⛔ sem motivo de suspeita ⛔ e ⛔ sem
+          * varfarina/heparina, a IVT pode ser iniciada antes do coagulograma
+          * **com regra de suspensão** — ⛔ e a regra precisa estar na tela,
+          * ⛔ junto do gesto. ⛔ O mesmo para risco declarado pela fonte.
+          */}
+        {portao.liberado
+          && portao.motivos.some((m) => m.efeito === "condicao_resolutiva" || m.efeito === "informa") ? (
+          <View style={e.portao} testID="avc-f-portao-condicoes">
+            {portao.motivos
+              .filter((m) => m.efeito === "condicao_resolutiva" || m.efeito === "informa")
+              .map((m) => (
+                <View key={m.id} style={e.portaoMotivo} testID={`avc-f-portao-condicao-${m.id}`}>
+                  <Text style={e.portaoNivel}>
+                    {m.efeito === "condicao_resolutiva"
+                      ? tr("Condição resolutiva vinculada")
+                      : tr("Risco declarado pela fonte")}
+                  </Text>
+                  <Text style={e.portaoRotulo}>{tr(m.rotulo)}</Text>
+                  {m.dado ? <Text style={e.portaoDado}>{tr(m.dado)}</Text> : null}
+                  <Text style={e.portaoFonte}>{m.fonte}</Text>
+                  <Text style={e.portaoFalta}>{tr(m.oQueFalta)}</Text>
+                </View>
+              ))}
+          </View>
+        ) : null}
+
         {portao.liberado ? (
           DECISAO_DE_PROSSEGUIR.map((campo) => (
             <CampoDaSuperficie

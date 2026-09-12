@@ -78,6 +78,10 @@ export const ROTULO_CLINICO: Readonly<Record<string, string>> = {
   anticoagulacao: "Uso de anticoagulante",
   glicemia: "Glicemia",
   pressao_arterial: "Pressão arterial",
+  // ── segurança da IVT (commit 7 · 2026-09-12) ─────────────────────────────
+  inr: "INR",
+  plaquetas_unidade: "Unidade das plaquetas",
+  motivo_para_suspeitar_alteracao_coagulacao: "Motivo para suspeitar de alteração da coagulação",
 };
 
 /**
@@ -118,6 +122,11 @@ export const ACAO_PENDENTE: Readonly<Record<string, string>> = {
   anticoagulacao: "Confirmar uso recente de anticoagulante",
   glicemia: "Medir a glicemia",
   pressao_arterial: "Aferir a pressão arterial",
+  // ── segurança da IVT (commit 7 · 2026-09-12) ─────────────────────────────
+  inr: "Registrar o resultado dos exames de coagulação",
+  plaquetas_unidade: "Registrar a unidade do laudo, sem a qual o valor não se compara ao corte",
+  motivo_para_suspeitar_alteracao_coagulacao:
+    "Responder se há motivo para suspeitar de alteração da coagulação",
 };
 
 /**

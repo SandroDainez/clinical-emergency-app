@@ -343,6 +343,42 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Faltam dados para concluir":
     "Faltan datos para concluir",
   "Falta registrar": "Falta registrar",
+  // ── incerteza tipada na segurança (R3 · commit 7 · 2026-09-12) ─────────
+  "Resultados discordantes — reconcilie antes de decidir": "Resultados discordantes — concilie antes de decidir",
+  "Exame pertinente ainda sem resultado": "Examen pertinente aún sin resultado",
+  "Situação que a fonte manda avaliar individualmente": "Situación que la fuente manda evaluar individualmente",
+  "Condição resolutiva vinculada": "Condición resolutiva vinculada",
+  "Risco declarado pela fonte": "Riesgo declarado por la fuente",
+  "Ainda não dá para concluir: há situação que a fonte manda avaliar individualmente":
+    "Aún no se puede concluir: hay una situación que la fuente manda evaluar individualmente",
+  "Resultados discordantes entre coletas": "Resultados discordantes entre muestras",
+  "Corrigir o resultado da coleta que estiver errado, na mesma coleta":
+    "Corregir el resultado de la muestra que esté equivocado, en la misma muestra",
+  "Valor sem unidade declarada": "Valor sin unidad declarada",
+  "Exames de coagulação": "Exámenes de coagulación",
+  "Varfarina ou heparina em uso": "Warfarina o heparina en uso",
+  "Exames hematológicos e de coagulação": "Exámenes hematológicos y de coagulación",
+  "Há motivo para suspeitar de alteração": "Hay motivo para sospechar alteración",
+  "Trombólise pode ser iniciada antes do resultado da coagulação":
+    "La trombólisis puede iniciarse antes del resultado de la coagulación",
+  "Sem motivo para suspeitar; sem varfarina ou heparina registradas":
+    "Sin motivo para sospechar; sin warfarina ni heparina registradas",
+  "Suspender se o resultado vier alterado pelos cortes da fonte":
+    "Suspender si el resultado llega alterado según los cortes de la fuente",
+  "Motivo para suspeitar de alteração: incerto": "Motivo para sospechar alteración: incierto",
+  "Motivo para suspeitar de alteração da coagulação ainda não avaliado":
+    "Motivo para sospechar alteración de la coagulación aún no evaluado",
+  "Responder se há motivo para suspeitar de alteração da coagulação":
+    "Responder si hay motivo para sospechar alteración de la coagulación",
+  "Análise individual de risco e benefício: a fonte diz que a trombólise pode ser considerada":
+    "Análisis individual de riesgo y beneficio: la fuente dice que la trombólisis puede considerarse",
+  "Julgamento individual: a fonte classifica a utilidade como incerta":
+    "Juicio individual: la fuente clasifica la utilidad como incierta",
+  "Julgamento individual: a fonte classifica como situação a considerar":
+    "Juicio individual: la fuente clasifica como situación a considerar",
+  "Risco declarado pela fonte; a trombólise não fica retida por ele":
+    "Riesgo declarado por la fuente; la trombólisis no queda retenida por él",
+  "Motivo para suspeitar de alteração da coagulação": "Motivo para sospechar alteración de la coagulación",
   // ── composição do veredito da IVT (D1 · commit 6 · 2026-09-12) ────────
   "✕ Os critérios não sustentam a trombólise": "✕ Los criterios no sustentan la trombólisis",
   "Os critérios registrados não sustentam a trombólise":

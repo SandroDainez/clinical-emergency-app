@@ -138,7 +138,14 @@ function candidatoIvt(e = vazio) {
   let x = reg(e, "incapacitante_assumido", "Incapacitante");
   x = reg(x, "hora_inicio_observado", AGORA - 2 * H);
   x = tcSem(x, 1, AGORA - 1 * H);
-  return x;
+  /** ⚠️ O juízo da rec. 10 respondido (HR-3): sem motivo para suspeitar ⇒ E-47, ⛔ e ⛔ não pendência. */
+  return reg(x, "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+}
+/** ⚠️ O mesmo candidato **sem** o juízo da rec. 10 — ⛔ para medir HR-3. */
+function candidatoSemJuizo(e = vazio) {
+  let x = reg(e, "incapacitante_assumido", "Incapacitante");
+  x = reg(x, "hora_inicio_observado", AGORA - 2 * H);
+  return tcSem(x, 1, AGORA - 1 * H);
 }
 /** ⚠️ Candidato EVT COMPLETO pela seleção (rec. 1 de §4.7.2). */
 function candidatoEvt(e = vazio, dtMs = 1 * H) {
@@ -252,7 +259,7 @@ ausente("7 · 72 h (API)", () => {
 
 /* ══ 8 · LIMITE EXATO DA JANELA ══════════════════════════════════════════ */
 ausente("8 · limite exato (API)", () => {
-  const limite = (dt) => { let e = reg(vazio, "incapacitante_assumido", "Incapacitante"); e = reg(e, "hora_inicio_observado", AGORA - dt); return ivt(tcSem(e, 1, AGORA - 30 * MIN)).v.tipo; };
+  const limite = (dt) => { let e = reg(vazio, "incapacitante_assumido", "Incapacitante"); e = reg(e, "hora_inicio_observado", AGORA - dt); e = reg(e, "motivo_para_suspeitar_alteracao_coagulacao", "nao"); return ivt(tcSem(e, 1, AGORA - 30 * MIN)).v.tipo; };
   conf("8 · IVT em exatamente 4,5 h → dentro (`indicada`)", limite(4.5 * H) === "indicada", `⛔ ${limite(4.5 * H)}`);
   conf("8 · EVT em exatamente 6 h → rec. 1 ⛔ e rec. 2 alcançam (fronteira da fonte, ⛔ não harmonizada)",
     evt(candidatoEvt(vazio, 6 * H)).tipo === "recomendada", `⛔ ${evt(candidatoEvt(vazio, 6 * H)).tipo}`);
@@ -261,7 +268,7 @@ ausente("8 · limite exato (API)", () => {
 
 /* ══ 9 · LIMITE + 1 ms (⛔ sem arredondar antes de comparar) ═════════════ */
 ausente("9 · limite + 1 ms (API)", () => {
-  const limite = (dt) => { let e = reg(vazio, "incapacitante_assumido", "Incapacitante"); e = reg(e, "hora_inicio_observado", AGORA - dt); return ivt(tcSem(e, 1, AGORA - 30 * MIN)).v.tipo; };
+  const limite = (dt) => { let e = reg(vazio, "incapacitante_assumido", "Incapacitante"); e = reg(e, "hora_inicio_observado", AGORA - dt); e = reg(e, "motivo_para_suspeitar_alteracao_coagulacao", "nao"); return ivt(tcSem(e, 1, AGORA - 30 * MIN)).v.tipo; };
   conf("9 · IVT em 4,5 h + 1 ms → fora", limite(4.5 * H + 1) !== "indicada", `⛔ ${limite(4.5 * H + 1)}`);
   conf("9 · IVT em 4,5 h − 1 ms → dentro", limite(4.5 * H - 1) === "indicada", `⛔ ${limite(4.5 * H - 1)}`);
   conf("9 · EVT em 24 h + 1 ms → fora", evt(candidatoEvt(vazio, 24 * H + 1)).tipo !== "recomendada", `⛔ ${evt(candidatoEvt(vazio, 24 * H + 1)).tipo}`);
@@ -341,8 +348,11 @@ ausente("14 · varfarina (API)", () => {
   conf("14 · varfarina + INR pendente → ⛔ NÃO liberado", p.liberado === false, `⛔ ${p.estado}`);
   conf("14 · ⛔ e o estado é `resultado_pendente` (`impede_ate_resultado`)",
     p.estado === "resultado_pendente" && p.motivos.some((m) => m.efeito === "impede_ate_resultado"), `⛔ ${p.estado} ${JSON.stringify(p.motivos.map((m) => [m.id, m.efeito]))}`);
-  const comInr = regI(e, col(1), "inr", 1.2);
-  conf("14 · varfarina + INR 1,2 registrado → o pendente sai", ivt(comInr).p.estado !== "resultado_pendente", `⛔ ${ivt(comInr).p.estado}`);
+  /** ⚠️ Table 8 fala de *"coagulation test results"* — INR, PT ⛔ e PTT; ⛔ nenhum mapeamento por agente é inventado. */
+  const soInr = regI(e, col(1), "inr", 1.2);
+  conf("14 · varfarina + só o INR registrado → ⛔ ainda pendente (PT ⛔ e aPTT faltam)", ivt(soInr).p.estado === "resultado_pendente", `⛔ ${ivt(soInr).p.estado}`);
+  const comCoag = regI(regI(soInr, col(1), "tp", 12), col(1), "aptt", 30);
+  conf("14 · varfarina + INR, PT ⛔ e aPTT registrados → o pendente sai", ivt(comCoag).p.estado !== "resultado_pendente", `⛔ ${ivt(comCoag).p.estado}`);
   const hep = reg(candidatoIvt(), "anticoagulante_em_uso", "Heparina ou heparina de baixo peso molecular");
   conf("14 · heparina + coagulograma pendente → ⛔ não liberado", ivt(hep).p.liberado === false, `⛔ ${ivt(hep).p.estado}`);
 });
@@ -366,13 +376,13 @@ ausente("15 · DOAC (API)", () => {
 
 /* ══ 16 · SUSPEITA DE COAGULOPATIA ═══════════════════════════════════════ */
 ausente("16 · suspeita (API)", () => {
-  const sim = reg(candidatoIvt(), "motivo_para_suspeitar_alteracao_coagulacao", "sim");
+  const sim = reg(candidatoSemJuizo(), "motivo_para_suspeitar_alteracao_coagulacao", "sim");
   conf("16 · suspeita = sim, sem exame → `resultado_pendente`", ivt(sim).p.estado === "resultado_pendente", `⛔ ${ivt(sim).p.estado}`);
-  const nao = reg(candidatoIvt(), "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+  const nao = reg(candidatoSemJuizo(), "motivo_para_suspeitar_alteracao_coagulacao", "nao");
   conf("16 · suspeita = não, sem varfarina/heparina → liberado, com E-47 visível",
     ivt(nao).p.liberado === true && ivt(nao).p.motivos.some((m) => m.efeito === "condicao_resolutiva"),
     `⛔ ${ivt(nao).p.estado} ${JSON.stringify(ivt(nao).p.motivos.map((m) => [m.id, m.efeito]))}`);
-  const np = candidatoIvt();
+  const np = candidatoSemJuizo();
   conf("16 · suspeita ⛔ NÃO perguntada → ⛔ não vira negativo ⛔ nem contraindicação (HR-3): `informacao_incompleta` nomeando o juízo",
     ivt(np).p.estado === "informacao_incompleta" && ivt(np).p.motivos.some((m) => m.campo === "motivo_para_suspeitar_alteracao_coagulacao"),
     `⛔ ${ivt(np).p.estado} ${JSON.stringify(ivt(np).p.motivos.map((m) => [m.id, m.campo]))}`);
