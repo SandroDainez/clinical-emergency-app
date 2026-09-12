@@ -46,7 +46,20 @@ import type { EstadoAvc } from "./estado";
 import { barreiraDeReperfusao } from "./derivacoes-c";
 import { bloqueiosCorrigiveis, type BloqueioCorrigivel } from "./derivacoes-d";
 import { recomendacoesDoEstado, type LeituraDaRecomendacao } from "./derivacoes-f";
-import type { Insumo } from "../conteudo/superficie-f";
+import { RECOMENDACOES, type Insumo, type Recomendacao } from "../conteudo/superficie-f";
+
+/**
+ * ⚠️⚠️⚠️ O UNIVERSO DO VEREDITO — ⛔ filtrado por **domínio**, ⛔ e ⛔ nunca por
+ * id ⛔ ou por texto (commit 4 · R2). ⚠️ Espelho exato de
+ * `RECOMENDACOES_DE_ELEGIBILIDADE` da EVT.
+ *
+ * ⛔ Fora daqui — ⛔ e **⛔ ainda no catálogo, listadas ⛔ e citadas**: `agente`
+ * (§4.6.2 rec. 1), `posologia` (§4.6.2 rec. 2) ⛔ e `principio` (§4.6.1 rec. 1).
+ * ⛔ Nenhuma delas fala da **população**; ⛔ todas pressupõem a elegibilidade que
+ * ⛔ este veredito existe para avaliar.
+ */
+export const RECOMENDACOES_DE_ELEGIBILIDADE_IVT: readonly Recomendacao[] =
+  RECOMENDACOES.filter((r) => r.terapia === "ivt" && r.dominio === "elegibilidade");
 
 /**
  * ⚠️⚠️ A FRASE QUE ⛔ NUNCA SAI DE PERTO DO VEREDITO.
@@ -207,8 +220,12 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
   }
 
   const leituras = recomendacoesDoEstado(estado, agoraMs);
-  /** ⚠️ ⛔ Só IVT: trombectomia é outra terapia, ⛔ e outro veredito. */
-  const ivt = leituras.filter((l) => l.terapia === "ivt");
+  /**
+   * ⚠️ ⛔ Só IVT **de elegibilidade** (commit 4): trombectomia é outra terapia,
+   * ⛔ e agente, posologia ⛔ e princípio ⛔ não decidem candidatura.
+   */
+  const permitidos = new Set(RECOMENDACOES_DE_ELEGIBILIDADE_IVT.map((r) => r.id));
+  const ivt = leituras.filter((l) => permitidos.has(l.id));
 
   /* ── 2 · o que a diretriz desaconselha, ⛔ e que se aplica a este caso ──── */
 

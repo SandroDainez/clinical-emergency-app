@@ -327,7 +327,48 @@ export const ACAO_DE_TROMBOLISE: readonly CampoDeclarado[] = [
  * retrievers* ⛔ não beneficiam em vaso médio/distal. ⛔ Deixá-la entrar no
  * veredito faria o app **negar candidatura por causa de um dispositivo**.
  */
-export type DominioDaRecomendacao = "elegibilidade" | "tecnica" | "procedimento";
+/**
+ * ── ⚠️⚠️⚠️ OS DOMÍNIOS DA **IVT** — R2 do plano de correção (commit 4 · 2026-09-12)
+ *
+ * ⛔ ⛔ Até aqui **toda** recomendação de IVT tinha `dominio: "elegibilidade"`,
+ * ⛔ e o veredito reduzia o catálogo por *"qualquer favorável aplicável ⇒
+ * indicada; qualquer COR 3 aplicável ⇒ ⛔ não recomendada"*. ⚠️ Medido por
+ * execução (auditoria AVC-01/02/03):
+ *
+ *   · **só peso** ⇒ `indicada` — ⛔ porque §4.6.2 rec. 1 (*"eligible for IVT,
+ *     tenecteplase … or alteplase … is recommended"*) exige ⛔ só `peso`.
+ *     ⛔ Uma recomendação que **pressupõe** elegibilidade ⛔ estava
+ *     **estabelecendo** elegibilidade;
+ *   · **TNK em consideração** ⇒ `nao_recomendada` — ⛔ porque §4.6.2 rec. 2 é
+ *     sobre a **dose de 0,4 mg/kg**, ⛔ e o agregador ⛔ não distinguia
+ *     *recomendação negativa sobre posologia* de *sobre população*;
+ *   · **só "Incapacitante"** ⇒ `indicada` — ⛔ porque §4.6.1 rec. 1 (*"faster
+ *     treatment improves functional outcomes"*) é **princípio de condução**,
+ *     ⛔ não critério de seleção.
+ *
+ * ⚠️ A EVT ⛔ já resolvia ⛔ isso com `dominio` + `RECOMENDACOES_DE_ELEGIBILIDADE`.
+ * ⛔ Aqui se aplica o **mesmo** desenho, ⛔ e ⛔ nenhuma recomendação sai do
+ * catálogo: ⛔ elas continuam listadas ⛔ e citadas; ⛔ o que muda é **quem entra
+ * no veredito**.
+ *
+ *   · `agente` — escolha do fármaco, ⛔ pressupõe elegibilidade (§4.6.2 rec. 1);
+ *   · `posologia` — esquema de dose (§4.6.2 rec. 2, TNK 0,4 mg/kg); ⛔ continua
+ *     em `alertasNegativos` para quem considera TNK — ⛔ e **E-50** continua
+ *     valendo: ⛔ nenhum regime de IAM alcança o AVC;
+ *   · `principio` — condução/rapidez (§4.6.1 rec. 1); ⛔ decisão do autor:
+ *     *"permanece no catálogo como princípio de rapidez/condução, ⛔ sai do
+ *     domínio de elegibilidade ⛔ e ⛔ não pode sustentar sozinho indicada"*.
+ *
+ * ⛔ ⛔ E ⛔ nenhum deles é deduzido de id ⛔ ou de texto — ⛔ é dado, ⛔ ao lado do
+ * verbatim (**E-31**).
+ */
+export type DominioDaRecomendacao =
+  | "elegibilidade"
+  | "tecnica"
+  | "procedimento"
+  | "agente"
+  | "posologia"
+  | "principio";
 
 /**
  * ⚠️⚠️ ⛔ A NOTA DE GENERALIZAÇÃO — ⛔ e ⛔ ela é **da recomendação**, ⛔ e ⛔ não
@@ -463,7 +504,16 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-02",
     localizacao: "§4.6.1 rec. 1 · p. e353",
     terapia: "ivt",
-    dominio: "elegibilidade",
+    /**
+     * ⚠️⚠️ **PRINCÍPIO**, ⛔ e ⛔ não elegibilidade (commit 4). ⛔ *"faster
+     * treatment improves functional outcomes"* fala de **condução**; ⛔ a
+     * população *"disabling deficits … eligible for IVT"* **pressupõe** a
+     * elegibilidade. ⛔ Sozinha, ⛔ ela fechava `indicada` com um toque em
+     * *"Incapacitante"*. ⚠️ Continua no catálogo, listada ⛔ e citada — ⛔ e a
+     * composição D1 cita esta frase como **fonte textual** do critério
+     * "déficit incapacitante", ⛔ sem depender da correspondência dela.
+     */
+    dominio: "principio",
     cor: "1",
     loe: "A",
     verbo: "faster treatment improves functional outcomes",
@@ -496,7 +546,14 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-09",
     localizacao: "§4.6.2 rec. 1 · p. e357",
     terapia: "ivt",
-    dominio: "elegibilidade",
+    /**
+     * ⚠️⚠️ **AGENTE**, ⛔ e ⛔ não elegibilidade (commit 4 · AVC-01). ⛔ *"…and
+     * eligible for IVT, tenecteplase … or alteplase … is recommended"*
+     * **pressupõe** elegibilidade ⛔ e escolhe o fármaco. ⛔ Com `exige: [peso]`
+     * ⛔ e domínio de elegibilidade, ⛔ **só o peso** fechava `indicada`.
+     * ⚠️ ⛔ `peso` continua exigido — ⛔ é o insumo do cartão de dose.
+     */
+    dominio: "agente",
     cor: "1",
     loe: "A",
     verbo: "is recommended",
@@ -515,7 +572,15 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     slot: "F-09",
     localizacao: "§4.6.2 rec. 2 · p. e357",
     terapia: "ivt",
-    dominio: "elegibilidade",
+    /**
+     * ⚠️⚠️ **POSOLOGIA**, ⛔ e ⛔ não elegibilidade (commit 4 · AVC-03). ⛔ A
+     * frase é sobre a **dose de 0,4 mg/kg**; ⛔ como elegibilidade, ⛔ ela fazia
+     * o veredito dizer *"⛔ não recomendada"* a quem **selecionava TNK** —
+     * ⛔ e o app calcula 0,25 mg/kg. ⚠️ Ela **continua** em `alertasNegativos`
+     * para quem considera TNK (⛔ é ⛔ isso que impede a dose do IAM, **E-50**);
+     * ⛔ o que ⛔ não faz mais é vetar a terapia.
+     */
+    dominio: "posologia",
     cor: "3: No Benefit",
     loe: "A",
     verbo: "is not recommended",
