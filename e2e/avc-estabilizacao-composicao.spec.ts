@@ -224,6 +224,73 @@ test.describe("AVC · Estabilização — composição", () => {
       await expect(conduta).toContainText(/94/);
     });
 
+  /* ══ ⚠️⚠️⚠️ 6b · A NOVA AFERIÇÃO NASCE **VAZIA**, ⛔ E A ANTIGA FICA ════ */
+  /**
+   * ⛔ Relato do autor (2026-09-12): *"quero colocar novos valores de pressão
+   * para o app entender que foi corrigido … ⛔ não tem um novo campo … o app
+   * leva aos controles iniciais onde inseri a pressão alta ⛔ para eu mudar"*.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ mudar o valor antigo ⛔ **⛔ corromperia a trilha**: a aferição
+   * passaria a dizer que a PA ⛔ **⛔ sempre foi** 170, ⛔ apagando o 224 que
+   * ⛔ motivou a conduta. ⛔ O portão destravaria ⛔ sobre uma história que
+   * ⛔ não aconteceu (decisão do autor, 2026-09-10).
+   *
+   * ⚠️ ⛔ Esta trava mede o **gesto real**: tocar o que está alterado, chegar
+   * ao tratamento, ⛔ e registrar a nova medida ⛔ sem sair da tela.
+   */
+  test("⛔ tocar o eixo alterado leva ao tratamento, ⛔ e a nova aferição nasce VAZIA",
+    async ({ page }) => {
+      await abrirEstabilizacao(page);
+      await medir(page, "pas", "224");
+      await medir(page, "pad", "195");
+
+      /** ⚠️ O gesto do autor: tocar o card do eixo que está alterado. */
+      await page.getByTestId("avc-ameaca-pressao").click();
+
+      /** ⚠️ ⛔ E o tratamento está lá — ⛔ com agente ⛔ e dose, ⛔ sem mais um toque. */
+      const bloco = page.getByTestId("avc-a-corrigir-pressao_acima_da_meta");
+      await expect(bloco).toBeVisible();
+      await expect(page.getByTestId("avc-a-agente-labetalol")).toContainText(/10 a 20 mg/);
+
+      /** ⚠️⚠️ ⛔ E o gesto de registrar a nova medida mora **⛔ aqui**. */
+      const novaMedida = page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta");
+      await expect(novaMedida).toBeVisible();
+      await expect(novaMedida).toContainText(/nova aferição de pressão arterial/i);
+
+      /** ⚠️ Antes do toque, a caixa ainda mostra a medida que motivou a conduta. */
+      await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue("224");
+
+      await novaMedida.click();
+
+      /**
+       * ⚠️⚠️ ⛔ A CAIXA NASCE **⛔ VAZIA** — ⛔ e ⛔ é isso que separa
+       * ⛔ *"nova aferição"* de ⛔ *"corrigir o que eu digitei"*.
+       */
+      await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue("");
+      await expect(page.getByTestId("avc-num-caixa-pad")).toHaveValue("");
+
+      /**
+       * ⚠️⚠️ ⛔ E A ANTERIOR ⛔ NÃO SE PERDE — ⛔ ela motivou a conduta.
+       *
+       * ⛔ ⛔ Ela ⛔ **⛔ não fica à vista**: a Estabilização desenha ⛔ só a
+       * instância corrente, ⛔ e as anteriores vivem ⛔ atrás de *"Ver
+       * histórico"* (**D-134**, dívida declarada — ⛔ e ⛔ não regressão desta
+       * mudança). ⚠️ ⛔ O que esta trava cobra ⛔ é que a trilha **⛔ saiba** que
+       * há duas, ⛔ e ⛔ que o caminho até a primeira ⛔ exista.
+       */
+      const grupoC = page.getByTestId("avc-grupo-pressao");
+      await expect(grupoC).toContainText(/2 medidas/i);
+      await expect(grupoC).toContainText(/ver histórico/i);
+
+      /**
+       * ⚠️ ⛔ OBSERVAÇÃO REGISTRADA (2026-09-12): ⛔ o botão genérico do topo do
+       * grupo ⛔ **⛔ continua existindo** — ⛔ há, ⛔ portanto, ⛔ dois pontos de
+       * entrada ⛔ para o mesmo gesto ⛔ quando há bloqueio. ⛔ Suprimir um deles
+       * ⛔ é decisão do autor, ⛔ e ⛔ não foi tomada aqui.
+       */
+      await expect(page.getByTestId("avc-nova-medida-pa")).toBeVisible();
+    });
+
   /* ══ ⚠️⚠️⚠️ 7 · PA ACIMA DA META — F-19 ⛔ NA PRÓPRIA ESTABILIZAÇÃO ════ */
 
   test("⛔ PA acima da meta traz agentes ⛔ e doses **aqui**",

@@ -160,12 +160,20 @@ test.describe("AVC · Estabilização — o acordeão dos eixos", () => {
   test("⛔ o eixo fechado mostra o que foi registrado", async ({ page }) => {
     await abrirEstabilizacao(page);
 
-    /** ⚠️ O gesto real: abrir C, medir, ⛔ e fechar. */
+    /**
+     * ⚠️ O gesto real: abrir C, medir, ⛔ e fechar.
+     *
+     * ⚠️⚠️ ⛔ E ⛔ FECHAR ⛔ É ⛔ PELO CABEÇALHO DO EIXO — 2026-09-12: ⛔ com
+     * ameaça ativa, ⛔ o **card** ⛔ deixou de ser interruptor ⛔ e passou a
+     * levar ⛔ ao tratamento (decisão do autor: *"o card resume; a tela do eixo
+     * trata"*). ⛔ Abrir ⛔ e fechar ⛔ continua ⛔ no cabeçalho, ⛔ que ⛔ é onde
+     * o acordeão sempre viveu.
+     */
     await page.getByTestId("avc-ameaca-pressao").click();
     await medir(page, "pas", "200");
     await medir(page, "pad", "120");
     await medir(page, "fc", "110");
-    await page.getByTestId("avc-ameaca-pressao").click();
+    await page.getByTestId("avc-eixo-abrir-pressao").click();
 
     const resumo = page.getByTestId("avc-eixo-resumo-pressao");
     await expect(resumo).toContainText("200/120");

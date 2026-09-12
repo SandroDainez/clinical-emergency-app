@@ -42,6 +42,8 @@ import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinico
 import { useTr } from "../../lib/use-tr";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
+import { ACOES_DE_CORRECAO } from "../../avc/conteudo/superficie-e";
+import { campoDoModulo } from "../../avc/conteudo/campos";
 import { eixoDoGrupo } from "./ui";
 import CalculadoraDeGlasgow, { BotaoDaCalculadoraDeGlasgow } from "./calculadora-de-glasgow";
 import { totalDoGlasgow } from "../../avc/conteudo/glasgow";
@@ -304,6 +306,8 @@ export default function SuperficieA({
 
 
 
+
+
   return (
     <View
       style={e.raiz}
@@ -352,6 +356,53 @@ export default function SuperficieA({
               <Text style={e.corrigirRisco}>{tr(b.formulacao)}</Text>
               {b.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-a-" estado={estado} agora={agora} agentesSempreAbertos /> : null}
               {b.id === "glicemia_alterada" ? <CondutaGlicemica prefixo="avc-a-" /> : null}
+              {/**
+                * ── ⚠️⚠️⚠️ ⛔ A NOVA AFERIÇÃO, **⛔ AQUI** — 2026-09-12 ─────────
+                *
+                * ⛔ Relato do autor: *"quero colocar novos valores de pressão
+                * para o app entender que foi corrigido … ⛔ não tem um novo
+                * campo … o app leva aos controles iniciais onde inseri a
+                * pressão alta ⛔ para eu mudar"*.
+                *
+                * ⚠️⚠️ ⛔ E **⛔ mudar o valor antigo ⛔ corromperia a trilha**: a
+                * aferição passaria a dizer que a PA ⛔ **⛔ sempre foi** 170,
+                * ⛔ apagando o 224 que motivou a conduta (decisão do autor,
+                * 2026-09-10 — ⛔ « Corrigir » ⛔ é ⛔ só para erro de digitação).
+                * ⛔ O gesto certo ⛔ já existia, ⛔ e ⛔ estava ⛔ **⛔ longe**:
+                * ⛔ no topo do grupo, ⛔ ou a três toques ⛔ via Correções.
+                *
+                * ⚠️ ⛔ Agora ele mora ⛔ **⛔ onde o card do eixo entrega o
+                * médico**: ⛔ ao lado do agente ⛔ e da dose ⛔ que ele acabou de
+                * ler. ⛔ A anterior ⛔ fica ⛔ na trilha (**§3.1**).
+                */}
+              {(() => {
+                const acao = ACOES_DE_CORRECAO.find((x) => x.bloqueio === b.id);
+                const tipo = acao === undefined
+                  ? undefined
+                  : campoDoModulo(acao.campoDaReavaliacao)?.instanciaDe;
+                return tipo === undefined || acao === undefined ? null : (
+                  <Pressable
+                    accessibilityRole="button"
+                    testID={`avc-a-nova-medida-${b.id}`}
+                    onPress={() => {
+                      onNovaMedida(tipo);
+                      /**
+                       * ⚠️⚠️ ⛔ E ⛔ LEVA ATÉ A CAIXA — ⛔ senão ⛔ o campo nasce
+                       * ⛔ **⛔ fora da vista**: o bloco de tratamento vem
+                       * ⛔ **antes** dos eixos, ⛔ e a aferição mora ⛔ neles.
+                       * ⛔ Abrir um campo que ⛔ o médico ⛔ não vê ⛔ é ⛔ o
+                       * mesmo defeito, ⛔ com outra roupa.
+                       */
+                      foco.pedirFoco(acao.campoDaReavaliacao);
+                    }}
+                    style={({ pressed }) => [e.novaMedida, pressed ? e.pressionado : null]}
+                  >
+                    <Text style={e.novaMedidaTexto}>
+                      {tr("Registrar")} {tr(acao.resolvePor).toLowerCase()}
+                    </Text>
+                  </Pressable>
+                );
+              })()}
               <Pressable
                 accessibilityRole="button"
                 testID={`avc-a-registrar-${b.id}`}
