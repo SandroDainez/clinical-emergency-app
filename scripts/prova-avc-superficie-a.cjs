@@ -183,16 +183,22 @@ const reg = (est, campo, valor, rel) => CAMPOS.registrarComInstancia(est, { camp
   // ⚠️ Marcos afastados de propósito: o decorrido é em MINUTOS, e dois marcos a
   // 20 s de distância cairiam no mesmo minuto — o que mediria o arredondamento,
   // não a separação dos relógios. A primeira versão deste teste errou assim.
-  let e = E.definirRelogioClinico(e0, "ultima_vez_bem", 400_000);   // 10 min
-  e = E.definirRelogioClinico(e, "inicio_observado", 700_000);      //  5 min
-  e = E.definirRelogioClinico(e, "reconhecimento", 880_000);        //  2 min
+  /**
+   * ⚠️ Desde o commit 10 (2026-09-12, R5 · AVC-12) o marco clínico **é o fato**
+   * do campo — ⛔ e ⛔ não uma entrada num mapa paralelo. ⛔ A separação dos
+   * relógios continua sendo o que se mede; ⛔ o que mudou é ⛔ só onde eles moram.
+   */
+  let e = E.registrarFato(e0, { campo: "hora_ultima_vez_bem", valor: 400_000 }, rel);   // 10 min
+  e = E.registrarFato(e, { campo: "hora_inicio_observado", valor: 700_000 }, rel);      //  5 min
+  e = E.registrarFato(e, { campo: "hora_reconhecimento", valor: 880_000 }, rel);        //  2 min
 
   confere("os quatro relógios coexistem com valores próprios",
-    e.relogiosClinicos.ultima_vez_bem === 400_000 &&
-    e.relogiosClinicos.inicio_observado === 700_000 &&
-    e.relogiosClinicos.reconhecimento === 880_000 &&
-    e.relogiosClinicos.t0_operacional === 1_000_000,
-    "F-02: colapsar marcos torna a janela estendida incomputável");
+    E.valorAtual(e, "hora_ultima_vez_bem").valor === 400_000 &&
+    E.valorAtual(e, "hora_inicio_observado").valor === 700_000 &&
+    E.valorAtual(e, "hora_reconhecimento").valor === 880_000 &&
+    e.relogiosClinicos.t0_operacional === 1_000_000 &&
+    e.relogiosClinicos.ultima_vez_bem === undefined,
+    "F-02: colapsar marcos torna a janela estendida incomputável — e o marco clínico vive no fato, não num mapa paralelo (E-27)");
 
   const m = new Set([
     E.decorridoEmMinutos(e, "ultima_vez_bem", rel),

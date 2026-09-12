@@ -79,6 +79,32 @@ export type RelogioClinicoId =
   | "t0_operacional";
 
 /**
+ * ⚠️⚠️⚠️ O MARCO CLÍNICO É **O FATO** — R5 do plano de correção (commit 10 ·
+ * 2026-09-12 · AVC-12).
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA ─────────────────────────────────────
+ *
+ * ⛔ O mesmo horário vivia em **dois** lugares: no fato do campo
+ * (`hora_ultima_vez_bem`) ⛔ e em `relogiosClinicos.ultima_vez_bem`. ⚠️ A tela
+ * escrevia os dois ao registrar a hora — ⛔ e ⛔ só o fato ao registrar *"⛔ sem
+ * essa informação"*. ⛔ Resultado medido: fato `nao_sei`, síntese *"Última vez
+ * bem há 2 h"*. ⛔ Duas verdades sobre o mesmo instante (**E-27**), ⛔ e a que
+ * o médico invalidou continuava na tela.
+ *
+ * ⚠️ Agora o **fato do campo é canônico**; ⛔ este mapa ⛔ só diz **qual campo**
+ * alimenta cada relógio clínico — ⛔ identidade estrutural, ⛔ nenhuma medicina.
+ * ⛔ `t0_operacional` ⛔ não está aqui de propósito: ⛔ ele é a chegada, nasce
+ * com o atendimento ⛔ e ⛔ não é fato informado (§0.1, **E-21**).
+ */
+export const CAMPO_DO_RELOGIO_CLINICO: Readonly<
+  Record<Exclude<RelogioClinicoId, "t0_operacional">, string>
+> = {
+  ultima_vez_bem: "hora_ultima_vez_bem",
+  inicio_observado: "hora_inicio_observado",
+  reconhecimento: "hora_reconhecimento",
+};
+
+/**
  * De onde veio o dado (E-03). A procedência muda a confiança sem mudar o valor.
  */
 export type Procedencia = "paciente" | "acompanhante" | "testemunha" | "pre_hospitalar" | "equipe" | "prontuario";

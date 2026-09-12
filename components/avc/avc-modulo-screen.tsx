@@ -175,7 +175,6 @@ import {
   valorAtual as valorAtualDoEstado,
   verSuperficie,
 } from "../../avc/nucleo/estado";
-import type { RelogioClinicoId } from "../../avc/nucleo/tipos";
 import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
 import SuperficieC from "./superficie-c";
@@ -782,8 +781,17 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   function registrarHora(campo: string, instante: number, qualRelogio?: string) {
     setEstado((e) => {
       const comFato = registrarFato(e, { campo, valor: instante, horaClinica: instante }, relogio);
-      return qualRelogio
-        ? definirRelogioClinico(comFato, qualRelogio as RelogioClinicoId, instante)
+      /**
+       * ⚠️⚠️ ⛔ SEM ESCRITA DUPLA (R5, commit 10 · 2026-09-12 · AVC-12).
+       *
+       * ⛔ Esta rotina gravava o horário **no fato ⛔ e no mapa de relógios**;
+       * *"⛔ sem essa informação"* gravava ⛔ só o fato — ⛔ e o mapa seguia
+       * dizendo *"há 2 h"* na síntese ⛔ e no cabeçalho. ⚠️ O marco clínico
+       * **é** o fato (`CAMPO_DO_RELOGIO_CLINICO`); ⛔ só o relógio
+       * operacional (chegada) vive no mapa, ⛔ porque ⛔ não é fato informado.
+       */
+      return qualRelogio === "t0_operacional"
+        ? definirRelogioClinico(comFato, "t0_operacional", instante)
         : comFato;
     });
   }

@@ -11,7 +11,13 @@
 
 import type { Instante, Relogio } from "./relogio";
 import { minutosDesde } from "./relogio";
-import type { FatoRegistrado, Pendencia, RelogioClinicoId, SuperficieId } from "./tipos";
+import {
+  CAMPO_DO_RELOGIO_CLINICO,
+  type FatoRegistrado,
+  type Pendencia,
+  type RelogioClinicoId,
+  type SuperficieId,
+} from "./tipos";
 
 /**
  * A trilha é APPEND-ONLY (§3.1). Registrar acrescenta; ⛔ nunca substitui.
@@ -242,10 +248,18 @@ export function historicoDe(estado: EstadoAvc, campo: string): readonly FatoRegi
   return estado.fatos.filter((f) => f.campo === campo);
 }
 
-/** Define um relógio clínico. ⛔ Um marco nunca sobrescreve outro (E-36). */
+/**
+ * Define o relógio **operacional**. ⛔ Um marco nunca sobrescreve outro (E-36).
+ *
+ * ⚠️⚠️ ⛔ SÓ `t0_operacional` (R5, commit 10 · 2026-09-12). ⛔ Os relógios
+ * clínicos ⛔ **não** se definem por aqui: ⛔ eles **são** o fato do campo
+ * (`CAMPO_DO_RELOGIO_CLINICO`), ⛔ e gravá-los numa segunda casa foi o que
+ * deixou *"Última vez bem há 2 h"* na tela depois de o médico registrar
+ * *"⛔ sem essa informação"* (AVC-12).
+ */
 export function definirRelogioClinico(
   estado: EstadoAvc,
-  qual: RelogioClinicoId,
+  qual: "t0_operacional",
   instante: Instante
 ): EstadoAvc {
   return { ...estado, relogiosClinicos: { ...estado.relogiosClinicos, [qual]: instante } };
@@ -256,13 +270,20 @@ export function definirRelogioClinico(
  *
  * ⚠️ É o único valor do módulo que muda sem ninguém tocar em nada. Devolve
  * `undefined` quando o marco é desconhecido: ⛔ incerteza não vira zero (E-02).
+ *
+ * ⚠️⚠️ ⛔ OS RELÓGIOS CLÍNICOS SÃO LIDOS **DO FATO** (R5, commit 10): ⛔ uma só
+ * verdade sobre o instante (**E-27**). ⛔ `nao_sei` ⛔ e ⛔ não perguntado
+ * devolvem `undefined` — ⛔ e a síntese, o cabeçalho ⛔ e os motores passam a
+ * concordar por construção, ⛔ porque leem a mesma trilha.
  */
 export function decorridoEmMinutos(
   estado: EstadoAvc,
   qual: RelogioClinicoId,
   relogio: Relogio
 ): number | undefined {
-  return minutosDesde(estado.relogiosClinicos[qual], relogio);
+  if (qual === "t0_operacional") return minutosDesde(estado.relogiosClinicos[qual], relogio);
+  const v = valorAtual(estado, CAMPO_DO_RELOGIO_CLINICO[qual])?.valor;
+  return typeof v === "number" && Number.isFinite(v) ? minutosDesde(v, relogio) : undefined;
 }
 
 /** Troca a superfície vista. ⛔ Não altera nada clínico (E-20). */
