@@ -36,6 +36,7 @@
     "test:engine": "node ./scripts/test-engine.cjs",
     "test:nucleo": "node ./scripts/prova-nucleo.cjs",
     "test:avc-nucleo": "node ./scripts/prova-avc-nucleo.cjs",
+    "test:avc-criticos": "node ./scripts/prova-avc-criticos.cjs",
     "test:avc-superficie-a": "node ./scripts/prova-avc-superficie-a.cjs",
     "test:avc-superficies": "node ./scripts/prova-avc-superficies.cjs",
     "test:selecao-encapsulada": "node ./scripts/valida-encapsulamento-selecao.cjs",
