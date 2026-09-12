@@ -44,6 +44,19 @@ const scripts = pkg.scripts || {};
 const ISENTOS = {
   // O próprio agregador — exigir que ele contenha a si mesmo é recursão, não regra.
   "test:all": "é o agregador",
+  /**
+   * ⚠️⚠️ ⛔ VERMELHA **POR CONSTRUÇÃO** ⛔ ATÉ O COMMIT 11 — 2026-09-12.
+   *
+   * ⛔ `prova-avc-criticos` nasceu no commit 1 do PLANO-CORRECAO-AVC-CRITICOS.md
+   * ⛔ com as expectativas do comportamento **correto** dos onze críticos, ⛔ e
+   * ⛔ por decisão do autor fica **fora** do agregador enquanto os commits 2–10
+   * ⛔ a vão deixando verde — ⛔ dentro dele, ⛔ derrubaria a suíte inteira entre
+   * passos ⛔ sem medir ⛔ nada de novo.
+   *
+   * ⛔ ⛔ ESTA ISENÇÃO **⛔ EXPIRA**: ⛔ o commit 11 a remove ⛔ e liga a prova ao
+   * `test:all`. ⛔ Se ⛔ ela ⛔ ainda estiver ⛔ aqui depois ⛔ disso, ⛔ é defeito.
+   */
+  "test:avc-criticos": "vermelha por construção até o commit 11 do plano de correção dos críticos; entra no test:all no commit 11",
   // `playwright --ui` abre uma janela interativa e fica esperando o humano.
   // Num pipeline, travaria para sempre. É a mesma suíte do test:e2e, que roda.
   "test:e2e:ui": "variante interativa do test:e2e — abre janela e aguarda o humano; a suíte roda em test:e2e",
