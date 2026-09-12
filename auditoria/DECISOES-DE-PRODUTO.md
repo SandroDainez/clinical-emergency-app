@@ -1897,3 +1897,72 @@ navegação ⛔ **não muda**.
 ⛔ **⛔ Não migrar todos os módulos de uma vez.** A ordem sugerida pelo autor é
 SCA → TEP → Sepse → Anafilaxia → demais, ⛔ **mas ⛔ nenhuma começa ⛔ sem ele
 indicar**.
+
+---
+
+## PD-39 · TODO DEPLOY DE PRODUÇÃO REGISTRA SHA + DEPLOY ID + ARTEFATO — DECIDIDA (2026-09-11)
+
+**Decisão do autor:** *"todo deploy de produção deve registrar commit SHA +
+Vercel deploy ID + bundle/artefato. Isso elimina esse buraco de
+rastreabilidade que apareceu agora."*
+
+### O buraco que a fez nascer
+
+Diagnóstico de infraestrutura de 2026-09-11, antes do primeiro push desta
+frente:
+
+| medida | achado |
+|---|---|
+| projeto na Vercel ligado ao Git? | ⛔ **não** — `vercel inspect` do deploy de produção não traz repositório, branch nem commit |
+| quem dispara os deploys | pessoa, pelo CLI (`sandrodainez` em todos os registros) |
+| deploys de *preview* na lista | **zero** — só `Production` |
+| workflow do GitHub que faça deploy | ⛔ nenhum, em nenhuma branch |
+| o commit em produção, `443f0d8`, estava em alguma branch remota? | ⛔ **não** |
+
+⚠️⚠️ A última linha é o buraco: **produção rodava um código que existia apenas
+em um disco**. Se a máquina falhasse, o que estava servindo médico não seria
+reconstituível pelo GitHub.
+
+⚠️ E, como o deploy nasce do local, **não existe rastro automático** ligando um
+deploy publicado ao commit que o gerou. A Vercel não tem como saber, porque não
+recebeu essa informação.
+
+### A regra
+
+**Todo deploy de produção registra, no repositório, os três identificadores:**
+
+| o quê | de onde vem |
+|---|---|
+| **commit SHA** | `git rev-parse HEAD` no momento do build |
+| **Vercel deploy ID** | a URL/ID do deploy promovido |
+| **artefato** | o nome do bundle servido, e o `dist/artefato.json` que a **D-128** já gera |
+
+⚠️ O **artefato já se autodeclara** desde a D-128: `dist/artefato.json` carrega
+`script`, `modo`, `backendEmbutido`, `geradoEm` e `commit`. A regra fecha o
+circuito registrando também o **deploy ID**, que é o único dos três que a
+máquina local não conhece sozinha.
+
+### Consequência operacional
+
+⛔ Um deploy sem os três registrados é **deploy sem procedência** — e
+procedência é exatamente o que este projeto exige de qualquer afirmação
+clínica. Não faz sentido exigir página e verbatim de uma fonte e aceitar
+"subiu em algum momento" para o código que a entrega.
+
+⚠️ **Isto não obriga a conectar o repositório à Vercel.** A conexão resolveria
+o rastro automaticamente, mas traria deploy automático por push e preview
+deployments — mudança de comportamento que **não foi decidida**. Enquanto não
+for, o registro é manual e vive aqui.
+
+### Precedente
+
+O commit `362d418` já fez isso para o deploy da infraestrutura de teste
+(**D-130**), antes da regra existir. Ele é o formato a seguir.
+
+### Estado em 2026-09-11
+
+| item | valor |
+|---|---|
+| produção | `443f0d8` · deploy `j9p41qshb` · bundle `entry-51567884b86940c3235c9ce65d78cfd2.js` |
+| branch de trabalho | `refactor/clinical-modules-rebuild` em `84f4a9a`, **preservada no GitHub** |
+| deploy pendente | ⛔ nenhum autorizado |
