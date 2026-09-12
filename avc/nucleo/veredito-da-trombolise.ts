@@ -152,7 +152,22 @@ function motivo(l: LeituraDaRecomendacao): MotivoDoVeredito {
  *   3. ⚠️ **Critério favorável que fechou.**
  *   4. ⚠️ **Falta dado** — ⛔ e a saída nomeia qual.
  */
-export function vereditoDaTrombolise(estado: EstadoAvc): VereditoDaTrombolise {
+/**
+ * ⚠️⚠️ `agoraMs` É **OBRIGATÓRIO** — commit 3 · 2026-09-12 (AVC-02, R2).
+ *
+ * ⛔ Este veredito chamava `recomendacoesDoEstado(estado)` ⛔ sem relógio, ⛔ e
+ * a janela ⛔ nunca era insumo da IVT: ⛔ um início há **72 h** saía `indicada`.
+ * ⚠️ A mesma regra que `veredito-da-trombectomia` ⛔ já cumpria: *"um veredito
+ * ⛔ não pode [ficar sem relógio], ⛔ porque a janela é um dos critérios
+ * (**E-21**)"*. ⛔ Quem **decide** exige `agora`; ⛔ quem ⛔ só lista pode ⛔ não
+ * ter. ⛔ O instante vem de quem chama (tela lê `relogio.agora()` uma vez por
+ * render; provas usam `relogioControlado`) — ⛔ nunca de `Date.now()` ⛔ aqui.
+ *
+ * ⚠️ Neste commit a assinatura muda ⛔ e ⛔ **⛔ nenhum resultado clínico** muda
+ * ⛔ ainda: ⛔ as recomendações IVT ⛔ só passam a declarar `criterios.janela`
+ * no commit 5.
+ */
+export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): VereditoDaTrombolise {
   const corrigirAntes = bloqueiosCorrigiveis(estado);
   const base = { corrigirAntes, ressalva: RESSALVA_DO_VEREDITO };
 
@@ -191,7 +206,7 @@ export function vereditoDaTrombolise(estado: EstadoAvc): VereditoDaTrombolise {
     };
   }
 
-  const leituras = recomendacoesDoEstado(estado);
+  const leituras = recomendacoesDoEstado(estado, agoraMs);
   /** ⚠️ ⛔ Só IVT: trombectomia é outra terapia, ⛔ e outro veredito. */
   const ivt = leituras.filter((l) => l.terapia === "ivt");
 

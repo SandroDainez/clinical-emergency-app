@@ -193,7 +193,8 @@ export default function SuperficieF({
    * ⛔ e ⛔ **nunca** gravado: quem congela veredito num fato faz a conclusão
    * sobreviver à correção do dado (**E-43**).
    */
-  const veredito = useMemo(() => vereditoDaTrombolise(estado), [estado]);
+  /** ⚠️ ⛔ Com o relógio (commit 3): ⛔ a janela é critério, ⛔ e ⛔ veredito ⛔ sem `agora` ⛔ não é veredito (**E-21**). */
+  const veredito = useMemo(() => vereditoDaTrombolise(estado, agora), [estado, agora]);
   /**
    * ── ⚠️⚠️ ⛔ O PORTÃO VEM PRONTO DO NÚCLEO — Fase 6, 2026-09-07 ────────────
    *
@@ -202,7 +203,7 @@ export default function SuperficieF({
    * ⚠️ ⛔ Recompô-las aqui criaria uma segunda verdade sobre a mesma decisão —
    * ⛔ e a regra clínica ⛔ envelheceria junto com o layout (**I6**).
    */
-  const portao = useMemo(() => estadoDoPortaoIVT(estado), [estado]);
+  const portao = useMemo(() => estadoDoPortaoIVT(estado, agora), [estado, agora]);
 
   /**
    * ⚠️⚠️ O VEREDITO DA EVT — ⛔ **outro motor**, ⛔ e ⛔ não outro ramo do da IVT.

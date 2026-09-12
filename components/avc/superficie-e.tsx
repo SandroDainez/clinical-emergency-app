@@ -117,7 +117,7 @@ export default function SuperficieE({
    * Reperfusão lê. ⛔ Duas somas da mesma regra é como as duas telas passam a
    * discordar sobre o mesmo paciente (**I6**).
    */
-  const portao = estadoDoPortaoIVT(estado);
+  const portao = estadoDoPortaoIVT(estado, agora);
 
   return (
     <View style={e.raiz} testID="avc-superficie-e-conteudo">

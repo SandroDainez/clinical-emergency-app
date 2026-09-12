@@ -190,8 +190,12 @@ function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
  *   4. ⛔ **Aguardando reavaliação** — ⛔ o conserto foi feito ⛔ e falta a prova.
  *   5. ⛔ **Falta dado** · **⛔ sem critério** · **liberado**.
  */
-export function estadoDoPortaoIVT(estado: EstadoAvc): PortaoIVT {
-  const veredito = vereditoDaTrombolise(estado);
+/**
+ * ⚠️ `agoraMs` obrigatório (commit 3): ⛔ o portão decide sobre a ação, ⛔ e a
+ * ação depende de um veredito que depende do relógio (**E-21**).
+ */
+export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT {
+  const veredito = vereditoDaTrombolise(estado, agoraMs);
   const motivos: MotivoDoPortao[] = [];
 
   /* ── 1 · segurança ⛔ NÃO corrigível ─────────────────────────────────── */

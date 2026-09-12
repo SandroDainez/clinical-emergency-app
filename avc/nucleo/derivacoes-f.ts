@@ -526,10 +526,33 @@ export function minutosDesdeCampoDoEstado(
   campo: string,
   agoraMs: number
 ): number | undefined {
+  const ms = msDesdeCampoDoEstado(estado, campo, agoraMs);
+  return ms === undefined ? undefined : Math.round(ms / 60_000);
+}
+
+/**
+ * ⚠️⚠️⚠️ A DURAÇÃO **PRECISA**, ⛔ para quem DECIDE — commit 3 · 2026-09-12
+ * (AVC-18, decisão do autor: *"comparar tempo preciso e arredondar apenas
+ * para apresentação"*).
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA ─────────────────────────────────────
+ *
+ * ⛔ `valorDaJanela` comparava **minutos arredondados**: 24 h + 24 s virava
+ * 1.440 min ⛔ e ⛔ ainda cabia em *"within 24 hours"*; 24 h + 36 s ⛔ não.
+ * ⚠️ Formatação decidindo fronteira de janela terapêutica (**E-01**).
+ *
+ * ⚠️ ⛔ `Math.max(0, …)` preservado: ⛔ um marco no futuro (relógio do
+ * aparelho atrasado) ⛔ continua contando zero, ⛔ e ⛔ não negativo — ⛔ é o
+ * comportamento que já existia, ⛔ e ⛔ mudá-lo seria regra nova.
+ * ⚠️ `undefined`, ⛔ **nunca zero**, quando o marco ⛔ não foi registrado (**E-02**).
+ */
+export function msDesdeCampoDoEstado(
+  estado: EstadoAvc,
+  campo: string,
+  agoraMs: number
+): number | undefined {
   const v = valorAtual(estado, campo)?.valor;
-  return typeof v === "number" && Number.isFinite(v)
-    ? Math.max(0, Math.round((agoraMs - v) / 60_000))
-    : undefined;
+  return typeof v === "number" && Number.isFinite(v) ? Math.max(0, agoraMs - v) : undefined;
 }
 
 /**
@@ -558,12 +581,19 @@ function valorDaJanela(
     const origem = ORIGEM_DO_MARCO[j.marco];
     if (origem.tipo !== "campo") continue;
     for (const campo of camposDoMarco(j.marco)) {
-      const min = minutosDesdeCampoDoEstado(estado, campo, agoraMs);
-      if (min === undefined) continue;
+      /**
+       * ⚠️⚠️ ⛔ EM MILISSEGUNDOS, ⛔ e ⛔ sem arredondar (AVC-18, commit 3).
+       * ⛔ Os limites são **inclusivos** como sempre foram (*"within 6 hours"*
+       * inclui 6 h em ponto) — ⛔ o que mudou é ⛔ só que 6 h + 1 ms ⛔ já ⛔ não
+       * cabe. ⛔ A fronteira em que 6 h pertence à rec. 1 **e** à rec. 2 é da
+       * fonte, ⛔ e continua ⛔ não harmonizada.
+       */
+      const ms = msDesdeCampoDoEstado(estado, campo, agoraMs);
+      if (ms === undefined) continue;
       algumMarco = true;
-      const de = Math.round((j.deHoras ?? 0) * 60);
-      const ate = Math.round(j.ateHoras * 60);
-      if (min >= de && min <= ate) return "satisfaz";
+      const de = (j.deHoras ?? 0) * 3_600_000;
+      const ate = j.ateHoras * 3_600_000;
+      if (ms >= de && ms <= ate) return "satisfaz";
     }
   }
   /** ⚠️ Marco registrado ⛔ e fora de toda janela é **resposta**, ⛔ não falta. */
