@@ -142,15 +142,43 @@ export function pendenciasDoCaso(estado: EstadoAvc): readonly Pendencia[] {
 export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
   const brutos: ProblemaAtivo[] = [];
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ UM PROBLEMA, ⛔ UMA LINHA — 2026-09-12.
+   *
+   * ⛔ Relato do autor: o rodapé trazia **⛔ duas linhas** para a pressão alta
+   * — ⛔ a ameaça do eixo ⛔ e o bloqueio corrigível —, ⛔ ambas com a mesma
+   * recomendação por extenso. ⚠️ ⛔ Elas ⛔ não são dois problemas: ⛔ a ameaça
+   * do eixo C ⛔ **⛔ nasce** do bloqueio (`bloqueiosCorrigiveis`), ⛔ e ⛔ o que
+   * o médico resolve ⛔ é ⛔ um só.
+   *
+   * ⚠️ ⛔ Quem fica é o **bloqueio**, ⛔ porque ⛔ é ele que carrega ⛔ o gesto
+   * que o derruba (`resolvePor`). ⛔ O card do eixo ⛔ continua mostrando ⛔ o
+   * estado ⛔ lá em cima — ⛔ nada se perde de vista.
+   */
+  const eixosJaCobertosPorBloqueio = new Set(bloqueiosCorrigiveis(estado).map((b) => b.eixo));
+
   /* ── ⚠️ 1 · AMEAÇAS IMEDIATAS ────────────────────────────────────────── */
   for (const a of ameacasImediatas(estado)) {
     if (a.estado !== "ameaca") continue;
+    if (eixosJaCobertosPorBloqueio.has(a.id)) continue;
     brutos.push({
       origem: "ameaca",
       id: a.id,
       estado: estadoClinicoDoEixo(a.estado),
       rotulo: a.nome,
-      detalhe: a.achado,
+      /**
+       * ⚠️⚠️ ⛔ E ⛔ AQUI TAMBÉM ⛔ NÃO SE REPETE — 2026-09-12.
+       *
+       * ⛔ Quando a derivação declara que a conduta ⛔ **⛔ é** o achado
+       * (`condutaRepeteOAchado`, caso do eixo B), ⛔ mostrar os dois ⛔ põe a
+       * mesma frase ⛔ duas vezes ⛔ dentro da mesma linha ⛔ do rodapé — ⛔ o
+       * mesmo defeito que ⛔ acabou de sair do card.
+       *
+       * ⚠️ ⛔ Quem cede é o **detalhe**: ⛔ o `resolvePor` ⛔ é obrigatório
+       * (**E-26** — ⛔ pendência sem o que a resolve ⛔ é muro), ⛔ e ⛔ ele ⛔ já
+       * diz ⛔ a mesma coisa.
+       */
+      detalhe: a.condutaRepeteOAchado === true ? undefined : a.achado,
       /**
        * ⚠️ A conduta **é** o que resolve — ⛔ e ela vem da fonte. ⛔ Sem conduta
        * declarada, o problema diz que se resolve **avaliando o eixo**, ⛔ e ⛔ não
@@ -174,7 +202,12 @@ export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
        * ⛔ e tem caminho de volta.
        */
       estado: "corrigivel",
-      rotulo: b.formulacao,
+      /**
+       * ⚠️⚠️ ⛔ O **ESTADO**, ⛔ e ⛔ não a recomendação inteira (2026-09-12):
+       * ⛔ o rodapé é lista de pendências, ⛔ e ⛔ a recomendação ⛔ com agente
+       * ⛔ e dose ⛔ mora ⛔ no bloco de tratamento.
+       */
+      rotulo: b.estadoCurto,
       resolvePor: b.resolvePor,
       dono: "correcoes",
     });

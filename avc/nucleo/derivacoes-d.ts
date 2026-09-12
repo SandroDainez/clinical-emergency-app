@@ -344,6 +344,28 @@ export type BloqueioCorrigivel = {
   readonly fonte: string;
   readonly verbo: string;
   readonly formulacao: string;
+  /**
+   * ⚠️⚠️⚠️ O **ESTADO**, ⛔ em uma linha — 2026-09-12.
+   *
+   * ⛔ Relato do autor: a frase da recomendação aparecia ⛔ **⛔ quatro vezes**
+   * na mesma tela (card do eixo · aviso do cockpit · bloco de tratamento ·
+   * rodapé de pendências). ⚠️ ⛔ A **recomendação** é uma só, ⛔ e mora ⛔ onde
+   * estão o agente ⛔ e a dose; ⛔ nos outros lugares o que o médico precisa
+   * ⛔ é ⛔ **⛔ saber em que pé está**.
+   *
+   * ⛔ ⛔ Isto ⛔ **⛔ não é conduta**, ⛔ e ⛔ por isso ⛔ não carrega verbo
+   * ⛔ nem número novo: ⛔ é ⛔ a leitura do **estado atual**, ⛔ derivada do
+   * mesmo corte que abriu o bloqueio. ⛔ A `formulacao` (⛔ com a fonte)
+   * ⛔ continua inteira ⛔ no bloco de tratamento.
+   */
+  readonly estadoCurto: string;
+  /**
+   * ⚠️ Qual eixo do ABCD este bloqueio **⛔ já cobre** — ⛔ para a lista de
+   * pendências ⛔ não mostrar ⛔ o mesmo problema ⛔ duas vezes (2026-09-12).
+   * ⛔ Mora aqui, ⛔ e ⛔ não em `problemas-ativos`: ⛔ nomear o campo ⛔ lá
+   * ⛔ seria ler ⛔ um campo ⛔ que aquele arquivo ⛔ não declara consumir.
+   */
+  readonly eixo: string;
   /** ⚠️ A aferição que sustenta o bloqueio AGORA — ⛔ não a primeira, ⛔ não a pior. */
   readonly instancia?: string;
   /** ⚠️ Qual nova aferição pode fazê-lo cair. ⛔ ⛔ Não é promessa de que vai cair. */
@@ -403,6 +425,8 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       fonte: "F-04",
       verbo: "should have their SBP lowered to <185 mm Hg and diastolic blood pressure (DBP) <110 mm Hg before IVT therapy is initiated to reduce hemorrhagic complications",
       formulacao: "Recomendação: controlar a pressão arterial antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
+      estadoCurto: "PA acima da meta",
+      eixo: "pressao",
       instancia: pa.instancia,
       resolvePor: "Uma nova aferição de pressão arterial",
     });
@@ -416,6 +440,8 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       fonte: "F-06",
       verbo: "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
       formulacao: "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
+      estadoCurto: "Glicemia abaixo do corte",
+      eixo: "glicemia",
       resolvePor: "Uma nova glicemia",
     });
   }

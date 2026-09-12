@@ -95,6 +95,12 @@ export type AmeacaImediata = {
   readonly estado: EstadoDaAmeaca;
   /** ⚠️ O que se lê quando há ameaça — ⛔ vem da derivação, ⛔ e ⛔ não da tela. */
   readonly achado?: string;
+  /**
+   * ⚠️ ⛔ A conduta ⛔ **⛔ não acrescenta** ao achado: ⛔ são a mesma frase.
+   * ⛔ Declarado ⛔ pela derivação (⛔ quem sabe), ⛔ e ⛔ nunca adivinhado ⛔ pela
+   * tela. ⛔ O dado ⛔ continua íntegro — ⛔ o que muda ⛔ é ⛔ só ⛔ não repetir.
+   */
+  readonly condutaRepeteOAchado?: true;
   /** ⚠️ Onde se resolve — ⛔ toda ameaça leva a um campo (**E-26**). */
   readonly campo: string;
   /**
@@ -220,6 +226,20 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
       estado: estadoDoEixo,
       achado: estadoDoEixo === "ameaca" ? l.curto : undefined,
       conduta: estadoDoEixo === "ameaca" ? l.texto : undefined,
+      /**
+       * ⚠️⚠️⚠️ ⛔ AQUI O ACHADO **⛔ JÁ É A CONDUTA** — 2026-09-12.
+       *
+       * ⛔ `curto` é *"O₂ suplementar — meta SpO₂ acima de 94%"* ⛔ e `texto` é
+       * *"Oxigênio suplementar recomendado, com meta de SpO₂ maior que 94%"*:
+       * ⛔ a **mesma** frase, ⛔ dita duas vezes. ⚠️ ⛔ Na via aérea ⛔ não é
+       * assim — *"Via aérea pode estar ameaçada"* ⛔ e *"Suporte de via aérea
+       * e ventilação recomendados"* ⛔ dizem coisas diferentes.
+       *
+       * ⛔ ⛔ Quem sabe disso é a **derivação**, ⛔ e ⛔ não a tela: ⛔ comparar
+       * texto ⛔ para adivinhar equivalência ⛔ seria heurística ⛔ que quebra
+       * ⛔ na primeira melhoria de redação.
+       */
+      condutaRepeteOAchado: true,
       campo: "hipoxia",
     };
   })();
@@ -271,7 +291,14 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
        * **afirmar o contrário**.
        */
       estado: b ? "ameaca" : m ? "medido" : "nao_avaliado",
-      achado: b?.formulacao,
+      /**
+       * ⚠️⚠️ ⛔ O **ESTADO**, ⛔ e ⛔ não a recomendação inteira — 2026-09-12.
+       *
+       * ⛔ A `formulacao` de F-04 aparecia ⛔ **⛔ quatro vezes** na mesma tela.
+       * ⚠️ ⛔ Ela ⛔ continua ⛔ inteira ⛔ no bloco de tratamento, ⛔ com a
+       * fonte; ⛔ aqui ⛔ o card diz ⛔ **⛔ em que pé está**.
+       */
+      achado: b?.estadoCurto,
       /**
        * ⚠️⚠️⚠️ ⛔ CONDUTA ⛔ É ⛔ O QUE FAZER; ⛔ **⛔ NÃO** ⛔ É ⛔ ONDE IR.
        *

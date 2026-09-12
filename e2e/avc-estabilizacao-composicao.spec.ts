@@ -215,13 +215,20 @@ test.describe("AVC · Estabilização — composição", () => {
        * autor: *"⛔ tenho 2 áreas que falam praticamente a mesma coisa"*).
        * ⚠️ ⛔ O contrato ⛔ não mudou: ⛔ a orientação existe, ⛔ e ⛔ é da fonte.
        */
-      await expect(page.getByTestId("avc-ameaca-conduta-respiracao")).toHaveCount(0);
+      /**
+       * ⚠️⚠️ ⛔ NO EIXO B O ACHADO **⛔ JÁ É A CONDUTA** — 2026-09-12: ⛔ *"O₂
+       * suplementar — meta SpO₂ acima de 94%"*. ⛔ A linha de conduta ⛔ seria
+       * a **mesma** frase dita duas vezes ⛔ dentro do mesmo card, ⛔ e ⛔ quem
+       * declara essa equivalência ⛔ é a derivação (`condutaRepeteOAchado`).
+       * ⚠️ ⛔ O contrato ⛔ não mudou: ⛔ a orientação existe ⛔ e ⛔ é da fonte.
+       */
+      const cardB = page.getByTestId("avc-ameaca-respiracao");
+      await expect(cardB).not.toContainText(/94/);
 
       await page.getByTestId("avc-opcao-hipoxia-sim").click();
-      const conduta = page.getByTestId("avc-ameaca-conduta-respiracao");
-      await expect(conduta).toBeVisible();
-      /** ⚠️ A meta é **da fonte** (F-23), ⛔ e ⛔ a tela ⛔ não a redige. */
-      await expect(conduta).toContainText(/94/);
+      await expect(cardB).toContainText(/94/);
+      /** ⛔ E ⛔ **⛔ uma vez só**: ⛔ sem a segunda linha repetindo o mesmo. */
+      await expect(page.getByTestId("avc-ameaca-conduta-respiracao")).toHaveCount(0);
     });
 
   /* ══ ⚠️⚠️⚠️ 6b · A NOVA AFERIÇÃO NASCE **VAZIA**, ⛔ E A ANTIGA FICA ════ */
@@ -283,12 +290,13 @@ test.describe("AVC · Estabilização — composição", () => {
       await expect(grupoC).toContainText(/ver histórico/i);
 
       /**
-       * ⚠️ ⛔ OBSERVAÇÃO REGISTRADA (2026-09-12): ⛔ o botão genérico do topo do
-       * grupo ⛔ **⛔ continua existindo** — ⛔ há, ⛔ portanto, ⛔ dois pontos de
-       * entrada ⛔ para o mesmo gesto ⛔ quando há bloqueio. ⛔ Suprimir um deles
-       * ⛔ é decisão do autor, ⛔ e ⛔ não foi tomada aqui.
+       * ⚠️⚠️ ⛔ UM GESTO, ⛔ UM LUGAR — decisão do autor, 2026-09-12, ⛔ tomada
+       * ⛔ **⛔ depois de medir**: ⛔ o botão genérico do topo do grupo ⛔ cede
+       * ⛔ quando há bloqueio, ⛔ porque ⛔ o fluxo principal dele ⛔ **⛔ era**
+       * ⛔ justamente ⛔ a reavaliação após tratamento. ⛔ Sem bloqueio ⛔ ele
+       * continua — ⛔ e ⛔ isso ⛔ tem trava própria em `avc-superficie-a`.
        */
-      await expect(page.getByTestId("avc-nova-medida-pa")).toBeVisible();
+      await expect(page.getByTestId("avc-nova-medida-pa")).toHaveCount(0);
     });
 
   /* ══ ⚠️⚠️⚠️ 7 · PA ACIMA DA META — F-19 ⛔ NA PRÓPRIA ESTABILIZAÇÃO ════ */

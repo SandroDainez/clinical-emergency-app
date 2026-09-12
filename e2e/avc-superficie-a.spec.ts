@@ -659,7 +659,7 @@ test.describe("Superfície A — UX clínica", () => {
     await informar(page, "pad", 112);
     await expect(page.getByTestId("avc-num-caixa-pas")).toHaveValue(String(pas1));
 
-    await page.getByTestId("avc-nova-medida-pa").click();
+    await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
 
     /** ⛔⛔ OS DOIS CONTROLES VOLTAM VAZIOS — ⛔ nem PAS ⛔ nem PAD herdam. */
     await vazia(page, "pas");
@@ -682,6 +682,12 @@ test.describe("Superfície A — UX clínica", () => {
     const glic = 112;
     await informar(page, "glicemia", glic);
 
+    /**
+     * ⚠️⚠️ ⛔ AQUI ⛔ NÃO HÁ BLOQUEIO — ⛔ e ⛔ isso ⛔ é do conteúdo: ⛔ só a
+     * sistólica foi informada, ⛔ e o bloqueio exige aferição **⛔ completa**.
+     * ⛔ Sem bloco de tratamento, ⛔ o gesto é o do topo do grupo — ⛔ que ⛔ é
+     * ⛔ exatamente ⛔ o caminho que ⛔ **⛔ não** foi suprimido (2026-09-12).
+     */
     await page.getByTestId("avc-nova-medida-pa").click();
     /**
      * ⛔ A glicemia ⛔ NÃO tem instância, e ⛔ não pode ser zerada por uma nova

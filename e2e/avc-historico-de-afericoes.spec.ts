@@ -31,6 +31,14 @@ const medir = async (page: Page, campo: string, v: number) => {
   await page.getByTestId(`avc-num-caixa-${campo}`).blur();
 };
 
+/**
+ * ⚠️⚠️ ⛔ O GESTO MUDOU DE LUGAR — 2026-09-12, ⛔ decisão do autor
+ * ⛔ **⛔ depois de medir**: ⛔ com bloqueio ativo, ⛔ registrar a nova
+ * aferição ⛔ mora ⛔ **⛔ dentro do bloco de tratamento**, ⛔ junto do
+ * agente ⛔ e da dose. ⛔ O botão genérico do topo do grupo ⛔ cede ⛔ aí,
+ * ⛔ e ⛔ continua existindo ⛔ **⛔ sem bloqueio** — ⛔ que é quando ⛔ não
+ * há tratamento ⛔ para acompanhá-lo.
+ */
 test.describe("AVC · o histórico das aferições", () => {
   test("PA: 183/111 → nova aferição 168/92 — ⛔ as DUAS aparecem",
     async ({ page }) => {
@@ -42,7 +50,7 @@ test.describe("AVC · o histórico das aferições", () => {
       /** ⚠️ ⛔ Com UMA medida ⛔ não há histórico — ⛔ e ⛔ não há ruído. */
       await expect(page.getByTestId("avc-historico-pa")).toHaveCount(0);
 
-      await page.getByTestId("avc-nova-medida-pa").click();
+      await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
       await medir(page, "pas", 168);
       await medir(page, "pad", 92);
 
@@ -67,7 +75,7 @@ test.describe("AVC · o histórico das aferições", () => {
       await abrir(page);
       await abrirEixo(page, "glicemia", "neurologico-inicial");
       await medir(page, "glicemia", 38);
-      await page.getByTestId("avc-nova-medida-glicemia").click();
+      await page.getByTestId("avc-a-nova-medida-glicemia_alterada").click();
       await medir(page, "glicemia", 96);
 
       await expect(page.getByTestId("avc-historico-glicemia")).toContainText("2 medidas");
@@ -82,7 +90,7 @@ test.describe("AVC · o histórico das aferições", () => {
       await abrir(page);
       await abrirEixo(page, "glicemia", "neurologico-inicial");
       await medir(page, "glicemia", 38);
-      await page.getByTestId("avc-nova-medida-glicemia").click();
+      await page.getByTestId("avc-a-nova-medida-glicemia_alterada").click();
       await medir(page, "glicemia", 96);
 
       /** ⚠️ ⛔ Erro de digitação ⛔ na medida atual: ⛔ era 69. */
@@ -118,7 +126,7 @@ test.describe("AVC · o histórico das aferições", () => {
       await abrirEixo(page, "pressao", "pressao");
       await medir(page, "pas", 183);
       await medir(page, "pad", 111);
-      await page.getByTestId("avc-nova-medida-pa").click();
+      await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
       await medir(page, "pas", 168);
       await medir(page, "pad", 92);
 

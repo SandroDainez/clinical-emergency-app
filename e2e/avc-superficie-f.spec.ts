@@ -105,7 +105,7 @@ test.describe("AVC · Reperfusão", () => {
 
       /** ⚠️ 3 · NOVA aferição adequada — ⛔ e ⛔ só agora o corrigível cai. */
       await page.getByTestId("avc-aba-estabilizacao").click();
-      await page.getByTestId("avc-nova-medida-pa").click();
+      await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
       /** ⚠️ ⛔ Desde o acordeão, o eixo C nasce recolhido. */
     await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-num-caixa-pas").fill("150");

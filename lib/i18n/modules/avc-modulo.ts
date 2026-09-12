@@ -358,6 +358,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Interrompida após o início — houve exposição": "Interrumpida después del inicio — hubo exposición",
   "Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.":
     "Registro contradictorio: cancelada después de iniciada. La exposición fue preservada; registre Interrumpida o corrija.",
+  // ── o estado em uma linha, sem repetir a recomendação (2026-09-12) ───────
+  "PA acima da meta": "PA por encima del objetivo",
+  "Glicemia abaixo do corte": "Glucemia por debajo del corte",
   // ── suspeita de HSA retém a execução (O3 · 2026-09-12) ───────────────────
   "Saída diagnóstica armada: suspeita clínica de hemorragia subaracnóidea":
     "Salida diagnóstica armada: sospecha clínica de hemorragia subaracnoidea",

@@ -409,8 +409,17 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
         await c.blur();
       }
 
-      /** ⛔ Chega às Correções — ⛔ e ⛔ **⛔ fica** lá. */
-      await page.getByTestId("avc-cockpit-bloqueio-acao-pressao_acima_da_meta").click();
+      /**
+       * ⛔ Chega às Correções — ⛔ e ⛔ **⛔ fica** lá.
+       *
+       * ⚠️⚠️ ⛔ NA ESTABILIZAÇÃO ⛔ O CAMINHO É O DO BLOCO DE TRATAMENTO —
+       * 2026-09-12: ⛔ o aviso do cockpit ⛔ cede ⛔ aqui, ⛔ porque ⛔ repetia a
+       * mesma recomendação a poucos pixels do bloco que ⛔ traz agente, dose
+       * ⛔ e gesto. ⚠️ ⛔ Nas **outras** superfícies ⛔ o aviso continua, ⛔ e
+       * ⛔ é por ele que se chega — ⛔ o que esta trava mede ⛔ é ⛔ que o
+       * caminho ⛔ **⛔ existe**, ⛔ e ⛔ não qual botão o desenha.
+       */
+      await page.getByTestId("avc-a-registrar-pressao_acima_da_meta").click();
       await expect(page.getByTestId("avc-superficie-e-conteudo")).toBeVisible();
 
       /** ⛔ Vai para longe do bloco, ⛔ de propósito. */

@@ -79,7 +79,7 @@ test.describe("AVC · Correções", () => {
 
     /** ⚠️⚠️ 3 · NOVA aferição, ⛔ e ⛔ só a sistólica. */
     await aba(page, "estabilizacao");
-    await page.getByTestId("avc-nova-medida-pa").click();
+    await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
     await page.getByTestId("avc-num-caixa-pas").fill("170");
 
     await abrirCorrecoes(page);
@@ -212,7 +212,7 @@ test.describe("AVC · Correções", () => {
       /** ⚠️⚠️ NOVA AFERIÇÃO em A — e é ela que derruba. */
       await aba(page, "estabilizacao");
       /** ⚠️ O botão é do BLOCO, e o bloco da PA se chama `pressao`. */
-      await page.getByTestId("avc-nova-medida-pa").click();
+      await page.getByTestId("avc-a-nova-medida-pressao_acima_da_meta").click();
       /**
        * ⚠️⚠️ A nova aferição nasce **SEM valor** — foi este teste que revelou o
        * defeito oposto, e a correção entrou em A na mesma rodada. Daqui ela sobe

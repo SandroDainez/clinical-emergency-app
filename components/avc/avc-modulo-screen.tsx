@@ -1488,7 +1488,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * ⛔ e o bloco de baixo saiu. ⛔ A frase é da fonte (**E-31**):
                 * ⛔ a tela ⛔ não redige conduta.
                 */}
-              {a.estado === "ameaca" && a.conduta !== undefined ? (
+              {a.estado === "ameaca"
+                && a.conduta !== undefined
+                && a.condutaRepeteOAchado !== true ? (
                 <Text style={s.ameacaConduta} testID={`avc-ameaca-conduta-${a.id}`}>
                   {tr(a.conduta)}
                 </Text>
@@ -1861,7 +1863,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           * botão. ⛔ Vermelho aqui gastaria o alarme que a tela precisa guardar
           * para o que ⛔ não tem saída.
           */}
-        {bloqueios.map((b) => (
+        {/**
+          * ── ⚠️⚠️⚠️ ⛔ O AVISO DO COCKPIT **⛔ CEDE** NA ESTABILIZAÇÃO ────────
+          *
+          * ⛔ Relato do autor (2026-09-12): a recomendação da PA aparecia
+          * ⛔ **⛔ quatro vezes** na mesma tela. ⚠️ ⛔ Uma delas ⛔ era este
+          * aviso, ⛔ desenhado ⛔ a poucos pixels ⛔ do bloco *"Corrigir
+          * agora"* — ⛔ que diz ⛔ a mesma frase ⛔ e ⛔ ainda traz ⛔ o agente,
+          * ⛔ a dose ⛔ e ⛔ o gesto.
+          *
+          * ⚠️⚠️ ⛔ E ⛔ ele ⛔ **⛔ não some do módulo**: ⛔ nas outras
+          * superfícies ⛔ ele é ⛔ **⛔ o único** lugar onde o bloqueio aparece,
+          * ⛔ e ⛔ some dele ⛔ seria ⛔ esconder ⛔ o que retém a trombólise.
+          * ⛔ Ele cede ⛔ **⛔ só** onde ⛔ há ⛔ quem diga ⛔ mais.
+          */}
+        {(estado.superficieVista === "estabilizacao" ? [] : bloqueios).map((b) => (
           <WarningCard
             key={b.id}
             nivel="atencao"

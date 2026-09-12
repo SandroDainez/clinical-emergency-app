@@ -304,6 +304,28 @@ export default function SuperficieA({
     return grupo.campos.some((c) => valorAtual(estado, c.id) !== undefined);
   }
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ UM GESTO, ⛔ UM LUGAR — decisão do autor, 2026-09-12, ⛔ tomada
+   * ⛔ **⛔ depois de medir** qual dos dois é o fluxo principal.
+   *
+   * ⛔ ⛔ A medição: ⛔ dos usos do botão genérico nos e2e, ⛔ quase todos
+   * acontecem ⛔ **⛔ depois de uma PA que bloqueia** (183 · 198 · 200 · 224) —
+   * ⛔ ou seja, ⛔ o fluxo principal dele ⛔ **⛔ é** a reavaliação após
+   * tratamento. ⚠️ ⛔ E ⛔ esse ⛔ é ⛔ exatamente o fluxo que o bloco de
+   * tratamento atende melhor: ⛔ junto do agente ⛔ e da dose, ⛔ com a
+   * viewport indo até a caixa.
+   *
+   * ⚠️⚠️ ⛔ E ⛔ NENHUM CAMINHO FICA SEM ENTRADA: ⛔ sem bloqueio ⛔ não há bloco
+   * de tratamento, ⛔ e o botão genérico ⛔ continua ⛔ no topo do grupo —
+   * ⛔ é ⛔ por ele que se registra ⛔ uma segunda medida ⛔ de uma PA normal.
+   */
+  const tiposComGestoNoTratamento = new Set(
+    corrigiveis
+      .map((b) => ACOES_DE_CORRECAO.find((x) => x.bloqueio === b.id))
+      .map((a) => (a === undefined ? undefined : campoDoModulo(a.campoDaReavaliacao)?.instanciaDe))
+      .filter((t): t is string => t !== undefined)
+  );
+
 
 
 
@@ -633,7 +655,9 @@ export default function SuperficieA({
               */}
             {!aberto || !haMedidaAberta(grupo)
               ? null
-              : [...new Set(grupo.campos.map((c) => c.instanciaDe).filter(Boolean))].map((tipo) => (
+              : [...new Set(grupo.campos.map((c) => c.instanciaDe).filter(Boolean))]
+                  .filter((tipo) => !tiposComGestoNoTratamento.has(tipo as string))
+                  .map((tipo) => (
                   <Pressable
                     key={tipo as string}
                     style={e.novaMedida}
