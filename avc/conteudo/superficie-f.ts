@@ -36,6 +36,7 @@
 import type { CampoDeclarado } from "./campo";
 import { OPCOES_ESTADO_DA_ACAO } from "./superficie-e";
 import type { Territorio } from "./superficie-c";
+import type { SuperficieId } from "../nucleo/tipos";
 
 
 /** ⚠️ Os cinco relógios. ⛔ `onset_ou_lkw` ⛔ NÃO é a soma dos dois primeiros. */
@@ -1178,3 +1179,130 @@ export const DOSES = {
   alteplase: { mgPorKg: 0.9, maximoMg: 90, slot: "F-09" },
   tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09" },
 } as const;
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ OS CRITÉRIOS DA INDICAÇÃO DE IVT — **D1** (commit 6 · 2026-09-12)
+ *
+ * ── ⚠️⚠️ ⛔ O QUE ISTO É, ⛔ E ⛔ O QUE ⛔ NÃO É ────────────────────────────
+ *
+ * ⚠️ Decisão do autor: *"'Trombólise indicada' ⛔ não deve ser derivada de uma
+ * única recomendação científica que já pressupõe elegibilidade. Ela deve ser
+ * uma DERIVAÇÃO COMPOSTA ⛔ E EXPLICÁVEL do estado clínico, ⛔ usando somente
+ * regras já sustentadas pelas fontes ⛔ e pelo contrato. ⛔ Não invente uma nova
+ * recomendação da guideline. ⛔ Não atribua à guideline a frase individual."*
+ *
+ * ⛔ ⛔ ⛔ **⛔ NÃO é um catálogo novo.** ⛔ Cada critério aponta para um leitor
+ * que **já existe** (insumo de B, janela de F, barreira de C, segurança de D)
+ * ⛔ e para o verbatim de onde a exigência sai. ⛔ Nenhum número nasce aqui:
+ * a janela padrão cita a frase *"within 4.5 hours of symptom onset or last
+ * known well"* — ⛔ a mesma das recomendações — ⛔ e o marco é o que ⛔ ela
+ * declara (`onset_ou_lkw`, **HR-1**), ⛔ com a disjunção que `valorDaJanela` já
+ * preserva.
+ *
+ * ⛔ ⛔ **⛔ NÃO é uma recomendação da fonte.** ⚠️ A conclusão *"os critérios
+ * registrados sustentam a trombólise"* é **do aplicativo** (nível 3 de
+ * construção, §6.9), ⛔ rastreável a fatos ⛔ e a regras-fonte — ⛔ e a decisão
+ * continua sendo do médico.
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (AVC-01) ─────────────────────────────
+ *
+ * ⛔ *"indicada"* nascia de **qualquer** recomendação favorável `aplicavel`:
+ * ⛔ só peso (§4.6.2 rec. 1) ⛔ ou ⛔ só *"Incapacitante"* (§4.6.1 rec. 1) fechavam
+ * o veredito ⛔ sem imagem, ⛔ sem relógio ⛔ e ⛔ sem segurança. ⚠️ A Consolidação
+ * Clínica (Bloco 4) ⛔ já listava os fatos mínimos: relógio · hemorragia
+ * excluída · déficit incapacitante · segurança. ⛔ Aqui ⛔ eles viram **dado**.
+ *
+ * ── ⚠️ AS ROTAS ──────────────────────────────────────────────────────────
+ *
+ * ⚠️ **Rota padrão:** `elegibilidade_clinica` ∧ `temporal` (janela padrão).
+ * ⚠️ **Rotas de janela estendida** (**HR-2**): ⛔ uma recomendação IVT de
+ * elegibilidade 2a/2b só sustenta quando **todos** os seus `exige` estão
+ * satisfeitos — ⛔ inclusive a janela dela, ⛔ contada do **seu** marco. ⛔ Falta
+ * de qualquer requisito pertinente mantém `incompleta`. ⛔ `nao_avaliavel`
+ * (F-31) ⛔ nunca sustenta.
+ * ⚠️ **Camadas comuns a toda rota:** `classe_imagem` (barreira de C) ⛔ e
+ * `seguranca` (D) — ⛔ e ⛔ nenhuma COR 3 de elegibilidade aplicável.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type PapelDoCriterio =
+  | "elegibilidade_clinica"
+  | "temporal"
+  | "classe_imagem"
+  | "seguranca"
+  /** ⚠️ Substitui os dois primeiros quando é uma rota 2a/2b que sustenta (HR-2). */
+  | "rota_estendida";
+
+export type CriterioDaIndicacao = {
+  readonly id: string;
+  readonly papel: Exclude<PapelDoCriterio, "rota_estendida">;
+  /** ⚠️ Linguagem clínica, ⛔ nunca slug. */
+  readonly rotulo: string;
+  readonly slot: string;
+  readonly localizacao: string;
+  /** ⚠️ **E-31**: ⛔ a exigência tem a frase de onde saiu. */
+  readonly verbatim: string;
+  /** ⚠️ ⛔ Só o critério temporal carrega janela — ⛔ e ⛔ ela é a da fonte. */
+  readonly janelas?: readonly JanelaDaRecomendacao[];
+  /** ⚠️ Onde o médico resolve quando falta (**E-26**). */
+  readonly leva: SuperficieId;
+  readonly campo?: string;
+  readonly oQueFalta: string;
+};
+
+export const CRITERIOS_DA_INDICACAO_IVT: readonly CriterioDaIndicacao[] = [
+  {
+    id: "deficit_incapacitante",
+    papel: "elegibilidade_clinica",
+    rotulo: "Déficit incapacitante assumido",
+    slot: "F-17",
+    localizacao: "§4.6.1 rec. 1 · p. e353",
+    verbatim:
+      "In adult patients with AIS with disabling deficits, regardless of NIHSS score), and eligible for IVT, faster treatment improves functional outcomes.",
+    leva: "neurologico",
+    campo: "incapacitante_assumido",
+    oQueFalta: "Definir se o déficit é incapacitante",
+  },
+  {
+    id: "janela_padrao",
+    papel: "temporal",
+    rotulo: "Dentro da janela padrão da fonte",
+    slot: "F-02",
+    /** ⚠️ ⛔ O marco `onset_ou_lkw` é o de §4.6.2 rec. 1 ⛔ e de §4.6.1 rec. 8 (**HR-1**). */
+    localizacao: "§4.6.2 rec. 1 · p. e357 · §4.6.1 rec. 2 · p. e353",
+    verbatim:
+      "In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.",
+    janelas: [
+      {
+        marco: "onset_ou_lkw",
+        ateHoras: 4.5,
+        verbatim: "within 4.5 hours of symptom onset or last known well",
+      },
+    ],
+    leva: "neurologico",
+    campo: "hora_inicio_observado",
+    oQueFalta: "Informar o horário de início do déficit",
+  },
+  {
+    id: "hemorragia_excluida",
+    papel: "classe_imagem",
+    rotulo: "Hemorragia intracraniana excluída na imagem",
+    slot: "F-16",
+    localizacao: "§3.2 rec. 1 · p. e341",
+    verbatim:
+      "In patients with suspected AIS, emergent brain imaging with NCCT or MRI is recommended on initial evaluation to assess ischemic burden (eg, ASPECTS) and exclude intracranial hemorrhage before initiating reperfusion interventions (see Figure 2).",
+    leva: "imagem",
+    campo: "estudo_resultado",
+    oQueFalta: "Registrar a tomografia de crânio sem contraste e o seu resultado",
+  },
+  {
+    id: "sem_impeditivo_de_seguranca",
+    papel: "seguranca",
+    rotulo: "Sem impeditivo de segurança conhecido",
+    slot: "F-07 / F-10",
+    localizacao: "Table 8 · p. e364–e367",
+    verbatim:
+      "The safety and efficacy of IV thrombolysis for AIS in patients with platelets <100,000/mm³, INR>1.7, aPTT>40s, or PT>15s is unknown though may substantially increase risk of harm and should not be administered.",
+    leva: "seguranca",
+    oQueFalta: "Rever os itens de segurança registrados",
+  },
+] as const;

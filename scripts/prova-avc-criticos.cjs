@@ -170,7 +170,7 @@ ausente("2 · só peso (API)", () => {
   const { v, p } = ivt(e);
   conf("2 · só peso → ⛔ NÃO `indicada`", v.tipo === "incompleta", `⛔ ${v.tipo} sustentam=${ids(v.sustentam)}`);
   conf("2 · só peso → portão ⛔ não liberado", p.liberado === false, `⛔ ${p.estado}`);
-  const faltantes = (v.criterios ?? []).filter((c) => c.estado === "ausente").map((c) => c.papel);
+  const faltantes = (v.criteriosAvaliados ?? []).filter((c) => c.estado === "ausente").map((c) => c.papel);
   conf("2 · ⛔ e a falta NOMEIA elegibilidade clínica, tempo ⛔ e imagem",
     ["elegibilidade_clinica", "temporal", "classe_imagem"].every((x) => faltantes.includes(x)),
     `⛔ ausentes=${JSON.stringify(faltantes)} — peso ≠ elegibilidade`);
@@ -183,9 +183,9 @@ ausente("3 · só incapacitante (API)", () => {
   conf("3 · só «Incapacitante» → ⛔ NÃO `indicada`", v.tipo === "incompleta", `⛔ ${v.tipo} sustentam=${ids(v.sustentam)}`);
   conf("3 · só «Incapacitante» → portão ⛔ não liberado", p.liberado === false, `⛔ ${p.estado}`);
   conf("3 · ⛔ e o critério de elegibilidade clínica está `satisfeito`, os outros ⛔ não",
-    (v.criterios ?? []).some((c) => c.papel === "elegibilidade_clinica" && c.estado === "satisfeito")
-    && (v.criterios ?? []).some((c) => c.papel === "temporal" && c.estado === "ausente"),
-    `⛔ ${JSON.stringify((v.criterios ?? []).map((c) => [c.papel, c.estado]))}`);
+    (v.criteriosAvaliados ?? []).some((c) => c.papel === "elegibilidade_clinica" && c.estado === "satisfeito")
+    && (v.criteriosAvaliados ?? []).some((c) => c.papel === "temporal" && c.estado === "ausente"),
+    `⛔ ${JSON.stringify((v.criteriosAvaliados ?? []).map((c) => [c.papel, c.estado]))}`);
 });
 
 /* ══ 4 · IMAGEM AUSENTE, DEMAIS CRITÉRIOS COMPLETOS ══════════════════════ */
@@ -194,8 +194,8 @@ ausente("4 · imagem ausente (API)", () => {
   e = reg(e, "hora_inicio_observado", AGORA - 2 * H);
   const { v, p } = ivt(e);
   conf("4 · sem TC → IVT `incompleta` (falta exclusão de hemorragia)",
-    v.tipo === "incompleta" && (v.criterios ?? []).some((c) => c.papel === "classe_imagem" && c.estado === "ausente"),
-    `⛔ ${v.tipo} · ${JSON.stringify((v.criterios ?? []).map((c) => [c.papel, c.estado]))}`);
+    v.tipo === "incompleta" && (v.criteriosAvaliados ?? []).some((c) => c.papel === "classe_imagem" && c.estado === "ausente"),
+    `⛔ ${v.tipo} · ${JSON.stringify((v.criteriosAvaliados ?? []).map((c) => [c.papel, c.estado]))}`);
   conf("4 · sem TC → portão ⛔ não liberado", p.liberado === false, `⛔ ${p.estado}`);
   const ve = evt(candidatoEvt());
   conf("4 · EVT sem imagem → seleção fecha ⛔ E classe retida (avaliar ≠ executar)",
@@ -241,8 +241,8 @@ ausente("7 · 72 h (API)", () => {
   conf("7 · início há 72 h → ⛔ NÃO `indicada`", v.tipo !== "indicada", `⛔ ${v.tipo}`);
   conf("7 · ⛔ e ⛔ NÃO `nao_recomendada` (fora da janela ≠ contraindicação, E-37)", v.tipo !== "nao_recomendada", `⛔ ${v.tipo}`);
   conf("7 · ⛔ e o critério temporal está `contradito`, ⛔ não ausente",
-    (v.criterios ?? []).some((c) => c.papel === "temporal" && c.estado === "contradito"),
-    `⛔ ${JSON.stringify((v.criterios ?? []).map((c) => [c.papel, c.estado]))}`);
+    (v.criteriosAvaliados ?? []).some((c) => c.papel === "temporal" && c.estado === "contradito"),
+    `⛔ ${JSON.stringify((v.criteriosAvaliados ?? []).map((c) => [c.papel, c.estado]))}`);
   conf("7 · portão ⛔ não liberado", p.liberado === false, `⛔ ${p.estado}`);
   /** ⚠️ ⛔ E o candidato completo dentro da janela É indicado — a composição fecha. */
   const ref = ivt(candidatoIvt());
@@ -496,14 +496,14 @@ ausente("23 · LKW (API)", () => {
 ausente("24 · D1 (API)", () => {
   const { v } = ivt(candidatoIvt());
   conf("24 · `indicada` carrega critérios com papel, estado ⛔ e fonte",
-    Array.isArray(v.criterios) && v.criterios.length >= 4 && v.criterios.every((c) => c.papel && c.estado && c.fonte),
-    `⛔ ${JSON.stringify(v.criterios)}`);
+    Array.isArray(v.criteriosAvaliados) && v.criteriosAvaliados.length >= 4 && v.criteriosAvaliados.every((c) => c.papel && c.estado && c.fonte),
+    `⛔ ${JSON.stringify(v.criteriosAvaliados)}`);
   conf("24 · ⛔ e todos os critérios estão `satisfeito` no caso positivo",
-    (v.criterios ?? []).every((c) => c.estado === "satisfeito"), `⛔ ${JSON.stringify((v.criterios ?? []).map((c) => [c.papel, c.estado]))}`);
+    (v.criteriosAvaliados ?? []).every((c) => c.estado === "satisfeito"), `⛔ ${JSON.stringify((v.criteriosAvaliados ?? []).map((c) => [c.papel, c.estado]))}`);
   conf("24 · ⛔ e o veredito se declara derivação nível 3 do aplicativo", v.nivelDeConstrucao === 3, `⛔ ${v.nivelDeConstrucao}`);
   conf("24 · ⛔ e a ressalva continua dentro do veredito", typeof v.ressalva === "string" && /decisão é do médico/i.test(v.ressalva), "⛔");
   conf("24 · ⛔ e ⛔ nenhuma recomendação isolada é apontada como autora da frase",
-    (v.sustentam ?? []).length === 0 || v.criterios.length > 1, "⛔");
+    (v.sustentam ?? []).length === 0 || v.criteriosAvaliados.length > 1, "⛔");
 });
 
 /* ══ 25 · PROPRIEDADES DO PORTÃO ═════════════════════════════════════════ */

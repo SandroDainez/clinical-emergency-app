@@ -83,6 +83,13 @@ export type EstadoDoPortao =
   | "afericao_incompleta"
   /** ⚠️ O catálogo tem **COR 3** que alcança este caso. */
   | "nao_recomendada"
+  /**
+   * ⚠️⚠️ A COMPOSIÇÃO **RESPONDEU CONTRA** (D1, commit 6): fora da janela padrão
+   * ⛔ sem rota estendida que alcance, ⛔ ou déficit assumido como ⛔ não
+   * incapacitante ⛔ sem outra rota. ⛔ É resposta do aplicativo (nível 3),
+   * ⛔ nunca *"contraindicada"* — ⛔ e o motivo nomeia o critério.
+   */
+  | "nao_sustentada"
   /** ⚠️ Falta dado que o próprio critério favorável exige. */
   | "informacao_incompleta"
   /** ⚠️ ⛔ Nenhum critério implementado fecha o caso. ⛔ Nem sim ⛔ nem não. */
@@ -275,6 +282,29 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
     }
   }
 
+  /* ── 2b · o critério da composição que respondeu contra (D1) ─────────── */
+
+  /**
+   * ⚠️ ⛔ Segurança contradita ⛔ **não** entra aqui: ⛔ ela ⛔ já está na camada
+   * de segurança, ⛔ com valor ⛔ e fonte — ⛔ repeti-la seria uma segunda verdade
+   * sobre o mesmo corte (**I6**).
+   */
+  if (veredito.tipo === "nao_sustentada") {
+    for (const c of veredito.criteriosAvaliados) {
+      if (c.estado !== "contradito" || c.papel === "seguranca") continue;
+      motivos.push({
+        id: `criterio-${c.id}`,
+        camada: "veredito",
+        rotulo: c.rotulo,
+        dado: c.valor,
+        fonte: c.fonte,
+        oQueFalta: c.oQueFalta,
+        leva: c.leva,
+        campo: c.campo,
+      });
+    }
+  }
+
   /* ── 3 e 4 · o que tem conserto ──────────────────────────────────────── */
 
   const corrigiveis = bloqueiosCorrigiveis(estado);
@@ -376,6 +406,9 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
       ? "bloqueado_seguranca"
       : veredito.tipo === "nao_recomendada"
         ? "nao_recomendada"
+        /** ⚠️ Resposta contra da composição (D1) — ⛔ corrigir a PA ⛔ não muda isso. */
+        : veredito.tipo === "nao_sustentada"
+        ? "nao_sustentada"
         /**
          * ⚠️⚠️ ⛔ ANTES do corrigível ⛔ e do aguardando: ⛔ a aferição pela
          * metade é ⛔ o que o médico tem de terminar **agora**, ⛔ e dizer

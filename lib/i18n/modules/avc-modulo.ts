@@ -343,6 +343,24 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Faltam dados para concluir":
     "Faltan datos para concluir",
   "Falta registrar": "Falta registrar",
+  // ── composição do veredito da IVT (D1 · commit 6 · 2026-09-12) ────────
+  "✕ Os critérios não sustentam a trombólise": "✕ Los criterios no sustentan la trombólisis",
+  "Os critérios registrados não sustentam a trombólise":
+    "Los criterios registrados no sustentan la trombólisis",
+  "Conclusão composta pelo aplicativo a partir das regras-fonte citadas em cada critério. Nenhuma recomendação isolada afirma esta frase.":
+    "Conclusión compuesta por la aplicación a partir de las reglas-fuente citadas en cada criterio. Ninguna recomendación aislada afirma esta frase.",
+  "Critérios da conclusão": "Criterios de la conclusión",
+  "Déficit incapacitante assumido": "Déficit discapacitante asumido",
+  "Dentro da janela padrão da fonte": "Dentro de la ventana estándar de la fuente",
+  "Hemorragia intracraniana excluída na imagem": "Hemorragia intracraneal excluida en la imagen",
+  "Sem impeditivo de segurança conhecido": "Sin impedimento de seguridad conocido",
+  "Recomendação de janela estendida aplicável": "Recomendación de ventana extendida aplicable",
+  "Definir se o déficit é incapacitante": "Definir si el déficit es discapacitante",
+  "Rever os itens de segurança registrados": "Revisar los ítems de seguridad registrados",
+  "Déficit assumido como não incapacitante": "Déficit asumido como no discapacitante",
+  "Fora da janela padrão; só uma recomendação de janela estendida alcançaria o caso":
+    "Fuera de la ventana estándar; solo una recomendación de ventana extendida alcanzaría el caso",
+  "Há impeditivo de segurança registrado": "Hay impedimento de seguridad registrado",
   // ── barreira de classe da reperfusão (R1 · 2026-09-12) ──────────────
   "Reperfusão retida pela imagem": "Reperfusión retenida por la imagen",
   "Estudo registrado sem resultado que responda pela hemorragia":

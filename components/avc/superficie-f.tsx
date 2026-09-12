@@ -95,9 +95,18 @@ const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
   afericao_incompleta: ESTADOS.andamento.simbolo,
   aguardando_reavaliacao: ESTADOS.andamento.simbolo,
   nao_recomendada: ESTADOS.impede.simbolo,
+  nao_sustentada: ESTADOS.impede.simbolo,
   informacao_incompleta: ESTADOS.verificar.simbolo,
   sem_criterios: ESTADOS.ausente.simbolo,
   liberado: ESTADOS.favoravel.simbolo,
+};
+
+/** ⚠️ Símbolo do estado de cada critério da composição (D1) — ⛔ cor ⛔ nunca decide sozinha (**E-15**). */
+const SIMBOLO_DO_CRITERIO: Readonly<Record<string, string>> = {
+  satisfeito: ESTADOS.favoravel.simbolo,
+  contradito: ESTADOS.impede.simbolo,
+  ausente: ESTADOS.verificar.simbolo,
+  em_julgamento: ESTADOS.andamento.simbolo,
 };
 
 const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
@@ -107,6 +116,8 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   afericao_incompleta: "Nova aferição incompleta — complete para reavaliar",
   aguardando_reavaliacao: "Correção registrada — falta a reavaliação",
   nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
+  /** ⚠️ D1: resposta **do aplicativo** — ⛔ nunca *"contraindicada"*; o motivo nomeia o critério. */
+  nao_sustentada: "Os critérios registrados não sustentam a trombólise",
   informacao_incompleta: "Faltam dados para concluir",
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
@@ -248,6 +259,8 @@ export default function SuperficieF({
           e.veredito,
           veredito.tipo === "indicada" && e.vereditoIndicada,
           (veredito.tipo === "retida" || veredito.tipo === "nao_recomendada") && e.vereditoContra,
+          /** ⚠️ Resposta contra da composição (D1): cautela, ⛔ e ⛔ não o crítico da segurança. */
+          veredito.tipo === "nao_sustentada" && e.evtCautela,
         ]}
         testID="avc-f-veredito"
       >
@@ -289,12 +302,60 @@ export default function SuperficieF({
                 ? tr("✕ Reperfusão retida pela imagem")
                 : veredito.tipo === "nao_recomendada"
                   ? tr("✕ A diretriz não recomenda")
-                  : veredito.tipo === "incompleta"
-                    ? tr("? Ainda não dá para concluir")
-                    : tr("· Sem critério aplicável ainda")}
+                  : veredito.tipo === "nao_sustentada"
+                    ? tr("✕ Os critérios não sustentam a trombólise")
+                    : veredito.tipo === "incompleta"
+                      ? tr("? Ainda não dá para concluir")
+                      : tr("· Sem critério aplicável ainda")}
           </Text>
         </View>
         <Text style={e.vereditoFrase}>{tr(veredito.frase)}</Text>
+
+        {/**
+          * ── ⚠️⚠️⚠️ OS CRITÉRIOS DA COMPOSIÇÃO (D1, commit 6) ─────────────────
+          *
+          * ⚠️ Decisão do autor: *"O sistema deverá conseguir explicar quais
+          * critérios registrados sustentaram a conclusão."* ⛔ Cada linha vem
+          * pronta do núcleo — papel, estado, valor legível, fonte ⛔ e onde
+          * resolver. ⛔ A tela ⛔ não recalcula ⛔ nada (**I6**), ⛔ e símbolo +
+          * palavra dizem o estado ⛔ sem depender de cor (**E-15**).
+          */}
+        {veredito.criteriosAvaliados.length > 0 ? (
+          <View style={e.vereditoFaltas} testID="avc-f-veredito-criterios">
+            <Text style={e.vereditoGrau}>{tr("Critérios da conclusão")}</Text>
+            {veredito.criteriosAvaliados.map((c) => (
+              <View
+                key={c.id}
+                style={e.vereditoMotivo}
+                testID={`avc-f-veredito-criterio-${c.id}`}
+              >
+                <Text
+                  style={e.vereditoVerbo}
+                  testID={`avc-f-veredito-criterio-${c.id}-${c.estado}`}
+                >
+                  {SIMBOLO_DO_CRITERIO[c.estado]} {tr(c.rotulo)}
+                  {c.valor ? ` — ${tr(c.valor)}` : ""}
+                </Text>
+                <Text style={e.vereditoGrau}>{c.fonte} · {c.localizacao}</Text>
+                {c.estado !== "satisfeito" && c.oQueFalta ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={tr(c.oQueFalta)}
+                    testID={`avc-f-veredito-criterio-ir-${c.id}`}
+                    onPress={() => (c.campo ? onIrParaCampo(c.campo) : onAbrirSuperficie(c.leva))}
+                    style={e.vereditoFaltaToque}
+                  >
+                    <Text style={e.vereditoFalta}>{tr(c.oQueFalta)}</Text>
+                    <Text style={e.vereditoFaltaSeta}>{SETA}</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ))}
+            <Text style={e.vereditoRessalva} testID="avc-f-veredito-autoria">
+              {tr(veredito.autoria)}
+            </Text>
+          </View>
+        ) : null}
 
         {/** ⚠️ Cada motivo cita COR/LOE ⛔ e o verbo **verbatim** da fonte. */}
         {[...veredito.contra, ...veredito.sustentam].map((m) => (

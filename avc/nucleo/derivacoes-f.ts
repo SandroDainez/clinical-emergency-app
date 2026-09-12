@@ -569,7 +569,12 @@ export function msDesdeCampoDoEstado(
  * marco aceita dois campos, ⛔ basta que **um** deles caia dentro — ⛔ escolher
  * o mais conservador seria regra clínica que a fonte ⛔ não deu.
  */
-function valorDaJanela(
+/**
+ * ⚠️ Exportada no commit 6 (2026-09-12): ⛔ a composição D1 do veredito da IVT
+ * lê a janela padrão **pela mesma função** que as recomendações usam (**I6**) —
+ * ⛔ uma segunda contagem divergiria num arredondamento.
+ */
+export function valorDaJanela(
   estado: EstadoAvc,
   janelas: readonly JanelaDaRecomendacao[],
   agoraMs: number | undefined
@@ -695,7 +700,7 @@ export type FatoQueFechou = {
  * ⛔ A janela da fonte é contada em horas; ⛔ minutos soltos obrigam o médico a
  * dividir de cabeça ⛔ enquanto decide (**E-21**).
  */
-function horasEMinutos(min: number): string {
+export function horasEMinutos(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${h}h${String(m).padStart(2, "0")}`;
