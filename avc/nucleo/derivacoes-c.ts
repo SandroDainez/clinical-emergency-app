@@ -675,6 +675,47 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
  * ⛔ E ⛔ NÃO É ASPECTS. São duas leituras diferentes da mesma tomografia, e
  * ⛔ nenhuma delas calcula a outra.
  */
+/**
+ * ⚠️⚠️⚠️ RETENÇÃO **DIAGNÓSTICA** — decisão do autor, 2026-09-12 (red-team O3).
+ *
+ * ⚠️ `suspeita_hsa = Sim` **retém a execução** da reperfusão isquêmica enquanto
+ * a suspeita estiver ativa. ⛔ Não é contraindicação: a fonte transcrita ⛔ não
+ * tem item sobre HSA clínica, ⛔ e ⛔ nada aqui afirma risco. ⛔ Não vira
+ * hemorragia: a barreira de classe (F-16) segue lendo ⛔ só a imagem. ⛔ Não
+ * apaga a avaliação: IVT ⛔ e EVT continuam avaliadas; ⛔ o que ⛔ não fica é a
+ * **execução liberada** com uma saída diagnóstica armada (§1.8, E-09).
+ *
+ * ⚠️ Resolve por «Não», correção ⛔ ou desfazer do fato. ⛔ «Incerto» ⛔ não retém
+ * (⛔ e ⛔ não é «não»). ⛔ Nenhuma regra sobre como investigar HSA nasce aqui.
+ */
+export type RetencaoDiagnostica =
+  | { readonly estado: "livre" }
+  | {
+      readonly estado: "retida";
+      readonly motivo: "suspeita_hsa";
+      /** ⚠️ A frase curta da própria leitura de C — ⛔ reutilizada (**I6**). */
+      readonly curto: string;
+      readonly oQueFalta: string;
+      readonly leva: "imagem";
+      readonly campo: "suspeita_hsa";
+      readonly fonte: string;
+    };
+
+export function retencaoDiagnostica(estado: EstadoAvc): RetencaoDiagnostica {
+  const s = suspeitaDeHsa(estado);
+  if (s.conclusao !== "sim") return { estado: "livre" };
+  return {
+    estado: "retida",
+    motivo: "suspeita_hsa",
+    curto: s.curto,
+    oQueFalta:
+      "Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro. A execução da reperfusão isquêmica fica retida enquanto ela estiver ativa",
+    leva: "imagem",
+    campo: "suspeita_hsa",
+    fonte: s.fonte,
+  };
+}
+
 export function hipodensidadeClara(estado: EstadoAvc): Leitura {
   const insumos = ["hipodensidade_clara"];
   const fonte = "F-07";

@@ -97,6 +97,7 @@ const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
   aguardando_reavaliacao: ESTADOS.andamento.simbolo,
   nao_recomendada: ESTADOS.impede.simbolo,
   nao_sustentada: ESTADOS.impede.simbolo,
+  saida_diagnostica_pendente: ESTADOS.verificar.simbolo,
   reconciliacao_pendente: ESTADOS.verificar.simbolo,
   resultado_pendente: ESTADOS.andamento.simbolo,
   julgamento_individual_pendente: ESTADOS.verificar.simbolo,
@@ -124,6 +125,8 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
   /** ⚠️ D1: resposta **do aplicativo** — ⛔ nunca *"contraindicada"*; o motivo nomeia o critério. */
   nao_sustentada: "Os critérios registrados não sustentam a trombólise",
+  /** ⚠️ O3: saída diagnóstica armada — ⛔ execução retida, ⛔ avaliação preservada, ⛔ não é contraindicação. */
+  saida_diagnostica_pendente: "Saída diagnóstica armada — execução retida enquanto a suspeita de hemorragia subaracnóidea estiver ativa",
   /** ⚠️ R3: incerteza relevante ⛔ não libera — ⛔ e ⛔ nenhum destes é contraindicação. */
   reconciliacao_pendente: "Resultados discordantes — reconcilie antes de decidir",
   resultado_pendente: "Exame pertinente ainda sem resultado",
@@ -546,6 +549,30 @@ export default function SuperficieF({
               accessibilityRole="button"
               testID="avc-f-evt-classe-ir"
               onPress={() => onIrParaCampo(vereditoEvt.classe.estado === "retida" ? vereditoEvt.classe.campo : "estudo_resultado")}
+            >
+              <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {/**
+          * ⚠️⚠️ O3 · SAÍDA DIAGNÓSTICA ARMADA (decisão do autor, 2026-09-12): a
+          * suspeita clínica de HSA retém a **execução** da trombectomia como
+          * retém a da trombólise. ⛔ A seleção continua escrita acima; ⛔ o que
+          * ⛔ não pode é o cartão parecer *"faça"* com a saída armada.
+          */}
+        {vereditoEvt.retencaoDiagnostica.estado === "retida" ? (
+          <View style={e.portaoMotivo} testID={`avc-f-evt-retencao-${vereditoEvt.retencaoDiagnostica.motivo}`}>
+            <Text style={e.portaoRotulo}>
+              {ESTADOS.verificar.simbolo} {tr("Execução retida por saída diagnóstica")}
+            </Text>
+            <Text style={e.portaoDado}>{tr(vereditoEvt.retencaoDiagnostica.curto)}</Text>
+            <Text style={e.portaoFonte}>{vereditoEvt.retencaoDiagnostica.fonte}</Text>
+            <Text style={e.portaoFalta}>{tr(vereditoEvt.retencaoDiagnostica.oQueFalta)}</Text>
+            <Pressable
+              style={e.portaoIr}
+              accessibilityRole="button"
+              testID="avc-f-evt-retencao-ir"
+              onPress={() => onIrParaCampo("suspeita_hsa")}
             >
               <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
             </Pressable>

@@ -45,6 +45,7 @@
  *   C12 DOAC hora não perguntada ....... 27 (red-team C40)
  *   C13 rota RM «unknown onset» ......... 28 (O6b)
  *   C14 marcos incompatíveis ............ 29 (O4)
+ *   C15 suspeita de HSA retém execução .. 30 (O3)
  */
 const fs = require("node:fs");
 const os = require("node:os");
@@ -730,6 +731,50 @@ ausente("29 · marcos (API)", () => {
   const ambosFora = reg(reg(semTempo(), "hora_ultima_vez_bem", AGORA - 7 * H), "hora_inicio_observado", AGORA - 6 * H);
   conf("29 · LKW 7 h + início 6 h (ambos fora) → contradito, ⛔ sem conflito", ivt(ambosFora).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado === "contradito", "⛔");
   conf("29 · ⛔ nenhum limite mudou: janela padrão segue 4,5 h por `onset_ou_lkw`", JANELA_PADRAO.length === 1 && JANELA_PADRAO[0].ateHoras === 4.5 && JANELA_PADRAO[0].marco === "onset_ou_lkw", "⛔");
+});
+
+/* ══ 30 · SUSPEITA CLÍNICA DE HSA RETÉM A EXECUÇÃO (O3 · 2026-09-12) ═════ */
+/**
+ * ⚠️⚠️ Decisão do autor: `suspeita_hsa = Sim` retém a **execução** da
+ * reperfusão isquêmica enquanto ativa. ⛔ Não é contraindicação, ⛔ não vira
+ * hemorragia, ⛔ não apaga a avaliação de IVT/EVT. «Não», correção ⛔ ou desfazer
+ * resolvem. ⛔ Nenhuma regra sobre investigação de HSA.
+ */
+ausente("30 · HSA (API)", () => {
+  const AP = emT("avc", "nucleo", "apresentacao-f.js");
+  const hsa = reg(candidatoIvt(), "suspeita_hsa", "sim");
+  const r = ivt(hsa);
+  conf("30 · HSA Sim + TC normal + IVT completa → veredito segue `indicada` (avaliação preservada)", r.v.tipo === "indicada", `⛔ ${r.v.tipo}`);
+  conf("30 · ⛔ mas o portão ⛔ NÃO libera", r.p.liberado === false, `⛔ ${r.p.estado}`);
+  conf("30 · ⛔ e o estado é a saída diagnóstica própria `saida_diagnostica_pendente`", r.p.estado === "saida_diagnostica_pendente", `⛔ ${r.p.estado}`);
+  conf("30 · ⛔ não é contraindicação: ⛔ nem `bloqueado_seguranca`, ⛔ nem motivo `impede`, ⛔ nem palavra «contraindic»",
+    r.p.estado !== "bloqueado_seguranca" && !r.p.motivos.some((m) => m.efeito === "impede") && !r.p.motivos.some((m) => /contraindic/i.test(`${m.rotulo} ${m.oQueFalta}`)),
+    `⛔ ${JSON.stringify(r.p.motivos.map((m) => [m.id, m.efeito]))}`);
+  conf("30 · ⛔ não vira hemorragia: barreira segue `liberada`, destino segue `suspeita_hsa`",
+    DC.barreiraDeReperfusao(hsa).estado === "liberada" && DC.destinoDaImagem(hsa).saida === "suspeita_hsa", "⛔");
+  const motivo = r.p.motivos.find((m) => m.campo === "suspeita_hsa");
+  conf("30 · o motivo aponta `suspeita_hsa`, com fonte ⛔ e o que resolve", motivo !== undefined && !!motivo.fonte && !!motivo.oQueFalta, `⛔ ${JSON.stringify(r.p.motivos.map((m) => m.campo))}`);
+  conf("30 · a retenção diagnóstica é derivada em C", DC.retencaoDiagnostica(hsa).estado === "retida" && DC.retencaoDiagnostica(candidatoIvt()).estado === "livre", "⛔");
+  /** ⚠️ EVT candidata. */
+  const evtHsa = reg(tcSem(candidatoEvt(), 1, AGORA - 30 * MIN), "suspeita_hsa", "sim");
+  const ve = evt(evtHsa);
+  conf("30 · HSA Sim + EVT candidata → seleção segue avaliada (`recomendada`), classe segue `liberada`", ve.tipo === "recomendada" && ve.classe.estado === "liberada", `⛔ ${ve.tipo} / ${ve.classe.estado}`);
+  conf("30 · ⛔ mas o veredito EVT carrega a retenção diagnóstica", ve.retencaoDiagnostica !== undefined && ve.retencaoDiagnostica.estado === "retida", `⛔ ${JSON.stringify(ve.retencaoDiagnostica)}`);
+  conf("30 · ⛔ e o cartão da EVT ⛔ não se pinta de sucesso", AP.papelDoVereditoEvt(ve) !== "sucesso", `⛔ ${AP.papelDoVereditoEvt(ve)}`);
+  /** ⚠️ Resolução. */
+  conf("30 · HSA Sim → Não → portão liberado", ivt(reg(hsa, "suspeita_hsa", "nao")).p.liberado === true, `⛔ ${ivt(reg(hsa, "suspeita_hsa", "nao")).p.estado}`);
+  const desfeito = E.desfazerRegistro(hsa, "suspeita_hsa", rel);
+  conf("30 · desfazer o registro → retenção sai (⛔ e ⛔ não vira «não»)", ivt(desfeito).p.liberado === true && DC.suspeitaDeHsa(desfeito).conclusao === "desconhecido", `⛔ ${ivt(desfeito).p.estado}`);
+  const fato = [...hsa.fatos].reverse().find((f) => f.campo === "suspeita_hsa");
+  const corrigido = E.corrigirFato(hsa, { campo: "suspeita_hsa", valor: "nao", corrigeFatoId: fato.id }, rel);
+  conf("30 · correção do fato para «não» → portão liberado", ivt(corrigido).p.liberado === true, `⛔ ${ivt(corrigido).p.estado}`);
+  conf("30 · «Incerto» ⛔ não retém (⛔ e ⛔ não é «não»)", ivt(reg(candidatoIvt(), "suspeita_hsa", "nao_sei")).p.liberado === true, "⛔");
+  /** ⚠️ Ordem: contraindicação real prevalece; hemorragia identificada segue pela imagem. */
+  conf("30 · HSA Sim + INR 3 → `bloqueado_seguranca` prevalece", ivt(regI(hsa, col(1), "inr", 3)).p.estado === "bloqueado_seguranca", "⛔");
+  conf("30 · HSA Sim + hemorragia identificada → IVT `retida` pela imagem, destino hemorrágico",
+    ivt(tcCom(hsa, 2, AGORA - 20 * MIN)).v.tipo === "retida" && DC.destinoDaImagem(tcCom(hsa, 2, AGORA - 20 * MIN)).saida === "hemorragia_intracraniana", "⛔");
+  conf("30 · propriedade: `liberado` ⇒ retenção diagnóstica livre",
+    [candidatoIvt(), hsa, reg(hsa, "suspeita_hsa", "nao")].every((e) => !ivt(e).p.liberado || DC.retencaoDiagnostica(e).estado === "livre"), "⛔");
 });
 
 /* ── resultado ─────────────────────────────────────────────────────────── */

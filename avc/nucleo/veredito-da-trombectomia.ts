@@ -60,7 +60,12 @@ import type { EstadoAvc } from "./estado";
  * ⚠️ ⛔ E a barreira **⛔ não substitui** a seleção: ⛔ ela viaja **ao lado**
  * (`classe`), ⛔ porque *avaliar* a população ⛔ não é *realizar* o procedimento.
  */
-import { barreiraDeReperfusao, type BarreiraDeReperfusao } from "./derivacoes-c";
+import {
+  barreiraDeReperfusao,
+  retencaoDiagnostica,
+  type BarreiraDeReperfusao,
+  type RetencaoDiagnostica,
+} from "./derivacoes-c";
 import {
   fatosQueFecharam,
   recomendacoesDoEstado,
@@ -139,6 +144,11 @@ export type VereditoDaTrombectomia = {
    * fazer.
    */
   readonly classe: BarreiraDeReperfusao;
+  /**
+   * ⚠️⚠️ O3 (2026-09-12): saída diagnóstica armada (suspeita clínica de HSA)
+   * retém a **execução** — ⛔ a seleção continua avaliada; ⛔ lida ⛔ só de C.
+   */
+  readonly retencaoDiagnostica: RetencaoDiagnostica;
   readonly frase: string;
   /** ⚠️ ⛔ O que sustenta — ⛔ com COR/LOE ⛔ e verbatim. */
   readonly sustentam: readonly MotivoDoVereditoEvt[];
@@ -243,7 +253,11 @@ export function vereditoDaTrombectomia(
    * negativas ⛔ e nas incompletas: ⛔ saber que a imagem ⛔ ainda ⛔ não excluiu
    * hemorragia importa ⛔ mesmo quando a seleção ⛔ não fechou.
    */
-  const base = { ressalva: RESSALVA, classe: barreiraDeReperfusao(estado) };
+  const base = {
+    ressalva: RESSALVA,
+    classe: barreiraDeReperfusao(estado),
+    retencaoDiagnostica: retencaoDiagnostica(estado),
+  };
   /**
    * ⚠️⚠️ ⛔ FILTRA POR **DOMÍNIO**, ⛔ e ⛔ não por id: ⛔ a recomendação de
    * *stent retriever* (§4.7.4 rec. 5) ⛔ existe no catálogo ⛔ e ⛔ **não**

@@ -358,6 +358,14 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Interrompida após o início — houve exposição": "Interrumpida después del inicio — hubo exposición",
   "Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.":
     "Registro contradictorio: cancelada después de iniciada. La exposición fue preservada; registre Interrumpida o corrija.",
+  // ── suspeita de HSA retém a execução (O3 · 2026-09-12) ───────────────────
+  "Saída diagnóstica armada: suspeita clínica de hemorragia subaracnóidea":
+    "Salida diagnóstica armada: sospecha clínica de hemorragia subaracnoidea",
+  "Saída diagnóstica armada — execução retida enquanto a suspeita de hemorragia subaracnóidea estiver ativa":
+    "Salida diagnóstica armada — ejecución retenida mientras la sospecha de hemorragia subaracnoidea esté activa",
+  "Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro. A execução da reperfusão isquêmica fica retida enquanto ela estiver ativa":
+    "Resolver la sospecha clínica de hemorragia subaracnoidea: responder «No», o corregir el registro. La ejecución de la reperfusión isquémica queda retenida mientras esté activa",
+  "Execução retida por saída diagnóstica": "Ejecución retenida por salida diagnóstica",
   // ── marcos temporais incompatíveis ⇒ reconciliação (O4 · 2026-09-12) ─────
   "Marcos temporais incompatíveis": "Marcos temporales incompatibles",
   "Última vez visto bem e início observado do déficit respondem de forma oposta à janela padrão":

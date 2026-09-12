@@ -52,7 +52,7 @@
 import type { EstadoAvc } from "./estado";
 import type { SuperficieId } from "./tipos";
 import { estadoDaReavaliacao, reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
-import { barreiraDeReperfusao } from "./derivacoes-c";
+import { retencaoDiagnostica, barreiraDeReperfusao } from "./derivacoes-c";
 import { acoesDoBloqueio } from "./derivacoes-e";
 import { bloqueiosCorrigiveis, impedimentosDeSeguranca, type EfeitoNaAcao } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
@@ -89,6 +89,11 @@ export type EstadoDoPortao =
    * ⛔ nunca *"contraindicada"* — ⛔ e o motivo nomeia o critério.
    */
   | "nao_sustentada"
+  /**
+   * ⚠️⚠️ Saída diagnóstica **armada** (O3, 2026-09-12): suspeita clínica de HSA
+   * ativa. ⛔ Avaliação segue; ⛔ execução ⛔ não libera; ⛔ não é contraindicação.
+   */
+  | "saida_diagnostica_pendente"
   /**
    * ── ⚠️⚠️ OS TRÊS ESTADOS DA INCERTEZA TIPADA (R3, commit 7) ─────────────
    *
@@ -129,7 +134,7 @@ export type MotivoDoPortao = {
    * aferição que a resolva): ⛔ é a exclusão que a fonte exige **antes** de
    * qualquer reperfusão (**E-08**), ⛔ e que ⛔ ainda ⛔ não está na trilha.
    */
-  readonly camada: "seguranca" | "correcao" | "veredito" | "classe";
+  readonly camada: "seguranca" | "correcao" | "veredito" | "classe" | "destino";
   /**
    * ⚠️⚠️ O EFEITO TIPADO SOBRE A AÇÃO (R3) — ⛔ presente nos motivos de
    * segurança. ⛔ `exige_julgamento` ⛔ nunca coexiste com `impede` no mesmo
@@ -277,6 +282,26 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
    * ⛔ Mesma classe de AVC-04: ⛔ o app ⛔ não elege; ⛔ nomeia os dois ⛔ e o
    * gesto que resolve. ⛔ Não é contraindicação ⛔ nem falta de dado.
    */
+  /**
+   * ⚠️⚠️ SAÍDA DIAGNÓSTICA ARMADA (O3, decisão do autor 2026-09-12): ⛔ a
+   * suspeita clínica de HSA retém a **execução** da reperfusão isquêmica.
+   * ⛔ Camada própria (`destino`): ⛔ nunca entra na conta de segurança, ⛔ nunca
+   * vira hemorragia, ⛔ e a avaliação (veredito) segue intacta.
+   */
+  const retencao = retencaoDiagnostica(estado);
+  if (retencao.estado === "retida") {
+    motivos.push({
+      id: "suspeita_hsa",
+      camada: "destino",
+      rotulo: "Saída diagnóstica armada: suspeita clínica de hemorragia subaracnóidea",
+      dado: retencao.curto,
+      fonte: retencao.fonte,
+      oQueFalta: retencao.oQueFalta,
+      leva: retencao.leva,
+      campo: retencao.campo,
+    });
+  }
+
   const temporal = veredito.criteriosAvaliados.find((c) => c.papel === "temporal");
   const reconciliarMarcos = temporal !== undefined && temporal.estado === "em_reconciliacao";
   if (reconciliarMarcos && temporal !== undefined) {
@@ -442,6 +467,9 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
         /** ⚠️ Resposta contra da composição (D1) — ⛔ corrigir a PA ⛔ não muda isso. */
         : veredito.tipo === "nao_sustentada"
         ? "nao_sustentada"
+        /** ⚠️ O3: saída diagnóstica armada retém a execução — ⛔ antes de qualquer pendência resolvível. */
+        : retencao.estado === "retida"
+        ? "saida_diagnostica_pendente"
         /**
          * ⚠️⚠️ A INCERTEZA RELEVANTE (R3) — ⛔ antes do corrigível: ⛔ tratar a
          * PA ⛔ não reconcilia duas coletas ⛔ nem traz um resultado que ⛔ não

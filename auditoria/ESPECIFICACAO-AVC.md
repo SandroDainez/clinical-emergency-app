@@ -44,7 +44,7 @@ condições como **saídas clínicas explícitas** — não como ausência de ca
 |---|---|
 | sem hemorragia | continua no fluxo de AVC isquêmico |
 | hemorragia intracraniana | **interrompe** o fluxo de reperfusão isquêmica e aponta para o futuro módulo de AVC hemorrágico |
-| suspeita de HSA | saída específica, apontando para o futuro fluxo de HSA |
+| suspeita de HSA | saída específica, apontando para o futuro fluxo de HSA; **retém a execução** da reperfusão isquêmica enquanto ativa (§1.8, item 4) |
 
 Apontar para módulo que ainda não existe é **destino declarado**, nunca beco sem
 saída. Como isso se representa é a **E-09**.
@@ -505,6 +505,18 @@ vocabulário que a Parte 2 vai ter de responder: **as oito espécies do princíp
 **3 · Trombólise IV e avaliação para trombectomia não são sequenciais.** Iniciar
 a primeira não pode bloquear, atrasar nem encerrar a segunda. É o exemplo que o
 princípio 6 nomeia, e é o teste mais duro da Parte 5. ⇒ **E-11**
+
+**4 · A suspeita clínica de HSA retém a EXECUÇÃO da reperfusão isquêmica —
+decisão do autor, 2026-09-12 (red-team O3).** Enquanto `suspeita_hsa = Sim`
+estiver ativa, a saída diagnóstica fica **armada** e a execução de IVT e de EVT
+**não fica liberada**. Isto **não** é contraindicação (a fonte transcrita não tem
+item sobre HSA clínica e nada aqui afirma risco), **não** transforma a suspeita em
+hemorragia confirmada (a exclusão de hemorragia continua sendo lida só da imagem,
+**E-08**) e **não** apaga a avaliação: IVT e EVT continuam sendo avaliadas e
+mostradas. A retenção é uma **pendência/saída diagnóstica própria**, com o gesto
+que a resolve: `suspeita_hsa = Não`, correção ou desfazer do fato (§3.4).
+"Incerto" não retém e não é "Não" (**E-02**). Nenhuma regra clínica sobre a
+investigação de HSA nasce daqui. ⇒ **E-09**, **PD-21**
 
 ### 1.9 Depois da imagem limpa: duas frentes, não duas etapas
 

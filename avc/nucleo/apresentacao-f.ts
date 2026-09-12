@@ -518,8 +518,11 @@ export const PAPEL_DO_VEREDITO_EVT: Readonly<
 export function papelDoVereditoEvt(v: {
   readonly tipo: TipoDoVereditoEvt;
   readonly classe: { readonly estado: "liberada" | "retida" };
+  /** ⚠️ O3: saída diagnóstica armada rebaixa o sucesso do mesmo jeito que a classe retida. */
+  readonly retencaoDiagnostica?: { readonly estado: "livre" | "retida" };
 }): PapelDeCor {
   const papel = PAPEL_DO_VEREDITO_EVT[v.tipo];
+  if (v.retencaoDiagnostica?.estado === "retida" && papel === "sucesso") return "neutro";
   /**
    * ⚠️⚠️ ⛔ A CLASSE RETIDA REBAIXA **⛔ SÓ O SUCESSO** — ⛔ e ⛔ não a cautela.
    *
