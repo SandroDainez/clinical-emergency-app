@@ -517,7 +517,19 @@ export function papelDoVereditoEvt(v: {
   readonly tipo: TipoDoVereditoEvt;
   readonly classe: { readonly estado: "liberada" | "retida" };
 }): PapelDeCor {
-  return v.classe.estado === "retida" ? "neutro" : PAPEL_DO_VEREDITO_EVT[v.tipo];
+  const papel = PAPEL_DO_VEREDITO_EVT[v.tipo];
+  /**
+   * ⚠️⚠️ ⛔ A CLASSE RETIDA REBAIXA **⛔ SÓ O SUCESSO** — ⛔ e ⛔ não a cautela.
+   *
+   * ⛔ A primeira versão devolvia `neutro` para **qualquer** tipo com classe
+   * retida, ⛔ e o e2e da Fase 9 pegou: ⛔ o *No Benefit* de um M2 ⛔ não
+   * dominante **⛔ sem TC** perdia a cautela — ⛔ como se a falta de imagem
+   * tornasse a ausência de benefício menos verdadeira. ⚠️ ⛔ Não torna: ⛔ a
+   * imagem governa **realizar**, ⛔ e ⛔ não o que a fonte diz da população.
+   * ⛔ O que a classe retida ⛔ não pode é deixar o cartão com cara de
+   * *"faça"*.
+   */
+  return v.classe.estado === "retida" && papel === "sucesso" ? "neutro" : papel;
 }
 
 
