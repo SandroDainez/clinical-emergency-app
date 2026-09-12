@@ -1959,10 +1959,53 @@ for, o registro é manual e vive aqui.
 O commit `362d418` já fez isso para o deploy da infraestrutura de teste
 (**D-130**), antes da regra existir. Ele é o formato a seguir.
 
+### ⚠️⚠️⚠️ A SEQUÊNCIA OBRIGATÓRIA — aprovada pelo autor em 2026-09-11
+
+⛔ **Nenhum `vercel --prod` sem percorrer os sete passos, nesta ordem.**
+
+| # | passo | o que registra |
+|---|---|---|
+| 1 | **HEAD candidato** | o commit exato que vai subir |
+| 2 | **`test:all` completo verde** | executado **neste HEAD** |
+| 3 | **registrar o SHA** | antes do deploy, não depois |
+| 4 | **deploy** | `vercel --prod` |
+| 5 | **registrar o Vercel deploy ID** | o único identificador que a máquina local não conhece sozinha |
+| 6 | **conferir artefato/bundle** | `dist/artefato.json` e o nome do bundle servido |
+| 7 | **smoke check de produção** | a aplicação respondendo, depois de publicada |
+
+### ⚠️⚠️ A regra que fecha a brecha do passo 2
+
+> ⛔ **Não usar como evidência uma suíte verde de commit anterior.**
+
+Verde em `X` não é verde em `X+4`, mesmo que os quatro commits sejam
+documentais. A suíte tem de rodar **no HEAD candidato**, e o registro tem de
+dizer em qual HEAD ela rodou.
+
+⚠️ Esta cláusula nasceu de um caso real, no mesmo dia: eu havia declarado a
+suíte verde, e a última execução completa que eu realmente tinha coberto
+apenas até `0801d4c` — quatro commits atrás do HEAD. A declaração não era
+falsa por má-fé; era **evidência velha apresentada como atual**. É exatamente
+o que a cláusula proíbe.
+
+⚠️ Vale o mesmo princípio da **R-AUSENCIA**: afirmação exige medição própria,
+e medição tem data e escopo.
+
+### ⛔ O que continua vetado
+
+| item | estado |
+|---|---|
+| conectar o GitHub à Vercel | ⛔ **não**, por enquanto — decisão do autor em 2026-09-11 |
+| deploy automático por push | ⛔ não existe, e não se cria |
+| preview deployment | ⛔ não existe, e não se cria |
+| merge em `main` · PR | ⛔ não autorizados |
+
 ### Estado em 2026-09-11
 
 | item | valor |
 |---|---|
 | produção | `443f0d8` · deploy `j9p41qshb` · bundle `entry-51567884b86940c3235c9ce65d78cfd2.js` |
-| branch de trabalho | `refactor/clinical-modules-rebuild` em `84f4a9a`, **preservada no GitHub** |
+| branch de trabalho | `refactor/clinical-modules-rebuild`, **preservada no GitHub** |
+| GitHub | ✅ atualizado |
+| produção | ⛔ **congelada** |
 | deploy pendente | ⛔ nenhum autorizado |
+| próxima frente | clínica/documental — ⛔ não é deploy |
