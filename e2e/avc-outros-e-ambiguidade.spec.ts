@@ -258,13 +258,12 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
       }
 
       /**
-       * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 — ⛔ o alerta
-       * mora ⛔ dentro do cartão do esmolol, ⛔ então ⛔ é preciso abrir a
-       * gaveta. ⛔ Ver ⛔ o alerta **⛔ quando se olha o esmolol** ⛔ é
-       * ⛔ exatamente ⛔ o ponto de ⛔ ele ter saído da nota solta.
+       * ⚠️⚠️ ⛔ NA ESTABILIZAÇÃO ⛔ OS AGENTES NASCEM **⛔ ABERTOS** — 2026-09-12:
+       * ⛔ este bloco ⛔ só existe ⛔ com bloqueio ativo, ⛔ e ⛔ é para onde o
+       * card do eixo leva. ⚠️ ⛔ O alerta mora ⛔ dentro do cartão do esmolol,
+       * ⛔ e ⛔ vê-lo **⛔ ao olhar o esmolol** ⛔ é o ponto de ⛔ ele ter saído
+       * da nota solta. ⛔ Em **Correções**, ⛔ a gaveta de 09-09 continua.
        */
-      await page.getByTestId("avc-a-agentes-abrir").first().click();
-
       const alerta = page.getByTestId("avc-a-alerta-esmolol").first();
       await expect(alerta).toBeVisible();
 

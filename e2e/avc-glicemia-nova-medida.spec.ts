@@ -34,7 +34,12 @@ test.describe("AVC · a nova glicemia é medida nova", () => {
       await abrir(page);
       await medir(page, 38);
 
-      await page.getByTestId("avc-conduta-glicemia").click();
+      /**
+       * ⚠️ ⛔ O bloco *"O que fazer agora"* saiu em 2026-09-12. ⛔ O caminho
+       * para **registrar** a correção é o botão do próprio bloco de
+       * tratamento, ⛔ na Estabilização — ⛔ que é o que E-09 exige da saída.
+       */
+      await page.getByTestId("avc-a-registrar-glicemia_alterada").click();
       await expect(page.getByTestId("avc-e-bloqueio-glicemia_alterada")).toBeVisible();
       await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
       await page.getByText("Realizada", { exact: true }).first().click();
@@ -77,7 +82,17 @@ test.describe("AVC · a nova glicemia é medida nova", () => {
     async ({ page }) => {
       await abrir(page);
       await medir(page, 318);
-      await page.getByTestId("avc-conduta-glicemia").click();
+      /**
+       * ⚠️⚠️ ⛔ AQUI ⛔ NÃO HÁ BLOCO DE TRATAMENTO ⛔ NA TELA — ⛔ e ⛔ isso ⛔ é o
+       * próprio achado: ⛔ *"Corrigir agora"* ⛔ só existe ⛔ com bloqueio ativo,
+       * ⛔ e a hiperglicemia ⛔ **⛔ não bloqueia** (**F-06**).
+       *
+       * ⚠️ ⛔ E ⛔ ela ⛔ continua tendo **destino**: ⛔ o card do eixo leva ⛔ ao
+       * que a própria ameaça declara — ⛔ Correções —, ⛔ que ⛔ é o caminho que
+       * o bloco removido fazia.
+       */
+      await expect(page.getByTestId("avc-a-corrigir-glicemia_alterada")).toHaveCount(0);
+      await page.getByTestId("avc-ameaca-glicemia").click();
 
       /** ⚠️⚠️ ⛔ Instância ⛔ **⛔ não é** bloqueio: ⛔ F-06 ⛔ diz que a hiper ⛔ não trava. */
       await expect(page.getByTestId("avc-e-bloqueio-glicemia_alterada")).toHaveCount(0);

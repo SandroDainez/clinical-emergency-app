@@ -947,6 +947,27 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     primeiroNaoConcluido === undefined ? [] : [primeiroNaoConcluido]
   );
 
+  /**
+   * ⚠️⚠️⚠️ ⛔ ONDE O TRATAMENTO DAQUELE EIXO ESTÁ ESCRITO — 2026-09-12.
+   *
+   * ⛔ Relato do autor: *"quando clico em via aérea me leva à tela de
+   * avaliação … o APP ⛔ não me orienta nada"*. ⚠️ ⛔ O toque abria o eixo
+   * ⛔ e parava no começo dele — ⛔ com a conduta mais abaixo, ⛔ atrás de um
+   * botão.
+   *
+   * ⚠️ ⛔ Nem todo eixo tem tratamento **registrável**: ⛔ `A` ⛔ e `B` ⛔ não
+   * têm, ⛔ e ⛔ isso ⛔ não é falha de fiação — ⛔ **F-23** diz *"airway
+   * support and ventilatory assistance are recommended as needed"* ⛔ e
+   * *"supplemental oxygen … to maintain SpO₂ >94%"*, ⛔ e ⛔ **⛔ é tudo o
+   * que a fonte tem**. ⛔ Inventar agente ⛔ ou dose ⛔ ali seria a tela
+   * escrevendo medicina (**E-31**). ⛔ Para esses, o card diz a conduta ⛔ e
+   * o toque abre o eixo, ⛔ como antes.
+   */
+  const BLOQUEIO_DO_EIXO: Readonly<Record<string, string>> = {
+    pressao: "pressao_acima_da_meta",
+    glicemia: "glicemia_alterada",
+  };
+
   function alternarEixo(grupo: string) {
     setEixosAbertos((a) => (a.includes(grupo) ? a.filter((g) => g !== grupo) : [...a, grupo]));
   }
@@ -1291,6 +1312,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                */
               onPress={() => {
                 const grupo = grupoDoEixo(a.id);
+                /**
+                 * ⚠️⚠️ ⛔ AMEAÇA ATIVA ⇒ ⛔ O TOQUE VAI AO **TRATAMENTO** —
+                 * decisão do autor, 2026-09-12: *"o card resume; a tela do
+                 * eixo trata"*. ⛔ O registro continua ⛔ na mesma tela,
+                 * ⛔ logo acima.
+                 */
+                /**
+                 * ⚠️⚠️ ⛔ O BLOCO *"Corrigir agora"* ⛔ SÓ EXISTE COM BLOQUEIO
+                 * ATIVO — ⛔ e ⛔ isso ⛔ é conteúdo, ⛔ não acaso: ⛔ oferecer
+                 * anti-hipertensivo a quem ⛔ não tem pressão alta ⛔ seria a
+                 * tela ensinando a tratar ⛔ o que ⛔ não existe.
+                 *
+                 * ⛔ ⛔ Por isso a hiperglicemia (⛔ que ⛔ **⛔ não bloqueia**,
+                 * **F-06**) ⛔ não tem bloco ⛔ para ⛔ onde rolar — ⛔ e ⛔ ela
+                 * ⛔ continua tendo destino: ⛔ o que a própria ameaça declara.
+                 */
+                const bloqueio = BLOQUEIO_DO_EIXO[a.id];
+                const temTratamentoNaTela =
+                  bloqueio !== undefined && bloqueios.some((b) => b.id === bloqueio);
+                if (a.estado === "ameaca" && temTratamentoNaTela) {
+                  if (grupo !== undefined && !eixosAbertos.includes(grupo)) alternarEixo(grupo);
+                  rolarAte(`tratamento_${bloqueio}`);
+                  return;
+                }
+                if (a.estado === "ameaca" && a.leva !== undefined) {
+                  abrir(a.leva as SuperficieId);
+                  return;
+                }
                 if (grupo === undefined) irParaCampo(a.campo);
                 else alternarEixo(grupo);
               }}
@@ -1431,6 +1480,23 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 * ⛔ ⛔ *"Em andamento"* ⛔ não é juízo: é *há fato registrado
                 * ⛔ neste eixo ⛔ e ⛔ ele ⛔ não foi dado por concluído*.
                 */}
+              {/**
+                * ── ⚠️⚠️⚠️ A CONDUTA, ⛔ NO PRÓPRIO CARD — 2026-09-12 ─────────
+                *
+                * ⛔ Relato do autor: *"tenho 2 áreas que falam praticamente a
+                * mesma coisa"* — ⛔ o card dizia o **achado** ⛔ e um bloco
+                * abaixo (*"O que fazer agora"*) dizia a **conduta**: ⛔ as
+                * duas metades da **mesma** leitura, ⛔ em dois lugares.
+                *
+                * ⚠️ ⛔ Agora o card resume ⛔ inteiro — achado ⛔ e conduta —,
+                * ⛔ e o bloco de baixo saiu. ⛔ A frase é da fonte (**E-31**):
+                * ⛔ a tela ⛔ não redige conduta.
+                */}
+              {a.estado === "ameaca" && a.conduta !== undefined ? (
+                <Text style={s.ameacaConduta} testID={`avc-ameaca-conduta-${a.id}`}>
+                  {tr(a.conduta)}
+                </Text>
+              ) : null}
               {estado.eixosConcluidos.includes(a.id) ? (
                 <Text style={s.ameacaProgresso} testID={`avc-ameaca-progresso-${a.id}`}>
                   {tr("Avaliação concluída")}
@@ -1494,89 +1560,17 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           */}
 
         {/**
-          * ── ⚠️⚠️ O QUE FAZER AGORA ────────────────────────────────────────
+          * ── ⚠️⚠️⚠️ ⛔ *"O QUE FAZER AGORA"* SAIU — 2026-09-12 ──────────────
           *
-          * > *"apareceu ameaça registrada, porém ⛔ não oferece caminho para
-          * >  tratamento das ameaças que foram registradas"*
-          * >                                          — autor, 2026-09-06
+          * ⛔ Relato do autor: *"tenho 2 áreas que falam praticamente a mesma
+          * coisa … podemos deixar só a parte superior clicável e funcional"*.
+          * ⚠️ ⛔ E ⛔ era isso mesmo: ⛔ o card acima mostrava `achado`, ⛔ este
+          * bloco mostrava `conduta` — ⛔ as duas metades da **mesma** leitura,
+          * ⛔ repetindo nome ⛔ e letra do eixo.
           *
-          * ⛔ **⛔ Ele estava certo, ⛔ e o próprio título do card já prometia o
-          * que a tela ⛔ não entregava:** *"Avaliar ⛔ **e tratar** ameaças
-          * imediatas"*. ⚠️ O card avaliava ⛔ e parava.
-          *
-          * ⚠️⚠️ ⛔ AS FRASES SÃO DAS FONTES (F-04, F-06, F-18, F-19), ⛔ e ⛔ a
-          * tela ⛔ não escreve conduta ⛔ nenhuma (**E-31**). ⛔ O botão ⛔ não
-          * trata: ⛔ ele **leva a onde o tratamento está registrado** — que é o
-          * que **E-09** exige de toda saída.
-          *
-          * ⚠️ ⛔ E ⛔ ele ⛔ não trava ⛔ nada (**E-11**): ⛔ é um atalho, ⛔ e ⛔ não
-          * um portão.
+          * ⚠️ ⛔ A conduta ⛔ não se perdeu: ⛔ ela subiu para o card
+          * (`avc-ameaca-conduta-*`), ⛔ e o toque leva ⛔ ao tratamento.
           */}
-        {ameacas.filter((a) => a.estado === "ameaca" && a.conduta !== undefined).length === 0
-          ? null
-          : (
-            <View style={s.condutas} testID="avc-ameacas-conduta">
-              <Text style={s.condutasTitulo}>{tr("O que fazer agora")}</Text>
-              {ameacas
-                .filter((a) => a.estado === "ameaca" && a.conduta !== undefined)
-                .map((a) => (
-                  <Pressable
-                    key={a.id}
-                    style={({ pressed }) => [s.conduta, pressed ? s.pressionado : null]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${tr(a.nome)}: ${tr(a.conduta ?? "")}`}
-                    testID={`avc-conduta-${a.id}`}
-                    onPress={() =>
-                      a.leva === undefined
-                        ? irParaCampo(a.campo)
-                        : abrir(a.leva as SuperficieId)
-                    }
-                  >
-                    <View style={s.condutaTexto}>
-                      <Text style={s.condutaEixo}>
-                        <Text style={{ color: tema.cores[COR_DO_EIXO[a.id] ?? "primary"] }}>
-                          {a.letra}
-                        </Text>
-                        {" · "}
-                        {tr(a.nome)}
-                      </Text>
-                      {/** ⚠️ A conduta VEM DA FONTE — ⛔ a tela ⛔ não a redige. */}
-                      <Text style={s.condutaFrase}>{tr(a.conduta ?? "")}</Text>
-                      {/**
-                        * ⚠️⚠️⚠️ ⛔ O DESTINO, ⛔ DITO — ⛔ e ⛔ não adivinhado.
-                        *
-                        * ⛔ Relato do autor, 2026-09-10: ⛔ a hiperglicemia
-                        * ⛔ *"nem aparece como correção para eu fazer"*.
-                        * ⚠️ ⛔ Medido: ⛔ **⛔ ela aparece** ⛔ na superfície de
-                        * Correções — ⛔ o que ⛔ não aparecia ⛔ era ⛔ **⛔ que
-                        * existe uma superfície**.
-                        *
-                        * ⛔ ⛔ A linha da PA ⛔ dizia ⛔ « Abrir Correções — a
-                        * fonte traz os agentes e as doses » ⛔ porque ⛔ a
-                        * ⛔ **⛔ conduta dela**, ⛔ no conteúdo, ⛔ é ⛔ escrita
-                        * assim. ⛔ A da glicemia ⛔ é ⛔ conduta clínica ⛔ de
-                        * verdade — ⛔ e ⛔ o médico ⛔ ficava ⛔ sem saber ⛔ que
-                        * havia ⛔ para onde ir.
-                        *
-                        * ⚠️ ⛔ Agora ⛔ o destino ⛔ é ⛔ **⛔ desenhado do `leva`**,
-                        * ⛔ e ⛔ não ⛔ redigido dentro da conduta: ⛔ a fonte
-                        * ⛔ escreve ⛔ o que fazer, ⛔ e a tela ⛔ escreve ⛔ onde.
-                        * ⛔ Isso ⛔ **⛔ não** iguala ⛔ PA ⛔ e ⛔ hiperglicemia:
-                        * ⛔ a hiper ⛔ segue ⛔ sem ciclo de correção — ⛔ ela ⛔ não
-                        * bloqueia ⛔ a trombólise (**F-06**). ⛔ O que ⛔ se iguala
-                        * ⛔ é ⛔ **⛔ a descoberta do caminho**.
-                        */}
-                      {a.leva === undefined ? null : (
-                        <Text style={s.condutaDestino} testID={`avc-conduta-destino-${a.id}`}>
-                          {tr("Abrir")} {tr(superficie(a.leva as SuperficieId).titulo)}
-                        </Text>
-                      )}
-                    </View>
-                    <Text style={s.condutaSeta}>{SETA}</Text>
-                  </Pressable>
-                ))}
-            </View>
-          )}
       </View>
       ) : estado.superficieVista === "paciente" ? (
         /**
@@ -2595,6 +2589,12 @@ const criarEstilos = (tema: Tema) =>
      * espaçamento **fecham a diferença** — ⛔ é o mesmo idioma que o app usa
      * para etiqueta ⛔ que ⛔ não é achado.
      */
+    /**
+     * ⚠️⚠️ A CONDUTA ⛔ NO CARD — 2026-09-12. ⛔ Ela ⛔ não compete com o achado
+     * (⛔ que é o estado clínico), ⛔ e ⛔ não vira parágrafo: ⛔ o autor pediu
+     * card **compacto** — *"para ⛔ não virar uma tela muito alta"*.
+     */
+    ameacaConduta: { ...PAPEL.legenda, color: tema.cores.primary },
     ameacaProgresso: {
       ...PAPEL.micro,
       color: tema.cores.textSecondary,
@@ -2642,28 +2642,12 @@ const criarEstilos = (tema: Tema) =>
     proximoEixoTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.primary, flex: 1 },
     proximoEixoSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
 
-    condutas: { gap: ESPACO.xs, marginTop: ESPACO.sm },
+    /**
+     * ⚠️ ⛔ Os estilos do bloco *"O que fazer agora"* saíram com ele em
+     * 2026-09-12: ⛔ a conduta subiu para o card do eixo (`ameacaConduta`).
+     */
     /** ⚠️ O mesmo retorno de toque do kit — ⛔ nunca reinventado por tela. */
     pressionado: { opacity: 0.65 },
-    condutasTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
-    conduta: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: ESPACO.sm,
-      minHeight: TOQUE.minimo,
-      paddingHorizontal: ESPACO.sm,
-      paddingVertical: ESPACO.xs,
-      borderRadius: RAIO.botao,
-      backgroundColor: tema.cores.warningTint,
-      borderWidth: 1.5,
-      borderColor: tema.cores.warning,
-    },
-    condutaTexto: { flex: 1, minWidth: 0, gap: 2 },
-    condutaEixo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
-    condutaFrase: { ...PAPEL.textoSecundario, color: tema.cores.text },
-    /** ⚠️ ⛔ O destino ⛔ é secundário ⛔ à conduta: ⛔ ele informa, ⛔ não compete. */
-    condutaDestino: { ...PAPEL.legenda, color: tema.cores.primary, marginTop: 2 },
-    condutaSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
 
     /* ── ⚠️ ESTABILIZAÇÃO PRIMEIRO ──────────────────────────────────────── */
     ameacaFrase: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },

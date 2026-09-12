@@ -60,6 +60,7 @@ export function CondutaDaPressao({
   prefixo,
   estado,
   agora,
+  agentesSempreAbertos = false,
 }: {
   prefixo: string;
   /**
@@ -71,6 +72,23 @@ export function CondutaDaPressao({
    */
   estado: EstadoAvc;
   agora: number;
+  /**
+   * ⚠️⚠️⚠️ ⛔ DUAS DECISÕES DO AUTOR, ⛔ E ⛔ ELAS ⛔ NÃO SE CONTRADIZEM.
+   *
+   * ⛔ **2026-09-09**: *"⛔ não poderia ser expansível ⛔ ao invés de ficar tudo
+   * aberto na tela?"* — ⛔ e o botão nasceu. ⚠️ ⛔ Ali o contexto é o
+   * **catálogo** (Correções): ⛔ o médico navega, ⛔ e a gaveta poupa tela.
+   *
+   * ⛔ **2026-09-12**: *"quando clico em algo que está alterado ⛔ tem que me
+   * dizer o que fazer … agentes ⛔ e doses ⛔ já aparecem abertos, ⛔ sem botão"*
+   * — ⚠️ ⛔ e aqui o contexto é **⛔ outro**: o card do eixo **⛔ em ameaça
+   * ativa** levou o médico ⛔ até este bloco ⛔ para ⛔ ele **tratar agora**.
+   * ⛔ Pedir mais um toque ⛔ nesse ponto ⛔ é ⛔ a queixa que originou a mudança.
+   *
+   * ⚠️ Por isso a abertura é **⛔ do chamador**, ⛔ e o padrão preserva o
+   * pedido de 09-09.
+   */
+  agentesSempreAbertos?: boolean;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -97,7 +115,8 @@ export function CondutaDaPressao({
    * ⛔ **⛔ fora**, ⛔ acima do botão: ⛔ ela ⛔ não é detalhe ⛔ dos agentes,
    * ⛔ ela ⛔ é o **estatuto** ⛔ deles.
    */
-  const [agentesAbertos, setAgentesAbertos] = useState(false);
+  const [abertoPeloToque, setAbertoPeloToque] = useState(false);
+  const agentesAbertos = agentesSempreAbertos || abertoPeloToque;
   return (
     <View style={e.terapeutica} testID={`${prefixo}terapeutica-pressao`}>
       <Text style={e.terapeuticaTitulo}>{tr("Agentes intravenosos")}</Text>
@@ -131,11 +150,12 @@ export function CondutaDaPressao({
         testID={`${prefixo}aviso-alto-risco`}
       />
 
+      {agentesSempreAbertos ? null : (
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: agentesAbertos }}
         testID={`${prefixo}agentes-abrir`}
-        onPress={() => setAgentesAbertos((v) => !v)}
+        onPress={() => setAbertoPeloToque((v) => !v)}
         style={({ pressed }) => [e.maisAlvos, pressed ? { opacity: 0.7 } : null]}
       >
         <Text style={e.maisAlvosTexto}>
@@ -144,6 +164,7 @@ export function CondutaDaPressao({
             : `${tr("Ver os agentes e as doses")} · ${AGENTES_ANTI_HIPERTENSIVOS.length}`}
         </Text>
       </Pressable>
+      )}
 
       {/**
         * ⚠️⚠️ ⛔ `calculoDose` ⛔ **⛔ junto do número**, ⛔ e ⛔ só quando ⛔ ele

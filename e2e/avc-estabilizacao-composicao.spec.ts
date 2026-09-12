@@ -209,10 +209,16 @@ test.describe("AVC · Estabilização — composição", () => {
   test("⛔ hipoxemia mostra a conduta da fonte, ⛔ sem inventar",
     async ({ page }) => {
       await abrirEstabilizacao(page);
-      await expect(page.getByTestId("avc-ameacas-conduta")).toHaveCount(0);
+      /**
+       * ⚠️⚠️ ⛔ A CONDUTA MUDOU DE LUGAR — 2026-09-12: ⛔ o bloco *"O que fazer
+       * agora"* saiu, ⛔ e a frase subiu ⛔ para o **card do eixo** (relato do
+       * autor: *"⛔ tenho 2 áreas que falam praticamente a mesma coisa"*).
+       * ⚠️ ⛔ O contrato ⛔ não mudou: ⛔ a orientação existe, ⛔ e ⛔ é da fonte.
+       */
+      await expect(page.getByTestId("avc-ameaca-conduta-respiracao")).toHaveCount(0);
 
       await page.getByTestId("avc-opcao-hipoxia-sim").click();
-      const conduta = page.getByTestId("avc-ameacas-conduta");
+      const conduta = page.getByTestId("avc-ameaca-conduta-respiracao");
       await expect(conduta).toBeVisible();
       /** ⚠️ A meta é **da fonte** (F-23), ⛔ e ⛔ a tela ⛔ não a redige. */
       await expect(conduta).toContainText(/94/);
@@ -232,12 +238,12 @@ test.describe("AVC · Estabilização — composição", () => {
       await expect(bloco).toBeVisible();
       await expect(page.getByTestId("avc-a-terapeutica-pressao")).toBeVisible();
       /**
-       * ⚠️ ⛔ Os agentes nascem **fechados** desde 2026-09-09 (*"⛔ não poderia
-       * ser expansível ⛔ ao invés de ficar tudo aberto na tela?"*). ⛔ A dose
-       * ⛔ continua ⛔ na tela — ⛔ **⛔ a um toque** —, ⛔ e ⛔ é ⛔ o toque que
-       * ⛔ mudou, ⛔ e ⛔ não a garantia.
+       * ⚠️⚠️ ⛔ E ⛔ AQUI ⛔ ELES NASCEM **⛔ ABERTOS** — 2026-09-12: ⛔ este
+       * bloco ⛔ só existe ⛔ com bloqueio ativo, ⛔ e ⛔ é ⛔ para onde o card do
+       * eixo leva ⛔ quando o médico toca ⛔ o que está alterado. ⛔ Pedir mais
+       * um toque ⛔ aqui ⛔ é a queixa que originou a mudança. ⚠️ ⛔ Em
+       * **Correções**, ⛔ que é catálogo, ⛔ a gaveta de 2026-09-09 continua.
        */
-      await page.getByTestId("avc-a-agentes-abrir").first().click();
       /** ⚠️ O agente ⛔ e a dose, ⛔ como F-19 os escreve. */
       await expect(page.getByTestId("avc-a-agente-labetalol")).toContainText(/10 a 20 mg/);
       /** ⚠️⚠️ ⛔ E a procedência: **a diretriz vigente ⛔ não nomeia fármaco**. */

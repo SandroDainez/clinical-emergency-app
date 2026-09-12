@@ -336,10 +336,21 @@ export default function SuperficieA({
         <View style={e.corrigirAgora} testID="avc-a-corrigir-agora">
           <Text style={e.corrigirTitulo}>{tr("Corrigir agora")}</Text>
           {corrigiveis.map((b) => (
-            <View key={b.id} style={e.corrigirItem} testID={`avc-a-corrigir-${b.id}`}>
+            /**
+              * ⚠️⚠️ ⛔ ALVO DE ROLAGEM — 2026-09-12. ⛔ O card do eixo, no topo,
+              * ⛔ leva **⛔ aqui**: ⛔ é onde o tratamento está escrito. ⛔ Sem
+              * registrar o nó, ⛔ o toque abriria a tela ⛔ e ⛔ pararia no
+              * começo dela, ⛔ que é ⛔ exatamente a queixa que originou isto.
+              */
+            <View
+              key={b.id}
+              ref={(n) => foco.registrarGrupo([`tratamento_${b.id}`], n)}
+              style={e.corrigirItem}
+              testID={`avc-a-corrigir-${b.id}`}
+            >
               {/** ⚠️ ⛔ O risco ⛔ e o alvo são a **formulação da fonte**. */}
               <Text style={e.corrigirRisco}>{tr(b.formulacao)}</Text>
-              {b.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-a-" estado={estado} agora={agora} /> : null}
+              {b.id === "pressao_acima_da_meta" ? <CondutaDaPressao prefixo="avc-a-" estado={estado} agora={agora} agentesSempreAbertos /> : null}
               {b.id === "glicemia_alterada" ? <CondutaGlicemica prefixo="avc-a-" /> : null}
               <Pressable
                 accessibilityRole="button"
