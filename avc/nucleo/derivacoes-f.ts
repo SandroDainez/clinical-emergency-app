@@ -223,11 +223,19 @@ export function doseDerivada(
      * ⛔ e o maior produto tem **duas** casas), ⛔ e ⛔ por isso ⛔ nenhum valor
      * verdadeiro é alterado.
      *
-     * ⛔ ⛔ **Quantas casas EXIBIR é decisão do autor** ⛔ e ⛔ não foi tomada
-     * aqui: ⛔ arredondar 15,625 para 15,6 ⛔ mudaria a dose, ⛔ e a fonte
-     * ⛔ não define arredondamento (Table 7 dá ⛔ só mg/kg ⛔ e teto).
+     * ── ⚠️⚠️ ⛔ E A DOSE É **INTEIRA** — decisão do autor, 2026-09-12 ────────
+     *
+     * ⛔ Relato: *"olha o tanto de casas decimais, isso nem dá para medir na
+     * prática"*. ⚠️ ⛔ A fonte ⛔ **não** define arredondamento — a Table 7 dá
+     * ⛔ só `mg/kg` ⛔ e o teto —, ⛔ então isto é **decisão declarada do
+     * autor**, ⛔ e ⛔ não conteúdo clínico derivado: ⛔ ela ⛔ não pode ser
+     * atribuída à AHA/ASA (**E-30**, **E-31**).
+     *
+     * ⛔ ⛔ O **teto continua sendo o número da fonte**, ⛔ e é aplicado
+     * **depois** do arredondamento: ⛔ nenhuma dose cruza 90 mg ⛔ ou 25 mg
+     * ⛔ por efeito de arredondar.
      */
-    totalMg: Math.min(Math.round(pesoKg * d.mgPorKg * 1e6) / 1e6, d.maximoMg),
+    totalMg: Math.min(Math.round(pesoKg * d.mgPorKg), d.maximoMg),
     slot: d.slot,
   };
 }

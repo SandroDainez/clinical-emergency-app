@@ -226,7 +226,7 @@ confere("⚠️⚠️ ⛔ ⛔ SEM PESO ⛔ NÃO EXISTE DOSE",
 confere("⚠️ a dose sai do peso, com o teto da fonte",
   D.doseDerivada("alteplase", 70, "medido").totalMg === 63 &&
     D.doseDerivada("alteplase", 120, "medido").totalMg === 90 &&
-    D.doseDerivada("tenecteplase", 70, "medido").totalMg === 17.5 &&
+    D.doseDerivada("tenecteplase", 70, "medido").totalMg === 18 &&
     D.doseDerivada("tenecteplase", 200, "medido").totalMg === 25,
   "0,9 mg/kg máx 90 · 0,25 mg/kg máx 25 (F-09)");
 
@@ -242,8 +242,9 @@ confere("⚠️ a dose sai do peso, com o teto da fonte",
  * dado clínico. ⚠️ ⛔ Quantas casas **exibir** é decisão do autor; ⛔ que o
  * número seja **o resultado da conta** ⛔ não é.
  *
- * ⚠️ O peso tem `passo: 1` (`paciente.ts`): o produto real tem no máximo
- * **duas** casas (`kg × 0,25`). ⛔ Mais que isso, ⛔ na saída, ⛔ é lixo.
+ * ⚠️⚠️ ⛔ E A DOSE É **INTEIRA** — decisão declarada do autor (2026-09-12),
+ * ⛔ e ⛔ não da fonte: a Table 7 dá ⛔ só `mg/kg` ⛔ e o teto. ⛔ O teto é
+ * aplicado **depois** do arredondamento, ⛔ e ⛔ nenhuma dose o cruza.
  */
 const casasDecimais = (n) => {
   const s = String(n);
@@ -251,18 +252,18 @@ const casasDecimais = (n) => {
   return i === -1 ? 0 : s.length - i - 1;
 };
 
-confere("⚠️⚠️ 99 kg de alteplase dá **89,1 mg**, ⛔ e ⛔ não `89.10000000000001`",
-  D.doseDerivada("alteplase", 99, "medido").totalMg === 89.1,
+confere("⚠️⚠️ 99 kg de alteplase dá **89 mg**, ⛔ e ⛔ não `89.10000000000001`",
+  D.doseDerivada("alteplase", 99, "medido").totalMg === 89,
   `⛔ ${D.doseDerivada("alteplase", 99, "medido").totalMg} — ⛔ número que ⛔ não se mede ⛔ não se administra`);
 
 const dosesSujas = [];
 for (let kg = 30; kg <= 200; kg++) {
   for (const ag of ["alteplase", "tenecteplase"]) {
     const total = D.doseDerivada(ag, kg, "medido").totalMg;
-    if (casasDecimais(total) > 2) dosesSujas.push(`${ag} ${kg}kg=${total}`);
+    if (casasDecimais(total) > 0) dosesSujas.push(`${ag} ${kg}kg=${total}`);
   }
 }
-confere("⚠️ ⛔ e ⛔ NENHUM peso da faixa (30–200 kg) produz mais de duas casas",
+confere("⚠️ ⛔ e ⛔ NENHUM peso da faixa (30–200 kg) produz casa decimal alguma",
   dosesSujas.length === 0,
   `⛔ ${dosesSujas.slice(0, 3).join(" · ")}${dosesSujas.length > 3 ? ` … +${dosesSujas.length - 3}` : ""}`);
 

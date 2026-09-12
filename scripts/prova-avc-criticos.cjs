@@ -290,7 +290,7 @@ ausente("10 · TNK (API)", () => {
   conf("10 · candidato + TNK em consideração → ⛔ NÃO `nao_recomendada`", v.tipo !== "nao_recomendada", `⛔ ${v.tipo} contra=${ids(v.contra)}`);
   conf("10 · candidato + TNK → `indicada` ⛔ e portão liberado", v.tipo === "indicada" && p.liberado === true, `⛔ ${v.tipo}/${p.estado}`);
   const d = DF.doseDerivada("tenecteplase", 70, "medido");
-  conf("10 · dose de TNK = 0,25 mg/kg, teto 25 mg", d && d.mgPorKg === 0.25 && d.maximoMg === 25 && d.totalMg === 17.5, `⛔ ${JSON.stringify(d)}`);
+  conf("10 · dose de TNK = 0,25 mg/kg, teto 25 mg", d && d.mgPorKg === 0.25 && d.maximoMg === 25 && d.totalMg === 18, `⛔ ${JSON.stringify(d)}`);
 });
 
 /* ══ 11 · REGRA DE 0,4 mg/kg ═════════════════════════════════════════════ */
