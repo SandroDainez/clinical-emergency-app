@@ -162,10 +162,21 @@ const marca = (e, campo, ...opcoes) => {
       return campo && (campo.opcoes ?? []).includes(i.opcao);
     }),
     "⚠️ casar por rótulo exige que o rótulo seja o MESMO: melhorar o texto de um lado quebraria a interpretação em silêncio");
-  /** ⚠️ §7.3 — ⛔ só a consulta recolhe; o juízo decide agora. */
-  confere("⛔ SÓ o bloco de consultas nasce recolhido",
-    S.GRUPOS_D.filter((g) => g.recolhido === true).map((g) => g.id).join(",") === "consultas",
-    "recolher o juízo de segurança esconderia o que decide agora; deixar as consultas abertas empurra o juízo para fora da primeira dobra");
+  /**
+   * ⚠️ §7.3 — ⛔ NENHUM bloco de D recolhe: ⛔ o que restou nesta superfície é
+   * o **juízo de segurança**, ⛔ e ele decide **agora**.
+   *
+   * ⚠️⚠️ ⛔ O único recolhido era o das **consultas**, removido por decisão do
+   * autor em 2026-09-12 (*"⛔ isso aqui ⛔ não tem a menor necessidade nesse
+   * app"*) — ⛔ registro que ⛔ nenhuma derivação lia, ⛔ com seis
+   * especialidades oferecidas ⛔ sem o antecedente que as justifica.
+   */
+  confere("⛔ NENHUM bloco de D nasce recolhido — ⛔ o juízo decide agora",
+    S.GRUPOS_D.filter((g) => g.recolhido === true).length === 0,
+    "recolher o juízo de segurança esconderia o que decide agora");
+  confere("⛔ e o registro solto de consultas ⛔ NÃO voltou",
+    S.TODOS_OS_CAMPOS_D.every((c) => c.id !== "consultas_acionadas"),
+    "⛔ ele ⛔ não alimentava ⛔ nenhuma derivação, ⛔ e a especialidade que a fonte nomeia vive **no item** que a justifica");
   confere("⛔ NENHUM campo de D bloqueia terapia",
     S.TODOS_OS_CAMPOS_D.every((c) => c.bloqueiaTerapia === false),
     "**PD-23**/**E-43**: bloqueio é estado derivado, e ⛔ nunca propriedade de campo");

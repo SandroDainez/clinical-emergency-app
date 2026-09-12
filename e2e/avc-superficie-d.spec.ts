@@ -169,22 +169,25 @@ test.describe("AVC · Superfície D — Segurança", () => {
   });
 
   /**
-   * ⚠️⚠️ §7.3 NA TELA — e o defeito que a revisão visual de 2026-08-30 achou: o
-   * bloco declarava `recolhido` e a tela desenhava as sete consultas abertas,
-   * empurrando o juízo de segurança para fora da primeira dobra.
+   * ⚠️⚠️ ⛔ AS CONSULTAS SAÍRAM — decisão do autor, 2026-09-12: *"⛔ isso aqui
+   * ⛔ não tem a menor necessidade nesse app"*. ⛔ Elas ⛔ não alimentavam
+   * ⛔ nenhuma derivação, ⛔ e as seis especialidades apareciam **todas**
+   * ⛔ mesmo ⛔ sem o antecedente que as justifica.
+   *
+   * ⚠️ ⛔ Esta trava ⛔ não mede ⛔ só a remoção: ⛔ mede que o **juízo de
+   * segurança** — que decide agora — ⛔ continua na primeira dobra, ⛔ que era
+   * o que o bloco recolhido protegia.
    */
-  test("as consultas nascem RECOLHIDAS, e o juízo de segurança ⛔ não", async ({ page }) => {
+  test("⛔ as consultas ⛔ NÃO existem, e o juízo de segurança abre direto", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirD(page);
 
-    await expect(page.getByTestId("avc-bloco-abrir-consultas"))
-      .toHaveAttribute("aria-expanded", "false");
     await expect(page.getByTestId("avc-campo-consultas_acionadas")).toHaveCount(0);
+    await expect(page.getByTestId("avc-bloco-abrir-consultas")).toHaveCount(0);
+    await expect(page.getByTestId("avc-grupo-consultas")).toHaveCount(0);
+
     // ⛔ E o juízo ⛔ NÃO recolhe: ele decide agora.
     await expect(page.getByTestId("avc-campo-incerteza_diagnostica")).toBeVisible();
-
-    await page.getByTestId("avc-bloco-abrir-consultas").click();
-    await expect(page.getByTestId("avc-campo-consultas_acionadas")).toBeVisible();
   });
 
   /**

@@ -586,34 +586,24 @@ export const FATOS_PROPRIOS_D: readonly CampoD[] = [
 ];
 
 /**
- * AS CONSULTAS — ⚠️ **ação e registro de D**, e ⛔ **nunca pendência** (E-49).
+ * ⚠️⚠️⚠️ ⛔ AS CONSULTAS SAÍRAM — decisão do autor, 2026-09-12.
  *
- * ⚠️ A fonte nomeia a especialidade dentro de itens específicos. Registrar que
- * ela foi acionada é útil; **cobrá-la** transformaria uma consideração em
- * tarefa que retém terapia tempo-dependente.
+ * ⛔ Havia aqui um `consultas_acionadas` (múltipla, seis especialidades, bloco
+ * recolhido). ⚠️ Relato do autor, na revisão visual: *"⛔ isso aqui ⛔ não tem a
+ * menor necessidade nesse app"*.
+ *
+ * ⛔ ⛔ ⛔ **⛔ E ⛔ nada dependia dele**: ⛔ nenhuma derivação lia o valor —
+ * ⛔ era registro que ⛔ não voltava para lugar nenhum. ⚠️ ⛔ Pior: as seis
+ * especialidades ⛔ nasciam de itens **específicos** da Table 8 (trauma →
+ * Cirurgia · GI/GU → Gastro/Uro · TCE → Neurocirurgia), ⛔ e apareciam
+ * **todas**, ⛔ mesmo ⛔ sem ⛔ nenhum desses antecedentes marcado — ⛔ a mesma
+ * classe de pressuposição do `sangramento_tratado`.
+ *
+ * ⚠️⚠️ ⛔ E A INFORMAÇÃO DA FONTE ⛔ NÃO SE PERDEU: cada item da Table 8 que
+ * nomeia especialidade continua exibindo a sua (`consulta` em
+ * `ItemDeSeguranca`, desenhado ao lado do item **marcado**) — ⛔ ali ela está
+ * ligada ao antecedente que a justifica, ⛔ que é onde a fonte a escreve.
  */
-export const CONSULTAS_D: readonly CampoD[] = [
-  {
-    id: "consultas_acionadas",
-    temporalidade: "estado",
-    rotulo: "Consultas especializadas acionadas",
-    tipo: "multipla",
-    opcoes: [
-      "Cirurgia",
-      "Gastroenterologia ou urologia",
-      "Cardiologia",
-      "Oncologia",
-      "Neurocirurgia",
-      "Neurocirurgia e neurointensivismo",
-      "Nenhuma",
-      NAO_SEI,
-    ],
-    exclusivas: ["Nenhuma", NAO_SEI],
-    ajuda: "Registro do que foi acionado. Nada no atendimento espera por uma consulta.",
-    fonte: F07,
-    bloqueiaTerapia: false,
-  },
-];
 
 const GRUPOS_D_DECLARADOS: readonly GrupoDeclarado[] = [
   {
@@ -635,7 +625,6 @@ const GRUPOS_D_DECLARADOS: readonly GrupoDeclarado[] = [
      * grupo a herda.
      */
   },
-  { id: "consultas", titulo: "Consultas especializadas", campos: CONSULTAS_D, recolhido: true },
 ];
 
 export const GRUPOS_D: readonly Grupo[] = comCasa("seguranca", GRUPOS_D_DECLARADOS);
@@ -653,7 +642,6 @@ export const SAIDA_SEM_CONCLUSAO_D: Readonly<Record<string, string>> = {
   incerteza_diagnostica: "Incerto",
   motivo_para_suspeitar_alteracao_coagulacao: "Incerto",
   sangramento_tratado: "Incerto",
-  consultas_acionadas: NAO_SEI,
 };
 
 export const SUPERFICIE_D: SuperficieId = "seguranca";

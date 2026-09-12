@@ -1520,8 +1520,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Juicio de seguridad",
   "Registra a dúvida clínica sobre o diagnóstico. A fonte declara risco baixo de dano com a trombólise nesta situação.":
     "Registra la duda clínica sobre el diagnóstico. La fuente declara riesgo bajo de daño con la trombólisis en esta situación.",
-  "Registro do que foi acionado. Nada no atendimento espera por uma consulta.":
-    "Registro de lo que se solicitó. Nada en la atención espera por una interconsulta.",
   "A fonte diz que a segurança da trombólise nesta situação é desconhecida, e que ela pode ser considerada após análise individual de risco e benefício. O aplicativo não classifica a janela de 48 horas, porque a fonte não define o instante de referência":
     "La fuente dice que la seguridad de la trombólisis en esta situación es desconocida, y que puede considerarse tras un análisis individual de riesgo y beneficio. La aplicación no clasifica la ventana de 48 horas, porque la fuente no define el instante de referencia",
   "A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b, e a trombólise não fica bloqueada":
@@ -1586,10 +1584,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "decisión caso por caso",
   "Marco temporal da exposição recente a DOAC":
     "Marco temporal de la exposición reciente a DOAC",
-  "Consultas especializadas acionadas":
-    "Interconsultas especializadas solicitadas",
-  "Consultas especializadas":
-    "Interconsultas especializadas",
   "O sangramento foi tratado e o risco foi reduzido":
     "El sangrado fue tratado y el riesgo fue reducido",
   "Cardiologia":
