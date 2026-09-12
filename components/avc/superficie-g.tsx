@@ -224,16 +224,33 @@ export default function SuperficieG({
             * indicada"* em *"trombólise administrada"* — o pior erro possível
             * aqui, ⛔ e agora ele seria cometido **pelo desenho**.
             */}
+          {/**
+            * ⚠️⚠️ A NATUREZA É A **FASE DA EXPOSIÇÃO** (D2, commit 8b): realizada ·
+            * iniciada · interrompida. ⛔ *"Indicada, ainda ⛔ não administrada"*
+            * saiu — ⛔ era o rótulo de uma instância vazia (AVC-13). ⚠️ Interrompida
+            * ganha o círculo cheio: **houve** exposição, ⛔ e ⛔ é ⛔ isso que o
+            * médico da próxima passagem precisa ler.
+            */}
           <ChecklistTimeline
             testID="avc-g-conduta"
             itens={sintese.condutas.map((c) => ({
               id: c.id,
               titulo: c.texto,
-              detalhe: c.natureza === "realizada" ? "Administrada" : "Indicada, ainda não administrada",
-              estado: c.natureza === "realizada" ? ("feito" as const) : ("pendente" as const),
+              detalhe:
+                c.natureza === "realizada"
+                  ? "Administrada"
+                  : c.natureza === "interrompida"
+                    ? "Interrompida após o início — houve exposição"
+                    : "Iniciada — infusão em andamento",
+              estado: c.natureza === "iniciada" ? ("pendente" as const) : ("feito" as const),
               horario: c.horario,
             }))}
           />
+          {sintese.condutas.some((c) => c.contraditoria) ? (
+            <Text style={e.linhaChave} testID="avc-g-conduta-contraditoria">
+              {tr("Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.")}
+            </Text>
+          ) : null}
         </View>
       ) : null}
 
@@ -358,7 +375,9 @@ export default function SuperficieG({
                   <Text style={e.faixaValor}>
                     {pertinencia.motivo === "iniciada"
                       ? tr("Trombólise iniciada")
-                      : tr("Trombólise realizada")}
+                      : pertinencia.motivo === "interrompida"
+                        ? tr("Trombólise interrompida")
+                        : tr("Trombólise realizada")}
                   </Text>
                 </View>
                 <Text style={e.faixaPendenteTexto}>
@@ -378,7 +397,9 @@ export default function SuperficieG({
                   <Text style={e.faixaValor}>
                     {pertinencia.motivo === "iniciada"
                       ? tr("Trombólise iniciada")
-                      : tr("Trombólise realizada")}
+                      : pertinencia.motivo === "interrompida"
+                        ? tr("Trombólise interrompida")
+                        : tr("Trombólise realizada")}
                   </Text>
                 </View>
                 <Text style={e.faixaForaTexto}>{tr("fora da janela da tabela")}</Text>
@@ -563,6 +584,22 @@ export default function SuperficieG({
                 {ASPIRINA_IV.localizacao}
               </Text>
               <Text style={e.linhaValor}>{tr(ASPIRINA_IV.frase)}</Text>
+            </View>
+          ) : null}
+          {/**
+            * ⚠️⚠️ **INDETERMINADA** ⛔ NÃO É *"passou"* (AVC-09, commit 8b): ⛔ houve
+            * IVT ⛔ e ⛔ não há hora — ⛔ a regra **COR 3: Harm** dos 90 min ⛔ não
+            * pode ser dada por encerrada ⛔ nem por ativa. ⛔ A tela diz ⛔ isso.
+            */}
+          {antitrombotico.aspirinaIvNosNoventaMin === undefined ? (
+            <View style={e.antitromboticoDano} testID="avc-g-antitrombotico-aspirina-iv-indeterminada">
+              <Text style={e.antitromboticoGrau}>
+                {tr("COR")} {ASPIRINA_IV.cor} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
+                {ASPIRINA_IV.localizacao}
+              </Text>
+              <Text style={e.linhaValor}>
+                {tr("Sem o horário da trombólise, a janela dos 90 minutos da aspirina IV é indeterminada")}
+              </Text>
             </View>
           ) : null}
 

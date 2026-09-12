@@ -23,7 +23,7 @@
  */
 import { decorridoEmMinutos, valorAtual, type EstadoAvc } from "./estado";
 import { destinoDaImagem } from "./derivacoes-c";
-import { acoesDeTrombolise } from "./derivacoes-f";
+import { exposicoesPorInstancia, type FaseDaExposicao } from "./derivacoes-f";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
 import { nihssCalculado, nihssInformado } from "./derivacoes-b";
 import type { Relogio } from "./relogio";
@@ -43,10 +43,17 @@ export type LinhaDaSintese = {
 export type Conduta = {
   readonly id: string;
   readonly texto: string;
-  /** ⚠️ `indicada` = decidida ⛔ e ⛔ não feita · `realizada` = aconteceu. */
-  readonly natureza: "indicada" | "realizada";
+  /**
+   * ⚠️⚠️ A **FASE DA EXPOSIÇÃO** (D2, commit 8b): `iniciada` · `realizada` ·
+   * `interrompida`. ⛔ *"indicada"* saiu: ⛔ ela nascia de uma instância
+   * **vazia** — ⛔ formulário aberto virando conduta (AVC-13). ⛔ Decisão de
+   * prosseguir ⛔ não é conduta desta lista; ⛔ ela vive no seu campo.
+   */
+  readonly natureza: FaseDaExposicao;
   /** ⚠️ Quando houver — ⛔ e ⛔ nunca inventado. */
   readonly horario?: string;
+  /** ⚠️ HR-5: trilha `Iniciada → Cancelada` — ⛔ exposição preservada, ⛔ contradição dita. */
+  readonly contraditoria?: boolean;
 };
 
 export type SinteseDoCaso = {
@@ -112,19 +119,23 @@ export function sinteseDoCaso(
   /* ── 2 · CONDUTA — ⛔ só o decidido, ⛔ e com a natureza explícita ──────── */
 
   /**
-   * ⚠️⚠️ AQUI MORA A DISTINÇÃO `indicada` × `realizada`.
+   * ⚠️⚠️ ⛔ SÓ O QUE **EXPÔS** O PACIENTE ENTRA (R4 · D2, commit 8b).
    *
-   * ⛔ `cancelada` ⛔ não entra: ação considerada ⛔ e abandonada ⛔ não é conduta
-   * do paciente — ⛔ ela é história, ⛔ e vive na trilha.
+   * ⛔ A versão anterior listava **toda** instância ⛔ não cancelada, ⛔ e uma
+   * instância **vazia** (formulário aberto) saía como *"Trombólise indicada"*
+   * (AVC-13). ⚠️ Agora a conduta nasce da **exposição**, lida do histórico:
+   * iniciada · realizada · interrompida. ⛔ `registro_em_aberto` ⛔ e
+   * `cancelada_antes_do_inicio` ⛔ não são conduta do paciente — ⛔ são história,
+   * ⛔ e vivem na trilha.
    */
-  for (const acao of acoesDeTrombolise(estado)) {
-    if (acao.estado === "cancelada") continue;
-    const agente = acao.agente ? `${acao.agente}` : "Trombólise";
+  for (const x of exposicoesPorInstancia(estado)) {
+    if (x.estado !== "exposta") continue;
     condutas.push({
-      id: `trombolise-${acao.instancia}`,
-      texto: agente,
-      natureza: acao.estado === "realizada" ? "realizada" : "indicada",
-      horario: acao.inicioMs === undefined ? undefined : horaCurta(acao.inicioMs),
+      id: `trombolise-${x.instancia}`,
+      texto: x.agente ? `${x.agente}` : "Trombólise",
+      natureza: x.fase,
+      horario: x.inicio.tipo === "conhecido" ? horaCurta(x.inicio.ms) : undefined,
+      contraditoria: x.contraditoria,
     });
   }
 

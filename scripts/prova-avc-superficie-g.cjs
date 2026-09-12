@@ -134,8 +134,9 @@ confere("há catálogo, regras e fatos operacionais a conferir",
    * depender da indicação — ⛔ e uma recomendação aplicável ⛔ não é uma infusão
    * correndo.
    */
+  /** ⚠️ Desde o commit 8b (2026-09-12) G lê a **exposição** (histórico da ação) — ⛔ ainda de F, ⛔ ainda a ação. */
   confere("⚠️⚠️ G lê a AÇÃO de F, ⛔ e ⛔ NÃO a correspondência clínica",
-    /acoesDeTrombolise/.test(fonteG)
+    /acoesDeTrombolise|exposicaoAoTrombolitico/.test(fonteG)
     && !/recomendacoesDoEstado|valorDoInsumo|correspondenciaDe|leiturasDasRecomendacoes/.test(fonteG),
     "⛔ destino que depende da indicação confunde 'deveria receber' com 'recebeu'");
 
@@ -386,7 +387,7 @@ confere("há catálogo, regras e fatos operacionais a conferir",
 
   // 9 e 10 · G lê a ação, ⛔ e ⛔ não escreve ⛔ nem corrige
   confere("⚠️⚠️ 9 · G LÊ a ação de F, ⛔ e ⛔ não a reimplementa",
-    /acoesDeTrombolise/.test(fonteG) && !/instanciasDe|valorNaInstancia/.test(fonteG),
+    /acoesDeTrombolise|exposicaoAoTrombolitico/.test(fonteG) && !/instanciasDe|valorNaInstancia/.test(fonteG),
     "⛔ reimplementar a leitura daria duas verdades sobre o mesmo fato (I6)");
 
   confere("⚠️⚠️ 10 · G ⛔ NÃO ESCREVE ⛔ nem corrige ⛔ nada",

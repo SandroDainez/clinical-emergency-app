@@ -20,7 +20,7 @@
 import { valorAtual, type EstadoAvc } from "./estado";
 import { nihssCalculado, nihssInformado } from "./derivacoes-b";
 import { ternario } from "./leitura";
-import { instanciasDe, valorNaInstancia } from "./instancia";
+import { fatosDaInstancia, instanciasDe, valorNaInstancia } from "./instancia";
 import {
   DOSES,
   RECOMENDACOES,
@@ -834,4 +834,127 @@ export function acoesDeTrombolise(estado: EstadoAvc): readonly AcaoDeTrombolise[
       inicioMs: typeof hora === "number" && Number.isFinite(hora) ? hora : undefined,
     };
   });
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ A EXPOSIÇÃO AO TROMBOLÍTICO — **derivada do histórico**, ⛔ e ⛔ não do
+ * último estado (R4 · D2 · commit 8b · 2026-09-12 · AVC-07, AVC-09, AVC-13)
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA ─────────────────────────────────────
+ *
+ * ⛔ `acoesDeTrombolise()` lia o **último** `ivt_estado` da instância, ⛔ e G
+ * contava ⛔ só `iniciada | realizada`. ⚠️ Medido por execução:
+ *
+ *   · **Iniciada → Cancelada** na mesma instância ⇒ *"⛔ sem administração
+ *     registrada"* — ⛔ a monitorização da Table 7 sumia ⛔ exatamente na
+ *     deterioração (AVC-07);
+ *   · **Iniciada ⛔ sem hora** ⇒ o antitrombótico dizia *"fora do contexto
+ *     pós-IVT"* ⛔ e a aspirina IV dos 90 min saía `false` — ⛔ desconhecido
+ *     virando negativo (AVC-09);
+ *   · **instância aberta ⛔ e vazia** ⇒ a síntese escrevia *"Trombólise
+ *     indicada"* — ⛔ formulário virando conduta (AVC-13).
+ *
+ * ── ⚠️⚠️ D2, ⛔ E A REGRA DO HISTÓRICO ────────────────────────────────────
+ *
+ * > *"A exposição deve ser derivada do histórico de eventos, ⛔ não somente do
+ * >  estado final atual. Interromper uma infusão ⛔ nunca pode fazer o sistema
+ * >  concluir que o paciente ⛔ não recebeu trombolítico."*
+ *
+ * ⚠️ Uma instância está **exposta** se **alguma vez** teve `Iniciada`,
+ * `Realizada` ⛔ ou `Interrompida`; ⛔ a `fase` é a última dessas três.
+ * ⛔ `Cancelada` ⛔ só significa *"antes do início"* quando **⛔ nenhuma** delas
+ * a precedeu. ⚠️ **HR-5**: trilha legada `Iniciada → Cancelada` **preserva** a
+ * exposição ⛔ e é marcada `contraditoria` — ⛔ nunca reinterpretada em silêncio.
+ *
+ * ── ⚠️ O QUE ⛔ NÃO É EVENTO ────────────────────────────────────────────
+ *
+ * ⛔ O marcador `trombolise_iv_nova_medida` (abrir o formulário) ⛔ e a escolha
+ * do agente em consideração ⛔ **⛔ não** produzem exposição: ⛔ `registro_em_aberto`
+ * é o nome disso, ⛔ e ⛔ nenhuma derivação clínica o consome (**E-20**, **E-40**).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type FaseDaExposicao = "iniciada" | "realizada" | "interrompida";
+
+/** ⚠️ Os **três** vazios do horário (**E-37**) — ⛔ e ⛔ nenhum é *"agora"* (**E-52**). */
+export type InicioDaExposicao =
+  | { readonly tipo: "conhecido"; readonly ms: number }
+  | { readonly tipo: "desconhecido_declarado" }
+  | { readonly tipo: "nao_perguntado" };
+
+export type Exposicao =
+  | { readonly estado: "nenhuma_administracao" }
+  /** ⚠️ Instância aberta ⛔ sem situação registrada — ⛔ formulário, ⛔ não evento. */
+  | { readonly estado: "registro_em_aberto"; readonly instancia: string }
+  | { readonly estado: "cancelada_antes_do_inicio"; readonly instancia: string }
+  | {
+      readonly estado: "exposta";
+      readonly instancia: string;
+      readonly fase: FaseDaExposicao;
+      readonly inicio: InicioDaExposicao;
+      /** ⚠️ O agente **efetivamente utilizado** — ⛔ não o em consideração. */
+      readonly agente?: string;
+      /** ⚠️⚠️ HR-5: `Cancelada` registrada **depois** de uma exposição — ⛔ trilha contraditória, ⛔ preservada. */
+      readonly contraditoria: boolean;
+    };
+
+const FASES_QUE_EXPOEM: readonly string[] = ["iniciada", "realizada", "interrompida"];
+
+/** ⚠️ A exposição de **uma** instância, lida do histórico dela. */
+export function exposicaoDaInstancia(estado: EstadoAvc, instancia: string): Exposicao {
+  const historico = fatosDaInstancia(estado, instancia)
+    .filter((f) => f.campo === "ivt_estado")
+    .map((f) => estadoDaAcao(f.valor))
+    .filter((v): v is EstadoDaTrombolise => v !== undefined);
+
+  const expoentes = historico.filter((v) => FASES_QUE_EXPOEM.includes(v));
+  if (expoentes.length > 0) {
+    const fase = expoentes[expoentes.length - 1] as FaseDaExposicao;
+    const ultimo = historico[historico.length - 1];
+    const hora = valorNaInstancia(estado, instancia, "ivt_inicio")?.valor;
+    const inicio: InicioDaExposicao =
+      typeof hora === "number" && Number.isFinite(hora)
+        ? { tipo: "conhecido", ms: hora }
+        : String(hora ?? "") === "nao_sei"
+          ? { tipo: "desconhecido_declarado" }
+          : { tipo: "nao_perguntado" };
+    const a = valorNaInstancia(estado, instancia, "ivt_agente_administrado")?.valor;
+    return {
+      estado: "exposta",
+      instancia,
+      fase,
+      inicio,
+      agente: typeof a === "string" && a.length > 0 ? a : undefined,
+      contraditoria: ultimo === "cancelada",
+    };
+  }
+  if (historico.length > 0 && historico[historico.length - 1] === "cancelada") {
+    return { estado: "cancelada_antes_do_inicio", instancia };
+  }
+  return { estado: "registro_em_aberto", instancia };
+}
+
+/** ⚠️ Todas as instâncias, na ordem de registro — ⛔ a síntese lista uma a uma. */
+export function exposicoesPorInstancia(estado: EstadoAvc): readonly Exposicao[] {
+  return instanciasDe(estado, TROMBOLISE_IV).map((i) => exposicaoDaInstancia(estado, i));
+}
+
+/**
+ * ⚠️⚠️ A EXPOSIÇÃO DO ATENDIMENTO — ⛔ a **última** instância exposta responde
+ * (uma iniciada depois de uma cancelada vale; ⛔ a trilha guarda as duas).
+ * ⛔ Sem ⛔ nenhuma exposta: cancelada antes do início > registro em aberto >
+ * ⛔ nenhuma administração.
+ */
+export function exposicaoAoTrombolitico(estado: EstadoAvc): Exposicao {
+  const todas = exposicoesPorInstancia(estado);
+  const expostas = todas.filter((x) => x.estado === "exposta");
+  if (expostas.length > 0) return expostas[expostas.length - 1];
+  const canceladas = todas.filter((x) => x.estado === "cancelada_antes_do_inicio");
+  if (canceladas.length > 0) return canceladas[canceladas.length - 1];
+  if (todas.length > 0) return todas[todas.length - 1];
+  return { estado: "nenhuma_administracao" };
+}
+
+/** ⚠️ Quantas administrações **com exposição** existem — ⛔ e ⛔ não quantas instâncias. */
+export function administracoesRegistradas(estado: EstadoAvc): number {
+  return exposicoesPorInstancia(estado).filter((x) => x.estado === "exposta").length;
 }

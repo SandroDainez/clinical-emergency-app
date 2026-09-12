@@ -343,6 +343,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Faltam dados para concluir":
     "Faltan datos para concluir",
   "Falta registrar": "Falta registrar",
+  // ── exposição ao trombolítico (R4 · D2 · commit 8b · 2026-09-12) ───────
+  "Trombólise interrompida": "Trombólisis interrumpida",
+  "Trombólise registrada sem horário: o intervalo até agora é indeterminado, e a ordem da imagem de controle vale.":
+    "Trombólisis registrada sin horario: el intervalo hasta ahora es indeterminado, y la orden de la imagen de control vale.",
+  "Sem o horário da trombólise, a janela dos 90 minutos da aspirina IV é indeterminada":
+    "Sin el horario de la trombólisis, la ventana de 90 minutos de la aspirina IV es indeterminada",
+  "Iniciada — infusão em andamento": "Iniciada — infusión en curso",
+  "Interrompida após o início — houve exposição": "Interrumpida después del inicio — hubo exposición",
+  "Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.":
+    "Registro contradictorio: cancelada después de iniciada. La exposición fue preservada; registre Interrumpida o corrija.",
   // ── incerteza tipada na segurança (R3 · commit 7 · 2026-09-12) ─────────
   "Resultados discordantes — reconcilie antes de decidir": "Resultados discordantes — concilie antes de decidir",
   "Exame pertinente ainda sem resultado": "Examen pertinente aún sin resultado",

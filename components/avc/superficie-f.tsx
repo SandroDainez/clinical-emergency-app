@@ -42,6 +42,7 @@ import {
   type LeituraDeRelogio,
 } from "../../avc/nucleo/apresentacao-f";
 import {
+  administracoesRegistradas,
   doseDerivada,
   minutosDesdeCampoDoEstado,
   recomendacoesDoEstado,
@@ -239,8 +240,12 @@ export default function SuperficieF({
    * ⛔ isso pronto ⛔ e pinta.
    */
   const papelEvt = papelDoVereditoEvt(vereditoEvt);
-  /** ⚠️ Quantas administrações já estão na trilha — ⛔ para medir discrepância. */
-  const administracoes = instanciasDe(estado, TROMBOLISE_IV).length;
+  /**
+   * ⚠️ Quantas administrações **com exposição** já estão na trilha — ⛔ para
+   * medir discrepância. ⛔ Contar instâncias fazia um formulário vazio virar
+   * *"administração registrada apesar de bloqueio"* (AVC-13, commit 8b).
+   */
+  const administracoes = administracoesRegistradas(estado);
 
 
   return (

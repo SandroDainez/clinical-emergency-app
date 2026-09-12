@@ -26,7 +26,11 @@ import { reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./deriva
  * volta para F. ⛔ Reimplementar a leitura aqui daria duas verdades sobre o
  * mesmo fato (I6); o que ⛔ **não** pode existir é o caminho inverso.
  */
-import { acoesDeTrombolise, type AcaoDeTrombolise } from "./derivacoes-f";
+import {
+  exposicaoAoTrombolitico,
+  type AcaoDeTrombolise,
+  type FaseDaExposicao,
+} from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { ternario } from "./leitura";
 import {
@@ -125,8 +129,11 @@ export function contextoOperacional(estado: EstadoAvc): readonly LeituraOperacio
  */
 export type PertinenciaDaMonitorizacao = {
   readonly pertinente: boolean;
-  readonly motivo: "iniciada" | "realizada" | "sem_administracao_registrada";
+  /** ⚠️ `interrompida` (D2): começou ⛔ e parou — ⛔ **houve** exposição, ⛔ e a vigilância segue. */
+  readonly motivo: FaseDaExposicao | "sem_administracao_registrada";
   readonly acao: AcaoDeTrombolise | undefined;
+  /** ⚠️⚠️ HR-5: trilha `Iniciada → Cancelada` — ⛔ exposição preservada ⛔ e contradição dita. */
+  readonly contraditoria?: boolean;
 };
 
 /**
@@ -143,16 +150,26 @@ export type PertinenciaDaMonitorizacao = {
  */
 export function pertinenciaDaMonitorizacao(estado: EstadoAvc): PertinenciaDaMonitorizacao {
   /**
-   * ⚠️ ⛔ Uma trombólise cancelada ⛔ não apaga uma anterior iniciada, ⛔ e uma
-   * iniciada depois de uma cancelada vale. A trilha guarda as duas.
+   * ⚠️⚠️ ⛔ LIDA DA **EXPOSIÇÃO** (R4 · D2, commit 8b), ⛔ e ⛔ não do último
+   * `ivt_estado`: ⛔ `Iniciada → Cancelada` apagava a monitorização ⛔ exatamente
+   * na deterioração (AVC-07). ⚠️ A exposição vem do **histórico** da instância;
+   * ⛔ interrompida ⛔ é exposição; ⛔ cancelada ⛔ só antes do início ⛔ não é.
    */
-  const conta = acoesDeTrombolise(estado)
-    .filter((a) => a.estado === "iniciada" || a.estado === "realizada");
-  const acao = conta[conta.length - 1];
-  if (!acao) {
+  const x = exposicaoAoTrombolitico(estado);
+  if (x.estado !== "exposta") {
     return { pertinente: false, motivo: "sem_administracao_registrada", acao: undefined };
   }
-  return { pertinente: true, motivo: acao.estado as "iniciada" | "realizada", acao };
+  return {
+    pertinente: true,
+    motivo: x.fase,
+    acao: {
+      instancia: x.instancia,
+      agente: x.agente,
+      estado: x.fase,
+      inicioMs: x.inicio.tipo === "conhecido" ? x.inicio.ms : undefined,
+    },
+    contraditoria: x.contraditoria,
+  };
 }
 
 /**
@@ -369,6 +386,12 @@ export function leituraDaSuperficieG(estado: EstadoAvc): LeituraDaSuperficieG {
 export type EstadoAntitrombotico =
   /** ⚠️ ⛔ Sem trombólise, a regra ⛔ não se aplica. ⛔ Isso ⛔ não é pendência. */
   | "fora_do_contexto_pos_ivt"
+  /**
+   * ⚠️⚠️ **HOUVE** trombólise ⛔ e o horário ⛔ não foi registrado (AVC-09,
+   * commit 8b): *"exposição confirmada, intervalo indeterminado"*. ⛔ Nunca
+   * *"fora do contexto"* — ⛔ desconhecido ⛔ não é negativo (**E-02**).
+   */
+  | "sem_horario_ivt"
   /** ⚠️ Dentro das 24 h, ⛔ e ⛔ nenhuma imagem de controle ⛔ ainda. */
   | "antes_da_imagem_controle"
   /** ⚠️⚠️ Passadas as 24 h ⛔ e ⛔ nada registrado — ⛔ **agora** está pendente. */
@@ -395,8 +418,11 @@ export type LeituraAntitrombotica = {
   /**
    * ⚠️⚠️⚠️ ⛔ A REGRA DOS 90 min CORRE **EM PARALELO**, ⛔ e ⛔ não substitui
    * ⛔ nenhum estado. ⛔ Ela é `3: Harm`, ⛔ e a das 24 h é `2b`.
+   *
+   * ⚠️ **Tri-estado** (commit 8b): `undefined` = ⛔ houve IVT ⛔ e ⛔ não se sabe
+   * a hora — ⛔ a janela é **indeterminada**, ⛔ e ⛔ isso ⛔ nunca vira `false`.
    */
-  readonly aspirinaIvNosNoventaMin: boolean;
+  readonly aspirinaIvNosNoventaMin: boolean | undefined;
 };
 
 const RESSALVA_ANTITROMBOTICA =
@@ -440,16 +466,29 @@ export function estadoAntitromboticoPosIvt(
   const p = pertinenciaDaMonitorizacao(estado);
   const inicio = p.pertinente ? p.acao?.inicioMs : undefined;
 
-  /**
-   * ⚠️⚠️ ⛔ SEM TROMBÓLISE ⛔ OU ⛔ SEM O HORÁRIO DELA, ⛔ a regra ⛔ não se
-   * aplica — ⛔ e ⛔ isso ⛔ **⛔ não** é o mesmo que estar pendente.
-   */
-  if (!p.pertinente || inicio === undefined) {
+  /** ⚠️ ⛔ SEM TROMBÓLISE, ⛔ a regra ⛔ não se aplica — ⛔ e ⛔ isso ⛔ não é pendência. */
+  if (!p.pertinente) {
     return {
       estado: "fora_do_contexto_pos_ivt",
       frase: "A ordem da imagem de controle vale após a trombólise.",
       ressalva: RESSALVA_ANTITROMBOTICA,
       aspirinaIvNosNoventaMin: false,
+    };
+  }
+  /**
+   * ⚠️⚠️ **HOUVE** TROMBÓLISE ⛔ E ⛔ NÃO HÁ HORÁRIO (AVC-09, commit 8b): ⛔ a
+   * versão anterior colapsava ⛔ isto em *"fora do contexto"* ⛔ e devolvia
+   * `aspirinaIvNosNoventaMin: false` — ⛔ desconhecido virando negativo sobre
+   * uma regra **COR 3: Harm**. ⚠️ Agora: exposição confirmada, intervalo
+   * indeterminado, aspirina IV **indeterminada**; ⛔ as funções irmãs
+   * (`faseDaMonitorizacao`, `estadoPressoricoPosIvt`) ⛔ já faziam ⛔ isso.
+   */
+  if (inicio === undefined) {
+    return {
+      estado: "sem_horario_ivt",
+      frase: "Trombólise registrada sem horário: o intervalo até agora é indeterminado, e a ordem da imagem de controle vale.",
+      ressalva: RESSALVA_ANTITROMBOTICA,
+      aspirinaIvNosNoventaMin: undefined,
     };
   }
 
