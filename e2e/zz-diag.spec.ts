@@ -3,7 +3,7 @@ import { fixarIdioma } from "./helpers";
 test.use({ viewport: { width: 375, height: 900 } });
 const abertos = async (page: any) => {
   const r: string[] = [];
-  for (const g of ["via-aerea","respiracao","pressao","neurologico-inicial","exposicao"])
+  for (const g of ["via-aerea","respiracao","pressao","neurologico-inicial"])
     if ((await page.getByTestId(`avc-grupo-${g}`).locator('[data-testid^="avc-campo-"]').count()) > 0) r.push(g);
   return r.join(",") || "(nenhum)";
 };

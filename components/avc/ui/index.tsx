@@ -217,7 +217,6 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
    * ⛔ exatamente para isso que a conferência de órfãs existe.
    */
   "neurologico-inicial": { icone: "neuro", cor: "debt" },
-  exposicao: { icone: "exposicao", cor: "primary" },
   /**
    * ⚠️ ⛔ `peso` SAIU DA TABELA em 2026-09-08: ⛔ o grupo deixou de existir na
    * Estabilização, ⛔ e entrada que aponta para bloco inexistente é cor que
@@ -249,7 +248,6 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
 
   /* ── Segurança ⛔ e laboratório ───────────────────────────────────────────*/
   juizo: { icone: "seguranca", cor: "warning" },
-  consultas: { icone: "consulta", cor: "primary" },
   coleta: { icone: "laboratorio", cor: "info" },
 };
 
@@ -281,7 +279,6 @@ export const EIXOS_DA_ESTABILIZACAO = [
   { eixo: "respiracao", grupo: "respiracao" },
   { eixo: "pressao", grupo: "pressao" },
   { eixo: "glicemia", grupo: "neurologico-inicial" },
-  { eixo: "exposicao", grupo: "exposicao" },
 ] as const;
 
 export function grupoDoEixo(eixo: string): string | undefined {

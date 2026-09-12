@@ -100,7 +100,6 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * (*"temperatura 39 °C fica medida, ⛔ e ⛔ NÃO vira ameaça"*). ⛔ Ler para
    * **exibir** ⛔ não é derivar conduta.
    */
-  temperatura: ["ameacas-imediatas.ts"],
 
   /**
    * ⚠️ ⛔ Os outros sinais vitais da Fase 3 ⛔ ainda ⛔ não são lidos por

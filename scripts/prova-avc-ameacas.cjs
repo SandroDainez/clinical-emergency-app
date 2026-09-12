@@ -196,34 +196,41 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
 {
   const lista = A.ameacasImediatas(novo());
   /**
-   * ⚠️⚠️ **CINCO** desde 2026-09-07 — decisão **C1**: o ABCDE clássico.
-   * ⛔ `D` deixou de ser *"Glicemia"* ⛔ e virou *"Neurológico"*; ⛔ `E ·
-   * Exposição` nasceu. ⛔ O fato da glicemia ⛔ não mudou.
+   * ⚠️⚠️ **QUATRO** desde 2026-09-12 — decisão do autor: ⛔ o `E · Exposição`
+   * saiu (*"⛔ não precisamos no app AVC … ⛔ só mais um item para confundir"*).
+   * ⚠️ ⛔ `D` continua *"Neurológico"* ⛔ e ⛔ não *"Glicemia"* (decisão **C1**,
+   * 2026-09-07); ⛔ o fato da glicemia ⛔ não mudou.
    */
   conf(
-    "⚠️ atendimento vazio deixa os CINCO eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
-    lista.length === 5 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
+    "⚠️ atendimento vazio deixa os QUATRO eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
+    lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
     `⛔ ${lista.map((a) => `${a.id}=${a.estado}`).join(" · ")}`
   );
   conf(
-    "⚠️ as cinco letras do ABCDE estão lá, na ordem",
-    lista.map((a) => a.letra).join("") === "ABCDE",
+    "⚠️ as quatro letras estão lá, na ordem",
+    lista.map((a) => a.letra).join("") === "ABCD",
     `⛔ "${lista.map((a) => a.letra).join("")}"`
   );
 
   /**
-   * ⚠️⚠️ ⛔ **E ⛔ NUNCA ACENDE** — ⛔ e ⛔ isso ⛔ não é eixo fraco: ⛔ é a recusa
-   * a inventar limiar. ⛔ Nenhuma fonte transcrita do AVC dá corte para
-   * temperatura, ⛔ e um `E` que acendesse por 38,2 °C emitiria conduta que
-   * ⛔ nenhuma fonte deste módulo escreve (**E-31**).
+   * ⚠️⚠️ ⛔ E O EIXO **⛔ NÃO EXISTE MAIS** — 2026-09-12.
+   *
+   * ⛔ Ele ⛔ nunca acendia, ⛔ e ⛔ isso ⛔ não era fraqueza: ⛔ nenhuma fonte
+   * transcrita do AVC dá corte para temperatura, ⛔ e um `E` que acendesse por
+   * 38,2 °C emitiria conduta que ⛔ nenhuma fonte deste módulo escreve
+   * (**E-31**). ⚠️ ⛔ O autor tirou a consequência: ⛔ eixo que ⛔ só sabe dizer
+   * *"⛔ não avaliado"* ⛔ sai.
+   *
+   * ⚠️ ⛔ E a trava ⛔ não sumiu com ele: ⛔ ela agora cobra a **ausência**,
+   * ⛔ para o eixo ⛔ não voltar por analogia com outro protocolo.
    */
   {
     const quente = com(novo(), "temperatura", 39);
-    const e = eixo(quente, "exposicao");
     conf(
-      "⚠️⚠️ temperatura 39 °C fica **medida**, ⛔ e ⛔ NÃO vira ameaça",
-      e.estado === "medido" && e.valor === "39" && e.achado === undefined,
-      `⛔ estado="${e.estado}" · achado=${JSON.stringify(e.achado)} — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
+      "⚠️⚠️ temperatura 39 °C ⛔ NÃO cria eixo ⛔ nem ameaça",
+      A.ameacasImediatas(quente).every((a) => a.id !== "exposicao" && a.campo !== "temperatura")
+      && A.ameacasImediatas(quente).length === 4,
+      `⛔ ${A.ameacasImediatas(quente).map((a) => a.id).join(" · ")} — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
     );
   }
 }

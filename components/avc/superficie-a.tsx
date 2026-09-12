@@ -172,7 +172,6 @@ const ROTULO_NO_RESUMO: Readonly<Record<string, string>> = {
   fc: "FC",
   glasgow: "Glasgow",
   glicemia: "glicemia",
-  temperatura: "T",
   consciencia_rebaixada: "Consciência rebaixada",
   disfuncao_bulbar: "Disfunção bulbar",
   hipoxia: "Hipoxemia",

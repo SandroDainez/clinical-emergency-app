@@ -246,7 +246,6 @@ const EIXOS_E_GRUPOS = [
   ["respiracao", "respiracao"],
   ["pressao", "pressao"],
   ["glicemia", "neurologico-inicial"],
-  ["exposicao", "exposicao"],
 ] as const;
 
 export async function abrirEixosDaEstabilizacao(page: Page): Promise<void> {

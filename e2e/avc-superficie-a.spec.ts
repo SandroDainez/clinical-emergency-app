@@ -751,7 +751,12 @@ test.describe("Superfície A — UX clínica", () => {
       "B · RESPIRAÇÃO",
       "C · CIRCULAÇÃO",
       "D · NEUROLÓGICO",
-      "E · EXPOSIÇÃO",
+      /**
+       * ⚠️ ⛔ *"E · EXPOSIÇÃO"* saiu em 2026-09-12, por decisão do autor: ⛔ o
+       * único campo do eixo (`temperatura`) ⛔ não tem fonte no módulo, ⛔ e o
+       * eixo ⛔ nunca acendia. ⚠️ A ausência tem trava própria em
+       * `prova-avc-superficie-a` (*"o bloco E · Exposição DESAPARECEU"*).
+       */
       /**
        * ⚠️ ⛔ *"PESO"* ⛔ e *"CRISE NO INÍCIO"* saíram da lista em 2026-09-08 —
        * ⛔ os dois deixaram de ser desenhados ⛔ aqui. ⚠️ ⛔ A ausência ⛔ deles

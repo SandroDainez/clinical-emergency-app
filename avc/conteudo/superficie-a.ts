@@ -358,20 +358,27 @@ export const NEUROLOGICO_A: readonly CampoA[] = [
   },
 ];
 
-export const EXPOSICAO_A: readonly CampoA[] = [
-  {
-    id: "temperatura",
-    temporalidade: "afericao",
-    rotulo: "Temperatura",
-    tipo: "grandeza",
-    unidade: "°C",
-    faixa: { min: 30, max: 43, passo: 1 },
-    natureza: "administrativo",
-    fonte: "",
-    bloqueiaTerapia: false,
-    nota: "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.",
-  },
-];
+/**
+ * ⚠️⚠️⚠️ ⛔ O EIXO **E · EXPOSIÇÃO** SAIU — decisão do autor, 2026-09-12.
+ *
+ * ⛔ Relato, na revisão visual: *"exposição ⛔ não precisamos no app AVC, isso
+ * se torna insignificante no contexto ⛔ e é ⛔ só mais um item para confundir"*.
+ *
+ * ⚠️⚠️ ⛔ E O CÓDIGO **⛔ JÁ DIZIA ISSO**, ⛔ sem tirar a consequência: o único
+ * campo do eixo (`temperatura`) era `natureza: "administrativo"`, ⛔ com
+ * `fonte: ""` ⛔ e a nota *"⛔ nenhuma recomendação deste módulo é calculada a
+ * partir dele"*; ⛔ e havia trava provando que o eixo **⛔ nunca acende**,
+ * ⛔ porque ⛔ nenhuma fonte transcrita do AVC dá corte de temperatura.
+ * ⛔ ⛔ Um card que ⛔ só sabe dizer *"⛔ não avaliado"* ⛔ cobra atenção ⛔ e
+ * ⛔ não devolve ⛔ nada.
+ *
+ * ⛔ ⛔ ⛔ **⛔ E ⛔ isto ⛔ não apaga temperatura do aplicativo:** o ramo
+ * **HIC** tem fonte própria (HIC 2022) ⛔ e ⛔ lá a temperatura elevada tem
+ * recomendação escrita — ⛔ ela vive ⛔ no catálogo daquele ramo, ⛔ intocada.
+ *
+ * ⚠️ Se um dia a fonte-mãe do isquêmico trouxer corte ou conduta de
+ * temperatura, ⛔ o eixo volta **com ela**, ⛔ e ⛔ não por analogia.
+ */
 
 /**
  * ── ⚠️ MONITORIZAÇÃO ⛔ E ACESSOS — briefing **item 13** ──────────────────
@@ -513,7 +520,6 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
      */
     campos: [...NEUROLOGICO_A, ...GLICEMIA_A],
   },
-  { id: "exposicao", titulo: "E · Exposição", campos: EXPOSICAO_A },
   /**
    * ── ⚠️⚠️⚠️ O PESO SAIU DA ESTABILIZAÇÃO — 2026-09-08 ────────────────────
    *

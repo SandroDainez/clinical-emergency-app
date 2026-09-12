@@ -181,14 +181,19 @@ conf(
   );
 }
 
-/* ══ ⚠️ 7 · O EIXO E, COMPLETO, ⛔ NÃO CRIA AMEAÇA ═══════════════════ */
+/* ══ ⚠️ 7 · O EIXO E ⛔ NÃO EXISTE MAIS ═══════════════════════════════ */
+/**
+ * ⚠️ Decisão do autor, 2026-09-12: ⛔ o `E · Exposição` saiu. ⛔ Ele media
+ * `temperatura`, ⛔ que ⛔ nenhuma fonte transcrita do AVC qualifica — ⛔ e
+ * ⛔ por isso o eixo ⛔ nunca acendia. ⚠️ A trava passa a cobrar a ausência.
+ */
 {
   const e = E.concluirEixo(com(novo(), "temperatura", 39), "exposicao");
   conf(
-    "⚠️ completar **E** ⛔ não cria ameaça, ⛔ nem concluído",
-    eixo(e, "exposicao").estado === "medido"
+    "⚠️ ⛔ o eixo E ⛔ não existe, ⛔ e concluí-lo ⛔ não inventa problema",
+    eixo(e, "exposicao") === undefined
     && P.problemasAtivos(e).every((p) => p.id !== "exposicao"),
-    `⛔ estado="${eixo(e, "exposicao").estado}" — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
+    `⛔ ${JSON.stringify(eixo(e, "exposicao"))} — ⛔ eixo removido ⛔ não pode voltar por conclusão de workflow`
   );
 }
 

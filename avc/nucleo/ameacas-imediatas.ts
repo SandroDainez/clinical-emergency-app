@@ -357,20 +357,14 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
    * ⛔ ⛔ Quando houver fonte — ⛔ e há, em sepse ⛔ e em pós-parada —, ⛔ ela
    * entra com slot próprio ⛔ e o consumidor declarado.
    */
-  const exposicao = ((): AmeacaImediata => {
-    const t = numero(estado, "temperatura");
-    return {
-      id: "exposicao",
-      letra: "E",
-      nome: "Exposição",
-      estado: t === undefined ? "nao_avaliado" : "medido",
-      campo: "temperatura",
-      valor: t === undefined ? undefined : String(t),
-      unidade: "°C",
-    };
-  })();
 
-  return [viaAerea, respiracao, pressao, glicemia, exposicao];
+  /**
+   * ⚠️ ⛔ **QUATRO** eixos — ⛔ o `E · Exposição` saiu em 2026-09-12 (decisão do
+   * autor): ⛔ nenhuma fonte transcrita do AVC dá corte de temperatura, ⛔ e o
+   * eixo ⛔ nunca acendia. ⛔ Eixo que ⛔ só sabe dizer *"⛔ não avaliado"*
+   * ⛔ cobra atenção ⛔ e ⛔ não devolve ⛔ nada.
+   */
+  return [viaAerea, respiracao, pressao, glicemia];
 }
 
 /**

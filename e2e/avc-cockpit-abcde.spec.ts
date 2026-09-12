@@ -49,8 +49,9 @@ test.describe("AVC · cockpit ABCDE", () => {
       .evaluateAll((els) =>
         els.map((e) => e.getAttribute("data-testid")!.replace("avc-ameaca-", ""))
       );
-    expect(ordem, "⛔ o ABCDE clássico, na ordem").toEqual([
-      "via_aerea", "respiracao", "pressao", "glicemia", "exposicao",
+    /** ⚠️ ⛔ QUATRO desde 2026-09-12: ⛔ o `E · Exposição` saiu (decisão do autor). */
+    expect(ordem, "⛔ os quatro eixos, na ordem").toEqual([
+      "via_aerea", "respiracao", "pressao", "glicemia",
     ]);
   });
 
@@ -225,10 +226,13 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
      */
     await abrirEixosDaEstabilizacao(page);
-    await page.getByTestId("avc-num-caixa-temperatura").fill("39");
-    const e = page.getByTestId("avc-ameaca-exposicao");
-    await expect(e).toContainText("39");
-    /** ⚠️ ⛔ Sem corte transcrito, ⛔ o app ⛔ não julga (**E-31**). */
-    await expect(e, "⛔ 39 °C ⛔ sem fonte ⛔ não pode acender").toContainText("Medido");
+    /**
+     * ⚠️⚠️ ⛔ O eixo `E · Exposição` SAIU em 2026-09-12 (decisão do autor):
+     * ⛔ ele media temperatura, ⛔ que ⛔ nenhuma fonte transcrita do AVC
+     * qualifica, ⛔ e ⛔ por isso ⛔ nunca acendia. ⚠️ A trava passa a cobrar a
+     * ausência — ⛔ do eixo ⛔ e do campo.
+     */
+    await expect(page.getByTestId("avc-num-caixa-temperatura")).toHaveCount(0);
+    await expect(page.getByTestId("avc-ameaca-exposicao")).toHaveCount(0);
   });
 });
