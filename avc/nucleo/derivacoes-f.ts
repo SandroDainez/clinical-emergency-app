@@ -790,7 +790,7 @@ export function recomendacoesDoEstado(
  * É QUEM CONSOME
  * ────────────────────────────────────────────────────────────────────────── */
 
-export type EstadoDaTrombolise = "iniciada" | "realizada" | "cancelada";
+export type EstadoDaTrombolise = "iniciada" | "realizada" | "interrompida" | "cancelada";
 
 export type AcaoDeTrombolise = {
   readonly instancia: string;
@@ -809,6 +809,7 @@ export type AcaoDeTrombolise = {
 function estadoDaAcao(v: unknown): EstadoDaTrombolise | undefined {
   if (v === "Iniciada") return "iniciada";
   if (v === "Realizada") return "realizada";
+  if (v === "Interrompida") return "interrompida";
   if (v === "Cancelada") return "cancelada";
   return undefined;
 }

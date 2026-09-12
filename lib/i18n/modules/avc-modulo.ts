@@ -1368,6 +1368,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Acción",
   "Iniciada":
     "Iniciada",
+  "Interrompida":
+    "Interrumpida",
   "Cancelada":
     "Cancelada",
   "Uma nova aferição de pressão arterial":

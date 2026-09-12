@@ -875,7 +875,16 @@ acionado.
 | **disponível** | nada a impede — nenhum bloqueio ativo sobre ela | sistema (derivado) |
 | **iniciada** | começou, e ainda não terminou | médico |
 | **realizada** | foi feita | médico |
-| **cancelada** | quando aplicável — interrompida ou desfeita, com motivo | médico |
+| **interrompida** | começou e foi suspensa antes da conclusão — **houve exposição** | médico |
+| **cancelada** | cancelada **antes do início** — **não houve exposição** | médico |
+
+> ⚠️ **Emenda aprovada pelo autor em 2026-09-12 (D2, PLANO-CORRECAO-AVC-CRITICOS.md).**
+> A versão anterior desta linha dizia *"cancelada — interrompida ou desfeita"*,
+> fundindo os dois estados; §3.7 já os separava (*"não realizada, interrompida ou
+> revertida"*). A fusão fazia o único estado registrável para *"parei a infusão"*
+> apagar a exposição ao trombolítico (AVC-07). **Interromper uma infusão nunca
+> pode fazer o sistema concluir que o paciente não recebeu trombolítico.** A
+> exposição é derivada do **histórico** de eventos, não só do estado final.
 
 ⚠️ **"Pode fazer" não é "foi feito", e "sugerida" não é nenhum dos dois.**
 Sugerida e disponível são **derivadas**; iniciada, realizada e cancelada são

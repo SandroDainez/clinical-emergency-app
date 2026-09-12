@@ -136,8 +136,11 @@ export function bloqueiosComAcoes(estado: EstadoAvc): readonly LeituraDoBloqueio
  */
 export function pendenciasOriginadasEmE(estado: EstadoAvc): readonly Pendencia[] {
   const glicemicas = acoesDoBloqueio(estado, "glicemia_alterada");
+  /** ⚠️ Interrompida ⛔ também é *"houve correção"* (D2): ⛔ algo foi dado antes de parar. */
   const houveCorrecao = glicemicas.some(
-    (a) => a.estado === ESTADO_DA_ACAO.iniciada || a.estado === ESTADO_DA_ACAO.realizada
+    (a) => a.estado === ESTADO_DA_ACAO.iniciada
+      || a.estado === ESTADO_DA_ACAO.realizada
+      || a.estado === ESTADO_DA_ACAO.interrompida
   );
   if (!houveCorrecao) return [];
   return [

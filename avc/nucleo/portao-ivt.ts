@@ -194,7 +194,10 @@ function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]
  */
 function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
   return acoesDoBloqueio(estado, bloqueio).some(
-    (a) => a.estado === ESTADO_DA_ACAO.iniciada || a.estado === ESTADO_DA_ACAO.realizada
+    (a) => a.estado === ESTADO_DA_ACAO.iniciada
+      || a.estado === ESTADO_DA_ACAO.realizada
+      /** ⚠️ Interrompida (D2): ⛔ houve gesto — ⛔ e ⛔ ele ⛔ também ⛔ não prova resolução. */
+      || a.estado === ESTADO_DA_ACAO.interrompida
   );
 }
 

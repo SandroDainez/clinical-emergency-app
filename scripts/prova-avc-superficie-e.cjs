@@ -134,8 +134,9 @@ const PA_ALTA = (e) => regA(regA(e, pa1, "pas", 190), pa1, "pad", 110);
    * a passar por `sugerida`: isso gravaria na trilha uma sugestão que o app
    * ⛔ nunca fez, num instante em que ela ⛔ não existiu.
    */
-  confere("`iniciada`, `realizada` e `cancelada` são registráveis DIRETO",
-    JSON.stringify(S.OPCOES_ESTADO_DA_ACAO) === JSON.stringify([EST.iniciada, EST.realizada, EST.cancelada]),
+  /** ⚠️ `interrompida` entrou em 2026-09-12 (D2 do autor): começou ⛔ e parou — ⛔ houve exposição. */
+  confere("`iniciada`, `realizada`, `interrompida` e `cancelada` são registráveis DIRETO",
+    JSON.stringify(S.OPCOES_ESTADO_DA_ACAO) === JSON.stringify([EST.iniciada, EST.realizada, EST.interrompida, EST.cancelada]),
     "*\"⛔ não fabricar estados intermediários\"*");
   confere("⛔ e `disponível`/`sugerida` ⛔ NÃO são opções graváveis",
     !S.OPCOES_ESTADO_DA_ACAO.includes(EST.disponivel)
@@ -157,14 +158,14 @@ const PA_ALTA = (e) => regA(regA(e, pa1, "pas", 190), pa1, "pad", 110);
   e = regA(e, a1, "acao_tipo", "Tratamento anti-hipertensivo");
   const comEstado = (v) => regA(e, a1, "acao_estado", v);
 
-  for (const v of [EST.iniciada, EST.realizada, EST.cancelada]) {
+  for (const v of [EST.iniciada, EST.realizada, EST.interrompida, EST.cancelada]) {
     const est = comEstado(v);
     confere(`com a ação em "${v}", o bloqueio CONTINUA aberto`,
       DD.bloqueiosCorrigiveis(est).some((b) => b.id === "pressao_acima_da_meta"),
       "quem derruba o bloqueio é **uma nova aferição**, e ⛔ nunca o registro da ação");
   }
   confere("⛔ e ⛔ NENHUMA ação, em estado nenhum, se declara resolvedora",
-    [EST.iniciada, EST.realizada, EST.cancelada]
+    [EST.iniciada, EST.realizada, EST.interrompida, EST.cancelada]
       .every((v) => DE.acaoResolveBloqueio({ instancia: a1, estado: v }) === false),
     "**E-43**: 'realizada' diz que a ação aconteceu, e ⛔ não que funcionou");
 

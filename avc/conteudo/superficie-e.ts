@@ -51,17 +51,37 @@ export const ACAO = "acao";
  * obrigado a passar por `sugerida` — isso gravaria na trilha uma sugestão que o
  * app ⛔ nunca fez, num instante em que ela ⛔ não existiu.
  */
+/**
+ * ── ⚠️⚠️⚠️ `interrompida` ≠ `cancelada` — **D2** do autor (commit 8a · 2026-09-12)
+ *
+ * > *"CANCELADA = a administração foi cancelada antes do início = ⛔ não houve
+ * >  exposição. INTERROMPIDA = a administração começou ⛔ e foi suspensa antes
+ * >  da conclusão = houve exposição. Interromper uma infusão ⛔ nunca pode fazer
+ * >  o sistema concluir que o paciente ⛔ não recebeu trombolítico."*
+ *
+ * ⛔ ⛔ O DEFEITO (AVC-07): ⛔ o único estado registrável para *"parei a
+ * infusão"* era `Cancelada`, ⛔ e ⛔ ele apagava a exposição — ⛔ a monitorização
+ * da Table 7 sumia ⛔ exatamente na deterioração, ⛔ que é quando a própria
+ * Table 7 manda *"discontinue the infusion"*. ⚠️ §3.7 da spec ⛔ já separava
+ * *"⛔ não realizada, interrompida ⛔ ou revertida"*; ⛔ §2.3 as fundia ⛔ e foi
+ * emendada junto com este commit.
+ *
+ * ⚠️ O vocabulário é **um só** no módulo (F importa daqui): ⛔ interromper um
+ * anti-hipertensivo ⛔ também é interromper.
+ */
 export const ESTADO_DA_ACAO = {
   disponivel: "Disponível",
   sugerida: "Sugerida",
   iniciada: "Iniciada",
   realizada: "Realizada",
+  interrompida: "Interrompida",
   cancelada: "Cancelada",
 } as const;
 
 export const OPCOES_ESTADO_DA_ACAO: readonly string[] = [
   ESTADO_DA_ACAO.iniciada,
   ESTADO_DA_ACAO.realizada,
+  ESTADO_DA_ACAO.interrompida,
   ESTADO_DA_ACAO.cancelada,
 ];
 
@@ -80,6 +100,8 @@ export const ESTADOS_QUE_NAO_RESOLVEM: readonly string[] = [
   ESTADO_DA_ACAO.sugerida,
   ESTADO_DA_ACAO.iniciada,
   ESTADO_DA_ACAO.realizada,
+  /** ⚠️ Interrompida ⛔ também ⛔ não resolve: ⛔ a ação parou; ⛔ se funcionou, quem responde é a nova aferição. */
+  ESTADO_DA_ACAO.interrompida,
   ESTADO_DA_ACAO.cancelada,
 ];
 

@@ -208,5 +208,17 @@ export type Pendencia = {
   readonly resolvePor: string;
 };
 
-/** Ciclo de vida da ação (§2.3, E-20). ⛔ Navegação nunca move uma ação. */
-export type EstadoDaAcao = "sugerida" | "disponivel" | "iniciada" | "realizada" | "cancelada";
+/**
+ * Ciclo de vida da ação (§2.3, E-20). ⛔ Navegação nunca move uma ação.
+ *
+ * ⚠️ `interrompida` (D2, commit 8a · 2026-09-12): começou ⛔ e foi suspensa —
+ * **houve** exposição. `cancelada` é ⛔ só antes do início. ⛔ Fundi-las apagava
+ * a exposição ao trombolítico (AVC-07).
+ */
+export type EstadoDaAcao =
+  | "sugerida"
+  | "disponivel"
+  | "iniciada"
+  | "realizada"
+  | "interrompida"
+  | "cancelada";
