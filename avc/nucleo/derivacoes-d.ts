@@ -906,6 +906,31 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
       leva: "seguranca",
       campo: "doac_ultima_dose",
     });
+  } else if (
+    doac.exposicao === "nao_perguntado"
+    && selecaoDe(estado, "anticoagulante_em_uso").includes(ANTICOAGULANTE.doac)
+  ) {
+    /**
+     * ⚠️⚠️ DOAC **NOMEADO** ⛔ E A HORA ⛔ NUNCA PERGUNTADA — red-team C40,
+     * 2026-09-12. ⛔ Antes, este vazio ⛔ não gerava impedimento ⛔ nenhum ⛔ e o
+     * portão abria, ⛔ enquanto *"não sei"* exigia julgamento: um degrau a menos
+     * de evidência valia como um degrau a mais (**E-23**; estado intermediário).
+     *
+     * ⚠️ O que se pede é **avaliar a hora** — ⛔ a pergunta, ⛔ não um resultado.
+     * ⛔ Não é contraindicação (a fonte ⛔ não contraindica ⛔ nem com exposição
+     * confirmada); ⛔ não vira `nao_sei` em silêncio (declarar desconhecida é
+     * resposta do médico, ⛔ e ela leva ao julgamento individual); ⛔ e ⛔ nenhuma
+     * janela é calculada (F-30).
+     */
+    lista.push({
+      id: "doac_hora",
+      efeito: "aguarda_juizo",
+      rotulo: "Anticoagulante oral direto em uso, hora da última dose ainda não avaliada",
+      fonte: "F-10",
+      oQueFalta: "Avaliar e registrar a hora da última dose do anticoagulante direto, ou declará-la desconhecida",
+      leva: "paciente",
+      campo: "doac_ultima_dose",
+    });
   }
   const cmb = microssangramentos(estado);
   if (cmb.estado === "informacao_insuficiente") {

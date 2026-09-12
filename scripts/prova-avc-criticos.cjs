@@ -42,6 +42,7 @@
  *   C8  Interrompida + exposição ....... 18, 19, 20, 22, 26
  *   C9  imagens pós-IVT ................ 21
  *   C10 marco canônico ................. 23
+ *   C12 DOAC hora não perguntada ....... 27 (red-team C40)
  */
 const fs = require("node:fs");
 const os = require("node:os");
@@ -555,6 +556,77 @@ ausente("26 · legado (API)", () => {
   conf("26 · iniciada → cancelada (legado) PRESERVA a exposição", x.estado === "exposta", `⛔ ${JSON.stringify(x)}`);
   conf("26 · ⛔ e sinaliza a contradição", x.contraditoria === true, `⛔ ${JSON.stringify(x)}`);
   conf("26 · ⛔ e a monitorização segue pertinente", DG.pertinenciaDaMonitorizacao(e).pertinente === true, "⛔");
+});
+
+/* ══ 27 · DOAC NOMEADO COM HORA ⛔ NÃO PERGUNTADA (red-team C40 · 2026-09-12) ═ */
+/**
+ * ⚠️⚠️ O ataque C40 do red-team pós-correção: DOAC **nomeado** ⛔ e a hora da
+ * última dose ⛔ nunca perguntada abria o portão, ⛔ enquanto *"não sei"*
+ * exigia julgamento. ⛔ Um degrau a menos de evidência valia como um degrau a
+ * mais (E-23; regra do estado intermediário). ⚠️ Esperado: pendência
+ * explícita (`aguarda_juizo`) nomeando a **hora** — ⛔ nunca contraindicação,
+ * ⛔ nunca conversão silenciosa em `nao_sei`, ⛔ nunca cálculo de 48 h.
+ */
+ausente("27 · DOAC hora não perguntada (API)", () => {
+  const DOAC = "Anticoagulante oral direto (DOAC)";
+  const np = reg(candidatoIvt(), "anticoagulante_em_uso", DOAC);
+  const r = ivt(np);
+  conf("27 · DOAC nomeado + hora ⛔ não perguntada + juízo «não» → ⛔ NÃO liberado", r.p.liberado === false, `⛔ ${r.p.estado}`);
+  conf("27 · ⛔ e o veredito ⛔ não é `indicada`", r.v.tipo !== "indicada", `⛔ ${r.v.tipo}`);
+  conf("27 · ⛔ e ⛔ não é contraindicação (`bloqueado_seguranca`)", r.p.estado !== "bloqueado_seguranca", `⛔ ${r.p.estado}`);
+  conf("27 · ⛔ e ⛔ não vira `nao_sei` em silêncio (segue `julgamento_individual_pendente` ⛔ só com «não sei»)",
+    r.p.estado !== "julgamento_individual_pendente" && DD.exposicaoADoac(np).exposicao === "nao_perguntado",
+    `⛔ ${r.p.estado} · exposição ${DD.exposicaoADoac(np).exposicao}`);
+  const motivo = r.p.motivos.find((m) => m.campo === "doac_ultima_dose");
+  conf("27 · pendência explícita `aguarda_juizo` apontando `doac_ultima_dose`",
+    motivo !== undefined && motivo.efeito === "aguarda_juizo",
+    `⛔ ${JSON.stringify(r.p.motivos.map((m) => [m.id, m.efeito, m.campo]))}`);
+  conf("27 · ⛔ e `oQueFalta` fala da **hora da última dose**",
+    motivo !== undefined && /hora da última dose/i.test(motivo.oQueFalta), `⛔ ${motivo && motivo.oQueFalta}`);
+  conf("27 · ⛔ e o portão é `informacao_incompleta`", r.p.estado === "informacao_incompleta", `⛔ ${r.p.estado}`);
+
+  /** ⚠️ Com **todos** os demais critérios completos (peso, agente, TNK) — ⛔ continua ⛔ não indicada. */
+  const completo = reg(reg(np, "peso", 70), "agente_trombolitico", "Tenecteplase");
+  const rc = ivt(completo);
+  const seg = rc.v.criteriosAvaliados.find((c) => c.papel === "seguranca");
+  conf("27 · demais critérios completos → veredito ⛔ ≠ `indicada`, segurança ⛔ ≠ `satisfeito`",
+    rc.v.tipo !== "indicada" && rc.p.liberado === false && (seg === undefined || seg.estado !== "satisfeito"),
+    `⛔ ${rc.v.tipo} / ${rc.p.estado} / ${seg && seg.estado}`);
+
+  /** ⚠️ Transições. */
+  const ns = reg(np, "doac_ultima_dose", "nao_sei");
+  conf("27 · transição não perguntada → «não sei»: `julgamento_individual_pendente` + `exige_julgamento`",
+    ivt(ns).p.estado === "julgamento_individual_pendente" && ivt(ns).p.motivos.some((m) => m.efeito === "exige_julgamento"),
+    `⛔ ${ivt(ns).p.estado}`);
+  conf("27 · ⛔ e F-30 segue sem janela", DD.exposicaoADoac(ns).janelaClassificada === false, "⛔");
+  const hc = reg(np, "doac_ultima_dose", AGORA - 3 * H);
+  conf("27 · transição não perguntada → hora conhecida: `julgamento_individual_pendente`, ⛔ sem cálculo de 48 h",
+    ivt(hc).p.estado === "julgamento_individual_pendente" && DD.exposicaoADoac(hc).janelaClassificada === false,
+    `⛔ ${ivt(hc).p.estado} · janelaClassificada ${DD.exposicaoADoac(hc).janelaClassificada}`);
+  const hc10d = reg(np, "doac_ultima_dose", AGORA - 10 * 24 * H);
+  conf("27 · hora conhecida há 10 dias: ⛔ mesmo estado (o app ⛔ não classifica 48 h)",
+    ivt(hc10d).p.estado === ivt(hc).p.estado, `⛔ ${ivt(hc10d).p.estado}`);
+
+  /**
+   * ⚠️⚠️ PROPRIEDADE: ⛔ preencher **menos** ⛔ jamais torna o portão ⛔ mais
+   * permissivo. ⛔ Para cada juízo da rec. 10, a hora ⛔ não perguntada ⛔ não
+   * pode ser mais permissiva que «não sei», ⛔ e «não sei» ⛔ não pode ser mais
+   * permissiva que a hora conhecida. ⛔ E com DOAC nomeado o portão ⛔ nunca abre.
+   */
+  const PERM = { liberado: 3, julgamento_individual_pendente: 2 };
+  const perm = (e) => { const s = ivt(e).p.estado; return s === "bloqueado_seguranca" ? 0 : (PERM[s] ?? 1); };
+  const juizos = [undefined, "nao", "sim", "nao_sei"];
+  const horas = [undefined, "nao_sei", AGORA - 3 * H];
+  const base = reg(candidatoSemJuizo(), "anticoagulante_em_uso", DOAC);
+  const com = (j, h) => { let e = base; if (j !== undefined) e = reg(e, "motivo_para_suspeitar_alteracao_coagulacao", j); if (h !== undefined) e = reg(e, "doac_ultima_dose", h); return e; };
+  const violacoes = [];
+  for (const j of juizos) {
+    const [pNp, pNs, pHc] = horas.map((h) => perm(com(j, h)));
+    if (!(pNp <= pNs && pNs <= pHc)) violacoes.push({ juizo: j ?? "não perguntado", pNp, pNs, pHc });
+    for (const h of horas) if (ivt(com(j, h)).p.liberado) violacoes.push({ juizo: j ?? "não perguntado", hora: h ?? "não perguntada", liberado: true });
+  }
+  conf("27 · propriedade: menos informação ⛔ nunca é mais permissivo; DOAC nomeado ⛔ nunca libera (12 combinações)",
+    violacoes.length === 0, `⛔ ${JSON.stringify(violacoes)}`);
 });
 
 /* ── resultado ─────────────────────────────────────────────────────────── */
