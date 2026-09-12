@@ -82,8 +82,7 @@ import {
   recomendacoesDoEstado,
   valorDoInsumo,
   valorDaJanela,
-  type LeituraDaRecomendacao,
-} from "./derivacoes-f";
+  type LeituraDaRecomendacao, conflitoDeMarcos } from "./derivacoes-f";
 import { camposDoMarco } from "./apresentacao-f";
 import {
   CRITERIOS_DA_INDICACAO_IVT,
@@ -177,7 +176,8 @@ export type MotivoDoVeredito = {
  * ⛔ `ausente` ⛔ nunca vira `contradito` (**E-23**); `em_julgamento` é a
  * situação que a fonte manda o médico ponderar (⛔ entra no commit 7).
  */
-export type EstadoDoCriterio = "satisfeito" | "contradito" | "ausente" | "em_julgamento";
+/** ⚠️ `em_reconciliacao` (O4, 2026-09-12): dois marcos conhecidos ⛔ e incompatíveis — ⛔ nem sim ⛔ nem não. */
+export type EstadoDoCriterio = "satisfeito" | "contradito" | "ausente" | "em_julgamento" | "em_reconciliacao";
 
 /**
  * ⚠️⚠️ UM CRITÉRIO **AVALIADO** — ⛔ e é ⛔ isto que torna a conclusão explicável
@@ -307,6 +307,20 @@ function avaliarCriterio(
     }
 
     case "temporal": {
+      /**
+       * ⚠️⚠️ MARCOS INCOMPATÍVEIS (O4): ⛔ última vez bem ⛔ e início observado
+       * conhecidos ⛔ e opostos quanto à janela. ⛔ Nenhum é escolhido; ⛔ o
+       * critério fica em reconciliação ⛔ e nomeia os dois campos.
+       */
+      const conflito = conflitoDeMarcos(estado, c.janelas ?? [], agoraMs);
+      if (conflito !== undefined) {
+        return {
+          ...b,
+          estado: "em_reconciliacao",
+          oQueFalta:
+            "Última vez visto bem e início observado do déficit respondem de forma oposta à janela. Corrija ou desfaça o registro errado; o aplicativo não escolhe entre eles",
+        };
+      }
       /** ⚠️ ⛔ A MESMA função que as recomendações usam (**I6**); ⛔ o marco é o da fonte (HR-1). */
       const v = valorDaJanela(estado, c.janelas ?? [], agoraMs);
       const valor = tempoLegivel(estado, c, agoraMs);
@@ -562,6 +576,24 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
   if (classe.estado === "ausente" && classe.campo) nomear(classe.campo);
   /** ⚠️ Segurança pendente (reconciliar · resultado · juízo) — ⛔ o campo vem do próprio impedimento. */
   if (seguranca.estado === "ausente" && seguranca.campo) nomear(seguranca.campo);
+
+  /**
+   * ⚠️⚠️ MARCOS INCOMPATÍVEIS (O4): ⛔ não é *"faltam dados"* — ⛔ os dois
+   * existem ⛔ e se contradizem. ⛔ *"janela"* sai da lista de faltas, porque
+   * ⛔ "informar o horário" ⛔ não é o gesto que resolve; ⛔ o motivo do portão
+   * nomeia os campos ⛔ e o gesto (corrigir ⛔ ou desfazer).
+   */
+  if (temporal.estado === "em_reconciliacao") {
+    return {
+      ...comum,
+      tipo: "incompleta",
+      frase: "Ainda não dá para concluir: os marcos temporais registrados são incompatíveis",
+      sustentam: [],
+      contra: [],
+      faltam: faltam.filter((i) => i !== "janela"),
+      criteriosAvaliados: criterios,
+    };
+  }
 
   if (faltam.length > 0 || avaliados.some((c) => c.estado === "ausente")) {
     return {

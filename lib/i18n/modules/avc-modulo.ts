@@ -358,6 +358,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Interrompida após o início — houve exposição": "Interrumpida después del inicio — hubo exposición",
   "Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.":
     "Registro contradictorio: cancelada después de iniciada. La exposición fue preservada; registre Interrumpida o corrija.",
+  // ── marcos temporais incompatíveis ⇒ reconciliação (O4 · 2026-09-12) ─────
+  "Marcos temporais incompatíveis": "Marcos temporales incompatibles",
+  "Última vez visto bem e início observado do déficit respondem de forma oposta à janela padrão":
+    "Última vez visto bien e inicio observado del déficit responden de forma opuesta a la ventana estándar",
+  "Corrigir ou desfazer o marco registrado errado; o aplicativo não escolhe entre eles":
+    "Corregir o deshacer el marco registrado erróneo; la aplicación no elige entre ellos",
+  "Última vez visto bem e início observado do déficit respondem de forma oposta à janela. Corrija ou desfaça o registro errado; o aplicativo não escolhe entre eles":
+    "Última vez visto bien e inicio observado del déficit responden de forma opuesta a la ventana. Corrija o deshaga el registro erróneo; la aplicación no elige entre ellos",
+  "Ainda não dá para concluir: os marcos temporais registrados são incompatíveis":
+    "Aún no se puede concluir: los marcos temporales registrados son incompatibles",
   // ── rota RM exige «unknown time of onset» (O6b · 2026-09-12) ─────────────
   "A recomendação de início desconhecido só alcança quem não tem horário de início conhecido.":
     "La recomendación de inicio desconocido solo alcanza a quien no tiene hora de inicio conocida.",

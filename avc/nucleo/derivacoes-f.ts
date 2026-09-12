@@ -586,6 +586,56 @@ export function msDesdeCampoDoEstado(
  * lê a janela padrão **pela mesma função** que as recomendações usam (**I6**) —
  * ⛔ uma segunda contagem divergiria num arredondamento.
  */
+/**
+ * ⚠️⚠️⚠️ MARCOS **INCOMPATÍVEIS** — decisão do autor, 2026-09-12 (O4).
+ *
+ * ⛔ Quando um marco disjuntivo (`onset_ou_lkw`) tem os **dois** campos
+ * conhecidos ⛔ e eles respondem de forma **oposta** à mesma janela — um dentro,
+ * outro fora —, ⛔ escolher qualquer um deles é decidir por conveniência: ⛔ o
+ * favorável libera fora da janela real; ⛔ o conservador nega dentro dela.
+ * ⚠️ Nenhum dos dois é a fonte. ⛔ O que existe é **contradição entre dois
+ * fatos**, ⛔ e contradição se **reconcilia** (mesma classe de AVC-04: coletas
+ * discordantes ⛔ não se elegem).
+ *
+ * ⚠️ ⛔ Um marco só segue HR-1. ⛔ Dois marcos concordes (ambos dentro ⛔ ou ambos
+ * fora) ⛔ não são conflito. ⛔ Nenhum limite muda; ⛔ nenhum relógio sintético
+ * nasce; ⛔ os dois fatos ficam na trilha.
+ */
+export type ConflitoDeMarcos = {
+  readonly janela: JanelaDaRecomendacao;
+  /** ⚠️ Os campos em conflito — ⛔ os dois, nomeados (**E-26**). */
+  readonly campos: readonly string[];
+  readonly dentro: readonly string[];
+  readonly fora: readonly string[];
+};
+
+export function conflitoDeMarcos(
+  estado: EstadoAvc,
+  janelas: readonly JanelaDaRecomendacao[],
+  agoraMs: number | undefined
+): ConflitoDeMarcos | undefined {
+  if (agoraMs === undefined) return undefined;
+  for (const j of janelas) {
+    const origem = ORIGEM_DO_MARCO[j.marco];
+    if (origem.tipo !== "campo") continue;
+    const campos = camposDoMarco(j.marco);
+    if (campos.length < 2) continue;
+    const dentro: string[] = [];
+    const fora: string[] = [];
+    const de = (j.deHoras ?? 0) * 3_600_000;
+    const ate = j.ateHoras * 3_600_000;
+    for (const campo of campos) {
+      const ms = msDesdeCampoDoEstado(estado, campo, agoraMs);
+      if (ms === undefined) continue;
+      (ms >= de && ms <= ate ? dentro : fora).push(campo);
+    }
+    if (dentro.length > 0 && fora.length > 0) {
+      return { janela: j, campos: [...dentro, ...fora], dentro, fora };
+    }
+  }
+  return undefined;
+}
+
 export function valorDaJanela(
   estado: EstadoAvc,
   janelas: readonly JanelaDaRecomendacao[],
@@ -598,6 +648,11 @@ export function valorDaJanela(
    * torna uma recomendação aplicável; ⛔ só a deixa potencial, nomeando a falta.
    */
   if (agoraMs === undefined || janelas.length === 0) return undefined;
+  /**
+   * ⚠️⚠️ ⛔ MARCOS INCOMPATÍVEIS ⛔ NÃO PRODUZEM CONCLUSÃO — ⛔ nem positiva ⛔ nem
+   * negativa (O4). ⛔ A disjunção só vale quando os marcos conhecidos concordam.
+   */
+  if (conflitoDeMarcos(estado, janelas, agoraMs) !== undefined) return undefined;
 
   let algumMarco = false;
   for (const j of janelas) {

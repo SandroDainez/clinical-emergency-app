@@ -111,6 +111,8 @@ const SIMBOLO_DO_CRITERIO: Readonly<Record<string, string>> = {
   contradito: ESTADOS.impede.simbolo,
   ausente: ESTADOS.verificar.simbolo,
   em_julgamento: ESTADOS.andamento.simbolo,
+  /** ⚠️ O4: dois marcos conhecidos ⛔ e incompatíveis — ⛔ verificar, ⛔ não impedir. */
+  em_reconciliacao: ESTADOS.verificar.simbolo,
 };
 
 const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {

@@ -236,6 +236,18 @@ terapêutica se conta dos relógios clínicos; porta-imagem e porta-agulha se co
 do t₀. Trocar um pelo outro produz janela errada com aparência de precisão. ⇒
 **E-21**
 
+⚠️ **Marcos incompatíveis — decisão do autor, 2026-09-12 (red-team O4).** Quando
+uma janela aceita dois marcos alternativos (*"symptom onset **or** last known
+well"*) e os **dois** estão registrados com hora conhecida, mas respondem de forma
+**oposta** à mesma janela — um dentro, outro fora —, o módulo **não escolhe**: nem
+o favorável, nem o conservador. Os dois fatos ficam preservados na trilha, o
+critério temporal entra em **reconciliação** nomeando explicitamente os campos em
+conflito, e **nenhuma conclusão temporal positiva** é produzida enquanto a
+contradição persistir. Corrigir ou desfazer um dos registros (§3.4) recalcula
+normalmente. Um único marco conhecido continua seguindo a disjunção da fonte
+(**HR-1**). Nenhum limite temporal muda e nenhum relógio sintético é criado.
+⇒ **E-21**, mesma classe de **AVC-04** (dados discordantes não se elegem).
+
 **Ao mesmo tempo — não antes, não depois — corre a estabilização.** Via aérea,
 respiração e circulação não são uma etapa que termina para o atendimento
 começar: são uma frente que permanece aberta e pode retomar a prioridade a

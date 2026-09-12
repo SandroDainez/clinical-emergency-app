@@ -44,6 +44,7 @@
  *   C10 marco canônico ................. 23
  *   C12 DOAC hora não perguntada ....... 27 (red-team C40)
  *   C13 rota RM «unknown onset» ......... 28 (O6b)
+ *   C14 marcos incompatíveis ............ 29 (O4)
  */
 const fs = require("node:fs");
 const os = require("node:os");
@@ -682,6 +683,53 @@ ausente("28 · rota RM (API)", () => {
   conf("28 · propriedade: início ⛔ não perguntado ⛔ nunca é mais permissivo que «não sei»", perm(np) <= perm(ns) && ivt(np).p.liberado === false, `⛔ np=${ivt(np).p.estado} ns=${ivt(ns).p.estado}`);
   conf("28 · ⛔ e ⛔ nenhum número novo: a janela da rota continua 4,5 h do reconhecimento",
     rec !== undefined && rec.janelas.length === 1 && rec.janelas[0].marco === "symptom_recognition" && rec.janelas[0].ateHoras === 4.5, "⛔");
+});
+
+/* ══ 29 · MARCOS TEMPORAIS INCOMPATÍVEIS ⇒ RECONCILIAÇÃO (O4 · 2026-09-12) ═ */
+/**
+ * ⚠️⚠️ Decisão do autor: dois marcos conhecidos ⛔ e incompatíveis ⛔ não se
+ * resolvem escolhendo o favorável ⛔ nem o conservador — geram reconciliação.
+ * ⛔ Um marco só segue HR-1. ⛔ Nenhum limite muda; ⛔ nenhum relógio sintético.
+ */
+ausente("29 · marcos (API)", () => {
+  const semTempo = () => reg(tcSem(reg(vazio, "incapacitante_assumido", "Incapacitante"), 1, AGORA - 30 * MIN), "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+  const JANELA_PADRAO = SF.CRITERIOS_DA_INDICACAO_IVT.find((c) => c.papel === "temporal").janelas;
+  const a = reg(reg(semTempo(), "hora_ultima_vez_bem", AGORA - 6 * H), "hora_inicio_observado", AGORA - 2 * H);
+  const b = reg(reg(semTempo(), "hora_inicio_observado", AGORA - 6 * H), "hora_ultima_vez_bem", AGORA - 2 * H);
+  for (const [nome, e] of [["LKW 6 h + início 2 h", a], ["início 6 h + LKW 2 h", b]]) {
+    const r = ivt(e);
+    const temporal = r.v.criteriosAvaliados.find((c) => c.papel === "temporal");
+    conf(`29 · ${nome} → ⛔ ≠ indicada ⛔ e ⛔ ≠ nao_sustentada (⛔ nenhuma escolha automática)`,
+      r.v.tipo !== "indicada" && r.v.tipo !== "nao_sustentada", `⛔ ${r.v.tipo}`);
+    conf(`29 · ${nome} → critério temporal em_reconciliacao`, temporal !== undefined && temporal.estado === "em_reconciliacao", `⛔ ${temporal && temporal.estado}`);
+    conf(`29 · ${nome} → portão reconciliacao_pendente, ⛔ não liberado`, r.p.estado === "reconciliacao_pendente" && r.p.liberado === false, `⛔ ${r.p.estado}`);
+    const c = DF.conflitoDeMarcos(e, JANELA_PADRAO, AGORA);
+    conf(`29 · ${nome} → conflito nomeia os DOIS campos`,
+      c !== undefined && c.campos.includes("hora_inicio_observado") && c.campos.includes("hora_ultima_vez_bem"), `⛔ ${JSON.stringify(c)}`);
+    conf(`29 · ${nome} → o motivo do portão aponta os campos em conflito`,
+      r.p.motivos.some((m) => m.efeito === "impede_ate_reconciliar" && /início observado/i.test(`${m.rotulo} ${m.dado} ${m.oQueFalta}`) && /última vez/i.test(`${m.rotulo} ${m.dado} ${m.oQueFalta}`)),
+      `⛔ ${JSON.stringify(r.p.motivos.map((m) => [m.id, m.efeito, m.dado]))}`);
+    conf(`29 · ${nome} → os dois fatos continuam na trilha`, E.valorAtual(e, "hora_ultima_vez_bem") !== undefined && E.valorAtual(e, "hora_inicio_observado") !== undefined, "⛔");
+  }
+  /** ⚠️ Correção de um dos fatos recalcula normalmente. */
+  const fatoOnset = [...a.fatos].reverse().find((f) => f.campo === "hora_inicio_observado");
+  const corr = E.corrigirFato(a, { campo: "hora_inicio_observado", valor: AGORA - 6 * H, corrigeFatoId: fatoOnset.id }, rel);
+  conf("29 · conflito → correção do início para 6 h → temporal contradito, ⛔ sem conflito",
+    ivt(corr).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado === "contradito" && DF.conflitoDeMarcos(corr, JANELA_PADRAO, AGORA) === undefined,
+    `⛔ ${ivt(corr).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado}`);
+  const corr2 = E.corrigirFato(a, { campo: "hora_inicio_observado", valor: AGORA - 5 * H, corrigeFatoId: fatoOnset.id }, rel);
+  conf("29 · conflito → correção do início para 5 h (ambos fora) → contradito", ivt(corr2).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado === "contradito", "⛔");
+  const desOnset = E.desfazerRegistro(a, "hora_inicio_observado", rel);
+  conf("29 · conflito → desfazer o início → só LKW 6 h → contradito (HR-1)", ivt(desOnset).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado === "contradito", `⛔ ${ivt(desOnset).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado}`);
+  const desLkw = E.desfazerRegistro(a, "hora_ultima_vez_bem", rel);
+  conf("29 · conflito → desfazer a LKW → só início 2 h → indicada (HR-1)", ivt(desLkw).v.tipo === "indicada", `⛔ ${ivt(desLkw).v.tipo}`);
+  conf("29 · apenas LKW 2 h → indicada", ivt(reg(semTempo(), "hora_ultima_vez_bem", AGORA - 2 * H)).v.tipo === "indicada", "⛔");
+  conf("29 · apenas início 2 h → indicada", ivt(reg(semTempo(), "hora_inicio_observado", AGORA - 2 * H)).v.tipo === "indicada", "⛔");
+  const ambosDentro = reg(reg(semTempo(), "hora_ultima_vez_bem", AGORA - 3 * H), "hora_inicio_observado", AGORA - 2 * H);
+  conf("29 · LKW 3 h + início 2 h (ambos dentro) → ⛔ sem conflito, indicada", ivt(ambosDentro).v.tipo === "indicada" && DF.conflitoDeMarcos(ambosDentro, JANELA_PADRAO, AGORA) === undefined, `⛔ ${ivt(ambosDentro).v.tipo}`);
+  const ambosFora = reg(reg(semTempo(), "hora_ultima_vez_bem", AGORA - 7 * H), "hora_inicio_observado", AGORA - 6 * H);
+  conf("29 · LKW 7 h + início 6 h (ambos fora) → contradito, ⛔ sem conflito", ivt(ambosFora).v.criteriosAvaliados.find((c) => c.papel === "temporal").estado === "contradito", "⛔");
+  conf("29 · ⛔ nenhum limite mudou: janela padrão segue 4,5 h por `onset_ou_lkw`", JANELA_PADRAO.length === 1 && JANELA_PADRAO[0].ateHoras === 4.5 && JANELA_PADRAO[0].marco === "onset_ou_lkw", "⛔");
 });
 
 /* ── resultado ─────────────────────────────────────────────────────────── */

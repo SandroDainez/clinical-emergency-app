@@ -270,6 +270,29 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
   const juizoPendente = impedimentos.some((i) => i.efeito === "aguarda_juizo");
   const julgamentoPendente = impedimentos.some((i) => i.efeito === "exige_julgamento");
 
+  /**
+   * ⚠️⚠️ MARCOS TEMPORAIS INCOMPATÍVEIS (O4, decisão do autor 2026-09-12):
+   * ⛔ o critério temporal da composição ficou `em_reconciliacao` — ⛔ última
+   * vez bem ⛔ e início observado conhecidos ⛔ e opostos quanto à janela.
+   * ⛔ Mesma classe de AVC-04: ⛔ o app ⛔ não elege; ⛔ nomeia os dois ⛔ e o
+   * gesto que resolve. ⛔ Não é contraindicação ⛔ nem falta de dado.
+   */
+  const temporal = veredito.criteriosAvaliados.find((c) => c.papel === "temporal");
+  const reconciliarMarcos = temporal !== undefined && temporal.estado === "em_reconciliacao";
+  if (reconciliarMarcos && temporal !== undefined) {
+    motivos.push({
+      id: "marcos_temporais",
+      camada: "veredito",
+      efeito: "impede_ate_reconciliar",
+      rotulo: "Marcos temporais incompatíveis",
+      dado: "Última vez visto bem e início observado do déficit respondem de forma oposta à janela padrão",
+      fonte: temporal.fonte,
+      oQueFalta: "Corrigir ou desfazer o marco registrado errado; o aplicativo não escolhe entre eles",
+      leva: temporal.leva,
+      campo: temporal.campo,
+    });
+  }
+
   /* ── 2 · o que a diretriz desaconselha ───────────────────────────────── */
 
   if (veredito.tipo === "nao_recomendada") {
@@ -424,7 +447,7 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
          * PA ⛔ não reconcilia duas coletas ⛔ nem traz um resultado que ⛔ não
          * foi colhido. ⛔ Nenhum dos dois libera.
          */
-        : reconciliar
+        : reconciliar || reconciliarMarcos
         ? "reconciliacao_pendente"
         : resultadoPendente
         ? "resultado_pendente"
