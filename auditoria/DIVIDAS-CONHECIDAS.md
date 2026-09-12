@@ -5702,3 +5702,72 @@ que `CAMPO_DE_TELA` não lista, ⛔ continua saindo da rede em silêncio.
 
 ⚠️ E a lista `CAMPO_DE_TELA` é **enumerada à mão**: cada campo novo de tela
 precisa ser lembrado. ⛔ Nada garante que o próximo será.
+
+---
+
+## D-139 — 📋 REGISTRO · AUDITORIA DOS CRÍTICOS DO AVC — o que fechou, o que ficou declarado (2026-09-12)
+
+**Origem:** auditoria externa do módulo AVC (AVC-01…19) + revisão independente
++ `auditoria/PLANO-CORRECAO-AVC-CRITICOS.md` (aprovado pelo autor). Onze
+achados validados como *release blockers* foram corrigidos em onze commits
+pequenos, cada um com prova vermelha antes e verde depois
+(`scripts/prova-avc-criticos.cjs`, ligada ao `test:all` neste registro).
+
+### ✅ Fechados nesta rodada (release blockers)
+
+| achado | causa-raiz | onde fechou |
+|---|---|---|
+| AVC-01 só peso / só «Incapacitante» ⇒ indicada | R1 + R2 | barreira de classe (C) · domínios do catálogo · composição D1 |
+| AVC-02 janela não governava o veredito IVT | R2 | `criterios.janela` nas recs IVT de elegibilidade · `agoraMs` obrigatório |
+| AVC-03 TNK ⇒ «não recomendada» | R2 | `ivt_tnk_04` → domínio `posologia`; alerta preservado |
+| AVC-04 coletas discordantes liberavam | R3 | `impede_ate_reconciliar` · portão `reconciliacao_pendente` |
+| AVC-05 EVT recomendada com hemorragia | R1 | eixo `classe` no veredito EVT, lido só de C |
+| AVC-06 G elegia estudo por ordem de registro | local | `imagensAposInstante` em C; G consome |
+| AVC-07 cancelar apagava exposição | R4 · D2 | `Interrompida` no vocabulário · exposição por histórico |
+| AVC-08 pendências de coagulação não chegavam ao portão | R3 | `impede_ate_resultado` · `aguarda_juizo` · `exige_julgamento` · E-47 visível |
+| AVC-09 IVT sem hora = «fora do contexto» | R4 | `sem_horario_ivt` · aspirina IV tri-estado |
+| AVC-12 LKW «não sei» seguia «há 2 h» | R5 | marco clínico canônico no fato (`CAMPO_DO_RELOGIO_CLINICO`) |
+| AVC-13 formulário vazio ⇒ «indicada» | R4 | síntese e discrepância só de instâncias **expostas** |
+| AVC-18 (de carona) arredondamento decidia janela | — | comparação em ms; arredondamento só na apresentação |
+
+### ⏸️ Correções POSTERIORES (validadas, fora desta rodada)
+
+- **AVC-11** — relógio não atualiza a tela sem interação (tique + retomada do
+  segundo plano; manter `Relogio` injetável).
+- **AVC-14** — cartão de discrepância usa o portão **atual** com verbo causal;
+  E-24 (evento histórico de derivação) segue adiada por §4.7.
+- **AVC-19** — `docs/avc-module.md` descreve a arquitetura legada (avc-engine,
+  eligibility, persistence). Reescrever ou remover.
+
+### 📌 LIMITAÇÃO DECLARADA — AVC-16 · RM não registra `estudo_resultado`
+
+`CAPACIDADES_DA_MODALIDADE` dá o resultado de hemorragia **só** à TC sem
+contraste (*"hoje, uma"*). F-16 rec. 1 admite *"NCCT **or MRI**"*. Consequência:
+paciente avaliado por RM fica com a classe `retida` por
+`sem_resultado_interpretavel` — dito na tela, ⛔ nunca silencioso. Fechar exige
+decisão do autor sobre acrescentar `estudo_resultado` à modalidade "Ressonância
+magnética" com F-16 rec. 1 como fonte; **qual sequência valida a exclusão:
+EVIDÊNCIA INSUFICIENTE** na fonte transcrita.
+
+### 🗺️ ROADMAP (decisão do autor; ⛔ não implementar sem indicação)
+
+- **AVC-10** persistência/retomada entre sessões (§3.9, §10.5).
+- **AVC-15** dose efetivamente administrada / quantidade parcial (F-20 parcial;
+  passa por E-49 — nunca obrigatória).
+- **AVC-17** fluxo de resgate pós-alteplase (F-35c parcial; §1.11).
+
+### ⚠️ INTERPRETAÇÕES QUE O AUTOR PRECISA CONFIRMAR (aplicadas conforme HR-3/HR-4)
+
+1. **Juízo da rec. 10 não perguntado** ⇒ portão `informacao_incompleta` nomeando
+   a **pergunta** ("há motivo para suspeitar?"), ⛔ nunca o exame. Respondido
+   "não" e sem varfarina/heparina ⇒ portão abre com E-47 visível. O e2e do M1
+   (fase 9) passou a responder o juízo antes de esperar as duas frentes.
+2. **Varfarina/heparina em uso** ⇒ `resultado_pendente` enquanto faltar
+   **INR, PT ou aPTT** (a frase da Table 8 fala de *"coagulation test
+   results"*; ⛔ nenhum mapeamento por agente foi inventado).
+3. **Julgamento individual pendente** (DOAC, CMB > 10, itens relativos) ⇒ portão
+   `julgamento_individual_pendente`, `liberado: false`; ⛔ sem campo novo de
+   registro do julgamento (HR-4 opção b fica para o autor).
+4. **HR-2 ao pé da letra**: o critério "déficit incapacitante" pertence à rota
+   padrão; rotas de janela estendida usam a população que a própria
+   recomendação escreve.

@@ -495,3 +495,33 @@ Nenhum destes itens é resolvido no plano. Os commits 5, 6, 7 e 8b esperam HR-1/
 **Ordem de execução confirmada:** commit 1 (prova adversarial vermelha) → 2 → 3 → 4 → 5 → 6 → 7 → 8a → 8b → 8c → 9 → 10 → 11. Após cada commit: suítes pertinentes + `test:all`. Regressão não explicada ⇒ parar e relatar.
 
 Este documento encerrou a etapa de planejamento em 2026-09-12 e passou a guiar a implementação.
+
+---
+
+## 14. EXECUÇÃO (2026-09-12) — commits, provas e o que ficou
+
+| # | commit | conteúdo | críticos (verdes/vermelhos) |
+|---|---|---|---|
+| 1 | `2cc88de` | prova adversarial vermelha + plano no repositório | 32 / 57 |
+| 2 | `230b0ac` | barreira de classe da reperfusão (R1) — portão, veredito IVT, eixo `classe` na EVT | 46 / 48 |
+| 3 | `e643547` | `agoraMs` obrigatório; janela em ms (AVC-18) | 48 / 46 |
+| 3b | `37a37f4` | isenção temporária de `test:pipeline` (expirou no commit 11) | — |
+| 3c | `058ae0b` | classe retida rebaixa só o papel de sucesso (regressão pega pelo e2e) | — |
+| 4 | `d90aeb5` | domínios `agente` / `posologia` / `principio` (AVC-03) | 61 / 33 |
+| 5 | `6045a15` | janela como critério das recs IVT de elegibilidade (AVC-02) | 61 / 33 |
+| 6 | `8cce85d` | veredito IVT composto e explicável (D1 · AVC-01) | 65 / 29 |
+| 7 | `397bca3` | incerteza tipada na segurança e no portão (R3 · AVC-04, 08) | 83 / 12 |
+| 8a | `77f56da` | estado `Interrompida` (D2) + emenda §2.3 | 85 / 10 |
+| 8b+8c | `3e94b1f` | exposição derivada do histórico (AVC-07, 09, 13) | 91 / 4 |
+| 9 | `55554d1` | imagens posteriores à IVT lidas por C (AVC-06) | 92 / 3 |
+| 10 | `26bd9da` | marco temporal canônico no fato (R5 · AVC-12) | **121 / 0** |
+| 11 | (este) | e2e do gesto real, prova no `test:all`, dívidas e emendas documentais | 121 / 0 |
+
+`test:all` completo (worktree isolado com `node_modules` próprio): verde nos
+commits 6 (`8cce85d`, 476 e2e) e 8b (`3e94b1f`, 476 e2e); commit 11 rodado ao
+final. Uma regressão real foi pega no caminho (commit 3c) e uma falsa (o Metro
+seguia o symlink de `node_modules` e empacotava a árvore principal) levou ao
+`npm ci` no worktree.
+
+Registro das interpretações que dependem do autor: `auditoria/DIVIDAS-CONHECIDAS.md`,
+D-139.

@@ -153,6 +153,16 @@ uso de antiagregante · fármaco disponível.
 aplicada) · candidato clínico · **bloqueio corrigível de PA** se `≥185/110` ·
 dose calculada por peso.
 
+> ⚠️ **Emenda D1 (autor, 2026-09-12 · PLANO-CORRECAO-AVC-CRITICOS.md):** a
+> conclusão *"trombólise indicada"* é **derivação composta de nível 3 do
+> aplicativo** — rota (déficit incapacitante ∧ janela padrão pelo marco
+> `onset_ou_lkw` de §4.6.2 rec. 1; ou rota de janela estendida com **todos** os
+> seus requisitos satisfeitos) ∧ hemorragia excluída (F-16) ∧ segurança sem
+> impeditivo ∧ nenhuma COR 3 de população aplicável. ⛔ Nenhuma recomendação
+> isolada afirma a frase; ⛔ §4.6.2 rec. 1 (agente) e §4.6.1 rec. 1 (rapidez)
+> **pressupõem** elegibilidade e saíram do domínio de elegibilidade
+> (`CRITERIOS_DA_INDICACAO_IVT`, `veredito-da-trombolise.ts`).
+
 **Ação disponível:** **TNK 0,25 mg/kg (máx 25 mg)** *ou* **alteplase 0,9 mg/kg
 (máx 90 mg)** — **COR 1 · A**, alternativas de mesma força. Administração pela
 **Table 7**.

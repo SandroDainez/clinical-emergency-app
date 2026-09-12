@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * PROVA ADVERSARIAL DOS CRÍTICOS DO AVC — ⚠️ **vermelha por construção**.
+ * PROVA ADVERSARIAL DOS CRÍTICOS DO AVC — ⚠️ nasceu **vermelha por construção**
+ * (commit 1) ⛔ e, desde o commit 11 (2026-09-12), é **regressão permanente**
+ * no `test:all`: ⛔ vermelho aqui é crítico reaberto.
  *
  * PROMETE: que os onze achados validados como *release blockers*
  *   (AVC-01 · 02 · 03 · 04 · 05 · 06 · 07 · 08 · 09 · 12 · 13) ⛔ não voltem, ⛔ e
@@ -558,6 +560,6 @@ ausente("26 · legado (API)", () => {
 /* ── resultado ─────────────────────────────────────────────────────────── */
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA ADVERSARIAL DOS CRÍTICOS — ${ok} verde(s) · ${falhas} vermelho(s)`);
 if (falhas > 0) {
-  console.log(`\n   Vermelhos: ${falhas}. ⚠️ Esta prova nasce vermelha por decisão do autor; cada bloco fica verde no commit indicado no cabeçalho.`);
+  console.log(`\n   Vermelhos: ${falhas}. ⛔ Desde o commit 11 esta prova é regressão permanente: um vermelho é um crítico da auditoria reaberto (ver o mapa commit → casos no cabeçalho).`);
   process.exit(1);
 }
