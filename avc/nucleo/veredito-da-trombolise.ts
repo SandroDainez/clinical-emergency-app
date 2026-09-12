@@ -43,7 +43,7 @@
  * ela.
  */
 import type { EstadoAvc } from "./estado";
-import { exclusaoDeHemorragia } from "./derivacoes-c";
+import { barreiraDeReperfusao } from "./derivacoes-c";
 import { bloqueiosCorrigiveis, type BloqueioCorrigivel } from "./derivacoes-d";
 import { recomendacoesDoEstado, type LeituraDaRecomendacao } from "./derivacoes-f";
 import type { Insumo } from "../conteudo/superficie-f";
@@ -158,8 +158,24 @@ export function vereditoDaTrombolise(estado: EstadoAvc): VereditoDaTrombolise {
 
   /* ── 1 · o bloqueio de classe ──────────────────────────────────────────── */
 
-  const imagem = exclusaoDeHemorragia(estado);
-  if (imagem.exclusao === "hemorragia_presente" || imagem.exclusao === "divergente") {
+  /**
+   * ⚠️⚠️ ⛔ LIDO DA **BARREIRA DE CLASSE**, ⛔ e ⛔ não de uma releitura da imagem
+   * (R1, commit 2 · 2026-09-12). ⛔ Este arquivo reimplementava metade da regra
+   * — ⛔ só `hemorragia_presente | divergente` — ⛔ e a outra metade
+   * (`sem_imagem`, `resultado_pendente`) caía no catálogo como se a classe
+   * estivesse aberta. ⚠️ Agora há **uma** função de classe (**I6**), ⛔ e ⛔ o que
+   * este veredito decide é ⛔ só **como nomear** cada retenção:
+   *
+   *   · achado positivo ⛔ ou divergência ⇒ `retida` (⛔ é resposta);
+   *   · ⛔ sem imagem ⛔ ou ⛔ sem laudo ⇒ segue para o catálogo ⛔ e sai
+   *     `incompleta` — ⛔ ausência ⛔ não é hemorragia (**E-23**), ⛔ mas ⛔ também
+   *     ⛔ nunca libera: ⛔ o portão consulta a barreira ⛔ por conta própria.
+   */
+  const barreira = barreiraDeReperfusao(estado);
+  if (
+    barreira.estado === "retida"
+    && (barreira.motivo === "hemorragia_presente" || barreira.motivo === "divergente")
+  ) {
     return {
       ...base,
       tipo: "retida",
@@ -168,7 +184,7 @@ export function vereditoDaTrombolise(estado: EstadoAvc): VereditoDaTrombolise {
        * aqui. ⚠️ Divergência ⛔ e hemorragia dizem coisas diferentes, ⛔ e cada
        * uma já tem a sua.
        */
-      frase: imagem.curto,
+      frase: barreira.curto,
       sustentam: [],
       contra: [],
       faltam: [],

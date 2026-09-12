@@ -31,7 +31,7 @@ import {
   PRINCIPIOS_GERAIS,
 } from "../../avc/conteudo/superficie-f";
 import {
-  PAPEL_DO_VEREDITO_EVT,
+  papelDoVereditoEvt,
   SELO_DO_VEREDITO_EVT,
   FALTAS_EM_PRIMEIRO_PLANO,
   faltasAgrupadas,
@@ -214,6 +214,12 @@ export default function SuperficieF({
     () => vereditoDaTrombectomia(estado, agora),
     [estado, agora]
   );
+  /**
+   * ⚠️⚠️ ⛔ O PAPEL DE COR VEM DO NÚCLEO (**seleção × classe**, R1). ⛔ A tela
+   * ⛔ não decide que hemorragia na TC tira o verde do cartão — ⛔ ela recebe
+   * ⛔ isso pronto ⛔ e pinta.
+   */
+  const papelEvt = papelDoVereditoEvt(vereditoEvt);
   /** ⚠️ Quantas administrações já estão na trilha — ⛔ para medir discrepância. */
   const administracoes = instanciasDe(estado, TROMBOLISE_IV).length;
 
@@ -397,7 +403,7 @@ export default function SuperficieF({
         testID="avc-f-evt"
         style={[
           e.veredito,
-          PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" && e.vereditoIndicada,
+          papelEvt === "sucesso" && e.vereditoIndicada,
           /**
            * ⚠️⚠️ **CAUTELA**, ⛔ e ⛔ NÃO o crítico do bloqueio de segurança.
            *
@@ -406,7 +412,7 @@ export default function SuperficieF({
            * *"⛔ não recomendada **por ausência de benefício**"* ter a cara de
            * um bloqueio — ⛔ a cor afirmando o que o texto ⛔ nega.
            */
-          PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "atencao" && e.evtCautela,
+          papelEvt === "atencao" && e.evtCautela,
         ]}
       >
         <CabecalhoDeBloco titulo={tr("Trombectomia mecânica")} testID="avc-f-bloco-evt" />
@@ -421,8 +427,8 @@ export default function SuperficieF({
           <Text
             style={[
               e.vereditoSelo,
-              PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" && e.vereditoSeloIndicada,
-              PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "atencao" && e.evtSeloCautela,
+              papelEvt === "sucesso" && e.vereditoSeloIndicada,
+              papelEvt === "atencao" && e.evtSeloCautela,
             ]}
             testID={`avc-f-evt-estado-${vereditoEvt.tipo}`}
           >
@@ -433,6 +439,42 @@ export default function SuperficieF({
         <Text style={e.vereditoFrase} testID="avc-f-evt-frase">
           {tr(vereditoEvt.frase)}
         </Text>
+
+        {/**
+          * ── ⚠️⚠️⚠️ A CLASSE, ⛔ AO LADO DA SELEÇÃO (R1, commit 2) ──────────
+          *
+          * ⛔ A seleção acima diz o que o catálogo pensa da **população**;
+          * ⛔ esta linha diz se a **classe de reperfusão** está aberta — ⛔ a
+          * exclusão de hemorragia que F-16 rec. 1 exige **antes** de qualquer
+          * intervenção, ⛔ e que §5.3 aplica a *realizar trombectomia*.
+          *
+          * ⚠️ ⛔ As duas aparecem: ⛔ esconder a seleção ⛔ apagaria informação
+          * verdadeira; ⛔ esconder a classe ⛔ pintaria de sucesso o que ⛔ não
+          * se pode fazer. ⛔ Símbolo + palavra + o gesto que resolve (**E-15**,
+          * **E-26**). ⚠️ A frase é a **mesma** da leitura de imagem (**I6**).
+          */}
+        {vereditoEvt.classe.estado === "retida" ? (
+          <View style={e.portaoMotivo} testID={`avc-f-evt-classe-${vereditoEvt.classe.motivo}`}>
+            <Text style={e.portaoRotulo}>
+              {vereditoEvt.classe.motivo === "hemorragia_presente"
+                || vereditoEvt.classe.motivo === "divergente"
+                ? ESTADOS.impede.simbolo
+                : ESTADOS.verificar.simbolo}{" "}
+              {tr("Reperfusão retida pela imagem")}
+            </Text>
+            <Text style={e.portaoDado}>{tr(vereditoEvt.classe.curto)}</Text>
+            <Text style={e.portaoFonte}>{vereditoEvt.classe.fonte}</Text>
+            <Text style={e.portaoFalta}>{tr(vereditoEvt.classe.oQueFalta)}</Text>
+            <Pressable
+              style={e.portaoIr}
+              accessibilityRole="button"
+              testID="avc-f-evt-classe-ir"
+              onPress={() => onIrParaCampo(vereditoEvt.classe.estado === "retida" ? vereditoEvt.classe.campo : "estudo_resultado")}
+            >
+              <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {/**
           * ⚠️⚠️ A MAIS FORTE PRIMEIRO, ⛔ e as demais **⛔ não somem**.
@@ -544,7 +586,7 @@ export default function SuperficieF({
         * escolha entre uma ⛔ e outra.
         */}
       {portao.liberado
-        && PAPEL_DO_VEREDITO_EVT[vereditoEvt.tipo] === "sucesso" ? (
+        && papelEvt === "sucesso" ? (
         <View style={e.paralelo} testID="avc-f-evt-sem-esperar">
           <Text style={e.paraleloGrau}>
             {tr("COR")} {IVT_E_EVT_EM_PARALELO.cor} · {tr("LOE")}{" "}

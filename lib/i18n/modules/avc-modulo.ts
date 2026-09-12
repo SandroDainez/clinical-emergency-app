@@ -343,6 +343,12 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Faltam dados para concluir":
     "Faltan datos para concluir",
   "Falta registrar": "Falta registrar",
+  // ── barreira de classe da reperfusão (R1 · 2026-09-12) ──────────────
+  "Reperfusão retida pela imagem": "Reperfusión retenida por la imagen",
+  "Estudo registrado sem resultado que responda pela hemorragia":
+    "Estudio registrado sin resultado que responda por la hemorragia",
+  "Corrigir o resultado do exame que estiver errado, na mesma instância":
+    "Corregir el resultado del examen que esté equivocado, en la misma instancia",
   "Excluir hemorragia intracraniana na imagem":
     "Excluir hemorragia intracraneal en la imagen",
   /**

@@ -498,6 +498,28 @@ export const PAPEL_DO_VEREDITO_EVT: Readonly<
   sem_criterios: "neutro",
 };
 
+/**
+ * ⚠️⚠️⚠️ O PAPEL DE COR DO CARTÃO DA EVT — ⛔ **seleção × classe** (R1, commit 2).
+ *
+ * ⛔ ⛔ `PAPEL_DO_VEREDITO_EVT[tipo]` sozinho pintava de **sucesso** um M1 que
+ * fecha COR 1 **com hemorragia na TC** (AVC-05). ⚠️ A cor dizia *"faça"* onde a
+ * fonte diz *"exclua hemorragia antes"*. ⛔ A seleção continua sendo lida ⛔ e
+ * mostrada; ⛔ o que ⛔ não pode é o **cartão** ter cara de liberado enquanto a
+ * classe está retida.
+ *
+ * ⚠️ ⛔ Com a classe retida o papel é **neutro** — ⛔ não `critico`: ⛔ imagem
+ * ⛔ não registrada ⛔ não é achado, ⛔ e ⛔ mesmo a hemorragia positiva ⛔ já tem
+ * o seu vermelho legítimo no veredito da IVT ⛔ e no destino hemorrágico. ⛔ A
+ * linha de classe, ⛔ no cartão, é quem diz **por quê** (símbolo + palavra,
+ * **E-15**).
+ */
+export function papelDoVereditoEvt(v: {
+  readonly tipo: TipoDoVereditoEvt;
+  readonly classe: { readonly estado: "liberada" | "retida" };
+}): PapelDeCor {
+  return v.classe.estado === "retida" ? "neutro" : PAPEL_DO_VEREDITO_EVT[v.tipo];
+}
+
 
 export const PRIORIDADE_DE_PRODUTO: readonly Insumo[] = [
   "sitio_da_oclusao",

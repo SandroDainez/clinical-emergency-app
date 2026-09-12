@@ -261,6 +261,22 @@ const evt = SF.RECOMENDACOES.filter((r) => r.terapia === "evt");
     && /dominio === "elegibilidade"/.test(fonte),
     "⛔ regra que pode virar dado ⛔ deve virar dado — ⛔ quatro varreduras de texto ⛔ já passaram verde nesta sessão"
   );
+
+  /**
+   * ── ⚠️⚠️⚠️ R1 (commit 2 · 2026-09-12) · A EVT ⛔ SÓ PODE IMPORTAR C ────
+   *
+   * ⛔ A barreira de classe (`barreiraDeReperfusao`, em `derivacoes-c`) é a
+   * **única** coisa comum a IVT ⛔ e EVT. ⛔ `derivacoes-d` (cortes, DOAC,
+   * antecedentes), `derivacoes-e` (correções), `portao-ivt` ⛔ e
+   * `veredito-da-trombolise` são **da IVT** — ⛔ importá-los faria a EVT herdar
+   * contraindicação que ⛔ não é dela (**E-11**).
+   */
+  const importsProibidos = fonte.match(/from "\.\/(derivacoes-d|derivacoes-e|portao-ivt|veredito-da-trombolise|derivacoes-lab)"/g) ?? [];
+  conf(
+    "⚠️⚠️⚠️ ⛔ a EVT ⛔ NÃO importa D, E, portão ⛔ nem veredito da IVT",
+    importsProibidos.length === 0 && /from "\.\/derivacoes-c"/.test(fonte),
+    `⛔ ${importsProibidos.join(" · ")} — a única coisa comum é a leitura de C`
+  );
 }
 
 

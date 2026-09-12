@@ -351,7 +351,133 @@ export function exclusaoDeHemorragia(estado: EstadoAvc): LeituraDaExclusao {
  * aprender.
  */
 export function reperfusaoRetidaPelaImagem(estado: EstadoAvc): boolean {
-  return exclusaoDeHemorragia(estado).exclusao !== "excluida";
+  return barreiraDeReperfusao(estado).estado === "retida";
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ A BARREIRA DE CLASSE DA REPERFUSÃO — **R1** do plano de correção
+ * (auditoria/PLANO-CORRECAO-AVC-CRITICOS.md, commit 2 · 2026-09-12)
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ELA FECHA (AVC-01 em parte, AVC-05) ─────────────
+ *
+ * ⛔ `reperfusaoRetidaPelaImagem()` existia, ⛔ era provada, ⛔ e **⛔ ninguém a
+ * lia** fora das provas. ⚠️ O veredito da IVT reimplementava **metade** dela
+ * (⛔ só `hemorragia_presente | divergente` viravam `retida`); ⛔ o portão herdava
+ * a metade; ⛔ e a EVT ⛔ não herdava ⛔ nada. Medido por execução:
+ *
+ *   · atendimento **⛔ sem nenhuma TC** + peso ⇒ portão IVT `liberado`;
+ *   · M1 completo + **TC com hemorragia** ⇒ EVT `recomendada`.
+ *
+ * ⚠️ F-16 rec. 1 (**COR 1 · LOE A**): *"exclude intracranial hemorrhage **before
+ * initiating reperfusion interventions**"* — ⛔ a classe inteira (**E-08**), ⛔ e
+ * §5.3 da spec nomeia *"administrar trombolítico; **realizar** trombectomia"*.
+ *
+ * ── ⚠️⚠️ ⛔ POR QUE ⛔ ELA ⛔ SÓ IMPORTA C ──────────────────────────────────
+ *
+ * ⛔ ⛔ Esta função é a **única** coisa comum entre IVT ⛔ e EVT. ⚠️ Se ela um dia
+ * ler `derivacoes-d` (cortes, DOAC, antecedentes) ⛔ ou `derivacoes-e`, a EVT
+ * passa a herdar contraindicação **específica da IVT** — ⛔ exatamente o erro
+ * que a independência das duas frentes (**E-11**, §4.7.1 COR 1 · A) proíbe.
+ * ⛔ A prova dos críticos mede ⛔ isso byte a byte (caso 17).
+ *
+ * ── ⚠️ O QUE ⛔ ELA ⛔ NÃO FAZ ────────────────────────────────────────────
+ *
+ * ⛔ **⛔ Não bloqueia avaliar.** §5.3: a imagem bloqueia **administrar/realizar**,
+ * ⛔ não *avaliar, preparar, pesar, corrigir PA*. ⛔ Quem lista recomendações
+ * continua listando; ⛔ quem **libera ação** consulta ⛔ aqui.
+ * ⛔ **⛔ Não afirma hemorragia por ausência** (**E-23**): `sem_imagem` ⛔ e
+ * `resultado_pendente` retêm a **ação** ⛔ e dizem que é a **trilha** que
+ * ⛔ não tem a exclusão — ⛔ nunca que o paciente sangra.
+ * ⛔ **⛔ Não elege** entre estudos: `divergente` retém até a correção do
+ * laudo errado **na mesma instância** (regra do autor, 2026-08-30).
+ * ⛔ **⛔ Não cria campo.** Deriva de `exclusaoDeHemorragia`,
+ * `situacaoDaTcSemContraste` ⛔ e `estudos()` — ⛔ nada novo é perguntado.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * ⚠️ Por que a classe está retida — ⛔ e ⛔ cada motivo tem gesto de resolução
+ * diferente (**E-26**).
+ *
+ *   · `sem_imagem` — ⛔ nenhum estudo registrado;
+ *   · `sem_resultado_interpretavel` — ⛔ há estudo, ⛔ mas ⛔ nenhum de modalidade
+ *     que responda `estudo_resultado` (ex.: ⛔ só RM). ⚠️ Limitação **declarada**
+ *     (AVC-16): F-16 rec. 1 admite *"NCCT or MRI"*, ⛔ e a matriz de
+ *     capacidades hoje dá resultado ⛔ só à TC sem contraste;
+ *   · `resultado_pendente` — TC sem contraste registrada, ⛔ sem laudo;
+ *   · `hemorragia_presente` — ⛔ achado positivo;
+ *   · `divergente` — ⛔ dois estudos discordam, ⛔ e ⛔ o app ⛔ não elege.
+ */
+export type MotivoDaRetencao =
+  | "sem_imagem"
+  | "sem_resultado_interpretavel"
+  | "resultado_pendente"
+  | "hemorragia_presente"
+  | "divergente";
+
+export type BarreiraDeReperfusao =
+  | {
+      readonly estado: "liberada";
+      /** ⚠️ Os estudos que sustentam a exclusão — a tela os nomeia (**E-30**). */
+      readonly estudos: readonly string[];
+      readonly fonte: "F-16";
+    }
+  | {
+      readonly estado: "retida";
+      readonly motivo: MotivoDaRetencao;
+      readonly estudos: readonly string[];
+      /** ⚠️ A frase curta da leitura de C — ⛔ reutilizada, ⛔ nunca reescrita (**I6**). */
+      readonly curto: string;
+      /** ⚠️ O que precisa acontecer para a classe abrir — ⛔ e ⛔ onde. */
+      readonly oQueFalta: string;
+      readonly leva: "imagem";
+      readonly campo: "estudo_resultado";
+      readonly fonte: "F-16";
+    };
+
+export function barreiraDeReperfusao(estado: EstadoAvc): BarreiraDeReperfusao {
+  const exclusao = exclusaoDeHemorragia(estado);
+  const base = { estudos: exclusao.estudos, fonte: "F-16" as const };
+
+  if (exclusao.exclusao === "excluida") return { ...base, estado: "liberada" };
+
+  const retida = (
+    motivo: MotivoDaRetencao,
+    oQueFalta: string
+  ): Extract<BarreiraDeReperfusao, { estado: "retida" }> => ({
+    ...base,
+    estado: "retida",
+    motivo,
+    curto: exclusao.curto,
+    oQueFalta,
+    leva: "imagem",
+    campo: "estudo_resultado",
+  });
+
+  if (exclusao.exclusao === "hemorragia_presente") {
+    return retida("hemorragia_presente", "Excluir hemorragia intracraniana na imagem");
+  }
+  if (exclusao.exclusao === "divergente") {
+    return retida("divergente", "Corrigir o resultado do exame que estiver errado, na mesma instância");
+  }
+
+  /**
+   * ⚠️ `sem_informacao` — ⛔ e a leitura de C ⛔ já distingue os três vazios
+   * (**E-37**); ⛔ aqui ⛔ só se nomeia o gesto que resolve cada um.
+   */
+  const situacao = situacaoDaTcSemContraste(estado);
+  if (situacao === "realizada_resultado_pendente") {
+    return retida("resultado_pendente", "Registrar o resultado quando o laudo estiver disponível");
+  }
+  if (estudos(estado).length > 0) {
+    return {
+      ...retida(
+        "sem_resultado_interpretavel",
+        "Registrar a tomografia de crânio sem contraste e o seu resultado"
+      ),
+      curto: "Estudo registrado sem resultado que responda pela hemorragia",
+    };
+  }
+  return retida("sem_imagem", "Registrar a tomografia de crânio sem contraste e o seu resultado");
 }
 
 /**

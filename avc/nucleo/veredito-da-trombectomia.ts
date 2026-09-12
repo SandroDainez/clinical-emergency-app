@@ -39,6 +39,28 @@
  *    julgamento clínico necessário, ⛔ e ⛔ nunca exclusão.
  */
 import type { EstadoAvc } from "./estado";
+/**
+ * ⚠️⚠️⚠️ ⛔ O ÚNICO IMPORT PERMITIDO ⛔ FORA DE F — ⛔ e ⛔ ele é de **C**.
+ *
+ * ── ⚠️⚠️ R1 · A BARREIRA DE CLASSE (commit 2 · 2026-09-12) ────────────────
+ *
+ * ⛔ Este motor ⛔ não lia imagem ⛔ nenhuma, ⛔ e por isso um M1 completo **com
+ * TC hemorrágica** saía `recomendada` (AVC-05) — ⛔ enquanto a IVT, ⛔ na mesma
+ * tela, dizia *"retida pela imagem"* ⛔ e o destino apontava para HIC.
+ *
+ * ⚠️ F-16 rec. 1 vale para *"reperfusion **interventions**"*, ⛔ e §5.3 da spec
+ * nomeia *"**realizar** trombectomia"* entre as ações que a exclusão de
+ * hemorragia governa. ⚠️ A barreira é **classe**, ⛔ não contraindicação de
+ * IVT — ⛔ e ⛔ é ⛔ por isso que ⛔ só `derivacoes-c` pode entrar ⛔ aqui:
+ * ⛔ `derivacoes-d` (cortes, DOAC, antecedentes) ⛔ e `derivacoes-e`
+ * (correções) são **⛔ da IVT**, ⛔ e ⛔ importá-los faria a EVT herdar o que
+ * ⛔ não é dela. ⛔ `prova-avc-fase9-evt` varre ⛔ isto, ⛔ e a prova dos críticos
+ * mede byte a byte (caso 17).
+ *
+ * ⚠️ ⛔ E a barreira **⛔ não substitui** a seleção: ⛔ ela viaja **ao lado**
+ * (`classe`), ⛔ porque *avaliar* a população ⛔ não é *realizar* o procedimento.
+ */
+import { barreiraDeReperfusao, type BarreiraDeReperfusao } from "./derivacoes-c";
 import {
   fatosQueFecharam,
   recomendacoesDoEstado,
@@ -106,7 +128,17 @@ export type MotivoDoVereditoEvt = {
 };
 
 export type VereditoDaTrombectomia = {
+  /** ⚠️ A **seleção** — ⛔ o que o catálogo diz sobre a população deste paciente. */
   readonly tipo: TipoDoVereditoEvt;
+  /**
+   * ⚠️⚠️⚠️ A **CLASSE** — ⛔ a exclusão de hemorragia que governa **realizar**
+   * (R1, commit 2). ⛔ Dois eixos, ⛔ e ⛔ nenhum sobrescreve o outro: ⛔ um M1
+   * que fecha COR 1 **⛔ e** tem hemorragia na TC é *"seleção atende · reperfusão
+   * retida pela imagem"* — ⛔ e a tela mostra os dois. ⛔ Achatar num só estado
+   * ⛔ ou esconderia a seleção, ⛔ ou pintaria de sucesso o que ⛔ não se pode
+   * fazer.
+   */
+  readonly classe: BarreiraDeReperfusao;
   readonly frase: string;
   /** ⚠️ ⛔ O que sustenta — ⛔ com COR/LOE ⛔ e verbatim. */
   readonly sustentam: readonly MotivoDoVereditoEvt[];
@@ -206,7 +238,12 @@ export function vereditoDaTrombectomia(
   estado: EstadoAvc,
   agoraMs: number
 ): VereditoDaTrombectomia {
-  const base = { ressalva: RESSALVA };
+  /**
+   * ⚠️ A classe é lida **uma** vez ⛔ e viaja em toda saída — ⛔ inclusive nas
+   * negativas ⛔ e nas incompletas: ⛔ saber que a imagem ⛔ ainda ⛔ não excluiu
+   * hemorragia importa ⛔ mesmo quando a seleção ⛔ não fechou.
+   */
+  const base = { ressalva: RESSALVA, classe: barreiraDeReperfusao(estado) };
   /**
    * ⚠️⚠️ ⛔ FILTRA POR **DOMÍNIO**, ⛔ e ⛔ não por id: ⛔ a recomendação de
    * *stent retriever* (§4.7.4 rec. 5) ⛔ existe no catálogo ⛔ e ⛔ **não**

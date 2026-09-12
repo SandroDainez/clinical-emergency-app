@@ -31,11 +31,11 @@
  * transforma a ausência da API em uma falha nomeada ⛔ e segue.
  *
  * Mapa commit → casos:
- *   C2  barreira de classe ............ 1, 4, 5, 6, 17
+ *   C2  barreira de classe ............ 1, 4 (EVT), 5, 6, 17
  *   C3  agora obrigatório + ms ........ 8, 9
  *   C4  domínios agente/posologia ...... 10, 11
  *   C5  janela como critério IVT ....... 7
- *   C6  composição D1 .................. 2, 3, 24, 25
+ *   C6  composição D1 .................. 2, 3, 4 (IVT), 24, 25
  *   C7  incerteza tipada ............... 12, 13, 14, 15, 16
  *   C8  Interrompida + exposição ....... 18, 19, 20, 22, 26
  *   C9  imagens pós-IVT ................ 21
@@ -158,8 +158,9 @@ ausente("1 · vazio (API)", () => {
   conf("1 · vazio → barreira de classe `retida` por `sem_imagem`",
     b.estado === "retida" && b.motivo === "sem_imagem", `⛔ ${JSON.stringify(b)}`);
   const ve = evt(vazio);
-  conf("1 · vazio → EVT `sem_criterios` ⛔ e classe retida",
-    ve.tipo === "sem_criterios" && ve.classe && ve.classe.estado === "retida",
+  /** ⚠️ Vazio ⇒ toda recomendação é *potencial* ⇒ `incompleta`, nomeando o que falta (E-26). */
+  conf("1 · vazio → EVT `incompleta` ⛔ e classe retida",
+    ve.tipo === "incompleta" && ve.classe && ve.classe.estado === "retida",
     `⛔ tipo=${ve.tipo} classe=${JSON.stringify(ve.classe)}`);
 });
 

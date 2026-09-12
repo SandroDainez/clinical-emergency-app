@@ -52,6 +52,7 @@
 import type { EstadoAvc } from "./estado";
 import type { SuperficieId } from "./tipos";
 import { estadoDaReavaliacao, reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
+import { barreiraDeReperfusao } from "./derivacoes-c";
 import { acoesDoBloqueio } from "./derivacoes-e";
 import { cortesLaboratoriais, itensMarcados, bloqueiosCorrigiveis } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
@@ -97,8 +98,16 @@ export type EstadoDoPortao =
  */
 export type MotivoDoPortao = {
   readonly id: string;
-  /** ⚠️⚠️ ⛔ De QUAL camada ⛔ ele vem — ⛔ e ⛔ elas ⛔ não se misturam. */
-  readonly camada: "seguranca" | "correcao" | "veredito";
+  /**
+   * ⚠️⚠️ ⛔ De QUAL camada ⛔ ele vem — ⛔ e ⛔ elas ⛔ não se misturam.
+   *
+   * ⚠️ `classe` (R1, 2026-09-12): a barreira de reperfusão **⛔ ainda ⛔ não
+   * aberta** — ⛔ imagem ⛔ não registrada ⛔ ou ⛔ sem laudo. ⛔ Não é segurança
+   * (⛔ ninguém afirmou hemorragia, **E-23**) ⛔ e ⛔ não é correção (⛔ não há
+   * aferição que a resolva): ⛔ é a exclusão que a fonte exige **antes** de
+   * qualquer reperfusão (**E-08**), ⛔ e que ⛔ ainda ⛔ não está na trilha.
+   */
+  readonly camada: "seguranca" | "correcao" | "veredito" | "classe";
   readonly rotulo: string;
   /** ⚠️ O valor que sustenta o bloqueio **agora**. */
   readonly dado?: string;
@@ -188,18 +197,32 @@ export function estadoDoPortaoIVT(estado: EstadoAvc): PortaoIVT {
   /* ── 1 · segurança ⛔ NÃO corrigível ─────────────────────────────────── */
 
   /**
-   * ⚠️⚠️ A IMAGEM ENTRA PELO VEREDITO, ⛔ e ⛔ não por leitura própria: `retida`
-   * ⛔ já é o bloqueio de classe (**R2.1 / E-08**), ⛔ e relê-lo aqui criaria
-   * uma segunda verdade sobre o mesmo fato (**I6**).
+   * ⚠️⚠️ A IMAGEM ENTRA PELA **BARREIRA DE CLASSE** (R1, commit 2 · 2026-09-12),
+   * ⛔ e ⛔ não mais por `veredito.tipo === "retida"`.
+   *
+   * ── ⚠️⚠️ ⛔ O FURO QUE ISTO FECHA (AVC-01) ─────────────────────────────
+   *
+   * ⛔ O veredito ⛔ só dizia `retida` para achado positivo ⛔ ou divergência.
+   * ⚠️ Com **⛔ nenhuma TC registrada**, ⛔ ele seguia para o catálogo, ⛔ e ⛔ um
+   * paciente ⛔ só com peso saía `indicada` — ⛔ e o portão, lendo ⛔ só o veredito,
+   * **liberava a administração ⛔ sem exclusão de hemorragia**. ⛔ F-16 rec. 1
+   * (COR 1 · A) ⛔ e §5.3 da spec ⛔ não admitem ⛔ isso.
+   *
+   * ⚠️ A barreira é **uma** função, em C (**I6**); ⛔ aqui ⛔ só se escolhe a
+   * camada do motivo: ⛔ achado positivo/divergência é **segurança**; ⛔ imagem
+   * ausente ⛔ ou ⛔ sem laudo é **classe** — ⛔ e ⛔ nenhuma das duas libera.
    */
-  if (veredito.tipo === "retida") {
+  const barreira = barreiraDeReperfusao(estado);
+  if (barreira.estado === "retida") {
+    const ehAchado = barreira.motivo === "hemorragia_presente" || barreira.motivo === "divergente";
     motivos.push({
-      id: "imagem",
-      camada: "seguranca",
-      rotulo: veredito.frase,
-      fonte: "F-16",
-      oQueFalta: "Excluir hemorragia intracraniana na imagem",
-      leva: "imagem",
+      id: ehAchado ? "imagem" : "imagem_nao_excluida",
+      camada: ehAchado ? "seguranca" : "classe",
+      rotulo: barreira.curto,
+      fonte: barreira.fonte,
+      oQueFalta: barreira.oQueFalta,
+      leva: barreira.leva,
+      campo: barreira.campo,
     });
   }
 
@@ -365,7 +388,21 @@ export function estadoDoPortaoIVT(estado: EstadoAvc): PortaoIVT {
               ? "informacao_incompleta"
               : veredito.tipo === "sem_criterios"
                 ? "sem_criterios"
-                : "liberado";
+                /**
+                 * ⚠️⚠️⚠️ ⛔ A CLASSE ⛔ AINDA ⛔ NÃO ABERTA ⛔ NUNCA LIBERA (R1).
+                 *
+                 * ⛔ Imagem ⛔ não registrada ⛔ ou ⛔ sem laudo é **dado que
+                 * falta** — ⛔ e ⛔ por isso o estado é `informacao_incompleta`,
+                 * ⛔ e ⛔ não um bloqueio de segurança: ⛔ ninguém afirmou
+                 * hemorragia (**E-23**). ⚠️ O motivo `imagem_nao_excluida`,
+                 * acima, diz o gesto que abre a classe.
+                 *
+                 * ⚠️ Invariante medida pela prova dos críticos (caso 25):
+                 * `liberado ⇒ barreira liberada`.
+                 */
+                : barreira.estado === "retida"
+                  ? "informacao_incompleta"
+                  : "liberado";
 
   return { estado: estadoFinal, liberado: estadoFinal === "liberado", motivos };
 }
