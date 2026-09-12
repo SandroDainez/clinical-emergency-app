@@ -948,20 +948,31 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   );
 
   /**
-   * ⚠️⚠️⚠️ ⛔ ONDE O TRATAMENTO DAQUELE EIXO ESTÁ ESCRITO — 2026-09-12.
+   * ⚠️⚠️ ⛔ ONDE O TRATAMENTO DAQUELE EIXO ESTÁ ESCRITO — 2026-09-12.
    *
    * ⛔ Relato do autor: *"quando clico em via aérea me leva à tela de
    * avaliação … o APP ⛔ não me orienta nada"*. ⚠️ ⛔ O toque abria o eixo
    * ⛔ e parava no começo dele — ⛔ com a conduta mais abaixo, ⛔ atrás de um
    * botão.
+   */
+  /**
+   * ── ⚠️⚠️ ⛔ AMEAÇA ATIVA ⇒ O TOQUE VAI AO **TRATAMENTO** — 2026-09-12 ────
    *
-   * ⚠️ ⛔ Nem todo eixo tem tratamento **registrável**: ⛔ `A` ⛔ e `B` ⛔ não
-   * têm, ⛔ e ⛔ isso ⛔ não é falha de fiação — ⛔ **F-23** diz *"airway
-   * support and ventilatory assistance are recommended as needed"* ⛔ e
-   * *"supplemental oxygen … to maintain SpO₂ >94%"*, ⛔ e ⛔ **⛔ é tudo o
-   * que a fonte tem**. ⛔ Inventar agente ⛔ ou dose ⛔ ali seria a tela
-   * escrevendo medicina (**E-31**). ⛔ Para esses, o card diz a conduta ⛔ e
-   * o toque abre o eixo, ⛔ como antes.
+   * ⚠️ Decisão do autor: *"o card resume; a tela do eixo trata"*. ⛔ O
+   * registro continua ⛔ na mesma tela, ⛔ logo acima do bloco.
+   *
+   * ⚠️⚠️ ⛔ E o bloco *"Corrigir agora"* **⛔ só existe com bloqueio ativo** —
+   * ⛔ isso ⛔ é conteúdo, ⛔ não acaso: ⛔ oferecer anti-hipertensivo a quem
+   * ⛔ não tem pressão alta ⛔ seria a tela ensinando a tratar ⛔ o que ⛔ não
+   * existe. ⛔ Por isso a hiperglicemia (⛔ que ⛔ **⛔ não bloqueia**, **F-06**)
+   * ⛔ não tem bloco ⛔ para ⛔ onde rolar — ⛔ e ⛔ ela ⛔ continua tendo
+   * destino: ⛔ o que a **própria ameaça declara** (`leva`).
+   *
+   * ⚠️ ⛔ Nem todo eixo tem tratamento registrável: ⛔ `A` ⛔ e `B` ⛔ não têm,
+   * ⛔ e ⛔ **F-23** ⛔ é a razão — *"airway support and ventilatory assistance
+   * are recommended as needed"* ⛔ e *"supplemental oxygen … to maintain
+   * SpO₂ >94%"* ⛔ **⛔ é tudo o que a fonte tem**. ⛔ Inventar agente ⛔ ou
+   * dose ⛔ ali seria a tela escrevendo medicina (**E-31**).
    */
   const BLOQUEIO_DO_EIXO: Readonly<Record<string, string>> = {
     pressao: "pressao_acima_da_meta",
@@ -1312,22 +1323,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                */
               onPress={() => {
                 const grupo = grupoDoEixo(a.id);
-                /**
-                 * ⚠️⚠️ ⛔ AMEAÇA ATIVA ⇒ ⛔ O TOQUE VAI AO **TRATAMENTO** —
-                 * decisão do autor, 2026-09-12: *"o card resume; a tela do
-                 * eixo trata"*. ⛔ O registro continua ⛔ na mesma tela,
-                 * ⛔ logo acima.
-                 */
-                /**
-                 * ⚠️⚠️ ⛔ O BLOCO *"Corrigir agora"* ⛔ SÓ EXISTE COM BLOQUEIO
-                 * ATIVO — ⛔ e ⛔ isso ⛔ é conteúdo, ⛔ não acaso: ⛔ oferecer
-                 * anti-hipertensivo a quem ⛔ não tem pressão alta ⛔ seria a
-                 * tela ensinando a tratar ⛔ o que ⛔ não existe.
-                 *
-                 * ⛔ ⛔ Por isso a hiperglicemia (⛔ que ⛔ **⛔ não bloqueia**,
-                 * **F-06**) ⛔ não tem bloco ⛔ para ⛔ onde rolar — ⛔ e ⛔ ela
-                 * ⛔ continua tendo destino: ⛔ o que a própria ameaça declara.
-                 */
+                /** ⚠️ Ver `BLOQUEIO_DO_EIXO`: o porquê mora lá, fora do JSX. */
                 const bloqueio = BLOQUEIO_DO_EIXO[a.id];
                 const temTratamentoNaTela =
                   bloqueio !== undefined && bloqueios.some((b) => b.id === bloqueio);

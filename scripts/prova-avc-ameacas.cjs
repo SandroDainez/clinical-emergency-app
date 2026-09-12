@@ -346,4 +346,4 @@ if (falhas > 0) {
   console.log(`\n❌ AMEAÇAS IMEDIATAS — ${falhas} falha(s), ${ok} ok\n`);
   process.exit(1);
 }
-console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 5 eixos (ABCDE)`);
+console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 4 eixos (ABCD)`);
