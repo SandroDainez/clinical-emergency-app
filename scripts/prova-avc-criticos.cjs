@@ -43,6 +43,7 @@
  *   C9  imagens pós-IVT ................ 21
  *   C10 marco canônico ................. 23
  *   C12 DOAC hora não perguntada ....... 27 (red-team C40)
+ *   C13 rota RM «unknown onset» ......... 28 (O6b)
  */
 const fs = require("node:fs");
 const os = require("node:os");
@@ -627,6 +628,60 @@ ausente("27 · DOAC hora não perguntada (API)", () => {
   }
   conf("27 · propriedade: menos informação ⛔ nunca é mais permissivo; DOAC nomeado ⛔ nunca libera (12 combinações)",
     violacoes.length === 0, `⛔ ${JSON.stringify(violacoes)}`);
+});
+
+/* ══ 28 · ROTA RM EXIGE «UNKNOWN TIME OF ONSET» (O6b · 2026-09-12) ═══════ */
+/**
+ * ⚠️⚠️ §4.6.3 rec. 1 escreve *"(a) have **unknown time of onset** and are within
+ * 4.5 hours from symptom recognition and (b) …"*. ⛔ O `exige` só cobrava (b) ⛔ e a
+ * janela: ⛔ início **conhecido** há 6 h ⛔ ainda sustentava *"indicada"*.
+ * ⚠️ Semântica decidida pelo autor: hora conhecida ⇒ contradito · «não sei» ⇒
+ * satisfeito · ⛔ não perguntado ⇒ ausente (⛔ vazio ⛔ não é *unknown onset*).
+ */
+ausente("28 · rota RM (API)", () => {
+  const RMOK = (e) => {
+    let x = regI(e, est(2), "estudo_modalidade", SC.MODALIDADE.rm);
+    x = regI(x, est(2), "dwi_menor_que_um_terco", "sim");
+    return regI(x, est(2), "flair_sem_alteracao_marcada", "sim");
+  };
+  const baseRm = (e = vazio) => reg(RMOK(tcSem(e, 1, AGORA - 1 * H)), "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+  const rec = SF.RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido");
+  conf("28 · `ivt_inicio_desconhecido` exige `inicio_desconhecido`, além de DWI, FLAIR ⛔ e janela",
+    rec !== undefined && ["inicio_desconhecido", "dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"].every((i) => rec.exige.includes(i)),
+    `⛔ ${JSON.stringify(rec && rec.exige)}`);
+  const leituraRm = (e) => DF.recomendacoesDoEstado(e, AGORA).find((l) => l.id === "ivt_inicio_desconhecido");
+
+  const np = reg(baseRm(), "hora_reconhecimento", AGORA - 2 * H);
+  conf("28 · início ⛔ NÃO perguntado + reconhecimento 2 h + RM completa → ⛔ ≠ indicada", ivt(np).v.tipo !== "indicada", `⛔ ${ivt(np).v.tipo}`);
+  conf("28 · ⛔ e a recomendação fica potencial nomeando `inicio_desconhecido`",
+    leituraRm(np) !== undefined && leituraRm(np).correspondencia === "potencialmente_aplicavel" && leituraRm(np).faltam.includes("inicio_desconhecido"),
+    `⛔ ${JSON.stringify(leituraRm(np) && [leituraRm(np).correspondencia, leituraRm(np).faltam])}`);
+  const ns = reg(np, "hora_inicio_observado", "nao_sei");
+  conf("28 · início «não sei» + reconhecimento 2 h + RM completa → indicada pela rota estendida",
+    ivt(ns).v.tipo === "indicada" && ivt(ns).v.sustentam.some((m) => m.id === "ivt_inicio_desconhecido"), `⛔ ${ivt(ns).v.tipo}`);
+  const hc = reg(reg(np, "hora_inicio_observado", AGORA - 6 * H), "hora_ultima_vez_bem", AGORA - 6 * H);
+  conf("28 · início CONHECIDO há 6 h (fora da janela padrão) + reconhecimento 2 h + RM completa → ⛔ ≠ indicada",
+    ivt(hc).v.tipo !== "indicada" && ivt(hc).p.liberado === false, `⛔ ${ivt(hc).v.tipo} / ${ivt(hc).p.estado}`);
+  conf("28 · ⛔ e a recomendação ⛔ não corresponde (requisito contradito)",
+    leituraRm(hc) !== undefined && leituraRm(hc).correspondencia === "nao_corresponde", `⛔ ${JSON.stringify(leituraRm(hc) && leituraRm(hc).correspondencia)}`);
+  /** ⚠️ Com déficit incapacitante: a rota padrão sustenta; ⛔ a RM, contradita, ⛔ não. */
+  const hc2 = reg(reg(np, "hora_inicio_observado", AGORA - 2 * H), "incapacitante_assumido", "Incapacitante");
+  conf("28 · início CONHECIDO há 2 h → rota padrão sustenta; ⛔ a rota RM ⛔ não é quem sustenta",
+    ivt(hc2).v.tipo === "indicada" && !ivt(hc2).v.sustentam.some((m) => m.id === "ivt_inicio_desconhecido"),
+    `⛔ ${ivt(hc2).v.tipo} ${JSON.stringify(ivt(hc2).v.sustentam.map((m) => m.id))}`);
+  const fora = reg(reg(baseRm(), "hora_reconhecimento", AGORA - 4.5 * H - 1), "hora_inicio_observado", "nao_sei");
+  conf("28 · reconhecimento a 4 h 30 + 1 ms → ⛔ ≠ indicada (janela da rota preservada)", ivt(fora).v.tipo !== "indicada", `⛔ ${ivt(fora).v.tipo}`);
+  let semFlair = regI(tcSem(vazio, 1, AGORA - 1 * H), est(2), "estudo_modalidade", SC.MODALIDADE.rm);
+  semFlair = regI(semFlair, est(2), "dwi_menor_que_um_terco", "sim");
+  semFlair = reg(reg(reg(semFlair, "motivo_para_suspeitar_alteracao_coagulacao", "nao"), "hora_reconhecimento", AGORA - 2 * H), "hora_inicio_observado", "nao_sei");
+  conf("28 · RM incompleta (sem FLAIR) + início «não sei» → incompleta nomeando FLAIR",
+    ivt(semFlair).v.tipo === "incompleta" && ivt(semFlair).v.faltam.includes("flair_sem_alteracao_marcada"), `⛔ ${ivt(semFlair).v.tipo} ${JSON.stringify(ivt(semFlair).v.faltam)}`);
+  /** ⚠️ Propriedade: ausência de pergunta ⛔ nunca vale «unknown onset». */
+  const PERM = { liberado: 3 };
+  const perm = (e) => PERM[ivt(e).p.estado] ?? 1;
+  conf("28 · propriedade: início ⛔ não perguntado ⛔ nunca é mais permissivo que «não sei»", perm(np) <= perm(ns) && ivt(np).p.liberado === false, `⛔ np=${ivt(np).p.estado} ns=${ivt(ns).p.estado}`);
+  conf("28 · ⛔ e ⛔ nenhum número novo: a janela da rota continua 4,5 h do reconhecimento",
+    rec !== undefined && rec.janelas.length === 1 && rec.janelas[0].marco === "symptom_recognition" && rec.janelas[0].ateHoras === 4.5, "⛔");
 });
 
 /* ── resultado ─────────────────────────────────────────────────────────── */

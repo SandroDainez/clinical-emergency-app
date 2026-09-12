@@ -164,6 +164,15 @@ export type Insumo =
    */
   | "agente_e_tenecteplase"
   /**
+   * ⚠️⚠️ **«UNKNOWN TIME OF ONSET»** — O6b, 2026-09-12. §4.6.3 rec. 1 escreve
+   * *"(a) have unknown time of onset and are within 4.5 hours from symptom
+   * recognition and (b) …"*. ⛔ O (a) ⛔ não era cobrado: início **conhecido**
+   * há 6 h ⛔ ainda sustentava a rota. ⚠️ Semântica decidida pelo autor: hora
+   * conhecida ⇒ contradiz · «não sei» declarado ⇒ satisfaz · ⛔ não perguntado
+   * ⇒ ausente — ⛔ vazio ⛔ não é *unknown onset* (**E-23**).
+   */
+  | "inicio_desconhecido"
+  /**
    * ⚠️⚠️⚠️ A JANELA COMO **INSUMO**, ⛔ e ⛔ não como enfeite.
    *
    * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA (2026-09-07) ────────────────────────
@@ -215,6 +224,8 @@ export const MOTIVO_CLINICO: Readonly<Record<Insumo, string>> = {
    * médico ⛔ não tem como saber que são perguntas distintas, ⛔ nem qual delas
    * já respondeu. Encontrado na revisão em largura de celular.
    */
+  inicio_desconhecido:
+    "A recomendação de início desconhecido só alcança quem não tem horário de início conhecido.",
   dwi_menor_que_um_terco:
     "Extensão da lesão em DWI, para a trombólise de início desconhecido.",
   flair_sem_alteracao_marcada:
@@ -623,7 +634,8 @@ export const RECOMENDACOES: readonly Recomendacao[] = [
     ],
     /** ⚠️ Janela como critério (commit 5) — ⛔ conta do **reconhecimento**, ⛔ e ⛔ de nenhum outro relógio. */
     criterios: { janela: { usaJanelasDaRecomendacao: true } },
-    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],
+    /** ⚠️ O (a) do verbatim — *"unknown time of onset"* — é requisito próprio (O6b). */
+    exige: ["inicio_desconhecido", "dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],
   },
   {
     id: "ivt_wakeup_ou_45_9",

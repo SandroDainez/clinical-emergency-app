@@ -84,8 +84,8 @@ module.exports = {
     {
       nome: "os dois componentes de RM viram um",
       arquivo: ARQ.conteudoF,
-      de: '    exige: ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],',
-      para: '    exige: ["dwi_menor_que_um_terco", "janela"],',
+      de: '    exige: ["inicio_desconhecido", "dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"],',
+      para: '    exige: ["inicio_desconhecido", "dwi_menor_que_um_terco", "janela"],',
     },
 
     /** ⚠️⚠️ LEVE **E** ⛔ NÃO INCAPACITANTE — duas propriedades. */

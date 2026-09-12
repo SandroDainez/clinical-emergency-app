@@ -420,6 +420,18 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
      * ⚠️⚠️ Os dois componentes de §4.6.3 rec. 1, **separados**. ⛔ O segundo é
      * uma **ausência** — e ⛔ não responder ⛔ não equivale a ausência (E-02).
      */
+    /**
+     * ⚠️⚠️ *"(a) have unknown time of onset"* — O6b, 2026-09-12. ⛔ Só o
+     * **declarado** «não sei» satisfaz; hora conhecida contradiz; ⛔ não
+     * perguntado fica ausente — ⛔ e ⛔ nunca vira desconhecido por conveniência.
+     */
+    case "inicio_desconhecido": {
+      const f = valorAtual(estado, "hora_inicio_observado");
+      if (f === undefined || String(f.valor) === "nao_perguntado") return undefined;
+      if (String(f.valor) === "nao_sei") return "satisfaz";
+      return typeof f.valor === "number" && Number.isFinite(f.valor) ? "contradiz" : undefined;
+    }
+
     case "dwi_menor_que_um_terco":
       return simNaoIncerto(estado, "dwi_menor_que_um_terco");
 

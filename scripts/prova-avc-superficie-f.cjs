@@ -427,7 +427,8 @@ confere("⚠️⚠️ ⛔ e a rec. 3 ⛔ NÃO qualifica o método",
  */
 confere("⚠️⚠️ RM: os DOIS componentes, separados",
   C.RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido").exige.sort().join() ===
-    ["dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"].sort().join(),
+    /** ⚠️ O6b (2026-09-12): o (a) do verbatim — «unknown time of onset» — entrou como requisito próprio. */
+    ["inicio_desconhecido", "dwi_menor_que_um_terco", "flair_sem_alteracao_marcada", "janela"].sort().join(),
   "⛔ um booleano apagaria **qual** dos dois falta — e que o segundo é uma **ausência**");
 
 /**

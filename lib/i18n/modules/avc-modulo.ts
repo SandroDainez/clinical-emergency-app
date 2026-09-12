@@ -358,6 +358,12 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Interrompida após o início — houve exposição": "Interrumpida después del inicio — hubo exposición",
   "Registro contraditório: cancelada depois de iniciada. A exposição foi preservada; registre Interrompida ou corrija.":
     "Registro contradictorio: cancelada después de iniciada. La exposición fue preservada; registre Interrumpida o corrija.",
+  // ── rota RM exige «unknown time of onset» (O6b · 2026-09-12) ─────────────
+  "A recomendação de início desconhecido só alcança quem não tem horário de início conhecido.":
+    "La recomendación de inicio desconocido solo alcanza a quien no tiene hora de inicio conocida.",
+  "Início desconhecido": "Inicio desconocido",
+  "Registrar se o horário de início é desconhecido, no campo do início observado":
+    "Registrar si la hora de inicio es desconocida, en el campo del inicio observado",
   // ── DOAC nomeado com hora não perguntada (red-team C40 · 2026-09-12) ─────
   "Anticoagulante oral direto em uso, hora da última dose ainda não avaliada":
     "Anticoagulante oral directo en uso, hora de la última dosis aún no evaluada",

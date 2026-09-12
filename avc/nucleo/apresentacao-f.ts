@@ -326,6 +326,8 @@ export const CAMPOS_DO_INSUMO: Readonly<Record<Insumo, readonly string[]>> = {
   /** ⚠️ Peso ⛔ sem origem ⛔ não vira dose — os dois campos são o insumo. */
   peso: ["peso", "peso_origem"],
   agente_e_tenecteplase: ["agente_trombolitico"],
+  /** ⚠️ O «unknown time of onset» se responde no próprio campo do início (O6b). */
+  inicio_desconhecido: ["hora_inicio_observado"],
   dwi_menor_que_um_terco: ["dwi_menor_que_um_terco"],
   flair_sem_alteracao_marcada: ["flair_sem_alteracao_marcada"],
   penumbra_salvavel: ["penumbra_salvavel"],

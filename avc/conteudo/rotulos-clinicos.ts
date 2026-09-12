@@ -56,6 +56,7 @@ export const ROTULO_CLINICO: Readonly<Record<string, string>> = {
   penumbra_por_perfusao_automatizada: "Penumbra por perfusão automatizada",
   dwi_menor_que_um_terco: "DWI menor que um terço do território",
   flair_sem_alteracao_marcada: "FLAIR sem alteração marcada",
+  inicio_desconhecido: "Início desconhecido",
   peso: "Peso",
   nao_elegivel_a_evt: "Inelegibilidade à trombectomia",
   agente_e_tenecteplase: "Agente em consideração",
@@ -113,6 +114,7 @@ export const ACAO_PENDENTE: Readonly<Record<string, string>> = {
    * ⛔ não é ação clínica ⛔ nem diz o que fazer. ⚠️ Visto na revisão de 375 px.
    */
   janela: "Informar o horário de início do déficit",
+  inicio_desconhecido: "Registrar se o horário de início é desconhecido, no campo do início observado",
 
   hora_ultima_vez_bem: "Informar a última vez visto bem",
   hora_chegada: "Informar o horário de chegada",
