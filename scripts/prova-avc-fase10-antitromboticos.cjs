@@ -346,10 +346,17 @@ const COM_HEMORRAGIA = "Hemorragia intracraniana identificada";
   );
   /** ⚠️ ⛔ E hemorragia no controle ⛔ não vira veredito aqui: é **resultado**. */
   const comSangue = comEstudo(comIvt(vazio, 26), 1, 1, TC, COM_HEMORRAGIA);
+  /**
+   * ⚠️ Desde o commit 9 (2026-09-12, AVC-06) o achado tem **estado próprio**
+   * (`resultado_disponivel_com_achado`) — ⛔ para ⛔ nunca ser vencido por uma
+   * posterior normal —, ⛔ e continua sendo ⛔ **só resultado**: ⛔ nenhum verbo
+   * de conduta, ⛔ nenhum *"liberado"*.
+   */
   conf(
     "⚠️ ⛔ e o resultado COM hemorragia também é ⛔ só resultado",
-    est(comSangue)?.estado === "resultado_disponivel"
-    && est(comSangue)?.resultado === COM_HEMORRAGIA,
+    est(comSangue)?.estado === "resultado_disponivel_com_achado"
+    && est(comSangue)?.resultado === COM_HEMORRAGIA
+    && !/inici|suspend|administr|liberad/i.test(String(est(comSangue)?.frase)),
     `⛔ ${JSON.stringify(est(comSangue))}`
   );
 }

@@ -458,16 +458,16 @@ ausente("21 · imagens pós-IVT (API)", () => {
   const ordemB = tcSem(tcCom(base, 1, T0 + 25 * H), 2, T0 + 1 * H);
   for (const [nome, e] of [["normal→hemorrágica", ordemA], ["hemorrágica→normal (inserção invertida)", ordemB]]) {
     const im = DG.imagensAposIvt(e, T0);
-    conf(`21 · ${nome} → \`hemorragia_identificada\` ⛔ e discordante`,
-      im.estado === "hemorragia_identificada" && im.discordante === true, `⛔ ${JSON.stringify(im)}`);
+    conf(`21 · ${nome} → achado presente ⛔ e discordante (C lê; G consome)`,
+      im.estado === "com_resultado" && im.achadoPresente === true && im.discordante === true, `⛔ ${JSON.stringify(im)}`);
     const a = DG.estadoAntitromboticoPosIvt(e, AGORA);
     conf(`21 · ${nome} → o antitrombótico ⛔ NUNCA diz «sem hemorragia»`,
       a.resultado !== SEM && a.estado !== "resultado_disponivel", `⛔ ${a.estado} · ${a.resultado}`);
-    conf(`21 · ${nome} → estado próprio de hemorragia pós-IVT`, a.estado === "hemorragia_pos_ivt_identificada", `⛔ ${a.estado}`);
+    conf(`21 · ${nome} → estado próprio de achado pós-IVT`, a.estado === "resultado_disponivel_com_achado" && a.resultado === HEM, `⛔ ${a.estado}`);
   }
   const concordam = tcSem(tcSem(base, 1, T0 + 1 * H), 2, T0 + 25 * H);
-  conf("21 · duas posteriores sem hemorragia → `sem_hemorragia_identificada`",
-    DG.imagensAposIvt(concordam, T0).estado === "sem_hemorragia_identificada", `⛔ ${JSON.stringify(DG.imagensAposIvt(concordam, T0))}`);
+  conf("21 · duas posteriores sem hemorragia → com resultado, ⛔ sem achado",
+    DG.imagensAposIvt(concordam, T0).estado === "com_resultado" && DG.imagensAposIvt(concordam, T0).achadoPresente === false, `⛔ ${JSON.stringify(DG.imagensAposIvt(concordam, T0))}`);
   const basal = tcSem(base, 1, T0 - 1 * H);
   conf("21 · estudo ANTERIOR à IVT ⛔ não é posterior", DG.imagensAposIvt(basal, T0).estado === "nenhuma_posterior", `⛔ ${JSON.stringify(DG.imagensAposIvt(basal, T0))}`);
 });

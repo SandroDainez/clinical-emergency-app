@@ -1150,3 +1150,85 @@ export function leiturasDaSuperficieC(estado: EstadoAvc): readonly (Leitura & { 
     { id: "alergias", ...alergiaAContraste(estado) },
   ];
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️⚠️ AS IMAGENS **POSTERIORES A UM INSTANTE** — ⛔ lidas, ⛔ e ⛔ nunca eleitas
+ * (commit 9 · 2026-09-12 · AVC-06)
+ *
+ * ── ⚠️⚠️ ⛔ O DEFEITO QUE ISTO FECHA ─────────────────────────────────────
+ *
+ * ⛔ G tinha um `estudoDeControle()` que devolvia o **primeiro por ordem de
+ * registro** com laudo. ⚠️ Medido: TC normal a T+1 h ⛔ e TC **hemorrágica** a
+ * T+25 h ⇒ o antitrombótico pós-IVT dizia *"Sem hemorragia"*, ⛔ enquanto esta
+ * superfície dizia `divergente` ⛔ e o destino apontava para HIC. ⛔ G reelegia
+ * o que C se recusa a eleger — ⛔ e a regra do autor (2026-08-30) é explícita:
+ * *"fazer o app preferir 'local', 'mais novo' ⛔ ou qualquer atributo ⛔ sem regra
+ * explícita seria criar uma hierarquia que ⛔ ninguém autorizou"*.
+ *
+ * ⚠️ Por isso a leitura mora **aqui**: quem lê imagem é C. ⛔ G passa ⛔ só o
+ * instante ⛔ e consome — ⛔ e a trava de G proíbe ⛔ até a palavra.
+ *
+ * ── ⚠️ O QUE ESTA LEITURA FAZ ────────────────────────────────────────────
+ *
+ * ⛔ **⛔ Não elege.** ⛔ Se **qualquer** estudo posterior descreve hemorragia,
+ * ⛔ isso é dito (a mesma regra de `destinoDaImagem`); ⛔ se outro discorda,
+ * ⛔ a discordância é dita junto. *"Sem hemorragia"* ⛔ só quando **todas** as
+ * posteriores com laudo concordam.
+ * ⛔ **⛔ Não classifica finalidade** (precoce · deterioração · controle):
+ * ⛔ exigiria fato novo ⛔ ou regra temporal que a fonte ⛔ não dá (**HR-6**).
+ * ⛔ **⛔ Não assume** estudo sem hora como posterior (**E-52**).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type LeituraDasImagensPosteriores =
+  | { readonly estado: "nenhuma_posterior" }
+  | { readonly estado: "posterior_sem_resultado"; readonly estudos: readonly string[] }
+  | {
+      readonly estado: "com_resultado";
+      readonly estudos: readonly string[];
+      /** ⚠️ **Alguma** posterior descreve hemorragia. */
+      readonly achadoPresente: boolean;
+      /** ⚠️ Há posterior com laudo que **⛔ não** a descreve — ⛔ dito, ⛔ nunca resolvido por eleição. */
+      readonly discordante: boolean;
+      /** ⚠️ O resultado **como foi registrado** — ⛔ o rótulo do achado, ⛔ ou o da ausência. */
+      readonly resultado: string;
+      /** ⚠️ A frase curta que a tela mostra. */
+      readonly curto: string;
+    };
+
+export function imagensAposInstante(
+  estado: EstadoAvc,
+  instanteMs: number
+): LeituraDasImagensPosteriores {
+  const posteriores = estudos(estado).filter(
+    (x) => x.horaConhecida && x.hora !== undefined && x.hora >= instanteMs
+  );
+  const comLaudo = posteriores.filter((x) => x.resultado !== undefined);
+  if (comLaudo.length === 0) {
+    return posteriores.length === 0
+      ? { estado: "nenhuma_posterior" }
+      : { estado: "posterior_sem_resultado", estudos: posteriores.map((x) => x.id) };
+  }
+  const comAchado = comLaudo.filter((x) => x.resultado === RESULTADO_TC.hemorragia);
+  const estudosIds = comLaudo.map((x) => x.id);
+  if (comAchado.length > 0) {
+    const discordante = comLaudo.length > comAchado.length;
+    return {
+      estado: "com_resultado",
+      estudos: estudosIds,
+      achadoPresente: true,
+      discordante,
+      resultado: RESULTADO_TC.hemorragia,
+      curto: discordante
+        ? "Hemorragia intracraniana identificada em imagem posterior à trombólise; há outra imagem posterior que não a descreve. O aplicativo não escolhe entre elas."
+        : "Hemorragia intracraniana identificada em imagem posterior à trombólise.",
+    };
+  }
+  return {
+    estado: "com_resultado",
+    estudos: estudosIds,
+    achadoPresente: false,
+    discordante: false,
+    resultado: RESULTADO_TC.semHemorragia,
+    curto: "Resultado da imagem de controle registrado.",
+  };
+}

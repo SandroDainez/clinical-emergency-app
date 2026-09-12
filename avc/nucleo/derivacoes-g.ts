@@ -18,7 +18,7 @@
  * caractere em relação ao estado vazio.
  */
 
-import { destinoDaImagem, estudos, type Estudo } from "./derivacoes-c";
+import { destinoDaImagem, estudos, imagensAposInstante, type Estudo } from "./derivacoes-c";
 import { PA_POS_REPERFUSAO } from "../conteudo/antihipertensivos";
 import { reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 /**
@@ -398,8 +398,15 @@ export type EstadoAntitrombotico =
   | "imagem_pendente"
   /** ⚠️ Estudo posterior à IVT, ⛔ e o laudo ⛔ ainda ⛔ não veio. */
   | "imagem_realizada_sem_resultado"
-  /** ⚠️⚠️ O laudo existe. ⛔ **⛔ E ⛔ SÓ ISSO.** */
+  /** ⚠️⚠️ O laudo existe ⛔ e ⛔ **nenhuma** posterior traz o achado. ⛔ **⛔ E ⛔ SÓ ISSO.** */
   | "resultado_disponivel"
+  /**
+   * ⚠️⚠️⚠️ **Alguma** imagem posterior à IVT traz o achado que C lê (commit 9,
+   * AVC-06). ⛔ Nunca é vencida por uma anterior normal, ⛔ e a discordância,
+   * quando há, é dita por C. ⛔ Nenhuma conduta sai daqui; ⛔ a saída de fluxo
+   * (PD-36) segue por C.
+   */
+  | "resultado_disponivel_com_achado"
   /** ⚠️⚠️ §4.8 rec. 2 — ⛔ risco incerto, ⛔ e ⛔ nunca rotina. */
   | "excecao_precoce_pode_ser_considerada";
 
@@ -409,6 +416,8 @@ export type LeituraAntitrombotica = {
   readonly ressalva: string;
   /** ⚠️ O resultado **como foi registrado**. ⛔ ⛔ Nunca interpretado. */
   readonly resultado?: string;
+  /** ⚠️ Posteriores com laudos **discordantes** — ⛔ dito, ⛔ e ⛔ não eleito (commit 9). */
+  readonly discordante?: boolean;
   readonly horasDesdeIvt?: number;
   /** ⚠️⚠️ COR/LOE ⛔ só quando há recomendação graduada em jogo. */
   readonly cor?: string;
@@ -448,15 +457,23 @@ const REC = (id: string) =>
  * divergiriam no dia em que *"hora desconhecida"* ganhasse tratamento
  * (**I6**). ⛔ A leitura já existia, ⛔ e já distingue `horaDesconhecida`.
  */
-function estudoDeControle(
-  estado: EstadoAvc,
-  inicioIvtMs: number
-): Estudo | undefined {
-  const posteriores = estudos(estado).filter(
-    (x) => x.horaConhecida && x.hora !== undefined && x.hora >= inicioIvtMs
-  );
-  /** ⚠️ Entre dois estudos de controle, o que **tem laudo** responde. */
-  return posteriores.find((x) => x.resultado !== undefined) ?? posteriores[0];
+/**
+ * ⚠️⚠️ AS IMAGENS POSTERIORES À IVT — ⛔ **lidas por C**, ⛔ e ⛔ só consumidas
+ * aqui (commit 9 · 2026-09-12 · AVC-06).
+ *
+ * ⛔ A primeira versão desta função vivia em G ⛔ e devolvia o **primeiro estudo
+ * por ordem de registro** com laudo: ⛔ uma TC normal a T+1 h vencia uma TC
+ * com achado a T+25 h. ⚠️ G ⛔ não decide sobre imagem: ⛔ quem lê imagem é C
+ * (`imagensAposInstante`), ⛔ que ⛔ não elege ⛔ e diz a discordância. ⛔ Aqui
+ * ⛔ só se passa o **instante** da IVT ⛔ e se consome a leitura — ⛔ e a
+ * trava desta superfície garante que ⛔ nenhuma palavra de imagem nasce em G.
+ *
+ * ⛔ Finalidade do estudo (precoce · deterioração · controle) ⛔ não é
+ * classificada: exigiria fato novo ⛔ ou regra temporal que a Table 7 ⛔ não dá
+ * (**HR-6**, fora desta rodada).
+ */
+export function imagensAposIvt(estado: EstadoAvc, inicioIvtMs: number) {
+  return imagensAposInstante(estado, inicioIvtMs);
 }
 
 export function estadoAntitromboticoPosIvt(
@@ -504,7 +521,8 @@ export function estadoAntitromboticoPosIvt(
     r90 !== undefined && minutosDesdeIvt >= 0 && minutosDesdeIvt < r90.janela.minutos;
 
   const base = { ressalva: RESSALVA_ANTITROMBOTICA, horasDesdeIvt, aspirinaIvNosNoventaMin };
-  const controle = estudoDeControle(estado, inicio);
+  const imagens = imagensAposIvt(estado, inicio);
+  const semLaudo = imagens.estado === "nenhuma_posterior" || imagens.estado === "posterior_sem_resultado";
 
   /**
    * ⚠️⚠️⚠️ A EXCEÇÃO VEM ANTES DOS DEGRAUS DA IMAGEM — ⛔ e ⛔ só dentro das
@@ -532,7 +550,7 @@ export function estadoAntitromboticoPosIvt(
     r24 !== undefined
     && minutosDesdeIvt < r24.janela.minutos
     && julgamento === true
-    && controle?.resultado === undefined
+    && semLaudo
   ) {
     return {
       ...base,
@@ -545,7 +563,7 @@ export function estadoAntitromboticoPosIvt(
     };
   }
 
-  if (controle === undefined) {
+  if (imagens.estado === "nenhuma_posterior") {
     /** ⚠️⚠️ ⛔ Antes do prazo ⛔ nada está atrasado — ⛔ e o nome diz isso. */
     return horasDesdeIvt < HORAS_DA_IMAGEM_DE_CONTROLE
       ? {
@@ -574,7 +592,7 @@ export function estadoAntitromboticoPosIvt(
         };
   }
 
-  if (controle.resultado === undefined) {
+  if (imagens.estado === "posterior_sem_resultado") {
     return {
       ...base,
       estado: "imagem_realizada_sem_resultado",
@@ -583,15 +601,32 @@ export function estadoAntitromboticoPosIvt(
   }
 
   /**
+   * ⚠️⚠️⚠️ O ACHADO EM **QUALQUER** POSTERIOR PREVALECE (commit 9, AVC-06):
+   * ⛔ uma TC normal a T+1 h ⛔ não desfaz uma posterior com achado, ⛔ e a ordem
+   * de registro ⛔ nunca decide. ⛔ A frase ⛔ e o resultado vêm de C; ⛔ nenhuma
+   * conduta sai daqui.
+   */
+  if (imagens.achadoPresente) {
+    return {
+      ...base,
+      estado: "resultado_disponivel_com_achado",
+      resultado: imagens.resultado,
+      discordante: imagens.discordante,
+      frase: imagens.curto,
+    };
+  }
+
+  /**
    * ⚠️⚠️⚠️ ⛔ **⛔ O RESULTADO, ⛔ E ⛔ NADA ALÉM DELE.**
    *
    * ⛔ ⛔ *"Sem hemorragia"* ⛔ **⛔ não** é *"pode iniciar"*. ⚠️ A frase abaixo
    * ⛔ não contém verbo de conduta ⛔ de propósito, ⛔ e ⛔ há trava que o mede.
+   * ⛔ E ⛔ ela ⛔ só sai quando **todas** as posteriores com laudo concordam.
    */
   return {
     ...base,
     estado: "resultado_disponivel",
-    resultado: controle.resultado,
+    resultado: imagens.resultado,
     frase: "Resultado da imagem de controle registrado.",
   };
 }

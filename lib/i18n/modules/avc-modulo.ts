@@ -343,6 +343,11 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Faltam dados para concluir":
     "Faltan datos para concluir",
   "Falta registrar": "Falta registrar",
+  // ── imagens posteriores à IVT (commit 9 · 2026-09-12 · AVC-06) ─────────
+  "Hemorragia intracraniana identificada em imagem posterior à trombólise.":
+    "Hemorragia intracraneal identificada en imagen posterior a la trombólisis.",
+  "Hemorragia intracraniana identificada em imagem posterior à trombólise; há outra imagem posterior que não a descreve. O aplicativo não escolhe entre elas.":
+    "Hemorragia intracraneal identificada en imagen posterior a la trombólisis; hay otra imagen posterior que no la describe. La aplicación no elige entre ellas.",
   // ── exposição ao trombolítico (R4 · D2 · commit 8b · 2026-09-12) ───────
   "Trombólise interrompida": "Trombólisis interrumpida",
   "Trombólise registrada sem horário: o intervalo até agora é indeterminado, e a ordem da imagem de controle vale.":
