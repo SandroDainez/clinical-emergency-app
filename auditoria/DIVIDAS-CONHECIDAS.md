@@ -5570,3 +5570,67 @@ transcrita **antes** de conferir contra a lista.
 
 **Hoje:** F-35b e F-35c têm a **transcrição fechada** e o **slot clínico ⛔ não
 completo** — LF-01 a LF-05 abertas.
+
+---
+
+## D-138 — ⏸️ ABERTA · A VARREDURA DE i18n DESCARTA PORTUGUÊS SEM ACENTO
+
+**Data:** 2026-09-11 · descoberta por acidente, ao registrar o **F-36**.
+
+`scripts/varredura-pt.cjs` classificou a string
+
+> `"Anafilaxia geral — broncodilatador, adrenalina EV e volume"`
+
+como **não-prosa**, e ⛔ não a cobrou de tradução. Ela é rótulo de tela, é
+português, e estava **sem par PT/ES**.
+
+### A causa, medida com o instrumento instrumentado
+
+Rodando a própria varredura com sonda:
+
+```
+DEBUG "Choque circulatório e monitorização hemodinâmi" | prose= true  | dict= true
+DEBUG "Escolha do fluido de ressuscitação em adulto c" | prose= true  | dict= true
+DEBUG "Anafilaxia geral — broncodilatador, adrenalina" | prose= false | dict= false
+```
+
+Em `isProse`, fora de campo de tela reconhecido, vale:
+
+```js
+if (!PT_HINT.test(s)) return false;
+```
+
+⚠️⚠️ A frase **não tem um único acento** — *"Anafilaxia geral broncodilatador
+adrenalina EV e volume"* — e ⛔ não casa nenhuma palavra-pista. Some da rede.
+
+### Por que isso é sério, e ⛔ não cosmético
+
+⚠️ A varredura é a única trava que garante o par PT/ES. Uma frase que ela
+descarta **vai para a tela do médico hispanofalante em português**, sem que
+nada reprove.
+
+⚠️ E o descarte é **silencioso**: não há aviso de "pulei esta", só ausência.
+
+⚠️⚠️ Isto é a **R-CONTROLE** aplicada a uma trava: *"SEM TRADUÇÃO: 0"* pode
+significar *"tudo traduzido"* ou *"não olhei"*, e hoje as duas saídas são
+idênticas.
+
+### ⚠️ O que NÃO é o defeito
+
+⛔ A varredura **não** cegou para o arquivo. Sonda inserida em
+`avc/conteudo/fontes.ts` foi flagrada na hora. O universo está certo; o
+**classificador** é que descarta.
+
+### Caminho
+
+1. em posição de **campo de tela reconhecido** (`assunto:`, `rotulo:`,
+   `label:`), ⛔ dispensar a heurística de idioma — o literal vai para a tela,
+   e isso basta. O código já faz isso para `CAMPO_DE_TELA`; **`assunto:` não
+   está na lista**;
+2. ou relatar as strings descartadas por `PT_HINT` num bloco *"descartadas por
+   heurística"*, para que o silêncio deixe de ser indistinguível do verde;
+3. mutação fiel: uma frase em português **sem acento** em campo de tela tem de
+   ser cobrada.
+
+⚠️ **Correção imediata já feita:** a tradução do assunto do F-36 foi
+adicionada à mão. ⛔ Isso ⛔ não fecha a dívida — fecha o sintoma.

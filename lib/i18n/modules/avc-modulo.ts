@@ -202,6 +202,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Choque cardiogénico — agentes vasoactivos y rangos de dosis",
   "Anafilaxia por contraste iodado — reconhecer e tratar":
     "Anafilaxia por contraste yodado — reconocer y tratar",
+  "Anafilaxia geral — broncodilatador, adrenalina EV e volume":
+    "Anafilaxia general — broncodilatador, adrenalina IV y volumen",
   "Hemorragia após trombólise ou anticoagulação":
     "Hemorragia tras trombólisis o anticoagulación",
   "Tromboembolismo pulmonar com instabilidade":

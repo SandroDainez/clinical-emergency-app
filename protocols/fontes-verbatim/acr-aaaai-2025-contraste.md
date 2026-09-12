@@ -20,7 +20,25 @@
 > | eixo | estado |
 > |---|---|
 > | **fidelidade documental** | ✅ **transcrito e conferido** em 2026-09-11 · 19 folhas, p. 1–17 do artigo |
-> | **aplicabilidade ao AVC isquêmico** | ⏳ **pendente** · ⚠️ **busca registrada: a palavra *stroke* aparece ZERO vezes no documento** |
+> | **aplicabilidade ao AVC isquêmico** | ⏳ **pendente** · ⚠️ **busca registrada e reconferida em 2026-09-11: *stroke*, *thrombolysis* e *thrombectomy* aparecem ZERO vezes** |
+
+> ## ⚠️⚠️⚠️ R-CONTROLE · toda busca declara controle positivo
+>
+> Regra nascida de um erro neste próprio arquivo, em 2026-09-11.
+>
+> A §2.4 afirmava *"a fonte NÃO dá broncodilatador"*, apoiada numa tabela de
+> buscas com **0 ocorrências**. A refação encontrou **1 ocorrência**, e a frase
+> da fonte contradiz o que estava escrito.
+>
+> | exigência | por quê |
+>|---|---|
+> | **controle positivo** em toda busca | uma palavra que TEM de aparecer (`the`, `patients`). Se ela der 0, o instrumento está quebrado e nenhum 0 daquela rodada vale |
+> | **achatar quebras de linha** antes de buscar frase | `tr '\n' ' '` — frase de várias palavras se parte entre linhas e some da busca |
+> | **conferir o caminho do arquivo** | um PDF movido devolve 0 em tudo, sem erro visível se `stderr` estiver suprimido |
+> | **citar o trecho**, não só a contagem | contagem sem contexto não distingue *"não menciona"* de *"menciona e diz outra coisa"* |
+>
+> ⚠️ É a **R-AUSENCIA** um nível abaixo: lá, afirmação de ausência exige busca;
+> aqui, **a busca exige prova de que funcionou**.
 
 ## ⚠️⚠️ NATUREZA E FORÇA — o documento **declara** força, em esquema próprio
 
@@ -179,8 +197,15 @@ contraste **intra-arterial**. ⛔ Este documento ⛔ **não** o cobre.
 > epinephrine**."
 
 ⚠️⚠️ **Esta frase toca a LF-01 — e ⛔ não a fecha.** Ela manda **parar a
-infusão do contraste**, e ⛔ não diz nada sobre continuar, abortar ou repetir o
-**exame**, nem sobre a janela de reperfusão do AVC. Ver §APLICABILIDADE.
+infusão do contraste**, o que já é mais do que nada: é o primeiro passo, e é
+explícito. ⛔ O que ela **não** diz é se o **exame** se completa, se aborta ou
+se repete, nem o que acontece com a janela de reperfusão do AVC.
+Ver §APLICABILIDADE.
+
+⚠️ Busca refeita em 2026-09-11 com controle positivo: `abort` = 0,
+`discontinu` = 0, `resume` = 1 (contexto não relacionado ao exame),
+`re-exposure` = 10 (todas sobre **reexposição futura ao contraste**, e ⛔ não
+sobre continuar o exame em curso).
 
 ## 2.2 · Adrenalina — dose, via e repetição · p. 5
 
@@ -242,28 +267,52 @@ lidas do render e cruzadas com a camada de texto, sem divergência.
 >
 > "H1 antihistamines should be used primarily for reactions limited to the skin."
 
-## 2.4 · ⚠️⚠️ BRONCOESPASMO — busca registrada, e a fonte NÃO dá broncodilatador
+## 2.4 · ⚠️⚠️ BRONCOESPASMO E SUPORTE RESPIRATÓRIO — **CORRIGIDO em 2026-09-11**
 
-⚠️ Conferido em 2026-09-11, a pedido do autor, na camada de texto do PDF
-completo (113.171 caracteres):
+⛔⛔ **ESTA SEÇÃO ESTAVA ERRADA.** A versão anterior afirmava que o documento
+*"NÃO dá broncodilatador"*, com uma tabela de buscas registrando **0
+ocorrências** para `bronchodilator`, `albuterol`, `salbutamol`, `beta-agonist`,
+`beta2` e `inhaled`.
 
-| termo | ocorrências |
-|---|---|
-| *bronchodilator* · *albuterol* · *salbutamol* · *beta-agonist* · *beta2* · *inhaled* | **0** cada |
+**A refação da busca, com controle positivo, contradiz aquilo:**
 
-➜ ⛔ **O documento nomeia o broncoespasmo como ACHADO, e ⛔ não dá tratamento
-específico para ele.** Broncoespasmo aparece na **Tabela 1** como achado
-**moderado** (sem hipóxia) e **grave** (com hipóxia), e na **Tabela 2** entre os
-sinais respiratórios da anafilaxia.
+| termo | antes (registrado) | agora (conferido) |
+|---|---|---|
+| `bronchodilator` | 0 | **1** |
+| `oxygen` | não buscado | **4** |
+| `albuterol` · `salbutamol` · `beta-agonist` · `nebuli` | 0 | 0 ✅ |
 
-⚠️ O que a fonte dá para o eixo respiratório é: **adrenalina** como primeira
-linha, e *"supplemental oxygen may be necessary for patients with respiratory
-symptoms"*.
+### O que a fonte REALMENTE diz — p. 5
 
-⚠️⚠️ ⛔ **Isto NÃO é ausência na literatura** — é ausência **nesta fonte**, e a
-busca está registrada. O app **já tem** módulo de anafilaxia com a WAO 2020
-declarada, que é onde o broncodilatador provavelmente vive. ➜ Conferir lá antes
-de abrir qualquer lacuna.
+> "Epinephrine counteracts the effects of the myriad of mediators of anaphylaxis
+> and arrests further mediator release. **All other therapies, including
+> antihistamines, glucocorticoids, and bronchodilators should be secondarily
+> considered after stabilization.**"
+
+E, p. 6:
+
+> "**Supplemental oxygen may be necessary for patients with respiratory
+> symptoms.**"
+
+E, na Tabela 2 (anafilaxia × vasovagal), o manejo da anafilaxia inclui:
+
+> "Intramuscular epinephrine, supine with legs elevated, intravenous fluid,
+> **oxygen**, and other measures as warranted"
+
+### A afirmação correta, e ela é mais estreita
+
+✅ A fonte **nomeia** broncodilatador e **posiciona** hierarquicamente: vem
+**depois** da adrenalina e **depois** da estabilização, nunca no lugar dela.
+
+⛔ A fonte **não diz qual** broncodilatador, **nem dose, nem via, nem
+repetição**. É lacuna de **detalhe farmacológico**, e ⛔ não de conduta.
+
+✅ A fonte **cobre oxigênio suplementar** para sintomas respiratórios, sem
+alvo de saturação nem dispositivo.
+
+➜ Portanto o que o **F-36** precisa buscar é **agente, dose e via do
+broncodilatador**, e ⛔ não *"o que fazer no broncoespasmo"*, que esta fonte já
+posiciona.
 
 ## 2.5 · Tratamento das reações leves e moderadas — ⛔ fora do escopo · p. 3
 
@@ -394,7 +443,24 @@ pré-medicação em emergência com janela terapêutica.
 busca insensível a maiúsculas, em 2026-09-11.
 
 ➜ ⛔ **O documento não menciona AVC nem trombólise.** Isso é **medida
-registrada**, e ⛔ não suposição.
+registrada**, e ⛔ não suposição. Refeito em 2026-09-11 com controle positivo:
+`stroke` = 0, `thrombolysis` = 0, `thrombectomy` = 0.
+
+### ⚠️⚠️ A ÚNICA MENÇÃO NEUROLÓGICA — e ela inverte o problema
+
+`cerebrovascular` aparece **uma vez**, na **Tabela 3 · Diagnóstico diferencial
+da anafilaxia**, p. 5:
+
+> | Cerebrovascular | Focal neurologic deficit |
+
+⚠️⚠️⚠️ **Leia o sentido:** para esta fonte, o evento cerebrovascular é um
+**diagnóstico diferencial DA anafilaxia** — algo que pode ser confundido com
+ela. ⛔ Ela **não** trata do caminho inverso, que é o do nosso módulo:
+**anafilaxia acontecendo EM um paciente que já tem AVC**.
+
+➜ Isso reforça, por outro ângulo, que a aplicabilidade ao AVC **não vem da
+fonte**: o único lugar onde os dois mundos se tocam neste documento é uma
+linha de tabela que aponta na direção oposta.
 
 ## ✅ O que é transportável
 

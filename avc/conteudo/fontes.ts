@@ -65,6 +65,7 @@ const CPTW386 = "protocols/fontes-verbatim/einstein-cptw386-choque.md";
 const ESICM_FLUIDOS = "protocols/fontes-verbatim/esicm-2024-fluidos-parte1.md";
 const ACC_CARDIOGENICO = "protocols/fontes-verbatim/acc-2025-choque-cardiogenico.md";
 const F35B_CONTRASTE = "protocols/fontes-verbatim/acr-aaaai-2025-contraste.md";
+const F36_ANAFILAXIA = "protocols/fontes-verbatim/f36-anafilaxia-geral-contrato.md";
 const F35C_TROMBOLISE = "protocols/fontes-verbatim/aha-asa-2017-hemorragia-pos-alteplase.md";
 
 export const SLOTS: readonly SlotDeFonte[] = [
@@ -221,6 +222,17 @@ export const SLOTS: readonly SlotDeFonte[] = [
   { id: "F-34", assunto: "Escolha do fluido de ressuscitação em adulto crítico", estado: "transcrito", arquivo: ESICM_FLUIDOS },
   { id: "F-35a", assunto: "Choque cardiogênico — agentes vasoativos e faixas de dose", estado: "transcrito", arquivo: ACC_CARDIOGENICO },
   { id: "F-35b", assunto: "Anafilaxia por contraste iodado — reconhecer e tratar", estado: "transcrito", arquivo: F35B_CONTRASTE },
+  /**
+   * ⚠️⚠️ F-36 ABERTO em 2026-09-11 — anafilaxia GERAL, e ⛔ não substitui o
+   * F-35b. Entra SÓ onde a fonte específica do contraste é silente ou declara
+   * fora de escopo: agente/dose/via do broncodilatador, reação leve e
+   * moderada, alvo de oxigenação, regime de adrenalina EV, tipo e volume de
+   * fluido, e reação a contraste INTRA-ARTERIAL (a trombectomia usa essa via).
+   *
+   * ⛔ Divergência entre fonte geral e fonte específica é ACHADO a registrar,
+   * ⛔ e não escolha a fazer em silêncio. Contrato completo no arquivo.
+   */
+  { id: "F-36", assunto: "Anafilaxia geral — broncodilatador, adrenalina EV e volume", estado: "aberto", arquivo: F36_ANAFILAXIA },
   { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "parcial", arquivo: F35C_TROMBOLISE },
   { id: "F-35d", assunto: "Tromboembolismo pulmonar com instabilidade", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35e", assunto: "Tamponamento cardíaco — drenagem", estado: "aberto", arquivo: CHOQUE_ABERTAS },
