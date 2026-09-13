@@ -359,6 +359,9 @@ export type BloqueioCorrigivel = {
    * ⛔ continua inteira ⛔ no bloco de tratamento.
    */
   readonly estadoCurto: string;
+  /** ⚠️ Limpeza visual (2026-09-13): o que o rodapé de pendências diz — ⛔ estado curto, ⛔ não a recomendação. */
+  readonly pendenciaCurta: string;
+  readonly resolucaoPendente: string;
   /**
    * ⚠️ Qual eixo do ABCD este bloqueio **⛔ já cobre** — ⛔ para a lista de
    * pendências ⛔ não mostrar ⛔ o mesmo problema ⛔ duas vezes (2026-09-12).
@@ -426,6 +429,8 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       verbo: "should have their SBP lowered to <185 mm Hg and diastolic blood pressure (DBP) <110 mm Hg before IVT therapy is initiated to reduce hemorrhagic complications",
       formulacao: "Recomendação: controlar a pressão arterial antes de iniciar a trombólise, para reduzir complicações hemorrágicas",
       estadoCurto: "PA acima da meta",
+      pendenciaCurta: "PA ainda acima da meta",
+      resolucaoPendente: "Nova aferição pendente",
       eixo: "pressao",
       instancia: pa.instancia,
       resolvePor: "Uma nova aferição de pressão arterial",
@@ -441,6 +446,8 @@ export function bloqueiosCorrigiveis(estado: EstadoAvc): readonly BloqueioCorrig
       verbo: "hypoglycemia (blood glucose <60 mg/dL) should be treated to avoid complications",
       formulacao: "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações",
       estadoCurto: "Glicemia abaixo do corte",
+      pendenciaCurta: "Glicemia ainda abaixo do corte",
+      resolucaoPendente: "Nova glicemia pendente",
       eixo: "glicemia",
       resolvePor: "Uma nova glicemia",
     });

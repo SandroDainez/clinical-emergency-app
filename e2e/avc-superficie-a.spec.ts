@@ -129,7 +129,10 @@ test.describe("Superfície A — estabilização", () => {
     await page.getByTestId("avc-opcao-hipoxia-sim").click();
 
     // Depois: recalculou, e a meta declarada pela fonte aparece.
-    await expect(page.getByTestId("avc-leitura-curto-oxigenio")).toContainText(/94/);
+    // ⚠️ Limpeza visual (2026-09-13): a conclusão mora UMA vez, no card do eixo B — o eco saiu do
+    // bloco "Atenção". ⛔ A afirmação ⛔ não enfraquece: antes /94/ na leitura; agora a frase inteira
+    // (O₂ suplementar + meta de 94%), que é o mesmo `curto` de `oxigenio()` (derivacoes.ts).
+    await expect(page.getByTestId("avc-ameaca-respiracao")).toContainText("O₂ suplementar — meta SpO₂ acima de 94%");
   });
 
   test("SpO₂ sozinha não gera indicação de oxigênio", async ({ page }) => {
@@ -285,7 +288,8 @@ test.describe("Superfície A — estabilização", () => {
     await page.getByTestId("avc-aba-estabilizacao").click();
 
     // ⚠️ E-20 pelo outro lado: navegar não registra, e também não desfaz.
-    await expect(page.getByTestId("avc-leitura-curto-oxigenio")).toContainText(/94/);
+    // ⚠️ Limpeza visual (2026-09-13): lida no card do eixo B, com a frase inteira (O₂ + meta de 94%).
+    await expect(page.getByTestId("avc-ameaca-respiracao")).toContainText("O₂ suplementar — meta SpO₂ acima de 94%");
   });
 
   test("a Superfície A fala espanhol", async ({ page }) => {

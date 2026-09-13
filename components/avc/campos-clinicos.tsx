@@ -528,18 +528,20 @@ export function CampoDeEscolha({
         })}
       </View>
       ) : null}
-      {/** ⚠️ D-PEND-19 (AC-45): desmarcar é gesto próprio — ⛔ só aparece quando há resposta do médico. */}
-      {manual !== undefined ? (
-        <Pressable
-          style={e.zero}
-          accessibilityRole="button"
-          accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
-          testID={`avc-limpar-${campo.id}`}
-          onPress={() => onDesfazer(campo.id)}
-        >
-          <Text style={e.zeroTexto}>{tr("Limpar")}</Text>
-        </Pressable>
-      ) : null}
+      {/** ⚠️ D-PEND-19 (AC-45): desmarcar é gesto próprio. ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */}
+      <View style={e.linhaLimpar}>
+        {manual !== undefined ? (
+          <Pressable
+            style={e.limpar}
+            accessibilityRole="button"
+            accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+            testID={`avc-limpar-${campo.id}`}
+            onPress={() => onDesfazer(campo.id)}
+          >
+            <Text style={e.limparTexto}>{tr("Limpar")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -1071,16 +1073,21 @@ export function CampoDeHora({
   const respondido = gravado !== undefined || desconhecido;
 
   /** ⚠️ D-PEND-19 (AC-45): «Sem essa informação» marcada se desfaz por «Limpar», ⛔ e ⛔ não pelo segundo toque. */
-  const botaoLimpar = desconhecido ? (
-    <Pressable
-      style={e.relogioAcao}
-      accessibilityRole="button"
-      accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
-      testID={`avc-limpar-${campo.id}`}
-      onPress={() => onDesfazer(campo.id)}
-    >
-      <Text style={e.relogioValor}>{tr("Limpar")}</Text>
-    </Pressable>
+  /** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */
+  const linhaLimpar = campo.aceitaDesconhecido ? (
+    <View style={e.linhaLimpar}>
+      {desconhecido ? (
+        <Pressable
+          style={e.limpar}
+          accessibilityRole="button"
+          accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+          testID={`avc-limpar-${campo.id}`}
+          onPress={() => onDesfazer(campo.id)}
+        >
+          <Text style={e.limparTexto}>{tr("Limpar")}</Text>
+        </Pressable>
+      ) : null}
+    </View>
   ) : null;
 
   /**
@@ -1148,8 +1155,9 @@ export function CampoDeHora({
           * marco.
           */}
         {campo.aceitaDesconhecido ? (
-          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}{botaoLimpar}</View>
+          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}</View>
         ) : null}
+        {linhaLimpar}
         {seletor}
         {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
       </View>
@@ -1178,8 +1186,8 @@ export function CampoDeHora({
       <View style={e.relogioAcoes}>
         {botaoDoValor}
         {botaoDesconhecido}
-        {botaoLimpar}
       </View>
+      {linhaLimpar}
 
       {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
 
@@ -2158,6 +2166,10 @@ export const criarEstilos = (tema: Tema) =>
     /** ⚠️ Desabilitado se vê, ⛔ não some: botão que aparece e desaparece muda o alvo debaixo do dedo. */
     degrauInerte: { opacity: 0.35 },
 
+    /** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */
+    linhaLimpar: { minHeight: TOQUE.minimo, flexDirection: "row", justifyContent: "flex-end", alignItems: "center" },
+    limpar: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
+    limparTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, textDecorationLine: "underline" },
     zero: {
       alignSelf: "flex-start", minHeight: TOQUE.minimo, justifyContent: "center",
       paddingHorizontal: ESPACO.md,

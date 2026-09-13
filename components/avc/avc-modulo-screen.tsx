@@ -1352,13 +1352,17 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             ) : (
               <CardNota>
                 {eixosNaoAvaliados(ameacas) === 0
-                  ? tr("Os quatro eixos avaliados")
+                  ? tr("Todos os eixos avaliados")
                   : `${eixosNaoAvaliados(ameacas)} ${tr("a avaliar")}`}
               </CardNota>
             )
           }
         />
-        <Text style={s.ameacaFrase}>{tr(PRIORIDADE_A.frase)}</Text>
+        {/**
+          * ⚠️ Uma frase, uma vez (autor, 2026-09-13): *"Avaliar e tratar ameaças imediatas…"*
+          * aparecia aqui ⛔ e no bloco da Estabilização logo abaixo. Fica lá, junto da nota ⓘ
+          * que explica as letras; o título deste card já diz "Estabilização primeiro".
+          */}
         <View style={s.ameacas}>
           {ameacas.map((a) => (
             <Pressable
@@ -1938,7 +1942,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <WarningCard
             key={b.id}
             nivel="atencao"
-            titulo={b.formulacao}
+            /** ⚠️ Limpeza visual (2026-09-13): o aviso diz o ESTADO; a recomendação completa mora no tratamento. */
+            titulo={b.estadoCurto}
             testID={`avc-cockpit-bloqueio-${b.id}`}
             acao={
               <PrimaryAction
@@ -2385,13 +2390,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   {ESTADOS[p.estado].simbolo}
                 </Text>
                 {"  "}
-                {tr(p.rotulo)}
+                {tr(p.rotuloCurto ?? p.rotulo)}
               </Text>
               {p.detalhe === undefined ? null : (
                 <Text style={s.pendenciaResolve}>{tr(p.detalhe)}</Text>
               )}
               {/* ⚠️ E-26: pendência sem condição de resolução é muro, não tarefa. */}
-              <Text style={s.pendenciaResolve}>{tr(p.resolvePor)}</Text>
+              <Text style={s.pendenciaResolve}>{tr(p.resolveCurto ?? p.resolvePor)}</Text>
               {/**
                 * ⚠️⚠️ A LETRA E O TÍTULO, ⛔ NUNCA O SLUG.
                 *

@@ -453,6 +453,7 @@ export function Segmentado({
      * o verde continuaria — medindo ⛔ nada. ⚠️ O sufixo é `valorDaOpcao`, que é
      * o que o estado realmente guarda: rótulo ⛔ nunca chega ao estado.
      */
+    <>
     <View
       style={binaria(opcoes) ? e.decisaoLinha : empilha(opcoes, rotuloDeInterface) ? e.segColuna : e.seg}
       testID={`avc-campo-${campo}-opcoes`}
@@ -542,18 +543,22 @@ export function Segmentado({
           </Pressable>
         );
       })}
+    </View>
+    {/** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */}
+    <View style={e.linhaLimpar}>
       {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
         <Pressable
-          style={e.segItem}
+          style={e.limpar}
           accessibilityRole="button"
           accessibilityLabel={tr("Limpar")}
           testID={`avc-limpar-${campo}`}
           onPress={() => onDesfazer(campo)}
         >
-          <Text style={e.segTexto}>{tr("Limpar")}</Text>
+          <Text style={e.limparTexto}>{tr("Limpar")}</Text>
         </Pressable>
       ) : null}
     </View>
+    </>
   );
 }
 
@@ -1343,17 +1348,20 @@ export function LinhaDeAchado({
             </Pressable>
           );
         })}
-      {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
-        <Pressable
-          style={e.segItemEstreito}
-          accessibilityRole="button"
-          accessibilityLabel={tr("Limpar")}
-          testID={`avc-limpar-${campo}`}
-          onPress={() => onDesfazer(campo)}
-        >
-          <Text style={e.segTextoEstreito}>{tr("Limpar")}</Text>
-        </Pressable>
-      ) : null}
+      </View>
+      {/** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */}
+      <View style={e.linhaLimpar}>
+        {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
+          <Pressable
+            style={e.limpar}
+            accessibilityRole="button"
+            accessibilityLabel={tr("Limpar")}
+            testID={`avc-limpar-${campo}`}
+            onPress={() => onDesfazer(campo)}
+          >
+            <Text style={e.limparTexto}>{tr("Limpar")}</Text>
+          </Pressable>
+        ) : null}
       </View>
       <Procedencia campo={campo} daEscala={daEscala} divergente={divergente} manual={manual} />
       {/**
@@ -1432,17 +1440,20 @@ export function Empilhado({
           </Pressable>
         );
       })}
-      {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
-        <Pressable
-          style={e.empilhadoItem}
-          accessibilityRole="button"
-          accessibilityLabel={tr("Limpar")}
-          testID={`avc-limpar-${campo}`}
-          onPress={() => onDesfazer(campo)}
-        >
-          <Text style={e.empilhadoTexto}>{tr("Limpar")}</Text>
-        </Pressable>
-      ) : null}
+      {/** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */}
+      <View style={e.linhaLimpar}>
+        {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
+          <Pressable
+            style={e.limpar}
+            accessibilityRole="button"
+            accessibilityLabel={tr("Limpar")}
+            testID={`avc-limpar-${campo}`}
+            onPress={() => onDesfazer(campo)}
+          >
+            <Text style={e.limparTexto}>{tr("Limpar")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -1897,6 +1908,10 @@ const criarEstilos = (tema: Tema) =>
       gap: ESPACO.xs,
     },
     /** ⚠️ Alvo de DEDO, ⛔ e ⛔ não de mouse: 44 px é o piso. */
+    /** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */
+    linhaLimpar: { minHeight: TOQUE.minimo, flexDirection: "row", justifyContent: "flex-end", alignItems: "center" },
+    limpar: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
+    limparTexto: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary, textDecorationLine: "underline" },
     segItem: {
       flex: 1,
       alignItems: "center",

@@ -1271,6 +1271,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "corrigido de": "corregido de",
   "corrigido": "corregido",
   "Evento de outro caso.": "Evento de otro caso.",
+  "PA ainda acima da meta": "PA todavía por encima de la meta",
+  "Nova aferição pendente": "Nueva medición pendiente",
+  "Glicemia ainda abaixo do corte": "Glucemia todavía por debajo del corte",
+  "Nova glicemia pendente": "Nueva glucemia pendiente",
   "Sem motivo para suspeitar; varfarina ou heparina registradas, com os exames de coagulação já registrados":
     "Sin motivo para sospechar; warfarina o heparina registradas, con los exámenes de coagulación ya registrados",
   "Segurança desconhecida segundo a fonte; a trombólise não fica retida por ele": "Seguridad desconocida según la fuente; la trombólisis no queda retenida por ello",

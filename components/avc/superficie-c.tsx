@@ -735,17 +735,6 @@ export default function SuperficieC({
                                 </Text>
                               </Pressable>
                             ) : null}
-                            {desconhecido ? (
-                              <Pressable
-                                style={e.desconhecidoCompacto}
-                                accessibilityRole="button"
-                                accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
-                                testID={`avc-limpar-${campo.id}`}
-                                onPress={() => onDesfazerNoEstudo(estudo.id, campo.id)}
-                              >
-                                <Text style={e.desconhecidoTexto}>{tr("Limpar")}</Text>
-                              </Pressable>
-                            ) : null}
                             <Recolhido
                               id={campo.id}
                               texto={campo.ajuda}
@@ -755,6 +744,22 @@ export default function SuperficieC({
                               <DetalheDoCampo campo={{ ...campo, casa: "imagem" }} />
                             </Recolhido>
                           </View>
+                          {/** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */}
+                          {campo.aceitaDesconhecido ? (
+                            <View style={e.linhaLimpar}>
+                              {desconhecido ? (
+                                <Pressable
+                                  style={e.limpar}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+                                  testID={`avc-limpar-${campo.id}`}
+                                  onPress={() => onDesfazerNoEstudo(estudo.id, campo.id)}
+                                >
+                                  <Text style={e.limparTexto}>{tr("Limpar")}</Text>
+                                </Pressable>
+                              ) : null}
+                            </View>
+                          ) : null}
                           {seletorDoCampo(estudo.id, campo.id)}
                         </View>
                       );
@@ -1300,6 +1305,10 @@ const criarEstilos = (tema: Tema) =>
      * 2026-09-06. ⛔ Ela declara ignorância (**E-37**), que é diferente de ⛔ não
      * ter perguntado; ⛔ e uma resposta que ⛔ não parece tocável ⛔ nunca é dada.
      */
+    /** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */
+    linhaLimpar: { minHeight: TOQUE.minimo, flexDirection: "row", justifyContent: "flex-end", alignItems: "center" },
+    limpar: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
+    limparTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, textDecorationLine: "underline" },
     desconhecidoCompacto: {
       minHeight: TOQUE.minimo,
       alignSelf: "flex-start",

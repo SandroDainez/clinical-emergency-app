@@ -629,7 +629,7 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   /* ── ⚠️ estabilização primeiro ─────────────────────────────────────────── */
   "Ameaça registrada": "Amenaza registrada",
   "ameaça registrada": "amenaza registrada",
-  "Os quatro eixos avaliados": "Los cuatro ejes evaluados",
+  "Todos os eixos avaliados": "Todos los ejes evaluados",
   "a avaliar": "por evaluar",
   "A avaliar": "Por evaluar",
   "Avaliado": "Evaluado",

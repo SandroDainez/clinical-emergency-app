@@ -63,6 +63,13 @@ export type ProblemaAtivo = {
   readonly detalhe?: string;
   /** ⚠️ O que **fecha** o problema — **E-26**. */
   readonly resolvePor: string;
+  /**
+   * ⚠️ Limpeza visual (2026-09-13): o texto CURTO que o rodapé de pendências mostra.
+   * ⛔ `rotulo` e `resolvePor` ficam intactos — o tratamento, Correções ⛔ e o portão
+   * continuam lendo os textos completos.
+   */
+  readonly rotuloCurto?: string;
+  readonly resolveCurto?: string;
   /** ⚠️ Onde se resolve. ⛔ Toda saída é declarada (**E-09**). */
   readonly dono: SuperficieId;
   /** ⚠️ O campo a focar ao chegar lá, quando há um. */
@@ -185,6 +192,8 @@ export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
        * inventa tratamento.
        */
       resolvePor: a.conduta ?? "Avaliar e tratar a ameaça",
+      /** ⚠️ Conduta que repete o achado (respiração): o rodapé mostra o achado curto, ⛔ e ⛔ não a mesma conduta com outras palavras. */
+      resolveCurto: a.condutaRepeteOAchado === true ? a.achado : undefined,
       dono: (a.leva as SuperficieId | undefined) ?? "estabilizacao",
       campo: a.campo,
     });
@@ -209,6 +218,8 @@ export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
        */
       rotulo: b.estadoCurto,
       resolvePor: b.resolvePor,
+      rotuloCurto: b.pendenciaCurta,
+      resolveCurto: b.resolucaoPendente,
       dono: "correcoes",
     });
   }

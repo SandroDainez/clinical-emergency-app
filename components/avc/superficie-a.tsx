@@ -22,6 +22,7 @@
  * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
+import { ameacasImediatas } from "../../avc/nucleo/ameacas-imediatas";
 import { marcaDeAutoria } from "../../avc/persistencia/autoria";
 import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import { nomeDaNovaAfericao } from "../../avc/conteudo/campos";
@@ -218,6 +219,18 @@ export default function SuperficieA({
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leituras = leiturasDaSuperficieA(estado);
+  /**
+   * ⚠️ Limpeza visual (2026-09-13): quando a CONDUTA da ameaça repete o próprio achado
+   * (`condutaRepeteOAchado`, a respiração), a leitura de ATENÇÃO com esse mesmo texto
+   * ⛔ se repete no bloco "Atenção" — o card do eixo já a diz. ⛔ Só esse eco sai; ⛔ via
+   * aérea e as demais leituras continuam; ⛔ nenhuma leitura some da derivação.
+   */
+  const achadosDosCards = new Set(
+    ameacasImediatas(estado)
+      .filter((a) => a.estado === "ameaca" && a.condutaRepeteOAchado === true && a.achado !== undefined)
+      .map((a) => a.achado as string)
+  );
+  const leiturasSemEco = leituras.filter((l) => !(l.tom === "atencao" && achadosDosCards.has(l.curto)));
 
   /**
    * ⚠️⚠️ ⛔ O RESUMO É **ECO**, ⛔ e ⛔ não leitura. ⛔ Ele lê o fato gravado ⛔ e
@@ -1038,7 +1051,7 @@ export default function SuperficieA({
         * o texto, o tom ⛔ e a fonte vêm da leitura, ⛔ e ⛔ nada é recalculado.
         */}
       <LeiturasEmBlocos
-        leituras={leituras}
+        leituras={leiturasSemEco}
         /**
          * ⚠️⚠️ ABERTO POR PADRÃO — ⛔ e a primeira versão o fechava.
          *
