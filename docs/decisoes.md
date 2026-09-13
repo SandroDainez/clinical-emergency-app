@@ -231,10 +231,66 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 **Razão registrada:** não fornecida além do texto da decisão.
 **Autoriza implementação:** sim (6ª rodada, Entrega 1): prova vermelha genérica em toda pergunta Sim/Não/Incerto do AVC; correção no componente compartilhado, não por tela; revisão das travas de contraste.
 
-**D-PEND-22, D-PEND-23, D-PEND-24:** anunciadas pelo autor em 2026-09-13, texto ainda não enviado. Não registradas e não implementadas.
+## D-PEND-22 · Dose da tenecteplase: 0,25 mg/kg exato, sem arredondar mg; Table 7 como conferência
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Como chegou:** bloco "Decisões — Sandro Dainez, 13/09/2026", colado pelo autor com a recomendação do revisor e sem linhas apagadas. Pela regra do próprio bloco, colar é aprovar.
+
+**Decisão, nos termos do autor:**
+- **Dose:** 0,25 mg/kg exato, máximo 25 mg, sem arredondar mg.
+- **Volume:** exibido com 0,1 mL, a 5 mg/mL.
+- **Table 7:** a faixa da Table 7 (p. e358) é exibida como conferência, com divergência explícita quando houver.
+- **Regulatório:** a situação regulatória no Brasil (ANVISA/bula) é campo separado, "pendente de conferência", visível ao usuário.
+- **Fonte:** recomendação textual da AHA 2026 e Table 7.
+- **Arredondamento:** o arredondamento para mg inteiro é retirado.
+
+**Origem:** AC-43 e pacote `docs/avc/revisao/AC-06-dose-trombolitico.md` §9A.
+**Fontes no repositório:** AHA 2026 §4.6.2 rec. 1 e Table 7, transcritas em `protocols/fontes-verbatim/aha-asa-2026-avc-isquemico.md:1557-1612`.
+**Leitura do agente, a confirmar:** a decisão fala da tenecteplase. A alteplase mantém a dose inteira da decisão de 2026-09-12. O arredondamento do volume ao 0,1 mL é feito ao valor mais próximo.
+**Autoriza implementação:** sim (7ª rodada, Entrega 2).
+
+## D-PEND-23 · Suspeita clínica de HSA com TC sem sangue: reter reperfusão como avaliação especializada
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Como chegou:** o mesmo bloco da D-PEND-22.
+
+**Decisão, nos termos do autor:**
+- **Conduta:** com suspeita clínica de HSA e TC sem sangue, reter a reperfusão.
+- **Classificação:** "requer avaliação especializada / corrigir e reavaliar", e não "impede pela diretriz".
+- **Fonte:** bula, marcada como adaptação do projeto até o autor conferir a Table 8.
+
+**Origem:** AC-15 e pacote `docs/avc/revisao/AC-15-hsa.md`.
+⚠️ **Fonte no repositório:** `protocols/fontes-verbatim/bulas-br-tromboliticos.md` **não contém** menção a hemorragia subaracnóidea (busca `subaracn|subarachnoid|HSA|SAH`: 0). O trecho da bula citado pelo autor **não está transcrito**. A regra fica registrada como adaptação do projeto.
+**Autoriza implementação:** sim (7ª rodada, Entrega 2).
+
+## D-PEND-24 · Puerpério: janela de 14 dias pós-parto no portão de população
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Como chegou:** o mesmo bloco da D-PEND-22.
+
+**Decisão, nos termos do autor:**
+- **Janela:** 14 dias pós-parto no portão de população.
+- **Marcação:** "fonte AHA 2019, a confirmar na Table 8 de 2026".
+- **Texto antigo:** o texto "10 dias" é apagado (já removido pela D-PEND-20 em `f314f36`).
+
+**Origem:** pacote `docs/avc/revisao/AC-03r-puerperio.md` (opção B).
+⚠️ **Fonte no repositório:** não há transcrição da diretriz AHA/ASA 2019 em `protocols/fontes-verbatim/`. A linha de gestação e puerpério da Table 8 de 2026 é imagem e não foi transcrita. Os 14 dias ficam registrados como número do autor, com a marcação que ele definiu.
+**Autoriza implementação:** sim (7ª rodada, Entrega 2). "Não sei" continua mantendo a pergunta.
+
+## AC-59 · Contorno da opção neutra ≥ 3:1 contra o card
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:**
+- **Contorno:** o contorno da opção neutra fica em ≥ 3:1 contra o card, nos dois temas.
+- **Trava:** a trava de contraste passa a exigir 3:1 para contorno de opção.
+- **Piso de 1,5:** mantido só para marcada contra neutra.
+
+**Autoriza implementação:** sim (7ª rodada, Entrega 1).
 
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
-- **AC-43:** dose da tenecteplase (pacote `docs/avc/revisao/AC-06-dose-trombolitico.md`).
-- **AC-15:** suspeita de HSA retendo a reperfusão (pacote `docs/avc/revisao/AC-15-hsa.md`).
-- **Janela de puerpério** (pacote `docs/avc/revisao/AC-03r-puerperio.md`).
+- ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
