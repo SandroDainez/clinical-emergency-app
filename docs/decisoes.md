@@ -310,6 +310,29 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 **Revoga:** a dose inteira da alteplase (decisão de 2026-09-12, mantida pela leitura do agente na D-PEND-22).
 **Autoriza implementação:** sim (8ª rodada, Entrega 3).
 
+## D-PEND-26 · AC-63: «Limpar» sobre fato que sustenta retenção ou bloqueio exige confirmação e grava correção "toque errado"
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Como chegou:** bloco colado pelo autor, com a recomendação do revisor. Pela regra do próprio bloco, colar é aprovar.
+
+**Decisão, nos termos do autor:**
+- **Confirmação:** «Limpar» sobre um fato que sustenta retenção ou bloqueio exige confirmação explícita ("foi engano?").
+- **Registro:** grava evento de correção com autor e motivo "toque errado".
+- **Estado da pergunta:** devolve a pergunta a "não respondida", nunca a "Não". A retenção cai porque o fato deixou de existir.
+- **Troca direta:** "Sim"→"Não" direto continua não liberando.
+- **Alcance:** regra genérica para toda pergunta que sustente retenção.
+- **Prova:** vermelha com HSA e com pelo menos uma outra pergunta de bloqueio.
+
+**Razão registrada (revisor, aceita pelo autor):** bloquear o «Limpar» impediria corrigir toque errado, que é frequente; dois toques liberando uma retenção de segurança também não serve. Três toques mais uma confirmação e uma linha de auditoria dizendo que foi engano "é o custo certo".
+**Origem:** AC-63 (`docs/avc/auditoria-vs-spec.md` §7.13) e pacote `docs/avc/revisao/hsa-resolucao.md` §7.
+**Autoriza implementação:** sim (9ª rodada).
+
+**Pedido do autor na mesma mensagem (AC-64), sem decisão clínica:**
+- **Transcrição:** trecho de investigação diagnóstica com TC sem sangue da diretriz de HSA 2023 (§4), a partir do PDF local, com página, para `protocols/fontes-verbatim/`.
+- **Proposta:** depois, completar `hsa-resolucao.md` com base nele.
+- **Mantido:** o campo de decisão continua vazio, e o card não muda até o autor decidir.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
