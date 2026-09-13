@@ -1107,6 +1107,7 @@ export function CampoDeHora({
       instante={editando.instante}
       selecionado={editando.selecionado}
       agora={agora}
+      estimativa={campo.estimativa === true}
       onMudar={(i, escolheuValor) =>
         setEditando((atual) => ({
           instante: i,

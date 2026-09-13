@@ -571,7 +571,7 @@ export const GRUPO_DA_TRANSFERENCIA: readonly Grupo[] = comCasa("destino", [
       { id: "transf_destino", rotulo: "Destino informado pela equipe", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
       /** ⚠️ Aparece quando o marco atual (pelo horário observado) é «Recusa» — a tela decide. */
       { id: "transf_recusa_motivo", rotulo: "Motivo da recusa", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
-      { id: "transf_previsao", rotulo: "Previsão do transporte (estimativa)", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
+      { id: "transf_previsao", rotulo: "Previsão do transporte (estimativa)", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, estimativa: true, ...REGISTRO },
     ],
   },
 ]);
@@ -582,13 +582,14 @@ export const GRUPO_DA_TELECONSULTA: readonly Grupo[] = comCasa("destino", [
     titulo: "Teleconsulta (telestroke)",
     nota: "O parecer é registrado como escrito e não altera nenhuma regra do app.",
     campos: [
-      { id: "tele_estado", rotulo: "Estado da teleconsulta", tipo: "escolha", temporalidade: "estado", opcoes: ESTADOS_DA_TELECONSULTA, ...REGISTRO },
-      { id: "tele_parecer", rotulo: "Parecer (texto livre)", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
-        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
-      { id: "tele_parecer_autor", rotulo: "Autor do parecer", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
-        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
-      { id: "tele_parecer_hora", rotulo: "Horário do parecer", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO,
-        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
+      /**
+       * ⚠️⚠️ AC-72 (autor, 2026-09-13): teleconsulta pelo mesmo modelo de MARCOS da
+       * transferência — ⛔ seletor de estado. «Parecer registrado» exige texto ⛔ e autor,
+       * ⛔ e o horário é o observado do próprio marco. A tela desenha os três juntos.
+       */
+      { id: "tele_marco", rotulo: "Marcos da teleconsulta", tipo: "escolha", temporalidade: "estavel", opcoes: ESTADOS_DA_TELECONSULTA, ...REGISTRO },
+      { id: "tele_parecer", rotulo: "Parecer (texto livre)", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
+      { id: "tele_parecer_autor", rotulo: "Autor do parecer", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
     ],
   },
 ]);

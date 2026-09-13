@@ -63,16 +63,17 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
     await expect(page.getByTestId("avc-g-linha-do-tempo")).toContainText("estimativa");
   });
 
-  test("telestroke: parecer registrado com texto, autor ⛔ e horário → «Avaliação especializada registrada»", async ({ page }) => {
+  test("telestroke por marcos (AC-72): parecer registrado com texto, autor ⛔ e horário → «Avaliação especializada registrada»", async ({ page }) => {
     await abrir(page);
-    await page.getByTestId("avc-opcao-tele_estado-Solicitada").click();
-    await page.getByTestId("avc-opcao-tele_estado-Parecer registrado").click();
-    await expect(page.getByTestId("avc-g-situacao-avaliacao-especializada"), "⛔ parecer presumido sem texto").toHaveCount(0);
-    await page.getByTestId("avc-texto-tele_parecer").fill("texto do parecer");
-    await page.getByTestId("avc-texto-tele_parecer").blur();
-    await page.getByTestId("avc-texto-tele_parecer_autor").fill("Dra. Neuro");
-    await page.getByTestId("avc-texto-tele_parecer_autor").blur();
-    await page.getByTestId("avc-hora-tele_parecer_hora").click();
+    await page.getByTestId("avc-g-registrar-tele-marco").click();
+    await page.getByTestId("avc-g-tele-marco-tipo-Solicitada").click();
+    await page.getByTestId("avc-g-tele-marco-agora").click();
+    await expect(page.getByTestId("avc-g-situacao-avaliacao-especializada"), "⛔ parecer presumido sem registro").toHaveCount(0);
+    await page.getByTestId("avc-g-registrar-tele-marco").click();
+    await page.getByTestId("avc-g-tele-marco-tipo-Parecer registrado").click();
+    await page.getByTestId("avc-g-tele-parecer-texto").fill("texto do parecer");
+    await page.getByTestId("avc-g-tele-parecer-autor").fill("Dra. Neuro");
+    await page.getByTestId("avc-g-tele-marco-informar-hora").click();
     await page.getByTestId("avc-seletor-hora-m-menos").click();
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await expect(page.getByTestId("avc-g-situacao-avaliacao-especializada")).toHaveText("Avaliação especializada registrada");
@@ -103,7 +104,7 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
     await abrir(page, "es-419");
     await page.getByTestId("avc-g-registrar-marco").click();
     await expect(page.getByTestId("avc-g-marco-tipo-Solicitada")).toContainText("Solicitud");
-    await expect(page.getByTestId("avc-campo-tele_estado")).toContainText(/teleconsulta/i);
+    await expect(page.getByTestId("avc-g-registrar-tele-marco")).toContainText(/teleconsulta/i);
     await expect(page.getByTestId("avc-g-marco-tipo-Solicitada")).not.toContainText("Solicitada");
   });
 });

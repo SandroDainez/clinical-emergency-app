@@ -2105,10 +2105,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Previsão do transporte (estimativa)": "Previsión del transporte (estimación)",
   "Teleconsulta (telestroke)": "Teleconsulta (teleictus)",
   "O parecer é registrado como escrito e não altera nenhuma regra do app.": "El dictamen se registra tal como fue escrito y no altera ninguna regla de la app.",
-  "Estado da teleconsulta": "Estado de la teleconsulta",
   "Parecer (texto livre)": "Dictamen (texto libre)",
   "Autor do parecer": "Autor del dictamen",
-  "Horário do parecer": "Hora del dictamen",
   "Transferência solicitada": "Traslado solicitado",
   "Contato realizado com o destino": "Contacto realizado con el destino",
   "Aceite registrado": "Aceptación registrada",
@@ -2190,4 +2188,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Reavaliação pendente": "Reevaluación pendiente",
   "Chegada registrada sem saída registrada": "Llegada registrada sin salida registrada",
   "Registrar": "Registrar",
+  // ── 12ª rodada: estimativa, teleconsulta por marcos (2026-09-13) ──
+  "Estimativa: pode ser um horário futuro.": "Estimación: puede ser una hora futura.",
+  "Marcos da teleconsulta": "Hitos de la teleconsulta",
+  "Cada marco entra na linha do tempo com os dois horários. O parecer exige texto e autor.": "Cada hito entra en la línea de tiempo con las dos horas. El dictamen exige texto y autor.",
+  "Registrar marco da teleconsulta": "Registrar hito de la teleconsulta",
+  "O parecer exige texto e autor.": "El dictamen exige texto y autor.",
 };

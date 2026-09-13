@@ -189,13 +189,12 @@ if (T !== undefined) {
   conf("A08 · a IVT impedida ⛔ não impede registrar a transferência", T.leituraDaTransferencia(impedidaEmTransf).estado === "Aceite", `⛔ ${JSON.stringify(T.leituraDaTransferencia(impedidaEmTransf))}`);
 
   /* ── telestroke ── */
-  let tele = reg(vazio(), "tele_estado", "Solicitada");
-  tele = reg(tele, "tele_estado", "Parecer registrado");
+  /** ⚠️ 12ª rodada (AC-72): teleconsulta por marcos; o parecer exige texto ⛔ e autor. */
+  let tele = T.registrarMarcoDeTeleconsulta(vazio(), "Solicitada", agora - 20 * 60_000, rel);
   conf("parecer ⛔ sem texto ⛔ não é presumido: sem a linha de avaliação especializada",
-    !S.sinteseDoCaso(tele, rel, []).situacao.some((l) => l.id === "avaliacao-especializada"), "⛔ parecer presumido");
-  tele = reg(tele, "tele_parecer", "texto do parecer");
-  tele = reg(tele, "tele_parecer_autor", "Dra. Neuro");
-  tele = reg(tele, "tele_parecer_hora", agora - 5 * 60_000, { horaClinica: agora - 5 * 60_000 });
+    T.registrarMarcoDeTeleconsulta(tele, "Parecer registrado", agora, rel, { texto: "", autor: "Dra. Neuro" }).fatos.length === tele.fatos.length
+      && !S.sinteseDoCaso(tele, rel, []).situacao.some((l) => l.id === "avaliacao-especializada"), "⛔ parecer presumido");
+  tele = T.registrarMarcoDeTeleconsulta(tele, "Parecer registrado", agora - 5 * 60_000, rel, { texto: "texto do parecer", autor: "Dra. Neuro" });
   const linhaEsp = S.sinteseDoCaso(tele, rel, []).situacao.find((l) => l.id === "avaliacao-especializada");
   conf("parecer registrado → a síntese diz exatamente «Avaliação especializada registrada», ⛔ sem conclusão",
     linhaEsp !== undefined && linhaEsp.texto === "Avaliação especializada registrada", `⛔ ${JSON.stringify(linhaEsp)}`);
@@ -203,7 +202,7 @@ if (T !== undefined) {
   conf("o parecer guarda texto, autor ⛔ e horário", esp !== undefined && esp.texto === "texto do parecer" && esp.autor === "Dra. Neuro" && esp.quando === agora - 5 * 60_000, `⛔ ${JSON.stringify(esp)}`);
   conf("o parecer ⛔ altera regras: portão ⛔ e EVT idênticos", chavesDoPortao(tele) === chavesDoPortao(vazio()) && leituraEvt(tele) === leituraEvt(vazio()), "⛔ derivação clínica mudou");
   conf("a teleconsulta entra na linha do tempo", T.linhaDoTempoDoCaso(tele).some((i) => i.ator === "teleconsulta" && i.texto === "Avaliação especializada registrada"), `⛔ ${JSON.stringify(T.linhaDoTempoDoCaso(tele))}`);
-  conf("«Não disponível» entra como marco", T.linhaDoTempoDoCaso(reg(vazio(), "tele_estado", "Não disponível")).some((i) => i.texto === "Teleconsulta não disponível"), "⛔");
+  conf("«Não disponível» entra como marco", T.linhaDoTempoDoCaso(T.registrarMarcoDeTeleconsulta(vazio(), "Não disponível", agora, rel)).some((i) => i.texto === "Teleconsulta não disponível"), "⛔");
 
   /* ── piora durante a espera ── */
   if (D !== undefined) {

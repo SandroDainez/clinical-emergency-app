@@ -31,6 +31,9 @@ import type { Relogio } from "./relogio";
 import type { FatoRegistrado, Pendencia } from "./tipos";
 
 export const CAMPO_MARCO = "transf_marco";
+/** ⚠️ AC-72 (autor, 2026-09-13): teleconsulta pelo mesmo modelo de marcos. */
+export const CAMPO_TELE_MARCO = "tele_marco";
+export const PARECER_REGISTRADO = "Parecer registrado";
 export const MOTIVO_HORARIO_CORRIGIDO = "horário corrigido";
 
 export type LeituraDaTransferencia = {
@@ -48,6 +51,8 @@ export type MarcoDaTransferencia = {
   readonly observado: number;
   readonly registradoEm: number;
   readonly horarioCorrigido: boolean;
+  /** ⚠️ Só no marco «Parecer registrado» da teleconsulta. */
+  readonly parecer?: { readonly texto: string; readonly autor: string };
 };
 
 export type ItemDaLinhaDoTempo = {
@@ -106,11 +111,6 @@ function atual(estado: EstadoAvc, campo: string): string | undefined {
   return f === undefined || vazio(f.valor) ? undefined : String(f.valor);
 }
 
-function instanteAtual(estado: EstadoAvc, campo: string): number | undefined {
-  const v = valorAtual(estado, campo)?.valor;
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
-}
-
 /** O fato original de uma cadeia de correções (o registro de verdade). */
 function raiz(estado: EstadoAvc, fato: FatoRegistrado): FatoRegistrado {
   let atualFato = fato;
@@ -128,29 +128,72 @@ export function registrarMarco(estado: EstadoAvc, tipo: string, observado: numbe
   return registrarFato(estado, { campo: CAMPO_MARCO, valor: tipo, horaClinica: observado }, relogio);
 }
 
+/**
+ * ⚠️ AC-72: «Parecer registrado» exige texto ⛔ e autor (sem eles, ⛔ entra). O texto ⛔ e o
+ * autor moram em fatos ligados ao marco pela instância = id do marco; ⛔ a hora é a
+ * observada do próprio marco.
+ */
+export function registrarMarcoDeTeleconsulta(
+  estado: EstadoAvc,
+  tipo: string,
+  observado: number,
+  relogio: Relogio,
+  parecer?: { readonly texto: string; readonly autor: string }
+): EstadoAvc {
+  const ehParecer = tipo === PARECER_REGISTRADO;
+  const texto = parecer?.texto.trim() ?? "";
+  const autor = parecer?.autor.trim() ?? "";
+  if (ehParecer && (texto === "" || autor === "")) return estado;
+  const comMarco = registrarFato(estado, { campo: CAMPO_TELE_MARCO, valor: tipo, horaClinica: observado }, relogio);
+  if (!ehParecer) return comMarco;
+  const marcoId = comMarco.fatos[comMarco.fatos.length - 1].id;
+  const comTexto = registrarFato(comMarco, { campo: "tele_parecer", valor: texto, instancia: marcoId }, relogio);
+  return registrarFato(comTexto, { campo: "tele_parecer_autor", valor: autor, instancia: marcoId }, relogio);
+}
+
+function marcoVigente(estado: EstadoAvc, fatoId: string): FatoRegistrado | undefined {
+  return [...vigentes(estado, CAMPO_MARCO), ...vigentes(estado, CAMPO_TELE_MARCO)].find((f) => f.id === fatoId);
+}
+
 export function corrigirHorarioDoMarco(estado: EstadoAvc, fatoId: string, observado: number, relogio: Relogio): EstadoAvc {
-  const alvo = vigentes(estado, CAMPO_MARCO).find((f) => f.id === fatoId);
+  const alvo = marcoVigente(estado, fatoId);
   if (alvo === undefined) return estado;
   return corrigirFato(
     estado,
-    { campo: CAMPO_MARCO, valor: alvo.valor, horaClinica: observado, corrigeFatoId: fatoId, motivo: MOTIVO_HORARIO_CORRIGIDO },
+    { campo: alvo.campo, valor: alvo.valor, horaClinica: observado, corrigeFatoId: fatoId, motivo: MOTIVO_HORARIO_CORRIGIDO },
     relogio
   );
 }
 
 export function marcoPorEngano(estado: EstadoAvc, fatoId: string, relogio: Relogio): EstadoAvc {
-  const alvo = vigentes(estado, CAMPO_MARCO).find((f) => f.id === fatoId);
+  const alvo = marcoVigente(estado, fatoId);
   if (alvo === undefined) return estado;
   return corrigirFato(
     estado,
-    { campo: CAMPO_MARCO, valor: "nao_perguntado", corrigeFatoId: fatoId, motivo: MOTIVO_ENGANO },
+    { campo: alvo.campo, valor: "nao_perguntado", corrigeFatoId: fatoId, motivo: MOTIVO_ENGANO },
     relogio
   );
 }
 
 export function marcosDaTransferencia(estado: EstadoAvc): readonly MarcoDaTransferencia[] {
+  return marcosDoCampo(estado, CAMPO_MARCO);
+}
+
+export function marcosDaTeleconsulta(estado: EstadoAvc): readonly MarcoDaTransferencia[] {
+  return marcosDoCampo(estado, CAMPO_TELE_MARCO);
+}
+
+function parecerDoMarco(estado: EstadoAvc, registroId: string): { texto: string; autor: string } | undefined {
+  const ultimo = (campo: string) =>
+    [...estado.fatos].reverse().find((f) => f.campo === campo && f.instancia === registroId && !vazio(f.valor));
+  const texto = ultimo("tele_parecer");
+  const autor = ultimo("tele_parecer_autor");
+  return texto === undefined || autor === undefined ? undefined : { texto: String(texto.valor), autor: String(autor.valor) };
+}
+
+function marcosDoCampo(estado: EstadoAvc, campo: string): readonly MarcoDaTransferencia[] {
   const ordem = (id: string) => estado.fatos.findIndex((f) => f.id === id);
-  return vigentes(estado, CAMPO_MARCO)
+  return vigentes(estado, campo)
     .map((f) => {
       const original = raiz(estado, f);
       return {
@@ -160,6 +203,7 @@ export function marcosDaTransferencia(estado: EstadoAvc): readonly MarcoDaTransf
         registradoEm: original.horaRegistro,
         horarioCorrigido: f.id !== original.id,
         indiceDoRegistro: ordem(original.id),
+        parecer: f.valor === PARECER_REGISTRADO ? parecerDoMarco(estado, original.id) : undefined,
       };
     })
     .sort((a, b) => a.observado - b.observado || a.indiceDoRegistro - b.indiceDoRegistro)
@@ -189,14 +233,10 @@ export function leituraDaTransferencia(estado: EstadoAvc): LeituraDaTransferenci
 }
 
 export function avaliacaoEspecializadaRegistrada(estado: EstadoAvc): AvaliacaoEspecializada | undefined {
-  if (atual(estado, "tele_estado") !== "Parecer registrado") return undefined;
-  const texto = atual(estado, "tele_parecer");
-  if (texto === undefined) return undefined;
-  return {
-    texto,
-    autor: atual(estado, "tele_parecer_autor"),
-    quando: instanteAtual(estado, "tele_parecer_hora"),
-  };
+  const pareceres = marcosDaTeleconsulta(estado).filter((m) => m.tipo === PARECER_REGISTRADO && m.parecer !== undefined);
+  const ultimo = pareceres[pareceres.length - 1];
+  if (ultimo === undefined || ultimo.parecer === undefined) return undefined;
+  return { texto: ultimo.parecer.texto, autor: ultimo.parecer.autor, quando: ultimo.observado };
 }
 
 /** Motivo registrado DEPOIS do registro original da recusa (a trilha é ordenada). */
@@ -241,22 +281,17 @@ export function linhaDoTempoDoCaso(estado: EstadoAvc): readonly ItemDaLinhaDoTem
       estimativa: true,
     });
   }
-  const parecer = avaliacaoEspecializadaRegistrada(estado);
-  for (const t of vigentes(estado, "tele_estado")) {
-    const frase = FRASE_DA_TELECONSULTA[String(t.valor)];
+  for (const m of marcosDaTeleconsulta(estado)) {
+    const frase = FRASE_DA_TELECONSULTA[m.tipo];
     if (frase === undefined) continue;
-    const ehParecer = t.valor === "Parecer registrado";
     itens.push({
-      id: `tele-${t.id}`,
-      fatoId: t.id,
+      id: `tele-${m.fatoId}`,
+      fatoId: m.fatoId,
       ator: "teleconsulta",
-      quando: ehParecer && parecer?.quando !== undefined ? parecer.quando : t.horaClinica ?? t.horaRegistro,
-      registradoEm: t.horaRegistro,
+      quando: m.observado,
+      registradoEm: m.registradoEm,
       texto: frase,
-      detalhe:
-        ehParecer && parecer !== undefined
-          ? parecer.autor === undefined ? parecer.texto : `${parecer.texto} — ${parecer.autor}`
-          : undefined,
+      detalhe: m.parecer === undefined ? undefined : `${m.parecer.texto} — ${m.parecer.autor}`,
       estimativa: false,
     });
   }

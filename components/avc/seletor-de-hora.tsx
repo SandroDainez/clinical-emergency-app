@@ -74,6 +74,11 @@ type Props = {
   onMudar: (instante: number, escolheuValor: boolean) => void;
   onConfirmar: () => void;
   onCancelar: () => void;
+  /**
+   * ⚠️⚠️ AC-71 (autor, 2026-09-13): PREVISÃO ⛔ É FATO. Com `estimativa`, o horário pode
+   * estar no futuro; ⛔ sem ela, o marco já aconteceu ⛔ e o teto continua sendo agora.
+   */
+  estimativa?: boolean;
 };
 
 export default function SeletorDeHora({
@@ -84,6 +89,7 @@ export default function SeletorDeHora({
   onMudar,
   onConfirmar,
   onCancelar,
+  estimativa = false,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -100,8 +106,9 @@ export default function SeletorDeHora({
    * ⛔ Não há piso: um AVC de ontem à noite é comum, e cortar o passado seria
    * inventar um limite que a fonte não escreve.
    */
+  const teto = estimativa ? Infinity : agora;
   function mover(minutos: number) {
-    onMudar(Math.min(agora, instante + minutos * MINUTO), true);
+    onMudar(Math.min(teto, instante + minutos * MINUTO), true);
   }
 
   /**
@@ -109,12 +116,12 @@ export default function SeletorDeHora({
    * marco no futuro ⛔ não existe, e o controle ⛔ não deixa construí-lo.
    */
   function moverDia(dias: number) {
-    onMudar(Math.min(agora, deslocarDias(instante, dias)), false);
+    onMudar(Math.min(teto, deslocarDias(instante, dias)), false);
   }
 
   /** ⚠️ Leva o DIA para N dias atrás, preservando a hora e o minuto atuais. */
   function irParaDiasAtras(dias: number) {
-    onMudar(Math.min(agora, instanteEmDiaComHora(agora, dias, hora, minuto)), false);
+    onMudar(Math.min(teto, instanteEmDiaComHora(agora, dias, hora, minuto)), false);
   }
 
   const distancia = diasAtras(instante, agora);
@@ -135,7 +142,7 @@ export default function SeletorDeHora({
    * impossível em toda superfície que contar tempo a partir dele. O que muda é
    * que agora ela é VISÍVEL: botão desabilitado e a razão escrita.
    */
-  const noTeto = instante >= agora;
+  const noTeto = instante >= teto;
 
   return (
     /**
@@ -211,7 +218,7 @@ export default function SeletorDeHora({
           numero={dataCurta(instante)}
           aoMenos={() => moverDia(-1)}
           aoMais={() => moverDia(+1)}
-          maisDesabilitado={ehHoje}
+          maisDesabilitado={ehHoje && !estimativa}
           testID="avc-seletor-data-passo"
           e={e}
         />
@@ -274,6 +281,11 @@ export default function SeletorDeHora({
         * botão desabilitado vira mistério — e mistério em controle de tempo é o
         * que faz o médico tocar dez vezes achando que a tela travou.
         */}
+      {estimativa ? (
+        <Text style={e.teto} testID="avc-seletor-hora-estimativa">
+          {tr("Estimativa: pode ser um horário futuro.")}
+        </Text>
+      ) : null}
       {noTeto ? (
         <Text style={e.teto} testID="avc-seletor-hora-teto">
           {tr("Este marco já aconteceu — não é possível registrar um horário futuro.")}

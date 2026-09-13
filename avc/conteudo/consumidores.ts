@@ -130,10 +130,9 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   transf_destino: ["transferencia.ts"],
   transf_recusa_motivo: ["transferencia.ts"],
   transf_previsao: ["transferencia.ts"],
-  tele_estado: ["transferencia.ts"],
+  tele_marco: ["transferencia.ts"],
   tele_parecer: ["transferencia.ts"],
   tele_parecer_autor: ["transferencia.ts"],
-  tele_parecer_hora: ["transferencia.ts"],
 
   /**
    * ── ⚠️⚠️ ⛔ O aPTT ⛔ E O TP **TÊM** CONSUMIDOR — ⛔ e ⛔ eu mapeei errado ────

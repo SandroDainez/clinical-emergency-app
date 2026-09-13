@@ -267,6 +267,11 @@ export type Campo = {
    */
   readonly aceitaDesconhecido?: true;
   /**
+   * ⚠️ AC-71 (autor, 2026-09-13): campo rotulado como ESTIMATIVA aceita horário futuro —
+   * previsão ⛔ é fato. ⛔ Ausente, o horário é OBSERVADO ⛔ e o teto continua sendo agora.
+   */
+  readonly estimativa?: true;
+  /**
    * ⚠️⚠️ **E-10 · O ZERO DESTA GRANDEZA É RESPOSTA CLÍNICA**, ⛔ não ausência.
    *
    * §0.2 declara duas famílias de campo numérico com semânticas OPOSTAS para o

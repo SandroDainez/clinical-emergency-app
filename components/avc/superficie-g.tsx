@@ -59,6 +59,8 @@ import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 import { MarcosDaTransferencia } from "./marcos-da-transferencia";
+import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
+import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
 
 /**
@@ -90,6 +92,10 @@ type Props = {
   onRegistrarMarco: (tipo: string, observado: number) => void;
   onCorrigirHoraDoMarco: (fatoId: string, observado: number) => void;
   onMarcoPorEngano: (fatoId: string) => void;
+  /** ⚠️ 12ª rodada (AC-72): teleconsulta por marcos; o parecer exige texto ⛔ e autor. */
+  onRegistrarMarcoDeTeleconsulta: (tipo: string, observado: number, parecer?: { texto: string; autor: string }) => void;
+  /** ⚠️ AC-73: correção por engano da piora, sempre disponível no evento da linha do tempo. */
+  onPioraPorEngano: (fatoId: string) => void;
 };
 
 /**
@@ -155,7 +161,10 @@ export default function SuperficieG({
   onRegistrarMarco,
   onCorrigirHoraDoMarco,
   onMarcoPorEngano,
+  onRegistrarMarcoDeTeleconsulta,
+  onPioraPorEngano,
 }: Props) {
+  const [enganoDaPiora, setEnganoDaPiora] = useState<string | undefined>(undefined);
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
 
@@ -334,6 +343,21 @@ export default function SuperficieG({
                     */}
                   {!item.estimativa && horaCurta(item.registradoEm) !== horaCurta(item.quando) ? (
                     <Text style={e.marcoDetalhe}>{tr("registrado às")} {horaCurta(item.registradoEm)}</Text>
+                  ) : null}
+                  {/**
+                    * ⚠️⚠️ AC-73 (autor, 2026-09-13): a correção «registrado por engano» fica
+                    * SEMPRE no evento — ⛔ o tempo passar ⛔ tira a capacidade de corrigir a
+                    * trilha. O efeito segue o AC-67 (tarefa ⛔ e eixos só voltam sem reavaliação).
+                    */}
+                  {item.ator === "piora" && item.nota === undefined ? (
+                    <Pressable
+                      style={e.tempoEngano}
+                      accessibilityRole="button"
+                      testID={`avc-g-tempo-engano-${item.fatoId}`}
+                      onPress={() => setEnganoDaPiora(item.fatoId)}
+                    >
+                      <Text style={e.tempoEnganoTexto}>{tr("Registrado por engano")}</Text>
+                    </Pressable>
                   ) : null}
                 </View>
               </View>
@@ -765,14 +789,18 @@ export default function SuperficieG({
             .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
             /** ⚠️ O motivo da recusa aparece quando o marco ATUAL (pelo horário observado) é «Recusa». */
             .filter((campo) => campo.id !== "transf_recusa_motivo" || leituraDaTransferencia(estado).estado === "Recusa")
+            /** ⚠️ AC-72: texto ⛔ e autor do parecer moram no marco «Parecer registrado». */
+            .filter((campo) => campo.id !== "tele_parecer" && campo.id !== "tele_parecer_autor")
             .map((campo) => {
-              if (campo.id === "transf_marco") {
+              if (campo.id === "transf_marco" || campo.id === "tele_marco") {
+                const tele = campo.id === "tele_marco";
                 return (
                   <MarcosDaTransferencia
                     key={campo.id}
+                    ator={tele ? "teleconsulta" : "transferencia"}
                     estado={estado}
                     agora={agora}
-                    onRegistrar={onRegistrarMarco}
+                    onRegistrar={tele ? onRegistrarMarcoDeTeleconsulta : onRegistrarMarco}
                     onCorrigirHora={onCorrigirHoraDoMarco}
                     onEngano={onMarcoPorEngano}
                   />
@@ -798,6 +826,17 @@ export default function SuperficieG({
             })}
         </View>
       ))}
+
+      <ConfirmacaoDeEngano
+        aberto={enganoDaPiora !== undefined}
+        titulo="Piora registrada por engano?"
+        texto="O registro não é apagado: recebe correção com motivo «registrado por engano». Se nenhum eixo foi reavaliado depois dele, a tarefa «Reavaliar agora» sai e os eixos concluídos antes voltam. Se a reavaliação já começou, ela fica."
+        onManter={() => setEnganoDaPiora(undefined)}
+        onCorrigir={() => {
+          if (enganoDaPiora !== undefined) onPioraPorEngano(enganoDaPiora);
+          setEnganoDaPiora(undefined);
+        }}
+      />
 
       <View style={e.operacional} testID="avc-g-contexto-operacional">
         <Text style={e.operacionalTitulo}>{tr("Capacidade deste serviço")}</Text>
@@ -1076,6 +1115,17 @@ const criarEstilos = (tema: Tema) =>
 
     sinteseLinha: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     marco: { flexDirection: "row", gap: ESPACO.sm, alignItems: "flex-start" },
+    tempoEngano: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    tempoEnganoTexto: { ...PAPEL.legenda, color: tema.cores.text },
     marcoHora: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary, minWidth: 44, fontVariant: ["tabular-nums"] },
     marcoCorpo: { flex: 1, gap: 2 },
     marcoEstimativa: { color: tema.cores.textSecondary, fontStyle: "italic" },

@@ -169,7 +169,7 @@ import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
 import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
 import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
-import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco } from "../../avc/nucleo/transferencia";
+import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
 import { BotaoPrecisoDeAjuda, DialogoDeAjuda } from "./preciso-de-ajuda";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
@@ -1977,7 +1977,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                 : tema.cores.critical
             }
           />
-          <Text style={s.imagemLinhaTexto} numberOfLines={2}>
+          {/** ⚠️ Nome de exame ⛔ se trunca — quebra de linha (autor, 2026-09-13). */}
+          <Text style={s.imagemLinhaTexto}>
             {tr(PRIORIDADE_DA_IMAGEM.titulo)}
           </Text>
           {/**
@@ -2434,6 +2435,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onRegistrarMarco={(tipo, observado) => setEstado((e) => registrarMarco(e, tipo, observado, relogio))}
             onCorrigirHoraDoMarco={(fatoId, observado) => setEstado((e) => corrigirHorarioDoMarco(e, fatoId, observado, relogio))}
             onMarcoPorEngano={(fatoId) => setEstado((e) => marcoPorEngano(e, fatoId, relogio))}
+            onRegistrarMarcoDeTeleconsulta={(tipo, observado, parecer) =>
+              setEstado((e) => registrarMarcoDeTeleconsulta(e, tipo, observado, relogio, parecer))}
+            onPioraPorEngano={(fatoId) => setEstado((e) => corrigirPioraPorEngano(e, fatoId, relogio))}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE

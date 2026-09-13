@@ -114,7 +114,12 @@ export function corrigirPioraPorEngano(estado: EstadoAvc, fatoId: string, relogi
     relogio
   );
   if (reavaliou) {
-    return registrarFato(corrigido, { campo: CAMPO_REAVALIACAO_MANTIDA, valor: fatoId }, relogio);
+    /**
+     * ⚠️ AC-73: com a reavaliação COMPLETA, ⛔ há o que manter pendente — ⛔ grava a marca
+     * (senão reabrir um eixo à mão ressuscitaria a tarefa de uma piora corrigida).
+     */
+    const incompleta = eixos.some((x) => !estado.eixosConcluidos.includes(x));
+    return incompleta ? registrarFato(corrigido, { campo: CAMPO_REAVALIACAO_MANTIDA, valor: fatoId }, relogio) : corrigido;
   }
   const vizinho = estado.fatos[indice + 1];
   const reabertos = vizinho !== undefined && vizinho.campo === CAMPO_EIXOS_REABERTOS ? String(vizinho.valor).split(",") : [];
