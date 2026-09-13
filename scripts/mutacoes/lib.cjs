@@ -25,7 +25,8 @@
  */
 const fs = require("node:fs");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
+const os = require("node:os");
+const { execFileSync, spawnSync } = require("node:child_process");
 
 const appDir = path.resolve(__dirname, "..", "..");
 
@@ -58,6 +59,48 @@ const ARQ = {
  * ⛔ Devolve `{ reprovadas, sobreviventes, ancorasQuebradas }` — e quem chama
  * decide o código de saída. ⚠️ Sobrevivente **e** âncora quebrada são falha.
  */
+/**
+ * ⚠️⚠️ CÓPIA ISOLADA — defeito de 2026-09-13.
+ *
+ * A mutação era gravada no arquivo REAL da árvore ⛔ e só restaurada no `finally`.
+ * Às 11:55:25 daquele dia, "a ação de F sai do registro do módulo" estava escrita
+ * em `avc/conteudo/campos.ts` enquanto um `build:web:teste` empacotava: o `dist` saiu
+ * com o registro da trombólise sem instância. ⛔ Nenhum outro processo pode ver
+ * código mutado.
+ *
+ * ⚠️ Agora: uma cópia por execução (arquivos rastreados ⛔ e não ignorados, com o
+ * conteúdo da árvore de trabalho), `node_modules` por link simbólico, ⛔ e a trava
+ * roda DENTRO da cópia. A árvore real ⛔ é lida uma vez ⛔ e nunca escrita.
+ * Prova: `scripts/prova-mutacoes-isoladas.cjs`.
+ */
+let copia;
+function copiaIsolada() {
+  if (copia) return copia;
+  const destino = fs.mkdtempSync(path.join(os.tmpdir(), "mutacoes-isoladas-"));
+  const lista = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], { cwd: appDir })
+    .toString("utf8").split("\0").filter(Boolean);
+  for (const rel of lista) {
+    const de = path.join(appDir, rel);
+    if (!fs.existsSync(de) || !fs.lstatSync(de).isFile()) continue;
+    const para = path.join(destino, rel);
+    fs.mkdirSync(path.dirname(para), { recursive: true });
+    fs.copyFileSync(de, para);
+  }
+  const link = path.join(destino, "node_modules");
+  fs.symlinkSync(path.join(appDir, "node_modules"), link, "dir");
+  process.on("exit", () => {
+    try {
+      /** ⚠️ O link sai PRIMEIRO: apagar a cópia ⛔ nunca pode alcançar o `node_modules` real. */
+      if (fs.lstatSync(link).isSymbolicLink()) fs.unlinkSync(link);
+      fs.rmSync(destino, { recursive: true, force: true });
+    } catch {
+      /* cópia temporária: o sistema limpa `tmpdir` */
+    }
+  });
+  copia = destino;
+  return copia;
+}
+
 function rodarConjunto({ nome, trava, mutacoes }) {
   const sobreviventes = [];
   const ancorasQuebradas = [];
@@ -66,7 +109,8 @@ function rodarConjunto({ nome, trava, mutacoes }) {
   console.log(`\n── ${nome} · trava: ${trava}`);
 
   for (const m of mutacoes) {
-    const arq = path.join(appDir, m.arquivo);
+    const raiz = copiaIsolada();
+    const arq = path.join(raiz, m.arquivo);
     const original = fs.readFileSync(arq, "utf8");
 
     /** ⚠️⚠️ REGRA 1 · âncora que ⛔ não casa é FALHA. */
@@ -78,7 +122,7 @@ function rodarConjunto({ nome, trava, mutacoes }) {
 
     try {
       fs.writeFileSync(arq, original.replace(m.de, m.para));
-      const r = spawnSync("node", [trava], { cwd: appDir, encoding: "utf8" });
+      const r = spawnSync("node", [trava], { cwd: raiz, encoding: "utf8" });
       if (r.status === 0) {
         sobreviventes.push(m.nome);
         console.log(`  ✗ SOBREVIVEU       ${m.nome}`);
@@ -95,4 +139,4 @@ function rodarConjunto({ nome, trava, mutacoes }) {
   return { nome, reprovadas, sobreviventes, ancorasQuebradas, total: mutacoes.length };
 }
 
-module.exports = { ARQ, rodarConjunto, appDir };
+module.exports = { ARQ, rodarConjunto, appDir, copiaIsolada };
