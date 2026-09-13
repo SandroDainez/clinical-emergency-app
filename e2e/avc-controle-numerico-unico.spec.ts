@@ -129,16 +129,21 @@ test.describe("AVC · o controle numérico é um só", () => {
 
   /* ══ ⚠️⚠️⚠️ 4 · ZERO CONTINUA SENDO VALOR ═══════════════════════════ */
 
-  test("⛔ zero é resposta onde o conteúdo diz que é, ⛔ e o degrau parte do piso",
+  test("⛔ zero é resposta onde o conteúdo diz que é, ⛔ e ⛔ nenhum ajuste parte do vazio",
     async ({ page }) => {
       await abrir(page);
 
       /**
-       * ⚠️⚠️ ⛔ O `+` FINO NASCE INERTE ⛔ e ⛔ o DEGRAU ⛔ **⛔ não** — ⛔ e ⛔ os
-       * dois ⛔ estão certos: ⛔ um `+1` ⛔ partindo do nada ⛔ gravaria ⛔ o piso
-       * ⛔ como medida (§0.2); ⛔ um degrau ⛔ é ⛔ movimento declarado.
+       * ⚠️⚠️ CAMPO VAZIO: o `+` fino ⛔ E os degraus nascem inertes — achado do autor
+       * (2026-09-13): *"sem valor, os dois deveriam estar no mesmo estado"*. ⛔ Qualquer
+       * ajuste partindo do nada gravaria o piso da faixa como medida (§0.2). ⚠️ Antes,
+       * o degrau partia do piso (+50 → 80 kg) — ⛔ mudança consciente.
        */
       await expect(page.getByTestId("avc-num-mais-peso")).toBeDisabled();
+      await expect(page.getByTestId("avc-degrau-peso-mais-50")).toBeDisabled();
+      await expect(page.getByTestId("avc-degrau-peso-menos-50")).toBeDisabled();
+      await page.getByTestId("avc-num-caixa-peso").fill("30");
+      await page.getByTestId("avc-num-caixa-peso").blur();
       await page.getByTestId("avc-degrau-peso-mais-50").click();
       await expect(page.getByTestId("avc-num-caixa-peso")).toHaveValue("80");
       await expect(page.getByTestId("avc-num-mais-peso")).toBeEnabled();

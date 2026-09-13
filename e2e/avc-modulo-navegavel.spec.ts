@@ -413,7 +413,9 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
      */
     const degrau = page.getByTestId("avc-degrau-nihss_informado-mais-10");
     await expect(degrau, "⛔ o cenário mudou: ⛔ o NIHSS informado saiu de B").toBeVisible();
-    await degrau.click();
+    /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o valor entra digitado. */
+    await page.getByTestId("avc-num-caixa-nihss_informado").fill("10");
+    await page.getByTestId("avc-num-caixa-nihss_informado").blur();
     /**
      * ⚠️ D-PEND-14 (2026-09-13): o escore de outro serviço ⛔ só sai da síntese com
      * "Não, escala completa". ⛔ A intenção desta trava ⛔ não muda: com NIHSS

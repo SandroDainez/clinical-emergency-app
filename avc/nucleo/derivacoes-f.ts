@@ -22,7 +22,7 @@ import { leituraDoNihssCalculado, nihssCalculado } from "./derivacoes-b";
 import { ternario } from "./leitura";
 import { fatosDaInstancia, instanciasDe, valorNaInstancia } from "./instancia";
 import {
-  DOSES,
+  DOSES, FAIXAS_TABLE_7_TNK, FONTE_DA_TABLE_7,
   RECOMENDACOES,
   TROMBOLISE_IV,
   type CriterioDeFaixa,
@@ -197,6 +197,17 @@ export type DoseDerivada = {
   readonly origemDoPeso: OrigemDoPeso;
   readonly totalMg: number;
   readonly slot: string;
+  /** ⚠️ D-PEND-22: só tenecteplase — volume a `concentracaoMgPorMl`, com 0,1 mL. */
+  readonly volumeMl?: number;
+  readonly concentracaoMgPorMl?: number;
+  /** ⚠️ D-PEND-22: a faixa da Table 7 como CONFERÊNCIA, ⛔ nunca como a dose. */
+  readonly conferenciaTable7?: {
+    readonly faixa: string;
+    readonly mg: number;
+    readonly ml: number;
+    readonly divergente: boolean;
+    readonly fonte: string;
+  };
 };
 
 /**
@@ -218,6 +229,15 @@ export function doseDerivada(
   if (pesoKg === undefined || origemDoPeso === undefined) return undefined;
   if (!(pesoKg > 0)) return undefined;
   const d = DOSES[agente];
+  /** ⚠️ Sem lixo de ponto flutuante: seis casas ⛔ não alcançam ⛔ nenhum produto real desta conta. */
+  const limpa = (x: number) => Number(x.toFixed(6));
+  const totalMg = Math.min(d.arredondaMgInteiro ? Math.round(pesoKg * d.mgPorKg) : limpa(pesoKg * d.mgPorKg), d.maximoMg);
+  const volumeMl = d.concentracaoMgPorMl === undefined
+    ? undefined
+    : Math.round(limpa((totalMg / d.concentracaoMgPorMl) * 10)) / 10;
+  const faixa = agente === "tenecteplase"
+    ? FAIXAS_TABLE_7_TNK.find((f) => pesoKg >= f.deKg && (f.ateKgExclusivo === undefined || pesoKg < f.ateKgExclusivo))
+    : undefined;
   return {
     agente,
     mgPorKg: d.mgPorKg,
@@ -225,33 +245,20 @@ export function doseDerivada(
     pesoKg,
     origemDoPeso,
     /**
-     * ⚠️⚠️⚠️ ⛔ SEM LIXO DE PONTO FLUTUANTE — 2026-09-12.
+     * ⚠️⚠️ ⛔ SEM LIXO DE PONTO FLUTUANTE — 2026-09-12 (relato do autor: *"89.10000000000001
+     * mg"* para 99 kg). ⛔ Artefato do `double`, ⛔ e ⛔ nunca dado clínico.
      *
-     * ⛔ Relato do autor, com captura: *"ALTEPLASE OLHA O TANTO DE CASAS
-     * DECIMAIS, ISSO NEM DÁ PARA MEDIR NA PRÁTICA"* — a tela mostrava
-     * **`89.10000000000001 mg`** para 99 kg.
-     *
-     * ⚠️⚠️ ⛔ ISTO ⛔ NÃO É ARREDONDAMENTO CLÍNICO. `99 × 0,9` **É** 89,1 em
-     * decimal; ⛔ o rabo de casas é o erro de representação binária do
-     * `double` (`0,9` ⛔ não existe exato em base 2) — ⛔ artefato da máquina,
-     * ⛔ e ⛔ nunca um dado clínico. ⚠️ As seis casas preservadas são folga: ⛔ elas
-     * ⛔ não alcançam ⛔ nenhum produto real desta conta (peso tem `passo: 1`,
-     * ⛔ e o maior produto tem **duas** casas), ⛔ e ⛔ por isso ⛔ nenhum valor
-     * verdadeiro é alterado.
-     *
-     * ── ⚠️⚠️ ⛔ E A DOSE É **INTEIRA** — decisão do autor, 2026-09-12 ────────
-     *
-     * ⛔ Relato: *"olha o tanto de casas decimais, isso nem dá para medir na
-     * prática"*. ⚠️ ⛔ A fonte ⛔ **não** define arredondamento — a Table 7 dá
-     * ⛔ só `mg/kg` ⛔ e o teto —, ⛔ então isto é **decisão declarada do
-     * autor**, ⛔ e ⛔ não conteúdo clínico derivado: ⛔ ela ⛔ não pode ser
-     * atribuída à AHA/ASA (**E-30**, **E-31**).
-     *
-     * ⛔ ⛔ O **teto continua sendo o número da fonte**, ⛔ e é aplicado
-     * **depois** do arredondamento: ⛔ nenhuma dose cruza 90 mg ⛔ ou 25 mg
-     * ⛔ por efeito de arredondar.
+     * ── ⚠️⚠️ QUANTAS CASAS A DOSE TEM ──────────────────────────────────────────
+     * ⚠️ Alteplase: **inteira** — decisão do autor, 2026-09-12. ⚠️ Tenecteplase:
+     * **exata**, 0,25 mg/kg ⛔ sem arredondar mg — **D-PEND-22**, 2026-09-13 (70 kg =
+     * 17,5 mg). ⛔ A fonte ⛔ não define arredondamento para ⛔ nenhuma (**E-30**). ⛔ O teto
+     * continua sendo o número da fonte, aplicado depois.
      */
-    totalMg: Math.min(Math.round(pesoKg * d.mgPorKg), d.maximoMg),
+    totalMg,
+    ...(volumeMl === undefined ? {} : { volumeMl, concentracaoMgPorMl: d.concentracaoMgPorMl }),
+    ...(faixa === undefined ? {} : {
+      conferenciaTable7: { faixa: faixa.faixa, mg: faixa.mg, ml: faixa.ml, divergente: faixa.mg !== totalMg, fonte: FONTE_DA_TABLE_7 },
+    }),
     slot: d.slot,
   };
 }

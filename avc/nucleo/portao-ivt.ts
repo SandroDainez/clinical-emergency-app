@@ -293,8 +293,9 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
     motivos.push({
       id: "suspeita_hsa",
       camada: "destino",
-      rotulo: "Saída diagnóstica armada: suspeita clínica de hemorragia subaracnóidea",
-      dado: retencao.curto,
+      /** ⚠️ D-PEND-23: "requer avaliação especializada / corrigir e reavaliar", ⛔ nunca segurança; procedência como adaptação do projeto. */
+      rotulo: retencao.rotulo,
+      dado: retencao.procedencia,
       fonte: retencao.fonte,
       oQueFalta: retencao.oQueFalta,
       leva: retencao.leva,

@@ -77,9 +77,12 @@ async function abrirNihssDeFora(page: Page) {
 async function nihssDeFora(page: Page, quantos: number) {
   await abrirNihssDeFora(page);
   let falta = quantos;
-  while (falta >= 10) {
-    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
-    falta -= 10;
+  if (falta >= 10) {
+    /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — as dezenas entram digitadas. */
+    const caixa = page.getByTestId("avc-num-caixa-nihss_informado");
+    await caixa.fill(String(falta - (falta % 10)));
+    await caixa.blur();
+    falta %= 10;
   }
   if (falta > 0 && quantos < 10) {
     /** ⚠️ ⛔ Abaixo de um degrau, ⛔ o zero ⛔ é a partida — ⛔ e ⛔ ele é válido aqui. */

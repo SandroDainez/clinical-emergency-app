@@ -94,7 +94,9 @@ test.describe("AVC · a cor diz o assunto", () => {
 
       const antes = await fundoDe(page, "avc-bloco-identificacao-selo");
       /** ⚠️ O gesto real: registrar a idade. */
-      await page.getByTestId("avc-degrau-idade-mais-10").click();
+      /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o valor entra digitado. */
+      await page.getByTestId("avc-num-caixa-idade").fill("70");
+      await page.getByTestId("avc-num-caixa-idade").blur();
       const depois = await fundoDe(page, "avc-bloco-identificacao-selo");
       expect(depois).toBe(antes);
     });

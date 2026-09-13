@@ -25,7 +25,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   ACAO_DE_TROMBOLISE,
   DECISAO_DE_PROSSEGUIR,
-  CAMPO_AGENTE,
+  CAMPO_AGENTE, SITUACAO_REGULATORIA_TNK,
   TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
   PRINCIPIOS_GERAIS,
@@ -126,8 +126,8 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
   /** ⚠️ D1: resposta **do aplicativo** — ⛔ nunca *"contraindicada"*; o motivo nomeia o critério. */
   nao_sustentada: "Os critérios registrados não sustentam a trombólise",
-  /** ⚠️ O3: saída diagnóstica armada — ⛔ execução retida, ⛔ avaliação preservada, ⛔ não é contraindicação. */
-  saida_diagnostica_pendente: "Saída diagnóstica armada — execução retida enquanto a suspeita de hemorragia subaracnóidea estiver ativa",
+  /** ⚠️ D-PEND-23: "requer avaliação especializada / corrigir e reavaliar" — ⛔ execução retida, ⛔ avaliação preservada, ⛔ não é contraindicação. */
+  saida_diagnostica_pendente: "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue",
   /** ⚠️ R3: incerteza relevante ⛔ não libera — ⛔ e ⛔ nenhum destes é contraindicação. */
   reconciliacao_pendente: "Resultados discordantes — reconcilie antes de decidir",
   resultado_pendente: "Exame pertinente ainda sem resultado",
@@ -136,6 +136,11 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
 };
+
+/** ⚠️ D-PEND-22: número com vírgula decimal; `casas` fixa as casas (volume com 0,1 mL). */
+function decimal(n: number, casas?: number): string {
+  return (casas === undefined ? String(n) : n.toFixed(casas)).replace(".", ",");
+}
 
 type Props = {
   estado: EstadoAvc;
@@ -568,9 +573,9 @@ export default function SuperficieF({
         {vereditoEvt.retencaoDiagnostica.estado === "retida" ? (
           <View style={e.portaoMotivo} testID={`avc-f-evt-retencao-${vereditoEvt.retencaoDiagnostica.motivo}`}>
             <Text style={e.portaoRotulo}>
-              {ESTADOS.verificar.simbolo} {tr("Execução retida por saída diagnóstica")}
+              {ESTADOS.verificar.simbolo} {tr(vereditoEvt.retencaoDiagnostica.rotulo)}
             </Text>
-            <Text style={e.portaoDado}>{tr(vereditoEvt.retencaoDiagnostica.curto)}</Text>
+            <Text style={e.portaoDado}>{tr(vereditoEvt.retencaoDiagnostica.procedencia)}</Text>
             <Text style={e.portaoFonte}>{vereditoEvt.retencaoDiagnostica.fonte}</Text>
             <Text style={e.portaoFalta}>{tr(vereditoEvt.retencaoDiagnostica.oQueFalta)}</Text>
             <Pressable
@@ -779,12 +784,34 @@ export default function SuperficieF({
               />
               <Text style={e.doseValor} testID="avc-f-dose-valor">
                 {tr(dose.agente === "alteplase" ? "Alteplase" : "Tenecteplase")}{" "}
-                {dose.totalMg} {tr("mg")}
+                {decimal(dose.totalMg)} {tr("mg")}
               </Text>
+              {/** ⚠️ D-PEND-22: volume a 5 mg/mL, com 0,1 mL — ⛔ só tenecteplase. */}
+              {dose.volumeMl !== undefined && dose.concentracaoMgPorMl !== undefined ? (
+                <Text style={e.doseSub} testID="avc-f-dose-volume">
+                  {decimal(dose.volumeMl, 1)} {tr("mL")} · {tr("a")} {decimal(dose.concentracaoMgPorMl)} {tr("mg/mL")}
+                </Text>
+              ) : null}
               {/** ⚠️ COMO se chegou ao número — abaixo dele, ⛔ e menor. */}
               <Text style={e.doseSub}>
-                {dose.mgPorKg} {tr("mg/kg")} · {tr("máx.")} {dose.maximoMg} {tr("mg")}
+                {decimal(dose.mgPorKg)} {tr("mg/kg")} · {tr("máx.")} {dose.maximoMg} {tr("mg")}
               </Text>
+              {/** ⚠️⚠️ D-PEND-22: a faixa da Table 7 é CONFERÊNCIA — ⛔ nunca a dose —, com a divergência dita. */}
+              {dose.conferenciaTable7 ? (
+                <View testID="avc-f-dose-table7">
+                  <Text style={e.doseSub}>
+                    {tr("Conferência")} · {dose.conferenciaTable7.fonte}: {dose.conferenciaTable7.faixa} → {decimal(dose.conferenciaTable7.mg)} {tr("mg")} · {decimal(dose.conferenciaTable7.ml)} {tr("mL")}
+                  </Text>
+                  {dose.conferenciaTable7.divergente ? (
+                    <Text style={e.doseSub} testID="avc-f-dose-table7-divergencia">
+                      {tr("A faixa da Table 7 difere da dose exata")}: {decimal(dose.conferenciaTable7.mg)} {tr("mg")} × {decimal(dose.totalMg)} {tr("mg")}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+              {dose.agente === "tenecteplase" ? (
+                <Text style={e.doseSub} testID="avc-f-dose-regulatorio">{tr(SITUACAO_REGULATORIA_TNK)}</Text>
+              ) : null}
               <Text style={e.doseSub} testID="avc-f-dose-origem">
                 {tr("peso")} {dose.pesoKg} {tr("kg")} — {tr(origemBruta)}
               </Text>

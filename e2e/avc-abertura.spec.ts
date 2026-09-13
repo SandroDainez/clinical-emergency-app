@@ -146,7 +146,9 @@ test.describe("AVC · abertura do atendimento", () => {
        *
        * ⚠️ O gesto real: registrar a idade, ⛔ que é o primeiro dado basal.
        */
-      await page.getByTestId("avc-degrau-idade-mais-10").click();
+      /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o valor entra digitado. */
+      await page.getByTestId("avc-num-caixa-idade").fill("70");
+      await page.getByTestId("avc-num-caixa-idade").blur();
 
       const proximo = page.getByTestId("avc-paciente-proximo");
       await expect(proximo).toBeVisible();

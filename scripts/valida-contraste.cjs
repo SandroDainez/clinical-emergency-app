@@ -145,6 +145,14 @@ const PARES = [
    * controle — ⛔ a cor ⛔ não é o único sinal (✓ ⛔ e borda, E-15).
    */
   ["text", "surface", 3, "anel da opção marcada (D-PEND-21) contra o card"],
+  /**
+   * ⚠️⚠️ AC-59 (decisão do autor, 2026-09-13): o contorno da opção NEUTRA ≥ 3:1
+   * contra o card ⛔ e contra o fundo da tela, nos dois temas (WCAG 1.4.11, limite
+   * de componente). ⚠️ O piso de 1,5 fica ⛔ só para marcada × neutra (acima).
+   * ⛔ Antes: 2,78 (claro) ⛔ e 2,53 (escuro) contra o card.
+   */
+  ["controlBorder", "surface", 3, "contorno da opção neutra contra o card (AC-59)"],
+  ["controlBorder", "bg", 3, "contorno da opção neutra contra o fundo da tela (AC-59)"],
   ["successFill", "controlSurface", 1.5, "Sim marcado se separa da opção neutra ao lado (D-PEND-21)"],
   ["criticalFill", "controlSurface", 1.5, "Não marcado se separa da opção neutra ao lado (D-PEND-21)"],
   /**

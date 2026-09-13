@@ -30,7 +30,7 @@
  * navegação ⛔ e título de fase juntos ⛔ não podem comer meia tela antes da
  * decisão aparecer (autor, 2026-09-05).
  */
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode, useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 /** ⚠️ ⛔ Qualquer nó que saiba se medir — ⛔ é ⛔ tudo que a barra precisa. */
@@ -63,7 +63,11 @@ export function ClinicalHeader({
   titulo: string;
   /** ⚠️ A linha de baixo — o escopo da síndrome. ⛔ Nunca o nome do módulo de novo. */
   escopo?: string;
-  /** ⚠️ O estado do atendimento, em vermelho ⛔ e com marcador redondo. */
+  /**
+   * ⚠️ O estado do atendimento, com marcador redondo, ⛔ em cor NEUTRA — achado do autor
+   * (2026-09-13) e spec p.462: *"evitar vermelho para simples atividade"*. ⛔ Vermelho é
+   * ameaça ⛔ e erro; "aberto" é atividade normal.
+   */
   marcador?: string;
   /**
    * ⚠️⚠️ O RELÓGIO CLÍNICO À DIREITA — ⛔ e ⛔ **não** o tempo de atendimento.
@@ -97,6 +101,14 @@ export function ClinicalHeader({
    * ele fica **fora do ScrollView**, ⛔ e por isso ⛔ nunca some (§7.8).
    */
   return (
+    /**
+     * ⚠️⚠️ DUAS LINHAS CURTAS, ⛔ e ⛔ não três colunas com o nome espremido — achado do
+     * autor, 2026-09-13 (spec p.418/p.462: *"Reduzir cabeçalho"*). ⛔ No meio de 64 + 112
+     * px sobravam ~151 px: *"AVC isquêmico agudo"* empilhava em três linhas de título
+     * grande (~150 px), ⛔ e em uma linha só seria cortado. ⚠️ Em cima: sair · estado ·
+     * relógio. Embaixo: o nome da síndrome em UMA linha, com a largura inteira.
+     */
+    <View style={e.headerBloco}>
     <View style={e.header}>
       <View style={e.headerLado}>
         <Pressable
@@ -129,8 +141,6 @@ export function ClinicalHeader({
             <Text style={e.headerMarcadorTexto}>{tr(marcador)}</Text>
           </View>
         ) : null}
-        <Text style={e.headerTitulo} numberOfLines={3}>{tr(titulo)}</Text>
-        {escopo ? <Text style={e.headerEscopo} numberOfLines={2}>{tr(escopo)}</Text> : null}
       </View>
 
       <View style={e.headerLadoDireito}>
@@ -184,6 +194,10 @@ export function ClinicalHeader({
         ) : null}
         {aoLado ?? null}
       </View>
+    </View>
+      {/** ⚠️ Uma linha, corpo menor, largura inteira — ⛔ nome clínico ⛔ nunca trunca. */}
+      <Text style={e.headerTitulo} numberOfLines={1} testID="avc-cabecalho-titulo">{tr(titulo)}</Text>
+      {escopo ? <Text style={e.headerEscopo} numberOfLines={2}>{tr(escopo)}</Text> : null}
     </View>
   );
 }
@@ -299,6 +313,35 @@ export function PhaseNavigation({
   const rolagemAtual = useRef(0);
 
   /**
+   * ⚠️⚠️ HÁ MAIS FASES FORA DA TELA? — achado do autor, 2026-09-13: a 375 px a quinta
+   * aba aparecia cortada ("Rep…") ⛔ e a borda de continuidade (2 px, opacidade 0,6)
+   * ⛔ não se via. ⚠️ Agora ⛔ cada lado com fase escondida ganha um botão ‹ ou › que
+   * **rola até ela**. ⛔ Medido no nó rolável (web); fora do navegador ⛔ não aparece.
+   */
+  const [transborda, setTransborda] = useState<{ readonly esquerda: boolean; readonly direita: boolean }>({ esquerda: false, direita: false });
+  const noRolavel = useCallback(
+    () => (trilho.current as unknown as { getScrollableNode?: () => { scrollLeft: number; scrollWidth: number; clientWidth: number } | null })?.getScrollableNode?.() ?? null,
+    []
+  );
+  const medirTransborda = useCallback(() => {
+    const n = noRolavel();
+    if (!n || typeof n.scrollWidth !== "number") return;
+    const esquerda = n.scrollLeft > 2;
+    const direita = n.scrollLeft + n.clientWidth < n.scrollWidth - 2;
+    setTransborda((t) => (t.esquerda === esquerda && t.direita === direita ? t : { esquerda, direita }));
+  }, [noRolavel]);
+  const rolarPor = (sentido: 1 | -1) => {
+    const n = noRolavel();
+    if (n && typeof n.scrollLeft === "number") {
+      n.scrollLeft = Math.max(0, n.scrollLeft + sentido * Math.round(n.clientWidth * 0.6));
+      rolagemAtual.current = n.scrollLeft;
+      requestAnimationFrame(medirTransborda);
+      return;
+    }
+    trilho.current?.scrollTo({ x: Math.max(0, rolagemAtual.current + sentido * 220), animated: true });
+  };
+
+  /**
    * ⚠️⚠️ A BARRA ⛔ NÃO ANDA SOZINHA — exigência do autor, 2026-09-05.
    *
    * ⛔ Trocar de fase por outro caminho (um botão do conteúdo, uma pendência)
@@ -357,7 +400,8 @@ export function PhaseNavigation({
       const rolavel = (
         trilho.current as unknown as { getScrollableNode?: () => { scrollLeft?: number } | null }
       )?.getScrollableNode?.();
-      const alvo = Math.max(0, comoNo.offsetLeft - 24);
+      /** ⚠️ 48 px, ⛔ e ⛔ não 24: o botão ‹ (40 px) cobriria o começo da aba ativa (medido na captura de 2026-09-13). */
+      const alvo = Math.max(0, comoNo.offsetLeft - 48);
       if (rolavel && typeof rolavel.scrollLeft === "number") {
         rolavel.scrollLeft = alvo;
         requestAnimationFrame(() => {
@@ -370,11 +414,17 @@ export function PhaseNavigation({
     }
     (item as NoMedivel).measureInWindow?.((xItem) => {
       trilho.current?.scrollTo({
-        x: Math.max(0, rolagemAtual.current + xItem - 24),
+        x: Math.max(0, rolagemAtual.current + xItem - 48),
         animated: true,
       });
     });
   }, [atual, fases.length]);
+
+  useEffect(() => {
+    medirTransborda();
+    const id = setTimeout(medirTransborda, 60);
+    return () => clearTimeout(id);
+  }, [atual, fases.length, medirTransborda]);
 
   /**
    * ⚠️⚠️ ROLÁVEL NA HORIZONTAL — corrigido em 2026-09-05 **na captura**.
@@ -405,6 +455,7 @@ export function PhaseNavigation({
       scrollEventThrottle={16}
       onScroll={(ev) => {
         rolagemAtual.current = ev.nativeEvent.contentOffset.x;
+        medirTransborda();
       }}
       testID="avc-barra"
     >
@@ -458,7 +509,28 @@ export function PhaseNavigation({
       *
       * ⛔ `pointerEvents="none"`: ele ⛔ não pode roubar o toque da aba embaixo.
       */}
-    <View style={e.navBorda} pointerEvents="none" testID="avc-barra-continua" />
+    {transborda.esquerda ? (
+      <Pressable
+        style={[e.navMais, e.navMaisEsquerda]}
+        accessibilityRole="button"
+        accessibilityLabel={tr("Fases anteriores")}
+        testID="avc-barra-mais-esquerda"
+        onPress={() => rolarPor(-1)}
+      >
+        <Text style={e.navMaisSeta}>‹</Text>
+      </Pressable>
+    ) : null}
+    {transborda.direita ? (
+      <Pressable
+        style={[e.navMais, e.navMaisDireita]}
+        accessibilityRole="button"
+        accessibilityLabel={tr("Mais fases")}
+        testID="avc-barra-mais-direita"
+        onPress={() => rolarPor(1)}
+      >
+        <Text style={e.navMaisSeta}>›</Text>
+      </Pressable>
+    ) : null}
     </View>
     </View>
   );
@@ -972,7 +1044,8 @@ function estilos(tema: Tema) {
       gap: ESPACO.xs,
     } as const,
 
-    header: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm } as const,
+    headerBloco: { gap: ESPACO.xs } as const,
+    header: { flexDirection: "row", alignItems: "center", gap: ESPACO.sm } as const,
     /**
      * ⚠️⚠️ 64 px, ⛔ e ⛔ não 82 — medido na captura de 2026-09-06.
      *
@@ -992,7 +1065,7 @@ function estilos(tema: Tema) {
      * elegibilidade.
      */
     headerLadoDireito: { width: 112, alignItems: "flex-end", gap: ESPACO.xs } as const,
-    headerCentro: { flex: 1, alignItems: "center", gap: 2 } as const,
+    headerCentro: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 } as const,
     headerSair: { minHeight: TOQUE.minimo, justifyContent: "center" } as const,
     headerSairTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary } as const,
     headerMarcador: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs } as const,
@@ -1000,11 +1073,11 @@ function estilos(tema: Tema) {
       width: 8,
       height: 8,
       borderRadius: RAIO.badge,
-      backgroundColor: tema.cores.critical,
+      backgroundColor: tema.cores.textSecondary,
     } as const,
-    headerMarcadorTexto: { ...PAPEL.rotuloDeMetrica, color: tema.cores.critical } as const,
+    headerMarcadorTexto: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary } as const,
     headerTitulo: {
-      ...PAPEL.tituloDaTela,
+      ...PAPEL.tituloDeSecao,
       color: tema.cores.text,
       textAlign: "center",
       /** ⚠️ ⛔ Ele encolhe até caber ⛔ antes de aceitar reticências. */
@@ -1085,17 +1158,20 @@ function estilos(tema: Tema) {
       paddingTop: ESPACO.sm,
     } as const,
     nav: { flexGrow: 0 } as const,
-    /** ⚠️ Faixa estreita na borda direita — presença, ⛔ e ⛔ não controle. */
-    navBorda: {
+    /** ⚠️ Botão de continuidade: corpo, contorno ⛔ e seta — ⛔ ele rola até a fase escondida. */
+    navMais: {
       position: "absolute",
-      right: 0,
       top: 0,
       bottom: 0,
-      width: ESPACO.md,
-      borderRightWidth: 2,
-      borderRightColor: tema.cores.border,
-      opacity: 0.6,
+      width: 40,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: tema.cores.surface,
+      borderColor: tema.cores.controlBorder,
     } as const,
+    navMaisDireita: { right: 0, borderLeftWidth: 1 } as const,
+    navMaisEsquerda: { left: 0, borderRightWidth: 1 } as const,
+    navMaisSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.text } as const,
     navConteudo: { paddingHorizontal: ESPACO.sm, gap: ESPACO.xs, alignItems: "flex-start" } as const,
     /**
      * ⚠️ Largura MÍNIMA, ⛔ e ⛔ não `flex: 1`: com `flex` as seis abas se

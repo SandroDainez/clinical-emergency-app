@@ -76,6 +76,16 @@ export type CampoP = CampoDeclarado;
  */
 export const FAIXA_ETARIA = { adulto: "18 anos ou mais", menor: "Menos de 18 anos" } as const;
 
+/**
+ * ⚠️⚠️ D-PEND-24 (autor, 2026-09-13): janela de 14 dias pós-parto no portão de
+ * população, marcada *"fonte AHA 2019, a confirmar na Table 8 de 2026"*. ⛔ A
+ * diretriz de 2019 ⛔ não está transcrita no repositório, ⛔ e a linha da Table 8 de
+ * 2026 é imagem: o número é do autor, com a marcação dele. ⛔ O "10 dias" antigo
+ * saiu pela D-PEND-20.
+ */
+export const JANELA_DO_PUERPERIO_DIAS = 14;
+export const PROCEDENCIA_DA_JANELA_DO_PUERPERIO = "fonte AHA 2019, a confirmar na Table 8 de 2026";
+
 export const GESTACAO_PUERPERIO = {
   nenhuma: "Não gestante e não puérpera",
   gestante: "Gestante",
@@ -104,7 +114,7 @@ export const POPULACAO_P: readonly CampoP[] = [
     opcoes: [GESTACAO_PUERPERIO.nenhuma, GESTACAO_PUERPERIO.gestante, GESTACAO_PUERPERIO.puerpera, NAO_SEI],
     fonte: "F-37",
     bloqueiaTerapia: false,
-    nota: "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.",
+    nota: "Gestante ou puérpera (até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026) está fora do escopo validado: encaminhar. Não sei mantém a pergunta.",
   },
 ];
 

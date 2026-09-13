@@ -1187,10 +1187,55 @@ export const DECISAO_DE_PROSSEGUIR: readonly CampoDeclarado[] = [
 
 
 /** ⚠️ Doses sustentadas por F-09. ⛔ **Preparo e administração ⛔ NÃO entram aqui.** */
-export const DOSES = {
-  alteplase: { mgPorKg: 0.9, maximoMg: 90, slot: "F-09" },
-  tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09" },
-} as const;
+export type DoseDoAgente = {
+  readonly mgPorKg: number;
+  readonly maximoMg: number;
+  readonly slot: string;
+  /**
+   * ⚠️ Alteplase: dose inteira (decisão do autor, 2026-09-12). Tenecteplase: dose
+   * EXATA, ⛔ sem arredondar mg (D-PEND-22, 2026-09-13). ⛔ A fonte ⛔ não define
+   * arredondamento para ⛔ nenhuma das duas.
+   */
+  readonly arredondaMgInteiro: boolean;
+  /** ⚠️ D-PEND-22: o volume da tenecteplase é exibido a 5 mg/mL, com 0,1 mL. */
+  readonly concentracaoMgPorMl?: number;
+};
+
+export const DOSES: { readonly alteplase: DoseDoAgente; readonly tenecteplase: DoseDoAgente } = {
+  alteplase: { mgPorKg: 0.9, maximoMg: 90, slot: "F-09", arredondaMgInteiro: true },
+  tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09", arredondaMgInteiro: false, concentracaoMgPorMl: 5 },
+};
+
+/**
+ * ⚠️⚠️ D-PEND-22 · A FAIXA DA TABLE 7 É **CONFERÊNCIA**, ⛔ e ⛔ não a dose.
+ *
+ * Verbatim da AHA/ASA 2026, Table 7, p. e358 (`protocols/fontes-verbatim/
+ * aha-asa-2026-avc-isquemico.md:1597-1605`). ⚠️ A dose exibida é a exata
+ * (0,25 mg/kg, teto 25 mg); a faixa aparece ao lado, ⛔ e a divergência é dita.
+ */
+export type FaixaDaTable7 = {
+  readonly faixa: string;
+  readonly deKg: number;
+  readonly ateKgExclusivo?: number;
+  readonly mg: number;
+  readonly ml: number;
+};
+
+export const FAIXAS_TABLE_7_TNK: readonly FaixaDaTable7[] = [
+  { faixa: "<60 kg", deKg: 0, ateKgExclusivo: 60, mg: 15, ml: 3 },
+  { faixa: "60 kg to <70 kg", deKg: 60, ateKgExclusivo: 70, mg: 17.5, ml: 3.5 },
+  { faixa: "70 kg to <80 kg", deKg: 70, ateKgExclusivo: 80, mg: 20, ml: 4 },
+  { faixa: "80 kg to <90 kg", deKg: 80, ateKgExclusivo: 90, mg: 22.5, ml: 4.5 },
+  { faixa: "≥90 kg", deKg: 90, mg: 25, ml: 5 },
+];
+
+export const FONTE_DA_TABLE_7 = "AHA/ASA 2026 · Table 7, p. e358";
+
+/**
+ * ⚠️ D-PEND-22: campo SEPARADO ⛔ e visível. ⛔ Nada foi conferido na ANVISA ⛔ nem na
+ * bula (pacote `docs/avc/revisao/AC-06-dose-trombolitico.md` §9A.3).
+ */
+export const SITUACAO_REGULATORIA_TNK = "Situação regulatória no Brasil (ANVISA/bula): pendente de conferência";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ⚠️⚠️⚠️ OS CRITÉRIOS DA INDICAÇÃO DE IVT — **D1** (commit 6 · 2026-09-12)

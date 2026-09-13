@@ -512,8 +512,9 @@ test.describe("AVC · Superfície B — Neurológico", () => {
     await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
 
     // Chega "NIHSS 12" da regulação.
-    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
-    for (let i = 0; i < 2; i += 1) await page.getByTestId("avc-num-mais-nihss_informado").click();
+    /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o valor entra digitado. */
+    await page.getByTestId("avc-num-caixa-nihss_informado").fill("12");
+    await page.getByTestId("avc-num-caixa-nihss_informado").blur();
     await page.getByTestId("avc-opcao-nihss_informado_origem-Regulação").click();
 
     await expect(page.getByTestId("avc-leitura-curto-nihss"))

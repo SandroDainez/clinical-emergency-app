@@ -39,8 +39,18 @@ Transcrito de `docs/spec-avc.md`, linhas 94–96:
 
 ⛔ **O que isto NÃO sustenta:**
 - limite de idade de recomendação;
-- definição da duração do puerpério;
+- definição da duração do puerpério (definida depois pelo autor na D-PEND-24, ver §5);
 - conduta, dose ou contraindicação para qualquer dessas populações;
 - qualquer afirmação clínica.
 
 A palavra *puérpera* é resposta do médico, sem critério do app.
+
+## 5 · D-PEND-24 — janela do puerpério (decisão do autor, 2026-09-13)
+
+**Decisão, nos termos do autor:** janela de 14 dias pós-parto no portão de população, marcada "fonte AHA 2019, a confirmar na Table 8 de 2026"; texto "10 dias" apagado.
+
+⚠️ **O que este registro NÃO é:** transcrição de fonte clínica.
+- **AHA 2019:** não está transcrita neste repositório.
+- **Table 8 de 2026:** a linha de gestação e puerpério é imagem e não foi transcrita.
+
+O número 14 é do autor, com a marcação que ele definiu (`docs/decisoes.md` D-PEND-24).

@@ -200,7 +200,12 @@ const CORES_CLARO: Cores = {
    * relatou seis vezes: a regra estava no arquivo, ⛔ e ⛔ não na tela.
    */
   controlSurface: "#D2DBE6",
-  controlBorder: "#8E9CB1",
+  /**
+   * ⚠️ AC-59 (decisão do autor, 2026-09-13): contorno de opção ≥ 3:1 contra o card ⛔ e
+   * contra o fundo. ⚠️ Medidos: 3,32:1 sobre `surface` · 3,02:1 sobre `bg` · 2,38:1 sobre
+   * `controlSurface`. ⛔ Antes (`#8E9CB1`): 2,78 · 2,53.
+   */
+  controlBorder: "#818EA1",
   primaryTint: "#EAF2FE",
   successTint: "#E9F7EE",
   warningTint: "#FDF4E3",
@@ -284,11 +289,13 @@ const CORES_ESCURO: Cores = {
 
   /**
    * ⚠️ Medidos: `controlSurface` dá **1,42:1** sobre o card ⛔ e sustenta texto
-   * branco a **12:1**; `controlBorder` dá **1,78:1** sobre o preenchimento.
+   * branco a **12:1**; `controlBorder` dá **2,17:1** sobre o preenchimento.
+   * ⚠️ AC-59 (2026-09-13): o contorno ≥ 3:1 contra o card (3,08:1) ⛔ e o fundo (3,47:1);
+   * ⛔ antes (`#4E5C73`): 2,53 · 2,85.
    * ⛔ Os valores anteriores davam 1,14 ⛔ e 1,19.
    */
   controlSurface: "#2A374A",
-  controlBorder: "#4E5C73",
+  controlBorder: "#5C697E",
 
   /** ⚠️ Tingimentos — a família da cor no fundo, ⛔ e o acento por cima. */
   primaryTint: "#0F1D30",

@@ -23,7 +23,7 @@ const VERDE = new Set(["rgb(21, 128, 61)", "rgb(18, 131, 63)"]);
 const VERMELHO = new Set(["rgb(179, 38, 30)"]);
 const ABAS = ["paciente", "estabilizacao", "neurologico", "imagem", "seguranca", "reperfusao", "destino"] as const;
 
-type Leitura = { id: string; marcada: boolean; fundo: string; borda: number; texto: string };
+type Leitura = { id: string; marcada: boolean; fundo: string; borda: number; texto: string; corDaBorda: string; fundoAtras: string };
 
 async function ler(page: Page, id: string): Promise<Leitura> {
   return page.getByTestId(id).evaluate((el) => {
@@ -34,6 +34,17 @@ async function ler(page: Page, id: string): Promise<Leitura> {
       fundo: s.backgroundColor,
       borda: parseFloat(s.borderTopWidth),
       texto: (el.textContent ?? "").trim(),
+      corDaBorda: s.borderTopColor,
+      /** O fundo real atrás da opção: o primeiro ancestral com cor opaca. */
+      fundoAtras: (() => {
+        let n = el.parentElement;
+        while (n) {
+          const c = getComputedStyle(n).backgroundColor;
+          if (c && c !== "transparent" && !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(c)) return c;
+          n = n.parentElement;
+        }
+        return getComputedStyle(document.body).backgroundColor;
+      })(),
     };
   });
 }
@@ -67,10 +78,26 @@ async function perguntasSimNao(page: Page): Promise<{ campo: string; ids: string
   });
 }
 
+/** WCAG: razão de contraste entre duas cores `rgb(…)`. */
+function razao(a: string, b: string): number {
+  const lum = (c: string) => {
+    const [r, g, bl] = (c.match(/\d+(\.\d+)?/g) ?? ["0", "0", "0"]).slice(0, 3).map((v) => {
+      const x = Number(v) / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [x, y] = [lum(a), lum(b)];
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
 function conferirNeutra(l: Leitura, falhas: string[], onde: string) {
   if (VERDE.has(l.fundo) || VERMELHO.has(l.fundo)) falhas.push(`${onde}: ${l.id} NÃO marcada com preenchimento semântico (${l.fundo})`);
   if (l.texto.startsWith("✓")) falhas.push(`${onde}: ${l.id} NÃO marcada exibe ✓`);
   if (l.borda < 1) falhas.push(`${onde}: ${l.id} NÃO marcada sem contorno`);
+  /** AC-59: o contorno da neutra ≥ 3:1 contra o fundo real atrás dela. */
+  const r = razao(l.corDaBorda, l.fundoAtras);
+  if (r < 3) falhas.push(`${onde}: ${l.id} contorno ${l.corDaBorda} × fundo ${l.fundoAtras} = ${r.toFixed(2)}:1 (< 3)`);
 }
 
 function conferirMarcada(l: Leitura, falhas: string[], onde: string) {

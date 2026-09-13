@@ -362,13 +362,13 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "PA acima da meta": "PA por encima del objetivo",
   "Glicemia abaixo do corte": "Glucemia por debajo del corte",
   // ── suspeita de HSA retém a execução (O3 · 2026-09-12) ───────────────────
-  "Saída diagnóstica armada: suspeita clínica de hemorragia subaracnóidea":
-    "Salida diagnóstica armada: sospecha clínica de hemorragia subaracnoidea",
-  "Saída diagnóstica armada — execução retida enquanto a suspeita de hemorragia subaracnóidea estiver ativa":
-    "Salida diagnóstica armada — ejecución retenida mientras la sospecha de hemorragia subaracnoidea esté activa",
+  // ── D-PEND-23 (2026-09-13): classificação da suspeita clínica de HSA ─────
+  "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue":
+    "Requiere evaluación especializada — corregir y reevaluar: sospecha clínica de hemorragia subaracnoidea con TC sin sangre",
+  "Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026":
+    "Adaptación del proyecto (D-PEND-23): prospecto citado por el autor, fragmento no transcrito en el repositorio; a verificar en la Table 8 de la AHA 2026",
   "Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro. A execução da reperfusão isquêmica fica retida enquanto ela estiver ativa":
     "Resolver la sospecha clínica de hemorragia subaracnoidea: responder «No», o corregir el registro. La ejecución de la reperfusión isquémica queda retenida mientras esté activa",
-  "Execução retida por saída diagnóstica": "Ejecución retenida por salida diagnóstica",
   // ── marcos temporais incompatíveis ⇒ reconciliação (O4 · 2026-09-12) ─────
   "Marcos temporais incompatíveis": "Marcos temporales incompatibles",
   "Última vez visto bem e início observado do déficit respondem de forma oposta à janela padrão":
@@ -1826,6 +1826,11 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "A diretriz não define este critério, então o app não conclui por você. Isto não é dado faltando do paciente, e não é falha do app.":
     "La guía no define este criterio, así que la app no concluye por usted. Esto no es un dato faltante del paciente, y no es una falla de la app.",
   "Cálculo de dose — não é administração": "Cálculo de dosis — no es administración",
+  // ── D-PEND-22 (2026-09-13): dose exata de tenecteplase, Table 7 como conferência ──
+  "Conferência": "Verificación",
+  "A faixa da Table 7 difere da dose exata": "La franja de la Table 7 difiere de la dosis exacta",
+  "Situação regulatória no Brasil (ANVISA/bula): pendente de conferência":
+    "Situación regulatoria en Brasil (ANVISA/prospecto): pendiente de verificación",
   "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso.":
     "Sin peso registrado y sin agente elegido, no hay dosis. La app no estima peso.",
   "Princípio geral": "Principio general",
@@ -2022,8 +2027,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Puérpera": "Puérpera",
   "O módulo foi escrito para adultos. Menos de 18 anos está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
     "El módulo fue escrito para adultos. Menos de 18 años está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
-  "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
-    "Embarazada o puérpera está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
+  // ── D-PEND-24 (2026-09-13): janela do puerpério ─────────────────────────
+  "Gestante ou puérpera (até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026) está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
+    "Embarazada o puérpera (hasta 14 días después del parto — fuente AHA 2019, a confirmar en la Table 8 de 2026) está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
+  "fonte AHA 2019, a confirmar na Table 8 de 2026": "fuente AHA 2019, a confirmar en la Table 8 de 2026",
   "Fora do escopo validado — encaminhar": "Fuera del alcance validado — derivar",
   // ── Persistência do atendimento (AC-02 · D-PEND-02 · D-PEND-03) ───────────
   "Abrindo o registro local do atendimento…": "Abriendo el registro local de la atención…",
@@ -2050,6 +2057,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
     "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
   "Temperatura no AVC isquêmico agudo (§4.4)": "Temperatura en el ACV isquémico agudo (§4.4)",
-  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera. Não sei mantém a pergunta.":
-    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas. No sé mantiene la pregunta.",
+  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (puerpério: até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026). Não sei mantém a pergunta.":
+    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas (puerperio: hasta 14 días después del parto — fuente AHA 2019, a confirmar en la Table 8 de 2026). No sé mantiene la pregunta.",
+  // ── barra de fases: continuidade (2026-09-13) ───────────────────────────
+  "Mais fases": "Más fases",
+  "Fases anteriores": "Fases anteriores",
 };

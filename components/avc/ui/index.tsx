@@ -808,6 +808,13 @@ export function Numero({
   const baseDoDegrau = gravado ?? (rascunho !== undefined ? Number(rascunho) : undefined) ?? faixa.min;
   const naoMove = (d: number) =>
     Math.min(faixa.max, Math.max(faixa.min, baseDoDegrau + d)) === baseDoDegrau;
+  /**
+   * ⚠️⚠️ CAMPO VAZIO: −10 ⛔ e +10 NO MESMO ESTADO — inertes (achado do autor,
+   * 2026-09-13: *"SpO₂ vazio com +10 habilitado e −10 apagado"*). ⛔ Um degrau partindo
+   * do nada gravaria o piso da faixa ± o degrau **como se fosse medida** (§0.2) — ⛔ a
+   * mesma razão do `−/+` fino. ⚠️ Com valor digitado ⛔ ou arrastado, os degraus movem.
+   */
+  const degrauInerte = (d: number) => semPartida || naoMove(d);
 
   /**
    * ⚠️⚠️ ONDE O POLEGAR DA BARRA FICA QUANDO ⛔ NADA FOI MEDIDO.
@@ -852,9 +859,9 @@ export function Numero({
           {degrausDaFaixa.map((d) => (
             <Pressable
               key={d}
-              style={[e.numDegrau, naoMove(d) ? e.numDegrauInerte : null]}
+              style={[e.numDegrau, degrauInerte(d) ? e.numDegrauInerte : null]}
               accessibilityRole="button"
-              disabled={naoMove(d)}
+              disabled={degrauInerte(d)}
               accessibilityLabel={`${tr(rotulo)} ${d > 0 ? tr("mais") : tr("menos")} ${Math.abs(d)}`}
               testID={`avc-degrau-${campo}-${d > 0 ? "mais" : "menos"}-${Math.abs(d)}`}
               /**

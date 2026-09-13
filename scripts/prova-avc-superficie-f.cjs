@@ -226,7 +226,7 @@ confere("⚠️⚠️ ⛔ ⛔ SEM PESO ⛔ NÃO EXISTE DOSE",
 confere("⚠️ a dose sai do peso, com o teto da fonte",
   D.doseDerivada("alteplase", 70, "medido").totalMg === 63 &&
     D.doseDerivada("alteplase", 120, "medido").totalMg === 90 &&
-    D.doseDerivada("tenecteplase", 70, "medido").totalMg === 18 &&
+    D.doseDerivada("tenecteplase", 70, "medido").totalMg === 17.5 &&
     D.doseDerivada("tenecteplase", 200, "medido").totalMg === 25,
   "0,9 mg/kg máx 90 · 0,25 mg/kg máx 25 (F-09)");
 
@@ -256,14 +256,20 @@ confere("⚠️⚠️ 99 kg de alteplase dá **89 mg**, ⛔ e ⛔ não `89.10000
   D.doseDerivada("alteplase", 99, "medido").totalMg === 89,
   `⛔ ${D.doseDerivada("alteplase", 99, "medido").totalMg} — ⛔ número que ⛔ não se mede ⛔ não se administra`);
 
+/**
+ * ⚠️⚠️ D-PEND-22 (autor, 2026-09-13): a tenecteplase passou a ser EXATA (0,25 mg/kg,
+ * ⛔ sem arredondar mg). ⚠️ Por isso a trava se divide: alteplase ⛔ nenhuma casa
+ * decimal (dose inteira); tenecteplase ⛔ até DUAS casas — o produto real de 0,25 por um
+ * peso inteiro —, ⛔ e ⛔ nunca o rabo do `double`.
+ */
 const dosesSujas = [];
 for (let kg = 30; kg <= 200; kg++) {
-  for (const ag of ["alteplase", "tenecteplase"]) {
-    const total = D.doseDerivada(ag, kg, "medido").totalMg;
-    if (casasDecimais(total) > 0) dosesSujas.push(`${ag} ${kg}kg=${total}`);
-  }
+  const alt = D.doseDerivada("alteplase", kg, "medido").totalMg;
+  if (casasDecimais(alt) > 0) dosesSujas.push(`alteplase ${kg}kg=${alt}`);
+  const tnk = D.doseDerivada("tenecteplase", kg, "medido").totalMg;
+  if (casasDecimais(tnk) > 2) dosesSujas.push(`tenecteplase ${kg}kg=${tnk}`);
 }
-confere("⚠️ ⛔ e ⛔ NENHUM peso da faixa (30–200 kg) produz casa decimal alguma",
+confere("⚠️ ⛔ nenhum peso (30–200 kg) produz lixo: alteplase inteira, tenecteplase com até duas casas",
   dosesSujas.length === 0,
   `⛔ ${dosesSujas.slice(0, 3).join(" · ")}${dosesSujas.length > 3 ? ` … +${dosesSujas.length - 3}` : ""}`);
 

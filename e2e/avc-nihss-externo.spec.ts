@@ -24,9 +24,12 @@ async function nihssDeFora(page: Page, quantos: number) {
     await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
   }
   let falta = quantos;
-  while (falta >= 10) {
-    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
-    falta -= 10;
+  if (falta >= 10) {
+    /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — as dezenas entram digitadas. */
+    const caixa = page.getByTestId("avc-num-caixa-nihss_informado");
+    await caixa.fill(String(falta - (falta % 10)));
+    await caixa.blur();
+    falta %= 10;
   }
   if (falta > 0 && quantos < 10) {
     await page.getByTestId("avc-grandeza-zero-nihss_informado").click();

@@ -123,8 +123,9 @@ test.describe("AVC · Paciente — painel de contexto", () => {
     await page.getByTestId("avc-aba-paciente").click();
     await expect(page.getByTestId("avc-campo-peso")).toHaveCount(1);
     await expect(page.getByTestId("avc-grandeza-peso")).toBeVisible();
-    /** ⚠️ O gesto real do controle de Paciente: o degrau grande. */
-    await page.getByTestId("avc-degrau-peso-mais-10").click();
+    /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o peso entra digitado. */
+    await page.getByTestId("avc-num-caixa-peso").fill("70");
+    await page.getByTestId("avc-num-caixa-peso").blur();
     await expect(page.getByTestId("avc-campo-peso")).not.toContainText(/não informado/i);
     /** ⛔ E ⛔ lá ⛔ ele ⛔ não é emprestado: ⛔ é a casa dele. */
     await expect(page.getByTestId("avc-emprestado-peso")).toHaveCount(0);

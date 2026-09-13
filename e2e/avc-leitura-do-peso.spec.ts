@@ -92,8 +92,9 @@ test.describe("AVC · a leitura do peso — D-126", () => {
     async ({ page }) => {
       await abrir(page);
       /** ⚠️ O gesto real, ⛔ na casa do fato. */
-      await page.getByTestId("avc-degrau-peso-mais-50").click();
-      await page.getByTestId("avc-degrau-peso-mais-10").click();
+      /** ⚠️ Campo vazio: os degraus ficam inertes (achado do autor, 2026-09-13) — o valor entra digitado. */
+      await page.getByTestId("avc-num-caixa-peso").fill("90");
+      await page.getByTestId("avc-num-caixa-peso").blur();
 
       await aba(page, "reperfusao");
       /**

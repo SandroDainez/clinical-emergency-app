@@ -687,12 +687,23 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
  *
  * ⚠️ Resolve por «Não», correção ⛔ ou desfazer do fato. ⛔ «Incerto» ⛔ não retém
  * (⛔ e ⛔ não é «não»). ⛔ Nenhuma regra sobre como investigar HSA nasce aqui.
+ *
+ * ── ⚠️⚠️ D-PEND-23 (autor, 2026-09-13) · A CLASSIFICAÇÃO ─────────────────────
+ * ⚠️ Suspeita clínica de HSA com TC sem sangue: reter a reperfusão, classificada como
+ * **"requer avaliação especializada / corrigir e reavaliar"** — ⛔ não "impede pela
+ * diretriz". ⚠️ Procedência: **adaptação do projeto** — o autor cita a bula, ⛔ mas o
+ * trecho ⛔ não está transcrito no repositório (`bulas-br-tromboliticos.md` ⛔ não
+ * menciona HSA), ⛔ e a Table 8 da AHA 2026 ⛔ ainda ⛔ não foi conferida.
  */
 export type RetencaoDiagnostica =
   | { readonly estado: "livre" }
   | {
       readonly estado: "retida";
       readonly motivo: "suspeita_hsa";
+      /** ⚠️ D-PEND-23: ⛔ nunca impedimento de segurança. */
+      readonly classificacao: "avaliacao_especializada";
+      readonly rotulo: string;
+      readonly procedencia: string;
       /** ⚠️ A frase curta da própria leitura de C — ⛔ reutilizada (**I6**). */
       readonly curto: string;
       readonly oQueFalta: string;
@@ -707,6 +718,9 @@ export function retencaoDiagnostica(estado: EstadoAvc): RetencaoDiagnostica {
   return {
     estado: "retida",
     motivo: "suspeita_hsa",
+    classificacao: "avaliacao_especializada",
+    rotulo: "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue",
+    procedencia: "Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026",
     curto: s.curto,
     oQueFalta:
       "Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro. A execução da reperfusão isquêmica fica retida enquanto ela estiver ativa",
