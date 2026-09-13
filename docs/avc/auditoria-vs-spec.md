@@ -1098,3 +1098,93 @@ Traz também o resultado de AC-46/47/48 (§7.9). As seções antigas "Decisões 
 | artefatos da suíte | revertidos (D-PEND-10) |
 | push | `1010a21..7c59d35` → `origin/refactor/clinical-modules-rebuild` (inclui `583dde3`, `9f79e66`); `git ls-remote` = `7c59d359ce8b387b80fff599fd1996b674ede7a9`; divergência 0/0 |
 | deploy · merge em `main` | ⛔ não feitos |
+
+### 7.14 · 9ª rodada de 2026-09-13 · D-PEND-26 («Limpar» auditado) e AC-64 (§4 da diretriz de HSA 2023) · commits `5705840` (decisão, só `docs/`) e `68da674` (código)
+
+**Decisão do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`, `5705840`):
+
+| decisão | conteúdo |
+|---|---|
+| D-PEND-26 (AC-63) | «Limpar» sobre fato que sustenta retenção ou bloqueio exige confirmação explícita ("foi engano?"), grava evento de correção com autor e motivo "toque errado" e devolve a pergunta a "não respondida", nunca a "Não". A retenção cai porque o fato deixou de existir. "Sim"→"Não" direto continua não liberando. Regra genérica; prova vermelha com HSA e com pelo menos uma outra pergunta de bloqueio |
+
+**Pedido do autor na mesma mensagem (AC-64), sem decisão clínica:** transcrever a §4 da diretriz de HSA 2023 a partir do PDF local e depois completar o pacote `hsa-resolucao.md`. O card não muda.
+
+#### D-PEND-26 · «Limpar» auditado
+
+**Regra genérica** (`avc/nucleo/limpar-auditado.ts`):
+- **Quando sustenta:** uma resposta sustenta retenção ou bloqueio quando limpá-la faria **sumir** um motivo restritivo do portão da IVT. Efeitos "condição resolutiva" e "informa" não restringem.
+- **Por que não é por campo citado:** a coagulação «Sim» gera o motivo "coagulograma" com campo `inr`, não com o campo da própria pergunta.
+- **O que o «Limpar» auditado faz:** corrige **todas** as respostas vigentes da pergunta, cada correção com motivo "toque errado" e apontando o fato corrigido.
+  - Com «Sim» seguido de «Não», corrigir só o «Não» deixaria o «Sim» retendo para sempre.
+  - O autor é carimbado pela persistência (AC-40).
+
+**Na tela:**
+- **Onde:** `avc-modulo-screen.tsx` `desfazer` consulta a regra; se a resposta sustenta, abre `components/avc/confirmacao-de-limpar.tsx`.
+- **Texto do diálogo:** *"Foi engano?"*, com as respostas registradas e *"Esta resposta sustenta uma retenção ou um bloqueio. Limpar registra uma correção com motivo «toque errado» e devolve a pergunta a não respondida."*
+- **Botões:** "Manter a resposta" · "Foi engano — limpar".
+- **Resposta que não sustenta nada:** limpa direto, como antes.
+
+**Provas:**
+
+| prova | antes (código e build de `7c59d35`) | depois |
+|---|---|---|
+| `scripts/prova-avc-limpar-auditado.cjs` | 🔴 0 · 3 (módulo e chamada na tela ausentes; as conferências de comportamento dependem do módulo) | ✅ 17/17 |
+| `e2e/avc-limpar-auditado.spec.ts` · HSA «Sim» → «Limpar» | 🔴 *"«Limpar» liberou a retenção sem confirmação"* | ✅ |
+| idem · coagulação «Sim» → «Limpar» | 🔴 *"bloqueio limpo sem confirmação"* | ✅ |
+| idem · controles: coagulação «Não», hipóxia «Sim» limpam direto | ✅ (já limpavam) | ✅ |
+
+**O que a prova de módulo confere:**
+- **HSA «Sim»:** sustenta; o «Limpar» auditado derruba a retenção, a pergunta volta a `nao_perguntado` (nunca «Não») e há 1 correção "toque errado" apontando o «Sim».
+- **HSA «Sim»→«Não» sem limpar:** continua retida.
+- **HSA «Sim»→«Não» com «Limpar» auditado:** 2 correções, retenção cai.
+- **Coagulação «Sim» sem exames:** sustenta; limpar derruba "coagulograma".
+- **Controles que não sustentam:** coagulação «Não», hipóxia «Sim», HSA nunca respondida.
+
+**Captura a 375 px — defeito visto e corrigido antes do commit:**
+- **1ª captura:** o diálogo aparecia **semitransparente**, com o texto sobreposto aos botões da página e sem o fundo escuro.
+- **Hipóteses:** animação de entrada ("fade") ou modal atrás do conteúdo. Uma segunda captura, esperando 600 ms no mesmo build, mostrou o diálogo opaco e na frente: era a animação.
+- **Correção:** `animationType="none"`. Uma confirmação de segurança não deve ficar meio visível no instante em que já aceita toque.
+- **Conferência:** 3ª captura sem espera, com o diálogo opaco e o fundo escurecido; e2e do «Limpar» e da opção neutra 10/10 nesse build.
+
+**Teste antigo ajustado:** a varredura de `e2e/avc-opcao-neutra.spec.ts` toca «Limpar» entre marcações em toda pergunta Sim/Não. Onde a confirmação aparece (HSA, coagulação), agora confirma.
+
+#### AC-64 · §4 da diretriz de HSA 2023
+
+- **PDF lido:** `~/Literatura Medica/04-Guias e Diretrizes (avaliar)/hoh-et-al-2023-…pdf`, fora do repositório.
+- ⚠️ **Não transcrito verbatim:** o agente não reproduz texto longo de diretriz protegida por direitos autorais.
+  - **O que foi registrado** em `protocols/fontes-verbatim/aha-asa-2023-hsa.md` **S-00:** localização (p. e322–e324), número da recomendação, COR/LOE e **paráfrase marcada**.
+  - **Literal:** fica nas linhas `> VERBATIM: ___`, para o autor colar.
+  - **COBERTURA:** atualizada.
+- **Recomendações localizadas** (paráfrase):
+  - **rec. 2 (COR 1, B-NR):** mais de 6 h **ou déficit neurológico novo** → TC sem contraste e, se negativa, punção lombar;
+  - **rec. 3 (COR 2a):** menos de 6 h e sem déficit novo → TC de alta qualidade laudada por neurorradiologista;
+  - **rec. 5 (COR 1):** alta suspeita e angio-TC negativa ou inconclusiva → DSA;
+  - **Figure 2 (e323):** punção lombar → xantocromia → angio-TC/DSA;
+  - **texto de suporte (e324):** as análises de sensibilidade da TC não se aplicam a apresentações atípicas com déficit focal novo.
+- **Pacote `docs/avc/revisao/hsa-resolucao.md`:**
+  - **§4:** o que a §4 trata e os limites de aplicação ao candidato à reperfusão;
+  - **§5:** proposta por item (TC negativa, punção lombar, angio-TC/DSA, avaliação especializada), cada um com a pergunta que só o autor decide;
+  - ⚠️ **punção lombar antes de trombólise:** sem fonte no repositório;
+  - **§7:** a pergunta 2 (brecha «Limpar») marcada como decidida pela D-PEND-26;
+  - **Decisão humana:** continua `___`.
+- **Card:** inalterado, *"Requer investigação antes de reperfundir — conteúdo pendente de validação"*.
+
+#### Achados
+
+| # | gravidade | achado | estado |
+|---|---|---|---|
+| AC-63 | alta · segurança | «Limpar» + «Não» liberava a HSA em dois toques | ✅ fechado pela D-PEND-26 em `68da674` |
+| AC-64 | média · fonte | §4 da diretriz de HSA 2023 não transcrita | ◐ localizada e parafraseada em S-00; verbatim pendente do autor |
+| AC-66 | média · clínico, pergunta | Pela rec. 2 da §4, com déficit focal a TC negativa não basta e segue punção lombar. A interação punção lombar × trombólise não está em nenhuma fonte do repositório | aberto: autor (pacote §7 pergunta 3) |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `5705840` (D-PEND-26) · `68da674` (código, com S-00 e o pacote) · commit só de `docs/` com esta seção e o status |
+| e2e da rodada no build final | ✅ 30/30 em 8 specs no build com animação; após remover a animação, limpar-auditado + opção neutra 10/10 |
+| e2e do AVC no build final | ✅ 369 passed (build com animação); `test:all` no HEAD final: 552 passed |
+| `test:all` (HEAD `68da674`) | ✅ **EXIT=0** · 140 scripts npm · Playwright **552 passed** (8,4 min), sem failed ou skipped · «Limpar» auditado 17/17 · rodada 8 28/28 · críticos 183/183 · 131 travas ligadas · índice 119 declaradas · execução 15:41–15:53 |
+| artefatos da suíte | revertidos (D-PEND-10) |
+| push | `4488259..68da674` → `origin/refactor/clinical-modules-rebuild` (inclui `5705840`); `git ls-remote` = `68da674267374d6dfdd7eaaf60b153ea96ec9db7`; divergência 0/0 |
+| deploy · merge em `main` | ⛔ não feitos |
