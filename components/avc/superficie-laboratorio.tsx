@@ -22,7 +22,7 @@ import { ANALITOS_L, COLETA, COLETA_L } from "../../avc/conteudo/laboratorio";
 import { HEDGE_DO_COAGULOGRAMA } from "../../avc/conteudo/superficie-d";
 import { coletas, leiturasDoLaboratorio } from "../../avc/nucleo/derivacoes-lab";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
-import { valorNaInstancia } from "../../avc/nucleo/instancia";
+import { correcaoNaInstancia, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
 import {
   CabecalhoDeBloco,
@@ -173,6 +173,7 @@ export default function SuperficieLaboratorio({
                      */
                     emCorrecao={emCorrecao(coleta.id, campo.id)}
                     onEntrarEmCorrecao={() => alternarCorrecao(coleta.id, campo.id)}
+                    correcao={correcaoNaInstancia(estado, coleta.id, campo.id)}
                     onCancelarCorrecao={() => alternarCorrecao(coleta.id, campo.id)}
                     onNovaMedida={onNovaColeta}
                     rotuloDeNovaMedida="Nova coleta"

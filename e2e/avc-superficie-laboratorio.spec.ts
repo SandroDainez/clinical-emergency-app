@@ -112,6 +112,12 @@ test.describe("AVC · Laboratório", () => {
     await page.getByTestId("avc-corrigir-inr").click();
     await page.getByTestId("avc-numerico-mais-inr").click();
     await expect(page.getByTestId("avc-valor-inr")).toContainText("1,5");
+    /**
+     * ⚠️ AC-02 (2026-09-13): a correção ⛔ entrou sem motivo — ⛔ e a leitura DIZ
+     * isso, junto do valor substituído. ⛔ Nem silêncio, ⛔ nem motivo inventado.
+     */
+    await expect(page.getByTestId("avc-correcao-inr")).toContainText("corrigido de 1,4");
+    await expect(page.getByTestId("avc-correcao-inr")).toContainText("sem motivo informado");
     await page.getByTestId("avc-corrigir-inr").click();
     await page.getByTestId("avc-numerico-menos-inr").click();
     await expect(page.getByTestId("avc-valor-inr")).toContainText("1,4");

@@ -1008,6 +1008,7 @@ export function NumeroComCorrecao({
   rotuloDeNovaMedida,
   detalheAberto,
   onAlternarDetalhe,
+  correcao,
   children,
 }: {
   campo: string;
@@ -1030,6 +1031,8 @@ export function NumeroComCorrecao({
   rotuloDeNovaMedida?: string;
   detalheAberto: boolean;
   onAlternarDetalhe: () => void;
+  /** ⚠️ AC-02: a correção vigente (`correcaoNaInstancia`) — dita na leitura, com o motivo ou "sem motivo informado". */
+  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null };
   /** ⚠️ O detalhe do campo — ajuda longa, nota ⛔ e FONTE (E-30). */
   children?: ReactNode;
 }) {
@@ -1081,6 +1084,12 @@ export function NumeroComCorrecao({
         <Text style={e.corrValor} testID={`avc-valor-${campo}`}>
           {`${gravado}${unidade ? ` ${tr(unidade)}` : ""}`}
         </Text>
+        {correcao ? (
+          <Text style={e.corrAjuda} testID={`avc-correcao-${campo}`}>
+            {correcao.valorOriginal === undefined ? tr("corrigido") : `${tr("corrigido de")} ${String(correcao.valorOriginal)}`}
+            {correcao.motivo === null ? ` · ${tr("sem motivo informado")}` : ` · ${tr("motivo")}: ${correcao.motivo}`}
+          </Text>
+        ) : null}
         {/**
           * ⚠️ LADO A LADO, ⛔ e ⛔ não empilhados: são **alternativas** de um mesmo
           * dilema, ⛔ e empilhadas viram botões idênticos rolando pela coluna.

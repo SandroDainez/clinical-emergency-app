@@ -56,7 +56,7 @@ import { ROTULO_DO_CAMPO } from "../../avc/conteudo/rotulos";
 import { destinoDaImagem, estudos, leiturasDaSuperficieC } from "../../avc/nucleo/derivacoes-c";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { valorAtual } from "../../avc/nucleo/estado";
-import { valorNaInstancia } from "../../avc/nucleo/instancia";
+import { correcaoNaInstancia, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CampoDaSuperficie, DetalheDoCampo, useDetalhes } from "./campos-clinicos";
 import SeletorDeHora from "./seletor-de-hora";
 import {
@@ -992,6 +992,7 @@ export default function SuperficieC({
                             gravado={medido}
                             emCorrecao={emCorrecao(estudo.id, campo.id)}
                             onEntrarEmCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
+                            correcao={correcaoNaInstancia(estado, estudo.id, campo.id)}
                             onCancelarCorrecao={() => alternarCorrecao(estudo.id, campo.id)}
                             onNovaMedida={onNovoEstudo}
                             rotuloDeCorrecao={campo.rotuloDeCorrecao}

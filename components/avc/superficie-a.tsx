@@ -966,6 +966,17 @@ export default function SuperficieA({
                                         * corrigido ⛔ esconderia ⛔ que houve erro (§3.4).
                                         */
                                       ` · ${tr("corrigido de")} ${String(v.valorOriginal)}`}
+                                  {/**
+                                    * ⚠️ AC-02 (2026-09-13): o motivo da correção é
+                                    * DITO — ⛔ e, se ⛔ não houve, a linha diz "sem
+                                    * motivo informado". ⛔ Nunca silêncio, ⛔ nunca
+                                    * motivo inventado.
+                                    */}
+                                  {v.motivoDaCorrecao === undefined
+                                    ? ""
+                                    : v.motivoDaCorrecao === null
+                                      ? ` · ${tr("sem motivo informado")}`
+                                      : ` · ${tr("motivo")}: ${v.motivoDaCorrecao}`}
                                 </Text>
                               ))}
                             </View>

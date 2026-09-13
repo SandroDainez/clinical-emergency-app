@@ -36,7 +36,8 @@
  * | **completar** | **mesma** instância | a outra metade da medida que já começou |
  */
 
-import type { EstadoAvc } from "./estado";
+import { registrarFato, type EstadoAvc } from "./estado";
+import type { Relogio } from "./relogio";
 import type { FatoRegistrado } from "./tipos";
 
 /**
@@ -115,6 +116,27 @@ export function valorNaInstancia(
   return daInstancia.length > 0 ? daInstancia[daInstancia.length - 1] : undefined;
 }
 
+/**
+ * ⚠️ AC-02 (2026-09-13) — A CORREÇÃO VIGENTE de um campo numa instância.
+ *
+ * `undefined` quando o valor atual ⛔ não é correção. Quando é: o valor que ela
+ * substituiu (`corrigeFatoId`) ⛔ e o motivo — `null` quando o médico ⛔ não deu
+ * motivo, para a tela escrever "sem motivo informado" ⛔ em vez de silêncio.
+ */
+export function correcaoNaInstancia(
+  estado: EstadoAvc,
+  instancia: string,
+  campo: string
+): { readonly valorOriginal: FatoRegistrado["valor"] | undefined; readonly motivo: string | null } | undefined {
+  const atual = valorNaInstancia(estado, instancia, campo);
+  if (atual === undefined || atual.tipo !== "correcao") return undefined;
+  const substituido = estado.fatos.find((f) => f.id === atual.corrigeFatoId);
+  return {
+    valorOriginal: substituido?.valor,
+    motivo: typeof atual.motivo === "string" && atual.motivo.trim() !== "" ? atual.motivo : null,
+  };
+}
+
 /* ────────────────────────────────────────────────────────────────────────────
  * O HISTÓRICO — ⚠️ uma JANELA sobre os fatos, ⛔ e ⛔ não uma segunda verdade
  * ────────────────────────────────────────────────────────────────────────── */
@@ -157,6 +179,13 @@ export type ValorNoHistorico = {
    * deixar acontecer (§3.4).
    */
   readonly valorOriginal: FatoRegistrado["valor"] | undefined;
+  /**
+   * ⚠️ AC-02 (2026-09-13): o motivo da ÚLTIMA correção deste valor — `undefined`
+   * quando ⛔ não houve correção; `null` quando houve ⛔ e o médico ⛔ não deu motivo.
+   * ⛔ Motivo ausente ⛔ nunca vira texto inventado: a tela escreve "sem motivo
+   * informado".
+   */
+  readonly motivoDaCorrecao: string | null | undefined;
 };
 
 export type MedidaNoHistorico = {
@@ -193,10 +222,18 @@ export function historicoDeAfericoes(
       const ultimo = doCampo[doCampo.length - 1];
       const houveCorrecao = doCampo.some((f) => f.tipo === "correcao");
       const primeiro = doCampo[0];
+      const correcoes = doCampo.filter((f) => f.tipo === "correcao");
+      const ultimaCorrecao = correcoes[correcoes.length - 1];
       return {
         campo,
         valor: ultimo.valor,
         valorOriginal: houveCorrecao ? primeiro.valor : undefined,
+        motivoDaCorrecao:
+          ultimaCorrecao === undefined
+            ? undefined
+            : typeof ultimaCorrecao.motivo === "string" && ultimaCorrecao.motivo.trim() !== ""
+              ? ultimaCorrecao.motivo
+              : null,
       };
     });
 
@@ -208,4 +245,27 @@ export function historicoDeAfericoes(
       corrigida: fatos.some((f) => f.tipo === "correcao"),
     };
   });
+}
+
+/**
+ * ⚠️⚠️ ABRIR UMA NOVA INSTÂNCIA — ⛔ idempotente contra toque duplo (A17, AC-02).
+ *
+ * ⛔ Um toque duplo em "Registrar administração" abria DUAS instâncias vazias de
+ * trombólise. ⚠️ Se a última instância do tipo ainda está VAZIA (só tem o fato
+ * que a abriu), ⛔ nada é aberto de novo: o mesmo estado volta, ⛔ e ⛔ nenhum
+ * evento é gravado. Uma instância com qualquer registro dentro ⛔ não conta como
+ * vazia — a segunda administração legítima continua possível.
+ */
+export function abrirNovaInstancia(estado: EstadoAvc, tipo: string, relogio: Relogio): EstadoAvc {
+  const existentes = instanciasDe(estado, tipo);
+  const ultima = existentes[existentes.length - 1];
+  if (ultima !== undefined && fatosDaInstancia(estado, ultima).every((f) => f.campo === `${tipo}_nova_medida`)) {
+    return estado;
+  }
+  const instancia = proximaInstancia(estado, tipo);
+  return registrarFato(
+    estado,
+    { campo: `${tipo}_nova_medida`, valor: instancia, instancia, motivo: "Nova aferição aberta pelo médico" },
+    relogio
+  );
 }

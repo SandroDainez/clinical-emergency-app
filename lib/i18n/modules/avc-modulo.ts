@@ -1269,6 +1269,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Ver histórico": "Ver historial",
   "Ocultar histórico": "Ocultar historial",
   "corrigido de": "corregido de",
+  "corrigido": "corregido",
+  "Evento de outro caso.": "Evento de otro caso.",
   /** ⚠️ Fase sem alvo publicado pela fonte — resposta, não vazio. */
   "A fonte não publica alvo pressórico para esta fase. Os alvos das fases anteriores seguem abaixo, para consulta.":
     "La fuente no publica objetivo de presión para esta fase. Los objetivos de las fases anteriores siguen abajo, para consulta.",
@@ -2012,6 +2014,19 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
     "Embarazada o puérpera está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
   "Fora do escopo validado — encaminhar": "Fuera del alcance validado — derivar",
+  // ── Persistência do atendimento (AC-02 · D-PEND-02 · D-PEND-03) ───────────
+  "Abrindo o registro local do atendimento…": "Abriendo el registro local de la atención…",
+  "Este atendimento já está aberto em outra aba deste aparelho. Continue nela para não registrar o mesmo caso em dois lugares.":
+    "Esta atención ya está abierta en otra pestaña de este dispositivo. Continúe en ella para no registrar el mismo caso en dos lugares.",
+  "O registro local falhou: este atendimento continua só nesta aba.":
+    "El registro local falló: esta atención continúa solo en esta pestaña.",
+  "Atendimento recuperado do registro local, aberto às": "Atención recuperada del registro local, abierta a las",
+  "Encerrar este atendimento e abrir um novo": "Cerrar esta atención y abrir una nueva",
+  "Confirmar: encerrar e abrir novo": "Confirmar: cerrar y abrir nueva",
+  "Continuar este atendimento": "Continuar esta atención",
+  "sem motivo informado": "sin motivo informado",
+  "motivo": "motivo",
+
   // ── NIHSS nos critérios e de outro serviço (D-PEND-13 · D-PEND-14) ────────
   "NIHSS inconclusivo por item não testável": "NIHSS no concluyente por ítem no evaluable",
   "decide só onde o escore de fora aparece; ⛔ nunca critério (D-PEND-14)":

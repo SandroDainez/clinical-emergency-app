@@ -1257,6 +1257,7 @@ export function CampoDaSuperficie({
   onCancelarCorrecao,
   onNovaMedida,
   rotuloDeNovaMedida,
+  correcao,
 }: {
   campo: Campo;
   /** A superfície que está desenhando. ⚠️ Diferente de `campo.casa` = emprestado. */
@@ -1296,6 +1297,8 @@ export function CampoDaSuperficie({
   onNovaMedida?: () => void;
   /** ⚠️ "Nova coleta" no Laboratório. ⚠️ Traduzido aqui dentro. */
   rotuloDeNovaMedida?: string;
+  /** ⚠️ AC-02: a correção vigente (`correcaoNaInstancia`) — dita na leitura, com o motivo ou "sem motivo informado". */
+  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null };
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -1421,6 +1424,16 @@ export function CampoDaSuperficie({
                 + `${campo.unidade ? ` ${tr(campo.unidade)}` : ""}`
               : tr(bruto)}
       </Text>
+      {correcao ? (
+        <Text style={e.campoAjuda} testID={`avc-correcao-${campo.id}`}>
+          {correcao.valorOriginal === undefined
+            ? tr("corrigido")
+            : `${tr("corrigido de")} ${typeof correcao.valorOriginal === "number"
+                ? numeroCurto(correcao.valorOriginal, campo.faixa?.passo ?? 1)
+                : tr(String(correcao.valorOriginal))}`}
+          {correcao.motivo === null ? ` · ${tr("sem motivo informado")}` : ` · ${tr("motivo")}: ${correcao.motivo}`}
+        </Text>
+      ) : null}
 
       {/**
         * ⚠️ LADO A LADO, e ⛔ não empilhados: as duas são **alternativas** de um

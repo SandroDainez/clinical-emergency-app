@@ -17,7 +17,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SEQUENCIA_OFICIAL, SUPERFICIES, superficie } from "../../avc/conteudo/superficies";
-import { proximaInstancia } from "../../avc/nucleo/instancia";
+import { abrirNovaInstancia, proximaInstancia } from "../../avc/nucleo/instancia";
 import { COLETA } from "../../avc/conteudo/laboratorio";
 import { ESTUDO, PRIORIDADE_DA_IMAGEM } from "../../avc/conteudo/superficie-c";
 import { PRIORIDADE_A } from "../../avc/conteudo/superficie-a";
@@ -190,6 +190,8 @@ import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
 import SuperficieC from "./superficie-c";
 import SuperficiePaciente from "./superficie-paciente";
+import { AtendimentoIndisponivel, FaixaDoAtendimentoPersistido } from "./avisos-do-atendimento";
+import { useAtendimentoPersistido } from "./use-atendimento-persistido";
 import PortaoDePopulacao from "./portao-de-populacao";
 import { superficieRetidaPeloPortao } from "../../avc/nucleo/populacao";
 import SuperficieLaboratorio from "./superficie-laboratorio";
@@ -220,7 +222,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const insets = useSafeAreaInsets();
   // ⚠️ O relógio entra por UMA porta (Q-01). ⛔ Nenhum `Date.now()` nesta árvore.
   const relogio = relogioDoSistema;
-  const [estado, setEstado] = useState(() => abrirAtendimento(relogio));
+  /**
+   * ⚠️⚠️ AC-02 · D-PEND-02 (2026-09-13): o atendimento vem do REGISTRO LOCAL — o
+   * caso mais recente ⛔ não encerrado é recuperado, ⛔ e cada mudança vira evento
+   * append-only. ⛔ Nenhuma regra clínica muda por isto.
+   */
+  const atendimento = useAtendimentoPersistido(relogio);
+  const { estado, setEstado } = atendimento;
   const [fontesAbertas, setFontesAbertas] = useState(false);
 
   const atual = superficie(estado.superficieVista);
@@ -693,12 +701,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * seu instante, e a trilha guarda os dois (§3.4).
    */
   function novaMedida(tipo: string) {
-    setEstado((e) => registrarFato(e, {
-      campo: `${tipo}_nova_medida`,
-      valor: proximaInstancia(e, tipo),
-      instancia: proximaInstancia(e, tipo),
-      motivo: "Nova aferição aberta pelo médico",
-    }, relogio));
+    /** ⚠️ AC-02 · A17: toque duplo ⛔ abre uma segunda instância vazia (`abrirNovaInstancia`). */
+    setEstado((e) => abrirNovaInstancia(e, tipo, relogio));
   }
 
   /**
@@ -1077,6 +1081,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
   return (
     <ClinicalShell
+      contexto={
+        <FaixaDoAtendimentoPersistido
+          recuperadoDe={atendimento.recuperadoDe}
+          falhaAoGravar={atendimento.falhaAoGravar}
+          onEncerrar={() => void atendimento.encerrarEAbrirNovo()}
+        />
+      }
       header={
         /**
          * ⚠️⚠️ O CABEÇALHO SEGUE A SÍNDROME ABERTA — ⛔ e ⛔ não é fixo (PD-36).
@@ -1243,6 +1254,13 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         />
       }
     >
+    {/**
+      * ⚠️ AC-02: enquanto o registro local abre, ⛔ ou se o caso já está aberto em
+      * outra aba (D-PEND-03), o corpo ⛔ não aparece — o cabeçalho continua.
+      */}
+    {atendimento.fase !== "pronto" ? (
+      <AtendimentoIndisponivel fase={atendimento.fase} />
+    ) : (
     <ProvedorDeFoco valor={foco}>
     <ScrollView
       ref={rolagem}
@@ -2428,6 +2446,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       <AcessoAoUsoClinico tr={tr} testID="avc-uso-clinico" />
     </ScrollView>
     </ProvedorDeFoco>
+    )}
     </ClinicalShell>
   );
 }
