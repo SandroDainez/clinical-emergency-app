@@ -1306,9 +1306,16 @@ const criarEstilos = (tema: Tema) =>
      * ter perguntado; ⛔ e uma resposta que ⛔ não parece tocável ⛔ nunca é dada.
      */
     /** ⚠️ «Limpar» (autor, 2026-09-13): linha própria SEMPRE reservada — aparecer ⛔ desloca nada abaixo; visual de ação secundária; ⛔ nunca junto das opções. */
+    /**
+     * ⚠️ «Limpar» (2026-09-13): ação SECUNDÁRIA, ⛔ nunca com cara de opção. Tem corpo
+     * ⛔ e borda (trava de afordância), mas em pílula, fundo de cartão e texto pequeno
+     * secundário — as opções são retângulos de `controlSurface` com texto principal, ⛔ e
+     * o tracejado já é de "Não sei". Mora em linha própria SEMPRE reservada: aparecer
+     * ⛔ não desloca nada.
+     */
     linhaLimpar: { minHeight: TOQUE.minimo, flexDirection: "row", justifyContent: "flex-end", alignItems: "center" },
-    limpar: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.sm },
-    limparTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, textDecorationLine: "underline" },
+    limpar: { minHeight: TOQUE.minimo, justifyContent: "center", paddingHorizontal: ESPACO.md, borderRadius: RAIO.badge, borderWidth: 1, borderColor: tema.cores.controlBorder, backgroundColor: tema.cores.surface },
+    limparTexto: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     desconhecidoCompacto: {
       minHeight: TOQUE.minimo,
       alignSelf: "flex-start",

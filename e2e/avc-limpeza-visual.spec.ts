@@ -143,16 +143,28 @@ test.describe("AVC · «Limpar» não desloca a tela nem se confunde com opção
     const limpar = page.getByTestId("avc-limpar-hipoxia");
     await expect(limpar).toBeVisible();
     await expect(limpar).toHaveAttribute("role", "button");
-    const estilo = async (sel: typeof limpar) => sel.evaluate((el) => {
-      const s = getComputedStyle(el);
-      return `${s.backgroundColor}|${s.borderTopWidth}|${s.minHeight}`;
-    });
-    expect(await estilo(limpar), "«Limpar» tem o mesmo visual de uma opção").not.toBe(await estilo(page.getByTestId("avc-opcao-hipoxia-nao")));
     const caixaLimpar = (await limpar.boundingBox())!;
     /** As opções que ESTÃO na tela (valor gravado: sim · nao · nao_sei) — ⛔ não nomes supostos. */
     const opcoes = page.locator('[data-testid^="avc-opcao-hipoxia-"]');
     await expect(opcoes, "controle: as três opções da pergunta").toHaveCount(3);
     const ids = await opcoes.evaluateAll((els) => els.map((el) => el.getAttribute("data-testid") as string));
+    /**
+     * Visual: corpo ⛔ e borda (afordância), mas ⛔ igual a ⛔ nenhuma opção — nem à
+     * neutra ("Incerto"), que é a mais parecida. Compara fundo, raio ⛔ e tamanho do texto.
+     */
+    const estilo = async (sel: typeof limpar) => sel.evaluate((el) => {
+      const s = getComputedStyle(el);
+      const texto = el.querySelector("div,span") ?? el;
+      return { corpo: s.backgroundColor, borda: s.borderTopWidth, raio: s.borderTopLeftRadius, fonte: getComputedStyle(texto).fontSize };
+    });
+    const eLimpar = await estilo(limpar);
+    expect(eLimpar.corpo, "«Limpar» sem corpo").not.toBe("rgba(0, 0, 0, 0)");
+    expect(eLimpar.borda, "«Limpar» sem borda").not.toBe("0px");
+    for (const id of ids) {
+      const eOp = await estilo(page.getByTestId(id));
+      expect(`${eLimpar.corpo}|${eLimpar.raio}|${eLimpar.fonte}`, `«Limpar» com o visual da opção ${id}`).not.toBe(`${eOp.corpo}|${eOp.raio}|${eOp.fonte}`);
+      expect(eLimpar.raio === eOp.raio || eLimpar.corpo === eOp.corpo, `«Limpar» parecido demais com ${id}: ${JSON.stringify([eLimpar, eOp])}`).toBe(false);
+    }
     for (const id of ids) {
       const c = (await page.getByTestId(id).boundingBox())!;
       const sobrepoe = caixaLimpar.x < c.x + c.width && c.x < caixaLimpar.x + caixaLimpar.width && caixaLimpar.y < c.y + c.height && c.y < caixaLimpar.y + caixaLimpar.height;
