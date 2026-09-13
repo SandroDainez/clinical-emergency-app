@@ -370,6 +370,37 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 - **Registro:** a leitura entrou no pacote como opção E.
 - **Card:** fica como está até a escolha.
 
+## Decisões da 11ª rodada (2026-09-13) · "Prioridade", AC-67, AC-68, AC-69 e ajustes das capturas
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente · **Origem:** capturas e relato da 10ª rodada (`docs/avc/auditoria-vs-spec.md` §7.15).
+
+**Decisões, nos termos do autor:**
+- **"Prioridade":** confirmada como linha no topo de toda superfície + primeiro item da lista de pendências. Sem seção nova.
+- **AC-67 (piora registrada por engano):** "Limpar" auditado com confirmação, no padrão da D-PEND-26.
+  - O evento não some: recebe correção com motivo "registrado por engano".
+  - A tarefa "Reavaliar agora" só é removida se os eixos não tiverem sido reavaliados depois dela. Se já foram, a reavaliação fica.
+- **AC-69 (marcos da transferência):** usar os dois horários do modelo de fato — observado (editável) e registrado (preservado). A síntese mostra a hora real com "registrado às" ao lado.
+- **AC-68 (um fato por tecla no texto livre):** confirmar ao sair do campo ou ao tocar "Registrar"; nunca por alteração.
+
+**Ajustes pedidos a partir das capturas:**
+1. **Eixos reabertos:** mostram a última avaliação com hora e a marca "reavaliação pendente"; nunca vazio. É a regra "reavaliações não sobrescrevem o basal", que vale para os eixos como para o NIHSS.
+2. **Marcos da transferência:** são eventos de uma linha do tempo, não seletor de estado.
+   - Ação "Registrar marco" que adiciona à linha do tempo com horário.
+   - Lista dos marcos já registrados abaixo.
+   - "Chegada" sem "Saída" é tolerado; a síntese avisa.
+   - Correção auditada por marco, não limpeza do conjunto.
+3. **Porta 4173:** o `test:all` encerra ou recusa a porta ocupada antes de subir o servidor (o servidor esquecido derrubou 66 testes na 10ª rodada).
+
+**Entrega 1 pedida:** "Preciso de ajuda" global, no mesmo topo fixo do "Paciente piorou".
+- **Opções do PDF:** não sei avaliar · não tenho o medicamento · não tenho o equipamento · não melhorou · paciente piorou (esta chama o mecanismo existente).
+- **Cada opção:** leva ao conteúdo ou caminho correspondente com retorno preservado.
+- **Sem conteúdo validado:** a tela diz isso e permite registrar a conduta externa, sem simular execução.
+- **Provas:** visível nas 7 superfícies a 375 px; retorno ao ponto de origem; nenhuma opção termina em beco sem saída. PT/ES. **Fecha o AC-10.**
+
+**Entrega 2 pedida:** eixos reabertos com última avaliação e hora; marcos como linha do tempo com correção auditada; `test:all` protege a porta 4173.
+
+**Autoriza implementação:** sim (11ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs com hashes; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
