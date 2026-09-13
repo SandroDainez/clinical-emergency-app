@@ -860,3 +860,119 @@ Traz também o resultado de AC-46/47/48 (§7.9). As seções antigas "Decisões 
 | artefatos da suíte | revertidos (D-PEND-10) |
 | push | `8633f76..4e05527` → `origin/refactor/clinical-modules-rebuild` (inclui `4447e15`); `git ls-remote` = `4e05527d9b710f6dd94d0d7dbd98b40ca48da522`; divergência 0/0. O commit só de `docs/` sobe em seguida (D-PEND-17). |
 | deploy · merge em `main` | ⛔ não feitos |
+
+### 7.12 · 7ª rodada de 2026-09-13 · AC-59, D-PEND-22/23/24 e achados de interface · commits `95028a5` (decisões, só `docs/`) e `c7a1956` (código)
+
+**Decisões do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`, `95028a5`):
+- **Como chegaram:** num bloco com a recomendação do revisor, colado pelo autor sem linhas apagadas. Pela regra do próprio bloco, colar é aprovar.
+
+| decisão | conteúdo | ressalva registrada |
+|---|---|---|
+| AC-59 | contorno da opção neutra ≥ 3:1 contra o card, nos dois temas; trava de contraste exige 3:1; 1,5 só para marcada × neutra | — |
+| D-PEND-22 | tenecteplase 0,25 mg/kg exato, máx. 25 mg, sem arredondar mg; volume com 0,1 mL a 5 mg/mL; Table 7 (e358) como conferência, com divergência explícita; situação regulatória "pendente de conferência", visível | leitura do agente, a confirmar: alteplase continua inteira; volume arredondado ao 0,1 mL mais próximo |
+| D-PEND-23 | suspeita clínica de HSA com TC sem sangue: reter reperfusão como "requer avaliação especializada / corrigir e reavaliar", não "impede pela diretriz"; fonte bula, marcada como adaptação do projeto até a Table 8 | a bula transcrita (`bulas-br-tromboliticos.md`) **não menciona HSA**: o trecho citado não está no repositório |
+| D-PEND-24 | puerpério: janela de 14 dias pós-parto no portão, "fonte AHA 2019, a confirmar na Table 8 de 2026"; "10 dias" apagado | **não há transcrição da AHA 2019** no repositório; o número é do autor, com a marcação dele |
+
+#### Entrega 1 · AC-59
+
+| prova | antes (código de `4e05527`) | depois |
+|---|---|---|
+| `test:contraste`, pares `controlBorder` × `surface` e × `bg` (3:1) | 🔴 4 falhas: claro 2,78 · 2,53; escuro 2,53 · 2,85 | ✅ 96 OK, 0 falhas |
+| `e2e/avc-opcao-neutra.spec.ts`, contorno da neutra × fundo real atrás dela, medido na tela | 🔴 4 superfícies; escuro `rgb(78, 92, 115)` × `rgb(11, 14, 20)` = 2,85:1 | ✅ 7/7 |
+
+**Correção** (`design-system/tokens.ts`):
+
+| tema | antes | depois | × card | × fundo | × corpo |
+|---|---|---|---|---|---|
+| claro | `#8E9CB1` | `#818EA1` | 3,32 | 3,02 | 2,38 |
+| escuro | `#4E5C73` | `#5C697E` | 3,08 | 3,47 | 2,17 |
+
+⚠️ **Dois temas:**
+- **Tema claro:** o app está fixo no escuro (`design-system/theme.ts`, `useTheme()` devolve `TEMAS.escuro`; a troca de tema é a Fase 9). O claro **não pode ser capturado na tela**; fica verificado só pelos números da trava de contraste.
+- **Capturas:** só no tema escuro.
+- **Alcance:** `controlBorder` é token global, então o contorno mais visível vale para todo controle do app, não só para a opção neutra.
+
+#### Entrega 2 · D-PEND-22, D-PEND-23, D-PEND-24
+
+| prova | antes (código de `4e05527`) | depois |
+|---|---|---|
+| `scripts/prova-avc-decisoes-d22-d24.cjs` | 🔴 11 verdes · 22 vermelhos (70 kg = 18 mg; sem volume, sem Table 7, sem regulatório; HSA sem classificação; sem 14 dias) | ✅ 33/33 |
+| `e2e/avc-decisoes-d22-d24.spec.ts` | 🔴 4/4 | ✅ 4/4 |
+
+**D-PEND-22 · dose da tenecteplase:**
+- **Cálculo:** `doseDerivada` usa 0,25 × peso exato, com teto de 25 mg, sem lixo de ponto flutuante.
+- **Volume:** a 5 mg/mL, ao 0,1 mL mais próximo.
+- **Conferência:** `conferenciaTable7` traz faixa, mg, mL, divergente e fonte "AHA/ASA 2026 · Table 7, p. e358", com as faixas verbatim da transcrição.
+- **Regulatório:** `SITUACAO_REGULATORIA_TNK`.
+- **Tela da Reperfusão:** dose com vírgula, volume, conferência com divergência e situação regulatória.
+
+| peso | dose exata | volume | faixa da Table 7 | divergência |
+|---|---|---|---|---|
+| 55 kg | 13,75 mg | 2,8 mL | <60 kg · 15 mg · 3 mL | sim |
+| 70 kg | 17,5 mg | 3,5 mL | 70 kg to <80 kg · 20 mg · 4 mL | sim |
+| 71 kg | 17,75 mg | 3,6 mL | 70 kg to <80 kg · 20 mg · 4 mL | sim |
+| 100 kg | 25 mg | 5,0 mL | ≥90 kg · 25 mg · 5 mL | não |
+| 120 kg | 25 mg | 5,0 mL | ≥90 kg · 25 mg · 5 mL | não |
+
+- **Controles:**
+  - alteplase inalterada (99 kg = 89 mg · 70 kg = 63 mg · teto 90);
+  - nenhuma dose de 30–50 mg (regime do IAM) alcançável entre 30 e 200 kg.
+- **Testes antigos atualizados:**
+  - `prova-avc-superficie-f` (70 kg: 18 → 17,5; trava de casas decimais dividida: alteplase inteira, tenecteplase ≤ 2 casas);
+  - `prova-avc-criticos` bloco 10 (18 → 17,5).
+
+**D-PEND-23 · suspeita clínica de HSA:**
+- **Classificação:** `retencaoDiagnostica` passa a ter `classificacao: "avaliacao_especializada"`, com o rótulo *"Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue"*.
+- **Procedência:** *"Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026"*.
+- **Portão da IVT:** o motivo leva esse rótulo e essa procedência, e continua na camada `destino`, nunca na de segurança.
+- **Na tela:** o título do estado e o bloco de retenção da EVT dizem a classificação; "Saída diagnóstica armada" saiu.
+- **Controles:** «Não» libera; «Incerto» não retém.
+- **Mesma lógica de retenção:** o que muda é a classificação e a procedência.
+
+**D-PEND-24 · puerpério:**
+- **Constantes:** `JANELA_DO_PUERPERIO_DIAS = 14` e `PROCEDENCIA_DA_JANELA_DO_PUERPERIO`.
+- **Textos:** a nota do campo e a pergunta do portão dizem *"até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026"*.
+- **Escopo populacional:** `protocols/fontes-verbatim/escopo-populacional-avc.md` §5 registra a decisão como número do autor, não como transcrição.
+- **Controles:** «Puérpera» fora do escopo; «Não sei» mantém a pergunta; nenhum "10 dias" em `avc/` nem nas traduções.
+
+#### Entrega 3 · achados de interface, sem decisão clínica
+
+| achado | prova (`e2e/avc-interface-compacta.spec.ts`) | antes | depois |
+|---|---|---|---|
+| cabeçalho alto; título em três linhas (spec p.418, p.462) | título em 1 linha, sem corte; bloco voltar + título (+ relógio quando existe) ≤ 96 px | 🔴 | ✅ ~86 px na captura |
+| ponto e texto vermelhos em "Atendimento aberto" (spec p.462) | texto e ponto sem `critical`/`criticalFill` | 🔴 | ✅ |
+| quinta aba cortada sem indicação | fase fora da tela ⇒ botão ›, com papel de botão, ≥ 32 px, que rola até a última fase | 🔴 (só borda de 2 px a 60% de opacidade, sem toque) | ✅ |
+| SpO₂ vazio: +10 habilitado, −10 apagado | vazio: os dois inertes e no mesmo estado; tocar +10 não grava; com 88 digitado, −10 → 78 | 🔴 | ✅ |
+
+**Correções:**
+- **Cabeçalho** (`components/avc/sistema/index.tsx`): duas linhas curtas. Em cima: sair · estado · relógio. Embaixo: o nome da síndrome em uma linha, largura inteira, `PAPEL.tituloDeSecao`, `testID="avc-cabecalho-titulo"`. Marcador em `textSecondary`.
+  - ⚠️ **1ª tentativa reprovada no e2e:** título em uma linha dentro das três colunas (64 · centro · 112 px). O nome ficou **cortado** ("AVC isquêmico ...") nos ~151 px do meio, e "Hemorragia subaracnóidea (HSA)" nunca caberia ali. O layout mudou em vez de encolher a fonte.
+  - ⚠️ **Instrumento corrigido:** a medida do bloco exigia o relógio do topo, que não é desenhado na Estabilização. Voltar e título passaram a ser obrigatórios; o relógio entra quando existe.
+- **Barra de fases:** botões ‹ e › (`avc-barra-mais-esquerda` / `-direita`), com corpo, contorno e seta. Medem o transbordo no nó rolável da web e rolam 60% da largura por toque. A borda passiva `avc-barra-continua` saiu. Fora do navegador, os botões não aparecem.
+  - ⚠️ **Defeito visto na captura e corrigido:** o botão ‹ (40 px) cobria o começo da aba ativa ("stabilizar"), porque a barra a rolava para 24 px da borda. Agora rola para 48 px, com trava no e2e: a aba ativa começa depois do fim do botão ‹.
+- **Degraus** (`components/avc/ui/index.tsx`): `degrauInerte = semPartida || naoMove(d)`, a mesma regra do `−/+` fino.
+
+⚠️ **Mudança consciente de comportamento nos degraus:**
+- **Antes:** o degrau partia do piso da faixa (+50 no peso vazio gravava 80 kg).
+- **Origem da regra antiga:** a correção da D-127 (2026-09-10) a descrevia como "por decisão", mas **não há decisão do autor registrada**; foi escolha minha.
+- **Agora:** com o campo vazio o valor entra digitado ou arrastado.
+- **Specs atualizados, 9 passos:** `avc-abertura`, `avc-cor-do-assunto`, `avc-controle-numerico-unico` (o teste agora afirma o vazio inerte), `avc-fase9-trombectomia`, `avc-nihss-externo`, `avc-leitura-do-peso`, `avc-modulo-navegavel`, `avc-superficie-b`, `avc-superficie-paciente`.
+
+#### Achados novos
+
+| # | gravidade | achado | estado |
+|---|---|---|---|
+| AC-60 | média · fonte | As fontes citadas nas D-PEND-23 (bula) e D-PEND-24 (AHA 2019) não estão transcritas no repositório. As duas regras rodam marcadas como adaptação ou "a confirmar", sem trecho verificável. | aberto: autor |
+| AC-61 | baixa · a confirmar | Leitura do agente na D-PEND-22: alteplase continua inteira; volume arredondado ao 0,1 mL mais próximo (71 kg: 3,55 → 3,6 mL). | confirmar com o autor |
+| AC-62 | baixa · limite | O tema claro não é alcançável no app (Fase 9), então a AC-59 só pôde ser capturada no escuro. Os botões ‹ › da barra medem o transbordo só na web. | registrado |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `95028a5` (decisões) · `c7a1956` (código) · commit só de `docs/` com esta seção, a fila e o status |
+| e2e do AVC no build novo | ✅ 357 passed (build final; antes 356 · 1 falha, o cabeçalho cortado, corrigido) |
+| `test:all` (HEAD `c7a1956`) | ✅ **EXIT=0** · 138 scripts npm · Playwright **540 passed** (8,3 min), sem failed ou skipped · D-PEND-22/23/24 33/33 · opção neutra 25/25 · contraste 96 OK · afordância 131 · críticos 183/183 · superfície F 92/92 · mutações 84/84 · 129 travas ligadas · índice 117 declaradas · censo 65 instrumentos · execução 14:19–14:30 |
+| artefatos da suíte | revertidos (D-PEND-10) |
+| push | `a7abed8..c7a1956` → `origin/refactor/clinical-modules-rebuild` (inclui `95028a5`); `git ls-remote` = `c7a19566ac1b9db5d796b1faec7eb433336812fd`; divergência 0/0 |
+| deploy · merge em `main` | ⛔ não feitos |
