@@ -196,6 +196,21 @@ export async function abrirModulo(
       timeout: 30_000,
     })
     .toBeGreaterThan(200);
+  /** ⚠️ AC-03: o AVC abre com o portão de população; os testes do protocolo seguem como adulto. */
+  if (moduloId === "avc") await responderPopulacaoAdulta(page);
+}
+
+/**
+ * ⚠️ AC-03 · PORTÃO DE POPULAÇÃO — responde "18 anos ou mais" e "Não gestante e
+ * não puérpera", o caso que o protocolo adulto atende. ⛔ Os testes do próprio
+ * portão ⛔ não usam isto (`e2e/avc-portao-populacao.spec.ts`).
+ */
+export async function responderPopulacaoAdulta(page: Page): Promise<void> {
+  const portao = page.getByTestId("avc-portao-populacao");
+  await expect(portao).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId("avc-opcao-faixa_etaria-18 anos ou mais").click();
+  await page.getByTestId("avc-opcao-gestacao_puerperio-Não gestante e não puérpera").click();
+  await expect(portao).toHaveCount(0);
 }
 
 /** Espera o estado clínico mudar para outro valor e devolve o novo. */

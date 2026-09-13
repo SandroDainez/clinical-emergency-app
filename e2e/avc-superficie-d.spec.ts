@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { ITENS_DE_SEGURANCA, TODOS_OS_CAMPOS_D } from "../avc/conteudo/superficie-d";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície D se COMPORTE na tela como interpretação, e ⛔ nunca
@@ -14,6 +14,7 @@ import { fixarIdioma } from "./helpers";
  */
 async function abrirD(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await irParaD(page);
 }
 /**
@@ -207,6 +208,7 @@ test.describe("AVC · Superfície D — Segurança", () => {
   test("a superfície inteira aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-seguranca").click();
     const conteudo = page.getByTestId("avc-superficie-d-conteudo");
     await expect(conteudo).toContainText(/juicio de seguridad/i);

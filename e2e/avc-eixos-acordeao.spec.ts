@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que os tiles **A–E** façam algo que a rolagem ⛔ não fazia — ⛔ abrir
@@ -33,6 +33,7 @@ const camposDe = (p: Page, grupo: string) =>
 async function abrirEstabilizacao(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await aba(page, "estabilizacao");
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
 }

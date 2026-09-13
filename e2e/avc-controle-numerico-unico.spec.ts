@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * ⚠️⚠️⚠️ UM CONTROLE NUMÉRICO SÓ NO MÓDULO — D-127.
@@ -22,6 +22,7 @@ import { fixarIdioma } from "./helpers";
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 async function abrirEstabilizacao(page: Page) {

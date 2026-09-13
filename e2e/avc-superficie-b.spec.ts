@@ -8,7 +8,7 @@ import {
 } from "../avc/conteudo/superficie-b";
 import { ITENS_NIHSS } from "../avc/conteudo/nihss";
 import { SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície B se COMPORTE na tela como decomposição — que o
@@ -53,6 +53,7 @@ async function ajustarDerivados(page: Page) {
 
 async function abrirB(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-neurologico").click();
   await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
 }

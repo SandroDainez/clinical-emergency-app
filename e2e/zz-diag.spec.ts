@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 test.use({ viewport: { width: 375, height: 900 } });
 const abertos = async (page: any) => {
   const r: string[] = [];
@@ -10,6 +10,7 @@ const abertos = async (page: any) => {
 test("concluir B manda para onde?", async ({ page }) => {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-estabilizacao").click();
   console.log("inicial:", await abertos(page));
   await page.getByTestId("avc-ameaca-respiracao").click();

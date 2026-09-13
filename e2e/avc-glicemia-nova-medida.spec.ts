@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * ⚠️⚠️⚠️ A NOVA GLICEMIA É UMA MEDIDA NOVA — D-133, 2026-09-10.
@@ -18,6 +18,7 @@ import { fixarIdioma } from "./helpers";
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-estabilizacao").click();
   const campos = page.getByTestId("avc-grupo-neurologico-inicial").locator('[data-testid^="avc-campo-"]');
   if ((await campos.count()) === 0) await page.getByTestId("avc-ameaca-glicemia").click();

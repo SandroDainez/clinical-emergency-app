@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { IDS_ANALITOS, TODOS_OS_CAMPOS_L } from "../avc/conteudo/laboratorio";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o Laboratório se comporte na tela como **painel de coletas** —
@@ -25,6 +25,7 @@ import { fixarIdioma } from "./helpers";
  */
 async function abrirLab(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-imagem").click();
   await expect(page.getByTestId("avc-superficie-laboratorio-conteudo")).toBeVisible();
 }
@@ -316,6 +317,7 @@ test.describe("AVC · Laboratório", () => {
   test("o painel inteiro aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-imagem").click();
     await page.getByTestId("avc-nova-coleta").click();
 

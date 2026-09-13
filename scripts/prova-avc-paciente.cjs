@@ -107,9 +107,15 @@ const TODOS = [
    * ⚠️ ⛔ E entrou **um**: `comorbidades` — ⛔ os antecedentes crônicos (HAS,
    * DM, DPOC) que ⛔ **⛔ não existiam** em campo ⛔ nenhum do módulo.
    */
-  confere("⚠️⚠️ os CINCO blocos basais de Paciente existem",
-    P.GRUPOS_P.length === 5,
-    `identificação · basais · alergias · medicações · antecedentes crônicos — ${P.GRUPOS_P.map((g) => g.id).join(", ")}`);
+  /**
+   * ⚠️⚠️ ⛔ E VIRARAM SEIS — 2026-09-13, AC-03: entrou **população atendida**, em
+   * primeiro, porque ela decide se o protocolo adulto se aplica (slot F-37,
+   * decisão escrita do autor). ⛔ A lista é conferida por id ⛔ e ordem, ⛔ não só
+   * pela contagem.
+   */
+  confere("⚠️⚠️ os SEIS blocos de Paciente existem, com a população primeiro",
+    P.GRUPOS_P.map((g) => g.id).join(",") === "populacao,identificacao,basais,alergias,medicacoes,comorbidades",
+    `população · identificação · basais · alergias · medicações · antecedentes crônicos — ${P.GRUPOS_P.map((g) => g.id).join(", ")}`);
   const ids = P.TODOS_OS_CAMPOS_P.map((c) => c.id);
   confere("⛔ nenhum id duplicado dentro de Paciente",
     new Set(ids).size === ids.length,

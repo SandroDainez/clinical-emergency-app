@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que E se COMPORTE na tela como registro de **ações** — que ⛔ nada nela
@@ -13,6 +13,7 @@ import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 async function abrirAvc(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click();
 
@@ -378,6 +379,7 @@ test.describe("AVC · Correções", () => {
   test("a superfície inteira aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     /** ⚠️ ⛔ Correções ⛔ só existe na barra quando há o que corrigir (**C3**). */
     await paAlta(page);
     await abrirCorrecoes(page);

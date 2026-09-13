@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o atendimento **comece em Paciente**, que a primeira tela seja
@@ -26,6 +26,7 @@ const aba = (p: Page, id: string) => p.getByTestId(`avc-aba-${id}`).click();
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 test.describe("AVC · abertura do atendimento", () => {

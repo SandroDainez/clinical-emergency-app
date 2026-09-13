@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o controle de tempo consiga representar **datas além de hoje** —
@@ -17,6 +17,7 @@ import { fixarIdioma } from "./helpers";
  */
 async function abrirSeletor(page: Page, campo: string, aba: string) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId(`avc-aba-${aba}`).click();
   await page.getByTestId(`avc-hora-${campo}`).click();
   await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
@@ -130,6 +131,7 @@ test.describe("AVC · controle de data e hora", () => {
   test("DESCONHECIDO continua sendo resposta, no DOAC", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-paciente").click();
 
     /**
@@ -153,6 +155,7 @@ test.describe("AVC · controle de data e hora", () => {
   test("o DOAC alcança anteontem sem dezenas de toques", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-paciente").click();
     /**
      * ⚠️⚠️ ⛔ O ANTICOAGULANTE VEM ANTES — 2026-09-07.
@@ -180,6 +183,7 @@ test.describe("AVC · controle de data e hora", () => {
   test("o controle de data aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-neurologico").click();
     await page.getByTestId("avc-hora-hora_ultima_vez_bem").click();
 

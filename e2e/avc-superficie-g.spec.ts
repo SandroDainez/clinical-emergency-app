@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície G CHEGUE À TELA na largura de celular como a
@@ -17,6 +17,7 @@ import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 async function abrirG(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-destino").click();
   await expect(page.getByTestId("avc-superficie-g-conteudo")).toBeVisible();
 }

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * OS CRÍTICOS DO AVC — ⚠️ **pelo gesto real do médico** (commit 11 · 2026-09-12).
@@ -18,6 +18,7 @@ import { fixarIdioma } from "./helpers";
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click();

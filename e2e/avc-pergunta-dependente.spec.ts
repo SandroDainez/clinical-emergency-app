@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a pergunta da **última dose do anticoagulante** ⛔ só exista
@@ -27,6 +27,7 @@ import { fixarIdioma } from "./helpers";
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await expect(page.getByTestId("avc-superficie-paciente-conteudo")).toBeVisible();
 }
 

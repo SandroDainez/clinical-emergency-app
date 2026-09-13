@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * ⚠️⚠️⚠️ « REGISTRAR UMA NOVA AFERIÇÃO » ⛔ ABRE A AFERIÇÃO — 2026-09-10.
@@ -26,6 +26,7 @@ import { fixarIdioma } from "./helpers";
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 async function medir(page: Page, campo: string, valor: number) {

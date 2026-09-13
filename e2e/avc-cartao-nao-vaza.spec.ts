@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma } from "./helpers";
+import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que ⛔ nada que o médico abre **escape do cartão**, ⛔ que ⛔ nenhuma
@@ -52,6 +52,7 @@ async function oQueVaza(page: Page) {
 async function estabilizacao(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-estabilizacao").click();
   await abrirEixosDaEstabilizacao(page);
 }
@@ -189,6 +190,7 @@ test.describe("AVC · o cartão segura o que está dentro dele", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
       await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
 
@@ -235,6 +237,7 @@ test.describe("AVC · o cartão segura o que está dentro dele", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-paciente").click();
 
       const aviso = page.getByTestId("avc-paciente-nao-e-porta");

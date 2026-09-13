@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
 import { dosesNoTexto } from "../avc/nucleo/unidade-clinica";
 
 /**
@@ -33,6 +33,7 @@ const aba = (p: Page, id: string) => p.getByTestId(`avc-aba-${id}`).click();
 async function abrirEstabilizacao(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await aba(page, "estabilizacao");
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
   /**

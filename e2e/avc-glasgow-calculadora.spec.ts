@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma } from "./helpers";
+import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o Glasgow possa ser **calculado por E · V · M** dentro da
@@ -28,6 +28,7 @@ test.use({ viewport: { width: 375, height: 812 } });
 async function abrirD(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-estabilizacao").click();
   await abrirEixosDaEstabilizacao(page);
   await expect(page.getByTestId("avc-campo-glasgow")).toBeVisible();

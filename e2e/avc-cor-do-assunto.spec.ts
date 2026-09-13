@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a cor do assunto **chegue à tela** — ⛔ e ⛔ que ⛔ ela seja
@@ -37,6 +37,7 @@ test.describe("AVC · a cor diz o assunto", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       const blocos = ["identificacao", "basais", "alergias", "medicacoes"];
       const cores: string[] = [];
@@ -62,6 +63,7 @@ test.describe("AVC · a cor diz o assunto", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /**
        * ⚠️⚠️ ⛔ Cor ⛔ e forma sozinhas ⛔ não são leitura. ⛔ Apague todas as
@@ -88,6 +90,7 @@ test.describe("AVC · a cor diz o assunto", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       const antes = await fundoDe(page, "avc-bloco-identificacao-selo");
       /** ⚠️ O gesto real: registrar a idade. */
@@ -107,6 +110,7 @@ test.describe("AVC · a cor diz o assunto", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       await aba(page, "estabilizacao");
       /**

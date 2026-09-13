@@ -233,6 +233,12 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * ⛔ e não escolha a fazer em silêncio. Contrato completo no arquivo.
    */
   { id: "F-36", assunto: "Anafilaxia geral — broncodilatador, adrenalina EV e volume", estado: "aberto", arquivo: F36_ANAFILAXIA },
+  /**
+   * ⚠️ AC-03 (2026-09-13): ⛔ não é fonte clínica — é o escopo declarado do
+   * módulo ([CORREÇÃO 12/09] e instrução escrita do autor). ⛔ Nenhuma conduta
+   * sai daqui; fora do escopo, a saída é encaminhar.
+   */
+  { id: "F-37", assunto: "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar", estado: "transcrito", arquivo: "protocols/fontes-verbatim/escopo-populacional-avc.md" },
   { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "parcial", arquivo: F35C_TROMBOLISE },
   { id: "F-35d", assunto: "Tromboembolismo pulmonar com instabilidade", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35e", assunto: "Tamponamento cardíaco — drenagem", estado: "aberto", arquivo: CHOQUE_ABERTAS },

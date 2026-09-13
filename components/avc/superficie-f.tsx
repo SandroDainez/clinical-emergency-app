@@ -49,6 +49,7 @@ import {
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { exibeDosePorPeso } from "../../avc/nucleo/populacao";
 /**
  * ⚠️⚠️ ⛔ A LEITURA DO PESO — ⛔ e ⛔ ela é a **mesma função** de sempre.
  *
@@ -207,8 +208,12 @@ export default function SuperficieF({
         : undefined;
   const agenteDose =
     agente === "Alteplase" ? "alteplase" : agente === "Tenecteplase" ? "tenecteplase" : undefined;
+  /**
+   * ⚠️⚠️ AC-03: dose calculada por peso ⛔ só para a população validada — adulto,
+   * não gestante, não puérpera (`avc/nucleo/populacao.ts`, slot F-37).
+   */
   const dose =
-    agenteDose !== undefined
+    agenteDose !== undefined && exibeDosePorPeso(estado)
       ? doseDerivada(agenteDose, typeof pesoBruto === "number" ? pesoBruto : undefined, origem)
       : undefined;
 

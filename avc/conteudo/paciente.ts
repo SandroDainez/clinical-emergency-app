@@ -64,6 +64,50 @@ export type CampoP = CampoDeclarado;
  * obrigatoriedade, e ⛔ sem qualquer efeito sobre o fluxo."* ⛔ Nenhuma derivação
  * o lê, e ⛔ nenhuma leitura muda por ele existir ou ⛔ não.
  */
+/**
+ * POPULAÇÃO ATENDIDA — ⚠️ AC-03, 2026-09-13 · slot F-37.
+ *
+ * Fonte: `protocols/fontes-verbatim/escopo-populacional-avc.md` — [CORREÇÃO
+ * 12/09] *"Identificar e encaminhar; nunca aplicar regra adulta em silêncio"* e
+ * a instrução escrita do autor. ⛔ Nenhuma conduta nasce daqui: fora do escopo,
+ * a saída é encaminhar (`avc/nucleo/populacao.ts`).
+ *
+ * ⚠️ "Não sei" ⛔ não é adulto ⛔ nem "não gestante": a pergunta continua.
+ */
+export const FAIXA_ETARIA = { adulto: "18 anos ou mais", menor: "Menos de 18 anos" } as const;
+
+export const GESTACAO_PUERPERIO = {
+  nenhuma: "Não gestante e não puérpera",
+  gestante: "Gestante",
+  puerpera: "Puérpera",
+} as const;
+
+export const POPULACAO_P: readonly CampoP[] = [
+  {
+    id: "faixa_etaria",
+    /** ⚠️ Do **paciente** — ⛔ e ⛔ nenhum módulo a recalcula. */
+    escopo: "global",
+    rotulo: "Faixa etária",
+    tipo: "escolha",
+    temporalidade: "estavel",
+    opcoes: [FAIXA_ETARIA.adulto, FAIXA_ETARIA.menor, NAO_SEI],
+    fonte: "F-37",
+    bloqueiaTerapia: false,
+    nota: "O módulo foi escrito para adultos. Menos de 18 anos está fora do escopo validado: encaminhar. Não sei mantém a pergunta.",
+  },
+  {
+    id: "gestacao_puerperio",
+    escopo: "global",
+    rotulo: "Gestação ou puerpério",
+    tipo: "escolha",
+    temporalidade: "estavel",
+    opcoes: [GESTACAO_PUERPERIO.nenhuma, GESTACAO_PUERPERIO.gestante, GESTACAO_PUERPERIO.puerpera, NAO_SEI],
+    fonte: "F-37",
+    bloqueiaTerapia: false,
+    nota: "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.",
+  },
+];
+
 export const IDENTIFICACAO_P: readonly CampoP[] = [
   {
     id: "identificacao",
@@ -673,6 +717,8 @@ export const COMORBIDADES_P: readonly CampoP[] = [
 ];
 
 const GRUPOS_P_DECLARADOS: readonly GrupoDeclarado[] = [
+  /** ⚠️ AC-03: a população vem primeiro — ela decide se o protocolo adulto se aplica. */
+  { id: "populacao", titulo: "População atendida", campos: POPULACAO_P },
   { id: "identificacao", titulo: "Identificação", campos: IDENTIFICACAO_P },
   { id: "basais", titulo: "Dados basais", campos: BASAIS_P },
   { id: "alergias", titulo: "Alergias", campos: ALERGIAS_P },
@@ -719,6 +765,9 @@ export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
   medicacoes_em_uso: NAO_SEI,
   comorbidades: NAO_SEI,
   sexo: NAO_SEI,
+  /** ⚠️ AC-03: "Não sei" ⛔ não conclui — o portão continua perguntando. */
+  faixa_etaria: NAO_SEI,
+  gestacao_puerperio: NAO_SEI,
   /**
    * ⚠️⚠️ ⛔ OS CINCO SAÍRAM em 2026-09-07 — ⛔ e a saída sem conclusão
    * acompanha o fato, ⛔ e ⛔ não a tela. ⛔ Ver `SAIDA_SEM_CONCLUSAO_B`.

@@ -185,6 +185,8 @@ import SuperficieA from "./superficie-a";
 import SuperficieB from "./superficie-b";
 import SuperficieC from "./superficie-c";
 import SuperficiePaciente from "./superficie-paciente";
+import PortaoDePopulacao from "./portao-de-populacao";
+import { superficieRetidaPeloPortao } from "../../avc/nucleo/populacao";
 import SuperficieLaboratorio from "./superficie-laboratorio";
 import { relogioDoSistema } from "../../avc/nucleo/relogio";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
@@ -2013,7 +2015,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           />
         </View>
 
-        {atual.id === "paciente" ? (
+        {/**
+          * ⚠️⚠️ AC-03 · PORTÃO DE POPULAÇÃO — antes de qualquer superfície de
+          * protocolo. ⛔ Só a Estabilização abre sem ele (escolha do autor,
+          * 2026-09-13). Fonte: slot F-37.
+          */}
+        {superficieRetidaPeloPortao(estado, atual.id) ? (
+          <PortaoDePopulacao
+            estado={estado}
+            agora={agora}
+            onEscolher={escolher}
+            onMedir={medir}
+            onHora={registrarHora}
+            onDesfazer={desfazer}
+          />
+        ) : atual.id === "paciente" ? (
           <>
             <SuperficiePaciente
               estado={estado}

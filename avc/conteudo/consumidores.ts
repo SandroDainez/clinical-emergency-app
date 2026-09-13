@@ -81,6 +81,9 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * varredura que reprova quem tentar derivar dele.
    */
   sexo: [],
+  /** ⚠️ AC-03: a população do caso decide o portão da entrada — ⛔ e nada mais. */
+  faixa_etaria: ["populacao.ts"],
+  gestacao_puerperio: ["populacao.ts"],
 
   /**
    * ── ⚠️⚠️ ⛔ A TRAVA PEGOU O MEU PRÓPRIO CÓDIGO (2026-09-07) ──────────────

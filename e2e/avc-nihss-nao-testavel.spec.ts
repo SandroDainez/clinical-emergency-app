@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { ITENS_NIHSS } from "../avc/conteudo/nihss";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * AC-01 · NIHSS — item NÃO TESTÁVEL (UN), pelo gesto do médico.
@@ -18,6 +18,7 @@ const ACEITAM_UN = ["5a", "5b", "6a", "6b", "7", "10"];
 async function abrirEscala(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-neurologico").click();
   await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
   await expect(page.getByTestId("avc-escala-nihss_calculado")).toBeVisible();

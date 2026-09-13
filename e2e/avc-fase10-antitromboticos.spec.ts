@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { dosesNoTexto } from "../avc/nucleo/unidade-clinica";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a escada do pós-trombólise **mude com o gesto do médico**, ⛔ e
@@ -32,6 +32,7 @@ const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click(
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 /** ⚠️ Confirmar ⛔ sem mexer ⛔ não é permitido — ⛔ "agora" ⛔ não é padrão (§0.2). */

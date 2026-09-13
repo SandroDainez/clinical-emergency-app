@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o veredito da trombectomia **mude junto com o gesto do médico**,
@@ -35,6 +35,7 @@ const aba = (page: Page, id: string) => page.getByTestId(`avc-aba-${id}`).click(
 async function abrir(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
 }
 
 /**

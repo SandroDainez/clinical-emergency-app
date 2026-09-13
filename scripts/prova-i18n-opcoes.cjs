@@ -183,6 +183,7 @@ const campos = [
     "Periférico",
     "Central",
     "Leve",                      // "leve" tem a mesma forma nos dois idiomas
+    "Puérpera",                  // AC-03: "puérpera" tem a mesma forma nos dois idiomas
     "Incapacitante",             // idem
     "Bilateral",                 // idem
     "Paciente",                  // idem

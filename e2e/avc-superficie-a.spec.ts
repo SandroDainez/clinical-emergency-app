@@ -4,7 +4,7 @@ import { superficie } from "../avc/conteudo/superficies";
 import { TODOS_OS_CAMPOS_A } from "../avc/conteudo/superficie-a";
 /** ⚠️ A cronologia mora na Avaliação AVC desde **C7**, 2026-09-07. */
 import { TODOS_OS_CAMPOS_B } from "../avc/conteudo/superficie-b";
-import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA, abrirEixosDaEstabilizacao } from "./helpers";
+import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície A tenha COMPORTAMENTO, não apenas campos.
@@ -32,6 +32,7 @@ import { fixarIdioma, HORA_EXIBIDA, HORA_EXIBIDA_MARCADA, abrirEixosDaEstabiliza
  */
 async function abrirA(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-estabilizacao").click();
   await expect(page.getByTestId("avc-superficie-a-conteudo")).toBeVisible();
   await abrirEixosDaEstabilizacao(page);
@@ -51,6 +52,7 @@ async function abrirA(page: Page) {
  */
 async function abrirCronologia(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-neurologico").click();
   await expect(page.getByTestId("avc-superficie-b-conteudo")).toBeVisible();
 }
@@ -289,6 +291,7 @@ test.describe("Superfície A — estabilização", () => {
   test("a Superfície A fala espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-estabilizacao").click();
     /** ⚠️ ⛔ O eixo D nasce recolhido desde o acordeão — ⛔ abrir é pré-condição. */
     await abrirEixosDaEstabilizacao(page);
@@ -1113,6 +1116,7 @@ test.describe("Superfície A — UX clínica", () => {
   test("PA: nova medida é aferição nova, e ⛔ não correção", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-estabilizacao").click();
     await abrirEixosDaEstabilizacao(page);
 

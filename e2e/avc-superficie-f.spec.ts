@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície F se COMPORTE na largura de celular como a proposta
@@ -16,6 +16,7 @@ import { fixarIdioma, abrirEixosDaEstabilizacao } from "./helpers";
 async function abrirF(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-reperfusao").click();
   await expect(page.getByTestId("avc-superficie-f-conteudo")).toBeVisible();
 }
@@ -50,6 +51,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /** ⚠️ O gesto: abrir coleta ⛔ e digitar o INR, como o médico faz. */
       await page.getByTestId("avc-aba-imagem").click();
@@ -86,6 +88,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await paAlta(page);
 
       /** ⚠️ 1 · bloqueado, ⛔ e com conserto. */
@@ -157,6 +160,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /**
        * ⚠️⚠️ ⛔ DOIS ESTUDOS, ⛔ e ⛔ isso é o fluxo REAL: cada modalidade responde
@@ -235,6 +239,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /** ⚠️ Uma contraindicação **⛔ não corrigível** ativa. */
       await page.getByTestId("avc-aba-imagem").click();
@@ -275,6 +280,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       await page.getByTestId("avc-aba-estabilizacao").click();
       /** ⚠️ ⛔ Desde o acordeão, o eixo D nasce recolhido. */
@@ -439,6 +445,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
       await expect(page.getByTestId("avc-campo-acordou_com_deficit")).toBeVisible();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);
@@ -453,6 +460,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
       await page.getByTestId("avc-hora-desconhecido-hora_inicio_observado").click();
       await page.getByTestId("avc-opcao-acordou_com_deficit-nao").click();
@@ -466,6 +474,7 @@ test.describe("AVC · Reperfusão", () => {
   test("acordar COM O DÉFICIT revela o meio do sono na Avaliação AVC", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-neurologico").click();
     await page.getByTestId("avc-opcao-acordou_com_deficit-sim").click();
     await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toBeVisible();
@@ -476,6 +485,7 @@ test.describe("AVC · Reperfusão", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
       await page.getByTestId("avc-opcao-acordou_com_deficit-nao_sei").click();
       await expect(page.getByTestId("avc-campo-hora_meio_do_sono")).toHaveCount(0);

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * OS CENÁRIOS CLÍNICOS COMPLETOS — pedidos pelo autor em 2026-09-05.
@@ -29,6 +29,7 @@ const OPCAO = (campo: string, valor: string) => `avc-opcao-${campo}-${valor}`;
 async function abrirModulo(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await expect(page.getByTestId("avc-barra")).toBeVisible();
 }
 

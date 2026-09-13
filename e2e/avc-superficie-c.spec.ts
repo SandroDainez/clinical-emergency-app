@@ -5,7 +5,7 @@ import {
   RESULTADO_TC,
   TODOS_OS_CAMPOS_C,
 } from "../avc/conteudo/superficie-c";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a Superfície C se COMPORTE na tela como ponto de decisão da
@@ -20,6 +20,7 @@ import { fixarIdioma } from "./helpers";
  */
 async function abrirC(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-imagem").click();
   await expect(page.getByTestId("avc-superficie-c-conteudo")).toBeVisible();
 }
@@ -603,6 +604,7 @@ test.describe("AVC · Superfície C — Imagem", () => {
   test("a superfície inteira aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-imagem").click();
 
     const conteudo = page.getByTestId("avc-superficie-c-conteudo");

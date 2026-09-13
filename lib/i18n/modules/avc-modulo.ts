@@ -1997,4 +1997,23 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "NIHSS con ítem no evaluable — la suma no es el total completo",
   "O item não testável fica fora da soma, com a justificativa registrada. Nenhuma regra recebe esta soma como total completo":
     "El ítem no evaluable queda fuera de la suma, con la justificación registrada. Ninguna regla recibe esta suma como total completo",
+
+  // ── Portão de população (AC-03, 2026-09-13) ───────────────────────────────
+  "População atendida": "Población atendida",
+  "Faixa etária": "Grupo etario",
+  "18 anos ou mais": "18 años o más",
+  "Menos de 18 anos": "Menos de 18 años",
+  "Gestação ou puerpério": "Embarazo o puerperio",
+  "Não gestante e não puérpera": "No embarazada y no puérpera",
+  "Gestante": "Embarazada",
+  "Puérpera": "Puérpera",
+  "O módulo foi escrito para adultos. Menos de 18 anos está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
+    "El módulo fue escrito para adultos. Menos de 18 años está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
+  "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
+    "Embarazada o puérpera está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
+  "Fora do escopo validado — encaminhar": "Fuera del alcance validado — derivar",
+  "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
+    "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
+  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera. Não sei mantém a pergunta.":
+    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas. No sé mantiene la pregunta.",
 };

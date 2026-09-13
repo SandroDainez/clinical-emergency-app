@@ -98,7 +98,7 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
      * ⚠️ ⛔ As cinco que ficaram são reais: F-07 (antiagregante), F-08 (idade),
      * F-09 (peso), F-10 (anticoagulante), F-16 (alergias).
      */
-    fontes: ["F-07", "F-08", "F-09", "F-10", "F-16"],
+    fontes: ["F-07", "F-08", "F-09", "F-10", "F-16", "F-37"],
   },
   {
     id: "laboratorio",

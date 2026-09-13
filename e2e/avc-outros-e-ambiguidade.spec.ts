@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma } from "./helpers";
+import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que *"Outros"* aceite ser **escrito**, que o escrito ⛔ volte ⛔ ao
@@ -26,6 +26,7 @@ test.use({ viewport: { width: 375, height: 812 } });
 async function paciente(page: Page) {
   await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-paciente").click();
   await expect(page.getByTestId("avc-superficie-paciente-conteudo")).toBeVisible();
 }
@@ -97,6 +98,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-estabilizacao").click();
       await abrirEixosDaEstabilizacao(page);
 
@@ -145,6 +147,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-estabilizacao").click();
       await abrirEixosDaEstabilizacao(page);
 
@@ -192,6 +195,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-estabilizacao").click();
       await abrirEixosDaEstabilizacao(page);
 
@@ -249,6 +253,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-estabilizacao").click();
       await abrirEixosDaEstabilizacao(page);
       for (const [id, v] of [["pas", "210"], ["pad", "120"]] as const) {
@@ -300,6 +305,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-imagem").click();
       await expect(page.getByTestId("avc-superficie-c-conteudo")).toBeVisible();
 
@@ -363,6 +369,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /** ⛔ Na Avaliação AVC ⛔ o campo está ⛔ na tela — ⛔ o atalho sobra. */
       await page.getByTestId("avc-aba-neurologico").click();
@@ -401,6 +408,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-estabilizacao").click();
       await abrirEixosDaEstabilizacao(page);
       for (const [id, v] of [["pas", "210"], ["pad", "120"]] as const) {
@@ -465,6 +473,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
       const corpo = page.getByTestId("avc-superficie-b-conteudo");
       await expect(corpo).toBeVisible();
@@ -502,6 +511,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       /** ⛔ Nada registrado ⛔ ainda — ⛔ o resumo ⛔ não pode ⛔ ocupar a tela. */
       for (const aba of ["neurologico", "imagem", "seguranca"]) {
@@ -543,6 +553,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-neurologico").click();
 
       await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
@@ -598,6 +609,7 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
       await page.getByTestId("avc-aba-imagem").click();
 
       /* ── 1 · ⛔ só o PEDIDO ────────────────────────────────────────── */

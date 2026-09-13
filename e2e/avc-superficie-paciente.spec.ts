@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { GRUPOS_P, TODOS_OS_CAMPOS_P } from "../avc/conteudo/paciente";
 import { SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que a superfície **Paciente** se comporte na tela como **painel** e
@@ -15,6 +15,7 @@ import { fixarIdioma } from "./helpers";
  */
 async function abrirPaciente(page: Page) {
   await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-paciente").click();
   await expect(page.getByTestId("avc-superficie-paciente-conteudo")).toBeVisible();
 }
@@ -67,6 +68,7 @@ test.describe("AVC · Paciente — painel de contexto", () => {
   test("com Paciente VAZIO, as nove superfícies abrem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     /**
      * ⚠️⚠️ ⛔ SETE, ⛔ e ⛔ não nove — 2026-09-06, decisão **C3**.
@@ -106,6 +108,7 @@ test.describe("AVC · Paciente — painel de contexto", () => {
   test("⛔ o peso é preenchido em Paciente — ⛔ e ⛔ em nenhuma outra tela", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     await page.getByTestId("avc-aba-estabilizacao").click();
     await expect(page.getByTestId("avc-campo-peso")).toHaveCount(0);
@@ -133,6 +136,7 @@ test.describe("AVC · Paciente — painel de contexto", () => {
   test("o mRS prévio continua preenchível na B, com os descritores", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-neurologico").click();
 
     /**
@@ -221,6 +225,7 @@ test.describe("AVC · Paciente — painel de contexto", () => {
   test("a superfície inteira aparece em espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-paciente").click();
 
     const conteudo = page.getByTestId("avc-superficie-paciente-conteudo");

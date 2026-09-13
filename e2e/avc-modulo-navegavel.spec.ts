@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { SUPERFICIES, SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
-import { fixarIdioma } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * PROMETE: que o módulo AVC exista, abra pela sua rota própria, e seja
@@ -19,6 +19,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("abre pela rota própria, com cabeçalho e saída", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await expect(page.getByText("AVC isquêmico agudo").first()).toBeVisible();
     // I7: a tela desenha o próprio cabeçalho, e ele tem saída — agora rotulada
     // "Módulos" e FIXA no topo (fora do ScrollView), para não sumir no scroll
@@ -31,6 +32,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("a saída leva de volta ao hub, MESMO após rolar uma superfície longa", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await expect(page.getByText("AVC isquêmico agudo").first()).toBeVisible();
 
     // Vai para uma superfície longa e rola até o fim — onde o médico se perdia.
@@ -51,6 +53,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("as nove superfícies abrem em qualquer ordem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     // ⚠️ Ordem deliberadamente EMBARALHADA: se houvesse árvore linear, abrir o
     // Destino antes do Neurológico falharia. É isso que a trava mede (§7.2, E-11).
@@ -106,6 +109,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("as abas aparecem na ordem aprovada, com a letra da posição", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     /**
      * ⛔⛔ ⛔ SEM LETRA — 2026-08-30. O A–G colidia com o **ABCDE do atendimento**, e
@@ -256,6 +260,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("estabilização aparece antes da prioridade de imagem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     /**
      * ⚠️⚠️ ⛔ O MÓDULO ABRE EM **PACIENTE** DESDE 2026-09-07 — ⛔ e ⛔ lá ⛔ não
      * há ⛔ nem eixos ⛔ nem prioridade de imagem, ⛔ por decisão do autor.
@@ -286,6 +291,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("trocar de fase volta a rolagem ao topo", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-estabilizacao").click();
 
     /**
@@ -355,6 +361,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("o resumo acompanha as superfícies ⛔ quando há o que resumir", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     /** ⛔ 1 · ⛔ sem ⛔ nada medido, ⛔ ele ⛔ não ocupa ⛔ tela ⛔ nenhuma. */
     for (const sup of SEQUENCIA_OFICIAL.filter(
@@ -422,6 +429,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("pendência é acionável de qualquer superfície e leva à sua dona", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     // Abre uma superfície que NÃO é a dona da pendência...
     await page.getByTestId("avc-aba-destino").click();
@@ -450,6 +458,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("o módulo fala espanhol", async ({ page }) => {
     await fixarIdioma(page, "es-419");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     await expect(page.getByText("ACV isquémico agudo").first()).toBeVisible();
     await page.getByTestId("avc-aba-imagem").click();
     await expect(page.getByText("Imagen").first()).toBeVisible();
@@ -460,6 +469,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("navegar entre superfícies não registra ação clínica", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
 
     // ⚠️ E-20: percorrer TODAS as superfícies não pode mudar nada — as pendências
     // continuam exatamente as mesmas, porque navegação não é fato clínico.
@@ -494,6 +504,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
     async ({ page }) => {
       await fixarIdioma(page, "pt-BR");
       await page.goto("/modulos/avc");
+      await responderPopulacaoAdulta(page);
 
       for (const [aba, letra] of Object.entries({
         estabilizacao: "a", neurologico: "b", reperfusao: "f", destino: "g",
@@ -519,6 +530,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("⛔ a barra ⛔ NÃO carrega contagem", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     const texto = await page.getByTestId("avc-barra").innerText();
     expect(texto, "badge numérico na navegação vira painel de alerta")
       .not.toMatch(/\d/);
@@ -528,6 +540,7 @@ test.describe("Módulo AVC — esqueleto navegável", () => {
   test("as seis são alcançáveis de qualquer uma delas", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
     const seis = ["estabilizacao", "neurologico", "imagem", "seguranca", "reperfusao", "destino"];
     for (const de of seis) {
       await page.getByTestId(`avc-aba-${de}`).click();
