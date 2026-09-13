@@ -136,6 +136,18 @@ const PARES = [
   ["onFill", "successFill", 4.5, "texto do botão \"Sim\""],
   ["onFill", "criticalFill", 4.5, "texto do botão \"Não\""],
   /**
+   * ⚠️⚠️ D-PEND-21 (autor, 2026-09-13) — opção NÃO marcada é neutra: corpo
+   * `controlSurface`, contorno `controlBorder`, texto `text` (pares acima: 1,25 ·
+   * 1,5 · 4,5). ⚠️ Marcada: borda de 2 px na cor do TEXTO, medida contra o CARD
+   * em que a opção vive (WCAG 1.4.11, 3:1) — ⛔ não contra o preenchimento: `text`
+   * sobre `criticalFill` no tema claro mede 2,73:1 ⛔ e ⛔ separaria nada.
+   * ⚠️ A cor da marcada contra a vizinha neutra: piso 1,5, o mesmo da borda do
+   * controle — ⛔ a cor ⛔ não é o único sinal (✓ ⛔ e borda, E-15).
+   */
+  ["text", "surface", 3, "anel da opção marcada (D-PEND-21) contra o card"],
+  ["successFill", "controlSurface", 1.5, "Sim marcado se separa da opção neutra ao lado (D-PEND-21)"],
+  ["criticalFill", "controlSurface", 1.5, "Não marcado se separa da opção neutra ao lado (D-PEND-21)"],
+  /**
    * ⚠️⚠️ O TINGIMENTO PRECISA SUSTENTAR **TEXTO** — ⛔ ele ⛔ não é papel de
    * parede. ⚠️ O card de alerta escreve título ⛔ e corpo em cima dele; ⛔ um
    * tingimento bonito ⛔ e ilegível ⛔ não serve para ⛔ nada.

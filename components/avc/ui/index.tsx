@@ -36,6 +36,7 @@ import { tingir } from "../../../design-system/paleta-de-area";
 import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
+import { opcaoDeDecisao, vistaDaOpcaoDeDecisao } from "../../../design-system/opcao-de-decisao";
 import { useTr } from "../../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../../design-system/aviso-de-apoio-clinico";
 
@@ -489,15 +490,13 @@ export function Segmentado({
          * sozinha: o ✓ ⛔ e a palavra dizem o mesmo.
          */
         const grande = binaria(opcoes);
-        const tom = gravado === "sim" ? e.decisaoSim : gravado === "nao" ? e.decisaoNao : e.decisaoNeutra;
-        const corDoTexto = grande && (gravado === "sim" || gravado === "nao")
-          ? e.decisaoTextoPreenchido
-          : grande ? e.decisaoTextoNeutro : e.segTexto;
+        /** ⚠️ D-PEND-21: aparência da fonte única — ⛔ não marcada é neutra; cor só marcada, com ✓ ⛔ e borda. */
+        const vista = vistaDaOpcaoDeDecisao(gravado, marcada);
         return (
           <Pressable
             key={op}
             style={grande
-              ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
+              ? [e.decisaoBotao, ...vista.corpo.map((k) => e[k])]
               : [e.segItem, marcada ? e.segAtivo : null]}
             accessibilityRole="radio"
             /**
@@ -536,8 +535,8 @@ export function Segmentado({
               * respondível. ⛔ Quem cede é o LAYOUT — a fileira vira coluna —,
               * ⛔ e ⛔ nunca o texto.
               */}
-            <Text style={grande ? corDoTexto : [e.segTexto, marcada ? e.segTextoAtivo : null]}>
-              {marcada ? "✓ " : ""}
+            <Text style={grande ? [e.decisaoTexto, e[vista.texto]] : [e.segTexto, marcada ? e.segTextoAtivo : null]}>
+              {vista.marca}
               {tr(rotuloDeInterface?.[op] ?? op)}
             </Text>
           </Pressable>
@@ -1319,13 +1318,13 @@ export function LinhaDeAchado({
           const gravado = valorDaOpcao(op);
           const marcada = valor === gravado;
           const grande = binaria(opcoes);
-          const tom = gravado === "sim" ? e.decisaoSim : gravado === "nao" ? e.decisaoNao : e.decisaoNeutra;
-          const preenchido = grande && (gravado === "sim" || gravado === "nao");
+          /** ⚠️ D-PEND-21: aparência da fonte única (`design-system/opcao-de-decisao.ts`). */
+          const vista = vistaDaOpcaoDeDecisao(gravado, marcada);
           return (
             <Pressable
               key={op}
               style={grande
-                ? [e.decisaoBotao, tom, marcada ? e.decisaoMarcada : null]
+                ? [e.decisaoBotao, ...vista.corpo.map((k) => e[k])]
                 : [e.segItemEstreito, marcada ? e.segAtivo : null]}
               accessibilityRole="radio"
               accessibilityState={{ checked: marcada }}
@@ -1338,11 +1337,11 @@ export function LinhaDeAchado({
             >
               <Text
                 style={grande
-                  ? (preenchido ? e.decisaoTextoPreenchido : e.decisaoTextoNeutro)
+                  ? [e.decisaoTexto, e[vista.texto]]
                   : [e.segTextoEstreito, marcada ? e.segTextoAtivo : null]}
                 numberOfLines={1}
               >
-                {marcada ? "✓ " : ""}
+                {vista.marca}
                 {tr(op)}
               </Text>
             </Pressable>
@@ -1950,18 +1949,13 @@ const criarEstilos = (tema: Tema) =>
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.xs,
     },
-    decisaoSim: { backgroundColor: tema.cores.successFill },
-    decisaoNao: { backgroundColor: tema.cores.criticalFill },
-    /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
-    decisaoNeutra: {
-      borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-      backgroundColor: tema.cores.controlSurface,
-    },
-    /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor — ⛔ ela ⛔ não vira outro botão. */
-    decisaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
-    decisaoTextoPreenchido: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
-    decisaoTextoNeutro: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    /**
+     * ⚠️⚠️ D-PEND-21 (autor, 2026-09-13): neutra · marcada · Sim · Não ⛔ e a cor do
+     * texto vêm da FONTE ÚNICA (`design-system/opcao-de-decisao.ts`) — ⛔ não marcada
+     * é neutra; cor só depois de marcar, sempre com ✓ ⛔ e borda.
+     */
+    ...opcaoDeDecisao(tema),
+    decisaoTexto: { ...PAPEL.tituloDeSecao },
 
     achadoBloco: { paddingVertical: ESPACO.xs },
     achadoTopo: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },

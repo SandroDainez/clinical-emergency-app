@@ -28,6 +28,7 @@ import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { useEstilosDoTema, useTheme, type Tema } from "../../../design-system/theme";
+import { opcaoDeDecisao, vistaDaOpcaoDeDecisao } from "../../../design-system/opcao-de-decisao";
 import { PAPEL } from "../../../design-system/tipografia-clinica";
 import { SETA } from "../../../design-system/afordancia";
 import { ESPACO, RAIO, TOQUE } from "../../../design-system/tokens";
@@ -268,8 +269,8 @@ export type TomDeResposta = "sim" | "nao" | "neutro";
  * **não**. ⚠️ *"⛔ Não elegível"* ⛔ não é um erro do médico ⛔ nem um alarme: ⛔ é
  * uma resposta clínica legítima, ⛔ e ela vale tanto quanto a outra.
  *
- * ⚠️ Cada botão carrega **símbolo ⛔ e palavra** (**E-15**): ✓ Sim · ✕ Não. ⛔ Quem
- * ⛔ não distingue as cores lê exatamente o mesmo.
+ * ⚠️ D-PEND-21 (autor, 2026-09-13): ⛔ não selecionada é neutra, ⛔ sem símbolo;
+ * selecionada ganha borda, ✓ ⛔ e só então a cor (**E-15**: a cor ⛔ nunca vem sozinha).
  *
  * ⚠️ Altura `TOQUE.critico` (56): ⛔ é a decisão da tela, ⛔ e ⛔ não um item de
  * lista. ⚠️ O app é usado com luva ⛔ e pressa.
@@ -290,10 +291,9 @@ export function RespostaAction({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(estilos);
-  const simbolo = tom === "sim" ? "✓" : tom === "nao" ? "✕" : "•";
-  const preenchimento =
-    tom === "sim" ? e.respostaSim : tom === "nao" ? e.respostaNao : e.respostaNeutra;
-  const textoDoTom = tom === "neutro" ? e.respostaTextoNeutro : e.respostaTexto;
+  /** ⚠️ D-PEND-21: aparência da fonte única (`design-system/opcao-de-decisao.ts`). */
+  const vista = vistaDaOpcaoDeDecisao(tom === "neutro" ? "nao_sei" : tom, selecionada === true);
+  const textoDoTom = [e.respostaTexto, e[vista.texto]];
   return (
     <Pressable
       onPress={onPress}
@@ -303,17 +303,11 @@ export function RespostaAction({
       testID={testID}
       style={({ pressed }) => [
         e.resposta,
-        preenchimento,
-        /**
-         * ⚠️ Selecionada ganha **anel**, ⛔ e ⛔ não outra cor: trocar a cor
-         * faria a resposta escolhida parecer um botão diferente do que foi
-         * apertado.
-         */
-        selecionada && e.respostaSelecionada,
+        ...vista.corpo.map((k) => e[k]),
         pressed && e.pressionado,
       ]}
     >
-      <Text style={textoDoTom} accessibilityElementsHidden>{simbolo}</Text>
+      {vista.marca !== "" ? <Text style={textoDoTom} accessibilityElementsHidden>✓</Text> : null}
       <Text style={textoDoTom} numberOfLines={1}>{tr(rotulo)}</Text>
     </Pressable>
   );
@@ -516,23 +510,16 @@ function estilos(tema: Tema) {
       minHeight: TOQUE.critico,
       borderRadius: RAIO.botao,
       paddingHorizontal: ESPACO.sm,
-    } as const,
-    respostaSim: { backgroundColor: tema.cores.successFill } as const,
-    respostaNao: { backgroundColor: tema.cores.criticalFill } as const,
-    /** ⚠️ *"Incerto"* / *"⛔ Não sei"* — ⛔ contorno, ⛔ e ⛔ nunca preenchido. */
-    /**
-     * ⚠️ Mesmos tokens do gêmeo `decisaoNeutra` em `ui/index.tsx` — ⛔ eles são
-     * o **mesmo botão conceitual** (*"Incerto"* / *"⛔ Não sei"*), ⛔ e ficaram
-     * com aparências diferentes até a auditoria de 2026-09-06 apontar.
-     */
-    respostaNeutra: {
+      /** ⚠️ Contorno sempre (D-PEND-21); a cor dele ⛔ e o corpo vêm de `decisaoNeutra`. */
       borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-      backgroundColor: tema.cores.controlSurface,
     } as const,
-    respostaSelecionada: { borderWidth: 2, borderColor: tema.cores.text } as const,
-    respostaTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill } as const,
-    respostaTextoNeutro: { ...PAPEL.tituloDeSecao, color: tema.cores.text } as const,
+    /**
+     * ⚠️⚠️ D-PEND-21 (autor, 2026-09-13): neutra · marcada · Sim · Não vêm da FONTE
+     * ÚNICA (`design-system/opcao-de-decisao.ts`) — o mesmo botão conceitual de
+     * `ui/index.tsx` ⛔ e `campos-clinicos.tsx`.
+     */
+    ...opcaoDeDecisao(tema),
+    respostaTexto: { ...PAPEL.tituloDeSecao } as const,
 
     /* ── linha do tempo ───────────────────────────────────────────────────── */
     trilha: { gap: 0 } as const,

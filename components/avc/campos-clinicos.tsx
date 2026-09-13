@@ -40,6 +40,7 @@ import { getPalette, tingir } from "../../design-system/paleta-de-area";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
+import { opcaoDeDecisao, vistaDaOpcaoDeDecisao } from "../../design-system/opcao-de-decisao";
 import { ESTADOS, type EstadoClinico } from "../../design-system/estados-clinicos";
 import { useTr } from "../../lib/use-tr";
 
@@ -470,10 +471,8 @@ export function CampoDeEscolha({
            * dizem o mesmo que a cor.
            */
           const grande = binaria(campo.opcoes);
-          const tom = !grande
-            ? null
-            : valor === "sim" ? e.opcaoSim : valor === "nao" ? e.opcaoNao : e.opcaoNeutra;
-          const preenchida = grande && (valor === "sim" || valor === "nao");
+          /** ⚠️ D-PEND-21: aparência da fonte única — ⛔ não marcada é neutra; cor só marcada, com ✓ ⛔ e borda. */
+          const vista = vistaDaOpcaoDeDecisao(valor, ativa);
           return (
             <Pressable
               key={op}
@@ -481,7 +480,7 @@ export function CampoDeEscolha({
                 e.opcao,
                 empilhado && e.opcaoLarga,
                 grande && e.opcaoDecisao,
-                tom,
+                ...(grande ? vista.corpo.map((k) => e[k]) : []),
                 /**
                  * ⚠️ *"⛔ Não sei"* fica **tracejado ⛔ e apagado** enquanto ⛔ não
                  * é escolhido: ⛔ ele ⛔ não disputa com os achados clínicos ao
@@ -489,7 +488,7 @@ export function CampoDeEscolha({
                  * uma resposta legítima, ⛔ e ⛔ não um estado de erro.
                  */
                 !grande && valor === "nao_sei" && !ativa && e.opcaoNaoSei,
-                ativa && (grande ? e.opcaoMarcada : e.opcaoAtiva),
+                ativa && !grande && e.opcaoAtiva,
               ]}
               accessibilityRole="radio"
               aria-checked={ativa}
@@ -516,11 +515,11 @@ export function CampoDeEscolha({
                 style={[
                   e.opcaoTexto,
                   !grande && valor === "nao_sei" && !ativa && e.opcaoTextoNaoSei,
-                  preenchida && e.opcaoTextoPreenchido,
+                  grande && e[vista.texto],
                   ativa && !grande && e.opcaoTextoAtivo,
                 ]}
               >
-                {ativa ? "✓ " : ""}
+                {vista.marca}
                 {tr(op)}
               </Text>
             </Pressable>
@@ -2137,20 +2136,13 @@ export const criarEstilos = (tema: Tema) =>
       flex: 1,
       minWidth: 0,
       minHeight: TOQUE.critico,
-      borderWidth: 0,
       paddingHorizontal: ESPACO.xs,
     },
-    opcaoSim: { backgroundColor: tema.cores.successFill },
-    opcaoNao: { backgroundColor: tema.cores.criticalFill },
-    /** ⚠️ *"Incerto"* ⛔ não é uma terceira cor: ⛔ é ausência de resposta. */
-    opcaoNeutra: {
-      backgroundColor: tema.cores.controlSurface,
-      borderWidth: 1,
-      borderColor: tema.cores.controlBorder,
-    },
-    /** ⚠️ Escolhida ganha **anel**, ⛔ e ⛔ não outra cor. */
-    opcaoMarcada: { borderWidth: 2, borderColor: tema.cores.text },
-    opcaoTextoPreenchido: { color: tema.cores.onFill },
+    /**
+     * ⚠️⚠️ D-PEND-21 (autor, 2026-09-13): neutra · marcada · Sim · Não ⛔ e a cor do
+     * texto vêm da FONTE ÚNICA (`design-system/opcao-de-decisao.ts`).
+     */
+    ...opcaoDeDecisao(tema),
 
     /** ⚠️ Neutraliza o `flexBasis: "100%"` do wrapper, que em coluna vira altura. */
     stepper: { flexGrow: 0, flexBasis: "auto", alignSelf: "stretch" },
