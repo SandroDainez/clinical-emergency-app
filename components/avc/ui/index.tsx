@@ -251,7 +251,6 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
 
   /* ── Segurança ⛔ e laboratório ───────────────────────────────────────────*/
   juizo: { icone: "seguranca", cor: "warning" },
-  consultas: { icone: "consulta", cor: "primary" },
   coleta: { icone: "laboratorio", cor: "info" },
 };
 
