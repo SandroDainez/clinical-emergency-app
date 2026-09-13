@@ -75,6 +75,10 @@ Trechos:
 | **Adaptação local** | Quem usa aguarda INR, PT **e** aPTT. É interpretação sem registro humano (`auditoria-vs-spec.md:282`). A leitura da opção heparina é decisão do autor (`auditoria/PLANO-CORRECAO-AVC-CRITICOS.md:490`). |
 | **Escolha de interface** | Pendência "Exames de coagulação", com o que falta registrar. |
 
+## 10A · Atualização da 4ª rodada (2026-09-13)
+
+- **AC-46 · reproduzido e corrigido** em `62856f4`: com varfarina ou heparina registradas, a condição resolutiva deixou de dizer "sem varfarina ou heparina registradas". A pergunta clínica deste pacote continua **sem decisão**.
+
 ## 11 · Decisão humana
 
 **Decisão humana:** ___ (nome, versão, data)

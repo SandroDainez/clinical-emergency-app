@@ -1,11 +1,21 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `7dc42c5`, enviado (`fc81900..7dc42c5`, 0/0); por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `9ef7270`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
 ## Ponto exato de retomada
 
-**Rodada em andamento (2026-09-13, 3ª):** decisões D-PEND-15/16/17 registradas; duas entregas.
+**Rodada em andamento (2026-09-13, 4ª):** decisões D-PEND-18/19/20 registradas; três entregas.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **Entrega 1 · achados por leitura** | AC-46, AC-47, AC-48 verificados rodando | ✅ `62856f4` · AC-46 reproduzido e corrigido · AC-47: cenário de perfusão **não reproduzido**; rota de RM reproduzida e corrigida · AC-48 reproduzido e corrigido · prova 14·8 → 22/22 |
+| **Entrega 2 · D-PEND-18/19/20** | AC-44 temperatura (§4.4 transcrita, F-38) · AC-45 segundo toque ignorado + «Limpar» · AC-50 texto removido | ✅ `f314f36` · prova 0·17 → 20/20 · e2e 3/3 vermelhos → verdes |
+| **Entrega 3 · pacote AC-43 ampliado** | recomendação textual × Table 7; comparativo 50–100 kg; campo regulatório em branco | ✅ só `docs/` |
+
+`test:all` no HEAD `9ef7270`: ✅ **EXIT=0** · 133 scripts npm · Playwright **517 passed** (8,0 min), sem failed ou skipped · achados 22/22 · D-PEND-18/19/20 20/20 · autoria e toque duplo 32/32 · persistência 40/40 · mutações 84/84 · 124 travas ligadas · índice 112 declaradas · censo 65 instrumentos · push `e660433..9ef7270` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `9ef72701b46b50ccccf958c46e82933205eea9c5`; divergência 0/0. O commit só de `docs/` sobe em seguida (D-PEND-17).
+
+**Rodada anterior (3ª), concluída:** decisões D-PEND-15/16/17; duas entregas.
 
 | entrega | escopo | estado |
 |---|---|---|
@@ -83,6 +93,17 @@ Detalhe em `docs/avc/auditoria-vs-spec.md` §7.8 e nos pacotes `docs/avc/revisao
 - **AC-46, AC-47, AC-48:** achados por leitura na D-139, **a verificar por execução**.
 - **AC-49, AC-50, AC-51:** baixos (página da rec. 10 na transcrição, texto órfão de puerpério, toque duplo sem janela).
 
+## 4ª rodada · achados
+
+Detalhe em `docs/avc/auditoria-vs-spec.md` §7.9.
+
+- **AC-44, AC-45, AC-50:** ✅ fechados pelas D-PEND-18/19/20 em `f314f36`.
+- **AC-46, AC-48:** ✅ reproduzidos e corrigidos em `62856f4`, sem limiar novo.
+- **AC-47:** cenário de perfusão **não reproduzido** (a rota fica travada pela F-31 e `nao_elegivel_a_evt` nunca é satisfeito); a rota de RM com início desconhecido foi reproduzida e corrigida em `62856f4`.
+- **AC-52 · média:** `nao_elegivel_a_evt` nunca é satisfeito.
+- **AC-53 · baixa · confirmar:** a D-PEND-19 não foi aplicada à seleção múltipla.
+- **AC-54 · baixa:** a correção do AC-47 responde em parte à interpretação 4 da D-139.
+
 ## Achados críticos
 
 | # | estado |
@@ -103,10 +124,9 @@ Detalhe em `docs/avc/auditoria-vs-spec.md` §7.8 e nos pacotes `docs/avc/revisao
 | D-PEND-11 | confirmar as 4 interpretações de D-139 — pacotes `revisao/D-139-1…4` |
 | D-PEND-12 | registrar formalmente a dose inteira do trombolítico — ver pacote `revisao/AC-06-dose-trombolitico.md` e AC-43 |
 | pacotes de revisão | nove decisões em `docs/avc/revisao/`, com "Decisão humana: ___" em branco |
-| AC-44 | temperatura no caminho isquêmico — pacote `revisao/AC-14-temperatura.md` |
 
 ## Próximo passo nesta rodada
 
-1. Revisão médica dos nove pacotes em `docs/avc/revisao/` — prioridade para AC-43 (dose da tenecteplase) e AC-44 (temperatura).
-2. Verificar por execução AC-46, AC-47 e AC-48.
+1. Decisões pendentes do autor: AC-43 (dose da tenecteplase, pacote ampliado §9A), AC-15 (HSA) e janela de puerpério.
+2. Confirmar AC-53 (seleção múltipla e D-PEND-19) e decidir o que fazer com AC-52.
 3. Antes de dado real de paciente: AC-39 (adaptador SQLite, §4 de `docs/avc/persistencia.md`) e os demais itens da §6.

@@ -1,6 +1,6 @@
 # AC-14 · Temperatura no caminho isquêmico
 
-**Estado:** aguardando decisão humana · **Criado em:** 2026-09-13
+**Estado:** ✅ decidido (D-PEND-18) e implementado em `f314f36` · **Criado em:** 2026-09-13
 **Origem:** `docs/avc/auditoria-vs-spec.md:45` (AC-14) · requisito `docs/avc/matriz-requisitos.md:29` (RQ-T01-03)
 
 ## 1 · Pergunta clínica
@@ -84,4 +84,4 @@ Hoje não há campo, então não há "não sei". Se o campo voltar, "não medida
 
 ## 12 · Decisão humana
 
-**Decisão humana:** ___ (nome, versão, data)
+**Decisão humana:** restaurar a temperatura no caminho isquêmico, transcrevendo a §4.4 (p. e352) — Sandro Dainez, 4ª rodada, 13/09/2026 (`docs/decisoes.md` D-PEND-18).

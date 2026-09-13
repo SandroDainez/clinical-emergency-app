@@ -77,6 +77,12 @@ Déficit incapacitante (`incapacitante_assumido`: "Incapacitante" / "Não incapa
 | **Adaptação local** | Leitura literal: o critério pertence à rota padrão. Registrada como "observação, não como decisão nova" na HR-2 (`PLANO:482`). A confirmação segue pendente (D-PEND-11). |
 | **Escolha de interface** | Quando uma rota estendida sustenta, a lista de critérios troca o déficit e a janela pela recomendação estendida aplicável. |
 
+## 10A · Atualização da 4ª rodada (2026-09-13)
+
+- **AC-47:** o cenário de perfusão pedido pelo autor **não reproduziu** (rota travada pela F-31; `nao_elegivel_a_evt` nunca satisfeito — AC-52).
+- A rota de RM com início desconhecido **reproduziu** e foi corrigida em `62856f4`, no sentido pedido pelo autor: com o déficit **registrado** "não incapacitante", a saída é "Sem indicação neste caminho", com o motivo.
+- "Incerto" e não perguntado não mudaram. Isso cobre em parte a opção C deste pacote; o resto continua **sem decisão**.
+
 ## 11 · Decisão humana
 
 **Decisão humana:** ___ (nome, versão, data)

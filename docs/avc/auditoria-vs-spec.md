@@ -583,3 +583,83 @@ Texto integral em `docs/decisoes.md`.
 | 2º `test:all` (HEAD `7dc42c5`) | ✅ **EXIT=0** · 131 scripts npm · Playwright **514 passed** (7,8 min), sem failed ou skipped · persistência 40/40 · autoria e toque duplo 32/32 · mutações 84/84 · 122 travas ligadas · índice: 110 declaradas · censo 65 instrumentos |
 | artefatos da suíte | `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json` revertidos (D-PEND-10) |
 | push | `fc81900..7dc42c5` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `7dc42c5e9def3b8e218a6b3759656ba3c32ed2a6`; divergência 0/0. O commit só de `docs/` com os pacotes sobe em seguida, sem `test:all` (D-PEND-17). |
+
+### 7.9 · 4ª rodada de 2026-09-13 · achados por leitura, decisões D-PEND-18/19/20 e pacote AC-43 ampliado
+
+**Decisões do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`, commit `433bb78`):
+
+| decisão | achado | conteúdo |
+|---|---|---|
+| D-PEND-18 | AC-44 | restaurar a temperatura no caminho isquêmico, transcrevendo a §4.4 (p. e352) |
+| D-PEND-19 | AC-45 | segundo toque em opção já marcada é ignorado; desmarcar exige "limpar" |
+| D-PEND-20 | AC-50 | apagar o texto "10 dias pós-parto", sem fonte |
+
+**Pendentes do autor, não implementados:** AC-43 (dose), AC-15 (HSA), janela de puerpério.
+
+#### Entrega 1 · verificar rodando o que foi visto só lendo · commit `62856f4`
+
+**Prova:** `scripts/prova-avc-achados-por-leitura.cjs`. Antes (código de `433bb78`): 🔴 14 verdes · 8 vermelhos. Depois: ✅ 22/22.
+
+| # | cenário | resultado antes | correção | depois |
+|---|---|---|---|---|
+| AC-46 | varfarina registrada; INR 1,0, TP 12, TTPa 30 registrados; plaquetas não; juízo "não" | ✅ **reproduzido**: *"Sem motivo para suspeitar; sem varfarina ou heparina registradas"* | texto passa a dizer *"varfarina ou heparina registradas, com os exames de coagulação já registrados"*; sem anticoagulante, o texto antigo continua (controle) | ✅ |
+| AC-47 · cenário do autor | "não incapacitante"; última vez bem e início há 6 h; TC sem hemorragia; penumbra em perfusão automatizada "sim"; juízo "não" | ⛔ **não reproduzido**: a rota `ivt_wakeup_ou_45_9` fica `nao_avaliavel` (travada por F-31) e `nao_elegivel_a_evt` nunca é satisfeito; o veredito já saía `nao_sustentada` | nenhuma nesse cenário; a conferência fica como trava | ✅ (trava) |
+| AC-47 · rota que sustenta | "não incapacitante"; RM com DWI < 1/3 e FLAIR sem alteração marcada; início "não sei"; reconhecimento há 2 h; juízo "não" | ✅ **reproduzido**: *"indicada"*, portão **liberado** | com déficit **registrado** "não incapacitante" e só rota estendida sustentando, a saída é `nao_sustentada` com *"Sem indicação neste caminho: o déficit foi registrado como não incapacitante"*; "Incapacitante" e "Incerto" ficam como estavam (controles) | ✅ portão não libera |
+| AC-48 | cada um dos quatro itens de "segurança desconhecida" marcado sobre candidato completo | ✅ **reproduzido** nos quatro: nenhum aparecia entre os impedimentos | entram como **informação** (`efeito: "informa"`), sem reter; o portão fica igual ao do candidato sem o item (controle) | ✅ |
+
+**Nenhum limiar novo.** Os arquivos alterados foram `avc/nucleo/derivacoes-d.ts`, `avc/nucleo/veredito-da-trombolise.ts` e as traduções ES.
+
+#### Entrega 2 · D-PEND-18, D-PEND-19, D-PEND-20 · commit `f314f36`
+
+| prova | antes (código de `433bb78`) | depois |
+|---|---|---|
+| `scripts/prova-avc-decisoes-d18-d20.cjs` | 🔴 0 verdes · 17 vermelhos | ✅ 20/20 (instrumento ampliado a todo desenhador de opção) |
+| `e2e/avc-decisoes-d18-d20.spec.ts` · escolha: 2º toque | 🔴 `aria-checked` recebeu "false" | ✅ |
+| e2e · "Sem essa informação": 2º toque | 🔴 `aria-checked` recebeu "false" | ✅ |
+| e2e · temperatura na Estabilização | 🔴 `avc-num-caixa-temperatura` não encontrado | ✅ |
+
+**D-PEND-18 · AC-44:**
+- **Volta do que saiu:** o diff inverso de `b170b44` devolve o campo, o eixo E e os testes que ele tinha mudado.
+- **Fonte:** o campo aponta a **F-38**, e a nota diz as três recomendações e que **não há corte**.
+- **Transcrição:** a §4.4 foi transcrita verbatim do PDF local (sha256 `7380c4f2…794ffe`) em `aha-asa-2026-avc-isquemico.md`, slot **F-38**; o slot está registrado em `fontes.ts`.
+- **Eixo E:** fica *medido*, nunca *ameaça*. A sinopse cita *"temperatures >37.5°C"*, mas isso não é recomendação e não virou corte.
+
+**D-PEND-19 · AC-45:**
+- **Opção de escolha:** o segundo toque é ignorado, e surge "Limpar" quando há resposta.
+- **"Sem essa informação":** o segundo toque é ignorado, e surge "Limpar" (no horário e no estudo de imagem).
+- **Componentes de opção da `ui/index.tsx`** (`Segmentado`, `LinhaDeAchado`, `Empilhado`): o mesmo. ⚠️ A 1ª versão só mudou `campos-clinicos.tsx`; a prova de módulo ficou verde e o e2e mostrou a opção da Superfície B ainda desmarcando. A prova foi ampliada para todo desenhador de opção.
+- **Teste antigo:** `e2e/avc-superficie-a.spec.ts` ("uma resposta pode ser desfeita") passou a desfazer por "Limpar".
+- **Fora do escopo:** a seleção múltipla (marcar/desmarcar item) **não** foi alterada — ver AC-53.
+
+**D-PEND-20 · AC-50:** a chave PT e a tradução ES saíram de `lib/i18n/modules/avc-nihss-elegibilidade.ts`.
+
+**Falha da suíte, corrigida:** ver `9ef7270` na tabela de suíte — aplicar o inverso inteiro de `b170b44` foi amplo demais.
+
+**Falhas de instrumento corrigidas:**
+- **Citação Markdown:** as três conferências de verbatim da prova nova liam a citação sem tirar os marcadores `> `, e davam vermelho sobre texto correto. Corrigido na própria prova.
+- **Resumo da prova de ameaças:** o fim da prova dizia "4 eixos (ABCD)" em texto fixo, enquanto as conferências já exigiam ABCDE. Corrigido o texto.
+
+#### Entrega 3 · pacote AC-43 ampliado (sem código)
+
+`docs/avc/revisao/AC-06-dose-trombolitico.md` §9A:
+- **Texto e tabela:** a recomendação textual (§4.6.2 rec. 1, COR 1, LOE A, **e357**) ao lado da Table 7 (**e358**).
+- **Cálculo:** comparativo para 50–100 kg nas três condutas (exata, faixa, inteiro atual), em mg e em mL a 5 mg/mL.
+- **Regulatório:** campo da situação regulatória no Brasil **em branco**, com a lista do que conferir na ANVISA e na bula.
+
+#### Achados novos
+
+| # | gravidade | achado | evidência |
+|---|---|---|---|
+| AC-52 | média | `nao_elegivel_a_evt` nunca é satisfeito (`return undefined`): as duas rotas de janela estendida que o exigem não alcançam "aplicável" nem com F-31 aberta. É por isso que o cenário de perfusão do AC-47 não reproduz. | `avc/nucleo/derivacoes-f.ts` (`case "nao_elegivel_a_evt"`) |
+| AC-53 | baixa · **confirmar com o autor** | A D-PEND-19 foi aplicada à escolha única e a "Sem essa informação". Na **seleção múltipla**, tocar um item marcado continua desmarcando só aquele item; o "limpar" apagaria a lista inteira. | `components/avc/campos-clinicos.tsx` (`CampoDeMultipla`) |
+| AC-54 | baixa | A AC-47 foi corrigida no sentido pedido (saída ≠ "indicada", com motivo). Isso responde em parte à interpretação 4 da D-139 (opção C do pacote), só para o registro explícito "não incapacitante". | `avc/nucleo/veredito-da-trombolise.ts`; pacote `D-139-4` |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `433bb78` (decisões, só `docs/`) · `62856f4` (Entrega 1) · `f314f36` (Entrega 2) · `9ef7270` (cor órfã) · commit só de `docs/` com os pacotes, a auditoria e o status (D-PEND-17) (pacotes, auditoria e status, só `docs/`) |
+| 1º `test:all` (HEAD `f314f36`) | 🔴 EXIT=1 · parou no 45º script, `test:avc-cor-do-assunto`: o diff inverso de `b170b44` trouxe de volta a entrada de cor do grupo `consultas`, que não existe e que `b170b44` tinha removido com razão → removida em `9ef7270`. Antes da parada, passaram: achados 22/22, D-PEND-18/19/20 20/20, autoria 32/32, persistência 40/40. |
+| 2º `test:all` (HEAD `9ef7270`) | ✅ **EXIT=0** · 133 scripts npm · Playwright **517 passed** (8,0 min), sem failed ou skipped · achados 22/22 · D-PEND-18/19/20 20/20 · autoria e toque duplo 32/32 · persistência 40/40 · mutações 84/84 · 124 travas ligadas · índice 112 declaradas · censo 65 instrumentos |
+| artefatos da suíte | `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json` revertidos (D-PEND-10) |
+| push | `e660433..9ef7270` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `9ef72701b46b50ccccf958c46e82933205eea9c5`; divergência 0/0. O commit só de `docs/` sobe em seguida (D-PEND-17). |

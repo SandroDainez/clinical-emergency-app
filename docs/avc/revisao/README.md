@@ -7,7 +7,7 @@
 |---|---|---|
 | [AC-15-hsa.md](AC-15-hsa.md) | A suspeita clínica de HSA retém a reperfusão? | **Não.** A fonte manda excluir hemorragia **por imagem**; a retenção por suspeita clínica é adaptação local. |
 | [AC-06-dose-trombolitico.md](AC-06-dose-trombolitico.md) | Como arredondar a dose do trombolítico? | **Alteplase:** a fonte não fala de arredondamento. **Tenecteplase:** a fonte **contradiz** o código, que ignora a tabela por faixa de peso da Table 7. |
-| [AC-14-temperatura.md](AC-14-temperatura.md) | A temperatura deve estar no caminho isquêmico? | **Não.** O PDF tem a §4.4 com recomendação COR 1; o app removeu a temperatura dizendo que não havia fonte transcrita. |
+| [AC-14-temperatura.md](AC-14-temperatura.md) | A temperatura deve estar no caminho isquêmico? ✅ **decidido (D-PEND-18)** | **Não.** O PDF tem a §4.4 com recomendação COR 1; o app removeu a temperatura dizendo que não havia fonte transcrita. |
 | [AC-13-estados-da-acao.md](AC-13-estados-da-acao.md) | A ação tem 4 ou 8 estados? | A fonte não define estados; a divergência é entre a spec (8) e a decisão D2 (4). |
 | [AC-03r-puerperio.md](AC-03r-puerperio.md) | Qual é a janela do puerpério? | Não conferível: a linha da Table 8 é imagem no PDF, e o app não define janela. |
 | [D-139-1-juizo-coagulacao.md](D-139-1-juizo-coagulacao.md) | Juízo sobre coagulação não perguntado | Parcial: o ramo "não" é confirmado; o ramo "não perguntado" preenche lacuna. |

@@ -22,7 +22,7 @@ O médico responde à pergunta "Gestação ou puerpério" antes de qualquer regr
 | Opções: "Não gestante e não puérpera" / "Gestante" / "Puérpera" / "Não sei" | `avc/conteudo/paciente.ts:79` e `:104` |
 | "Puérpera" → fora do escopo validado, encaminhar | `avc/nucleo/populacao.ts:48` |
 | "Não sei" → pergunta pendente; retém protocolo e dose | `avc/nucleo/populacao.ts:56` |
-| Texto antigo com "primeiros 10 dias pós-parto": sem consumidor no AVC e sem fonte registrada | `lib/i18n/modules/avc-nihss-elegibilidade.ts:135` |
+| Texto antigo com "primeiros 10 dias pós-parto": sem consumidor no AVC e sem fonte registrada | **removido** pela D-PEND-20 em `f314f36` |
 
 **O app não define janela:** "puérpera" é resposta binária do médico. Não há campo de data do parto nem de dias pós-parto.
 

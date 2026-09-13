@@ -79,6 +79,10 @@ Hora do DOAC "não sei" → julgamento individual (`derivacoes-d.ts`). Microssan
 | **Adaptação local** | Julgamento pendente não pode virar liberação automática. Decisão HR-4 do autor, 2026-09-12, sem versão. Não há campo novo nesta rodada. |
 | **Escolha de interface** | Título "Situação que a fonte manda avaliar individualmente"; a decisão de prosseguir só aparece com o portão liberado. |
 
+## 10A · Atualização da 4ª rodada (2026-09-13)
+
+- **AC-48 · reproduzido e corrigido** em `62856f4`: os quatro itens de "segurança desconhecida" passaram a aparecer como **informação**, sem reter. Reter ou pedir julgamento continua **sem decisão** (opções deste pacote).
+
 ## 11 · Decisão humana
 
 **Decisão humana:** ___ (nome, versão, data)

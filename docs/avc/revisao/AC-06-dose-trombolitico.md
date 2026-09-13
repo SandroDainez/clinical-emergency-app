@@ -91,6 +91,66 @@ Hoje, peso ausente ou origem "Não sei" → **sem dose**, e o app não estima pe
 - **Alteplase:** a fonte **não fala** de arredondamento. O mg inteiro é adaptação local.
 - **Tenecteplase:** a fonte **contradiz** o código. A Table 7 tem a tabela por faixa de peso, e o app calcula mg/kg arredondado, com valor abaixo da faixa em cinco dos seis pesos da tabela acima.
 
+## 9A · Ampliação de 2026-09-13 — pedido do autor (AC-43), sem código
+
+### 9A.1 · Recomendação textual × Table 7
+
+| onde | classe e nível | página | trecho literal (conferido no PDF) |
+|---|---|---|---|
+| **§4.6.2 *Choice of Thrombolytic Agent*, rec. 1** | COR 1 · LOE A | PDF p. 42 = **e357** | *"tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg)"* |
+| **Table 7 *Treatment of AIS in Adults*** | tabela operacional, sem COR/LOE | PDF p. 43 = **e358** | *"Push 0.25 mg/kg (up to maximum 25 mg) based on patient body weight"*, seguida da tabela por faixa de peso (§9) |
+
+- **Transcrição:** a rec. 1 está em `protocols/fontes-verbatim/aha-asa-2026-avc-isquemico.md:1557-1562`; a Table 7, em `:1591-1612`.
+- ⚠️ A recomendação textual dá **mg/kg e máximo**. A Table 7 dá a mesma posologia **e** a tabela de administração por faixa de peso, com volume. **Nenhuma das duas fala em arredondar para mg inteiro.**
+
+### 9A.2 · Cálculo comparativo — tenecteplase, três condutas
+
+- **Exata:** 0,25 mg/kg, com teto de 25 mg, sem arredondamento.
+- **Faixa:** a tabela da Table 7.
+- **Inteiro atual:** o código de hoje, `Math.min(Math.round(peso × 0,25), 25)` em `avc/nucleo/derivacoes-f.ts:254`.
+- **Volume:** a 5 mg/mL, como pedido. As linhas da Table 7 são coerentes com 5 mg/mL (15 mg · 3 mL … 25 mg · 5 mL); a concentração após reconstituição **não foi conferida em bula** (§9A.3).
+- **Método:** conta aritmética feita para este pacote, **não executada na tela**. Só 70 kg (inteiro, 18 mg) tem prova no código.
+
+| peso | exata | faixa (Table 7) | inteiro atual |
+|---|---|---|---|
+| 50 kg | 12,5 mg · 2,5 mL | 15 mg · 3 mL | 13 mg · 2,6 mL |
+| 60 kg | 15 mg · 3 mL | 17,5 mg · 3,5 mL | 15 mg · 3 mL |
+| 70 kg | 17,5 mg · 3,5 mL | 20 mg · 4 mL | 18 mg · 3,6 mL |
+| 80 kg | 20 mg · 4 mL | 22,5 mg · 4,5 mL | 20 mg · 4 mL |
+| 90 kg | 22,5 mg · 4,5 mL | 25 mg · 5 mL | 23 mg · 4,6 mL |
+| 100 kg | 25 mg · 5 mL | 25 mg · 5 mL | 25 mg · 5 mL |
+
+**Leitura sem decisão:**
+- **50, 70 e 90 kg:** as três condutas dão valores diferentes.
+- **60 e 80 kg:** a exata coincide com o inteiro atual; a faixa dá 2,5 mg a mais.
+- **100 kg:** as três dão 25 mg.
+- **Faixa × exata:** para pesos nestes pontos, a faixa nunca fica abaixo da exata.
+- **Inteiro atual × faixa:** o inteiro atual fica abaixo da faixa em 50, 60, 70, 80 e 90 kg.
+
+⚠️ **A nota da Table 7 para < 50 kg** (faixa de 1 kg com peso exato conhecido) não se aplica aos pesos desta tabela.
+
+### 9A.3 · Situação regulatória no Brasil — **a preencher**
+
+**Situação regulatória no Brasil:** ___ (quem conferiu, data, documento)
+
+**O que precisa ser conferido na ANVISA:**
+- **Registro:** registro vigente de tenecteplase (Metalyse®) no Brasil, com número e titular.
+- **Indicação:** a indicação **AVC isquêmico agudo** consta do registro, ou só infarto agudo do miocárdio?
+- **Apresentação:** existe a apresentação de 25 mg registrada e comercializada no Brasil?
+- **Categoria:** categoria de venda e restrição de uso.
+
+**O que precisa ser conferido na bula profissional:**
+- **Versão:** versão e data da bula vigente para a apresentação usada no AVC.
+- **Posologia do AVC:** mg/kg e máximo, e se traz tabela por faixa de peso para AVC (a bula de 40/50 mg traz faixas **para infarto**, que ⛔ não se usam no AVC: `bulas-br-tromboliticos.md:163-164`).
+- **Preparo:** diluente, volume de reconstituição e **concentração final em mg/mL**, que confirma ou não os 5 mg/mL da §9A.2.
+- **Graduação:** graduação da seringa e se a administração é por volume da faixa.
+- **Estabilidade:** estabilidade depois de reconstituído.
+
+**Estado das fontes hoje:**
+- A bula de Metalyse 25 mg para AVC **não foi obtida** (`bulas-br-tromboliticos.md:179`).
+- Nenhum PDF de bula está no repositório nem no aparelho.
+- Acesso automatizado ao portal da ANVISA ⛔ não foi tentado.
+
 ## 10 · Separação das camadas
 
 | camada | conteúdo |
