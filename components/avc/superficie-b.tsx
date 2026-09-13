@@ -19,7 +19,7 @@
  *   ⛔ **concluir.** A leitura é intermediária (**E-46**); quem decide é o médico,
  *      no bloco de decisão, e divergir ⛔ não é erro.
  */
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { GRUPOS_B, TODOS_OS_CAMPOS_B } from "../../avc/conteudo/superficie-b";
@@ -36,6 +36,10 @@ import {
 import { CAMPO_DA_JUSTIFICATIVA, CAMPO_DE_ITEM, ITENS_NIHSS, type RespostaDoItem } from "../../avc/conteudo/nihss";
 import { respostaDoItem } from "../../avc/nucleo/derivacoes-b";
 import CampoDeEscala from "./campo-de-escala";
+import { examesNihss, itensNihssSugeridosComoNaoTestaveis } from "../../avc/nucleo/via-aerea-externa";
+import { MOTIVO_CLINICO, RECOMENDACOES } from "../../avc/conteudo/superficie-f";
+import { CAMPOS_DO_INSUMO } from "../../avc/nucleo/apresentacao-f";
+import type { SuperficieId } from "../../avc/nucleo/tipos";
 import {
   LinhaDeAchado,
   Procedencia,
@@ -86,7 +90,23 @@ type Props = {
     justificativas: Record<string, string>,
     total: number
   ) => void;
+  /** ⚠️ 13ª rodada (A04): leva ao caminho de início desconhecido. */
+  onAbrirSuperficie?: (id: SuperficieId) => void;
+  /** ⚠️ 13ª rodada (A04): leva a cada dado que o caminho de início desconhecido exige. */
+  onIrParaCampo?: (campo: string) => void;
 };
+
+/** ⚠️ 13ª rodada (A09): a marca do exame em relação à via aérea definitiva registrada. */
+const MARCA_DO_EXAME: Readonly<Record<string, string>> = {
+  anterior_a_sedacao: "anterior à sedação — basal preservado",
+  sob_sedacao: "sob sedação — confundidor",
+  sem_referencia: "horário da via aérea definitiva desconhecido — basal não separado",
+};
+
+function horaCurta(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
 
 export default function SuperficieB({
   estado,
@@ -96,7 +116,11 @@ export default function SuperficieB({
   onMedir,
   onDesfazer,
   onEscala,
+  onAbrirSuperficie,
+  onIrParaCampo,
 }: Props) {
+  const examesDoNihss = examesNihss(estado);
+  const sugestoesUN = itensNihssSugeridosComoNaoTestaveis(estado);
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   /**
@@ -329,6 +353,27 @@ export default function SuperficieB({
               );
             })() : null}
 
+            {/**
+              * ── ⚠️⚠️ EXAME ANTERIOR À SEDAÇÃO — 13ª rodada (A09) ─────────────────
+              * ⚠️ Com via aérea definitiva registrada, cada NIHSS recebe a marca: basal
+              * preservado (antes do horário) ⛔ ou confundidor (depois). ⚠️ O item de UN
+              * por intubação é SUGERIDO — ⛔ nunca gravado.
+              */}
+            {camposDoGrupo(grupo).some((c) => c.id === "nihss_calculado") && (examesDoNihss.some((x) => x.marca !== undefined) || sugestoesUN.length > 0) ? (
+              <View style={e.resumo} testID="avc-b-exames-nihss">
+                {examesDoNihss.map((x) => (
+                  <Text key={x.fatoId} style={e.resumoLinha} testID={`avc-b-exame-nihss-${x.fatoId}`}>
+                    NIHSS {x.total} · {horaCurta(x.quando)}
+                    {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_EXAME[x.marca])}`}
+                  </Text>
+                ))}
+                {sugestoesUN.map((id) => (
+                  <Text key={id} style={e.resumoLinha} testID={`avc-b-sugestao-un-${id}`}>
+                    {tr("Item")} {id}: {tr("pode ser não testável por via aérea definitiva — sugestão, não registro")}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
             {fechado || resumindo ? null : (
               <>
                 {camposDoGrupo(grupo)
@@ -368,6 +413,7 @@ export default function SuperficieB({
                         detalheAberto={detalhes.aberto(campo.id)}
                         onAlternarDetalhe={() => detalhes.alternar(campo.id)}
                         onRegistrarEscala={onEscala}
+                        sugestoesNaoTestavel={sugestoesUN}
                         onDesfazer={onDesfazer}
                         /**
                          * ⚠️ O segundo caminho abre o bloco que **já existe** —
@@ -477,8 +523,8 @@ export default function SuperficieB({
                    * apresentação próprias, ⛔ e migrá-los ⛔ não era o pedido.
                    */
                   return (
+                    <Fragment key={campo.id}>
                     <CampoDaSuperficie
-                      key={campo.id}
                       campo={campo}
                       casaAtual="neurologico"
                       bruto={String(valorAtual(estado, campo.id)?.valor ?? "")}
@@ -494,6 +540,63 @@ export default function SuperficieB({
                       empilhado={campo.tipo === "grau"}
                       nomeDaCasa="Paciente"
                     />
+                    {/**
+                      * ── ⚠️⚠️ A04 · INÍCIO DESCONHECIDO — 13ª rodada ─────────────────
+                      * ⚠️ «Última vez bem» desconhecida ⛔ é substituída pela descoberta:
+                      * mostra o caminho de avaliação do início desconhecido.
+                      */}
+                    {campo.id === "hora_ultima_vez_bem" && String(valorAtual(estado, campo.id)?.valor ?? "") === "nao_sei" ? (
+                      <View style={e.resumo} testID="avc-b-caminho-inicio-desconhecido">
+                        <Text style={e.resumoLinha}>
+                          {tr("Última vez bem desconhecida: o início não é substituído pela hora da descoberta.")}
+                        </Text>
+                        {/**
+                          * ⚠️ O caminho vem do conteúdo JÁ transcrito: a recomendação de início
+                          * desconhecido ⛔ e cada dado que ela exige, com o motivo ⛔ e o toque
+                          * que leva ao campo. ⛔ Nenhum texto clínico novo.
+                          */}
+                        {(() => {
+                          const rec = RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido");
+                          if (rec === undefined) return null;
+                          return (
+                            <>
+                              <Text style={e.resumoLinha} testID="avc-b-inicio-desconhecido-populacao">
+                                {tr("Caminho da diretriz")}: {tr(rec.populacao)} · {tr("COR")} {rec.cor} · {tr("LOE")} {rec.loe}
+                              </Text>
+                              {rec.exige.filter((insumo) => insumo !== "janela").map((insumo) => {
+                                const alvo = CAMPOS_DO_INSUMO[insumo][0];
+                                return (
+                                  <Pressable
+                                    key={insumo}
+                                    style={e.caminho}
+                                    accessibilityRole="button"
+                                    testID={`avc-b-inicio-desconhecido-exige-${insumo}`}
+                                    onPress={() => {
+                                      if (alvo === undefined) return;
+                                      if (onIrParaCampo !== undefined) onIrParaCampo(alvo);
+                                      else foco.pedirFoco(alvo);
+                                    }}
+                                  >
+                                    <Text style={e.caminhoTexto}>{tr(MOTIVO_CLINICO[insumo])}</Text>
+                                  </Pressable>
+                                );
+                              })}
+                            </>
+                          );
+                        })()}
+                        {onAbrirSuperficie !== undefined ? (
+                          <Pressable
+                            style={e.caminho}
+                            accessibilityRole="button"
+                            testID="avc-b-abrir-inicio-desconhecido"
+                            onPress={() => onAbrirSuperficie("reperfusao")}
+                          >
+                            <Text style={e.caminhoTexto}>{tr("Ver o caminho de início desconhecido")}</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ) : null}
+                    </Fragment>
                   );
                 })}
               </>
@@ -514,6 +617,17 @@ export default function SuperficieB({
 
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
+    caminho: {
+      alignSelf: "flex-start",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    caminhoTexto: { color: tema.cores.primary, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
     raiz: { gap: ESPACO.md },
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     /**

@@ -1148,15 +1148,13 @@ export function CampoDeHora({
             setEditando(editando ? null : { instante: gravado ?? agora, selecionado: gravado !== undefined })
           }
           info={<BotaoDeInfo id={campo.id} onPress={onAlternarDetalhe} />}
+          /**
+           * ⚠️⚠️ 13ª rodada (autor, sobre a captura): a sub-linha solta ⛔ ainda parecia de
+           * DOIS marcos. ⚠️ Agora o «Sem essa informação» mora DENTRO do cartão do marco:
+           * "não sei quando chegou" ⛔ e "não sei a última vez bem" são fatos diferentes.
+           */
+          rodape={campo.aceitaDesconhecido ? botaoDesconhecido : undefined}
         />
-        {/**
-          * ⚠️⚠️ A SUB-LINHA PERTENCE AO RELÓGIO ACIMA — ⛔ solta, ⛔ ela parecia
-          * ⛔ pertencer ⛔ ao de baixo, ⛔ e num campo de horário ⛔ isso troca o
-          * marco.
-          */}
-        {campo.aceitaDesconhecido ? (
-          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}</View>
-        ) : null}
         {linhaLimpar}
         {seletor}
         {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
@@ -2009,14 +2007,6 @@ export const criarEstilos = (tema: Tema) =>
      * ⛔ enquanto a sub-linha era texto, ⛔ e virou **sobreposição** ⛔ assim que
      * ⛔ ela ganhou corpo de botão (relato do autor, 2026-09-06).
      */
-    subLinhaDoMarco: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: ESPACO.sm,
-      paddingLeft: ESPACO.md,
-      marginTop: ESPACO.xs,
-      marginBottom: ESPACO.sm,
-    },
     relogioLinha: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs, minHeight: TOQUE.minimo },
     relogioRotulo: { color: tema.cores.text, fontSize: TIPOGRAFIA.body.fontSize, flex: 1, minWidth: 120 },
     // ⚠️ `flexShrink` no VALOR e não no rótulo: entre encurtar "não informado"

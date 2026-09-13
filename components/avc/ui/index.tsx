@@ -1529,6 +1529,7 @@ export function LinhaDeRelogio({
   destaque,
   onPress,
   info,
+  rodape,
 }: {
   campo: string;
   icone: NomeDeIcone;
@@ -1548,6 +1549,8 @@ export function LinhaDeRelogio({
    * ⛔ ou o de baixo. ⚠️ Num campo de horário, essa dúvida troca o **marco**.
    */
   info?: ReactNode;
+  /** ⚠️ 13ª rodada: «Sem essa informação» DENTRO do próprio marco — ⛔ solto abaixo de dois. */
+  rodape?: ReactNode;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -1560,7 +1563,8 @@ export function LinhaDeRelogio({
    * suíte usa.
    */
   return (
-    <View style={[e.rel, destaque ? e.relDestaque : null]}>
+    <View style={[e.relMarco, destaque ? e.relDestaque : null]} testID={`avc-marco-${campo}`}>
+    <View style={e.rel}>
       <Pressable
         style={e.relToque}
         accessibilityRole="button"
@@ -1628,6 +1632,8 @@ export function LinhaDeRelogio({
         {/** ⚠️ ⛔ Sem cor ⛔ nenhuma na conta: a seta diz *leva a algum lugar*. */}
         <Text style={e.relSeta}>{SETA}</Text>
       </Pressable>
+    </View>
+      {rodape ? <View style={e.relRodape}>{rodape}</View> : null}
     </View>
   );
 }
@@ -2231,10 +2237,8 @@ const criarEstilos = (tema: Tema) =>
      * toque parecer **alvo** em vez de parágrafo. ⛔ Numa lista de campos
      * tocáveis, o divisor ⛔ não diz onde o dedo encosta.
      */
-    rel: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: ESPACO.sm,
+    relMarco: {
+      gap: ESPACO.xs,
       backgroundColor: tema.cores.surfaceElevated,
       borderRadius: RAIO.botao,
       borderWidth: 1,
@@ -2242,6 +2246,12 @@ const criarEstilos = (tema: Tema) =>
       paddingHorizontal: ESPACO.sm,
       paddingVertical: ESPACO.xs,
     },
+    rel: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+    },
+    relRodape: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.sm },
     /** ⚠️ 44 px é o piso, ⛔ e ⛔ não uma sugestão: o app é usado com luva. */
     /**
      * ⚠️⚠️ QUEM ENCOLHE É O RÓTULO, ⛔ e ⛔ NUNCA O VALOR — corrigido na captura.

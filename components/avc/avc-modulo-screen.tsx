@@ -172,6 +172,15 @@ import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
 import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
 import { BotaoPrecisoDeAjuda, DialogoDeAjuda } from "./preciso-de-ajuda";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
+import { chamarModulo, pilhaDeChamadas, retornarDoModulo, retornoDaChamada, type RetornoDeModulo } from "../../avc/nucleo/chamadas";
+import {
+  intervencaoDeViaAereaPendente,
+  leituraDaViaAereaExterna,
+  registrarViaAereaExterna,
+  suporteAtivo,
+} from "../../avc/nucleo/via-aerea-externa";
+import { moduloChamavel } from "../../avc/conteudo/modulos-chamaveis";
+import { ModuloIndisponivel } from "./modulo-indisponivel";
 import { CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
 import {
   CAMPO_DA_JUSTIFICATIVA,
@@ -279,6 +288,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const [ajudaAberta, setAjudaAberta] = useState(false);
   const [retornoDaAjuda, setRetornoDaAjuda] = useState<{ readonly superficie: SuperficieId; readonly y: number } | undefined>(undefined);
   const [enganoDaPiora, setEnganoDaPiora] = useState(false);
+  /** ⚠️ 13ª rodada (C05): superfície visível durante uma chamada aberta ⛔ e o último retorno. */
+  const [verSuperficieDuranteChamada, setVerSuperficieDuranteChamada] = useState(false);
+  const [ultimoRetorno, setUltimoRetorno] = useState<RetornoDeModulo | undefined>(undefined);
 
   /**
    * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
@@ -507,6 +519,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const trilhaDeSuperficies = useRef<SuperficieId[]>([]);
 
   function abrir(id: SuperficieId) {
+    /** ⚠️ 13ª rodada: navegar com intervenção aberta ⛔ a encerra — a pilha fica, com o aviso. */
+    if (pilhaDeChamadas(estado).length > 0) setVerSuperficieDuranteChamada(true);
     // ⚠️ E-20: mudar de superfície ⛔ NÃO produz ação clínica nem registra nada.
     /**
      * ⚠️⚠️ O EMPILHAR ACONTECE **FORA** DO `setEstado` — ⛔ e ⛔ isso ⛔ não é
@@ -670,6 +684,48 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     rolagemARestaurar.current = r.y;
     setRetornoDaAjuda(undefined);
     abrir(r.superficie);
+  }
+
+  /**
+   * ── ⚠️⚠️ CONTRATO DE NAVEGAÇÃO (C05) — 13ª rodada ───────────────────────────
+   * ⚠️ Chamar grava a chamada com `encounterId` (o id do caso) ⛔ e a origem (superfície,
+   * campo, rolagem). ⚠️ Voltar ⛔ cancelar retornam só o topo da pilha; ao esvaziar a
+   * pilha, a tela volta à superfície ⛔ e à rolagem de origem ⛔ e mostra o retorno.
+   */
+  function restaurarRolagem(y: number) {
+    [0, 60, 250, 500].forEach((ms) => setTimeout(() => rolagem.current?.scrollTo({ y, animated: false }), ms));
+  }
+
+  function chamarModuloDaTela(destino: string, campo?: string) {
+    const aberta = pilhaDeChamadas(estado);
+    const topo = aberta[aberta.length - 1];
+    const origem = topo === undefined
+      ? { modulo: "avc", superficie: estado.superficieVista, campo, rolagem: rolagemAtual.current }
+      : { modulo: topo.destino, rolagem: 0 };
+    setUltimoRetorno(undefined);
+    setVerSuperficieDuranteChamada(false);
+    setEstado((e) => chamarModulo(e, { encounterId: atendimento.casoId ?? "caso-sem-id", destino, origem }, relogio));
+    restaurarRolagem(0);
+  }
+
+  function retornarDaTela(cancelado: boolean) {
+    const aberta = pilhaDeChamadas(estado);
+    const topo = aberta[aberta.length - 1];
+    if (topo === undefined) return;
+    const proximo = retornarDoModulo(estado, topo.chamadaId, relogio, cancelado);
+    setEstado(proximo);
+    if (aberta.length === 1) {
+      setUltimoRetorno(retornoDaChamada(proximo, topo.chamadaId));
+      const sup = topo.origem.superficie as SuperficieId | undefined;
+      if (sup !== undefined && sup !== estado.superficieVista) {
+        rolagemARestaurar.current = topo.origem.rolagem;
+        abrir(sup);
+      } else {
+        restaurarRolagem(topo.origem.rolagem);
+      }
+    } else {
+      restaurarRolagem(0);
+    }
   }
 
   function registrarPioraDaTela(texto: string) {
@@ -1040,6 +1096,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * quando o estado muda, ⛔ e ⛔ é isso que as mantém verdadeiras.
    */
   const ameacas = useMemo(() => ameacasImediatas(estado), [estado]);
+  /** ⚠️ 13ª rodada (C05, A09): pilha de chamadas, suporte ativo ⛔ intervenção de via aérea. */
+  const pilha = useMemo(() => pilhaDeChamadas(estado), [estado]);
+  const topoDaPilha = pilha[pilha.length - 1];
+  const mostrarPainel = pilha.length > 0 && !verSuperficieDuranteChamada;
+  const intervencaoVA = useMemo(() => intervencaoDeViaAereaPendente(estado), [estado]);
+  const textoDoSuporte = suporteAtivo(estado)
+    .map((p) => (p.hora !== undefined ? `${tr(p.rotulo)} ${horaDoInstante(p.hora)}` : tr(p.rotulo)))
+    .join(" · ");
   /** ⚠️ 11ª rodada: só enquanto a reavaliação da piora está pendente. */
   const anteriorDaPiora = useMemo(
     () => (reavaliacaoPendente(estado) === undefined ? undefined : avaliacaoAntesDaPiora(estado)),
@@ -1187,6 +1251,12 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               <BotaoPrecisoDeAjuda onPress={() => setAjudaAberta(true)} />
               <BotaoPacientePiorou onPress={() => setPioraAberta(true)} />
             </View>
+          ) : null}
+          {/** ⚠️ 13ª rodada (A09): suporte ativo registrado, no topo fixo de toda superfície. */}
+          {textoDoSuporte !== "" ? (
+            <Text style={s.suporteAtivo} testID="avc-suporte-ativo">
+              {tr("Suporte ativo")}: {textoDoSuporte}
+            </Text>
           ) : null}
         </>
       }
@@ -1388,6 +1458,74 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * calculada.
         */}
       <View ref={noDoConteudo} style={s.medidor} />
+      {/**
+        * ── ⚠️⚠️ MÓDULO CHAMADO (C05) — 13ª rodada ─────────────────────────────
+        * ⚠️ Com chamada aberta, o painel do destino ocupa o conteúdo; a superfície de
+        * origem fica montada (⛔ perde estado) e escondida. ⚠️ Navegar para uma
+        * superfície (piora, abas, ajuda) mostra a superfície com o aviso de intervenção em
+        * andamento — ⛔ a pilha ⛔ se perde.
+        */}
+      {mostrarPainel && topoDaPilha !== undefined ? (
+        <ModuloIndisponivel
+          key={topoDaPilha.chamadaId}
+          chamada={topoDaPilha}
+          pilha={pilha}
+          estado={estado}
+          obterAgora={() => relogio.agora()}
+          onRegistrar={(r) => setEstado((e) => registrarViaAereaExterna(e, r, relogio, topoDaPilha.chamadaId))}
+          onChamar={(destino) => chamarModuloDaTela(destino)}
+          onVoltar={() => retornarDaTela(false)}
+          onCancelar={() => retornarDaTela(true)}
+        />
+      ) : null}
+      <View style={mostrarPainel ? s.oculto : s.visivel}>
+      {pilha.length > 0 && verSuperficieDuranteChamada ? (
+        <View style={s.avisoModulo} testID="avc-chamada-em-andamento">
+          <Text style={s.avisoModuloTexto}>
+            {tr("Intervenção em andamento")}: {pilha.map((c) => tr(moduloChamavel(c.destino)?.nome ?? c.destino)).join(" › ")}
+          </Text>
+          <Pressable
+            onPress={() => {
+              setVerSuperficieDuranteChamada(false);
+              restaurarRolagem(0);
+            }}
+            accessibilityRole="button"
+            testID="avc-chamada-voltar"
+            style={s.retornoLinha}
+          >
+            <Text style={s.retornoTexto}>‹ {tr("Voltar ao registro da intervenção")}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {ultimoRetorno !== undefined && pilha.length === 0 ? (
+        <View style={s.avisoModulo} testID="avc-retorno-modulo">
+          <Text style={s.avisoModuloTexto}>
+            {ultimoRetorno.cancelado
+              ? `${tr("Chamada cancelada")}: ${tr(moduloChamavel(ultimoRetorno.destino)?.nome ?? ultimoRetorno.destino)}. ${tr("O que foi registrado continua na trilha.")}`
+              : `${tr("Retorno de")} ${tr(moduloChamavel(ultimoRetorno.destino)?.nome ?? ultimoRetorno.destino)}: ${ultimoRetorno.eventos.length} ${tr("registro(s) de conduta externa")}`}
+          </Text>
+          {textoDoSuporte !== "" ? (
+            <Text style={s.avisoModuloDetalhe}>
+              {tr("Suporte ativo")}: {textoDoSuporte}
+            </Text>
+          ) : null}
+          <Text style={s.avisoModuloDetalhe}>{tr("Resposta não medida no módulo: reavaliar no AVC.")}</Text>
+          {leituraDaViaAereaExterna(estado).pendencias.filter((p) => ultimoRetorno.pendencias.includes(p.id)).length > 0 ? (
+            <Text style={s.avisoModuloDetalhe}>
+              {tr("Pendências")}:{" "}
+              {leituraDaViaAereaExterna(estado).pendencias.filter((p) => ultimoRetorno.pendencias.includes(p.id)).map((p) => tr(p.rotulo)).join(" · ")}
+            </Text>
+          ) : null}
+          <Pressable
+            onPress={() => setUltimoRetorno(undefined)}
+            accessibilityRole="button"
+            testID="avc-retorno-fechar"
+            style={s.reavaliarEngano}
+          >
+            <Text style={s.reavaliarEnganoTexto}>{tr("Fechar")}</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {/**
         * ── ⚠️⚠️ PRIORIDADE · «REAVALIAR AGORA» — 2026-09-13 (A11) ───────────────
         * ⚠️ Depois de «Paciente piorou», a tarefa abre o topo de TODA superfície —
@@ -1743,6 +1881,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   </>
                 );
               })()}
+              {a.id === "via_aerea" && intervencaoVA ? (
+                <Text style={s.ameacaPendente} testID="avc-ameaca-intervencao-via_aerea">
+                  {tr("Intervenção registrada · reavaliação pendente")}
+                </Text>
+              ) : null}
               {estado.eixosConcluidos.includes(a.id) ? (
                 <Text style={s.ameacaProgresso} testID={`avc-ameaca-progresso-${a.id}`}>
                   {tr("Avaliação concluída")}
@@ -2294,6 +2437,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             eixosAbertos={eixosAbertos}
             onAlternarEixo={alternarEixo}
             onConcluirEixo={concluirOuReabrirEixo}
+            onChamarModulo={chamarModuloDaTela}
             pontosDoGlasgow={Object.fromEntries(
               ["e", "v", "m"]
                 .map((id) => [id, valorAtualDoEstado(estado, CAMPO_DE_ITEM_GLASGOW(id))?.valor])
@@ -2331,6 +2475,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onMedir={medir}
             onDesfazer={desfazer}
             onEscala={registrarEscala}
+            onAbrirSuperficie={abrir}
+            onIrParaCampo={irParaCampo}
           />
         ) : atual.id === "imagem" ? (
           /**
@@ -2647,6 +2793,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * caminho**. ⚠️ ⛔ E ⛔ o texto ⛔ é ⛔ o **⛔ mesmo** do aceite.
         */}
       <AcessoAoUsoClinico tr={tr} testID="avc-uso-clinico" />
+      </View>
     </ScrollView>
     </ProvedorDeFoco>
     </ProvedorDeAutoria>
@@ -2870,6 +3017,20 @@ const criarEstilos = (tema: Tema) =>
     acoesDaImagem: { gap: ESPACO.sm },
     /** ⚠️ A forma compacta da prioridade — ⛔ uma linha, ⛔ e tocável inteira. */
     acoesGlobais: { flexDirection: "row", gap: ESPACO.sm },
+    suporteAtivo: { ...PAPEL.legenda, color: tema.cores.text, fontWeight: "700" },
+    oculto: { display: "none" },
+    visivel: {},
+    avisoModulo: {
+      gap: ESPACO.xs,
+      padding: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+      backgroundColor: tema.cores.surface,
+      marginBottom: ESPACO.sm,
+    },
+    avisoModuloTexto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    avisoModuloDetalhe: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     retornoLinha: {
       minHeight: TOQUE.minimo,
       justifyContent: "center",

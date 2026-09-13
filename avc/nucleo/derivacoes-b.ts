@@ -17,6 +17,7 @@
 
 import { criseNoInicio } from "./derivacoes";
 import { valorAtual, type EstadoAvc } from "./estado";
+import { horarioDaIntubacao } from "./via-aerea-externa";
 import {
   numero,
   respondeuDesconhecido,
@@ -194,8 +195,9 @@ export function totalDaEscala(estado: EstadoAvc): number | undefined {
  * critério de trombectomia é decisão pendente do autor.
  */
 export function leituraDoNihssCalculado(
-  estado: EstadoAvc
+  estadoCompleto: EstadoAvc
 ): { soma: number; naoTestaveis: readonly string[] } | undefined {
+  const estado = estadoDoExameBasal(estadoCompleto);
   const s = somaDaTrilha(estado);
   if (s.completa) return { soma: s.soma, naoTestaveis: s.naoTestaveis };
   if (s.naoTestaveis.length > 0) return undefined;
@@ -215,7 +217,23 @@ export function leituraDoNihssCalculado(
  * ⛔ não permite concluir hemianopsia, afasia, negligência nem paresia. Se
  * derivasse, o app estaria inventando um exame que ninguém fez aqui.
  */
-export function nihssCalculado(estado: EstadoAvc): number | undefined {
+/**
+ * ⚠️⚠️ EXAME BASAL ANTERIOR À SEDAÇÃO — autor, 2026-09-13 (13ª rodada, A09): com via aérea
+ * definitiva registrada com horário, ⛔ e havendo NIHSS ANTERIOR a ele, o exame feito
+ * depois (sob sedação — confundidor) ⛔ substitui o basal no valor que as regras leem. ⛔
+ * Sem basal anterior, nada muda: o único exame continua valendo, marcado na tela.
+ */
+function estadoDoExameBasal(estado: EstadoAvc): EstadoAvc {
+  const corte = horarioDaIntubacao(estado);
+  if (corte === undefined) return estado;
+  const quando = (f: { horaClinica?: number; horaRegistro: number }) => f.horaClinica ?? f.horaRegistro;
+  const doExame = (campo: string) => campo.startsWith("nihss_") && !campo.startsWith("nihss_informado");
+  if (!estado.fatos.some((f) => f.campo === "nihss_calculado" && quando(f) < corte)) return estado;
+  return { ...estado, fatos: estado.fatos.filter((f) => !(doExame(f.campo) && quando(f) >= corte)) };
+}
+
+export function nihssCalculado(estadoCompleto: EstadoAvc): number | undefined {
+  const estado = estadoDoExameBasal(estadoCompleto);
   /**
    * ⚠️⚠️ OS ITENS MANDAM, e o total gravado é o registro do gesto.
    *
@@ -425,7 +443,7 @@ export function nihssRegistrado(estado: EstadoAvc): Leitura {
    * ⚠️⚠️ AC-01: escala feita com item NÃO TESTÁVEL. ⛔ Não é "ainda não
    * registrado" — o exame foi feito —, ⛔ e ⛔ não é total completo.
    */
-  if (calculado === undefined && itensNaoTestaveis(estado).length > 0) {
+  if (calculado === undefined && itensNaoTestaveis(estadoDoExameBasal(estado)).length > 0) {
     return {
       conclusao: "sim",
       tom: "informativo",

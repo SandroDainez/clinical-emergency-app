@@ -222,5 +222,6 @@ export function useAtendimentoPersistido(relogio: Relogio) {
     setRecuperadoDe(undefined);
   }, [ctx, relogio]);
 
-  return { fase, estado, setEstado, recuperadoDe, falhaAoGravar, persistente, autoriaPorFato, encerrarEAbrirNovo };
+  /** ⚠️ 13ª rodada: o id do caso é o `encounterId` do contrato de navegação entre módulos. */
+  return { fase, estado, setEstado, recuperadoDe, falhaAoGravar, persistente, autoriaPorFato, encerrarEAbrirNovo, casoId: caso.current };
 }

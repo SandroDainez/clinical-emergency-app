@@ -90,6 +90,8 @@ const POR_SUPERFICIE = {
    * ⚠️ 2026-09-13 (10ª rodada): transferência ⛔ e teleconsulta entram em G como
    * **registro** (T07, A12) — ⛔ sem critério clínico, ⛔ e ⛔ sem alcançar a F.
    */
+  /** ⚠️ 2026-09-13 (13ª rodada, A09): via aérea como conduta externa, desenhada no painel do módulo indisponível. */
+  A_EXTERNA: mod("via-aerea-externa").CAMPOS_DA_VIA_AEREA_EXTERNA,
   G: [...SG.FATOS_OPERACIONAIS, ...SG.CAMPOS_ANTITROMBOTICOS, ...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA],
 };
 const TODOS = Object.entries(POR_SUPERFICIE)
@@ -183,6 +185,8 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
     CAMPOS_ANTITROMBOTICOS: SG.CAMPOS_ANTITROMBOTICOS.map((c) => c.id),
     CAMPO_AGENTE: [SF.CAMPO_AGENTE.id],
     /** ⚠️ 2026-09-13 — transferência ⛔ e teleconsulta, percorridas em G (registro, T07). */
+    /** ⚠️ 13ª rodada — percorridos no painel do módulo indisponível. */
+    CAMPOS_DA_VIA_AEREA_EXTERNA: mod("via-aerea-externa").CAMPOS_DA_VIA_AEREA_EXTERNA.map((c) => c.id),
     GRUPOS_DE_REGISTRO_DE_G: [...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA].map((c) => c.id),
   };
   /**

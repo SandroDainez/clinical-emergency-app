@@ -259,11 +259,19 @@ const acha = (id) => campos.find((c) => c.id === id);
     && !marcos.some((x) => /stroke|generic|avc_time/i.test(String(x.relogio))),
     `⛔ ${marcos.map((x) => x.relogio).join(" · ")} — dois campos no mesmo relógio fundem duas contagens que a fonte mantém separadas`
   );
+  /**
+   * ⚠️⚠️ ATUALIZADA CONSCIENTEMENTE — 2026-09-13 (13ª rodada). ⛔ Era "a chegada ⛔ NÃO
+   * aceita desconhecido", contra marcar por simetria. ⚠️ O autor decidiu, sobre a captura,
+   * que *"não sei quando chegou"* ⛔ e *"não sei a última vez bem"* são fatos DIFERENTES,
+   * cada um com o seu «Sem essa informação» (`docs/decisoes.md`). ⚠️ O que continua
+   * protegido: cada marco com resposta própria — ⛔ desconhecido em um ⛔ vale para o outro
+   * (e2e `avc-rodada13.spec.ts`).
+   */
   conf(
-    "⚠️ o último-visto-bem aceita DESCONHECIDO, ⛔ e a chegada ⛔ NÃO (**E-02**)",
+    "⚠️ o último-visto-bem ⛔ e a chegada aceitam DESCONHECIDO, cada um o seu (**E-02**, 13ª rodada)",
     acha("hora_ultima_vez_bem").aceitaDesconhecido === true
-    && !acha("hora_chegada").aceitaDesconhecido,
-    "⛔ marcar por simetria inventaria uma resposta que ⛔ não existe clinicamente"
+    && acha("hora_chegada").aceitaDesconhecido === true,
+    "⛔ «não sei quando chegou» é resposta própria (decisão do autor, 13ª rodada)"
   );
 
   /**

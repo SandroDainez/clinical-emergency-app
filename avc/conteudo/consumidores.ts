@@ -131,6 +131,16 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   transf_recusa_motivo: ["transferencia.ts"],
   transf_previsao: ["transferencia.ts"],
   tele_marco: ["transferencia.ts"],
+  /**
+   * ⚠️ A09 (13ª rodada): via aérea como conduta externa. ⛔ Lida só pela leitura do
+   * registro; ⚠️ o horário corta o exame basal do NIHSS (via `horarioDaIntubacao`).
+   */
+  va_definitiva: ["via-aerea-externa.ts"],
+  va_tipo: ["via-aerea-externa.ts"],
+  va_hora: ["via-aerea-externa.ts"],
+  va_quem: ["via-aerea-externa.ts"],
+  va_sedacao: ["via-aerea-externa.ts"],
+  va_ventilacao: ["via-aerea-externa.ts"],
   tele_parecer: ["transferencia.ts"],
   tele_parecer_autor: ["transferencia.ts"],
 
@@ -205,7 +215,8 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * *"clinical deficits should be assessed **after correction of glucose**"*.
    */
   deficit_focal: ["derivacoes-b.ts", "derivacoes-e.ts", "derivacoes.ts", "portao-ivt.ts"],
-  nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts"],
+  /** ⚠️ 13ª rodada (A09): `via-aerea-externa.ts` marca cada exame como anterior à sedação ⛔ ou sob sedação. */
+  nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts", "via-aerea-externa.ts"],
   /** ⚠️ D-PEND-14: o escore de outro serviço ⛔ não é lido por regra — só pela leitura de B. */
   nihss_informado: ["derivacoes-b.ts"],
   nihss_informado_nao_testaveis: ["derivacoes-b.ts"],

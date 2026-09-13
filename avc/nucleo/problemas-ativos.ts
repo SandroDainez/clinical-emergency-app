@@ -37,6 +37,7 @@ import { pendenciasDoLaboratorio } from "./derivacoes-lab";
 import { pendenciasDerivadas } from "./derivacoes";
 import { reavaliacaoPendente } from "./deterioracao";
 import { pendenciasDoDestino } from "./transferencia";
+import { leituraDaViaAereaExterna } from "./via-aerea-externa";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
 
@@ -137,6 +138,8 @@ function familiasDePendencia(
     { origem: "derivada", lista: pendenciasDoLaboratorio(estado) },
     /** ⚠️ T07/A12 — registro da transferência (2026-09-13). ⛔ Sem critério clínico. */
     { origem: "derivada", lista: pendenciasDoDestino(estado) },
+    /** ⚠️ A09 (13ª rodada): «não sei» na conduta externa de via aérea ⛔ e reavaliação pendente. */
+    { origem: "derivada", lista: leituraDaViaAereaExterna(estado).pendencias },
     /**
      * ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
      * campo ⛔ ainda ⛔ não existe é muro, ⛔ e ⛔ não tarefa (**E-26**, **I-7**).

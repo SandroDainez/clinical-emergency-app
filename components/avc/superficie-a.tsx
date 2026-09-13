@@ -118,6 +118,8 @@ type Props = {
    * ⛔ ele ⛔ não afirma normalidade, ⛔ e ⛔ mexe ⛔ só em `eixosConcluidos`.
    */
   onConcluirEixo: (eixo: string) => void;
+  /** ⚠️ 13ª rodada (C05): chama um módulo (hoje indisponível) a partir do campo de origem. */
+  onChamarModulo?: (destino: string, campo: string) => void;
   /**
    * ── ⚠️⚠️⚠️ A CALCULADORA DE GLASGOW — 2026-09-08 ────────────────────────
    *
@@ -197,6 +199,7 @@ export default function SuperficieA({
   eixosAbertos,
   onAlternarEixo,
   onConcluirEixo,
+  onChamarModulo,
   pontosDoGlasgow,
   onRegistrarGlasgow,
   onMedirGlasgow,
@@ -1020,6 +1023,16 @@ export default function SuperficieA({
               * eixo concluído ⛔ sem dado continua dizendo *"Sem dados clínicos
               * registrados"*.
               */}
+            {eixo === "via_aerea" && aberto && onChamarModulo !== undefined ? (
+              <Pressable
+                accessibilityRole="button"
+                testID="avc-chamar-modulo-via_aerea"
+                onPress={() => onChamarModulo("via_aerea", "consciencia_rebaixada")}
+                style={({ pressed }) => [e.concluirNoEixo, pressed ? e.pressionado : null]}
+              >
+                <Text style={e.concluirNoEixoTexto}>{tr("Via aérea: registrar conduta externa")}</Text>
+              </Pressable>
+            ) : null}
             {eixo === undefined || !aberto ? null : (
               <Pressable
                 accessibilityRole="button"

@@ -161,6 +161,8 @@ export const CRONOLOGIA_B: readonly CampoB[] = [
     rotulo: "Chegada ao pronto-socorro",
     tipo: "hora",
     relogio: "t0_operacional",
+    /** ⚠️ 13ª rodada (autor): «não sei quando chegou» é fato próprio, ⛔ diferente de «não sei a última vez bem». */
+    aceitaDesconhecido: true,
     fonte: "F-11",
     bloqueiaTerapia: false,
     nota: "Referência de porta. Não substitui nenhum relógio clínico.",

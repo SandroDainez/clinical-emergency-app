@@ -85,6 +85,8 @@ type Props = {
    * veio o 14.
    */
   aoInformarTotal?: () => void;
+  /** ⚠️ 13ª rodada (A09): itens que a via aérea definitiva torna candidatos a UN — SUGERIDOS, ⛔ nunca gravados. */
+  sugestoesNaoTestavel?: readonly string[];
 };
 
 export default function CampoDeEscala({
@@ -97,6 +99,7 @@ export default function CampoDeEscala({
   onRegistrarEscala,
   onDesfazer,
   aoInformarTotal,
+  sugestoesNaoTestavel = [],
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -317,6 +320,11 @@ export default function CampoDeEscala({
               {item.help && regrasAbertas.includes(item.id) ? (
                 <Text style={e.itemAjuda} testID={`avc-regra-${item.id}`}>
                   {tr(item.help)}
+                </Text>
+              ) : null}
+              {sugestoesNaoTestavel.includes(item.id) ? (
+                <Text style={e.itemComoAvaliar} testID={`avc-escala-sugestao-un-${item.id}`}>
+                  {tr("Sugestão: há via aérea definitiva registrada; este item pode ser não testável. Marque só se aplicável, com justificativa.")}
                 </Text>
               ) : null}
               <View style={e.opcoes}>
