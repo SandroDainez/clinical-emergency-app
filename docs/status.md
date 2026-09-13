@@ -1,12 +1,12 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `e8fed38`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `70149fc`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
-## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 10ª rodada)
+## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 11ª rodada)
 
 Fonte de cada linha:
-- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (§1, §7.4–§7.15).
+- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (§1, §7.4–§7.16).
 - **Decisões:** `docs/decisoes.md`.
 - **Casos A:** `docs/spec-avc.md` §15 × testes.
 
@@ -33,9 +33,7 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 16a | decisão | média · fonte | **AC-60**: fontes citadas nas D-PEND-23 (bula) e D-PEND-24 (AHA 2019) não transcritas no repositório. As regras rodam como adaptação ou "a confirmar". | aberto | autor: colocar os trechos |
 | 17 | achado | alta | **AC-08**: dose do trombolítico recalculada do peso atual; não existe evento de dose histórica. | aberto | código |
 | 18 | achado | alta | **AC-09**: decisões não são registradas. | parcial: só a conclusão de população é versionada (`prova-avc-persistencia` A14) | código |
-| 19 | achado | alta | **AC-10**: "Preciso de ajuda" não existe. "Paciente piorou" global foi entregue em `e8fed38` (§7.15). | parcial | código |
-| 19a | pergunta | média | **AC-67**: «Paciente piorou» registrado por engano não tem desfazer; a tarefa só sai reconcluindo os eixos. | aberto | autor |
-| 19b | decisão | baixa · interpretação | **"Prioridade"** do ajuste de rota foi lida como linha no topo de toda superfície + primeiro lugar da lista de problemas (§7.15). | confirmar | autor |
+| 19 | pergunta | baixa · interpretação | **AC-67**: "reavaliado depois" da piora foi lido como fato da Estabilização registrado depois do evento ou eixo concluído de novo (§7.16). | confirmar | autor |
 | 20 | fonte | alta · clínico | **Transferência · critério e destino**: o ciclo e o telestroke existem como registro (`e8fed38`); critério de transferência e centro de destino seguem sem fonte (Portaria 665/2012, rede local). | aberto | autor: fonte |
 | 21 | achado | alta | **AC-12**: angioedema não existe; F-35b (contraste) transcrito, mas não chega a nenhuma superfície. | aberto | código + fonte |
 | 22 | achado | alta | **AC-39**: nativo sem persistência (`armazenamento.native.ts` em memória). | documentado (`docs/avc/persistencia.md` §4), não implementado; os demais itens da §6 de `persistencia.md` também antes de dado real | código, antes de dado real |
@@ -58,13 +56,15 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 38 | achado | baixa | **AC-35**: helpers sem uso no e2e da fase 9. | aberto | código |
 | 39 | achado | baixa | **AC-41**: o e2e "corrigir NÃO cria terceira medida" da A não corrige. | aberto (instrumento) | código |
 | 40 | achado | baixa | **AC-42, AC-51**: `dblclick` não reproduz A17 (a prova usa dois cliques); o toque duplo não tem janela de tempo. | limites declarados | — |
-| 40a | achado | baixa | **AC-68**: campo de texto grava um fato por alteração (herdado de `identificacao`); motivo da recusa e parecer enchem a trilha. **AC-69**: marco da transferência usa a hora do registro, sem retroagir; horário futuro na previsão não medido. **AC-70**: a trava de texto livre (`prova-avc-paciente`) cobre só P/A/B/C. | declarados | código |
+| 40a | achado | média | **AC-71**: "Previsão do transporte (estimativa)" usa o seletor de hora com teto *agora*; estimativa futura não pode ser registrada. | aberto | código |
+| 40b | pergunta | baixa | **AC-72**: a teleconsulta continua com seletor de estado; o ajuste "eventos, não seletor" foi pedido só para a transferência. | aberto | autor |
+| 40c | achado | baixa | **AC-73**: a correção por engano da piora só aparece com a tarefa pendente. **AC-70**: a trava de texto livre (`prova-avc-paciente`) cobre só P/A/B/C. | declarados | código |
 | 41 | caso A | — | **A09**: intubação e módulos associados. | **sem teste** (depende de AC-16) | código |
 | 42 | caso A | — | **A16**: concentração alterada. | **sem teste** (depende de AC-21) | código |
 | 43 | caso A | — | **A05** NIHSS baixo incapacitante · **A08** IVT impedida com EVT recomendada (ganhou o cenário "transferência em curso") · **A10** reavaliação após glicemia · **A14** decisão histórica. | **parciais**: há teste, mas não mede o caso inteiro (§3 da auditoria) | código |
 
 **Fechados, fora da fila:**
-- **Achados:** AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
+- **Achados:** AC-10, AC-67, AC-68, AC-69 (`70149fc`), AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
 - **Casos A01–A18 com teste que mede o caso:** A11 e A12 (`e2e/avc-paciente-piorou.spec.ts`, `e2e/avc-transferencia.spec.ts`, `prova-avc-piora-e-transferencia`), A01, A02, A03, A04, A06 (`e2e/avc-nihss-nao-testavel.spec.ts`, `prova-avc-nihss-criterios`), A07, A13 (web: `e2e/avc-persistencia.spec.ts`), A15, A17 (`e2e/avc-persistencia.spec.ts`, `prova-avc-autoria-e-toque-duplo`) e A18 na forma da D-PEND-03 (detectar e bloquear).
 - ⚠️ **Método:** a cobertura de A01–A12 e A15 é a leitura de asserções da §3 (1ª rodada). Nesta rodada só A06, A13, A14, A17 e A18 foram reconferidos contra os testes existentes.
 
@@ -81,7 +81,20 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 
 ## Ponto exato de retomada
 
-**Rodada mais recente (2026-09-13, 10ª) · D-PEND-27, «Paciente piorou» global e transferência/telestroke:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.15.
+**Rodada mais recente (2026-09-13, 11ª) · «Preciso de ajuda» (fecha AC-10), AC-67, AC-68, AC-69, eixos reabertos e porta do e2e:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.16.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **«Preciso de ajuda» global (fecha AC-10)** | topo fixo ao lado de «Paciente piorou»; cinco opções do PDF; painel com o que existe (ou "este módulo não tem conteúdo"), caminhos com retorno à origem e rolagem, conduta externa na linha do tempo; «paciente piorou» abre o mecanismo existente | ✅ `70149fc` · e2e 6 vermelhos → verdes |
+| **AC-67 · piora por engano** | confirmação; correção "registrado por engano"; sem reavaliação, tarefa cai e eixos concluídos voltam; com reavaliação começada, fica | ✅ `70149fc` · interpretação a confirmar |
+| **Eixos reabertos** | "Antes da piora: … · HH:MM" e «Reavaliação pendente»; eixo sem dado diz "sem dados registrados" | ✅ `70149fc` |
+| **AC-69 · marcos** | «Registrar marco» + lista com "aconteceu às · registrado às"; correção de horário e engano por marco; ordem pelo observado; chegada sem saída avisada | ✅ `70149fc` |
+| **AC-68 · texto livre** | grava ao sair do campo ou em «Registrar» | ✅ `70149fc` |
+| **Porta 4173** | `test:porta-e2e` recusa porta ocupada antes de `test:e2e` | ✅ `70149fc` · prova 0·2 → 5/5 |
+
+`test:all` no HEAD `70149fc`: ✅ **EXIT=0** · 143 `npm run` + 1 `node` · Playwright **574 passed** (8,8 min), sem failed ou skipped · rodada 11 46/46 · porta do e2e 5/5 · críticos 183/183 · 135 travas ligadas · índice 123 declaradas · push `6aae9b7..70149fc`; `git ls-remote` = `70149fcf4958`; divergência 0/0.
+
+**Rodada anterior (10ª), concluída · D-PEND-27, «Paciente piorou» global e transferência/telestroke:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.15.
 
 | entrega | escopo | estado |
 |---|---|---|
