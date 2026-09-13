@@ -22,6 +22,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { lerFonte } = require("./lib/fonte.cjs");
 const { execFileSync } = require("node:child_process");
 
 const appDir = path.resolve(__dirname, "..");
@@ -215,7 +216,7 @@ const pronto = T && LOG && MEM && TR;
     conf("linha do tempo · correção com motivo traz o motivo",
       linhaCom !== undefined && linhaCom.motivoDaCorrecao === "Erro de digitação",
       `⛔ ${JSON.stringify(linhaCom)}`);
-    const telaA = fs.readFileSync(path.join(appDir, "components", "avc", "superficie-a.tsx"), "utf8");
+    const telaA = lerFonte(path.join(appDir, "components", "avc", "superficie-a.tsx"));
     conf("linha do tempo · a tela escreve «sem motivo informado», ⛔ e ⛔ não silêncio",
       /sem motivo informado/.test(telaA) && /motivoDaCorrecao/.test(telaA),
       "⛔ components/avc/superficie-a.tsx não mostra o motivo da correção");
@@ -238,12 +239,12 @@ const pronto = T && LOG && MEM && TR;
     conf("leitura · correção com motivo traz o motivo ⛔ e o valor que ela substituiu",
       cCom !== undefined && cCom.valorOriginal === 1.5 && cCom.motivo === "Laudo reemitido", `⛔ ${JSON.stringify(cCom)}`);
     for (const arq of ["campos-clinicos.tsx", path.join("ui", "index.tsx")]) {
-      const t = fs.readFileSync(path.join(appDir, "components", "avc", arq), "utf8");
+      const t = lerFonte(path.join(appDir, "components", "avc", arq));
       conf(`leitura · ${arq} escreve «sem motivo informado» na linha de correção`,
         /sem motivo informado/.test(t) && /avc-correcao-/.test(t), `⛔ ${arq}`);
     }
     for (const arq of ["superficie-laboratorio.tsx", "superficie-c.tsx"]) {
-      const t = fs.readFileSync(path.join(appDir, "components", "avc", arq), "utf8");
+      const t = lerFonte(path.join(appDir, "components", "avc", arq));
       conf(`leitura · ${arq} entrega a correção vigente à leitura`,
         /correcao=\{correcaoNaInstancia\(/.test(t), `⛔ ${arq}`);
     }
