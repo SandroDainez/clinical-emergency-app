@@ -51,7 +51,7 @@ test.describe("AVC · Estabilização — o acordeão dos eixos", () => {
     await abrirEstabilizacao(page);
 
     await expect(camposDe(page, "via-aerea").first()).toBeVisible();
-    for (const g of ["respiracao", "pressao", "neurologico-inicial"]) {
+    for (const g of ["respiracao", "pressao", "neurologico-inicial", "exposicao"]) {
       await expect(camposDe(page, g), `⛔ ${g} nasceu aberto`).toHaveCount(0);
       /** ⚠️ ⛔ E o fechado ⛔ não fica mudo: ⛔ ele diz o que tem. */
       await expect(page.getByTestId(`avc-eixo-resumo-${g}`)).toBeVisible();
@@ -240,6 +240,7 @@ test.describe("AVC · Estabilização — o acordeão dos eixos", () => {
       ["respiracao", "respiracao"],
       ["pressao", "pressao"],
       ["glicemia", "neurologico-inicial"],
+      ["exposicao", "exposicao"],
     ] as const) {
       const fechado = (await camposDe(page, grupo).count()) === 0;
       if (fechado) await page.getByTestId(`avc-ameaca-${tile}`).click();
@@ -247,7 +248,7 @@ test.describe("AVC · Estabilização — o acordeão dos eixos", () => {
     }
 
     /** ⚠️ ⛔ E o `Concluir` de cada eixo mora **dentro** ⛔ dele. */
-    for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial"]) {
+    for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial", "exposicao"]) {
       await expect(page.getByTestId(`avc-eixo-concluir-${g}`)).toBeVisible();
     }
   });

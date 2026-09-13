@@ -526,8 +526,10 @@ test.describe("Superfície A — UX clínica", () => {
     await expect(semInfo).toHaveAttribute("aria-checked", "true");
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem")).toHaveCount(0);
 
-    // ⚠️ O mesmo botão desfaz — é o gesto que qualquer um tenta primeiro.
+    // ⚠️ D-PEND-19 (AC-45, 2026-09-13): o segundo toque ⛔ desfaz nada; desfazer é «Limpar».
     await semInfo.click();
+    await expect(semInfo).toHaveAttribute("aria-checked", "true");
+    await page.getByTestId("avc-limpar-hora_ultima_vez_bem").click();
     await expect(semInfo).toHaveAttribute("aria-checked", "false");
     await expect(page.getByTestId("avc-pendencia-ultima_vez_bem"),
       "desfazer sem reabrir a pendência faria o app dizer 'pronto' sobre o que não está")
@@ -760,12 +762,7 @@ test.describe("Superfície A — UX clínica", () => {
       "B · RESPIRAÇÃO",
       "C · CIRCULAÇÃO",
       "D · NEUROLÓGICO",
-      /**
-       * ⚠️ ⛔ *"E · EXPOSIÇÃO"* saiu em 2026-09-12, por decisão do autor: ⛔ o
-       * único campo do eixo (`temperatura`) ⛔ não tem fonte no módulo, ⛔ e o
-       * eixo ⛔ nunca acendia. ⚠️ A ausência tem trava própria em
-       * `prova-avc-superficie-a` (*"o bloco E · Exposição DESAPARECEU"*).
-       */
+      "E · EXPOSIÇÃO",
       /**
        * ⚠️ ⛔ *"PESO"* ⛔ e *"CRISE NO INÍCIO"* saíram da lista em 2026-09-08 —
        * ⛔ os dois deixaram de ser desenhados ⛔ aqui. ⚠️ ⛔ A ausência ⛔ deles

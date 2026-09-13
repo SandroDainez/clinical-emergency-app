@@ -719,12 +719,10 @@ export default function SuperficieC({
                                 aria-checked={desconhecido}
                                 accessibilityLabel={`${tr(campo.rotulo)}: ${tr("Sem essa informação")}`}
                                 testID={`avc-hora-desconhecido-${campo.id}`}
-                                /** ⚠️ Tocar de novo DESFAZ — corrige, ⛔ e ⛔ não apaga. */
-                                onPress={() =>
-                                  desconhecido
-                                    ? onDesfazerNoEstudo(estudo.id, campo.id)
-                                    : onEscolherNoEstudo(estudo.id, campo.id, "nao_sei")
-                                }
+                                /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): marcado, o segundo toque ⛔ é ignorado; desmarcar é «Limpar». */
+                                onPress={() => {
+                                  if (!desconhecido) onEscolherNoEstudo(estudo.id, campo.id, "nao_sei");
+                                }}
                               >
                                 <Text
                                   style={[
@@ -735,6 +733,17 @@ export default function SuperficieC({
                                   {desconhecido ? "✓ " : ""}
                                   {tr("Sem essa informação")}
                                 </Text>
+                              </Pressable>
+                            ) : null}
+                            {desconhecido ? (
+                              <Pressable
+                                style={e.desconhecidoCompacto}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+                                testID={`avc-limpar-${campo.id}`}
+                                onPress={() => onDesfazerNoEstudo(estudo.id, campo.id)}
+                              >
+                                <Text style={e.desconhecidoTexto}>{tr("Limpar")}</Text>
                               </Pressable>
                             ) : null}
                             <Recolhido

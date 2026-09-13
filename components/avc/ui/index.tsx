@@ -219,6 +219,7 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
    * ⛔ exatamente para isso que a conferência de órfãs existe.
    */
   "neurologico-inicial": { icone: "neuro", cor: "debt" },
+  exposicao: { icone: "exposicao", cor: "primary" },
   /**
    * ⚠️ ⛔ `peso` SAIU DA TABELA em 2026-09-08: ⛔ o grupo deixou de existir na
    * Estabilização, ⛔ e entrada que aponta para bloco inexistente é cor que
@@ -250,6 +251,7 @@ export const ASSUNTO_DO_BLOCO: Readonly<Record<string, Assunto>> = {
 
   /* ── Segurança ⛔ e laboratório ───────────────────────────────────────────*/
   juizo: { icone: "seguranca", cor: "warning" },
+  consultas: { icone: "consulta", cor: "primary" },
   coleta: { icone: "laboratorio", cor: "info" },
 };
 
@@ -281,6 +283,7 @@ export const EIXOS_DA_ESTABILIZACAO = [
   { eixo: "respiracao", grupo: "respiracao" },
   { eixo: "pressao", grupo: "pressao" },
   { eixo: "glicemia", grupo: "neurologico-inicial" },
+  { eixo: "exposicao", grupo: "exposicao" },
 ] as const;
 
 export function grupoDoEixo(eixo: string): string | undefined {
@@ -511,7 +514,10 @@ export function Segmentado({
             /** ⚠️ O leitor de tela ouve a opção INTEIRA, ⛔ nunca a abreviação. */
             accessibilityLabel={tr(op)}
             /** ⚠️ Tocar na marcada DESFAZ — o gesto que todo mundo já tenta (§7.16). */
-            onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+            onPress={() => {
+              /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): o segundo toque numa opção já marcada ⛔ é ignorado; desmarcar é «Limpar». */
+              if (!marcada) onEscolher(campo, gravado);
+            }}
           >
             {/**
               * ⚠️⚠️ O ✓ ANUNCIA A ESCOLHA **SEM DEPENDER DE COR**.
@@ -537,6 +543,17 @@ export function Segmentado({
           </Pressable>
         );
       })}
+      {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
+        <Pressable
+          style={e.segItem}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Limpar")}
+          testID={`avc-limpar-${campo}`}
+          onPress={() => onDesfazer(campo)}
+        >
+          <Text style={e.segTexto}>{tr("Limpar")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -1310,7 +1327,10 @@ export function LinhaDeAchado({
               accessibilityState={{ checked: marcada }}
               aria-checked={marcada}
               testID={`avc-opcao-${campo}-${gravado}`}
-              onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+              onPress={() => {
+              /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): o segundo toque numa opção já marcada ⛔ é ignorado; desmarcar é «Limpar». */
+              if (!marcada) onEscolher(campo, gravado);
+            }}
             >
               <Text
                 style={grande
@@ -1324,6 +1344,17 @@ export function LinhaDeAchado({
             </Pressable>
           );
         })}
+      {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
+        <Pressable
+          style={e.segItemEstreito}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Limpar")}
+          testID={`avc-limpar-${campo}`}
+          onPress={() => onDesfazer(campo)}
+        >
+          <Text style={e.segTextoEstreito}>{tr("Limpar")}</Text>
+        </Pressable>
+      ) : null}
       </View>
       <Procedencia campo={campo} daEscala={daEscala} divergente={divergente} manual={manual} />
       {/**
@@ -1390,7 +1421,10 @@ export function Empilhado({
             aria-checked={marcada}
             testID={`avc-opcao-${campo}-${gravado}`}
             /** ⚠️ Tocar na marcada DESFAZ — ⛔ não apaga, corrige (§7.16). */
-            onPress={() => (marcada ? onDesfazer(campo) : onEscolher(campo, gravado))}
+            onPress={() => {
+              /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): o segundo toque numa opção já marcada ⛔ é ignorado; desmarcar é «Limpar». */
+              if (!marcada) onEscolher(campo, gravado);
+            }}
           >
             <Text style={[e.empilhadoTexto, marcada ? e.empilhadoTextoAtivo : null]}>
               {marcada ? "✓ " : ""}
@@ -1399,6 +1433,17 @@ export function Empilhado({
           </Pressable>
         );
       })}
+      {opcoes.some((op) => valorDaOpcao(op) === valor) ? (
+        <Pressable
+          style={e.empilhadoItem}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Limpar")}
+          testID={`avc-limpar-${campo}`}
+          onPress={() => onDesfazer(campo)}
+        >
+          <Text style={e.empilhadoTexto}>{tr("Limpar")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

@@ -239,6 +239,7 @@ export const SLOTS: readonly SlotDeFonte[] = [
    * sai daqui; fora do escopo, a saída é encaminhar.
    */
   { id: "F-37", assunto: "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar", estado: "transcrito", arquivo: "protocols/fontes-verbatim/escopo-populacional-avc.md" },
+  { id: "F-38", assunto: "Temperatura no AVC isquêmico agudo (§4.4)", estado: "transcrito", arquivo: AHA },
   { id: "F-35c", assunto: "Hemorragia após trombólise ou anticoagulação", estado: "parcial", arquivo: F35C_TROMBOLISE },
   { id: "F-35d", assunto: "Tromboembolismo pulmonar com instabilidade", estado: "aberto", arquivo: CHOQUE_ABERTAS },
   { id: "F-35e", assunto: "Tamponamento cardíaco — drenagem", estado: "aberto", arquivo: CHOQUE_ABERTAS },

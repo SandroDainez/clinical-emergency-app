@@ -500,7 +500,10 @@ export function CampoDeEscolha({
                * segundo botão por campo encheria a tela de controle para o caso
                * raro, quando o alvo óbvio já estava debaixo do dedo.
                */
-              onPress={() => (ativa ? onDesfazer(campo.id) : onEscolher(campo.id, valor))}
+              onPress={() => {
+                /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): o segundo toque numa opção já marcada ⛔ é ignorado; desmarcar é «Limpar». */
+                if (!ativa) onEscolher(campo.id, valor);
+              }}
             >
               {/**
                * ⚠️⚠️ A MARCA `✓` ⛔ NÃO É ENFEITE — ela é o que sobra quando a cor
@@ -524,6 +527,18 @@ export function CampoDeEscolha({
           );
         })}
       </View>
+      ) : null}
+      {/** ⚠️ D-PEND-19 (AC-45): desmarcar é gesto próprio — ⛔ só aparece quando há resposta do médico. */}
+      {manual !== undefined ? (
+        <Pressable
+          style={e.zero}
+          accessibilityRole="button"
+          accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+          testID={`avc-limpar-${campo.id}`}
+          onPress={() => onDesfazer(campo.id)}
+        >
+          <Text style={e.zeroTexto}>{tr("Limpar")}</Text>
+        </Pressable>
       ) : null}
     </View>
   );
@@ -1041,7 +1056,10 @@ export function CampoDeHora({
        * informação e não consigo desmarcar isso"*. ⚠️ Desfazer ⛔ não apaga:
        * corrige, e a trilha guarda as duas passagens.
        */
-      onPress={() => (desconhecido ? onDesfazer(campo.id) : onEscolher(campo.id, "nao_sei"))}
+      onPress={() => {
+        /** ⚠️ D-PEND-19 (AC-45, 2026-09-13): marcado, o segundo toque ⛔ é ignorado; desmarcar é «Limpar». */
+        if (!desconhecido) onEscolher(campo.id, "nao_sei");
+      }}
     >
       <Text style={[e.relogioValor, desconhecido && e.relogioAcaoAtivaTexto]}>
         {desconhecido ? "✓ " : ""}
@@ -1051,6 +1069,19 @@ export function CampoDeHora({
   ) : null;
 
   const respondido = gravado !== undefined || desconhecido;
+
+  /** ⚠️ D-PEND-19 (AC-45): «Sem essa informação» marcada se desfaz por «Limpar», ⛔ e ⛔ não pelo segundo toque. */
+  const botaoLimpar = desconhecido ? (
+    <Pressable
+      style={e.relogioAcao}
+      accessibilityRole="button"
+      accessibilityLabel={`${tr(campo.rotulo)}: ${tr("limpar")}`}
+      testID={`avc-limpar-${campo.id}`}
+      onPress={() => onDesfazer(campo.id)}
+    >
+      <Text style={e.relogioValor}>{tr("Limpar")}</Text>
+    </Pressable>
+  ) : null;
 
   /**
    * ── ⚠️⚠️ O MARCO TEM APRESENTAÇÃO PRÓPRIA, ⛔ e ⛔ ela é a que já existia ──
@@ -1117,7 +1148,7 @@ export function CampoDeHora({
           * marco.
           */}
         {campo.aceitaDesconhecido ? (
-          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}</View>
+          <View style={e.subLinhaDoMarco}>{botaoDesconhecido}{botaoLimpar}</View>
         ) : null}
         {seletor}
         {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}
@@ -1147,6 +1178,7 @@ export function CampoDeHora({
       <View style={e.relogioAcoes}>
         {botaoDoValor}
         {botaoDesconhecido}
+        {botaoLimpar}
       </View>
 
       {detalheAberto ? <DetalheDoCampo campo={campo} /> : null}

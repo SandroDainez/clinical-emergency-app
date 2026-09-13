@@ -38,6 +38,8 @@ export const avcAbcdeEs: Record<string, string> = {
   "calculada de PAS e PAD": "calculada de PAS y PAD",
   "Registro de sinal vital. Nenhuma recomendação deste módulo é calculada a partir dele.":
     "Registro de signo vital. Ninguna recomendación de este módulo se calcula a partir de él.",
+  "AHA/ASA 2026 §4.4 (p. e352): na hipertermia, buscar normotermia (COR 1) e identificar e tratar a causa (COR 1); na normotermia, hipotermia induzida ou prevenção de febre de rotina não são recomendadas (COR 3: sem benefício). A recomendação não traz corte de temperatura: o app registra o valor e não o classifica.":
+    "AHA/ASA 2026 §4.4 (p. e352): en la hipertermia, buscar la normotermia (COR 1) e identificar y tratar la causa (COR 1); en la normotermia, no se recomiendan la hipotermia inducida ni la prevención rutinaria de la fiebre (COR 3: sin beneficio). La recomendación no trae un corte de temperatura: la app registra el valor y no lo clasifica.",
   "Registro do nível de consciência. A pergunta que decide suporte de via aérea é a do bloco A.":
     "Registro del nivel de conciencia. La pregunta que decide el soporte de vía aérea es la del bloque A.",
   "Registro operacional do atendimento. Não interfere em nenhuma recomendação.":

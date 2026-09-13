@@ -132,8 +132,6 @@ export const ES_AVC_NIHSS: Record<string, string> = {
   "Cirurgia maior ou trauma cranioencefálico recente conforme protocolo local.":
     "Cirugía mayor o traumatismo craneoencefálico reciente según el protocolo local.",
   "Gestação / puerpério muito recente": "Embarazo / puerperio muy reciente",
-  "Gestação em curso ou puerpério muito recente, especialmente nos primeiros 10 dias pós-parto.":
-    "Embarazo en curso o puerperio muy reciente, sobre todo en los primeros 10 días tras el parto.",
   "Exige decisão compartilhada com neurologia/obstetrícia e ponderação individual do risco hemorrágico.":
     "Exige una decisión compartida con neurología y obstetricia, y una ponderación individual del riesgo hemorrágico.",
   "Exames pendentes em usuário de anticoagulante":

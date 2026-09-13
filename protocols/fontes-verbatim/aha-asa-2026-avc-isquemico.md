@@ -2616,3 +2616,49 @@ epiléptico.
 - ⚠️ **Consequência para a spec:** o campo "houve crise?" agora **tem regra que o
   consome** — mas apenas para (a) crise não provocada pós-AVC e (b) contexto de
   mimetizador. ⛔ Crise no início **não** gera conduta anticonvulsiva por esta fonte.
+
+
+---
+
+### F-38 · Temperatura no AVC isquêmico agudo
+
+**Status:** ✅ **TRANSCRITO** em 2026-09-13 · ⏳ **aguarda conferência clínica do autor**
+**Decisão que pediu a transcrição:** D-PEND-18 (`docs/decisoes.md`, AC-44) — restaurar a temperatura no caminho isquêmico.
+**Origem do texto:** PDF local da publicação (121 p., sha256 `7380c4f2352e9757dbd5eeeacadea7d6915824967e29f7ab0a9f5b9525794ffe`), extraído com `pdftotext` e conferido na página.
+
+| # | contrato §6.11 | |
+|---|---|---|
+| 2 | localização | §4.4 *Temperature Management*, recs. 1–3, p. **e352** (PDF p. 37) |
+| 3 | grau e nível | por recomendação, abaixo |
+| 4 | população | *"patients with AIS who have hyperthermia"* (recs. 1–2) · *"patients with AIS and normothermia"* (rec. 3) — adulta no V1 |
+| 5 | espécie | **recomendação** — ⛔ sem corte numérico na recomendação |
+| 6 | marco | não se aplica |
+| 7 | fonte-mãe | sim |
+| 8 | divergências | a **sinopse** (texto de suporte) cita *"temperatures >37.5°C"*; ⛔ não é recomendação, ⛔ e ⛔ não vira corte no app |
+| 9 | adaptação brasileira | não se aplica |
+| 11 | data | 2026-09-13 · conferência clínica pendente |
+
+#### Verbatim
+
+**Rec. 1 · COR 1 · LOE B-R**
+
+> "In patients with AIS who have hyperthermia, targeting normothermia, including
+> using nurse-initiated protocols for managing fever, is recommended for improving
+> functional outcomes and reducing death."
+
+**Rec. 2 · COR 1 · LOE C-EO**
+
+> "In patients with AIS and hyperthermia, sources of hyperthermia, such as
+> infection, should be identified and treated to avoid complications."
+
+**Rec. 3 · COR 3: No Benefit · LOE B-R**
+
+> "In patients with AIS and normothermia, treatment with induced hypothermia or
+> prophylactic fever prevention is not recommended for the purpose of improving
+> outcomes."
+
+#### ⚠️ Achados
+
+- ⛔ **Nenhuma das três recomendações traz corte de temperatura.** O único número está na sinopse, que é texto de suporte.
+- ⚠️ **O app registra a temperatura e ⛔ não a classifica:** o eixo E fica *medido*, ⛔ nunca *ameaça*, até decisão humana sobre corte.
+- ⚠️ A remoção de 2026-09-12 (`b170b44`) se apoiava em *"nenhuma fonte transcrita dá corte"*. A lacuna era da **transcrição**: a §4.4 existe desde a publicação.

@@ -2045,6 +2045,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "El puntaje de otro servicio es contexto y nunca criterio. Salvo escala completa, aparece solo en la síntesis.",
   "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
     "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
+  "Temperatura no AVC isquêmico agudo (§4.4)": "Temperatura en el ACV isquémico agudo (§4.4)",
   "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera. Não sei mantém a pergunta.":
     "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas. No sé mantiene la pregunta.",
 };

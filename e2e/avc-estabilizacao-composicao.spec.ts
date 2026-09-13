@@ -79,7 +79,7 @@ test.describe("AVC · Estabilização — composição", () => {
       /* ── ⚠️ E O QUE **PRECISA** ESTAR ──────────────────────────────────── */
 
       await expect(page.getByTestId("avc-ameacas-imediatas")).toBeVisible();
-      for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial"]) {
+      for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial", "exposicao"]) {
         await expect(page.getByTestId(`avc-grupo-${g}`)).toBeVisible();
       }
     });
@@ -147,7 +147,7 @@ test.describe("AVC · Estabilização — composição", () => {
    * — ⛔ o controle nascia `flex: 0 0 auto` numa linha, ⛔ e o slider ficava com
    * 104 px de 343 disponíveis. ⚠️ É a lição de `barra-utilizavel.spec`.
    */
-  test("⛔ os sete sliders começam ⛔ e terminam no mesmo x",
+  test("⛔ os oito sliders começam ⛔ e terminam no mesmo x",
     async ({ page }) => {
       await abrirEstabilizacao(page);
 
@@ -167,12 +167,9 @@ test.describe("AVC · Estabilização — composição", () => {
        * ⛔ o mesmo padrão ⛔ dos 14 falsos positivos ⛔ do auditor, ⛔ na
        * mesma tarde.
        *
-       * ⚠️ ⛔ Então ⛔ ela **⛔ espera** ⛔ os sete terem caixa ⛔ antes de
+       * ⚠️ ⛔ Então ⛔ ela **⛔ espera** ⛔ os oito terem caixa ⛔ antes de
        * comparar. ⛔ Se ⛔ algum ⛔ nunca tiver, ⛔ ela ⛔ falha ⛔ **⛔ por
        * isso**, ⛔ e ⛔ com ⛔ essa palavra.
-       *
-       * ⚠️ ⛔ SETE desde 2026-09-12: ⛔ a temperatura saiu com o eixo
-       * `E · Exposição` (decisão do autor).
        */
       await expect
         .poll(
@@ -185,7 +182,7 @@ test.describe("AVC · Estabilização — composição", () => {
             ),
           { message: "⛔ trilho sem caixa: o layout ainda não assentou" }
         )
-        .toBeGreaterThanOrEqual(7);
+        .toBeGreaterThanOrEqual(8);
 
       const medidas = await page.evaluate(() =>
         Array.from(document.querySelectorAll('[data-testid^="avc-num-barra-"]')).map((n) => {
@@ -193,8 +190,7 @@ test.describe("AVC · Estabilização — composição", () => {
           return { id: n.getAttribute("data-testid"), x: Math.round(r.x), fim: Math.round(r.right) };
         })
       );
-      /** ⚠️ ⛔ SETE desde 2026-09-12: ⛔ a temperatura saiu com o eixo `E · Exposição`. */
-      expect(medidas.length, "⛔ os controles numéricos sumiram").toBeGreaterThanOrEqual(7);
+      expect(medidas.length, "⛔ os controles numéricos sumiram").toBeGreaterThanOrEqual(8);
       /** ⚠️ ⛔ E ⛔ nenhum deles ⛔ pode ter entrado ⛔ na conta ⛔ com zero. */
       const semCaixa = medidas.filter((m) => m.fim - m.x === 0).map((m) => m.id);
       expect(semCaixa, `⛔ trilho com largura zero: ${JSON.stringify(semCaixa)}`).toEqual([]);
@@ -355,13 +351,15 @@ test.describe("AVC · Estabilização — composição", () => {
    * autor proibiu: *"⛔ sem corte, alvo ⛔ ou fármaco até existir fonte
    * específica transcrita para AVC"*.
    */
-  test("⛔ hipotensão ⛔ e Glasgow ⛔ NÃO geram conduta",
+  test("⛔ temperatura, hipotensão ⛔ e Glasgow ⛔ NÃO geram conduta",
     async ({ page }) => {
       await abrirEstabilizacao(page);
 
       /** ⛔ Hipotensão franca. */
       await medir(page, "pas", "80");
       await medir(page, "pad", "46");
+      /** ⛔ Febre. */
+      await medir(page, "temperatura", "39");
       /** ⛔ Glasgow rebaixado. */
       await medir(page, "glasgow", "8");
 
