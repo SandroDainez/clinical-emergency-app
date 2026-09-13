@@ -243,7 +243,8 @@ function conf(nome, cond, porque) {
 
     const reavaliada = E.registrarFato(
       corrigida,
-      { campo: "nihss_informado", valor: 4 },
+      /** ⚠️ D-PEND-14 (2026-09-13): reexame é o NIHSS feito NESTE atendimento, ⛔ não o de outro serviço. */
+      { campo: "nihss_calculado", valor: 4 },
       R.relogioControlado(1_000_100)
     );
     conf(
