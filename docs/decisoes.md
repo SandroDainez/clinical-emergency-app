@@ -221,6 +221,18 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 **Razão registrada:** não fornecida além do texto da decisão.
 **Autoriza implementação:** sim (4ª rodada, Entrega 2).
 
+## D-PEND-21 · Opção não marcada é neutra; cor só após marcação, com ✓ e borda
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** opção não marcada é neutra (contorno, sem preenchimento de cor semântica); cor só após marcação, sempre acompanhada de ✓ e borda.
+
+**Origem:** observação da revisão visual a 375 px da 5ª rodada (`docs/avc/auditoria-vs-spec.md` §7.10): com nada marcado, "Sim" aparecia verde cheio e "Não" vermelho cheio; a marcada se distinguia só pela borda e pelo ✓.
+**Razão registrada:** não fornecida além do texto da decisão.
+**Autoriza implementação:** sim (6ª rodada, Entrega 1): prova vermelha genérica em toda pergunta Sim/Não/Incerto do AVC; correção no componente compartilhado, não por tela; revisão das travas de contraste.
+
+**D-PEND-22, D-PEND-23, D-PEND-24:** anunciadas pelo autor em 2026-09-13, texto ainda não enviado. Não registradas e não implementadas.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - **AC-43:** dose da tenecteplase (pacote `docs/avc/revisao/AC-06-dose-trombolitico.md`).
