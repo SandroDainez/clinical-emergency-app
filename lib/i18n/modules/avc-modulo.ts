@@ -1271,6 +1271,10 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "corrigido de": "corregido de",
   "corrigido": "corregido",
   "Evento de outro caso.": "Evento de otro caso.",
+  "Sem motivo para suspeitar; varfarina ou heparina registradas, com os exames de coagulação já registrados":
+    "Sin motivo para sospechar; warfarina o heparina registradas, con los exámenes de coagulación ya registrados",
+  "Segurança desconhecida segundo a fonte; a trombólise não fica retida por ele": "Seguridad desconocida según la fuente; la trombólisis no queda retenida por ello",
+  "Sem indicação neste caminho: o déficit foi registrado como não incapacitante": "Sin indicación por este camino: el déficit se registró como no incapacitante",
   "registrado neste aparelho, sem conta": "registrado en este dispositivo, sin cuenta",
   "registrado em sessão anônima, sem conta": "registrado en sesión anónima, sin cuenta",
   "autor não registrado": "autor no registrado",

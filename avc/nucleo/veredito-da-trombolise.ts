@@ -521,6 +521,24 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
       : [clinica, temporal];
   const criterios: CriterioAvaliado[] = [...criteriosDaRota, classe, seguranca];
 
+  /**
+   * ⚠️⚠️ AC-47 (2026-09-13, reproduzido por prova; saída pedida pelo autor): com o
+   * déficit REGISTRADO como não incapacitante, uma rota de janela estendida ⛔ não
+   * transforma o caso em *"indicada"*. A saída diz o motivo. ⛔ Só o registro
+   * explícito fecha: *"Incerto"* ⛔ e ⛔ não perguntado ⛔ mudam nada. ⛔ Nenhum limiar.
+   */
+  if (!rotaPadrao && rotasQueSustentam.length > 0 && clinica.estado === "contradito") {
+    return {
+      ...comum,
+      tipo: "nao_sustentada",
+      frase: "Sem indicação neste caminho: o déficit foi registrado como não incapacitante",
+      sustentam: [],
+      contra: [],
+      faltam: [],
+      criteriosAvaliados: [clinica, ...rotasQueSustentam.map(criterioDaRota), classe, seguranca],
+    };
+  }
+
   if (rotaSustenta && classe.estado === "satisfeito" && seguranca.estado === "satisfeito") {
     return {
       ...comum,

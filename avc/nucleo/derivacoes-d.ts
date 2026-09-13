@@ -884,7 +884,14 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
         id: "condicao_resolutiva_coagulograma",
         efeito: "condicao_resolutiva",
         rotulo: "Trombólise pode ser iniciada antes do resultado da coagulação",
-        dado: "Sem motivo para suspeitar; sem varfarina ou heparina registradas",
+        /**
+         * ⚠️ AC-46 (2026-09-13, reproduzido por prova): com varfarina ⛔ ou heparina
+         * registradas, este ramo só é alcançado com INR, TP ⛔ e TTPa já registrados —
+         * ⛔ e o texto ⛔ pode dizer que ⛔ não há anticoagulante.
+         */
+        dado: usaVarfarinaOuHeparina(estado)
+          ? "Sem motivo para suspeitar; varfarina ou heparina registradas, com os exames de coagulação já registrados"
+          : "Sem motivo para suspeitar; sem varfarina ou heparina registradas",
         fonte: "F-10",
         oQueFalta: "Suspender se o resultado vier alterado pelos cortes da fonte",
         leva: "laboratorio",
@@ -1001,6 +1008,22 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
         dado: i.formulacao,
         fonte: "F-07",
         oQueFalta: "Risco declarado pela fonte; a trombólise não fica retida por ele",
+        leva: "seguranca",
+      });
+    } else if (i.estado === "informacao_insuficiente") {
+      /**
+       * ⚠️ AC-48 (2026-09-13, reproduzido por prova): o item que a fonte chama de
+       * *"safety … is unknown"* era lido na Superfície D ⛔ e sumia do portão.
+       * ⚠️ Entra como INFORMAÇÃO — ⛔ não retém: reter ⛔ ou pedir julgamento é
+       * decisão clínica ⛔ não tomada (pacote `docs/avc/revisao/D-139-3`).
+       */
+      lista.push({
+        id: `item-${i.id}`,
+        efeito: "informa",
+        rotulo: i.rotulo,
+        dado: i.formulacao,
+        fonte: "F-07",
+        oQueFalta: "Segurança desconhecida segundo a fonte; a trombólise não fica retida por ele",
         leva: "seguranca",
       });
     }
