@@ -1188,3 +1188,128 @@ Traz também o resultado de AC-46/47/48 (§7.9). As seções antigas "Decisões 
 | artefatos da suíte | revertidos (D-PEND-10) |
 | push | `4488259..68da674` → `origin/refactor/clinical-modules-rebuild` (inclui `5705840`); `git ls-remote` = `68da674267374d6dfdd7eaaf60b153ea96ec9db7`; divergência 0/0 |
 | deploy · merge em `main` | ⛔ não feitos |
+
+### 7.15 · 10ª rodada de 2026-09-13 · D-PEND-27, «Paciente piorou» global (AC-10, A11) e transferência/telestroke (T07, A12, A08) · commits `d1edb50` e `f7993d7` (só `docs/`) e `e8fed38` (código)
+
+**Decisão e pedidos do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`):
+
+| item | conteúdo |
+|---|---|
+| D-PEND-27 (`d1edb50`) | No diálogo "Foi engano?", «Manter a resposta» é a ação padrão visualmente; «Foi engano — limpar» é secundária |
+| AC-66 / "fato novo" (`d1edb50`) | A leitura do autor não coincide com A–D e entrou como **opção E** no pacote `revisao/hsa-resolucao.md`. ⛔ Não escolhida: o card fica como está |
+| Transferência e telestroke (`d1edb50`) | Ciclo de vida da transferência; teleconsulta como ator com parecer registrado; plano local e tarefas durante a espera; linha do tempo real na síntese. ⛔ Nenhum critério de transferência nem centro de destino afirmado |
+| Ajuste de rota (`f7993d7`) | «Paciente piorou» é ação GLOBAL: evento de deterioração (autor, horário, texto livre opcional), tarefa «reavaliar agora» em Prioridade, reabre a avaliação de ameaças com histórico preservado. ⛔ Sem limiar, ⛔ sem conduta. A espera da transferência usa o mesmo mecanismo |
+
+#### D-PEND-27 · destaque no caminho seguro
+
+- **O que mudou:** em `components/avc/confirmacao-de-limpar.tsx`, «Manter a resposta» usa o preenchimento da ação padrão (`primaryFill`) e «Foi engano — limpar» usa o estilo secundário.
+- **Provas:** `prova-avc-limpar-auditado` 🔴 17·2 → ✅ 19/19. No e2e, o fundo de «Manter» no build de `68da674` era `rgb(42, 55, 74)` 🔴; agora é `rgb(26, 107, 213)` ✅.
+
+#### «Paciente piorou» · ação global
+
+**Onde fica:** um botão no topo fixo do shell, logo abaixo do cabeçalho. Ele fica fora da rolagem e aparece em toda superfície do AVC (`components/avc/paciente-piorou.tsx`).
+
+**O diálogo:**
+- Texto: *"Registra o evento com o seu nome e o horário, cria a tarefa «Reavaliar agora» e reabre a avaliação de ameaças da Estabilização. Nada do que já foi registrado é apagado."*
+- Campo *"O que mudou (opcional)"*.
+- Botões «Cancelar» e «Registrar piora». «Cancelar» não registra nada.
+
+**O que o registro faz** (`avc/nucleo/deterioracao.ts`):
+- **Evento:** um fato `paciente_piorou` com horário clínico e o texto aparado; sem texto, `sem_descricao`. O autor é carimbado pela persistência (AC-40).
+- **Reabertura:** os eixos de `ameacasImediatas` saem de `eixosConcluidos`. Nenhum fato é corrigido nem apagado, e cada `eixo_reaberto` fica na trilha.
+- **Tarefa `reavaliar_apos_piora`:**
+  - existe no mesmo instante do evento;
+  - fica fixada em primeiro em `problemasAtivos`;
+  - resolve quando os eixos voltam a ser concluídos;
+  - não traz número nem conduta.
+- **Na tela:**
+  - leva à Estabilização;
+  - uma linha «Reavaliar agora» abre o topo de **toda** superfície, inclusive Paciente e Estabilização, até a reavaliação;
+  - a tarefa também é a primeira de "Pendências do atendimento".
+
+⚠️ **Leitura de "Prioridade" (interpretação, a confirmar):** o app não tinha uma seção com esse nome. Foram usados dois lugares: a linha no topo de cada superfície, onde já morava a prioridade da imagem, e o primeiro lugar da lista de problemas.
+
+#### Transferência e teleconsulta · registro
+
+**Campos em G** (`avc/conteudo/superficie-g.ts`), todos `administrativo`, com consumidor declarado só em `transferencia.ts`:
+
+| bloco | campos |
+|---|---|
+| Transferência | estado (Solicitada · Contato realizado · Aceite · Recusa · Transporte confirmado · Saída · Chegada · Cancelada) · destino informado pela equipe (texto) · motivo da recusa (texto, aparece com «Recusa») · previsão do transporte (estimativa, hora) |
+| Teleconsulta (telestroke) | estado (Solicitada · Em andamento · Parecer registrado · Não disponível) · parecer (texto) · autor do parecer (texto) · horário do parecer |
+
+**Leitura** (`avc/nucleo/transferencia.ts`):
+- **Cada toque é um marco com horário**, e a linha do tempo é a trilha. Marco corrigido ou limpo sai dela.
+- **Aceite nunca presumido:**
+  - só conta um «Aceite» registrado depois da última recusa ou cancelamento;
+  - transporte, saída ou chegada sem aceite fazem a síntese dizer *"Aceite não registrado"*.
+- **Recusa:**
+  - sem motivo, vira pendência *"Registrar o motivo da recusa"*;
+  - com motivo, entra na linha do tempo como *"Recusa registrada"* com o texto.
+- **A12:** duas situações dão a linha *"Sem transferência confirmada: manter o plano local, documentar e revisar o acesso"* e a tarefa *"Revisar o acesso à transferência"*:
+  - "transferência viável neste momento" = «Não»;
+  - ou recusa/cancelamento sem nova solicitação.
+  - «Incerto» não cria a tarefa (RQ-REC-01).
+- **Espera:** de Solicitada a Saída, a síntese diz *"Transferência em curso: o plano local e as tarefas continuam"*. Nada trava, e a piora usa o botão global.
+- **Parecer:**
+  - estado «Parecer registrado» com texto → *"Avaliação especializada registrada"* na situação;
+  - na linha do tempo, o texto e o autor aparecem como escritos;
+  - sem texto, o parecer não é presumido.
+- **Síntese** (`sintese-do-caso.ts`): novo `linhaDoTempo`, com transferência, teleconsulta e pioras em ordem de horário; estimativa marcada.
+- **Barreira clínica:** portão da IVT e veredito da EVT idênticos com e sem transferência, recurso ou parecer.
+
+#### Provas (vermelho no código e no build de `68da674`)
+
+| prova | antes | depois |
+|---|---|---|
+| `scripts/prova-avc-piora-e-transferencia.cjs` (nova, no `test:all`) | 🔴 0 · 5 (módulos e tela ausentes; as conferências de comportamento dependem dos módulos) | ✅ 47/47 |
+| `e2e/avc-paciente-piorou.spec.ts` · visível e acionável nas 7 superfícies a 375 px, rolado ao fim, com bloco aberto e recolhido | 🔴 *"«Paciente piorou» fora da tela em paciente"* (elemento ausente) | ✅ |
+| idem · A11 após trombólise: tarefa no topo, eixo concluído reaberto, IVT preservada, autor no evento | 🔴 | ✅ |
+| idem · piora durante a espera: transferência continua «Aceite», piora na linha do tempo | 🔴 | ✅ |
+| idem · ES | 🔴 | ✅ |
+| `e2e/avc-transferencia.spec.ts` · A12 sem recurso | 🔴 | ✅ |
+| idem · recusa sem/com motivo | 🔴 | ✅ |
+| idem · aceite não presumido e estimativa | 🔴 | ✅ |
+| idem · telestroke: parecer com texto, autor e horário | 🔴 | ✅ |
+| idem · A08: coagulação «Sim», transferência aceita, portão e EVT presentes | 🔴 | ✅ |
+| idem · ES | 🔴 | ✅ |
+
+**Ajustes de instrumento antes do verde:**
+- (a) A prova de módulo procurava `<ScrollView` e achava o genérico `useRef<ScrollView>`; passou a procurar o JSX `<ScrollView ref=`. O vermelho era legítimo: o botão não existia.
+- (b) O e2e ES esperava "Teleconsulta" com maiúscula no rótulo; passou a aceitar `/teleconsulta/i`.
+- (c) No build novo:
+  - os blocos nascem recolhidos, e a condição "com bloco recolhido" passou a abrir e recolher de novo um bloco;
+  - `not.toHaveText` num selo que some reprovava por "elemento ausente", e passou a contar o selo "Avaliação concluída" (0).
+
+**Travas ajustadas conscientemente** (motivo no próprio arquivo):
+- **`prova-avc-cockpit`:**
+  - a regra "nenhuma derivação lê `eixosConcluidos`" ganhou uma exceção nomeada, `deterioracao.ts`, que é workflow: reabre e diz se a tarefa segue aberta;
+  - uma conferência nova limita o que esse módulo exporta a evento, leitura do evento e tarefa. A regra continua para todo o resto do núcleo.
+- **`prova-alcancabilidade-avc`:** os campos de transferência e teleconsulta entram no universo de G.
+- **`prova-avc-consumidores`:** a primeira versão tinha o literal `"glicemia"` (id de eixo) em `deterioracao.ts`. A trava acusou leitura não declarada, e os eixos passaram a ser lidos de `ameacasImediatas`.
+
+#### Achados
+
+| # | gravidade | achado | estado |
+|---|---|---|---|
+| AC-10 | alta | «Preciso de ajuda» e «Paciente piorou» não existiam | ◐ **«Paciente piorou» fechado** em `e8fed38`; «Preciso de ajuda» continua ausente |
+| AC-11 | alta | sem ciclo de transferência nem telestroke | ✅ fechado em `e8fed38` como **registro**; critério e destino seguem sem fonte (Portaria 665/2012, rede local) |
+| AC-67 | média · pergunta | «Paciente piorou» registrado por engano não tem desfazer; a tarefa só sai reconcluindo os eixos | aberto: autor decide se cabe «Limpar» auditado ao evento |
+| AC-68 | baixa | Campo de texto grava um fato por alteração (herdado de `identificacao`); motivo da recusa e parecer digitados letra a letra enchem a trilha. A leitura usa o último valor | aberto · código |
+| AC-69 | baixa · limite | O horário de cada marco da transferência é o do registro, sem retroagir. A previsão usa o seletor de hora do app; horário futuro não foi medido | declarado |
+| AC-70 | baixa · instrumento | A trava "texto livre só administrativo" (`prova-avc-paciente`) cobre só P/A/B/C. Os textos de G ficam cobertos por consumidores e alcançabilidade | declarado |
+
+**Casos A:** A11 e A12 passam a ter e2e que mede o caso. A08 ganhou o cenário "transferência em curso"; o restante de A08 segue como na §3.
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `d1edb50` · `f7993d7` (decisões, só `docs/`) · `e8fed38` (código) · commit só de `docs/` com esta seção e o status |
+| e2e da rodada no build final | ✅ 14/14 (paciente-piorou 4, transferência 6, limpar-auditado 4) |
+| e2e do AVC no build final | ✅ 380 passed |
+| 1º `test:all` (HEAD `e8fed38`) | 🔴 EXIT=1 · **ambiente**: um `serve -s dist` meu, na 4173, foi reaproveitado (`reuseExistingServer`); com fallback SPA, toda rota recebeu o HTML da home → React #418 · 66 failed (hidratação, módulos, migração, validação dirigida), 497 passed · nada enviado |
+| 2º `test:all` (HEAD `e8fed38`, servidor derrubado) | ✅ **EXIT=0** · 140 `npm run` + 1 `node` · Playwright **563 passed** (8,6 min), sem failed ou skipped · piora e transferência 47/47 · «Limpar» auditado 19/19 · rodada 8 28/28 · críticos 183/183 · cockpit 18/18 · alcançabilidade 22/22 · 132 travas ligadas · índice 120 declaradas · término 17:30 · `dist/artefato.json` = `e8fed38` |
+| artefatos da suíte | revertidos (D-PEND-10) |
+| push | `84a858d..e8fed38` → `origin/refactor/clinical-modules-rebuild` (inclui `d1edb50` e `f7993d7`); `git ls-remote` = `e8fed38543d4be95bd094f86c57f2d1158efb71e`; divergência 0/0 |
+| deploy · merge em `main` | ⛔ não feitos |
