@@ -74,6 +74,18 @@ test.describe("AVC · D-PEND-26 · «Limpar» auditado", () => {
     await expect.poll(() => trilhaTemToqueErrado(page, "suspeita_hsa"), { timeout: 5_000 }).toBe(true);
   });
 
+  test("D-PEND-27 · o destaque visual fica em «Manter a resposta»; «Foi engano — limpar» é secundário", async ({ page }) => {
+    await abrir(page, "imagem");
+    await page.getByTestId("avc-opcao-suspeita_hsa-sim").click();
+    await page.getByTestId("avc-limpar-suspeita_hsa").click();
+    await expect(page.getByTestId("avc-confirmar-limpar")).toBeVisible();
+    const fundo = (id: string) => page.getByTestId(id).evaluate((el) => getComputedStyle(el).backgroundColor);
+    /** `primaryFill` dos dois temas (`design-system/tokens.ts`): o preenchimento da ação padrão. */
+    const AZUL = "rgb(26, 107, 213)";
+    expect(await fundo("avc-confirmar-limpar-cancelar"), "⛔ o caminho seguro ⛔ é a ação padrão").toBe(AZUL);
+    expect(await fundo("avc-confirmar-limpar-sim"), "⛔ «limpar» ainda tem o destaque da ação padrão").not.toBe(AZUL);
+  });
+
   test("coagulação «Sim» (bloqueio até resultado) → «Limpar» pede confirmação; confirmar deixa sem resposta", async ({ page }) => {
     const COAG = "motivo_para_suspeitar_alteracao_coagulacao";
     await abrir(page, "seguranca");

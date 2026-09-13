@@ -171,13 +171,30 @@ conf(
    * passaria a emitir conduta a partir de um **gesto de tela**.
    */
   const dir = path.join(appDir, "avc", "nucleo");
+  /**
+   * ⚠️⚠️ UMA EXCEÇÃO NOMEADA — 2026-09-13 (ajuste de rota do autor, «Paciente piorou»).
+   * ⚠️ `deterioracao.ts` é **workflow**, ⛔ e ⛔ não derivação de conduta: ele REABRE os
+   * eixos (o pedido do autor é literalmente *"reabre a avaliação de ameaças"*) ⛔ e diz
+   * se a tarefa «reavaliar agora» continua aberta. ⛔ Ele ⛔ produz achado, ⛔ conduta,
+   * ⛔ limiar ⛔ nem bloqueio (`prova-avc-piora-e-transferencia.cjs`). ⚠️ A regra que
+   * esta trava protege — ⛔ conclusão ⛔ nunca vira insumo de conduta — continua inteira
+   * para todo o resto do núcleo.
+   */
+  const WORKFLOW = new Set(["deterioracao.ts"]);
   const leem = fs.readdirSync(dir)
-    .filter((f) => f.endsWith(".ts") && f !== "estado.ts")
+    .filter((f) => f.endsWith(".ts") && f !== "estado.ts" && !WORKFLOW.has(f))
     .filter((f) => lerFonte(path.join(dir, f)).includes("eixosConcluidos"));
   conf(
     "⚠️⚠️ ⛔ NENHUMA derivação lê `eixosConcluidos`",
     leem.length === 0,
     `⛔ ${leem.join(" · ")} — conclusão é workflow, ⛔ e ⛔ nunca insumo de conduta`
+  );
+  const exportsDoWorkflow = lerFonte(path.join(dir, "deterioracao.ts")).match(/export function (\w+)/g) ?? [];
+  conf(
+    "⚠️ ⛔ e a exceção só exporta evento, leitura do evento ⛔ e tarefa",
+    exportsDoWorkflow.length === 3
+      && ["registrarPiora", "eventosDePiora", "reavaliacaoPendente"].every((n) => exportsDoWorkflow.some((x) => x.endsWith(n))),
+    `⛔ ${exportsDoWorkflow.join(" · ")} — ⛔ função nova no módulo de workflow pede decisão`
   );
 }
 

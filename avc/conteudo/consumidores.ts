@@ -123,6 +123,19 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   identificacao: [],
 
   /**
+   * ⚠️ T07/A12 — registro da transferência ⛔ e da teleconsulta (2026-09-13). ⛔ Lidos
+   * só pela leitura do registro ⛔ e pela síntese; ⛔ nenhum portão, veredito ⛔ ou dose.
+   */
+  transf_estado: ["transferencia.ts"],
+  transf_destino: ["transferencia.ts"],
+  transf_recusa_motivo: ["transferencia.ts"],
+  transf_previsao: ["transferencia.ts"],
+  tele_estado: ["transferencia.ts"],
+  tele_parecer: ["transferencia.ts"],
+  tele_parecer_autor: ["transferencia.ts"],
+  tele_parecer_hora: ["transferencia.ts"],
+
+  /**
    * ── ⚠️⚠️ ⛔ O aPTT ⛔ E O TP **TÊM** CONSUMIDOR — ⛔ e ⛔ eu mapeei errado ────
    *
    * ⛔ O mapeamento da Fase 5 disse *"⛔ ninguém os lê"*, ⛔ e o autor decidiu

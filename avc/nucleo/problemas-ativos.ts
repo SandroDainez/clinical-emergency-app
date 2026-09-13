@@ -35,6 +35,8 @@ import { bloqueiosCorrigiveis, pendenciasDaSeguranca } from "./derivacoes-d";
 import { acoes, pendenciasOriginadasEmE } from "./derivacoes-e";
 import { pendenciasDoLaboratorio } from "./derivacoes-lab";
 import { pendenciasDerivadas } from "./derivacoes";
+import { reavaliacaoPendente } from "./deterioracao";
+import { pendenciasDoDestino } from "./transferencia";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
 
@@ -50,7 +52,7 @@ import type { Pendencia, SuperficieId } from "./tipos";
  * ⚠️ Com a origem em campo próprio, a ordem deixa de ser adivinhada pelo nome —
  * ⛔ e a prova passa a medir a **regra**, ⛔ e ⛔ não uma coincidência de letras.
  */
-export type OrigemDoProblema = "ameaca" | "bloqueio" | "derivada" | "campo";
+export type OrigemDoProblema = "reavaliacao" | "ameaca" | "bloqueio" | "derivada" | "campo";
 
 export type ProblemaAtivo = {
   readonly id: string;
@@ -94,6 +96,7 @@ export type ProblemaAtivo = {
  * código, ⛔ e uma prova a executa.
  */
 const PESO_DA_ORIGEM = {
+  reavaliacao: -1,
   ameaca: 0,
   bloqueio: 1,
   derivada: 2,
@@ -112,7 +115,13 @@ type Origem = OrigemDoProblema;
 function familiasDePendencia(
   estado: EstadoAvc
 ): readonly { readonly origem: Origem; readonly lista: readonly Pendencia[] }[] {
+  const reavaliacao = reavaliacaoPendente(estado);
   return [
+    /**
+     * ⚠️⚠️ «PACIENTE PIOROU» — ajuste de rota do autor, 2026-09-13 (A11). ⛔ A tarefa
+     * ⛔ espera agenda: ela é fixada em PRIMEIRO na ordenação abaixo.
+     */
+    { origem: "reavaliacao", lista: reavaliacao === undefined ? [] : [reavaliacao] },
     { origem: "derivada", lista: pendenciasDerivadas(estado) },
     /**
      * ⚠️ As da imagem são **derivadas** ⛔ e ⛔ não passam por
@@ -126,6 +135,8 @@ function familiasDePendencia(
     /** ⚠️ E **origina**, ⛔ mas a dona é B — ver `pendenciasOriginadasEmE`. */
     { origem: "derivada", lista: pendenciasOriginadasEmE(estado) },
     { origem: "derivada", lista: pendenciasDoLaboratorio(estado) },
+    /** ⚠️ T07/A12 — registro da transferência (2026-09-13). ⛔ Sem critério clínico. */
+    { origem: "derivada", lista: pendenciasDoDestino(estado) },
     /**
      * ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
      * campo ⛔ ainda ⛔ não existe é muro, ⛔ e ⛔ não tarefa (**E-26**, **I-7**).
@@ -247,6 +258,8 @@ export function problemasAtivos(estado: EstadoAvc): readonly ProblemaAtivo[] {
    * mesmo peso trocariam de lugar a cada render.
    */
   return [...brutos].sort((x, y) => {
+    const fixada = Number(y.origem === "reavaliacao") - Number(x.origem === "reavaliacao");
+    if (fixada !== 0) return fixada;
     const porEstado =
       ORDEM_DOS_ESTADOS.indexOf(x.estado) - ORDEM_DOS_ESTADOS.indexOf(y.estado);
     if (porEstado !== 0) return porEstado;

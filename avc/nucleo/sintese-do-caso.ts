@@ -28,6 +28,14 @@ import { bloqueiosCorrigiveis } from "./derivacoes-d";
 import { leituraDoNihssCalculado, nihssCalculado, nihssInformado } from "./derivacoes-b";
 import { textoDoTotalNihss } from "../../lib/nihss";
 import type { Relogio } from "./relogio";
+import { reavaliacaoPendente } from "./deterioracao";
+import {
+  FRASE_DO_MARCO,
+  avaliacaoEspecializadaRegistrada,
+  leituraDaTransferencia,
+  linhaDoTempoDoCaso,
+  type ItemDaLinhaDoTempo,
+} from "./transferencia";
 
 /** ⚠️ Um fato da síntese — ⛔ já formatado para leitura, ⛔ e sem id cru. */
 export type LinhaDaSintese = {
@@ -64,10 +72,22 @@ export type SinteseDoCaso = {
   /** ⚠️ O que fazer agora — ⛔ operacional, ⛔ e ⛔ não guideline genérica. */
   readonly proximaAcao: readonly LinhaDaSintese[];
   /** ⚠️ Só o que interfere em segurança, decisão, destino ⛔ ou tratamento. */
-  readonly pendencias: readonly { readonly id: string; readonly campo: string }[];
+  readonly pendencias: readonly { readonly id: string; readonly campo: string; readonly rotulo?: string }[];
+  /**
+   * ⚠️ A linha do tempo REAL da transferência, da teleconsulta ⛔ e das pioras
+   * (2026-09-13): cada item é um fato com horário; estimativa sai marcada.
+   */
+  readonly linhaDoTempo: readonly ItemDaLinhaDoTempo[];
 };
 
 /** ⚠️ `96` → `"1 h 36 min"`. ⛔ Minuto cru vira conta na cabeça do médico. */
+/**
+ * ⚠️ Pendências cujo rótulo ⛔ sai de `acaoPendente(campo)`: o campo apontado é só
+ * o lugar onde se resolve (a piora aponta a via aérea; a revisão do acesso, o estado
+ * da transferência), ⛔ e o texto do campo diria outra coisa.
+ */
+const ROTULO_PROPRIO = new Set(["reavaliar_apos_piora", "revisar_acesso_transferencia", "motivo_da_recusa"]);
+
 function duracao(min: number): string {
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
@@ -124,6 +144,31 @@ export function sinteseDoCaso(
     situacao.push({ id: "nihss", texto: `NIHSS de outro serviço ${nihss}` });
   }
 
+  /* ── 1b · PIORA, TRANSFERÊNCIA ⛔ E TELECONSULTA — registro, ⛔ sem critério ── */
+
+  if (reavaliacaoPendente(estado) !== undefined) {
+    situacao.push({ id: "piora", texto: "Paciente piorou: reavaliação pendente" });
+  }
+  const transferencia = leituraDaTransferencia(estado);
+  if (transferencia.estado !== undefined && FRASE_DO_MARCO[transferencia.estado] !== undefined) {
+    situacao.push({ id: "transferencia", texto: FRASE_DO_MARCO[transferencia.estado] });
+  }
+  if (transferencia.marcoSemAceite) {
+    situacao.push({ id: "aceite-nao-registrado", texto: "Aceite não registrado" });
+  }
+  if (transferencia.emEspera) {
+    situacao.push({ id: "espera", texto: "Transferência em curso: o plano local e as tarefas continuam" });
+  }
+  if (transferencia.semTransferenciaConfirmada) {
+    situacao.push({
+      id: "plano-local",
+      texto: "Sem transferência confirmada: manter o plano local, documentar e revisar o acesso",
+    });
+  }
+  if (avaliacaoEspecializadaRegistrada(estado) !== undefined) {
+    situacao.push({ id: "avaliacao-especializada", texto: "Avaliação especializada registrada" });
+  }
+
   /* ── 2 · CONDUTA — ⛔ só o decidido, ⛔ e com a natureza explícita ──────── */
 
   /**
@@ -176,9 +221,13 @@ export function sinteseDoCaso(
    * núcleo já classificou como abertas — ⛔ e a tela as apresenta como **ação**,
    * ⛔ nunca como nome de variável (`acaoPendente`).
    */
-  const pendencias = pendenciasDoCaso.map((p) => ({ id: p.id, campo: p.campo }));
+  const pendencias = pendenciasDoCaso.map((p) =>
+    ROTULO_PROPRIO.has(p.id) && "rotulo" in p
+      ? { id: p.id, campo: p.campo, rotulo: String((p as { rotulo: string }).rotulo) }
+      : { id: p.id, campo: p.campo }
+  );
 
-  return { situacao, condutas, proximaAcao, pendencias };
+  return { situacao, condutas, proximaAcao, pendencias, linhaDoTempo: linhaDoTempoDoCaso(estado) };
 }
 
 /** ⚠️ `HH:MM` — ⛔ a síntese ⛔ não inventa fuso ⛔ nem formato longo. */

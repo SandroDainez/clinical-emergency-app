@@ -23,7 +23,7 @@ import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_D } from "./superficie-d";
 import { TODOS_OS_CAMPOS_E } from "./superficie-e";
 import { ACAO_DE_TROMBOLISE, DECISAO_DE_PROSSEGUIR } from "./superficie-f";
-import { CAMPOS_ANTITROMBOTICOS } from "./superficie-g";
+import { CAMPOS_ANTITROMBOTICOS, CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "./superficie-g";
 
 /**
  * TODOS os campos do módulo, de todas as casas.
@@ -101,6 +101,8 @@ export function todosOsCampos(): readonly Campo[] {
      * na Fase 9.
      */
     ...CAMPOS_ANTITROMBOTICOS,
+    ...CAMPOS_DA_TRANSFERENCIA,
+    ...CAMPOS_DA_TELECONSULTA,
   ];
 }
 

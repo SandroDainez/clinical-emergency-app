@@ -517,3 +517,76 @@ export const FATOS_OPERACIONAIS: readonly FatoOperacional[] = [
  * lembrar de acrescentá-lo à trava (D-15).
  */
 export const IDS_OPERACIONAIS: readonly string[] = FATOS_OPERACIONAIS.map((f) => f.id);
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⚠️⚠️ TRANSFERÊNCIA ⛔ E TELECONSULTA — pedido do autor, 2026-09-13 (T07, A12)
+ *
+ * ⚠️ São **registro**, ⛔ e ⛔ não afirmação clínica: ⛔ nenhum critério de
+ * transferência ⛔ nem centro de destino é dito pelo app — o destino é texto
+ * escrito pela equipe. ⛔ Portaria 665/2012 ⛔ e rede local ⛔ são pendências
+ * clínicas na fila; até haver fonte, ⛔ nada aqui orienta.
+ *
+ * ⚠️ Cada estado é um fato com horário (a linha do tempo é a trilha real). ⛔ Os
+ * estados ⛔ são possibilidades, ⛔ e ⛔ não fluxo forçado — o mesmo princípio de
+ * `ESTADO_DA_ACAO`. ⛔ Aceite ⛔ nunca é presumido: um marco posterior sem aceite
+ * registrado é **dito**.
+ *
+ * ⚠️ Nenhum destes campos alcança a F: ⛔ transferência ⛔ e parecer ⛔ não mudam
+ * portão, veredito ⛔ nem dose (prova `prova-avc-piora-e-transferencia.cjs`).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export const ESTADOS_DA_TRANSFERENCIA = [
+  "Solicitada",
+  "Contato realizado",
+  "Aceite",
+  "Recusa",
+  "Transporte confirmado",
+  "Saída",
+  "Chegada",
+  "Cancelada",
+] as const;
+
+export const ESTADOS_DA_TELECONSULTA = [
+  "Solicitada",
+  "Em andamento",
+  "Parecer registrado",
+  "Não disponível",
+] as const;
+
+const REGISTRO = { natureza: "administrativo", fonte: "administrativo", bloqueiaTerapia: false } as const;
+
+export const GRUPO_DA_TRANSFERENCIA: readonly Grupo[] = comCasa("destino", [
+  {
+    id: "transferencia",
+    titulo: "Transferência",
+    nota: "Registro da equipe. O app não define critério nem destino de transferência.",
+    campos: [
+      { id: "transf_estado", rotulo: "Estado da transferência", tipo: "escolha", temporalidade: "estado", opcoes: ESTADOS_DA_TRANSFERENCIA, ...REGISTRO,
+        nota: "Cada toque registra o marco com o horário. Aceite só existe quando registrado." },
+      { id: "transf_destino", rotulo: "Destino informado pela equipe", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
+      { id: "transf_recusa_motivo", rotulo: "Motivo da recusa", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
+        apareceQuando: { campo: "transf_estado", valor: "Recusa" } },
+      { id: "transf_previsao", rotulo: "Previsão do transporte (estimativa)", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
+    ],
+  },
+]);
+
+export const GRUPO_DA_TELECONSULTA: readonly Grupo[] = comCasa("destino", [
+  {
+    id: "teleconsulta",
+    titulo: "Teleconsulta (telestroke)",
+    nota: "O parecer é registrado como escrito e não altera nenhuma regra do app.",
+    campos: [
+      { id: "tele_estado", rotulo: "Estado da teleconsulta", tipo: "escolha", temporalidade: "estado", opcoes: ESTADOS_DA_TELECONSULTA, ...REGISTRO },
+      { id: "tele_parecer", rotulo: "Parecer (texto livre)", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
+        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
+      { id: "tele_parecer_autor", rotulo: "Autor do parecer", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
+        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
+      { id: "tele_parecer_hora", rotulo: "Horário do parecer", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO,
+        apareceQuando: { campo: "tele_estado", valor: "Parecer registrado" } },
+    ],
+  },
+]);
+
+export const CAMPOS_DA_TRANSFERENCIA: readonly Campo[] = GRUPO_DA_TRANSFERENCIA.flatMap((g) => g.campos);
+export const CAMPOS_DA_TELECONSULTA: readonly Campo[] = GRUPO_DA_TELECONSULTA.flatMap((g) => g.campos);

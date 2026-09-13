@@ -45,11 +45,15 @@ export function ConfirmacaoDeLimpar({
               {tr("Esta resposta sustenta uma retenção ou um bloqueio. Limpar registra uma correção com motivo «toque errado» e devolve a pergunta a não respondida.")}
             </Text>
             <View style={e.linha}>
-              <Pressable style={e.botaoSecundario} accessibilityRole="button" testID="avc-confirmar-limpar-cancelar" onPress={onCancelar}>
-                <Text style={e.botaoSecundarioTexto}>{tr("Manter a resposta")}</Text>
+              {/**
+                * ⚠️⚠️ D-PEND-27 (autor, 2026-09-13): o DESTAQUE fica no caminho seguro. ⛔ Numa
+                * confirmação que existe para frear o dedo, "limpar" ⛔ é a ação padrão.
+                */}
+              <Pressable style={e.botaoSecundario} accessibilityRole="button" testID="avc-confirmar-limpar-sim" onPress={onConfirmar}>
+                <Text style={e.botaoSecundarioTexto}>{tr("Foi engano — limpar")}</Text>
               </Pressable>
-              <Pressable style={e.botaoPrincipal} accessibilityRole="button" testID="avc-confirmar-limpar-sim" onPress={onConfirmar}>
-                <Text style={e.botaoPrincipalTexto}>{tr("Foi engano — limpar")}</Text>
+              <Pressable style={e.botaoPrincipal} accessibilityRole="button" testID="avc-confirmar-limpar-cancelar" onPress={onCancelar}>
+                <Text style={e.botaoPrincipalTexto}>{tr("Manter a resposta")}</Text>
               </Pressable>
             </View>
           </View>

@@ -160,6 +160,9 @@ import { ACAO } from "../../avc/conteudo/superficie-e";
 import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../../avc/conteudo/campos";
 import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../../avc/nucleo/limpar-auditado";
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
+import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
+import { reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
+import { CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
 import {
   CAMPO_DA_JUSTIFICATIVA,
   CAMPO_DE_ITEM,
@@ -260,6 +263,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const [resumoAberto, setResumoAberto] = useState(false);
   /** ⚠️ D-PEND-26: «Limpar» que sustenta retenção ⛔ ou bloqueio espera confirmação. */
   const [pedidoDeLimpar, setPedidoDeLimpar] = useState<PedidoDeLimpar | undefined>(undefined);
+  /** ⚠️ «Paciente piorou» global (ajuste de rota do autor, 2026-09-13). */
+  const [pioraAberta, setPioraAberta] = useState(false);
 
   /**
    * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
@@ -555,6 +560,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * documenta para a trombólise.
        */
       ["imagem", TODOS_OS_CAMPOS_L],
+      ["destino", [...CAMPOS_DA_TRANSFERENCIA, ...CAMPOS_DA_TELECONSULTA]],
     ];
     const achado = donos.find(([, campos]) => campos.some((c) => c.id === campo));
     if (!achado) return;
@@ -627,6 +633,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     if (estado.superficieVista !== dono) abrir(dono);
     /** ⛔ Já estando ⛔ lá, ⛔ o que resta ⛔ é ⛔ levar até o ponto. */
     if (alvo) rolarAte(alvo);
+  }
+
+  /**
+   * ⚠️ A11 — o evento, a reabertura ⛔ e a ida à Estabilização no mesmo gesto. ⛔ A
+   * rolagem volta ao topo na troca de superfície, onde a tarefa está.
+   */
+  function registrarPioraDaTela(texto: string) {
+    setPioraAberta(false);
+    setEstado((e) => registrarPiora(e, texto, relogio));
+    abrir("estabilizacao");
   }
 
   function escolher(campo: string, valor: string) {
@@ -1101,11 +1117,21 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   return (
     <ClinicalShell
       contexto={
-        <FaixaDoAtendimentoPersistido
-          recuperadoDe={atendimento.recuperadoDe}
-          falhaAoGravar={atendimento.falhaAoGravar}
-          onEncerrar={() => void atendimento.encerrarEAbrirNovo()}
-        />
+        <>
+          <FaixaDoAtendimentoPersistido
+            recuperadoDe={atendimento.recuperadoDe}
+            falhaAoGravar={atendimento.falhaAoGravar}
+            onEncerrar={() => void atendimento.encerrarEAbrirNovo()}
+          />
+          {/**
+            * ── ⚠️⚠️ «PACIENTE PIOROU» — GLOBAL, ⛔ FORA DA ROLAGEM (2026-09-13) ─────
+            * ⚠️ Ajuste de rota do autor: acessível de qualquer tela do AVC. ⛔ No topo
+            * fixo ele ⛔ some ao rolar ⛔ nem fica atrás de bloco recolhido.
+            */}
+          {atendimento.fase === "pronto" ? (
+            <BotaoPacientePiorou onPress={() => setPioraAberta(true)} />
+          ) : null}
+        </>
       }
       header={
         /**
@@ -1301,6 +1327,29 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * calculada.
         */}
       <View ref={noDoConteudo} style={s.medidor} />
+      {/**
+        * ── ⚠️⚠️ PRIORIDADE · «REAVALIAR AGORA» — 2026-09-13 (A11) ───────────────
+        * ⚠️ Depois de «Paciente piorou», a tarefa abre o topo de TODA superfície —
+        * ⛔ inclusive Paciente ⛔ e Estabilização — até os cinco eixos voltarem a ser
+        * concluídos. ⛔ Sem limiar, ⛔ sem conduta: ela diz onde olhar.
+        */}
+      {reavaliacaoPendente(estado) === undefined ? null : (
+        <Pressable
+          onPress={() => abrir("estabilizacao")}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Paciente piorou: reavaliar agora")}
+          testID="avc-prioridade-reavaliar"
+          style={s.reavaliarLinha}
+        >
+          <View style={s.reavaliarTexto}>
+            <Text style={s.reavaliarTitulo}>{tr("Reavaliar agora")}</Text>
+            <Text style={s.reavaliarDetalhe}>
+              {tr("Paciente piorou. Conclua de novo a avaliação de cada eixo da Estabilização.")}
+            </Text>
+          </View>
+          <Text style={s.reavaliarSeta}>{SETA}</Text>
+        </Pressable>
+      )}
       {/**
         * ── ⚠️⚠️ COCKPIT (§7.8) ────────────────────────────────────────────
         *
@@ -2260,6 +2309,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
              */
             pendencias={pendenciasDoCaso(estado)}
             relogio={relogio}
+            onHora={registrarHora}
+            onDesfazer={desfazer}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE
@@ -2482,6 +2533,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio));
         }}
       />
+      <DialogoPacientePiorou
+        aberto={pioraAberta}
+        onCancelar={() => setPioraAberta(false)}
+        onRegistrar={registrarPioraDaTela}
+      />
     </ClinicalShell>
   );
 }
@@ -2665,6 +2721,22 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ As duas saídas da imagem — ⛔ empilhadas, ⛔ e ⛔ não lado a lado. */
     acoesDaImagem: { gap: ESPACO.sm },
     /** ⚠️ A forma compacta da prioridade — ⛔ uma linha, ⛔ e tocável inteira. */
+    reavaliarLinha: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+      backgroundColor: tema.cores.criticalTint,
+      borderWidth: 1.5,
+      borderColor: tema.cores.critical,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.md,
+      paddingVertical: ESPACO.sm,
+    },
+    reavaliarTexto: { flex: 1, gap: 2 },
+    reavaliarTitulo: { ...PAPEL.tituloDeSecao, color: tema.cores.text },
+    reavaliarDetalhe: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    reavaliarSeta: { ...PAPEL.tituloDeSecao, color: tema.cores.critical },
     imagemLinha: {
       flexDirection: "row",
       alignItems: "center",

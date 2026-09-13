@@ -17,7 +17,7 @@
  * autor do evento (carimbado pela persistência, AC-40).
  * UNIVERSO: `avc/nucleo/limpar-auditado.ts`, `avc/nucleo/{estado,portao-ivt,derivacoes-c}.ts`,
  * `components/avc/avc-modulo-screen.tsx`.
- * FONTE: `docs/decisoes.md` D-PEND-26.
+ * FONTE: `docs/decisoes.md` D-PEND-26 ⛔ e D-PEND-27 (destaque visual no caminho seguro).
  */
 const fs = require("node:fs");
 const os = require("node:os");
@@ -106,6 +106,12 @@ const tela = lerFonte(path.join(appDir, "components", "avc", "avc-modulo-screen.
 const desfazer = (tela.match(/function desfazer\(campo: string\)[\s\S]*?\n  \}/) || [""])[0];
 conf("a tela: «Limpar» consulta a regra genérica antes de corrigir", /campoSustentaRetencaoOuBloqueio\(/.test(desfazer), `⛔ ${desfazer.slice(0, 200)}`);
 conf("a tela: a confirmação grava pelo «Limpar» auditado", /limparComCorrecaoAuditada\(/.test(tela) && /avc-confirmar-limpar|ConfirmacaoDeLimpar/.test(tela), "⛔ sem confirmação");
+
+/* ── D-PEND-27: o destaque no caminho seguro ── */
+const dialogo = lerFonte(path.join(appDir, "components", "avc", "confirmacao-de-limpar.tsx"));
+const estiloDe = (testID) => ((dialogo.match(new RegExp(`style=\\{e\\.(\\w+)\\}[^>]*testID="${testID}"`)) || [])[1]);
+conf("D-PEND-27 · «Manter a resposta» usa o estilo da ação padrão (botaoPrincipal)", estiloDe("avc-confirmar-limpar-cancelar") === "botaoPrincipal", `⛔ ${estiloDe("avc-confirmar-limpar-cancelar")}`);
+conf("D-PEND-27 · «Foi engano — limpar» usa o estilo secundário", estiloDe("avc-confirmar-limpar-sim") === "botaoSecundario", `⛔ ${estiloDe("avc-confirmar-limpar-sim")}`);
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · D-PEND-26 «LIMPAR» AUDITADO — ${ok} verde(s) · ${falhas} vermelho(s)`);
 process.exit(falhas === 0 ? 0 : 1);

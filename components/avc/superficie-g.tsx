@@ -48,7 +48,8 @@ import type { Relogio } from "../../avc/nucleo/relogio";
 import { sinteseDoCaso } from "../../avc/nucleo/sintese-do-caso";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 /** ⚠️ A conversão rótulo → valor gravado mora no conteúdo. ⛔ A tela ⛔ não a refaz. */
-import { valorDaOpcao } from "../../avc/conteudo/campo";
+import { campoAparece, valorDaOpcao } from "../../avc/conteudo/campo";
+import { GRUPO_DA_TELECONSULTA, GRUPO_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
 import { ClinicalCard, SectionTitle, WarningCard } from "./sistema";
 import { ChecklistTimeline } from "./sistema/blocos";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -56,7 +57,7 @@ import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
-import { CabecalhoDeBloco } from "./campos-clinicos";
+import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 
 /**
  * ⚠️⚠️ ⛔ LIDA DO CATÁLOGO, ⛔ e ⛔ NÃO reescrita na tela — ⛔ COR, LOE, seção e
@@ -80,6 +81,9 @@ type Props = {
   /** ⚠️ Quem sabe quais pendências existem é o módulo — ⛔ não esta tela (I6). */
   pendencias: readonly { readonly id: string; readonly campo: string }[];
   relogio: Relogio;
+  /** ⚠️ Transferência ⛔ e teleconsulta (2026-09-13): horário ⛔ e «Limpar» dos campos de registro. */
+  onHora: (campo: string, instante: number, relogio?: string) => void;
+  onDesfazer: (campo: string) => void;
 };
 
 /**
@@ -140,6 +144,8 @@ export default function SuperficieG({
   onAbrirSuperficie,
   pendencias,
   relogio,
+  onHora,
+  onDesfazer,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -287,10 +293,35 @@ export default function SuperficieG({
             testID="avc-g-pendencias"
             itens={sintese.pendencias.map((p) => ({
               id: p.id,
-              titulo: acaoPendente(p.campo),
+              titulo: p.rotulo ?? acaoPendente(p.campo),
               estado: "pendente" as const,
             }))}
           />
+        </View>
+      ) : null}
+
+      {/**
+        * ── ⚠️⚠️ LINHA DO TEMPO — transferência, teleconsulta ⛔ e pioras (2026-09-13) ──
+        * ⚠️ A trilha REAL: cada item é um fato com o horário em que aconteceu.
+        * ⛔ Estimativa sai marcada como estimativa.
+        */}
+      {sintese.linhaDoTempo.length > 0 ? (
+        <View style={e.grupo} testID="avc-g-sintese-linha-do-tempo">
+          <SectionTitle testID="avc-g-bloco-linha-do-tempo">Linha do tempo</SectionTitle>
+          <ClinicalCard testID="avc-g-linha-do-tempo">
+            {sintese.linhaDoTempo.map((item) => (
+              <View key={item.id} style={e.marco} testID={`avc-g-marco-${item.id}`}>
+                <Text style={e.marcoHora}>{horaCurta(item.quando)}</Text>
+                <View style={e.marcoCorpo}>
+                  <Text style={e.sinteseLinha}>
+                    {tr(item.texto)}
+                    {item.estimativa ? <Text style={e.marcoEstimativa}>{` · ${tr("estimativa")}`}</Text> : null}
+                  </Text>
+                  {item.detalhe === undefined ? null : <Text style={e.marcoDetalhe}>{item.detalhe}</Text>}
+                </View>
+              </View>
+            ))}
+          </ClinicalCard>
         </View>
       ) : null}
 
@@ -703,6 +734,40 @@ export default function SuperficieG({
         * fronteira fica no topo do bloco, ⛔ e ⛔ não escondida numa nota: é ela
         * que impede geografia de virar critério clínico (F-03 §12).
         */}
+      {/**
+        * ── ⚠️⚠️ TRANSFERÊNCIA ⛔ E TELECONSULTA — REGISTRO (T07, 2026-09-13) ──────
+        * ⛔ Nenhum critério ⛔ nem destino é afirmado: a equipe registra. ⚠️ Durante
+        * a espera, ⛔ nada aqui trava o plano local ⛔ ou as tarefas; ⛔ uma piora usa
+        * o «Paciente piorou» do topo, o mesmo de qualquer tela.
+        */}
+      {GRUPOS_DE_REGISTRO_DE_G.map((grupo) => (
+        <View key={grupo.id} style={e.grupo} testID={`avc-g-${grupo.id}`}>
+          <CabecalhoDeBloco titulo={tr(grupo.titulo)} testID={`avc-g-bloco-${grupo.id}`} />
+          {grupo.nota ? <Text style={e.nota}>{tr(grupo.nota)}</Text> : null}
+          {grupo.campos
+            .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+            .map((campo) => {
+              const valor = valorAtual(estado, campo.id)?.valor;
+              return (
+                <CampoDaSuperficie
+                  key={campo.id}
+                  campo={campo}
+                  casaAtual="destino"
+                  bruto={String(valor ?? "")}
+                  numero={typeof valor === "number" ? valor : undefined}
+                  agora={agora}
+                  detalheAberto={false}
+                  onAlternarDetalhe={() => undefined}
+                  onEscolher={onEscolher}
+                  onMedir={() => undefined}
+                  onHora={onHora}
+                  onDesfazer={onDesfazer}
+                />
+              );
+            })}
+        </View>
+      ))}
+
       <View style={e.operacional} testID="avc-g-contexto-operacional">
         <Text style={e.operacionalTitulo}>{tr("Capacidade deste serviço")}</Text>
         <Text style={e.operacionalFronteira}>
@@ -759,6 +824,14 @@ export default function SuperficieG({
  * que a Superfície F já pagou: a leitura comparava rótulo, o estado tinha slug,
  * ⛔ e ⛔ nada funcionava ⛔ enquanto as provas passavam.
  */
+/** ⚠️ Transferência ⛔ e teleconsulta: blocos de REGISTRO da equipe (T07, 2026-09-13). */
+const GRUPOS_DE_REGISTRO_DE_G = [...GRUPO_DA_TRANSFERENCIA, ...GRUPO_DA_TELECONSULTA];
+
+function horaCurta(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 function valorGravado(opcao: string): string {
   if (opcao === "Sim") return "sim";
   if (opcao === "Não") return "nao";
@@ -971,6 +1044,11 @@ const criarEstilos = (tema: Tema) =>
     lacunaTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
 
     sinteseLinha: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    marco: { flexDirection: "row", gap: ESPACO.sm, alignItems: "flex-start" },
+    marcoHora: { ...PAPEL.rotuloDeMetrica, color: tema.cores.textSecondary, minWidth: 44, fontVariant: ["tabular-nums"] },
+    marcoCorpo: { flex: 1, gap: 2 },
+    marcoEstimativa: { color: tema.cores.textSecondary, fontStyle: "italic" },
+    marcoDetalhe: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     saidaCartao: {
       backgroundColor: tema.cores.surface,
       borderRadius: RAIO.botao,

@@ -86,7 +86,11 @@ const POR_SUPERFICIE = {
    * ⛔ no mesmo dia: o campo estava no registro do módulo ⛔ e ⛔ **⛔ não** numa
    * superfície — ⛔ órfão, ⛔ e inalcançável pela varredura.
    */
-  G: [...SG.FATOS_OPERACIONAIS, ...SG.CAMPOS_ANTITROMBOTICOS],
+  /**
+   * ⚠️ 2026-09-13 (10ª rodada): transferência ⛔ e teleconsulta entram em G como
+   * **registro** (T07, A12) — ⛔ sem critério clínico, ⛔ e ⛔ sem alcançar a F.
+   */
+  G: [...SG.FATOS_OPERACIONAIS, ...SG.CAMPOS_ANTITROMBOTICOS, ...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA],
 };
 const TODOS = Object.entries(POR_SUPERFICIE)
   .flatMap(([sup, cs]) => cs.map((c) => ({ ...c, sup })));
@@ -178,6 +182,8 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
     /** ⚠️ O julgamento da exceção das 24 h — percorrido no bloco antitrombótico. */
     CAMPOS_ANTITROMBOTICOS: SG.CAMPOS_ANTITROMBOTICOS.map((c) => c.id),
     CAMPO_AGENTE: [SF.CAMPO_AGENTE.id],
+    /** ⚠️ 2026-09-13 — transferência ⛔ e teleconsulta, percorridas em G (registro, T07). */
+    GRUPOS_DE_REGISTRO_DE_G: [...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA].map((c) => c.id),
   };
   /**
    * ⚠️⚠️ ⛔ CITAR O NOME ⛔ NÃO É PERCORRER A LISTA.
