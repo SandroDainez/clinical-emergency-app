@@ -291,6 +291,25 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Autoriza implementação:** sim (7ª rodada, Entrega 1).
 
+## D-PEND-25 · Alteplase: 0,9 mg/kg exato, máx. 90 mg, sem arredondar mg; bolus de 10% e volume a 1 mg/mL
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:**
+- **Dose:** alteplase 0,9 mg/kg exato, máx. 90 mg, sem arredondar mg.
+- **Administração:** 10% em bolus em 1 min, restante em 60 min.
+- **Volume:** a 1 mg/mL.
+- **Provas:** as mesmas da TNK (70, 100, 120 kg).
+
+**Origem:** AC-61 (leitura do agente na D-PEND-22, que mantinha a alteplase inteira). O autor: "a rodada anterior tirou o '18 mg' de um fármaco e deixou o mesmo defeito no outro".
+**Fontes no repositório:**
+- **Dose e esquema:** AHA/ASA 2026 §4.6.2 rec. 1 (COR 1, LOE A, p. e357) e Table 7 (p. e358): *"Infuse 0.9 mg/kg (maximum dose 90 mg) over 60 min, with 10% of the dose given as a bolus over 1 min"*.
+- **Concentração:** bula do Actilyse, 1 mg/mL (`protocols/fontes-verbatim/bulas-br-tromboliticos.md` §20.3).
+- **Esquema na bula:** 10% em bolus e o restante em 60 min (§20.8).
+
+**Revoga:** a dose inteira da alteplase (decisão de 2026-09-12, mantida pela leitura do agente na D-PEND-22).
+**Autoriza implementação:** sim (8ª rodada, Entrega 3).
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
