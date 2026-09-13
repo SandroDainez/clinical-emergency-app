@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * Transferência ⛔ e telestroke (T07, A12, A08) — pedido do autor, 2026-09-13.
@@ -37,10 +37,12 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
 
   test("recusa registrada: sem motivo vira pendência; com motivo entra na linha do tempo", async ({ page }) => {
     await abrir(page);
-    await page.getByTestId("avc-opcao-transf_estado-Solicitada").click();
-    await page.getByTestId("avc-opcao-transf_estado-Recusa").click();
+    await registrarMarcoAgora(page, "Solicitada");
+    await registrarMarcoAgora(page, "Recusa");
     await expect(page.getByTestId("avc-pendencia-motivo_da_recusa")).toHaveCount(1);
     await page.getByTestId("avc-texto-transf_recusa_motivo").fill("sem leito");
+    /** ⚠️ AC-68 (11ª rodada): o texto grava ao sair do campo, ⛔ e ⛔ por tecla. */
+    await page.getByTestId("avc-texto-transf_recusa_motivo").blur();
     const linha = page.getByTestId("avc-g-linha-do-tempo");
     await expect(linha).toContainText("Transferência solicitada");
     await expect(linha).toContainText("Recusa registrada");
@@ -52,8 +54,8 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
 
   test("aceite ⛔ nunca presumido: transporte confirmado sem aceite é dito", async ({ page }) => {
     await abrir(page);
-    await page.getByTestId("avc-opcao-transf_estado-Solicitada").click();
-    await page.getByTestId("avc-opcao-transf_estado-Transporte confirmado").click();
+    await registrarMarcoAgora(page, "Solicitada");
+    await registrarMarcoAgora(page, "Transporte confirmado");
     await expect(page.getByTestId("avc-g-situacao-aceite-nao-registrado")).toBeVisible();
     await page.getByTestId("avc-hora-transf_previsao").click();
     await page.getByTestId("avc-seletor-hora-m-menos").click();
@@ -67,7 +69,9 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
     await page.getByTestId("avc-opcao-tele_estado-Parecer registrado").click();
     await expect(page.getByTestId("avc-g-situacao-avaliacao-especializada"), "⛔ parecer presumido sem texto").toHaveCount(0);
     await page.getByTestId("avc-texto-tele_parecer").fill("texto do parecer");
+    await page.getByTestId("avc-texto-tele_parecer").blur();
     await page.getByTestId("avc-texto-tele_parecer_autor").fill("Dra. Neuro");
+    await page.getByTestId("avc-texto-tele_parecer_autor").blur();
     await page.getByTestId("avc-hora-tele_parecer_hora").click();
     await page.getByTestId("avc-seletor-hora-m-menos").click();
     await page.getByTestId("avc-seletor-hora-confirmar").click();
@@ -85,20 +89,21 @@ test.describe("AVC · transferência ⛔ e telestroke", () => {
     await abrirTudo(page);
     await page.getByTestId(`avc-opcao-${COAG}-sim`).click();
     await page.getByTestId("avc-aba-destino").click();
-    await page.getByTestId("avc-opcao-transf_estado-Solicitada").click();
-    await page.getByTestId("avc-opcao-transf_estado-Aceite").click();
+    await registrarMarcoAgora(page, "Solicitada");
+    await registrarMarcoAgora(page, "Aceite");
     await page.getByTestId("avc-aba-reperfusao").click();
     await expect(page.getByTestId("avc-f-portao-motivo-coagulograma"), "⛔ a transferência apagou o impedimento").toBeVisible();
     await expect(page.getByTestId("avc-f-evt"), "⛔ a EVT sumiu com a IVT impedida").toBeVisible();
     await page.getByTestId("avc-aba-destino").click();
-    await expect(page.getByTestId("avc-opcao-transf_estado-Aceite")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("avc-g-marcos"), "⛔ o marco sumiu").toContainText("Aceite");
     await expect(page.getByTestId("avc-g-situacao-transferencia")).toBeVisible();
   });
 
   test("ES · rótulos da transferência ⛔ e da teleconsulta em espanhol", async ({ page }) => {
     await abrir(page, "es-419");
-    await expect(page.getByTestId("avc-campo-transf_estado")).toContainText("Solicitud");
+    await page.getByTestId("avc-g-registrar-marco").click();
+    await expect(page.getByTestId("avc-g-marco-tipo-Solicitada")).toContainText("Solicitud");
     await expect(page.getByTestId("avc-campo-tele_estado")).toContainText(/teleconsulta/i);
-    await expect(page.getByTestId("avc-campo-transf_estado")).not.toContainText("Solicitada");
+    await expect(page.getByTestId("avc-g-marco-tipo-Solicitada")).not.toContainText("Solicitada");
   });
 });

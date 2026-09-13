@@ -18,7 +18,7 @@
 import { marcaDeAutoria } from "../../avc/persistencia/autoria";
 import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
@@ -1220,6 +1220,21 @@ export function CampoDeTexto({
   const corDoPlaceholder = useEstilosDoTema((tema) => ({ cor: { color: tema.cores.textSecondary } })).cor
     .color as string;
   const respondido = valor.length > 0;
+  /**
+   * ── ⚠️⚠️ AC-68 · UM FATO POR CONFIRMAÇÃO, ⛔ E ⛔ POR TECLA (autor, 2026-09-13) ──
+   * ⛔ Gravar a cada alteração enchia a trilha com "L", "Le", "Lei"… ⚠️ O texto vive
+   * num rascunho ⛔ e vira fato ao SAIR do campo ⛔ ou em «Registrar». Rascunho igual ao
+   * gravado ⛔ grava nada; rascunho vazio sobre valor gravado limpa.
+   */
+  const [rascunho, setRascunho] = useState(valor);
+  useEffect(() => setRascunho(valor), [valor]);
+  const confirmar = () => {
+    const limpo = rascunho.trim();
+    if (limpo === valor) return;
+    if (limpo.length === 0) onDesfazer(campo.id);
+    else onEscrever(campo.id, limpo);
+  };
+  const pendente = rascunho.trim() !== valor;
   return (
     <View style={[e.campo, respondido && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
       <View style={e.campoTopo}>
@@ -1229,8 +1244,10 @@ export function CampoDeTexto({
       {campo.ajuda ? <Text style={e.campoAjuda}>{tr(campo.ajuda)}</Text> : null}
       <TextInput
         style={e.entradaDeTexto}
-        value={valor}
-        onChangeText={(t) => (t.length === 0 ? onDesfazer(campo.id) : onEscrever(campo.id, t))}
+        value={rascunho}
+        onChangeText={setRascunho}
+        onBlur={confirmar}
+        onSubmitEditing={confirmar}
         placeholder={tr("não informado")}
         /**
          * ⚠️ A COR VEM DO TEMA, e ⛔ não de um hexadecimal — `valida-paleta`
@@ -1241,6 +1258,17 @@ export function CampoDeTexto({
         testID={`avc-texto-${campo.id}`}
         accessibilityLabel={tr(campo.rotulo)}
       />
+      {pendente ? (
+        <Pressable
+          style={e.limpar}
+          accessibilityRole="button"
+          accessibilityLabel={`${tr(campo.rotulo)}: ${tr("Registrar")}`}
+          testID={`avc-texto-registrar-${campo.id}`}
+          onPress={confirmar}
+        >
+          <Text style={e.limparTexto}>{tr("Registrar")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

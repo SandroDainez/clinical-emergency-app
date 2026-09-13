@@ -156,6 +156,9 @@ export function sinteseDoCaso(
   if (transferencia.marcoSemAceite) {
     situacao.push({ id: "aceite-nao-registrado", texto: "Aceite não registrado" });
   }
+  if (transferencia.chegadaSemSaida) {
+    situacao.push({ id: "saida-nao-registrada", texto: "Chegada registrada sem saída registrada" });
+  }
   if (transferencia.emEspera) {
     situacao.push({ id: "espera", texto: "Transferência em curso: o plano local e as tarefas continuam" });
   }

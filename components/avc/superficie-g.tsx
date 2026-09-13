@@ -58,6 +58,8 @@ import { PAPEL } from "../../design-system/tipografia-clinica";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
+import { MarcosDaTransferencia } from "./marcos-da-transferencia";
+import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
 
 /**
  * ⚠️⚠️ ⛔ LIDA DO CATÁLOGO, ⛔ e ⛔ NÃO reescrita na tela — ⛔ COR, LOE, seção e
@@ -84,6 +86,10 @@ type Props = {
   /** ⚠️ Transferência ⛔ e teleconsulta (2026-09-13): horário ⛔ e «Limpar» dos campos de registro. */
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onDesfazer: (campo: string) => void;
+  /** ⚠️ 11ª rodada (AC-69): marcos como eventos, cada um com a sua correção auditada. */
+  onRegistrarMarco: (tipo: string, observado: number) => void;
+  onCorrigirHoraDoMarco: (fatoId: string, observado: number) => void;
+  onMarcoPorEngano: (fatoId: string) => void;
 };
 
 /**
@@ -146,6 +152,9 @@ export default function SuperficieG({
   relogio,
   onHora,
   onDesfazer,
+  onRegistrarMarco,
+  onCorrigirHoraDoMarco,
+  onMarcoPorEngano,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -310,7 +319,7 @@ export default function SuperficieG({
           <SectionTitle testID="avc-g-bloco-linha-do-tempo">Linha do tempo</SectionTitle>
           <ClinicalCard testID="avc-g-linha-do-tempo">
             {sintese.linhaDoTempo.map((item) => (
-              <View key={item.id} style={e.marco} testID={`avc-g-marco-${item.id}`}>
+              <View key={item.id} style={e.marco} testID={`avc-g-tempo-${item.id}`}>
                 <Text style={e.marcoHora}>{horaCurta(item.quando)}</Text>
                 <View style={e.marcoCorpo}>
                   <Text style={e.sinteseLinha}>
@@ -318,6 +327,14 @@ export default function SuperficieG({
                     {item.estimativa ? <Text style={e.marcoEstimativa}>{` · ${tr("estimativa")}`}</Text> : null}
                   </Text>
                   {item.detalhe === undefined ? null : <Text style={e.marcoDetalhe}>{item.detalhe}</Text>}
+                  {item.nota === undefined ? null : <Text style={e.marcoDetalhe}>{tr(item.nota)}</Text>}
+                  {/**
+                    * ⚠️ AC-69 · a hora ao lado é a REAL (observada); ⚠️ «registrado às» só
+                    * aparece quando difere — ⛔ minutos de atraso de registro ⛔ somem.
+                    */}
+                  {!item.estimativa && horaCurta(item.registradoEm) !== horaCurta(item.quando) ? (
+                    <Text style={e.marcoDetalhe}>{tr("registrado às")} {horaCurta(item.registradoEm)}</Text>
+                  ) : null}
                 </View>
               </View>
             ))}
@@ -746,7 +763,21 @@ export default function SuperficieG({
           {grupo.nota ? <Text style={e.nota}>{tr(grupo.nota)}</Text> : null}
           {grupo.campos
             .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor))
+            /** ⚠️ O motivo da recusa aparece quando o marco ATUAL (pelo horário observado) é «Recusa». */
+            .filter((campo) => campo.id !== "transf_recusa_motivo" || leituraDaTransferencia(estado).estado === "Recusa")
             .map((campo) => {
+              if (campo.id === "transf_marco") {
+                return (
+                  <MarcosDaTransferencia
+                    key={campo.id}
+                    estado={estado}
+                    agora={agora}
+                    onRegistrar={onRegistrarMarco}
+                    onCorrigirHora={onCorrigirHoraDoMarco}
+                    onEngano={onMarcoPorEngano}
+                  />
+                );
+              }
               const valor = valorAtual(estado, campo.id)?.valor;
               return (
                 <CampoDaSuperficie

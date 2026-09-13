@@ -86,6 +86,7 @@ export function DialogoPacientePiorou({
 const criarEstilos = (tema: Tema) =>
   StyleSheet.create({
     botaoGlobal: {
+      flex: 1,
       minHeight: TOQUE.minimo,
       justifyContent: "center",
       alignItems: "center",

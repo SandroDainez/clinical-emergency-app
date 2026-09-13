@@ -298,3 +298,14 @@ export async function abrirEixosDaEstabilizacao(page: Page): Promise<void> {
     if ((await campos.count()) === 0) await page.getByTestId(`avc-ameaca-${eixo}`).click();
   }
 }
+
+/**
+ * Registra um marco da transferência em Destino, «aconteceu agora» (11ª rodada,
+ * 2026-09-13): os marcos são eventos de uma linha do tempo, ⛔ e ⛔ não seletor de estado.
+ */
+export async function registrarMarcoAgora(page: Page, tipo: string): Promise<void> {
+  await page.getByTestId("avc-g-registrar-marco").click();
+  await page.getByTestId(`avc-g-marco-tipo-${tipo}`).click();
+  await page.getByTestId("avc-g-marco-agora").click();
+  await expect(page.getByTestId("avc-g-marcos")).toContainText(tipo);
+}

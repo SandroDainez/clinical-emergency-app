@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * «Paciente piorou» GLOBAL — ajuste de rota do autor, 2026-09-13 (AC-10, A11).
@@ -110,15 +110,15 @@ test.describe("AVC · «Paciente piorou» global", () => {
   test("piora durante a espera da transferência: mesmo mecanismo, ⛔ e a transferência continua", async ({ page }) => {
     await abrir(page);
     await page.getByTestId("avc-aba-destino").click();
-    await page.getByTestId("avc-opcao-transf_estado-Solicitada").click();
-    await page.getByTestId("avc-opcao-transf_estado-Aceite").click();
+    await registrarMarcoAgora(page, "Solicitada");
+    await registrarMarcoAgora(page, "Aceite");
 
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
     await expect(page.getByTestId("avc-prioridade-reavaliar")).toBeInViewport();
 
     await page.getByTestId("avc-aba-destino").click();
-    await expect(page.getByTestId("avc-opcao-transf_estado-Aceite"), "⛔ a piora mexeu na transferência").toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("avc-g-marcos"), "⛔ a piora mexeu na transferência").toContainText("Aceite");
     const linha = page.getByTestId("avc-g-linha-do-tempo");
     await expect(linha).toContainText("Aceite registrado");
     await expect(linha).toContainText("Paciente piorou");

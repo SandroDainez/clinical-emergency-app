@@ -126,7 +126,7 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * ⚠️ T07/A12 — registro da transferência ⛔ e da teleconsulta (2026-09-13). ⛔ Lidos
    * só pela leitura do registro ⛔ e pela síntese; ⛔ nenhum portão, veredito ⛔ ou dose.
    */
-  transf_estado: ["transferencia.ts"],
+  transf_marco: ["transferencia.ts"],
   transf_destino: ["transferencia.ts"],
   transf_recusa_motivo: ["transferencia.ts"],
   transf_previsao: ["transferencia.ts"],

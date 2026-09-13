@@ -192,8 +192,12 @@ conf(
   const exportsDoWorkflow = lerFonte(path.join(dir, "deterioracao.ts")).match(/export function (\w+)/g) ?? [];
   conf(
     "⚠️ ⛔ e a exceção só exporta evento, leitura do evento ⛔ e tarefa",
-    exportsDoWorkflow.length === 3
-      && ["registrarPiora", "eventosDePiora", "reavaliacaoPendente"].every((n) => exportsDoWorkflow.some((x) => x.endsWith(n))),
+    /**
+     * ⚠️ 2026-09-13 (11ª rodada, AC-67): + `corrigirPioraPorEngano` — a correção auditada
+     * da piora devolve os eixos concluídos antes quando ⛔ houve reavaliação. Workflow.
+     */
+    exportsDoWorkflow.length === 4
+      && ["registrarPiora", "eventosDePiora", "reavaliacaoPendente", "corrigirPioraPorEngano"].every((n) => exportsDoWorkflow.some((x) => x.endsWith(n))),
     `⛔ ${exportsDoWorkflow.join(" · ")} — ⛔ função nova no módulo de workflow pede decisão`
   );
 }

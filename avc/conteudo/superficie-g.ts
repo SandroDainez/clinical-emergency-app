@@ -561,11 +561,16 @@ export const GRUPO_DA_TRANSFERENCIA: readonly Grupo[] = comCasa("destino", [
     titulo: "Transferência",
     nota: "Registro da equipe. O app não define critério nem destino de transferência.",
     campos: [
-      { id: "transf_estado", rotulo: "Estado da transferência", tipo: "escolha", temporalidade: "estado", opcoes: ESTADOS_DA_TRANSFERENCIA, ...REGISTRO,
-        nota: "Cada toque registra o marco com o horário. Aceite só existe quando registrado." },
+      /**
+       * ⚠️⚠️ MARCO, ⛔ E ⛔ NÃO ESTADO (autor, 2026-09-13, 11ª rodada): cada registro é um evento
+       * da linha do tempo, com horário observado ⛔ e horário de registro. A tela ⛔ o desenha
+       * como seletor: ação «Registrar marco» ⛔ e lista dos já registrados.
+       */
+      { id: "transf_marco", rotulo: "Marcos da transferência", tipo: "escolha", temporalidade: "estavel", opcoes: ESTADOS_DA_TRANSFERENCIA, ...REGISTRO,
+        nota: "Cada marco entra na linha do tempo com o horário em que aconteceu e o horário em que foi registrado. Aceite só existe quando registrado." },
       { id: "transf_destino", rotulo: "Destino informado pela equipe", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
-      { id: "transf_recusa_motivo", rotulo: "Motivo da recusa", tipo: "texto", temporalidade: "estavel", ...REGISTRO,
-        apareceQuando: { campo: "transf_estado", valor: "Recusa" } },
+      /** ⚠️ Aparece quando o marco atual (pelo horário observado) é «Recusa» — a tela decide. */
+      { id: "transf_recusa_motivo", rotulo: "Motivo da recusa", tipo: "texto", temporalidade: "estavel", ...REGISTRO },
       { id: "transf_previsao", rotulo: "Previsão do transporte (estimativa)", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
     ],
   },

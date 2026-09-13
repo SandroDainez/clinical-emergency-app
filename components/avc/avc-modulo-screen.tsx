@@ -126,6 +126,11 @@ const COR_DO_EIXO: Readonly<Record<string, "info" | "primary" | "critical" | "de
 };
 
 
+function horaDoInstante(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
   estabilizacao: { nome: "Estabilizar", icone: "estabilizar" },
   neurologico: { nome: "Neuro", icone: "neuro" },
@@ -161,7 +166,12 @@ import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../..
 import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../../avc/nucleo/limpar-auditado";
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
-import { reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
+import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
+import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
+import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
+import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco } from "../../avc/nucleo/transferencia";
+import { BotaoPrecisoDeAjuda, DialogoDeAjuda } from "./preciso-de-ajuda";
+import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
 import {
   CAMPO_DA_JUSTIFICATIVA,
@@ -265,6 +275,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const [pedidoDeLimpar, setPedidoDeLimpar] = useState<PedidoDeLimpar | undefined>(undefined);
   /** ⚠️ «Paciente piorou» global (ajuste de rota do autor, 2026-09-13). */
   const [pioraAberta, setPioraAberta] = useState(false);
+  /** ⚠️ «Preciso de ajuda» global (11ª rodada) ⛔ e o ponto de origem para voltar. */
+  const [ajudaAberta, setAjudaAberta] = useState(false);
+  const [retornoDaAjuda, setRetornoDaAjuda] = useState<{ readonly superficie: SuperficieId; readonly y: number } | undefined>(undefined);
+  const [enganoDaPiora, setEnganoDaPiora] = useState(false);
 
   /**
    * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
@@ -639,6 +653,25 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ A11 — o evento, a reabertura ⛔ e a ida à Estabilização no mesmo gesto. ⛔ A
    * rolagem volta ao topo na troca de superfície, onde a tarefa está.
    */
+  /**
+   * ⚠️ «Preciso de ajuda» → caminho: guarda a superfície ⛔ e a rolagem de origem; a faixa
+   * «Voltar para …» devolve as duas.
+   */
+  function seguirCaminhoDaAjuda(destino: SuperficieId) {
+    setAjudaAberta(false);
+    if (destino === estado.superficieVista) return;
+    setRetornoDaAjuda({ superficie: estado.superficieVista, y: rolagemAtual.current });
+    abrir(destino);
+  }
+
+  function voltarDaAjuda() {
+    const r = retornoDaAjuda;
+    if (r === undefined) return;
+    rolagemARestaurar.current = r.y;
+    setRetornoDaAjuda(undefined);
+    abrir(r.superficie);
+  }
+
   function registrarPioraDaTela(texto: string) {
     setPioraAberta(false);
     setEstado((e) => registrarPiora(e, texto, relogio));
@@ -947,10 +980,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ ⛔ Se há foco pedido, ⛔ ele manda: quem tocou *"Pressão arterial"* quer
    * chegar **na pressão**, ⛔ e ⛔ não no topo da fase.
    */
+  /** ⚠️ 11ª rodada: a rolagem atual ⛔ e a que o retorno da ajuda pede de volta. */
+  const rolagemAtual = useRef(0);
+  const rolagemARestaurar = useRef<number | undefined>(undefined);
+
   useEffect(() => {
     if (focoPendente.current !== undefined) return;
-    rolagem.current?.scrollTo({ y: 0, animated: false });
+    const y = rolagemARestaurar.current;
+    rolagemARestaurar.current = undefined;
+    rolagem.current?.scrollTo({ y: y ?? 0, animated: false });
+    if (y !== undefined) {
+      /** ⚠️ A superfície de origem ainda está montando: repete até o conteúdo ter altura. */
+      const repetir = [60, 250].map((ms) => setTimeout(() => rolagem.current?.scrollTo({ y, animated: false }), ms));
+      return () => repetir.forEach(clearTimeout);
+    }
+    return undefined;
   }, [estado.superficieVista]);
+
+  useEffect(() => {
+    if (retornoDaAjuda !== undefined && retornoDaAjuda.superficie === estado.superficieVista) setRetornoDaAjuda(undefined);
+  }, [estado.superficieVista, retornoDaAjuda]);
 
   const foco = useMemo(
     () => ({
@@ -991,6 +1040,11 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * quando o estado muda, ⛔ e ⛔ é isso que as mantém verdadeiras.
    */
   const ameacas = useMemo(() => ameacasImediatas(estado), [estado]);
+  /** ⚠️ 11ª rodada: só enquanto a reavaliação da piora está pendente. */
+  const anteriorDaPiora = useMemo(
+    () => (reavaliacaoPendente(estado) === undefined ? undefined : avaliacaoAntesDaPiora(estado)),
+    [estado]
+  );
   /**
    * ⚠️⚠️ O PRÓXIMO EIXO **⛔ NÃO AVALIADO**, na ordem do ABCDE.
    *
@@ -1129,7 +1183,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             * fixo ele ⛔ some ao rolar ⛔ nem fica atrás de bloco recolhido.
             */}
           {atendimento.fase === "pronto" ? (
-            <BotaoPacientePiorou onPress={() => setPioraAberta(true)} />
+            <View style={s.acoesGlobais}>
+              <BotaoPrecisoDeAjuda onPress={() => setAjudaAberta(true)} />
+              <BotaoPacientePiorou onPress={() => setPioraAberta(true)} />
+            </View>
           ) : null}
         </>
       }
@@ -1311,6 +1368,10 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     <ScrollView
       ref={rolagem}
       style={s.root}
+      scrollEventThrottle={16}
+      onScroll={(ev) => {
+        rolagemAtual.current = ev.nativeEvent.contentOffset.y;
+      }}
       /**
        * ⚠️⚠️ O PADDING INFERIOR É A BARRA + A SAFE AREA.
        *
@@ -1333,22 +1394,53 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         * ⛔ inclusive Paciente ⛔ e Estabilização — até os cinco eixos voltarem a ser
         * concluídos. ⛔ Sem limiar, ⛔ sem conduta: ela diz onde olhar.
         */}
-      {reavaliacaoPendente(estado) === undefined ? null : (
+      {/**
+        * ── ⚠️⚠️ RETORNO DA AJUDA — 11ª rodada ────────────────────────────────
+        * ⚠️ Quem seguiu um caminho de «Preciso de ajuda» volta ao ponto de origem —
+        * superfície ⛔ e rolagem — com um toque.
+        */}
+      {retornoDaAjuda !== undefined && retornoDaAjuda.superficie !== estado.superficieVista ? (
         <Pressable
-          onPress={() => abrir("estabilizacao")}
+          onPress={voltarDaAjuda}
           accessibilityRole="button"
-          accessibilityLabel={tr("Paciente piorou: reavaliar agora")}
-          testID="avc-prioridade-reavaliar"
-          style={s.reavaliarLinha}
+          accessibilityLabel={`${tr("Voltar para")} ${tr(CURTO[retornoDaAjuda.superficie]?.nome ?? superficie(retornoDaAjuda.superficie).titulo)}`}
+          testID="avc-ajuda-retorno"
+          style={s.retornoLinha}
         >
-          <View style={s.reavaliarTexto}>
-            <Text style={s.reavaliarTitulo}>{tr("Reavaliar agora")}</Text>
-            <Text style={s.reavaliarDetalhe}>
-              {tr("Paciente piorou. Conclua de novo a avaliação de cada eixo da Estabilização.")}
-            </Text>
-          </View>
-          <Text style={s.reavaliarSeta}>{SETA}</Text>
+          <Text style={s.retornoTexto}>
+            ‹ {tr("Voltar para")} {tr(CURTO[retornoDaAjuda.superficie]?.nome ?? superficie(retornoDaAjuda.superficie).titulo)}
+          </Text>
         </Pressable>
+      ) : null}
+      {reavaliacaoPendente(estado) === undefined ? null : (
+        <View style={s.reavaliarBloco}>
+          <Pressable
+            onPress={() => abrir("estabilizacao")}
+            accessibilityRole="button"
+            accessibilityLabel={tr("Paciente piorou: reavaliar agora")}
+            testID="avc-prioridade-reavaliar"
+            style={s.reavaliarLinha}
+          >
+            <View style={s.reavaliarTexto}>
+              <Text style={s.reavaliarTitulo}>{tr("Reavaliar agora")}</Text>
+              <Text style={s.reavaliarDetalhe}>
+                {tr("Paciente piorou. Conclua de novo a avaliação de cada eixo da Estabilização.")}
+              </Text>
+            </View>
+            <Text style={s.reavaliarSeta}>{SETA}</Text>
+          </Pressable>
+          {/** ⚠️ AC-67 · «Limpar» auditado da piora — ⛔ some depois de corrigida. */}
+          {eventosDePiora(estado).slice(-1)[0]?.engano === true ? null : (
+            <Pressable
+              onPress={() => setEnganoDaPiora(true)}
+              accessibilityRole="button"
+              testID="avc-piora-engano"
+              style={s.reavaliarEngano}
+            >
+              <Text style={s.reavaliarEnganoTexto}>{tr("Registrado por engano?")}</Text>
+            </Pressable>
+          )}
+        </View>
       )}
       {/**
         * ── ⚠️⚠️ COCKPIT (§7.8) ────────────────────────────────────────────
@@ -1623,6 +1715,34 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   {tr(a.conduta)}
                 </Text>
               ) : null}
+              {/**
+                * ── ⚠️⚠️ EIXO REABERTO PELA PIORA — 11ª rodada ─────────────────────
+                * ⚠️ *"Reavaliações não sobrescrevem o basal"*: a avaliação de ANTES da
+                * piora, com hora, ⛔ e a marca «Reavaliação pendente» até concluir de
+                * novo. ⛔ Nunca o vazio.
+                */}
+              {(() => {
+                const ant = anteriorDaPiora?.find((x) => x.id === a.id);
+                if (ant === undefined || estado.eixosConcluidos.includes(a.id)) return null;
+                const leitura = ant.semDados
+                  ? tr("sem dados registrados")
+                  : [
+                      /** ⚠️ Com ameaça, o ACHADO de então diz mais que o rótulo do estado. */
+                      tr(ant.achado ?? ESTADOS[estadoClinicoDoEixo(ant.estado)].rotulo),
+                      ant.valor === undefined ? undefined : `${ant.valor}${ant.unidade ? ` ${tr(ant.unidade)}` : ""}`,
+                      ant.quando === undefined ? undefined : horaDoInstante(ant.quando),
+                    ].filter((x) => x !== undefined).join(" · ");
+                return (
+                  <>
+                    <Text style={s.ameacaAnterior} testID={`avc-ameaca-anterior-${a.id}`}>
+                      {tr("Antes da piora")}: {leitura}
+                    </Text>
+                    <Text style={s.ameacaPendente} testID={`avc-ameaca-reavaliacao-pendente-${a.id}`}>
+                      {tr("Reavaliação pendente")}
+                    </Text>
+                  </>
+                );
+              })()}
               {estado.eixosConcluidos.includes(a.id) ? (
                 <Text style={s.ameacaProgresso} testID={`avc-ameaca-progresso-${a.id}`}>
                   {tr("Avaliação concluída")}
@@ -2311,6 +2431,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             relogio={relogio}
             onHora={registrarHora}
             onDesfazer={desfazer}
+            onRegistrarMarco={(tipo, observado) => setEstado((e) => registrarMarco(e, tipo, observado, relogio))}
+            onCorrigirHoraDoMarco={(fatoId, observado) => setEstado((e) => corrigirHorarioDoMarco(e, fatoId, observado, relogio))}
+            onMarcoPorEngano={(fatoId) => setEstado((e) => marcoPorEngano(e, fatoId, relogio))}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE
@@ -2533,6 +2656,27 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio));
         }}
       />
+      <DialogoDeAjuda
+        aberto={ajudaAberta}
+        onFechar={() => setAjudaAberta(false)}
+        onCaminho={seguirCaminhoDaAjuda}
+        onRegistrar={(opcao, texto) => setEstado((e) => registrarCondutaExterna(e, opcao, texto, relogio))}
+        onPiora={() => {
+          setAjudaAberta(false);
+          setPioraAberta(true);
+        }}
+      />
+      <ConfirmacaoDeEngano
+        aberto={enganoDaPiora}
+        titulo="Piora registrada por engano?"
+        texto="O registro não é apagado: recebe correção com motivo «registrado por engano». Se nenhum eixo foi reavaliado depois dele, a tarefa «Reavaliar agora» sai e os eixos concluídos antes voltam. Se a reavaliação já começou, ela fica."
+        onManter={() => setEnganoDaPiora(false)}
+        onCorrigir={() => {
+          setEnganoDaPiora(false);
+          const ultimo = eventosDePiora(estado).slice(-1)[0];
+          if (ultimo !== undefined) setEstado((e) => corrigirPioraPorEngano(e, ultimo.fatoId, relogio));
+        }}
+      />
       <DialogoPacientePiorou
         aberto={pioraAberta}
         onCancelar={() => setPioraAberta(false)}
@@ -2721,6 +2865,31 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ As duas saídas da imagem — ⛔ empilhadas, ⛔ e ⛔ não lado a lado. */
     acoesDaImagem: { gap: ESPACO.sm },
     /** ⚠️ A forma compacta da prioridade — ⛔ uma linha, ⛔ e tocável inteira. */
+    acoesGlobais: { flexDirection: "row", gap: ESPACO.sm },
+    retornoLinha: {
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.primary,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    retornoTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.primary },
+    reavaliarBloco: { gap: ESPACO.xs },
+    reavaliarEngano: {
+      alignSelf: "flex-end",
+      minHeight: TOQUE.minimo,
+      justifyContent: "center",
+      paddingHorizontal: ESPACO.md,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    reavaliarEnganoTexto: { ...PAPEL.legenda, color: tema.cores.text },
+    ameacaAnterior: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    ameacaPendente: { ...PAPEL.micro, color: tema.cores.warning, textTransform: "uppercase" },
     reavaliarLinha: {
       flexDirection: "row",
       alignItems: "center",
