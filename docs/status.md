@@ -92,7 +92,7 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 | **AC-68 · texto livre** | grava ao sair do campo ou em «Registrar» | ✅ `70149fc` |
 | **Porta 4173** | `test:porta-e2e` recusa porta ocupada antes de `test:e2e` | ✅ `70149fc` · prova 0·2 → 5/5 |
 
-`test:all` no HEAD `70149fc`: ✅ **EXIT=0** · 143 `npm run` + 1 `node` · Playwright **574 passed** (8,8 min), sem failed ou skipped · rodada 11 46/46 · porta do e2e 5/5 · críticos 183/183 · 135 travas ligadas · índice 123 declaradas · push `6aae9b7..70149fc`; `git ls-remote` = `70149fcf4958`; divergência 0/0.
+`test:all` no HEAD `70149fc`: ✅ **EXIT=0** · 143 `npm run` + 1 `node` · Playwright **574 passed** (8,8 min), sem failed ou skipped · rodada 11 46/46 · porta do e2e 5/5 · críticos 183/183 · 135 travas ligadas · índice 123 declaradas · push `6aae9b7..70149fc`; `git ls-remote` = `70149fcf4958`; divergência 0/0. ⚠️ O commit de docs `9b3c45e` truncou `docs/avc/auditoria-vs-spec.md` (1280 linhas); restaurado no commit seguinte, sem reescrever histórico (§7.16).
 
 **Rodada anterior (10ª), concluída · D-PEND-27, «Paciente piorou» global e transferência/telestroke:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.15.
 
