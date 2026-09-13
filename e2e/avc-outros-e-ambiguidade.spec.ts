@@ -559,6 +559,12 @@ test.describe("AVC · *«Outros»* se escreve, ⛔ e a tela ⛔ não se contradi
       await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
       /** ⛔ O gesto do médico: ⛔ o botão que registra **zero** ⛔ como resposta. */
       await page.getByTestId("avc-grandeza-zero-nihss_informado").click();
+      /**
+       * ⚠️ D-PEND-14 (2026-09-13): o escore de outro serviço ⛔ só sai da síntese
+       * com "Não, escala completa". ⛔ A intenção desta prova ⛔ não muda: zero é
+       * resposta, ⛔ e ⛔ a peça ⛔ nunca vira travessão.
+       */
+      await page.getByTestId("avc-opcao-nihss_informado_nao_testaveis-Não, escala completa").click();
 
       await page.getByTestId("avc-aba-imagem").click();
       const resumo = page.getByTestId("avc-resumo");
