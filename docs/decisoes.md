@@ -333,6 +333,28 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 - **Proposta:** depois, completar `hsa-resolucao.md` com base nele.
 - **Mantido:** o campo de decisão continua vazio, e o card não muda até o autor decidir.
 
+## D-PEND-27 · Diálogo "Foi engano?": o destaque visual fica no caminho seguro
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** no diálogo "Foi engano?", "Manter a resposta" é a ação padrão visualmente; "Foi engano — limpar" é secundária.
+
+**Razão registrada:** "numa confirmação cuja função é frear o dedo, o destaque visual deve estar no caminho seguro."
+**Origem:** captura da confirmação da D-PEND-26 (`docs/avc/auditoria-vs-spec.md` §7.14).
+**Autoriza implementação:** sim (10ª rodada).
+
+**Pedido do autor na mesma mensagem (10ª rodada), sem conteúdo clínico novo:** transferência com ciclo de vida e telestroke como ator (T07, caso A12).
+- **Estados da transferência:** solicitada → contato realizado → aceite ou recusa (com motivo) → transporte confirmado → saída → chegada, ou cancelamento. Estimativas marcadas como estimativas; aceite nunca presumido.
+- **Estados do telestroke:** solicitada · em andamento · parecer registrado (texto livre, autor, horário; sem conclusão automática) · não disponível. O parecer não altera regra; aparece como "avaliação especializada registrada".
+- **Durante a espera:** plano local e tarefas continuam; deterioração antecipa reavaliação. Sem recurso e sem aceite: plano local, documentação e revisão do acesso como tarefa, nunca terapia substituta.
+- **Síntese:** inclui a linha do tempo real da transferência e do parecer.
+- **Critério de transferência e centro de destino:** nenhum texto é afirmado; só o que o usuário registra, até haver fonte (Portaria 665/2012 e rede local na fila).
+
+**AC-66 / "fato novo" da HSA:**
+- **Estado:** o autor deu a leitura dele, mas **ainda não escolheu** a opção do pacote `revisao/hsa-resolucao.md`.
+- **Registro:** a leitura entrou no pacote como opção E.
+- **Card:** fica como está até a escolha.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

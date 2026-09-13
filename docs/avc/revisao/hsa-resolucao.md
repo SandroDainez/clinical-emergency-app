@@ -64,10 +64,11 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 | **B** | avaliação especializada registrada (quem, quando, conclusão) |
 | **C** | A ou B |
 | **D** | só a correção formal do registro, como hoje (erro de registro), sem liberação clínica pela interface |
+| **E** | **Leitura do autor (2026-09-13), ainda não escolhida.** Libera a retenção um resultado registrado de **angio-TC** (o fluxo de oclusão de grande vaso já a pede, e ela detecta aneurisma) **com reavaliação clínica documentada**, ou **punção lombar com resultado registrado**. Nunca «Não» nem «Limpar». **Mesmo com o fato novo, a saída é "avaliação especializada", não "elegível"** (D-PEND-23): o intervalo punção lombar → trombolítico não está resolvido em fonte do repositório, e quem decide é telestroke/neurologia, não o app. **Tempo desde a TC não resolve:** passagem de tempo não é dado. |
 
 ## 7 · Decisões pedidas
 
-1. Qual opção da §6 define "fato novo"?
+1. Qual opção da §6 define "fato novo"? (A–D ou E, a leitura do autor de 2026-09-13)
 2. ~~«Limpar» de uma suspeita já marcada «Sim» deve continuar liberando a retenção?~~ **Decidido pela D-PEND-26 (2026-09-13):** exige confirmação ("foi engano?"), grava correção com motivo "toque errado" e devolve a pergunta a "não respondida".
 3. Punção lombar antes de reperfundir: aceitável? Com que intervalo? (§5; sem fonte no repositório)
 
