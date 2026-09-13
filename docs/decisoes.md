@@ -442,6 +442,54 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Autoriza implementação:** sim (12ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs com hashes; sem `main`.
 
+## Decisão da 13ª rodada (2026-09-13) · contrato de navegação com destinos indisponíveis, via aérea como conduta externa, "Sem essa informação" por marco
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente · **Origem:** bloqueio da Entrega 2 da 12ª rodada (`docs/avc/auditoria/7.17-rodada-12.md`).
+
+**Decisão, nos termos do autor:** opção (A). Não restaurar módulos legados.
+
+**Razão registrada:**
+- Via aérea, ventilação e sedoanalgesia foram removidas em 27/08 porque estavam sem validação. Restaurar o JSON legado (B) traria de volta exatamente o que foi tirado, e sem engine.
+- Adiar (C) deixa o A09 sem prova e o cabeçalho sem "suporte ativo", que o PDF exige desde a T01.
+- O que o AVC precisa hoje não é o módulo de via aérea. É saber que o paciente foi intubado, quando, e que o exame neurológico anterior à sedação está preservado. Isso é registro estruturado de conduta externa, sem fármaco e sem dose.
+- O contrato fica pronto para quando via aérea voltar como segundo módulo do motor ("família procedimento", com o AVC como primeiro consumidor).
+
+**Entrega 1 — contrato de navegação entre módulos:**
+- **O contrato:** `encounterId`, ponto de origem com rolagem, pilha, retorno com eventos, suporte, resposta e pendências.
+- **Destinos:** via aérea, ventilação e sedoanalgesia aparecem como "indisponível neste app", com registro estruturado de conduta externa.
+- **Limite:** módulo indisponível nunca mostra botão que simule execução.
+- **Provas:**
+  - chamada e retorno com destino indisponível;
+  - fechar e reabrir no meio;
+  - "Paciente piorou" a partir do painel de indisponível.
+
+**Entrega 2 — conduta externa de via aérea (estado, não conduta clínica):**
+- **Campos:**
+  - via aérea definitiva: sim · não · não sei;
+  - tipo: intubação orotraqueal · dispositivo supraglótico · via aérea cirúrgica · outra · não sei;
+  - horário observado (com registrado);
+  - quem realizou: texto livre;
+  - sedação em curso: sim · não · não sei;
+  - ventilação mecânica: sim · não · não sei.
+- **Fora do registro:** fármaco, dose e parâmetro ventilatório.
+- **Efeitos com "via aérea definitiva = sim":**
+  - o cabeçalho mostra "intubado às HH:MM · sedação em curso";
+  - o eixo A vai a "intervenção registrada · reavaliação pendente" até nova medida;
+  - todo exame neurológico com horário anterior ao da intubação recebe "anterior à sedação — basal preservado"; o posterior recebe "sob sedação — confundidor";
+  - os itens do NIHSS que a intubação torna não testáveis (AC-01) passam a ser sugeridos automaticamente, nunca preenchidos.
+- **Provas vermelhas:**
+  - A09 completo;
+  - NIHSS basal preservado após registrar intubação;
+  - exame novo sob sedação não substitui o basal;
+  - "não sei" em cada campo mantém pendência.
+
+**Entrega 3 — "Sem essa informação" por marco na Cronologia:**
+- **O problema:** "não sei quando chegou" e "não sei a última vez bem" são fatos diferentes.
+- **O pedido:** o botão fica por marco, e "última vez bem desconhecida" abre o caminho de início desconhecido (A04), com prova.
+- **Origem:** 1ª captura da 12ª rodada, com um "Sem essa informação" único abaixo de dois marcos.
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (13ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs no modelo append-only; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
