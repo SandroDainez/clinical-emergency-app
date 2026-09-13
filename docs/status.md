@@ -1,11 +1,21 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `9ef7270`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `60d580d`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
 ## Ponto exato de retomada
 
-**Rodada em andamento (2026-09-13, 4ª):** decisões D-PEND-18/19/20 registradas; três entregas.
+**Rodada mais recente (2026-09-13, 5ª) · limpeza visual, sem regra clínica alterada:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.10.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **Limpeza visual** | PA alta com uma recomendação completa, aviso e rodapé curtos · respiração sem eco · nova aferição medida (nenhum botão removido) · frase "Avaliar e tratar ameaças imediatas" uma vez só | ✅ `1da11b9` · prova 5·8 → 13/13 · e2e "uma frase, uma vez" 🔴 2× → ✅ |
+| **«Limpar» (AC-56)** | linha própria sempre reservada; pílula com corpo e borda, ⛔ diferente de toda opção; tocar nele ⛔ marca nada | ✅ `1da11b9` + `60d580d` · e2e 🔴 547 → 595 px → ✅ |
+| **Regressão da trombólise (AC-57/58)** | hipótese de import refutada; causa real: mutação gravada na árvore durante o build | ✅ `6ffe520` · mutações em cópia isolada (sonda 5·2 → 7/7) · trava de ciclo de import (0 ciclos em 558 arquivos) |
+
+1º `test:all` (HEAD `1da11b9`): 🔴 EXIT=1 em `test:avc-afordancia` («Limpar» como texto), nada enviado. 2º `test:all` no HEAD `60d580d`: ✅ **EXIT=0** · 136 scripts npm · Playwright **525 passed** (8,1 min), sem failed ou skipped · mutações 84/84 · 127 travas ligadas · índice 115 declaradas · censo 65 instrumentos · push `589c55d..60d580d`; `git ls-remote` = `60d580d0f56a9892063e547681c8a13402ddd08c`; divergência 0/0. Sem deploy.
+
+**Rodada anterior (4ª), concluída:** decisões D-PEND-18/19/20 registradas; três entregas.
 
 | entrega | escopo | estado |
 |---|---|---|
