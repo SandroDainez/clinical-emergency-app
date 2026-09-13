@@ -771,3 +771,92 @@ Prova de módulo `prova-avc-limpeza-visual`: 🔴 5·8 → ✅ 13/13.
 | artefatos da suíte | revertidos (D-PEND-10) |
 | push | `589c55d..60d580d` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `60d580d0f56a9892063e547681c8a13402ddd08c`; divergência 0/0 (o helper `osxkeychain` não abriu no terminal sem TTY; o envio usou a credencial do `gh` já autenticado) |
 | deploy | ⛔ não feito (pedido do autor) |
+
+### 7.11 · 6ª rodada de 2026-09-13 · D-PEND-21 (opção neutra) e fila consolidada · commits `4447e15` (decisão, só `docs/`) e `4e05527` (código)
+
+**Decisão do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`, `4447e15`):
+
+| decisão | conteúdo |
+|---|---|
+| D-PEND-21 | opção não marcada é neutra (contorno, sem preenchimento de cor semântica); cor só após marcação, sempre acompanhada de ✓ e borda |
+
+⛔ **D-PEND-22, D-PEND-23, D-PEND-24:** anunciadas pelo autor, texto não enviado. Não registradas. A Entrega 3 (dose exata com a Table 7 como conferência, HSA reclassificada, puerpério 14 dias) **não foi iniciada**, nem com provas.
+
+#### Entrega 1 · D-PEND-21 · commit `4e05527`
+
+**Onde estava o defeito.** Quatro desenhadores pintavam verde e vermelho por conta própria, marcados ou não:
+
+| desenhador | arquivo | estilos |
+|---|---|---|
+| `Segmentado` e `LinhaDeAchado` | `components/avc/ui/index.tsx` | `decisaoSim` · `decisaoNao` |
+| `CampoDeEscolha` | `components/avc/campos-clinicos.tsx` | `opcaoSim` · `opcaoNao` |
+| `RespostaAction` (sem uso atual) | `components/avc/sistema/blocos.tsx` | `respostaSim` · `respostaNao`; ✓/✕ exibidos sempre |
+
+**Correção no componente compartilhado.** `design-system/opcao-de-decisao.ts` é a fonte única:
+- `opcaoDeDecisao(tema)` dá os estilos;
+- `vistaDaOpcaoDeDecisao(valor, marcada)` diz quais aplicar e se há ✓;
+- os quatro desenhadores consomem essa fonte, e a tipografia continua de cada um.
+
+| estado | corpo | borda | ✓ | texto |
+|---|---|---|---|---|
+| não marcada | `controlSurface` | 1 px `controlBorder` | — | `text` |
+| Sim marcado | `successFill` | 2 px `text` | ✓ | `onFill` |
+| Não marcado | `criticalFill` | 2 px `text` | ✓ | `onFill` |
+| Incerto marcado | `controlSurface` | 2 px `text` | ✓ | `text` |
+
+**Provas:**
+
+| prova | antes (código de `60d580d`) | depois |
+|---|---|---|
+| `e2e/avc-opcao-neutra.spec.ts`, varredura genérica: toda pergunta cujas opções são só sim·nao·nao_sei, em cada superfície com aba, com blocos recolhíveis e eixos abertos; marca Sim, Não e Incerto com «Limpar» entre eles | 🔴 4 de 7 superfícies · 23 perguntas (estabilização 2, neurológico 17, imagem 2, segurança 2) · 138 opções não marcadas com preenchimento semântico e sem contorno · nas 69 marcações, a marcada já tinha ✓, borda e cor | ✅ 7/7 |
+| `scripts/prova-avc-opcao-neutra.cjs`: varredura de `successFill`/`criticalFill` em `components/avc` (com autoteste), fonte única nos dois temas, consumo pelos quatro desenhadores | 🔴 2 verdes · 9 vermelhos | ✅ 25/25 |
+| e2e do AVC (`e2e/avc-*`) no build novo | — | ✅ 349 passed |
+
+⚠️ **Universo declarado:**
+- **Sem pergunta visível:** paciente, reperfusão e destino não têm pergunta Sim/Não/Incerto visível sem responder outra antes.
+- **Não varrido:** perguntas que só aparecem depois de outra resposta.
+- **Cobertura garantida:** a prova de módulo pega qualquer desenhador novo que pinte essas cores.
+
+**Travas de contraste revistas com o estado neutro** (`scripts/valida-contraste.cjs`: 3 pares novos × 2 temas; 86 → 92 conferências, 0 falhas):
+
+| par | piso | claro | escuro | observação |
+|---|---|---|---|---|
+| `text` × `controlSurface` (texto da neutra) | 4,5 | 12,77 | 12,04 | já existia |
+| `controlSurface` × `surface` (corpo da neutra × card) | 1,25 | 1,40 | 1,42 | já existia |
+| `controlBorder` × `controlSurface` (contorno × corpo) | 1,5 | 1,99 | 1,78 | já existia |
+| **`text` × `surface`** (anel da marcada × card, WCAG 1.4.11) | **3** | 17,85 | 17,11 | novo |
+| **`successFill` × `controlSurface`** (Sim marcado × neutra vizinha) | **1,5** | 3,59 | 2,49 | novo |
+| **`criticalFill` × `controlSurface`** (Não marcado × neutra vizinha) | **1,5** | 4,67 | 1,84 | novo |
+| `controlBorder` × `surface` (contorno neutro × card) | — | 2,78 | 2,53 | **não travado: abaixo de 3:1 → AC-59** |
+
+⚠️ O anel antigo era medido contra o preenchimento: `text` × `criticalFill` no tema claro dava 2,73:1. O anel novo é medido contra o card.
+
+**Capturas a 375 px** (Estabilização, "Há hipoxemia ou necessidade clínica de oxigênio?"):
+- **antes:** com nada marcado, Sim verde cheio e Não vermelho cheio;
+- **depois:** as três opções neutras com contorno; Sim marcado verde com ✓ e borda; Não marcado vermelho com ✓ e borda; Incerto marcado com ✓ e borda, sem cor.
+
+#### Entrega 2 · fila consolidada
+
+Tabela única em `docs/status.md` ("Fila consolidada"), em quatro partes:
+- o que só o autor pode fazer;
+- decisões pendentes;
+- achados AC-\* abertos por gravidade;
+- casos A01–A18 sem teste ou parciais.
+
+Traz também o resultado de AC-46/47/48 (§7.9). As seções antigas "Decisões abertas" e "Próximo passo" passaram a apontar para ela.
+
+#### Achado novo
+
+| # | gravidade | achado | estado |
+|---|---|---|---|
+| AC-59 | baixa · interface | O contorno da opção neutra mede 2,53:1 (escuro) e 2,78:1 (claro) contra o card, abaixo dos 3:1 da WCAG 1.4.11 para limite de componente. A opção se separa do card pelo corpo (1,40–1,42:1) com a borda; a marcada tem anel de 17:1. | registrado; token não alterado (decisão de design do autor) |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `4447e15` (D-PEND-21, só `docs/`) · `4e05527` (código) · commit só de `docs/` com esta seção, a fila e o status (D-PEND-17) |
+| `test:all` (HEAD `4e05527`) | ✅ **EXIT=0** · 137 scripts npm · Playwright **532 passed** (8,1 min), sem failed ou skipped · D-PEND-21 opção neutra 25/25 · contraste 92 OK · afordância 129 controles · limpeza visual 13/13 · mutações isoladas 7/7 · sem ciclo de import 3/3 · mutações 84/84 · D-PEND-18/19/20 20/20 · achados 22/22 · persistência 40/40 · 128 travas ligadas · índice 116 declaradas · censo 65 instrumentos · execução 13:18–13:30 |
+| artefatos da suíte | revertidos (D-PEND-10) |
+| push | `8633f76..4e05527` → `origin/refactor/clinical-modules-rebuild` (inclui `4447e15`); `git ls-remote` = `4e05527d9b710f6dd94d0d7dbd98b40ca48da522`; divergência 0/0. O commit só de `docs/` sobe em seguida (D-PEND-17). |
+| deploy · merge em `main` | ⛔ não feitos |
