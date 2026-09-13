@@ -151,6 +151,8 @@ export type MotivoDoPortao = {
   /** ⚠️ ⛔ Onde o médico resolve isto. ⛔ Motivo sem destino é muro (**E-26**). */
   readonly leva?: SuperficieId;
   readonly campo?: string;
+  /** ⚠️ Procedência interna (adaptação, status de transcrição) — ⛔ só no ⓘ, ⛔ nunca no card (8ª rodada). */
+  readonly procedencia?: string;
 };
 
 export type PortaoIVT = {
@@ -293,12 +295,13 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
     motivos.push({
       id: "suspeita_hsa",
       camada: "destino",
-      /** ⚠️ D-PEND-23: "requer avaliação especializada / corrigir e reavaliar", ⛔ nunca segurança; procedência como adaptação do projeto. */
+      /** ⚠️ D-PEND-23: "requer avaliação especializada / corrigir e reavaliar", ⛔ nunca segurança. */
       rotulo: retencao.rotulo,
-      dado: retencao.procedencia,
+      dado: retencao.curto,
       fonte: retencao.fonte,
+      procedencia: retencao.procedencia,
       oQueFalta: retencao.oQueFalta,
-      leva: retencao.leva,
+      /** ⛔ SEM `leva`: ⛔ nenhum «Resolver» — o único gesto disponível seria trocar a resposta (8ª rodada). */
       campo: retencao.campo,
     });
   }

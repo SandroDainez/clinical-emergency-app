@@ -713,17 +713,29 @@ export type RetencaoDiagnostica =
     };
 
 export function retencaoDiagnostica(estado: EstadoAvc): RetencaoDiagnostica {
+  /**
+   * ⚠️⚠️ SEM ATALHO — pedido do autor, 2026-09-13 (8ª rodada, prioridade alta).
+   *
+   * ⛔ Trocar a resposta ⛔ é dado novo. Um «Sim» registrado mantém a retenção mesmo que
+   * depois se responda «Não» ⛔ ou «Incerto»: ⛔ condição corrigível exige FATO NOVO, ⛔ e o
+   * conteúdo do que resolve a suspeita ⛔ ainda ⛔ não existe (pacote
+   * `docs/avc/revisao/hsa-resolucao.md`). ⚠️ Libera ⛔ só a correção do próprio «Sim»
+   * (erro de registro) — ⛔ o que inclui «Limpar», que é correção: brecha declarada no
+   * pacote, com decisão pedida.
+   */
+  const simVigente = estado.fatos.some(
+    (f) => f.campo === "suspeita_hsa" && f.valor === "sim" && !estado.fatos.some((c) => c.corrigeFatoId === f.id)
+  );
+  if (!simVigente) return { estado: "livre" };
   const s = suspeitaDeHsa(estado);
-  if (s.conclusao !== "sim") return { estado: "livre" };
   return {
     estado: "retida",
     motivo: "suspeita_hsa",
     classificacao: "avaliacao_especializada",
     rotulo: "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue",
     procedencia: "Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026",
-    curto: s.curto,
-    oQueFalta:
-      "Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro. A execução da reperfusão isquêmica fica retida enquanto ela estiver ativa",
+    curto: "Suspeita clínica de hemorragia subaracnóidea registrada",
+    oQueFalta: "Requer investigação antes de reperfundir — conteúdo pendente de validação",
     leva: "imagem",
     campo: "suspeita_hsa",
     fonte: s.fonte,

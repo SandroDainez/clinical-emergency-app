@@ -1829,6 +1829,23 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ── D-PEND-22 (2026-09-13): dose exata de tenecteplase, Table 7 como conferência ──
   "Conferência": "Verificación",
   "A faixa da Table 7 difere da dose exata": "La franja de la Table 7 difiere de la dosis exacta",
+  // ── 8ª rodada (2026-09-13): card de dose com uma dose só; contadores em linguagem direta ──
+  "Restante": "Restante",
+  "faixa da diretriz, para conferência — não é a dose a preparar": "franja de la guía, para verificación — no es la dosis a preparar",
+  "A faixa dá": "La franja da",
+  "em vez de": "en lugar de",
+  "recomendação se aplica": "recomendación se aplica",
+  "recomendações se aplicam": "recomendaciones se aplican",
+  "depende de dado ainda não registrado": "depende de un dato aún no registrado",
+  "dependem de dados ainda não registrados": "dependen de datos aún no registrados",
+  "sem critério objetivo na diretriz": "sin criterio objetivo en la guía",
+  "Tenecteplase e alteplase estão na mesma recomendação da diretriz. Escolher não significa administrar.":
+    "Tenecteplasa y alteplasa están en la misma recomendación de la guía. Elegir no significa administrar.",
+  "AHA/ASA 2026, §4.6.2, recomendação 1 (COR 1, LOE A), p. e357: “In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.”":
+    "AHA/ASA 2026, §4.6.2, recomendación 1 (COR 1, LOE A), p. e357: “In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.”",
+  // ── 8ª rodada: HSA sem atalho ─────────────────────────────────────────
+  "Requer investigação antes de reperfundir — conteúdo pendente de validação":
+    "Requiere investigación antes de reperfundir — contenido pendiente de validación",
   "Situação regulatória no Brasil (ANVISA/bula): pendente de conferência":
     "Situación regulatoria en Brasil (ANVISA/prospecto): pendiente de verificación",
   "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso.":
@@ -2057,8 +2074,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
     "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
   "Temperatura no AVC isquêmico agudo (§4.4)": "Temperatura en el ACV isquémico agudo (§4.4)",
-  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (puerpério: até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026). Não sei mantém a pergunta.":
-    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas (puerperio: hasta 14 días después del parto — fuente AHA 2019, a confirmar en la Table 8 de 2026). No sé mantiene la pregunta.",
+  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto).":
+    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas (hasta 14 días después del parto).",
   // ── barra de fases: continuidade (2026-09-13) ───────────────────────────
   "Mais fases": "Más fases",
   "Fases anteriores": "Fases anteriores",

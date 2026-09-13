@@ -197,9 +197,12 @@ export type DoseDerivada = {
   readonly origemDoPeso: OrigemDoPeso;
   readonly totalMg: number;
   readonly slot: string;
-  /** ⚠️ D-PEND-22: só tenecteplase — volume a `concentracaoMgPorMl`, com 0,1 mL. */
+  /** ⚠️ D-PEND-22/25: volume a `concentracaoMgPorMl`, com 0,1 mL. */
   readonly volumeMl?: number;
   readonly concentracaoMgPorMl?: number;
+  /** ⚠️ D-PEND-25: alteplase — bolus de 10% em 1 min ⛔ e o restante em 60 min. */
+  readonly bolus?: { readonly mg: number; readonly ml: number; readonly minutos: number };
+  readonly infusao?: { readonly mg: number; readonly ml: number; readonly minutos: number };
   /** ⚠️ D-PEND-22: a faixa da Table 7 como CONFERÊNCIA, ⛔ nunca como a dose. */
   readonly conferenciaTable7?: {
     readonly faixa: string;
@@ -235,6 +238,9 @@ export function doseDerivada(
   const volumeMl = d.concentracaoMgPorMl === undefined
     ? undefined
     : Math.round(limpa((totalMg / d.concentracaoMgPorMl) * 10)) / 10;
+  const emMl = (mg: number) =>
+    d.concentracaoMgPorMl === undefined ? 0 : Math.round(limpa((mg / d.concentracaoMgPorMl) * 10)) / 10;
+  const bolusMg = d.esquema === undefined ? undefined : limpa(totalMg * d.esquema.fracaoBolus);
   const faixa = agente === "tenecteplase"
     ? FAIXAS_TABLE_7_TNK.find((f) => pesoKg >= f.deKg && (f.ateKgExclusivo === undefined || pesoKg < f.ateKgExclusivo))
     : undefined;
@@ -249,12 +255,16 @@ export function doseDerivada(
      * mg"* para 99 kg). ⛔ Artefato do `double`, ⛔ e ⛔ nunca dado clínico.
      *
      * ── ⚠️⚠️ QUANTAS CASAS A DOSE TEM ──────────────────────────────────────────
-     * ⚠️ Alteplase: **inteira** — decisão do autor, 2026-09-12. ⚠️ Tenecteplase:
+     * ⚠️ Alteplase: **exata** (D-PEND-25, 2026-09-13; antes inteira). ⚠️ Tenecteplase:
      * **exata**, 0,25 mg/kg ⛔ sem arredondar mg — **D-PEND-22**, 2026-09-13 (70 kg =
      * 17,5 mg). ⛔ A fonte ⛔ não define arredondamento para ⛔ nenhuma (**E-30**). ⛔ O teto
      * continua sendo o número da fonte, aplicado depois.
      */
     totalMg,
+    ...(bolusMg === undefined || d.esquema === undefined ? {} : {
+      bolus: { mg: bolusMg, ml: emMl(bolusMg), minutos: d.esquema.minutosBolus },
+      infusao: { mg: limpa(totalMg - bolusMg), ml: emMl(limpa(totalMg - bolusMg)), minutos: d.esquema.minutosInfusao },
+    }),
     ...(volumeMl === undefined ? {} : { volumeMl, concentracaoMgPorMl: d.concentracaoMgPorMl }),
     ...(faixa === undefined ? {} : {
       conferenciaTable7: { faixa: faixa.faixa, mg: faixa.mg, ml: faixa.ml, divergente: faixa.mg !== totalMg, fonte: FONTE_DA_TABLE_7 },

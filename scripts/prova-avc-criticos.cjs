@@ -738,8 +738,9 @@ ausente("29 · marcos (API)", () => {
 /**
  * ⚠️⚠️ Decisão do autor: `suspeita_hsa = Sim` retém a **execução** da
  * reperfusão isquêmica enquanto ativa. ⛔ Não é contraindicação, ⛔ não vira
- * hemorragia, ⛔ não apaga a avaliação de IVT/EVT. «Não», correção ⛔ ou desfazer
- * resolvem. ⛔ Nenhuma regra sobre investigação de HSA.
+ * hemorragia, ⛔ não apaga a avaliação de IVT/EVT. ⚠️ 8ª rodada (autor, 2026-09-13):
+ * trocar «Sim» por «Não» ⛔ SEM fato novo ⛔ resolve; correção ⛔ ou desfazer do «Sim»
+ * (erro de registro) resolvem. ⛔ Nenhuma regra sobre investigação de HSA.
  */
 ausente("30 · HSA (API)", () => {
   const AP = emT("avc", "nucleo", "apresentacao-f.js");
@@ -763,7 +764,7 @@ ausente("30 · HSA (API)", () => {
   conf("30 · ⛔ mas o veredito EVT carrega a retenção diagnóstica", ve.retencaoDiagnostica !== undefined && ve.retencaoDiagnostica.estado === "retida", `⛔ ${JSON.stringify(ve.retencaoDiagnostica)}`);
   conf("30 · ⛔ e o cartão da EVT ⛔ não se pinta de sucesso", AP.papelDoVereditoEvt(ve) !== "sucesso", `⛔ ${AP.papelDoVereditoEvt(ve)}`);
   /** ⚠️ Resolução. */
-  conf("30 · HSA Sim → Não → portão liberado", ivt(reg(hsa, "suspeita_hsa", "nao")).p.liberado === true, `⛔ ${ivt(reg(hsa, "suspeita_hsa", "nao")).p.estado}`);
+  conf("30 · HSA Sim → Não SEM fato novo → portão ⛔ libera (8ª rodada; antes liberava)", ivt(reg(hsa, "suspeita_hsa", "nao")).p.liberado === false, `⛔ ${ivt(reg(hsa, "suspeita_hsa", "nao")).p.estado}`);
   const desfeito = E.desfazerRegistro(hsa, "suspeita_hsa", rel);
   conf("30 · desfazer o registro → retenção sai (⛔ e ⛔ não vira «não»)", ivt(desfeito).p.liberado === true && DC.suspeitaDeHsa(desfeito).conclusao === "desconhecido", `⛔ ${ivt(desfeito).p.estado}`);
   const fato = [...hsa.fatos].reverse().find((f) => f.campo === "suspeita_hsa");

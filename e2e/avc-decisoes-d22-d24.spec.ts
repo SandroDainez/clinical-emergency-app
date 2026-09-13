@@ -47,9 +47,11 @@ test.describe("AVC · D-PEND-22 · dose exata de tenecteplase", () => {
     await expect(page.getByTestId("avc-f-dose-valor")).not.toContainText("18 mg");
     await expect(page.getByTestId("avc-f-dose-volume")).toContainText("3,5 mL");
     const t7 = page.getByTestId("avc-f-dose-table7");
-    await expect(t7).toContainText("Table 7");
+    /** ⚠️ 8ª rodada: a conferência ⛔ mostra mL; a fonte (Table 7, p. e358) fica no ⓘ. */
     await expect(t7).toContainText("20 mg");
-    await expect(t7).toContainText("4 mL");
+    await expect(t7).not.toContainText("mL");
+    await page.getByTestId("avc-info-table7").click();
+    await expect(page.getByTestId("avc-info-texto-table7")).toContainText("Table 7, p. e358");
     await expect(page.getByTestId("avc-f-dose-table7-divergencia")).toBeVisible();
     await expect(page.getByTestId("avc-f-dose-regulatorio")).toContainText("pendente de conferência");
   });
@@ -84,7 +86,9 @@ test.describe("AVC · D-PEND-23 · suspeita clínica de HSA", () => {
     await expect(motivo).toBeVisible();
     await expect(motivo).toContainText("Requer avaliação especializada");
     await expect(motivo).toContainText(/corrigir e reavaliar/i);
-    await expect(motivo).toContainText(/adaptação do projeto/i);
+    /** ⚠️ 8ª rodada: a procedência ("adaptação do projeto") fica no ⓘ do motivo. */
+    await page.getByTestId("avc-info-portao-suspeita_hsa").click();
+    await expect(page.getByTestId("avc-info-texto-portao-suspeita_hsa")).toContainText(/adaptação do projeto/i);
     await expect(motivo).not.toContainText(/contraindica|impede pela diretriz|Saída diagnóstica armada/i);
   });
 });
@@ -94,6 +98,9 @@ test.describe("AVC · D-PEND-24 · puerpério 14 dias", () => {
     await abrir(page);
     const pergunta = page.getByTestId("avc-portao-pergunta-pendente");
     await expect(pergunta).toContainText("até 14 dias após o parto");
+    /** ⚠️ 8ª rodada: a marcação da fonte fica no ⓘ do campo, ⛔ não no card. */
+    await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("a confirmar");
+    await page.getByTestId("avc-info-gestacao_puerperio").click();
     await expect(page.getByTestId("avc-portao-populacao")).toContainText("AHA 2019, a confirmar na Table 8 de 2026");
     await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("10 dias");
     await page.getByTestId("avc-opcao-faixa_etaria-18 anos ou mais").click();

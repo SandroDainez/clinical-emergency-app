@@ -19,7 +19,7 @@
  * ⚠️ A ORDEM E O AGRUPAMENTO ⛔ NÃO MORAM AQUI: são regras, e regra em JSX ⛔ não
  * se prova. Vivem em `avc/nucleo/apresentacao-f`, e esta tela apenas as lê.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -72,6 +72,7 @@ import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
+import { Recolhido } from "./ui";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
@@ -136,6 +137,21 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
 };
+
+/**
+ * ⚠️⚠️ PROCEDÊNCIA ⛔ NO ⓘ, ⛔ NUNCA NO CARD — pedido do autor, 2026-09-13 (8ª rodada).
+ * ⛔ Fonte, status de transcrição ⛔ e referência de spec ⛔ são orientação: no card viram
+ * ruído. ⚠️ Ficam atrás do ⓘ, ⛔ e a trava `e2e/avc-procedencia-fora-do-card.spec.ts`
+ * reprova "repositório", "spec §", "transcrito", "D-PEND" ⛔ ou "a confirmar" fora dele.
+ */
+function InfoDoCard({ id, texto, children }: { id: string; texto?: string; children?: ReactNode }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <Recolhido id={id} texto={texto} aberto={aberto} onAlternar={() => setAberto((a) => !a)}>
+      {children}
+    </Recolhido>
+  );
+}
 
 /** ⚠️ D-PEND-22: número com vírgula decimal; `casas` fixa as casas (volume com 0,1 mL). */
 function decimal(n: number, casas?: number): string {
@@ -575,17 +591,13 @@ export default function SuperficieF({
             <Text style={e.portaoRotulo}>
               {ESTADOS.verificar.simbolo} {tr(vereditoEvt.retencaoDiagnostica.rotulo)}
             </Text>
-            <Text style={e.portaoDado}>{tr(vereditoEvt.retencaoDiagnostica.procedencia)}</Text>
-            <Text style={e.portaoFonte}>{vereditoEvt.retencaoDiagnostica.fonte}</Text>
+            <Text style={e.portaoDado}>{tr(vereditoEvt.retencaoDiagnostica.curto)}</Text>
             <Text style={e.portaoFalta}>{tr(vereditoEvt.retencaoDiagnostica.oQueFalta)}</Text>
-            <Pressable
-              style={e.portaoIr}
-              accessibilityRole="button"
-              testID="avc-f-evt-retencao-ir"
-              onPress={() => onIrParaCampo("suspeita_hsa")}
-            >
-              <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
-            </Pressable>
+            {/** ⛔ Sem «Resolver»: o único gesto seria trocar a resposta (8ª rodada). */}
+            <InfoDoCard id="evt-retencao">
+              <Text style={e.portaoFonte}>{vereditoEvt.retencaoDiagnostica.fonte}</Text>
+              <Text style={e.portaoFonte}>{tr(vereditoEvt.retencaoDiagnostica.procedencia)}</Text>
+            </InfoDoCard>
           </View>
         ) : null}
 
@@ -752,7 +764,10 @@ export default function SuperficieF({
             );
           })}
         </View>
-        <Text style={e.agenteNota}>{tr(CAMPO_AGENTE.nota)}</Text>
+        <View style={e.agenteLinha}>
+          <Text style={e.agenteNota}>{tr(CAMPO_AGENTE.nota)}</Text>
+          <InfoDoCard id="agente" texto={CAMPO_AGENTE.ajuda} />
+        </View>
 
         {/**
           * ⚠️⚠️ O CÁLCULO ⛔ NÃO É A ADMINISTRAÇÃO — e a tela diz isso ⛔ antes de
@@ -786,27 +801,47 @@ export default function SuperficieF({
                 {tr(dose.agente === "alteplase" ? "Alteplase" : "Tenecteplase")}{" "}
                 {decimal(dose.totalMg)} {tr("mg")}
               </Text>
-              {/** ⚠️ D-PEND-22: volume a 5 mg/mL, com 0,1 mL — ⛔ só tenecteplase. */}
+              {/**
+                * ⚠️⚠️ UMA DOSE SÓ, com mL — 8ª rodada. ⛔ Com a seringa na mão, qualquer outro
+                * "mg · mL" no card lê como instrução. D-PEND-22 (TNK 5 mg/mL), D-PEND-25
+                * (alteplase 1 mg/mL, bolus de 10% em 1 min ⛔ e o restante em 60 min).
+                */}
               {dose.volumeMl !== undefined && dose.concentracaoMgPorMl !== undefined ? (
-                <Text style={e.doseSub} testID="avc-f-dose-volume">
+                <Text style={e.doseVolume} testID="avc-f-dose-volume">
                   {decimal(dose.volumeMl, 1)} {tr("mL")} · {tr("a")} {decimal(dose.concentracaoMgPorMl)} {tr("mg/mL")}
                 </Text>
+              ) : null}
+              {dose.bolus && dose.infusao ? (
+                <>
+                  <Text style={e.doseEsquema} testID="avc-f-dose-bolus">
+                    {tr("Bolus")}: {decimal(dose.bolus.mg)} {tr("mg")} ({decimal(dose.bolus.ml, 1)} {tr("mL")}) {tr("em")} {dose.bolus.minutos} {tr("min")}
+                  </Text>
+                  <Text style={e.doseEsquema} testID="avc-f-dose-infusao">
+                    {tr("Restante")}: {decimal(dose.infusao.mg)} {tr("mg")} ({decimal(dose.infusao.ml, 1)} {tr("mL")}) {tr("em")} {dose.infusao.minutos} {tr("min")}
+                  </Text>
+                </>
               ) : null}
               {/** ⚠️ COMO se chegou ao número — abaixo dele, ⛔ e menor. */}
               <Text style={e.doseSub}>
                 {decimal(dose.mgPorKg)} {tr("mg/kg")} · {tr("máx.")} {dose.maximoMg} {tr("mg")}
               </Text>
-              {/** ⚠️⚠️ D-PEND-22: a faixa da Table 7 é CONFERÊNCIA — ⛔ nunca a dose —, com a divergência dita. */}
+              {/**
+                * ⚠️⚠️ D-PEND-22 · a faixa da Table 7 é CONFERÊNCIA — ⛔ só em mg, ⛔ menor, rotulada.
+                * ⛔ Sem mL: "4 mL" no card lê como dose a preparar (8ª rodada).
+                */}
               {dose.conferenciaTable7 ? (
-                <View testID="avc-f-dose-table7">
-                  <Text style={e.doseSub}>
-                    {tr("Conferência")} · {dose.conferenciaTable7.fonte}: {dose.conferenciaTable7.faixa} → {decimal(dose.conferenciaTable7.mg)} {tr("mg")} · {decimal(dose.conferenciaTable7.ml)} {tr("mL")}
+                <View testID="avc-f-dose-table7" style={e.doseConferenciaBloco}>
+                  <Text style={e.doseConferencia}>
+                    {decimal(dose.conferenciaTable7.mg)} {tr("mg")} — {tr("faixa da diretriz, para conferência — não é a dose a preparar")}
                   </Text>
                   {dose.conferenciaTable7.divergente ? (
-                    <Text style={e.doseSub} testID="avc-f-dose-table7-divergencia">
-                      {tr("A faixa da Table 7 difere da dose exata")}: {decimal(dose.conferenciaTable7.mg)} {tr("mg")} × {decimal(dose.totalMg)} {tr("mg")}
+                    <Text style={e.doseConferencia} testID="avc-f-dose-table7-divergencia">
+                      {tr("A faixa dá")} {decimal(dose.conferenciaTable7.mg)} {tr("mg")} {tr("em vez de")} {decimal(dose.totalMg)} {tr("mg")}
                     </Text>
                   ) : null}
+                  <InfoDoCard id="table7">
+                    <Text style={e.doseConferencia}>{dose.conferenciaTable7.fonte} · {dose.conferenciaTable7.faixa}</Text>
+                  </InfoDoCard>
                 </View>
               ) : null}
               {dose.agente === "tenecteplase" ? (
@@ -909,8 +944,11 @@ export default function SuperficieF({
                     {tr(m.dado)}
                   </Text>
                 ) : null}
-                <Text style={e.portaoFonte}>{m.fonte}</Text>
                 <Text style={e.portaoFalta}>{tr(m.oQueFalta)}</Text>
+                <InfoDoCard id={`portao-${m.id}`}>
+                  <Text style={e.portaoFonte}>{m.fonte}</Text>
+                  {m.procedencia ? <Text style={e.portaoFonte}>{tr(m.procedencia)}</Text> : null}
+                </InfoDoCard>
                 {m.leva ? (
                   <Pressable
                     style={e.portaoIr}
@@ -1351,16 +1389,16 @@ function Raia({
       <Text style={e.raiaTitulo}>{titulo}</Text>
       <View style={e.raiaLinha}>
         <Text style={e.raiaNumeroAplicavel} testID={`${testID}-aplicaveis`}>{aplicaveis}</Text>
-        <Text style={e.raiaRotulo}>{tr("aplicáveis")}</Text>
+        <Text style={e.raiaRotulo}>{tr(aplicaveis === 1 ? "recomendação se aplica" : "recomendações se aplicam")}</Text>
       </View>
       <View style={e.raiaLinha}>
         <Text style={e.raiaNumeroPotencial} testID={`${testID}-potenciais`}>{potenciais}</Text>
-        <Text style={e.raiaRotulo}>{tr("potenciais")}</Text>
+        <Text style={e.raiaRotulo}>{tr(potenciais === 1 ? "depende de dado ainda não registrado" : "dependem de dados ainda não registrados")}</Text>
       </View>
       {p.sem_fonte > 0 ? (
         <View style={e.raiaLinha}>
           <Text style={e.raiaNumeroDivida} testID={`${testID}-sem-fonte`}>{p.sem_fonte}</Text>
-          <Text style={e.raiaRotulo}>{tr("sem critério na fonte")}</Text>
+          <Text style={e.raiaRotulo}>{tr("sem critério objetivo na diretriz")}</Text>
         </View>
       ) : null}
     </View>
@@ -1881,7 +1919,8 @@ const criarEstilos = (tema: Tema) =>
     opcaoAtiva: { borderColor: tema.cores.primary },
     opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     opcaoTextoAtivo: { color: tema.cores.primary, fontWeight: "700" },
-    agenteNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    agenteNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, flexShrink: 1 },
+    agenteLinha: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: ESPACO.xs },
 
     dose: {
       backgroundColor: tema.cores.bg,
@@ -1898,6 +1937,12 @@ const criarEstilos = (tema: Tema) =>
     },
     doseValor: { ...PAPEL.dose, color: tema.cores.text },
     doseSub: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
+    /** ⚠️ O volume a preparar é parte da dose: corpo principal, ⛔ e ⛔ não legenda. */
+    doseVolume: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    doseEsquema: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    /** ⚠️ Conferência: menor que o volume ⛔ e secundária — ⛔ não compete com a dose. */
+    doseConferenciaBloco: { gap: 2, paddingTop: ESPACO.xs },
+    doseConferencia: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize },
     /**
      * ⚠️ **Atenção**, ⛔ e ⛔ não crítico: ⛔ a frase pede para **⛔ não parar**,
      * ⛔ e pintá-la de vermelho a leria como impedimento.

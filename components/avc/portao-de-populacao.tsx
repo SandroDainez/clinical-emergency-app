@@ -56,7 +56,7 @@ export default function PortaoDePopulacao({ estado, agora, onEscolher, onMedir, 
         </View>
       ) : (
         <Text style={e.pergunta} testID="avc-portao-pergunta-pendente">
-          {tr("Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (puerpério: até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026). Não sei mantém a pergunta.")}
+          {tr("Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto).")}
         </Text>
       )}
       {campos.map((campo) => (

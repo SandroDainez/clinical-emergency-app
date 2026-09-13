@@ -10,11 +10,14 @@
  *   (70 kg: faixa 20 mg × exata 17,5 mg) e sem divergência quando coincide (100 kg);
  *   a situação regulatória no Brasil é campo separado "pendente de conferência",
  *   exibido na tela; nenhuma dose do regime de IAM (30–50 mg) é alcançável; e a
- *   alteplase fica como estava (dose inteira, 99 kg = 89 mg — controle).
+ *   alteplase ⛔ ganha a conferência de Table 7 (a faixa por peso é da tenecteplase).
+ *   ⚠️ Desde a D-PEND-25 (2026-09-13) a alteplase também é exata (99 kg = 89,1 mg);
+ *   o detalhe dela é de `prova-avc-rodada8.cjs`.
  *   D-PEND-23 — a suspeita clínica de HSA retém a reperfusão classificada como
  *   "requer avaliação especializada / corrigir e reavaliar" — ⛔ nunca como
  *   impedimento de segurança —, com o motivo nomeado e a procedência marcada como
- *   adaptação do projeto; «Não» libera, «Incerto» ⛔ não retém (controles).
+ *   adaptação do projeto; «Não» ⛔ ou «Incerto» desde o início ⛔ retêm (controles).
+ *   ⚠️ Desde a 8ª rodada, «Não» DEPOIS de «Sim» ⛔ libera (`prova-avc-rodada8.cjs`).
  *   D-PEND-24 — o portão de população declara a janela de 14 dias pós-parto, com a
  *   marcação "fonte AHA 2019, a confirmar na Table 8 de 2026"; «Puérpera» continua
  *   fora do escopo; «Não sei» mantém a pergunta; ⛔ nenhum "10 dias" volta.
@@ -89,11 +92,12 @@ conf("D-PEND-22 · a tela exibe volume, conferência da Table 7 e situação reg
 const iam = [];
 for (let kg = 30; kg <= 200; kg++) if ([30, 35, 40, 45, 50].includes(tnk(kg).totalMg)) iam.push(kg);
 conf("D-PEND-22 · E-50: ⛔ nenhuma dose de 30/35/40/45/50 mg alcançável (30–200 kg)", iam.length === 0, `⛔ ${iam.join(",")}`);
-conf("controle · alteplase inalterada: 99 kg → 89 mg, 70 kg → 63 mg, teto 90",
-  DF.doseDerivada("alteplase", 99, "medido").totalMg === 89 && DF.doseDerivada("alteplase", 70, "medido").totalMg === 63 && DF.doseDerivada("alteplase", 200, "medido").totalMg === 90,
-  "⛔ a decisão é da tenecteplase");
-conf("controle · alteplase ⛔ ganha volume ⛔ nem conferência de Table 7 (a decisão ⛔ não a alcança)",
-  DF.doseDerivada("alteplase", 70, "medido").volumeMl === undefined && DF.doseDerivada("alteplase", 70, "medido").conferenciaTable7 === undefined, "⛔");
+/** ⚠️ D-PEND-25 (2026-09-13) substituiu o controle "alteplase inteira": agora exata (99 kg = 89,1 mg), com volume. */
+conf("controle · alteplase (D-PEND-25): 99 kg → 89,1 mg, 70 kg → 63 mg, teto 90",
+  DF.doseDerivada("alteplase", 99, "medido").totalMg === 89.1 && DF.doseDerivada("alteplase", 70, "medido").totalMg === 63 && DF.doseDerivada("alteplase", 200, "medido").totalMg === 90,
+  "⛔ D-PEND-25");
+conf("controle · alteplase ⛔ ganha conferência de Table 7 (a faixa por peso é da tenecteplase)",
+  DF.doseDerivada("alteplase", 70, "medido").conferenciaTable7 === undefined, "⛔");
 
 /* ══ D-PEND-23 · suspeita clínica de HSA ═══════════════════════════════════ */
 const rel = R.relogioControlado(1_800_000_000_000);
@@ -111,7 +115,8 @@ conf("D-PEND-23 · o motivo nomeia a suspeita clínica de HSA com TC sem sangue"
 conf("D-PEND-23 · procedência marcada como adaptação do projeto, com a bula não transcrita",
   ret.estado === "retida" && /adaptação do projeto/i.test(ret.procedencia ?? "") && /não transcrit/i.test(ret.procedencia ?? "") && /Table 8/.test(ret.procedencia ?? ""),
   `⛔ ${ret.procedencia}`);
-conf("controle · «Não» ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(hsa, { campo: "suspeita_hsa", valor: "nao" }, rel)).estado === "livre", "⛔");
+/** ⚠️ 8ª rodada: «Não» DEPOIS de «Sim» ⛔ libera (sem fato novo); o controle passa a ser «Não» desde o início. */
+conf("controle · «Não» desde o início ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao" }, rel)).estado === "livre", "⛔");
 conf("controle · «Incerto» ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao_sei" }, rel)).estado === "livre", "⛔");
 const portao = lerFonte(path.join(appDir, "avc", "nucleo", "portao-ivt.ts"));
 conf("D-PEND-23 · no portão, o motivo da HSA ⛔ entra na camada de segurança e leva a classificação",

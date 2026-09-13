@@ -252,8 +252,9 @@ const casasDecimais = (n) => {
   return i === -1 ? 0 : s.length - i - 1;
 };
 
-confere("⚠️⚠️ 99 kg de alteplase dá **89 mg**, ⛔ e ⛔ não `89.10000000000001`",
-  D.doseDerivada("alteplase", 99, "medido").totalMg === 89,
+/** ⚠️ D-PEND-25 (2026-09-13): alteplase EXATA — 99 kg = 89,1 mg (antes 89, inteira). */
+confere("⚠️⚠️ 99 kg de alteplase dá **89,1 mg**, ⛔ e ⛔ não `89.10000000000001`",
+  D.doseDerivada("alteplase", 99, "medido").totalMg === 89.1,
   `⛔ ${D.doseDerivada("alteplase", 99, "medido").totalMg} — ⛔ número que ⛔ não se mede ⛔ não se administra`);
 
 /**
@@ -265,11 +266,11 @@ confere("⚠️⚠️ 99 kg de alteplase dá **89 mg**, ⛔ e ⛔ não `89.10000
 const dosesSujas = [];
 for (let kg = 30; kg <= 200; kg++) {
   const alt = D.doseDerivada("alteplase", kg, "medido").totalMg;
-  if (casasDecimais(alt) > 0) dosesSujas.push(`alteplase ${kg}kg=${alt}`);
+  if (casasDecimais(alt) > 1) dosesSujas.push(`alteplase ${kg}kg=${alt}`);
   const tnk = D.doseDerivada("tenecteplase", kg, "medido").totalMg;
   if (casasDecimais(tnk) > 2) dosesSujas.push(`tenecteplase ${kg}kg=${tnk}`);
 }
-confere("⚠️ ⛔ nenhum peso (30–200 kg) produz lixo: alteplase inteira, tenecteplase com até duas casas",
+confere("⚠️ ⛔ nenhum peso (30–200 kg) produz lixo: alteplase com até uma casa, tenecteplase com até duas",
   dosesSujas.length === 0,
   `⛔ ${dosesSujas.slice(0, 3).join(" · ")}${dosesSujas.length > 3 ? ` … +${dosesSujas.length - 3}` : ""}`);
 
@@ -283,8 +284,14 @@ confere("⚠️⚠️ a ORIGEM do peso viaja com a dose",
   D.doseDerivada("alteplase", 70, "estimado").origemDoPeso === "estimado",
   "⛔ medido e estimado ⛔ não se confundem — a dose carrega de onde veio");
 
-confere("⚠️⚠️ ⛔ ⛔ ⛔ cálculo ⛔ NÃO produz preparo ⛔ nem administração",
-  !/preparo|reconstitu|diluent|equipo|bolus|infus|administrar/i.test(fonteD),
+/**
+ * ⚠️⚠️ D-PEND-25 (autor, 2026-09-13): o esquema da alteplase — 10% em bolus em 1 min ⛔ e o
+ * restante em 60 min, a 1 mg/mL — PASSOU a ser derivado aqui, com fonte transcrita (Table 7,
+ * p. e358; bula Actilyse §20.3 ⛔ e §20.8, campos "fechado"). ⚠️ Por isso "bolus" ⛔ e "infus"
+ * saíram da lista. ⛔ Preparo (diluente, reconstituição, equipo) ⛔ continua proibido.
+ */
+confere("⚠️⚠️ ⛔ ⛔ ⛔ cálculo ⛔ NÃO produz preparo (diluente, reconstituição, equipo) ⛔ nem a ordem de administrar",
+  !/preparo|reconstitu|diluent|equipo|administrar/i.test(fonteD),
   "⛔ F-20 está **parcial**, e para TNK a indicação para AVC e o preparo ⛔ NÃO estão confirmados por fonte primária");
 
 // ── ⚠️⚠️ 8 · OPERACIONAL ⛔ NÃO SATISFAZ PRÉ-CONDIÇÃO CLÍNICA ─────────────

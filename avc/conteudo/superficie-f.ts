@@ -1129,7 +1129,9 @@ export const CAMPO_AGENTE = {
   rotulo: "Agente trombolítico em consideração",
   opcoes: ["Alteplase", "Tenecteplase", "Indefinido"],
   fonte: "F-09",
-  nota: "A fonte recomenda os dois com a mesma força. Escolher não significa administrar.",
+  /** ⚠️ 8ª rodada: o card diz o fato curto; a frase literal ⛔ e a página ficam no ⓘ (`ajuda`). */
+  nota: "Tenecteplase e alteplase estão na mesma recomendação da diretriz. Escolher não significa administrar.",
+  ajuda: "AHA/ASA 2026, §4.6.2, recomendação 1 (COR 1, LOE A), p. e357: “In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.”",
 } as const;
 
 /**
@@ -1197,12 +1199,22 @@ export type DoseDoAgente = {
    * arredondamento para ⛔ nenhuma das duas.
    */
   readonly arredondaMgInteiro: boolean;
-  /** ⚠️ D-PEND-22: o volume da tenecteplase é exibido a 5 mg/mL, com 0,1 mL. */
+  /** ⚠️ D-PEND-22/25: volume exibido com 0,1 mL — tenecteplase a 5 mg/mL, alteplase a 1 mg/mL. */
   readonly concentracaoMgPorMl?: number;
+  /**
+   * ⚠️ D-PEND-25: alteplase — 10% em bolus em 1 min, o restante em 60 min (Table 7,
+   * p. e358: *"Infuse 0.9 mg/kg (maximum dose 90 mg) over 60 min, with 10% of the dose
+   * given as a bolus over 1 min"*; bula Actilyse §20.8).
+   */
+  readonly esquema?: { readonly fracaoBolus: number; readonly minutosBolus: number; readonly minutosInfusao: number };
 };
 
 export const DOSES: { readonly alteplase: DoseDoAgente; readonly tenecteplase: DoseDoAgente } = {
-  alteplase: { mgPorKg: 0.9, maximoMg: 90, slot: "F-09", arredondaMgInteiro: true },
+  /** ⚠️ D-PEND-25 (2026-09-13): exata, ⛔ sem arredondar mg; 1 mg/mL (bula Actilyse §20.3). */
+  alteplase: {
+    mgPorKg: 0.9, maximoMg: 90, slot: "F-09", arredondaMgInteiro: false, concentracaoMgPorMl: 1,
+    esquema: { fracaoBolus: 0.1, minutosBolus: 1, minutosInfusao: 60 },
+  },
   tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09", arredondaMgInteiro: false, concentracaoMgPorMl: 5 },
 };
 
