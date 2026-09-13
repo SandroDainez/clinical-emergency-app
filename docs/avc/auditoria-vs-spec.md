@@ -415,3 +415,72 @@ Três âncoras de mutação foram reescritas contra o código novo, com a mesma 
 | AC-33 | média | O contexto da Table 4 (NIHSS 0–5, teto) com UN continua "não estabelecido". A D-PEND-13 não foi aplicada aqui porque a instrução pedia os critérios de trombectomia. | `derivacoes-b.ts`, `contextoDaTable4` |
 | AC-34 | baixa · não medido | As frases compostas da síntese ("NIHSS de outro serviço X", "X, com N itens não testáveis") não tiveram a tradução ES conferida na tela. | `avc/nucleo/sintese-do-caso.ts` |
 | AC-35 | baixa | Os helpers `nihssDeFora`, `baixarNihss` e `abrirNihssDeFora` ficaram sem uso no e2e da fase 9. | `e2e/avc-fase9-trombectomia.spec.ts` |
+
+**Suíte e envio da Entrega 1:**
+
+| item | resultado |
+|---|---|
+| commit de `docs/` | `773ed92` — "docs: especificação, matrizes, auditoria e status do AVC" |
+| 1º `test:all` (HEAD `773ed92`) | 🔴 parou no passo 31: `test:avc-independencia` (fixture C.3 usava NIHSS de outro serviço como reexame) → corrigida em `9a0ecea` |
+| 2º `test:all` (HEAD `9a0ecea`) | 🔴 504 verdes · **2 vermelhos**: dois e2e faziam o resumo aparecer com NIHSS de outro serviço → passam a responder "Não, escala completa" em `8e07c30` |
+| 3º `test:all` (HEAD `8e07c30`, árvore limpa) | ✅ **EXIT=0** · 129 scripts npm · Playwright **506 passed · 0 failed · 0 skipped** · mutações 84/84 · 120 travas ligadas |
+| artefatos da suíte | `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json`, revertidos (D-PEND-10) |
+| push | `2e28bd8..8e07c30` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `8e07c30812d25be096e87cd4a06c6b40b324db73`; divergência 0/0 |
+
+⚠️ As três correções de fixture (`9a0ecea`, `8e07c30`) são consequência direta da D-PEND-14. ⛔ Nenhuma afrouxou o que o teste mede.
+
+### 7.6 · Entrega 2 · AC-02 persistência local-first (D-PEND-02, D-PEND-03) · commit `fa01339`
+
+**O que entrou:**
+- log de eventos append-only em IndexedDB (`avc-atendimento`, schema v2), atrás de uma interface de armazenamento;
+- recuperação do caso mais recente não encerrado;
+- horário observado e registrado em cada evento de fato;
+- conclusões versionadas, e correção com autor;
+- trava por caso: segunda aba do mesmo caso fica bloqueada;
+- migração v1→v2.
+
+Sem sincronização com servidor. Limites em `docs/avc/persistencia.md`.
+
+**Quem atribui a ordem (`seq`):**
+- Na primeira implementação (nunca commitada), era o **produtor**: `log.ts` gravava `seq: ctx.proximoSeq()`, e o hook fornecia `proximoSeq: () => ++seq.current`. Os armazenamentos só ordenavam.
+- Para passar a conferência *"valor anterior continua na trilha"*, a prova tinha sido ajustada na ordem dos eventos. O autor recusou: A13 e A14 dependem da ordem de **gravação**.
+- **Corrigido no módulo** antes do commit:
+  - `NovoEvento = Omit<EventoDoAtendimento, "seq">`, e o produtor não tem mais `seq`;
+  - `anexarEventos` numera dentro de **uma** transação readwrite (maior `seq` do caso pelo índice `[casoId, seq]`, depois `++seq` na ordem de entrada);
+  - a memória faz o mesmo.
+- O ajuste da prova foi revertido. Entraram três conferências de ordem: evento produzido sem `seq`; `seq` 1, 2, 3 na ordem de gravação; a reconstrução segue a gravação mesmo com a correção **produzida antes** dos eventos que ela corrige.
+- Vermelho antes da correção: 26 verdes · 7 vermelhos. Depois: ✅ 40/40.
+
+**Provas verdes:**
+
+| exigência | prova de módulo (`scripts/prova-avc-persistencia.cjs`) | gesto real (`e2e/avc-persistencia.spec.ts`) |
+|---|---|---|
+| A13 fechar/reabrir | estado reconstruído com fatos idênticos (`JSON.stringify`), mais relógios, eixos, superfície, exposição ao trombolítico e 1 administração; recupera o caso não encerrado | `:37` A13 |
+| A17 toque duplo | `abrirNovaInstancia` duas vezes devolve o mesmo estado, com 1 instância de trombólise; 1 evento com ID | `:63` A17 |
+| A14 nova versão da conclusão | 2 versões, `pergunta_pendente` → `adulto_validado`, IDs distintos, anterior preservada | — |
+| correção versionada | evento de correção com `autor`, `motivo` e `corrigeFatoId`; o valor anterior continua na trilha | lab `avc-superficie-laboratorio.spec.ts:99` |
+| trava da segunda aba | 1ª adquire, 2ª recusada, liberada volta a abrir; aviso "outra aba" | `:84` D-PEND-03 |
+| migração v1→v2 | `VERSAO_DO_SCHEMA === 2`; eventos migrados com versão e autor; `dados` intactos; dump v1 recuperado (peso 70) | `:95` schema v1 → v2 |
+
+**Correção sem motivo na tela:**
+- Em `8e07c30`, **nenhuma** tela mostrava motivo de correção (`git grep` = 0).
+- Agora, "Corrigir resultado" no Laboratório e na Imagem mostra a linha `avc-correcao-<campo>`: *"corrigido de 1,4 · sem motivo informado"*, ou *"· motivo: X"*.
+- O histórico da A mostra o mesmo, via `motivoDaCorrecao`.
+- e2e: `avc-superficie-laboratorio.spec.ts:99`. Prova de módulo: `correcaoNaInstancia` (nunca corrigido → sem linha; sem motivo → `null`; com motivo → o texto, mais o valor substituído).
+
+#### Achado clínico fechado pela D-PEND-14
+
+| # | gravidade | achado | evidência |
+|---|---|---|---|
+| AC-36 | **alta · clínico · fechado** | O app aceitava **NIHSS de outro serviço como exame deste atendimento**. O escore de fora alimentava o critério de trombectomia e contava como **reexame** na reavaliação. Três testes antigos só passavam por isso: usavam o escore de fora como basal ou reexame. | Em `2e28bd8`: `derivacoes-f.ts:390` e `:541` (`nihssCalculado(estado) ?? nihssInformado(estado)`); `derivacoes.ts:301` e `:341` (`nihss_informado` como reexame e insumo); `apresentacao-f.ts:309` (`nihss: ["nihss_calculado", "nihss_informado"]`). **Fechado pela D-PEND-14 em `207e4be`**. Fixtures corrigidas em `207e4be`, `9a0ecea` (`prova-avc-independencia` C.3) e `8e07c30` (dois e2e de resumo). |
+
+#### Achados novos da Entrega 2
+
+| # | gravidade | achado | evidência |
+|---|---|---|---|
+| AC-37 | alta · **fechado antes do push** | `seq` atribuído pelo produtor, não pela gravação. A reconstrução dependia da ordem em que o código produzia, e não da ordem em que o log gravou. | acima; `fa01339` |
+| AC-38 | média · **confirmar com o autor** | Correção **sem motivo** continua aceita (decisão do autor de 2026-08-30). O pedido da Entrega 2 dizia "correção com autor e motivo". Hoje o motivo ausente é gravado como ausente e dito na tela; nenhum gesto da tela pede motivo. | `avc/nucleo/estado.ts` `corrigirFato`; `components/avc/avc-modulo-screen.tsx` `corrigirNaInstanciaDaTela` |
+| AC-39 | alta · antes de dado real | O app **nativo não persiste**: `armazenamento.native.ts` usa memória, e fechar o app perde o caso. Só o web usa IndexedDB. | `avc/persistencia/armazenamento.native.ts` |
+| AC-40 | média | O autor é um identificador **local do aparelho** (`local:<uuid>`), não uma identidade autenticada. | `components/avc/use-atendimento-persistido.ts` `autorLocal` |
+| AC-41 | baixa · instrumento | O e2e *"corrigir NÃO cria uma terceira medida"* da A **não corrige**: digitar sobre o valor é nova escrita na mesma instância (`registrarComInstancia`). A superfície A **não tem** gesto "Corrigir". A asserção "sem motivo informado" foi posta ali, ficou vermelha pelo motivo certo e foi **retirada**; a prova foi para o gesto real no Laboratório. | `e2e/avc-historico-de-afericoes.spec.ts:89` |
+| AC-42 | baixa · instrumento | `dblclick` do Playwright **não reproduziu** o defeito A17 no código antigo. A prova usa dois cliques. | `e2e/avc-persistencia.spec.ts:63` |
