@@ -189,3 +189,40 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 **Como se confere:** antes do commit, `git diff --cached --stat` lista apenas caminhos sob `docs/`. Qualquer caminho fora de `docs/` volta à regra geral: push só com `test:all` verde no HEAD exato.
 **O que continua valendo:** commit por caminho explícito, e nenhuma afirmação de teste que não rodou.
 **Razão registrada:** não fornecida além do texto da decisão.
+
+## D-PEND-18 · AC-44: temperatura volta ao caminho isquêmico, com a §4.4 transcrita
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** restaurar temperatura no caminho isquêmico, transcrevendo a §4.4 (p. e352) da AHA/ASA 2026.
+
+**Origem:** achado AC-44 e pacote `docs/avc/revisao/AC-14-temperatura.md`.
+**Revoga:** a remoção do eixo E e da temperatura do commit `b170b44` (decisão de 2026-09-12, registrada só na mensagem do commit).
+**Razão registrada:** não fornecida além do texto da decisão.
+**Autoriza implementação:** sim (4ª rodada, Entrega 2).
+
+## D-PEND-19 · AC-45: segundo toque em opção já marcada é ignorado
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** o segundo toque numa opção já marcada é **ignorado**; desmarcar exige o gesto **"limpar"**.
+
+**Origem:** achado AC-45 de `docs/avc/auditoria-vs-spec.md` §7.8.
+**Razão registrada:** não fornecida além do texto da decisão.
+**Autoriza implementação:** sim (4ª rodada, Entrega 2).
+
+## D-PEND-20 · AC-50: apagar o texto "10 dias pós-parto" sem fonte
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** apagar o texto "10 dias pós-parto", que não tem fonte.
+
+**Origem:** achado AC-50 de `docs/avc/auditoria-vs-spec.md` §7.8.
+**Razão registrada:** não fornecida além do texto da decisão.
+**Autoriza implementação:** sim (4ª rodada, Entrega 2).
+
+## Pendentes do autor em 2026-09-13 (não implementar)
+
+- **AC-43:** dose da tenecteplase (pacote `docs/avc/revisao/AC-06-dose-trombolitico.md`).
+- **AC-15:** suspeita de HSA retendo a reperfusão (pacote `docs/avc/revisao/AC-15-hsa.md`).
+- **Janela de puerpério** (pacote `docs/avc/revisao/AC-03r-puerperio.md`).
