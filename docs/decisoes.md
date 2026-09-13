@@ -401,6 +401,47 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Autoriza implementação:** sim (11ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs com hashes; sem `main`.
 
+## Decisões da 12ª rodada (2026-09-13) · auditoria append-only, AC-67 confirmado, AC-71, AC-72, AC-73 e contrato de navegação (C05)
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente · **Origem:** capturas e relato da 11ª rodada (§7.16).
+
+**Decisões, nos termos do autor:**
+- **Auditoria append-only (correção estrutural do incidente `9b3c45e`):**
+  - uma seção por arquivo em `docs/avc/auditoria/`;
+  - o `auditoria-vs-spec.md` vira índice gerado;
+  - nenhum script reescreve arquivo de histórico, só cria;
+  - migrar sem perda, contando linhas antes e depois.
+  - **Razão registrada:** é a segunda vez que um script abre o arquivo para escrita e o destrói. "O modo de falha está no desenho"; com uma seção por arquivo, a classe inteira de erro deixa de existir.
+- **AC-67:** interpretação confirmada. Conta como "reavaliado depois" qualquer fato da Estabilização registrado depois da piora, ou eixo concluído de novo.
+- **AC-71:** campos rotulados como estimativa aceitam horário futuro; horários observados continuam não aceitando. "É a diferença entre previsão e fato, que o próprio PDF exige."
+- **AC-72:** teleconsulta pelo mesmo modelo de marcos, sem seletor de estado:
+  - solicitada;
+  - em andamento;
+  - parecer registrado (texto, autor, horário);
+  - não disponível.
+- **AC-73:** a correção "registrado por engano" fica sempre disponível no evento da linha do tempo, não só enquanto a tarefa está pendente.
+  - O efeito segue a regra do AC-67: tarefa e eixos só voltam se nada foi reavaliado depois.
+  - "Perder a capacidade de corrigir porque o tempo passou não faz sentido numa trilha."
+- **Achado de captura:** nome de exame não se trunca; quebra de linha ("Tomografia de crânio sem ...").
+
+**Entrega 2 pedida — contrato de navegação entre módulos (C05, p. 4 do PDF):**
+- **Antes de tudo:** inspecionar os módulos de via aérea existentes sem alterar a lógica deles.
+- **Chamada e retorno:** com `encounterId`, ponto de origem e pilha. Caminho: AVC → via aérea → cuidados pós-intubação → retorno ao AVC, no campo de origem, com rolagem preservada.
+- **O retorno transporta:** eventos realmente registrados, suporte ativo (ex.: intubado, ventilação), resposta e pendências.
+- **Voltar não conclui a ameaça:** o eixo A fica "intervenção registrada · reavaliação pendente" até nova medida.
+- **Exame neurológico anterior à sedação:** preservado e marcado.
+- **Módulo não implementado:** aparece como "indisponível" com registro de conduta externa, nunca botão que simula execução.
+- **Provas vermelhas:**
+  - A09 completo;
+  - retorno aninhado (dois módulos);
+  - cancelamento no meio;
+  - fechar e reabrir durante a intervenção;
+  - "Paciente piorou" dentro do módulo chamado.
+- **Idiomas:** PT/ES.
+- **Conteúdo clínico:** nenhum novo. Os módulos chamados mantêm o conteúdo que já têm, com o estado de validação que já declaram.
+
+**Autoriza implementação:** sim (12ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs com hashes; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
