@@ -506,3 +506,80 @@ Sem sincronização com servidor. Limites em `docs/avc/persistencia.md`.
 | — | regra de envio | **D-PEND-17:** commit só de `docs/` dispensa `test:all` quando `git diff --stat` tocar só `docs/`. |
 
 Texto integral em `docs/decisoes.md`.
+
+### 7.8 · 3ª rodada de 2026-09-13 · pacotes de revisão médica e correções sem decisão clínica
+
+#### Entrega 1 · pacotes de revisão médica (sem código)
+
+- **Onde:** `docs/avc/revisao/`, com índice em `README.md`. São nove pacotes, cada um com o campo "Decisão humana: ___" vazio.
+- **Fontes primárias abertas:** PDFs locais da AHA/ASA 2026 (sha256 `7380c4f2…794ffe`) e da AHA/ASA 2023 HSA (sha256 `3e206a9d…c00c73`), lidos com `pdftotext`.
+- **Limites:**
+  - A Table 8 da AHA 2026 é imagem no PDF, e as frases dela vêm só da transcrição.
+  - Os PDFs das bulas brasileiras não estão disponíveis.
+
+| pacote | a fonte confirma o código? |
+|---|---|
+| AC-15 · HSA retém reperfusão | **não** — a fonte manda excluir hemorragia por imagem; reter pela suspeita clínica é adaptação local |
+| AC-06 · dose do trombolítico | alteplase: a fonte não fala de arredondamento · tenecteplase: a fonte **contradiz** o código (AC-43) |
+| AC-14 · temperatura no isquêmico | **não** — §4.4 com COR 1 no PDF (AC-44) |
+| AC-13 · estados da ação | a fonte não trata disso; a divergência é spec (8) × D2 (4) |
+| AC-03r · puerpério | não conferível: a Table 8 é imagem, e o app não define janela |
+| D-139 · 1 juízo da coagulação | parcial |
+| D-139 · 2 varfarina/heparina | ambígua |
+| D-139 · 3 julgamento individual | parcial |
+| D-139 · 4 déficit incapacitante | a fonte não trata disso |
+
+#### Entrega 2 · correções sem decisão clínica · commit `c513b64` (mais `7dc42c5`)
+
+**(a) AC-40, fechado:**
+- **Autor com sessão:** o autor do evento é o `user.id` da sessão Supabase.
+- **Sem sessão:** o autor é o ID do aparelho, marcado `origemDoAutor = aparelho` no evento e, na linha do tempo, "registrado neste aparelho, sem conta".
+- **Sessão anônima:** marcada à parte.
+- **Schema e migração:** schema v3, com migração v1/v2 → v3 sem inventar autor.
+
+**(b) Toque duplo:**
+- **Onde estava:** a proteção **não** estava só no botão da trombólise. Ela morava em `abrirNovaInstancia`, que atende os três botões de "nova instância" e nenhuma outra ação.
+- **Onde está agora:** o hook do atendimento aplica `repeteOGestoAnterior` a **toda** mudança de estado.
+- **Regra:** gesto que repete o imediatamente anterior, sem nada entre os dois, não vira fato nem evento.
+- **Tempo:** a regra não usa janela de tempo.
+- **Guarda que continua:** a de `abrirNovaInstancia` fica como está.
+
+**(c) AC-39, documentado e não implementado:** o adaptador SQLite necessário e o que ele precisa satisfazer das 40 conferências estão em `docs/avc/persistencia.md` §4.
+
+**Vermelho → verde:**
+
+| prova | antes (código de `fd1af8e`) | depois |
+|---|---|---|
+| `scripts/prova-avc-autoria-e-toque-duplo.cjs` | 🔴 0 verdes · 13 vermelhos (módulos inexistentes; eventos sem `origemDoAutor`; schema 2; hook sem sessão) | ✅ 32/32 |
+| `e2e/avc-autoria-e-toque-duplo.spec.ts` · correção do laboratório marcada | 🔴 recebeu *"corrigido de 1,4 · sem motivo informado"* | ✅ |
+| e2e · histórico marcado | 🔴 recebeu *"1ª medida · 09:51Glicemia capilar: 38"* | ✅ |
+| e2e · «Registrar ação» 2× | 🔴 `avc-e-acao-acao_2` com contagem 1 | ✅ |
+| e2e · Glasgow «Usar» 2× antes de redesenhar | 🔴 o log tinha 2 Glasgow | ✅ |
+
+**Consequência direta do schema v3:**
+- `prova-avc-persistencia.cjs` passou a exigir versão 3 nas conferências de schema (continua 40/40).
+- `e2e/avc-persistencia.spec.ts` passou a esperar o banco na versão 3.
+
+**Achados novos:**
+
+| # | gravidade | achado | evidência |
+|---|---|---|---|
+| AC-43 | **alta · clínico** | A dose da tenecteplase não segue a tabela por faixa de peso da Table 7: 70 kg → 18 mg no app, 20 mg na faixa. O comentário do código e o commit `6f230f1` dizem que a Table 7 dá "só mg/kg". **Não corrigido**: exige decisão clínica. | `avc/nucleo/derivacoes-f.ts:254`; AHA 2026 Table 7, PDF p. 43 = e358; pacote `revisao/AC-06-dose-trombolitico.md` |
+| AC-44 | **alta · clínico** | O caminho isquêmico não registra temperatura, embora a §4.4 da fonte-mãe tenha recomendação COR 1. A remoção (`b170b44`) se apoiou na ausência de transcrição. **Não corrigido.** | AHA 2026 §4.4, PDF p. 37 = e352; `e2e/avc-cockpit-abcde.spec.ts:235`; pacote `revisao/AC-14-temperatura.md` |
+| AC-45 | média · interface | Tocar duas vezes numa **opção já marcada** desfaz a escolha, porque a opção alterna. A regra de toque duplo não cobre isso, que é gesto de interface e não repetição. | `components/avc/campos-clinicos.tsx:501` (`ativa ? onDesfazer : onEscolher`) |
+| AC-46 | média · **por leitura, a verificar** | Com varfarina registrada, INR/PT/aPTT registrados, plaquetas ausentes e juízo "não", o texto seria *"sem varfarina ou heparina registradas"*. | `avc/nucleo/derivacoes-d.ts:887`; pacote D-139-2 |
+| AC-47 | alta · **por leitura, a verificar** | "Não incapacitante" com rota de janela estendida aplicável pode sair "indicada", sem teste que cubra o caso. | `avc/nucleo/veredito-da-trombolise.ts:514`; pacote D-139-4 |
+| AC-48 | média · **por leitura, a verificar** | Quatro itens relativos com `informacao_insuficiente` (malformação vascular não rota, dissecção intracraniana, neoplasia ativa, punção arterial não compressível) não geram impedimento nenhum. | `avc/nucleo/derivacoes-d.ts` (laço de itens relativos); pacote D-139-3 |
+| AC-49 | baixa · fonte | A transcrição registra a rec. 10 da §4.6.1 em e354; o texto extraído do PDF está em e353. O cabeçalho da transcrição ainda diz "vazio de propósito" (D-PEND-09). | `aha-asa-2026-avc-isquemico.md:1846-1850`; PDF p. 38 |
+| AC-50 | baixa | Texto i18n "primeiros 10 dias pós-parto" sem consumidor no AVC e sem fonte registrada. | `lib/i18n/modules/avc-nihss-elegibilidade.ts:135` |
+| AC-51 | baixa · limite declarado | A regra de toque duplo não usa janela de tempo: repetir de propósito o **mesmo** registro, sem nada entre os dois, não vira segundo fato (perde-se só o horário da repetição). | `avc/nucleo/toque-duplo.ts`; `docs/avc/persistencia.md` §2 |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `fd1af8e` (decisões D-PEND-15/16/17, só `docs/`, D-PEND-17) · `c513b64` (código e provas) · `7dc42c5` (declaração da prova) · `commit só de `docs/` com os pacotes e a documentação` (pacotes e documentação, só `docs/`, D-PEND-17) |
+| 1º `test:all` (HEAD `c513b64`) | 🔴 EXIT=1 · parou em `test:indice` depois de 123 scripts: a prova nova entrou no `test:all` sem PROMETE / NÃO PROMETE / UNIVERSO → declarada em `7dc42c5`. Tudo o que rodou antes passou (persistência 40/40, autoria e toque duplo 32/32, mutações 84/84, 122 travas, censo 65). |
+| 2º `test:all` (HEAD `7dc42c5`) | ✅ **EXIT=0** · 131 scripts npm · Playwright **514 passed** (7,8 min), sem failed ou skipped · persistência 40/40 · autoria e toque duplo 32/32 · mutações 84/84 · 122 travas ligadas · índice: 110 declaradas · censo 65 instrumentos |
+| artefatos da suíte | `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json` revertidos (D-PEND-10) |
+| push | `fc81900..7dc42c5` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `7dc42c5e9def3b8e218a6b3759656ba3c32ed2a6`; divergência 0/0. O commit só de `docs/` com os pacotes sobe em seguida, sem `test:all` (D-PEND-17). |

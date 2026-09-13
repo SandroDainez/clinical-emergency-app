@@ -1,7 +1,7 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD:** `fc81900`, igual ao remoto (0 atrás / 0 à frente)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `7dc42c5`, enviado (`fc81900..7dc42c5`, 0/0); por cima, um commit só de `docs/` (D-PEND-17)
 
 ## Ponto exato de retomada
 
@@ -9,8 +9,8 @@
 
 | entrega | escopo | estado |
 |---|---|---|
-| **Entrega 1 · revisão médica** | pacotes `docs/avc/revisao/<id>.md`: HSA retendo reperfusão; arredondamento da dose do trombolítico; temperatura no caminho isquêmico; estados da ação (4 vs 8); janela de puerpério; as quatro interpretações da D-139. Sem código. | em andamento |
-| **Entrega 2 · correções sem decisão clínica** | (a) AC-40: autor = `user.id` da sessão Supabase, com o ID do aparelho só como fallback marcado; (b) proteção de toque duplo no registro de evento, para toda ação; (c) AC-39: documentar o adaptador SQLite | em andamento |
+| **Entrega 1 · revisão médica** | nove pacotes em `docs/avc/revisao/` (HSA; dose do trombolítico; temperatura; estados da ação; puerpério; quatro interpretações da D-139), com decisão humana em branco | ✅ escritos · `commit só de `docs/` com os pacotes e a documentação` (só `docs/`, D-PEND-17) |
+| **Entrega 2 · correções sem decisão clínica** | (a) AC-40; (b) toque duplo no registro, para toda ação; (c) AC-39 documentado | ✅ `c513b64` (código) · `7dc42c5` (declaração da prova) · `test:all` no HEAD `7dc42c5`: EXIT=0, Playwright 514/514 · push `fc81900..7dc42c5` |
 
 **Rodada anterior (2ª), concluída:**
 
@@ -70,6 +70,19 @@ Detalhe em `docs/avc/auditoria-vs-spec.md` §7.5.
 
 Detalhe em `docs/avc/auditoria-vs-spec.md` §7.6.
 
+## 3ª rodada · achados
+
+Detalhe em `docs/avc/auditoria-vs-spec.md` §7.8 e nos pacotes `docs/avc/revisao/`.
+
+- **AC-40:** ✅ fechado em `c513b64` — autor = `user.id` da sessão Supabase; sem sessão, ID do aparelho marcado no evento e na linha do tempo.
+- **Toque duplo:** a proteção morava em `abrirNovaInstancia` (três botões); agora vale no registro, para toda ação (`c513b64`).
+- **AC-39:** documentado, não implementado (`docs/avc/persistencia.md` §4).
+- **AC-43 · alta · clínico:** a dose da tenecteplase não segue a tabela por faixa de peso da Table 7 (70 kg: 18 mg no app, 20 mg na faixa). **Não corrigido.**
+- **AC-44 · alta · clínico:** a temperatura saiu do caminho isquêmico, mas a §4.4 da AHA 2026 tem recomendação COR 1. **Não corrigido.**
+- **AC-45 · média:** tocar duas vezes numa opção já marcada desfaz a escolha.
+- **AC-46, AC-47, AC-48:** achados por leitura na D-139, **a verificar por execução**.
+- **AC-49, AC-50, AC-51:** baixos (página da rec. 10 na transcrição, texto órfão de puerpério, toque duplo sem janela).
+
 ## Achados críticos
 
 | # | estado |
@@ -87,11 +100,13 @@ Detalhe em `docs/avc/auditoria-vs-spec.md` §7.6.
 | D-PEND-07 | força, `contextoDaFonte` e validação humana por regra |
 | D-PEND-09 | corrigir `docs/avc-module.md` e o cabeçalho da fonte-mãe |
 | D-PEND-10 | regenerar e commitar `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json` |
-| D-PEND-11 | confirmar as 4 interpretações de D-139 |
-| D-PEND-12 | registrar formalmente a dose inteira do trombolítico |
+| D-PEND-11 | confirmar as 4 interpretações de D-139 — pacotes `revisao/D-139-1…4` |
+| D-PEND-12 | registrar formalmente a dose inteira do trombolítico — ver pacote `revisao/AC-06-dose-trombolitico.md` e AC-43 |
+| pacotes de revisão | nove decisões em `docs/avc/revisao/`, com "Decisão humana: ___" em branco |
+| AC-44 | temperatura no caminho isquêmico — pacote `revisao/AC-14-temperatura.md` |
 
 ## Próximo passo nesta rodada
 
-1. Entrega 1 desta rodada: pacotes de revisão médica, com o campo de decisão humana vazio.
-2. Entrega 2 desta rodada: AC-40 e toque duplo com prova vermelha antes; AC-39 só documentado.
-3. Antes de dado real de paciente: AC-39 (persistência nativa) e os limites de `docs/avc/persistencia.md`.
+1. Revisão médica dos nove pacotes em `docs/avc/revisao/` — prioridade para AC-43 (dose da tenecteplase) e AC-44 (temperatura).
+2. Verificar por execução AC-46, AC-47 e AC-48.
+3. Antes de dado real de paciente: AC-39 (adaptador SQLite, §4 de `docs/avc/persistencia.md`) e os demais itens da §6.
