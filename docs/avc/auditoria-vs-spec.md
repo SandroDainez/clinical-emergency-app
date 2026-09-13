@@ -484,3 +484,25 @@ Sem sincronização com servidor. Limites em `docs/avc/persistencia.md`.
 | AC-40 | média | O autor é um identificador **local do aparelho** (`local:<uuid>`), não uma identidade autenticada. | `components/avc/use-atendimento-persistido.ts` `autorLocal` |
 | AC-41 | baixa · instrumento | O e2e *"corrigir NÃO cria uma terceira medida"* da A **não corrige**: digitar sobre o valor é nova escrita na mesma instância (`registrarComInstancia`). A superfície A **não tem** gesto "Corrigir". A asserção "sem motivo informado" foi posta ali, ficou vermelha pelo motivo certo e foi **retirada**; a prova foi para o gesto real no Laboratório. | `e2e/avc-historico-de-afericoes.spec.ts:89` |
 | AC-42 | baixa · instrumento | `dblclick` do Playwright **não reproduziu** o defeito A17 no código antigo. A prova usa dois cliques. | `e2e/avc-persistencia.spec.ts:63` |
+
+**Suíte e envio da Entrega 2:**
+
+| item | resultado |
+|---|---|
+| commits | `fa01339` (código e provas) · `5c41455` (docs) · `fc81900` (prova lê fonte sem comentário) |
+| 1º `test:all` (HEAD `5c41455`) | 🔴 EXIT=1 · parou em `test:leitura-fonte`: `prova-avc-persistencia.cjs` lia `.tsx` cru com `fs.readFileSync`, então a busca por "sem motivo informado" podia ser satisfeita por um comentário → passou a usar `lerFonte` em `fc81900` |
+| 2º `test:all` (HEAD `fc81900`, árvore limpa, mesmo HEAD no início e no fim) | ✅ **EXIT=0** · 130 scripts npm · Playwright **510 passed** (7.8 min), sem failed ou skipped · persistência 40/40 · mutações 84/84 · 121 travas ligadas · 65 instrumentos no censo |
+| artefatos da suíte | `INDICE-DE-TRAVAS.md` e `INVENTARIO-AFIRMACOES-AVC.json` revertidos (D-PEND-10) |
+| push | `8e07c30..fc81900` → `origin/refactor/clinical-modules-rebuild`; `git ls-remote` = `fc819003ff61de8d313d3a0c9b8fe96a483a521b`; divergência 0/0 |
+
+⚠️ Esta tabela e a atualização correspondente de `docs/status.md` ficaram **fora de commit**: commitá-las criaria um HEAD sem `test:all`.
+
+### 7.7 · Decisões do autor de 2026-09-13 (3ª rodada)
+
+| # | estado | decisão |
+|---|---|---|
+| AC-38 | ✅ **fechado** pela D-PEND-15 | Motivo da correção opcional, autor obrigatório, ausência visível ("sem motivo informado"); decisão de 2026-08-30 mantida. Já conforme em `fa01339`. |
+| AC-32 | ✅ **confirmado** pela D-PEND-16 | Com UN, "contradiz" só quando a soma parcial excede o teto. Já conforme em `207e4be`; provas `prova-avc-nihss-criterios.cjs:120-122`. |
+| — | regra de envio | **D-PEND-17:** commit só de `docs/` dispensa `test:all` quando `git diff --stat` tocar só `docs/`. |
+
+Texto integral em `docs/decisoes.md`.

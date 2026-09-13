@@ -147,3 +147,45 @@ Stroke Scale (`protocols/fontes-verbatim/nih-nihss-2024.md`, p. 8) não traz reg
 **Origem:** achado AC-28 de `docs/avc/auditoria-vs-spec.md` §7.2.
 **Razão registrada:** não fornecida além do texto da decisão.
 **Autoriza implementação:** sim, na rodada seguinte à decisão (Entrega 1).
+
+## D-PEND-15 · Correção: motivo opcional, autor obrigatório, ausência visível
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:**
+
+- O motivo da correção é **opcional**.
+- O **autor é obrigatório** em todo evento de correção.
+- A **ausência** de motivo é **visível**: a tela escreve "sem motivo informado".
+- A decisão de 2026-08-30 (`corrigirFato` não exige motivo) fica **mantida**.
+
+**Origem:** achado AC-38 de `docs/avc/auditoria-vs-spec.md` §7.6, que fica **fechado**.
+**Estado da implementação:** já conforme em `fa01339`. O evento sempre leva `autor`; o motivo ausente é gravado como ausente; "sem motivo informado" aparece na leitura do Laboratório e da Imagem e no histórico da A.
+**Razão registrada:** não fornecida além do texto da decisão.
+
+## D-PEND-16 · "Contradiz" com item não testável só quando a soma parcial excede o teto
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** com item UN, um critério de faixa com teto dá **"contradiz" apenas quando a soma parcial excede o teto**.
+
+Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
+
+| soma parcial com UN | resultado |
+|---|---|
+| ≤ 9 | inconclusivo |
+| > 9 | contradiz |
+
+**Origem:** achado AC-32 de `docs/avc/auditoria-vs-spec.md` §7.5, que fica **confirmado**.
+**Estado da implementação:** conforme em `207e4be` (`avc/nucleo/derivacoes-f.ts`, bloco D-PEND-13). Provas em `scripts/prova-avc-nihss-criterios.cjs:120-122`: parcial 7 e parcial 5 → inconclusivo; parcial 10 → contradiz.
+**Razão registrada:** não fornecida além do texto da decisão.
+
+## D-PEND-17 · Commit só de `docs/` dispensa `test:all`
+
+**Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** um commit **apenas de `docs/`** dispensa `test:all` quando `git diff --stat` tocar **só** `docs/`.
+
+**Como se confere:** antes do commit, `git diff --cached --stat` lista apenas caminhos sob `docs/`. Qualquer caminho fora de `docs/` volta à regra geral: push só com `test:all` verde no HEAD exato.
+**O que continua valendo:** commit por caminho explícito, e nenhuma afirmação de teste que não rodou.
+**Razão registrada:** não fornecida além do texto da decisão.
