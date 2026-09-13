@@ -27,3 +27,20 @@ export function faixaNihss(total: number) {
 export function classifyNihss(total: number) {
   return faixaNihss(total).rotulo;
 }
+
+/**
+ * O TOTAL DITO COMO ELE É — AC-01, decisão do autor (2026-09-13).
+ *
+ * ⚠️ Com item não testável (UN), a soma ⛔ não é o total completo da escala, e o
+ * texto diz quantos itens ficaram de fora: "14, com 1 item não testável".
+ * `tr` traduz os fragmentos; sem ele, sai em português.
+ */
+export function textoDoTotalNihss(
+  soma: number,
+  naoTestaveis: number,
+  tr: (pt: string) => string = (pt) => pt
+): string {
+  if (naoTestaveis <= 0) return String(soma);
+  const resto = naoTestaveis === 1 ? tr("item não testável") : tr("itens não testáveis");
+  return `${soma}, ${tr("com")} ${naoTestaveis} ${resto}`;
+}

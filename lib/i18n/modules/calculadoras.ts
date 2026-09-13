@@ -320,7 +320,7 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "Mudo/afasia global": "Mudo / afasia global",
   "10. Disartria": "10. Disartria",
   "Discreta a moderada": "De leve a moderada",
-  "Grave/intubado": "Grave / intubado",
+  "Grave/anártrico": "Grave / anártrico",
   "11. Extinção/desatenção": "11. Extinción / falta de atención",
   "Sem anormalidade": "Sin anormalidad",
   "Extinção 1 modalidade": "Extinción en 1 modalidad",

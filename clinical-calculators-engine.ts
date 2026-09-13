@@ -731,7 +731,7 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "10", label: "10. Disartria", help:
           "Só é não testável se houver intubação ou outra barreira física. Não dizer ao paciente por que ele está sendo testado.",
         options: [
-        { label: "Normal", points: 0 }, { label: "Discreta a moderada", points: 1 }, { label: "Grave/intubado", points: 2 } ] },
+        { label: "Normal", points: 0 }, { label: "Discreta a moderada", points: 1 }, { label: "Grave/anártrico", points: 2 } ] },
       { id: "11", label: "11. Extinção/desatenção", help:
           "Como só pontua se estiver presente, este item NUNCA é não testável.",
         options: [

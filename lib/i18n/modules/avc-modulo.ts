@@ -1978,4 +1978,23 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Anticoagulação e antiagregação": "Anticoagulación y antiagregación",
   "Não perguntado": "No preguntado",
   "sem cruzar o corte ou ainda sem resultado": "sin cruzar el punto de corte o aún sin resultado",
+
+  // ── NIHSS · item não testável (AC-01, 2026-09-13) ─────────────────────────
+  "Não testável (UN)": "No evaluable (UN)",
+  "Não testável (UN) só em 5a, 5b, 6a, 6b e 7, por amputação ou fusão articular, e em 10, por intubação ou barreira física, sempre com justificativa escrita. UN não entra na soma.":
+    "No evaluable (UN) solo en 5a, 5b, 6a, 6b y 7, por amputación o fusión articular, y en 10, por intubación o barrera física, siempre con justificación escrita. UN no entra en la suma.",
+  "Amputação ou fusão articular no ombro": "Amputación o fusión articular en el hombro",
+  "Amputação ou fusão articular no quadril": "Amputación o fusión articular en la cadera",
+  "Amputação ou fusão articular": "Amputación o fusión articular",
+  "Intubação ou outra barreira física à fala": "Intubación u otra barrera física para el habla",
+  "Escreva a justificativa": "Escriba la justificación",
+  "Justificativa do item não testável": "Justificación del ítem no evaluable",
+  "Falta justificar": "Falta justificar",
+  "com": "con",
+  "item não testável": "ítem no evaluable",
+  "itens não testáveis": "ítems no evaluables",
+  "NIHSS com item não testável — a soma não é o total completo":
+    "NIHSS con ítem no evaluable — la suma no es el total completo",
+  "O item não testável fica fora da soma, com a justificativa registrada. Nenhuma regra recebe esta soma como total completo":
+    "El ítem no evaluable queda fuera de la suma, con la justificación registrada. Ninguna regla recibe esta suma como total completo",
 };

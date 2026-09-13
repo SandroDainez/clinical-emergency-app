@@ -33,7 +33,8 @@ import SuperficieF from "./superficie-f";
 import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
-import { nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
+import { leituraDoNihssCalculado, nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
+import { textoDoTotalNihss } from "../../lib/nihss";
 import { correcoesEhRelevante, pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
 import { ESTADOS, corDoEstado } from "../../design-system/estados-clinicos";
@@ -152,7 +153,12 @@ const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
 };
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../../avc/conteudo/campos";
-import { CAMPO_DE_ITEM } from "../../avc/conteudo/nihss";
+import {
+  CAMPO_DA_JUSTIFICATIVA,
+  CAMPO_DE_ITEM,
+  NAO_TESTAVEL,
+  type RespostaDoItem,
+} from "../../avc/conteudo/nihss";
 import { slot } from "../../avc/conteudo/fontes";
 import { GRUPOS_A, TODOS_OS_CAMPOS_A } from "../../avc/conteudo/superficie-a";
 import {
@@ -321,7 +327,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         campo: "nihss_informado",
         icone: "neuro" as const,
         acento: "success" as const,
-        valor: typeof nihss === "number" ? String(nihss) : undefined,
+        /** ⚠️ AC-01: com item não testável, a peça diz a soma ⛔ e quantos ficaram de fora. */
+        valor: (() => {
+          const comUn = leituraDoNihssCalculado(estado);
+          if (comUn !== undefined && comUn.naoTestaveis.length > 0) {
+            return textoDoTotalNihss(comUn.soma, comUn.naoTestaveis.length, tr);
+          }
+          return typeof nihss === "number" ? String(nihss) : undefined;
+        })(),
         unidadeDinamica: undefined as string | undefined,
       },
       {
@@ -741,11 +754,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     });
   }
 
-  function registrarEscala(pontos: Record<string, number>, total: number) {
+  function registrarEscala(
+    respostas: Record<string, RespostaDoItem>,
+    justificativas: Record<string, string>,
+    total: number
+  ) {
     setEstado((e) => {
       let proximo = e;
-      for (const [item, ponto] of Object.entries(pontos)) {
-        proximo = registrarFato(proximo, { campo: CAMPO_DE_ITEM(item), valor: ponto }, relogio);
+      for (const [item, resposta] of Object.entries(respostas)) {
+        proximo = registrarFato(proximo, { campo: CAMPO_DE_ITEM(item), valor: resposta }, relogio);
+        /**
+         * ⚠️ AC-01: o item não testável grava a justificativa escrita ao lado.
+         * ⛔ O campo só confirma com ela preenchida.
+         */
+        if (resposta === NAO_TESTAVEL) {
+          proximo = registrarFato(
+            proximo,
+            { campo: CAMPO_DA_JUSTIFICATIVA(item), valor: (justificativas[item] ?? "").trim() },
+            relogio
+          );
+        }
       }
       return registrarFato(proximo, { campo: "nihss_calculado", valor: total }, relogio);
     });

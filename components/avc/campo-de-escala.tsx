@@ -31,10 +31,18 @@
  * sensibilidade e 3 na linguagem" muda o total, e ⛔ ninguém adivinha pelo rótulo.
  */
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { Campo } from "../../avc/conteudo/campo";
-import { ITENS_NIHSS } from "../../avc/conteudo/nihss";
+import {
+  ITENS_NIHSS,
+  ITENS_QUE_ACEITAM_NAO_TESTAVEL,
+  NAO_TESTAVEL,
+  NOTA_NAO_TESTAVEL,
+  somaDoNihss,
+  type RespostaDoItem,
+} from "../../avc/conteudo/nihss";
+import { textoDoTotalNihss } from "../../lib/nihss";
 import { comoAvaliarItem, oQueAvaliaItem } from "../../avc/conteudo/explicacoes";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
@@ -47,12 +55,18 @@ type Props = {
   campo: Campo;
   /** O total já registrado, venha da escala ou de fora dela. */
   total: number | undefined;
-  /** A pontuação por item já registrada. ⚠️ Vazio ⛔ não é zero. */
-  pontos: Readonly<Record<string, number>>;
+  /** A resposta por item já registrada — número ⛔ ou não testável. ⚠️ Vazio ⛔ não é zero. */
+  pontos: Readonly<Record<string, RespostaDoItem>>;
+  /** A justificativa escrita já registrada de cada item não testável (AC-01). */
+  justificativas: Readonly<Record<string, string>>;
   detalheAberto: boolean;
   onAlternarDetalhe: () => void;
-  /** Grava a escala inteira: um fato por item, mais o total. */
-  onRegistrarEscala: (pontos: Record<string, number>, total: number) => void;
+  /** Grava a escala inteira: um fato por item, a justificativa de cada UN, e a soma. */
+  onRegistrarEscala: (
+    respostas: Record<string, RespostaDoItem>,
+    justificativas: Record<string, string>,
+    total: number
+  ) => void;
   onDesfazer: (campo: string) => void;
   /**
    * ⚠️⚠️ O SEGUNDO CAMINHO — pedido do autor em 2026-09-06: *"tem que deixar
@@ -77,6 +91,7 @@ export default function CampoDeEscala({
   campo,
   total,
   pontos,
+  justificativas,
   detalheAberto,
   onAlternarDetalhe,
   onRegistrarEscala,
@@ -91,7 +106,9 @@ export default function CampoDeEscala({
    * trilha de estados intermediários de um exame que ainda está acontecendo —
    * e o total de um NIHSS pela metade ⛔ não é um NIHSS.
    */
-  const [rascunho, setRascunho] = useState<Record<string, number>>({});
+  const [rascunho, setRascunho] = useState<Record<string, RespostaDoItem>>({});
+  /** ⚠️ AC-01: a justificativa escrita de cada item não testável, enquanto se digita. */
+  const [rascunhoDeJustificativa, setRascunhoDeJustificativa] = useState<Record<string, string>>({});
   /** Quais regras de pontuação estão abertas. ⚠️ Fechadas por padrão. */
   const [regrasAbertas, setRegrasAbertas] = useState<readonly string[]>([]);
   /**
@@ -135,10 +152,17 @@ export default function CampoDeEscala({
    */
   const [verTodos, setVerTodos] = useState(true);
 
-  const emEdicao = { ...pontos, ...rascunho };
-  const respondidos = ITENS_NIHSS.filter((v) => emEdicao[v.id] !== undefined).length;
-  const completa = respondidos === ITENS_NIHSS.length;
-  const parcial = ITENS_NIHSS.reduce((s, v) => s + (emEdicao[v.id] ?? 0), 0);
+  const emEdicao: Record<string, RespostaDoItem> = { ...pontos, ...rascunho };
+  const justificativasEmEdicao: Record<string, string> = { ...justificativas, ...rascunhoDeJustificativa };
+  /**
+   * ⚠️⚠️ AC-01: soma, itens não testáveis ⛔ e o que falta justificar vêm de
+   * `somaDoNihss` (conteúdo, com fonte) — ⛔ esta camada ⛔ não soma nada sozinha.
+   */
+  const somaAtual = somaDoNihss(emEdicao, justificativasEmEdicao);
+  const respondidos = somaAtual.respondidos;
+  const completa = somaAtual.completa;
+  const parcial = somaAtual.soma;
+  const naoTestaveisGravados = Object.values(pontos).filter((r) => r === NAO_TESTAVEL).length;
 
   return (
     <View style={[e.campo, total !== undefined && e.campoRespondido]} testID={`avc-campo-${campo.id}`}>
@@ -154,7 +178,10 @@ export default function CampoDeEscala({
 
       <View style={e.linhaDoValor}>
         <Text style={[e.valor, total === undefined && e.valorAusente]} testID={`avc-escala-valor-${campo.id}`}>
-          {total === undefined ? tr("não informado") : String(total)}
+          {total === undefined
+            ? tr("não informado")
+            /** ⚠️ AC-01: com item não testável, ⛔ nunca como total completo. */
+            : textoDoTotalNihss(total, naoTestaveisGravados, tr)}
         </Text>
         <Pressable
           style={[e.acao, e.acaoPrincipal]}
@@ -177,6 +204,7 @@ export default function CampoDeEscala({
             testID={`avc-limpar-${campo.id}`}
             onPress={() => {
               setRascunho({});
+              setRascunhoDeJustificativa({});
               onDesfazer(campo.id);
             }}
           >
@@ -208,6 +236,13 @@ export default function CampoDeEscala({
 
       {aberta ? (
         <View style={e.escala} testID={`avc-escala-${campo.id}`}>
+          {/**
+            * ⚠️ AC-01 (d): a nota sobre itens não testáveis mora ⛔ aqui, no campo
+            * do AVC — ⛔ e ⛔ não só na calculadora. Fonte: NIH Stroke Scale (2024).
+            */}
+          <Text style={e.notaNaoTestavel} testID="avc-escala-nota-nao-testavel">
+            {tr(NOTA_NAO_TESTAVEL)}
+          </Text>
           {/**
             * ⚠️⚠️ O CROMADO DA ESCALA — progresso ⛔ e a porta da revisão.
             *
@@ -325,7 +360,40 @@ export default function CampoDeEscala({
                     </Pressable>
                   );
                 })}
+                {/**
+                  * ⚠️⚠️ AC-01 (b): NÃO TESTÁVEL (UN) — ⛔ só nos itens que a fonte
+                  * admite (5a, 5b, 6a, 6b, 7 e 10), ⛔ e ⛔ sem ponto: UN ⛔ não soma.
+                  */}
+                {ITENS_QUE_ACEITAM_NAO_TESTAVEL[item.id] !== undefined ? (
+                  <Pressable
+                    style={[e.opcao, emEdicao[item.id] === NAO_TESTAVEL && e.opcaoAtiva]}
+                    accessibilityRole="radio"
+                    aria-checked={emEdicao[item.id] === NAO_TESTAVEL}
+                    testID={`avc-escala-opcao-${item.id}-UN`}
+                    onPress={() => setRascunho((r) => ({ ...r, [item.id]: NAO_TESTAVEL }))}
+                  >
+                    <Text style={[e.opcaoTexto, emEdicao[item.id] === NAO_TESTAVEL && e.opcaoTextoAtivo]}>
+                      {emEdicao[item.id] === NAO_TESTAVEL ? "✓ " : ""}
+                      {tr("Não testável (UN)")} · {tr(ITENS_QUE_ACEITAM_NAO_TESTAVEL[item.id])}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
+              {/** ⚠️ UN exige justificativa escrita — *"clearly write the explanation"* (NIH). */}
+              {emEdicao[item.id] === NAO_TESTAVEL ? (
+                <TextInput
+                  style={e.justificativa}
+                  value={justificativasEmEdicao[item.id] ?? ""}
+                  onChangeText={(texto) =>
+                    setRascunhoDeJustificativa((j) => ({ ...j, [item.id]: texto }))
+                  }
+                  multiline
+                  placeholder={tr("Escreva a justificativa")}
+                  placeholderTextColor={e.justificativaPlaceholder.color}
+                  accessibilityLabel={tr("Justificativa do item não testável")}
+                  testID={`avc-escala-justificativa-${item.id}`}
+                />
+              ) : null}
             </View>
           ))}
 
@@ -353,7 +421,8 @@ export default function CampoDeEscala({
               * que parece medida antes de alguém medir (§0.2).
               */}
             <Text style={e.parcial} testID={`avc-escala-parcial-${campo.id}`}>
-              {completa ? tr("Total") : tr("Soma parcial")}: {parcial} · {respondidos}/{ITENS_NIHSS.length}
+              {completa ? tr("Total") : tr("Soma parcial")}:{" "}
+              {textoDoTotalNihss(parcial, somaAtual.naoTestaveis.length, tr)} · {respondidos}/{ITENS_NIHSS.length}
             </Text>
             <Pressable
               style={[e.confirmar, !completa && e.confirmarInativo]}
@@ -362,8 +431,9 @@ export default function CampoDeEscala({
               disabled={!completa}
               testID={`avc-escala-confirmar-${campo.id}`}
               onPress={() => {
-                onRegistrarEscala(emEdicao, parcial);
+                onRegistrarEscala(emEdicao, justificativasEmEdicao, parcial);
                 setRascunho({});
+                setRascunhoDeJustificativa({});
                 setAberta(false);
               }}
             >
@@ -383,6 +453,14 @@ export default function CampoDeEscala({
                        * item restante. ⛔ Concordância errada numa tela clínica
                        * ⛔ não é detalhe: ⛔ ela ensina a ⛔ não confiar no texto.
                        */
+                      /**
+                       * ⚠️ AC-01: todos os itens respondidos, ⛔ mas UN sem
+                       * justificativa escrita — ⛔ o bloqueio diz isso.
+                       */
+                      if (respondidos === ITENS_NIHSS.length && somaAtual.faltamJustificar.length > 0) {
+                        const n = somaAtual.faltamJustificar.length;
+                        return `${tr("Falta justificar")} ${n} ${tr(n === 1 ? "item não testável" : "itens não testáveis")}`;
+                      }
                       const faltam = ITENS_NIHSS.length - respondidos;
                       return faltam === 1
                         ? `${tr("Falta")} 1 ${tr("item")}`
@@ -565,4 +643,19 @@ const criarEstilos = (tema: Tema) =>
     },
     confirmarTexto: { ...PAPEL.tituloDeSecao, color: tema.cores.onFill },
     confirmarTextoInativo: { color: tema.cores.textSecondary },
+    /** ⚠️ AC-01: a nota dos itens não testáveis — secundária, ⛔ mas sempre à vista com a escala aberta. */
+    notaNaoTestavel: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
+    /** ⚠️ AC-01: a justificativa do UN — o mesmo corpo da caixa de texto de "Outros". */
+    justificativa: {
+      ...PAPEL.textoPrincipal,
+      color: tema.cores.text,
+      backgroundColor: tema.cores.bg,
+      borderWidth: 2,
+      borderColor: tema.cores.controlBorder,
+      borderRadius: RAIO.botao,
+      paddingHorizontal: ESPACO.sm,
+      paddingVertical: ESPACO.sm,
+      minHeight: TOQUE.minimo,
+    },
+    justificativaPlaceholder: { color: tema.cores.textSecondary },
   });

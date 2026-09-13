@@ -16,7 +16,7 @@
  */
 
 import { criseNoInicio } from "./derivacoes";
-import type { EstadoAvc } from "./estado";
+import { valorAtual, type EstadoAvc } from "./estado";
 import {
   numero,
   respondeuDesconhecido,
@@ -34,6 +34,11 @@ import {
   CAMPO_DE_ITEM,
   ITENS_NIHSS,
   MOTORES_POR_LADO,
+  CAMPO_DA_JUSTIFICATIVA,
+  NAO_TESTAVEL,
+  somaDoNihss,
+  type RespostaDoItem,
+  type SomaDoNihss,
 } from "../conteudo/nihss";
 
 /**
@@ -125,20 +130,77 @@ export function contextoDaTable4(estado: EstadoAvc): ContextoDaFonte {
  *     cortes de item, e o app ⛔ não os adivinha.
  */
 
-/** A pontuação registrada de um item da escala, ou `undefined` se não respondido. */
+/**
+ * A pontuação registrada de um item da escala, ou `undefined` se não respondido.
+ * ⚠️ Item não testável (UN) ⛔ não tem pontuação: também devolve `undefined`, e
+ * por isso nenhuma derivação por corte de item conclui nada a partir dele.
+ */
 export function pontoDoItem(estado: EstadoAvc, item: string): number | undefined {
   return numero(estado, CAMPO_DE_ITEM(item));
 }
 
-/** ⚠️ `true` quando TODOS os itens da escala foram respondidos. */
-export function escalaPreenchida(estado: EstadoAvc): boolean {
-  return ITENS_NIHSS.every((v) => pontoDoItem(estado, v.id) !== undefined);
+/**
+ * ⚠️ A resposta do item como a trilha a guarda: número ⛔ ou não testável (UN).
+ * Fonte e decisão do autor: `avc/conteudo/nihss.ts` (AC-01, 2026-09-13).
+ */
+export function respostaDoItem(estado: EstadoAvc, item: string): RespostaDoItem | undefined {
+  const f = valorAtual(estado, CAMPO_DE_ITEM(item));
+  if (f === undefined) return undefined;
+  if (typeof f.valor === "number") return f.valor;
+  return f.valor === NAO_TESTAVEL ? NAO_TESTAVEL : undefined;
 }
 
-/** O total somado dos itens respondidos, ou `undefined` se a escala não foi preenchida. */
+/** A justificativa escrita de um item UN, ⚠️ ou `undefined` se vazia. */
+export function justificativaDoItem(estado: EstadoAvc, item: string): string | undefined {
+  const v = valorAtual(estado, CAMPO_DA_JUSTIFICATIVA(item))?.valor;
+  return typeof v === "string" && v.trim() !== "" ? v : undefined;
+}
+
+function somaDaTrilha(estado: EstadoAvc): SomaDoNihss {
+  const respostas: Record<string, RespostaDoItem | undefined> = {};
+  const justificativas: Record<string, string | undefined> = {};
+  for (const v of ITENS_NIHSS) {
+    respostas[v.id] = respostaDoItem(estado, v.id);
+    justificativas[v.id] = justificativaDoItem(estado, v.id);
+  }
+  return somaDoNihss(respostas, justificativas);
+}
+
+/** Os itens gravados como não testáveis. */
+export function itensNaoTestaveis(estado: EstadoAvc): readonly string[] {
+  return ITENS_NIHSS.filter((v) => respostaDoItem(estado, v.id) === NAO_TESTAVEL).map((v) => v.id);
+}
+
+/** ⚠️ `true` quando TODOS os itens foram respondidos: número, ⛔ ou UN justificado. */
+export function escalaPreenchida(estado: EstadoAvc): boolean {
+  return somaDaTrilha(estado).completa;
+}
+
+/**
+ * O total somado dos itens, ⚠️ ou `undefined` se a escala não foi preenchida
+ * ⛔ ou tem item não testável — com UN, a soma ⛔ não é o total da escala.
+ */
 export function totalDaEscala(estado: EstadoAvc): number | undefined {
-  if (!escalaPreenchida(estado)) return undefined;
-  return ITENS_NIHSS.reduce((soma, v) => soma + (pontoDoItem(estado, v.id) ?? 0), 0);
+  const s = somaDaTrilha(estado);
+  if (!s.completa || s.naoTestaveis.length > 0) return undefined;
+  return s.soma;
+}
+
+/**
+ * ⚠️ A LEITURA PARA A TELA: a soma ⛔ e os itens não testáveis (AC-01).
+ *
+ * ⛔ Não alimenta regra nenhuma — regra lê `nihssCalculado`, que devolve
+ * `undefined` quando há UN. Usar um total com UN como escore completo em
+ * critério de trombectomia é decisão pendente do autor.
+ */
+export function leituraDoNihssCalculado(
+  estado: EstadoAvc
+): { soma: number; naoTestaveis: readonly string[] } | undefined {
+  const s = somaDaTrilha(estado);
+  if (s.completa) return { soma: s.soma, naoTestaveis: s.naoTestaveis };
+  if (s.naoTestaveis.length > 0) return undefined;
+  const gravado = numero(estado, "nihss_calculado");
+  return gravado === undefined ? undefined : { soma: gravado, naoTestaveis: [] };
 }
 
 /**
@@ -163,6 +225,13 @@ export function nihssCalculado(estado: EstadoAvc): number | undefined {
    * são os itens; ⛔ eles ⛔ não têm como divergir do total, porque a tela grava os
    * dois no mesmo gesto.
    */
+  /**
+   * ⚠️⚠️ AC-01 (2026-09-13): com item NÃO TESTÁVEL, ⛔ nenhuma regra recebe
+   * número. A soma com UN ⛔ não é o total da escala, e o critério de
+   * trombectomia (NIHSS ≥ 6, ≥ 10, 6–9) ⛔ não pode lê-la como se fosse. ⛔ Nem o
+   * total gravado entra por trás: ele é essa mesma soma.
+   */
+  if (itensNaoTestaveis(estado).length > 0) return undefined;
   return totalDaEscala(estado) ?? numero(estado, "nihss_calculado");
 }
 
@@ -341,6 +410,21 @@ export function nihssRegistrado(estado: EstadoAvc): Leitura {
   const informado = nihssInformado(estado);
   const insumos = ["nihss_calculado", "nihss_informado"];
   const fonte = "F-17";
+
+  /**
+   * ⚠️⚠️ AC-01: escala feita com item NÃO TESTÁVEL. ⛔ Não é "ainda não
+   * registrado" — o exame foi feito —, ⛔ e ⛔ não é total completo.
+   */
+  if (calculado === undefined && itensNaoTestaveis(estado).length > 0) {
+    return {
+      conclusao: "sim",
+      tom: "informativo",
+      curto: "NIHSS com item não testável — a soma não é o total completo",
+      texto: "O item não testável fica fora da soma, com a justificativa registrada. Nenhuma regra recebe esta soma como total completo",
+      insumos,
+      fonte,
+    };
+  }
 
   if (calculado === undefined && informado === undefined) {
     return {

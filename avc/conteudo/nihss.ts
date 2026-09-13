@@ -49,6 +49,90 @@ export const ITENS_NIHSS: readonly ScoreVar[] = NIHSS.vars;
 export const CAMPO_DE_ITEM = (id: string) => `nihss_${id}`;
 
 /**
+ * ── ITEM NÃO TESTÁVEL (UN) — AC-01, 2026-09-13 ─────────────────────────────
+ *
+ * Fonte: `protocols/fontes-verbatim/nih-nihss-2024.md` (NINDS, *NIH Stroke
+ * Scale*, fev. 2024), itens 5, 6, 7 e 10: *"Only in the case of amputation or
+ * joint fusion…"* / *"Only if the patient is intubated or has other physical
+ * barriers to producing speech, the examiner should record the score as
+ * untestable (UN) and clearly write the explanation for this choice."* O item 11
+ * *"is never untestable"*; o 1a exige resposta mesmo com tubo endotraqueal.
+ *
+ * ⚠️ DECISÃO DO AUTOR (2026-09-13), ⛔ não da fonte: o UN ⛔ não entra na soma, e o
+ * total é dito como "X, com N itens não testáveis" — ⛔ nunca como total completo.
+ * A folha de total do NIH ⛔ não traz regra para UN.
+ */
+export const FONTE_NIHSS_NIH = "protocols/fontes-verbatim/nih-nihss-2024.md";
+
+/** O valor gravado no fato do item quando ele não pôde ser testado. */
+export const NAO_TESTAVEL = "nao_testavel" as const;
+
+export type RespostaDoItem = number | typeof NAO_TESTAVEL;
+
+/** A justificativa escrita do UN — ⚠️ um fato próprio, ao lado do item. */
+export const CAMPO_DA_JUSTIFICATIVA = (id: string) => `nihss_${id}_justificativa`;
+
+/** ⚠️ SÓ estes itens aceitam UN, cada um com o motivo que a fonte admite. */
+export const ITENS_QUE_ACEITAM_NAO_TESTAVEL: Readonly<Record<string, string>> = {
+  "5a": "Amputação ou fusão articular no ombro",
+  "5b": "Amputação ou fusão articular no ombro",
+  "6a": "Amputação ou fusão articular no quadril",
+  "6b": "Amputação ou fusão articular no quadril",
+  "7": "Amputação ou fusão articular",
+  "10": "Intubação ou outra barreira física à fala",
+};
+
+export const NOTA_NAO_TESTAVEL =
+  "Não testável (UN) só em 5a, 5b, 6a, 6b e 7, por amputação ou fusão articular, e em 10, por intubação ou barreira física, sempre com justificativa escrita. UN não entra na soma.";
+
+export type SomaDoNihss = {
+  /** Soma dos itens pontuados. ⚠️ Com UN, ⛔ não é o total completo. */
+  readonly soma: number;
+  readonly naoTestaveis: readonly string[];
+  /** Itens UN ainda sem justificativa escrita. */
+  readonly faltamJustificar: readonly string[];
+  /** Itens marcados UN sem que a fonte admita UN neles. */
+  readonly invalidos: readonly string[];
+  readonly respondidos: number;
+  /** Todos respondidos, todo UN justificado, nenhum UN inválido. */
+  readonly completa: boolean;
+};
+
+export function somaDoNihss(
+  respostas: Readonly<Record<string, RespostaDoItem | undefined>>,
+  justificativas: Readonly<Record<string, string | undefined>> = {}
+): SomaDoNihss {
+  let soma = 0;
+  let respondidos = 0;
+  const naoTestaveis: string[] = [];
+  const faltamJustificar: string[] = [];
+  const invalidos: string[] = [];
+  for (const item of ITENS_NIHSS) {
+    const r = respostas[item.id];
+    if (r === undefined) continue;
+    respondidos += 1;
+    if (r === NAO_TESTAVEL) {
+      if (ITENS_QUE_ACEITAM_NAO_TESTAVEL[item.id] === undefined) {
+        invalidos.push(item.id);
+        continue;
+      }
+      naoTestaveis.push(item.id);
+      if ((justificativas[item.id] ?? "").trim() === "") faltamJustificar.push(item.id);
+      continue;
+    }
+    soma += r;
+  }
+  return {
+    soma,
+    naoTestaveis,
+    faltamJustificar,
+    invalidos,
+    respondidos,
+    completa: respondidos === ITENS_NIHSS.length && faltamJustificar.length === 0 && invalidos.length === 0,
+  };
+}
+
+/**
  * OS ITENS QUE A TABLE 4 USA POR NOME — ⚠️ o mapa que autoriza a derivação.
  *
  * ⚠️⚠️ CADA LINHA VEM DO VERBATIM (F-17, Table 4, p. e355), e ⛔ nenhuma foi

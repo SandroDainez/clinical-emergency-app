@@ -33,7 +33,8 @@ import {
   valorEfetivo,
   veioDaEscala,
 } from "../../avc/nucleo/derivacoes-b";
-import { CAMPO_DE_ITEM, ITENS_NIHSS } from "../../avc/conteudo/nihss";
+import { CAMPO_DA_JUSTIFICATIVA, CAMPO_DE_ITEM, ITENS_NIHSS, type RespostaDoItem } from "../../avc/conteudo/nihss";
+import { respostaDoItem } from "../../avc/nucleo/derivacoes-b";
 import CampoDeEscala from "./campo-de-escala";
 import {
   LinhaDeAchado,
@@ -80,7 +81,11 @@ type Props = {
   onMedir: (campo: string, valor: number) => void;
   onDesfazer: (campo: string) => void;
   /** ⚠️ A escala inteira num gesto: um fato por item, mais o total (§3.1). */
-  onEscala: (pontos: Record<string, number>, total: number) => void;
+  onEscala: (
+    respostas: Record<string, RespostaDoItem>,
+    justificativas: Record<string, string>,
+    total: number
+  ) => void;
 };
 
 export default function SuperficieB({
@@ -350,9 +355,15 @@ export default function SuperficieB({
                         campo={campo}
                         total={numeroGravado(campo.id)}
                         pontos={Object.fromEntries(
-                          ITENS_NIHSS.map((v) => [v.id, numeroGravado(CAMPO_DE_ITEM(v.id))]).filter(
+                          ITENS_NIHSS.map((v) => [v.id, respostaDoItem(estado, v.id)]).filter(
                             ([, p]) => p !== undefined
-                          ) as [string, number][]
+                          ) as [string, RespostaDoItem][]
+                        )}
+                        /** ⚠️ AC-01: a justificativa escrita de cada item não testável. */
+                        justificativas={Object.fromEntries(
+                          ITENS_NIHSS.map((v) => [v.id, valorAtual(estado, CAMPO_DA_JUSTIFICATIVA(v.id))?.valor]).filter(
+                            ([, j]) => typeof j === "string"
+                          ) as [string, string][]
                         )}
                         detalheAberto={detalhes.aberto(campo.id)}
                         onAlternarDetalhe={() => detalhes.alternar(campo.id)}

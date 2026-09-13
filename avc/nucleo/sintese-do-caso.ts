@@ -25,7 +25,8 @@ import { decorridoEmMinutos, valorAtual, type EstadoAvc } from "./estado";
 import { destinoDaImagem } from "./derivacoes-c";
 import { exposicoesPorInstancia, type FaseDaExposicao } from "./derivacoes-f";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
-import { nihssCalculado, nihssInformado } from "./derivacoes-b";
+import { leituraDoNihssCalculado, nihssCalculado, nihssInformado } from "./derivacoes-b";
+import { textoDoTotalNihss } from "../../lib/nihss";
 import type { Relogio } from "./relogio";
 
 /** ⚠️ Um fato da síntese — ⛔ já formatado para leitura, ⛔ e sem id cru. */
@@ -112,7 +113,11 @@ export function sinteseDoCaso(
    * entre eles por conta própria: quem resolve isso é a derivação de B.
    */
   const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
-  if (nihss !== undefined) {
+  /** ⚠️ AC-01: com item não testável, a síntese diz a soma ⛔ e quantos ficaram de fora. */
+  const comUn = leituraDoNihssCalculado(estado);
+  if (comUn !== undefined && comUn.naoTestaveis.length > 0) {
+    situacao.push({ id: "nihss", texto: `NIHSS ${textoDoTotalNihss(comUn.soma, comUn.naoTestaveis.length)}` });
+  } else if (nihss !== undefined) {
     situacao.push({ id: "nihss", texto: `NIHSS ${nihss}` });
   }
 
