@@ -13,6 +13,27 @@
  *     ⛔ Sem janela de tempo: a regra ⛔ não lê relógio.
  *
  * Gesto real: `e2e/avc-autoria-e-toque-duplo.spec.ts`.
+ *
+ * PROMETE: que o autor de cada evento é o `user.id` da sessão Supabase quando ela
+ * existe; que sem sessão o autor é o ID do aparelho, marcado `origemDoAutor =
+ * aparelho`, e que sessão anônima é marcada à parte; que o schema sobe para 3 com
+ * migração v1/v2 → v3 sem inventar autor; que a linha do tempo (histórico da A) e
+ * a leitura da correção (Laboratório, Imagem) mostram a marca; que um gesto que
+ * repete o imediatamente anterior, sem nada registrado entre os dois, ⛔ não
+ * acrescenta fato — Glasgow pela calculadora, «Registrar ação» antes e depois de
+ * a tela redesenhar, desfazer e «Registrar administração» —; que gestos
+ * legítimos continuam registrando; e que o hook aplica a regra a toda mudança de
+ * estado.
+ * NÃO PROMETE: sessão Supabase real (aqui o cliente é falso, e o `dist` das provas
+ * não tem backend); identidade de quem está com o aparelho na mão; sincronização;
+ * nem que tocar de novo numa opção marcada seja protegido (isso desfaz, por
+ * desenho). A ligação com as telas é conferida por leitura de fonte sem
+ * comentário, ⛔ não por renderização.
+ * UNIVERSO: `avc/persistencia/{autoria,tipos,log,armazenamento-memoria}.ts`,
+ * `avc/nucleo/toque-duplo.ts`, `components/avc/use-atendimento-persistido.ts`,
+ * `components/avc/{superficie-a,campos-clinicos}.tsx`, `components/avc/ui/index.tsx`.
+ * FONTE: pedido do autor de 2026-09-13 (Entrega 2 · AC-40 e toque duplo);
+ * `docs/avc/persistencia.md`.
  */
 const fs = require("node:fs");
 const os = require("node:os");
