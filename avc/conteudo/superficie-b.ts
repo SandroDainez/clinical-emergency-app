@@ -416,6 +416,21 @@ export const NIHSS_B: readonly CampoB[] = [
     bloqueiaTerapia: false,
     nota: "Momento em que aquele exame foi feito, que pode ser bem anterior à chegada.",
   },
+  /**
+   * ⚠️ D-PEND-14 (2026-09-13, decisão do autor): o escore de outro serviço é
+   * contexto, ⛔ nunca critério. Esta pergunta decide só ONDE ele aparece: salvo
+   * "Não, escala completa", ⛔ só na síntese.
+   */
+  {
+    id: "nihss_informado_nao_testaveis",
+    temporalidade: "estavel",
+    rotulo: "Houve itens não testáveis nesse NIHSS?",
+    tipo: "escolha",
+    opcoes: ["Não, escala completa", "Sim, houve itens não testáveis", NAO_SEI],
+    fonte: "F-13",
+    bloqueiaTerapia: false,
+    nota: "O escore de outro serviço é contexto e nunca critério. Salvo escala completa, ele aparece só na síntese.",
+  },
 ] as const;
 
 /**
@@ -1001,6 +1016,7 @@ export const VOCABULARIO_PROPRIO_B: readonly { id: string; motivo: string }[] = 
   { id: "antecedentes_cardio_sistemicos", motivo: "cada item é um antecedente nomeado pela fonte, e nenhum é sim ou não" },
   { id: "procedimentos_recentes", motivo: "as janelas da fonte estão no rótulo de cada item" },
   { id: "nihss_informado_origem", motivo: "procedência muda a confiança sem mudar o número (E-03)" },
+  { id: "nihss_informado_nao_testaveis", motivo: "decide só onde o escore de fora aparece; ⛔ nunca critério (D-PEND-14)" },
   { id: "incapacitante_assumido", motivo: "as três decisões de §2.8-6, e Incerto é decisão" },
   { id: "deficit_leve", motivo: "leve/não leve/incerto é julgamento clínico, e a fonte não define por escore" },
   { id: "consulta_paciente_familia", motivo: "registra com quem foi a conversa, e não é sim ou não" },

@@ -371,6 +371,19 @@ export function vereditoDaTrombectomia(
       vistos.add(i);
       faltam.push({ insumo: i, rotulo: rotuloClinico(i), campos: CAMPOS_DO_INSUMO[i] });
     }
+    /**
+     * ⚠️ D-PEND-13 (2026-09-13): NIHSS com item não testável que ⛔ não decide o
+     * critério ⛔ não é "não atendido" — é **inconclusivo**, ⛔ e a frase diz isso.
+     */
+    for (const i of l.inconclusivos) {
+      if (vistos.has(i)) continue;
+      vistos.add(i);
+      faltam.push({
+        insumo: i,
+        rotulo: `${rotuloClinico(i)} inconclusivo por item não testável`,
+        campos: CAMPOS_DO_INSUMO[i],
+      });
+    }
   }
   if (faltam.length > 0) {
     return {

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta, preencherNihssComSoma } from "./helpers";
 
 /**
  * OS CRÍTICOS DO AVC — ⚠️ **pelo gesto real do médico** (commit 11 · 2026-09-12).
@@ -101,8 +101,8 @@ test.describe("AVC · críticos — o gesto real", () => {
     await abrir(page);
     await aba(page, "neurologico");
     await horaHa(page, "hora_inicio_observado", 1);
-    await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
-    await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
+    /** ⚠️ D-PEND-14 (2026-09-13): critério ⛔ só lê o NIHSS feito NESTE atendimento — pela escala. */
+    await preencherNihssComSoma(page, 10);
     await page.getByTestId("avc-abrir-mrs_previo").click();
     await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
     await page.getByTestId("avc-opcao-incapacitante_assumido-Incapacitante").click();

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta, preencherNihssComSoma } from "./helpers";
 
 /**
  * PROMETE: que o módulo AVC funcione como **UMA MÁQUINA**, atravessando
@@ -140,15 +140,8 @@ test.describe("AVC · fluxos clínicos completos", () => {
       await page.getByTestId("avc-opcao-sitio_oclusao-M1 da artéria cerebral média").click();
 
       await aba(page, "neurologico");
-      /** ⚠️ O bloco do NIHSS de fora nasce RECOLHIDO — o médico o abre. */
-      await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
-      /**
-       * ⚠️ O NIHSS mora na Superfície **B**, que ⛔ NÃO foi reescrita — lá o
-       * controle antigo continua. ⛔ Migrar esta linha teria sido tratar B como
-       * se ela tivesse mudado.
-       */
-      await page.getByTestId("avc-grandeza-zero-nihss_informado").click();
-      for (let i = 0; i < 6; i += 1) await page.getByTestId("avc-num-mais-nihss_informado").click();
+      /** ⚠️ D-PEND-14 (2026-09-13): critério ⛔ só lê o NIHSS feito NESTE atendimento — pela escala. */
+      await preencherNihssComSoma(page, 6);
 
       await aba(page, "reperfusao");
       /** ⚠️⚠️ O NIHSS ATRAVESSOU: ⛔ ele some da lista de faltas. */

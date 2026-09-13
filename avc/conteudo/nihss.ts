@@ -30,6 +30,7 @@
  */
 
 import { CALC_TOOLS, type ScoreTool, type ScoreVar } from "../../clinical-calculators-engine";
+import { somaDoNihssDe, type RespostaDoItemNihss, type SomaDoNihss } from "../../lib/nihss";
 
 const ESCALA = CALC_TOOLS.find((t) => t.id === "nihss");
 
@@ -64,72 +65,24 @@ export const CAMPO_DE_ITEM = (id: string) => `nihss_${id}`;
  */
 export const FONTE_NIHSS_NIH = "protocols/fontes-verbatim/nih-nihss-2024.md";
 
-/** O valor gravado no fato do item quando ele não pôde ser testado. */
-export const NAO_TESTAVEL = "nao_testavel" as const;
+/**
+ * ⚠️⚠️ A REGRA UN MORA EM `lib/nihss.ts` (AC-29, 2026-09-13) — a MESMA da
+ * calculadora avulsa. ⛔ Aqui ela só é reexportada; ⛔ nenhuma lista é copiada.
+ */
+export { NAO_TESTAVEL, ITENS_QUE_ACEITAM_NAO_TESTAVEL, NOTA_NAO_TESTAVEL } from "../../lib/nihss";
+export type { SomaDoNihss } from "../../lib/nihss";
 
-export type RespostaDoItem = number | typeof NAO_TESTAVEL;
+export type RespostaDoItem = RespostaDoItemNihss;
 
 /** A justificativa escrita do UN — ⚠️ um fato próprio, ao lado do item. */
 export const CAMPO_DA_JUSTIFICATIVA = (id: string) => `nihss_${id}_justificativa`;
 
-/** ⚠️ SÓ estes itens aceitam UN, cada um com o motivo que a fonte admite. */
-export const ITENS_QUE_ACEITAM_NAO_TESTAVEL: Readonly<Record<string, string>> = {
-  "5a": "Amputação ou fusão articular no ombro",
-  "5b": "Amputação ou fusão articular no ombro",
-  "6a": "Amputação ou fusão articular no quadril",
-  "6b": "Amputação ou fusão articular no quadril",
-  "7": "Amputação ou fusão articular",
-  "10": "Intubação ou outra barreira física à fala",
-};
-
-export const NOTA_NAO_TESTAVEL =
-  "Não testável (UN) só em 5a, 5b, 6a, 6b e 7, por amputação ou fusão articular, e em 10, por intubação ou barreira física, sempre com justificativa escrita. UN não entra na soma.";
-
-export type SomaDoNihss = {
-  /** Soma dos itens pontuados. ⚠️ Com UN, ⛔ não é o total completo. */
-  readonly soma: number;
-  readonly naoTestaveis: readonly string[];
-  /** Itens UN ainda sem justificativa escrita. */
-  readonly faltamJustificar: readonly string[];
-  /** Itens marcados UN sem que a fonte admita UN neles. */
-  readonly invalidos: readonly string[];
-  readonly respondidos: number;
-  /** Todos respondidos, todo UN justificado, nenhum UN inválido. */
-  readonly completa: boolean;
-};
-
+/** ⚠️ A soma da escala do AVC, pela regra única de `lib/nihss.ts`. */
 export function somaDoNihss(
   respostas: Readonly<Record<string, RespostaDoItem | undefined>>,
   justificativas: Readonly<Record<string, string | undefined>> = {}
 ): SomaDoNihss {
-  let soma = 0;
-  let respondidos = 0;
-  const naoTestaveis: string[] = [];
-  const faltamJustificar: string[] = [];
-  const invalidos: string[] = [];
-  for (const item of ITENS_NIHSS) {
-    const r = respostas[item.id];
-    if (r === undefined) continue;
-    respondidos += 1;
-    if (r === NAO_TESTAVEL) {
-      if (ITENS_QUE_ACEITAM_NAO_TESTAVEL[item.id] === undefined) {
-        invalidos.push(item.id);
-        continue;
-      }
-      naoTestaveis.push(item.id);
-      if ((justificativas[item.id] ?? "").trim() === "") faltamJustificar.push(item.id);
-      continue;
-    }
-    soma += r;
-  }
-  return {
-    soma,
-    naoTestaveis,
-    faltamJustificar,
-    invalidos,
-    respondidos,
-    completa: respondidos === ITENS_NIHSS.length && faltamJustificar.length === 0 && invalidos.length === 0,
-  };
+  return somaDoNihssDe(ITENS_NIHSS.map((v) => v.id), respostas, justificativas);
 }
 
 /**

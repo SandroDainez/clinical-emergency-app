@@ -240,6 +240,16 @@ export function nihssInformado(estado: EstadoAvc): number | undefined {
 }
 
 /**
+ * ⚠️⚠️ D-PEND-14 (2026-09-13, decisão do autor): o escore de outro serviço é
+ * contexto, ⛔ nunca critério. ⛔ Fora da síntese ele só aparece quando o médico
+ * respondeu "Não, escala completa" (valor gravado = o próprio rótulo).
+ */
+export function nihssExternoForaDaSintese(estado: EstadoAvc): boolean {
+  if (nihssInformado(estado) === undefined) return false;
+  return valorAtual(estado, "nihss_informado_nao_testaveis")?.valor === "Não, escala completa";
+}
+
+/**
  * O valor que a ESCALA dá para um achado da Table 4 — `"sim"`, `"nao"` ou nada.
  *
  * ⚠️ E-23 aqui também: item ⛔ não respondido ⛔ não deriva. ⛔ Um "não" derivado de

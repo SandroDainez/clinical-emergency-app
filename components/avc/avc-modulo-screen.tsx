@@ -33,7 +33,12 @@ import SuperficieF from "./superficie-f";
 import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
 import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
-import { leituraDoNihssCalculado, nihssCalculado, nihssInformado } from "../../avc/nucleo/derivacoes-b";
+import {
+  leituraDoNihssCalculado,
+  nihssCalculado,
+  nihssExternoForaDaSintese,
+  nihssInformado,
+} from "../../avc/nucleo/derivacoes-b";
 import { textoDoTotalNihss } from "../../lib/nihss";
 import { correcoesEhRelevante, pendenciasDoCaso, problemasAtivos } from "../../avc/nucleo/problemas-ativos";
 import { SETA } from "../../design-system/afordancia";
@@ -312,7 +317,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
 
 
   const VITAIS = useMemo(() => {
-    const nihss = nihssCalculado(estado) ?? nihssInformado(estado);
+    /** ⚠️ D-PEND-14: o escore de outro serviço ⛔ só aparece aqui com "Não, escala completa". */
+    const nihss =
+      nihssCalculado(estado) ?? (nihssExternoForaDaSintese(estado) ? nihssInformado(estado) : undefined);
     /**
      * ⚠️⚠️ ⛔ A PERGUNTA DA PEÇA É *"EXISTE EXAME?"* — 2026-09-09.
      *

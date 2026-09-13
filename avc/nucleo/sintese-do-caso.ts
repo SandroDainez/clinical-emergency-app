@@ -117,8 +117,11 @@ export function sinteseDoCaso(
   const comUn = leituraDoNihssCalculado(estado);
   if (comUn !== undefined && comUn.naoTestaveis.length > 0) {
     situacao.push({ id: "nihss", texto: `NIHSS ${textoDoTotalNihss(comUn.soma, comUn.naoTestaveis.length)}` });
-  } else if (nihss !== undefined) {
+  } else if (nihssCalculado(estado) !== undefined) {
     situacao.push({ id: "nihss", texto: `NIHSS ${nihss}` });
+  } else if (nihss !== undefined) {
+    /** ⚠️ D-PEND-14: o escore de outro serviço aparece na síntese — ⛔ e é dito como de fora. */
+    situacao.push({ id: "nihss", texto: `NIHSS de outro serviço ${nihss}` });
   }
 
   /* ── 2 · CONDUTA — ⛔ só o decidido, ⛔ e com a natureza explícita ──────── */

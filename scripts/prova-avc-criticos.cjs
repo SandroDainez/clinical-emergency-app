@@ -156,7 +156,8 @@ function candidatoSemJuizo(e = vazio) {
 /** ⚠️ Candidato EVT COMPLETO pela seleção (rec. 1 de §4.7.2). */
 function candidatoEvt(e = vazio, dtMs = 1 * H) {
   let x = reg(e, "sitio_oclusao", "M1 da artéria cerebral média");
-  x = reg(x, "nihss_informado", 12);
+  /** ⚠️ D-PEND-14 (2026-09-13): critério só consome o NIHSS feito NESTE atendimento. */
+  x = reg(x, "nihss_calculado", 12);
   x = reg(x, "mrs_previo", "0 · assintomático");
   x = reg(x, "aspects", 8);
   return reg(x, "hora_inicio_observado", AGORA - dtMs);

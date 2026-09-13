@@ -2012,6 +2012,15 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Gestante ou puérpera está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
     "Embarazada o puérpera está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
   "Fora do escopo validado — encaminhar": "Fuera del alcance validado — derivar",
+  // ── NIHSS nos critérios e de outro serviço (D-PEND-13 · D-PEND-14) ────────
+  "NIHSS inconclusivo por item não testável": "NIHSS no concluyente por ítem no evaluable",
+  "decide só onde o escore de fora aparece; ⛔ nunca critério (D-PEND-14)":
+    "decide solo dónde aparece el puntaje externo; ⛔ nunca criterio (D-PEND-14)",
+  "Houve itens não testáveis nesse NIHSS?": "¿Hubo ítems no evaluables en ese NIHSS?",
+  "Não, escala completa": "No, escala completa",
+  "Sim, houve itens não testáveis": "Sí, hubo ítems no evaluables",
+  "O escore de outro serviço é contexto e nunca critério. Salvo escala completa, ele aparece só na síntese.":
+    "El puntaje de otro servicio es contexto y nunca criterio. Salvo escala completa, aparece solo en la síntesis.",
   "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
     "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
   "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera. Não sei mantém a pergunta.":

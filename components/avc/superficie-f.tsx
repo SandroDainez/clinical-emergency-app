@@ -1397,6 +1397,18 @@ function Cartao({
         </Text>
       ) : null}
 
+      {/**
+        * ⚠️ D-PEND-13 (2026-09-13): o NIHSS com item não testável que ⛔ não decide
+        * o critério é dito como tal — ⛔ nem "falta" ⛔ nem "fora".
+        */}
+      {leitura.inconclusivos.length > 0 ? (
+        <Text style={e.falta1} testID={`avc-f-rec-inconclusivo-${leitura.id}`}>
+          {leitura.inconclusivos
+            .map((x) => (x === "nihss" ? tr("NIHSS inconclusivo por item não testável") : tr(acaoPendente(x))))
+            .join(" · ")}
+        </Text>
+      ) : null}
+
       {aberto ? (
         <View style={e.detalhe} testID={`avc-f-rec-detalhe-${leitura.id}`}>
           {leitura.sustentam.length > 0 ? (

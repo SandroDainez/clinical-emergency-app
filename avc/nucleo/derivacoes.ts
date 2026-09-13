@@ -291,14 +291,12 @@ export function estadoDaReavaliacao(estado: EstadoAvc): EstadoDaReavaliacao {
   const neurologicoDepois = estado.fatos.some(
     (f) =>
       /**
-       * ⚠️ OS DOIS NIHSS CONTAM COMO EXAME POSTERIOR — o calculado aqui e o
-       * informado por fora —, porque a pergunta é *"houve reavaliação depois da
-       * correção?"*. ⛔ O que o externo ⛔ não pode é DERIVAR achado (isso é
-       * `derivacoes-b`); registrar que alguém reavaliou, ele pode.
+       * ⚠️ D-PEND-14 (2026-09-13, decisão do autor): ⛔ só o NIHSS feito NESTE
+       * atendimento conta como exame posterior. O escore de outro serviço é
+       * contexto, ⛔ nunca critério — ⛔ nem de reavaliação.
        */
       (f.campo === "deficit_focal"
-        || f.campo === "nihss_calculado"
-        || f.campo === "nihss_informado") &&
+        || f.campo === "nihss_calculado") &&
       f.horaRegistro > ultima.horaRegistro
   );
   return neurologicoDepois ? "reavaliado" : "corrigida_sem_exame";
@@ -338,7 +336,8 @@ export function pendenciasDerivadas(estado: EstadoAvc): readonly Pendencia[] {
 }
 
 export function reavaliacaoAposCorrecao(estado: EstadoAvc): Leitura {
-  const insumos = ["glicemia", "deficit_focal", "nihss_calculado", "nihss_informado"];
+  /** ⚠️ D-PEND-14: ⛔ o escore de outro serviço ⛔ não é insumo da reavaliação. */
+  const insumos = ["glicemia", "deficit_focal", "nihss_calculado"];
   const fonte = "F-06";
   const situacao = estadoDaReavaliacao(estado);
 

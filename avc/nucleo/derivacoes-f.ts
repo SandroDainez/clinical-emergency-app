@@ -18,7 +18,7 @@
  * recomendação, e colapsá-los faria o app afirmar exclusão que ⛔ ninguém disse.
  */
 import { valorAtual, type EstadoAvc } from "./estado";
-import { nihssCalculado, nihssInformado } from "./derivacoes-b";
+import { leituraDoNihssCalculado, nihssCalculado } from "./derivacoes-b";
 import { ternario } from "./leitura";
 import { fatosDaInstancia, instanciasDe, valorNaInstancia } from "./instancia";
 import {
@@ -58,6 +58,12 @@ export type LeituraDaRecomendacao = {
   readonly incompativeis: readonly Insumo[];
   /** ⚠️ Insumos ausentes — o que colher para poder concluir. */
   readonly faltam: readonly Insumo[];
+  /**
+   * ⚠️ D-PEND-13 (2026-09-13): insumos PRESENTES que ⛔ não decidem o critério —
+   * NIHSS com item não testável abaixo do piso, ou diante de teto. ⛔ Não é falta
+   * ⛔ nem contradição.
+   */
+  readonly inconclusivos: readonly Insumo[];
   /** ⚠️ Dívida de fonte que impede concluir. ⛔ Ver F-31, F-29. */
   readonly travadaPor?: string;
 };
@@ -67,7 +73,12 @@ export type LeituraDaRecomendacao = {
  *
  * ⛔ `undefined` significa *"⛔ não se sabe"*, e ⛔ **nunca** *"⛔ não"*.
  */
-export type ValorDoInsumo = "satisfaz" | "contradiz" | undefined;
+/**
+ * ⚠️ `inconclusivo` — D-PEND-13 (2026-09-13, decisão do autor): o dado EXISTE, ⛔
+ * mas ⛔ não decide o critério (NIHSS com item não testável abaixo do piso, ou
+ * diante de teto). ⛔ Não é falta ⛔ nem contradição.
+ */
+export type ValorDoInsumo = "satisfaz" | "contradiz" | "inconclusivo" | undefined;
 
 /**
  * ⚠️⚠️ A REGRA DE CORRESPONDÊNCIA — pura, e a razão de existir.
@@ -91,31 +102,35 @@ export function correspondenciaDe(
   sustentam: Insumo[];
   incompativeis: Insumo[];
   faltam: Insumo[];
+  inconclusivos: Insumo[];
 } {
   const sustentam: Insumo[] = [];
   const incompativeis: Insumo[] = [];
   const faltam: Insumo[] = [];
+  const inconclusivos: Insumo[] = [];
 
   for (const i of exige) {
     const v = valor(i);
     if (v === "satisfaz") sustentam.push(i);
     else if (v === "contradiz") incompativeis.push(i);
+    /** ⚠️ D-PEND-13: presente ⛔ e indeciso — ⛔ nem falta ⛔ nem contradição. */
+    else if (v === "inconclusivo") inconclusivos.push(i);
     else faltam.push(i);
   }
 
   /** ⚠️ 1 · resposta contrária ⛔ não vira potencial. */
   if (incompativeis.length > 0) {
-    return { correspondencia: "nao_corresponde", sustentam, incompativeis, faltam };
+    return { correspondencia: "nao_corresponde", sustentam, incompativeis, faltam, inconclusivos };
   }
   /** ⚠️ 2 · dívida de fonte trava mesmo com tudo presente. */
   if (travadaPor) {
-    return { correspondencia: "nao_avaliavel", sustentam, incompativeis, faltam };
+    return { correspondencia: "nao_avaliavel", sustentam, incompativeis, faltam, inconclusivos };
   }
-  /** ⚠️ 3 · falta dado nomeável. */
-  if (faltam.length > 0) {
-    return { correspondencia: "potencialmente_aplicavel", sustentam, incompativeis, faltam };
+  /** ⚠️ 3 · falta dado nomeável, ⛔ ou dado presente que ⛔ não decide (D-PEND-13). */
+  if (faltam.length > 0 || inconclusivos.length > 0) {
+    return { correspondencia: "potencialmente_aplicavel", sustentam, incompativeis, faltam, inconclusivos };
   }
-  return { correspondencia: "aplicavel", sustentam, incompativeis, faltam };
+  return { correspondencia: "aplicavel", sustentam, incompativeis, faltam, inconclusivos };
 }
 
 /**
@@ -142,6 +157,7 @@ export function leiturasDasRecomendacoes(
       sustentam: c.sustentam,
       incompativeis: c.incompativeis,
       faltam: c.faltam,
+      inconclusivos: c.inconclusivos,
       travadaPor: r.travadaPor,
     };
   });
@@ -387,8 +403,8 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
      * dos dois satisfaz o critério de haver escore.
      */
     case "nihss": {
-      const v = nihssCalculado(estado) ?? nihssInformado(estado);
-      return typeof v === "number" ? "satisfaz" : undefined;
+      /** ⚠️ D-PEND-14 (2026-09-13): ⛔ só a escala feita NESTE atendimento — com ou sem item não testável. */
+      return leituraDoNihssCalculado(estado) !== undefined ? "satisfaz" : undefined;
     }
 
     case "mrs_previo": {
@@ -538,7 +554,8 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
  */
 function valorNumericoDoInsumo(estado: EstadoAvc, insumo: Insumo): number | undefined {
   if (insumo === "nihss") {
-    const n = nihssCalculado(estado) ?? nihssInformado(estado);
+    /** ⚠️ D-PEND-14: ⛔ o escore de outro serviço ⛔ nunca é o número de um critério. */
+    const n = nihssCalculado(estado);
     return typeof n === "number" && Number.isFinite(n) ? n : undefined;
   }
   /** ⚠️⚠️ Escala com rótulo — ⛔ o grau sai da própria lista, ⛔ e ⛔ não de um `parseInt`. */
@@ -742,6 +759,26 @@ export function valorDoInsumoNaRecomendacao(
     const t = territorioDoEstado(estado);
     if (t === undefined) return undefined;
     return c.sitio_da_oclusao.in.includes(t) ? "satisfaz" : "contradiz";
+  }
+
+  /**
+   * ⚠️⚠️ D-PEND-13 (2026-09-13, decisão do autor — a fonte ⛔ não define): com
+   * item NÃO TESTÁVEL a soma é LIMITE INFERIOR do escore.
+   *   · piso (≥ k): satisfaz quando a soma ≥ k; abaixo, **inconclusivo** — ⛔ nunca
+   *     "não atendido";
+   *   · teto (≤ k): ⛔ nunca satisfeito. ⚠️ Se a soma já passa do teto, o escore
+   *     real também passa: aí é contradição (consequência aritmética do limite
+   *     inferior, ⛔ não regra nova).
+   * ⛔ Nenhum limiar muda. Sem UN, a leitura é a de sempre.
+   */
+  if (insumo === "nihss" && c.nihss !== undefined) {
+    const l = leituraDoNihssCalculado(estado);
+    if (l === undefined) return undefined;
+    if (l.naoTestaveis.length === 0) return naFaixa(l.soma, c.nihss) ? "satisfaz" : "contradiz";
+    const f = c.nihss;
+    if (f.max !== undefined) return l.soma > f.max ? "contradiz" : "inconclusivo";
+    if (f.min !== undefined) return l.soma >= f.min ? "satisfaz" : "inconclusivo";
+    return "inconclusivo";
   }
 
   const faixa =

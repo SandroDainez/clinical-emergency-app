@@ -193,7 +193,9 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    */
   deficit_focal: ["derivacoes-b.ts", "derivacoes-e.ts", "derivacoes.ts", "portao-ivt.ts"],
   nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts"],
-  nihss_informado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts"],
+  /** ⚠️ D-PEND-14: o escore de outro serviço ⛔ não é lido por regra — só pela leitura de B. */
+  nihss_informado: ["derivacoes-b.ts"],
+  nihss_informado_nao_testaveis: ["derivacoes-b.ts"],
 
   /** ⚠️ ⛔ A ação de correção — ⛔ e ⛔ ela ⛔ **nunca** resolve bloqueio sozinha. */
   acao_tipo: ["derivacoes-e.ts"],

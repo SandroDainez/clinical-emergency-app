@@ -751,7 +751,7 @@ export const CALC_TOOLS: CalcTool[] = [
         lines: [NIHSS_SEM_INDICACAO],
       };
     },
-    note: "Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.",
+    note: "Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação): use a opção UN, com justificativa; UN não entra na soma.",
   },
   {
     kind: "score",

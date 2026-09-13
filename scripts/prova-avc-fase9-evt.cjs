@@ -319,7 +319,8 @@ function paciente(p) {
   if (p.aspects !== undefined) e = regI(e, "aspects", p.aspects);
   if (p.pcAspects !== undefined) e = regI(e, "pc_aspects", p.pcAspects);
   if (p.massa !== undefined) e = regI(e, "efeito_de_massa", CAMPO.valorDaOpcao(p.massa));
-  if (p.nihss !== undefined) e = reg(e, "nihss_informado", p.nihss);
+  /** ⚠️ D-PEND-14 (2026-09-13): critério ⛔ só consome o NIHSS feito NESTE atendimento. */
+  if (p.nihss !== undefined) e = reg(e, "nihss_calculado", p.nihss);
   /**
    * ⚠️⚠️⚠️ ⛔ O mRS ENTRA COMO A **TELA** O GRAVA — ⛔ e ⛔ isto ⛔ não é detalhe.
    *

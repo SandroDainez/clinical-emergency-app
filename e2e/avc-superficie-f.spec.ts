@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta } from "./helpers";
+import { fixarIdioma, abrirEixosDaEstabilizacao, responderPopulacaoAdulta, preencherNihssComSoma } from "./helpers";
 
 /**
  * PROMETE: que a Superfície F se COMPORTE na largura de celular como a proposta
@@ -207,12 +207,8 @@ test.describe("AVC · Reperfusão", () => {
       await page.getByTestId("avc-hora-hora_inicio_observado").click();
       await page.getByTestId("avc-seletor-hora-h-menos").click();
       await page.getByTestId("avc-seletor-hora-confirmar").click();
-      await page.getByTestId("avc-bloco-abrir-nihss-de-fora").click();
-      /** ⚠️ Gesto real: o degrau parte, o `+` acerta (D-127). */
-      await page.getByTestId("avc-degrau-nihss_informado-mais-10").click();
-      for (let i = 0; i < 4; i += 1) {
-        await page.getByTestId("avc-num-mais-nihss_informado").click();
-      }
+      /** ⚠️ D-PEND-14 (2026-09-13): critério ⛔ só lê o NIHSS feito NESTE atendimento — pela escala. */
+      await preencherNihssComSoma(page, 14);
       await page.getByTestId("avc-abrir-mrs_previo").click();
       await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
 

@@ -15,6 +15,14 @@ import {
   type Tone,
 } from "../../clinical-calculators-engine";
 import { useTr } from "../../lib/use-tr";
+import {
+  ITENS_QUE_ACEITAM_NAO_TESTAVEL,
+  NAO_TESTAVEL,
+  NOTA_NAO_TESTAVEL,
+  somaDoNihssDe,
+  textoDoTotalNihss,
+  type RespostaDoItemNihss,
+} from "../../lib/nihss";
 import { Header } from "../ui-v2/header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
@@ -195,7 +203,31 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
 
 function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record<string, number>; setScore: (k: string, p: number) => void }) {
   const tr = useTr();
-  const total = tool.vars.reduce((acc, v) => acc + (scores[`${tool.id}.${v.id}`] ?? v.options[0].points), 0);
+  /*
+    ⚠️⚠️ AC-29 (2026-09-13): no NIHSS, o item NÃO TESTÁVEL (UN) segue a regra ÚNICA
+    de `lib/nihss.ts` — a mesma do módulo AVC. ⛔ Nenhuma lista, soma ou texto
+    copiado aqui. Com UN, a soma é limite inferior (D-PEND-13): ⛔ sem faixa de
+    gravidade, porque a faixa de uma soma parcial afirmaria o que ninguém mediu.
+  */
+  const ehNihss = tool.id === "nihss";
+  const [naoTestaveis, setNaoTestaveis] = useState<readonly string[]>([]);
+  const [justificativas, setJustificativas] = useState<Record<string, string>>({});
+  const pontoDe = (id: string, padrao: number) => scores[`${tool.id}.${id}`] ?? padrao;
+  const somaUn = ehNihss
+    ? somaDoNihssDe(
+        tool.vars.map((v) => v.id),
+        Object.fromEntries(
+          tool.vars.map((v): [string, RespostaDoItemNihss] => [
+            v.id,
+            naoTestaveis.includes(v.id) ? NAO_TESTAVEL : pontoDe(v.id, v.options[0].points),
+          ])
+        ),
+        justificativas
+      )
+    : undefined;
+  const total = somaUn ? somaUn.soma : tool.vars.reduce((acc, v) => acc + pontoDe(v.id, v.options[0].points), 0);
+  const comUn = somaUn !== undefined && somaUn.naoTestaveis.length > 0;
+  const faltamJustificar = somaUn?.faltamJustificar.length ?? 0;
   const interp = tool.interpret(total);
   const isToggle = tool.layout === "toggle";
 
@@ -204,10 +236,27 @@ function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record
       {/* Resultado no topo (fica visível ao rolar os itens) */}
       <View style={[s.resultCard, { borderColor: TONE[interp.tone].border, backgroundColor: TONE[interp.tone].bg }]}>
         <Text style={s.scoreTotalLabel}>{tr("PONTUAÇÃO")} ({tool.totalRange})</Text>
-        <Text style={[s.scoreTotal, { color: TONE[interp.tone].text }]}>{total.toString().replace(".", ",")}</Text>
-        <Text style={[s.scoreInterp, { color: TONE[interp.tone].text }]}>{tr(interp.label)}</Text>
-        {interp.lines?.map((l, i) => <Text key={i} style={s.scoreInterpLine}>{tr(l)}</Text>)}
+        {comUn ? (
+          <Text style={[s.scoreInterp, { color: TONE[interp.tone].text }]} testID={`calc-total-${tool.id}`}>
+            {faltamJustificar > 0
+              ? `${tr("Falta justificar")} ${faltamJustificar} ${tr(faltamJustificar === 1 ? "item não testável" : "itens não testáveis")}`
+              : textoDoTotalNihss(total, somaUn.naoTestaveis.length, tr)}
+          </Text>
+        ) : (
+          <>
+            <Text style={[s.scoreTotal, { color: TONE[interp.tone].text }]} testID={`calc-total-${tool.id}`}>
+              {total.toString().replace(".", ",")}
+            </Text>
+            <Text style={[s.scoreInterp, { color: TONE[interp.tone].text }]}>{tr(interp.label)}</Text>
+            {interp.lines?.map((l, i) => <Text key={i} style={s.scoreInterpLine}>{tr(l)}</Text>)}
+          </>
+        )}
       </View>
+      {ehNihss ? (
+        <View style={s.noteBox} testID="calc-nota-nao-testavel">
+          <Text style={s.noteTxt}>{tr(NOTA_NAO_TESTAVEL)}</Text>
+        </View>
+      ) : null}
 
       <View style={s.card}>
         <Text style={s.cardLabel}>{isToggle ? tr("MARQUE OS PRESENTES") : tr("SELECIONE CADA ITEM")}</Text>
@@ -227,14 +276,45 @@ function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record
               {v.help ? <Text style={s.scoreVarHelp}>{tr(v.help)}</Text> : null}
               <View style={s.optWrap}>
                 {v.options.map((o, idx) => {
-                  const isActive = sel === o.points;
+                  const isActive = sel === o.points && !naoTestaveis.includes(v.id);
                   return (
-                    <Pressable key={idx} style={[s.optChip, isActive && s.optChipActive]} onPress={() => setScore(key, o.points)}>
+                    <Pressable
+                      key={idx}
+                      style={[s.optChip, isActive && s.optChipActive]}
+                      testID={`calc-opcao-${tool.id}-${v.id}-${o.points}`}
+                      onPress={() => {
+                        setScore(key, o.points);
+                        setNaoTestaveis((u) => u.filter((x) => x !== v.id));
+                      }}
+                    >
                       <Text style={[s.optChipTxt, isActive && s.optChipTxtActive]}>{tr(o.label)}</Text>
                     </Pressable>
                   );
                 })}
+                {/* ⚠️ AC-29: UN só nos itens que a regra única admite. */}
+                {ehNihss && ITENS_QUE_ACEITAM_NAO_TESTAVEL[v.id] !== undefined ? (
+                  <Pressable
+                    style={[s.optChip, naoTestaveis.includes(v.id) && s.optChipActive]}
+                    testID={`calc-opcao-${tool.id}-${v.id}-UN`}
+                    onPress={() => setNaoTestaveis((u) => (u.includes(v.id) ? u : [...u, v.id]))}
+                  >
+                    <Text style={[s.optChipTxt, naoTestaveis.includes(v.id) && s.optChipTxtActive]}>
+                      {tr("Não testável (UN)")} · {tr(ITENS_QUE_ACEITAM_NAO_TESTAVEL[v.id])}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
+              {ehNihss && naoTestaveis.includes(v.id) ? (
+                <TextInput
+                  style={[s.input, s.justificativa]}
+                  value={justificativas[v.id] ?? ""}
+                  onChangeText={(t) => setJustificativas((j) => ({ ...j, [v.id]: t }))}
+                  multiline
+                  placeholder={tr("Escreva a justificativa")}
+                  accessibilityLabel={tr("Justificativa do item não testável")}
+                  testID={`calc-justificativa-${tool.id}-${v.id}`}
+                />
+              ) : null}
             </View>
           );
         })}
@@ -324,6 +404,8 @@ const s = StyleSheet.create({
 
   noteBox: { backgroundColor: "#383e4a", borderRadius: 12, borderWidth: 1, borderColor: "#565e6c", padding: 12 },
   noteTxt: { fontSize: 12.5, color: "#aab6c6", lineHeight: 18 },
+  /** ⚠️ AC-29: a justificativa do UN ocupa a linha inteira — a caixa numérica tem 110 px. */
+  justificativa: { width: "100%" },
 
   placeholder: { backgroundColor: "#383e4a", borderRadius: 12, borderWidth: 1, borderColor: "#565e6c", padding: 16 },
   placeholderTxt: { fontSize: 13, color: "#aab6c6" },

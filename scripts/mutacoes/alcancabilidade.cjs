@@ -36,8 +36,9 @@ module.exports = {
     {
       nome: "derivação volta a ler o campo fantasma nihss",
       arquivo: ARQ.derivF,
-      de: "      const v = nihssCalculado(estado) ?? nihssInformado(estado);",
-      para: '      const v = valorAtual(estado, "nihss")?.valor;',
+      /** ⚠️ Âncora reescrita em 2026-09-13 (D-PEND-14): a leitura passou a ser só a escala feita aqui. */
+      de: '      return leituraDoNihssCalculado(estado) !== undefined ? "satisfaz" : undefined;',
+      para: '      return valorAtual(estado, "nihss")?.valor !== undefined ? "satisfaz" : undefined;',
     },
 
     /** ⚠️⚠️ RÓTULO × SLUG — a comparação que fica eternamente falsa. */

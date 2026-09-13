@@ -305,8 +305,11 @@ export function itensDaTela(
  */
 export const CAMPOS_DO_INSUMO: Readonly<Record<Insumo, readonly string[]>> = {
   sitio_da_oclusao: ["sitio_oclusao"],
-  /** ⚠️ Dois campos, ⛔ e ⛔ nenhum corrige o outro — a escala e o escore de fora. */
-  nihss: ["nihss_calculado", "nihss_informado"],
+  /**
+   * ⚠️ D-PEND-14 (2026-09-13): ⛔ só a escala feita NESTE atendimento resolve o
+   * NIHSS de um critério. O escore de outro serviço é contexto, ⛔ nunca critério.
+   */
+  nihss: ["nihss_calculado"],
   mrs_previo: ["mrs_previo"],
   aspects: ["aspects"],
   pc_aspects: ["pc_aspects"],

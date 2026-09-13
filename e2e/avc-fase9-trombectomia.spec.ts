@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { fixarIdioma, responderPopulacaoAdulta, preencherNihssComSoma } from "./helpers";
 
 /**
  * PROMETE: que o veredito da trombectomia **mude junto com o gesto do médico**,
@@ -119,7 +119,7 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
       // ── o relógio, o NIHSS e a funcionalidade prévia ──────────────────
       await aba(page, "neurologico");
       await inicioHaHoras(page, 2);
-      await nihssDeFora(page, 14);
+      await preencherNihssComSoma(page, 14);
       await page.getByTestId("avc-abrir-mrs_previo").click();
       await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
       /**
@@ -205,7 +205,7 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
        * ⛔ **⛔ não** evita a espera: ⛔ o Playwright esperava 15 s por ⛔ nada
        * ⛔ e o teste estourava. ⛔ `.catch()` esconde o erro, ⛔ e ⛔ não o custo.)
        */
-      await baixarNihss(page, 9);
+      await preencherNihssComSoma(page, 5);
 
       await aba(page, "reperfusao");
       /**
@@ -227,7 +227,7 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
       await aba(page, "neurologico");
       /** ⚠️⚠️ **7 horas** — ⛔ fora de *"within 6 hours"*, ⛔ dentro de *"6 to 24"*. */
       await inicioHaHoras(page, 7);
-      await nihssDeFora(page, 14);
+      await preencherNihssComSoma(page, 14);
       await page.getByTestId("avc-abrir-mrs_previo").click();
       await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
 
@@ -350,7 +350,7 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
 
       await aba(page, "neurologico");
       await inicioHaHoras(page, 10);
-      await nihssDeFora(page, 12);
+      await preencherNihssComSoma(page, 12);
       await page.getByTestId("avc-abrir-mrs_previo").click();
       await page.getByTestId("avc-opcao-mrs_previo-0 · assintomático").click();
 
@@ -383,7 +383,7 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
       /* ── ⚠️⚠️⚠️ NIHSS 12 → 7: A PALAVRA MUDA COM A FORÇA DA FONTE ────── */
 
       await aba(page, "neurologico");
-      await baixarNihss(page, 5);
+      await preencherNihssComSoma(page, 7);
 
       await aba(page, "reperfusao");
       /**

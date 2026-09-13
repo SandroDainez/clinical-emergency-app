@@ -1,6 +1,32 @@
 import { expect, type Page } from "@playwright/test";
 import { VERSAO_DO_TEXTO } from "../lib/consentimento";
 import { LOCALE_STORAGE_KEY } from "../lib/locale";
+import { ITENS_NIHSS } from "../avc/conteudo/nihss";
+
+/**
+ * ⚠️⚠️ D-PEND-14 (2026-09-13, decisão do autor): critério de trombectomia ⛔ só
+ * consome o NIHSS feito NESTE atendimento. Este auxiliar monta a escala item a
+ * item com a soma pedida — motores, face ⛔ e linguagem recebem os pontos primeiro.
+ * ⚠️ A distribuição ⛔ não é o que os testes medem: a soma é.
+ */
+const ORDEM_DE_PONTOS_NIHSS = ["5b", "6b", "4", "9", "5a", "6a", "3", "8", "10", "11", "2", "7", "1a", "1b", "1c"];
+export async function preencherNihssComSoma(page: Page, soma: number): Promise<void> {
+  const pontos: Record<string, number> = {};
+  let resta = soma;
+  for (const id of ORDEM_DE_PONTOS_NIHSS) {
+    const item = ITENS_NIHSS.find((v) => v.id === id);
+    if (!item) throw new Error("item " + id + " ausente da escala");
+    const p = Math.min(Math.max(...item.options.map((o) => o.points)), resta);
+    pontos[id] = p;
+    resta -= p;
+  }
+  if (resta !== 0) throw new Error("soma " + soma + " impossível na escala");
+  await page.getByTestId("avc-escala-abrir-nihss_calculado").click();
+  for (const item of ITENS_NIHSS) {
+    await page.getByTestId("avc-escala-opcao-" + item.id + "-" + pontos[item.id]).click();
+  }
+  await page.getByTestId("avc-escala-confirmar-nihss_calculado").click();
+}
 
 /**
  * Helpers para dirigir um app React Native rodando em react-native-web.

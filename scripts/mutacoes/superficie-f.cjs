@@ -42,13 +42,14 @@ module.exports = {
     {
       nome: "dívida de fonte deixa de travar a correspondência",
       arquivo: ARQ.derivF,
-      de: '  if (travadaPor) {\n    return { correspondencia: "nao_avaliavel", sustentam, incompativeis, faltam };\n  }',
+      /** ⚠️ Âncora reescrita em 2026-09-13 (D-PEND-13): o retorno carrega `inconclusivos`. */
+      de: '  if (travadaPor) {\n    return { correspondencia: "nao_avaliavel", sustentam, incompativeis, faltam, inconclusivos };\n  }',
       para: "",
     },
     {
       nome: "contrário deixa de vencer o potencial",
       arquivo: ARQ.derivF,
-      de: '  if (incompativeis.length > 0) {\n    return { correspondencia: "nao_corresponde", sustentam, incompativeis, faltam };\n  }',
+      de: '  if (incompativeis.length > 0) {\n    return { correspondencia: "nao_corresponde", sustentam, incompativeis, faltam, inconclusivos };\n  }',
       para: "",
     },
 
