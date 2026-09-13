@@ -350,6 +350,21 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 - **Síntese:** inclui a linha do tempo real da transferência e do parecer.
 - **Critério de transferência e centro de destino:** nenhum texto é afirmado; só o que o usuário registra, até haver fonte (Portaria 665/2012 e rede local na fila).
 
+**Ajuste de rota do autor (2026-09-13, antes da implementação), nos termos dele:**
+- **Rota:** não criar deterioração dentro da transferência.
+- **Ação global:** implementar "Paciente piorou" como ação GLOBAL, acessível de qualquer tela do AVC.
+  - gera evento de deterioração (autor, horário, texto livre opcional);
+  - cria a tarefa "reavaliar agora", que aparece em Prioridade;
+  - reabre a avaliação de ameaças (Estabilização) com o histórico preservado.
+- **Limites:** sem limiar, sem conduta.
+- **Transferência:** a espera da transferência usa esse mesmo mecanismo.
+- **Provas vermelhas:**
+  - A11: deterioração após tratamento leva a avaliação imediata, sem esperar tarefa agendada;
+  - deterioração durante a espera de transferência;
+  - "Paciente piorou" visível e acionável em todas as superfícies a 375 px, incluindo com bloco recolhido.
+- **Idiomas:** PT/ES.
+- **Razão registrada (revisor, aceita pelo autor):** é um dos dois botões globais do PDF (com "Preciso de ajuda"). Nascer dentro da transferência criaria dois mecanismos parciais e uma migração dolorosa. **Fecha o AC-10** (a parte "Paciente piorou") e dá prova ao A11.
+
 **AC-66 / "fato novo" da HSA:**
 - **Estado:** o autor deu a leitura dele, mas **ainda não escolheu** a opção do pacote `revisao/hsa-resolucao.md`.
 - **Registro:** a leitura entrou no pacote como opção E.
