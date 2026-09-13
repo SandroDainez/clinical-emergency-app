@@ -976,3 +976,125 @@ Traz também o resultado de AC-46/47/48 (§7.9). As seções antigas "Decisões 
 | artefatos da suíte | revertidos (D-PEND-10) |
 | push | `a7abed8..c7a1956` → `origin/refactor/clinical-modules-rebuild` (inclui `95028a5`); `git ls-remote` = `c7a19566ac1b9db5d796b1faec7eb433336812fd`; divergência 0/0 |
 | deploy · merge em `main` | ⛔ não feitos |
+
+### 7.13 · 8ª rodada de 2026-09-13 · HSA sem atalho, procedência fora do card, card de dose e D-PEND-25 · commits `583dde3` (decisão, só `docs/`) e `7c59d35` (código)
+
+**Decisão do autor** (Sandro Dainez, 13/09/2026; `docs/decisoes.md`, `583dde3`):
+
+| decisão | conteúdo |
+|---|---|
+| D-PEND-25 | alteplase 0,9 mg/kg exato, máx. 90 mg, sem arredondar mg; 10% em bolus em 1 min, restante em 60 min; volume a 1 mg/mL; mesmas provas da TNK (70, 100, 120 kg) |
+
+- **Fecha:** AC-61.
+- **Fontes, todas transcritas:**
+  - AHA 2026 §4.6.2 rec. 1 (e357);
+  - Table 7 (e358): *"Infuse 0.9 mg/kg (maximum dose 90 mg) over 60 min, with 10% of the dose given as a bolus over 1 min"*;
+  - bula Actilyse §20.3 (1 mg/mL) e §20.8.
+
+**Achados do autor na leitura das capturas da 7ª rodada:**
+- **Segurança:** o card da HSA ensinava a virar a resposta.
+- **Procedência:** o metadado interno aparecia no card clínico.
+- **Dose:** o card mostrava duas doses completas.
+- **Menores:** contadores opacos na Reperfusão; "mesma força" sem a frase literal.
+
+**Provas vermelhas antes** (código e build de `c7a1956`):
+
+| prova | antes |
+|---|---|
+| `scripts/prova-avc-rodada8.cjs` | 🔴 7 verdes · 21 vermelhos |
+| `e2e/avc-hsa-sem-atalho.spec.ts` | 🔴 1/1 |
+| `e2e/avc-procedencia-fora-do-card.spec.ts` | 🔴 2 de 4 (portão; HSA + TNK). Superfícies com blocos abertos e alteplase já passavam |
+| `e2e/avc-card-de-dose.spec.ts` | 🔴 4/4 |
+
+#### Entrega 1 (alta) · HSA sem atalho
+
+**Violações encontradas no card (captura):**
+- *"Resolver a suspeita clínica de hemorragia subaracnóidea: responder «Não», ou corrigir o registro"*;
+- botão «Resolver ›», que levava ao campo;
+- trocar «Sim» por «Não» liberava a reperfusão.
+
+**Correção:**
+- **Retenção** (`avc/nucleo/derivacoes-c.ts` `retencaoDiagnostica`):
+  - nasce de um fato «Sim» **não corrigido**;
+  - registrar «Não» ou «Incerto» depois **não** desfaz;
+  - libera só a correção do próprio «Sim» (erro de registro).
+- **Texto do card:** *"Requer investigação antes de reperfundir — conteúdo pendente de validação"*.
+- **Botão:** o motivo do portão ficou sem `leva`, e não há «Resolver» nem no portão da IVT nem na retenção da EVT.
+- **Prova antiga atualizada:** `prova-avc-criticos` bloco 30, "Sim → Não → portão liberado", passou a afirmar que o portão **não** libera.
+
+⚠️ **Brecha declarada, não fechada sem decisão:**
+- **Caminho:** «Limpar» é implementado como correção (`desfazerRegistro` → `corrigirFato`), então «Limpar» seguido de «Não» libera em dois toques.
+- **Por que não foi fechada:** impediria corrigir um toque errado em «Sim».
+- **Decisão pedida:** pacote `docs/avc/revisao/hsa-resolucao.md` §7.
+
+**Pacote `docs/avc/revisao/hsa-resolucao.md`**, com a decisão humana em branco:
+- **Fontes do repositório:** a AHA 2026 manda excluir hemorragia por imagem (§3.2) e não trata a suspeita clínica com TC sem sangue.
+- **AHA/ASA 2023 de HSA:** a transcrição declara a **§4 (diagnóstico/imagem) não transcrita**. O que resolveria (angio-TC, punção lombar, avaliação especializada) fica listado **sem conteúdo afirmado**, apontando a §4 como o que falta transcrever.
+- **Opções A–D** para definir "fato novo".
+
+#### Entrega 2 · procedência fora do card clínico
+
+**Trava genérica** (`e2e/avc-procedencia-fora-do-card.spec.ts`):
+- **O que procura:** todo texto visível com "repositório", "spec §", "transcrit", "D-PEND" ou "a confirmar" fora de `avc-info-texto-*`/`avc-detalhe-*`.
+- **Cenários:** portão pendente; as 7 superfícies com blocos abertos; HSA + TNK 70 kg; alteplase 70 kg.
+
+**Encontrado antes:**
+- portão: *"… (puerpério: até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026). Não sei mantém a pergunta."*;
+- card da HSA: *"Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026"* e *"spec §1.8"*.
+
+**Correção:**
+- **Portão:** *"… não gestante e não puérpera (até 14 dias após o parto)."* A marcação da fonte e o "Não sei mantém a pergunta" seguem na nota do campo (ⓘ).
+- **Portão da IVT:** fonte e procedência de **todo** motivo passam para um ⓘ (`avc-info-portao-<id>`). A retenção da EVT também (`avc-info-evt-retencao`).
+- **Dose:** a fonte da Table 7 fica no ⓘ (`avc-info-table7`).
+
+⚠️ **Fora do universo da trava:** o código do slot de fonte (ex.: "F-10") não está na lista de strings. No card do portão ele saiu para o ⓘ. Se outros "F-nn" aparecem no card de outras telas, **não foi medido** nesta rodada.
+
+#### Entrega 3 · card de dose, D-PEND-25, contadores e "mesma força"
+
+**Card de dose** (`components/avc/superficie-f.tsx`):
+- **Dose e volume:** uma dose só, com o volume em corpo principal.
+- **Conferência da Table 7:** só em mg, em legenda, rotulada *"faixa da diretriz, para conferência — não é a dose a preparar"*, **sem mL**.
+- **Divergência:** *"A faixa dá 20 mg em vez de 17,5 mg"*.
+
+**Alteplase (D-PEND-25):**
+
+| peso | dose | volume (1 mg/mL) | bolus em 1 min | restante em 60 min |
+|---|---|---|---|---|
+| 70 kg | 63 mg | 63,0 mL | 6,3 mg · 6,3 mL | 56,7 mg · 56,7 mL |
+| 71 kg | 63,9 mg | 63,9 mL | 6,39 mg · 6,4 mL | 57,51 mg · 57,5 mL |
+| 99 kg | 89,1 mg | 89,1 mL | 8,91 mg · 8,9 mL | 80,19 mg · 80,2 mL |
+| 100 kg | 90 mg | 90,0 mL | 9 mg · 9,0 mL | 81 mg · 81,0 mL |
+| 120 kg | 90 mg (teto) | 90,0 mL | 9 mg · 9,0 mL | 81 mg · 81,0 mL |
+
+- **Provas antigas atualizadas:** `prova-avc-superficie-f` e `prova-avc-decisoes-d22-d24`.
+  - 99 kg: 89 → 89,1 mg.
+  - Casas decimais: alteplase ≤ 1, tenecteplase ≤ 2.
+  - Palavras "bolus" e "infus" liberadas no núcleo de dose, porque a D-PEND-25 as autoriza com fonte; preparo segue proibido.
+
+**Contadores de Reperfusão:** *"1 recomendação se aplica · 3 dependem de dados ainda não registrados · 2 sem critério objetivo na diretriz"*, no lugar de *"1 aplicáveis · 3 potenciais · 2 sem critério na fonte"*.
+
+**"Mesma força":** a frase existe.
+- **Recomendação:** §4.6.2 rec. 1, COR 1 · LOE A, p. e357, uma única recomendação com *"tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes"*.
+- **No card:** *"Tenecteplase e alteplase estão na mesma recomendação da diretriz. Escolher não significa administrar."*
+- **No ⓘ (`avc-info-agente`):** a frase literal completa, com a página.
+
+#### Achados novos
+
+| # | gravidade | achado | estado |
+|---|---|---|---|
+| AC-63 | **alta · segurança** | «Limpar» seguido de «Não» libera a retenção da HSA em dois toques, porque «Limpar» é correção. | aberto: decisão do autor (pacote `hsa-resolucao.md` §7) |
+| AC-64 | média · fonte | A §4 (diagnóstico/imagem) da AHA/ASA 2023 de HSA não está transcrita. Sem ela não existe conteúdo que defina o que resolve a suspeita. | aberto: autor/transcrição |
+| AC-65 | baixa · não medido | A trava cobre só as cinco strings pedidas. Códigos de slot "F-nn" fora do portão da IVT não foram varridos, então não se sabe se aparecem no card de outras telas. | a medir |
+
+**Suíte e envio:**
+
+| item | resultado |
+|---|---|
+| commits | `583dde3` (D-PEND-25) · `9f79e66` (pacote `hsa-resolucao.md`) · `7c59d35` (código) · commit só de `docs/` com esta seção e o status |
+| incidente de processo | a 1ª cadeia de commit usou heredoc seguido de `&& \`; a continuação engoliu o título, o commit do pacote saiu sem título (`c688562`) e o resto da cadeia não rodou. Pego antes do push; mensagem corrigida com `--amend -F arquivo` (`9f79e66`); regra registrada: mensagem sempre por arquivo |
+| provas no build final | ✅ 17/17 (HSA 1 · procedência 4 · dose 4 · D-PEND-22/23/24 4 · interface 4) |
+| e2e do AVC no build final | ✅ 366 passed |
+| `test:all` (HEAD `7c59d35`) | ✅ **EXIT=0** · 139 scripts npm · Playwright **549 passed** (8,4 min), sem failed ou skipped · rodada 8 28/28 · D-PEND-22/23/24 33/33 · críticos 183/183 · superfície F 92/92 · execução 15:11–15:22 |
+| artefatos da suíte | revertidos (D-PEND-10) |
+| push | `1010a21..7c59d35` → `origin/refactor/clinical-modules-rebuild` (inclui `583dde3`, `9f79e66`); `git ls-remote` = `7c59d359ce8b387b80fff599fd1996b674ede7a9`; divergência 0/0 |
+| deploy · merge em `main` | ⛔ não feitos |

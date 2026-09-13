@@ -1,12 +1,12 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `c7a1956`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `7c59d35`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
-## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 7ª rodada)
+## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 8ª rodada)
 
 Fonte de cada linha:
-- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (§1, §7.4–§7.12).
+- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (§1, §7.4–§7.13).
 - **Decisões:** `docs/decisoes.md`.
 - **Casos A:** `docs/spec-avc.md` §15 × testes.
 
@@ -17,7 +17,10 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 1 | só o autor | alta | **Errata** *Stroke* 2026;57(8):e461–e467 (AC-04). Nenhum slot AHA/ASA 2026 foi conferido contra ela. | inacessível por via automatizada (403); nenhuma tentativa de contornar | autor: colocar o PDF da errata no repositório |
 | 2 | só o autor | alta | **Table 8** (gestação e puerpério, p. e364–e367). A linha é imagem no PDF e não foi transcrita; a janela de puerpério depende dela (AC-03r). | não conferível | autor: transcrever ou confirmar a linha |
 | 3 | só o autor | alta | **ANVISA e bula** (D-PEND-22 exibe o campo "pendente de conferência"): situação regulatória da tenecteplase no AVC no Brasil; bula Metalyse 25 mg não obtida; concentração após reconstituição não conferida em bula (pacote `revisao/AC-06-dose-trombolitico.md` §9A). | campo regulatório em branco | autor: consultar ANVISA e bula |
-| 4 | só o autor | alta | **Teste no celular**: nenhum registro, em `docs/`, de uso em aparelho físico. O app nativo não persiste o caso (AC-39). | não feito | autor: usar no aparelho (web no navegador e, se for o caso, nativo) |
+| 4 | só o autor | alta | **Teste no celular** (persistência): nenhum registro, em `docs/`, de uso em aparelho físico. O app nativo não persiste o caso (AC-39). Pelo autor em 2026-09-13: **presumir que não foi feito**. | presumido não feito | autor |
+| 5 | decisão | **alta · segurança** | **AC-63**: «Limpar» seguido de «Não» libera a retenção da HSA em dois toques (Limpar é correção). Trocar «Sim» por «Não» direto já não libera. | aberto | autor: pacote `revisao/hsa-resolucao.md` §7 |
+| 6 | decisão | alta | **HSA · o que é "fato novo"**: opções A–D no pacote `revisao/hsa-resolucao.md` §6. Até decidir, o card diz "Requer investigação antes de reperfundir — conteúdo pendente de validação". | aguardando | autor |
+| 7 | só o autor | média · fonte | **AC-64**: §4 (diagnóstico/imagem) da AHA/ASA 2023 de HSA não transcrita; sem ela não há conteúdo do que resolve a suspeita. | aberto | autor / transcrição do PDF já enviado |
 | 8 | decisão | alta | **D-PEND-11 / AC-05**: quatro interpretações da D-139 aplicadas no código, sem confirmação (pacotes `revisao/D-139-1…4`). AC-54: a correção do AC-47 responde em parte à interpretação 4. | aguardando | autor |
 | 9 | decisão | média | **D-PEND-07**: força, `contextoDaFonte` e validação humana por regra. Toda regra segue "pendente de validação médica". | aberta | autor |
 | 10 | decisão | média | **D-PEND-06**: registro formal dos direitos de uso do NIHSS. | aberta | autor |
@@ -28,7 +31,6 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 15 | decisão | média | **AC-52**: `nao_elegivel_a_evt` nunca é satisfeito, e as duas rotas de janela estendida que o exigem nunca ficam "aplicáveis". | decidir o que fazer | autor |
 | 16 | decisão | — | **Pacotes de revisão**: `docs/avc/revisao/` com "Decisão humana: ___" em branco. AC-06, AC-15 e AC-03r foram decididos pelas D-PEND-22/23/24 e os pacotes ainda não foram carimbados. | aguardando | autor |
 | 16a | decisão | média · fonte | **AC-60**: fontes citadas nas D-PEND-23 (bula) e D-PEND-24 (AHA 2019) não transcritas no repositório. As regras rodam como adaptação ou "a confirmar". | aberto | autor: colocar os trechos |
-| 16b | decisão | baixa | **AC-61**: leitura do agente na D-PEND-22: alteplase continua inteira; volume arredondado ao 0,1 mL mais próximo (71 kg → 3,6 mL). | confirmar | autor |
 | 17 | achado | alta | **AC-08**: dose do trombolítico recalculada do peso atual; não existe evento de dose histórica. | aberto | código |
 | 18 | achado | alta | **AC-09**: decisões não são registradas. | parcial: só a conclusão de população é versionada (`prova-avc-persistencia` A14) | código |
 | 19 | achado | alta | **AC-10**: "Preciso de ajuda" e "Paciente piorou" não existem (A11). | aberto | código |
@@ -47,6 +49,7 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 32 | achado | média | **AC-31**: na calculadora avulsa, item não tocado vale 0. | aberto | código |
 | 33 | achado | média | **AC-33**: contexto da Table 4 com UN sem a D-PEND-13. | aberto | código |
 | 34a | achado | baixa | **AC-62**: tema claro inalcançável no app (Fase 9), então a AC-59 só foi capturada no escuro; botões ‹ › da barra de fases medem transbordo só na web. | registrado | código |
+| 34b | achado | baixa · não medido | **AC-65**: a trava de procedência cobre só "repositório", "spec §", "transcrito", "D-PEND", "a confirmar". Códigos "F-nn" fora do portão da IVT não foram varridos. | a medir | código |
 | 35 | achado | baixa | **AC-23**: 48 literais com mais de 200 caracteres em `avc/conteudo`, sem trava. | aberto | código |
 | 36 | achado | baixa | **AC-24, AC-25**: `matriz-requisitos.md` com três classificações erradas e RQ-PER-03 desatualizado. | aberto | documento |
 | 37 | achado | baixa | **AC-30 / AC-34**: tradução ES das frases compostas da síntese não medida. | aberto | código |
@@ -58,7 +61,7 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 43 | caso A | — | **A05** NIHSS baixo incapacitante · **A08** IVT impedida com EVT recomendada · **A10** reavaliação após glicemia · **A11** deterioração · **A12** plano local e transferência · **A14** decisão histórica. | **parciais**: há teste, mas não mede o caso inteiro (§3 da auditoria) | código |
 
 **Fechados, fora da fila:**
-- **Achados:** AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 e os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`). AC-58 fica registrado como diagnóstico.
+- **Achados:** AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico.
 - **Casos A01–A18 com teste que mede o caso:** A01, A02, A03, A04, A06 (`e2e/avc-nihss-nao-testavel.spec.ts`, `prova-avc-nihss-criterios`), A07, A13 (web: `e2e/avc-persistencia.spec.ts`), A15, A17 (`e2e/avc-persistencia.spec.ts`, `prova-avc-autoria-e-toque-duplo`) e A18 na forma da D-PEND-03 (detectar e bloquear).
 - ⚠️ **Método:** a cobertura de A01–A12 e A15 é a leitura de asserções da §3 (1ª rodada). Nesta rodada só A06, A13, A14, A17 e A18 foram reconferidos contra os testes existentes.
 
@@ -75,7 +78,17 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 
 ## Ponto exato de retomada
 
-**Rodada mais recente (2026-09-13, 7ª) · AC-59, D-PEND-22/23/24 e interface:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.12.
+**Rodada mais recente (2026-09-13, 8ª) · HSA sem atalho, procedência fora do card, card de dose, D-PEND-25:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.13.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **Entrega 1 (alta) · HSA** | card sem «responder Não» e sem «Resolver»; «Sim» → «Não» sem fato novo não libera; pacote `revisao/hsa-resolucao.md` | ✅ `7c59d35` · prova + e2e vermelhos → verdes · ⚠️ brecha «Limpar» + «Não» declarada (AC-63) |
+| **Entrega 2 · procedência** | "repositório", "spec §", "transcrito", "D-PEND", "a confirmar" só no ⓘ; trava genérica e2e | ✅ `7c59d35` · 2 cenários vermelhos (portão; HSA+TNK) → verdes |
+| **Entrega 3 · dose e Reperfusão** | uma dose com mL; Table 7 só em mg, rotulada, "em vez de"; D-PEND-25 alteplase exata com bolus e infusão; contadores em linguagem direta; "mesma força" com literal e página (e357) no ⓘ | ✅ `583dde3` (decisão) + `7c59d35` · e2e 4/4 vermelhos → verdes |
+
+`test:all` no HEAD `7c59d35`: ✅ **EXIT=0** · 139 scripts npm · Playwright **549 passed** (8,4 min), sem failed ou skipped · rodada 8 28/28 · D-PEND-22/23/24 33/33 · críticos 183/183 · superfície F 92/92 · execução 15:11–15:22 · push `1010a21..7c59d35` → `origin/refactor/clinical-modules-rebuild` (inclui `583dde3`, `9f79e66`); `git ls-remote` = `7c59d359ce8b387b80fff599fd1996b674ede7a9`; divergência 0/0. Sem deploy, sem merge em `main`.
+
+**Rodada anterior (7ª), concluída · AC-59, D-PEND-22/23/24 e interface:** detalhe em `docs/avc/auditoria-vs-spec.md` §7.12.
 
 | entrega | escopo | estado |
 |---|---|---|
