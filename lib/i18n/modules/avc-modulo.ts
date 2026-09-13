@@ -1271,6 +1271,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "corrigido de": "corregido de",
   "corrigido": "corregido",
   "Evento de outro caso.": "Evento de otro caso.",
+  "registrado neste aparelho, sem conta": "registrado en este dispositivo, sin cuenta",
+  "registrado em sessão anônima, sem conta": "registrado en sesión anónima, sin cuenta",
+  "autor não registrado": "autor no registrado",
   /** ⚠️ Fase sem alvo publicado pela fonte — resposta, não vazio. */
   "A fonte não publica alvo pressórico para esta fase. Os alvos das fases anteriores seguem abaixo, para consulta.":
     "La fuente no publica objetivo de presión para esta fase. Los objetivos de las fases anteriores siguen abajo, para consulta.",

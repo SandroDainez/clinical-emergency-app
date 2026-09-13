@@ -15,6 +15,8 @@
  * ⚠️ Isto ⛔ NÃO é componente do app (§9.1): mora em `components/avc/` e ⛔ não
  * sai daqui enquanto um segundo módulo clínico não exigir o mesmo.
  */
+import { marcaDeAutoria } from "../../avc/persistencia/autoria";
+import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import type React from "react";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -1298,9 +1300,11 @@ export function CampoDaSuperficie({
   /** ⚠️ "Nova coleta" no Laboratório. ⚠️ Traduzido aqui dentro. */
   rotuloDeNovaMedida?: string;
   /** ⚠️ AC-02: a correção vigente (`correcaoNaInstancia`) — dita na leitura, com o motivo ou "sem motivo informado". */
-  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null };
+  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null; readonly fatoId?: string };
 }) {
   const tr = useTr();
+  /** ⚠️ AC-40: quem registrou a correção — marcado quando ⛔ não é conta. */
+  const autoriaDe = useAutoriaDoAtendimento();
   const e = useEstilosDoTema(criarEstilos);
   const emprestado = campo.casa !== casaAtual;
 
@@ -1432,6 +1436,7 @@ export function CampoDaSuperficie({
                 ? numeroCurto(correcao.valorOriginal, campo.faixa?.passo ?? 1)
                 : tr(String(correcao.valorOriginal))}`}
           {correcao.motivo === null ? ` · ${tr("sem motivo informado")}` : ` · ${tr("motivo")}: ${correcao.motivo}`}
+          {marcaDeAutoria(autoriaDe(correcao.fatoId)) === undefined ? "" : ` · ${tr(marcaDeAutoria(autoriaDe(correcao.fatoId)) as string)}`}
         </Text>
       ) : null}
 

@@ -127,13 +127,19 @@ export function correcaoNaInstancia(
   estado: EstadoAvc,
   instancia: string,
   campo: string
-): { readonly valorOriginal: FatoRegistrado["valor"] | undefined; readonly motivo: string | null } | undefined {
+): {
+  readonly valorOriginal: FatoRegistrado["valor"] | undefined;
+  readonly motivo: string | null;
+  /** ⚠️ AC-40: o fato da correção — quem o registrou está no log. */
+  readonly fatoId: string;
+} | undefined {
   const atual = valorNaInstancia(estado, instancia, campo);
   if (atual === undefined || atual.tipo !== "correcao") return undefined;
   const substituido = estado.fatos.find((f) => f.id === atual.corrigeFatoId);
   return {
     valorOriginal: substituido?.valor,
     motivo: typeof atual.motivo === "string" && atual.motivo.trim() !== "" ? atual.motivo : null,
+    fatoId: atual.id,
   };
 }
 
@@ -195,6 +201,8 @@ export type MedidaNoHistorico = {
   readonly valores: readonly ValorNoHistorico[];
   /** ⚠️ Instante de REGISTRO. ⛔ Relógio clínico ⛔ é outra coisa, ⛔ e pode faltar. */
   readonly registradaEm: number | undefined;
+  /** ⚠️ AC-40: o primeiro fato da medida — a linha do tempo pergunta ao log quem o registrou. */
+  readonly idDoFatoDeRegistro: string | undefined;
   readonly corrigida: boolean;
 };
 
@@ -242,6 +250,7 @@ export function historicoDeAfericoes(
       atual: i === instancias.length - 1,
       valores,
       registradaEm: fatos[0]?.horaRegistro,
+      idDoFatoDeRegistro: fatos[0]?.id,
       corrigida: fatos.some((f) => f.tipo === "correcao"),
     };
   });

@@ -15,6 +15,8 @@
  * informado**; ⛔ nenhum valor nasce preenchido; ⛔ zero ⛔ nunca aparece por
  * descuido. ⚠️ A linguagem é outra; a semântica é a mesma.
  */
+import { marcaDeAutoria } from "../../../avc/persistencia/autoria";
+import { useAutoriaDoAtendimento } from "../autoria-do-atendimento";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useState, type ReactNode } from "react";
 import Slider from "@react-native-community/slider";
@@ -1032,11 +1034,13 @@ export function NumeroComCorrecao({
   detalheAberto: boolean;
   onAlternarDetalhe: () => void;
   /** ⚠️ AC-02: a correção vigente (`correcaoNaInstancia`) — dita na leitura, com o motivo ou "sem motivo informado". */
-  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null };
+  correcao?: { readonly valorOriginal: unknown; readonly motivo: string | null; readonly fatoId?: string };
   /** ⚠️ O detalhe do campo — ajuda longa, nota ⛔ e FONTE (E-30). */
   children?: ReactNode;
 }) {
   const tr = useTr();
+  /** ⚠️ AC-40: quem registrou a correção — marcado quando ⛔ não é conta. */
+  const autoriaDe = useAutoriaDoAtendimento();
   const e = useEstilosDoTema(criarEstilos);
   /** ⚠️⚠️ O rascunho da CORREÇÃO — ⛔ e ⛔ nunca um valor da trilha. */
   const [rascunho, setRascunho] = useState<string | undefined>(undefined);
@@ -1088,6 +1092,7 @@ export function NumeroComCorrecao({
           <Text style={e.corrAjuda} testID={`avc-correcao-${campo}`}>
             {correcao.valorOriginal === undefined ? tr("corrigido") : `${tr("corrigido de")} ${String(correcao.valorOriginal)}`}
             {correcao.motivo === null ? ` · ${tr("sem motivo informado")}` : ` · ${tr("motivo")}: ${correcao.motivo}`}
+            {marcaDeAutoria(autoriaDe(correcao.fatoId)) === undefined ? "" : ` · ${tr(marcaDeAutoria(autoriaDe(correcao.fatoId)) as string)}`}
           </Text>
         ) : null}
         {/**

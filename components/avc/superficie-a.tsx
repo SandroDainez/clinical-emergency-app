@@ -22,6 +22,8 @@
  * ⛔ eles carregam regras conquistadas a duras penas, ⛔ e reescrevê-los ⛔ não
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
+import { marcaDeAutoria } from "../../avc/persistencia/autoria";
+import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import { nomeDaNovaAfericao } from "../../avc/conteudo/campos";
 import { historicoDeAfericoes } from "../../avc/nucleo/instancia";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
@@ -199,6 +201,8 @@ export default function SuperficieA({
   origemDoGlasgow,
 }: Props) {
   const tr = useTr();
+  /** ⚠️ AC-40: a linha do tempo marca o registro feito sem conta. */
+  const autoriaDe = useAutoriaDoAtendimento();
   const foco = useFoco();
   /**
    * ⚠️⚠️ ⛔ ABERTO É **UI**, ⛔ e ⛔ não progresso — ⛔ a mesma separação do
@@ -954,6 +958,9 @@ export default function SuperficieA({
                                 {m.registradaEm === undefined
                                   ? ""
                                   : ` · ${horaDeExibicao(m.registradaEm, agora)}`}
+                                {marcaDeAutoria(autoriaDe(m.idDoFatoDeRegistro)) === undefined
+                                  ? ""
+                                  : ` · ${tr(marcaDeAutoria(autoriaDe(m.idDoFatoDeRegistro)) as string)}`}
                               </Text>
                               {m.valores.map((v) => (
                                 <Text key={v.campo} style={e.historicoValor}>

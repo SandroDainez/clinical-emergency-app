@@ -264,7 +264,7 @@ const pronto = T && LOG && MEM && TR;
 
   /* ══ Schema versionado · migração v1 → v2 com dados gravados por v1 ═══════ */
   if (pronto) {
-    conf("o schema declara número de versão 2", T.VERSAO_DO_SCHEMA === 2, `⛔ ${T.VERSAO_DO_SCHEMA}`);
+    conf("o schema declara número de versão 3 (AC-40: origem do autor)", T.VERSAO_DO_SCHEMA === 3, `⛔ ${T.VERSAO_DO_SCHEMA}`);
     const v1 = {
       casos: [{ casoId: "caso-v1", abertoEm: T0, encerradoEm: null }],
       eventos: [
@@ -273,11 +273,11 @@ const pronto = T && LOG && MEM && TR;
       ],
     };
     const migrados = v1.eventos.map(T.migrarEventoDeV1);
-    conf("v1 → v2: todo evento ganha versão do schema ⛔ e autor declarado", migrados.every((e) => e.versaoDoSchema === 2 && typeof e.autor === "string" && e.autor.length > 0), `⛔ ${JSON.stringify(migrados)}`);
-    conf("v1 → v2: ⛔ nenhum dado clínico muda na migração", JSON.stringify(migrados.map((e) => e.dados)) === JSON.stringify(v1.eventos.map((e) => e.dados)), "⛔");
+    conf("v1 → schema atual: todo evento ganha versão do schema ⛔ e autor declarado", migrados.every((e) => e.versaoDoSchema === T.VERSAO_DO_SCHEMA && typeof e.autor === "string" && e.autor.length > 0), `⛔ ${JSON.stringify(migrados)}`);
+    conf("v1 → schema atual: ⛔ nenhum dado clínico muda na migração", JSON.stringify(migrados.map((e) => e.dados)) === JSON.stringify(v1.eventos.map((e) => e.dados)), "⛔");
     const arm = MEM.criarArmazenamentoEmMemoria({ dumpV1: v1 });
     const recV1 = LOG.reconstruirEstado(await arm.lerEventos("caso-v1"));
-    conf("dados gravados por v1 são recuperados em v2", E.valorAtual(recV1, "peso")?.valor === 70 && (await arm.casoMaisRecenteNaoEncerrado()) === "caso-v1", "⛔");
+    conf("dados gravados por v1 são recuperados no schema atual", E.valorAtual(recV1, "peso")?.valor === 70 && (await arm.casoMaisRecenteNaoEncerrado()) === "caso-v1", "⛔");
   }
 
   /* ══ Rascunho separado de fato confirmado ═════════════════════════════════ */

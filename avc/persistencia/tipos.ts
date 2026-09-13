@@ -16,6 +16,10 @@
  *  · v2 — acrescenta a loja `rascunhos` ([casoId, chave]), o índice
  *    `porCasoSeq` ([casoId, seq]) e, em todo evento, `autor`, `observadoEm` e
  *    `versaoDoSchema`. A migração ⛔ não toca `dados` ⛔ nem `seq`.
+ *  · v3 — AC-40 (2026-09-13): em todo evento, `origemDoAutor` — `sessao` (user.id
+ *    da sessão Supabase), `sessao_anonima`, `aparelho` (recurso sem sessão) ⛔ ou
+ *    `nao_registrado`. A migração ⛔ não inventa autor: o v2 só gravava `local:<uuid>`
+ *    (aparelho) ⛔ ou o marcador de v1 (não registrado).
  *
  * ⚠️ v1 é o primeiro schema escrito nesta rodada (2026-09-13); ⛔ não há dado real
  * de paciente gravado por ele. A migração existe e é provada com dados v1
@@ -28,11 +32,14 @@ import type { SuperficieId } from "../nucleo/tipos";
 import type { FatoRegistrado } from "../nucleo/tipos";
 import type { Instante } from "../nucleo/relogio";
 
-export const VERSAO_DO_SCHEMA = 2 as const;
+export const VERSAO_DO_SCHEMA = 3 as const;
 export const NOME_DO_BANCO = "avc-atendimento";
 
 /** Autor de evento migrado de v1 — ⛔ v1 ⛔ não gravava autor, e ⛔ nenhum é inventado. */
 export const AUTOR_NAO_REGISTRADO_V1 = "nao_registrado_schema_v1";
+
+/** ⚠️ AC-40: de onde veio o autor do evento. ⛔ `aparelho` ⛔ não é identidade. */
+export type OrigemDoAutor = "sessao" | "sessao_anonima" | "aparelho" | "nao_registrado";
 
 export type TipoDeEvento =
   | "caso_aberto"
@@ -61,6 +68,8 @@ export type EventoDoAtendimento = {
   /** Quando o fato foi OBSERVADO, se o médico disse; `null` se ⛔ não disse. */
   readonly observadoEm: Instante | null;
   readonly autor: string;
+  /** ⚠️ AC-40: `user.id` da sessão, ⛔ ou o recurso do aparelho — sempre declarado. */
+  readonly origemDoAutor: OrigemDoAutor;
   readonly versaoDoSchema: typeof VERSAO_DO_SCHEMA;
   readonly dados:
     | DadosDoCasoAberto
@@ -84,8 +93,23 @@ export type EventoV1 = {
   readonly dados: EventoDoAtendimento["dados"];
 };
 
-export function migrarEventoDeV1(e: EventoV1 | EventoDoAtendimento): EventoDoAtendimento {
-  if ("versaoDoSchema" in e && e.versaoDoSchema === VERSAO_DO_SCHEMA) return e;
+/** O evento como v2 o gravava: com autor ⛔ e sem a origem dele. */
+export type EventoV2 = Omit<EventoDoAtendimento, "origemDoAutor" | "versaoDoSchema"> & {
+  readonly versaoDoSchema: 2;
+};
+
+/** ⚠️ O v2 só gravava `local:<uuid>` (aparelho) ⛔ ou o marcador de v1 — ⛔ nada além. */
+function origemGravadaPeloV2(autor: string): OrigemDoAutor {
+  return autor.startsWith("local:") ? "aparelho" : "nao_registrado";
+}
+
+/** ⚠️ Qualquer evento gravado por schema anterior → o schema atual, ⛔ sem tocar `dados` ⛔ nem `seq`. */
+export function migrarEvento(e: EventoV1 | EventoV2 | EventoDoAtendimento): EventoDoAtendimento {
+  if ("versaoDoSchema" in e && e.versaoDoSchema === VERSAO_DO_SCHEMA) return e as EventoDoAtendimento;
+  if ("versaoDoSchema" in e && e.versaoDoSchema === 2) {
+    const v2 = e as EventoV2;
+    return { ...v2, origemDoAutor: origemGravadaPeloV2(v2.autor), versaoDoSchema: VERSAO_DO_SCHEMA };
+  }
   const fato = (e.dados as { fato?: FatoRegistrado }).fato;
   return {
     id: e.id,
@@ -95,10 +119,14 @@ export function migrarEventoDeV1(e: EventoV1 | EventoDoAtendimento): EventoDoAte
     registradoEm: e.registradoEm,
     observadoEm: fato?.horaClinica ?? null,
     autor: AUTOR_NAO_REGISTRADO_V1,
+    origemDoAutor: "nao_registrado",
     versaoDoSchema: VERSAO_DO_SCHEMA,
     dados: e.dados,
   };
 }
+
+/** @deprecated nome antigo — migra v1 ⛔ e v2. */
+export const migrarEventoDeV1 = migrarEvento;
 
 export type CasoGuardado = {
   readonly casoId: string;

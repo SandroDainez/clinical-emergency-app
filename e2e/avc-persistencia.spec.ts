@@ -92,7 +92,7 @@ test.describe("AVC · persistência do atendimento", () => {
     await expect(segunda.getByTestId("avc-superficie-paciente-conteudo")).toHaveCount(0);
   });
 
-  test("schema v1 → v2 · dados gravados por v1 são migrados e recuperados", async ({ page }) => {
+  test("schema v1 → v3 · dados gravados por v1 são migrados e recuperados", async ({ page }) => {
     const T0 = Date.now() - 10 * 60_000;
     await fixarIdioma(page, "pt-BR");
     await page.goto("/");
@@ -135,6 +135,6 @@ test.describe("AVC · persistência do atendimento", () => {
       const req = indexedDB.open("avc-atendimento");
       req.onsuccess = () => { const v = req.result.version; req.result.close(); resolve(v); };
     }));
-    expect(versao, "o banco foi migrado para o schema 2").toBe(2);
+    expect(versao, "o banco foi migrado para o schema 3 (AC-40)").toBe(3);
   });
 });

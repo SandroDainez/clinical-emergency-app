@@ -7,12 +7,13 @@
  * log; dump de v1 é migrado ao carregar.
  */
 import {
-  migrarEventoDeV1,
+  migrarEvento,
   type ArmazenamentoDoAtendimento,
   type CasoGuardado,
   type DadosDoCasoAberto,
   type EventoDoAtendimento,
   type EventoV1,
+  type EventoV2,
   type RascunhoDoAtendimento,
 } from "./tipos";
 
@@ -20,14 +21,17 @@ const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 
 export function criarArmazenamentoEmMemoria(opcoes?: {
   dumpV1?: { casos: readonly CasoGuardado[]; eventos: readonly EventoV1[] };
+  /** ⚠️ Dump de qualquer schema anterior (v1 ⛔ ou v2), migrado ao carregar. */
+  dumpAnterior?: { casos: readonly CasoGuardado[]; eventos: readonly (EventoV1 | EventoV2)[] };
 }): ArmazenamentoDoAtendimento {
   const casos = new Map<string, CasoGuardado>();
   const eventos = new Map<string, EventoDoAtendimento>();
   const rascunhos = new Map<string, RascunhoDoAtendimento>();
 
-  if (opcoes?.dumpV1) {
-    for (const c of opcoes.dumpV1.casos) casos.set(c.casoId, clone(c));
-    for (const e of opcoes.dumpV1.eventos) eventos.set(e.id, migrarEventoDeV1(clone(e)));
+  for (const dump of [opcoes?.dumpV1, opcoes?.dumpAnterior]) {
+    if (!dump) continue;
+    for (const c of dump.casos) casos.set(c.casoId, clone(c));
+    for (const e of dump.eventos) eventos.set(e.id, migrarEvento(clone(e)));
   }
 
   const ultimoSeq = (casoId: string) =>

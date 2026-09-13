@@ -30,12 +30,15 @@ import {
   type DadosDoCasoAberto,
   type EventoDoAtendimento,
   type NovoEvento,
+  type OrigemDoAutor,
   type TipoDeEvento,
 } from "./tipos";
 
 export type ContextoDoLog = {
   readonly casoId: string;
   readonly autor: string;
+  /** ⚠️ AC-40: sessão, sessão anônima ⛔ ou recurso do aparelho. */
+  readonly origemDoAutor: OrigemDoAutor;
   readonly agora: number;
   readonly gerarId: () => string;
 };
@@ -65,6 +68,7 @@ function evento(
     registradoEm,
     observadoEm,
     autor: ctx.autor,
+    origemDoAutor: ctx.origemDoAutor,
     versaoDoSchema: VERSAO_DO_SCHEMA,
     dados,
   };

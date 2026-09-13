@@ -192,6 +192,7 @@ import SuperficieC from "./superficie-c";
 import SuperficiePaciente from "./superficie-paciente";
 import { AtendimentoIndisponivel, FaixaDoAtendimentoPersistido } from "./avisos-do-atendimento";
 import { useAtendimentoPersistido } from "./use-atendimento-persistido";
+import { ProvedorDeAutoria } from "./autoria-do-atendimento";
 import PortaoDePopulacao from "./portao-de-populacao";
 import { superficieRetidaPeloPortao } from "../../avc/nucleo/populacao";
 import SuperficieLaboratorio from "./superficie-laboratorio";
@@ -1261,6 +1262,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     {atendimento.fase !== "pronto" ? (
       <AtendimentoIndisponivel fase={atendimento.fase} />
     ) : (
+    <ProvedorDeAutoria autoriaPorFato={atendimento.autoriaPorFato}>
     <ProvedorDeFoco valor={foco}>
     <ScrollView
       ref={rolagem}
@@ -2446,6 +2448,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
       <AcessoAoUsoClinico tr={tr} testID="avc-uso-clinico" />
     </ScrollView>
     </ProvedorDeFoco>
+    </ProvedorDeAutoria>
     )}
     </ClinicalShell>
   );
