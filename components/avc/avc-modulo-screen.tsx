@@ -158,6 +158,8 @@ const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
 };
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../../avc/conteudo/campos";
+import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../../avc/nucleo/limpar-auditado";
+import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import {
   CAMPO_DA_JUSTIFICATIVA,
   CAMPO_DE_ITEM,
@@ -256,6 +258,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⛔ ⛔ Nada some: é a mesma informação, noutra densidade.
    */
   const [resumoAberto, setResumoAberto] = useState(false);
+  /** ⚠️ D-PEND-26: «Limpar» que sustenta retenção ⛔ ou bloqueio espera confirmação. */
+  const [pedidoDeLimpar, setPedidoDeLimpar] = useState<PedidoDeLimpar | undefined>(undefined);
 
   /**
    * ⚠️⚠️ O SIGNIFICADO PRÉ-IVT VEM DE **D**, ⛔ e ⛔ NUNCA de um `if` local.
@@ -801,6 +805,20 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * marcado — porque ele existiu, e esconder que existiu é o que §3.1 proíbe.
    */
   function desfazer(campo: string) {
+    /**
+     * ⚠️⚠️ D-PEND-26 (AC-63, 2026-09-13): se a resposta sustenta retenção ⛔ ou bloqueio,
+     * «Limpar» ⛔ apaga — abre a confirmação "foi engano?", ⛔ e só ela grava a correção
+     * com motivo "toque errado".
+     */
+    if (campoSustentaRetencaoOuBloqueio(estado, campo, relogio)) {
+      const corrigidos = new Set(estado.fatos.map((f) => f.corrigeFatoId));
+      const ROTULO: Readonly<Record<string, string>> = { sim: "Sim", nao: "Não", nao_sei: "Incerto" };
+      const respostas = estado.fatos
+        .filter((f) => f.campo === campo && String(f.valor) !== "nao_perguntado" && !corrigidos.has(f.id))
+        .map((f) => ROTULO[String(f.valor)] ?? String(f.valor));
+      setPedidoDeLimpar({ campo, rotulo: campoDoModulo(campo)?.rotulo ?? campo, respostas });
+      return;
+    }
     /**
      * ⚠️ Passa por `corrigirNaInstancia` para que campos com `instanciaDe`
      * desfaçam DENTRO da aferição aberta — a mesma regra, num lugar só (I6).
@@ -2455,6 +2473,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     </ProvedorDeFoco>
     </ProvedorDeAutoria>
     )}
+      <ConfirmacaoDeLimpar
+        pedido={pedidoDeLimpar}
+        onCancelar={() => setPedidoDeLimpar(undefined)}
+        onConfirmar={() => {
+          const alvo = pedidoDeLimpar;
+          setPedidoDeLimpar(undefined);
+          if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio));
+        }}
+      />
     </ClinicalShell>
   );
 }

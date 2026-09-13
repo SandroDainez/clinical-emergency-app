@@ -297,6 +297,54 @@ detalhado em **S-02**). O ramo de sistemas entra na superfície de destino/trans
 
 ---
 
+## S-00 · §4 Manifestações clínicas e diagnóstico — LOCALIZAÇÃO E PARÁFRASE (AC-64, 2026-09-13)
+
+> ⚠️⚠️ **ISTO NÃO É VERBATIM.** Pedido do autor (AC-64): transcrever o trecho de investigação com TC sem sangue. O agente **não reproduz texto longo** de diretriz protegida por direitos autorais.
+> - **O que está aqui:** localização exata (página impressa, número da recomendação, COR/LOE) e **paráfrase** marcada.
+> - **O literal:** deve ser **colado pelo autor** a partir do PDF, nas linhas `> VERBATIM: ___`.
+> - **Regra:** nenhuma regra do app deve citar esta paráfrase como texto da fonte.
+>
+> **PDF lido:** `~/Literatura Medica/04-Guias e Diretrizes (avaliar)/hoh-et-al-2023-…-aneurysmal-subarachnoid-hemorrhage-….pdf`, PDF p. 9–11 = impressas **e322–e324**.
+
+**Tabela "Recommendations for Clinical Manifestations and Diagnosis of aSAH" — p. e322:**
+
+| rec. | COR | LOE | paráfrase (não verbatim) |
+|---|---|---|---|
+| 1 | 1 | B-NR | Cefaleia de início agudo e intenso: investigação diagnóstica imediata para diagnosticar ou excluir HSA aneurismática. |
+| 2 | 1 | B-NR | Cefaleia aguda intensa **com mais de 6 h** do início **ou com déficit neurológico novo**: TC de crânio sem contraste e, **se negativa**, punção lombar, para diagnosticar ou excluir. |
+| 3 | 2a | B-NR | Cefaleia aguda intensa **com menos de 6 h** do início e **sem déficit neurológico novo**: TC sem contraste em equipamento de alta qualidade, laudada por neurorradiologista certificado, é razoável para diagnosticar ou excluir. |
+| 4 | 2b | B-NR | Cefaleia aguda intensa sem déficit neurológico novo: aplicar a Ottawa SAH Rule (Table 3, p. e324) pode ser razoável para identificar alto risco. |
+| 5 | 1 | B-NR | HSA espontânea com alta suspeita de fonte aneurismática e angio-TC negativa ou inconclusiva: angiografia por subtração digital (DSA) indicada para diagnosticar ou excluir aneurisma. |
+| 6 | 2a | B-NR | HSA com aneurisma confirmado: DSA pode ser útil para definir a estratégia de tratamento. |
+
+> VERBATIM rec. 2 (a colar pelo autor): ___
+> VERBATIM rec. 3 (a colar pelo autor): ___
+> VERBATIM rec. 5 (a colar pelo autor): ___
+
+**Figure 2 "Workflow for patients with symptoms concerning for aSAH" — p. e323, em paráfrase:**
+- **≥ 6 h ou déficit neurológico novo:** TC sem contraste (Classe 1).
+  - Sem HSA → punção lombar (Classe 1).
+  - Xantocromia presente → angio-TC/DSA (Classe 1); ausente → investigação a critério do médico.
+- **< 6 h e sem déficit novo:** TC sem contraste (Classe 2a).
+  - Sem HSA → investigação a critério do médico.
+- **Qualquer ramo:** com HSA à TC → angio-TC/DSA.
+
+**Recommendation-Specific Supportive Text — p. e323–e324, em paráfrase:**
+- **Item 2 (e323):**
+  - A punção lombar costuma ser feita após 6 a 12 h do início.
+  - Um estudo com espectrofotometria para xantocromia após TC negativa relatou alta sensibilidade; os números estão no PDF.
+  - Não há estudo comparando angio-TC com punção lombar como próximo passo.
+  - A angio-TC não avalia a HSA diretamente, só a patologia vascular.
+- **Item 3 (e324):**
+  - A TC em até 6 h do início, em equipamento de alta qualidade, tem alta sensibilidade; os números estão no PDF.
+  - Essas análises **não se aplicam** a apresentações atípicas, entre elas **déficit neurológico focal novo**, síncope, convulsão e dor cervical isolada.
+
+⚠️ **Relevância para o módulo AVC (leitura do agente, a validar pelo autor):**
+- **Déficit focal presente:** o paciente do fluxo isquêmico tem, por definição, déficit neurológico. Pela rec. 2, com suspeita clínica de HSA e TC negativa, a investigação seguiria para punção lombar, e não para a TC isolada da rec. 3.
+- **Punção lombar e trombólise:** a interação entre punção lombar e trombólise **não** está nesta diretriz, nem na transcrição da AHA 2026 do repositório (busca "lumbar": 0). É pergunta clínica aberta.
+
+---
+
 ## COBERTURA — o que deste PDF foi transcrito
 
 Transcritas as seções operacionais para as superfícies do módulo: **§6**
@@ -307,7 +355,7 @@ suporte), **§8.4** (hidrocefalia), **§8.5** (convulsões), **§8** (complicaç
 volume, TEV, glicemia).
 
 **Não transcritas** (fora do escopo das superfícies clínicas do módulo agora): §2
-(conceitos gerais), §3 (história natural), §4 (diagnóstico/imagem — a triagem
+(conceitos gerais), §3 (história natural), §4 (diagnóstico/imagem — **localizada e parafraseada em S-00 em 2026-09-13, verbatim pendente do autor**; a triagem
 isquêmico×hemorrágico×HSA já é resolvida na Superfície C), §7.1 (manejo anestésico
 intraoperatório — detalhe cirúrgico), §8.1 (enfermagem além do essencial), §9
 (recuperação/reabilitação), §10 (prevenção de recorrência).

@@ -11,20 +11,17 @@ Com suspeita clínica de HSA e TC sem sangue, **que fato registrado** encerra a 
 
 Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragia e suspeita clínica de HSA registrada.
 
-## 3 · Comportamento atual do código (8ª rodada)
+## 3 · Comportamento atual do código (9ª rodada, D-PEND-26)
 
 | o quê | onde |
 |---|---|
 | «Sim» retém a reperfusão; classificação "requer avaliação especializada / corrigir e reavaliar" (D-PEND-23) | `avc/nucleo/derivacoes-c.ts` `retencaoDiagnostica` |
-| Depois de «Sim», registrar «Não» ou «Incerto» **não** desfaz a retenção | idem; prova `scripts/prova-avc-rodada8.cjs`; e2e `e2e/avc-hsa-sem-atalho.spec.ts` |
+| Depois de «Sim», registrar «Não» ou «Incerto» **não** desfaz a retenção | idem; `scripts/prova-avc-rodada8.cjs`; `e2e/avc-hsa-sem-atalho.spec.ts` |
 | O card diz *"Requer investigação antes de reperfundir — conteúdo pendente de validação"*; o motivo não tem botão «Resolver» | `avc/nucleo/portao-ivt.ts`; `components/avc/superficie-f.tsx` |
-| **Libera:** a correção formal do registro (o «Sim» é declarado erro de registro) | `avc/nucleo/estado.ts` `corrigirFato` |
-| ⚠️ **Também libera:** «Limpar», porque é implementado como correção (`desfazerRegistro` → `corrigirFato` para `nao_perguntado`) | `avc/nucleo/estado.ts:219` |
+| **«Limpar» (D-PEND-26):** abre a confirmação "Foi engano?". Confirmar grava correção com motivo "toque errado" (autor carimbado pela persistência) em **todas** as respostas vigentes e devolve a pergunta a "não respondida". A retenção cai porque o fato deixou de existir | `avc/nucleo/limpar-auditado.ts`; `components/avc/confirmacao-de-limpar.tsx`; `scripts/prova-avc-limpar-auditado.cjs`; `e2e/avc-limpar-auditado.spec.ts` |
+| A regra vale para toda resposta cujo apagamento faria sumir um motivo restritivo do portão (provada com HSA e coagulação «Sim») | idem |
 
-⚠️ **Brecha declarada, não fechada sem decisão:**
-- **Caminho:** «Limpar» seguido de «Não» são dois toques e liberam a reperfusão, sem investigação.
-- **Por que não foi fechada:** fechá-la impediria corrigir um toque errado em «Sim», o que manteria a reperfusão retida por erro de digitação.
-- **Decisão pedida:** ver §7.
+✅ **A brecha da 8ª rodada fechou:** «Limpar» + «Não» em dois toques deu lugar a um ato explícito, auditado, que custa três toques mais a confirmação (D-PEND-26).
 
 ## 4 · O que as fontes do repositório dizem
 
@@ -33,25 +30,37 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 - **Suspeita de HSA:** não tem recomendação sobre suspeita clínica de HSA com TC sem sangue em candidato à reperfusão. A busca no PDF foi registrada no pacote `AC-15-hsa.md` §9.
 
 **AHA/ASA 2023, HSA aneurismática** (`protocols/fontes-verbatim/aha-asa-2023-hsa.md`):
-- **Transcrito:** §6 (ressangramento), §7 (tratamento do aneurisma), §8.2–§8.5 (vasoespasmo, hidrocefalia, convulsões) e §8 (complicações).
-- **Não transcrito:** a própria transcrição declara *"§4 (diagnóstico/imagem)"* como **não transcrito**.
-- ⚠️ **Consequência:** o conteúdo que responderia a esta pergunta — como investigar suspeita de HSA com TC sem sangue — **não está no repositório**. Nenhum exame, prazo ou limiar é afirmado aqui.
+- **Transcrito:** §6, §7, §8.2–§8.5 e §8.
+- **§4 (diagnóstico), atualizado em 2026-09-13, AC-64:** localizada e **parafraseada** em **S-00**, com página e COR/LOE. O **verbatim ainda falta**: o agente não reproduz texto longo da diretriz, e o autor cola o literal.
+- **O que a §4 trata** (paráfrase, p. e322–e324): investigação de **cefaleia aguda intensa** suspeita de HSA aneurismática.
+  - **Rec. 2 (COR 1, B-NR):** com mais de 6 h **ou déficit neurológico novo**, TC sem contraste e, se negativa, punção lombar.
+  - **Rec. 3 (COR 2a, B-NR):** com menos de 6 h e sem déficit novo, a TC de alta qualidade laudada por neurorradiologista é razoável para excluir.
+  - **Rec. 5 (COR 1, B-NR):** alta suspeita de aneurisma com angio-TC negativa ou inconclusiva pede DSA.
+  - **Figure 2 (e323):** punção lombar → xantocromia → angio-TC/DSA.
+- ⚠️ **Limites de aplicação ao módulo:**
+  - **População diferente:** a §4 fala de quem chega com **cefaleia**, não de candidato à reperfusão isquêmica.
+  - **Apresentação atípica:** o texto de suporte (e324) diz que as análises de sensibilidade da TC não se aplicam a apresentações atípicas, entre elas déficit neurológico focal novo.
 
-## 5 · O que resolveria — itens a conferir, sem conteúdo afirmado
+## 5 · O que resolveria — proposta com base na §4 da AHA/ASA 2023 (S-00), sem decisão
 
-| item citado pelo autor | fonte no repositório | o que falta |
+⚠️ **Proposta do agente a partir da paráfrase de S-00.** Nada disto está no app. O card continua "Requer investigação antes de reperfundir — conteúdo pendente de validação" até a decisão.
+
+| item | apoio na §4 (paráfrase, com página) | pergunta que só o autor decide |
 |---|---|---|
-| angiotomografia (angio-TC) | nenhuma para esta indicação; a transcrição de 2023 cita CTA/CTP só na monitorização de vasoespasmo (S-04) | transcrever a §4 da AHA/ASA 2023 (diagnóstico/imagem), com recomendação, COR/LOE e página |
-| punção lombar | nenhuma; a transcrição de 2023 cita drenagem lombar só na hidrocefalia (S-05) | idem |
-| avaliação neurológica / especializada | "avaliação por especialista" aparece em §7 rec. 6 de 2023 (sistemas de cuidado), sem relação com o diagnóstico da suspeita | idem, e decidir se avaliação especializada registrada basta como "fato novo" |
+| **TC sem contraste negativa** | rec. 2 (COR 1, e322): com déficit novo ou mais de 6 h, a TC negativa **não basta**, e segue punção lombar. Rec. 3 (COR 2a) só vale com menos de 6 h e **sem** déficit novo | O candidato à reperfusão tem déficit focal: a TC negativa sozinha pode encerrar a suspeita? Pela leitura da §4, não. |
+| **punção lombar (xantocromia)** | rec. 2 e Figure 2 (e322–e323): exame seguinte após TC negativa; o texto de suporte cita 6 a 12 h do início | ⚠️ Punção lombar e trombólise: a interação **não está** nesta diretriz nem na AHA 2026 transcrita. É conduta aceitável antes de reperfundir? Com que intervalo? |
+| **angio-TC / DSA** | rec. 5 (COR 1, e322) e Figure 2: após xantocromia, ou na alta suspeita de aneurisma com angio-TC negativa, DSA. O texto de suporte (e323) diz que a angio-TC não avalia a HSA em si | Angio-TC negativa, sozinha, encerra a suspeita? A §4 não sustenta isso. |
+| **avaliação especializada** | não aparece na §4 como critério diagnóstico; "avaliação por especialista" está em §7 rec. 6 (sistemas de cuidado) | Avaliação especializada registrada basta como "fato novo"? |
 
-**Fonte aberta para transcrever:** Hoh BL et al., *2023 Guideline for the Management of Patients With Aneurysmal Subarachnoid Hemorrhage*, Stroke 2023;54:e314–e370, §4 (o PDF primário já foi enviado pelo autor em 2026-09-05).
+**Pendência de fonte:**
+- **Literal:** colar o verbatim das recs. 2, 3 e 5 em `protocols/fontes-verbatim/aha-asa-2023-hsa.md` S-00, nas linhas `> VERBATIM: ___`.
+- **Punção lombar e trombólise:** transcrever o item correspondente da AHA 2026 (Table 8) se houver.
 
 ## 6 · Opções para "fato novo" — sem escolha
 
 | opção | fato que libera a retenção |
 |---|---|
-| **A** | investigação registrada com resultado (exame + resultado + horário), após o conteúdo da §4 ser transcrito e validado |
+| **A** | investigação registrada com resultado (exame + resultado + horário), após o conteúdo da §4 ser transcrito e validado. Pela §4, a sequência para quem tem déficit é TC → punção lombar → angio-TC/DSA se houver xantocromia; ver a pergunta sobre punção lombar e trombólise na §5 |
 | **B** | avaliação especializada registrada (quem, quando, conclusão) |
 | **C** | A ou B |
 | **D** | só a correção formal do registro, como hoje (erro de registro), sem liberação clínica pela interface |
@@ -59,7 +68,8 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 ## 7 · Decisões pedidas
 
 1. Qual opção da §6 define "fato novo"?
-2. «Limpar» de uma suspeita já marcada «Sim» deve continuar liberando a retenção (erro de toque), ou deve exigir correção formal com motivo?
+2. ~~«Limpar» de uma suspeita já marcada «Sim» deve continuar liberando a retenção?~~ **Decidido pela D-PEND-26 (2026-09-13):** exige confirmação ("foi engano?"), grava correção com motivo "toque errado" e devolve a pergunta a "não respondida".
+3. Punção lombar antes de reperfundir: aceitável? Com que intervalo? (§5; sem fonte no repositório)
 
 ## 8 · Separação das camadas
 

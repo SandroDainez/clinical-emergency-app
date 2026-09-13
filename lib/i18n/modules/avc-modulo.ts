@@ -1843,6 +1843,14 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Tenecteplasa y alteplasa están en la misma recomendación de la guía. Elegir no significa administrar.",
   "AHA/ASA 2026, §4.6.2, recomendação 1 (COR 1, LOE A), p. e357: “In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.”":
     "AHA/ASA 2026, §4.6.2, recomendación 1 (COR 1, LOE A), p. e357: “In adult patients with AIS presenting within 4.5 hours of symptom onset or last known well and eligible for IVT, tenecteplase at a dose of 0.25 mg/kg body weight (max 25 mg) or alteplase at a dose of 0.9 mg/kg body weight (max 90 mg) is recommended to improve functional outcomes.”",
+  // ── D-PEND-26 (2026-09-13): «Limpar» auditado ──────────────────────────
+  "toque errado": "toque equivocado",
+  "Foi engano?": "¿Fue un error?",
+  "Resposta registrada para": "Respuesta registrada para",
+  "Esta resposta sustenta uma retenção ou um bloqueio. Limpar registra uma correção com motivo «toque errado» e devolve a pergunta a não respondida.":
+    "Esta respuesta sostiene una retención o un bloqueo. Limpiar registra una corrección con motivo «toque equivocado» y devuelve la pregunta a no respondida.",
+  "Manter a resposta": "Mantener la respuesta",
+  "Foi engano — limpar": "Fue un error — limpiar",
   // ── 8ª rodada: HSA sem atalho ─────────────────────────────────────────
   "Requer investigação antes de reperfundir — conteúdo pendente de validação":
     "Requiere investigación antes de reperfundir — contenido pendiente de validación",

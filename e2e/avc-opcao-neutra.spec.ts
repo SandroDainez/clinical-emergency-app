@@ -141,6 +141,9 @@ test.describe("AVC · D-PEND-21 · opção não marcada é neutra", () => {
           const limpar = page.getByTestId(`avc-limpar-${campo}`);
           if ((await limpar.count()) === 0) { falhas.push(`${onde}: sem «Limpar» depois de marcar`); break; }
           await limpar.click();
+          /** ⚠️ D-PEND-26: resposta que sustenta retenção ⛔ ou bloqueio pede confirmação — ⛔ a varredura confirma. */
+          const confirmar = page.getByTestId("avc-confirmar-limpar-sim");
+          if (await confirmar.isVisible().catch(() => false)) await confirmar.click();
           await expect(opcao).toHaveAttribute("aria-checked", "false");
         }
       }
