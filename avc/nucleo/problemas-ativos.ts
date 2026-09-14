@@ -40,6 +40,7 @@ import { pendenciasDoDestino } from "./transferencia";
 import { leituraDaViaAereaExterna } from "./via-aerea-externa";
 import { pendenciasDoPlano } from "./plano-48h";
 import { caminhoHemorragico } from "./caminho-hemorragico";
+import { pendenciasDaPopulacao } from "./populacao";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
 
@@ -145,6 +146,8 @@ function familiasDePendencia(
     { origem: "derivada", lista: pendenciasDoDestino(estado) },
     /** ⚠️ A09 (13ª rodada): «não sei» na conduta externa de via aérea ⛔ e reavaliação pendente. */
     { origem: "derivada", lista: leituraDaViaAereaExterna(estado).pendencias },
+    /** ⚠️ AC-03r (pedido do autor, 2026-09-14): puérpera com a data do parto necessária ⛔ resolvida. */
+    { origem: "derivada", lista: pendenciasDaPopulacao(estado) },
     /**
      * ⚠️ `pendenciasVigentes()` filtra as que ⛔ não têm porta: pendência cujo
      * campo ⛔ ainda ⛔ não existe é muro, ⛔ e ⛔ não tarefa (**E-26**, **I-7**).

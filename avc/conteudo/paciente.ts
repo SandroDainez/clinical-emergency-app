@@ -84,7 +84,15 @@ export const FAIXA_ETARIA = { adulto: "18 anos ou mais", menor: "Menos de 18 ano
  * saiu pela D-PEND-20.
  */
 export const JANELA_DO_PUERPERIO_DIAS = 14;
-export const PROCEDENCIA_DA_JANELA_DO_PUERPERIO = "fonte AHA 2019, a confirmar na Table 8 de 2026";
+/**
+ * ⚠️⚠️ AC-03r, C8 (autor, 2026-09-14; `docs/decisoes.md` §7): os 14 dias são decisão operacional LOCAL do projeto
+ * enquanto ⛔ houver fonte primária — ⛔ recomendação da AHA/ASA 2026 (a Table 8, p. e366, ⛔ traz janela em dias).
+ * Revoga a marcação «fonte AHA 2019, a confirmar na Table 8 de 2026».
+ */
+export const PROCEDENCIA_DA_JANELA_DO_PUERPERIO = "regra local do projeto (D-PEND-24 e C8)";
+
+/** ⚠️ AC-03r (decisão do autor, 2026-09-14): a hora do parto só vale confirmada. */
+export const HORA_DO_PARTO = { conhecida: "Sim", soData: "Não, só a data" } as const;
 
 export const GESTACAO_PUERPERIO = {
   nenhuma: "Não gestante e não puérpera",
@@ -114,7 +122,42 @@ export const POPULACAO_P: readonly CampoP[] = [
     opcoes: [GESTACAO_PUERPERIO.nenhuma, GESTACAO_PUERPERIO.gestante, GESTACAO_PUERPERIO.puerpera, NAO_SEI],
     fonte: "F-37",
     bloqueiaTerapia: false,
-    nota: "Gestante ou puérpera (até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026) está fora do escopo validado: encaminhar. Não sei mantém a pergunta.",
+    nota: "Gestante, ou puérpera até 14 dias após o parto, está fora do escopo validado: encaminhar. Os 14 dias são regra local do projeto, não recomendação da AHA/ASA. Não sei mantém a pergunta.",
+  },
+  {
+    /**
+     * ⚠️⚠️ AC-03r, C8: a data do parto decide a janela LOCAL de 14 dias. Os dias contam até a ABERTURA do
+     * atendimento (`abertoEm`), ⛔ até o relógio de agora — retomar o caso ⛔ muda a leitura. Desconhecida permanece
+     * desconhecida: ⛔ assume mais de 14 dias ⛔ libera o protocolo adulto (`avc/nucleo/populacao.ts`).
+     */
+    id: "data_do_parto",
+    escopo: "global",
+    rotulo: "Data do parto",
+    tipo: "hora",
+    temporalidade: "estavel",
+    apareceQuando: { campo: "gestacao_puerperio", valor: GESTACAO_PUERPERIO.puerpera },
+    /** ⚠️ C8: «data desconhecida» é resposta registrável — ⛔ sem este gesto, ela só existiria por omissão (e2e da 19ª rodada). */
+    aceitaDesconhecido: true,
+    fonte: "F-37",
+    bloqueiaTerapia: false,
+    nota: "O tempo conta da data e hora do parto até a abertura do atendimento. Até 14 dias (14 × 24 h), fora do escopo validado: encaminhar — regra local do projeto, não recomendação da AHA/ASA. Data desconhecida não libera o protocolo adulto.",
+  },
+  {
+    /**
+     * ⚠️⚠️ Decisão do autor (2026-09-14, antes do commit do AC-03r): a hora do parto ⛔ vale por característica do
+     * seletor, que sempre grava uma. Só «Sim» usa a hora; «Não, só a data», «Não sei» ⛔ sem resposta = informação
+     * incompleta — ⛔ se assume 00:00, 12:00 ⛔ horário ⛔ nenhum.
+     */
+    id: "parto_hora_conhecida",
+    escopo: "global",
+    rotulo: "Hora do parto conhecida?",
+    tipo: "escolha",
+    temporalidade: "estavel",
+    opcoes: [HORA_DO_PARTO.conhecida, HORA_DO_PARTO.soData, NAO_SEI],
+    apareceQuando: { campo: "gestacao_puerperio", valor: GESTACAO_PUERPERIO.puerpera },
+    fonte: "F-37",
+    bloqueiaTerapia: false,
+    nota: "Só «Sim» usa a hora registrada com a data do parto. Sem a hora confirmada, a janela local de 14 dias não é calculada e nenhum horário é assumido.",
   },
 ];
 
@@ -778,6 +821,8 @@ export const SAIDA_SEM_CONCLUSAO_P: Readonly<Record<string, string>> = {
   /** ⚠️ AC-03: "Não sei" ⛔ não conclui — o portão continua perguntando. */
   faixa_etaria: NAO_SEI,
   gestacao_puerperio: NAO_SEI,
+  /** ⚠️ AC-03r: «Não sei» na hora do parto ⛔ conclui — a janela local ⛔ é calculada. */
+  parto_hora_conhecida: NAO_SEI,
   /**
    * ⚠️⚠️ ⛔ OS CINCO SAÍRAM em 2026-09-07 — ⛔ e a saída sem conclusão
    * acompanha o fato, ⛔ e ⛔ não a tela. ⛔ Ver `SAIDA_SEM_CONCLUSAO_B`.

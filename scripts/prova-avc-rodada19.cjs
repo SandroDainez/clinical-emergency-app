@@ -32,7 +32,9 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rodada19-"));
 try {
   execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
     "--moduleResolution", "node", "--skipLibCheck", "--rootDir", appDir, "--outDir", tmp,
-    path.join(appDir, "avc", "nucleo", "portao-ivt.ts"), path.join(appDir, "avc", "conteudo", "campos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-d.ts")],
+    path.join(appDir, "avc", "nucleo", "portao-ivt.ts"), path.join(appDir, "avc", "conteudo", "campos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-d.ts"),
+    path.join(appDir, "avc", "nucleo", "populacao.ts"), path.join(appDir, "avc", "nucleo", "formato.ts"), path.join(appDir, "avc", "persistencia", "log.ts"),
+    path.join(appDir, "avc", "nucleo", "problemas-ativos.ts")],
   { cwd: appDir, stdio: "pipe" });
 } catch { /* erros de tipo de dependência ⛔ impedem a emissão */ }
 const emT = (...p) => { try { return require(path.join(tmp, ...p)); } catch { return undefined; } };
@@ -273,6 +275,174 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
     `⛔ ${JSON.stringify(trilha)}`);
   conf("… a tela mostra a trilha em detalhe expansível, com a autoria do fato (AC-40)",
     /avc-f-julgamentos/.test(telaF) && /julgamentosRegistrados/.test(telaF) && /useAutoriaDoAtendimento/.test(telaF), "⛔ sem trilha na tela");
+}
+
+/* ══ AC-03r · C8 · data do parto e janela operacional LOCAL de 14 dias ═══════════════ */
+{
+  const CAMPO = emT("avc", "conteudo", "campo.js");
+  const PAC = emT("avc", "conteudo", "paciente.js");
+  const POP = emT("avc", "nucleo", "populacao.js");
+  const FMT = emT("avc", "nucleo", "formato.js");
+  const LOG = emT("avc", "persistencia", "log.js");
+  const opc = (e, campo, rotulo) => reg(e, campo, CAMPO.valorDaOpcao(rotulo));
+  const adulta = (gestacao) => opc(opc(vazio, "faixa_etaria", "18 anos ou mais"), "gestacao_puerperio", gestacao);
+  /**
+   * ⚠️ Decisão do autor (2026-09-14, antes do commit): data E hora do parto, com a hora CONFIRMADA na pergunta
+   * separada; tempo decorrido até a ABERTURA do atendimento (`abertoEm`, congelada) ≤ 14×24 h. Ajuste de instrumento: o
+   * helper registra também «Sim» na hora conhecida — sem ela, a leitura é informação incompleta.
+   */
+  const parto = (e, dias) => reg(reg(e, "data_do_parto", FMT.deslocarDias(vazio.abertoEm, -dias)), "parto_hora_conhecida", CAMPO.valorDaOpcao("Sim"));
+  const pop = (e) => POP?.estadoDaPopulacao?.(e);
+  const pu = (e) => POP?.leituraDoPuerperio?.(e);
+  const retido = (e) => pop(e)?.estado !== "adulto_validado" && POP?.exibeDosePorPeso?.(e) === false
+    && POP?.superficieRetidaPeloPortao?.(e, "reperfusao") === true;
+
+  const campo = PAC?.TODOS_OS_CAMPOS_P?.find((c) => c.id === "data_do_parto");
+  conf("AC-03r · campo `data_do_parto` (data e hora, do paciente), que só aparece para «Puérpera»",
+    campo?.tipo === "hora" && campo?.escopo === "global" && campo?.apareceQuando?.campo === "gestacao_puerperio"
+      && (campo?.apareceQuando?.valor === "Puérpera" || (campo?.apareceQuando?.algumDe ?? []).includes("Puérpera")), `⛔ ${JSON.stringify(campo)}`);
+
+  const d13 = parto(adulta("Puérpera"), 13);
+  const d14 = parto(adulta("Puérpera"), 14);
+  const d15 = parto(adulta("Puérpera"), 15);
+  conf("AC-03r · 13 dias após o parto → dentro da janela local: fora do escopo validado (encaminhar)",
+    pu(d13)?.estado === "dentro_da_janela_local" && pu(d13)?.dias === 13 && pop(d13)?.estado === "fora_do_escopo"
+      && pop(d13)?.motivos.includes("puerpera") && retido(d13), `⛔ ${JSON.stringify([pu(d13), pop(d13)])}`);
+  conf("AC-03r · exatamente 14 dias → ainda dentro («até 14 dias»)",
+    pu(d14)?.estado === "dentro_da_janela_local" && pu(d14)?.dias === 14 && pop(d14)?.estado === "fora_do_escopo" && retido(d14),
+    `⛔ ${JSON.stringify([pu(d14), pop(d14)])}`);
+  conf("AC-03r · 15 dias → além da janela local: o portão ⛔ retém por puerpério",
+    pu(d15)?.estado === "alem_da_janela_local" && pu(d15)?.dias === 15 && pop(d15)?.estado === "adulto_validado"
+      && POP?.exibeDosePorPeso?.(d15) === true, `⛔ ${JSON.stringify([pu(d15), pop(d15)])}`);
+
+  /* Decisão do autor · fronteira por tempo decorrido (≤ 14×24 h), a mesma com a abertura em qualquer hora do dia */
+  const MIN = 60_000;
+  const DIA = 24 * H;
+  for (const [h, m] of [[10, 0], [0, 30], [23, 50]]) {
+    const abertura = new Date(2026, 8, 14, h, m).getTime();
+    const relA = R.relogioControlado(abertura);
+    const regA = (e, campo, valor) => E.registrarFato(e, { campo, valor }, relA);
+    const caso = (delta) => {
+      let e = E.abrirAtendimento(relA);
+      e = regA(e, "faixa_etaria", CAMPO.valorDaOpcao("18 anos ou mais"));
+      e = regA(e, "gestacao_puerperio", CAMPO.valorDaOpcao("Puérpera"));
+      e = regA(e, "data_do_parto", abertura - delta);
+      return regA(e, "parto_hora_conhecida", CAMPO.valorDaOpcao("Sim"));
+    };
+    const saidas = [13 * DIA + 23 * 60 * MIN + 59 * MIN, 14 * DIA, 14 * DIA + MIN, 15 * DIA].map((d) => [pu(caso(d))?.estado, pop(caso(d))?.estado]);
+    conf(`⚠️ AC-03r · fronteira (abertura ${h}:${String(m).padStart(2, "0")}): 13d23:59 dentro · 14 d exatos dentro · 14 d + 1 min além · 15 d além`,
+      JSON.stringify(saidas) === JSON.stringify([
+        ["dentro_da_janela_local", "fora_do_escopo"], ["dentro_da_janela_local", "fora_do_escopo"],
+        ["alem_da_janela_local", "adulto_validado"], ["alem_da_janela_local", "adulto_validado"],
+      ]), `⛔ ${JSON.stringify(saidas)}`);
+  }
+
+  /* Decisão do autor · hora do parto: só «Sim» usa a hora; «Não, só a data», «Não sei» ⛔ sem resposta = incompleta */
+  const soData = (resposta) => {
+    const e = reg(adulta("Puérpera"), "data_do_parto", FMT.deslocarDias(vazio.abertoEm, -30));
+    return resposta === undefined ? e : reg(e, "parto_hora_conhecida", CAMPO.valorDaOpcao(resposta));
+  };
+  const campoHora = PAC?.TODOS_OS_CAMPOS_P?.find((c) => c.id === "parto_hora_conhecida");
+  conf("⚠️ AC-03r · pergunta separada «Hora do parto conhecida?» (Sim · Não, só a data · Não sei), só para «Puérpera»",
+    campoHora?.tipo === "escolha" && campoHora?.escopo === "global" && JSON.stringify(campoHora?.opcoes) === JSON.stringify(["Sim", "Não, só a data", CAMPO.NAO_SEI])
+      && campoHora?.apareceQuando?.campo === "gestacao_puerperio", `⛔ ${JSON.stringify(campoHora)}`);
+  for (const [nome, resposta] of [["«Não, só a data»", "Não, só a data"], ["«Não sei»", CAMPO.NAO_SEI], ["sem resposta", undefined]]) {
+    const e = soData(resposta);
+    conf(`⚠️ AC-03r · data de 30 dias com hora ${nome} → hora desconhecida: ⛔ assume horário, retém ⛔ e fica pendente`,
+      pu(e)?.estado === "hora_desconhecida" && pu(e)?.dias === undefined && retido(e)
+        && (pop(e)?.faltam ?? []).includes("parto_hora_conhecida"),
+      `⛔ ${JSON.stringify([pu(e), pop(e)])}`);
+  }
+
+  const semData = adulta("Puérpera");
+  const dataNaoSei = reg(adulta("Puérpera"), "data_do_parto", "nao_sei");
+  conf("AC-03r · C8 · data do parto não registrada → desconhecida; ⛔ assume >14 dias ⛔ libera o protocolo adulto",
+    pu(semData)?.estado === "data_desconhecida" && pu(semData)?.dias === undefined && retido(semData), `⛔ ${JSON.stringify([pu(semData), pop(semData)])}`);
+  conf("AC-03r · C8 · data do parto «não sei» → desconhecida, com a mesma retenção",
+    pu(dataNaoSei)?.estado === "data_desconhecida" && pu(dataNaoSei)?.dias === undefined && retido(dataNaoSei),
+    `⛔ ${JSON.stringify([pu(dataNaoSei), pop(dataNaoSei)])}`);
+  conf("… a data desconhecida é nomeada entre o que falta",
+    (pop(semData)?.faltam ?? []).includes("data_do_parto") && (pop(dataNaoSei)?.faltam ?? []).includes("data_do_parto"),
+    `⛔ ${JSON.stringify([pop(semData)?.faltam, pop(dataNaoSei)?.faltam])}`);
+
+  const gestacaoNaoSei = parto(adulta(CAMPO.NAO_SEI), 30);
+  conf("AC-03r · gestação/puerpério «não sei» → pergunta pendente, ⛔ liberado — nem com data do parto antiga registrada",
+    pop(gestacaoNaoSei)?.estado === "pergunta_pendente" && retido(gestacaoNaoSei) && pu(gestacaoNaoSei)?.estado === "nao_se_aplica",
+    `⛔ ${JSON.stringify([pu(gestacaoNaoSei), pop(gestacaoNaoSei)])}`);
+
+  /* Persistência e retomada: o log reconstrói a mesma leitura; ⛔ o relógio de agora ⛔ entra na conta */
+  let seq = 0;
+  let idN = 0;
+  const ctx = () => ({ casoId: "caso-ac03r", autor: "local:prova", agora: rel.agora(), proximoSeq: () => ++seq, gerarId: () => `ev-${++idN}` });
+  const gravar = (passos) => {
+    let est = vazio;
+    const eventos = [...(LOG?.eventosDeAbertura?.(est, ctx()) ?? [])];
+    for (const p of passos) {
+      const prox = p(est);
+      eventos.push(...(LOG?.eventosDaTransicao?.(est, prox, ctx()) ?? []));
+      est = prox;
+    }
+    return { est, rec: LOG?.reconstruirEstado?.(JSON.parse(JSON.stringify(eventos))) };
+  };
+  const inicio = [(e) => opc(e, "faixa_etaria", "18 anos ou mais"), (e) => opc(e, "gestacao_puerperio", "Puérpera")];
+  const casos = [
+    ["dentro_da_janela_local", gravar([...inicio, (e) => parto(e, 13)])],
+    ["alem_da_janela_local", gravar([...inicio, (e) => parto(e, 15)])],
+    ["data_desconhecida", gravar([...inicio, (e) => reg(e, "data_do_parto", "nao_sei")])],
+  ];
+  const leituraDe = (e) => JSON.stringify([pu(e), pop(e)]);
+  conf("AC-03r · persistência e retomada: 13 d, 15 d e data «não sei» voltam do log com a mesma leitura e o mesmo portão",
+    casos.every(([esperado, { est, rec }]) => rec !== undefined && pu(rec)?.estado === esperado && leituraDe(rec) === leituraDe(est) && rec.abertoEm === est.abertoEm),
+    `⛔ ${JSON.stringify(casos.map(([e, { rec }]) => [e, rec && pu(rec)]))}`);
+  const agoraReal = Date.now;
+  Date.now = () => AGORA + 10 * 24 * H;
+  const dezDiasDepois = casos.map(([, { rec }]) => rec && leituraDe(rec));
+  Date.now = agoraReal;
+  conf("… retomar o caso 10 dias depois ⛔ empurra os 13 dias para fora da janela (a conta é da abertura do atendimento)",
+    JSON.stringify(dezDiasDepois) === JSON.stringify(casos.map(([, { rec }]) => rec && leituraDe(rec))) && pu(casos[0][1].rec)?.dias === 13,
+    `⛔ ${JSON.stringify(dezDiasDepois)}`);
+
+  /* C8: os 14 dias são regra local — ⛔ nenhum texto os atribui à AHA/ASA */
+  const telaPortao = lerFonte(path.join(appDir, "components", "avc", "portao-de-populacao.tsx"));
+  const textos = [
+    lerFonte(path.join(appDir, "avc", "conteudo", "paciente.ts")),
+    lerFonte(path.join(appDir, "avc", "nucleo", "populacao.ts")),
+    telaPortao,
+    lerFonte(path.join(appDir, "lib", "i18n", "modules", "avc-modulo.ts")),
+  ].join("\n");
+  /**
+   * ⚠️ Ajuste de instrumento (antes de implementar): a primeira versão reprovava QUALQUER «AHA» junto dos 14 dias, e
+   * isso proibiria a própria rotulagem pedida («regra local, não AHA/ASA»). Reprova-se a ATRIBUIÇÃO, ⛔ a negação.
+   */
+  const atribui = /fonte\s+(da\s+)?AHA|AHA\s*(\/ASA\s*)?(19|20)\d\d|(segundo|conforme|pela|recomendad[ao]\s+pela)\s+(a\s+)?AHA|a confirmar na Table 8|a confirmar en la Table 8|fuente AHA/i;
+  const frases = textos.match(/"[^"\n]*(14 dias|14 días)[^"\n]*"/g) ?? [];
+  conf("AC-03r · C8 · ⛔ nenhum texto atribui os 14 dias à AHA/ASA (nem «a confirmar na Table 8»)",
+    frases.length > 0 && frases.every((f) => !atribui.test(f)), `⛔ ${frases.filter((f) => atribui.test(f)).join(" | ")}`);
+  const nota = PAC?.TODOS_OS_CAMPOS_P?.find((c) => c.id === "gestacao_puerperio")?.nota ?? "";
+  const procedencia = PAC?.PROCEDENCIA_DA_JANELA_DO_PUERPERIO ?? "";
+  /**
+   * ⚠️ Pedido do autor (2026-09-14, antes do commit do AC-03r): puérpera com a data do parto necessária ⛔ resolvida
+   * aparece como PENDÊNCIA na fase Paciente — ⛔ «Nada pendente aqui».
+   */
+  const PA = emT("avc", "nucleo", "problemas-ativos.js");
+  const pendenteNoPaciente = (e) => (PA?.problemasAtivos?.(e) ?? []).some((p) => p.dono === "paciente" && p.campo === "data_do_parto");
+  const noCaso = (e) => (PA?.pendenciasDoCaso?.(e) ?? []).some((p) => p.campo === "data_do_parto" && p.dono === "paciente");
+  conf("⚠️ AC-03r · puérpera + data do parto ausente → pendência visível na fase Paciente",
+    pendenteNoPaciente(semData) && noCaso(semData), `⛔ ${JSON.stringify((PA?.pendenciasDoCaso?.(semData) ?? []).map((p) => [p.dono, p.campo]))}`);
+  conf("⚠️ AC-03r · puérpera + data do parto «não sei» → pendência visível", pendenteNoPaciente(dataNaoSei) && noCaso(dataNaoSei), "⛔");
+  conf("… data válida fora da janela (15 d) → pendência resolvida; dentro (13 d) também ⛔ pede a data",
+    !pendenteNoPaciente(d15) && !noCaso(d15) && !pendenteNoPaciente(d13) && !noCaso(d13), "⛔");
+  const naoPuerpera = adulta("Não gestante e não puérpera");
+  const pendenteHora = (e) => (PA?.pendenciasDoCaso?.(e) ?? []).some((p) => p.campo === "parto_hora_conhecida" && p.dono === "paciente");
+  conf("⚠️ AC-03r · hora do parto «Não, só a data» ⛔ sem resposta → pendência visível; «Sim» resolve",
+    pendenteHora(soData("Não, só a data")) && pendenteHora(soData(undefined)) && !pendenteHora(soData("Sim")) && !pendenteHora(d15), "⛔");
+  conf("… paciente ⛔ puérpera (nem gestante, nem «não sei») → ⛔ cria pendência de data do parto",
+    !noCaso(naoPuerpera) && !noCaso(adulta("Gestante")) && !noCaso(adulta(CAMPO.NAO_SEI)) && !pendenteNoPaciente(naoPuerpera), "⛔");
+
+  conf("… a janela é dita REGRA LOCAL: na procedência, na nota da pergunta, na nota da data e no texto do portão",
+    /regra local/i.test(procedencia) && !/AHA/.test(procedencia) && /regra local/i.test(nota) && /regra local/i.test(campo?.nota ?? "")
+      && /14 dias após o parto[^"]*regra local/i.test(telaPortao),
+    `⛔ ${JSON.stringify({ procedencia, nota, notaData: campo?.nota })}`);
 }
 
 console.log(`\nprova-avc-rodada19: ${ok} ok · ${falhas} falha(s)`);

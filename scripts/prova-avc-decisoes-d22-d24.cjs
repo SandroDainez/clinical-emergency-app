@@ -137,11 +137,16 @@ conf("D-PEND-23 · o título do estado na tela diz «Requer avaliação especial
 
 /* ══ D-PEND-24 · puerpério ═════════════════════════════════════════════════ */
 conf("D-PEND-24 · a janela é 14 dias pós-parto", PAC.JANELA_DO_PUERPERIO_DIAS === 14, `⛔ ${PAC.JANELA_DO_PUERPERIO_DIAS}`);
-conf("D-PEND-24 · marcação «fonte AHA 2019, a confirmar na Table 8 de 2026»",
-  PAC.PROCEDENCIA_DA_JANELA_DO_PUERPERIO === "fonte AHA 2019, a confirmar na Table 8 de 2026", `⛔ ${PAC.PROCEDENCIA_DA_JANELA_DO_PUERPERIO}`);
+/**
+ * ⚠️ Ajuste consciente (19ª rodada, AC-03r · C8, autor 2026-09-14): a marcação «fonte AHA 2019, a confirmar na Table 8
+ * de 2026» foi REVOGADA — os 14 dias são regra local do projeto. A conferência passa a exigir a regra local ⛔ e a
+ * reprovar a atribuição antiga.
+ */
+conf("D-PEND-24 · C8 · procedência da janela: regra local do projeto, ⛔ «fonte AHA 2019»",
+  /regra local/.test(PAC.PROCEDENCIA_DA_JANELA_DO_PUERPERIO) && !/AHA 2019|Table 8/.test(PAC.PROCEDENCIA_DA_JANELA_DO_PUERPERIO), `⛔ ${PAC.PROCEDENCIA_DA_JANELA_DO_PUERPERIO}`);
 const gp = PAC.TODOS_OS_CAMPOS_P.find((c) => c.id === "gestacao_puerperio");
-conf("D-PEND-24 · a pergunta do portão diz a janela e a marcação",
-  gp !== undefined && /14 dias/.test(`${gp.rotulo} ${gp.nota}`) && /AHA 2019/.test(gp.nota) && /Table 8 de 2026/.test(gp.nota), `⛔ ${JSON.stringify(gp)}`);
+conf("D-PEND-24 · C8 · a pergunta do portão diz a janela e que ela é regra local",
+  gp !== undefined && /14 dias/.test(`${gp.rotulo} ${gp.nota}`) && /regra local/.test(gp.nota) && !/AHA 2019|a confirmar na Table 8/.test(gp.nota), `⛔ ${JSON.stringify(gp)}`);
 const telaPortao = lerFonte(path.join(appDir, "components", "avc", "portao-de-populacao.tsx"));
 conf("D-PEND-24 · o texto do portão pendente diz «até 14 dias após o parto»", /até 14 dias após o parto/.test(telaPortao), "⛔");
 const caso = (g) => {

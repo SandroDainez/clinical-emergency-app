@@ -84,6 +84,10 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   /** ⚠️ AC-03: a população do caso decide o portão da entrada — ⛔ e nada mais. */
   faixa_etaria: ["populacao.ts"],
   gestacao_puerperio: ["populacao.ts"],
+  /** ⚠️ AC-03r, C8: a data do parto decide a janela local de 14 dias do portão — ⛔ e nada mais. */
+  data_do_parto: ["populacao.ts"],
+  /** ⚠️ AC-03r (decisão do autor): só a hora confirmada entra na conta da janela. */
+  parto_hora_conhecida: ["populacao.ts"],
 
   /**
    * ── ⚠️⚠️ ⛔ A TRAVA PEGOU O MEU PRÓPRIO CÓDIGO (2026-09-07) ──────────────

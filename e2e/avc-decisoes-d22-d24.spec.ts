@@ -114,7 +114,9 @@ test.describe("AVC · D-PEND-24 · puerpério 14 dias", () => {
     /** ⚠️ 8ª rodada: a marcação da fonte fica no ⓘ do campo, ⛔ não no card. */
     await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("a confirmar");
     await page.getByTestId("avc-info-gestacao_puerperio").click();
-    await expect(page.getByTestId("avc-portao-populacao")).toContainText("AHA 2019, a confirmar na Table 8 de 2026");
+    /** ⚠️ Ajuste consciente (19ª rodada, AC-03r · C8): a marcação revogada deu lugar à regra local do projeto. */
+    await expect(page.getByTestId("avc-portao-populacao")).toContainText("regra local do projeto");
+    await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("AHA 2019");
     await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("10 dias");
     await page.getByTestId("avc-opcao-faixa_etaria-18 anos ou mais").click();
     await page.getByTestId("avc-opcao-gestacao_puerperio-nao_sei").click();

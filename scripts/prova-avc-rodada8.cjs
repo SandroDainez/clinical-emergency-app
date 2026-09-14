@@ -123,7 +123,8 @@ const perguntaPortao = (telaPortao.match(/"Antes do protocolo:[^"]*"/) || [""])[
 conf("portão · a pergunta do card ⛔ carrega procedência ⛔ nem «Não sei mantém a pergunta»",
   perguntaPortao !== "" && !PROIBIDAS.test(perguntaPortao) && !/Não sei mantém a pergunta/.test(perguntaPortao), `⛔ ${perguntaPortao}`);
 const gp = PAC.TODOS_OS_CAMPOS_P.find((c) => c.id === "gestacao_puerperio");
-conf("portão · a marcação da fonte dos 14 dias segue no ⓘ (nota do campo)", gp && /AHA 2019/.test(gp.nota), `⛔ ${gp && gp.nota}`);
+/** ⚠️ Ajuste consciente (19ª rodada, AC-03r · C8): a marcação dos 14 dias passou a «regra local do projeto» — ⛔ «AHA 2019». */
+conf("portão · a marcação dos 14 dias (regra local) segue no ⓘ (nota do campo)", gp && /regra local/.test(gp.nota) && !/AHA 2019/.test(gp.nota), `⛔ ${gp && gp.nota}`);
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · 8ª RODADA — ${ok} verde(s) · ${falhas} vermelho(s)`);
 process.exit(falhas === 0 ? 0 : 1);

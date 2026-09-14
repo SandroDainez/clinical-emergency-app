@@ -9,11 +9,13 @@
  */
 import { StyleSheet, Text, View } from "react-native";
 
+import { campoAparece } from "../../avc/conteudo/campo";
 import { GRUPOS_P } from "../../avc/conteudo/paciente";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import {
   MENSAGEM_FORA_DO_ESCOPO,
   estadoDaPopulacao,
+  leituraDoPuerperio,
   type MotivoForaDoEscopo,
 } from "../../avc/nucleo/populacao";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -43,7 +45,10 @@ export default function PortaoDePopulacao({ estado, agora, onEscolher, onMedir, 
   const e = useEstilosDoTema(criarEstilos);
   const detalhes = useDetalhes();
   const leitura = estadoDaPopulacao(estado);
-  const campos = GRUPOS_P.find((g) => g.id === "populacao")?.campos ?? [];
+  const puerperio = leituraDoPuerperio(estado);
+  /** ⚠️ AC-03r: a data do parto só aparece para «Puérpera» — a mesma condição da tela Paciente. */
+  const campos = (GRUPOS_P.find((g) => g.id === "populacao")?.campos ?? [])
+    .filter((campo) => campoAparece(campo, (c) => valorAtual(estado, c)?.valor));
 
   return (
     <View style={e.raiz} testID="avc-portao-populacao">
@@ -53,10 +58,26 @@ export default function PortaoDePopulacao({ estado, agora, onEscolher, onMedir, 
           <Text style={e.foraMotivo}>
             {leitura.motivos.map((m) => tr(ROTULO_DO_MOTIVO[m])).join(" · ")}
           </Text>
+          {/** ⚠️ AC-03r, C8: a janela é dita regra local, com os dias ⛔ com a data desconhecida nomeada. */}
+          {leitura.motivos.includes("puerpera") && puerperio.estado === "dentro_da_janela_local" ? (
+            <Text style={e.foraMotivo} testID="avc-portao-puerperio-dias">
+              {puerperio.dias} {tr("dias após o parto — dentro da janela de 14 dias, regra local do projeto")}
+            </Text>
+          ) : null}
+          {leitura.motivos.includes("puerpera") && puerperio.estado === "hora_desconhecida" ? (
+            <Text style={e.foraMotivo} testID="avc-portao-puerperio-hora-desconhecida">
+              {tr("hora do parto desconhecida — a janela local de 14 dias não foi calculada")}
+            </Text>
+          ) : null}
+          {leitura.motivos.includes("puerpera") && puerperio.estado === "data_desconhecida" ? (
+            <Text style={e.foraMotivo} testID="avc-portao-puerperio-desconhecida">
+              {tr("data do parto desconhecida — a janela local de 14 dias não foi calculada")}
+            </Text>
+          ) : null}
         </View>
       ) : (
         <Text style={e.pergunta} testID="avc-portao-pergunta-pendente">
-          {tr("Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto).")}
+          {tr("Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto — regra local do projeto, não recomendação da AHA/ASA).")}
         </Text>
       )}
       {campos.map((campo) => (

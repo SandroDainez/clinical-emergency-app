@@ -79,3 +79,89 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
     await expect(page.getByTestId("avc-f-julgamento-doac-nao-prosseguir")).toHaveText("No continuar");
   });
 });
+
+/**
+ * AC-03r (autor, 2026-09-14; `docs/decisoes.md` §7 e C8): data do parto e janela operacional LOCAL de 14 dias.
+ * ⚠️ O seletor de data é tolerante a ±1 dia aqui (13 ⛔ 14 retêm; 15 ⛔ 16 liberam); os limites exatos são da prova.
+ */
+async function puerperaNoPortao(page: Page) {
+  await fixarIdioma(page, "pt-BR");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/modulos/avc");
+  await page.getByTestId("avc-opcao-faixa_etaria-18 anos ou mais").click();
+  await page.getByTestId("avc-opcao-gestacao_puerperio-Puérpera").click();
+  await expect(page.getByTestId("avc-campo-data_do_parto")).toBeVisible();
+}
+
+async function partoHaDias(page: Page, dias: number) {
+  await page.getByTestId("avc-hora-data_do_parto").click();
+  await expect(page.getByTestId("avc-seletor-hora")).toBeVisible();
+  await page.getByTestId("avc-seletor-data-escolher").click();
+  for (let i = 0; i < dias; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
+  /**
+   * ⚠️ Ajuste de instrumento (depois de implementar): mover só o dia ⛔ seleciona o valor, e «Confirmar» fica inativo.
+   * O gesto real toca a hora — o mesmo que `e2e/avc-controle-de-data` faz para o DOAC.
+   */
+  await page.getByTestId("avc-seletor-hora-h-menos").click();
+  await page.getByTestId("avc-seletor-hora-confirmar").click();
+  /** ⚠️ Decisão do autor: a hora só vale confirmada na pergunta separada. */
+  await page.getByTestId("avc-opcao-parto_hora_conhecida-sim").click();
+}
+
+test.describe("AVC · 19ª rodada · AC-03r · data do parto e janela local de 14 dias", () => {
+  test("13 dias: fora do escopo, e a janela é dita regra local — ⛔ AHA", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await partoHaDias(page, 13);
+    const fora = page.getByTestId("avc-portao-fora-do-escopo");
+    await expect(fora).toContainText("Fora do escopo validado — encaminhar");
+    await expect(page.getByTestId("avc-portao-populacao")).toContainText("regra local");
+    /** ⚠️ Ajuste de instrumento (antes de implementar): reprova a atribuição, ⛔ a rotulagem «não é recomendação da AHA/ASA». */
+    await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("AHA 2019");
+    await expect(page.getByTestId("avc-portao-populacao")).not.toContainText("fonte AHA");
+  });
+
+  test("15 dias: a janela local não retém; ⛔ muda ao fechar e reabrir o caso", async ({ page, context }) => {
+    await puerperaNoPortao(page);
+    await partoHaDias(page, 15);
+    await expect(page.getByTestId("avc-portao-populacao")).toHaveCount(0);
+
+    const outra = await context.newPage();
+    await page.close();
+    await fixarIdioma(outra, "pt-BR");
+    await outra.goto("/modulos/avc");
+    await expect(outra.getByTestId("avc-caso-recuperado")).toBeVisible({ timeout: 30_000 });
+    await expect(outra.getByTestId("avc-portao-populacao")).toHaveCount(0);
+  });
+
+  /** ⚠️ Pedido do autor (antes do commit do AC-03r): a data necessária ⛔ resolvida é pendência — ⛔ «Nada pendente aqui». */
+  test("puérpera sem data e com «Sem essa informação»: o cabeçalho do Paciente mostra a pendência", async ({ page }) => {
+    await puerperaNoPortao(page);
+    const cabecalho = page.getByTestId("avc-fase-pendentes");
+    await expect(cabecalho).toContainText("a resolver aqui");
+    await expect(cabecalho).not.toContainText("Nada pendente aqui");
+    await page.getByTestId("avc-hora-desconhecido-data_do_parto").click();
+    await expect(cabecalho).toContainText("a resolver aqui");
+  });
+
+  /** ⚠️ Decisão do autor: data sem hora ⛔ assume horário — retém ⛔ e fica pendente. */
+  test("15 dias com hora «Não, só a data»: ⛔ libera, e a pendência aparece", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await page.getByTestId("avc-hora-data_do_parto").click();
+    await page.getByTestId("avc-seletor-data-escolher").click();
+    for (let i = 0; i < 15; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
+    await page.getByTestId("avc-seletor-hora-h-menos").click();
+    await page.getByTestId("avc-seletor-hora-confirmar").click();
+    await page.getByTestId("avc-opcao-parto_hora_conhecida-Não, só a data").click();
+    await expect(page.getByTestId("avc-portao-fora-do-escopo")).toContainText("hora do parto desconhecida");
+    await expect(page.getByTestId("avc-fase-pendentes")).toContainText("a resolver aqui");
+  });
+
+  test("data do parto desconhecida: ⛔ libera o protocolo adulto", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await page.getByTestId("avc-hora-desconhecido-data_do_parto").click();
+    await expect(page.getByTestId("avc-portao-fora-do-escopo")).toContainText("data do parto desconhecida");
+    await page.getByTestId("avc-aba-reperfusao").click();
+    await expect(page.getByTestId("avc-portao-populacao")).toBeVisible();
+    await expect(page.getByTestId("avc-f-raia-ivt")).toHaveCount(0);
+  });
+});

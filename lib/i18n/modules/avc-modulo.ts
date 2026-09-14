@@ -2075,9 +2075,31 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "O módulo foi escrito para adultos. Menos de 18 anos está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
     "El módulo fue escrito para adultos. Menos de 18 años está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
   // ── D-PEND-24 (2026-09-13): janela do puerpério ─────────────────────────
-  "Gestante ou puérpera (até 14 dias após o parto — fonte AHA 2019, a confirmar na Table 8 de 2026) está fora do escopo validado: encaminhar. Não sei mantém a pergunta.":
-    "Embarazada o puérpera (hasta 14 días después del parto — fuente AHA 2019, a confirmar en la Table 8 de 2026) está fuera del alcance validado: derivar. No sé mantiene la pregunta.",
-  "fonte AHA 2019, a confirmar na Table 8 de 2026": "fuente AHA 2019, a confirmar en la Table 8 de 2026",
+  // ── AC-03r · C8 (2026-09-14): data do parto e janela local de 14 dias ───
+  "Gestante, ou puérpera até 14 dias após o parto, está fora do escopo validado: encaminhar. Os 14 dias são regra local do projeto, não recomendação da AHA/ASA. Não sei mantém a pergunta.":
+    "Embarazada, o puérpera hasta 14 días después del parto, está fuera del alcance validado: derivar. Los 14 días son una regla local del proyecto, no una recomendación de la AHA/ASA. No sé mantiene la pregunta.",
+  "regra local do projeto (D-PEND-24 e C8)": "regla local del proyecto (D-PEND-24 y C8)",
+  "Data do parto": "Fecha del parto",
+  "O tempo conta da data e hora do parto até a abertura do atendimento. Até 14 dias (14 × 24 h), fora do escopo validado: encaminhar — regra local do projeto, não recomendação da AHA/ASA. Data desconhecida não libera o protocolo adulto.":
+    "El tiempo se cuenta desde la fecha y hora del parto hasta la apertura de la atención. Hasta 14 días (14 × 24 h), fuera del alcance validado: derivar — regla local del proyecto, no una recomendación de la AHA/ASA. Una fecha desconocida no libera el protocolo adulto.",
+  "Hora do parto conhecida?": "¿Hora del parto conocida?",
+  "Não, só a data": "No, solo la fecha",
+  "Só «Sim» usa a hora registrada com a data do parto. Sem a hora confirmada, a janela local de 14 dias não é calculada e nenhum horário é assumido.":
+    "Solo «Sí» usa la hora registrada con la fecha del parto. Sin la hora confirmada, la ventana local de 14 días no se calcula y no se asume ningún horario.",
+  "hora do parto desconhecida — a janela local de 14 dias não foi calculada":
+    "hora del parto desconocida — la ventana local de 14 días no se calculó",
+  "Hora do parto de puérpera ainda sem confirmação que decida o portão":
+    "Hora del parto de puérpera aún sin confirmación que decida el portón",
+  "Registrar se a hora do parto é conhecida; sem a hora, a janela local de 14 dias não é calculada e o protocolo adulto não é liberado":
+    "Registrar si la hora del parto es conocida; sin la hora, la ventana local de 14 días no se calcula y el protocolo adulto no se libera",
+  "dias após o parto — dentro da janela de 14 dias, regra local do projeto":
+    "días después del parto — dentro de la ventana de 14 días, regla local del proyecto",
+  "data do parto desconhecida — a janela local de 14 dias não foi calculada":
+    "fecha del parto desconocida — la ventana local de 14 días no se calculó",
+  "Data do parto de puérpera ainda sem resposta que decida o portão":
+    "Fecha del parto de puérpera aún sin respuesta que decida el portón",
+  "Registrar a data do parto; sem ela, a janela local de 14 dias não é calculada e o protocolo adulto não é liberado":
+    "Registrar la fecha del parto; sin ella, la ventana local de 14 días no se calcula y el protocolo adulto no se libera",
   "Fora do escopo validado — encaminhar": "Fuera del alcance validado — derivar",
   // ── Persistência do atendimento (AC-02 · D-PEND-02 · D-PEND-03) ───────────
   "Abrindo o registro local do atendimento…": "Abriendo el registro local de la atención…",
@@ -2104,8 +2126,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Escopo populacional do módulo — adulto, não gestante, não puérpera; fora dele, encaminhar":
     "Alcance poblacional del módulo — adulto, no embarazada, no puérpera; fuera de él, derivar",
   "Temperatura no AVC isquêmico agudo (§4.4)": "Temperatura en el ACV isquémico agudo (§4.4)",
-  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto).":
-    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas (hasta 14 días después del parto).",
+  "Antes do protocolo: este módulo foi escrito para adulto, não gestante e não puérpera (até 14 dias após o parto — regra local do projeto, não recomendação da AHA/ASA).":
+    "Antes del protocolo: este módulo fue escrito para adultos, no embarazadas y no puérperas (hasta 14 días después del parto — regla local del proyecto, no una recomendación de la AHA/ASA).",
   // ── barra de fases: continuidade (2026-09-13) ───────────────────────────
   "Mais fases": "Más fases",
   "Fases anteriores": "Fases anteriores",
