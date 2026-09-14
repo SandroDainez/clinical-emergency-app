@@ -807,6 +807,25 @@ export function usaVarfarinaOuHeparina(estado: EstadoAvc): boolean {
 /** ⚠️ Os exames que a frase da Table 8 chama de *"coagulation test results"*. */
 const TESTES_DE_COAGULACAO = ["inr", "aptt", "tp"] as const;
 
+/**
+ * ⚠️ D-139-2, C6 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §3): os exames PERTINENTES ao anticoagulante
+ * registrado — ⛔ INR + PT + aPTT de todos. VKA/varfarina: INR. Heparina: o campo junta HNF ⛔ HBPM, ⛔ a regra por
+ * agente, dose ⛔ horário ⛔ tem fonte (Lote 2) — mantém INR, PT ⛔ aPTT até a decisão. DOAC: regra própria, fora daqui.
+ */
+export function examesPertinentesDeCoagulacao(estado: EstadoAvc): readonly string[] {
+  const marcados = selecaoDe(estado, "anticoagulante_em_uso");
+  const pertinentes = new Set<string>();
+  if (marcados.includes(ANTICOAGULANTE.varfarina)) pertinentes.add("inr");
+  if (marcados.includes(ANTICOAGULANTE.heparina)) for (const t of TESTES_DE_COAGULACAO) pertinentes.add(t);
+  return [...pertinentes];
+}
+
+/** ⚠️ Só VKA registrado (sem heparina): o texto diz o exame pertinente, ⛔ "exames de coagulação". */
+function soVka(estado: EstadoAvc): boolean {
+  const marcados = selecaoDe(estado, "anticoagulante_em_uso");
+  return marcados.includes(ANTICOAGULANTE.varfarina) && !marcados.includes(ANTICOAGULANTE.heparina);
+}
+
 export function impedimentosDeSeguranca(estado: EstadoAvc): readonly ImpedimentoDeSeguranca[] {
   const lista: ImpedimentoDeSeguranca[] = [];
   const rotuloDe = (campo: string) => campoDoModulo(campo)?.rotulo ?? campo;
@@ -857,9 +876,8 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
     const juizoRespondido =
       fatoDoJuizo !== undefined && String(fatoDoJuizo.valor) !== "nao_perguntado";
     const suspeita = ternario(estado, "motivo_para_suspeitar_alteracao_coagulacao");
-    const coagulacaoPendente = naoColhidos.some((c) =>
-      (TESTES_DE_COAGULACAO as readonly string[]).includes(c.id)
-    );
+    const pertinentes = examesPertinentesDeCoagulacao(estado);
+    const coagulacaoPendente = naoColhidos.some((c) => pertinentes.includes(c.id));
 
     if (usaVarfarinaOuHeparina(estado) && coagulacaoPendente) {
       /** ⚠️ Table 8: a permissão de iniciar antes do resultado é ⛔ só *"without recent use of warfarin or heparin"*. */
@@ -896,9 +914,11 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
          * registradas, este ramo só é alcançado com INR, TP ⛔ e TTPa já registrados —
          * ⛔ e o texto ⛔ pode dizer que ⛔ não há anticoagulante.
          */
-        dado: usaVarfarinaOuHeparina(estado)
-          ? "Sem motivo para suspeitar; varfarina ou heparina registradas, com os exames de coagulação já registrados"
-          : "Sem motivo para suspeitar; sem varfarina ou heparina registradas",
+        dado: soVka(estado)
+          ? "Sem motivo para suspeitar; antagonista da vitamina K registrado, com o INR já registrado"
+          : usaVarfarinaOuHeparina(estado)
+            ? "Sem motivo para suspeitar; varfarina ou heparina registradas, com os exames de coagulação já registrados"
+            : "Sem motivo para suspeitar; sem varfarina ou heparina registradas",
         fonte: "F-10",
         oQueFalta: "Suspender se o resultado vier alterado pelos cortes da fonte",
         leva: "laboratorio",

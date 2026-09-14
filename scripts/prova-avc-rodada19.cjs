@@ -10,9 +10,10 @@
  *    déficit que falta; «Incapacitante» continua sustentando.
  *  · AC-06 (C5): a tenecteplase ⛔ exibe volume ⛔ nem concentração sem documento regulatório brasileiro;
  *    dose em mg; Table 7 como conferência em mg; alteplase mantém 1 mg/mL da bula.
+ *  · D-139-2 (C6): varfarina/VKA pede só INR; heparina (HNF e HBPM no mesmo campo) sem mudança; DOAC em regra própria.
  * NÃO PROMETE: que a conduta esteja clinicamente validada; nenhum limiar novo; a tela é medida
  *   pelos e2e existentes.
- * UNIVERSO: `avc/nucleo/{veredito-da-trombolise,portao-ivt,derivacoes-f}.ts`, `avc/conteudo/{campos,superficie-f}.ts`,
+ * UNIVERSO: `avc/nucleo/{veredito-da-trombolise,portao-ivt,derivacoes-f,derivacoes-d}.ts`, `avc/conteudo/{campos,superficie-f}.ts`,
  *   `components/avc/superficie-f.tsx`.
  * FONTE: `docs/decisoes.md` — 19ª rodada (§6 D-139-4) e complemento; pacote
  *   `docs/avc/revisao/D-139-4-deficit-incapacitante.md`.
@@ -28,7 +29,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rodada19-"));
 try {
   execFileSync("npx", ["tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
     "--moduleResolution", "node", "--skipLibCheck", "--rootDir", appDir, "--outDir", tmp,
-    path.join(appDir, "avc", "nucleo", "portao-ivt.ts"), path.join(appDir, "avc", "conteudo", "campos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-f.ts")],
+    path.join(appDir, "avc", "nucleo", "portao-ivt.ts"), path.join(appDir, "avc", "conteudo", "campos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-d.ts")],
   { cwd: appDir, stdio: "pipe" });
 } catch { /* erros de tipo de dependência ⛔ impedem a emissão */ }
 const emT = (...p) => { try { return require(path.join(tmp, ...p)); } catch { return undefined; } };
@@ -112,6 +113,32 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
   conf("… a alteplase mantém 1 mg/mL (bula Actilyse I23-01, p. 7): 70 kg → 63 mL", alt(70)?.volumeMl === 63 && alt(70)?.concentracaoMgPorMl === 1, `⛔ ${JSON.stringify(alt(70))}`);
   const tela = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
   conf("… a situação regulatória da tenecteplase continua visível", /avc-f-dose-regulatorio/.test(tela), "⛔");
+}
+
+/* ══ D-139-2 · C6 · VKA/varfarina: INR como parâmetro principal ═══════════════ */
+{
+  const DD = emT("avc", "nucleo", "derivacoes-d.js");
+  const PAC = emT("avc", "conteudo", "paciente.js");
+  const L = emT("avc", "conteudo", "laboratorio.js");
+  const col = (n) => I.nomeDaInstancia(L.COLETA, n);
+  const base = () => {
+    let x = reg(vazio, "incapacitante_assumido", "Incapacitante");
+    x = reg(x, "hora_inicio_observado", AGORA - 2 * H);
+    x = tcSem(x, 1, AGORA - 1 * H);
+    return reg(x, "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+  };
+  const coag = (e) => (DD?.impedimentosDeSeguranca?.(e) ?? []).find((i) => i.id === "coagulograma");
+  const vka = reg(base(), "anticoagulante_em_uso", PAC.ANTICOAGULANTE.varfarina);
+  conf("D-139-2 · VKA sem INR → aguarda o INR (o resultado pertinente)", coag(vka)?.efeito === "impede_ate_resultado" && coag(vka)?.campo === "inr", `⛔ ${JSON.stringify(coag(vka))}`);
+  const vkaComInr = regI(vka, col(1), "inr", 1.0);
+  conf("⚠️ D-139-2 · VKA com INR registrado, SEM PT ⛔ aPTT → ⛔ aguarda PT/aPTT (teste sem pertinência ⛔ é exigido)",
+    coag(vkaComInr) === undefined, `⛔ ${JSON.stringify(coag(vkaComInr))}`);
+  const hep = reg(base(), "anticoagulante_em_uso", PAC.ANTICOAGULANTE.heparina);
+  const hepComInr = regI(hep, col(1), "inr", 1.0);
+  conf("D-139-2 · heparina (HNF e HBPM no mesmo campo) ⛔ muda nesta rodada: com INR só, continua aguardando (Lote 2 sem fonte)",
+    coag(hepComInr)?.efeito === "impede_ate_resultado", `⛔ ${JSON.stringify(coag(hepComInr))}`);
+  const doac = reg(base(), "anticoagulante_em_uso", PAC.ANTICOAGULANTE.doac);
+  conf("D-139-2 · DOAC mantém a regra própria (⛔ entra no coagulograma de VKA)", coag(doac)?.dado !== "Varfarina ou heparina em uso", `⛔ ${JSON.stringify(coag(doac))}`);
 }
 
 console.log(`\nprova-avc-rodada19: ${ok} ok · ${falhas} falha(s)`);

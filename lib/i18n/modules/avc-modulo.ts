@@ -2502,4 +2502,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Bula brasileira: contraindicada com início há mais de 4,5 h ou horário desconhecido": "Prospecto brasileño: contraindicada con inicio hace más de 4,5 h u hora desconocida",
   "Bula profissional Actilyse® (I23-01), p. 4 — contraindicação geral por alto risco de hemorragia; classificação do projeto: avaliação especializada (D-PEND-23)": "Prospecto profesional Actilyse® (I23-01), p. 4 — contraindicación general por alto riesgo de hemorragia; clasificación del proyecto: evaluación especializada (D-PEND-23)",
   "R6 · R4 (não transcritas) · AHA/ASA 2026 §5.2 rec. 1 (COR 1, C-EO), p. e389": "R6 · R4 (no transcritas) · AHA/ASA 2026 §5.2 rec. 1 (COR 1, C-EO), p. e389",
+  /* ── 19ª rodada · Lote 1 (D-139-2, C6) ── */
+  "Sem motivo para suspeitar; antagonista da vitamina K registrado, com o INR já registrado": "Sin motivo para sospechar; antagonista de la vitamina K registrado, con el INR ya registrado",
 };

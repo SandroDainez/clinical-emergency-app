@@ -355,9 +355,14 @@ ausente("14 · varfarina (API)", () => {
   conf("14 · varfarina + INR pendente → ⛔ NÃO liberado", p.liberado === false, `⛔ ${p.estado}`);
   conf("14 · ⛔ e o estado é `resultado_pendente` (`impede_ate_resultado`)",
     p.estado === "resultado_pendente" && p.motivos.some((m) => m.efeito === "impede_ate_resultado"), `⛔ ${p.estado} ${JSON.stringify(p.motivos.map((m) => [m.id, m.efeito]))}`);
-  /** ⚠️ Table 8 fala de *"coagulation test results"* — INR, PT ⛔ e PTT; ⛔ nenhum mapeamento por agente é inventado. */
+  /**
+   * ⚠️ Ajuste consciente (19ª rodada, D-139-2 C6, autor): VKA/varfarina tem o INR como parâmetro principal; PT ⛔ aPTT
+   * deixam de ser exigidos de quem usa só VKA (teste sem pertinência farmacológica ⛔ é exigido). Heparina ⛔ muda (Lote 2).
+   */
   const soInr = regI(e, col(1), "inr", 1.2);
-  conf("14 · varfarina + só o INR registrado → ⛔ ainda pendente (PT ⛔ e aPTT faltam)", ivt(soInr).p.estado === "resultado_pendente", `⛔ ${ivt(soInr).p.estado}`);
+  conf("14 · varfarina + só o INR registrado → o resultado pendente sai (C6: INR é o exame pertinente)", ivt(soInr).p.estado !== "resultado_pendente", `⛔ ${ivt(soInr).p.estado}`);
+  const hepSoInr = regI(reg(candidatoIvt(), "anticoagulante_em_uso", "Heparina ou heparina de baixo peso molecular"), col(1), "inr", 1.2);
+  conf("14 · heparina + só o INR registrado → ⛔ ainda pendente (heparina sem mudança nesta rodada)", ivt(hepSoInr).p.estado === "resultado_pendente", `⛔ ${ivt(hepSoInr).p.estado}`);
   const comCoag = regI(regI(soInr, col(1), "tp", 12), col(1), "aptt", 30);
   conf("14 · varfarina + INR, PT ⛔ e aPTT registrados → o pendente sai", ivt(comCoag).p.estado !== "resultado_pendente", `⛔ ${ivt(comCoag).p.estado}`);
   const hep = reg(candidatoIvt(), "anticoagulante_em_uso", "Heparina ou heparina de baixo peso molecular");
