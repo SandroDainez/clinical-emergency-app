@@ -942,6 +942,40 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 | D-139-3 | ✅ decidido (C7); ◐ destino dos gatilhos que saem do julgamento | modelo de dados e DOAC implementáveis |
 | AC-03r | ✅ decidido (C8); janela como regra local | implementável |
 
+## Decisões da 19ª rodada (2026-09-14) · complemento: definições D1, D3 e D8 e autorização do Lote 1
+
+**Autor:** Sandro Dainez, 14/09/2026, respondendo aos itens 1, 3 e 8 do §10 da seção anterior.
+**Autoriza implementação:** **sim, só o Lote 1**, com teste vermelho antes de cada alteração, teste focal verde depois, `test:all` antes de cada commit relevante, commits pequenos e separáveis e **sem push remoto**. Nada do Lote 2 além destas três definições.
+
+### D1 · AC-15 · déficit neurológico novo
+
+- **O que conta:** no algoritmo de HSA, um déficit focal neurológico agudo do episódio atual conta como *new neurological deficit*, inclusive se inicialmente atribuído ao AVC isquêmico.
+- **Quando participa:** só **depois** que a suspeita clínica de HSA estiver ativa. A presença de déficit de AVC, isoladamente, não abre suspeita de HSA.
+- **Rota de exclusão por TC:** suspeita ativa + início da cefaleia <6 h + ausência de déficit neurológico novo + TC sem contraste de alta qualidade conforme a fonte (AHA/ASA 2023 §4 rec. 3, p. e322).
+- **Com déficit neurológico novo:** não usar a rota simplificada; seguir o ramo TC → investigação adicional (§4 rec. 2; Figure 2, p. e323).
+
+### D3 · AC-15 · punção lombar sem xantocromia
+
+- **Sem exclusão automática:** ausência de xantocromia não exclui HSA. Pela Figure 2, depois de TC negativa no ramo ≥6 h ou com déficit neurológico novo, a punção lombar é Classe 1, e a ausência de xantocromia leva a *work-up at physician discretion*.
+- **Estados:**
+  - xantocromia presente → HSA não excluída; seguir investigação vascular;
+  - xantocromia ausente → `avaliacao_hsa_pos_pl_pendente`; não liberar IVT automaticamente.
+- **Liberação:** a retenção só cai com registro explícito de "HSA excluída após investigação", com autor e hora.
+- **Tempo:** sem intervalo punção lombar → trombólise sem fonte (reitera a C3).
+
+### D8 · D-139-3 · condições que deixam o julgamento genérico
+
+- **DOAC <48 h:** julgamento individual obrigatório (Table 8, faixa relativa, p. e365).
+- **Carga conhecida de microssangramentos >10:**
+  - não liberar automaticamente; a AHA/ASA 2026 classifica a utilidade da IVT como incerta (§4.6.1 rec. 13, COR 2b, B-NR, p. e354);
+  - semântica própria `beneficio_ivt_incerto_requer_decisao_clinica`, retendo até decisão clínica registrada;
+  - não chamar de contraindicação absoluta nem atribuir à fonte a expressão "individual basis", que a recomendação não usa.
+- **Demais itens relativos da Table 8:** sem comportamento único; classificação item a item pelo verbo e pelo grau de certeza da fonte.
+  - Os que exigem individualização explicitamente podem usar julgamento registrado.
+  - Os que só dizem segurança desconhecida precisam de decisão separada antes de definir se retêm ou só informam. Até lá, mantêm o comportamento atual (AC-48: informação, sem reter).
+
+**Complementa:** as C1, C3 e C7 (seção anterior).
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
