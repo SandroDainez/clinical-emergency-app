@@ -1,12 +1,12 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-14
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `e680ec0`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `91ea49d`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
-## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 16ª rodada)
+## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 17ª rodada)
 
 Fonte de cada linha:
-- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.21).
+- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.22).
 - **Decisões:** `docs/decisoes.md`.
 - **Casos A:** `docs/spec-avc.md` §15 × testes.
 
@@ -57,12 +57,13 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 38 | achado | baixa | **AC-35**: helpers sem uso no e2e da fase 9. | aberto | código |
 | 39 | achado | baixa | **AC-41**: o e2e "corrigir NÃO cria terceira medida" da A não corrige. | aberto (instrumento) | código |
 | 40 | achado | baixa | **AC-42, AC-51**: `dblclick` não reproduz A17 (a prova usa dois cliques); o toque duplo não tem janela de tempo. | limites declarados | — |
+| 40b | achado | média · baixa | **AC-112** vocabulário de TEV e dispositivos e "contraindicada no momento retém" (proposta do agente) · **AC-113** posição no tema identifica pendentes · **AC-114** verbo em inglês saiu do card para o ⓘ (revoga em parte §6.14/E-45) · **AC-115** resultados antigos crus · **AC-116** a trava de idioma cobre só os cenários percorridos · **AC-117** agente repetido nos cartões de reversão (§7.22) | a confirmar · declarados | autor · código |
 | 40a | achado | baixa | **AC-70**: a trava de texto livre (`prova-avc-paciente`) cobre só P/A/B/C. **AC-75**: a trava append-only reprova reescrita depois do commit, não antes. | declarados | código |
 | 42 | caso A | — | **A16**: concentração alterada. | **sem teste** (depende de AC-21) | código |
 | 43 | caso A | — | **A05** NIHSS baixo incapacitante · **A08** IVT impedida com EVT recomendada (ganhou o cenário "transferência em curso") · **A10** reavaliação após glicemia · **A14** decisão histórica. | **parciais**: há teste, mas não mede o caso inteiro (§3 da auditoria) | código |
 
 **Fechados, fora da fila:**
-- **Achados:** regressão de procedência, AC-91, AC-92, AC-95, AC-98 (`e680ec0`, trava em toda superfície, uma fonte de verdade, pendência de sedação, trava de via oral pela imagem, «Centro de referência recusou»), AC-81, AC-82, AC-83, AC-85, AC-88, AC-89 (`ebc736f`, via aérea e exames, dois desfechos, resultado e trava de via oral, agenda viva), AC-101 decidido como comportamento correto, AC-93 aceito, AC-76, AC-77, AC-78 (`3069500`, via aérea avançada, sedação como contexto, marca no Glasgow), AC-16 (`16b92ac`, contrato com destinos indisponíveis), AC-71, AC-72, AC-73, AC-74 (`bbbf109`), interpretação do AC-67 confirmada, AC-10, AC-67, AC-68, AC-69 (`70149fc`), AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
+- **Achados:** AC-106 a AC-111 (`db9290b`, `91ea49d`: vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, nome único da HIC, declaração da equipe), regressão de procedência, AC-91, AC-92, AC-95, AC-98 (`e680ec0`, trava em toda superfície, uma fonte de verdade, pendência de sedação, trava de via oral pela imagem, «Centro de referência recusou»), AC-81, AC-82, AC-83, AC-85, AC-88, AC-89 (`ebc736f`, via aérea e exames, dois desfechos, resultado e trava de via oral, agenda viva), AC-101 decidido como comportamento correto, AC-93 aceito, AC-76, AC-77, AC-78 (`3069500`, via aérea avançada, sedação como contexto, marca no Glasgow), AC-16 (`16b92ac`, contrato com destinos indisponíveis), AC-71, AC-72, AC-73, AC-74 (`bbbf109`), interpretação do AC-67 confirmada, AC-10, AC-67, AC-68, AC-69 (`70149fc`), AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
 - **Casos A01–A18 com teste que mede o caso:** A09 (`e2e/avc-rodada13.spec.ts`, `prova-avc-rodada13`, com destinos indisponíveis), A11 e A12 (`e2e/avc-paciente-piorou.spec.ts`, `e2e/avc-transferencia.spec.ts`, `prova-avc-piora-e-transferencia`), A01, A02, A03, A04, A06 (`e2e/avc-nihss-nao-testavel.spec.ts`, `prova-avc-nihss-criterios`), A07, A13 (web: `e2e/avc-persistencia.spec.ts`), A15, A17 (`e2e/avc-persistencia.spec.ts`, `prova-avc-autoria-e-toque-duplo`) e A18 na forma da D-PEND-03 (detectar e bloquear).
 - ⚠️ **Método:** a cobertura de A01–A12 e A15 é a leitura de asserções da §3 (1ª rodada). Nesta rodada só A06, A13, A14, A17 e A18 foram reconferidos contra os testes existentes.
 
@@ -79,7 +80,19 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 
 ## Ponto exato de retomada
 
-**Rodada mais recente (2026-09-13, 16ª) · regressão de procedência em todas as superfícies, AC-95/98/91/92, textos:** detalhe em `docs/avc/auditoria/7.21-rodada-16.md`.
+**Rodada mais recente (2026-09-14, 17ª) · vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, nome único da HIC, declaração da equipe:** detalhe em `docs/avc/auditoria/7.22-rodada-17.md`.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **AC-106 · AC-107** | vocabulário próprio por transversal (trava de via oral só na deglutição); pendente com tema, variante e posição; trava genérica | ✅ `db9290b` |
+| **AC-108** | verbo, verbatim e citação em inglês no ⓘ (D, E, F, G, HIC/HSA); força traduzida; trava de idioma por conteúdo em PT e ES; selo "sem benefício" | ✅ `db9290b` · `91ea49d` |
+| **AC-109 · AC-110 · AC-111** | motivos por terapia; "Hemorragia intracraniana (HIC)"; declaração da equipe | ✅ `db9290b` |
+
+`test:all` no HEAD `91ea49d`: ✅ **EXIT=0** · 149 `npm run` + 1 `node` · Playwright **625 passed** (9,7 min) · prova rodada 17 35/35 · críticos 183/183 · 142 travas ligadas · índice 130 declaradas · push `75c2924..91ea49d`; `git ls-remote` = `91ea49de6f0f`; divergência 0/0. A execução em `db9290b` falhou (fases 9 e 10) e não foi enviada. Capturas a 375 px enviadas ao autor (22).
+
+**Recebido do autor em 2026-09-14, não iniciado:** 18ª rodada. Documentos oficiais substituem os dossiês (bula Actilyse I23-01, HSA 2023 integral, Linha de Cuidados em AVC do MS), mais errata e Table 8.
+
+**Rodada anterior (16ª), concluída · regressão de procedência em todas as superfícies, AC-95/98/91/92, textos:** detalhe em `docs/avc/auditoria/7.21-rodada-16.md`.
 
 | entrega | escopo | estado |
 |---|---|---|
