@@ -1,12 +1,12 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-13
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `16b92ac`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `3069500`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
-## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 13ª rodada)
+## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 14ª rodada)
 
 Fonte de cada linha:
-- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.18).
+- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.19).
 - **Decisões:** `docs/decisoes.md`.
 - **Casos A:** `docs/spec-avc.md` §15 × testes.
 
@@ -33,14 +33,15 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 16a | decisão | média · fonte | **AC-60**: fontes citadas nas D-PEND-23 (bula) e D-PEND-24 (AHA 2019) não transcritas no repositório. As regras rodam como adaptação ou "a confirmar". | aberto | autor: colocar os trechos |
 | 17 | achado | alta | **AC-08**: dose do trombolítico recalculada do peso atual; não existe evento de dose histórica. | aberto | código |
 | 18 | achado | alta | **AC-09**: decisões não são registradas. | parcial: só a conclusão de população é versionada (`prova-avc-persistencia` A14) | código |
-| 19 | decisão | média · interpretação | **AC-76**: "intubado às" só com tipo = intubação orotraqueal; outros tipos dizem "via aérea definitiva às". **AC-77**: o basal só é preferido nas regras quando há NIHSS anterior ao horário; exame único posterior segue valendo, marcado "sob sedação — confundidor" (§7.18). | confirmar | autor |
+| 19 | decisão | média · interpretação | **AC-81**: tipo «Outra»/«Não sei» deixa a definitiva indeterminada. **AC-82**: horário da via aérea avançada desconhecido deixa todo NIHSS inconclusivo até "sedação suspensa = sim". **AC-83**: a marca "sob sedação" corta pelo horário da via aérea mesmo com "sedação em curso = não". **AC-85**: «Fim da trombectomia» e «Decisão de não reperfundir» criados como horários da equipe; "Não prosseguir" da trombólise não abre o caminho sem reperfusão (§7.19). | confirmar | autor |
+| 19a | fonte | média | **AC-90**: R4, R5 e R6 fora do repositório; seções da AHA 2026 sobre deglutição, mobilização e TEV não localizadas na transcrição. As transversais do plano até 48 h seguem "conteúdo pendente de validação" (`revisao/plano-48h.md`). | pendente | autor: fontes |
 | 20 | fonte | alta · clínico | **Transferência · critério e destino**: o ciclo e o telestroke existem como registro (`e8fed38`); critério de transferência e centro de destino seguem sem fonte (Portaria 665/2012, rede local). | aberto | autor: fonte |
 | 21 | achado | alta | **AC-12**: angioedema não existe; F-35b (contraste) transcrito, mas não chega a nenhuma superfície. | aberto | código + fonte |
 | 22 | achado | alta | **AC-39**: nativo sem persistência (`armazenamento.native.ts` em memória). | documentado (`docs/avc/persistencia.md` §4), não implementado; os demais itens da §6 de `persistencia.md` também antes de dado real | código, antes de dado real |
 | 23 | achado | alta · histórico | **AC-27**: antes de `ec8f107`, caso com UN rodava com total inflado. | sem ação possível: o atendimento não persistia | — |
 | 24 | achado | alta | **AC-07**: toque repetido ao abrir ação clínica. | provavelmente resolvido pelo A17 (`fa01339`, `c513b64`); **fechamento não registrado** | confirmar e registrar |
 | 25 | achado | média | **AC-13**: ciclo de vida da ação tem 4 estados; o PDF pede 8. | aberto (pacote de estados da ação) | autor + código |
-| 26 | achado | baixa | **AC-78**: marca antes/depois da sedação cobre o NIHSS, não o Glasgow nem achados avulsos. **AC-79**: «quem realizou» vazio não gera pendência. **AC-80**: o aviso de retorno não sobrevive a recarregar (pilha e registros sobrevivem). | declarados | código |
+| 26 | achado | baixa | **AC-84**: Glasgow só com a marca. **AC-86**: desfazer evento com horário exige «Sem essa informação» → «Limpar». **AC-87**: intervalo de reavaliação só na trombólise, até 24 h. **AC-88**: transversais sem prazo, resultado não modelado. **AC-89**: agenda só recalcula no desenho da tela; sem notificação. AC-79 e AC-80 aceitos pelo autor. | declarados | código |
 | 27 | achado | média | **AC-18**: a imagem tem 2 das 3 saídas pedidas. | aberto | código |
 | 28 | achado | média | **AC-19**: faltam cinco comorbidades da lista do PDF. | aberto | código |
 | 29 | achado | média | **AC-20**: paciente avaliado só por RM fica com a classe da reperfusão retida. | limitação declarada | autor + código |
@@ -61,7 +62,7 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 43 | caso A | — | **A05** NIHSS baixo incapacitante · **A08** IVT impedida com EVT recomendada (ganhou o cenário "transferência em curso") · **A10** reavaliação após glicemia · **A14** decisão histórica. | **parciais**: há teste, mas não mede o caso inteiro (§3 da auditoria) | código |
 
 **Fechados, fora da fila:**
-- **Achados:** AC-16 (`16b92ac`, contrato com destinos indisponíveis), AC-71, AC-72, AC-73, AC-74 (`bbbf109`), interpretação do AC-67 confirmada, AC-10, AC-67, AC-68, AC-69 (`70149fc`), AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
+- **Achados:** AC-76, AC-77, AC-78 (`3069500`, via aérea avançada, sedação como contexto, marca no Glasgow), AC-16 (`16b92ac`, contrato com destinos indisponíveis), AC-71, AC-72, AC-73, AC-74 (`bbbf109`), interpretação do AC-67 confirmada, AC-10, AC-67, AC-68, AC-69 (`70149fc`), AC-11 (`e8fed38`, como registro), AC-01, AC-02 (web), AC-03, AC-14 → AC-44, AC-26, AC-28, AC-29, AC-32, AC-36, AC-37, AC-38, AC-40, AC-44, AC-45, AC-46, AC-47 (rota de RM), AC-48, AC-50, AC-55, AC-56, AC-57, a D-PEND-21 (`4e05527`), AC-43 (D-PEND-22), AC-15 (D-PEND-23), janela de puerpério (D-PEND-24), AC-59 os quatro achados de interface da 7ª rodada: cabeçalho, ponto vermelho, quinta aba e degraus (`c7a1956`); AC-61 (D-PEND-25) e os achados da leitura das capturas da 7ª rodada: HSA ensinando a virar a resposta, procedência no card, duas doses no card, contadores opacos, "mesma força" sem literal (`7c59d35`). AC-58 fica registrado como diagnóstico; AC-63 (D-PEND-26, «Limpar» auditado, `68da674`).
 - **Casos A01–A18 com teste que mede o caso:** A09 (`e2e/avc-rodada13.spec.ts`, `prova-avc-rodada13`, com destinos indisponíveis), A11 e A12 (`e2e/avc-paciente-piorou.spec.ts`, `e2e/avc-transferencia.spec.ts`, `prova-avc-piora-e-transferencia`), A01, A02, A03, A04, A06 (`e2e/avc-nihss-nao-testavel.spec.ts`, `prova-avc-nihss-criterios`), A07, A13 (web: `e2e/avc-persistencia.spec.ts`), A15, A17 (`e2e/avc-persistencia.spec.ts`, `prova-avc-autoria-e-toque-duplo`) e A18 na forma da D-PEND-03 (detectar e bloquear).
 - ⚠️ **Método:** a cobertura de A01–A12 e A15 é a leitura de asserções da §3 (1ª rodada). Nesta rodada só A06, A13, A14, A17 e A18 foram reconferidos contra os testes existentes.
 
@@ -78,7 +79,17 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 
 ## Ponto exato de retomada
 
-**Rodada mais recente (2026-09-13, 13ª) · contrato de navegação com destinos indisponíveis, via aérea como conduta externa, Cronologia por marco:** detalhe em `docs/avc/auditoria/7.18-rodada-13.md`.
+**Rodada mais recente (2026-09-13, 14ª) · via aérea avançada, NIHSS sob sedação como contexto, A04 com dois caminhos, leve ≠ incapacitante, plano até 48 h:** detalhe em `docs/avc/auditoria/7.19-rodada-14.md`.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **AC-76/77/78** | "via aérea avançada instalada" com definitiva pelo tipo e cabeçalho por tipo; NIHSS sob sedação sem basal → regras "inconclusivo — exame sob sedação; avaliação especializada"; «Sedação suspensa para o exame» no próprio exame; marca no Glasgow | ✅ `3069500` |
+| **A04 · leve ≠ incapacitante** | cartão com §4.6.3 rec. 1 (DWI/FLAIR) e rec. 2 (perfusão automatizada), cada uma com os dados exigidos; prova de perguntas e fatos distintos | ✅ `3069500` |
+| **Plano até 48 h (T08, C08)** | caminho por evento real (trombólise, trombectomia, não reperfundir, hemorragia); tarefa com origem, prazo/condição e critério; tempo não conclui nem libera (A15); piora antecipa; cancelamento encerra; agenda com "Próxima reavaliação"; sem notificação presumida; transversais pendentes de validação | ✅ `3069500` · AC-85, AC-90 com o autor |
+
+`test:all` no HEAD `3069500`: ✅ **EXIT=0** · 147 `npm run` + 1 `node` · Playwright **596 passed** (9,5 min), sem failed ou skipped · rodada 14 61/61 · rodada 13 40/40 · críticos 183/183 · 139 travas ligadas · índice 127 declaradas · push `2ce72ba..3069500`; `git ls-remote` = `306950095f54`; divergência 0/0.
+
+**Rodada anterior (13ª), concluída · contrato de navegação com destinos indisponíveis, via aérea como conduta externa, Cronologia por marco:** detalhe em `docs/avc/auditoria/7.18-rodada-13.md`.
 
 | entrega | escopo | estado |
 |---|---|---|
