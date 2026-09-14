@@ -722,6 +722,40 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Idiomas:** PT/ES. **Autoriza implementação:** sim (17ª rodada). Todos com prova vermelha antes; `test:all` completo; push só verde; docs append-only; capturas depois; sem `main`.
 
+## Decisões da 18ª rodada (2026-09-14) · documentos oficiais substituem os dossiês: bula Actilyse, HSA 2023 integral, Linha de Cuidados em AVC (MS); errata e Table 8
+
+**Autor:** Sandro Dainez, 14/09/2026.
+
+**Documentos entregues pelo autor** (em `~/Downloads/Documentos para o app/`; a mensagem diz `protocols/fontes-verbatim/`, onde não estavam):
+- **Oficiais, que substituem os dossiês de conferência:** bula profissional Actilyse (I23-01); diretriz HSA AHA/ASA 2023 integral; "PCDT de Cuidados ao AVC" (Ministério da Saúde).
+- **Também na pasta:** AHA/ASA 2026 integral e *Correction* (errata, *Stroke* 2026;57:e461–e467); CSBPR7 *Acute Stroke Management* (2022); Portaria GM/MS 665/2012; artigo *Arq Neuropsiquiatr* 2012; e os dossiês de Actilyse, Metalyse e HSA §4.
+- **Procedência:** onde estava "dossiê de conferência", passa a bula, diretriz ou PCDT oficial, com página.
+
+**Entrega A — Actilyse oficial.**
+- **D-PEND-25 fecha com fonte de bula** (texto do autor): 0,9 mg/kg, máx. 90 mg; 10% em bolus de 1–2 minutos ("a bula diz 1–2, não 1"); restante em 60 min; concentração 1 mg/mL.
+- **Tabela de dose por peso da bula (40 a 100+ kg):** transcrever e exibir como conferência, no padrão da Table 7 da TNK. Só mg, menor, com a frase "tabela da bula, para conferência — não é a dose a preparar". Prova: 70 kg → 63,0 mg · bolus 6,3 · infusão 56,7.
+- **D-PEND-23 (HSA):** passa a ter fonte nominal de bula, com a frase literal no ⓘ.
+- **Conflito declarado:**
+  - A bula (2023) contraindica início >4,5 h ou desconhecido e não contempla janela estendida nem tenecteplase para AVC; a AHA/ASA 2026 contempla.
+  - Onde as duas divergirem, o card mostra as duas posições rotuladas (bula brasileira × diretriz), nunca só uma.
+  - Não resolver o conflito: listar as divergências em `docs/avc/revisao/bula-x-diretriz.md` com decisão em branco.
+- **Contraindicações antigas da bula** (NIHSS >25, glicemia, plaquetas etc.): não viram regra determinística; entram como "critério de bula" no mesmo pacote.
+
+**Entrega B — HSA 2023 integral.**
+- Substituir o dossiê; transcrever a §4 com página e COR/LOE.
+- Completar a opção E de `hsa-resolucao.md` com a regra real: com déficit novo ou >6 h, TC negativa não resolve e exige punção lombar; angio-TC investiga a fonte depois de HSA demonstrada.
+- A decisão continua em branco.
+
+**Entrega C — PCDT de Cuidados ao AVC (MS).**
+- Ler e produzir `docs/avc/revisao/pcdt-brasil.md`: elegibilidade à trombólise no SUS, fluxo, critérios de centro e cuidados, e onde diverge da AHA/ASA 2026 e da bula.
+- Não implementar nada a partir dele nesta rodada; é insumo de decisão.
+
+**Prioridade:** as entregas da errata e da Table 8 "do comando anterior" seguem valendo e vêm antes destas, se ainda não foram feitas.
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (18ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
+
+**Mensagem do autor durante a rodada:** "todos estão em Downloads, pasta Documentos para o APP".
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
