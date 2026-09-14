@@ -26,7 +26,7 @@ import {
 } from "../conteudo/plano-48h";
 import { RESULTADO_TC } from "../conteudo/superficie-c";
 import { MONITORIZACAO_POS_IVT } from "../conteudo/superficie-g";
-import { estudos, imagensAposInstante } from "./derivacoes-c";
+import { estudos, exclusaoDeHemorragia, imagensAposInstante } from "./derivacoes-c";
 import { exposicaoAoTrombolitico } from "./derivacoes-f";
 import { eventosDePiora } from "./deterioracao";
 import { registrarFato, valorAtual, type EstadoAvc } from "./estado";
@@ -263,7 +263,11 @@ export type TravaDeViaOral = { readonly motivo: "reprovada" | "nao_realizada" | 
  * via oral". ⛔ Sem caminho aberto ⛔ há trava no cabeçalho (o plano ⛔ começou).
  */
 export function travaDeViaOral(estado: EstadoAvc): TravaDeViaOral | undefined {
-  if (!leiturasDeOrigem(estado).some(([, l]) => l.origem !== undefined)) return undefined;
+  /**
+   * ⚠️ AC-92 (16ª rodada, autor): a trava ⛔ depende do plano de 48 h — vale desde que o caminho esteja
+   * definido pela imagem registrada (TC com ⛔ sem hemorragia, ⛔ divergente). Antes do laudo, ⛔ trava.
+   */
+  if (exclusaoDeHemorragia(estado).exclusao === "sem_informacao") return undefined;
   const r = resultadoDaTarefa(estado, "degluticao");
   if (r === "Aprovada") return undefined;
   if (r === "Reprovada") return { motivo: "reprovada" };

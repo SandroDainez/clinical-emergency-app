@@ -36,30 +36,17 @@ export const GRUPO_DO_CAMINHO_HEMORRAGICO = comCasa("destino", [
 
 export const CAMPOS_DO_CAMINHO_HEMORRAGICO: readonly Campo[] = GRUPO_DO_CAMINHO_HEMORRAGICO.flatMap((g) => g.campos);
 
-export type CondutaPendente = {
-  readonly id: string;
+/**
+ * ⚠️ AC-95 (16ª rodada): as condutas ⛔ declaram estado nem fonte próprios — o caminho consome os itens do
+ * catálogo HIC/HSA pela validação única (`validacao-do-catalogo.ts`). ⛔ Nenhuma conduta com dois estados.
+ */
+export type CondutaDoCaminhoHemorragico = {
+  readonly id: "reversao_anticoagulante" | "alvo_pressorico" | "indicacao_cirurgica";
   readonly rotulo: string;
-  readonly conteudo: "pendente_de_validacao";
-  readonly fontesCandidatas: readonly string[];
 };
 
-export const CONDUTAS_DO_CAMINHO_HEMORRAGICO: readonly CondutaPendente[] = [
-  {
-    id: "reversao_anticoagulante",
-    rotulo: "Reversão de anticoagulante",
-    conteudo: "pendente_de_validacao",
-    fontesCandidatas: ["AHA/ASA 2022 (HIC) · §5.2.1 · slot H-02", "AHA/ASA 2023 (HSA) · §6 · slot S-01", "AHA/ASA 2017 (hemorragia pós-alteplase) · §3.3 a §3.5"],
-  },
-  {
-    id: "alvo_pressorico",
-    rotulo: "Alvo pressórico",
-    conteudo: "pendente_de_validacao",
-    fontesCandidatas: ["AHA/ASA 2022 (HIC) · §5.1 · slot H-01", "AHA/ASA 2023 (HSA) · §6 · slot S-01", "AHA/ASA 2017 (hemorragia pós-alteplase) · §3.6"],
-  },
-  {
-    id: "indicacao_cirurgica",
-    rotulo: "Indicação neurocirúrgica",
-    conteudo: "pendente_de_validacao",
-    fontesCandidatas: ["AHA/ASA 2022 (HIC) · §6.1 e §6.2 · slots H-10, H-11, H-12", "AHA/ASA 2023 (HSA) · §7 · slot S-02", "AHA/ASA 2017 (hemorragia pós-alteplase) · §3.7"],
-  },
+export const CONDUTAS_DO_CAMINHO_HEMORRAGICO: readonly CondutaDoCaminhoHemorragico[] = [
+  { id: "reversao_anticoagulante", rotulo: "Reversão de anticoagulante" },
+  { id: "alvo_pressorico", rotulo: "Alvo pressórico" },
+  { id: "indicacao_cirurgica", rotulo: "Indicação neurocirúrgica" },
 ];

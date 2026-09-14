@@ -175,7 +175,8 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
   const ids = (e) => P.planoAte48h(e, T0 + HORA).caminhos.map((c) => c.id);
   const motivos = CP.MOTIVOS_DE_DESFECHO_NEGATIVO ?? [];
   conf("AC-85: motivos incluem impedida, sem indicação, indisponível, recusada, decisão da equipe ⛔ recusa do paciente/família",
-    ["Impedida", "Sem indicação", "Indisponível", "Recusada", "Decisão da equipe / limitação terapêutica", "Recusa do paciente ou família"].every((m) => motivos.includes(m)), `⛔ ${motivos}`);
+    /* ⚠️ ajuste consciente (16ª rodada, AC-98): «Recusada» → «Centro de referência recusou» */
+    ["Impedida", "Sem indicação", "Indisponível", "Centro de referência recusou", "Decisão da equipe / limitação terapêutica", "Recusa do paciente ou família"].every((m) => motivos.includes(m)), `⛔ ${motivos}`);
   conf("… o evento avulso «Decisão de não reperfundir» saiu", !(CP.CAMPOS_DO_PLANO_48H ?? []).some((c) => c.id === "nao_reperfundir_hora") && !K.todosOsCampos().some((c) => c.id === "nao_reperfundir_hora"), "⛔ ainda existe");
   const ivtNeg = reg(reg(vazio, "ivt_nao_prosseguir_motivo", "Sem indicação"), "ivt_nao_prosseguir_hora", T0, { horaClinica: T0 });
   const pendIvt = tenta(() => P.pendenciasDoPlano(ivtNeg), []);
@@ -211,17 +212,25 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
 if (P?.planoAte48h !== undefined && CP !== undefined) {
   const rel = R.relogioControlado(T0);
   const reg = (e, c, v) => E.registrarFato(e, { campo: c, valor: CAMPO.valorDaOpcao(v) }, rel);
+  /**
+   * ⚠️ Ajuste consciente (16ª rodada, AC-92): a trava vale com o caminho DEFINIDO PELA IMAGEM, ⛔ pelo plano
+   * aberto — o cenário registra também a TC sem hemorragia.
+   */
   const ivt = (() => {
     const inst = I.nomeDaInstancia(SF.TROMBOLISE_IV, 1);
-    const x = K.registrarComInstancia(E.abrirAtendimento(rel), { campo: "ivt_estado", valor: "Realizada" }, rel, inst);
-    return K.registrarComInstancia(x, { campo: "ivt_inicio", valor: T0 }, rel, inst);
+    let x = K.registrarComInstancia(E.abrirAtendimento(rel), { campo: "ivt_estado", valor: "Realizada" }, rel, inst);
+    x = K.registrarComInstancia(x, { campo: "ivt_inicio", valor: T0 }, rel, inst);
+    const est = I.nomeDaInstancia(SC.ESTUDO, 1);
+    x = K.registrarComInstancia(x, { campo: "estudo_modalidade", valor: CAMPO.valorDaOpcao("Tomografia de crânio sem contraste") }, rel, est);
+    x = K.registrarComInstancia(x, { campo: "estudo_hora", valor: T0 }, rel, est);
+    return K.registrarComInstancia(x, { campo: "estudo_resultado", valor: CAMPO.valorDaOpcao("Sem hemorragia intracraniana identificada") }, rel, est);
   })();
   const deg = (CP.CAMPOS_DO_PLANO_48H ?? []).find((c) => c.id === "plano_degluticao");
   conf("AC-88: resultado = aprovada · reprovada · não realizada · não sei", JSON.stringify(deg?.opcoes) === JSON.stringify(["Aprovada", "Reprovada", "Não realizada", "Não sei"]), `⛔ ${JSON.stringify(deg?.opcoes)}`);
   conf("… as quatro transversais por registro usam o mesmo resultado", ["plano_mobilizacao", "plano_tev", "plano_dispositivos"].every((id) => JSON.stringify((CP.CAMPOS_DO_PLANO_48H ?? []).find((c) => c.id === id)?.opcoes) === JSON.stringify(["Aprovada", "Reprovada", "Não realizada", "Não sei"])), "⛔ opções diferentes");
   const trava = (e) => tenta(() => P.travaDeViaOral(e), "erro");
-  conf("sem caminho aberto ⛔ há trava no cabeçalho", trava(E.abrirAtendimento(rel)) === undefined, `⛔ ${JSON.stringify(trava(E.abrirAtendimento(rel)))}`);
-  conf("caminho aberto ⛔ triagem sem registro → trava «nada por via oral»", trava(ivt)?.motivo === "sem_registro", `⛔ ${JSON.stringify(trava(ivt))}`);
+  conf("sem caminho definido pela imagem ⛔ há trava no cabeçalho", trava(E.abrirAtendimento(rel)) === undefined, `⛔ ${JSON.stringify(trava(E.abrirAtendimento(rel)))}`);
+  conf("caminho definido ⛔ triagem sem registro → trava «nada por via oral»", trava(ivt)?.motivo === "sem_registro", `⛔ ${JSON.stringify(trava(ivt))}`);
   conf("⚠️ deglutição REPROVADA → trava mantida", trava(reg(ivt, "plano_degluticao", "Reprovada"))?.motivo === "reprovada", `⛔ ${JSON.stringify(trava(reg(ivt, "plano_degluticao", "Reprovada")))}`);
   conf("⚠️ deglutição NÃO REALIZADA → trava mantida", trava(reg(ivt, "plano_degluticao", "Não realizada"))?.motivo === "nao_realizada", "⛔");
   conf("deglutição «não sei» → trava mantida", trava(reg(ivt, "plano_degluticao", "Não sei"))?.motivo === "nao_sei", "⛔");
@@ -277,9 +286,10 @@ if (H?.caminhoHemorragico !== undefined && CH !== undefined) {
   conf("… neurocirurgia contatada por marcos (como a teleconsulta)", tenta(() => T.marcosDaNeurocirurgia(neuro), []).some((m) => m.tipo === "Contatada" && m.observado === T0 + 5 * MIN), "⛔ sem marco");
   conf("… parecer da neurocirurgia exige texto ⛔ autor", tenta(() => T.registrarMarcoDeNeurocirurgia(hem, "Parecer registrado", T0, rel, { texto: "", autor: "" }), null) === hem, "⛔ parecer vazio entrou");
   const condutas = CH.CONDUTAS_DO_CAMINHO_HEMORRAGICO ?? [];
-  conf("… condutas: reversão, alvo pressórico, indicação cirúrgica — todas «conteúdo pendente de validação» com fonte candidata",
-    ["reversao_anticoagulante", "alvo_pressorico", "indicacao_cirurgica"].every((id) => condutas.some((x) => x.id === id && x.conteudo === "pendente_de_validacao" && x.fontesCandidatas.length > 0)),
-    `⛔ ${JSON.stringify(condutas.map((x) => [x.id, x.conteudo]))}`);
+  /** ⚠️ Ajuste consciente (16ª rodada, AC-95): as condutas ⛔ declaram estado próprio — consomem o catálogo. */
+  conf("… condutas: reversão, alvo pressórico, indicação cirúrgica — sem estado nem fonte próprios (AC-95)",
+    ["reversao_anticoagulante", "alvo_pressorico", "indicacao_cirurgica"].every((id) => condutas.some((x) => x.id === id && x.conteudo === undefined && x.fontesCandidatas === undefined)),
+    `⛔ ${JSON.stringify(condutas)}`);
   conf("… ⛔ dose, alvo numérico ⛔ ou limiar no conteúdo do caminho", !/\d+\s*(mg|UI|U\/kg|mmHg|mL|%)/i.test(JSON.stringify(CH)), "⛔ número clínico");
   conf("HSA suspeita sem hemorragia na imagem ⛔ abre o caminho hemorrágico", H.caminhoHemorragico(E.registrarFato(vazio, { campo: "suspeita_hsa", valor: "sim" }, rel)).ativo === false, "⛔ abriu por suspeita");
 

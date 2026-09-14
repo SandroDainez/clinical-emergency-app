@@ -41,6 +41,14 @@ async function registrarIvt(page: Page, estado: "Realizada" | "Iniciada" = "Real
   await informarHora(page, "ivt_inicio");
 }
 
+async function tcSemHemorragia(page: Page) {
+  await page.getByTestId("avc-aba-imagem").click();
+  await page.getByTestId("avc-novo-estudo").click();
+  await page.getByTestId("avc-opcao-estudo_modalidade-Tomografia de crânio sem contraste").click();
+  await informarHora(page, "estudo_hora");
+  await page.getByTestId("avc-opcao-estudo_resultado-Sem hemorragia intracraniana identificada").click();
+}
+
 async function tcComHemorragia(page: Page) {
   await page.getByTestId("avc-aba-imagem").click();
   await page.getByTestId("avc-novo-estudo").click();
@@ -104,6 +112,8 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
   test("AC-88: triagem de deglutição com resultado; reprovada ⛔ mantém «Nada por via oral» no cabeçalho; aprovada tira", async ({ page }) => {
     await abrir(page);
     await registrarIvt(page);
+    /** ⚠️ Ajuste consciente (16ª rodada, AC-92): a trava vale com o caminho definido pela imagem. */
+    await tcSemHemorragia(page);
     await expect(page.getByTestId("avc-trava-via-oral")).toContainText("Nada por via oral");
     await page.getByTestId("avc-aba-destino").click();
     const tarefa = page.getByTestId("avc-plano-tarefa-degluticao");
@@ -144,7 +154,12 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
     for (const id of ["reversao_anticoagulante", "alvo_pressorico", "indicacao_cirurgica"]) {
       await expect(page.getByTestId(`avc-hem-conduta-${id}`)).toContainText("conteúdo pendente de validação");
     }
-    expect(await caminho.innerText(), "⛔ número clínico no caminho").not.toMatch(/\d+\s*(mg|UI|mmHg|mL)/i);
+    /**
+     * ⚠️ Ajuste consciente (16ª rodada, AC-95): o caminho consome o catálogo com a força que ele declara — item
+     * formal mostra o texto transcrito (com números); ⛔ a ausência de número deixou de ser a regra. ⚠️ A dose da
+     * figura 2 (⛔ graduada) segue fora da tela.
+     */
+    expect(await caminho.innerText(), "⛔ dose da figura 2 no caminho").not.toMatch(/UI\/kg/i);
     await page.getByTestId("avc-g-registrar-neuro-marco").click();
     await page.getByTestId("avc-g-neuro-marco-tipo-Contatada").click();
     await page.getByTestId("avc-g-neuro-marco-agora").click();
@@ -188,6 +203,8 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
   test("ES · trava de via oral ⛔ sem reperfusão em espanhol", async ({ page }) => {
     await abrir(page, "es-419");
     await registrarIvt(page);
+    /** ⚠️ Ajuste consciente (16ª rodada, AC-92). */
+    await tcSemHemorragia(page);
     await expect(page.getByTestId("avc-trava-via-oral")).toContainText("Nada por vía oral");
   });
 });

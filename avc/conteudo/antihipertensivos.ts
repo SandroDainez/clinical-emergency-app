@@ -130,7 +130,7 @@ export const AGENTES_ANTI_HIPERTENSIVOS: readonly AgenteAntiHipertensivo[] = [
     quando: "Conforme protocolo institucional",
     cautela:
       "Menos titulável. Analisar hipovolemia, insuficiência renal, estenose bilateral de artérias renais e risco de hipotensão prolongada",
-    procedencia: "Sem dose neste slot",
+    procedencia: "Sem dose nesta fonte",
   },
   {
     id: "hidralazina",
@@ -139,7 +139,7 @@ export const AGENTES_ANTI_HIPERTENSIVOS: readonly AgenteAntiHipertensivo[] = [
     quando: "Conforme protocolo institucional",
     cautela:
       "Resposta individual variável, duração longa, possibilidade de taquicardia reflexa e de redução pressórica excessiva",
-    procedencia: "Sem dose neste slot",
+    procedencia: "Sem dose nesta fonte",
   },
   {
     id: "nitroprussiato",

@@ -81,7 +81,7 @@ export const ES_AVC_GLICEMIA: Readonly<Record<string, string>> = {
     "Cuando esté indicada en el paciente crítico, según protocolo institucional validado de infusión",
   "Não existe dose fixa recomendada para o acidente vascular cerebral. A necessidade depende de resistência insulínica, diabetes prévio, peso, função renal, potássio, alimentação, corticoide, catecolaminas, cetoacidose, estado hiperosmolar e velocidade de queda da glicemia":
     "No existe dosis fija recomendada para el accidente cerebrovascular. La necesidad depende de resistencia insulínica, diabetes previa, peso, función renal, potasio, alimentación, corticoide, catecolaminas, cetoacidosis, estado hiperosmolar y velocidad de caída de la glucemia",
-  "Sem dose neste slot, por decisão da fonte":
+  "Sem dose, por decisão da fonte":
     "Sin dosis en esta fuente, por decisión de la propia fuente",
 
   /* ── alvos ─────────────────────────────────────────────────────────────── */

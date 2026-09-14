@@ -224,7 +224,7 @@ export const TRATAMENTOS_GLICEMICOS: readonly TratamentoGlicemico[] = [
       "Quando indicada no paciente crítico, segundo protocolo institucional validado de infusão",
     cautela:
       "Não existe dose fixa recomendada para o acidente vascular cerebral. A necessidade depende de resistência insulínica, diabetes prévio, peso, função renal, potássio, alimentação, corticoide, catecolaminas, cetoacidose, estado hiperosmolar e velocidade de queda da glicemia",
-    procedencia: "Sem dose neste slot, por decisão da fonte",
+    procedencia: "Sem dose, por decisão da fonte",
   },
 ];
 

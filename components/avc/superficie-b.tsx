@@ -406,6 +406,12 @@ export default function SuperficieB({
                     {tr("Informe o horário da via aérea para recuperar o exame basal")}
                   </Text>
                 ) : null}
+                {/** ⚠️ AC-91 (16ª rodada): sedação ⛔ registrada — dito, para liberar o exame como basal. */}
+                {leituraDaViaAereaExterna(estado).pendencias.some((p) => p.id === "informar_sedacao_va") ? (
+                  <Text style={e.resumoLinha} testID="avc-b-informar-sedacao">
+                    {tr("Sedação não registrada — informe para liberar o exame como basal")}
+                  </Text>
+                ) : null}
                 {nihssSoSobSedacao ? (
                   <Text style={e.resumoLinha} testID="avc-b-nihss-inconclusivo-sedacao">
                     {tr("Sem exame anterior à sedação: regras dependentes do NIHSS ficam inconclusivo — exame sob sedação; avaliação especializada.")}

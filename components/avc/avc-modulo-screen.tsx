@@ -1529,7 +1529,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           <Text style={s.avisoModuloTexto}>
             {ultimoRetorno.cancelado
               ? `${tr("Chamada cancelada")}: ${tr(moduloChamavel(ultimoRetorno.destino)?.nome ?? ultimoRetorno.destino)}. ${tr("O que foi registrado continua na trilha.")}`
-              : `${tr("Retorno de")} ${tr(moduloChamavel(ultimoRetorno.destino)?.nome ?? ultimoRetorno.destino)}: ${ultimoRetorno.eventos.length} ${tr("registro(s) de conduta externa")}`}
+              : `${tr("Retorno de")} ${tr(moduloChamavel(ultimoRetorno.destino)?.nome ?? ultimoRetorno.destino)}: ${ultimoRetorno.eventos.length} ${ultimoRetorno.eventos.length === 1 ? tr("registro de conduta externa") : tr("registros de conduta externa")}`}
           </Text>
           {textoDoSuporte !== "" ? (
             <Text style={s.avisoModuloDetalhe}>

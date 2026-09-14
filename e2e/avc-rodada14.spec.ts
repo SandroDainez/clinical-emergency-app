@@ -116,7 +116,11 @@ test.describe("AVC · 14ª rodada · via aérea avançada, sedação ⛔ plano a
     const plano = page.getByTestId("avc-plano-48h");
     await plano.scrollIntoViewIfNeeded();
     await expect(page.getByTestId("avc-plano-caminho-ivt")).toBeVisible();
-    await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText(/Próxima reavaliação: \d{2}:\d{2} \(em 1[3-5] min\)/);
+    /**
+     * ⚠️ Ajuste de instrumento (16ª rodada): perto da meia-noite a próxima reavaliação cai no dia seguinte e a tela
+     * mostra a data ("14/09 00:06") — comportamento certo (`HORA_EXIBIDA`); o teste aceitava só "HH:MM".
+     */
+    await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText(/Próxima reavaliação: (\d{2}\/\d{2} )?\d{2}:\d{2} \(em 1[3-5] min\)/);
     await expect(page.getByTestId("avc-plano-agenda")).toContainText("Imagem de controle");
     await expect(page.getByTestId("avc-plano-tarefa-ivt_antitromboticos")).toContainText("retida");
     await expect(page.getByTestId("avc-plano-tarefa-degluticao")).toContainText("conteúdo pendente de validação");
@@ -132,7 +136,8 @@ test.describe("AVC · 14ª rodada · via aérea avançada, sedação ⛔ plano a
     await informarHora(page, "evt_fim");
     const evt = page.getByTestId("avc-plano-caminho-evt");
     await expect(evt).toContainText("Monitorização pós-trombectomia");
-    await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText("sem intervalo transcrito");
+    /** ⚠️ Ajuste consciente (16ª rodada): "transcrit" é procedência proibida no card desde a 8ª rodada. */
+    await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText("sem intervalo definido na fonte");
     const textoEvt = await evt.innerText();
 
     /** ⚠️ Ajuste consciente (15ª rodada, AC-85): sem reperfusão abre pelos dois desfechos — aqui, a decisão global. */

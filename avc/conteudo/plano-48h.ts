@@ -65,7 +65,8 @@ export const MOTIVOS_DE_DESFECHO_NEGATIVO = [
   "Impedida",
   "Sem indicação",
   "Indisponível",
-  "Recusada",
+  /** ⚠️ AC-98 (16ª rodada): ⛔ "Recusada", que se confundia com a recusa do paciente. */
+  "Centro de referência recusou",
   "Decisão da equipe / limitação terapêutica",
   "Recusa do paciente ou família",
 ] as const;
@@ -119,7 +120,7 @@ export type DefinicaoDeTarefa = {
 
 const REAVALIACAO_SEM_INTERVALO = {
   rotulo: "Reavaliação: pressão arterial e exame neurológico",
-  criterioDeConclusao: "PA completa e exame neurológico (NIHSS ou Glasgow) registrados depois do evento; sem intervalo transcrito — a equipe define",
+  criterioDeConclusao: "PA completa e exame neurológico (NIHSS ou Glasgow) registrados depois do evento; sem intervalo definido na fonte — a equipe define",
   conteudo: "pendente_de_validacao",
 } as const;
 
@@ -141,7 +142,8 @@ export const TAREFAS_DO_CAMINHO: Readonly<Record<CaminhoDoPlanoId, readonly Defi
     },
     {
       id: "ivt_antitromboticos",
-      rotulo: "Antiagregante ou anticoagulante: retido até a imagem de controle com laudo",
+      /** ⚠️ 16ª rodada: concordância com o estado da tarefa ("retida"). */
+      rotulo: "Terapia antitrombótica: retida até a imagem de controle com laudo",
       criterioDeConclusao: "Laudo da imagem de controle registrado; a decisão de iniciar é da equipe e o app não a toma",
       conteudo: "fonte_transcrita",
       fonte: "F-15 · Table 7 · p. e358 · R5 (não transcrita)",
@@ -151,7 +153,7 @@ export const TAREFAS_DO_CAMINHO: Readonly<Record<CaminhoDoPlanoId, readonly Defi
     {
       id: "evt_monitorizacao",
       rotulo: "Monitorização pós-trombectomia",
-      criterioDeConclusao: "Conteúdo pendente de validação: a fonte transcrita não publica tabela equivalente à Table 7",
+      criterioDeConclusao: "Conteúdo pendente de validação: a fonte não publica tabela equivalente à Table 7",
       conteudo: "pendente_de_validacao",
       fonte: "F-15 · lacuna da fonte",
     },
@@ -192,7 +194,7 @@ export const TAREFAS_DO_CAMINHO: Readonly<Record<CaminhoDoPlanoId, readonly Defi
     { id: "hemorragia_reavaliacao", ...REAVALIACAO_SEM_INTERVALO, fonte: "AHA/ASA 2022 (HIC) § a localizar" },
     {
       id: "hemorragia_antitromboticos",
-      rotulo: "Antiagregante ou anticoagulante: retido, o tempo não o libera",
+      rotulo: "Terapia antitrombótica: retida, o tempo não a libera",
       criterioDeConclusao: "Decisão da equipe; conteúdo pendente de validação",
       conteudo: "pendente_de_validacao",
       fonte: "R5 (não transcrita)",

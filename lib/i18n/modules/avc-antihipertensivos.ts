@@ -70,7 +70,7 @@ export const ES_AVC_ANTIHIPERTENSIVOS: Readonly<Record<string, string>> = {
     "Prospecto (DailyMed). No forma parte de la tabla de 2019",
   "Manual de Rotinas do Ministério da Saúde, 2013":
     "Manual de Rutinas del Ministerio de Salud de Brasil, 2013",
-  "Sem dose neste slot": "Sin dosis en esta fuente",
+  "Sem dose nesta fonte": "Sin dosis en esta fuente",
   "Nitroprussiato de sódio": "Nitroprusiato de sodio",
 
   /* ── o alerta de segurança ─────────────────────────────────────────────── */

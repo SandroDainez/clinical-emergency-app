@@ -61,6 +61,7 @@ import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 import { MarcosDaTransferencia } from "./marcos-da-transferencia";
 import { PlanoAte48h } from "./plano-48h";
 import { CaminhoHemorragico } from "./caminho-hemorragico";
+import { Recolhido } from "./ui";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
@@ -172,6 +173,7 @@ export default function SuperficieG({
   onInterromperInfusao,
 }: Props) {
   const [enganoDaPiora, setEnganoDaPiora] = useState<string | undefined>(undefined);
+  const [infoDaRec, setInfoDaRec] = useState<string | undefined>(undefined);
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
 
@@ -404,9 +406,12 @@ export default function SuperficieG({
             {/** ⚠️ Verbatim em inglês — ⛔ verbatim ⛔ não se traduz (§6.14). */}
             <Text style={e.verbo}>“{d.verbo}”</Text>
             {d.nota ? <Text style={e.nota}>{tr(d.nota)}</Text> : null}
-            <Text style={e.fonte}>
-              {d.localizacao} · {tr("slot")} {d.slot}
-            </Text>
+            {/** ⚠️ 16ª rodada: localização ⛔ slot são procedência — moram no ⓘ, ⛔ no card. */}
+            <Recolhido id={`g-rec-${d.id}`} aberto={infoDaRec === d.id} onAlternar={() => setInfoDaRec((v) => (v === d.id ? undefined : d.id))}>
+              <Text style={e.fonte}>
+                {d.localizacao} · {tr("slot")} {d.slot}
+              </Text>
+            </Recolhido>
           </View>
         ))}
       </View>

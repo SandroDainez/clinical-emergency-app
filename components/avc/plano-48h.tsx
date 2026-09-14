@@ -27,6 +27,7 @@ import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
+import { Recolhido } from "./ui";
 
 const ROTULO_DO_ESTADO: Readonly<Record<EstadoDaTarefa, string>> = {
   pendente: "pendente",
@@ -42,7 +43,7 @@ const ROTULO_DO_QUANDO: Readonly<Record<QuandoDaTarefa["tipo"], string>> = {
   prazo: "prazo",
   periodica: "próxima",
   condicao: "depende de registro",
-  sem_prazo_transcrito: "sem prazo transcrito",
+  sem_prazo_transcrito: "sem prazo definido na fonte",
   sem_horario_de_origem: "sem horário do evento — nenhum prazo calculado",
 };
 
@@ -65,6 +66,8 @@ export function PlanoAte48h({
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const [agoraVivo, setAgoraVivo] = useState(agora);
+  const [infoAberta, setInfoAberta] = useState<readonly string[]>([]);
+  const alternarInfo = (id: string) => setInfoAberta((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
   useEffect(() => {
     setAgoraVivo(agora);
     const id = setInterval(() => setAgoraVivo(Date.now()), PASSO_DO_RELOGIO_MS);
@@ -107,7 +110,7 @@ export function PlanoAte48h({
     p === undefined ? undefined
       : p.tipo === "agora" ? tr("agora — antecipada por piora")
         : p.tipo === "horario" ? `${hora(p.instante)} ${relativo(p.instante)}`
-          : tr("sem intervalo transcrito para este caminho — a equipe define");
+          : tr("sem intervalo definido na fonte para este caminho — a equipe define");
 
   const linhaDaTarefa = (t: TarefaDoPlano) => {
     const campoDoResultado = resultadoPorTarefa.get(t.id);
@@ -120,9 +123,15 @@ export function PlanoAte48h({
           {t.conteudo === "pendente_de_validacao" && t.estado !== "conteudo_pendente" ? ` · ${tr("conteúdo pendente de validação")}` : ""}
           {t.quando.instante !== undefined ? ` · ${tr(ROTULO_DO_QUANDO[t.quando.tipo])} ${hora(t.quando.instante)} ${relativo(t.quando.instante)}` : ""}
         </Text>
-        <Text style={e.detalhe}>
-          {tr("Conclusão")}: {tr(t.criterioDeConclusao)} · {tr("Fonte")}: {tr(t.fonte)}
-        </Text>
+        {/** ⚠️ 16ª rodada (regressão das capturas): conclusão ⛔ fonte moram no ⓘ — ⛔ no card. */}
+        <Recolhido id={`plano-${t.id}`} aberto={infoAberta.includes(t.id)} onAlternar={() => alternarInfo(t.id)}>
+          <Text style={e.detalhe}>
+            {tr("Conclusão")}: {tr(t.criterioDeConclusao)}
+          </Text>
+          <Text style={e.detalhe}>
+            {tr("Fonte")}: {tr(t.fonte)}
+          </Text>
+        </Recolhido>
         {campoDoResultado !== undefined ? campo(campoDoResultado) : null}
       </View>
     );

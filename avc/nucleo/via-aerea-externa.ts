@@ -159,6 +159,10 @@ export function leituraDaViaAereaExterna(estado: EstadoAvc): LeituraDaViaAerea {
   } else if (valores[CAMPO.avancada] === "sim" && hora === undefined) {
     pendencias.push({ id: "confirmar_va_hora", rotulo: "Registrar o horário da via aérea avançada", dono: "estabilizacao", campo: CAMPO.hora, resolvePor: "Registrar o horário observado" });
   }
+  /** ⚠️ AC-91 (16ª rodada): sedação ⛔ registrada conta como "não sei" — ⛔ e isso é dito, para liberar o basal. */
+  if (valores[CAMPO.avancada] === "sim" && valores[CAMPO.sedacao] === undefined && haExame) {
+    pendencias.push({ id: "informar_sedacao_va", rotulo: "Sedação não registrada — informe para liberar o exame como basal", dono: "estabilizacao", campo: CAMPO.sedacao, resolvePor: "Registrar se há sedação em curso" });
+  }
   if (intervencaoDeViaAereaPendente(estado)) {
     pendencias.push({ id: "reavaliar_via_aerea", rotulo: "Reavaliar a via aérea depois da intervenção registrada", dono: "estabilizacao", campo: "consciencia_rebaixada", resolvePor: "Registrar nova avaliação da via aérea" });
   }

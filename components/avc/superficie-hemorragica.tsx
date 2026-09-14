@@ -34,6 +34,7 @@ import {
   type Recomendacao,
 } from "../../avc/conteudo/hemorragia-intracerebral";
 import { AVISO_HSA, CITACAO_HSA, TEMAS_HSA } from "../../avc/conteudo/hemorragia-subaracnoidea";
+import { rotuloDaClasse, validacaoDoItem } from "../../avc/conteudo/validacao-do-catalogo";
 import { ClinicalCard, InfoToggle, SectionTitle, WarningCard } from "./sistema";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
@@ -53,13 +54,9 @@ function corDaDirecao(dir: Direcao, tema: Tema): string {
   return tema.cores.warning;
 }
 
-/** ⚠️ O rótulo PT da classe — ⛔ a classe em si é dado, ⛔ e ⛔ não texto de tela. */
+/** ⚠️ O rótulo PT da classe — ⛔ a classe em si é dado; ⚠️ fonte única com o caminho hemorrágico (16ª rodada). */
 function rotuloCor(cor: ClasseCOR): string {
-  if (cor === "COR 1") return "Recomendado";
-  if (cor === "COR 2a") return "Razoável";
-  if (cor === "COR 2b") return "Pode ser considerado";
-  if (cor === "COR 3: No Benefit") return "Sem benefício";
-  return "Potencialmente danoso";
+  return rotuloDaClasse(cor);
 }
 
 export default function SuperficieHemorragica({ variante }: { variante: Variante }) {
@@ -77,14 +74,19 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
   function cartao(rec: Recomendacao) {
     const aberto = abertos[rec.id] === true;
     const cor = corDaDirecao(rec.direcao, tema);
+    /** ⚠️ AC-95 (16ª rodada): o MESMO estado que o caminho hemorrágico mostra. */
+    const validacao = validacaoDoItem(rec);
+    const formal = validacao.estado === "recomendacao_formal";
     return (
       <ClinicalCard key={rec.id} testID={`avc-hem-rec-${rec.id}`}>
         <View style={e.topo}>
           {/** ⚠️ Selo com BORDA colorida ⛔ e rótulo em texto — cor ⛔ nunca sozinha. */}
-          <View style={[e.selo, { borderColor: cor }]}>
-            <Text style={[e.seloTexto, { color: cor }]}>{tr(rotuloCor(rec.cor))}</Text>
-          </View>
-          <Text style={e.loe}>{tr("Nível")} {rec.loe}</Text>
+          {formal ? (
+            <View style={[e.selo, { borderColor: cor }]}>
+              <Text style={[e.seloTexto, { color: cor }]}>{tr(rotuloCor(rec.cor))}</Text>
+            </View>
+          ) : null}
+          <Text style={e.loe}>{formal ? `${tr("Nível")} ${rec.loe}` : tr("conteúdo pendente de validação")}</Text>
           {/** ⚠️ O ⓘ na linha do que ele explica — padrão único do módulo. */}
           <InfoToggle
             aberto={aberto}
@@ -93,9 +95,9 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
             testID={`avc-hem-fonte-${rec.id}`}
           />
         </View>
-        <Text style={e.frase}>{tr(rec.formulacao)}</Text>
-        {rec.populacao ? (
-          <Text style={e.populacao}>{tr("População")}: {tr(rec.populacao)}</Text>
+        {formal ? <Text style={e.frase}>{tr(rec.formulacao)}</Text> : null}
+        {validacao.estado === "recomendacao_formal" ? (
+          <Text style={e.populacao}>{tr("População")}: {tr(validacao.contextoDaFonte)}</Text>
         ) : null}
         {aberto ? (
           /**
@@ -135,10 +137,7 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
             tr={tr}
             testID="avc-hem-aviso-alto-risco"
           />
-          <Text style={e.resumo}>
-            {tr("Suspender o anticoagulante e reverter o mais rápido possível. O agente depende do anticoagulante em uso.")}
-          </Text>
-          {REVERSAO_POR_AGENTE.map((r) => (
+          {REVERSAO_POR_AGENTE.map((r) => validacaoDoItem(r).estado === "recomendacao_formal" ? (
             <ClinicalCard key={r.id} testID={`avc-hem-reversao-${r.id}`}>
               <Text style={e.agente}>{tr(r.agente)}</Text>
               <Text style={e.frase}>{tr(r.conduta)}</Text>
@@ -171,6 +170,15 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
                 </ClinicalCard>
               ) : null}
               {r.alternativa ? <Text style={e.populacao}>{tr(r.alternativa)}</Text> : null}
+            </ClinicalCard>
+          ) : (
+            /**
+             * ⚠️ AC-95 (16ª rodada): esquema de reversão com dose da figura 2 (⛔ recomendação graduada) —
+             * pendente aqui ⛔ no caminho hemorrágico, com o agente dito ⛔ e ⛔ nenhuma conduta ⛔ dose.
+             */
+            <ClinicalCard key={r.id} testID={`avc-hem-reversao-${r.id}`}>
+              <Text style={e.agente}>{tr(r.agente)}</Text>
+              <Text style={e.populacao}>{tr("conteúdo pendente de validação")}</Text>
             </ClinicalCard>
           ))}
         </View>

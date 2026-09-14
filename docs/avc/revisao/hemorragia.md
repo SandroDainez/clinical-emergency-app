@@ -51,7 +51,30 @@ As fontes estão em `protocols/fontes-verbatim/`. Os arquivos da HIC e da HSA es
   - **AHA/ASA 2023 (HSA):** §7, p. e327 (S-02); hidrocefalia em S-05.
   - **AHA/ASA 2017 (hemorragia pós-alteplase):** §3.7, p. e354.
 
-## Relação com o catálogo existente
+## Uma fonte de verdade (AC-95, 16ª rodada)
+
+**Decisão do autor (13/09/2026):** o caminho hemorrágico consome o conteúdo do catálogo HIC/HSA, com a força e a fonte que o catálogo declara. Nenhuma conduta tem dois estados de validação.
+
+- **Função única:** `avc/conteudo/validacao-do-catalogo.ts`, usada pelo catálogo (`superficie-hemorragica.tsx`) e pelo caminho (`caminho-hemorragico.tsx`).
+- **Contrato de uma regra (`docs/spec-avc.md` §12):** força e `contextoDaFonte` declarados pelo que o item já tem.
+  - COR + LOE de diretriz → força `recomendacao_formal`.
+  - `contextoDaFonte` = população declarada no item.
+- **Vão para "conteúdo pendente de validação" nos dois lugares:**
+  - todo item sem população: 31 de 41 na HIC, 17 de 25 na HSA;
+  - as seis reversões por agente, porque a dose vem da figura 2 e não é recomendação graduada.
+- **Itens de cada conduta:**
+  - reversão: HIC tema "reversão" + reversão por agente; HSA "reversão";
+  - alvo pressórico: HIC tema "pressão arterial"; HSA "pa_curta";
+  - indicação cirúrgica: HIC tema "cirurgia"; HSA tema "aneurisma".
+- **Tipo registrado:**
+  - intraparenquimatosa → HIC;
+  - subaracnóidea → HSA;
+  - subdural ou outra → sem item no catálogo (pendente);
+  - não registrado ou não sei → os dois.
+- **Na tela:** fonte e texto literal ficam no ⓘ.
+- **Substitui a seção abaixo.** Ela registrava o estado da 15ª rodada, com o catálogo mostrando doses e o caminho mostrando "pendente".
+
+## Relação com o catálogo existente (15ª rodada — substituída pela seção acima)
 
 - **O que o catálogo mostra hoje:** a superfície `hic`/`hsa` (`components/avc/superficie-hemorragica.tsx`) exibe recomendações transcritas, com números (doses do esquema de reversão, alvo pressórico). Continua acessível pelo cartão da Imagem.
 - **Por que não foi removido:** ele é transcrição, com conferência do autor pendente. O caminho hemorrágico não o repete: aponta as condutas como pendentes.

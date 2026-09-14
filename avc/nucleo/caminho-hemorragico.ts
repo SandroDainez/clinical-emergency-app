@@ -31,6 +31,14 @@ export type LeituraDoCaminhoHemorragico = {
   readonly infusao: InfusaoNoCaminho;
   readonly interrompidaEm?: number;
   readonly pendencias: readonly Pendencia[];
+  /** ⚠️ 16ª rodada: as mesmas pendências, com rótulo curto — dentro do caminho o prefixo é redundante. */
+  readonly pendenciasNoCaminho: readonly Pendencia[];
+};
+
+const ROTULO_NO_CAMINHO: Readonly<Record<string, string>> = {
+  registrar_interrupcao_da_infusao: "Registrar a interrupção da infusão",
+  hem_anticoagulante: "Registrar o anticoagulante em uso",
+  hem_tipo: "Registrar o tipo de hemorragia",
 };
 
 const ROTULO_DO_TIPO: Readonly<Record<string, string>> = { nao_sei: "Não sei" };
@@ -49,7 +57,7 @@ function infusao(estado: EstadoAvc): { estado: InfusaoNoCaminho; instancia?: str
 export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragico {
   const com = estudos(estado).filter((e) => e.resultado === RESULTADO_TC.hemorragia);
   const inf = infusao(estado);
-  if (com.length === 0) return { ativo: false, infusao: inf.estado, pendencias: [] };
+  if (com.length === 0) return { ativo: false, infusao: inf.estado, pendencias: [], pendenciasNoCaminho: [] };
 
   const horas = com.map((e) => e.hora).filter((h): h is number => h !== undefined);
   const t = valorAtual(estado, "hem_tipo")?.valor;
@@ -77,6 +85,7 @@ export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragi
     infusao: inf.estado,
     interrompidaEm: inf.interrompidaEm,
     pendencias,
+    pendenciasNoCaminho: pendencias.map((p) => ({ ...p, rotulo: ROTULO_NO_CAMINHO[p.id] ?? p.rotulo })),
   };
 }
 

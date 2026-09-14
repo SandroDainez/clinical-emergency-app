@@ -6,9 +6,11 @@
  * do Paciente ⛔ marcos da neurocirurgia. ⛔ Toda conduta: "conteúdo pendente de validação" com a
  * fonte candidata — ⛔ nenhum número.
  */
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CAMPOS_DO_CAMINHO_HEMORRAGICO, CONDUTAS_DO_CAMINHO_HEMORRAGICO } from "../../avc/conteudo/caminho-hemorragico";
+import { itensDaConduta, rotuloDaClasse } from "../../avc/conteudo/validacao-do-catalogo";
 import { caminhoHemorragico } from "../../avc/nucleo/caminho-hemorragico";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
@@ -19,6 +21,7 @@ import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 import { MarcosDaTransferencia } from "./marcos-da-transferencia";
+import { Recolhido } from "./ui";
 
 export function CaminhoHemorragico({
   estado,
@@ -44,6 +47,8 @@ export function CaminhoHemorragico({
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const c = caminhoHemorragico(estado);
+  const [infoAberta, setInfoAberta] = useState<readonly string[]>([]);
+  const alternarInfo = (id: string) => setInfoAberta((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
   if (!c.ativo) return null;
   const hora = (ms: number) => horaDeExibicao(ms, agora);
 
@@ -69,7 +74,7 @@ export function CaminhoHemorragico({
         </Text>
       ) : null}
 
-      {c.pendencias.filter((p) => p.id !== "registrar_interrupcao_da_infusao").map((p) => (
+      {c.pendenciasNoCaminho.filter((p) => p.id !== "registrar_interrupcao_da_infusao").map((p) => (
         <Text key={p.id} style={e.pendencia} testID={`avc-hem-pendencia-${p.id}`}>
           {tr(p.rotulo)}
         </Text>
@@ -122,16 +127,50 @@ export function CaminhoHemorragico({
         );
       })}
 
+      {/**
+        * ⚠️ AC-95 (16ª rodada): uma fonte de verdade — cada conduta mostra os itens do catálogo HIC/HSA com o
+        * MESMO estado de validação do catálogo (`itensDaConduta` → `validacaoDoItem`). Fonte ⛔ verbatim no ⓘ.
+        */}
       <View style={e.bloco} testID="avc-hem-condutas">
-        {CONDUTAS_DO_CAMINHO_HEMORRAGICO.map((x) => (
-          <View key={x.id} style={e.conduta} testID={`avc-hem-conduta-${x.id}`}>
-            <Text style={e.condutaTitulo}>{tr(x.rotulo)}</Text>
-            <Text style={e.pendencia}>{tr("conteúdo pendente de validação")}</Text>
-            <Text style={e.detalhe}>
-              {tr("Fonte candidata")}: {x.fontesCandidatas.map((f) => tr(f)).join(" · ")}
-            </Text>
-          </View>
-        ))}
+        {CONDUTAS_DO_CAMINHO_HEMORRAGICO.map((x) => {
+          const itens = itensDaConduta(x.id, c.tipo);
+          return (
+            <View key={x.id} style={e.conduta} testID={`avc-hem-conduta-${x.id}`}>
+              <Text style={e.condutaTitulo}>{tr(x.rotulo)}</Text>
+              {itens.length === 0 ? (
+                <Text style={e.pendencia}>{tr("Sem item no catálogo para este tipo — conteúdo pendente de validação")}</Text>
+              ) : null}
+              {itens.map((i) => {
+                const esquema = "agente" in i.item;
+                const formal = i.validacao.estado === "recomendacao_formal";
+                return (
+                  <View key={i.chave} style={e.item} testID={`avc-hem-item-${i.chave}`}>
+                    <Text style={e.linha}>
+                      {"agente" in i.item ? tr(i.item.agente) : tr(i.tituloDoTema)}
+                      {formal && !("agente" in i.item) ? ` · ${tr(rotuloDaClasse(i.item.cor))} · ${tr("Nível")} ${i.item.loe}` : ""}
+                    </Text>
+                    {formal && !("agente" in i.item) ? (
+                      <Text style={e.linha}>{tr(i.item.formulacao)}</Text>
+                    ) : (
+                      <Text style={e.pendencia}>{tr("conteúdo pendente de validação")}</Text>
+                    )}
+                    {i.validacao.estado === "recomendacao_formal" ? (
+                      <Text style={e.detalhe}>
+                        {tr("População")}: {tr(i.validacao.contextoDaFonte)}
+                      </Text>
+                    ) : null}
+                    <Recolhido id={`hem-${i.chave}`} aberto={infoAberta.includes(i.chave)} onAlternar={() => alternarInfo(i.chave)}>
+                      <Text style={e.detalhe}>
+                        {tr("Fonte")}: {i.validacao.fonte}
+                      </Text>
+                      {!esquema && "verbatim" in i.item ? <Text style={e.detalhe}>{i.item.verbatim}</Text> : null}
+                    </Recolhido>
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -146,6 +185,7 @@ function criarEstilos(tema: Tema) {
     detalhe: { ...PAPEL.legenda, color: tema.cores.textSecondary },
     pendencia: { ...PAPEL.legenda, color: tema.cores.text, fontWeight: "700" },
     conduta: { gap: 2, paddingTop: ESPACO.xs },
+    item: { gap: 2, paddingTop: ESPACO.xs },
     condutaTitulo: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "700" },
     botao: {
       alignSelf: "flex-start",
