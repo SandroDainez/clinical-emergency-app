@@ -110,7 +110,7 @@ export function CaminhoHemorragico({
             campo={campo}
             casaAtual="destino"
             bruto={String(valor ?? "")}
-            numero={undefined}
+            numero={typeof valor === "number" ? valor : undefined}
             agora={agora}
             detalheAberto={false}
             onAlternarDetalhe={() => undefined}
