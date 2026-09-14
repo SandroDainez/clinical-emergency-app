@@ -34,6 +34,7 @@ import { rotuloClinico } from "../conteudo/rotulos-clinicos";
 import { grauDoRotulo } from "../conteudo/mrs";
 import { TERRITORIO_DA_OPCAO } from "../conteudo/superficie-c";
 import { ORIGEM_DO_MARCO, camposDoMarco } from "./apresentacao-f";
+import { FONTE_DA_TABELA_DA_BULA, TABELA_DE_DOSE_AVC_BULA } from "../conteudo/bula-actilyse";
 
 export type Correspondencia =
   | "aplicavel"
@@ -203,6 +204,18 @@ export type DoseDerivada = {
   /** ⚠️ D-PEND-25: alteplase — bolus de 10% em 1 min ⛔ e o restante em 60 min. */
   readonly bolus?: { readonly mg: number; readonly ml: number; readonly minutos: number };
   readonly infusao?: { readonly mg: number; readonly ml: number; readonly minutos: number };
+  /**
+   * ⚠️ 18ª rodada (autor): a tabela de dose por peso da bula Actilyse (I23-01, p. 9) como CONFERÊNCIA da
+   * alteplase, ⛔ nunca como a dose. Peso sem linha na tabela ⛔ é interpolado (`semLinha`).
+   */
+  readonly conferenciaBula?: {
+    readonly semLinha: boolean;
+    readonly rotulo?: string;
+    readonly totalMg?: number;
+    readonly bolusMg?: number;
+    readonly infusaoMg?: number;
+    readonly fonte: string;
+  };
   /** ⚠️ D-PEND-22: a faixa da Table 7 como CONFERÊNCIA, ⛔ nunca como a dose. */
   readonly conferenciaTable7?: {
     readonly faixa: string;
@@ -224,6 +237,15 @@ export type DoseDerivada = {
  * ⛔ ⛔ **Sem peso ⛔ não existe dose.** ⛔ Não estimar, ⛔ não assumir 70 kg,
  * ⛔ não arredondar sem regra de fonte.
  */
+/** ⚠️ A linha da tabela da bula para o peso exato; 100 kg ou mais → "100+"; ⛔ interpolação. */
+function conferenciaDaBula(pesoKg: number): NonNullable<DoseDerivada["conferenciaBula"]> {
+  const linha = pesoKg >= 100
+    ? TABELA_DE_DOSE_AVC_BULA.find((x) => x.rotulo === "100+")
+    : TABELA_DE_DOSE_AVC_BULA.find((x) => x.pesoKg === pesoKg);
+  if (linha === undefined) return { semLinha: true, fonte: FONTE_DA_TABELA_DA_BULA };
+  return { semLinha: false, rotulo: linha.rotulo, totalMg: linha.totalMg, bolusMg: linha.bolusMg, infusaoMg: linha.infusaoMg, fonte: FONTE_DA_TABELA_DA_BULA };
+}
+
 export function doseDerivada(
   agente: "alteplase" | "tenecteplase",
   pesoKg: number | undefined,
@@ -266,6 +288,7 @@ export function doseDerivada(
       infusao: { mg: limpa(totalMg - bolusMg), ml: emMl(limpa(totalMg - bolusMg)), minutos: d.esquema.minutosInfusao },
     }),
     ...(volumeMl === undefined ? {} : { volumeMl, concentracaoMgPorMl: d.concentracaoMgPorMl }),
+    ...(agente !== "alteplase" ? {} : { conferenciaBula: conferenciaDaBula(pesoKg) }),
     ...(faixa === undefined ? {} : {
       conferenciaTable7: { faixa: faixa.faixa, mg: faixa.mg, ml: faixa.ml, divergente: faixa.mg !== totalMg, fonte: FONTE_DA_TABLE_7 },
     }),

@@ -71,3 +71,13 @@ Hoje "Não sei" mantém a pergunta, e a dose por peso não aparece. É escolha d
 ## 11 · Decisão humana
 
 **Decisão humana:** ___ (nome, versão, data)
+
+## 12 · Table 8 conferida no PDF (18ª rodada, 2026-09-14)
+
+- **Linha conferida:** AHA/ASA 2026 (versão online corrigida), Table 8, faixa relativa, p. e366, "Pregnancy and post-partum period". A trombólise pode ser considerada na gestação e no puerpério quando o benefício no AVC moderado ou grave supera o risco de sangramento uterino, com consulta obstétrica de emergência. **Não há janela em dias**: a linha está sem janela em dias.
+- **Consequência para a D-PEND-24:** os 14 dias do app ("fonte AHA 2019, a confirmar na Table 8 de 2026") **não são confirmados** pela Table 8 de 2026, que não traz número.
+- **Bula profissional Actilyse (I23-01), p. 4:** "parto nos últimos 10 dias" entre as contraindicações gerais por alto risco de hemorragia. É a fonte do texto "10 dias" removido pela D-PEND-20 por falta de fonte.
+- **Três posições, sem decisão:** bula 10 dias (contraindicação) · AHA/ASA 2026 sem janela (faixa relativa) · app 14 dias (D-PEND-24, AHA 2019 não transcrita).
+- **Pacote relacionado:** `docs/avc/revisao/bula-x-diretriz.md` §7.
+- **Decisão humana:** ___
+

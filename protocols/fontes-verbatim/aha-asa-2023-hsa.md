@@ -305,6 +305,8 @@ detalhado em **S-02**). O ramo de sistemas entra na superfície de destino/trans
 > - **Regra:** nenhuma regra do app deve citar esta paráfrase como texto da fonte.
 >
 > **PDF lido:** `~/Literatura Medica/04-Guias e Diretrizes (avaliar)/hoh-et-al-2023-…-aneurysmal-subarachnoid-hemorrhage-….pdf`, PDF p. 9–11 = impressas **e322–e324**.
+>
+> ✅ **Conferido no PDF integral em 2026-09-14 (18ª rodada)** — documento oficial entregue pelo autor (`~/Downloads/Documentos para o app/hoh-et-al-2023-…pdf`, *Stroke* 2023;54:e314–e370), que **substitui o dossiê de conferência** (`HSA_AHA_ASA_2023_secao4_hsa-resolucao.pdf`). As seis recomendações da tabela abaixo, os COR/LOE, as páginas e a Figure 2 conferem. A paráfrase segue marcada como paráfrase; o verbatim continua a colar pelo autor.
 
 **Tabela "Recommendations for Clinical Manifestations and Diagnosis of aSAH" — p. e322:**
 

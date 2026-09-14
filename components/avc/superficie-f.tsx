@@ -75,6 +75,7 @@ import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { Recolhido } from "./ui";
 import { classeCurta, forcaDaClasse3, rotuloDaForca } from "../../avc/conteudo/forca-da-recomendacao";
+import { DIVERGENCIAS_DE_CARD, FONTE_BULA_ACTILYSE, LITERAL_HSA_BULA, POSOLOGIA_AVC_BULA } from "../../avc/conteudo/bula-actilyse";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
@@ -613,6 +614,8 @@ export default function SuperficieF({
             <InfoDoCard id="evt-retencao">
               <Text style={e.portaoFonte}>{vereditoEvt.retencaoDiagnostica.fonte}</Text>
               <Text style={e.portaoFonte}>{tr(vereditoEvt.retencaoDiagnostica.procedencia)}</Text>
+              {/** ⚠️ 18ª rodada: a frase literal da bula (p. 4), no ⓘ. Em ES aparece traduzida (a varredura de i18n ⛔ isenta texto renderizado). */}
+              <Text style={e.portaoFonte}>{tr("Bula, p.")} {LITERAL_HSA_BULA.pagina}: “{tr(LITERAL_HSA_BULA.texto)}”</Text>
             </InfoDoCard>
           </View>
         ) : null}
@@ -852,6 +855,21 @@ export default function SuperficieF({
                   <Text style={e.doseEsquema} testID="avc-f-dose-infusao">
                     {tr("Restante")}: {decimal(dose.infusao.mg)} {tr("mg")} ({decimal(dose.infusao.ml, 1)} {tr("mL")}) {tr("em")} {dose.infusao.minutos} {tr("min")}
                   </Text>
+                  {/**
+                    * ⚠️ 18ª rodada (autor): onde bula e diretriz divergem, as DUAS posições, rotuladas. A duração do
+                    * bolus é da diretriz (Table 7, D-PEND-25); a posologia do AVC da bula ⛔ dá duração (p. 8).
+                    * ⛔ Nada é resolvido aqui: pacote `docs/avc/revisao/bula-x-diretriz.md` (D1).
+                    */}
+                  <Text style={e.doseSub} testID="avc-f-dose-bolus-diretriz">
+                    {tr("Diretriz AHA/ASA 2026")}: {tr("bolus em")} {dose.bolus.minutos} {tr("min")}
+                  </Text>
+                  <Text style={e.doseSub} testID="avc-f-dose-bolus-bula">
+                    {tr("Bula brasileira")}: {tr("sem duração do bolus na posologia do AVC")}
+                  </Text>
+                  <InfoDoCard id="bula-bolus">
+                    <Text style={e.doseConferencia}>{tr(POSOLOGIA_AVC_BULA.notaDoBolus)}</Text>
+                    <Text style={e.doseConferencia}>{FONTE_BULA_ACTILYSE} · p. {POSOLOGIA_AVC_BULA.pagina}</Text>
+                  </InfoDoCard>
                 </>
               ) : null}
               {/** ⚠️ COMO se chegou ao número — abaixo dele, ⛔ e menor. */}
@@ -874,6 +892,28 @@ export default function SuperficieF({
                   ) : null}
                   <InfoDoCard id="table7">
                     <Text style={e.doseConferencia}>{dose.conferenciaTable7.fonte} · {dose.conferenciaTable7.faixa}</Text>
+                  </InfoDoCard>
+                </View>
+              ) : null}
+              {/**
+                * ⚠️ 18ª rodada (autor): a tabela de dose por peso da bula (p. 9) como CONFERÊNCIA — só mg, menor,
+                * rotulada, no padrão da Table 7 da TNK. Peso sem linha: dito, ⛔ interpolado.
+                */}
+              {dose.conferenciaBula ? (
+                <View testID="avc-f-dose-bula" style={e.doseConferenciaBloco}>
+                  {dose.conferenciaBula.semLinha ? (
+                    <Text style={e.doseConferencia}>
+                      {tr("A tabela da bula não traz")} {dose.pesoKg} {tr("kg")} — {tr("nada é interpolado")}
+                    </Text>
+                  ) : (
+                    <Text style={e.doseConferencia}>
+                      {decimal(dose.conferenciaBula.totalMg ?? 0, 1)} {tr("mg")} · {tr("bolus")} {decimal(dose.conferenciaBula.bolusMg ?? 0, 1)} {tr("mg")} · {tr("infusão")} {decimal(dose.conferenciaBula.infusaoMg ?? 0, 1)} {tr("mg")} — {tr("tabela da bula, para conferência — não é a dose a preparar")}
+                    </Text>
+                  )}
+                  <InfoDoCard id="bula-tabela">
+                    <Text style={e.doseConferencia}>
+                      {dose.conferenciaBula.fonte}{dose.conferenciaBula.rotulo ? ` · ${dose.conferenciaBula.rotulo} kg` : ""}
+                    </Text>
                   </InfoDoCard>
                 </View>
               ) : null}
@@ -981,6 +1021,10 @@ export default function SuperficieF({
                 <InfoDoCard id={`portao-${m.id}`}>
                   <Text style={e.portaoFonte}>{m.fonte}</Text>
                   {m.procedencia ? <Text style={e.portaoFonte}>{tr(m.procedencia)}</Text> : null}
+                  {/** ⚠️ 18ª rodada: a frase literal da bula (p. 4) no ⓘ da retenção pela suspeita de HSA. */}
+                  {m.id === "suspeita_hsa" ? (
+                    <Text style={e.portaoFonte}>{tr("Bula, p.")} {LITERAL_HSA_BULA.pagina}: “{tr(LITERAL_HSA_BULA.texto)}”</Text>
+                  ) : null}
                 </InfoDoCard>
                 {m.leva ? (
                   <Pressable
@@ -1480,6 +1524,18 @@ function Cartao({
         * ⚠️ AC-108 (17ª rodada): no card, a FORÇA da classe traduzida; o verbo em inglês, no detalhe aberto.
         */}
       <Text style={e.verbo}>{tr(rotuloDaForca(leitura.cor) ?? "")}</Text>
+      {/**
+        * ⚠️ 18ª rodada (autor): onde a bula brasileira diverge da diretriz, as duas posições, rotuladas — ⛔ uma só.
+        * ⛔ Nada é resolvido: pacote `docs/avc/revisao/bula-x-diretriz.md` (I1).
+        */}
+      {DIVERGENCIAS_DE_CARD[leitura.id] ? (
+        <View testID={`avc-f-rec-bula-${leitura.id}`}>
+          <Text style={e.populacao}>
+            {tr("Diretriz AHA/ASA 2026")}: {tr(rotuloDaForca(leitura.cor) ?? "")}
+          </Text>
+          <Text style={e.populacao}>{tr(DIVERGENCIAS_DE_CARD[leitura.id].bula)}</Text>
+        </View>
+      ) : null}
 
       <Relogios relogios={item.relogios} onIrParaCampo={onIrParaCampo} />
 

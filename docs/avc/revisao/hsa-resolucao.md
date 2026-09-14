@@ -64,7 +64,7 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 | **B** | avaliação especializada registrada (quem, quando, conclusão) |
 | **C** | A ou B |
 | **D** | só a correção formal do registro, como hoje (erro de registro), sem liberação clínica pela interface |
-| **E** | **Leitura do autor (2026-09-13), ainda não escolhida.** Libera a retenção um resultado registrado de **angio-TC** (o fluxo de oclusão de grande vaso já a pede, e ela detecta aneurisma) **com reavaliação clínica documentada**, ou **punção lombar com resultado registrado**. Nunca «Não» nem «Limpar». **Mesmo com o fato novo, a saída é "avaliação especializada", não "elegível"** (D-PEND-23): o intervalo punção lombar → trombolítico não está resolvido em fonte do repositório, e quem decide é telestroke/neurologia, não o app. **Tempo desde a TC não resolve:** passagem de tempo não é dado. |
+| **E** | **Leitura do autor (2026-09-13), completada com a regra da §4 conferida no PDF integral (18ª rodada), ainda não escolhida.** Pela AHA/ASA 2023 §4 (p. e322–e323): com **déficit neurológico novo ou mais de 6 h** do início, a **TC sem contraste negativa não resolve** a suspeita e exige **punção lombar** (rec. 2, COR 1, B-NR; Figure 2); a **angio-TC ou a DSA investigam a fonte depois de HSA demonstrada**, na TC ou pela xantocromia (rec. 5, COR 1, B-NR; Figure 2). Abaixo de 6 h e sem déficit novo, a TC de alta qualidade laudada por neurorradiologista é razoável para excluir (rec. 3, COR 2a, B-NR), cenário que não é o do candidato à reperfusão com déficit. Leitura original do autor: libera a retenção um resultado registrado de angio-TC com reavaliação clínica documentada, ou punção lombar com resultado registrado. ⚠️ Pela §4, a angio-TC negativa sozinha não demonstra ausência de HSA: ela investiga a fonte depois da HSA demonstrada. Nunca «Não» nem «Limpar». Mesmo com o fato novo, a saída é "avaliação especializada", não "elegível" (D-PEND-23). Tempo desde a TC não resolve. |
 
 ## 7 · Decisões pedidas
 
@@ -83,3 +83,11 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 ## 9 · Decisão humana
 
 **Decisão humana:** ___ (nome, versão, data)
+
+## 10 · Fonte conferida no PDF integral (18ª rodada, 2026-09-14)
+
+- **Documento:** AHA/ASA 2023, *Stroke* 2023;54:e314–e370, PDF integral entregue pelo autor; substitui o dossiê de conferência da §4.
+- **§4, p. e322–e324:** seis recomendações, conferidas com COR/LOE em `protocols/fontes-verbatim/aha-asa-2023-hsa.md` S-00.
+- **Punção lombar × trombólise:** a §4 não trata. Na Table 8 da AHA/ASA 2026 (p. e366), a linha "punção dural nos últimos 7 dias" está na faixa relativa ("may be considered in individual cases"). Não resolve a pergunta 3 da §7: é insumo.
+- **Decisão:** continua em branco (§9).
+

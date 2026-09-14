@@ -112,8 +112,14 @@ conf("D-PEND-23 · o rótulo diz «Requer avaliação especializada» e «corrig
   `⛔ ${JSON.stringify(ret)}`);
 conf("D-PEND-23 · o motivo nomeia a suspeita clínica de HSA com TC sem sangue",
   ret.estado === "retida" && /hemorragia subaracnóidea/.test(ret.rotulo ?? "") && /sem sangue|sem hemorragia/i.test(ret.rotulo ?? ""), `⛔ ${ret.rotulo}`);
-conf("D-PEND-23 · procedência marcada como adaptação do projeto, com a bula não transcrita",
-  ret.estado === "retida" && /adaptação do projeto/i.test(ret.procedencia ?? "") && /não transcrit/i.test(ret.procedencia ?? "") && /Table 8/.test(ret.procedencia ?? ""),
+/**
+ * ⚠️ Ajuste consciente (18ª rodada, autor): a bula profissional Actilyse (I23-01) entrou como fonte oficial — a
+ * procedência deixa de ser "adaptação do projeto, bula não transcrita" e cita a bula nominalmente, com página. A
+ * classificação continua sendo do projeto ("avaliação especializada").
+ */
+conf("D-PEND-23 · procedência com fonte nominal de bula (Actilyse I23-01, p. 4) e classificação do projeto",
+  ret.estado === "retida" && /Actilyse/.test(ret.procedencia ?? "") && /I23-01/.test(ret.procedencia ?? "") && /p\. 4/.test(ret.procedencia ?? "")
+    && /avaliação especializada/i.test(ret.procedencia ?? "") && !/não transcrit/i.test(ret.procedencia ?? ""),
   `⛔ ${ret.procedencia}`);
 /** ⚠️ 8ª rodada: «Não» DEPOIS de «Sim» ⛔ libera (sem fato novo); o controle passa a ser «Não» desde o início. */
 conf("controle · «Não» desde o início ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao" }, rel)).estado === "livre", "⛔");

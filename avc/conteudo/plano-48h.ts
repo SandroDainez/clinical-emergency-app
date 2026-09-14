@@ -241,7 +241,8 @@ export const TAREFAS_TRANSVERSAIS: readonly DefinicaoDeTarefa[] = [
     rotulo: "Triagem de deglutição antes de via oral",
     criterioDeConclusao: "Resultado aprovada registrado; reprovada, não realizada ou não sei mantêm nada por via oral",
     conteudo: "pendente_de_validacao",
-    fonte: "R6 · R4 (não transcritas) · AHA 2026 § a localizar",
+    /** ⚠️ 18ª rodada: a errata localizou a seção — §5.2 Dysphagia, rec. 1 (COR 1, C-EO), p. e389. ⛔ Valida o conteúdo. */
+    fonte: "R6 · R4 (não transcritas) · AHA/ASA 2026 §5.2 rec. 1 (COR 1, C-EO), p. e389",
   },
   { id: "glicemia", rotulo: "Glicemia", criterioDeConclusao: "Glicemia registrada depois do evento de origem", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 §4.5 (F-06)" },
   { id: "temperatura", rotulo: "Temperatura", criterioDeConclusao: "Temperatura registrada depois do evento de origem", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 §4.4 (F-38)" },

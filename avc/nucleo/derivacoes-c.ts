@@ -733,7 +733,12 @@ export function retencaoDiagnostica(estado: EstadoAvc): RetencaoDiagnostica {
     motivo: "suspeita_hsa",
     classificacao: "avaliacao_especializada",
     rotulo: "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue",
-    procedencia: "Adaptação do projeto (D-PEND-23): bula citada pelo autor, trecho não transcrito no repositório; a conferir na Table 8 da AHA 2026",
+    /**
+     * ⚠️ 18ª rodada (autor): fonte nominal de bula — Bula profissional Actilyse® I23-01, p. 4, contraindicação geral
+     * por alto risco de hemorragia. ⚠️ A classificação continua "avaliação especializada" (D-PEND-23), ⛔ impedimento.
+     * A Table 8 da AHA/ASA 2026 (e364–e367) ⛔ traz linha para suspeita de HSA com TC sem sangue.
+     */
+    procedencia: "Bula profissional Actilyse® (I23-01), p. 4 — contraindicação geral por alto risco de hemorragia; classificação do projeto: avaliação especializada (D-PEND-23)",
     curto: "Suspeita clínica de hemorragia subaracnóidea registrada",
     oQueFalta: "Requer investigação antes de reperfundir — conteúdo pendente de validação",
     leva: "imagem",
