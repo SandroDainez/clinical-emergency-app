@@ -5,7 +5,7 @@
 > ⛔ nenhum script reescreve arquivo de seção (`scripts/prova-auditoria-append-only.cjs`, no `test:all`).
 > Referências antigas a "`auditoria-vs-spec.md` §7.x" apontam para o arquivo `7.xx-*.md` correspondente.
 
-**Seções:** 25 · **linhas:** 1571
+**Seções:** 26 · **linhas:** 1692
 
 - [Auditoria do AVC existente contra a especificação (PDF v1.1)](auditoria/0-introducao.md)
 - [1. Achados ordenados por gravidade](auditoria/1-achados.md)
@@ -32,3 +32,4 @@
   - [7.15 · 10ª rodada de 2026-09-13 · D-PEND-27, «Paciente piorou» global (AC-10, A11) e transferência/telestroke (T07, A12, A08) · commits `d1edb50` e `f7993d7` (só `docs/`) e `e8fed38` (código)](auditoria/7.15-rodada-10.md)
   - [7.16 · 11ª rodada de 2026-09-13 · «Preciso de ajuda» (fecha AC-10), AC-67, AC-68, AC-69, eixos reabertos e porta do e2e · commits `c2f0c23` (decisões, só `docs/`) e `70149fc` (código)](auditoria/7.16-rodada-11.md)
   - [7.17 · 12ª rodada de 2026-09-13 · auditoria append-only, AC-71, AC-72, AC-73, nome de exame e o contrato de navegação (C05) bloqueado · commits `b580cb8` (decisões), `844b852` (migração) e `bbbf109` (código)](auditoria/7.17-rodada-12.md)
+  - [7.18 · 13ª rodada de 2026-09-13 · contrato de navegação com destinos indisponíveis (C05), via aérea como conduta externa (A09) e "Sem essa informação" por marco (A04) · commits `4c110d3` (decisão) e `16b92ac` (código)](auditoria/7.18-rodada-13.md)
