@@ -976,6 +976,16 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Complementa:** as C1, C3 e C7 (seção anterior).
 
+### Complemento de 2026-09-14 · validação clínica final (texto do autor)
+
+**Decisão, nos termos do autor:** onde o projeto indicava "validação por neurologista vascular", passa a constar:
+
+> validação clínica final pelo responsável médico do projeto, com rastreabilidade explícita para literatura primária e documentação oficial. Testes automatizados não substituem essa revisão clínica.
+
+- **Onde estava:** só em `docs/avc/revisao/DOSSIE-REVISAO.pdf` (`1573e8e`), no rótulo "[neurologista vascular]" das páginas dos pacotes 1 a 7 e no critério "Quem decide" da capa. Nenhum `.md` versionado nem código usavam a expressão.
+- **Aplicado:** o dossiê foi gerado de novo com o rótulo "[responsável médico do projeto]" e o texto acima no critério "Quem decide". O conteúdo dos nove pacotes não mudou.
+- **Não muda:** nenhuma decisão já registrada. Nenhum teste declara validação clínica.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
