@@ -20,6 +20,10 @@
  *    AC-03r; §5.2 localizada na procedência da deglutição.
  * NÃO PROMETE: o gesto a 375 px (isso é `e2e/avc-rodada18.spec.ts`); ⛔ valida conteúdo clínico — ⛔ decide
  *   divergência entre bula e diretriz.
+ * UNIVERSO: `avc/conteudo/{bula-actilyse,superficie-f,plano-48h}.ts`, `avc/nucleo/{derivacoes-f,derivacoes-c}.ts`,
+ *   `components/avc/superficie-f.tsx`, todo `avc/nucleo/*.ts` (leitura de critérios de bula), `docs/avc/revisao/
+ *   {bula-x-diretriz,pcdt-brasil,errata-2026,hsa-resolucao,AC-03r-puerperio}.md`,
+ *   `protocols/fontes-verbatim/aha-asa-2023-hsa.md`; busca de "dossiê de conferência" em docs, protocols, avc e components.
  * FONTE: `docs/decisoes.md` — 18ª rodada; bula Actilyse I23-01 p. 4, 6, 7, 8, 9.
  */
 const fs = require("node:fs");
