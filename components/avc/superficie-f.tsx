@@ -24,7 +24,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   ACAO_DE_TROMBOLISE,
+  CAMPO_DO_JULGAMENTO,
   DECISAO_DE_PROSSEGUIR,
+  DECISAO_DO_JULGAMENTO,
+  instanciaDoJulgamento,
   CAMPO_AGENTE, SITUACAO_REGULATORIA_TNK,
   TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
@@ -67,7 +70,10 @@ import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
 import { vereditoDaTrombectomia } from "../../avc/nucleo/veredito-da-trombectomia";
 import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
-import { numeroCurto } from "../../avc/nucleo/formato";
+import { horaComData, numeroCurto } from "../../avc/nucleo/formato";
+import { julgamentosRegistrados } from "../../avc/nucleo/derivacoes-d";
+import { marcaDeAutoria, type Autoria } from "../../avc/persistencia/autoria";
+import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -107,6 +113,9 @@ const SIMBOLO_DO_PORTAO: Readonly<Record<string, string>> = {
   reconciliacao_pendente: ESTADOS.verificar.simbolo,
   resultado_pendente: ESTADOS.andamento.simbolo,
   julgamento_individual_pendente: ESTADOS.verificar.simbolo,
+  decisao_clinica_pendente: ESTADOS.verificar.simbolo,
+  avaliacao_risco_beneficio_pendente: ESTADOS.verificar.simbolo,
+  decisao_de_nao_prosseguir: ESTADOS.impede.simbolo,
   informacao_incompleta: ESTADOS.verificar.simbolo,
   sem_criterios: ESTADOS.ausente.simbolo,
   liberado: ESTADOS.favoravel.simbolo,
@@ -137,6 +146,11 @@ const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
   reconciliacao_pendente: "Resultados discordantes — reconcilie antes de decidir",
   resultado_pendente: "Exame pertinente ainda sem resultado",
   julgamento_individual_pendente: "Situação que a fonte manda avaliar individualmente",
+  /** ⚠️ D-139-3, C7: ⛔ «individual» ⛔ nem «contraindicação» — benefício incerto, decisão clínica a registrar. */
+  decisao_clinica_pendente: "Benefício da trombólise incerto — requer decisão clínica registrada",
+  /** ⚠️ Conclusão do D-139-3: ⛔ «individual» (⛔ é o verbo da fonte) ⛔ nem «contraindicação». */
+  avaliacao_risco_beneficio_pendente: "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada",
+  decisao_de_nao_prosseguir: "Decisão clínica registrada: não prosseguir com a trombólise",
   informacao_incompleta: "Faltam dados para concluir",
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
@@ -156,6 +170,21 @@ function InfoDoCard({ id, texto, children }: { id: string; texto?: string; child
     </Recolhido>
   );
 }
+
+/**
+ * ⚠️ Conclusão do D-139-3: quem registrou. Conta ⛔ tem nome no módulo (a autoria guarda o id); sem conta, a marca
+ * de AC-40; ainda sem evento no log, dito como tal — ⛔ nunca inventado.
+ */
+function rotuloDaAutoria(autoria: Autoria | undefined): string {
+  if (autoria === undefined) return "autoria ainda não gravada";
+  return marcaDeAutoria(autoria) ?? "registrado com conta";
+}
+
+/** ⚠️ D-139-3: os dois gestos do julgamento registrado, na ordem da decisão. */
+const GESTOS_DO_JULGAMENTO = [
+  { opcao: DECISAO_DO_JULGAMENTO.prosseguir, sufixo: "prosseguir" },
+  { opcao: DECISAO_DO_JULGAMENTO.naoProsseguir, sufixo: "nao-prosseguir" },
+] as const;
 
 /** ⚠️ D-PEND-22: número com vírgula decimal; `casas` fixa as casas (volume com 0,1 mL). */
 function decimal(n: number, casas?: number): string {
@@ -198,6 +227,9 @@ export default function SuperficieF({
   const [abertos, setAbertos] = useState<readonly string[]>([]);
   const alternar = (id: string) =>
     setAbertos((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
+  /** ⚠️ Conclusão do D-139-3: a trilha dos julgamentos ⛔ a autoria de cada registro (AC-40). */
+  const julgamentos = useMemo(() => julgamentosRegistrados(estado), [estado]);
+  const autoriaDe = useAutoriaDoAtendimento();
   /** ⚠️ 14ª rodada (AC-77): o motivo do NIHSS inconclusivo, dito pelo núcleo. */
   const motivoDoNihss = motivoDoInsumoInconclusivo(estado, "nihss");
 
@@ -1036,8 +1068,59 @@ export default function SuperficieF({
                     <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
                   </Pressable>
                 ) : null}
+                {/** ⚠️ D-139-3: o julgamento registrado no próprio motivo — mudar a decisão é novo registro, ⛔ sobrescrita. */}
+                {m.julgamento ? (
+                  <View style={e.julgamento}>
+                    <Text style={e.portaoNivel}>{tr("Registrar a decisão clínica")}</Text>
+                    {/** ⚠️ Revisão a 375 px: os dois gestos da mesma decisão lado a lado, ⛔ um deles na linha do rótulo. */}
+                    <View style={e.julgamentoGestos}>
+                      {GESTOS_DO_JULGAMENTO.map((g) => (
+                        <Pressable
+                          key={g.sufixo}
+                          style={e.portaoIr}
+                          accessibilityRole="button"
+                          testID={`avc-f-julgamento-${m.id}-${g.sufixo}`}
+                          onPress={() => onEscolherNaInstancia(instanciaDoJulgamento(m.julgamento as string), CAMPO_DO_JULGAMENTO.id, g.opcao)}
+                        >
+                          <Text style={e.portaoIrTexto}>{tr(g.opcao)}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                ) : null}
               </View>
             ))}
+          </View>
+        ) : null}
+
+        {/**
+          * ⚠️ Decisão do autor (conclusão do D-139-3, item 2): decisão vigente + autor + data/hora, na trilha
+          * expansível — ⛔ no card do motivo. Visível com o portão aberto ⛔ ou fechado; ⛔ nada é sobrescrito.
+          */}
+        {julgamentos.length > 0 ? (
+          <View style={e.julgamento} testID="avc-f-julgamentos">
+            <Pressable
+              style={e.portaoIr}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: abertos.includes("julgamentos") }}
+              testID="avc-f-julgamentos-abrir"
+              onPress={() => alternar("julgamentos")}
+            >
+              <Text style={e.portaoIrTexto}>
+                {tr("Decisões clínicas registradas")} ({julgamentos.length}) {abertos.includes("julgamentos") ? "▾" : "›"}
+              </Text>
+            </Pressable>
+            {abertos.includes("julgamentos")
+              ? julgamentos.map((j, i) => (
+                  <View key={j.fatoId} style={e.portaoMotivo} testID={`avc-f-julgamentos-${i}`}>
+                    <Text style={e.portaoRotulo}>{tr(j.rotuloDoAlvo)}</Text>
+                    <Text style={e.portaoDado}>{tr(j.decisao)}</Text>
+                    <Text style={e.portaoFonte}>{horaComData(j.horaRegistro)}</Text>
+                    <Text style={e.portaoFonte}>{tr(rotuloDaAutoria(autoriaDe(j.fatoId)))}</Text>
+                    <Text style={e.portaoNivel}>{j.vigente ? tr("decisão vigente") : tr("registro anterior")}</Text>
+                  </View>
+                ))
+              : null}
           </View>
         ) : null}
 
@@ -1700,6 +1783,8 @@ const criarEstilos = (tema: Tema) =>
       marginTop: ESPACO.xs,
     },
     portaoIrTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary, fontWeight: "700" },
+    julgamento: { gap: ESPACO.xs, marginTop: ESPACO.xs },
+    julgamentoGestos: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: ESPACO.xs },
     /** ⚠️ ⛔ Bloqueado ⛔ e **legível** — ⛔ cinza sobre cinza esconde a razão. */
     opcaoBloqueada: { borderStyle: "dashed", opacity: 0.6 },
     /** ⚠️ ⛔ A divergência é **registro**, ⛔ e ⛔ não repreensão: ⛔ tom de aviso, ⛔ e ⛔ nada de vermelho de erro. */

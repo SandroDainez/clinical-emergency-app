@@ -419,8 +419,31 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Responder si hay motivo para sospechar alteración de la coagulación",
   "Análise individual de risco e benefício: a fonte diz que a trombólise pode ser considerada":
     "Análisis individual de riesgo y beneficio: la fuente dice que la trombólisis puede considerarse",
-  "Julgamento individual: a fonte classifica a utilidade como incerta":
-    "Juicio individual: la fuente clasifica la utilidad como incierta",
+  // ── D-139-3 · julgamento registrado (19ª rodada · 2026-09-14) ─────────
+  "Benefício da trombólise incerto segundo a fonte: registrar a decisão clínica":
+    "Beneficio de la trombólisis incierto según la fuente: registrar la decisión clínica",
+  "Benefício da trombólise incerto — requer decisão clínica registrada":
+    "Beneficio de la trombólisis incierto — requiere decisión clínica registrada",
+  "Decisão clínica registrada: não prosseguir com a trombólise":
+    "Decisión clínica registrada: no continuar con la trombólisis",
+  "Decisão clínica registrada: não prosseguir": "Decisión clínica registrada: no continuar",
+  "Decisão de não prosseguir registrada neste episódio; mudar a decisão exige novo registro":
+    "Decisión de no continuar registrada en este episodio; cambiar la decisión exige un nuevo registro",
+  "Registrar a decisão clínica": "Registrar la decisión clínica",
+  "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada":
+    "Evaluación de riesgo y beneficio obligatoria — requiere decisión clínica registrada",
+  "Avaliação cuidadosa de risco e benefício com as especialidades que a fonte indica; registrar a decisão clínica":
+    "Evaluación cuidadosa de riesgo y beneficio con las especialidades que indica la fuente; registrar la decisión clínica",
+  "Decisões clínicas registradas": "Decisiones clínicas registradas",
+  "decisão vigente": "decisión vigente",
+  "registro anterior": "registro anterior",
+  "autoria ainda não gravada": "autoría aún no grabada",
+  "registrado com conta": "registrado con cuenta",
+  "Ressonância prévia com mais de 10 microssangramentos": "Resonancia previa con más de 10 microsangrados",
+  "Prosseguir": "Continuar",
+  "Decisão clínica registrada": "Decisión clínica registrada",
+  "Decisão clínica sobre a situação apontada no portão. Mudar a decisão é um novo registro; o anterior continua na trilha.":
+    "Decisión clínica sobre la situación señalada en el portón. Cambiar la decisión es un nuevo registro; el anterior sigue en el historial.",
   "Julgamento individual: a fonte classifica como situação a considerar":
     "Juicio individual: la fuente clasifica como situación a considerar",
   "Risco declarado pela fonte; a trombólise não fica retida por ele":

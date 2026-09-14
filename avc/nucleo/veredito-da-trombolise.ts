@@ -387,7 +387,12 @@ function avaliarCriterio(
           campo: p.campo,
         };
       }
-      const julgamentos = dado(["exige_julgamento"]);
+      /** ⚠️ D-139-3: o benefício incerto que aguarda decisão clínica também fica em julgamento — ⛔ nunca satisfeito por omissão. */
+      const julgamentos = dado([
+        "exige_julgamento",
+        "beneficio_ivt_incerto_requer_decisao_clinica",
+        "avaliacao_risco_beneficio_obrigatoria",
+      ]);
       if (julgamentos.length > 0) {
         return {
           ...b,

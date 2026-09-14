@@ -42,6 +42,13 @@ import { COLETA, FATOR_PARA_MM3 } from "../conteudo/laboratorio";
 import { NAO_SEI } from "../conteudo/campo";
 import { campoDoModulo } from "../conteudo/campos";
 import { ANTICOAGULANTE } from "../conteudo/paciente";
+import {
+  CAMPO_DO_JULGAMENTO,
+  DECISAO_DO_JULGAMENTO,
+  JULGAMENTO,
+  instanciaDoJulgamento,
+  rotuloDoAlvoDoJulgamento,
+} from "../conteudo/superficie-f";
 
 /** ⚠️ A leitura de UM item — e o verbo viaja junto, ⛔ sempre. */
 export type LeituraDeSeguranca = {
@@ -778,6 +785,18 @@ export type EfeitoNaAcao =
   | "impede_ate_resultado"
   | "aguarda_juizo"
   | "exige_julgamento"
+  /**
+   * ⚠️ D-139-3, C7 (autor, 2026-09-14): >10 microssangramentos — a fonte classifica o benefício como incerto (COR 2b).
+   * ⛔ Não é «julgamento individual» (a recomendação ⛔ usa o termo) ⛔ nem contraindicação absoluta: retém até a
+   * decisão clínica registrada.
+   */
+  | "beneficio_ivt_incerto_requer_decisao_clinica"
+  /**
+   * ⚠️ Decisão do autor (2026-09-14, conclusão do D-139-3): item relativo cujo verbo da fonte ⛔ diz individualização
+   * mas pede avaliação cuidadosa (TCE moderado a grave entre 14 dias e 3 meses). ⛔ Contraindicação; retém até a
+   * decisão clínica registrada.
+   */
+  | "avaliacao_risco_beneficio_obrigatoria"
   | "condicao_resolutiva"
   | "informa";
 
@@ -792,7 +811,65 @@ export type ImpedimentoDeSeguranca = {
   readonly oQueFalta: string;
   readonly leva: SuperficieId;
   readonly campo?: string;
+  /** ⚠️ D-139-3: o alvo que aceita julgamento registrado (`instanciaDoJulgamento(alvo)`) — ⛔ ausente, ⛔ não aceita. */
+  readonly julgamento?: string;
+  /** ⚠️ D-139-3: `impede` que vem de «não prosseguir» registrado — decisão clínica, ⛔ não contraindicação. */
+  readonly decisaoClinica?: boolean;
 };
+
+/** ⚠️ D-139-3: a decisão clínica vigente para um alvo — a última da instância; ⛔ `undefined` se ⛔ não há. */
+export function julgamentoRegistrado(estado: EstadoAvc, alvo: string): "prosseguir" | "nao_prosseguir" | undefined {
+  const f = valorNaInstancia(estado, instanciaDoJulgamento(alvo), CAMPO_DO_JULGAMENTO.id);
+  if (f?.valor === DECISAO_DO_JULGAMENTO.prosseguir) return "prosseguir";
+  if (f?.valor === DECISAO_DO_JULGAMENTO.naoProsseguir) return "nao_prosseguir";
+  return undefined;
+}
+
+/** ⚠️ Um registro da trilha dos julgamentos — autor ⛔ não mora aqui: vem da persistência (AC-40), pelo `fatoId`. */
+export type JulgamentoNaTrilha = {
+  readonly fatoId: string;
+  readonly alvo: string;
+  readonly rotuloDoAlvo: string;
+  readonly decisao: string;
+  readonly horaRegistro: number;
+  /** ⚠️ O último registro do alvo — ⛔ os anteriores continuam, ⛔ sobrescritos. */
+  readonly vigente: boolean;
+};
+
+/** ⚠️ Decisão do autor (conclusão do D-139-3, item 2): TODOS os julgamentos registrados, na ordem da trilha. */
+export function julgamentosRegistrados(estado: EstadoAvc): readonly JulgamentoNaTrilha[] {
+  const prefixo = `${JULGAMENTO}_`;
+  const fatos = estado.fatos.filter(
+    (f) => f.campo === CAMPO_DO_JULGAMENTO.id && f.instancia?.startsWith(prefixo) === true && typeof f.valor === "string"
+  );
+  return fatos.map((f, i) => {
+    const alvo = (f.instancia as string).slice(prefixo.length);
+    return {
+      fatoId: f.id,
+      alvo,
+      rotuloDoAlvo: rotuloDoAlvoDoJulgamento(alvo),
+      decisao: f.valor as string,
+      horaRegistro: f.horaRegistro,
+      vigente: !fatos.slice(i + 1).some((g) => g.instancia === f.instancia),
+    };
+  });
+}
+
+/** ⚠️ D-139-3: «não prosseguir» registrado impede a IVT no episódio; ⛔ o gesto continua, e mudar é novo registro. */
+function naoProsseguirRegistrado(alvo: string, rotulo: string, fonte: string, campo?: string): ImpedimentoDeSeguranca {
+  return {
+    id: alvo,
+    efeito: "impede",
+    rotulo,
+    dado: "Decisão clínica registrada: não prosseguir",
+    fonte,
+    oQueFalta: "Decisão de não prosseguir registrada neste episódio; mudar a decisão exige novo registro",
+    leva: "seguranca",
+    campo,
+    julgamento: alvo,
+    decisaoClinica: true,
+  };
+}
 
 /**
  * ⚠️ Varfarina ⛔ ou heparina **registradas** — ⛔ lido pelos rótulos nomeados em
@@ -957,15 +1034,22 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
   /* ── 3 · o que a fonte manda julgar individualmente ────────────────────── */
   const doac = exposicaoADoac(estado);
   if (doac.individualizada) {
-    lista.push({
-      id: "doac",
-      efeito: "exige_julgamento",
-      rotulo: doac.curto,
-      fonte: "F-10",
-      oQueFalta: "Análise individual de risco e benefício: a fonte diz que a trombólise pode ser considerada",
-      leva: "seguranca",
-      campo: "doac_ultima_dose",
-    });
+    /** ⚠️ D-139-3: DOAC <48 h exige julgamento; «prosseguir» registrado retira ⛔ só este motivo. */
+    const j = julgamentoRegistrado(estado, "doac");
+    if (j === "nao_prosseguir") {
+      lista.push(naoProsseguirRegistrado("doac", doac.curto, "F-10", "doac_ultima_dose"));
+    } else if (j === undefined) {
+      lista.push({
+        id: "doac",
+        efeito: "exige_julgamento",
+        rotulo: doac.curto,
+        fonte: "F-10",
+        oQueFalta: "Análise individual de risco e benefício: a fonte diz que a trombólise pode ser considerada",
+        leva: "seguranca",
+        campo: "doac_ultima_dose",
+        julgamento: "doac",
+      });
+    }
   } else if (
     doac.exposicao === "nao_perguntado"
     && selecaoDe(estado, "anticoagulante_em_uso").includes(ANTICOAGULANTE.doac)
@@ -994,15 +1078,22 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
   }
   const cmb = microssangramentos(estado);
   if (cmb.estado === "informacao_insuficiente") {
-    lista.push({
-      id: "cmb",
-      efeito: "exige_julgamento",
-      rotulo: cmb.curto,
-      fonte: "F-07",
-      oQueFalta: "Julgamento individual: a fonte classifica a utilidade como incerta",
-      leva: "seguranca",
-      campo: "informacao_previa_cmb",
-    });
+    /** ⚠️ D-139-3, C7: benefício incerto — retém até a decisão clínica registrada, ⛔ «julgamento individual». */
+    const j = julgamentoRegistrado(estado, "cmb");
+    if (j === "nao_prosseguir") {
+      lista.push(naoProsseguirRegistrado("cmb", cmb.curto, "F-07", "informacao_previa_cmb"));
+    } else if (j === undefined) {
+      lista.push({
+        id: "cmb",
+        efeito: "beneficio_ivt_incerto_requer_decisao_clinica",
+        rotulo: cmb.curto,
+        fonte: "F-07",
+        oQueFalta: "Benefício da trombólise incerto segundo a fonte: registrar a decisão clínica",
+        leva: "seguranca",
+        campo: "informacao_previa_cmb",
+        julgamento: "cmb",
+      });
+    }
   }
 
   /* ── 4 · os itens de F-07, ⛔ com o verbo da fonte ──────────────────────── */
@@ -1018,15 +1109,33 @@ export function impedimentosDeSeguranca(estado: EstadoAvc): readonly Impedimento
         leva: "seguranca",
       });
     } else if (i.estado === "situacao_individualizada") {
-      lista.push({
-        id: `item-${i.id}`,
-        efeito: "exige_julgamento",
-        rotulo: i.rotulo,
-        dado: i.formulacao,
-        fonte: "F-07",
-        oQueFalta: "Julgamento individual: a fonte classifica como situação a considerar",
-        leva: "seguranca",
-      });
+      /**
+       * ⚠️ D-139-3, D8: ⛔ só o item cujo verbo da fonte diz individualização aceita o julgamento registrado.
+       * ⛔ O TCE moderado a grave entre 14 dias e 3 meses (verbo sem «individual») fica como estava.
+       */
+      /**
+       * ⚠️ Decisão do autor (conclusão do D-139-3, item 1): sem «individual» no verbo, o item ⛔ vira «julgamento
+       * individual» — é avaliação de risco e benefício obrigatória, com a mesma decisão registrada.
+       */
+      const alvo = `item-${i.id}`;
+      const explicita = /individual/i.test(i.verbo);
+      const j = julgamentoRegistrado(estado, alvo);
+      if (j === "nao_prosseguir") {
+        lista.push(naoProsseguirRegistrado(alvo, i.rotulo, "F-07"));
+      } else if (j === undefined) {
+        lista.push({
+          id: alvo,
+          efeito: explicita ? "exige_julgamento" : "avaliacao_risco_beneficio_obrigatoria",
+          rotulo: i.rotulo,
+          dado: i.formulacao,
+          fonte: "F-07",
+          oQueFalta: explicita
+            ? "Julgamento individual: a fonte classifica como situação a considerar"
+            : "Avaliação cuidadosa de risco e benefício com as especialidades que a fonte indica; registrar a decisão clínica",
+          leva: "seguranca",
+          julgamento: alvo,
+        });
+      }
     } else if (i.estado === "risco_aumentado") {
       lista.push({
         id: `item-${i.id}`,

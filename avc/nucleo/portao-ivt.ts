@@ -110,6 +110,12 @@ export type EstadoDoPortao =
    * liberação automática (**HR-4**).
    */
   | "julgamento_individual_pendente"
+  /** ⚠️ D-139-3, C7: benefício da IVT incerto (>10 microssangramentos) — retém até a decisão clínica registrada. */
+  | "decisao_clinica_pendente"
+  /** ⚠️ Conclusão do D-139-3: avaliação de risco e benefício obrigatória (TCE 14 d–3 m) — retém até a decisão registrada. */
+  | "avaliacao_risco_beneficio_pendente"
+  /** ⚠️ D-139-3: «não prosseguir» registrado — decisão clínica do episódio, ⛔ não contraindicação de segurança. */
+  | "decisao_de_nao_prosseguir"
   /** ⚠️ Falta dado que o próprio critério favorável exige. */
   | "informacao_incompleta"
   /** ⚠️ ⛔ Nenhum critério implementado fecha o caso. ⛔ Nem sim ⛔ nem não. */
@@ -153,6 +159,8 @@ export type MotivoDoPortao = {
   readonly campo?: string;
   /** ⚠️ Procedência interna (adaptação, status de transcrição) — ⛔ só no ⓘ, ⛔ nunca no card (8ª rodada). */
   readonly procedencia?: string;
+  /** ⚠️ D-139-3: o alvo cujo julgamento a tela registra neste motivo — ⛔ ausente, ⛔ há gesto de julgamento. */
+  readonly julgamento?: string;
 };
 
 export type PortaoIVT = {
@@ -186,6 +194,7 @@ function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]
     oQueFalta: i.oQueFalta,
     leva: i.leva,
     campo: i.campo,
+    julgamento: i.julgamento,
   };
 }
 
@@ -269,13 +278,18 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
   for (const i of impedimentos) motivos.push(motivoDeSeguranca(i));
 
   /** ⚠️ ⛔ Só o que **impede** nomeia o estado de segurança: achado de imagem ⛔ e `impede`. */
+  /** ⚠️ D-139-3: «não prosseguir» registrado impede, ⛔ mas ⛔ nomeia o estado como decisão, ⛔ e ⛔ não como segurança. */
+  const decididos = new Set(impedimentos.filter((i) => i.decisaoClinica).map((i) => i.id));
   const seguranca = motivos.filter(
-    (m) => m.camada === "seguranca" && (m.efeito === undefined || m.efeito === "impede")
+    (m) => m.camada === "seguranca" && (m.efeito === undefined || m.efeito === "impede") && !decididos.has(m.id)
   );
+  const naoProsseguir = decididos.size > 0;
   const reconciliar = impedimentos.some((i) => i.efeito === "impede_ate_reconciliar");
   const resultadoPendente = impedimentos.some((i) => i.efeito === "impede_ate_resultado");
   const juizoPendente = impedimentos.some((i) => i.efeito === "aguarda_juizo");
   const julgamentoPendente = impedimentos.some((i) => i.efeito === "exige_julgamento");
+  const decisaoPendente = impedimentos.some((i) => i.efeito === "beneficio_ivt_incerto_requer_decisao_clinica");
+  const avaliacaoPendente = impedimentos.some((i) => i.efeito === "avaliacao_risco_beneficio_obrigatoria");
 
   /**
    * ⚠️⚠️ MARCOS TEMPORAIS INCOMPATÍVEIS (O4, decisão do autor 2026-09-12):
@@ -466,6 +480,9 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
   const estadoFinal: EstadoDoPortao =
     seguranca.length > 0
       ? "bloqueado_seguranca"
+      /** ⚠️ D-139-3: a decisão registrada de ⛔ não prosseguir vem antes da leitura do veredito, que a conta como impeditivo. */
+      : naoProsseguir
+      ? "decisao_de_nao_prosseguir"
       : veredito.tipo === "nao_recomendada"
         ? "nao_recomendada"
         /** ⚠️ Resposta contra da composição (D1) — ⛔ corrigir a PA ⛔ não muda isso. */
@@ -500,6 +517,11 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
              * navegação ⛔ nem registro, ⛔ mas ⛔ não é convertido em liberação
              * automática. ⛔ E ⛔ nunca vira `bloqueado_seguranca`.
              */
+            /** ⚠️ D-139-3, C7: benefício incerto retém até a decisão clínica — ⛔ «julgamento individual». */
+            : decisaoPendente
+            ? "decisao_clinica_pendente"
+            : avaliacaoPendente
+            ? "avaliacao_risco_beneficio_pendente"
             : julgamentoPendente
             ? "julgamento_individual_pendente"
             /** ⚠️ **HR-3**: o juízo da rec. 10 ⛔ ainda ⛔ não respondido é dado que falta — ⛔ a pergunta, ⛔ não o exame. */
@@ -523,5 +545,13 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
                   ? "informacao_incompleta"
                   : "liberado";
 
-  return { estado: estadoFinal, liberado: estadoFinal === "liberado", motivos };
+  /**
+   * ⚠️ Decisão do autor (conclusão do D-139-3, item 3): a decisão vigente de ⛔ não prosseguir é o MOTIVO PRINCIPAL;
+   * os demais seguem visíveis, na ordem em que já estavam. Sem ela, a hierarquia de sempre.
+   */
+  const ordenados = naoProsseguir
+    ? [...motivos.filter((m) => decididos.has(m.id)), ...motivos.filter((m) => !decididos.has(m.id))]
+    : motivos;
+
+  return { estado: estadoFinal, liberado: estadoFinal === "liberado", motivos: ordenados };
 }

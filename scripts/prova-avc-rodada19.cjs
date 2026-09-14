@@ -11,9 +11,12 @@
  *  · AC-06 (C5): a tenecteplase ⛔ exibe volume ⛔ nem concentração sem documento regulatório brasileiro;
  *    dose em mg; Table 7 como conferência em mg; alteplase mantém 1 mg/mL da bula.
  *  · D-139-2 (C6): varfarina/VKA pede só INR; heparina (HNF e HBPM no mesmo campo) sem mudança; DOAC em regra própria.
+ *  · D-139-3 (C7, D8): julgamento individual registrado (prosseguir · não prosseguir) resolve o DOAC; «não
+ *    prosseguir» impede; mudança é novo registro; >10 microssangramentos retêm como benefício incerto até decisão
+ *    clínica; itens relativos classificados pelo verbo da fonte.
  * NÃO PROMETE: que a conduta esteja clinicamente validada; nenhum limiar novo; a tela é medida
  *   pelos e2e existentes.
- * UNIVERSO: `avc/nucleo/{veredito-da-trombolise,portao-ivt,derivacoes-f,derivacoes-d}.ts`, `avc/conteudo/{campos,superficie-f}.ts`,
+ * UNIVERSO: `avc/nucleo/{veredito-da-trombolise,portao-ivt,derivacoes-f,derivacoes-d}.ts`, `avc/conteudo/{campos,superficie-f,superficie-d}.ts`,
  *   `components/avc/superficie-f.tsx`.
  * FONTE: `docs/decisoes.md` — 19ª rodada (§6 D-139-4) e complemento; pacote
  *   `docs/avc/revisao/D-139-4-deficit-incapacitante.md`.
@@ -139,6 +142,137 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
     coag(hepComInr)?.efeito === "impede_ate_resultado", `⛔ ${JSON.stringify(coag(hepComInr))}`);
   const doac = reg(base(), "anticoagulante_em_uso", PAC.ANTICOAGULANTE.doac);
   conf("D-139-2 · DOAC mantém a regra própria (⛔ entra no coagulograma de VKA)", coag(doac)?.dado !== "Varfarina ou heparina em uso", `⛔ ${JSON.stringify(coag(doac))}`);
+}
+
+/* ══ D-139-3 · C7 e D8 · julgamento individual registrado ═══════════════════════ */
+{
+  const DD = emT("avc", "nucleo", "derivacoes-d.js");
+  const PAC = emT("avc", "conteudo", "paciente.js");
+  const L = emT("avc", "conteudo", "laboratorio.js");
+  const col = (n) => I.nomeDaInstancia(L.COLETA, n);
+  /** Candidato completo à IVT pela rota padrão, com coagulograma registrado. */
+  const base = () => {
+    let x = reg(vazio, "incapacitante_assumido", "Incapacitante");
+    x = reg(x, "hora_inicio_observado", AGORA - 2 * H);
+    x = tcSem(x, 1, AGORA - 1 * H);
+    x = reg(x, "motivo_para_suspeitar_alteracao_coagulacao", "nao");
+    /**
+     * ⚠️ Ajuste de instrumento (vermelho da seção D-139-3, antes de implementar): plaquetas sem unidade deixavam o
+     * portão em «reconciliação pendente» e escondiam o julgamento. Agora: 200 mil/mm³ com a unidade declarada.
+     */
+    for (const [c, v] of [["inr", 1.0], ["aptt", 30], ["tp", 12], ["plaquetas", 200], ["plaquetas_unidade", "mil/mm³ (×10³/µL)"]]) x = regI(x, col(1), c, v);
+    return x;
+  };
+  /**
+   * ⚠️ Ajuste de instrumento (antes de implementar): o rascunho gravava «prosseguir»/«nao_prosseguir» crus na instância
+   * «doac». A tela grava o RÓTULO da opção, e a instância segue a convenção `<tipo>_<alvo>` (`instanciasDe`). O
+   * instrumento passa a usar as constantes do conteúdo — ⛔ o valor que a derivação lê é o que a tela grava.
+   */
+  const SF = emT("avc", "conteudo", "superficie-f.js");
+  const julgar = (e, alvo, decisao) => regI(e, SF?.instanciaDoJulgamento?.(alvo) ?? alvo, "julgamento_individual_registrado",
+    decisao === "prosseguir" ? SF?.DECISAO_DO_JULGAMENTO?.prosseguir : SF?.DECISAO_DO_JULGAMENTO?.naoProsseguir);
+  const imp = (e, id) => (DD?.impedimentosDeSeguranca?.(e) ?? []).find((i) => i.id === id);
+
+  /* DOAC <48 h: julgamento individual obrigatório (Table 8, p. e365) */
+  const doac = reg(reg(base(), "anticoagulante_em_uso", PAC.ANTICOAGULANTE.doac), "doac_ultima_dose", "nao_sei");
+  conf("D-139-3 · existe o campo `julgamento_individual_registrado` (prosseguir · não prosseguir)",
+    CAMPOS?.todosOsCampos?.().some((c) => c.id === "julgamento_individual_registrado"), "⛔ campo ausente");
+  conf("D-139-3 · DOAC individualizado sem julgamento → portão em julgamento pendente, ⛔ liberado",
+    ivt(doac).p.estado === "julgamento_individual_pendente" && ivt(doac).p.liberado === false, `⛔ ${ivt(doac).p.estado}`);
+  const doacSim = julgar(doac, "doac", "prosseguir");
+  conf("⚠️ D-139-3 · DOAC + julgamento «prosseguir» registrado → o julgamento deixa de estar pendente",
+    imp(doacSim, "doac") === undefined && ivt(doacSim).p.estado !== "julgamento_individual_pendente", `⛔ ${ivt(doacSim).p.estado} · ${JSON.stringify(imp(doacSim, "doac"))}`);
+  /**
+   * ⚠️ Ajuste de instrumento (depois de implementar): o cenário anterior (juízo «sim» com INR, PT, aPTT ⛔ plaquetas
+   * normais já registrados) ⛔ tinha outro impedimento — passava no vermelho só porque o próprio DOAC retinha. Agora
+   * o outro impedimento é real: >10 microssangramentos sem decisão clínica.
+   */
+  const doacSimComPendencia = julgar(reg(doac, "informacao_previa_cmb", "Ressonância prévia com mais de 10 microssangramentos"), "doac", "prosseguir");
+  conf("… «prosseguir» ⛔ libera se outro impedimento existe (ex.: >10 microssangramentos sem decisão)",
+    ivt(doacSimComPendencia).p.liberado === false && imp(doacSimComPendencia, "cmb") !== undefined,
+    `⛔ ${ivt(doacSimComPendencia).p.estado}`);
+  const doacNao = julgar(doac, "doac", "nao_prosseguir");
+  conf("⚠️ D-139-3 · «não prosseguir» registrado → impede a IVT neste episódio",
+    imp(doacNao, "doac")?.efeito === "impede" && ivt(doacNao).p.liberado === false, `⛔ ${JSON.stringify(imp(doacNao, "doac"))}`);
+  const mudou = julgar(doacNao, "doac", "prosseguir");
+  conf("… mudar a decisão é NOVO registro: a trilha guarda os dois (⛔ sobrescrita)",
+    mudou.fatos.filter((f) => f.campo === "julgamento_individual_registrado").length === 2 && imp(mudou, "doac") === undefined, "⛔ sobrescrita ou leitura antiga");
+
+  /* Microssangramentos >10: benefício incerto, retém até decisão clínica (COR 2b, p. e354) */
+  const cmb = reg(base(), "informacao_previa_cmb", "Ressonância prévia com mais de 10 microssangramentos");
+  conf("⚠️ D-139-3 · >10 microssangramentos → `beneficio_ivt_incerto_requer_decisao_clinica`, ⛔ «julgamento individual»",
+    imp(cmb, "cmb")?.efeito === "beneficio_ivt_incerto_requer_decisao_clinica", `⛔ ${JSON.stringify(imp(cmb, "cmb"))}`);
+  conf("… retém a IVT até a decisão clínica registrada", ivt(cmb).p.liberado === false, `⛔ ${ivt(cmb).p.estado}`);
+  conf("… ⛔ atribui à fonte «individual basis» (a recomendação ⛔ usa)", !/individual/i.test(`${imp(cmb, "cmb")?.oQueFalta} ${imp(cmb, "cmb")?.rotulo}`), `⛔ ${imp(cmb, "cmb")?.oQueFalta}`);
+  conf("… decisão clínica «prosseguir» registrada → deixa de reter por este motivo",
+    imp(julgar(cmb, "cmb", "prosseguir"), "cmb") === undefined, "⛔");
+
+  /* Itens relativos: classificação pelo verbo da fonte (D8) */
+  const SD = emT("avc", "conteudo", "superficie-d.js");
+  const explicitos = (SD?.ITENS_DE_SEGURANCA ?? []).filter((i) => i.estado === "situacao_individualizada");
+  conf("D-139-3 · todo item «situação individualizada» cita individualização no verbo da fonte, exceto os declarados",
+    explicitos.every((i) => /individual/i.test(i.verbo) || i.opcao === "Traumatismo craniano moderado a grave entre 14 dias e 3 meses"),
+    `⛔ ${explicitos.filter((i) => !/individual/i.test(i.verbo)).map((i) => i.opcao).join(" · ")}`);
+  const seguranca = (SD?.ITENS_DE_SEGURANCA ?? []).filter((i) => i.estado === "informacao_insuficiente").map((i) => i.opcao);
+  conf("… os de «segurança desconhecida» ⛔ viram julgamento obrigatório (continuam informação, AC-48)",
+    seguranca.length >= 2, `⛔ ${seguranca.join(" · ")}`);
+  const imps = (e) => DD?.impedimentosDeSeguranca?.(e) ?? [];
+  const puncao = reg(base(), "procedimentos_recentes", "Punção dural nos últimos 7 dias");
+  const idPuncao = "item-Punção dural nos últimos 7 dias";
+  conf("⚠️ D-139-3 · D8 · item com individualização explícita no verbo («in individual cases») aceita o julgamento registrado",
+    imp(puncao, idPuncao)?.efeito === "exige_julgamento" && imp(julgar(puncao, idPuncao, "prosseguir"), idPuncao) === undefined,
+    `⛔ ${JSON.stringify(imps(julgar(puncao, idPuncao, "prosseguir")).map((i) => [i.id, i.efeito]))}`);
+  const tce = reg(base(), "procedimentos_recentes", "Traumatismo craniano moderado a grave entre 14 dias e 3 meses");
+  const idTce = "item-Traumatismo craniano moderado a grave entre 14 dias e 3 meses";
+  /**
+   * ⚠️ Decisão do autor (2026-09-14, conclusão do D-139-3, item 1): a Table 8 diz que a IVT pode ser considerada após
+   * avaliação cuidadosa do tipo e da gravidade do trauma, com neurocirurgia e neurointensivismo. ⛔ Contraindicação,
+   * ⛔ «individual basis» (⛔ é o verbo literal): avaliação de risco e benefício obrigatória, retida até a decisão.
+   * Substitui a conferência anterior («o julgamento ⛔ o resolve»), que media o comportamento sinalizado ao autor.
+   */
+  const semTermo = (i) => !/individual|contraindica/i.test(`${i?.oQueFalta} ${i?.rotulo} ${i?.dado ?? ""}`);
+  conf("⚠️ D-139-3 · TCE moderado a grave entre 14 dias e 3 meses → `avaliacao_risco_beneficio_obrigatoria`, ⛔ «individual» ⛔ contraindicação",
+    imp(tce, idTce)?.efeito === "avaliacao_risco_beneficio_obrigatoria" && semTermo(imp(tce, idTce)), `⛔ ${JSON.stringify(imp(tce, idTce))}`);
+  conf("… retém o portão (`avaliacao_risco_beneficio_pendente`) até a decisão clínica",
+    ivt(tce).p.estado === "avaliacao_risco_beneficio_pendente" && ivt(tce).p.liberado === false, `⛔ ${ivt(tce).p.estado}`);
+  conf("… «prosseguir» registrado deixa de reter por ele; «não prosseguir» impede",
+    imp(julgar(tce, idTce, "prosseguir"), idTce) === undefined && imp(julgar(tce, idTce, "nao_prosseguir"), idTce)?.efeito === "impede",
+    `⛔ ${JSON.stringify(imp(julgar(tce, idTce, "prosseguir"), idTce))}`);
+
+  /* O portão nomeia cada situação sem chamá-la de contraindicação */
+  conf("⚠️ D-139-3 · CMB >10 sem decisão → portão `decisao_clinica_pendente` (⛔ julgamento individual)",
+    ivt(cmb).p.estado === "decisao_clinica_pendente", `⛔ ${ivt(cmb).p.estado}`);
+  conf("… CMB «não prosseguir» → impede", imp(julgar(cmb, "cmb", "nao_prosseguir"), "cmb")?.efeito === "impede", "⛔");
+  conf("⚠️ D-139-3 · «não prosseguir» registrado (sem outro impeditivo) → portão `decisao_de_nao_prosseguir`, ⛔ «contraindicação de segurança»",
+    ivt(doacNao).p.estado === "decisao_de_nao_prosseguir", `⛔ ${ivt(doacNao).p.estado}`);
+  const telaF = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
+  const titulo = (telaF.match(/decisao_de_nao_prosseguir:\s*"([^"]+)"/) ?? [])[1] ?? "";
+  conf("… o título desse estado ⛔ diz contraindicação", titulo !== "" && !/contraindica/i.test(titulo), `⛔ «${titulo}»`);
+  conf("… a tela oferece os dois gestos do julgamento no motivo do portão",
+    /avc-f-julgamento-\$\{m\.id\}-/.test(telaF) && /DECISAO_DO_JULGAMENTO/.test(telaF), "⛔ sem gesto na tela");
+
+  /* Decisão do autor, item 3: «não prosseguir» vigente é o motivo principal */
+  const ids = (e) => ivt(e).p.motivos.map((m) => m.id);
+  const doacSemTc = reg(reg(vazio, "anticoagulante_em_uso", PAC.ANTICOAGULANTE.doac), "doac_ultima_dose", "nao_sei");
+  const semTcNao = julgar(doacSemTc, "doac", "nao_prosseguir");
+  conf("⚠️ D-139-3 · «não prosseguir» vigente é o MOTIVO PRINCIPAL; a TC ⛔ registrada segue visível como adicional",
+    ids(semTcNao)[0] === "doac" && ids(semTcNao).length > 1, `⛔ ${JSON.stringify(ids(semTcNao))}`);
+  const semTcSim = julgar(semTcNao, "doac", "prosseguir");
+  conf("… novo registro «prosseguir» (⛔ sobrescrita): o principal volta à hierarquia dos impedimentos restantes",
+    !ids(semTcSim).includes("doac") && ids(semTcSim)[0] === ids(vazio)[0]
+      && semTcSim.fatos.filter((f) => f.campo === "julgamento_individual_registrado").length === 2,
+    `⛔ ${JSON.stringify(ids(semTcSim))} × ${JSON.stringify(ids(vazio))}`);
+
+  /* Decisão do autor, item 2: decisão vigente + autor + data/hora visíveis, na trilha */
+  const trilha = DD?.julgamentosRegistrados?.(mudou) ?? [];
+  conf("⚠️ D-139-3 · a trilha dos julgamentos guarda os dois registros — alvo, decisão, hora, fato ⛔ qual é o vigente",
+    trilha.length === 2
+      && trilha[0].decisao === SF?.DECISAO_DO_JULGAMENTO?.naoProsseguir && trilha[0].vigente === false
+      && trilha[1].decisao === SF?.DECISAO_DO_JULGAMENTO?.prosseguir && trilha[1].vigente === true
+      && trilha.every((t) => t.alvo === "doac" && typeof t.horaRegistro === "number" && typeof t.fatoId === "string" && typeof t.rotuloDoAlvo === "string" && t.rotuloDoAlvo !== ""),
+    `⛔ ${JSON.stringify(trilha)}`);
+  conf("… a tela mostra a trilha em detalhe expansível, com a autoria do fato (AC-40)",
+    /avc-f-julgamentos/.test(telaF) && /julgamentosRegistrados/.test(telaF) && /useAutoriaDoAtendimento/.test(telaF), "⛔ sem trilha na tela");
 }
 
 console.log(`\nprova-avc-rodada19: ${ok} ok · ${falhas} falha(s)`);

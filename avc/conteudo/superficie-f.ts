@@ -1187,6 +1187,36 @@ export const DECISAO_DE_PROSSEGUIR: readonly CampoDeclarado[] = [
   },
 ];
 
+/**
+ * ⚠️⚠️ D-139-3, C7 ⛔ D8 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada ⛔ complemento): o JULGAMENTO REGISTRADO
+ * de uma situação que a fonte manda decidir caso a caso — DOAC <48 h, >10 microssangramentos, ⛔ item relativo cujo
+ * verbo diz individualização. ⚠️ Uma instância por alvo (`julgamento_<alvo>`): o registro de um ⛔ resolve outro.
+ * ⛔ «Prosseguir» só libera se ⛔ nada mais impede; «não prosseguir» impede a IVT no episódio; mudar é NOVO registro
+ * (a trilha guarda os dois). Autor ⛔ hora vêm do fato (AC-40). ⛔ Não é ligado a todo gatilho: a derivação escolhe.
+ */
+export const JULGAMENTO = "julgamento";
+export const instanciaDoJulgamento = (alvo: string): string => `${JULGAMENTO}_${alvo}`;
+export const DECISAO_DO_JULGAMENTO = { prosseguir: "Prosseguir", naoProsseguir: "Não prosseguir" } as const;
+/** ⚠️ O nome clínico do alvo na trilha dos julgamentos — o item relativo usa a própria opção marcada. */
+const ROTULO_DO_ALVO_DO_JULGAMENTO: Readonly<Record<string, string>> = {
+  doac: "Anticoagulante oral direto (DOAC)",
+  cmb: "Ressonância prévia com mais de 10 microssangramentos",
+};
+export function rotuloDoAlvoDoJulgamento(alvo: string): string {
+  return ROTULO_DO_ALVO_DO_JULGAMENTO[alvo] ?? (alvo.startsWith("item-") ? alvo.slice("item-".length) : alvo);
+}
+export const CAMPO_DO_JULGAMENTO: CampoDeclarado = {
+  id: "julgamento_individual_registrado",
+  temporalidade: "estado",
+  instanciaDe: JULGAMENTO,
+  rotulo: "Decisão clínica registrada",
+  tipo: "escolha",
+  opcoes: [DECISAO_DO_JULGAMENTO.prosseguir, DECISAO_DO_JULGAMENTO.naoProsseguir],
+  fonte: "F-07",
+  bloqueiaTerapia: false,
+  nota: "Decisão clínica sobre a situação apontada no portão. Mudar a decisão é um novo registro; o anterior continua na trilha.",
+};
+
 
 /** ⚠️ Doses sustentadas por F-09. ⛔ **Preparo e administração ⛔ NÃO entram aqui.** */
 export type DoseDoAgente = {
