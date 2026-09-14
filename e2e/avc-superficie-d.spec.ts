@@ -91,7 +91,12 @@ test.describe("AVC · Superfície D — Segurança", () => {
       .toContainText(/potencialmente danoso, e a fonte diz que não deve ser administrado/i);
     await expect(page.getByTestId("avc-d-formulacao-Lesão medular aguda nos últimos 3 meses"))
       .toContainText(/provavelmente contraindicado/i);
-    /** ⚠️ E o verbatim continua visível, como autoridade. */
+    /**
+     * ⚠️ E o verbatim continua na tela, como autoridade — ⚠️ ajuste consciente (17ª rodada, AC-108): no ⓘ do
+     * item, ⛔ no texto visível. O gesto abre o ⓘ antes de ler o verbo.
+     */
+    await page.getByTestId("avc-info-item-Neoplasia intracraniana intra-axial").click();
+    await page.getByTestId("avc-info-item-Lesão medular aguda nos últimos 3 meses").click();
     await expect(page.getByTestId("avc-d-verbo-Neoplasia intracraniana intra-axial"))
       .toContainText("potentially harmful and should not be administered");
     await expect(page.getByTestId("avc-d-verbo-Lesão medular aguda nos últimos 3 meses"))

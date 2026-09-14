@@ -207,7 +207,7 @@ export function sinteseDoCaso(
    * correspondente — ⛔ e a tela diz isso, ⛔ em vez de listar recomendações.
    */
   if (destino?.saida === "hemorragia_intracraniana") {
-    proximaAcao.push({ id: "abrir-hic", texto: "Abrir o manejo de hemorragia intracerebral" });
+    proximaAcao.push({ id: "abrir-hic", texto: "Abrir o manejo de Hemorragia intracraniana (HIC)" });
   } else if (destino?.saida === "suspeita_hsa") {
     proximaAcao.push({ id: "abrir-hsa", texto: "Abrir o manejo de hemorragia subaracnóidea" });
   }

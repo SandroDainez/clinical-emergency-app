@@ -245,7 +245,8 @@ test.describe("AVC · Superfície C — Imagem", () => {
 
     const destino = page.getByTestId("avc-destino-imagem");
     await expect(destino).toBeVisible();
-    await expect(destino).toContainText(/AVC hemorrágico/i);
+    /** ⚠️ Ajuste consciente (17ª rodada, AC-110): um nome só — "Hemorragia intracraniana (HIC)". */
+    await expect(destino).toContainText("Hemorragia intracraniana (HIC)");
     // ⚠️ E o que acontece MESMO ASSIM — sem isto, o destino seria um vazio educado.
     await expect(destino).toContainText(/o atendimento continua/i);
 

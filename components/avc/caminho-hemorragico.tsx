@@ -5,6 +5,7 @@
  * reperfusão isquêmica com motivo, infusão (pede o registro da interrupção), tipo, anticoagulante
  * do Paciente ⛔ marcos da neurocirurgia. ⛔ Toda conduta: "conteúdo pendente de validação" com a
  * fonte candidata — ⛔ nenhum número.
+ * ⚠️ 17ª rodada: bloco com o nome único do caminho (AC-110) ⛔ pendente sempre com nome (AC-107).
  */
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -54,7 +55,7 @@ export function CaminhoHemorragico({
 
   return (
     <View style={e.raiz} testID="avc-hem-caminho">
-      <CabecalhoDeBloco titulo={tr("Caminho hemorrágico")} testID="avc-g-bloco-hem-caminho" />
+      <CabecalhoDeBloco titulo={tr("Hemorragia intracraniana (HIC)")} testID="avc-g-bloco-hem-caminho" />
 
       <Text style={e.bloqueio} testID="avc-hem-bloqueio">
         {tr("Trombólise e trombectomia isquêmicas bloqueadas")}: {tr("hemorragia intracraniana identificada na imagem")}
@@ -145,14 +146,24 @@ export function CaminhoHemorragico({
                 const formal = i.validacao.estado === "recomendacao_formal";
                 return (
                   <View key={i.chave} style={e.item} testID={`avc-hem-item-${i.chave}`}>
-                    <Text style={e.linha}>
-                      {"agente" in i.item ? tr(i.item.agente) : tr(i.tituloDoTema)}
-                      {formal && !("agente" in i.item) ? ` · ${tr(rotuloDaClasse(i.item.cor))} · ${tr("Nível")} ${i.item.loe}` : ""}
-                    </Text>
                     {formal && !("agente" in i.item) ? (
-                      <Text style={e.linha}>{tr(i.item.formulacao)}</Text>
+                      <>
+                        <Text style={e.linha}>
+                          {tr(i.tituloDoTema)} · {tr(rotuloDaClasse(i.item.cor))} · {tr("Nível")} {i.item.loe}
+                        </Text>
+                        <Text style={e.linha}>{tr(i.item.formulacao)}</Text>
+                      </>
                     ) : (
-                      <Text style={e.pendencia}>{tr("conteúdo pendente de validação")}</Text>
+                      /** ⚠️ AC-107 (17ª rodada): o pendente diz o que está pendente — tema ⛔ agente, variante, posição. */
+                      <Text style={e.pendencia}>
+                        {"agente" in i.item
+                          ? `${tr("Reversão por agente")} · ${tr(i.item.agente)} · HIC`
+                          : i.partes !== undefined
+                            ? `${tr(i.partes.tema)} · ${i.partes.variante} · ${tr("recomendação")} ${i.partes.ordem} ${tr("de")} ${i.partes.total}`
+                            : tr(i.tituloDoTema)}
+                        {" — "}
+                        {tr("conteúdo pendente de validação")}
+                      </Text>
                     )}
                     {i.validacao.estado === "recomendacao_formal" ? (
                       <Text style={e.detalhe}>

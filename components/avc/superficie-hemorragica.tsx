@@ -34,8 +34,9 @@ import {
   type Recomendacao,
 } from "../../avc/conteudo/hemorragia-intracerebral";
 import { AVISO_HSA, CITACAO_HSA, TEMAS_HSA } from "../../avc/conteudo/hemorragia-subaracnoidea";
-import { rotuloDaClasse, validacaoDoItem } from "../../avc/conteudo/validacao-do-catalogo";
+import { partesDaIdentificacao, rotuloDaClasse, validacaoDoItem } from "../../avc/conteudo/validacao-do-catalogo";
 import { ClinicalCard, InfoToggle, SectionTitle, WarningCard } from "./sistema";
+import { Recolhido } from "./ui";
 import { useEstilosDoTema, useTheme, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, RAIO } from "../../design-system/tokens";
@@ -71,7 +72,12 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
 
   const alternar = (id: string) => setAbertos((a) => ({ ...a, [id]: !a[id] }));
 
-  function cartao(rec: Recomendacao) {
+  const identificacaoPendente = (rec: Recomendacao, tituloDoTema: string) => {
+    const p = partesDaIdentificacao(rec, tituloDoTema, variante);
+    return `${tr(p.tema)} · ${tr("recomendação")} ${p.ordem} ${tr("de")} ${p.total}${p.populacao ? ` · ${tr(p.populacao)}` : ""} — ${tr("conteúdo pendente de validação")}`;
+  };
+
+  function cartao(rec: Recomendacao, tituloDoTema: string) {
     const aberto = abertos[rec.id] === true;
     const cor = corDaDirecao(rec.direcao, tema);
     /** ⚠️ AC-95 (16ª rodada): o MESMO estado que o caminho hemorrágico mostra. */
@@ -86,7 +92,11 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
               <Text style={[e.seloTexto, { color: cor }]}>{tr(rotuloCor(rec.cor))}</Text>
             </View>
           ) : null}
-          <Text style={e.loe}>{formal ? `${tr("Nível")} ${rec.loe}` : tr("conteúdo pendente de validação")}</Text>
+          {/**
+            * ⚠️ AC-107 (17ª rodada): pendente ⛔ é só "conteúdo pendente de validação" — diz o tema, a variante ⛔ a
+            * posição no tema (dois pendentes consecutivos distinguíveis), sem conteúdo ⛔ validado.
+            */}
+          <Text style={e.loe}>{formal ? `${tr("Nível")} ${rec.loe}` : identificacaoPendente(rec, tituloDoTema)}</Text>
           {/** ⚠️ O ⓘ na linha do que ele explica — padrão único do módulo. */}
           <InfoToggle
             aberto={aberto}
@@ -178,7 +188,7 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
              */
             <ClinicalCard key={r.id} testID={`avc-hem-reversao-${r.id}`}>
               <Text style={e.agente}>{tr(r.agente)}</Text>
-              <Text style={e.populacao}>{tr("conteúdo pendente de validação")}</Text>
+              <Text style={e.populacao}>{tr("Reversão por agente")} · {tr(r.agente)} — {tr("conteúdo pendente de validação")}</Text>
             </ClinicalCard>
           ))}
         </View>
@@ -188,13 +198,15 @@ export default function SuperficieHemorragica({ variante }: { variante: Variante
         <View key={t.id} style={e.grupo} testID={`avc-hem-tema-${t.id}`}>
           <SectionTitle testID={`avc-hem-bloco-${t.id}`}>{t.titulo}</SectionTitle>
           <Text style={e.resumo}>{tr(t.resumo)}</Text>
-          {t.recomendacoes.map((rec) => cartao(rec))}
+          {t.recomendacoes.map((rec) => cartao(rec, t.titulo))}
         </View>
       ))}
 
       <View style={e.rodape} testID="avc-hem-fonte-citacao">
-        {/** ⚠️ Citação — dado bibliográfico, ⛔ não texto de tela traduzível. */}
-        <Text style={e.citacao}>{citacao}</Text>
+        {/** ⚠️ Citação — dado bibliográfico em inglês: AC-108 (17ª rodada), mora no ⓘ, ⛔ no texto visível. */}
+        <Recolhido id={`hem-citacao-${variante}`} texto={tr("Diretriz citada")} aberto={abertos.citacao === true} onAlternar={() => alternar("citacao")}>
+          <Text style={e.citacao}>{citacao}</Text>
+        </Recolhido>
       </View>
     </View>
   );

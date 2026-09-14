@@ -159,7 +159,8 @@ if (V?.validacaoDoItem !== undefined && HIC && HSA) {
 
 /* ══ 3 · AC-98 · AC-91 · AC-92 ════════════════════════════════════════════ */
 {
-  const motivos = CP?.MOTIVOS_DE_DESFECHO_NEGATIVO ?? [];
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-109): motivos por terapia — o AC-98 vale na lista da trombectomia. */
+  const motivos = CP?.MOTIVOS_DE_DESFECHO_NEGATIVO_EVT ?? [];
   conf("AC-98: «Recusada» vira «Centro de referência recusou»; «Recusa do paciente ou família» fica",
     motivos.includes("Centro de referência recusou") && !motivos.includes("Recusada") && motivos.includes("Recusa do paciente ou família"), `⛔ ${motivos}`);
 
@@ -207,7 +208,8 @@ if (V?.validacaoDoItem !== undefined && HIC && HSA) {
   conf("pendências DENTRO do caminho sem o prefixo «Caminho hemorrágico:»",
     Array.isArray(c.pendenciasNoCaminho) && c.pendenciasNoCaminho.length > 0 && c.pendenciasNoCaminho.every((p) => !/^Caminho hemorrágico:/.test(p.rotulo)),
     `⛔ ${JSON.stringify(c.pendenciasNoCaminho)}`);
-  conf("… na lista geral do atendimento o contexto continua dito", PA.pendenciasDoCaso(hem).some((p) => /^Caminho hemorrágico:/.test(p.rotulo)), "⛔ perdeu o contexto na lista geral");
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-110): o contexto é dito pelo nome único do caminho. */
+  conf("… na lista geral do atendimento o contexto continua dito", PA.pendenciasDoCaso(hem).some((p) => /^Hemorragia intracraniana \(HIC\):/.test(p.rotulo)), "⛔ perdeu o contexto na lista geral");
   const telaCam = lerFonte(arq("components", "avc", "caminho-hemorragico.tsx"));
   conf("… a tela do caminho usa as pendências curtas", /pendenciasNoCaminho/.test(telaCam), "⛔ tela usa as longas");
 }

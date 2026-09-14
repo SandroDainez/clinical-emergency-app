@@ -24,7 +24,7 @@
 export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   // ── Cromado da tela ────────────────────────────────────────────────────────
   "Nível": "Nivel",
-  "Abrir o manejo de hemorragia intracerebral": "Abrir el manejo de hemorragia intracerebral",
+  "Abrir o manejo de Hemorragia intracraniana (HIC)": "Abrir el manejo de Hemorragia intracraneal (HIC)",
   "Abrir o manejo de hemorragia subaracnóidea": "Abrir el manejo de hemorragia subaracnoidea",
   "Situação atual": "Situación actual",
   "Conduta": "Conducta",
@@ -100,7 +100,7 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "COR 3: No Benefit": "COR 3: No Benefit",
 
   // ── Superfícies-destino ────────────────────────────────────────────────────
-  "AVC hemorrágico (HIC)": "ACV hemorrágico (HIC)",
+  "Hemorragia intracraniana (HIC)": "Hemorragia intracraneal (HIC)",
   "Adulto com hemorragia intracerebral espontânea":
     "Adulto con hemorragia intracerebral espontánea",
   "Adulto com hemorragia subaracnóidea aneurismática":

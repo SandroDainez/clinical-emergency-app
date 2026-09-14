@@ -173,7 +173,8 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
   const reg = (e, c, v, extra = {}) => E.registrarFato(e, { campo: c, valor: v, ...extra }, rel);
   const vazio = E.abrirAtendimento(rel);
   const ids = (e) => P.planoAte48h(e, T0 + HORA).caminhos.map((c) => c.id);
-  const motivos = CP.MOTIVOS_DE_DESFECHO_NEGATIVO ?? [];
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-109): motivos por terapia — a lista completa é a da trombectomia. */
+  const motivos = CP.MOTIVOS_DE_DESFECHO_NEGATIVO_EVT ?? [];
   conf("AC-85: motivos incluem impedida, sem indicação, indisponível, recusada, decisão da equipe ⛔ recusa do paciente/família",
     /* ⚠️ ajuste consciente (16ª rodada, AC-98): «Recusada» → «Centro de referência recusou» */
     ["Impedida", "Sem indicação", "Indisponível", "Centro de referência recusou", "Decisão da equipe / limitação terapêutica", "Recusa do paciente ou família"].every((m) => motivos.includes(m)), `⛔ ${motivos}`);
@@ -227,7 +228,8 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
   })();
   const deg = (CP.CAMPOS_DO_PLANO_48H ?? []).find((c) => c.id === "plano_degluticao");
   conf("AC-88: resultado = aprovada · reprovada · não realizada · não sei", JSON.stringify(deg?.opcoes) === JSON.stringify(["Aprovada", "Reprovada", "Não realizada", "Não sei"]), `⛔ ${JSON.stringify(deg?.opcoes)}`);
-  conf("… as quatro transversais por registro usam o mesmo resultado", ["plano_mobilizacao", "plano_tev", "plano_dispositivos"].every((id) => JSON.stringify((CP.CAMPOS_DO_PLANO_48H ?? []).find((c) => c.id === id)?.opcoes) === JSON.stringify(["Aprovada", "Reprovada", "Não realizada", "Não sei"])), "⛔ opções diferentes");
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-106): cada transversal tem vocabulário próprio — ⛔ o da deglutição. */
+  conf("… as outras transversais por registro têm resultado registrável, ⛔ o vocabulário da deglutição", ["plano_mobilizacao", "plano_tev", "plano_dispositivos"].every((id) => { const o = (CP.CAMPOS_DO_PLANO_48H ?? []).find((c) => c.id === id)?.opcoes ?? []; return o.length >= 3 && !o.includes("Aprovada"); }), "⛔ opções herdadas");
   const trava = (e) => tenta(() => P.travaDeViaOral(e), "erro");
   conf("sem caminho definido pela imagem ⛔ há trava no cabeçalho", trava(E.abrirAtendimento(rel)) === undefined, `⛔ ${JSON.stringify(trava(E.abrirAtendimento(rel)))}`);
   conf("caminho definido ⛔ triagem sem registro → trava «nada por via oral»", trava(ivt)?.motivo === "sem_registro", `⛔ ${JSON.stringify(trava(ivt))}`);
@@ -237,7 +239,8 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
   conf("deglutição APROVADA → sem trava", trava(reg(ivt, "plano_degluticao", "Aprovada")) === undefined, "⛔ trava com aprovada");
   const tv = (e, id) => P.planoAte48h(e, T0 + MIN).transversais.find((t) => t.id === id);
   conf("a tarefa leva o resultado registrado ⛔ reprovada ⛔ conclui a trava", tv(reg(ivt, "plano_degluticao", "Reprovada"), "degluticao")?.resultado === "Reprovada" && tv(reg(ivt, "plano_degluticao", "Reprovada"), "degluticao")?.estado === "retida", `⛔ ${JSON.stringify(tv(reg(ivt, "plano_degluticao", "Reprovada"), "degluticao"))}`);
-  conf("mobilização reprovada = resultado registrado (concluída, com o resultado)", tv(reg(ivt, "plano_mobilizacao", "Reprovada"), "mobilizacao")?.estado === "concluida" && tv(reg(ivt, "plano_mobilizacao", "Reprovada"), "mobilizacao")?.resultado === "Reprovada", "⛔");
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-106): mobilização conclui com «Realizada» (vocabulário próprio). */
+  conf("mobilização realizada = resultado registrado (concluída, com o resultado)", tv(reg(ivt, "plano_mobilizacao", "Realizada"), "mobilizacao")?.estado === "concluida" && tv(reg(ivt, "plano_mobilizacao", "Realizada"), "mobilizacao")?.resultado === "Realizada", `⛔ ${JSON.stringify(tv(reg(ivt, "plano_mobilizacao", "Realizada"), "mobilizacao"))}`);
   conf("«não realizada» ⛔ conclui", tv(reg(ivt, "plano_tev", "Não realizada"), "tev")?.estado !== "concluida", "⛔");
   const tela = lerFonte(arq("components", "avc", "avc-modulo-screen.tsx"));
   conf("a trava aparece no cabeçalho de suporte", /avc-trava-via-oral/.test(tela) && /travaDeViaOral\(/.test(tela), "⛔ cabeçalho sem trava");
@@ -318,7 +321,8 @@ if (H?.caminhoHemorragico !== undefined && CH !== undefined) {
   const tela = lerFonte(arq("components", "avc", "avc-modulo-screen.tsx"));
   conf("a tela reduz as abas no caminho hemorrágico", /SUPERFICIES_DO_CAMINHO_HEMORRAGICO/.test(tela) && /caminhoHemorragico\(/.test(tela), "⛔ abas iguais");
   conf("⚠️ captura do A07: com o caminho aberto, o título ⛔ diz «AVC isquêmico agudo»",
-    /caminhoHemorragico\(estado\)\.ativo \? "Hemorragia intracraniana" : "AVC isquêmico agudo"/.test(tela), "⛔ título isquêmico no caminho hemorrágico");
+    /* ⚠️ ajuste consciente (17ª rodada, AC-110): o título do caminho é o nome único da HIC (`TITULO_DA_SINDROME.hic`) */
+    /caminhoHemorragico\(estado\)\.ativo \? TITULO_DA_SINDROME\.hic : "AVC isquêmico agudo"/.test(tela), "⛔ título isquêmico no caminho hemorrágico");
   conf("a Destino desenha o caminho hemorrágico", /<CaminhoHemorragico/.test(lerFonte(arq("components", "avc", "superficie-g.tsx"))), "⛔ fora da Destino");
 }
 

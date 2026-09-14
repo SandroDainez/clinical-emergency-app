@@ -74,6 +74,7 @@ import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { acaoPendente } from "../../avc/conteudo/rotulos-clinicos";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { Recolhido } from "./ui";
+import { classeCurta, forcaDaClasse3, rotuloDaForca } from "../../avc/conteudo/forca-da-recomendacao";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
@@ -415,9 +416,13 @@ export default function SuperficieF({
         {[...veredito.contra, ...veredito.sustentam].map((m) => (
           <View key={m.id} style={e.vereditoMotivo} testID={`avc-f-veredito-motivo-${m.id}`}>
             <Text style={e.vereditoGrau}>
-              {tr("COR")} {m.cor} · {tr("LOE")} {m.loe} · {m.localizacao}
+              {tr("COR")} {classeCurta(m.cor)} · {tr("LOE")} {m.loe} · {m.localizacao}
             </Text>
-            <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+            {/** ⚠️ AC-108 (17ª rodada): a força traduzida no card; o verbo em inglês no ⓘ. */}
+            <Text style={e.vereditoVerbo}>{tr(rotuloDaForca(m.cor) ?? "")}</Text>
+            <InfoDoCard id={`f-veredito-verbo-${m.id}`}>
+              <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+            </InfoDoCard>
           </View>
         ))}
 
@@ -479,7 +484,7 @@ export default function SuperficieF({
         */}
       <View style={e.paralelo} testID="avc-f-paralelismo">
         <Text style={e.paraleloGrau}>
-          {tr("COR")} {IVT_E_EVT_EM_PARALELO.cor} · {tr("LOE")} {IVT_E_EVT_EM_PARALELO.loe}
+          {tr("COR")} {classeCurta(IVT_E_EVT_EM_PARALELO.cor)}{forcaDaClasse3(IVT_E_EVT_EM_PARALELO.cor) ? ` (${tr(forcaDaClasse3(IVT_E_EVT_EM_PARALELO.cor) ?? "")})` : ""} · {tr("LOE")} {IVT_E_EVT_EM_PARALELO.loe}
         </Text>
         <Text style={e.paraleloTexto}>
           {tr("Trombólise e trombectomia correm em paralelo — uma não atrasa a outra.")}
@@ -628,10 +633,13 @@ export default function SuperficieF({
             testID={`avc-f-evt-motivo-${m.id}`}
           >
             <Text style={e.vereditoGrau}>
-              {tr("COR")} {m.cor} · {tr("LOE")} {m.loe} · {m.localizacao}
+              {tr("COR")} {classeCurta(m.cor)} · {tr("LOE")} {m.loe} · {m.localizacao}
             </Text>
-            {/** ⚠️ Verbatim em inglês — ⛔ verbatim ⛔ não se traduz (§6.14). */}
-            <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+            {/** ⚠️ AC-108 (17ª rodada): a força traduzida no card; o verbatim em inglês (⛔ traduzido, §6.14) no ⓘ. */}
+            <Text style={e.vereditoVerbo}>{tr(rotuloDaForca(m.cor) ?? "")}</Text>
+            <InfoDoCard id={`f-evt-verbo-${m.id}`}>
+              <Text style={e.vereditoVerbo}>{m.verbo}</Text>
+            </InfoDoCard>
 
             {/**
               * ⚠️⚠️ O FUNDAMENTO — ⛔ **⛔ só os fatos desta recomendação**.
@@ -672,7 +680,9 @@ export default function SuperficieF({
                   {m.generalizacao.marcador}{" "}
                   {tr("Generalização limitada — exige julgamento clínico, e não é exclusão")}
                 </Text>
-                <Text style={e.evtGeneralizacaoTexto}>{m.generalizacao.verbatim}</Text>
+                <InfoDoCard id={`f-evt-generalizacao-${m.id}`}>
+                  <Text style={e.evtGeneralizacaoTexto}>{m.generalizacao.verbatim}</Text>
+                </InfoDoCard>
               </View>
             ) : null}
           </View>
@@ -725,11 +735,13 @@ export default function SuperficieF({
         && papelEvt === "sucesso" ? (
         <View style={e.paralelo} testID="avc-f-evt-sem-esperar">
           <Text style={e.paraleloGrau}>
-            {tr("COR")} {IVT_E_EVT_EM_PARALELO.cor} · {tr("LOE")}{" "}
+            {tr("COR")} {classeCurta(IVT_E_EVT_EM_PARALELO.cor)} · {tr("LOE")}{" "}
             {IVT_E_EVT_EM_PARALELO.loe} · {IVT_E_EVT_EM_PARALELO.localizacao}
           </Text>
           <Text style={e.paraleloTexto}>{tr(IVT_E_EVT_EM_PARALELO.frase)}</Text>
-          <Text style={e.evtGeneralizacaoTexto}>{IVT_E_EVT_EM_PARALELO.verbatim}</Text>
+          <InfoDoCard id="f-evt-sem-esperar">
+            <Text style={e.evtGeneralizacaoTexto}>{IVT_E_EVT_EM_PARALELO.verbatim}</Text>
+          </InfoDoCard>
         </View>
       ) : null}
 
@@ -1302,7 +1314,7 @@ export default function SuperficieF({
                 <View style={e.dividaTopo}>
                   <Text style={e.dividaMarcador}>{tr("Critério não definido pela fonte")}</Text>
                   <Text style={e.dividaGrau}>
-                    {tr("COR")} {i.leitura.cor} · {i.leitura.terapia === "ivt" ? tr("Trombólise") : tr("Trombectomia")}
+                    {tr("COR")} {classeCurta(i.leitura.cor)}{forcaDaClasse3(i.leitura.cor) ? ` (${tr(forcaDaClasse3(i.leitura.cor) ?? "")})` : ""} · {i.leitura.terapia === "ivt" ? tr("Trombólise") : tr("Trombectomia")}
                   </Text>
                 </View>
                 <Text style={e.dividaPopulacao}>{tr(i.leitura.populacao)}</Text>
@@ -1338,9 +1350,12 @@ export default function SuperficieF({
         {PRINCIPIOS_GERAIS.map((g) => (
           <View key={g.id} style={e.principio} testID={`avc-f-principio-${g.id}`}>
             <Text style={e.grau}>
-              {tr("COR")} {g.cor} · {tr("LOE")} {g.loe}
+              {tr("COR")} {classeCurta(g.cor)} · {tr("LOE")} {g.loe}
             </Text>
-            <Text style={e.verbo}>“{g.verbo}”</Text>
+            <Text style={e.verbo}>{tr(rotuloDaForca(g.cor) ?? "")}</Text>
+            <InfoDoCard id={`f-principio-verbo-${g.id}`}>
+              <Text style={e.verbo}>“{g.verbo}”</Text>
+            </InfoDoCard>
             <Text style={e.principioPressupoe}>
               {tr("Pressupõe")}: {tr(g.pressupoe)}. {tr("Não afirma corresponder a este caso.")}
             </Text>
@@ -1455,15 +1470,16 @@ function Cartao({
       onPress={onAlternar}
     >
       <Text style={[e.grau, alerta ? e.grauAlerta : null]}>
-        {tr("COR")} {leitura.cor} · {tr("LOE")} {leitura.loe} ·{" "}
+        {tr("COR")} {classeCurta(leitura.cor)} · {tr("LOE")} {leitura.loe} ·{" "}
         {leitura.terapia === "ivt" ? tr("Trombólise") : tr("Trombectomia")}
       </Text>
       <Text style={e.populacao}>{tr(leitura.populacao)}</Text>
       {/**
         * ⚠️⚠️ O VERBO DA FONTE, EM INGLÊS, ⛔ SEM TRADUÇÃO E ⛔ SEM CONVERSÃO.
         * ⛔ *not recommended* ⛔ nunca vira "contraindicado" (§6.14, E-45).
+        * ⚠️ AC-108 (17ª rodada): no card, a FORÇA da classe traduzida; o verbo em inglês, no detalhe aberto.
         */}
-      <Text style={e.verbo}>“{leitura.verbo}”</Text>
+      <Text style={e.verbo}>{tr(rotuloDaForca(leitura.cor) ?? "")}</Text>
 
       <Relogios relogios={item.relogios} onIrParaCampo={onIrParaCampo} />
 
@@ -1505,6 +1521,7 @@ function Cartao({
               {tr("Sustentam")}: {leitura.sustentam.map((x) => tr(x)).join(", ")}
             </Text>
           ) : null}
+          <Text style={e.verbo}>“{leitura.verbo}”</Text>
           <Text style={e.fonte}>
             {leitura.localizacao} · {tr("slot")} {leitura.slot}
           </Text>

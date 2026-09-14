@@ -16,8 +16,10 @@
 import { valorDaOpcao } from "../conteudo/campo";
 import {
   CAMPO_DO_RESULTADO,
+  CONCLUI_COM,
   EVENTO_DE_ORIGEM,
-  RESULTADOS_DA_TAREFA,
+  RESULTADOS_POR_TAREFA,
+  RETEM_COM,
   TAREFAS_DO_CAMINHO,
   TAREFAS_TRANSVERSAIS,
   type CaminhoDoPlanoId,
@@ -61,7 +63,7 @@ export type TarefaDoPlano = {
   readonly criterioDeConclusao: string;
   readonly estado: EstadoDaTarefa;
   readonly atrasoMin?: number;
-  /** ⚠️ AC-88: o resultado registrado, como rótulo (aprovada · reprovada · não realizada · não sei). */
+  /** ⚠️ AC-88 ⛔ AC-106: o resultado registrado, como rótulo do vocabulário da tarefa. */
   readonly resultado?: string;
   readonly conteudo: ConteudoDaTarefa;
   readonly fonte: string;
@@ -247,13 +249,19 @@ function leiturasDeOrigem(estado: EstadoAvc): readonly [CaminhoDoPlanoId, Leitur
 
 /* ── AC-88 · resultado ⛔ trava de via oral ──────────────────────────────── */
 
-const ROTULO_DO_RESULTADO: Readonly<Record<string, string>> = Object.fromEntries(RESULTADOS_DA_TAREFA.map((r) => [valorDaOpcao(r), r]));
+type TarefaComResultado = keyof typeof RESULTADOS_POR_TAREFA;
+const temResultado = (id: string): id is TarefaComResultado => id in RESULTADOS_POR_TAREFA;
 
+/**
+ * ⚠️ AC-106 (17ª rodada): o valor gravado é lido NO VOCABULÁRIO DA TAREFA. Um valor fora dele (ex.: um
+ * "aprovada" gravado na mobilização antes da 17ª rodada) aparece cru ⛔ e ⛔ conclui nada.
+ */
 function resultadoDaTarefa(estado: EstadoAvc, tarefaId: string): string | undefined {
   const campo = CAMPO_DO_RESULTADO[tarefaId];
-  if (campo === undefined) return undefined;
+  if (campo === undefined || !temResultado(tarefaId)) return undefined;
   const v = valorAtual(estado, campo)?.valor;
-  return typeof v === "string" && v !== "nao_perguntado" ? ROTULO_DO_RESULTADO[v] ?? v : undefined;
+  if (typeof v !== "string" || v === "nao_perguntado") return undefined;
+  return (RESULTADOS_POR_TAREFA[tarefaId] as readonly string[]).find((r) => valorDaOpcao(r) === v) ?? v;
 }
 
 export type TravaDeViaOral = { readonly motivo: "reprovada" | "nao_realizada" | "nao_sei" | "sem_registro" };
@@ -421,9 +429,11 @@ function transversais(estado: EstadoAvc, caminhos: readonly CaminhoDoPlano[], fo
       return tarefa(def, "transversal", evento, q, medida !== undefined ? "concluida" : "pendente");
     }
     const resultado = resultadoDaTarefa(estado, def.id);
-    if (def.id === "degluticao") return tarefa(def, "transversal", evento, q, resultado === "Aprovada" ? "concluida" : "retida", { resultado });
-    const registrado = resultado === "Aprovada" || resultado === "Reprovada";
-    return tarefa(def, "transversal", evento, q, registrado ? "concluida" : "pendente", { resultado });
+    if (def.id === "degluticao") return tarefa(def, "transversal", evento, q, resultado === CONCLUI_COM.degluticao ? "concluida" : "retida", { resultado });
+    /** ⚠️ AC-106: cada tarefa conclui pelo SEU vocabulário; "contraindicada no momento" retém. */
+    const conclui = temResultado(def.id) && resultado === CONCLUI_COM[def.id];
+    const retem = resultado !== undefined && RETEM_COM.includes(resultado);
+    return tarefa(def, "transversal", evento, q, conclui ? "concluida" : retem ? "retida" : "pendente", { resultado });
   });
 }
 

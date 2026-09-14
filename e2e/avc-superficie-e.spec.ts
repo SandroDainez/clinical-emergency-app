@@ -195,6 +195,8 @@ test.describe("AVC · Correções", () => {
        * formulação da fonte **⛔ chega à tela** — ⛔ é o mesmo.
        */
         .toContainText(/controlar a pressão arterial antes de iniciar a trombólise/i);
+      /** ⚠️ Ajuste consciente (17ª rodada, AC-108): o verbatim mora no ⓘ — o gesto o abre antes de ler. */
+      await page.getByTestId("avc-info-e-verbo-pressao_acima_da_meta").click();
       await expect(page.getByTestId("avc-e-verbo-pressao_acima_da_meta"))
         .toContainText("before IVT therapy is initiated");
       // ⚠️ E a tela DIZ o que faz o bloqueio cair.

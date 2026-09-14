@@ -51,6 +51,7 @@ import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
+import { classeCurta, forcaDaClasse3 } from "../../avc/conteudo/forca-da-recomendacao";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 1 · PRESSÃO — F-19 dá os agentes; F-04 dá os alvos
@@ -262,7 +263,7 @@ export function CondutaDaPressao({
             <Text style={e.alvoGrau}>
               {alvo.apoioSemGrau
                 ? tr("Texto de apoio da diretriz, sem grau de recomendação")
-                : `${tr("COR")} ${alvo.cor} · ${tr("LOE")} ${alvo.loe}`}
+                : `${tr("COR")} ${classeCurta(alvo.cor)}${forcaDaClasse3(alvo.cor) ? ` (${tr(forcaDaClasse3(alvo.cor) ?? "")})` : ""} · ${tr("LOE")} ${alvo.loe}`}
             </Text>
             <Text style={e.alvoValor}>{tr(alvo.valor)}</Text>
             <Text style={e.alvoContexto}>{tr(alvo.contexto)}</Text>
@@ -318,7 +319,7 @@ export function CondutaGlicemica({ prefixo }: { prefixo: string }) {
         * correção**. ⛔ Uma tabela de cinco faixas no topo ensinaria o oposto.
         */}
       <View style={e.pergunta} testID={`${prefixo}pergunta-glicemia`}>
-        <Text style={e.perguntaGrau}>{tr("COR")} {PERGUNTA_QUE_DECIDE.cor}</Text>
+        <Text style={e.perguntaGrau}>{tr("COR")} {classeCurta(PERGUNTA_QUE_DECIDE.cor)}{forcaDaClasse3(PERGUNTA_QUE_DECIDE.cor) ? ` (${tr(forcaDaClasse3(PERGUNTA_QUE_DECIDE.cor) ?? "")})` : ""}</Text>
         <Text style={e.perguntaTexto}>{tr(PERGUNTA_QUE_DECIDE.pergunta)}</Text>
         <Text style={e.perguntaRamo}>
           {tr("Se persiste")}: {tr(PERGUNTA_QUE_DECIDE.sePersiste)}
@@ -380,7 +381,7 @@ export function CondutaGlicemica({ prefixo }: { prefixo: string }) {
       {ALVOS_GLICEMICOS.map((a) => (
         <View key={a.id} style={e.alvo} testID={`${prefixo}alvo-glicemia-${a.id}`}>
           <Text style={e.alvoGrau}>
-            {a.cor === "—" ? tr("Manejo hospitalar") : `${tr("COR")} ${a.cor}`}
+            {a.cor === "—" ? tr("Manejo hospitalar") : `${tr("COR")} ${classeCurta(a.cor)}${forcaDaClasse3(a.cor) ? ` (${tr(forcaDaClasse3(a.cor) ?? "")})` : ""}`}
           </Text>
           <Text style={e.alvoValor}>{tr(a.valor)}</Text>
           <Text style={e.alvoContexto}>{tr(a.contexto)}</Text>

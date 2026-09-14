@@ -4,7 +4,7 @@ import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from
 import { SUPERFICIES, SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
 
 /**
- * PROCEDÊNCIA FORA DO CARD CLÍNICO (autor, 2026-09-13; ampliada na 16ª rodada). Metadado de
+ * PROCEDÊNCIA FORA DO CARD CLÍNICO (autor, 2026-09-13; ampliada na 16ª ⛔ na 17ª rodada). Metadado de
  * auditoria — "repositório", "spec §", "transcrito", "D-PEND", "a confirmar", "Fonte:",
  * "Conclusão:", "Fonte candidata", "§ a localizar", "slot" — ⛔ é orientação: no card é ruído
  * que reduz a confiança. Ele mora ⛔ só no bloco de ajuda (ⓘ).
@@ -14,15 +14,30 @@ import { SUPERFICIES, SEQUENCIA_OFICIAL } from "../avc/conteudo/superficies";
  * abas que a própria barra mostra, em vários estados do caso, ⛔ e cada superfície do registro
  * fora da barra é visitada por um gesto real (`visita("…")`).
  *
+ * ⚠️ 17ª rodada (capturas da 16ª), duas travas genéricas no mesmo universo:
+ *  · AC-108 — `inglesVisivel`: nenhum trecho em inglês no texto visível, em pt-BR ⛔ em es. A trava
+ *    de i18n mede CHAVES; o verbo ⛔ o verbatim da fonte são CONTEÚDO ⛔ escapavam. Verbatim só no ⓘ.
+ *  · AC-107 — `pendenteSemNome`: nenhum cartão cujo texto visível seja apenas "conteúdo pendente de
+ *    validação" — o bloco com identificador mais próximo precisa dizer o que está pendente.
+ *
  * UNIVERSO: todo texto VISÍVEL do módulo AVC com os ⓘ fechados, nos cenários abaixo. Um texto
  * proibido só passa dentro de um bloco de ajuda aberto (`avc-info-texto-*`, `avc-detalhe-*`).
  */
 
 const PROIBIDAS = /repositório|spec §|transcrit|D-PEND|a confirmar|\bFonte\s*:|Fonte candidata|Conclusão\s*:|a localizar|\bslot\b/i;
 
-async function proibidasVisiveis(page: Page, onde: string): Promise<string[]> {
-  const achados = await page.evaluate((fonte) => {
-    const re = new RegExp(fonte, "i");
+/**
+ * ⚠️ Palavras funcionais do inglês que ⛔ existem como palavra em português ⛔ em espanhol.
+ * ⚠️ Ajuste de instrumento (vermelho da 17ª rodada, antes de implementar): com `\b`, "Até" ⛔ "Início" casavam
+ * "at" ⛔ "in" — o `\b` do JavaScript ⛔ conhece letra acentuada. Fronteira por letra Unicode (`\p{L}`, flag u).
+ */
+const INGLES = /(?<!\p{L})(the|is|are|was|were|be|been|should|may|might|recommended|reasonable|patients?|with|without|and|or|of|to|in|on|at|by|not|than|from|this|that|which|benefit|harm(ful)?)(?!\p{L})/iu;
+
+const PENDENTE_SOZINHO = /^(conteúdo pendente de validação|contenido pendiente de validación)$/i;
+
+async function textosVisiveis(page: Page, fonte: string, onde: string, flags = "i"): Promise<string[]> {
+  const achados = await page.evaluate(([f, fl]) => {
+    const re = new RegExp(f, fl);
     const out: string[] = [];
     const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let n: Node | null;
@@ -33,12 +48,39 @@ async function proibidasVisiveis(page: Page, onde: string): Promise<string[]> {
       if (!el) continue;
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
-      if (el.closest('[data-testid^="avc-info-texto-"], [data-testid^="avc-detalhe-"]')) continue;
+      if (el.closest('[data-testid^="avc-info-texto-"], [data-testid^="avc-detalhe-"], [data-testid^="avc-hem-verbatim-"]')) continue;
       out.push(t.slice(0, 140));
     }
     return out;
-  }, PROIBIDAS.source);
+  }, [fonte, flags] as const);
   return [...new Set(achados)].map((t) => `${onde}: «${t}»`);
+}
+
+const proibidasVisiveis = (page: Page, onde: string) => textosVisiveis(page, PROIBIDAS.source, onde);
+const inglesVisivel = (page: Page, onde: string) => textosVisiveis(page, INGLES.source, `${onde} · inglês`, INGLES.flags);
+
+async function pendenteSemNome(page: Page, onde: string): Promise<string[]> {
+  const achados = await page.evaluate((fonte) => {
+    const re = new RegExp(fonte, "i");
+    const out: string[] = [];
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let n: Node | null;
+    while ((n = w.nextNode())) {
+      const t = (n.textContent ?? "").replace(/\s+/g, " ").trim();
+      if (!re.test(t)) continue;
+      const el = n.parentElement;
+      if (!el || el.getBoundingClientRect().height === 0) continue;
+      const bloco = el.closest("[data-testid]") as HTMLElement | null;
+      const resto = (bloco?.innerText ?? "").replace(new RegExp(fonte.slice(2, -2), "gi"), "").replace(/[^A-Za-zÀ-ÿ]/g, "");
+      if (resto.length === 0) out.push(bloco?.getAttribute("data-testid") ?? "(sem bloco)");
+    }
+    return out;
+  }, PENDENTE_SOZINHO.source);
+  return [...new Set(achados)].map((id) => `${onde} · pendente sem nome: ${id}`);
+}
+
+async function verificar(page: Page, onde: string): Promise<string[]> {
+  return [...(await proibidasVisiveis(page, onde)), ...(await inglesVisivel(page, onde)), ...(await pendenteSemNome(page, onde))];
 }
 
 async function abrirTudo(page: Page) {
@@ -49,8 +91,8 @@ async function abrirTudo(page: Page) {
   }
 }
 
-async function abrir(page: Page) {
-  await fixarIdioma(page, "pt-BR");
+async function abrir(page: Page, idioma: "pt-BR" | "es-419" = "pt-BR") {
+  await fixarIdioma(page, idioma);
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/modulos/avc");
 }
@@ -71,13 +113,13 @@ async function varrerAbas(page: Page, cenario: string): Promise<string[]> {
     await page.getByTestId(`avc-aba-${aba}`).click();
     if (aba === "estabilizacao") await abrirEixosDaEstabilizacao(page);
     await abrirTudo(page);
-    falhas.push(...(await proibidasVisiveis(page, `${cenario} · ${aba}`)));
+    falhas.push(...(await verificar(page, `${cenario} · ${aba}`)));
   }
   return falhas;
 }
 
-async function reperfusaoCom(page: Page, agente: "Tenecteplase" | "Alteplase", hsa: boolean) {
-  await abrir(page);
+async function reperfusaoCom(page: Page, agente: "Tenecteplase" | "Alteplase", hsa: boolean, idioma: "pt-BR" | "es-419" = "pt-BR") {
+  await abrir(page, idioma);
   await responderPopulacaoAdulta(page);
   await page.getByTestId("avc-aba-paciente").click();
   await page.getByTestId("avc-num-caixa-peso").fill("70");
@@ -101,11 +143,11 @@ async function tcComResultado(page: Page, resultado: string) {
   await page.getByTestId(`avc-opcao-estudo_resultado-${resultado}`).click();
 }
 
-test.describe("AVC · procedência ⛔ renderizada fora do bloco de ajuda", () => {
+test.describe("AVC · procedência, inglês ⛔ pendente sem nome ⛔ renderizados fora do bloco de ajuda", () => {
   test("1 · portão de população pendente", async ({ page }) => {
     await abrir(page);
     await expect(page.getByTestId("avc-portao-populacao")).toBeVisible();
-    const f = await proibidasVisiveis(page, "portão");
+    const f = await verificar(page, "portão");
     expect(f, f.join("\n")).toEqual([]);
   });
 
@@ -140,13 +182,13 @@ test.describe("AVC · procedência ⛔ renderizada fora do bloco de ajuda", () =
 
   test("3 · suspeita de HSA + tenecteplase 70 kg na Reperfusão", async ({ page }) => {
     await reperfusaoCom(page, "Tenecteplase", true);
-    const f = await proibidasVisiveis(page, "reperfusão HSA+TNK");
+    const f = await verificar(page, "reperfusão HSA+TNK");
     expect(f, f.join("\n")).toEqual([]);
   });
 
   test("4 · alteplase 70 kg na Reperfusão", async ({ page }) => {
     await reperfusaoCom(page, "Alteplase", false);
-    const f = await proibidasVisiveis(page, "reperfusão alteplase");
+    const f = await verificar(page, "reperfusão alteplase");
     expect(f, f.join("\n")).toEqual([]);
   });
 
@@ -191,7 +233,7 @@ test.describe("AVC · procedência ⛔ renderizada fora do bloco de ajuda", () =
     await page.getByTestId("avc-aba-imagem").click();
     await page.getByTestId("avc-destino-abrir-hemorragia_intracraniana").click();
     await expect(page.getByTestId("avc-superficie-hic")).toBeVisible();
-    falhas.push(...(await proibidasVisiveis(page, "catálogo HIC")));
+    falhas.push(...(await verificar(page, "catálogo HIC")));
     expect(falhas, falhas.join("\n")).toEqual([]);
   });
 
@@ -204,7 +246,28 @@ test.describe("AVC · procedência ⛔ renderizada fora do bloco de ajuda", () =
     /** ⚠️ visita("hsa") */
     await page.getByTestId("avc-destino-abrir-suspeita_hsa").click();
     await expect(page.getByTestId("avc-superficie-hsa")).toBeVisible();
-    const falhas = await proibidasVisiveis(page, "catálogo HSA");
+    const falhas = await verificar(page, "catálogo HSA");
+    expect(falhas, falhas.join("\n")).toEqual([]);
+  });
+
+  /* ── ⚠️ 17ª rodada · as mesmas travas em espanhol (AC-108: nem em es) ─────── */
+
+  test("10 · ES · caminho hemorrágico, toda aba ⛔ catálogo HIC", async ({ page }) => {
+    await abrir(page, "es-419");
+    await responderPopulacaoAdulta(page);
+    await tcComResultado(page, "Hemorragia intracraniana identificada");
+    const falhas = await varrerAbas(page, "ES hemorrágico");
+    await page.getByTestId("avc-aba-imagem").click();
+    await page.getByTestId("avc-destino-abrir-hemorragia_intracraniana").click();
+    await expect(page.getByTestId("avc-superficie-hic")).toBeVisible();
+    falhas.push(...(await verificar(page, "ES catálogo HIC")));
+    expect(falhas, falhas.join("\n")).toEqual([]);
+  });
+
+  test("11 · ES · alteplase 70 kg na Reperfusão ⛔ toda aba", async ({ page }) => {
+    await reperfusaoCom(page, "Alteplase", false, "es-419");
+    const falhas = await verificar(page, "ES reperfusão alteplase");
+    falhas.push(...(await varrerAbas(page, "ES caso com alteplase")));
     expect(falhas, falhas.join("\n")).toEqual([]);
   });
 });

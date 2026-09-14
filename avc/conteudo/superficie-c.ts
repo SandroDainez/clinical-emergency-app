@@ -989,7 +989,7 @@ export const DESTINOS_DA_IMAGEM = {
      * **visto na imagem**, a outra é hipótese clínica.
      */
     rotulo: "Hemorragia intracraniana identificada",
-    modulo: "Módulo de AVC hemorrágico",
+    modulo: "Hemorragia intracraniana (HIC)",
     /** ⚠️ EXISTE desde 2026-09-05 (PD-36): catálogo HIC (AHA/ASA 2022) construído. */
     moduloExiste: true,
     oQueAcontece:

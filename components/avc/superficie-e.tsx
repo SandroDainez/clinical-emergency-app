@@ -27,6 +27,7 @@ import type { EstadoAvc } from "../../avc/nucleo/estado";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
+import { Recolhido } from "./ui";
 import { useFoco } from "./sistema/foco";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -264,7 +265,14 @@ export default function SuperficieE({
             <Text style={e.formulacao} testID={`avc-e-formulacao-${bloqueio.id}`}>
               {tr(bloqueio.formulacao)}
             </Text>
-            <Text style={e.verbo} testID={`avc-e-verbo-${bloqueio.id}`}>“{bloqueio.verbo}”</Text>
+            {/** ⚠️ AC-108 (17ª rodada): o verbo da fonte, em inglês, mora no ⓘ. */}
+            <Recolhido
+              id={`e-verbo-${bloqueio.id}`}
+              aberto={detalhes.aberto(`e-verbo-${bloqueio.id}`)}
+              onAlternar={() => detalhes.alternar(`e-verbo-${bloqueio.id}`)}
+            >
+              <Text style={e.verbo} testID={`avc-e-verbo-${bloqueio.id}`}>“{bloqueio.verbo}”</Text>
+            </Recolhido>
 
             {/**
               * ⚠️⚠️ O QUE RESOLVE — e a frase diz **uma nova aferição**, ⛔ não esta

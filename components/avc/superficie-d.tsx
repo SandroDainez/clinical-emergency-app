@@ -449,6 +449,8 @@ export default function SuperficieD({
                           {i.consulta ? ` · ${tr(i.consulta)}` : ""}
                         </Text>
                         {i.nota ? <Text style={e.itemNota}>{tr(i.nota)}</Text> : null}
+                        {/** ⚠️ AC-108 (17ª rodada): o verbo da fonte, em inglês, mora no ⓘ — a formulação em português fica no card. */}
+                        <Text style={e.verbo} testID={`avc-d-verbo-${i.id}`}>“{i.verbo}”</Text>
                       </Recolhido>
                     </View>
                     {/**
@@ -460,11 +462,6 @@ export default function SuperficieD({
                     <Text style={e.formulacao} testID={`avc-d-formulacao-${i.id}`}>
                       {tr(i.formulacao)}
                     </Text>
-                    {/**
-                      * ⚠️ E o VERBATIM logo abaixo, em inglês, como **autoridade**
-                      * — ⛔ a tradução acompanha a fonte, e ⛔ nunca a substitui.
-                      */}
-                    <Text style={e.verbo} testID={`avc-d-verbo-${i.id}`}>“{i.verbo}”</Text>
                     {/**
                       * ⚠️⚠️ O PAR DA FONTE — ⛔ e a frase fala da **FONTE**.
                       *

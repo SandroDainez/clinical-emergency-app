@@ -61,6 +61,7 @@ import {
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { classeCurta, forcaDaClasse3 } from "../../avc/conteudo/forca-da-recomendacao";
 
 type Props = {
   estado: EstadoAvc;
@@ -612,7 +613,7 @@ export default function SuperficieB({
                           return (
                             <View key={recId} style={e.caminhoDaDiretriz} testID={`avc-b-caminho-${recId}`}>
                               <Text style={e.resumoLinha} testID={`avc-b-caminho-populacao-${recId}`}>
-                                {tr("Caminho da diretriz")} · {rec.localizacao}: {tr(rec.populacao)} · {tr("COR")} {rec.cor} · {tr("LOE")} {rec.loe}
+                                {tr("Caminho da diretriz")} · {rec.localizacao}: {tr(rec.populacao)} · {tr("COR")} {classeCurta(rec.cor)}{forcaDaClasse3(rec.cor) ? ` (${tr(forcaDaClasse3(rec.cor) ?? "")})` : ""} · {tr("LOE")} {rec.loe}
                               </Text>
                               {rec.exige.filter((insumo) => insumo !== "janela").map((insumo) => {
                                 const alvo = CAMPOS_DO_INSUMO[insumo][0];

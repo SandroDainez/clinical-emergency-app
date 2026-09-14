@@ -147,7 +147,8 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
     /** ⚠️ Defeito achado na captura da própria rodada: o título seguia "AVC isquêmico agudo". */
     await expect(page.getByText("AVC isquêmico agudo", { exact: true }), "⛔ título isquêmico no caminho hemorrágico").toHaveCount(0);
     /** ⚠️ Título curto: "… — caminho hemorrágico" truncava a 375 px (captura da rodada). */
-    await expect(page.getByText("Hemorragia intracraniana", { exact: true }).first()).toBeVisible();
+    /** ⚠️ Ajuste consciente (17ª rodada, AC-110): o nome único do caminho é "Hemorragia intracraniana (HIC)". */
+    await expect(page.getByTestId("avc-cabecalho-titulo")).toHaveText("Hemorragia intracraniana (HIC)");
     await expect(page.getByTestId("avc-hem-bloqueio")).toContainText(/trombólise e trombectomia isquêmicas bloqueadas/i);
     await page.getByTestId("avc-opcao-hem_tipo-Intraparenquimatosa").click();
     await expect(page.getByTestId("avc-hem-anticoagulante")).toContainText("Anticoagulante em uso");

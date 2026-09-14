@@ -62,6 +62,7 @@ import { MarcosDaTransferencia } from "./marcos-da-transferencia";
 import { PlanoAte48h } from "./plano-48h";
 import { CaminhoHemorragico } from "./caminho-hemorragico";
 import { Recolhido } from "./ui";
+import { classeCurta, forcaDaClasse3, rotuloDaForca } from "../../avc/conteudo/forca-da-recomendacao";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
@@ -400,14 +401,15 @@ export default function SuperficieG({
         {DESTINOS_RECOMENDADOS.map((d) => (
           <View key={d.id} style={e.rec} testID={`avc-g-rec-${d.id}`}>
             <Text style={e.grau} testID={`avc-g-grau-${d.id}`}>
-              {tr("COR")} {d.cor} · {tr("LOE")} {d.loe}
+              {tr("COR")} {classeCurta(d.cor)}{forcaDaClasse3(d.cor) ? ` (${tr(forcaDaClasse3(d.cor) ?? "")})` : ""} · {tr("LOE")} {d.loe}
             </Text>
             <Text style={e.titulo}>{tr(d.rotulo)}</Text>
-            {/** ⚠️ Verbatim em inglês — ⛔ verbatim ⛔ não se traduz (§6.14). */}
-            <Text style={e.verbo}>“{d.verbo}”</Text>
+            {/** ⚠️ AC-108 (17ª rodada): a tela mostra a FORÇA traduzida; o verbo em inglês mora no ⓘ. */}
+            <Text style={e.verbo}>{tr(rotuloDaForca(d.cor) ?? "")}</Text>
             {d.nota ? <Text style={e.nota}>{tr(d.nota)}</Text> : null}
             {/** ⚠️ 16ª rodada: localização ⛔ slot são procedência — moram no ⓘ, ⛔ no card. */}
             <Recolhido id={`g-rec-${d.id}`} aberto={infoDaRec === d.id} onAlternar={() => setInfoDaRec((v) => (v === d.id ? undefined : d.id))}>
+              <Text style={e.fonte}>“{d.verbo}”</Text>
               <Text style={e.fonte}>
                 {d.localizacao} · {tr("slot")} {d.slot}
               </Text>
@@ -542,7 +544,7 @@ export default function SuperficieG({
                   */}
                 <Text style={e.paRegra} testID="avc-g-pa-regra">
                   {tr(pressao.alvo.frase)} · {tr(pressao.contexto)} · {tr("COR")}{" "}
-                  {pressao.cor} · {tr("LOE")} {pressao.loe}
+                  {classeCurta(pressao.cor)}{forcaDaClasse3(pressao.cor) ? ` (${tr(forcaDaClasse3(pressao.cor) ?? "")})` : ""} · {tr("LOE")} {pressao.loe}
                 </Text>
               </View>
             ) : null}
@@ -660,7 +662,7 @@ export default function SuperficieG({
             {/** ⚠️⚠️ COR/LOE ⛔ só quando há recomendação graduada em jogo. */}
             {antitrombotico.cor !== undefined ? (
               <Text style={e.antitromboticoGrau} testID="avc-g-antitrombotico-grau">
-                {tr("COR")} {antitrombotico.cor} · {tr("LOE")} {antitrombotico.loe} ·{" "}
+                {tr("COR")} {classeCurta(antitrombotico.cor)}{forcaDaClasse3(antitrombotico.cor) ? ` (${tr(forcaDaClasse3(antitrombotico.cor) ?? "")})` : ""} · {tr("LOE")} {antitrombotico.loe} ·{" "}
                 {antitrombotico.localizacao}
               </Text>
             ) : null}
@@ -683,7 +685,7 @@ export default function SuperficieG({
           {antitrombotico.aspirinaIvNosNoventaMin ? (
             <View style={e.antitromboticoDano} testID="avc-g-antitrombotico-aspirina-iv">
               <Text style={e.antitromboticoGrau}>
-                {tr("COR")} {ASPIRINA_IV.cor} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
+                {tr("COR")} {classeCurta(ASPIRINA_IV.cor)}{forcaDaClasse3(ASPIRINA_IV.cor) ? ` (${tr(forcaDaClasse3(ASPIRINA_IV.cor) ?? "")})` : ""} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
                 {ASPIRINA_IV.localizacao}
               </Text>
               <Text style={e.linhaValor}>{tr(ASPIRINA_IV.frase)}</Text>
@@ -697,7 +699,7 @@ export default function SuperficieG({
           {antitrombotico.aspirinaIvNosNoventaMin === undefined ? (
             <View style={e.antitromboticoDano} testID="avc-g-antitrombotico-aspirina-iv-indeterminada">
               <Text style={e.antitromboticoGrau}>
-                {tr("COR")} {ASPIRINA_IV.cor} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
+                {tr("COR")} {classeCurta(ASPIRINA_IV.cor)}{forcaDaClasse3(ASPIRINA_IV.cor) ? ` (${tr(forcaDaClasse3(ASPIRINA_IV.cor) ?? "")})` : ""} · {tr("LOE")} {ASPIRINA_IV.loe} ·{" "}
                 {ASPIRINA_IV.localizacao}
               </Text>
               <Text style={e.linhaValor}>

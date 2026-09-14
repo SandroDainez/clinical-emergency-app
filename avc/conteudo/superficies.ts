@@ -203,7 +203,7 @@ const ORDEM_DE_APRESENTACAO: readonly DeclaracaoDeSuperficie[] = [
   {
     id: "hic",
     destino: true,
-    titulo: "AVC hemorrágico (HIC)",
+    titulo: "Hemorragia intracraniana (HIC)",
     resumo: "Recomendações da diretriz de hemorragia intracerebral espontânea.",
     fontes: [
       "H-01", "H-02", "H-03", "H-04", "H-05", "H-06", "H-07", "H-08",

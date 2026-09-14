@@ -1121,7 +1121,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Há também suspeita de hemorragia subaracnóidea.":
     "Hay también sospecha de hemorragia subaracnoidea.",
   "Fluxo de hemorragia subaracnóidea": "Flujo de hemorragia subaracnoidea",
-  "Módulo de AVC hemorrágico": "Módulo de ACV hemorrágico",
   /**
    * ⚠️ DUAS CHAVES PARECIDAS, e as duas são necessárias: o **destino** diz
    * *identificada* (redação do autor, para separar achado de suspeita); a
@@ -2286,7 +2285,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Mobilização avaliada pela equipe": "Movilización evaluada por el equipo",
   "Prevenção de TEV avaliada pela equipe": "Prevención de TEV evaluada por el equipo",
   "Dispositivos revisados pela equipe": "Dispositivos revisados por el equipo",
-  "Caminho da hemorragia revisado pela equipe": "Camino de la hemorragia revisado por el equipo",
+  "Declaração da equipe: a equipe declara ter revisado o caminho da hemorragia": "Declaración del equipo: el equipo declara haber revisado el camino de la hemorragia",
   "Não realizada": "No realizada",
   "Avaliada": "Evaluada",
   "Não avaliada": "No evaluada",
@@ -2321,7 +2320,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Decisão da equipe com imagem e avaliação registradas; conteúdo pendente de validação": "Decisión del equipo con imagen y evaluación registradas; contenido pendiente de validación",
   "PA completa registrada depois da decisão de não reperfundir": "PA completa registrada después de la decisión de no reperfundir",
   "Decisão da equipe; conteúdo pendente de validação": "Decisión del equipo; contenido pendiente de validación",
-  "Caminho da hemorragia registrado como revisado pela equipe": "Camino de la hemorragia registrado como revisado por el equipo",
+  "Declaração da equipe registrada (revisado); o app não confere o conteúdo revisado": "Declaración del equipo registrada (revisado); la app no verifica el contenido revisado",
   "Triagem de deglutição registrada como realizada; até lá, via oral retida": "Tamizaje de deglución registrado como realizado; hasta entonces, vía oral retenida",
   "Glicemia registrada depois do evento de origem": "Glucemia registrada después del evento de origen",
   "Temperatura registrada depois do evento de origem": "Temperatura registrada después del evento de origen",
@@ -2402,7 +2401,7 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "PA completa registrada depois dos desfechos negativos": "PA completa registrada después de los desenlaces negativos",
   "Caminho hemorrágico · docs/avc/revisao/hemorragia.md": "Camino hemorrágico · docs/avc/revisao/hemorragia.md",
   "Resultado aprovada registrado; reprovada, não realizada ou não sei mantêm nada por via oral": "Resultado aprobada registrado; reprobada, no realizada o no sé mantienen nada por vía oral",
-  "Resultado registrado: aprovada ou reprovada": "Resultado registrado: aprobada o reprobada",
+  "Realizada conclui; contraindicada no momento retém; não realizada ou não sei mantêm pendente": "Realizada concluye; contraindicada en este momento retiene; no realizada o no sé mantienen pendiente",
   "Desfecho negativo corrigido": "Desenlace negativo corregido",
   "Sem reperfusão: falta o desfecho da trombectomia (motivo e horário)": "Sin reperfusión: falta el desenlace de la trombectomía (motivo y hora)",
   "Sem reperfusão: falta o horário do desfecho da trombectomia": "Sin reperfusión: falta la hora del desenlace de la trombectomía",
@@ -2445,8 +2444,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "AHA/ASA 2023 (HSA) · §7 · slot S-02": "AHA/ASA 2023 (HSA) · §7 · slot S-02",
   "AHA/ASA 2017 (hemorragia pós-alteplase) · §3.7": "AHA/ASA 2017 (hemorragia posalteplasa) · §3.7",
   "Hemorragia com trombólise em curso: registrar a interrupção da infusão": "Hemorragia con trombólisis en curso: registrar la interrupción de la infusión",
-  "Caminho hemorrágico: registrar o anticoagulante em uso": "Camino hemorrágico: registrar el anticoagulante en uso",
-  "Caminho hemorrágico: registrar o tipo de hemorragia": "Camino hemorrágico: registrar el tipo de hemorragia",
+  "Hemorragia intracraniana (HIC): registrar o anticoagulante em uso": "Hemorragia intracraneal (HIC): registrar el anticoagulante en uso",
+  "Hemorragia intracraniana (HIC): registrar o tipo de hemorragia": "Hemorragia intracraneal (HIC): registrar el tipo de hemorragia",
   "Registrar a interrupção da infusão": "Registrar la interrupción de la infusión",
   "Registrar o anticoagulante em uso no Paciente": "Registrar el anticoagulante en uso en Paciente",
   "Registrar o tipo de hemorragia": "Registrar el tipo de hemorragia",
@@ -2480,4 +2479,11 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Registrar o anticoagulante em uso": "Registrar el anticoagulante en uso",
   "Nível": "Nivel",
   "População": "Población",
+  /* ── 17ª rodada (AC-106, AC-107, AC-108) ── */
+  "Contraindicada no momento": "Contraindicada en este momento",
+  "Não iniciada": "No iniciada",
+  "Iniciada conclui; contraindicada no momento retém; não iniciada ou não sei mantêm pendente": "Iniciada concluye; contraindicada en este momento retiene; no iniciada o no sé mantienen pendiente",
+  "Revisados conclui; não revisados ou não sei mantêm pendente": "Revisados concluye; no revisados o no sé mantienen pendiente",
+  "recomendação": "recomendación",
+  "Diretriz citada": "Guía citada",
 };

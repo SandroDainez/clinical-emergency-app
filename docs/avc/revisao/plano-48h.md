@@ -127,3 +127,20 @@ Todas nascem do primeiro evento real registrado e ficam como "conteúdo pendente
   - os resultados das quatro transversais (15ª rodada);
   - «Caminho da hemorragia revisado».
   - Antes desta rodada, o app não tinha evento de fim de trombectomia, e "não prosseguir" existia só para trombólise, sem horário.
+
+## Vocabulário de resultado por transversal (AC-106, 17ª rodada)
+
+**Decisão do autor (14/09/2026):** cada transversal tem vocabulário próprio; nenhuma herda o da deglutição. A trava de via oral lê só o resultado da deglutição.
+
+| transversal | resultados | conclui | retém | fica pendente | origem |
+|---|---|---|---|---|---|
+| deglutição | Aprovada · Reprovada · Não realizada · Não sei | Aprovada | Reprovada, Não realizada, Não sei (trava de via oral) | — | autor |
+| mobilização | Realizada · Não realizada · Contraindicada no momento · Não sei | Realizada | Contraindicada no momento | Não realizada, Não sei | autor |
+| prevenção de TEV | Iniciada · Não iniciada · Contraindicada no momento · Não sei | Iniciada | Contraindicada no momento | Não iniciada, Não sei | **proposta do agente, pendente de validação** |
+| dispositivos | Revisados · Não revisados · Não sei | Revisados | — | Não revisados, Não sei | **proposta do agente, pendente de validação** |
+
+- **Contraindicada no momento retém, não conclui:** é registro de avaliação, não de execução. Pela regra do estado intermediário, um degrau a menos de evidência não vale como um degrau a mais. Esta é uma interpretação do agente, pendente de confirmação do autor.
+- **TEV e dispositivos:** o vocabulário registra só o que a equipe fez. "Iniciada" não diz qual medida (mecânica ou farmacológica); "Revisados" não diz o que foi mantido ou retirado. O conteúdo de cada tarefa segue pendente de validação.
+- **Registros gravados antes da 17ª rodada** (por exemplo, "Aprovada" na mobilização) aparecem com o valor cru e não concluem a tarefa. Não há dado real de paciente (AC-39).
+- **Marco da hemorragia (AC-111):** o campo diz "Declaração da equipe: a equipe declara ter revisado o caminho da hemorragia". O app não confere o conteúdo revisado.
+

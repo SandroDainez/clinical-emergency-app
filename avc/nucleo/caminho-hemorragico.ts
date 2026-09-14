@@ -70,10 +70,10 @@ export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragi
     pendencias.push({ id: "registrar_interrupcao_da_infusao", rotulo: "Hemorragia com trombólise em curso: registrar a interrupção da infusão", dono: "destino", campo: "ivt_estado", resolvePor: "Registrar a interrupção da infusão" });
   }
   if (itens.length === 0) {
-    pendencias.push({ id: "hem_anticoagulante", rotulo: "Caminho hemorrágico: registrar o anticoagulante em uso", dono: "paciente", campo: "anticoagulante_em_uso", resolvePor: "Registrar o anticoagulante em uso no Paciente" });
+    pendencias.push({ id: "hem_anticoagulante", rotulo: "Hemorragia intracraniana (HIC): registrar o anticoagulante em uso", dono: "paciente", campo: "anticoagulante_em_uso", resolvePor: "Registrar o anticoagulante em uso no Paciente" });
   }
   if (tipo === undefined) {
-    pendencias.push({ id: "hem_tipo", rotulo: "Caminho hemorrágico: registrar o tipo de hemorragia", dono: "destino", campo: "hem_tipo", resolvePor: "Registrar o tipo de hemorragia" });
+    pendencias.push({ id: "hem_tipo", rotulo: "Hemorragia intracraniana (HIC): registrar o tipo de hemorragia", dono: "destino", campo: "hem_tipo", resolvePor: "Registrar o tipo de hemorragia" });
   }
 
   return {

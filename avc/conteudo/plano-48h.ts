@@ -12,16 +12,36 @@
  * ⚠️ 15ª rodada:
  *  · AC-85: o evento avulso "Decisão de não reperfundir" saiu. O caminho sem reperfusão abre
  *    com desfecho negativo de IVT (motivo + horário) ⛔ de EVT (motivo + horário).
- *  · AC-88: as transversais registram RESULTADO (aprovada · reprovada · não realizada · não
- *    sei); deglutição ≠ aprovada mantém "nada por via oral".
+ *  · AC-88: as transversais registram RESULTADO; deglutição ≠ aprovada mantém "nada por via oral".
+ *  · AC-106 (17ª rodada): o vocabulário do resultado é de cada transversal (`RESULTADOS_POR_TAREFA`).
  */
 import type { Campo } from "./campo";
 import { comCasa } from "./campo";
 
 const REGISTRO = { natureza: "administrativo", fonte: "administrativo", bloqueiaTerapia: false } as const;
 
-/** ⚠️ AC-88: o resultado da tarefa é dado do médico; ⛔ como fazê-la segue pendente. */
-export const RESULTADOS_DA_TAREFA = ["Aprovada", "Reprovada", "Não realizada", "Não sei"] as const;
+/**
+ * ⚠️ AC-88: o resultado da tarefa é dado do médico; ⛔ como fazê-la segue pendente.
+ * ⚠️ AC-106 (17ª rodada, autor): UM VOCABULÁRIO POR TRANSVERSAL — ⛔ nenhuma herda o da deglutição.
+ * "Aprovada/Reprovada" em mobilização era registro sem significado, ⛔ e a trava de via oral depende de
+ * "reprovada" significar algo. Deglutição ⛔ mobilização: redação do autor. TEV ⛔ dispositivos: proposta do
+ * agente, registrada em `docs/avc/revisao/plano-48h.md`, pendente de validação.
+ */
+export const RESULTADOS_POR_TAREFA = {
+  degluticao: ["Aprovada", "Reprovada", "Não realizada", "Não sei"],
+  mobilizacao: ["Realizada", "Não realizada", "Contraindicada no momento", "Não sei"],
+  tev: ["Iniciada", "Não iniciada", "Contraindicada no momento", "Não sei"],
+  dispositivos: ["Revisados", "Não revisados", "Não sei"],
+} as const satisfies Readonly<Record<string, readonly string[]>>;
+
+/** ⚠️ O resultado que conclui cada tarefa; "Contraindicada no momento" retém (⛔ conclui); o resto fica pendente. */
+export const CONCLUI_COM: Readonly<Record<keyof typeof RESULTADOS_POR_TAREFA, string>> = {
+  degluticao: "Aprovada",
+  mobilizacao: "Realizada",
+  tev: "Iniciada",
+  dispositivos: "Revisados",
+};
+export const RETEM_COM: readonly string[] = ["Contraindicada no momento"];
 
 export const GRUPO_DO_PLANO_48H = comCasa("destino", [
   {
@@ -37,11 +57,12 @@ export const GRUPO_DO_PLANO_48H = comCasa("destino", [
     titulo: "Resultados das tarefas",
     nota: "Resultado registrado pela equipe. O conteúdo de cada tarefa está pendente de validação.",
     campos: [
-      { id: "plano_degluticao", rotulo: "Triagem de deglutição — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_DA_TAREFA, ...REGISTRO },
-      { id: "plano_mobilizacao", rotulo: "Mobilização — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_DA_TAREFA, ...REGISTRO },
-      { id: "plano_tev", rotulo: "Prevenção de TEV — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_DA_TAREFA, ...REGISTRO },
-      { id: "plano_dispositivos", rotulo: "Dispositivos — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_DA_TAREFA, ...REGISTRO },
-      { id: "plano_hemorragia_revisada", rotulo: "Caminho da hemorragia revisado pela equipe", tipo: "escolha", temporalidade: "estado", opcoes: ["Revisado", "Não revisado"], ...REGISTRO },
+      { id: "plano_degluticao", rotulo: "Triagem de deglutição — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_POR_TAREFA.degluticao, ...REGISTRO },
+      { id: "plano_mobilizacao", rotulo: "Mobilização — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_POR_TAREFA.mobilizacao, ...REGISTRO },
+      { id: "plano_tev", rotulo: "Prevenção de TEV — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_POR_TAREFA.tev, ...REGISTRO },
+      { id: "plano_dispositivos", rotulo: "Dispositivos — resultado", tipo: "escolha", temporalidade: "estado", opcoes: RESULTADOS_POR_TAREFA.dispositivos, ...REGISTRO },
+      /** ⚠️ AC-111 (17ª rodada): é DECLARAÇÃO da equipe — ⛔ o app confere o conteúdo revisado. */
+      { id: "plano_hemorragia_revisada", rotulo: "Declaração da equipe: a equipe declara ter revisado o caminho da hemorragia", tipo: "escolha", temporalidade: "estado", opcoes: ["Revisado", "Não revisado"], ...REGISTRO },
     ],
   },
 ]);
@@ -61,7 +82,18 @@ export const TAREFA_DO_RESULTADO: Readonly<Record<string, string>> = {
 
 /* ── AC-85 · desfecho negativo da reperfusão ─────────────────────────────── */
 
-export const MOTIVOS_DE_DESFECHO_NEGATIVO = [
+/**
+ * ⚠️ AC-109 (17ª rodada, autor): motivos POR TERAPIA. A trombólise se faz na própria casa: "Indisponível" ⛔
+ * "Centro de referência recusou" são motivos de trombectomia/transferência.
+ */
+export const MOTIVOS_DE_NAO_PROSSEGUIR_IVT = [
+  "Impedida",
+  "Sem indicação",
+  "Decisão da equipe / limitação terapêutica",
+  "Recusa do paciente ou família",
+] as const;
+
+export const MOTIVOS_DE_DESFECHO_NEGATIVO_EVT = [
   "Impedida",
   "Sem indicação",
   "Indisponível",
@@ -80,9 +112,9 @@ export const GRUPO_DE_DESFECHO_NEGATIVO = comCasa("reperfusao", [
     titulo: "Desfecho negativo da reperfusão",
     nota: "Registro da equipe: motivo e horário de cada terapia. O caminho sem reperfusão abre só com os dois registrados.",
     campos: [
-      { id: "ivt_nao_prosseguir_motivo", rotulo: "Trombólise: não prosseguir — motivo", tipo: "escolha", temporalidade: "estado", opcoes: MOTIVOS_DE_DESFECHO_NEGATIVO, ...REGISTRO },
+      { id: "ivt_nao_prosseguir_motivo", rotulo: "Trombólise: não prosseguir — motivo", tipo: "escolha", temporalidade: "estado", opcoes: MOTIVOS_DE_NAO_PROSSEGUIR_IVT, ...REGISTRO },
       { id: "ivt_nao_prosseguir_hora", rotulo: "Trombólise: não prosseguir — horário", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
-      { id: "evt_desfecho_motivo", rotulo: "Trombectomia: desfecho negativo — motivo", tipo: "escolha", temporalidade: "estado", opcoes: MOTIVOS_DE_DESFECHO_NEGATIVO, ...REGISTRO },
+      { id: "evt_desfecho_motivo", rotulo: "Trombectomia: desfecho negativo — motivo", tipo: "escolha", temporalidade: "estado", opcoes: MOTIVOS_DE_DESFECHO_NEGATIVO_EVT, ...REGISTRO },
       { id: "evt_desfecho_hora", rotulo: "Trombectomia: desfecho negativo — horário", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
     ],
   },
@@ -105,7 +137,8 @@ export const TITULO_DO_CAMINHO: Readonly<Record<CaminhoDoPlanoId, string>> = {
   ivt: "Depois da trombólise",
   evt: "Depois da trombectomia",
   sem_reperfusao: "Sem reperfusão",
-  hemorragia: "Hemorragia",
+  /** ⚠️ AC-110 (17ª rodada): um nome só para o caminho. */
+  hemorragia: "Hemorragia intracraniana (HIC)",
 };
 
 export type ConteudoDaTarefa = "fonte_transcrita" | "pendente_de_validacao";
@@ -187,7 +220,7 @@ export const TAREFAS_DO_CAMINHO: Readonly<Record<CaminhoDoPlanoId, readonly Defi
     {
       id: "hemorragia_caminho_proprio",
       rotulo: "Reversão, alvo pressórico e indicação neurocirúrgica: caminho próprio da hemorragia",
-      criterioDeConclusao: "Caminho da hemorragia registrado como revisado pela equipe",
+      criterioDeConclusao: "Declaração da equipe registrada (revisado); o app não confere o conteúdo revisado",
       conteudo: "pendente_de_validacao",
       fonte: "Caminho hemorrágico · docs/avc/revisao/hemorragia.md",
     },
@@ -212,9 +245,9 @@ export const TAREFAS_TRANSVERSAIS: readonly DefinicaoDeTarefa[] = [
   },
   { id: "glicemia", rotulo: "Glicemia", criterioDeConclusao: "Glicemia registrada depois do evento de origem", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 §4.5 (F-06)" },
   { id: "temperatura", rotulo: "Temperatura", criterioDeConclusao: "Temperatura registrada depois do evento de origem", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 §4.4 (F-38)" },
-  { id: "mobilizacao", rotulo: "Mobilização", criterioDeConclusao: "Resultado registrado: aprovada ou reprovada", conteudo: "pendente_de_validacao", fonte: "R6 · R4 (não transcritas) · AHA 2026 § a localizar" },
-  { id: "tev", rotulo: "Prevenção de tromboembolismo venoso", criterioDeConclusao: "Resultado registrado: aprovada ou reprovada", conteudo: "pendente_de_validacao", fonte: "R6 · R5 (não transcritas) · AHA 2026 § a localizar" },
-  { id: "dispositivos", rotulo: "Dispositivos (sondas e cateteres)", criterioDeConclusao: "Resultado registrado: aprovada ou reprovada", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 Table 7 (F-15)" },
+  { id: "mobilizacao", rotulo: "Mobilização", criterioDeConclusao: "Realizada conclui; contraindicada no momento retém; não realizada ou não sei mantêm pendente", conteudo: "pendente_de_validacao", fonte: "R6 · R4 (não transcritas) · AHA 2026 § a localizar" },
+  { id: "tev", rotulo: "Prevenção de tromboembolismo venoso", criterioDeConclusao: "Iniciada conclui; contraindicada no momento retém; não iniciada ou não sei mantêm pendente", conteudo: "pendente_de_validacao", fonte: "R6 · R5 (não transcritas) · AHA 2026 § a localizar" },
+  { id: "dispositivos", rotulo: "Dispositivos (sondas e cateteres)", criterioDeConclusao: "Revisados conclui; não revisados ou não sei mantêm pendente", conteudo: "pendente_de_validacao", fonte: "R6 (não transcrita) · AHA 2026 Table 7 (F-15)" },
 ];
 
 /** ⚠️ O campo de resultado de cada tarefa que conclui por registro. */

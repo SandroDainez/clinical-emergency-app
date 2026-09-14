@@ -12,6 +12,7 @@
  */
 import { REVERSAO_POR_AGENTE, TEMAS_HIC, type EsquemaDeReversao, type Recomendacao } from "./hemorragia-intracerebral";
 import { TEMAS_HSA } from "./hemorragia-subaracnoidea";
+import { rotuloDaForca } from "./forca-da-recomendacao";
 
 export type ValidacaoDoItem =
   | {
@@ -43,12 +44,38 @@ export function validacaoDoItem(item: ItemDoCatalogo): ValidacaoDoItem {
 
 /** ⚠️ O rótulo PT da classe — um só, para catálogo ⛔ caminho (movido de `superficie-hemorragica.tsx`). */
 export function rotuloDaClasse(cor: Recomendacao["cor"]): string {
-  if (cor === "COR 1") return "Recomendado";
-  if (cor === "COR 2a") return "Razoável";
-  if (cor === "COR 2b") return "Pode ser considerado";
-  if (cor === "COR 3: No Benefit") return "Sem benefício";
-  return "Potencialmente danoso";
+  /** ⚠️ 17ª rodada: a mesma tradução de força do módulo inteiro (`forca-da-recomendacao.ts`). */
+  return rotuloDaForca(cor) ?? "Potencialmente danoso";
 }
+
+/* ── ⚠️ AC-107 (17ª rodada) · ITEM PENDENTE COM NOME ────────────────────────── */
+
+/**
+ * ⚠️ Pendente sem nome ⛔ é informação, é ruído (autor). Todo item diz o TEMA, a variante (HIC/HSA), a posição
+ * no tema — dois pendentes consecutivos ficam distinguíveis ⛔ sem mostrar conteúdo ⛔ validado — ⛔ a população
+ * quando houver.
+ */
+export type PartesDaIdentificacao = {
+  readonly tema: string;
+  readonly variante: "HIC" | "HSA";
+  readonly ordem: number;
+  readonly total: number;
+  readonly populacao?: string;
+};
+
+export function partesDaIdentificacao(item: Recomendacao, tituloDoTema: string, variante: "hic" | "hsa"): PartesDaIdentificacao {
+  const tema = (variante === "hic" ? TEMAS_HIC : TEMAS_HSA).find((t) => t.recomendacoes.some((r) => r.id === item.id));
+  const recs = tema?.recomendacoes ?? [item];
+  return {
+    tema: tituloDoTema,
+    variante: variante === "hic" ? "HIC" : "HSA",
+    ordem: Math.max(1, recs.findIndex((r) => r.id === item.id) + 1),
+    total: recs.length,
+    populacao: item.populacao,
+  };
+}
+
+/** ⚠️ ⛔ Frase montada aqui: a tela compõe as partes com `tr()` (trava `test:frase-composta`, D-19). */
 
 export type CondutaDoCaminho = "reversao_anticoagulante" | "alvo_pressorico" | "indicacao_cirurgica";
 
@@ -67,6 +94,8 @@ export type ItemDaConduta = {
   readonly tituloDoTema: string;
   readonly item: ItemDoCatalogo;
   readonly validacao: ValidacaoDoItem;
+  /** ⚠️ AC-107: o nome do item — tema, variante, posição ⛔ população (esquema de reversão: o agente). */
+  readonly partes?: PartesDaIdentificacao;
 };
 
 /**
@@ -91,7 +120,7 @@ export function itensDaConduta(conduta: CondutaDoCaminho, tipo: string | undefin
     }
     for (const t of temas) {
       const recs = t.recomendacoes.filter((r) => (sel.temas ?? []).includes(t.id) || (sel.recs ?? []).includes(r.id));
-      for (const r of recs) out.push({ chave: `${variante}-${r.id}`, variante, tituloDoTema: t.titulo, item: r, validacao: validacaoDoItem(r) });
+      for (const r of recs) out.push({ chave: `${variante}-${r.id}`, variante, tituloDoTema: t.titulo, item: r, validacao: validacaoDoItem(r), partes: partesDaIdentificacao(r, t.titulo, variante) });
     }
   }
   return out;

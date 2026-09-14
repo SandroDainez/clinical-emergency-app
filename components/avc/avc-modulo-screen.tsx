@@ -93,7 +93,8 @@ const ALTURA_DA_BARRA = 62;
  * ⚠️ Ausente aqui = a síndrome do fluxo principal. ⛔ Só os destinos divergem.
  */
 const TITULO_DA_SINDROME: Readonly<Record<string, string>> = {
-  hic: "AVC hemorrágico (HIC)",
+  /** ⚠️ AC-110 (17ª rodada): um nome só — aba, cabeçalho, bloco do caminho ⛔ síntese. */
+  hic: "Hemorragia intracraniana (HIC)",
   hsa: "Hemorragia subaracnóidea (HSA)",
 };
 
@@ -1297,7 +1298,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          */
         <ClinicalHeader
           /** ⚠️ 15ª rodada (captura do A07): com o caminho hemorrágico aberto, o título ⛔ diz "isquêmico". */
-          titulo={TITULO_DA_SINDROME[atual.id] ?? (caminhoHemorragico(estado).ativo ? "Hemorragia intracraniana" : "AVC isquêmico agudo")}
+          titulo={TITULO_DA_SINDROME[atual.id] ?? (caminhoHemorragico(estado).ativo ? TITULO_DA_SINDROME.hic : "AVC isquêmico agudo")}
           /**
            * ⚠️⚠️ O ESCOPO SAIU DO CABEÇALHO — 2026-09-06.
            *

@@ -80,3 +80,14 @@ As fontes estão em `protocols/fontes-verbatim/`. Os arquivos da HIC e da HSA es
 - **Por que não foi removido:** ele é transcrição, com conferência do autor pendente. O caminho hemorrágico não o repete: aponta as condutas como pendentes.
 - **O que o autor decide:** se o catálogo também passa a "pendente de validação" (achado da 15ª rodada).
 - **Conflito já registrado:** `f35c-trombolise-contrato.md` ainda diz "nada transcrito", mas o arquivo de 2017 está transcrito e conferido.
+
+## Nome, identificação e idioma (AC-107, AC-108, AC-110, 17ª rodada)
+
+**Decisão do autor (14/09/2026).**
+- **Um nome só (AC-110):** "Hemorragia intracraniana (HIC)" na aba do catálogo, no cabeçalho (catálogo e caminho), no bloco do caminho na Destino, no caminho do plano até 48 h, na pendência da lista geral e na síntese.
+  - O caminho também cobre hemorragia subaracnóidea e subdural pelo tipo registrado; o nome é o decidido pelo autor.
+- **Pendente com nome (AC-107):** todo item pendente diz o tema, a variante (HIC ou HSA) e a posição no tema ("recomendação 2 de 4"); a população aparece quando o item a declara.
+  - A posição distingue dois pendentes consecutivos do mesmo tema sem mostrar conteúdo não validado. É escolha do agente, pendente de confirmação do autor.
+  - Esquema de reversão pendente: "Reversão por agente · <agente>".
+- **Sem inglês visível (AC-108):** o verbatim de cada recomendação e a citação bibliográfica da diretriz ficam no ⓘ.
+

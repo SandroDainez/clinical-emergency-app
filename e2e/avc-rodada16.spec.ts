@@ -52,8 +52,9 @@ test.describe("AVC · 16ª rodada · uma fonte de verdade ⛔ travas", () => {
     await abrir(page);
     await page.getByTestId("avc-aba-reperfusao").click();
     await page.getByTestId("avc-f-desfechos").scrollIntoViewIfNeeded();
-    await expect(page.getByTestId("avc-opcao-ivt_nao_prosseguir_motivo-Centro de referência recusou")).toBeVisible();
-    await expect(page.getByTestId("avc-opcao-ivt_nao_prosseguir_motivo-Recusada")).toHaveCount(0);
+    /** ⚠️ Ajuste consciente (17ª rodada, AC-109): o motivo existe só na trombectomia. */
+    await expect(page.getByTestId("avc-opcao-evt_desfecho_motivo-Centro de referência recusou")).toBeVisible();
+    await expect(page.getByTestId("avc-opcao-evt_desfecho_motivo-Recusada")).toHaveCount(0);
   });
 
   test("AC-91: via aérea com sedação não registrada + exame → pendência visível para liberar o basal", async ({ page }) => {

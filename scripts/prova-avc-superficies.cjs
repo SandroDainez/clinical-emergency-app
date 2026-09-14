@@ -203,7 +203,8 @@ const ORDEM_APROVADA = [
    * ⛔ nem aparecem na barra de etapas. A posição aqui é só a ordem em que
    * estão declarados no arquivo (PD-36).
    */
-  ["hic", "AVC hemorrágico (HIC)"],
+  /** ⚠️ Ajuste consciente (17ª rodada, AC-110): um nome só para a hemorragia intracraniana. */
+  ["hic", "Hemorragia intracraniana (HIC)"],
   ["hsa", "Hemorragia subaracnóidea (HSA)"],
 ];
 confere("a ordem de apresentação é a aprovada",
