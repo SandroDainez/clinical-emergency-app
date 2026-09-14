@@ -490,6 +490,50 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Idiomas:** PT/ES. **Autoriza implementação:** sim (13ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs no modelo append-only; sem `main`.
 
+## Decisões da 14ª rodada (2026-09-13) · AC-76 a AC-80, caminho A04 completo, leve ≠ incapacitante e plano até 48 h
+
+**Autor:** Sandro Dainez, 13/09/2026.
+
+**AC-76 — corrigido pelo autor ("o erro é meu"):**
+- Dispositivo supraglótico não é via aérea definitiva. Definitiva = tubo com balonete na traqueia (intubação orotraqueal ou via aérea cirúrgica).
+- O campo passa a ser "via aérea avançada instalada: sim · não · não sei". O tipo define se é definitiva.
+- Cabeçalho por tipo:
+  - intubação orotraqueal → "intubado às HH:MM";
+  - via aérea cirúrgica → "via aérea cirúrgica às HH:MM";
+  - dispositivo supraglótico → "dispositivo supraglótico às HH:MM (não definitiva)".
+- A marca de sedação e a sugestão do item 10 do NIHSS valem para todos os tipos.
+
+**AC-77 — não confirmado:**
+- NIHSS sob sedação não é limite inferior nem superior; pode satisfazer falsamente um piso de EVT.
+- Mesma regra de D-PEND-14: é contexto, não critério.
+- Sem basal anterior, as regras dependentes ficam "inconclusivo — exame sob sedação; avaliação especializada".
+- Exceção humana explícita: campo "sedação suspensa para o exame: sim · não" no próprio exame. Com "sim", o exame vale e fica marcado.
+
+**AC-78:** a marca de sedação passa a valer também para o Glasgow.
+
+**AC-79 e AC-80:** aceitos como estão.
+
+**Cartão A04:**
+- Hoje mostra só o caminho RM-DWI/FLAIR.
+- A AHA 2026 também tem o caminho por perfusão (despertar até 9 h do ponto médio do sono; 4,5–9 h).
+- Se §4.6.3 estiver transcrito, oferecer os dois caminhos com os dados exigidos; senão, marcar "segundo caminho pendente de transcrição".
+
+**Leve × incapacitante:** "Déficit leve, na avaliação do médico" (Leve · Não leve · Incerto) não se funde com "incapacitante"; são perguntas distintas da diretriz (A05). Confirmar com prova.
+
+**Entrega 2 — plano até 48 h (T08, C08), estrutura sem conteúdo clínico:**
+- Tarefas vinculadas a eventos reais, com caminho próprio para cada um:
+  - início da trombólise;
+  - fim da trombectomia;
+  - decisão de não reperfundir;
+  - hemorragia confirmada.
+- Cada tarefa declara evento de origem, prazo ou condição, e critério real de conclusão.
+- Passagem de tempo nunca autoriza sozinha (A15: sem imagem de controle, a terapia dependente fica retida). Deterioração antecipa.
+- Agenda visível na tela com "próxima reavaliação". Notificações em segundo plano documentadas como não confiáveis, sem presumir.
+- Itens transversais (deglutição como trava antes de via oral, glicemia, temperatura, mobilização, TEV, dispositivos) entram como tarefas "conteúdo pendente de validação", com as fontes R5/R6 e AHA 2026 § correspondente listadas por tarefa em `docs/avc/revisao/plano-48h.md`.
+- Provas: A15; atraso; cancelamento; fuso; quatro caminhos com agendas diferentes.
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (14ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
