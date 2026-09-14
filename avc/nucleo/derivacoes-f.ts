@@ -18,7 +18,7 @@
  * recomendação, e colapsá-los faria o app afirmar exclusão que ⛔ ninguém disse.
  */
 import { valorAtual, type EstadoAvc } from "./estado";
-import { leituraDoNihssCalculado, nihssCalculado } from "./derivacoes-b";
+import { leituraDoNihssCalculado, nihssCalculado, nihssInconclusivoPorSedacao } from "./derivacoes-b";
 import { ternario } from "./leitura";
 import { fatosDaInstancia, instanciasDe, valorNaInstancia } from "./instancia";
 import {
@@ -421,6 +421,8 @@ export function valorDoInsumo(estado: EstadoAvc, insumo: Insumo): ValorDoInsumo 
      */
     case "nihss": {
       /** ⚠️ D-PEND-14 (2026-09-13): ⛔ só a escala feita NESTE atendimento — com ou sem item não testável. */
+      /** ⚠️ AC-77 (14ª rodada): exame só sob sedação ⛔ sustenta a regra dependente. */
+      if (nihssInconclusivoPorSedacao(estado)) return "inconclusivo";
       return leituraDoNihssCalculado(estado) !== undefined ? "satisfaz" : undefined;
     }
 
@@ -758,6 +760,16 @@ function territorioDoEstado(estado: EstadoAvc) {
  *   · **contradiz** — o dado existe ⛔ e está fora dele (⛔ é resposta, ⛔ não falta);
  *   · `undefined`   — ⛔ o dado ⛔ não foi registrado (⛔ e ⛔ isso ⛔ não é um "não").
  */
+/**
+ * ⚠️ POR QUE UM INSUMO FICOU INCONCLUSIVO — dito pelo núcleo, ⛔ recalculado pela tela.
+ * AC-77 (sedação) vem antes de D-PEND-13 (item não testável): sem exame válido ⛔ há soma.
+ */
+export function motivoDoInsumoInconclusivo(estado: EstadoAvc, insumo: Insumo): string | undefined {
+  if (insumo !== "nihss") return undefined;
+  if (nihssInconclusivoPorSedacao(estado)) return "NIHSS inconclusivo — exame sob sedação; avaliação especializada";
+  return "NIHSS inconclusivo por item não testável";
+}
+
 export function valorDoInsumoNaRecomendacao(
   estado: EstadoAvc,
   r: Recomendacao,
@@ -789,6 +801,8 @@ export function valorDoInsumoNaRecomendacao(
    * ⛔ Nenhum limiar muda. Sem UN, a leitura é a de sempre.
    */
   if (insumo === "nihss" && c.nihss !== undefined) {
+    /** ⚠️ AC-77 (14ª rodada): exame só sob sedação ⛔ é limite nenhum — ⛔ satisfaz ⛔ nem contradiz. */
+    if (nihssInconclusivoPorSedacao(estado)) return "inconclusivo";
     const l = leituraDoNihssCalculado(estado);
     if (l === undefined) return undefined;
     if (l.naoTestaveis.length === 0) return naFaixa(l.soma, c.nihss) ? "satisfaz" : "contradiz";

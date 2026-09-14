@@ -59,6 +59,7 @@ import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 import { MarcosDaTransferencia } from "./marcos-da-transferencia";
+import { PlanoAte48h } from "./plano-48h";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
@@ -365,6 +366,13 @@ export default function SuperficieG({
           </ClinicalCard>
         </View>
       ) : null}
+
+      {/**
+        * ── ⚠️⚠️ PLANO ATÉ 48 H — 14ª rodada (T08, C08) ─────────────────────────────
+        * ⚠️ Um caminho por evento real; ⛔ o tempo ⛔ libera ⛔ nem conclui; agenda com a próxima
+        * reavaliação ⛔ e o aviso de que ⛔ há notificação em segundo plano.
+        */}
+      <PlanoAte48h estado={estado} agora={agora} onEscolher={onEscolher} onHora={onHora} onDesfazer={onDesfazer} />
 
       {/* ── 1 · recomendação graduada ──────────────────────────────────── */}
       <View style={e.grupo} testID="avc-g-recomendados">

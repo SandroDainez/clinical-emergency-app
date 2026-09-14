@@ -176,6 +176,7 @@ import { chamarModulo, pilhaDeChamadas, retornarDoModulo, retornoDaChamada, type
 import {
   intervencaoDeViaAereaPendente,
   leituraDaViaAereaExterna,
+  registrarSedacaoSuspensa,
   registrarViaAereaExterna,
   suporteAtivo,
 } from "../../avc/nucleo/via-aerea-externa";
@@ -1102,7 +1103,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const mostrarPainel = pilha.length > 0 && !verSuperficieDuranteChamada;
   const intervencaoVA = useMemo(() => intervencaoDeViaAereaPendente(estado), [estado]);
   const textoDoSuporte = suporteAtivo(estado)
-    .map((p) => (p.hora !== undefined ? `${tr(p.rotulo)} ${horaDoInstante(p.hora)}` : tr(p.rotulo)))
+    .map((p) => [tr(p.rotulo), p.hora !== undefined ? horaDoInstante(p.hora) : undefined, p.sufixo !== undefined ? tr(p.sufixo) : undefined]
+      .filter((x) => x !== undefined).join(" "))
     .join(" · ");
   /** ⚠️ 11ª rodada: só enquanto a reavaliação da piora está pendente. */
   const anteriorDaPiora = useMemo(
@@ -2475,6 +2477,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onMedir={medir}
             onDesfazer={desfazer}
             onEscala={registrarEscala}
+            onSedacaoSuspensa={(exameFatoId, valor) => setEstado((e) => registrarSedacaoSuspensa(e, exameFatoId, valor, relogio))}
             onAbrirSuperficie={abrir}
             onIrParaCampo={irParaCampo}
           />

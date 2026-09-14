@@ -103,7 +103,7 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * (*"temperatura 39 °C fica medida, ⛔ e ⛔ NÃO vira ameaça"*). ⛔ Ler para
    * **exibir** ⛔ não é derivar conduta.
    */
-  temperatura: ["ameacas-imediatas.ts"],
+  temperatura: ["ameacas-imediatas.ts", "plano-48h.ts"],
 
   /**
    * ⚠️ ⛔ Os outros sinais vitais da Fase 3 ⛔ ainda ⛔ não são lidos por
@@ -111,7 +111,8 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    */
   fc: [],
   fr: [],
-  glasgow: [],
+  /** ⚠️ AC-78 (14ª rodada): lido só para marcar cada Glasgow em relação à sedação — ⛔ decide nada. */
+  glasgow: ["via-aerea-externa.ts", "plano-48h.ts"],
   monitorizacao: [],
   acessos: [],
 
@@ -133,9 +134,20 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   tele_marco: ["transferencia.ts"],
   /**
    * ⚠️ A09 (13ª rodada): via aérea como conduta externa. ⛔ Lida só pela leitura do
-   * registro; ⚠️ o horário corta o exame basal do NIHSS (via `horarioDaIntubacao`).
+   * registro; ⚠️ o horário marca os exames sob sedação (14ª rodada: via aérea AVANÇADA, AC-76/77).
    */
-  va_definitiva: ["via-aerea-externa.ts"],
+  va_avancada: ["via-aerea-externa.ts"],
+  /**
+   * ⚠️ T08 (14ª rodada): eventos ⛔ registros do plano até 48 h. ⛔ Lidos só pela leitura do
+   * plano; ⛔ nenhum portão, veredito ⛔ ou dose.
+   */
+  evt_fim: ["plano-48h.ts"],
+  nao_reperfundir_hora: ["plano-48h.ts"],
+  plano_degluticao: ["plano-48h.ts"],
+  plano_mobilizacao: ["plano-48h.ts"],
+  plano_tev: ["plano-48h.ts"],
+  plano_dispositivos: ["plano-48h.ts"],
+  plano_hemorragia_revisada: ["plano-48h.ts"],
   va_tipo: ["via-aerea-externa.ts"],
   va_hora: ["via-aerea-externa.ts"],
   va_quem: ["via-aerea-externa.ts"],
@@ -204,10 +216,10 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * metade falta** na aferição incompleta, ⛔ para o toque levar ao campo certo
    * (**E-26**). ⛔ Ele ⛔ não lê o valor — ⛔ quem lê é `derivacoes.ts`.
    */
-  pas: ["ameacas-imediatas.ts", "derivacoes.ts", "portao-ivt.ts"],
-  pad: ["derivacoes.ts", "portao-ivt.ts"],
+  pas: ["ameacas-imediatas.ts", "derivacoes.ts", "portao-ivt.ts", "plano-48h.ts"],
+  pad: ["derivacoes.ts", "portao-ivt.ts", "plano-48h.ts"],
   /** ⚠️ Ameaça imediata (eixo D), corte de F-06 ⛔ e a série temporal da reavaliação. */
-  glicemia: ["ameacas-imediatas.ts", "derivacoes-d.ts", "derivacoes.ts"],
+  glicemia: ["ameacas-imediatas.ts", "derivacoes-d.ts", "derivacoes.ts", "plano-48h.ts"],
 
   /**
    * ⚠️⚠️ `deficit_focal` alimenta **quatro** leitores, ⛔ e o do portão é o mais
@@ -216,7 +228,7 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    */
   deficit_focal: ["derivacoes-b.ts", "derivacoes-e.ts", "derivacoes.ts", "portao-ivt.ts"],
   /** ⚠️ 13ª rodada (A09): `via-aerea-externa.ts` marca cada exame como anterior à sedação ⛔ ou sob sedação. */
-  nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts", "via-aerea-externa.ts"],
+  nihss_calculado: ["apresentacao-f.ts", "derivacoes-b.ts", "derivacoes.ts", "via-aerea-externa.ts", "plano-48h.ts"],
   /** ⚠️ D-PEND-14: o escore de outro serviço ⛔ não é lido por regra — só pela leitura de B. */
   nihss_informado: ["derivacoes-b.ts"],
   nihss_informado_nao_testaveis: ["derivacoes-b.ts"],
@@ -226,7 +238,7 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   acao_estado: ["derivacoes-e.ts"],
 
   /** ⚠️ O resultado da imagem — o único bloqueio de **classe** do módulo. */
-  estudo_resultado: ["derivacoes-c.ts"],
+  estudo_resultado: ["derivacoes-c.ts", "plano-48h.ts"],
   hipodensidade_clara: ["derivacoes-c.ts"],
 
   /** ⚠️ Os antecedentes que a segurança interpreta (**F-07**, **F-30**). */

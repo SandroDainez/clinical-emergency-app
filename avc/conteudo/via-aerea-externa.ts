@@ -27,7 +27,8 @@ export const GRUPO_DA_VIA_AEREA_EXTERNA = comCasa("estabilizacao", [
     titulo: "Via aérea · conduta externa",
     nota: "Registro do que a equipe fez fora do app. Sem fármaco, dose ou parâmetro ventilatório.",
     campos: [
-      { id: "va_definitiva", rotulo: "Via aérea definitiva", tipo: "escolha", temporalidade: "estavel", opcoes: SIM_NAO_NAO_SEI, ...REGISTRO },
+      /** ⚠️ AC-76 (14ª rodada): "avançada", ⛔ "definitiva" — o tipo define se é definitiva. */
+      { id: "va_avancada", rotulo: "Via aérea avançada instalada", tipo: "escolha", temporalidade: "estavel", opcoes: SIM_NAO_NAO_SEI, ...REGISTRO },
       { id: "va_tipo", rotulo: "Tipo", tipo: "escolha", temporalidade: "estavel", opcoes: TIPOS_DE_VIA_AEREA, ...REGISTRO },
       { id: "va_hora", rotulo: "Horário observado", tipo: "hora", temporalidade: "estavel", aceitaDesconhecido: true, ...REGISTRO },
       { id: "va_quem", rotulo: "Quem realizou", tipo: "texto", temporalidade: "estavel", ...REGISTRO },

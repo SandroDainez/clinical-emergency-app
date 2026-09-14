@@ -324,7 +324,7 @@ export default function CampoDeEscala({
               ) : null}
               {sugestoesNaoTestavel.includes(item.id) ? (
                 <Text style={e.itemComoAvaliar} testID={`avc-escala-sugestao-un-${item.id}`}>
-                  {tr("Sugestão: há via aérea definitiva registrada; este item pode ser não testável. Marque só se aplicável, com justificativa.")}
+                  {tr("Sugestão: há via aérea avançada registrada; este item pode ser não testável. Marque só se aplicável, com justificativa.")}
                 </Text>
               ) : null}
               <View style={e.opcoes}>

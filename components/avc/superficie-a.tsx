@@ -50,6 +50,15 @@ import { campoDoModulo } from "../../avc/conteudo/campos";
 import { eixoDoGrupo } from "./ui";
 import CalculadoraDeGlasgow, { BotaoDaCalculadoraDeGlasgow } from "./calculadora-de-glasgow";
 import { totalDoGlasgow } from "../../avc/conteudo/glasgow";
+import { examesGlasgow } from "../../avc/nucleo/via-aerea-externa";
+
+/** ⚠️ AC-78 (14ª rodada): a marca de cada Glasgow em relação à via aérea avançada registrada. */
+const MARCA_DO_GLASGOW: Readonly<Record<string, string>> = {
+  anterior_a_sedacao: "anterior à sedação",
+  sob_sedacao: "sob sedação",
+  sem_referencia: "horário da via aérea avançada desconhecido — não separado da sedação",
+  sedacao_suspensa: "sedação suspensa para o exame",
+};
 import { bloqueiosCorrigiveis } from "../../avc/nucleo/derivacoes-d";
 
 /** ⚠️ O símbolo do tom — ⛔ o mesmo vocabulário do painel compartilhado. */
@@ -850,6 +859,17 @@ export default function SuperficieA({
                       <Text style={e.origem} testID="avc-glasgow-origem">
                         {tr(origemDoGlasgow)}
                       </Text>
+                    )}
+                    {/** ⚠️ AC-78 (14ª rodada): a marca de sedação também no Glasgow — ⛔ muda leitura nenhuma. */}
+                    {campo.id !== "glasgow" || !examesGlasgow(estado).some((x) => x.marca !== undefined) ? null : (
+                      <View testID="avc-a-exames-glasgow">
+                        {examesGlasgow(estado).map((x) => (
+                          <Text key={x.fatoId} style={e.origem} testID={`avc-a-exame-glasgow-${x.fatoId}`}>
+                            Glasgow {x.total} · {horaDeExibicao(x.quando, agora)}
+                            {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_GLASGOW[x.marca])}`}
+                          </Text>
+                        ))}
+                      </View>
                     )}
                     {campo.id !== "glasgow" || !glasgowAberto ? null : (
                       <CalculadoraDeGlasgow

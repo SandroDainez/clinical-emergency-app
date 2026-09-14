@@ -17,7 +17,7 @@
 
 import { criseNoInicio } from "./derivacoes";
 import { valorAtual, type EstadoAvc } from "./estado";
-import { horarioDaIntubacao } from "./via-aerea-externa";
+import { examesNihss } from "./via-aerea-externa";
 import {
   numero,
   respondeuDesconhecido,
@@ -218,18 +218,40 @@ export function leituraDoNihssCalculado(
  * derivasse, o app estaria inventando um exame que ninguém fez aqui.
  */
 /**
- * ⚠️⚠️ EXAME BASAL ANTERIOR À SEDAÇÃO — autor, 2026-09-13 (13ª rodada, A09): com via aérea
- * definitiva registrada com horário, ⛔ e havendo NIHSS ANTERIOR a ele, o exame feito
- * depois (sob sedação — confundidor) ⛔ substitui o basal no valor que as regras leem. ⛔
- * Sem basal anterior, nada muda: o único exame continua valendo, marcado na tela.
+ * ⚠️⚠️ EXAME SOB SEDAÇÃO É CONTEXTO, ⛔ CRITÉRIO — autor, 2026-09-13.
+ *
+ * 13ª rodada (A09): com NIHSS anterior à via aérea, o exame feito depois ⛔ substitui o basal.
+ * ⚠️ 14ª rodada (AC-77, ⛔ confirmada a leitura anterior): o exame sob sedação ⛔ é limite
+ * inferior ⛔ nem superior — pode satisfazer falsamente um piso de EVT. Mesma regra de
+ * D-PEND-14. ⚠️ O lote de cada exame que ⛔ vale para regras (sob sedação ⛔ ou ⛔ separável,
+ * sem "sedação suspensa = sim") sai do valor que as regras leem; sem nenhum exame válido, as
+ * regras dependentes ficam inconclusivas (`nihssInconclusivoPorSedacao`).
  */
 function estadoDoExameBasal(estado: EstadoAvc): EstadoAvc {
-  const corte = horarioDaIntubacao(estado);
-  if (corte === undefined) return estado;
-  const quando = (f: { horaClinica?: number; horaRegistro: number }) => f.horaClinica ?? f.horaRegistro;
+  const invalidos = new Set(examesNihss(estado).filter((x) => !x.valeParaRegras).map((x) => x.fatoId));
+  if (invalidos.size === 0) return estado;
   const doExame = (campo: string) => campo.startsWith("nihss_") && !campo.startsWith("nihss_informado");
-  if (!estado.fatos.some((f) => f.campo === "nihss_calculado" && quando(f) < corte)) return estado;
-  return { ...estado, fatos: estado.fatos.filter((f) => !(doExame(f.campo) && quando(f) >= corte)) };
+  /** ⚠️ O lote de um exame: os fatos da escala desde o total anterior até o próprio total. */
+  const fora = new Set<number>();
+  let inicioDoLote = 0;
+  estado.fatos.forEach((f, i) => {
+    if (f.campo !== "nihss_calculado") return;
+    if (invalidos.has(f.id)) {
+      for (let j = inicioDoLote; j <= i; j += 1) if (doExame(estado.fatos[j].campo)) fora.add(j);
+    }
+    inicioDoLote = i + 1;
+  });
+  return { ...estado, fatos: estado.fatos.filter((_, i) => !fora.has(i)) };
+}
+
+/**
+ * ⚠️ AC-77: há NIHSS registrado neste atendimento, ⛔ e ⛔ nenhum vale para as regras (todos
+ * sob sedação ⛔ ou ⛔ separáveis dela, sem sedação suspensa). As regras dependentes ficam
+ * "inconclusivo — exame sob sedação; avaliação especializada".
+ */
+export function nihssInconclusivoPorSedacao(estado: EstadoAvc): boolean {
+  const exames = examesNihss(estado);
+  return exames.length > 0 && exames.every((x) => !x.valeParaRegras);
 }
 
 export function nihssCalculado(estadoCompleto: EstadoAvc): number | undefined {
@@ -438,6 +460,21 @@ export function nihssRegistrado(estado: EstadoAvc): Leitura {
   const informado = nihssInformado(estado);
   const insumos = ["nihss_calculado", "nihss_informado"];
   const fonte = "F-17";
+
+  /**
+   * ⚠️⚠️ AC-77 (14ª rodada): o exame existe, ⛔ e foi feito sob sedação sem basal anterior.
+   * ⛔ Não é "ainda não registrado", ⛔ e ⛔ nenhuma regra recebe o número.
+   */
+  if (calculado === undefined && nihssInconclusivoPorSedacao(estado)) {
+    return {
+      conclusao: "sim",
+      tom: "informativo",
+      curto: "NIHSS sob sedação — inconclusivo; avaliação especializada",
+      texto: "Exame sob sedação é contexto, não critério: nenhuma regra recebe este número. Sem exame anterior à sedação, as regras dependentes ficam inconclusivas; um exame com sedação suspensa, registrada no próprio exame, passa a valer",
+      insumos,
+      fonte,
+    };
+  }
 
   /**
    * ⚠️⚠️ AC-01: escala feita com item NÃO TESTÁVEL. ⛔ Não é "ainda não

@@ -27,7 +27,7 @@ export const MODULOS_CHAMAVEIS: readonly ModuloChamavel[] = [
     nome: "Via aérea",
     disponivel: false,
     cuidadosAssociados: ["ventilacao", "sedoanalgesia"],
-    campos: ["va_definitiva", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"],
+    campos: ["va_avancada", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"],
   },
   { id: "ventilacao", nome: "Ventilação mecânica", disponivel: false, cuidadosAssociados: [], campos: ["va_ventilacao"] },
   { id: "sedoanalgesia", nome: "Analgesia e sedação", disponivel: false, cuidadosAssociados: [], campos: ["va_sedacao"] },

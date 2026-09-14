@@ -34,7 +34,7 @@ import {
   veioDaEscala,
 } from "../../avc/nucleo/derivacoes-b";
 import { CAMPO_DA_JUSTIFICATIVA, CAMPO_DE_ITEM, ITENS_NIHSS, type RespostaDoItem } from "../../avc/conteudo/nihss";
-import { respostaDoItem } from "../../avc/nucleo/derivacoes-b";
+import { nihssInconclusivoPorSedacao, respostaDoItem } from "../../avc/nucleo/derivacoes-b";
 import CampoDeEscala from "./campo-de-escala";
 import { examesNihss, itensNihssSugeridosComoNaoTestaveis } from "../../avc/nucleo/via-aerea-externa";
 import { MOTIVO_CLINICO, RECOMENDACOES } from "../../avc/conteudo/superficie-f";
@@ -94,14 +94,20 @@ type Props = {
   onAbrirSuperficie?: (id: SuperficieId) => void;
   /** ⚠️ 13ª rodada (A04): leva a cada dado que o caminho de início desconhecido exige. */
   onIrParaCampo?: (campo: string) => void;
+  /** ⚠️ 14ª rodada (AC-77): "sedação suspensa para o exame", gravada no próprio exame. */
+  onSedacaoSuspensa?: (exameFatoId: string, valor: "sim" | "nao") => void;
 };
 
-/** ⚠️ 13ª rodada (A09): a marca do exame em relação à via aérea definitiva registrada. */
+/** ⚠️ 13ª rodada (A09) · 14ª (AC-76/77): a marca do exame em relação à via aérea avançada registrada. */
 const MARCA_DO_EXAME: Readonly<Record<string, string>> = {
   anterior_a_sedacao: "anterior à sedação — basal preservado",
   sob_sedacao: "sob sedação — confundidor",
-  sem_referencia: "horário da via aérea definitiva desconhecido — basal não separado",
+  sem_referencia: "horário da via aérea avançada desconhecido — exame não separado da sedação",
+  sedacao_suspensa: "sedação suspensa para o exame — vale para as regras",
 };
+
+/** ⚠️ 14ª rodada (A04): os DOIS caminhos de §4.6.3 já transcritos — DWI/FLAIR (rec. 1) ⛔ e perfusão automatizada (rec. 2). */
+const CAMINHOS_DE_INICIO_DESCONHECIDO = ["ivt_inicio_desconhecido", "ivt_wakeup_ou_45_9"] as const;
 
 function horaCurta(ms: number): string {
   const d = new Date(ms);
@@ -118,8 +124,10 @@ export default function SuperficieB({
   onEscala,
   onAbrirSuperficie,
   onIrParaCampo,
+  onSedacaoSuspensa,
 }: Props) {
   const examesDoNihss = examesNihss(estado);
+  const nihssSoSobSedacao = nihssInconclusivoPorSedacao(estado);
   const sugestoesUN = itensNihssSugeridosComoNaoTestaveis(estado);
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -362,14 +370,42 @@ export default function SuperficieB({
             {camposDoGrupo(grupo).some((c) => c.id === "nihss_calculado") && (examesDoNihss.some((x) => x.marca !== undefined) || sugestoesUN.length > 0) ? (
               <View style={e.resumo} testID="avc-b-exames-nihss">
                 {examesDoNihss.map((x) => (
-                  <Text key={x.fatoId} style={e.resumoLinha} testID={`avc-b-exame-nihss-${x.fatoId}`}>
-                    NIHSS {x.total} · {horaCurta(x.quando)}
-                    {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_EXAME[x.marca])}`}
-                  </Text>
+                  <View key={x.fatoId}>
+                    <Text style={e.resumoLinha} testID={`avc-b-exame-nihss-${x.fatoId}`}>
+                      NIHSS {x.total} · {horaCurta(x.quando)}
+                      {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_EXAME[x.marca])}`}
+                    </Text>
+                    {/**
+                      * ⚠️ AC-77 (14ª rodada): exceção humana explícita, NO exame — com "sim" o exame
+                      * vale para as regras ⛔ e fica marcado. ⛔ Nada é presumido.
+                      */}
+                    {onSedacaoSuspensa !== undefined && x.marca !== undefined && x.marca !== "anterior_a_sedacao" ? (
+                      <View style={e.linhaDeSedacao}>
+                        <Text style={e.resumoLinha}>{tr("Sedação suspensa para o exame")}:</Text>
+                        {(["sim", "nao"] as const).map((valor) => (
+                          <Pressable
+                            key={valor}
+                            style={e.caminho}
+                            accessibilityRole="radio"
+                            aria-checked={x.sedacaoSuspensa === valor}
+                            testID={`avc-b-exame-sedacao-suspensa-${x.fatoId}-${valor}`}
+                            onPress={() => onSedacaoSuspensa(x.fatoId, valor)}
+                          >
+                            <Text style={e.caminhoTexto}>{tr(valor === "sim" ? "Sim" : "Não")}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
                 ))}
+                {nihssSoSobSedacao ? (
+                  <Text style={e.resumoLinha} testID="avc-b-nihss-inconclusivo-sedacao">
+                    {tr("Sem exame anterior à sedação: regras dependentes do NIHSS ficam inconclusivo — exame sob sedação; avaliação especializada.")}
+                  </Text>
+                ) : null}
                 {sugestoesUN.map((id) => (
                   <Text key={id} style={e.resumoLinha} testID={`avc-b-sugestao-un-${id}`}>
-                    {tr("Item")} {id}: {tr("pode ser não testável por via aérea definitiva — sugestão, não registro")}
+                    {tr("Item")} {id}: {tr("pode ser não testável por via aérea avançada — sugestão, não registro")}
                   </Text>
                 ))}
               </View>
@@ -555,24 +591,31 @@ export default function SuperficieB({
                           * desconhecido ⛔ e cada dado que ela exige, com o motivo ⛔ e o toque
                           * que leva ao campo. ⛔ Nenhum texto clínico novo.
                           */}
-                        {(() => {
-                          const rec = RECOMENDACOES.find((r) => r.id === "ivt_inicio_desconhecido");
+                        {CAMINHOS_DE_INICIO_DESCONHECIDO.map((recId) => {
+                          const rec = RECOMENDACOES.find((r) => r.id === recId);
                           if (rec === undefined) return null;
                           return (
-                            <>
-                              <Text style={e.resumoLinha} testID="avc-b-inicio-desconhecido-populacao">
-                                {tr("Caminho da diretriz")}: {tr(rec.populacao)} · {tr("COR")} {rec.cor} · {tr("LOE")} {rec.loe}
+                            <View key={recId} style={e.caminhoDaDiretriz} testID={`avc-b-caminho-${recId}`}>
+                              <Text style={e.resumoLinha} testID={`avc-b-caminho-populacao-${recId}`}>
+                                {tr("Caminho da diretriz")} · {rec.localizacao}: {tr(rec.populacao)} · {tr("COR")} {rec.cor} · {tr("LOE")} {rec.loe}
                               </Text>
                               {rec.exige.filter((insumo) => insumo !== "janela").map((insumo) => {
                                 const alvo = CAMPOS_DO_INSUMO[insumo][0];
+                                /** ⚠️ Dado sem campo (ex.: não elegível a EVT, F-31): dito, ⛔ botão morto. */
+                                if (alvo === undefined) {
+                                  return (
+                                    <Text key={insumo} style={e.resumoLinha} testID={`avc-b-caminho-${recId}-exige-${insumo}`}>
+                                      {tr(MOTIVO_CLINICO[insumo])}
+                                    </Text>
+                                  );
+                                }
                                 return (
                                   <Pressable
                                     key={insumo}
                                     style={e.caminho}
                                     accessibilityRole="button"
-                                    testID={`avc-b-inicio-desconhecido-exige-${insumo}`}
+                                    testID={`avc-b-caminho-${recId}-exige-${insumo}`}
                                     onPress={() => {
-                                      if (alvo === undefined) return;
                                       if (onIrParaCampo !== undefined) onIrParaCampo(alvo);
                                       else foco.pedirFoco(alvo);
                                     }}
@@ -581,9 +624,9 @@ export default function SuperficieB({
                                   </Pressable>
                                 );
                               })}
-                            </>
+                            </View>
                           );
-                        })()}
+                        })}
                         {onAbrirSuperficie !== undefined ? (
                           <Pressable
                             style={e.caminho}
@@ -628,6 +671,8 @@ const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.controlSurface,
     },
     caminhoTexto: { color: tema.cores.primary, fontSize: TIPOGRAFIA.body.fontSize, fontWeight: "600" },
+    linhaDeSedacao: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: ESPACO.xs },
+    caminhoDaDiretriz: { gap: ESPACO.xs, marginTop: ESPACO.xs },
     raiz: { gap: ESPACO.md },
     cabecalho: { flexDirection: "row", alignItems: "center", gap: ESPACO.xs },
     /**

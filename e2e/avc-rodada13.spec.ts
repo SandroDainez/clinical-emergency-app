@@ -51,7 +51,7 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
     await expect(painel).toContainText("indisponível neste app");
     expect(await painel.innerText(), "⛔ o painel simula execução").not.toMatch(EXECUCAO);
 
-    await page.getByTestId("avc-va-va_definitiva-sim").click();
+    await page.getByTestId("avc-va-va_avancada-sim").click();
     await page.getByTestId("avc-va-va_tipo-Intubação orotraqueal").click();
     await page.getByTestId("avc-va-hora-agora").click();
     await page.getByTestId("avc-va-quem").fill("Dr. Plantão");
@@ -88,14 +88,14 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
   test("«não sei» em cada campo mantém pendência, no retorno ⛔ na lista do atendimento", async ({ page }) => {
     await abrir(page);
     await chamarViaAerea(page);
-    for (const c of ["va_definitiva", "va_tipo", "va_sedacao", "va_ventilacao"]) {
+    for (const c of ["va_avancada", "va_tipo", "va_sedacao", "va_ventilacao"]) {
       await page.getByTestId(`avc-va-${c}-nao_sei`).click();
     }
     await page.getByTestId("avc-va-hora-nao-sei").click();
     await page.getByTestId("avc-va-registrar").click();
     await page.getByTestId("avc-modulo-voltar").click();
     await expect(page.getByTestId("avc-retorno-modulo")).toContainText("Pendências");
-    for (const c of ["va_definitiva", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"]) {
+    for (const c of ["va_avancada", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"]) {
       await expect(page.locator(`[data-testid^="avc-pendencia-"][data-testid$="${c}"]`), `⛔ «não sei» em ${c} sem pendência`).toHaveCount(1);
     }
   });
@@ -118,7 +118,7 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
   test("fechar ⛔ reabrir no meio da intervenção: o painel volta com a pilha", async ({ page }) => {
     await abrir(page);
     await chamarViaAerea(page);
-    await page.getByTestId("avc-va-va_definitiva-sim").click();
+    await page.getByTestId("avc-va-va_avancada-sim").click();
     await page.getByTestId("avc-va-registrar").click();
     await page.getByTestId("avc-chamar-modulo-ventilacao").click();
     await expect(page.getByTestId("avc-modulo-indisponivel-ventilacao")).toBeVisible();
@@ -159,7 +159,7 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
      * no próprio cartão A04: a recomendação existente ⛔ e o toque que leva a cada dado.
      */
     await expect(caminho).toContainText("início desconhecido, com RM-DWI/FLAIR compatível");
-    await page.getByTestId("avc-b-inicio-desconhecido-exige-dwi_menor_que_um_terco").click();
+    await page.getByTestId("avc-b-caminho-ivt_inicio_desconhecido-exige-dwi_menor_que_um_terco").click();
     await expect(page.getByTestId("avc-superficie-imagem"), "⛔ o dado exigido ⛔ abriu").toBeVisible();
     await page.getByTestId("avc-aba-neurologico").click();
     await page.getByTestId("avc-b-abrir-inicio-desconhecido").click();
@@ -170,7 +170,7 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
     await abrir(page, "es-419");
     await chamarViaAerea(page);
     await expect(page.getByTestId("avc-modulo-indisponivel-via_aerea")).toContainText("no disponible en esta app");
-    await page.getByTestId("avc-va-va_definitiva-sim").click();
+    await page.getByTestId("avc-va-va_avancada-sim").click();
     await page.getByTestId("avc-va-hora-agora").click();
     await page.getByTestId("avc-va-registrar").click();
     await page.getByTestId("avc-modulo-voltar").click();

@@ -25,7 +25,7 @@ import { decorridoEmMinutos, valorAtual, type EstadoAvc } from "./estado";
 import { destinoDaImagem } from "./derivacoes-c";
 import { exposicoesPorInstancia, type FaseDaExposicao } from "./derivacoes-f";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
-import { leituraDoNihssCalculado, nihssCalculado, nihssInformado } from "./derivacoes-b";
+import { leituraDoNihssCalculado, nihssCalculado, nihssInconclusivoPorSedacao, nihssInformado } from "./derivacoes-b";
 import { textoDoTotalNihss } from "../../lib/nihss";
 import type { Relogio } from "./relogio";
 import { reavaliacaoPendente } from "./deterioracao";
@@ -139,6 +139,9 @@ export function sinteseDoCaso(
     situacao.push({ id: "nihss", texto: `NIHSS ${textoDoTotalNihss(comUn.soma, comUn.naoTestaveis.length)}` });
   } else if (nihssCalculado(estado) !== undefined) {
     situacao.push({ id: "nihss", texto: `NIHSS ${nihss}` });
+  } else if (nihssInconclusivoPorSedacao(estado)) {
+    /** ⚠️ AC-77 (14ª rodada): o exame existe, ⛔ e sob sedação ⛔ é número de critério. */
+    situacao.push({ id: "nihss", texto: "NIHSS sob sedação — inconclusivo; avaliação especializada" });
   } else if (nihss !== undefined) {
     /** ⚠️ D-PEND-14: o escore de outro serviço aparece na síntese — ⛔ e é dito como de fora. */
     situacao.push({ id: "nihss", texto: `NIHSS de outro serviço ${nihss}` });

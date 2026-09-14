@@ -98,7 +98,7 @@ if (CH !== undefined && VA !== undefined) {
     `⛔ ${JSON.stringify(pilha)}`);
   const via = pilha[0].chamadaId;
   rel.avancar(MIN);
-  e = VA.registrarViaAereaExterna(e, { definitiva: "sim", tipo: "Intubação orotraqueal", observado: rel.agora(), quem: "Dr. Plantão", sedacao: "sim", ventilacao: "sim" }, rel, via);
+  e = VA.registrarViaAereaExterna(e, { avancada: "sim", tipo: "Intubação orotraqueal", observado: rel.agora(), quem: "Dr. Plantão", sedacao: "sim", ventilacao: "sim" }, rel, via);
   e = CH.chamarModulo(e, { encounterId: ENC, destino: "ventilacao", origem: { modulo: "via_aerea", rolagem: 0 } }, rel);
   pilha = CH.pilhaDeChamadas(e);
   conf("retorno aninhado: pilha com 2 (via aérea › ventilação)", pilha.map((c) => c.destino).join("›") === "via_aerea›ventilacao", `⛔ ${pilha.map((c) => c.destino)}`);
@@ -114,7 +114,7 @@ if (CH !== undefined && VA !== undefined) {
   const ret = CH.retornoDaChamada(final, via);
   conf("retorno: mesmo encounterId, origem, ⛔ cancelado", ret !== undefined && ret.encounterId === ENC && ret.origem.rolagem === 912 && ret.cancelado === false,
     `⛔ ${JSON.stringify(ret)}`);
-  const idsDaChamada = final.fatos.filter((f) => f.instancia === via && ["va_definitiva", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"].includes(f.campo)).map((f) => f.id);
+  const idsDaChamada = final.fatos.filter((f) => f.instancia === via && ["va_avancada", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"].includes(f.campo)).map((f) => f.id);
   conf("retorno transporta os eventos REALMENTE registrados na chamada", ret !== undefined && idsDaChamada.length === 6 && idsDaChamada.every((id) => ret.eventos.includes(id)),
     `⛔ ${JSON.stringify(ret && ret.eventos)} × ${idsDaChamada}`);
   conf("retorno transporta suporte ativo, resposta ⛔ medida ⛔ e pendência de reavaliação",
@@ -130,7 +130,7 @@ conf("conteúdo ⛔ leitura da via aérea externa existem",
   "⛔ avc/conteudo/via-aerea-externa.ts ou avc/nucleo/via-aerea-externa.ts ausente/incompleto");
 if (CVA !== undefined) {
   const ids = CVA.CAMPOS_DA_VIA_AEREA_EXTERNA.map((c) => c.id);
-  conf("exatamente os seis campos pedidos", JSON.stringify(ids) === JSON.stringify(["va_definitiva", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"]), `⛔ ${ids}`);
+  conf("exatamente os seis campos pedidos", JSON.stringify(ids) === JSON.stringify(["va_avancada", "va_tipo", "va_hora", "va_quem", "va_sedacao", "va_ventilacao"]), `⛔ ${ids}`);
   const tipo = CVA.CAMPOS_DA_VIA_AEREA_EXTERNA.find((c) => c.id === "va_tipo");
   conf("tipo: IOT · supraglótico · cirúrgica · outra · não sei",
     tipo !== undefined && JSON.stringify(tipo.opcoes) === JSON.stringify(["Intubação orotraqueal", "Dispositivo supraglótico", "Via aérea cirúrgica", "Outra", "Não sei"]), `⛔ ${JSON.stringify(tipo && tipo.opcoes)}`);
@@ -145,7 +145,7 @@ if (VA !== undefined) {
   let e = E.registrarFato(E.abrirAtendimento(rel), { campo: "nihss_calculado", valor: 4 }, rel);
   rel.avancar(10 * MIN);
   const tIot = rel.agora();
-  e = VA.registrarViaAereaExterna(e, { definitiva: "sim", tipo: "Intubação orotraqueal", observado: tIot, quem: "Dr. Plantão", sedacao: "sim", ventilacao: "sim" }, rel);
+  e = VA.registrarViaAereaExterna(e, { avancada: "sim", tipo: "Intubação orotraqueal", observado: tIot, quem: "Dr. Plantão", sedacao: "sim", ventilacao: "sim" }, rel);
   const partes = VA.suporteAtivo(e);
   conf("suporte ativo: «intubado às» HH:MM · «sedação em curso» · «ventilação mecânica»",
     partes.length === 3 && partes[0].rotulo === "intubado às" && partes[0].hora === tIot && partes[1].rotulo === "sedação em curso" && partes[2].rotulo === "ventilação mecânica",
@@ -161,24 +161,25 @@ if (VA !== undefined) {
   conf("marcas: basal «anterior à sedação», novo «sob sedação»",
     exames.length === 2 && exames[0].total === 4 && exames[0].marca === "anterior_a_sedacao" && exames[0].quando === t0
       && exames[1].total === 12 && exames[1].marca === "sob_sedacao", `⛔ ${JSON.stringify(exames)}`);
-  const soSob = E.registrarFato(VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { definitiva: "sim", observado: rel.agora() - MIN }, rel), { campo: "nihss_calculado", valor: 9 }, rel);
-  conf("sem exame basal, o único exame fica marcado «sob sedação» (⛔ some)",
-    VA.examesNihss(soSob).length === 1 && VA.examesNihss(soSob)[0].marca === "sob_sedacao" && B.nihssCalculado(soSob) === 9, `⛔ ${JSON.stringify(VA.examesNihss(soSob))}`);
+  const soSob = E.registrarFato(VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { avancada: "sim", observado: rel.agora() - MIN }, rel), { campo: "nihss_calculado", valor: 9 }, rel);
+  /** ⚠️ Ajuste consciente (14ª rodada, AC-77 ⛔ confirmado): o único exame sob sedação fica marcado ⛔ e ⛔ vale para as regras. */
+  conf("sem exame basal, o único exame fica marcado «sob sedação» (⛔ some) ⛔ e ⛔ vira número de regra (AC-77)",
+    VA.examesNihss(soSob).length === 1 && VA.examesNihss(soSob)[0].marca === "sob_sedacao" && B.nihssCalculado(soSob) === undefined, `⛔ ${JSON.stringify(VA.examesNihss(soSob))}`);
   conf("UN por intubação é SUGERIDO (item de barreira à fala) ⛔ e ⛔ gravado",
     JSON.stringify(VA.itensNihssSugeridosComoNaoTestaveis(e)) === JSON.stringify(["10"]) && !e.fatos.some((f) => f.campo === "nihss_10"),
     `⛔ ${JSON.stringify(VA.itensNihssSugeridosComoNaoTestaveis(e))}`);
   conf("sem via aérea definitiva ⛔ há sugestão ⛔ nem marca", VA.itensNihssSugeridosComoNaoTestaveis(E.abrirAtendimento(rel)).length === 0 && VA.examesNihss(E.registrarFato(E.abrirAtendimento(rel), { campo: "nihss_calculado", valor: 3 }, rel)).every((x) => x.marca === undefined), "⛔");
 
   /* «não sei» mantém pendência */
-  const naoSei = VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { definitiva: "nao_sei", tipo: "nao_sei", observado: "nao_sei", sedacao: "nao_sei", ventilacao: "nao_sei" }, rel);
+  const naoSei = VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { avancada: "nao_sei", tipo: "nao_sei", observado: "nao_sei", sedacao: "nao_sei", ventilacao: "nao_sei" }, rel);
   const pend = VA.leituraDaViaAereaExterna(naoSei).pendencias.map((p) => p.campo);
   conf("«não sei» em cada campo mantém pendência (definitiva, tipo, horário, sedação, ventilação)",
-    ["va_definitiva", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"].every((c) => pend.includes(c)), `⛔ ${pend}`);
-  conf("… ⛔ e as pendências aparecem na lista do atendimento", ["va_definitiva", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"].every((c) => PA.pendenciasDoCaso(naoSei).some((p) => p.campo === c)),
+    ["va_avancada", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"].every((c) => pend.includes(c)), `⛔ ${pend}`);
+  conf("… ⛔ e as pendências aparecem na lista do atendimento", ["va_avancada", "va_tipo", "va_hora", "va_sedacao", "va_ventilacao"].every((c) => PA.pendenciasDoCaso(naoSei).some((p) => p.campo === c)),
     `⛔ ${PA.pendenciasDoCaso(naoSei).map((p) => p.campo)}`);
   const resolvido = VA.registrarViaAereaExterna(naoSei, { tipo: "Intubação orotraqueal" }, rel);
   conf("responder o campo tira só aquela pendência", !VA.leituraDaViaAereaExterna(resolvido).pendencias.some((p) => p.campo === "va_tipo") && VA.leituraDaViaAereaExterna(resolvido).pendencias.some((p) => p.campo === "va_sedacao"), "⛔");
-  const horaNaoSei = VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { definitiva: "sim", observado: "nao_sei" }, rel);
+  const horaNaoSei = VA.registrarViaAereaExterna(E.abrirAtendimento(rel), { avancada: "sim", observado: "nao_sei" }, rel);
   conf("horário da intubação desconhecido: exame ⛔ é classificado (⛔ inventa basal)",
     VA.examesNihss(E.registrarFato(horaNaoSei, { campo: "nihss_calculado", valor: 5 }, rel)).every((x) => x.marca === "sem_referencia"), "⛔ classificou sem horário");
 }

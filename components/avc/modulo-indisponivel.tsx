@@ -34,7 +34,7 @@ function horaCurta(ms: number): string {
 }
 
 const CHAVE: Readonly<Record<string, keyof RegistroDeViaAerea>> = {
-  va_definitiva: "definitiva",
+  va_avancada: "avancada",
   va_tipo: "tipo",
   va_hora: "observado",
   va_quem: "quem",
@@ -197,7 +197,8 @@ export function ModuloIndisponivel({
           <Text style={e.rotulo} testID="avc-va-leitura">
             {tr("Registrado até agora")}:{" "}
             {[
-              leitura.definitiva ? `${tr("Via aérea definitiva")}: ${tr(leitura.definitiva === "sim" ? "Sim" : leitura.definitiva === "nao" ? "Não" : "Não sei")}` : undefined,
+              leitura.avancada ? `${tr("Via aérea avançada instalada")}: ${tr(leitura.avancada === "sim" ? "Sim" : leitura.avancada === "nao" ? "Não" : "Não sei")}` : undefined,
+              leitura.definitiva ? `${tr("Definitiva")}: ${tr(leitura.definitiva === "sim" ? "Sim" : leitura.definitiva === "nao" ? "Não" : "não determinada pelo tipo")}` : undefined,
               leitura.tipo ? `${tr("Tipo")}: ${tr(leitura.tipo === "nao_sei" ? "Não sei" : leitura.tipo)}` : undefined,
               leitura.observado !== undefined ? `${tr("Horário observado")}: ${horaCurta(leitura.observado)}` : leitura.horaDesconhecida ? `${tr("Horário observado")}: ${tr("Não sei")}` : undefined,
               leitura.quem ? `${tr("Quem realizou")}: ${leitura.quem}` : undefined,

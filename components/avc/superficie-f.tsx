@@ -45,6 +45,7 @@ import {
   administracoesRegistradas,
   doseDerivada,
   minutosDesdeCampoDoEstado,
+  motivoDoInsumoInconclusivo,
   recomendacoesDoEstado,
   type OrigemDoPeso,
 } from "../../avc/nucleo/derivacoes-f";
@@ -187,6 +188,8 @@ export default function SuperficieF({
   const [abertos, setAbertos] = useState<readonly string[]>([]);
   const alternar = (id: string) =>
     setAbertos((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
+  /** ⚠️ 14ª rodada (AC-77): o motivo do NIHSS inconclusivo, dito pelo núcleo. */
+  const motivoDoNihss = motivoDoInsumoInconclusivo(estado, "nihss");
 
   /**
    * ⚠️ Minutos desde um campo de hora. ⛔ Devolve `undefined` — ⛔ nunca zero —
@@ -1171,7 +1174,7 @@ export default function SuperficieF({
           <CabecalhoDeBloco titulo={tr("Com prazo correndo")} testID="avc-f-bloco-acao" />
           {acoes.map((i) => (
             <Cartao key={i.leitura.id} item={i} aberto={abertos.includes(i.leitura.id)}
-              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} />
+              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} motivoDoNihss={motivoDoNihss} />
           ))}
         </View>
       ) : null}
@@ -1182,7 +1185,7 @@ export default function SuperficieF({
           <CabecalhoDeBloco titulo={tr("Aplicáveis a este paciente")} testID="avc-f-bloco-aplicavel" />
           {aplicaveis.map((i) => (
             <Cartao key={i.leitura.id} item={i} aberto={abertos.includes(i.leitura.id)}
-              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} />
+              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} motivoDoNihss={motivoDoNihss} />
           ))}
         </View>
       ) : null}
@@ -1193,7 +1196,7 @@ export default function SuperficieF({
           <CabecalhoDeBloco titulo={tr("Falta um dado para fechar")} testID="avc-f-bloco-um-dado" />
           {aUmDado.map((i) => (
             <Cartao key={i.leitura.id} item={i} aberto={abertos.includes(i.leitura.id)}
-              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} />
+              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} motivoDoNihss={motivoDoNihss} />
           ))}
         </View>
       ) : null}
@@ -1204,7 +1207,7 @@ export default function SuperficieF({
           <CabecalhoDeBloco titulo={tr("Alertas para este contexto")} testID="avc-f-bloco-cor3" />
           {alertas.map((i) => (
             <Cartao key={i.leitura.id} item={i} aberto={abertos.includes(i.leitura.id)}
-              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} />
+              onAlternar={() => alternar(i.leitura.id)} onIrParaCampo={onIrParaCampo} motivoDoNihss={motivoDoNihss} />
           ))}
         </View>
       ) : null}
@@ -1412,11 +1415,14 @@ function Cartao({
   aberto,
   onAlternar,
   onIrParaCampo,
+  motivoDoNihss,
 }: {
   item: ItemDaTela;
   aberto: boolean;
   onAlternar: () => void;
   onIrParaCampo: (campo: string) => void;
+  /** ⚠️ 14ª rodada (AC-77): o motivo do NIHSS inconclusivo vem do núcleo — sedação ⛔ ou item não testável. */
+  motivoDoNihss?: string;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -1469,7 +1475,7 @@ function Cartao({
       {leitura.inconclusivos.length > 0 ? (
         <Text style={e.falta1} testID={`avc-f-rec-inconclusivo-${leitura.id}`}>
           {leitura.inconclusivos
-            .map((x) => (x === "nihss" ? tr("NIHSS inconclusivo por item não testável") : tr(acaoPendente(x))))
+            .map((x) => (x === "nihss" ? tr(motivoDoNihss ?? "NIHSS inconclusivo por item não testável") : tr(acaoPendente(x))))
             .join(" · ")}
         </Text>
       ) : null}

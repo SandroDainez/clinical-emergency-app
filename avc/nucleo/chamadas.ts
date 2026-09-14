@@ -98,6 +98,8 @@ export function retornoDaChamada(estado: EstadoAvc, chamadaId: string): RetornoD
   if (chamada === undefined) return undefined;
   const leitura = leituraDaViaAereaExterna(estado);
   const suporte: string[] = [];
+  /** ⚠️ AC-76: avançada ≠ definitiva — o tipo decide a segunda. */
+  if (leitura.avancada === "sim") suporte.push("via_aerea_avancada");
   if (leitura.definitiva === "sim") suporte.push("via_aerea_definitiva");
   if (leitura.sedacao === "sim") suporte.push("sedacao_em_curso");
   if (leitura.ventilacao === "sim") suporte.push("ventilacao_mecanica");
