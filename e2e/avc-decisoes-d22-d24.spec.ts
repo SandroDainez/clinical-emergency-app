@@ -74,7 +74,7 @@ test.describe("AVC · D-PEND-22 · dose exata de tenecteplase", () => {
 });
 
 test.describe("AVC · D-PEND-23 · suspeita clínica de HSA", () => {
-  test("«Sim» → motivo «Requer avaliação especializada — corrigir e reavaliar», adaptação do projeto", async ({ page }) => {
+  test("«Sim» → motivo «Requer avaliação especializada — corrigir e reavaliar», com a bula nominal no ⓘ", async ({ page }) => {
     await abrir(page);
     await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-imagem").click();
@@ -86,9 +86,16 @@ test.describe("AVC · D-PEND-23 · suspeita clínica de HSA", () => {
     await expect(motivo).toBeVisible();
     await expect(motivo).toContainText("Requer avaliação especializada");
     await expect(motivo).toContainText(/corrigir e reavaliar/i);
-    /** ⚠️ 8ª rodada: a procedência ("adaptação do projeto") fica no ⓘ do motivo. */
+    /**
+     * ⚠️ 8ª rodada: a procedência fica no ⓘ do motivo. ⚠️ Ajuste consciente (18ª rodada, autor): a procedência deixa
+     * de ser "adaptação do projeto" e passa à bula profissional Actilyse (I23-01, p. 4), com a frase literal; a
+     * classificação continua do projeto ("avaliação especializada").
+     */
     await page.getByTestId("avc-info-portao-suspeita_hsa").click();
-    await expect(page.getByTestId("avc-info-texto-portao-suspeita_hsa")).toContainText(/adaptação do projeto/i);
+    const info = page.getByTestId("avc-info-texto-portao-suspeita_hsa");
+    await expect(info).toContainText("Bula profissional Actilyse® (I23-01), p. 4");
+    await expect(info).toContainText("incluindo hemorragia subaracnóidea");
+    await expect(info).toContainText(/classificação do projeto: avaliação especializada/i);
     await expect(motivo).not.toContainText(/contraindica|impede pela diretriz|Saída diagnóstica armada/i);
   });
 });
