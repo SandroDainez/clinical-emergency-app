@@ -71,10 +71,13 @@ conf("D-PEND-22 · 70 kg → 17,5 mg (exato, ⛔ sem arredondar)", tnk(70).total
 conf("D-PEND-22 · 100 kg → 25 mg (teto)", tnk(100).totalMg === 25, `⛔ ${tnk(100).totalMg}`);
 conf("D-PEND-22 · 120 kg → 25 mg (teto)", tnk(120).totalMg === 25, `⛔ ${tnk(120).totalMg}`);
 conf("D-PEND-22 · 71 kg → 17,75 mg (exato)", tnk(71).totalMg === 17.75, `⛔ ${tnk(71).totalMg}`);
-conf("D-PEND-22 · volume a 5 mg/mL: 70 kg → 3,5 mL", tnk(70).volumeMl === 3.5, `⛔ ${JSON.stringify(tnk(70))}`);
-conf("D-PEND-22 · volume: 100 kg e 120 kg → 5 mL", tnk(100).volumeMl === 5 && tnk(120).volumeMl === 5, `⛔ ${tnk(100).volumeMl} · ${tnk(120).volumeMl}`);
-conf("D-PEND-22 · volume com 0,1 mL: 71 kg (17,75 mg) → 3,6 mL", tnk(71).volumeMl === 3.6, `⛔ ${tnk(71).volumeMl}`);
-conf("D-PEND-22 · a concentração do volume é declarada (5 mg/mL)", tnk(70).concentracaoMgPorMl === 5, `⛔ ${tnk(70).concentracaoMgPorMl}`);
+/**
+ * ⚠️ Ajuste consciente (19ª rodada, C5, autor): o volume a 5 mg/mL da D-PEND-22 sai do comportamento operacional
+ * enquanto a bula oficial da apresentação brasileira de Metalyse 25 mg ⛔ estiver arquivada. A dose segue em mg.
+ */
+conf("C5 · tenecteplase ⛔ exibe volume: 70, 71, 100 ⛔ 120 kg sem `volumeMl`",
+  [70, 71, 100, 120].every((kg) => tnk(kg).volumeMl === undefined), `⛔ ${JSON.stringify([70, 71, 100, 120].map((kg) => tnk(kg).volumeMl))}`);
+conf("C5 · tenecteplase ⛔ declara concentração (5 mg/mL seria inferência)", tnk(70).concentracaoMgPorMl === undefined, `⛔ ${tnk(70).concentracaoMgPorMl}`);
 const faixa = (kg) => tnk(kg).conferenciaTable7;
 conf("D-PEND-22 · Table 7 como conferência: 70 kg → faixa «70 kg to <80 kg», 20 mg · 4 mL, divergente",
   faixa(70) !== undefined && faixa(70).mg === 20 && faixa(70).ml === 4 && faixa(70).faixa === "70 kg to <80 kg" && faixa(70).divergente === true,

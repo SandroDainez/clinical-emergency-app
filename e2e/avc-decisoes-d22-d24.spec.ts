@@ -6,7 +6,7 @@ import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
  * D-PEND-22, D-PEND-23, D-PEND-24 (autor, 2026-09-13) — pelo gesto do médico.
  *
  *   D-PEND-22 · tenecteplase 0,25 mg/kg exato, teto 25 mg, sem arredondar mg; volume
- *   a 5 mg/mL com 0,1 mL; faixa da Table 7 como conferência, divergência explícita;
+ *   a 5 mg/mL retirado pela C5 (19ª rodada); faixa da Table 7 como conferência, divergência explícita;
  *   situação regulatória "pendente de conferência" visível.
  *   D-PEND-23 · suspeita clínica de HSA com TC sem sangue retém a reperfusão como
  *   "requer avaliação especializada / corrigir e reavaliar", adaptação do projeto.
@@ -41,11 +41,12 @@ async function tenecteplaseCom(page: Page, kg: number) {
 }
 
 test.describe("AVC · D-PEND-22 · dose exata de tenecteplase", () => {
-  test("70 kg → 17,5 mg · 3,5 mL; Table 7 20 mg · 4 mL com divergência; regulatório pendente", async ({ page }) => {
+  test("70 kg → 17,5 mg, sem volume (C5); Table 7 20 mg com divergência; regulatório pendente", async ({ page }) => {
     await tenecteplaseCom(page, 70);
     await expect(page.getByTestId("avc-f-dose-valor")).toContainText("17,5 mg");
     await expect(page.getByTestId("avc-f-dose-valor")).not.toContainText("18 mg");
-    await expect(page.getByTestId("avc-f-dose-volume")).toContainText("3,5 mL");
+    /** ⚠️ Ajuste consciente (19ª rodada, C5): sem bula brasileira de Metalyse 25 mg, a TNK ⛔ mostra volume. */
+    await expect(page.getByTestId("avc-f-dose-volume")).toHaveCount(0);
     const t7 = page.getByTestId("avc-f-dose-table7");
     /** ⚠️ 8ª rodada: a conferência ⛔ mostra mL; a fonte (Table 7, p. e358) fica no ⓘ. */
     await expect(t7).toContainText("20 mg");
@@ -56,10 +57,10 @@ test.describe("AVC · D-PEND-22 · dose exata de tenecteplase", () => {
     await expect(page.getByTestId("avc-f-dose-regulatorio")).toContainText("pendente de conferência");
   });
 
-  test("100 kg e 120 kg → 25 mg · 5,0 mL (teto); Table 7 coincide, ⛔ sem divergência", async ({ page }) => {
+  test("100 kg e 120 kg → 25 mg (teto), sem volume (C5); Table 7 coincide, ⛔ sem divergência", async ({ page }) => {
     await tenecteplaseCom(page, 100);
     await expect(page.getByTestId("avc-f-dose-valor")).toContainText("25 mg");
-    await expect(page.getByTestId("avc-f-dose-volume")).toContainText("5,0 mL");
+    await expect(page.getByTestId("avc-f-dose-volume")).toHaveCount(0);
     await expect(page.getByTestId("avc-f-dose-table7")).toContainText("25 mg");
     await expect(page.getByTestId("avc-f-dose-table7-divergencia")).toHaveCount(0);
 
@@ -69,7 +70,7 @@ test.describe("AVC · D-PEND-22 · dose exata de tenecteplase", () => {
     await peso.blur();
     await page.getByTestId("avc-aba-reperfusao").click();
     await expect(page.getByTestId("avc-f-dose-valor")).toContainText("25 mg");
-    await expect(page.getByTestId("avc-f-dose-volume")).toContainText("5,0 mL");
+    await expect(page.getByTestId("avc-f-dose-volume")).toHaveCount(0);
   });
 });
 

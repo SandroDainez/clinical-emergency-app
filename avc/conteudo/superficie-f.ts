@@ -1199,7 +1199,7 @@ export type DoseDoAgente = {
    * arredondamento para ⛔ nenhuma das duas.
    */
   readonly arredondaMgInteiro: boolean;
-  /** ⚠️ D-PEND-22/25: volume exibido com 0,1 mL — tenecteplase a 5 mg/mL, alteplase a 1 mg/mL. */
+  /** ⚠️ D-PEND-25: volume exibido com 0,1 mL, alteplase a 1 mg/mL (bula Actilyse I23-01, p. 7). Tenecteplase ⛔ declara (C5). */
   readonly concentracaoMgPorMl?: number;
   /**
    * ⚠️ D-PEND-25: alteplase — 10% em bolus em 1 min, o restante em 60 min (Table 7,
@@ -1215,7 +1215,12 @@ export const DOSES: { readonly alteplase: DoseDoAgente; readonly tenecteplase: D
     mgPorKg: 0.9, maximoMg: 90, slot: "F-09", arredondaMgInteiro: false, concentracaoMgPorMl: 1,
     esquema: { fracaoBolus: 0.1, minutosBolus: 1, minutosInfusao: 60 },
   },
-  tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09", arredondaMgInteiro: false, concentracaoMgPorMl: 5 },
+  /**
+   * ⚠️ AC-06, C5 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada): dose em mg, exata (D-PEND-22), ⛔ SEM
+   * concentração ⛔ nem volume — a bula oficial da apresentação brasileira de Metalyse 25 mg ⛔ está arquivada, ⛔ e
+   * 5 mg/mL seria inferência. Revoga em parte a D-PEND-22 ("volume a 5 mg/mL").
+   */
+  tenecteplase: { mgPorKg: 0.25, maximoMg: 25, slot: "F-09", arredondaMgInteiro: false },
 };
 
 /**

@@ -31,17 +31,19 @@ const fonte = (page: Page, id: string) => page.getByTestId(id).evaluate((el) => 
 });
 
 test.describe("AVC · card de dose · uma dose só", () => {
-  test("tenecteplase 70 kg: 17,5 mg · 3,5 mL; conferência só em mg, menor, rotulada; «em vez de»", async ({ page }) => {
+  test("tenecteplase 70 kg: 17,5 mg, sem volume (C5); conferência só em mg, menor, rotulada; «em vez de»", async ({ page }) => {
     await doseCom(page, "Tenecteplase", 70);
     await expect(page.getByTestId("avc-f-dose-valor")).toContainText("17,5 mg");
-    await expect(page.getByTestId("avc-f-dose-volume")).toContainText("3,5 mL");
+    /** ⚠️ Ajuste consciente (19ª rodada, C5): sem bula brasileira de Metalyse 25 mg, a TNK ⛔ mostra volume. */
+    await expect(page.getByTestId("avc-f-dose-volume")).toHaveCount(0);
     const t7 = page.getByTestId("avc-f-dose-table7");
     await expect(t7).toContainText("faixa da diretriz, para conferência — não é a dose a preparar");
     await expect(t7).toContainText("20 mg");
     await expect(t7, "⛔ a conferência mostra mL — lê como dose a preparar").not.toContainText("mL");
     await expect(page.getByTestId("avc-f-dose-table7-divergencia")).toContainText("em vez de");
     await expect(page.getByTestId("avc-f-dose")).not.toContainText("×");
-    expect(await fonte(page, "avc-f-dose-table7"), "a conferência ⛔ é menor que a linha do volume").toBeLessThan(await fonte(page, "avc-f-dose-volume"));
+    /** ⚠️ Ajuste consciente (C5): sem a linha do volume, a conferência é medida contra a linha da dose. */
+    expect(await fonte(page, "avc-f-dose-table7"), "a conferência ⛔ é menor que a linha da dose").toBeLessThan(await fonte(page, "avc-f-dose-valor"));
   });
 
   test("alteplase 70 kg (D-PEND-25): 63 mg · 63,0 mL; bolus 6,3 mg/6,3 mL em 1 min; restante 56,7 mg/56,7 mL em 60 min", async ({ page }) => {

@@ -839,7 +839,7 @@ export default function SuperficieF({
               </Text>
               {/**
                 * ⚠️⚠️ UMA DOSE SÓ, com mL — 8ª rodada. ⛔ Com a seringa na mão, qualquer outro
-                * "mg · mL" no card lê como instrução. D-PEND-22 (TNK 5 mg/mL), D-PEND-25
+                * "mg · mL" no card lê como instrução. C5 (19ª rodada): TNK ⛔ tem volume sem bula brasileira; D-PEND-25
                 * (alteplase 1 mg/mL, bolus de 10% em 1 min ⛔ e o restante em 60 min).
                 */}
               {dose.volumeMl !== undefined && dose.concentracaoMgPorMl !== undefined ? (
