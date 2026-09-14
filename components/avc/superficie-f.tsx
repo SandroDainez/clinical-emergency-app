@@ -74,6 +74,7 @@ import { horaComData, numeroCurto } from "../../avc/nucleo/formato";
 import { julgamentosRegistrados } from "../../avc/nucleo/derivacoes-d";
 import { marcaDeAutoria, type Autoria } from "../../avc/persistencia/autoria";
 import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
+import { TransicoesDaAcao } from "./transicoes-da-acao";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { SETA } from "../../design-system/afordancia";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -1224,6 +1225,8 @@ export default function SuperficieF({
                 onDesfazer={(c) => onDesfazerNaInstancia(inst, c)}
               />
             ))}
+            {/** ⚠️ AC-13: cada situação registrada, com horário ⛔ autoria — ⛔ o estado antigo ⛔ some. */}
+            <TransicoesDaAcao estado={estado} instancia={inst} campo="ivt_estado" />
           </View>
         ))}
         {/**

@@ -51,7 +51,7 @@ test.describe("AVC · a reavaliação abre uma nova aferição", () => {
       /** ⚠️ O caminho do médico: o problema leva às Correções. */
       await page.getByText(/Abrir Correções/i).first().click();
       await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
-      await page.getByText("Realizada", { exact: true }).first().click();
+      await page.getByText("Administrada/concluída", { exact: true }).first().click();
 
       /** ⚠️⚠️ ⛔ O ciclo ⛔ **⛔ não** fecha ⛔ com a ação: ⛔ tratado ⛔ ≠ resolvido. */
       await expect(page.locator("body")).toContainText(/Falta: uma nova aferição/i);
@@ -81,7 +81,7 @@ test.describe("AVC · a reavaliação abre uma nova aferição", () => {
       await medir(page, "pad", 111);
       await page.getByText(/Abrir Correções/i).first().click();
       await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
-      await page.getByText("Realizada", { exact: true }).first().click();
+      await page.getByText("Administrada/concluída", { exact: true }).first().click();
       await page.getByTestId("avc-e-reavaliar-pressao_acima_da_meta").click();
 
       await medir(page, "pas", 168);

@@ -34,7 +34,7 @@ async function tc(page: Page, resultado: string) {
 async function planoDaTrombolise(page: Page) {
   await page.getByTestId("avc-aba-reperfusao").click();
   await page.getByTestId("avc-nova-trombolise").click();
-  await page.getByTestId("avc-opcao-ivt_estado-Realizada").click();
+  await page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída").click();
   await informarHora(page, "ivt_inicio");
   await page.getByTestId("avc-aba-destino").click();
 }

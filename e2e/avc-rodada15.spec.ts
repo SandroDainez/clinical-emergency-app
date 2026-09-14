@@ -34,7 +34,7 @@ async function registrarViaAerea(page: Page, r: { tipo: string; hora: "agora" | 
   await expect(page.getByTestId("avc-superficie-estabilizacao")).toBeVisible();
 }
 
-async function registrarIvt(page: Page, estado: "Realizada" | "Iniciada" = "Realizada") {
+async function registrarIvt(page: Page, estado: "Administrada/concluída" | "Iniciada" = "Administrada/concluída") {
   await page.getByTestId("avc-aba-reperfusao").click();
   await page.getByTestId("avc-nova-trombolise").click();
   await page.getByTestId(`avc-opcao-ivt_estado-${estado}`).click();

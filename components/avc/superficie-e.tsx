@@ -27,6 +27,7 @@ import type { EstadoAvc } from "../../avc/nucleo/estado";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { valorNaInstancia } from "../../avc/nucleo/instancia";
 import { CabecalhoDeBloco, CampoDaSuperficie, useDetalhes } from "./campos-clinicos";
+import { TransicoesDaAcao } from "./transicoes-da-acao";
 import { Recolhido } from "./ui";
 import { useFoco } from "./sistema/foco";
 import { CondutaDaPressao, CondutaGlicemica } from "./conduta-da-fonte";
@@ -392,6 +393,8 @@ export default function SuperficieE({
                     onDesfazer={(c) => onDesfazerNaAcao(a.instancia, c)}
                   />
                 ))}
+                {/** ⚠️ AC-13: as transições da ação, com horário ⛔ autoria. */}
+                <TransicoesDaAcao estado={estado} instancia={a.instancia} campo="acao_estado" />
               </View>
             ))}
 

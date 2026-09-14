@@ -34,7 +34,8 @@ try {
     "--moduleResolution", "node", "--skipLibCheck", "--rootDir", appDir, "--outDir", tmp,
     path.join(appDir, "avc", "nucleo", "portao-ivt.ts"), path.join(appDir, "avc", "conteudo", "campos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-f.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-d.ts"),
     path.join(appDir, "avc", "nucleo", "populacao.ts"), path.join(appDir, "avc", "nucleo", "formato.ts"), path.join(appDir, "avc", "persistencia", "log.ts"),
-    path.join(appDir, "avc", "nucleo", "problemas-ativos.ts")],
+    path.join(appDir, "avc", "nucleo", "problemas-ativos.ts"), path.join(appDir, "avc", "nucleo", "derivacoes-e.ts"),
+    path.join(appDir, "avc", "nucleo", "caminho-hemorragico.ts"), path.join(appDir, "avc", "nucleo", "plano-48h.ts"), path.join(appDir, "avc", "nucleo", "transicoes-da-acao.ts")],
   { cwd: appDir, stdio: "pipe" });
 } catch { /* erros de tipo de dependência ⛔ impedem a emissão */ }
 const emT = (...p) => { try { return require(path.join(tmp, ...p)); } catch { return undefined; } };
@@ -529,6 +530,151 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
     /regra local/i.test(procedencia) && !/AHA/.test(procedencia) && /regra local/i.test(nota) && /regra local/i.test(campo?.nota ?? "")
       && /14 dias após o parto[^"]*regra local/i.test(telaPortao),
     `⛔ ${JSON.stringify({ procedencia, nota, notaData: campo?.nota })}`);
+}
+
+/* ══ AC-13 · estados da ação — os 8 decididos; «não sei» separado (docs/decisoes.md, 19ª rodada §8) ═════════ */
+{
+  const SE = emT("avc", "conteudo", "superficie-e.js");
+  const SF = emT("avc", "conteudo", "superficie-f.js");
+  const DF = emT("avc", "nucleo", "derivacoes-f.js");
+  const DE = emT("avc", "nucleo", "derivacoes-e.js");
+  /** ⚠️ Ajuste de instrumento (depois de implementar): a trilha saiu de derivacoes-e — a prova da Superfície E (§6) proíbe horaRegistro lá. */
+  const TA = emT("avc", "nucleo", "transicoes-da-acao.js");
+  const CH = emT("avc", "nucleo", "caminho-hemorragico.js");
+  const PL = emT("avc", "nucleo", "plano-48h.js");
+  const LOGa = emT("avc", "persistencia", "log.js");
+  const CAMPO = emT("avc", "conteudo", "campo.js");
+  const IDS = ["indicado", "decidido", "prescrito", "preparado", "iniciado", "administrado_concluido", "interrompido", "cancelado"];
+  const ROT = {
+    indicado: "Indicada", decidido: "Decidida", prescrito: "Prescrita", preparado: "Preparada",
+    iniciado: "Iniciada", administrado_concluido: "Administrada/concluída", interrompido: "Interrompida", cancelado: "Cancelada",
+  };
+  const EXPOE = {
+    indicado: false, decidido: false, prescrito: false, preparado: false,
+    iniciado: true, administrado_concluido: true, interrompido: true, cancelado: false,
+  };
+  const leEstado = (v) => SE?.estadoDaAcaoRegistrado?.(v);
+
+  conf("AC-13 · os 8 estados da ação, na ordem decidida", JSON.stringify(SE?.ESTADOS_DA_ACAO) === JSON.stringify(IDS), `⛔ ${JSON.stringify(SE?.ESTADOS_DA_ACAO)}`);
+  conf("… cada estado tem o seu rótulo gravável", IDS.every((id) => SE?.ROTULO_DO_ESTADO_DA_ACAO?.[id] === ROT[id]), `⛔ ${JSON.stringify(SE?.ROTULO_DO_ESTADO_DA_ACAO)}`);
+  conf("… as opções da tela: os 8 rótulos ⛔ «Não sei» — ⛔ «Realizada», «Sugerida» ⛔ «Disponível»",
+    JSON.stringify(SE?.OPCOES_ESTADO_DA_ACAO) === JSON.stringify([...IDS.map((id) => ROT[id]), CAMPO.NAO_SEI]), `⛔ ${JSON.stringify(SE?.OPCOES_ESTADO_DA_ACAO)}`);
+  conf("… cada rótulo gravado é lido como o seu estado", IDS.every((id) => leEstado(ROT[id]) === id), `⛔ ${JSON.stringify(IDS.map((id) => leEstado(ROT[id])))}`);
+  conf("⚠️ AC-13 · «não sei» ⛔ é nono estado: é informação ausente, lida separada do estado",
+    leEstado("nao_sei") === undefined && SE?.informacaoDoEstadoDaAcao?.("nao_sei")?.tipo === "nao_sei"
+      && SE?.informacaoDoEstadoDaAcao?.(undefined)?.tipo === "nao_perguntado"
+      && SE?.informacaoDoEstadoDaAcao?.("Prescrita")?.tipo === "registrado" && SE?.informacaoDoEstadoDaAcao?.("Prescrita")?.estado === "prescrito",
+    `⛔ ${JSON.stringify([SE?.informacaoDoEstadoDaAcao?.("nao_sei"), SE?.informacaoDoEstadoDaAcao?.(undefined)])}`);
+  conf("⚠️ AC-13 · exposição por estado: iniciado, administrado/concluído ⛔ interrompido expõem; indicado, decidido, prescrito, preparado ⛔ cancelado ⛔",
+    IDS.every((id) => SE?.EXPOE_O_PACIENTE?.[id] === EXPOE[id]), `⛔ ${JSON.stringify(SE?.EXPOE_O_PACIENTE)}`);
+  conf("⚠️ AC-13 · dados antigos: «Iniciada» → iniciado · «Realizada» → administrado/concluído · «Interrompida» → interrompido · «Cancelada» → cancelado",
+    leEstado("Iniciada") === "iniciado" && leEstado("Realizada") === "administrado_concluido"
+      && leEstado("Interrompida") === "interrompido" && leEstado("Cancelada") === "cancelado",
+    `⛔ ${JSON.stringify(["Iniciada", "Realizada", "Interrompida", "Cancelada"].map(leEstado))}`);
+
+  /* Trombólise: a exposição por estado, ⛔ histórico */
+  const ivtCom = (...rotulos) => {
+    let e = I.abrirNovaInstancia(vazio, SF.TROMBOLISE_IV, rel);
+    const inst = I.instanciasDe(e, SF.TROMBOLISE_IV)[0];
+    for (const r of rotulos) e = regI(e, inst, "ivt_estado", r);
+    return { e, inst };
+  };
+  const expo = (e) => DF?.exposicaoAoTrombolitico?.(e);
+  for (const id of IDS) {
+    const { e } = ivtCom(ROT[id]);
+    conf(`AC-13 · trombólise «${ROT[id]}» → ${EXPOE[id] ? "exposta" : "⛔ exposta"}`,
+      (expo(e)?.estado === "exposta") === EXPOE[id] && DF?.administracoesRegistradas?.(e) === (EXPOE[id] ? 1 : 0), `⛔ ${JSON.stringify(expo(e))}`);
+  }
+  const preparo = ivtCom("Indicada", "Decidida", "Prescrita", "Preparada").e;
+  conf("⚠️ AC-13 · «Prescrita» ⛔ «Preparada» ⛔ contam como exposição — antes do início, com o último estado nomeado",
+    expo(preparo)?.estado === "antes_do_inicio" && expo(preparo)?.ultimo === "preparado" && DF?.administracoesRegistradas?.(preparo) === 0
+      && expo(ivtCom("Prescrita").e)?.estado === "antes_do_inicio", `⛔ ${JSON.stringify(expo(preparo))}`);
+  const interrompida = ivtCom("Preparada", "Interrompida").e;
+  conf("⚠️ AC-13 · «Interrompida» conta como exposição (fase interrompida), ⛔ depois do preparo",
+    expo(interrompida)?.estado === "exposta" && expo(interrompida)?.fase === "interrompida", `⛔ ${JSON.stringify(expo(interrompida))}`);
+  const cancelada = ivtCom("Prescrita", "Cancelada").e;
+  conf("⚠️ AC-13 · «Cancelada» ⛔ conta: cancelada antes do início; interrompido ≠ cancelado",
+    expo(cancelada)?.estado === "cancelada_antes_do_inicio" && expo(interrompida)?.estado !== expo(cancelada)?.estado, `⛔ ${JSON.stringify(expo(cancelada))}`);
+  conf("… estado posterior sem exposição ⛔ apaga a exposição anterior (Iniciada → Prescrita continua exposta)",
+    expo(ivtCom("Iniciada", "Prescrita").e)?.estado === "exposta", `⛔ ${JSON.stringify(expo(ivtCom("Iniciada", "Prescrita").e))}`);
+  conf("⚠️ AC-13 · «não sei» sozinho ⛔ vira «sem exposição» ⛔ nem exposição: situação desconhecida; depois de «Iniciada», a exposição fica",
+    expo(ivtCom("nao_sei").e)?.estado === "situacao_desconhecida" && expo(ivtCom("Prescrita", "nao_sei").e)?.estado === "situacao_desconhecida"
+      && expo(ivtCom("Iniciada", "nao_sei").e)?.estado === "exposta",
+    `⛔ ${JSON.stringify([expo(ivtCom("nao_sei").e), expo(ivtCom("Prescrita", "nao_sei").e)])}`);
+  const legado = ivtCom("Realizada").e;
+  conf("⚠️ AC-13 · registro antigo «Realizada» continua exposto como concluído (fase realizada)",
+    expo(legado)?.estado === "exposta" && expo(legado)?.fase === "realizada"
+      && expo(ivtCom("Administrada/concluída").e)?.fase === "realizada", `⛔ ${JSON.stringify(expo(legado))}`);
+
+  /* Transições: horário ⛔ fato de cada uma (autoria pelo fato, AC-40); ⛔ estado antigo perdido */
+  const trilha = ivtCom("Prescrita", "Preparada", "Iniciada", "Interrompida");
+  const ts = TA?.transicoesDoEstadoDaAcao?.(trilha.e, trilha.inst, "ivt_estado") ?? [];
+  conf("⚠️ AC-13 · cada transição fica na trilha, na ordem, com horário ⛔ fato — só a última é a vigente",
+    ts.length === 4 && JSON.stringify(ts.map((t) => t.estado)) === JSON.stringify(["prescrito", "preparado", "iniciado", "interrompido"])
+      && ts.every((t) => typeof t.horaRegistro === "number" && typeof t.fatoId === "string" && t.informacao === "registrado")
+      && ts.filter((t) => t.vigente).length === 1 && ts[3].vigente === true,
+    `⛔ ${JSON.stringify(ts)}`);
+  const tsNs = TA?.transicoesDoEstadoDaAcao?.(ivtCom("Prescrita", "nao_sei").e, "trombolise_iv_1", "ivt_estado") ?? [];
+  const tsLeg = TA?.transicoesDoEstadoDaAcao?.(legado, "trombolise_iv_1", "ivt_estado") ?? [];
+  conf("… «não sei» entra na trilha como informação ausente (⛔ estado); o legado é marcado, com o rótulo gravado",
+    tsNs.length === 2 && tsNs[1].informacao === "nao_sei" && tsNs[1].estado === undefined
+      && tsLeg.length === 1 && tsLeg[0].estado === "administrado_concluido" && tsLeg[0].legado === true && tsLeg[0].rotuloGravado === "Realizada",
+    `⛔ ${JSON.stringify([tsNs, tsLeg])}`);
+
+  /* Ação de correção (Superfície E): o mesmo vocabulário */
+  const acaoCom = (rotulo) => {
+    let e = I.abrirNovaInstancia(vazio, SE.ACAO, rel);
+    const inst = I.instanciasDe(e, SE.ACAO)[0];
+    e = regI(e, inst, "acao_tipo", "Correção glicêmica");
+    return regI(e, inst, "acao_estado", rotulo);
+  };
+  const reavalia = (rotulo) => (DE?.pendenciasOriginadasEmE?.(acaoCom(rotulo)) ?? []).length > 0;
+  conf("AC-13 · correção glicêmica: só estado que expõe abre a reavaliação — prescrita ⛔ preparada ⛔; interrompida ⛔ legado «Realizada» sim; cancelada ⛔",
+    !reavalia("Prescrita") && !reavalia("Preparada") && reavalia("Interrompida") && reavalia("Administrada/concluída")
+      && reavalia("Realizada") && reavalia("Iniciada") && !reavalia("Cancelada") && !reavalia("nao_sei"),
+    `⛔ ${JSON.stringify(["Prescrita", "Preparada", "Interrompida", "Administrada/concluída", "Realizada", "Cancelada", "nao_sei"].map(reavalia))}`);
+
+  /* Persistência e retomada */
+  let sa = 0;
+  let ia = 0;
+  const ctxA = () => ({ casoId: "caso-ac13", autor: "local:prova", agora: rel.agora(), proximoSeq: () => ++sa, gerarId: () => `eva-${++ia}` });
+  let est = vazio;
+  const eventos = [...(LOGa?.eventosDeAbertura?.(est, ctxA()) ?? [])];
+  const passos = [
+    (e) => I.abrirNovaInstancia(e, SF.TROMBOLISE_IV, rel),
+    (e) => regI(e, "trombolise_iv_1", "ivt_estado", "Prescrita"),
+    (e) => regI(e, "trombolise_iv_1", "ivt_estado", "Realizada"),
+    (e) => I.abrirNovaInstancia(e, SF.TROMBOLISE_IV, rel),
+    (e) => regI(e, "trombolise_iv_2", "ivt_estado", "Preparada"),
+    (e) => regI(e, "trombolise_iv_2", "ivt_estado", "nao_sei"),
+  ];
+  for (const p of passos) {
+    const prox = p(est);
+    eventos.push(...(LOGa?.eventosDaTransicao?.(est, prox, ctxA()) ?? []));
+    est = prox;
+  }
+  const rec = LOGa?.reconstruirEstado?.(JSON.parse(JSON.stringify(eventos)));
+  const retrato = (e) => JSON.stringify([DF?.exposicoesPorInstancia?.(e), TA?.transicoesDoEstadoDaAcao?.(e, "trombolise_iv_1", "ivt_estado"),
+    TA?.transicoesDoEstadoDaAcao?.(e, "trombolise_iv_2", "ivt_estado")]);
+  conf("⚠️ AC-13 · persistência e retomada: exposição ⛔ trilhas (legado, preparo ⛔ «não sei») voltam iguais do log",
+    rec !== undefined && retrato(rec) === retrato(est) && DF?.exposicoesPorInstancia?.(rec)?.[0]?.estado === "exposta"
+      && DF?.exposicoesPorInstancia?.(rec)?.[1]?.estado === "situacao_desconhecida",
+    `⛔ ${rec && JSON.stringify(DF?.exposicoesPorInstancia?.(rec))}`);
+
+  /* Não regressão: caminho hemorrágico ⛔ plano pós-trombólise */
+  const emCurso = ivtCom("Iniciada").e;
+  const interrompidaNoCaminho = CH?.registrarInterrupcaoDaInfusao?.(emCurso, AGORA, rel);
+  conf("AC-13 · caminho hemorrágico ⛔ regride: iniciada = em curso; a interrupção registrada = interrompida (exposição preservada)",
+    CH?.caminhoHemorragico?.(emCurso)?.infusao === "em_curso" && CH?.caminhoHemorragico?.(interrompidaNoCaminho)?.infusao === "interrompida"
+      && expo(interrompidaNoCaminho)?.estado === "exposta",
+    `⛔ ${JSON.stringify([CH?.caminhoHemorragico?.(emCurso)?.infusao, interrompidaNoCaminho && CH?.caminhoHemorragico?.(interrompidaNoCaminho)?.infusao])}`);
+  conf("… administrada/concluída ⛔ legado «Realizada» = concluída; prescrita = sem trombólise",
+    CH?.caminhoHemorragico?.(ivtCom("Administrada/concluída").e)?.infusao === "concluida" && CH?.caminhoHemorragico?.(legado)?.infusao === "concluida"
+      && CH?.caminhoHemorragico?.(ivtCom("Prescrita").e)?.infusao === "sem_trombolise", "⛔");
+  conf("AC-13 · plano pós-trombólise ⛔ regride: exposta com administrada, interrompida ⛔ legado; ⛔ com prescrita, preparada ⛔ cancelada",
+    PL?.desfechosNegativos?.(ivtCom("Administrada/concluída").e)?.ivtExposta === true && PL?.desfechosNegativos?.(interrompida)?.ivtExposta === true
+      && PL?.desfechosNegativos?.(legado)?.ivtExposta === true && PL?.desfechosNegativos?.(preparo)?.ivtExposta === false
+      && PL?.desfechosNegativos?.(cancelada)?.ivtExposta === false, "⛔");
 }
 
 console.log(`\nprova-avc-rodada19: ${ok} ok · ${falhas} falha(s)`);

@@ -100,7 +100,7 @@ test.describe("AVC · Reperfusão", () => {
       /** ⚠️⚠️ 2 · TRATAMENTO REGISTRADO — ⛔ e ⛔ ele ⛔ **não** libera. */
       await page.getByTestId("avc-aba-correcoes").click();
       await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
-      await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+      await page.getByTestId("avc-opcao-acao_estado-Administrada/concluída").click();
 
       await page.getByTestId("avc-aba-reperfusao").click();
       await expect(page.getByTestId("avc-f-portao-estado-aguardando_reavaliacao")).toBeVisible();
@@ -289,7 +289,7 @@ test.describe("AVC · Reperfusão", () => {
       /** ⚠️ Correção registrada. */
       await page.getByTestId("avc-aba-correcoes").click();
       await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
-      await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+      await page.getByTestId("avc-opcao-acao_estado-Administrada/concluída").click();
 
       /** ⚠️⚠️ Glicemia normalizada — ⛔ e ⛔ **ainda** ⛔ não libera. */
       await page.getByTestId("avc-aba-estabilizacao").click();

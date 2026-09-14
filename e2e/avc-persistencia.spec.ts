@@ -29,7 +29,7 @@ async function informarHora(page: Page, campo: string) {
 async function registrarIvt(page: Page) {
   await aba(page, "reperfusao");
   await page.getByTestId("avc-nova-trombolise").click();
-  await page.getByTestId("avc-opcao-ivt_estado-Realizada").click();
+  await page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída").click();
   await informarHora(page, "ivt_inicio");
 }
 

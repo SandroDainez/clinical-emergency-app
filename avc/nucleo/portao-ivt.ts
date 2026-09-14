@@ -53,10 +53,9 @@ import type { EstadoAvc } from "./estado";
 import type { SuperficieId } from "./tipos";
 import { estadoDaReavaliacao, reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./derivacoes";
 import { retencaoDiagnostica, barreiraDeReperfusao } from "./derivacoes-c";
-import { acoesDoBloqueio } from "./derivacoes-e";
+import { acaoExpos, acoesDoBloqueio } from "./derivacoes-e";
 import { bloqueiosCorrigiveis, impedimentosDeSeguranca, type EfeitoNaAcao } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
-import { ESTADO_DA_ACAO } from "../conteudo/superficie-e";
 
 /**
  * ⚠️⚠️ SETE ESTADOS, ⛔ E ⛔ NENHUM DELES É *"desabilitado"*.
@@ -209,12 +208,8 @@ function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]
  * ⛔ ⛔ `cancelada` ⛔ não conta: ⛔ nada foi feito.
  */
 function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
-  return acoesDoBloqueio(estado, bloqueio).some(
-    (a) => a.estado === ESTADO_DA_ACAO.iniciada
-      || a.estado === ESTADO_DA_ACAO.realizada
-      /** ⚠️ Interrompida (D2): ⛔ houve gesto — ⛔ e ⛔ ele ⛔ também ⛔ não prova resolução. */
-      || a.estado === ESTADO_DA_ACAO.interrompida
-  );
+  /** ⚠️ Interrompida (D2): ⛔ houve gesto; AC-13: prescrita ⛔ preparada ⛔ são gesto no paciente. ⛔ Nada prova resolução. */
+  return acoesDoBloqueio(estado, bloqueio).some(acaoExpos);
 }
 
 /**

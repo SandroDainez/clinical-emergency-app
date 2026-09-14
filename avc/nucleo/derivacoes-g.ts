@@ -127,6 +127,12 @@ export function contextoOperacional(estado: EstadoAvc): readonly LeituraOperacio
  * ⛔ ⛔ `cancelada` ⛔ **não** é administração. ⚠️ A regra de E vale inteira aqui:
  * ação considerada e abandonada ⛔ não conta como tratamento realizado.
  */
+const ESTADO_DA_FASE: Readonly<Record<FaseDaExposicao, AcaoDeTrombolise["estado"]>> = {
+  iniciada: "iniciado",
+  realizada: "administrado_concluido",
+  interrompida: "interrompido",
+};
+
 export type PertinenciaDaMonitorizacao = {
   readonly pertinente: boolean;
   /** ⚠️ `interrompida` (D2): começou ⛔ e parou — ⛔ **houve** exposição, ⛔ e a vigilância segue. */
@@ -165,7 +171,8 @@ export function pertinenciaDaMonitorizacao(estado: EstadoAvc): PertinenciaDaMoni
     acao: {
       instancia: x.instancia,
       agente: x.agente,
-      estado: x.fase,
+      /** ⚠️ AC-13: a fase (nome que G já lê) volta ao estado da ação — iniciada → iniciado, realizada → administrado/concluído. */
+      estado: ESTADO_DA_FASE[x.fase],
       inicioMs: x.inicio.tipo === "conhecido" ? x.inicio.ms : undefined,
     },
     contraditoria: x.contraditoria,

@@ -81,7 +81,7 @@ test.describe("AVC · «Paciente piorou» global", () => {
 
     await page.getByTestId("avc-aba-reperfusao").click();
     await page.getByTestId("avc-nova-trombolise").click();
-    await page.getByTestId("avc-opcao-ivt_estado-Realizada").click();
+    await page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída").click();
 
     await page.getByTestId("avc-aba-destino").click();
     await page.getByTestId("avc-piorou").click();
@@ -100,7 +100,7 @@ test.describe("AVC · «Paciente piorou» global", () => {
       .toHaveAttribute("data-testid", "avc-pendencia-reavaliar_apos_piora");
 
     await page.getByTestId("avc-aba-reperfusao").click();
-    await expect(page.getByTestId("avc-opcao-ivt_estado-Realizada"), "⛔ a piora apagou o tratamento").toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída"), "⛔ a piora apagou o tratamento").toHaveAttribute("aria-checked", "true");
     await expect.poll(() => eventoDePioraComAutor(page), { timeout: 5_000 }).toBe(true);
 
     await page.getByTestId("avc-prioridade-reavaliar").click();

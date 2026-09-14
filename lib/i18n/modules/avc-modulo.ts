@@ -430,6 +430,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Decisão de não prosseguir registrada neste episódio; mudar a decisão exige novo registro":
     "Decisión de no continuar registrada en este episodio; cambiar la decisión exige un nuevo registro",
   "Registrar a decisão clínica": "Registrar la decisión clínica",
+  // ── AC-13 · estados da ação (19ª rodada · 2026-09-14) ─────────────────
+  "Indicada": "Indicada",
+  "Decidida": "Decidida",
+  "Prescrita": "Prescrita",
+  "Preparada": "Preparada",
+  "Administrada/concluída": "Administrada/concluida",
+  "Transições registradas": "Transiciones registradas",
+  "situação vigente": "situación vigente",
+  "Não sei — situação não informada": "No sé — situación no informada",
+  "registro antigo": "registro antiguo",
   "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada":
     "Evaluación de riesgo y beneficio obligatoria — requiere decisión clínica registrada",
   "Avaliação cuidadosa de risco e benefício com as especialidades que a fonte indica; registrar a decisão clínica":

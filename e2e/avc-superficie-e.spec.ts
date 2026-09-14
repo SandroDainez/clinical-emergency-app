@@ -74,7 +74,7 @@ test.describe("AVC · Correções", () => {
 
     /** ⚠️ 2 · ação corretiva registrada — ⛔ e ⛔ ela ⛔ NÃO resolve. */
     await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
-    await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+    await page.getByTestId("avc-opcao-acao_estado-Administrada/concluída").click();
     await expect(page.getByTestId("avc-e-ciclo-aguardando_reavaliacao")).toBeVisible();
     await expect(page.getByTestId("avc-e-bloqueio-pressao_acima_da_meta")).toBeVisible();
 
@@ -126,7 +126,7 @@ test.describe("AVC · Correções", () => {
     await expect(page.getByTestId("avc-e-ciclo-bloqueado_corrigivel")).toBeVisible();
 
     await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
-    await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+    await page.getByTestId("avc-opcao-acao_estado-Administrada/concluída").click();
     await expect(page.getByTestId("avc-e-ciclo-aguardando_reavaliacao")).toBeVisible();
 
     /** ⚠️ Glicemia normalizada — ⛔ e ⛔ **ainda** ⛔ não resolvido. */
@@ -239,7 +239,7 @@ test.describe("AVC · Correções", () => {
     await aba(page, "correcoes");
 
     await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
-    await page.getByTestId("avc-opcao-acao_estado-Realizada").click();
+    await page.getByTestId("avc-opcao-acao_estado-Administrada/concluída").click();
     await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
 
     await expect(page.getByTestId("avc-e-acao-acao_1")).toBeVisible();
@@ -256,7 +256,7 @@ test.describe("AVC · Correções", () => {
     await aba(page, "correcoes");
     await page.getByTestId("avc-e-nova-acao-pressao_acima_da_meta").click();
 
-    await expect(page.getByTestId("avc-opcao-acao_estado-Realizada")).toBeVisible();
+    await expect(page.getByTestId("avc-opcao-acao_estado-Administrada/concluída")).toBeVisible();
     await expect(page.getByTestId("avc-opcao-acao_estado-Sugerida")).toHaveCount(0);
     await expect(page.getByTestId("avc-opcao-acao_estado-Disponível")).toHaveCount(0);
   });

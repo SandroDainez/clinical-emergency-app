@@ -30,6 +30,12 @@ import {
   type JanelaDaRecomendacao,
   type Recomendacao,
 } from "../conteudo/superficie-f";
+import {
+  EXPOE_O_PACIENTE,
+  estadoDaAcaoRegistrado,
+  informacaoDoEstadoDaAcao,
+  type EstadoDaAcaoRegistrado,
+} from "../conteudo/superficie-e";
 import { rotuloClinico } from "../conteudo/rotulos-clinicos";
 import { grauDoRotulo } from "../conteudo/mrs";
 import { TERRITORIO_DA_OPCAO } from "../conteudo/superficie-c";
@@ -975,7 +981,8 @@ export function recomendacoesDoEstado(
  * É QUEM CONSOME
  * ────────────────────────────────────────────────────────────────────────── */
 
-export type EstadoDaTrombolise = "iniciada" | "realizada" | "interrompida" | "cancelada";
+/** ⚠️ AC-13: o vocabulário é o de E — os 8 estados; «não sei» fica fora (`informacaoDoEstadoDaAcao`). */
+export type EstadoDaTrombolise = EstadoDaAcaoRegistrado;
 
 export type AcaoDeTrombolise = {
   readonly instancia: string;
@@ -990,13 +997,9 @@ export type AcaoDeTrombolise = {
   readonly inicioMs: number | undefined;
 };
 
-/** ⚠️ Rótulo gravado → estado. ⛔ Qualquer outra coisa é `undefined`. */
+/** ⚠️ Rótulo gravado → estado (os 8 ⛔ o legado «Realizada»). ⛔ Qualquer outra coisa é `undefined`. */
 function estadoDaAcao(v: unknown): EstadoDaTrombolise | undefined {
-  if (v === "Iniciada") return "iniciada";
-  if (v === "Realizada") return "realizada";
-  if (v === "Interrompida") return "interrompida";
-  if (v === "Cancelada") return "cancelada";
-  return undefined;
+  return estadoDaAcaoRegistrado(v);
 }
 
 /**
@@ -1071,6 +1074,10 @@ export type Exposicao =
   /** ⚠️ Instância aberta ⛔ sem situação registrada — ⛔ formulário, ⛔ não evento. */
   | { readonly estado: "registro_em_aberto"; readonly instancia: string }
   | { readonly estado: "cancelada_antes_do_inicio"; readonly instancia: string }
+  /** ⚠️ AC-13: indicada, decidida, prescrita ⛔ preparada — ⛔ exposição; o último estado fica nomeado. */
+  | { readonly estado: "antes_do_inicio"; readonly instancia: string; readonly ultimo: EstadoDaTrombolise }
+  /** ⚠️ AC-13: «não sei» ⛔ nenhuma exposição antes — ⛔ vira «sem exposição» ⛔ nem exposição. */
+  | { readonly estado: "situacao_desconhecida"; readonly instancia: string }
   | {
       readonly estado: "exposta";
       readonly instancia: string;
@@ -1082,18 +1089,27 @@ export type Exposicao =
       readonly contraditoria: boolean;
     };
 
-const FASES_QUE_EXPOEM: readonly string[] = ["iniciada", "realizada", "interrompida"];
+/**
+ * ⚠️ AC-13: a fase que os consumidores já leem (plano até 48 h, caminho hemorrágico, síntese) — ⛔ renomeada, para
+ * ⛔ regredir. administrado/concluído (⛔ o legado «Realizada») = `realizada`.
+ */
+const FASE_DO_ESTADO: Readonly<Partial<Record<EstadoDaTrombolise, FaseDaExposicao>>> = {
+  iniciado: "iniciada",
+  administrado_concluido: "realizada",
+  interrompido: "interrompida",
+};
 
 /** ⚠️ A exposição de **uma** instância, lida do histórico dela. */
 export function exposicaoDaInstancia(estado: EstadoAvc, instancia: string): Exposicao {
-  const historico = fatosDaInstancia(estado, instancia)
+  const registros = fatosDaInstancia(estado, instancia)
     .filter((f) => f.campo === "ivt_estado")
-    .map((f) => estadoDaAcao(f.valor))
-    .filter((v): v is EstadoDaTrombolise => v !== undefined);
+    .map((f) => informacaoDoEstadoDaAcao(f.valor))
+    .filter((i) => i.tipo !== "nao_perguntado");
+  const historico = registros.flatMap((i) => (i.tipo === "registrado" ? [i.estado] : []));
 
-  const expoentes = historico.filter((v) => FASES_QUE_EXPOEM.includes(v));
+  const expoentes = historico.filter((v) => EXPOE_O_PACIENTE[v]);
   if (expoentes.length > 0) {
-    const fase = expoentes[expoentes.length - 1] as FaseDaExposicao;
+    const fase = FASE_DO_ESTADO[expoentes[expoentes.length - 1]] as FaseDaExposicao;
     const ultimo = historico[historico.length - 1];
     const hora = valorNaInstancia(estado, instancia, "ivt_inicio")?.valor;
     const inicio: InicioDaExposicao =
@@ -1109,13 +1125,17 @@ export function exposicaoDaInstancia(estado: EstadoAvc, instancia: string): Expo
       fase,
       inicio,
       agente: typeof a === "string" && a.length > 0 ? a : undefined,
-      contraditoria: ultimo === "cancelada",
+      contraditoria: ultimo === "cancelado",
     };
   }
-  if (historico.length > 0 && historico[historico.length - 1] === "cancelada") {
+  const ultimaInformacao = registros[registros.length - 1];
+  if (ultimaInformacao === undefined) return { estado: "registro_em_aberto", instancia };
+  if (ultimaInformacao.tipo === "nao_sei") return { estado: "situacao_desconhecida", instancia };
+  if (ultimaInformacao.tipo === "registrado" && ultimaInformacao.estado === "cancelado") {
     return { estado: "cancelada_antes_do_inicio", instancia };
   }
-  return { estado: "registro_em_aberto", instancia };
+  const ultimo = historico[historico.length - 1];
+  return ultimo === undefined ? { estado: "registro_em_aberto", instancia } : { estado: "antes_do_inicio", instancia, ultimo };
 }
 
 /** ⚠️ Todas as instâncias, na ordem de registro — ⛔ a síntese lista uma a uma. */

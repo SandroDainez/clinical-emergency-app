@@ -21,9 +21,24 @@ import { bloqueiosCorrigiveis, type BloqueioCorrigivel } from "./derivacoes-d";
 import {
   ACAO,
   ACOES_DE_CORRECAO,
-  ESTADO_DA_ACAO,
+  EXPOE_O_PACIENTE,
+  estadoDaAcaoRegistrado,
   type AcaoDeCorrecao,
 } from "../conteudo/superficie-e";
+
+/**
+ * ⚠️ AC-13: a ação JÁ expôs o paciente? — iniciada, administrada/concluída (⛔ o legado «Realizada») ⛔ interrompida.
+ * ⛔ Indicada, decidida, prescrita, preparada, cancelada ⛔ «não sei» ⛔ contam. ⛔ Expor ⛔ é resolver.
+ */
+export function acaoExpos(acao: { readonly estado?: string }): boolean {
+  const e = estadoDaAcaoRegistrado(acao.estado);
+  return e !== undefined && EXPOE_O_PACIENTE[e];
+}
+
+/**
+ * ⚠️ AC-13: a trilha das transições (com horário ⛔ autoria) mora em `./transicoes-da-acao` — ⛔ aqui, onde o horário
+ * de registro ⛔ pode entrar na leitura de E (§6 da prova da Superfície E).
+ */
 
 /** ⚠️ Uma ação registrada, como a tela e a prova a enxergam. */
 export type AcaoRegistrada = {
@@ -136,12 +151,8 @@ export function bloqueiosComAcoes(estado: EstadoAvc): readonly LeituraDoBloqueio
  */
 export function pendenciasOriginadasEmE(estado: EstadoAvc): readonly Pendencia[] {
   const glicemicas = acoesDoBloqueio(estado, "glicemia_alterada");
-  /** ⚠️ Interrompida ⛔ também é *"houve correção"* (D2): ⛔ algo foi dado antes de parar. */
-  const houveCorrecao = glicemicas.some(
-    (a) => a.estado === ESTADO_DA_ACAO.iniciada
-      || a.estado === ESTADO_DA_ACAO.realizada
-      || a.estado === ESTADO_DA_ACAO.interrompida
-  );
+  /** ⚠️ Interrompida ⛔ também é *"houve correção"* (D2); AC-13: prescrita ⛔ preparada ⛔ são. */
+  const houveCorrecao = glicemicas.some(acaoExpos);
   if (!houveCorrecao) return [];
   return [
     {

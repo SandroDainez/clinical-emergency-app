@@ -38,7 +38,7 @@ async function registrarViaAerea(page: Page, tipo: string) {
 async function registrarIvt(page: Page) {
   await page.getByTestId("avc-aba-reperfusao").click();
   await page.getByTestId("avc-nova-trombolise").click();
-  await page.getByTestId("avc-opcao-ivt_estado-Realizada").click();
+  await page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída").click();
   await informarHora(page, "ivt_inicio");
 }
 

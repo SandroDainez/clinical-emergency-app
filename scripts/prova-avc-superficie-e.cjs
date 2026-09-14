@@ -135,8 +135,14 @@ const PA_ALTA = (e) => regA(regA(e, pa1, "pas", 190), pa1, "pad", 110);
    * ⛔ nunca fez, num instante em que ela ⛔ não existiu.
    */
   /** ⚠️ `interrompida` entrou em 2026-09-12 (D2 do autor): começou ⛔ e parou — ⛔ houve exposição. */
-  confere("`iniciada`, `realizada`, `interrompida` e `cancelada` são registráveis DIRETO",
-    JSON.stringify(S.OPCOES_ESTADO_DA_ACAO) === JSON.stringify([EST.iniciada, EST.realizada, EST.interrompida, EST.cancelada]),
+  /**
+   * ⚠️ Ajuste consciente (19ª rodada, AC-13 opção B): as opções passaram aos 8 estados decididos ⛔ «Não sei» separado;
+   * «Realizada» ⛔ é mais oferecida (continua legível como administrada/concluída). ⛔ Nenhuma é sequência obrigatória.
+   */
+  confere("os 8 estados da ação ⛔ «Não sei» são registráveis DIRETO — ⛔ «Realizada» (legado, só leitura)",
+    JSON.stringify(S.OPCOES_ESTADO_DA_ACAO) === JSON.stringify([EST.indicada, EST.decidida, EST.prescrita, EST.preparada,
+      EST.iniciada, EST.concluida, EST.interrompida, EST.cancelada, "Não sei"])
+      && !S.OPCOES_ESTADO_DA_ACAO.includes(EST.realizada),
     "*\"⛔ não fabricar estados intermediários\"*");
   confere("⛔ e `disponível`/`sugerida` ⛔ NÃO são opções graváveis",
     !S.OPCOES_ESTADO_DA_ACAO.includes(EST.disponivel)

@@ -25,7 +25,7 @@
 
 import type { SuperficieId } from "../nucleo/tipos";
 import type { Campo, CampoDeclarado, Grupo, GrupoDeclarado } from "./campo";
-import { camposDoGrupo, comCasa } from "./campo";
+import { NAO_SEI, camposDoGrupo, comCasa } from "./campo";
 
 export type CampoE = CampoDeclarado;
 
@@ -72,18 +72,89 @@ export const ACAO = "acao";
 export const ESTADO_DA_ACAO = {
   disponivel: "Disponível",
   sugerida: "Sugerida",
+  indicada: "Indicada",
+  decidida: "Decidida",
+  prescrita: "Prescrita",
+  preparada: "Preparada",
   iniciada: "Iniciada",
+  concluida: "Administrada/concluída",
+  /** ⚠️ AC-13: rótulo LEGADO — registros antigos continuam legíveis como administrada/concluída; ⛔ é mais oferecido. */
   realizada: "Realizada",
   interrompida: "Interrompida",
   cancelada: "Cancelada",
 } as const;
 
-export const OPCOES_ESTADO_DA_ACAO: readonly string[] = [
-  ESTADO_DA_ACAO.iniciada,
-  ESTADO_DA_ACAO.realizada,
-  ESTADO_DA_ACAO.interrompida,
-  ESTADO_DA_ACAO.cancelada,
+/**
+ * ── ⚠️⚠️⚠️ AC-13 · OS 8 ESTADOS DA AÇÃO (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8, opção B) ────────
+ *
+ * indicado · decidido · prescrito · preparado · iniciado · administrado/concluído · interrompido · cancelado.
+ * ⚠️ Os rótulos gravados seguem o gênero de «ação» (Indicada … Cancelada), ⛔ e os já gravados ⛔ mudam: «Iniciada»,
+ * «Interrompida» ⛔ «Cancelada» são os mesmos; «Realizada» é lido como administrado/concluído.
+ * ⛔ «Não sei» ⛔ é nono estado: é ausência de informação, lida à parte (`informacaoDoEstadoDaAcao`).
+ * ⚠️ Exposição: iniciado, administrado/concluído ⛔ interrompido expõem; indicado, decidido, prescrito, preparado ⛔
+ * cancelado ⛔ (interrompido ≠ cancelado, D2).
+ */
+export type EstadoDaAcaoRegistrado =
+  | "indicado"
+  | "decidido"
+  | "prescrito"
+  | "preparado"
+  | "iniciado"
+  | "administrado_concluido"
+  | "interrompido"
+  | "cancelado";
+
+export const ESTADOS_DA_ACAO: readonly EstadoDaAcaoRegistrado[] = [
+  "indicado", "decidido", "prescrito", "preparado", "iniciado", "administrado_concluido", "interrompido", "cancelado",
 ];
+
+export const ROTULO_DO_ESTADO_DA_ACAO: Readonly<Record<EstadoDaAcaoRegistrado, string>> = {
+  indicado: ESTADO_DA_ACAO.indicada,
+  decidido: ESTADO_DA_ACAO.decidida,
+  prescrito: ESTADO_DA_ACAO.prescrita,
+  preparado: ESTADO_DA_ACAO.preparada,
+  iniciado: ESTADO_DA_ACAO.iniciada,
+  administrado_concluido: ESTADO_DA_ACAO.concluida,
+  interrompido: ESTADO_DA_ACAO.interrompida,
+  cancelado: ESTADO_DA_ACAO.cancelada,
+};
+
+/** ⚠️ Rótulos antigos ⛔ que ⛔ são mais oferecidos — ⛔ perdem o significado. */
+const ROTULO_LEGADO_DO_ESTADO: Readonly<Record<string, EstadoDaAcaoRegistrado>> = {
+  [ESTADO_DA_ACAO.realizada]: "administrado_concluido",
+};
+
+export const EXPOE_O_PACIENTE: Readonly<Record<EstadoDaAcaoRegistrado, boolean>> = {
+  indicado: false,
+  decidido: false,
+  prescrito: false,
+  preparado: false,
+  iniciado: true,
+  administrado_concluido: true,
+  interrompido: true,
+  cancelado: false,
+};
+
+/** ⚠️ Valor gravado → estado. ⛔ «não sei», não perguntado ⛔ qualquer outra coisa = `undefined`. */
+export function estadoDaAcaoRegistrado(valor: unknown): EstadoDaAcaoRegistrado | undefined {
+  if (typeof valor !== "string") return undefined;
+  const atual = ESTADOS_DA_ACAO.find((e) => ROTULO_DO_ESTADO_DA_ACAO[e] === valor);
+  return atual ?? ROTULO_LEGADO_DO_ESTADO[valor];
+}
+
+/** ⚠️ A informação sobre o estado — ⛔ o estado em si: «não sei» ⛔ não perguntado ficam FORA dos 8. */
+export type InformacaoDoEstadoDaAcao =
+  | { readonly tipo: "registrado"; readonly estado: EstadoDaAcaoRegistrado }
+  | { readonly tipo: "nao_sei" }
+  | { readonly tipo: "nao_perguntado" };
+
+export function informacaoDoEstadoDaAcao(valor: unknown): InformacaoDoEstadoDaAcao {
+  if (valor === "nao_sei") return { tipo: "nao_sei" };
+  const estado = estadoDaAcaoRegistrado(valor);
+  return estado === undefined ? { tipo: "nao_perguntado" } : { tipo: "registrado", estado };
+}
+
+export const OPCOES_ESTADO_DA_ACAO: readonly string[] = [...ESTADOS_DA_ACAO.map((e) => ROTULO_DO_ESTADO_DA_ACAO[e]), NAO_SEI];
 
 /**
  * ⛔⛔ `cancelada` ⛔ NUNCA É DESFECHO FAVORÁVEL — trava do autor.
@@ -98,7 +169,13 @@ export const OPCOES_ESTADO_DA_ACAO: readonly string[] = [
 export const ESTADOS_QUE_NAO_RESOLVEM: readonly string[] = [
   ESTADO_DA_ACAO.disponivel,
   ESTADO_DA_ACAO.sugerida,
+  /** ⚠️ AC-13: ⛔ nenhum dos 8 estados resolve bloqueio — ⛔ quem resolve é a nova aferição. */
+  ESTADO_DA_ACAO.indicada,
+  ESTADO_DA_ACAO.decidida,
+  ESTADO_DA_ACAO.prescrita,
+  ESTADO_DA_ACAO.preparada,
   ESTADO_DA_ACAO.iniciada,
+  ESTADO_DA_ACAO.concluida,
   ESTADO_DA_ACAO.realizada,
   /** ⚠️ Interrompida ⛔ também ⛔ não resolve: ⛔ a ação parou; ⛔ se funcionou, quem responde é a nova aferição. */
   ESTADO_DA_ACAO.interrompida,

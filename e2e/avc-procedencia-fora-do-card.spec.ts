@@ -199,7 +199,7 @@ test.describe("AVC · procedência, inglês ⛔ pendente sem nome ⛔ renderizad
     await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-reperfusao").click();
     await page.getByTestId("avc-nova-trombolise").click();
-    await page.getByTestId("avc-opcao-ivt_estado-Realizada").click();
+    await page.getByTestId("avc-opcao-ivt_estado-Administrada/concluída").click();
     await informarHora(page, "ivt_inicio");
     await page.getByTestId("avc-aba-destino").click();
     await expect(page.getByTestId("avc-plano-48h")).toBeVisible();

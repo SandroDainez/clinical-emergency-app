@@ -186,3 +186,48 @@ test.describe("AVC · 19ª rodada · AC-03r · data do parto e janela local de 1
     await expect(page.getByTestId("avc-f-raia-ivt")).toHaveCount(0);
   });
 });
+
+/**
+ * AC-13 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8): os 8 estados da ação, «não sei» separado, exposição
+ * por estado ⛔ transições com horário ⛔ autoria.
+ */
+async function trombolisePorEstados(page: Page, ...rotulos: string[]) {
+  await fixarIdioma(page, "pt-BR");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/modulos/avc");
+  await responderPopulacaoAdulta(page);
+  await page.getByTestId("avc-aba-reperfusao").click();
+  await page.getByTestId("avc-nova-trombolise").click();
+  for (const r of rotulos) await page.getByTestId(`avc-opcao-ivt_estado-${r}`).click();
+}
+
+test.describe("AVC · 19ª rodada · AC-13 · estados da ação", () => {
+  test("as 8 situações ⛔ «Não sei» aparecem como opções; ⛔ «Realizada»", async ({ page }) => {
+    await trombolisePorEstados(page);
+    for (const r of ["Indicada", "Decidida", "Prescrita", "Preparada", "Iniciada", "Administrada/concluída", "Interrompida", "Cancelada", "nao_sei"]) {
+      await expect(page.getByTestId(`avc-opcao-ivt_estado-${r}`)).toBeVisible();
+    }
+    await expect(page.getByTestId("avc-opcao-ivt_estado-Realizada")).toHaveCount(0);
+  });
+
+  test("«Prescrita» → «Preparada» ⛔ é exposição: o Destino ⛔ mostra conduta de trombólise", async ({ page }) => {
+    await trombolisePorEstados(page, "Prescrita", "Preparada");
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-superficie-g-conteudo")).toBeVisible();
+    await expect(page.getByTestId("avc-g-conduta")).toHaveCount(0);
+  });
+
+  test("«Preparada» → «Interrompida» é exposição; a trilha mostra as duas transições com horário ⛔ autoria", async ({ page }) => {
+    await trombolisePorEstados(page, "Preparada", "Interrompida");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    const primeira = page.getByTestId("avc-transicoes-trombolise_iv_1-0");
+    const segunda = page.getByTestId("avc-transicoes-trombolise_iv_1-1");
+    await expect(primeira).toContainText("Preparada");
+    await expect(segunda).toContainText("Interrompida");
+    await expect(segunda).toContainText("situação vigente");
+    await expect(primeira).toContainText(/\d{2}:\d{2}/);
+    await expect(segunda).toContainText("registrado neste aparelho, sem conta");
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-g-conduta")).toContainText("Interrompida após o início — houve exposição");
+  });
+});

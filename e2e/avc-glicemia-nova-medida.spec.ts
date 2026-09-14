@@ -43,7 +43,7 @@ test.describe("AVC · a nova glicemia é medida nova", () => {
       await page.getByTestId("avc-a-registrar-glicemia_alterada").click();
       await expect(page.getByTestId("avc-e-bloqueio-glicemia_alterada")).toBeVisible();
       await page.getByTestId("avc-e-nova-acao-glicemia_alterada").click();
-      await page.getByText("Realizada", { exact: true }).first().click();
+      await page.getByText("Administrada/concluída", { exact: true }).first().click();
 
       /** ⚠️ ⛔ Tratado ⛔ ≠ resolvido: ⛔ o ciclo espera ⛔ a medida. */
       await expect(page.locator("body")).toContainText(/Falta: uma nova glicemia/i);
