@@ -618,6 +618,70 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
   - IVT negativa com EVT pendente não abre o caminho;
   - a decisão global registra os dois desfechos e abre.
 
+## Decisões da 16ª rodada (2026-09-13) · regressão de procedência, AC-95, AC-98, AC-91, AC-92, AC-93, AC-101 e textos
+
+**Autor:** Sandro Dainez, 13/09/2026.
+
+**Capturas da 15ª rodada — revisadas pelo autor:**
+- **Aprovados:** caminho hemorrágico com título próprio, bloqueio em vermelho com horário, interrupção da infusão registrável e os quatro caminhos de 48 h com agendas distintas.
+
+**Regressão (alta) — procedência de volta ao card clínico.**
+- **O que aparece em texto normal no plano de 48 h:**
+  - "Fonte: F-15 · Table 7 · p. e358 · R5 (não transcrita)";
+  - "Fonte: R6 · R4 (não transcritas) · AHA 2026 § a localizar";
+  - "Conclusão: …".
+- **Por que voltou:** a 8ª rodada tirou isso dos cards e mandou para o ⓘ, com trava. O plano nasceu fora do alcance da trava (AC-70: a varredura só cobre algumas superfícies).
+- **Correções pedidas:**
+  - mover fonte, status e conclusão para o ⓘ nessas telas;
+  - ampliar a trava para todas as superfícies do AVC, não uma lista. Senão a próxima superfície nova repete.
+
+**AC-95 — uma fonte de verdade.**
+- Catálogo de hemorragia dizendo dose e alvo, e caminho hemorrágico dizendo "pendente", sobre a mesma conduta, é pior que qualquer um dos dois.
+- O caminho consome o conteúdo do catálogo, com a força e a fonte que ele declara.
+- Item sem fonte, força e contexto no contrato da p. 12 fica pendente nos dois lugares.
+- Nenhuma conduta com dois estados de validação.
+- **Resposta do autor a pergunta de implementação:** declarar pelo que já existe.
+  - Recomendação com COR + LOE de diretriz → força `recomendacao_formal`.
+  - `contextoDaFonte` = a população declarada no item.
+  - Item sem população e as doses da figura 2 (não graduadas) → pendentes no catálogo e no caminho.
+
+**AC-98 — renomear:** "Recusada" vira "Centro de referência recusou". "Recusa do paciente ou família" fica.
+
+**AC-91 — confirmado, com pendência visível:** "Sedação não registrada — informe para liberar o exame como basal".
+
+**AC-92 — corrigir.**
+- A trava de via oral não depende de o plano de 48 h estar aberto: vale desde que o caminho (isquêmico ou hemorrágico) esteja definido. Disfagia é risco desde a chegada.
+- **Resposta do autor a pergunta de implementação:** o caminho está definido pela imagem registrada.
+  - Com laudo "Hemorragia intracraniana identificada": caminho hemorrágico.
+  - Com laudo "Sem hemorragia intracraniana identificada": caminho isquêmico.
+  - Antes do laudo: sem trava.
+
+**AC-93 — aceito:** glicemia e temperatura são medidas; concluem pela medida.
+
+**AC-101 — decidido, não é achado aberto:** suspeita de HSA sem sangue na imagem retém a reperfusão (D-PEND-23), mas não abre o caminho hemorrágico.
+
+**Menores das capturas:**
+- "4 registro(s) de conduta externa": plural por contagem, em PT e ES.
+- "Antiagregante ou anticoagulante: retido… / retida · condição": concordância.
+- "Unidade de AVC organizada, com…" truncado.
+- "Caminho hemorrágico: registrar…" repetido em cada pendência: o prefixo é redundante dentro do próprio caminho.
+
+**Entregas:**
+1. **(alta) Procedência:**
+   - "Fonte:", "Conclusão:", "§ a localizar", "não transcrita" e afins saem do texto visível do plano de 48 h e do caminho hemorrágico, e vão para o ⓘ;
+   - a trava da 8ª rodada passa a valer para todas as superfícies do AVC;
+   - prova vermelha reproduzindo as telas das capturas.
+2. **AC-95, AC-98, AC-91, AC-92,** com provas vermelhas.
+3. **Texto:**
+   - plural por contagem (PT/ES);
+   - concordância "retido/retida";
+   - "Unidade de AVC organizada…" sem truncar;
+   - sem o prefixo "Caminho hemorrágico:" nas pendências dentro do próprio caminho.
+
+**Capturas a 375 px depois:** plano de 48 h nos quatro caminhos, caminho hemorrágico e trava de via oral sem plano aberto.
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (16ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
