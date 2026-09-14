@@ -512,11 +512,17 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
   const rotasPotenciais = favoraveis.filter((l) => l.correspondencia === "potencialmente_aplicavel");
 
   const rotaPadrao = clinica.estado === "satisfeito" && temporal.estado === "satisfeito";
-  const rotaSustenta = rotaPadrao || rotasQueSustentam.length > 0;
+  /**
+   * ⚠️ D-139-4, opção C (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada): a rota estendida só sustenta com
+   * o déficit REGISTRADO como incapacitante. «Incerto» ⛔ não perguntado ⛔ viram incapacitante ⛔ nem liberam a
+   * IVT — o déficit fica nomeado entre as faltas. «Não incapacitante» registrado fecha abaixo (AC-47).
+   */
+  const estendidaSustenta = rotasQueSustentam.length > 0 && clinica.estado === "satisfeito";
+  const rotaSustenta = rotaPadrao || estendidaSustenta;
 
   /** ⚠️ Os critérios que a tela lista: ⛔ a rota que sustentou, ⛔ ou os dois da rota padrão. */
   const criteriosDaRota: CriterioAvaliado[] =
-    !rotaPadrao && rotasQueSustentam.length > 0
+    !rotaPadrao && estendidaSustenta
       ? rotasQueSustentam.map(criterioDaRota)
       : [clinica, temporal];
   const criterios: CriterioAvaliado[] = [...criteriosDaRota, classe, seguranca];

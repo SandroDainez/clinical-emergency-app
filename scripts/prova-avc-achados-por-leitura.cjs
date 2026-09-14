@@ -110,8 +110,9 @@ function candidatoIvt(e = vazio) {
   rm = reg(rm, "motivo_para_suspeitar_alteracao_coagulacao", "nao");
   rm = reg(rm, "hora_reconhecimento", AGORA - 2 * H);
   rm = reg(rm, "hora_inicio_observado", "nao_sei");
-  conf("AC-47 · controle: RM com início desconhecido, SEM registrar déficit → indicada pela rota estendida",
-    ivt(rm).v.tipo === "indicada", `⛔ ${ivt(rm).v.tipo}`);
+  /** ⚠️ Ajuste consciente (19ª rodada, D-139-4 opção C, autor): sem o déficit registrado, a rota estendida ⛔ sustenta. */
+  conf("AC-47 · controle: RM com início desconhecido, SEM registrar déficit → ⛔ «indicada», nomeando o déficit",
+    ivt(rm).v.tipo !== "indicada" && ivt(rm).v.faltam.includes("deficit_incapacitante"), `⛔ ${ivt(rm).v.tipo}`);
   const naoIncap = reg(rm, "incapacitante_assumido", "Não incapacitante");
   nota(`AC-47 · cenário RM: veredito com «não incapacitante» = ${ivt(naoIncap).v.tipo} · "${ivt(naoIncap).v.frase}"`);
   conf("AC-47 · RM com início desconhecido + «não incapacitante» → ⛔ «indicada»", ivt(naoIncap).v.tipo !== "indicada", `⛔ ${ivt(naoIncap).v.tipo}`);
@@ -122,7 +123,8 @@ function candidatoIvt(e = vazio) {
   const incap = reg(rm, "incapacitante_assumido", "Incapacitante");
   conf("AC-47 · controle: com «Incapacitante», a rota estendida continua sustentando", ivt(incap).v.tipo === "indicada", `⛔ ${ivt(incap).v.tipo}`);
   const incerto = reg(rm, "incapacitante_assumido", "Incerto");
-  conf("AC-47 · controle: «Incerto» ⛔ muda a rota estendida (só o registro «não incapacitante» fecha)", ivt(incerto).v.tipo === "indicada", `⛔ ${ivt(incerto).v.tipo}`);
+  /** ⚠️ Ajuste consciente (19ª rodada, D-139-4 opção C): «Incerto» ⛔ vira incapacitante ⛔ nem libera a rota estendida. */
+  conf("AC-47 · «Incerto» ⛔ sustenta a rota estendida ⛔ nem libera o portão", ivt(incerto).v.tipo !== "indicada" && ivt(incerto).p.liberado === false, `⛔ ${ivt(incerto).v.tipo}`);
 }
 
 /* ══ AC-48 · «segurança desconhecida» ⛔ some do portão ═════════════════ */

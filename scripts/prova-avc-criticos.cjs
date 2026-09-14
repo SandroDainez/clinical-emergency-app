@@ -660,8 +660,15 @@ ausente("28 · rota RM (API)", () => {
     leituraRm(np) !== undefined && leituraRm(np).correspondencia === "potencialmente_aplicavel" && leituraRm(np).faltam.includes("inicio_desconhecido"),
     `⛔ ${JSON.stringify(leituraRm(np) && [leituraRm(np).correspondencia, leituraRm(np).faltam])}`);
   const ns = reg(np, "hora_inicio_observado", "nao_sei");
-  conf("28 · início «não sei» + reconhecimento 2 h + RM completa → indicada pela rota estendida",
-    ivt(ns).v.tipo === "indicada" && ivt(ns).v.sustentam.some((m) => m.id === "ivt_inicio_desconhecido"), `⛔ ${ivt(ns).v.tipo}`);
+  /**
+   * ⚠️ Ajuste consciente (19ª rodada, D-139-4 opção C, autor): a rota estendida só sustenta com o déficit
+   * REGISTRADO como incapacitante. Sem o registro, a saída fica incompleta, nomeando o déficit.
+   */
+  const nsIncap = reg(ns, "incapacitante_assumido", "Incapacitante");
+  conf("28 · início «não sei» + reconhecimento 2 h + RM completa + «Incapacitante» → indicada pela rota estendida",
+    ivt(nsIncap).v.tipo === "indicada" && ivt(nsIncap).v.sustentam.some((m) => m.id === "ivt_inicio_desconhecido"), `⛔ ${ivt(nsIncap).v.tipo}`);
+  conf("28 · … sem registrar o déficit → incompleta, nomeando o déficit incapacitante (⛔ «indicada»)",
+    ivt(ns).v.tipo === "incompleta" && ivt(ns).v.faltam.includes("deficit_incapacitante") && ivt(ns).p.liberado === false, `⛔ ${ivt(ns).v.tipo} ${JSON.stringify(ivt(ns).v.faltam)}`);
   const hc = reg(reg(np, "hora_inicio_observado", AGORA - 6 * H), "hora_ultima_vez_bem", AGORA - 6 * H);
   conf("28 · início CONHECIDO há 6 h (fora da janela padrão) + reconhecimento 2 h + RM completa → ⛔ ≠ indicada",
     ivt(hc).v.tipo !== "indicada" && ivt(hc).p.liberado === false, `⛔ ${ivt(hc).v.tipo} / ${ivt(hc).p.estado}`);
