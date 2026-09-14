@@ -756,6 +756,192 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Mensagem do autor durante a rodada:** "todos estão em Downloads, pasta Documentos para o APP".
 
+## Decisões da 19ª rodada (2026-09-14) · revisão do DOSSIE-REVISAO.pdf: os nove pacotes e as nove decisões complementares
+
+**Autor:** Sandro Dainez, 14/09/2026, sobre `docs/avc/revisao/DOSSIE-REVISAO.pdf` (`1573e8e`).
+**Autoriza implementação:** **não**. O autor autorizou só o commit de documentação desta seção; nenhum código muda antes de nova autorização.
+
+**Duas mensagens do autor:** a primeira decide os nove pacotes (§1–§9); a segunda ajusta três pontos (AC-13, D-139-3, AC-15) e traz nove decisões complementares, incorporadas em cada seção e numeradas **C1–C9**.
+
+### 0 · Reconciliação: os nove pacotes não estavam igualmente pendentes
+
+| pacote | estado antes desta rodada | por quê |
+|---|---|---|
+| AC-14 · temperatura | **decidido** (D-PEND-18) e implementado em `f314f36` | o próprio pacote registra a decisão |
+| AC-06 · dose do trombolítico | **decidido** (D-PEND-22 tenecteplase, D-PEND-25 alteplase) | o campo do pacote não foi carimbado |
+| AC-15 · suspeita de HSA | **decidido em parte** (D-PEND-23 retém a reperfusão); o que resolve a suspeita seguia aberto em `hsa-resolucao.md` | o campo do pacote não foi carimbado |
+| AC-03r · puerpério | **decidido em parte** (D-PEND-24, 14 dias); a fonte seguia "a confirmar" | o campo do pacote não foi carimbado |
+| D-139-1 a D-139-4, AC-13 | **abertos** | sem decisão registrada |
+
+`docs/status.md` (fila, linha 16) já dizia que AC-06, AC-15 e AC-03r estavam decididos e não carimbados. Esta rodada **não reabre** AC-06 nem AC-14.
+
+### 1 · AC-15 · suspeita de HSA — variante da opção C
+
+**Decisão, nos termos do autor:**
+- Suspeita clínica relevante de HSA ainda não resolvida permanece como **pendência diagnóstica** e **pode reter temporariamente** a reperfusão.
+- **"Incerto" não equivale a "não".**
+- **HSA confirmada** tem **caminho próprio**, distinto da HIC.
+- O bloqueio tem **condição explícita de resolução**; não pode ser permanente por simples suspeita não esclarecida.
+
+**Refina:** D-PEND-23 (a retenção continua "avaliação especializada", não impedimento).
+**Muda em relação ao app de hoje:**
+- "Sim" retém sem condição de resolução (só a correção libera, 8ª rodada e D-PEND-26).
+- "Incerto" registrado desde o início não retém.
+- A imagem tem só dois resultados e não distingue HSA.
+- O caminho hemorrágico usa um nome só, "Hemorragia intracraniana (HIC)" (AC-110), inclusive para o tipo subaracnóidea.
+
+**Decisões complementares:**
+- **C1 · resolução da suspeita:** segue o algoritmo diagnóstico da AHA/ASA 2023 (§4, p. e322–e323; Figure 2).
+  - **<6 h do início da cefaleia, sem déficit neurológico novo:** TC sem contraste de alta qualidade negativa pode resolver a suspeita conforme a diretriz (rec. 3, COR 2a, B-NR).
+  - **≥6 h ou com déficit neurológico novo:** TC negativa não resolve. Se a suspeita permanece, a rota exige investigação adicional, com punção lombar prevista como Classe 1 (rec. 2, COR 1, B-NR).
+  - A resolução decorre dos **fatos diagnósticos registrados**, não de inferência automática.
+- **C2 · "Incerto":** enquanto a suspeita estiver ativa e não resolvida, "Incerto" **retém** a reperfusão; não equivale a "Não". Cumprido o critério diagnóstico de exclusão, a retenção é removida.
+- **C3 · punção lombar × trombólise:** não criar intervalo temporal local sem fonte nem regra de "X horas após a punção". Se necessário, abrir questão clínica própria, com fonte específica.
+- **C4 · HSA confirmada:** classificação própria de imagem para HSA, distinta de HIC. O caminho hemorrágico pode compartilhar componentes, mas não denomina HSA confirmada como "HIC". HSA fica preservada como diagnóstico e caminho próprio.
+
+**Revoga em parte:** o AC-110 (17ª rodada) no ponto em que "Hemorragia intracraniana (HIC)" nomeia também a HSA.
+**Estado:** decidido, **incluindo a condição de resolução**. O que ainda falta de fonte está no §10.
+
+### 2 · AC-06 · dose do trombolítico — mantém D-PEND-22 e D-PEND-25
+
+**Decisão, nos termos do autor:** dose exata por peso, sem arredondamento arbitrário para mg inteiro. Alteplase 0,9 mg/kg, máximo 90 mg; tenecteplase 0,25 mg/kg, máximo 25 mg. **Não inferir volume ou concentração sem documento regulatório correspondente.** Não reabrir a decisão só porque o pacote aparece pendente.
+
+**Estado:** **encerrado** quanto à dose.
+**⚠️ Conflito a confirmar pelo autor:**
+- A D-PEND-22 manda exibir o volume da tenecteplase "a 5 mg/mL".
+- Essa concentração **não tem documento regulatório**: a bula de Metalyse 25 mg não foi obtida, e a de 40/50 mg não declara mg/mL (`bulas-br-tromboliticos.md` §20.3, "implicam 5 mg/mL").
+- Pela regra nova, o volume da tenecteplase é inferência. A alteplase tem 1 mg/mL na bula I23-01 (p. 7).
+
+**Decisões complementares:**
+- **C5 · volume da tenecteplase:** retirar do comportamento operacional brasileiro o volume calculado a 5 mg/mL enquanto não houver documento regulatório oficial da apresentação brasileira arquivado. Manter a dose em mg. A Table 7 da AHA/ASA pode permanecer como fonte internacional/documental, sem assumir que a apresentação brasileira é idêntica.
+  - **Revoga em parte:** a D-PEND-22 no ponto "volume exibido com 0,1 mL, a 5 mg/mL".
+  - **Resolve o conflito** registrado acima.
+- **C9 · AC-118 encerrado pela AHA/ASA 2026 Table 7 (p. e358):** alteplase 0,9 mg/kg, máximo 90 mg; 10% da dose em bolus IV durante 1 minuto; o restante infundido durante 60 minutos.
+  - Confirma o esquema da D-PEND-25.
+  - A divergência D1 de `bula-x-diretriz.md` (a posologia do AVC da bula não dá duração) fica decidida.
+
+### 3 · D-139 interpretação 2 · varfarina/heparina — opção B
+
+**Decisão, nos termos do autor:**
+- Requisitos laboratoriais **específicos por agente**, em vez de exigir INR + PT + aPTT de todos.
+- Não exigir teste sem pertinência farmacológica só para satisfazer o motor.
+- DOAC mantém a regra própria.
+
+**Revoga:** a lista universal `["inr", "aptt", "tp"]` (`avc/nucleo/derivacoes-d.ts`).
+**Decisão complementar C6 · mapa por agente (nos termos do autor):**
+- **VKA/varfarina:** INR como parâmetro principal.
+- **HNF:** considerar exposição recente e aPTT quando pertinente.
+- **HBPM:** não usar aPTT como teste de liberação. A lógica se baseia em agente, dose e horário; anti-Xa só entra se uma fonte específica sustentar sua operacionalização.
+- **DOAC:** regra própria.
+- **Limite:** não inventar exames para preencher o mapa.
+
+**Estado:** decidido. O que ainda falta de fonte para HNF e HBPM está no §10.
+
+### 4 · D-139 interpretação 1 · coagulograma — opção A
+
+**Decisão, nos termos do autor:**
+- "Não" permite prosseguir conforme a diretriz quando não há razão para suspeitar de alteração.
+- "Sim" e "incerto" aguardam os resultados pertinentes.
+- "Não perguntado" permanece informação incompleta.
+- Ausência de resposta nunca vira resposta negativa.
+
+**Estado:** **encerrado.** É o comportamento atual (`derivacoes-d.ts`). Falta cobertura: nenhuma asserção isola "Incerto", e nenhum e2e mede o título causado só pelo juízo não perguntado (pacote §4).
+**Interação com a interpretação 2:** "resultados pertinentes" passa a seguir o mapa por agente quando houver anticoagulante registrado.
+
+### 5 · D-139 interpretação 3 · julgamento individual — opção B
+
+**Decisão, nos termos do autor:**
+- Fato explícito `julgamento_individual_registrado`, com decisão (prosseguir / não prosseguir), autor e data/hora.
+- Não transformar automaticamente todo item relativo da Table 8 em julgamento obrigatório; cada condição segue o grau de suporte da sua fonte.
+
+**Ajuste do autor:**
+- O modelo de dados do fato pode ser preparado.
+- O fato **não** é ligado ao portão pelos gatilhos atuais indiscriminadamente (hoje: DOAC, microssangramentos >10 e itens relativos de "situação individualizada").
+
+**Decisão complementar C7:**
+- **Onde se exige o julgamento:** só nas condições em que a fonte sustenta avaliação individual. **DOAC é o caso claramente identificado** (Table 8, faixa relativa, p. e365: "on an individual basis").
+- **Sem automatismo:** microssangramentos >10 e toda a faixa relativa da Table 8 não viram julgamento obrigatório.
+- **`prosseguir`** só libera se nenhum outro impedimento existir.
+- **`não_prosseguir`** impede a IVT naquele episódio, com trilha auditável. Mudar a decisão exige novo registro, não sobrescrita silenciosa.
+
+**Estado:** decidido.
+
+### 6 · D-139 interpretação 4 · déficit incapacitante — opção C para o V1
+
+**Decisão, nos termos do autor:**
+- "Não incapacitante" explicitamente registrado impede a rota estendida.
+- "Incerto" e "não perguntado" não viram incapacitante nem liberam a IVT automaticamente.
+- Distinção explícita entre desconhecido, negativo e não avaliado.
+
+**Estado:** **encerrado.**
+- **Já implementado:** a primeira metade (AC-47, `62856f4`; `veredito-da-trombolise.ts`: com o déficit registrado "não incapacitante", toda rota estendida sai "Sem indicação neste caminho").
+- **Muda:** hoje "Incerto" e não perguntado não afetam as rotas estendidas, que podem sustentar "indicada".
+
+### 7 · AC-03r · puerpério — data do parto e regra explícita
+
+**Decisão, nos termos do autor:**
+- Usar a data do parto e regra explícita quando aplicável.
+- A janela de 14 dias (D-PEND-24) é **decisão operacional/local** enquanto não houver fonte primária que a sustente.
+- Não atribuí-la à AHA/ASA 2026 sem suporte documental.
+
+**Revoga:** a marcação "fonte AHA 2019, a confirmar na Table 8 de 2026" (nota do campo `gestacao_puerperio`).
+**Estado:** decidido; a janela **depende de fonte primária externa.**
+- A AHA/ASA 2019 não está no repositório.
+- A Table 8 de 2026 (p. e366) não traz janela em dias.
+- A bula Actilyse I23-01 (p. 4) traz "parto nos últimos 10 dias" (AC-119).
+
+**Decisão complementar C8 · data do parto desconhecida:**
+- Desconhecida permanece desconhecida.
+- Não assumir mais de 14 dias.
+- Não liberar automaticamente o protocolo adulto pela ausência da data.
+- Os 14 dias continuam identificados como regra local, não como recomendação da AHA/ASA 2026.
+
+### 8 · AC-13 · estados da ação — opção B
+
+**Decisão, nos termos do autor:**
+- **Os 8 estados da spec:** indicado, decidido, prescrito, preparado, iniciado, administrado/concluído, interrompido, cancelado.
+- **"Interrompido"** implica exposição; **"cancelado"**, ausência de exposição.
+- **"Não sei"** é estado epistemológico (ausência de informação), não sinônimo de cancelado nem de não realizado.
+  - **Ajuste do autor:** "não sei" **não é um nono estado da ação.** Os estados da ação são os 8 decididos; a ausência de informação é modelada **separadamente** do estado.
+- **Horário e responsável** registrados quando aplicável.
+
+**Revoga:** os 4 estados registráveis (iniciada, realizada, interrompida, cancelada) e a emenda de 6 estados de 2026-09-12 (`auditoria/ESPECIFICACAO-AVC.md` §2.3).
+**Estado:** **encerrado** quanto ao modelo (a fonte clínica não define estados; é escolha de especificação).
+
+### 9 · AC-14 · temperatura — não reabrir
+
+**Decisão, nos termos do autor:** manter a D-PEND-18: registro de temperatura no AVC isquêmico e §4.4 da AHA/ASA 2026.
+**Estado:** **encerrado** (implementado em `f314f36`). Só falta carimbar o pacote.
+
+### 10 · O que ainda depende de fonte ou definição externa (depois de C1–C9)
+
+| pacote | pendência | natureza |
+|---|---|---|
+| AC-15 | **"déficit neurológico novo" no candidato com AVC:** o déficit do próprio AVC conta como "novo" para o ramo da §4? A §4 trata de quem se apresenta com cefaleia (população diferente, `hsa-resolucao.md` §4). Pela C1, o fato é registrado, não inferido; falta dizer se o déficit focal do AVC já o preenche. | definição do autor |
+| AC-15 | **"TC de alta qualidade laudada por neurorradiologista"** (rec. 3): não há fato registrado para qualidade do equipamento nem para quem laudou | dado a modelar; a fonte existe |
+| AC-15 | **o que fecha a investigação depois da punção lombar:** a Figure 2 leva "sem xantocromia" a "investigação a critério do médico". A rec. 2 diz que a punção serve para "diagnosticar/excluir". Falta confirmar que punção sem xantocromia registrada exclui para fins de liberação. | leitura da fonte a confirmar pelo autor |
+| AC-15 | **intervalo punção lombar × trombólise:** sem fonte; questão clínica própria (C3) | fonte externa |
+| AC-15 | **verbatim das recs. 2, 3 e 5 da §4:** página e COR/LOE conferidos no PDF integral; o literal não foi colado | autor |
+| AC-06 | **bula oficial de Metalyse 25 mg (apresentação brasileira):** sem ela, não há volume nem concentração (C5) | fonte regulatória externa |
+| D-139-2 | **HNF, "exposição recente":** a Table 8 fala em "recent use of heparin" sem janela de tempo; o campo do app diz "em uso" | fonte externa |
+| D-139-2 | **HBPM, regra por agente, dose e horário:** nenhuma fonte do repositório define dose ou intervalo que retenha ou libere; anti-Xa sem operacionalização (C6) | fonte externa |
+| D-139-3 | **itens relativos que hoje pedem julgamento** (situação individualizada) e **microssangramentos >10:** saem do julgamento obrigatório pela C7. Falta dizer se passam a informação sem retenção ou mantêm outra forma de retenção. | definição do autor |
+| AC-03r | **fonte primária da janela de 14 dias:** a AHA 2019 não está no repositório (regra local pela C8) | fonte externa, sem bloquear a implementação |
+
+### 11 · Estado dos nove pacotes depois desta rodada
+
+| pacote | estado | implementação |
+|---|---|---|
+| AC-14 | ✅ encerrado (D-PEND-18) | feita (`f314f36`) |
+| AC-06 | ✅ encerrado: dose (D-PEND-22/25), volume da TNK retirado (C5), bolus pela Table 7 (C9) | a fazer: retirar o volume da TNK |
+| D-139-1 | ✅ encerrado (opção A) | é o comportamento atual; faltam testes |
+| D-139-4 | ✅ encerrado (opção C) | parcial; falta "incerto"/não perguntado nas rotas estendidas |
+| AC-13 | ✅ encerrado (opção B, 8 estados; "não sei" separado) | a fazer |
+| AC-15 | ✅ decidido (C1–C4); ◐ três definições do §10 antes da implementação completa | a fazer, em parte bloqueado |
+| D-139-2 | ✅ decidido (C6); ◐ HNF e HBPM sem fonte suficiente | VKA implementável; HNF e HBPM parciais |
+| D-139-3 | ✅ decidido (C7); ◐ destino dos gatilhos que saem do julgamento | modelo de dados e DOAC implementáveis |
+| AC-03r | ✅ decidido (C8); janela como regra local | implementável |
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
