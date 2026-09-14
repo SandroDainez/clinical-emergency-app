@@ -36,7 +36,7 @@ import {
 import { CAMPO_DA_JUSTIFICATIVA, CAMPO_DE_ITEM, ITENS_NIHSS, type RespostaDoItem } from "../../avc/conteudo/nihss";
 import { nihssInconclusivoPorSedacao, respostaDoItem } from "../../avc/nucleo/derivacoes-b";
 import CampoDeEscala from "./campo-de-escala";
-import { examesNihss, itensNihssSugeridosComoNaoTestaveis } from "../../avc/nucleo/via-aerea-externa";
+import { examesNihss, itensNihssSugeridosComoNaoTestaveis, leituraDaViaAereaExterna, lembreteNihss1b } from "../../avc/nucleo/via-aerea-externa";
 import { MOTIVO_CLINICO, RECOMENDACOES } from "../../avc/conteudo/superficie-f";
 import { CAMPOS_DO_INSUMO } from "../../avc/nucleo/apresentacao-f";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
@@ -104,6 +104,8 @@ const MARCA_DO_EXAME: Readonly<Record<string, string>> = {
   sob_sedacao: "sob sedação — confundidor",
   sem_referencia: "horário da via aérea avançada desconhecido — exame não separado da sedação",
   sedacao_suspensa: "sedação suspensa para o exame — vale para as regras",
+  /** ⚠️ AC-83 (15ª rodada): sem sedação — o exame vale; só o item 10 é UN (instrução NIH). */
+  com_via_aerea_sem_sedacao: "com via aérea avançada, sem sedação — vale; item 10 não testável",
 };
 
 /** ⚠️ 14ª rodada (A04): os DOIS caminhos de §4.6.3 já transcritos — DWI/FLAIR (rec. 1) ⛔ e perfusão automatizada (rec. 2). */
@@ -398,6 +400,12 @@ export default function SuperficieB({
                     ) : null}
                   </View>
                 ))}
+                {/** ⚠️ AC-82 (15ª rodada): sem horário da via aérea ⛔ há basal — dito, ⛔ silêncio. */}
+                {leituraDaViaAereaExterna(estado).pendencias.some((p) => p.id === "recuperar_basal_va_hora") ? (
+                  <Text style={e.resumoLinha} testID="avc-b-recuperar-basal">
+                    {tr("Informe o horário da via aérea para recuperar o exame basal")}
+                  </Text>
+                ) : null}
                 {nihssSoSobSedacao ? (
                   <Text style={e.resumoLinha} testID="avc-b-nihss-inconclusivo-sedacao">
                     {tr("Sem exame anterior à sedação: regras dependentes do NIHSS ficam inconclusivo — exame sob sedação; avaliação especializada.")}
@@ -450,6 +458,7 @@ export default function SuperficieB({
                         onAlternarDetalhe={() => detalhes.alternar(campo.id)}
                         onRegistrarEscala={onEscala}
                         sugestoesNaoTestavel={sugestoesUN}
+                        lembrete1b={lembreteNihss1b(estado)}
                         onDesfazer={onDesfazer}
                         /**
                          * ⚠️ O segundo caminho abre o bloco que **já existe** —

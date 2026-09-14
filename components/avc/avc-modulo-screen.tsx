@@ -169,7 +169,7 @@ import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
 import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
 import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
-import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
+import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeNeurocirurgia, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
 import { BotaoPrecisoDeAjuda, DialogoDeAjuda } from "./preciso-de-ajuda";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { chamarModulo, pilhaDeChamadas, retornarDoModulo, retornoDaChamada, type RetornoDeModulo } from "../../avc/nucleo/chamadas";
@@ -180,6 +180,17 @@ import {
   registrarViaAereaExterna,
   suporteAtivo,
 } from "../../avc/nucleo/via-aerea-externa";
+import { registrarDecisaoGlobalDeNaoReperfundir, travaDeViaOral, type TravaDeViaOral } from "../../avc/nucleo/plano-48h";
+import { caminhoHemorragico, registrarInterrupcaoDaInfusao } from "../../avc/nucleo/caminho-hemorragico";
+import { SUPERFICIES_DO_CAMINHO_HEMORRAGICO } from "../../avc/conteudo/caminho-hemorragico";
+
+/** ⚠️ AC-88 (15ª rodada): por que a via oral segue travada — dito no cabeçalho de suporte. */
+const MOTIVO_DA_TRAVA_DE_VIA_ORAL: Readonly<Record<TravaDeViaOral["motivo"], string>> = {
+  reprovada: "triagem de deglutição reprovada",
+  nao_realizada: "triagem de deglutição não realizada",
+  nao_sei: "resultado da triagem de deglutição: não sei",
+  sem_registro: "triagem de deglutição sem resultado registrado",
+};
 import { moduloChamavel } from "../../avc/conteudo/modulos-chamaveis";
 import { ModuloIndisponivel } from "./modulo-indisponivel";
 import { CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "../../avc/conteudo/superficie-g";
@@ -1260,6 +1271,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
               {tr("Suporte ativo")}: {textoDoSuporte}
             </Text>
           ) : null}
+          {/** ⚠️ AC-88 (15ª rodada): trava de segurança — deglutição ≠ aprovada, com caminho do plano aberto. */}
+          {(() => {
+            const trava = travaDeViaOral(estado);
+            return trava === undefined ? null : (
+              <Text style={s.travaViaOral} testID="avc-trava-via-oral">
+                {tr("Nada por via oral")} — {tr(MOTIVO_DA_TRAVA_DE_VIA_ORAL[trava.motivo])}
+              </Text>
+            );
+          })()}
         </>
       }
       header={
@@ -1276,7 +1296,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          * catálogo de HIC mostrava o cabeçalho isquêmico truncado por cima.
          */
         <ClinicalHeader
-          titulo={TITULO_DA_SINDROME[atual.id] ?? "AVC isquêmico agudo"}
+          /** ⚠️ 15ª rodada (captura do A07): com o caminho hemorrágico aberto, o título ⛔ diz "isquêmico". */
+          titulo={TITULO_DA_SINDROME[atual.id] ?? (caminhoHemorragico(estado).ativo ? "Hemorragia intracraniana" : "AVC isquêmico agudo")}
           /**
            * ⚠️⚠️ O ESCOPO SAIU DO CABEÇALHO — 2026-09-06.
            *
@@ -1403,10 +1424,14 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
            * nela**.
            */
           fases={(() => {
-            const listadas = [
-              ...SEQUENCIA_OFICIAL,
-              ...(correcoesEhRelevante(estado) ? [superficie("correcoes")] : []),
-            ];
+            /** ⚠️ A07 (15ª rodada): no caminho hemorrágico, só as superfícies do caminho ficam na barra. */
+            const doCaminho: readonly string[] = SUPERFICIES_DO_CAMINHO_HEMORRAGICO;
+            const listadas = caminhoHemorragico(estado).ativo
+              ? SEQUENCIA_OFICIAL.filter((s) => doCaminho.includes(s.id))
+              : [
+                ...SEQUENCIA_OFICIAL,
+                ...(correcoesEhRelevante(estado) ? [superficie("correcoes")] : []),
+              ];
             return listadas.some((s) => s.id === estado.superficieVista)
               ? listadas
               : [...listadas, superficie(estado.superficieVista)];
@@ -2560,6 +2585,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onEscolherNaInstancia={escolherNaInstancia}
             onHoraNaInstancia={medirNaInstancia}
             onDesfazerNaInstancia={desfazerNaInstancia}
+            onHora={registrarHora}
+            onDesfazer={desfazer}
+            onDecisaoGlobal={(motivo) => setEstado((e) => registrarDecisaoGlobalDeNaoReperfundir(e, motivo, relogio.agora(), relogio))}
           />
         ) : atual.id === "destino" ? (
           <SuperficieG
@@ -2587,6 +2615,9 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onRegistrarMarcoDeTeleconsulta={(tipo, observado, parecer) =>
               setEstado((e) => registrarMarcoDeTeleconsulta(e, tipo, observado, relogio, parecer))}
             onPioraPorEngano={(fatoId) => setEstado((e) => corrigirPioraPorEngano(e, fatoId, relogio))}
+            onRegistrarMarcoDeNeurocirurgia={(tipo, observado, parecer) =>
+              setEstado((e) => registrarMarcoDeNeurocirurgia(e, tipo, observado, relogio, parecer))}
+            onInterromperInfusao={() => setEstado((e) => registrarInterrupcaoDaInfusao(e, relogio.agora(), relogio))}
           />
         ) : atual.id === "correcoes" ? (
           <SuperficieE
@@ -3021,6 +3052,7 @@ const criarEstilos = (tema: Tema) =>
     /** ⚠️ A forma compacta da prioridade — ⛔ uma linha, ⛔ e tocável inteira. */
     acoesGlobais: { flexDirection: "row", gap: ESPACO.sm },
     suporteAtivo: { ...PAPEL.legenda, color: tema.cores.text, fontWeight: "700" },
+    travaViaOral: { ...PAPEL.legenda, color: tema.cores.critical, fontWeight: "700" },
     oculto: { display: "none" },
     visivel: {},
     avisoModulo: {

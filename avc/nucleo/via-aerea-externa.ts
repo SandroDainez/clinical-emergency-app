@@ -68,7 +68,17 @@ export type LeituraDaViaAerea = {
 
 export type ParteDoSuporte = { readonly rotulo: string; readonly hora?: number; readonly sufixo?: string };
 
-export type MarcaDoExame = "anterior_a_sedacao" | "sob_sedacao" | "sem_referencia" | "sedacao_suspensa";
+export type MarcaDoExame = "anterior_a_sedacao" | "sob_sedacao" | "sem_referencia" | "sedacao_suspensa" | "com_via_aerea_sem_sedacao";
+
+/**
+ * ⚠️ AC-83 (15ª rodada; `nih-nihss-2024.md`, p. 2, item 1b): o intubado que ⛔ fala RECEBE 1 —
+ * ⛔ é UN. ⚠️ Lembrete na tela, ⛔ nunca gravado.
+ */
+export function lembreteNihss1b(estado: EstadoAvc): string | undefined {
+  return leituraDaViaAereaExterna(estado).avancada === "sim"
+    ? "Instrução NIH, item 1b: intubado que não fala recebe 1 (não é não testável)."
+    : undefined;
+}
 
 export type ExameMarcado = {
   readonly fatoId: string;
@@ -137,7 +147,16 @@ export function leituraDaViaAereaExterna(estado: EstadoAvc): LeituraDaViaAerea {
       pendencias.push({ id: `confirmar_${campo}`, rotulo, dono: "estabilizacao", campo, resolvePor: "Registrar a resposta quando for conhecida" });
     }
   }
-  if (valores[CAMPO.avancada] === "sim" && hora === undefined) {
+  /**
+   * ⚠️ AC-82 (15ª rodada): sem horário da via aérea ⛔ há exame basal — ⛔ e isso é dito como
+   * pendência explícita quando existe exame a recuperar (substitui a genérica do horário).
+   */
+  const haExame = estado.fatos.some((f) => f.campo === "nihss_calculado" && typeof f.valor === "number");
+  if (valores[CAMPO.avancada] === "sim" && typeof hora !== "number" && haExame) {
+    const i = pendencias.findIndex((p) => p.id === "confirmar_va_hora");
+    if (i !== -1) pendencias.splice(i, 1);
+    pendencias.push({ id: "recuperar_basal_va_hora", rotulo: "Informe o horário da via aérea para recuperar o exame basal", dono: "estabilizacao", campo: CAMPO.hora, resolvePor: "Registrar o horário observado da via aérea avançada" });
+  } else if (valores[CAMPO.avancada] === "sim" && hora === undefined) {
     pendencias.push({ id: "confirmar_va_hora", rotulo: "Registrar o horário da via aérea avançada", dono: "estabilizacao", campo: CAMPO.hora, resolvePor: "Registrar o horário observado" });
   }
   if (intervencaoDeViaAereaPendente(estado)) {
@@ -166,7 +185,7 @@ const CABECALHO_DO_TIPO: Readonly<Record<string, Cabecalho>> = {
   [TIPO_SUPRAGLOTICO]: { as: "dispositivo supraglótico às", desconhecido: "dispositivo supraglótico · horário desconhecido", naoRegistrado: "dispositivo supraglótico · horário não registrado", sufixo: "(não definitiva)" },
 };
 /** ⚠️ Outra ⛔ ou não sei: avançada, ⛔ e definitiva ⛔ presumida. */
-const CABECALHO_SEM_TIPO: Cabecalho = { as: "via aérea avançada às", desconhecido: "via aérea avançada · horário desconhecido", naoRegistrado: "via aérea avançada · horário não registrado", sufixo: "(tipo não define se é definitiva)" };
+const CABECALHO_SEM_TIPO: Cabecalho = { as: "via aérea avançada às", desconhecido: "via aérea avançada · horário desconhecido", naoRegistrado: "via aérea avançada · horário não registrado", sufixo: "(tipo não determinado)" };
 
 export function suporteAtivo(estado: EstadoAvc): readonly ParteDoSuporte[] {
   const l = leituraDaViaAereaExterna(estado);
@@ -206,10 +225,17 @@ function examesMarcados(estado: EstadoAvc, campo: string): readonly ExameMarcado
     .map((f) => {
       const quando = f.horaClinica ?? f.horaRegistro;
       const suspensa = sedacaoSuspensaDoExame(estado, f.id);
+      /**
+       * ⚠️ AC-83 (15ª rodada): dois confundidores. "Sob sedação" só com sedação = sim ⛔ não sei
+       * (⛔ registrada conta como não sei); com sedação = não, o exame é "com via aérea
+       * avançada, sem sedação" — vale, ⛔ só o item 10 é UN (instrução NIH).
+       */
+      const semSedacao = l.sedacao === "nao";
       const base: MarcaDoExame | undefined =
         l.avancada !== "sim" ? undefined
-          : l.observado === undefined ? "sem_referencia"
-            : quando < l.observado ? "anterior_a_sedacao" : "sob_sedacao";
+          : l.observado !== undefined && quando < l.observado ? "anterior_a_sedacao"
+            : semSedacao ? "com_via_aerea_sem_sedacao"
+              : l.observado === undefined ? "sem_referencia" : "sob_sedacao";
       const confundido = base === "sob_sedacao" || base === "sem_referencia";
       const marca: MarcaDoExame | undefined = confundido && suspensa === "sim" ? "sedacao_suspensa" : base;
       return { fatoId: f.id, total: f.valor as number, quando, marca, sedacaoSuspensa: suspensa, valeParaRegras: !confundido || suspensa === "sim" };

@@ -77,6 +77,7 @@ import { Recolhido } from "./ui";
 import { useTr } from "../../lib/use-tr";
 import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico";
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
+import { DesfechoNegativo } from "./desfecho-negativo";
 
 /**
  * ⚠️⚠️ ⛔ CADA ESTADO TEM A SUA FRASE — ⛔ e ⛔ nenhum deles é *"desabilitado"*.
@@ -170,6 +171,10 @@ type Props = {
   onEscolherNaInstancia: (instancia: string, campo: string, valor: string) => void;
   onHoraNaInstancia: (instancia: string, campo: string, valor: number) => void;
   onDesfazerNaInstancia: (instancia: string, campo: string) => void;
+  /** ⚠️ AC-85 (15ª rodada): desfecho negativo — horário, «Limpar» ⛔ decisão global. */
+  onHora: (campo: string, instante: number, relogio?: string) => void;
+  onDesfazer: (campo: string) => void;
+  onDecisaoGlobal: (motivo: string) => void;
 };
 
 export default function SuperficieF({
@@ -182,6 +187,9 @@ export default function SuperficieF({
   onEscolherNaInstancia,
   onHoraNaInstancia,
   onDesfazerNaInstancia,
+  onHora,
+  onDesfazer,
+  onDecisaoGlobal,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -730,6 +738,16 @@ export default function SuperficieF({
         <Raia titulo={tr("Trombólise")} itens={itens} terapia="ivt" testID="avc-f-raia-ivt" />
         <Raia titulo={tr("Trombectomia")} itens={itens} terapia="evt" testID="avc-f-raia-evt" />
       </View>
+
+      {/* ── AC-85 (15ª rodada): desfecho negativo de IVT ⛔ EVT, com decisão global ─────── */}
+      <DesfechoNegativo
+        estado={estado}
+        agora={agora}
+        onEscolher={onEscolher}
+        onHora={onHora}
+        onDesfazer={onDesfazer}
+        onDecisaoGlobal={onDecisaoGlobal}
+      />
 
       {/**
         * ⚠️⚠️ MEDICAMENTO · DOSE · ADMINISTRAÇÃO SUBIRAM PARA CÁ (PD-37).

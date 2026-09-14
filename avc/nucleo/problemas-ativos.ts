@@ -38,6 +38,8 @@ import { pendenciasDerivadas } from "./derivacoes";
 import { reavaliacaoPendente } from "./deterioracao";
 import { pendenciasDoDestino } from "./transferencia";
 import { leituraDaViaAereaExterna } from "./via-aerea-externa";
+import { pendenciasDoPlano } from "./plano-48h";
+import { caminhoHemorragico } from "./caminho-hemorragico";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
 
@@ -133,6 +135,9 @@ function familiasDePendencia(
     { origem: "derivada", lista: pendenciasDaImagem(estado) },
     /** ⚠️ D ⛔ não possui fatos, ⛔ e possui as próprias pendências (**E-07**). */
     { origem: "derivada", lista: pendenciasDaSeguranca(estado) },
+    /** ⚠️ 15ª rodada: desfecho negativo incompleto (AC-85) ⛔ pendências do caminho hemorrágico (A07). */
+    { origem: "derivada", lista: pendenciasDoPlano(estado) },
+    { origem: "derivada", lista: caminhoHemorragico(estado).pendencias },
     /** ⚠️ E **origina**, ⛔ mas a dona é B — ver `pendenciasOriginadasEmE`. */
     { origem: "derivada", lista: pendenciasOriginadasEmE(estado) },
     { origem: "derivada", lista: pendenciasDoLaboratorio(estado) },

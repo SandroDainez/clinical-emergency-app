@@ -94,6 +94,9 @@ const POR_SUPERFICIE = {
   A_EXTERNA: mod("via-aerea-externa").CAMPOS_DA_VIA_AEREA_EXTERNA,
   /** ⚠️ 14ª rodada (T08): eventos ⛔ registros do plano até 48 h, desenhados na Destino. */
   G_PLANO: mod("plano-48h").CAMPOS_DO_PLANO_48H,
+  /** ⚠️ 15ª rodada: desfecho negativo (Reperfusão) ⛔ caminho hemorrágico (Destino). */
+  F_DESFECHO: mod("plano-48h").CAMPOS_DE_DESFECHO,
+  G_HEMORRAGICO: mod("caminho-hemorragico").CAMPOS_DO_CAMINHO_HEMORRAGICO,
   G: [...SG.FATOS_OPERACIONAIS, ...SG.CAMPOS_ANTITROMBOTICOS, ...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA],
 };
 const TODOS = Object.entries(POR_SUPERFICIE)
@@ -189,7 +192,10 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
     /** ⚠️ 2026-09-13 — transferência ⛔ e teleconsulta, percorridas em G (registro, T07). */
     /** ⚠️ 13ª rodada — percorridos no painel do módulo indisponível. */
     CAMPOS_DA_VIA_AEREA_EXTERNA: mod("via-aerea-externa").CAMPOS_DA_VIA_AEREA_EXTERNA.map((c) => c.id),
-    CAMPOS_DO_PLANO_48H: mod("plano-48h").CAMPOS_DO_PLANO_48H.map((c) => c.id),
+    CAMPOS_DE_EVENTO_DO_PLANO: mod("plano-48h").CAMPOS_DE_EVENTO_DO_PLANO.map((c) => c.id),
+    CAMPOS_DE_RESULTADO_DO_PLANO: mod("plano-48h").CAMPOS_DE_RESULTADO_DO_PLANO.map((c) => c.id),
+    CAMPOS_DE_DESFECHO: mod("plano-48h").CAMPOS_DE_DESFECHO.map((c) => c.id),
+    CAMPOS_DO_CAMINHO_HEMORRAGICO: mod("caminho-hemorragico").CAMPOS_DO_CAMINHO_HEMORRAGICO.map((c) => c.id),
     GRUPOS_DE_REGISTRO_DE_G: [...SG.CAMPOS_DA_TRANSFERENCIA, ...SG.CAMPOS_DA_TELECONSULTA].map((c) => c.id),
   };
   /**

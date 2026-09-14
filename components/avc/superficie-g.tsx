@@ -60,6 +60,7 @@ import { AvisoDeApoioClinico } from "../../design-system/aviso-de-apoio-clinico"
 import { CabecalhoDeBloco, CampoDaSuperficie } from "./campos-clinicos";
 import { MarcosDaTransferencia } from "./marcos-da-transferencia";
 import { PlanoAte48h } from "./plano-48h";
+import { CaminhoHemorragico } from "./caminho-hemorragico";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
@@ -97,6 +98,9 @@ type Props = {
   onRegistrarMarcoDeTeleconsulta: (tipo: string, observado: number, parecer?: { texto: string; autor: string }) => void;
   /** ⚠️ AC-73: correção por engano da piora, sempre disponível no evento da linha do tempo. */
   onPioraPorEngano: (fatoId: string) => void;
+  /** ⚠️ A07 (15ª rodada): marcos da neurocirurgia ⛔ registro da interrupção da infusão. */
+  onRegistrarMarcoDeNeurocirurgia: (tipo: string, observado: number, parecer?: { texto: string; autor: string }) => void;
+  onInterromperInfusao: () => void;
 };
 
 /**
@@ -164,6 +168,8 @@ export default function SuperficieG({
   onMarcoPorEngano,
   onRegistrarMarcoDeTeleconsulta,
   onPioraPorEngano,
+  onRegistrarMarcoDeNeurocirurgia,
+  onInterromperInfusao,
 }: Props) {
   const [enganoDaPiora, setEnganoDaPiora] = useState<string | undefined>(undefined);
   const tr = useTr();
@@ -372,6 +378,18 @@ export default function SuperficieG({
         * ⚠️ Um caminho por evento real; ⛔ o tempo ⛔ libera ⛔ nem conclui; agenda com a próxima
         * reavaliação ⛔ e o aviso de que ⛔ há notificação em segundo plano.
         */}
+      {/** ⚠️ A07 (15ª rodada): o caminho hemorrágico, quando a imagem o abre, vem antes do plano. */}
+      <CaminhoHemorragico
+        estado={estado}
+        agora={agora}
+        onEscolher={onEscolher}
+        onDesfazer={onDesfazer}
+        onAbrirSuperficie={onAbrirSuperficie}
+        onInterromperInfusao={onInterromperInfusao}
+        onRegistrarMarco={onRegistrarMarcoDeNeurocirurgia}
+        onCorrigirHoraDoMarco={onCorrigirHoraDoMarco}
+        onMarcoPorEngano={onMarcoPorEngano}
+      />
       <PlanoAte48h estado={estado} agora={agora} onEscolher={onEscolher} onHora={onHora} onDesfazer={onDesfazer} />
 
       {/* ── 1 · recomendação graduada ──────────────────────────────────── */}

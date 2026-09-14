@@ -87,6 +87,8 @@ type Props = {
   aoInformarTotal?: () => void;
   /** ⚠️ 13ª rodada (A09): itens que a via aérea definitiva torna candidatos a UN — SUGERIDOS, ⛔ nunca gravados. */
   sugestoesNaoTestavel?: readonly string[];
+  /** ⚠️ AC-83 (15ª rodada): lembrete literal da instrução NIH no item 1b — ⛔ nunca gravado. */
+  lembrete1b?: string;
 };
 
 export default function CampoDeEscala({
@@ -100,6 +102,7 @@ export default function CampoDeEscala({
   onDesfazer,
   aoInformarTotal,
   sugestoesNaoTestavel = [],
+  lembrete1b,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -320,6 +323,11 @@ export default function CampoDeEscala({
               {item.help && regrasAbertas.includes(item.id) ? (
                 <Text style={e.itemAjuda} testID={`avc-regra-${item.id}`}>
                   {tr(item.help)}
+                </Text>
+              ) : null}
+              {item.id === "1b" && lembrete1b !== undefined ? (
+                <Text style={e.itemComoAvaliar} testID="avc-escala-lembrete-1b">
+                  {tr(lembrete1b)}
                 </Text>
               ) : null}
               {sugestoesNaoTestavel.includes(item.id) ? (

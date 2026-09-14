@@ -31,6 +31,8 @@ import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import SeletorDeHora from "./seletor-de-hora";
+import { ESTADOS_DA_NEUROCIRURGIA } from "../../avc/conteudo/caminho-hemorragico";
+import { marcosDaNeurocirurgia } from "../../avc/nucleo/transferencia";
 
 type Hora = { readonly instante: number; readonly selecionado: boolean };
 type Parecer = { readonly texto: string; readonly autor: string };
@@ -56,6 +58,17 @@ const CONFIG = {
     rotuloRegistrar: "Registrar marco da teleconsulta",
     prefixo: "avc-g-tele-marco",
   },
+  /** ⚠️ A07 (15ª rodada): neurocirurgia pelo mesmo modelo; parecer exige texto ⛔ autor. */
+  neurocirurgia: {
+    tipos: ESTADOS_DA_NEUROCIRURGIA as readonly string[],
+    titulo: "Marcos da neurocirurgia",
+    nota: "Cada marco entra com os dois horários. O parecer exige texto e autor.",
+    campoTestID: "avc-campo-neuro_marco",
+    lista: "avc-g-neuro-marcos",
+    registrar: "avc-g-registrar-neuro-marco",
+    rotuloRegistrar: "Registrar marco da neurocirurgia",
+    prefixo: "avc-g-neuro-marco",
+  },
 } as const;
 
 function horaCurta(ms: number): string {
@@ -71,7 +84,7 @@ export function MarcosDaTransferencia({
   onCorrigirHora,
   onEngano,
 }: {
-  ator?: "transferencia" | "teleconsulta";
+  ator?: "transferencia" | "teleconsulta" | "neurocirurgia";
   estado: EstadoAvc;
   agora: number;
   onRegistrar: (tipo: string, observado: number, parecer?: Parecer) => void;
@@ -83,7 +96,8 @@ export function MarcosDaTransferencia({
   const cfg = CONFIG[ator];
   const corDoPlaceholder = useEstilosDoTema((tema) => ({ cor: { color: tema.cores.textSecondary } })).cor
     .color as string;
-  const marcos = ator === "teleconsulta" ? marcosDaTeleconsulta(estado) : marcosDaTransferencia(estado);
+  const marcos = ator === "teleconsulta" ? marcosDaTeleconsulta(estado)
+    : ator === "neurocirurgia" ? marcosDaNeurocirurgia(estado) : marcosDaTransferencia(estado);
   const [registrando, setRegistrando] = useState(false);
   const [tipo, setTipo] = useState<string | undefined>(undefined);
   const [horaNova, setHoraNova] = useState<Hora | null>(null);
@@ -91,7 +105,7 @@ export function MarcosDaTransferencia({
   const [corrigindo, setCorrigindo] = useState<{ readonly fatoId: string; readonly hora: Hora } | null>(null);
   const [engano, setEngano] = useState<string | undefined>(undefined);
 
-  const exigeParecer = ator === "teleconsulta" && tipo === PARECER_REGISTRADO;
+  const exigeParecer = (ator === "teleconsulta" || ator === "neurocirurgia") && tipo === PARECER_REGISTRADO;
   const parecerCompleto = parecer.texto.trim() !== "" && parecer.autor.trim() !== "";
   const podeRegistrar = !exigeParecer || parecerCompleto;
 

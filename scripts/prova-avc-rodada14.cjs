@@ -241,7 +241,8 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
 
   const ivt = comIvt(vazio, T0);
   const evt = reg(vazio, "evt_fim", T0, { horaClinica: T0 });
-  const semRep = reg(vazio, "nao_reperfundir_hora", T0, { horaClinica: T0 });
+  /** ⚠️ Ajuste consciente (15ª rodada, AC-85): o evento avulso saiu — sem reperfusão = desfecho negativo de IVT ⛔ de EVT. */
+  const semRep = P.registrarDecisaoGlobalDeNaoReperfundir(vazio, "Decisão da equipe / limitação terapêutica", T0, rel);
   const hem = comEstudo(vazio, T0, "Hemorragia intracraniana identificada");
 
   conf("sem evento real ⛔ há caminho (⛔ plano inventado)", plano(vazio, T0).caminhos.length === 0, `⛔ ${ids(plano(vazio, T0))}`);
@@ -314,7 +315,7 @@ if (P?.planoAte48h !== undefined && CP !== undefined) {
     `⛔ ${JSON.stringify(tv.map((t) => [t.id, t.conteudo]))}`);
   const deg = tv.find((t) => t.id === "degluticao");
   conf("deglutição é TRAVA antes de via oral (retida até a triagem registrada)", deg?.estado === "retida" && /via oral/i.test(deg?.rotulo + deg?.criterioDeConclusao), `⛔ ${JSON.stringify(deg)}`);
-  const degOk = plano(reg(ivt, "plano_degluticao", CAMPO.valorDaOpcao("Realizada")), T0 + MIN).transversais.find((t) => t.id === "degluticao");
+  const degOk = plano(reg(ivt, "plano_degluticao", CAMPO.valorDaOpcao("Aprovada")) /* ⚠️ ajuste consciente (AC-88): resultado, ⛔ "realizada" */, T0 + MIN).transversais.find((t) => t.id === "degluticao");
   conf("… triagem registrada conclui a trava", degOk?.estado === "concluida", `⛔ ${JSON.stringify(degOk)}`);
   rel.definir(T0 + 30 * MIN);
   const gl = I.nomeDaInstancia("glicemia", 1);

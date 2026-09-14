@@ -33,6 +33,8 @@ import type { FatoRegistrado, Pendencia } from "./tipos";
 export const CAMPO_MARCO = "transf_marco";
 /** ⚠️ AC-72 (autor, 2026-09-13): teleconsulta pelo mesmo modelo de marcos. */
 export const CAMPO_TELE_MARCO = "tele_marco";
+/** ⚠️ 15ª rodada (A07): neurocirurgia contatada pelo mesmo modelo de marcos da teleconsulta. */
+export const CAMPO_NEURO_MARCO = "neuro_marco";
 export const PARECER_REGISTRADO = "Parecer registrado";
 export const MOTIVO_HORARIO_CORRIGIDO = "horário corrigido";
 
@@ -140,19 +142,46 @@ export function registrarMarcoDeTeleconsulta(
   relogio: Relogio,
   parecer?: { readonly texto: string; readonly autor: string }
 ): EstadoAvc {
+  return registrarMarcoComParecer(estado, { marco: CAMPO_TELE_MARCO, ...PARECER_DO_CAMPO[CAMPO_TELE_MARCO] }, tipo, observado, relogio, parecer);
+}
+
+/** ⚠️ 15ª rodada (A07): marcos da neurocirurgia — «Parecer registrado» exige texto ⛔ autor. */
+export function registrarMarcoDeNeurocirurgia(
+  estado: EstadoAvc,
+  tipo: string,
+  observado: number,
+  relogio: Relogio,
+  parecer?: { readonly texto: string; readonly autor: string }
+): EstadoAvc {
+  return registrarMarcoComParecer(estado, { marco: CAMPO_NEURO_MARCO, ...PARECER_DO_CAMPO[CAMPO_NEURO_MARCO] }, tipo, observado, relogio, parecer);
+}
+
+const PARECER_DO_CAMPO: Readonly<Record<string, { texto: string; autor: string }>> = {
+  [CAMPO_TELE_MARCO]: { texto: "tele_parecer", autor: "tele_parecer_autor" },
+  [CAMPO_NEURO_MARCO]: { texto: "neuro_parecer", autor: "neuro_parecer_autor" },
+};
+
+function registrarMarcoComParecer(
+  estado: EstadoAvc,
+  campos: { readonly marco: string; readonly texto: string; readonly autor: string },
+  tipo: string,
+  observado: number,
+  relogio: Relogio,
+  parecer?: { readonly texto: string; readonly autor: string }
+): EstadoAvc {
   const ehParecer = tipo === PARECER_REGISTRADO;
   const texto = parecer?.texto.trim() ?? "";
   const autor = parecer?.autor.trim() ?? "";
   if (ehParecer && (texto === "" || autor === "")) return estado;
-  const comMarco = registrarFato(estado, { campo: CAMPO_TELE_MARCO, valor: tipo, horaClinica: observado }, relogio);
+  const comMarco = registrarFato(estado, { campo: campos.marco, valor: tipo, horaClinica: observado }, relogio);
   if (!ehParecer) return comMarco;
   const marcoId = comMarco.fatos[comMarco.fatos.length - 1].id;
-  const comTexto = registrarFato(comMarco, { campo: "tele_parecer", valor: texto, instancia: marcoId }, relogio);
-  return registrarFato(comTexto, { campo: "tele_parecer_autor", valor: autor, instancia: marcoId }, relogio);
+  const comTexto = registrarFato(comMarco, { campo: campos.texto, valor: texto, instancia: marcoId }, relogio);
+  return registrarFato(comTexto, { campo: campos.autor, valor: autor, instancia: marcoId }, relogio);
 }
 
 function marcoVigente(estado: EstadoAvc, fatoId: string): FatoRegistrado | undefined {
-  return [...vigentes(estado, CAMPO_MARCO), ...vigentes(estado, CAMPO_TELE_MARCO)].find((f) => f.id === fatoId);
+  return [...vigentes(estado, CAMPO_MARCO), ...vigentes(estado, CAMPO_TELE_MARCO), ...vigentes(estado, CAMPO_NEURO_MARCO)].find((f) => f.id === fatoId);
 }
 
 export function corrigirHorarioDoMarco(estado: EstadoAvc, fatoId: string, observado: number, relogio: Relogio): EstadoAvc {
@@ -183,11 +212,16 @@ export function marcosDaTeleconsulta(estado: EstadoAvc): readonly MarcoDaTransfe
   return marcosDoCampo(estado, CAMPO_TELE_MARCO);
 }
 
-function parecerDoMarco(estado: EstadoAvc, registroId: string): { texto: string; autor: string } | undefined {
+export function marcosDaNeurocirurgia(estado: EstadoAvc): readonly MarcoDaTransferencia[] {
+  return marcosDoCampo(estado, CAMPO_NEURO_MARCO);
+}
+
+function parecerDoMarco(estado: EstadoAvc, registroId: string, campoDoMarco: string): { texto: string; autor: string } | undefined {
+  const campos = PARECER_DO_CAMPO[campoDoMarco] ?? PARECER_DO_CAMPO[CAMPO_TELE_MARCO];
   const ultimo = (campo: string) =>
     [...estado.fatos].reverse().find((f) => f.campo === campo && f.instancia === registroId && !vazio(f.valor));
-  const texto = ultimo("tele_parecer");
-  const autor = ultimo("tele_parecer_autor");
+  const texto = ultimo(campos.texto);
+  const autor = ultimo(campos.autor);
   return texto === undefined || autor === undefined ? undefined : { texto: String(texto.valor), autor: String(autor.valor) };
 }
 
@@ -203,7 +237,7 @@ function marcosDoCampo(estado: EstadoAvc, campo: string): readonly MarcoDaTransf
         registradoEm: original.horaRegistro,
         horarioCorrigido: f.id !== original.id,
         indiceDoRegistro: ordem(original.id),
-        parecer: f.valor === PARECER_REGISTRADO ? parecerDoMarco(estado, original.id) : undefined,
+        parecer: f.valor === PARECER_REGISTRADO ? parecerDoMarco(estado, original.id, campo) : undefined,
       };
     })
     .sort((a, b) => a.observado - b.observado || a.indiceDoRegistro - b.indiceDoRegistro)

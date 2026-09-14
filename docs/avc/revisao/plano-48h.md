@@ -11,7 +11,7 @@
 - **Origem real.** Cada caminho nasce de um evento registrado, com horário quando conhecido:
   - início da trombólise;
   - fim da trombectomia;
-  - decisão de não reperfundir;
+  - desfechos negativos de trombólise **e** de trombectomia, cada um com motivo e horário (AC-85, 15ª rodada: o evento avulso "decisão de não reperfundir" saiu);
   - hemorragia confirmada em imagem.
 - **Três declarações por tarefa:** evento de origem; prazo ou condição; critério real de conclusão (um fato registrado, nunca a passagem do tempo).
 - **O tempo nunca autoriza.** Terapia dependente de imagem fica retida até o laudo (A15). Com o laudo, a condição fica atendida, mas a decisão é da equipe: o app não libera.
@@ -19,6 +19,15 @@
 - **Cancelamento encerra o caminho.** Isso vale para trombólise cancelada antes do início, horário do evento corrigido e laudo de hemorragia corrigido. As tarefas desse caminho saem da agenda e o encerramento é dito.
 - **Fuso.** Instantes são guardados em milissegundos (UTC). A tela exibe o horário local do aparelho e o intervalo relativo ("em 14 min"). O mesmo registro gera a mesma agenda em qualquer fuso.
 - **Evento sem horário.** O caminho existe, mas nenhum prazo é calculado.
+- **Sem reperfusão (AC-85, 15ª rodada).** O caminho abre só com desfecho negativo de IVT e de EVT, cada um com motivo e horário.
+  - **Motivos:** impedida, sem indicação, indisponível, recusada, decisão da equipe / limitação terapêutica, recusa do paciente ou família.
+  - **Um só registrado:** o caminho não abre, e a pendência nomeia o que falta.
+  - **Decisão global:** registra o mesmo motivo e horário nos dois desfechos com um gesto.
+  - **Trombólise administrada:** o "não prosseguir" não vale.
+- **Resultado das transversais (AC-88, 15ª rodada).**
+  - **Opções:** aprovada · reprovada · não realizada · não sei.
+  - **Trava de via oral:** a deglutição diferente de aprovada mantém «Nada por via oral» no cabeçalho de suporte, enquanto houver caminho aberto.
+- **Relógio da agenda (AC-89, defeito das capturas da 14ª rodada).** A agenda recalcula a cada 30 s com a tela aberta. Intervalos longos são ditos em horas ("em 23 h 59 min").
 
 ## Notificações em segundo plano
 
@@ -46,14 +55,14 @@
 | trombectomia | `evt_monitorizacao` | sem prazo transcrito | conteúdo pendente de validação | F-15 · `LACUNA_POS_EVT` (a fonte não publica tabela equivalente à Table 7) |
 | trombectomia | `evt_reavaliacao` | sem intervalo transcrito; piora antecipa | PA completa e exame neurológico registrados depois do evento | R4; AHA 2026 § a localizar |
 | trombectomia | `evt_antitromboticos` | retida; o tempo não libera | conteúdo pendente de validação | R5; AHA 2026 §4.8 e §4.9 (não incorporados ao caminho da trombectomia) |
-| não reperfundir | `sem_reperfusao_reavaliacao` | sem intervalo transcrito; piora antecipa | PA completa e exame neurológico registrados depois da decisão | R4; AHA 2026 § a localizar |
-| não reperfundir | `sem_reperfusao_pressao` | condição: PA registrada depois da decisão | PA completa registrada depois da decisão | F-05 (conduta pressórica sem reperfusão, já transcrita) |
-| não reperfundir | `sem_reperfusao_antitromboticos` | retida; o tempo não libera | conteúdo pendente de validação | R5; AHA 2026 §4.8 |
+| sem reperfusão | `sem_reperfusao_reavaliacao` | sem intervalo transcrito; piora antecipa | PA completa e exame neurológico registrados depois dos desfechos negativos | R4; AHA 2026 § a localizar |
+| sem reperfusão | `sem_reperfusao_pressao` | condição: PA registrada depois dos desfechos negativos | PA completa registrada depois dos desfechos negativos | F-05 (conduta pressórica sem reperfusão, já transcrita) |
+| sem reperfusão | `sem_reperfusao_antitromboticos` | retida; o tempo não libera | conteúdo pendente de validação | R5; AHA 2026 §4.8 |
 | hemorragia | `hemorragia_caminho_proprio` | condição: caminho próprio da hemorragia | caminho da hemorragia registrado como revisado pela equipe | superfície hemorrágica (AHA/ASA 2022 HIC; AHA/ASA 2023 HSA) |
 | hemorragia | `hemorragia_reavaliacao` | sem intervalo transcrito; piora antecipa | PA completa e exame neurológico registrados depois do evento | AHA/ASA 2022 HIC § a localizar |
 | hemorragia | `hemorragia_antitromboticos` | retida; o tempo não libera | conteúdo pendente de validação | R5; AHA/ASA 2022 HIC § a localizar |
 
-**Fechamento dos caminhos sem horário transcrito.** A trombectomia, a decisão de não reperfundir e a hemorragia não têm intervalo de reavaliação transcrito.
+**Fechamento dos caminhos sem horário transcrito.** A trombectomia, o caminho sem reperfusão e a hemorragia não têm intervalo de reavaliação transcrito.
 - A agenda desses caminhos diz "sem intervalo transcrito — a equipe define".
 - O app não copia os intervalos da Table 7 para eles.
 
@@ -63,8 +72,10 @@ Todas nascem do primeiro evento real registrado e ficam como "conteúdo pendente
 
 ### `degluticao`
 - **Tarefa:** triagem de deglutição antes de via oral. É **trava**: via oral retida até a triagem ser registrada como realizada.
-- **Critério de conclusão:** campo "Triagem de deglutição" = Realizada.
-- **Limite:** o resultado da triagem não é modelado; conteúdo pendente.
+- **Critério de conclusão:** resultado "Aprovada" no campo "Triagem de deglutição — resultado".
+- **Resultado (AC-88, 15ª rodada):** aprovada · reprovada · não realizada · não sei.
+  - Reprovada, não realizada, não sei ou sem registro mantêm «Nada por via oral» no cabeçalho de suporte, enquanto houver caminho aberto.
+  - O conteúdo de como fazer a triagem segue pendente; o resultado é dado do médico.
 - **Fontes:**
   - **R6:** *Inpatient Prevention and Management of Complications* (disfagia). Não transcrita.
   - **R4:** *Acute Stroke Unit Care*. Não transcrita.
@@ -86,14 +97,14 @@ Todas nascem do primeiro evento real registrado e ficam como "conteúdo pendente
 
 ### `mobilizacao`
 - **Tarefa:** mobilização.
-- **Critério de conclusão:** campo "Mobilização avaliada pela equipe" = Avaliada.
+- **Critério de conclusão:** resultado registrado, aprovada ou reprovada ("Mobilização — resultado"). Não realizada e não sei não concluem.
 - **Fontes:**
   - **R6** e **R4:** não transcritas.
   - **AHA 2026:** § a localizar. Zero ocorrências de "mobiliz" na transcrição atual.
 
 ### `tev`
 - **Tarefa:** prevenção de tromboembolismo venoso.
-- **Critério de conclusão:** campo "Prevenção de TEV avaliada pela equipe" = Avaliada.
+- **Critério de conclusão:** resultado registrado, aprovada ou reprovada ("Prevenção de TEV — resultado"). Não realizada e não sei não concluem.
 - **Fontes:**
   - **R6** e **R5:** não transcritas.
   - **AHA 2026:** § a localizar. Não há ocorrência pertinente de "venous thromb" nem de "pneumatic" na transcrição atual.
@@ -101,7 +112,7 @@ Todas nascem do primeiro evento real registrado e ficam como "conteúdo pendente
 
 ### `dispositivos`
 - **Tarefa:** dispositivos (sondas e cateteres).
-- **Critério de conclusão:** campo "Dispositivos revisados pela equipe" = Revisados.
+- **Critério de conclusão:** resultado registrado, aprovada ou reprovada ("Dispositivos — resultado"). Não realizada e não sei não concluem.
 - **Fontes:**
   - **R6:** não transcrita.
   - **AHA 2026:** Table 7, p. e358 (F-15, transcrito): adiar sonda nasogástrica, sonda vesical de demora e cateter arterial se o paciente puder ser manejado com segurança sem eles. O plano não repete o conteúdo como ordem.
@@ -109,9 +120,10 @@ Todas nascem do primeiro evento real registrado e ficam como "conteúdo pendente
 ## Pendências para o autor
 
 - **R4, R5, R6:** trazer os documentos ao repositório e transcrever.
-- **AHA 2026 — seções a localizar no PDF:** deglutição, mobilização, TEV, reavaliação após trombectomia e após decisão de não reperfundir.
+- **AHA 2026 — seções a localizar no PDF:** deglutição, mobilização, TEV, reavaliação após trombectomia e no caminho sem reperfusão.
 - **Registros novos (estrutura, a confirmar):**
-  - «Fim da trombectomia» e «Decisão de não reperfundir», como horários da equipe;
-  - os quatro registros das transversais;
+  - «Fim da trombectomia», como horário da equipe;
+  - desfechos negativos de IVT e de EVT (motivo e horário), com decisão global (15ª rodada);
+  - os resultados das quatro transversais (15ª rodada);
   - «Caminho da hemorragia revisado».
   - Antes desta rodada, o app não tinha evento de fim de trombectomia, e "não prosseguir" existia só para trombólise, sem horário.

@@ -135,7 +135,13 @@ test.describe("AVC · 14ª rodada · via aérea avançada, sedação ⛔ plano a
     await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText("sem intervalo transcrito");
     const textoEvt = await evt.innerText();
 
-    await informarHora(page, "nao_reperfundir_hora");
+    /** ⚠️ Ajuste consciente (15ª rodada, AC-85): sem reperfusão abre pelos dois desfechos — aqui, a decisão global. */
+    await page.getByTestId("avc-aba-reperfusao").click();
+    await page.getByTestId("avc-f-decisao-global").scrollIntoViewIfNeeded();
+    await page.getByTestId("avc-f-decisao-global").click();
+    await page.getByTestId("avc-f-decisao-global-motivo-Decisão da equipe / limitação terapêutica").click();
+    await page.getByTestId("avc-f-decisao-global-agora").click();
+    await page.getByTestId("avc-aba-destino").click();
     const semRep = page.getByTestId("avc-plano-caminho-sem_reperfusao");
     await expect(semRep).toBeVisible();
     expect(await semRep.innerText()).not.toBe(textoEvt);

@@ -142,7 +142,16 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
    * plano; ⛔ nenhum portão, veredito ⛔ ou dose.
    */
   evt_fim: ["plano-48h.ts"],
-  nao_reperfundir_hora: ["plano-48h.ts"],
+  /** ⚠️ AC-85 (15ª rodada): desfechos negativos de IVT ⛔ EVT — abrem o caminho sem reperfusão. */
+  ivt_nao_prosseguir_motivo: ["plano-48h.ts"],
+  ivt_nao_prosseguir_hora: ["plano-48h.ts"],
+  evt_desfecho_motivo: ["plano-48h.ts"],
+  evt_desfecho_hora: ["plano-48h.ts"],
+  /** ⚠️ A07 (15ª rodada): estado do caminho hemorrágico ⛔ marcos da neurocirurgia. */
+  hem_tipo: ["caminho-hemorragico.ts"],
+  neuro_marco: ["transferencia.ts"],
+  neuro_parecer: ["transferencia.ts"],
+  neuro_parecer_autor: ["transferencia.ts"],
   plano_degluticao: ["plano-48h.ts"],
   plano_mobilizacao: ["plano-48h.ts"],
   plano_tev: ["plano-48h.ts"],
@@ -242,7 +251,7 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   hipodensidade_clara: ["derivacoes-c.ts"],
 
   /** ⚠️ Os antecedentes que a segurança interpreta (**F-07**, **F-30**). */
-  anticoagulante_em_uso: ["derivacoes-d.ts"],
+  anticoagulante_em_uso: ["derivacoes-d.ts", "caminho-hemorragico.ts"],
   antiagregante_em_uso: ["derivacoes-d.ts"],
   doac_ultima_dose: ["derivacoes-d.ts"],
   informacao_previa_cmb: ["derivacoes-d.ts"],

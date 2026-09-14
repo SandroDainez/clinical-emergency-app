@@ -1,18 +1,27 @@
 /**
- * PLANO ATÉ 48 H — AGENDA NA TELA (T08, C08; autor, 2026-09-13, 14ª rodada).
+ * PLANO ATÉ 48 H — AGENDA NA TELA (T08, C08; autor, 2026-09-13, 14ª ⛔ 15ª rodadas).
  *
  * ⚠️ Esta camada só desenha `planoAte48h` (núcleo). ⛔ Nenhum prazo é calculado aqui.
- * ⚠️ "Próxima reavaliação" com horário local ⛔ e intervalo relativo; atraso ⛔ e antecipação
- * por piora ditos em palavra.
+ * ⚠️ "Próxima reavaliação" com horário local ⛔ e intervalo relativo em horas ⛔ minutos; atraso ⛔
+ * antecipação por piora ditos em palavra.
+ * ⚠️ 15ª rodada (capturas da 14ª): o relógio da agenda anda com a tela parada (AC-89, defeito);
+ * o evento de origem é dito uma vez, no título do caminho; os eventos ficam no topo ⛔ o resultado
+ * de cada tarefa, na própria tarefa.
  * ⛔ Notificação em segundo plano ⛔ é presumida: o bloco diz que nada avisa com a tela fechada.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { CAMPOS_DO_PLANO_48H, TITULO_DO_CAMINHO } from "../../avc/conteudo/plano-48h";
+import {
+  CAMPOS_DE_EVENTO_DO_PLANO,
+  CAMPOS_DE_RESULTADO_DO_PLANO,
+  TAREFA_DO_RESULTADO,
+  TITULO_DO_CAMINHO,
+} from "../../avc/conteudo/plano-48h";
+import type { Campo } from "../../avc/conteudo/campo";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
-import { planoAte48h, type EstadoDaTarefa, type QuandoDaTarefa, type TarefaDoPlano } from "../../avc/nucleo/plano-48h";
+import { planoAte48h, textoDoIntervalo, type EstadoDaTarefa, type QuandoDaTarefa, type TarefaDoPlano } from "../../avc/nucleo/plano-48h";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO } from "../../design-system/tokens";
@@ -32,10 +41,13 @@ const ROTULO_DO_ESTADO: Readonly<Record<EstadoDaTarefa, string>> = {
 const ROTULO_DO_QUANDO: Readonly<Record<QuandoDaTarefa["tipo"], string>> = {
   prazo: "prazo",
   periodica: "próxima",
-  condicao: "condição",
+  condicao: "depende de registro",
   sem_prazo_transcrito: "sem prazo transcrito",
   sem_horario_de_origem: "sem horário do evento — nenhum prazo calculado",
 };
+
+/** ⚠️ AC-89 (defeito, 15ª rodada): "em 14 min" ⛔ pode ficar parado numa tela aberta. */
+const PASSO_DO_RELOGIO_MS = 30_000;
 
 export function PlanoAte48h({
   estado,
@@ -52,13 +64,43 @@ export function PlanoAte48h({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
-  const plano = useMemo(() => planoAte48h(estado, agora), [estado, agora]);
+  const [agoraVivo, setAgoraVivo] = useState(agora);
+  useEffect(() => {
+    setAgoraVivo(agora);
+    const id = setInterval(() => setAgoraVivo(Date.now()), PASSO_DO_RELOGIO_MS);
+    return () => clearInterval(id);
+  }, [agora]);
+  const plano = useMemo(() => planoAte48h(estado, agoraVivo), [estado, agoraVivo]);
+  const resultadoPorTarefa = useMemo(
+    () => new Map<string, Campo>(CAMPOS_DE_RESULTADO_DO_PLANO.map((c) => [TAREFA_DO_RESULTADO[c.id], c])),
+    []
+  );
 
   const relativo = (instante: number) => {
-    const min = Math.round((instante - agora) / 60_000);
-    return min >= 0 ? `(${tr("em")} ${min} min)` : `· ${tr("atrasada há")} ${-min} min`;
+    const min = Math.round((instante - agoraVivo) / 60_000);
+    return min >= 0 ? `(${tr("em")} ${textoDoIntervalo(min)})` : `· ${tr("atrasada há")} ${textoDoIntervalo(-min)}`;
   };
-  const hora = (instante: number) => horaDeExibicao(instante, agora);
+  const hora = (instante: number) => horaDeExibicao(instante, agoraVivo);
+
+  const campo = (c: Campo) => {
+    const valor = valorAtual(estado, c.id)?.valor;
+    return (
+      <CampoDaSuperficie
+        key={c.id}
+        campo={c}
+        casaAtual="destino"
+        bruto={String(valor ?? "")}
+        numero={typeof valor === "number" ? valor : undefined}
+        agora={agoraVivo}
+        detalheAberto={false}
+        onAlternarDetalhe={() => undefined}
+        onEscolher={onEscolher}
+        onMedir={() => undefined}
+        onHora={onHora}
+        onDesfazer={onDesfazer}
+      />
+    );
+  };
 
   const p = plano.proximaReavaliacao;
   const textoDaProxima =
@@ -67,24 +109,24 @@ export function PlanoAte48h({
         : p.tipo === "horario" ? `${hora(p.instante)} ${relativo(p.instante)}`
           : tr("sem intervalo transcrito para este caminho — a equipe define");
 
-  const linhaDaTarefa = (t: TarefaDoPlano) => (
-    <View key={t.id} style={e.tarefa} testID={`avc-plano-tarefa-${t.id}`}>
-      <Text style={e.tarefaTitulo}>{tr(t.rotulo)}</Text>
-      <Text style={e.linha}>
-        {tr(ROTULO_DO_ESTADO[t.estado])}
-        {t.conteudo === "pendente_de_validacao" && t.estado !== "conteudo_pendente" ? ` · ${tr("conteúdo pendente de validação")}` : ""}
-        {" · "}
-        {tr(ROTULO_DO_QUANDO[t.quando.tipo])}
-        {t.quando.instante !== undefined ? ` ${hora(t.quando.instante)} ${relativo(t.quando.instante)}` : ""}
-      </Text>
-      <Text style={e.detalhe}>
-        {tr("Evento de origem")}: {tr(t.eventoDeOrigem)} · {tr("Conclusão")}: {tr(t.criterioDeConclusao)}
-      </Text>
-      <Text style={e.detalhe}>
-        {tr("Fonte")}: {tr(t.fonte)}
-      </Text>
-    </View>
-  );
+  const linhaDaTarefa = (t: TarefaDoPlano) => {
+    const campoDoResultado = resultadoPorTarefa.get(t.id);
+    return (
+      <View key={t.id} style={e.tarefa} testID={`avc-plano-tarefa-${t.id}`}>
+        <Text style={e.tarefaTitulo}>{tr(t.rotulo)}</Text>
+        <Text style={e.linha}>
+          {tr(ROTULO_DO_ESTADO[t.estado])}
+          {t.resultado !== undefined ? ` · ${tr("resultado")}: ${tr(t.resultado)}` : ""}
+          {t.conteudo === "pendente_de_validacao" && t.estado !== "conteudo_pendente" ? ` · ${tr("conteúdo pendente de validação")}` : ""}
+          {t.quando.instante !== undefined ? ` · ${tr(ROTULO_DO_QUANDO[t.quando.tipo])} ${hora(t.quando.instante)} ${relativo(t.quando.instante)}` : ""}
+        </Text>
+        <Text style={e.detalhe}>
+          {tr("Conclusão")}: {tr(t.criterioDeConclusao)} · {tr("Fonte")}: {tr(t.fonte)}
+        </Text>
+        {campoDoResultado !== undefined ? campo(campoDoResultado) : null}
+      </View>
+    );
+  };
 
   return (
     <View style={e.raiz} testID="avc-plano-48h">
@@ -99,9 +141,18 @@ export function PlanoAte48h({
         {tr("Sem aviso em segundo plano: com a tela fechada, nada avisa que uma reavaliação venceu. Consulte esta agenda.")}
       </Text>
 
+      {plano.pendencias.map((x) => (
+        <Text key={x.id} style={e.pendencia} testID={`avc-plano-pendencia-${x.id}`}>
+          {tr(x.rotulo)}
+        </Text>
+      ))}
+
+      {/** ⚠️ Os eventos que abrem caminho, no topo — ⛔ a telas de distância das tarefas. */}
+      {CAMPOS_DE_EVENTO_DO_PLANO.map(campo)}
+
       {plano.caminhos.length === 0 ? (
         <Text style={e.linha} testID="avc-plano-sem-evento">
-          {tr("Nenhum evento registrado abre o plano: início da trombólise, fim da trombectomia, decisão de não reperfundir ou hemorragia confirmada em imagem.")}
+          {tr("Nenhum evento registrado abre o plano: início da trombólise, fim da trombectomia, desfechos negativos de trombólise e trombectomia ou hemorragia confirmada em imagem.")}
         </Text>
       ) : (
         <View style={e.agenda} testID="avc-plano-agenda">
@@ -141,27 +192,6 @@ export function PlanoAte48h({
           {plano.transversais.map(linhaDaTarefa)}
         </View>
       ) : null}
-
-      {/** ⚠️ Os eventos ⛔ os registros que concluem tarefas — registro da equipe. */}
-      {CAMPOS_DO_PLANO_48H.map((campo) => {
-        const valor = valorAtual(estado, campo.id)?.valor;
-        return (
-          <CampoDaSuperficie
-            key={campo.id}
-            campo={campo}
-            casaAtual="destino"
-            bruto={String(valor ?? "")}
-            numero={typeof valor === "number" ? valor : undefined}
-            agora={agora}
-            detalheAberto={false}
-            onAlternarDetalhe={() => undefined}
-            onEscolher={onEscolher}
-            onMedir={() => undefined}
-            onHora={onHora}
-            onDesfazer={onDesfazer}
-          />
-        );
-      })}
     </View>
   );
 }
@@ -172,10 +202,11 @@ function criarEstilos(tema: Tema) {
     proxima: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "700" },
     linha: { ...PAPEL.textoPrincipal, color: tema.cores.text },
     detalhe: { ...PAPEL.legenda, color: tema.cores.textSecondary },
+    pendencia: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "700" },
     agenda: { gap: ESPACO.xs },
     caminho: { gap: ESPACO.xs, paddingTop: ESPACO.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: tema.cores.border },
     caminhoTitulo: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "700" },
-    tarefa: { gap: 2 },
+    tarefa: { gap: 2, paddingTop: ESPACO.xs },
     tarefaTitulo: { ...PAPEL.textoPrincipal, color: tema.cores.text, fontWeight: "600" },
   });
 }
