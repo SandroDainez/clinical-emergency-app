@@ -5,7 +5,7 @@
 > ⛔ nenhum script reescreve arquivo de seção (`scripts/prova-auditoria-append-only.cjs`, no `test:all`).
 > Referências antigas a "`auditoria-vs-spec.md` §7.x" apontam para o arquivo `7.xx-*.md` correspondente.
 
-**Seções:** 28 · **linhas:** 2046
+**Seções:** 29 · **linhas:** 2189
 
 - [Auditoria do AVC existente contra a especificação (PDF v1.1)](auditoria/0-introducao.md)
 - [1. Achados ordenados por gravidade](auditoria/1-achados.md)
@@ -35,3 +35,4 @@
   - [7.18 · 13ª rodada de 2026-09-13 · contrato de navegação com destinos indisponíveis (C05), via aérea como conduta externa (A09) e "Sem essa informação" por marco (A04) · commits `4c110d3` (decisão) e `16b92ac` (código)](auditoria/7.18-rodada-13.md)
   - [7.19 · 14ª rodada de 2026-09-13 · via aérea avançada (AC-76), NIHSS sob sedação como contexto (AC-77), marca no Glasgow (AC-78), A04 com os dois caminhos, leve ≠ incapacitante e plano até 48 h (T08, C08) · commits `1583de4` (decisão) e `3069500` (código)](auditoria/7.19-rodada-14.md)
   - [7.20 · 15ª rodada de 2026-09-13 · capturas antes da entrega, AC-81/82/83/85/88, defeitos das capturas da 14ª rodada e caminho hemorrágico (A07) · commits `24992c2` e `62ba140` (decisões), `ebc736f` (código), `fe95af0` e `e775061` (correções pelo `test:all`)](auditoria/7.20-rodada-15.md)
+  - [7.21 · 16ª rodada de 2026-09-13 · regressão de procedência em todas as superfícies, AC-95/98/91/92 e textos · commits `df627c6` (decisões) e `e680ec0` (código)](auditoria/7.21-rodada-16.md)
