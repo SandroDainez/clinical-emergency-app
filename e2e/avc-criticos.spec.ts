@@ -116,13 +116,17 @@ test.describe("AVC · críticos — o gesto real", () => {
     await page.getByTestId("avc-num-caixa-aspects").fill("8");
     await page.getByTestId("avc-num-caixa-aspects").blur();
 
-    await aba(page, "reperfusao");
-    await expect(page.getByTestId("avc-f-portao-estado-bloqueado_seguranca")).toBeVisible();
-    await expect(page.getByTestId("avc-f-evt-classe-hemorragia_presente")).toBeVisible();
+    /**
+     * ⚠️ Ajuste consciente (15ª rodada, A07, decisão do autor): a hemorragia na imagem abre o caminho
+     * hemorrágico, que tira a Reperfusão da barra ⛔ e diz o bloqueio da IVT ⛔ da EVT com motivo. ⚠️ A
+     * classe retida da EVT segue medida no núcleo (`prova-avc-criticos`, bloco 5); ⛔ aqui mede-se a tela.
+     */
+    await expect(page.getByTestId("avc-aba-reperfusao"), "⛔ Reperfusão na barra do caminho hemorrágico").toHaveCount(0);
+    await aba(page, "destino");
+    await expect(page.getByTestId("avc-hem-bloqueio")).toContainText(/Trombólise e trombectomia isquêmicas bloqueadas/);
     await expect(page.getByTestId("avc-f-evt-sem-esperar")).toHaveCount(0);
-    await expect(page.getByTestId("avc-f-evt")).toContainText(/Reperfusão retida pela imagem/);
     /** ⚠️ ⛔ E a palavra proibida ⛔ não aparece. */
-    await expect(page.getByTestId("avc-superficie-f-conteudo")).not.toContainText(/contraindicad/i);
+    await expect(page.getByTestId("avc-hem-caminho")).not.toContainText(/contraindicad/i);
   });
 
   /* ══ AVC-04 · COLETAS DISCORDANTES ⛔ NÃO LIBERAM ═════════════════════ */
