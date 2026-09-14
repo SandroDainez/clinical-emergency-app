@@ -201,7 +201,9 @@ test.describe("AVC · Fase 10 — antitrombóticos pós-IVT", () => {
        */
       const noventa = page.getByTestId("avc-g-antitrombotico-aspirina-iv");
       await expect(noventa).toBeVisible();
-      await expect(noventa).toContainText("COR 3: Harm");
+      /** ⚠️ Ajuste consciente (17ª rodada, AC-108): "COR 3 (Potencialmente danoso)" — a direção traduzida, ⛔ o inglês. */
+      await expect(noventa).toContainText("COR 3 (Potencialmente danoso)");
+      await expect(noventa, "⛔ inglês visível (AC-108)").not.toContainText("Harm");
       await expect(noventa).toContainText("LOE B-R");
       await expect(noventa).toContainText(/90 minutos/);
       /** ⚠️⚠️ ⛔ **IV**, ⛔ e ⛔ não a aspirina oral — ⛔ a fonte é específica. */

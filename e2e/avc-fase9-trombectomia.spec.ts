@@ -335,9 +335,13 @@ test.describe("AVC · Fase 9 — veredito da trombectomia", () => {
        */
       const raia = page.getByTestId("avc-f-evt");
       await expect(raia)
-        .toContainText(/EVT não recomendada para melhorar desfecho — No Benefit/);
+        .toContainText(/EVT não recomendada para melhorar desfecho — sem benefício/);
+      /** ⚠️ Ajuste consciente (17ª rodada, AC-108): a direção da classe 3 traduzida; o verbo em inglês mora no ⓘ. */
       await expect(page.getByTestId("avc-f-evt-motivo-evt_m2_nao_dominante"))
-        .toContainText("COR 3: No Benefit");
+        .toContainText("COR 3");
+      await expect(page.getByTestId("avc-f-evt-motivo-evt_m2_nao_dominante"))
+        .toContainText("Sem benefício");
+      await expect(raia, "⛔ inglês visível (AC-108)").not.toContainText("No Benefit");
       await expect(page.getByTestId("avc-f-evt-motivo-evt_m2_nao_dominante"))
         .toContainText("LOE A");
       await expect(raia).not.toContainText(/contraindicad/i);

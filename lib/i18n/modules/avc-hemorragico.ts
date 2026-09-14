@@ -433,9 +433,9 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "EVT pode ser razoável": "La TEV puede ser razonable",
   "Efetividade da EVT não bem estabelecida":
     "Efectividad de la TEV no bien establecida",
-  /** ⚠️⚠️ *"No Benefit"* ⛔ não se traduz — ⛔ é o rótulo de COR da fonte. */
-  "EVT não recomendada para melhorar desfecho — No Benefit":
-    "TEV no recomendada para mejorar el desenlace — No Benefit",
+  /** ⚠️ 17ª rodada (AC-108): a direção da classe 3 traduzida; o rótulo em inglês da fonte mora no ⓘ. */
+  "EVT não recomendada para melhorar desfecho — sem benefício":
+    "TEV no recomendada para mejorar el desenlace — sin beneficio",
   "Nenhum critério implementado fecha este caso":
     "Ningún criterio implementado cierra este caso",
   /** ⚠️⚠️ ⛔ *"⛔ não é exclusão"* ⛔ precisa sobreviver à tradução (**E-45**). */

@@ -445,7 +445,7 @@ export const SELO_DO_VEREDITO_EVT: Readonly<
   /** ⚠️⚠️ *"para melhorar desfecho"* ⛔ é da frase da fonte, ⛔ e delimita o que ⛔ não se espera. */
   nao_recomendada_sem_beneficio: {
     simbolo: "✕",
-    rotulo: "EVT não recomendada para melhorar desfecho — No Benefit",
+    rotulo: "EVT não recomendada para melhorar desfecho — sem benefício",
   },
   incompleta: { simbolo: "?", rotulo: "Faltam dados para concluir" },
   sem_criterios: { simbolo: "—", rotulo: "Nenhum critério implementado fecha este caso" },

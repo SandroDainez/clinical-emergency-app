@@ -1192,7 +1192,7 @@ const M2D = "M2 dominante da artéria cerebral média";
   conf(
     "⚠️⚠️ ⛔ e o selo continua dizendo *«⛔ não recomendada para melhorar desfecho — No Benefit»*",
     A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.rotulo
-      === "EVT não recomendada para melhorar desfecho — No Benefit",
+      === "EVT não recomendada para melhorar desfecho — sem benefício",
     `⛔ "${A3.SELO_DO_VEREDITO_EVT.nao_recomendada_sem_beneficio.rotulo}"`
   );
   const r8 = evt.find((r) => r.id === "evt_m2_nao_dominante");
