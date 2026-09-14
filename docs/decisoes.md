@@ -594,6 +594,30 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Idiomas:** PT/ES. **Autoriza implementação:** sim (15ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
 
+### 15ª rodada · respostas do autor a duas perguntas de implementação (13/09/2026)
+
+**AC-83 — a instrução do autor acima foi revogada pela fonte.**
+- **Conflito:** a instrução NIH transcrita (`nih-nihss-2024.md`, p. 2, item 1b) diz que o intubado que não fala recebe 1. O UN por intubação existe só no item 10.
+- **Decisão, com via aérea avançada e sem sedação:**
+  - item 10: não testável (UN, com justificativa);
+  - item 1b: pontuado pelo médico, com lembrete literal da instrução NIH na tela ("intubado que não fala recebe 1");
+  - itens 1a e 1c: pontuados normalmente;
+  - restante do exame: válido para as regras.
+- **Soma:** segue a D-PEND-13 (UN = limite inferior) apenas pelo item 10.
+- **O que se revoga:** a frase "itens 1b e 10 não testáveis", registrada acima nesta seção.
+- **Prova vermelha (intubado sem sedação):**
+  - 1b = 1 aceito;
+  - 1b = UN rejeitado;
+  - 10 = UN aceito.
+
+**AC-85 — substituir pela regra.**
+- O evento avulso "Decisão de não reperfundir" sai.
+- O caminho sem reperfusão abre só com desfecho negativo de IVT ("Não prosseguir" + motivo + horário) **e** de EVT (motivo + horário). Com um dos dois pendente, a pendência nomeia qual.
+- Os motivos de EVT incluem "decisão da equipe / limitação terapêutica" e "recusa do paciente ou família". Assim a decisão global se registra nos dois desfechos com um gesto, sem pular a avaliação.
+- **Provas vermelhas:**
+  - IVT negativa com EVT pendente não abre o caminho;
+  - a decisão global registra os dois desfechos e abre.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
