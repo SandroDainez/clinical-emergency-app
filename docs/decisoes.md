@@ -682,6 +682,46 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Idiomas:** PT/ES. **Autoriza implementação:** sim (16ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
 
+## Decisões da 17ª rodada (2026-09-14) · AC-106 a AC-111: vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, um nome para a HIC, declaração da equipe
+
+**Autor:** Sandro Dainez, revisão das capturas da 16ª rodada.
+
+**Capturas da 16ª rodada — revisadas pelo autor:**
+- **Aprovados:** a Entrega 1 funcionou (os cards mostram conduta e o ⓘ carrega conclusão e fonte); o AC-95 ficou coerente (o catálogo HIC mostra o que tem COR/LOE e população e marca o resto como pendente nos dois lugares).
+
+**AC-106 (alta) — vocabulário de resultado por transversal.**
+- **Achado:** "Aprovada/Reprovada" foi aplicado a Mobilização. O vocabulário nasceu para a triagem de deglutição e generalizou para as outras transversais. Reaproveitá-lo produz registro sem significado, e a trava de via oral depende de "reprovada" significar algo.
+- **Deglutição:** mantém aprovada · reprovada · não realizada · não sei.
+- **Mobilização:** realizada · não realizada · contraindicada no momento · não sei.
+- **Demais transversais:** o agente propõe o vocabulário próprio e registra; nenhuma herda o da deglutição.
+- **Trava de via oral:** continua ligada só ao resultado da deglutição.
+
+**AC-107 (alta) — item pendente sempre com nome.**
+- **Achado:** na aba HIC, dois cartões consecutivos dizem só "conteúdo pendente de validação", sem título. Pendente sem nome não é informação, é ruído.
+- **Regra:** todo item pendente exibe o tema e, quando houver, a população (exemplo do autor: "Alvo pressórico · HIC grave — pendente").
+- **Proibido:** cartão cujo texto visível seja apenas "conteúdo pendente de validação". Trava genérica.
+
+**AC-108 — nenhum trecho em inglês no texto visível.**
+- **Achado:** "Unidade de AVC organizada… is recommended". Escapa da trava de i18n porque é conteúdo, não chave.
+- **Regra:** nenhum trecho em inglês no texto visível em pt-BR (nem em es). O verbatim da fonte fica só no ⓘ; a tela mostra a força traduzida.
+- **Trava:** a de idioma passa a cobrir conteúdo, não só chaves.
+
+**AC-109 — motivos de "não prosseguir" por terapia.**
+- **Achado:** "Centro de referência recusou" aparece na lista da trombólise. A trombólise se faz na própria casa; recusa de centro é motivo de EVT/transferência.
+- **Regra:** a lista é por terapia; "Centro de referência recusou" e "Indisponível" só na trombectomia.
+
+**AC-110 — um único nome para o caminho.**
+- **Achado:** o cabeçalho diz "Hemorragia intracraniana" e a aba diz "AVC hemorrágico (HIC)".
+- **Regra:** "Hemorragia intracraniana (HIC)" no cabeçalho, na aba e na síntese.
+
+**AC-111 — o marco de revisão é declaração.**
+- **Achado:** "Caminho da hemorragia revisado pela equipe · Revisado/Não revisado" registra uma declaração, não o conteúdo.
+- **Regra:** o rótulo explicita que é declaração da equipe ("a equipe declara ter revisado"), senão vira caixinha marcada.
+
+**Observação do autor sobre o ritmo:** ele para de recomendar novas rodadas hoje. São 16 desde ontem, e o que trava não é o código: são a errata, a Table 8, a bula e R4–R6. Enquanto esses PDFs não entram, cada rodada acrescenta mais "§ a localizar".
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (17ª rodada). Todos com prova vermelha antes; `test:all` completo; push só verde; docs append-only; capturas depois; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
