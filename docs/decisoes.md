@@ -534,6 +534,66 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 **Idiomas:** PT/ES. **Autoriza implementação:** sim (14ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
 
+## Decisões da 15ª rodada (2026-09-13) · capturas antes de entregar, AC-85 parcial, AC-81/82 confirmados, AC-83 não confirmado, AC-88 como trava, caminho hemorrágico (A07)
+
+**Autor:** Sandro Dainez, 13/09/2026.
+
+**Observação sobre revisão:**
+- Sem capturas, a rodada não está revisada. A agenda de 48 h e o cabeçalho por tipo de via aérea são o tipo de coisa que já surpreendeu na tela com testes verdes.
+- Capturas antes de qualquer outra entrega.
+
+**AC-85 — confirmado em parte:**
+- Os dois eventos com horário registrado pela equipe (fim da trombectomia, decisão de não reperfundir) ficam.
+- "Não prosseguir" na trombólise, sem horário, não abrir o caminho sem reperfusão é um problema: é o caminho mais frequente no Brasil e nunca abriria.
+- **Regra:**
+  - "Não prosseguir" ganha horário observado.
+  - O caminho "sem reperfusão" abre quando IVT e EVT têm, **ambos**, desfecho final negativo registrado (impedida, sem indicação, indisponível ou recusada), cada um com horário.
+  - Enquanto um dos dois estiver pendente, o caminho não abre, e a pendência diz qual falta.
+
+**AC-81 — confirmado:** «Outra» ou «Não sei» → definitiva não determinada; cabeçalho "via aérea avançada às HH:MM (tipo não determinado)".
+
+**AC-82 — confirmado, com pendência:** sem horário da via aérea nenhum exame é basal. Isso gera pendência explícita "informe o horário da via aérea para recuperar o exame basal", e não só silêncio.
+
+**AC-83 — não confirmado. São dois confundidores diferentes:**
+- **Sedação em curso = não:** o exame não é "sob sedação". É "com via aérea avançada, sem sedação":
+  - os itens 1b e 10 ficam não testáveis;
+  - o restante vale.
+- **"Sob sedação"** (contexto, não critério): só quando sedação = sim ou não sei.
+
+**AC-88 — corrigir agora (trava de segurança):**
+- Triagem de deglutição "feita", sem resultado, não serve.
+- As tarefas transversais registram resultado: aprovada · reprovada · não realizada · não sei.
+- Deglutição reprovada ou não realizada mantém a trava "nada por via oral" visível no cabeçalho de suporte.
+- O conteúdo de como fazer a triagem continua pendente; o resultado é dado do médico.
+
+**AC-90 — do autor:** R4/R5/R6 (Canadian) e as seções da AHA 2026 sobre deglutição, mobilização e TEV entram na lista de PDFs do autor.
+
+**AC-84, AC-86, AC-87, AC-89 — aceitos como limites declarados**, com uma ressalva:
+- A agenda que só recalcula ao redesenhar vira defeito no momento em que a "próxima reavaliação" fica visível numa tela parada. Registrar como defeito.
+- ⚠️ **Numeração:** o autor citou "AC-86", mas na §7.19 esse limite é o **AC-89**. O AC-86 é "desfazer evento com horário gravado exige «Sem essa informação» → «Limpar»". A ressalva vale para o AC-89.
+
+**Entrega 1:**
+- as cinco decisões acima (AC-85, AC-81, AC-82, AC-83, AC-88), com provas vermelhas antes;
+- capturas a 375 px da 14ª rodada e desta:
+  - agenda de 48 h em cada um dos quatro caminhos;
+  - cabeçalho por tipo de via aérea;
+  - trava de via oral no cabeçalho.
+
+**Entrega 2 — caminho hemorrágico como caminho (A07), estrutura sem conteúdo:**
+- **Abertura:** a saída "hemorragia" da T04 abre um caminho próprio com superfícies reduzidas (estabilização, neurológico, imagem, destino/48 h).
+- **Bloqueio:** IVT e EVT isquêmicas ficam bloqueadas definitivamente, com motivo.
+- **Campos de estado apenas:**
+  - tipo: intraparenquimatosa · subaracnóidea · subdural · outra · não sei;
+  - anticoagulante em uso, reutilizando o que a T01 já tem;
+  - neurocirurgia contatada, por marcos, como a teleconsulta de AVC.
+- **Condutas:** reversão, alvo pressórico e indicação cirúrgica aparecem como "conteúdo pendente de validação". O pacote `docs/avc/revisao/hemorragia.md` lista, por item, a fonte candidata (AHA/ASA 2022 ICH, AHA/ASA 2023 HSA, transcrições existentes).
+- **Provas:**
+  - A07 completo;
+  - hemorragia depois de trombólise iniciada (complicação) leva ao mesmo caminho, com a infusão interrompida e registrada;
+  - troca de idioma no meio.
+
+**Idiomas:** PT/ES. **Autoriza implementação:** sim (15ª rodada). Provas vermelhas antes; `test:all` completo; push só verde; docs append-only; sem `main`.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
