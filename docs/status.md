@@ -1,12 +1,12 @@
 # Status · App Emergências — módulo AVC (PDF v1.1)
 
 **Última atualização:** 2026-09-14
-**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `91ea49d`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
+**Branch:** `refactor/clinical-modules-rebuild` · **HEAD de código:** `e8d8a56`, enviado; por cima, um commit só de `docs/` (D-PEND-17)
 
-## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 17ª rodada)
+## Fila consolidada · tudo que está aberto (2026-09-13, atualizada na 18ª rodada)
 
 Fonte de cada linha:
-- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.22).
+- **AC-\*:** `docs/avc/auditoria-vs-spec.md` (índice gerado; seções append-only em `docs/avc/auditoria/`, §1 e §7.4–§7.23).
 - **Decisões:** `docs/decisoes.md`.
 - **Casos A:** `docs/spec-avc.md` §15 × testes.
 
@@ -57,6 +57,8 @@ Fechados não entram na tabela; ver a nota logo abaixo dela. Ordem: primeiro o q
 | 38 | achado | baixa | **AC-35**: helpers sem uso no e2e da fase 9. | aberto | código |
 | 39 | achado | baixa | **AC-41**: o e2e "corrigir NÃO cria terceira medida" da A não corrige. | aberto (instrumento) | código |
 | 40 | achado | baixa | **AC-42, AC-51**: `dblclick` não reproduz A17 (a prova usa dois cliques); o toque duplo não tem janela de tempo. | limites declarados | — |
+| 40c | decisão | alta · média | **18ª rodada, decisões em branco (§7.23):** **AC-118** duração do bolus (texto do autor 1–2 min × bula sem duração na posologia do AVC × diretriz 1 min; `bula-x-diretriz.md` D1) · **AC-119** puerpério (bula 10 dias × Table 8 de 2026 sem janela × app 14 dias; AC-03r §12) · divergências bula × diretriz e critérios de bula (`bula-x-diretriz.md`) · Linha de Cuidados MS (`pcdt-brasil.md`) · opção E da HSA com a regra da §4 (`hsa-resolucao.md`) | aguardando | autor |
+| 40d | fonte | média · baixa | **AC-120** o PCDT de trombólise não está na pasta (o documento do MS é a Linha de Cuidados) · **AC-121** bula I23-01 mais antiga que a I24-01; ANVISA não consultada · **AC-122** literal da bula traduzido em ES · **AC-123** §4.6.3 rec. 2 exige "não elegível à EVT" (com AC-52) · **AC-124** cartão de janela estendida não capturado | declarados | autor · código |
 | 40b | achado | média · baixa | **AC-112** vocabulário de TEV e dispositivos e "contraindicada no momento retém" (proposta do agente) · **AC-113** posição no tema identifica pendentes · **AC-114** verbo em inglês saiu do card para o ⓘ (revoga em parte §6.14/E-45) · **AC-115** resultados antigos crus · **AC-116** a trava de idioma cobre só os cenários percorridos · **AC-117** agente repetido nos cartões de reversão (§7.22) | a confirmar · declarados | autor · código |
 | 40a | achado | baixa | **AC-70**: a trava de texto livre (`prova-avc-paciente`) cobre só P/A/B/C. **AC-75**: a trava append-only reprova reescrita depois do commit, não antes. | declarados | código |
 | 42 | caso A | — | **A16**: concentração alterada. | **sem teste** (depende de AC-21) | código |
@@ -80,7 +82,18 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 
 ## Ponto exato de retomada
 
-**Rodada mais recente (2026-09-14, 17ª) · vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, nome único da HIC, declaração da equipe:** detalhe em `docs/avc/auditoria/7.22-rodada-17.md`.
+**Rodada mais recente (2026-09-14, 18ª) · documentos oficiais no lugar dos dossiês: bula Actilyse I23-01, HSA 2023 integral, Linha de Cuidados MS; errata e Table 8:** detalhe em `docs/avc/auditoria/7.23-rodada-18.md`.
+
+| entrega | escopo | estado |
+|---|---|---|
+| **Errata · Table 8** | 34 itens conferidos (`errata-2026.md`); §5.2 localizada na deglutição; puerpério sem janela em dias na Table 8 | ✅ `0b56ee4` · decisões em branco |
+| **A · bula Actilyse** | tabela de dose por peso como conferência; bolus nas duas posições; D-PEND-23 com bula nominal e literal no ⓘ; janela estendida com as duas posições; critérios de bula só no pacote | ✅ `0b56ee4` · `e8d8a56` |
+| **B · HSA 2023** | S-00 conferido no PDF integral; opção E com a regra da §4 | ✅ `0b56ee4` · decisão em branco |
+| **C · Linha de Cuidados MS** | `pcdt-brasil.md`, sem implementação | ✅ `0b56ee4` |
+
+`test:all` no HEAD `e8d8a56`: ✅ **EXIT=0** · 150 `npm run` + 1 `node` · Playwright **631 passed** (9,7 min) · prova rodada 18 32/32 · críticos 183/183 · 143 travas ligadas · índice 131 declaradas · push `df1f7ba..e8d8a56`; `git ls-remote` = `e8d8a5672d90`; divergência 0/0. Execuções anteriores em `0b56ee4` (trava do índice) e `636f3ba` (e2e da D-PEND-23) falharam e não foram enviadas. Capturas a 375 px enviadas ao autor (5).
+
+**Rodada anterior (17ª), concluída · vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, nome único da HIC, declaração da equipe:** detalhe em `docs/avc/auditoria/7.22-rodada-17.md`.
 
 | entrega | escopo | estado |
 |---|---|---|
@@ -89,8 +102,6 @@ Prova: `scripts/prova-avc-achados-por-leitura.cjs`, de 🔴 14 verdes · 8 verme
 | **AC-109 · AC-110 · AC-111** | motivos por terapia; "Hemorragia intracraniana (HIC)"; declaração da equipe | ✅ `db9290b` |
 
 `test:all` no HEAD `91ea49d`: ✅ **EXIT=0** · 149 `npm run` + 1 `node` · Playwright **625 passed** (9,7 min) · prova rodada 17 35/35 · críticos 183/183 · 142 travas ligadas · índice 130 declaradas · push `75c2924..91ea49d`; `git ls-remote` = `91ea49de6f0f`; divergência 0/0. A execução em `db9290b` falhou (fases 9 e 10) e não foi enviada. Capturas a 375 px enviadas ao autor (22).
-
-**Recebido do autor em 2026-09-14, não iniciado:** 18ª rodada. Documentos oficiais substituem os dossiês (bula Actilyse I23-01, HSA 2023 integral, Linha de Cuidados em AVC do MS), mais errata e Table 8.
 
 **Rodada anterior (16ª), concluída · regressão de procedência em todas as superfícies, AC-95/98/91/92, textos:** detalhe em `docs/avc/auditoria/7.21-rodada-16.md`.
 

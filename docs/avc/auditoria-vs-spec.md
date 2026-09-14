@@ -5,7 +5,7 @@
 > ⛔ nenhum script reescreve arquivo de seção (`scripts/prova-auditoria-append-only.cjs`, no `test:all`).
 > Referências antigas a "`auditoria-vs-spec.md` §7.x" apontam para o arquivo `7.xx-*.md` correspondente.
 
-**Seções:** 30 · **linhas:** 2303
+**Seções:** 31 · **linhas:** 2417
 
 - [Auditoria do AVC existente contra a especificação (PDF v1.1)](auditoria/0-introducao.md)
 - [1. Achados ordenados por gravidade](auditoria/1-achados.md)
@@ -37,3 +37,4 @@
   - [7.20 · 15ª rodada de 2026-09-13 · capturas antes da entrega, AC-81/82/83/85/88, defeitos das capturas da 14ª rodada e caminho hemorrágico (A07) · commits `24992c2` e `62ba140` (decisões), `ebc736f` (código), `fe95af0` e `e775061` (correções pelo `test:all`)](auditoria/7.20-rodada-15.md)
   - [7.21 · 16ª rodada de 2026-09-13 · regressão de procedência em todas as superfícies, AC-95/98/91/92 e textos · commits `df627c6` (decisões) e `e680ec0` (código)](auditoria/7.21-rodada-16.md)
   - [7.22 · 17ª rodada de 2026-09-14 · AC-106 a AC-111: vocabulário por transversal, pendente com nome, sem inglês na tela, motivos por terapia, nome único da HIC, declaração da equipe · commits `0f05e8f` (decisões), `db9290b` (código) e `91ea49d` (correção pelo `test:all`)](auditoria/7.22-rodada-17.md)
+  - [7.23 · 18ª rodada de 2026-09-14 · documentos oficiais no lugar dos dossiês: bula Actilyse (I23-01), HSA 2023 integral, Linha de Cuidados em AVC (MS); errata e Table 8 · commits `8ced5ec` (decisões), `0b56ee4` (código), `636f3ba` (declaração da prova), `d48feaf` e `e8d8a56` (ajuste consciente do e2e da D-PEND-23)](auditoria/7.23-rodada-18.md)
