@@ -87,6 +87,12 @@ test.describe("AVC · D-PEND-23 · suspeita clínica de HSA", () => {
     await expect(motivo).toContainText("Requer avaliação especializada");
     await expect(motivo).toContainText(/corrigir e reavaliar/i);
     /**
+     * ⚠️ O CARTÃO não diz "contraindica" (D-PEND-23). ⚠️ Ajuste consciente (18ª rodada): medido com o ⓘ fechado — dentro
+     * do ⓘ, a bula (p. 4) diz "contraindicação geral", e essa é a posição da bula, rotulada ao lado da classificação do
+     * projeto, ⛔ o texto do cartão.
+     */
+    await expect(motivo).not.toContainText(/contraindica|impede pela diretriz|Saída diagnóstica armada/i);
+    /**
      * ⚠️ 8ª rodada: a procedência fica no ⓘ do motivo. ⚠️ Ajuste consciente (18ª rodada, autor): a procedência deixa
      * de ser "adaptação do projeto" e passa à bula profissional Actilyse (I23-01, p. 4), com a frase literal; a
      * classificação continua do projeto ("avaliação especializada").
@@ -96,7 +102,6 @@ test.describe("AVC · D-PEND-23 · suspeita clínica de HSA", () => {
     await expect(info).toContainText("Bula profissional Actilyse® (I23-01), p. 4");
     await expect(info).toContainText("incluindo hemorragia subaracnóidea");
     await expect(info).toContainText(/classificação do projeto: avaliação especializada/i);
-    await expect(motivo).not.toContainText(/contraindica|impede pela diretriz|Saída diagnóstica armada/i);
   });
 });
 
