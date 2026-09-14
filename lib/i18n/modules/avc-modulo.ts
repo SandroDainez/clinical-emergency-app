@@ -2084,14 +2084,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "El tiempo se cuenta desde la fecha y hora del parto hasta la apertura de la atención. Hasta 14 días (14 × 24 h), fuera del alcance validado: derivar — regla local del proyecto, no una recomendación de la AHA/ASA. Una fecha desconocida no libera el protocolo adulto.",
   "Hora do parto conhecida?": "¿Hora del parto conocida?",
   "Não, só a data": "No, solo la fecha",
-  "Só «Sim» usa a hora registrada com a data do parto. Sem a hora confirmada, a janela local de 14 dias não é calculada e nenhum horário é assumido.":
-    "Solo «Sí» usa la hora registrada con la fecha del parto. Sin la hora confirmada, la ventana local de 14 días no se calcula y no se asume ningún horario.",
-  "hora do parto desconhecida — a janela local de 14 dias não foi calculada":
-    "hora del parto desconocida — la ventana local de 14 días no se calculó",
-  "Hora do parto de puérpera ainda sem confirmação que decida o portão":
-    "Hora del parto de puérpera aún sin confirmación que decida el portón",
-  "Registrar se a hora do parto é conhecida; sem a hora, a janela local de 14 dias não é calculada e o protocolo adulto não é liberado":
-    "Registrar si la hora del parto es conocida; sin la hora, la ventana local de 14 días no se calcula y el protocolo adulto no se libera",
+  "Só «Sim» usa a hora registrada com a data do parto. Sem ela, nenhum horário é assumido: vale o dia inteiro, e a hora só é pedida quando o horário decide a janela local de 14 dias.":
+    "Solo «Sí» usa la hora registrada con la fecha del parto. Sin ella, no se asume ningún horario: vale el día entero, y la hora solo se pide cuando el horario decide la ventana local de 14 días.",
+  "hora do parto desconhecida — nesta data, o horário decide a janela local de 14 dias: registre a hora":
+    "hora del parto desconocida — en esta fecha, el horario decide la ventana local de 14 días: registre la hora",
+  "dias de calendário após o parto, hora desconhecida — dentro da janela de 14 dias em qualquer horário daquele dia, regra local do projeto":
+    "días de calendario después del parto, hora desconocida — dentro de la ventana de 14 días en cualquier horario de ese día, regla local del proyecto",
+  "Hora do parto de puérpera necessária: nesta data, o horário decide o portão":
+    "Hora del parto de puérpera necesaria: en esta fecha, el horario decide el portón",
+  "Registrar a hora do parto; nesta data, a janela local de 14 dias depende do horário e o protocolo adulto não é liberado sem ela":
+    "Registrar la hora del parto; en esta fecha, la ventana local de 14 días depende del horario y el protocolo adulto no se libera sin ella",
   "dias após o parto — dentro da janela de 14 dias, regra local do projeto":
     "días después del parto — dentro de la ventana de 14 días, regla local del proyecto",
   "data do parto desconhecida — a janela local de 14 dias não foi calculada":

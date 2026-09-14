@@ -18,8 +18,16 @@ import { valorAtual } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
 import { valorDaOpcao } from "../conteudo/campo";
 import { FAIXA_ETARIA, GESTACAO_PUERPERIO, HORA_DO_PARTO, JANELA_DO_PUERPERIO_DIAS } from "../conteudo/paciente";
+import { deslocarDias, diasAtras } from "./formato";
 
 const DIA_MS = 24 * 60 * 60 * 1000;
+
+/** ⚠️ 00:00 do dia de calendário do instante — o começo do intervalo de horários possíveis daquela data. */
+function inicioDoDia(instante: number): number {
+  const d = new Date(instante);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
 
 export const MENSAGEM_FORA_DO_ESCOPO = "Fora do escopo validado — encaminhar";
 
@@ -41,18 +49,27 @@ export type LeituraDaPopulacao = {
  *   · `nao_se_aplica` — ⛔ «Puérpera» registrada;
  *   · `data_desconhecida` — data ⛔ registrada ou «Sem essa informação»: ⛔ assume mais de 14 dias, ⛔ libera o
  *     protocolo adulto;
- *   · `hora_desconhecida` — data registrada, hora ⛔ confirmada («Não, só a data», «Não sei» ⛔ sem resposta):
- *     ⛔ assume horário nenhum; informação incompleta, retém como a data desconhecida;
- *   · `dentro_da_janela_local` — tempo decorrido ≤ 14 × 24 h: fora do escopo validado;
- *   · `alem_da_janela_local` — tempo decorrido > 14 × 24 h: o portão ⛔ retém por puerpério.
+ *   · `hora_desconhecida` — só a data («Não, só a data», «Não sei» ⛔ sem resposta) ⛔ o dia inteiro CRUZA 14 × 24 h:
+ *     informação incompleta, pede a hora, retém como a data desconhecida;
+ *   · `dentro_da_janela_local` — tempo decorrido ≤ 14 × 24 h (com a hora; ⛔ sem ela, em QUALQUER horário do dia):
+ *     fora do escopo validado;
+ *   · `alem_da_janela_local` — tempo decorrido > 14 × 24 h (com a hora; ⛔ sem ela, em QUALQUER horário do dia): o
+ *     portão ⛔ retém por puerpério.
  *
  * ⚠️ Decisão do autor (2026-09-14): data E hora do parto contra a data e hora de ABERTURA do atendimento
  * (`abertoEm`, congelada no episódio) — ⛔ o relógio de agora: retomar o caso ⛔ muda a classificação.
- * `dias` é o número de dias completos decorridos, só para exibição. ⛔ Regra local do projeto — ⛔ recomendação da AHA/ASA.
+ * ⚠️ Refinamento do autor (após `078b41f`): só a data ⛔ assume 00:00, 12:00 ⛔ horário nenhum — ⛔ nem o que o seletor
+ * gravou. O intervalo é o dia de calendário inteiro (limitado à abertura); a hora só decide quando o intervalo cruza.
+ * `dias` é só exibição: dias completos decorridos (com a hora) ⛔ dias de calendário (só a data).
+ * ⛔ Regra local do projeto — ⛔ recomendação da AHA/ASA.
  */
 export type LeituraDoPuerperio =
   | { readonly estado: "nao_se_aplica" | "data_desconhecida" | "hora_desconhecida" }
-  | { readonly estado: "dentro_da_janela_local" | "alem_da_janela_local"; readonly dias: number };
+  | {
+      readonly estado: "dentro_da_janela_local" | "alem_da_janela_local";
+      readonly dias: number;
+      readonly horaConhecida: boolean;
+    };
 
 export function leituraDoPuerperio(estado: EstadoAvc): LeituraDoPuerperio {
   if (valorAtual(estado, "gestacao_puerperio")?.valor !== valorDaOpcao(GESTACAO_PUERPERIO.puerpera)) {
@@ -60,14 +77,24 @@ export function leituraDoPuerperio(estado: EstadoAvc): LeituraDoPuerperio {
   }
   const parto = valorAtual(estado, "data_do_parto")?.valor;
   if (typeof parto !== "number") return { estado: "data_desconhecida" };
-  if (valorAtual(estado, "parto_hora_conhecida")?.valor !== valorDaOpcao(HORA_DO_PARTO.conhecida)) {
-    return { estado: "hora_desconhecida" };
+  const limite = JANELA_DO_PUERPERIO_DIAS * DIA_MS;
+  if (valorAtual(estado, "parto_hora_conhecida")?.valor === valorDaOpcao(HORA_DO_PARTO.conhecida)) {
+    const decorrido = estado.abertoEm - parto;
+    return {
+      estado: decorrido <= limite ? "dentro_da_janela_local" : "alem_da_janela_local",
+      dias: Math.floor(decorrido / DIA_MS),
+      horaConhecida: true,
+    };
   }
-  const decorrido = estado.abertoEm - parto;
-  return {
-    estado: decorrido <= JANELA_DO_PUERPERIO_DIAS * DIA_MS ? "dentro_da_janela_local" : "alem_da_janela_local",
-    dias: Math.floor(decorrido / DIA_MS),
-  };
+  /** ⚠️ Só a data: o intervalo de horários possíveis — ⛔ e ⛔ nenhum ponto dentro dele é escolhido. */
+  const inicio = inicioDoDia(parto);
+  const fim = Math.min(deslocarDias(inicio, 1) - 1, estado.abertoEm);
+  const maiorDecorrido = estado.abertoEm - inicio;
+  const menorDecorrido = estado.abertoEm - fim;
+  const dias = diasAtras(parto, estado.abertoEm);
+  if (maiorDecorrido <= limite) return { estado: "dentro_da_janela_local", dias, horaConhecida: false };
+  if (menorDecorrido > limite) return { estado: "alem_da_janela_local", dias, horaConhecida: false };
+  return { estado: "hora_desconhecida" };
 }
 
 /**
@@ -116,10 +143,10 @@ export function pendenciasDaPopulacao(estado: EstadoAvc): readonly Pendencia[] {
     return [
       {
         id: "parto_hora_conhecida",
-        rotulo: "Hora do parto de puérpera ainda sem confirmação que decida o portão",
+        rotulo: "Hora do parto de puérpera necessária: nesta data, o horário decide o portão",
         dono: "paciente",
         campo: "parto_hora_conhecida",
-        resolvePor: "Registrar se a hora do parto é conhecida; sem a hora, a janela local de 14 dias não é calculada e o protocolo adulto não é liberado",
+        resolvePor: "Registrar a hora do parto; nesta data, a janela local de 14 dias depende do horário e o protocolo adulto não é liberado sem ela",
       },
     ];
   }

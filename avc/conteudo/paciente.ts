@@ -145,8 +145,8 @@ export const POPULACAO_P: readonly CampoP[] = [
   {
     /**
      * ⚠️⚠️ Decisão do autor (2026-09-14, antes do commit do AC-03r): a hora do parto ⛔ vale por característica do
-     * seletor, que sempre grava uma. Só «Sim» usa a hora; «Não, só a data», «Não sei» ⛔ sem resposta = informação
-     * incompleta — ⛔ se assume 00:00, 12:00 ⛔ horário ⛔ nenhum.
+     * seletor, que sempre grava uma. Só «Sim» usa a hora; «Não, só a data», «Não sei» ⛔ sem resposta = só a data, lida
+     * pelo intervalo do dia inteiro (refinamento do autor após `078b41f`) — incompleta só quando o dia cruza 14 × 24 h. ⛔ Se assume 00:00, 12:00 ⛔ horário ⛔ nenhum.
      */
     id: "parto_hora_conhecida",
     escopo: "global",
@@ -157,7 +157,7 @@ export const POPULACAO_P: readonly CampoP[] = [
     apareceQuando: { campo: "gestacao_puerperio", valor: GESTACAO_PUERPERIO.puerpera },
     fonte: "F-37",
     bloqueiaTerapia: false,
-    nota: "Só «Sim» usa a hora registrada com a data do parto. Sem a hora confirmada, a janela local de 14 dias não é calculada e nenhum horário é assumido.",
+    nota: "Só «Sim» usa a hora registrada com a data do parto. Sem ela, nenhum horário é assumido: vale o dia inteiro, e a hora só é pedida quando o horário decide a janela local de 14 dias.",
   },
 ];
 

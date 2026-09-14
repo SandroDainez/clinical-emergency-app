@@ -61,12 +61,16 @@ export default function PortaoDePopulacao({ estado, agora, onEscolher, onMedir, 
           {/** ⚠️ AC-03r, C8: a janela é dita regra local, com os dias ⛔ com a data desconhecida nomeada. */}
           {leitura.motivos.includes("puerpera") && puerperio.estado === "dentro_da_janela_local" ? (
             <Text style={e.foraMotivo} testID="avc-portao-puerperio-dias">
-              {puerperio.dias} {tr("dias após o parto — dentro da janela de 14 dias, regra local do projeto")}
+              {puerperio.dias}{" "}
+              {/** ⚠️ Refinamento do autor: só a data ⛔ inventa horário — o dia inteiro cabe na janela, e isso é dito. */}
+              {puerperio.horaConhecida
+                ? tr("dias após o parto — dentro da janela de 14 dias, regra local do projeto")
+                : tr("dias de calendário após o parto, hora desconhecida — dentro da janela de 14 dias em qualquer horário daquele dia, regra local do projeto")}
             </Text>
           ) : null}
           {leitura.motivos.includes("puerpera") && puerperio.estado === "hora_desconhecida" ? (
             <Text style={e.foraMotivo} testID="avc-portao-puerperio-hora-desconhecida">
-              {tr("hora do parto desconhecida — a janela local de 14 dias não foi calculada")}
+              {tr("hora do parto desconhecida — nesta data, o horário decide a janela local de 14 dias: registre a hora")}
             </Text>
           ) : null}
           {leitura.motivos.includes("puerpera") && puerperio.estado === "data_desconhecida" ? (

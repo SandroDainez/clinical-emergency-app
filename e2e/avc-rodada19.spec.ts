@@ -143,17 +143,38 @@ test.describe("AVC · 19ª rodada · AC-03r · data do parto e janela local de 1
     await expect(cabecalho).toContainText("a resolver aqui");
   });
 
-  /** ⚠️ Decisão do autor: data sem hora ⛔ assume horário — retém ⛔ e fica pendente. */
-  test("15 dias com hora «Não, só a data»: ⛔ libera, e a pendência aparece", async ({ page }) => {
-    await puerperaNoPortao(page);
+  /**
+   * ⚠️ Refinamento do autor (após `078b41f`): só a data ⛔ inventa horário — o dia inteiro é o intervalo. A hora só é
+   * pedida quando o dia cruza 14 × 24 h. Ajuste consciente: o teste «15 dias só data retém» deu lugar a 14 · 3 · 20 dias.
+   */
+  async function dataSemHora(page: Page, dias: number) {
     await page.getByTestId("avc-hora-data_do_parto").click();
     await page.getByTestId("avc-seletor-data-escolher").click();
-    for (let i = 0; i < 15; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
+    for (let i = 0; i < dias; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
     await page.getByTestId("avc-seletor-hora-h-menos").click();
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await page.getByTestId("avc-opcao-parto_hora_conhecida-Não, só a data").click();
+  }
+
+  test("14 dias com hora «Não, só a data»: o horário decide — ⛔ libera, e pede a hora", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await dataSemHora(page, 14);
     await expect(page.getByTestId("avc-portao-fora-do-escopo")).toContainText("hora do parto desconhecida");
     await expect(page.getByTestId("avc-fase-pendentes")).toContainText("a resolver aqui");
+  });
+
+  test("3 dias com hora «Não, só a data»: dentro da regra local em qualquer horário, ⛔ pede a hora", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await dataSemHora(page, 3);
+    await expect(page.getByTestId("avc-portao-fora-do-escopo")).toContainText("dentro da janela de 14 dias");
+    await expect(page.getByTestId("avc-portao-fora-do-escopo")).toContainText("hora desconhecida");
+    await expect(page.getByTestId("avc-fase-pendentes")).toContainText("Nada pendente aqui");
+  });
+
+  test("20 dias com hora «Não, só a data»: além em qualquer horário — o portão ⛔ retém", async ({ page }) => {
+    await puerperaNoPortao(page);
+    await dataSemHora(page, 20);
+    await expect(page.getByTestId("avc-portao-populacao")).toHaveCount(0);
   });
 
   test("data do parto desconhecida: ⛔ libera o protocolo adulto", async ({ page }) => {

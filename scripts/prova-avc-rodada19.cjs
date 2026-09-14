@@ -338,8 +338,12 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
   }
 
   /* Decisão do autor · hora do parto: só «Sim» usa a hora; «Não, só a data», «Não sei» ⛔ sem resposta = incompleta */
+  /**
+   * ⚠️ Ajuste consciente (refinamento do autor após `078b41f`): data sem hora passou a ser lida por INTERVALO do dia.
+   * 30 dias antes ⛔ é mais incompleto (é além em qualquer horário); a data em que o horário DECIDE é a de 14 dias antes.
+   */
   const soData = (resposta) => {
-    const e = reg(adulta("Puérpera"), "data_do_parto", FMT.deslocarDias(vazio.abertoEm, -30));
+    const e = reg(adulta("Puérpera"), "data_do_parto", FMT.deslocarDias(vazio.abertoEm, -14));
     return resposta === undefined ? e : reg(e, "parto_hora_conhecida", CAMPO.valorDaOpcao(resposta));
   };
   const campoHora = PAC?.TODOS_OS_CAMPOS_P?.find((c) => c.id === "parto_hora_conhecida");
@@ -348,10 +352,92 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
       && campoHora?.apareceQuando?.campo === "gestacao_puerperio", `⛔ ${JSON.stringify(campoHora)}`);
   for (const [nome, resposta] of [["«Não, só a data»", "Não, só a data"], ["«Não sei»", CAMPO.NAO_SEI], ["sem resposta", undefined]]) {
     const e = soData(resposta);
-    conf(`⚠️ AC-03r · data de 30 dias com hora ${nome} → hora desconhecida: ⛔ assume horário, retém ⛔ e fica pendente`,
+    conf(`⚠️ AC-03r · data de 14 dias (o horário decide) com hora ${nome} → hora desconhecida: ⛔ assume horário, retém ⛔ e fica pendente`,
       pu(e)?.estado === "hora_desconhecida" && pu(e)?.dias === undefined && retido(e)
         && (pop(e)?.faltam ?? []).includes("parto_hora_conhecida"),
       `⛔ ${JSON.stringify([pu(e), pop(e)])}`);
+  }
+
+  /* ══ Refinamento do autor (após 078b41f) · só a data: INTERVALO do dia inteiro, ⛔ horário inventado ══════ */
+  {
+    const PAi = emT("avc", "nucleo", "problemas-ativos.js");
+    const pedeHora = (e) => (PAi?.pendenciasDoCaso?.(e) ?? []).some((p) => p.campo === "parto_hora_conhecida" && p.dono === "paciente");
+    const LOGi = emT("avc", "persistencia", "log.js");
+    /** Caso com abertura em `ab` (h, min) e parto `diasAntes` dias de calendário antes, gravado na hora `hg` do seletor. */
+    const somenteData = (ab, diasAntes, hg, resposta = "Não, só a data") => {
+      const abertura = new Date(2026, 8, 14, ab[0], ab[1]).getTime();
+      const relA = R.relogioControlado(abertura);
+      const passos = [
+        (e) => E.registrarFato(e, { campo: "faixa_etaria", valor: CAMPO.valorDaOpcao("18 anos ou mais") }, relA),
+        (e) => E.registrarFato(e, { campo: "gestacao_puerperio", valor: CAMPO.valorDaOpcao("Puérpera") }, relA),
+        (e) => E.registrarFato(e, { campo: "data_do_parto", valor: new Date(2026, 8, 14 - diasAntes, hg[0], hg[1]).getTime() }, relA),
+        ...(resposta === undefined ? [] : [(e) => E.registrarFato(e, { campo: "parto_hora_conhecida", valor: CAMPO.valorDaOpcao(resposta) }, relA)]),
+      ];
+      let est = E.abrirAtendimento(relA);
+      let sq = 0;
+      let idq = 0;
+      const ctxA = () => ({ casoId: "caso-intervalo", autor: "local:prova", agora: relA.agora(), proximoSeq: () => ++sq, gerarId: () => `evi-${++idq}` });
+      const eventos = [...(LOGi?.eventosDeAbertura?.(est, ctxA()) ?? [])];
+      for (const p of passos) {
+        const prox = p(est);
+        eventos.push(...(LOGi?.eventosDaTransicao?.(est, prox, ctxA()) ?? []));
+        est = prox;
+      }
+      return { est, rec: LOGi?.reconstruirEstado?.(JSON.parse(JSON.stringify(eventos))) };
+    };
+    const HORAS_GRAVADAS = [[0, 1], [12, 0], [23, 59]];
+    const leitura = (e) => [pu(e)?.estado, pop(e)?.estado];
+    const DENTRO = ["dentro_da_janela_local", "fora_do_escopo"];
+    const ALEM = ["alem_da_janela_local", "adulto_validado"];
+    for (const ab of [[10, 0], [0, 30], [23, 50]]) {
+      const rot = `${ab[0]}:${String(ab[1]).padStart(2, "0")}`;
+      const leituras = (dias, resposta) => HORAS_GRAVADAS.map((hg) => leitura(somenteData(ab, dias, hg, resposta).est));
+      const todas = (dias, esperado, resposta) => leituras(dias, resposta).every((l) => JSON.stringify(l) === JSON.stringify(esperado));
+      conf(`⚠️ AC-03r · só a data (abertura ${rot}) · parto 3 dias antes, hora desconhecida → dentro da regra local`,
+        todas(3, DENTRO), `⛔ ${JSON.stringify(leituras(3))}`);
+      conf(`… (abertura ${rot}) · 13 dias antes, hora desconhecida → dentro`, todas(13, DENTRO), `⛔ ${JSON.stringify(leituras(13))}`);
+      conf(`… (abertura ${rot}) · 16 dias antes, hora desconhecida → além em qualquer horário: adulto validado`,
+        todas(16, ALEM), `⛔ ${JSON.stringify(leituras(16))}`);
+      const cruza = HORAS_GRAVADAS.map((hg) => somenteData(ab, 14, hg).est);
+      conf(`⚠️ … (abertura ${rot}) · 14 dias antes: o dia cruza 14 × 24 h → informação incompleta; pede a hora (retém, falta, pendência)`,
+        cruza.every((e) => pu(e)?.estado === "hora_desconhecida" && retido(e)
+          && (pop(e)?.faltam ?? []).includes("parto_hora_conhecida") && pedeHora(e)),
+        `⛔ ${JSON.stringify(cruza.map((e) => [pu(e), pop(e)?.faltam, pedeHora(e)]))}`);
+      conf(`… (abertura ${rot}) · dentro ⛔ além por intervalo ⛔ criam pendência de hora`,
+        [3, 13, 16].every((d) => HORAS_GRAVADAS.every((hg) => !pedeHora(somenteData(ab, d, hg).est))), "⛔");
+      conf(`… (abertura ${rot}) · hora «Não sei» ⛔ sem resposta valem como «só a data»`,
+        [3, 14, 16].every((d) => JSON.stringify(leituras(d, CAMPO.NAO_SEI)) === JSON.stringify(leituras(d))
+          && JSON.stringify(leituras(d, undefined)) === JSON.stringify(leituras(d))),
+        `⛔ ${JSON.stringify([leituras(14, CAMPO.NAO_SEI), leituras(14, undefined), leituras(14)])}`);
+      conf(`⚠️ … (abertura ${rot}) · nenhuma hipótese silenciosa de horário: a hora que o seletor gravou ⛔ muda a leitura sem «Sim»`,
+        [3, 13, 14, 15, 16].every((d) => new Set(leituras(d).map((l) => JSON.stringify(l))).size === 1),
+        `⛔ ${JSON.stringify([13, 14, 15].map((d) => leituras(d)))}`);
+      const retomadas = [3, 14, 16].map((d) => somenteData(ab, d, [12, 0]));
+      const agoraReal = Date.now;
+      Date.now = () => new Date(2026, 8, 24, 9, 0).getTime();
+      const depois = retomadas.map(({ rec }) => rec && JSON.stringify(leitura(rec)));
+      Date.now = agoraReal;
+      conf(`… (abertura ${rot}) · retomada pelo log, 10 dias depois → resultado invariável`,
+        retomadas.every(({ est, rec }, i) => rec !== undefined && rec.abertoEm === est.abertoEm && depois[i] === JSON.stringify(leitura(est))),
+        `⛔ ${JSON.stringify(depois)}`);
+    }
+    conf("… abertura exatamente às 00:00, só a data de 14 dias antes → dentro (o maior tempo possível é 14 × 24 h exatas)",
+      JSON.stringify(leitura(somenteData([0, 0], 14, [12, 0]).est)) === JSON.stringify(DENTRO),
+      `⛔ ${JSON.stringify(leitura(somenteData([0, 0], 14, [12, 0]).est))}`);
+    const comHora = (ab, deltaMs) => {
+      const abertura = new Date(2026, 8, 14, ab[0], ab[1]).getTime();
+      const relA = R.relogioControlado(abertura);
+      let e = E.abrirAtendimento(relA);
+      for (const [c, v] of [["faixa_etaria", CAMPO.valorDaOpcao("18 anos ou mais")], ["gestacao_puerperio", CAMPO.valorDaOpcao("Puérpera")],
+        ["data_do_parto", abertura - deltaMs], ["parto_hora_conhecida", CAMPO.valorDaOpcao("Sim")]]) e = E.registrarFato(e, { campo: c, valor: v }, relA);
+      return e;
+    };
+    conf("… hora CONHECIDA ⛔ usa intervalo: 14 d exatos → dentro · 14 d + 1 min → além (abertura 23:50)",
+      JSON.stringify(leitura(comHora([23, 50], 14 * DIA))) === JSON.stringify(DENTRO)
+        && JSON.stringify(leitura(comHora([23, 50], 14 * DIA + MIN))) === JSON.stringify(ALEM), "⛔");
+    const dataNaoSeiI = reg(adulta("Puérpera"), "data_do_parto", "nao_sei");
+    conf("… a própria data «Sem essa informação» continua desconhecida (⛔ intervalo sem data)",
+      pu(dataNaoSeiI)?.estado === "data_desconhecida" && retido(dataNaoSeiI), `⛔ ${JSON.stringify(pu(dataNaoSeiI))}`);
   }
 
   const semData = adulta("Puérpera");
