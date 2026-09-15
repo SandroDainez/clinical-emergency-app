@@ -23,5 +23,13 @@
  * essa nomenclatura. Nomear a equivalência é mais curto do que deixar alguém
  * procurando uma ampola que não existe.
  */
+/**
+ * ⚠️ A LINHA CURTA DE SEGURANÇA — o que precisa estar à vista no meio da parada (autor, 2026-09-15: o card
+ * «Próxima epinefrina» estava poluído demais para uma PCR). Mesma apresentação, mesmos números do texto completo
+ * abaixo, sem a comparação com a anafilaxia nem a explicação do «1:10.000», que ficam atrás de «Detalhes».
+ * ⛔ A ampola inteira continua dita na dose oferecida (R-48/R-50).
+ */
+export const ADRENALINA_NA_PARADA_RESUMO = "1 mg = UMA ampola inteira (1 mg/mL), sem diluir · flush de 20 mL";
+
 export const ADRENALINA_NA_PARADA_APRESENTACAO =
   "1 mg = UMA ampola inteira de adrenalina 1 mg/mL (1 mL) — sem diluir, seguida de flush de 20 mL e elevação do membro. É a apresentação nacional, e é a mesma ampola da anafilaxia: o que muda é a VIA e a dose (lá 0,5 mg IM). O \"1:10.000\" da literatura internacional é a mesma massa em 10 mL — não procure a ampola diluída, ela não é a padronizada aqui.";

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { METAS_POR_ESTADO_POS_ROSC } from "../../lib/metas-pos-parada";
 import { OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
 import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../../lib/fv-fina";
-import { ADRENALINA_NA_PARADA_APRESENTACAO } from "../../lib/adrenalina-na-parada";
+import { ADRENALINA_NA_PARADA_APRESENTACAO, ADRENALINA_NA_PARADA_RESUMO } from "../../lib/adrenalina-na-parada";
 import { useRouter, type Href } from "expo-router";
 import {getCopy } from "../../acls/microcopy";
 import { Header, Tag, TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
@@ -180,6 +180,8 @@ function AclsProtocolScreen({
   // Mantém a tela acordada durante toda a reanimação (não apaga/bloqueia sozinha).
   useScreenWakeLock(true);
   const [showRecords, setShowRecords] = useState(false);
+  /** ⚠️ 2026-09-15 (autor): a explicação completa da apresentação fica atrás de «Detalhes» — na PCR, só o essencial à vista. */
+  const [epiDetalhes, setEpiDetalhes] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showPhaseNote, setShowPhaseNote] = useState(false);
   const [showRefModules, setShowRefModules] = useState(false);
@@ -477,18 +479,34 @@ function AclsProtocolScreen({
         {showFutureAdrenalineStatus ? (
           <View style={aclsScreenStyles.epiCountdownCard}>
             <View style={aclsScreenStyles.epiCountdownLeft}>
-              <Text style={aclsScreenStyles.epiCountdownEyebrow}>{tr("PRÓXIMA EPINEFRINA")}</Text>
+              {/* ⚠️ 2026-09-15 (autor): «muito poluído para uma PCR». À vista: o que é, qual dose, a linha curta de
+                  segurança e o contador. A explicação completa da apresentação fica atrás de «Detalhes». */}
               <Text style={aclsScreenStyles.epiCountdownTitle}>
-                {screenModel.adrenalineStatusLabel ? tr("Epinefrina atrasada!") : tr("Próxima dose programada")}
+                {screenModel.adrenalineStatusLabel ? tr("Epinefrina atrasada!") : tr("Próxima epinefrina")}
               </Text>
               <Text style={aclsScreenStyles.epiCountdownNote}>
                 {tr("Dose")} {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
               </Text>
-              {/* R-48: a apresentação pertence à superfície de AÇÃO. Ela vivia
-                  só no campo `source` do card da Farmacologia. */}
-              <Text style={aclsScreenStyles.epiCountdownNote}>
-                {tr(ADRENALINA_NA_PARADA_APRESENTACAO)}
+              {/* R-48: a apresentação pertence à superfície de AÇÃO — em forma curta. */}
+              <Text style={aclsScreenStyles.epiCountdownNote} testID="acls-epi-resumo">
+                {tr(ADRENALINA_NA_PARADA_RESUMO)}
               </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: epiDetalhes }}
+                onPress={() => setEpiDetalhes((v) => !v)}
+                hitSlop={8}
+                testID="acls-epi-detalhes"
+              >
+                <Text style={[aclsScreenStyles.epiCountdownNote, aclsScreenStyles.epiCountdownDetalhes]}>
+                  {epiDetalhes ? tr("Ocultar detalhes") : tr("Detalhes")}
+                </Text>
+              </Pressable>
+              {epiDetalhes ? (
+                <Text style={aclsScreenStyles.epiCountdownNote} testID="acls-epi-apresentacao">
+                  {tr(ADRENALINA_NA_PARADA_APRESENTACAO)}
+                </Text>
+              ) : null}
             </View>
             <View style={[
               aclsScreenStyles.epiCountdownBadge,
@@ -588,7 +606,7 @@ function AclsProtocolScreen({
           // exatamente quando alguém aspira a ampola.
           detail={
             heroDocumentationAction?.id === "adrenaline"
-              ? tr(ADRENALINA_NA_PARADA_APRESENTACAO)
+              ? tr(ADRENALINA_NA_PARADA_RESUMO)
               : isContinuousCprFocus
                 ? undefined
                 : screenModel.bannerDetail ?? screenModel.details[0]
@@ -785,9 +803,7 @@ function AclsProtocolScreen({
               // ela só apareceria DEPOIS da primeira dose — exatamente a que
               // alguém aspira sem saber que é a ampola inteira.
               // Achado na verificação por execução (R-50), não na leitura.
-              ctaDetail = `${tr("1 mg IV/IO · Não interromper RCP")} · ${tr(
-                ADRENALINA_NA_PARADA_APRESENTACAO
-              )}`;
+              ctaDetail = `${tr("1 mg IV/IO · Não interromper RCP")} · ${tr(ADRENALINA_NA_PARADA_RESUMO)}`;
             } else if (isAntiarrhythmicCpr) {
               isConfirming = Boolean(isPendingAnt);
               const antDoseNum = (antCount ?? 0) + 1;
@@ -1692,6 +1708,12 @@ const aclsScreenStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#fdba74",
     lineHeight: 28,
+  },
+  /** ⚠️ Sem cor própria: herda a da nota (`epiCountdownNote`) — o teto de hexadecimais do legado só desce. */
+  epiCountdownDetalhes: {
+    fontWeight: "700",
+    textDecorationLine: "underline",
+    paddingVertical: 4,
   },
   epiCountdownUnit: {
     fontSize: 9,

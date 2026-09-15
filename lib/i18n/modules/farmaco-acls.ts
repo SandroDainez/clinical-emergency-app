@@ -2,6 +2,13 @@
  * Farmacologia no ACLS + preparos consumindo Vasoativas (R-46).
  */
 export const ES_FARMACO_ACLS: Record<string, string> = {
+  /* ── 2026-09-15 · card «Próxima epinefrina» enxuto ── */
+  "Próxima epinefrina":
+    "Próxima epinefrina",
+  "Detalhes":
+    "Detalles",
+  "Ocultar detalhes":
+    "Ocultar detalles",
   "150 mg IV/IO em bolus — NÃO no ciclo seguinte: a 2ª dose entra um ciclo DEPOIS, alternando com a epinefrina, e é assim que o app a oferece. Espaçar 300 mg → 150 mg em dois ciclos reproduz a cadência do algoritmo circular; dar as duas em ciclos consecutivos não é o que a máquina executa nem o que a diretriz descreve.":
     "150 mg IV/IO en bolo — NO en el ciclo siguiente: la 2ª dosis entra un ciclo DESPUÉS, alternando con la epinefrina, y así es como la app la ofrece. Espaciar 300 mg → 150 mg en dos ciclos reproduce la cadencia del algoritmo circular; dar las dos en ciclos consecutivos no es lo que la máquina ejecuta ni lo que la guía describe.",
   "AHA ACLS 2025 · apresentações e volumes em lib/atropina.ts (fonte única).":
