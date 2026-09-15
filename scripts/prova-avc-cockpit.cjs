@@ -202,14 +202,15 @@ conf(
   );
 }
 
-/* ══ ⚠️ 7 · O EIXO E, COMPLETO, ⛔ NÃO CRIA AMEAÇA ═══════════════════ */
+/* ══ ⚠️ 7 · A TEMPERATURA, EM «C · CIRCULAÇÃO», ⛔ NÃO CRIA AMEAÇA ═══════════ */
+/** ⚠️ Ajuste consciente (autor, 2026-09-15): ⛔ há eixo E; a temperatura mora em C ⛔ e ⛔ muda o eixo, que lê a pressão. */
 {
-  const e = E.concluirEixo(com(novo(), "temperatura", 39), "exposicao");
+  const e = com(novo(), "temperatura", 39);
   conf(
-    "⚠️ completar **E** ⛔ não cria ameaça, ⛔ nem concluído",
-    eixo(e, "exposicao").estado === "medido"
-    && P.problemasAtivos(e).every((p) => p.id !== "exposicao"),
-    `⛔ estado="${eixo(e, "exposicao").estado}" — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
+    "⚠️ temperatura 39 °C ⛔ cria ameaça ⛔ nem problema ativo, ⛔ e o eixo C segue sem avaliação de pressão",
+    eixo(e, "pressao").estado === "nao_avaliado"
+    && P.problemasAtivos(e).every((p) => !/temperatura|exposicao/.test(p.id)),
+    `⛔ estado="${eixo(e, "pressao").estado}" — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
   );
 }
 

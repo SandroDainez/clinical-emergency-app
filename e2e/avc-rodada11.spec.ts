@@ -51,7 +51,8 @@ test.describe("AVC · 11ª rodada", () => {
     await expect(anterior, "⛔ o eixo reaberto ⛔ mostra a avaliação anterior").toContainText("Antes da piora");
     await expect(anterior).toContainText(/\d{2}:\d{2}/);
     await expect(page.getByTestId("avc-ameaca-reavaliacao-pendente-respiracao")).toBeVisible();
-    await expect(page.getByTestId("avc-ameaca-anterior-exposicao"), "⛔ eixo sem dado ⛔ diz nada").toContainText("sem dados registrados");
+    /** ⚠️ Ajuste consciente (autor, 2026-09-15): ⛔ há eixo E; o eixo sem dado antes da piora é o D (glicemia). */
+    await expect(page.getByTestId("avc-ameaca-anterior-glicemia"), "⛔ eixo sem dado ⛔ diz nada").toContainText("sem dados registrados");
 
     await abrirEixosDaEstabilizacao(page);
     await page.getByTestId("avc-eixo-concluir-respiracao").click();

@@ -935,12 +935,17 @@ const K = require(path.join(tmp, "conteudo", "campo.js"));
    * fato registrável. ⛔ A regra contra fingir cobertura continua valendo —
    * ⛔ e ⛔ é a conferência abaixo que a executa.
    */
-  confere("os CINCO blocos do ABCDE clássico carregam a letra",
-    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico", "E · Exposição"]
+  /** ⚠️ Ajuste consciente (autor, 2026-09-15): «E · Exposição» sai; a temperatura mora em «C · Circulação». */
+  confere("os QUATRO blocos ABCD carregam a letra",
+    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico"]
       .every((t) => titulos.includes(t)),
     `⛔ moldura pela metade, sem dizer, seria pior que ⛔ nenhuma — ${titulos.join(" | ")}`);
-  confere("⛔ e ⛔ NENHUM bloco do ABCDE está VAZIO",
-    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico", "E · Exposição"]
+  confere("⛔ «E · Exposição» ⛔ existe ⛔ e a temperatura está em «C · Circulação»",
+    !titulos.includes("E · Exposição")
+      && K.camposDoGrupo(C.GRUPOS_A.find((g) => g.titulo === "C · Circulação")).some((c) => c.id === "temperatura"),
+    `⛔ ${titulos.join(" | ")}`);
+  confere("⛔ e ⛔ NENHUM bloco do ABCD está VAZIO",
+    ["A · Via aérea", "B · Respiração", "C · Circulação", "D · Neurológico"]
       .every((t) => K.camposDoGrupo(C.GRUPOS_A.find((g) => g.titulo === t)).length > 0),
     "*\"⛔ não force todo campo a caber em ABCDE\"* — bloco vazio fingiria cobertura");
   confere("⛔ e o antigo eixo 'D · Glicemia' DESAPARECEU",

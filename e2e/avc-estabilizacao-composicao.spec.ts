@@ -79,7 +79,7 @@ test.describe("AVC · Estabilização — composição", () => {
       /* ── ⚠️ E O QUE **PRECISA** ESTAR ──────────────────────────────────── */
 
       await expect(page.getByTestId("avc-ameacas-imediatas")).toBeVisible();
-      for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial", "exposicao"]) {
+      for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial"]) {
         await expect(page.getByTestId(`avc-grupo-${g}`)).toBeVisible();
       }
     });

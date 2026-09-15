@@ -201,6 +201,21 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 **Razão registrada:** não fornecida além do texto da decisão.
 **Autoriza implementação:** sim (4ª rodada, Entrega 2).
 
+## D-PEND-18 · complemento (2026-09-15): temperatura em «C · Circulação», sem eixo «E · Exposição»
+
+**Data:** 2026-09-15 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.
+
+**Decisão, nos termos do autor:** «tudo bem se voltou mas não cabe isso em exposição, quem sabe colocamos onde avaliamos sinais vitais como PAS PAD».
+
+- A temperatura **continua** no caminho isquêmico (D-PEND-18, §4.4, sem corte).
+- O eixo «E · Exposição» **sai** da Estabilização; a estabilização volta a ABCD.
+- A temperatura mora em «C · Circulação», depois de PAS, PAD e FC. Não vira ameaça e não muda o estado do eixo C, que continua lendo a pressão.
+- Atendimentos salvos com o eixo `exposicao` concluído continuam abrindo: o nome sobra na trilha e nenhuma tela o lê.
+
+**Na mesma mensagem:**
+- **«Paciente piorou» sem tela de ação:** decidir depois; registrado como dívida (`auditoria/DIVIDAS-CONHECIDAS.md`, D-140).
+- **«Preciso de ajuda»:** fica como está até existirem outros módulos para ligar às opções.
+
 ## D-PEND-19 · AC-45: segundo toque em opção já marcada é ignorado
 
 **Data:** 2026-09-13 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** vigente.

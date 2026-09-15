@@ -72,7 +72,8 @@ const CAJ = opcional("avc", "conteudo", "ajuda.js");
 const AA = opcional("avc", "nucleo", "avaliacao-anterior.js");
 
 const MIN = 60_000;
-const EIXOS = ["via_aerea", "respiracao", "pressao", "glicemia", "exposicao"];
+/** ⚠️ Ajuste consciente (autor, 2026-09-15): ⛔ há eixo E. */
+const EIXOS = ["via_aerea", "respiracao", "pressao", "glicemia"];
 
 /* ══ 1 · «PRECISO DE AJUDA» ══════════════════════════════════════════════ */
 conf("os módulos de ajuda existem (conteúdo ⛔ e registro)",
@@ -165,14 +166,14 @@ if (AA !== undefined) {
   const ant = AA.avaliacaoAntesDaPiora(e);
   const resp = ant && ant.find((x) => x.id === "respiracao");
   const via = ant && ant.find((x) => x.id === "via_aerea");
-  const expo = ant && ant.find((x) => x.id === "exposicao");
+  const expo = ant && ant.find((x) => x.id === "glicemia");
   conf("respiração · estado ⛔ e hora de ANTES da piora", resp !== undefined && resp.estado === antes.find((x) => x.id === "respiracao").estado && resp.quando === t0 + MIN,
     `⛔ ${JSON.stringify(resp)}`);
   conf("⛔ o fato novo depois da piora ⛔ sobrescreve a avaliação anterior",
     resp !== undefined && AM.ameacasImediatas(e).find((x) => x.id === "respiracao").estado !== resp.estado, `⛔ ${JSON.stringify(AM.ameacasImediatas(e).find((x) => x.id === "respiracao"))}`);
   conf("via aérea · hora do registro anterior", via !== undefined && via.quando === t0, `⛔ ${JSON.stringify(via)}`);
   conf("eixo sem dado antes da piora diz ⛔ sem dado (⛔ vazio silencioso)", expo !== undefined && expo.quando === undefined && expo.semDados === true, `⛔ ${JSON.stringify(expo)}`);
-  conf("os cinco eixos estão na leitura", ant !== undefined && EIXOS.every((x) => ant.some((a) => a.id === x)), `⛔ ${ant && ant.map((a) => a.id)}`);
+  conf("os quatro eixos estão na leitura", ant !== undefined && EIXOS.every((x) => ant.some((a) => a.id === x)), `⛔ ${ant && ant.map((a) => a.id)}`);
 }
 
 /* ══ 4 · MARCOS DA TRANSFERÊNCIA (AC-69) ═════════════════════════════════ */

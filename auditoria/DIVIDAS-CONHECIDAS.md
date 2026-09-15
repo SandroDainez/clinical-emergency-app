@@ -5771,3 +5771,25 @@ EVIDÊNCIA INSUFICIENTE** na fonte transcrita.
 4. **HR-2 ao pé da letra**: o critério "déficit incapacitante" pertence à rota
    padrão; rotas de janela estendida usam a população que a própria
    recomendação escreve.
+
+---
+
+## D-140 · AVC — «Paciente piorou» registra, mas não mostra o que fazer (2026-09-15)
+
+**Estado:** ⏸️ aberta, por decisão do autor («depois decidimos isso, deixe como uma dívida»).
+
+**O que acontece hoje:** o botão global registra o evento (autor, horário, texto opcional), cria «Reavaliar agora» e abre a
+Estabilização com os eixos reabertos (10ª rodada: «sem limiar, sem conduta»). No uso real, a tela que aparece são os
+cartões «Não avaliado» — nada diz o que fazer.
+
+**O que existe e não é mostrado:** a conduta da fonte para piora neurológica após trombolítico (Table 7 — interromper a
+infusão, se em curso, e TC de crânio de urgência) já está transcrita em `avc/conteudo/superficie-g.ts`, na
+monitorização.
+
+**Proposta registrada (não decidida):** depois de registrar, uma tela «Piora: o que fazer agora» — atalhos para
+reavaliar ABCD e repetir o NIHSS, e, com trombolítico em curso ou registrado, a conduta já transcrita da Table 7. Sem
+conduta nova.
+
+**Relacionada:** «Preciso de ajuda» — 4 das 5 opções terminam em «não há conteúdo» + registro da conduta externa; o
+autor decidiu manter assim até existirem outros módulos para ligar às opções.
+

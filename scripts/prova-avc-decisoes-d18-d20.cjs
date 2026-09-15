@@ -3,7 +3,7 @@
  * PROVA · DECISÕES D-PEND-18, D-PEND-19 E D-PEND-20 (autor, 2026-09-13).
  *
  * PROMETE: (D-PEND-18 · AC-44) que a temperatura voltou ao caminho isquêmico — o
- * campo existe na Estabilização com fonte F-38, o eixo E · Exposição existe, e
+ * campo existe na Estabilização com fonte F-38, em «C · Circulação» (autor, 2026-09-15: sem «E · Exposição»), e
  * temperatura medida fica «medida» ⛔ sem virar ameaça, porque a §4.4 ⛔ não traz
  * corte na recomendação —, e que a §4.4 (p. e352) está transcrita verbatim, com as
  * três recomendações e seus graus; (D-PEND-19 · AC-45) que o segundo toque numa
@@ -83,12 +83,21 @@ const vazio = E.abrirAtendimento(rel);
     conf(`AC-44 · §4.4 rec. ${rec} verbatim, com o grau`, corrido.includes(verbatim) && grau.test(bloco), `⛔ rec. ${rec}`);
   }
 
+  /**
+   * ⚠️ Ajuste do autor (2026-09-15): a temperatura FICA (D-PEND-18), mas ⛔ num eixo «E · Exposição» — «não cabe isso em
+   * exposição». Ela mora onde se avaliam os sinais vitais: «C · Circulação», junto de PAS, PAD ⛔ FC.
+   */
   const eixos = A.ameacasImediatas(vazio);
-  conf("AC-44 · o eixo E · Exposição voltou, depois da glicemia", eixos.map((a) => a.letra).join("") === "ABCDE" && eixos[4].id === "exposicao", `⛔ ${eixos.map((a) => a.letra).join("")}`);
+  conf("AC-44 · a estabilização tem os eixos ABCD, sem «E · Exposição»",
+    eixos.map((a) => a.letra).join("") === "ABCD" && !eixos.some((a) => a.id === "exposicao"), `⛔ ${eixos.map((a) => a.letra).join("")}`);
+  const fonteA = lerFonte(path.join(appDir, "avc", "conteudo", "superficie-a.ts"));
+  conf("AC-44 · a temperatura está no grupo «C · Circulação», junto de PAS/PAD/FC; ⛔ há grupo «E · Exposição»",
+    /id: "pressao",\s*titulo: "C · Circulação",\s*campos: \[[^\]]*TEMPERATURA_A/.test(fonteA) && !/titulo: "E · Exposição"/.test(fonteA), "⛔");
   const quente = E.registrarFato(vazio, { campo: "temperatura", valor: 39 }, rel);
-  const e = A.ameacasImediatas(quente).find((a) => a.id === "exposicao");
-  conf("AC-44 · 39 °C fica MEDIDA ⛔ e ⛔ não vira ameaça: a recomendação ⛔ não traz corte, ⛔ nenhum foi criado",
-    e !== undefined && e.estado === "medido" && e.valor === "39" && e.achado === undefined, `⛔ ${JSON.stringify(e)}`);
+  const lista = A.ameacasImediatas(quente);
+  conf("AC-44 · 39 °C ⛔ vira ameaça ⛔ nem mexe no eixo C: a recomendação ⛔ traz corte, ⛔ nenhum foi criado",
+    lista.every((a) => a.campo !== "temperatura" && a.achado === undefined) && lista.find((a) => a.id === "pressao")?.estado === "nao_avaliado",
+    `⛔ ${JSON.stringify(lista.map((a) => [a.id, a.estado, a.campo]))}`);
 }
 
 /* ══ D-PEND-19 · AC-45 · segundo toque em opção marcada é ignorado ═══════ */

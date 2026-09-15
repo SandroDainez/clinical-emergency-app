@@ -358,7 +358,7 @@ export const NEUROLOGICO_A: readonly CampoA[] = [
   },
 ];
 
-export const EXPOSICAO_A: readonly CampoA[] = [
+export const TEMPERATURA_A: readonly CampoA[] = [
   {
     id: "temperatura",
     temporalidade: "afericao",
@@ -503,7 +503,8 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
   {
     id: "pressao",
     titulo: "C · Circulação",
-    campos: [...PRESSAO_A, ...CIRCULACAO_EXTRA_A],
+    /** ⚠️ Autor, 2026-09-15: a temperatura é sinal vital de chegada — mora aqui, junto de PAS, PAD ⛔ FC, ⛔ num «E · Exposição». */
+    campos: [...PRESSAO_A, ...CIRCULACAO_EXTRA_A, ...TEMPERATURA_A],
   },
   {
     id: "neurologico-inicial",
@@ -514,7 +515,6 @@ const GRUPOS_A_DECLARADOS: readonly GrupoDeclarado[] = [
      */
     campos: [...NEUROLOGICO_A, ...GLICEMIA_A],
   },
-  { id: "exposicao", titulo: "E · Exposição", campos: EXPOSICAO_A },
   /**
    * ── ⚠️⚠️⚠️ O PESO SAIU DA ESTABILIZAÇÃO — 2026-09-08 ────────────────────
    *

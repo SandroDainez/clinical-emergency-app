@@ -202,12 +202,12 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
    */
   conf(
     "⚠️ atendimento vazio deixa os CINCO eixos em ⛔ NÃO avaliado, ⛔ e ⛔ sem valor",
-    lista.length === 5 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
+    lista.length === 4 && lista.every((a) => a.estado === "nao_avaliado" && a.valor === undefined),
     `⛔ ${lista.map((a) => `${a.id}=${a.estado}`).join(" · ")}`
   );
   conf(
-    "⚠️ as cinco letras do ABCDE estão lá, na ordem",
-    lista.map((a) => a.letra).join("") === "ABCDE",
+    "⚠️ as quatro letras ABCD estão lá, na ordem (autor, 2026-09-15: ⛔ há eixo E)",
+    lista.map((a) => a.letra).join("") === "ABCD",
     `⛔ "${lista.map((a) => a.letra).join("")}"`
   );
 
@@ -218,13 +218,18 @@ const eixo = (e, id) => A.ameacasImediatas(e).find((x) => x.id === id);
    * ⛔ nenhuma fonte deste módulo escreve (**E-31**).
    */
   {
+    /** ⚠️ Ajuste consciente (autor, 2026-09-15): a temperatura mora em «C · Circulação», ⛔ num eixo E. */
     const quente = com(novo(), "temperatura", 39);
-    const e = eixo(quente, "exposicao");
+    const todas = A.ameacasImediatas(quente);
     conf(
-      "⚠️⚠️ temperatura 39 °C fica **medida**, ⛔ e ⛔ NÃO vira ameaça",
-      e.estado === "medido" && e.valor === "39" && e.achado === undefined,
-      `⛔ estado="${e.estado}" · achado=${JSON.stringify(e.achado)} — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
+      "⚠️⚠️ temperatura 39 °C ⛔ vira ameaça ⛔ nem muda o eixo C",
+      todas.every((a) => a.campo !== "temperatura" && a.achado === undefined) && eixo(quente, "pressao").estado === "nao_avaliado",
+      `⛔ ${JSON.stringify(todas.map((a) => [a.id, a.estado]))} — ⛔ sem corte transcrito, ⛔ o app ⛔ não julga`
     );
+    /** ⚠️ Retomada: atendimento salvo com o eixo «exposicao» concluído continua abrindo — o nome sobra, ⛔ ninguém o lê. */
+    const legado = { ...novo(), eixosConcluidos: ["exposicao"] };
+    conf("retomada com «exposicao» concluído (legado) ⛔ quebra a leitura dos eixos",
+      A.ameacasImediatas(legado).length === 4, "⛔");
   }
 }
 
@@ -339,4 +344,4 @@ if (falhas > 0) {
   console.log(`\n❌ AMEAÇAS IMEDIATAS — ${falhas} falha(s), ${ok} ok\n`);
   process.exit(1);
 }
-console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 5 eixos (ABCDE)`);
+console.log(`✅ AMEAÇAS IMEDIATAS — ${ok}/${ok} conferências · 4 eixos (ABCD)`);

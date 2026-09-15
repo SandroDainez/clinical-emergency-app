@@ -89,7 +89,7 @@ test.describe("AVC · 12ª rodada · Entrega 1", () => {
     await page.getByTestId("avc-aba-estabilizacao").click();
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
-    for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial", "exposicao"]) {
+    for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial"]) {
       await abrirEixosDaEstabilizacao(page);
       const botao = page.getByTestId(`avc-eixo-concluir-${g}`);
       if ((await botao.textContent())?.includes("Concluir")) await botao.click();
@@ -105,7 +105,8 @@ test.describe("AVC · 12ª rodada · Entrega 1", () => {
     await expect(page.getByTestId("avc-g-linha-do-tempo").locator('[data-testid^="avc-g-tempo-engano-"]'), "⛔ corrigir duas vezes").toHaveCount(0);
     await page.getByTestId("avc-aba-estabilizacao").click();
     await expect(page.getByTestId("avc-prioridade-reavaliar"), "⛔ a tarefa voltou").toHaveCount(0);
-    await expect(page.getByTestId("avc-ameacas-imediatas").getByText("Avaliação concluída"), "⛔ a reavaliação feita foi desfeita").toHaveCount(5);
+    /** ⚠️ Ajuste consciente (autor, 2026-09-15): quatro eixos ABCD, ⛔ há E. */
+    await expect(page.getByTestId("avc-ameacas-imediatas").getByText("Avaliação concluída"), "⛔ a reavaliação feita foi desfeita").toHaveCount(4);
   });
 
   test("nome de exame ⛔ trunca na linha de prioridade a 375 px", async ({ page }) => {

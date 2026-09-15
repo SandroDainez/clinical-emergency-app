@@ -370,34 +370,10 @@ export function ameacasImediatas(estado: EstadoAvc): readonly AmeacaImediata[] {
   })();
 
   /**
-   * ── ⚠️⚠️ **E · EXPOSIÇÃO** — ⛔ e ⛔ ele ⛔ NUNCA acende ─────────────────────
-   *
-   * ⚠️ Decisão do autor (**item 12**): *"Criar E de forma mínima ⛔ e útil.
-   * ⛔ Não preencher com conteúdo deduzido."*
-   *
-   * ⛔ ⛔ **⛔ Nenhuma fonte transcrita do AVC dá corte para temperatura.**
-   * ⚠️ Então ⛔ ele ⛔ só sabe dizer duas coisas: **medido** ⛔ ou **⛔ não
-   * avaliado** — ⛔ e ⛔ isso ⛔ não é um eixo fraco: ⛔ é a recusa a inventar
-   * limiar. ⛔ Um `E` que acendesse por 38,2 °C estaria emitindo conduta que
-   * ⛔ nenhuma fonte deste módulo escreve (**E-31**).
-   *
-   * ⛔ ⛔ Quando houver fonte — ⛔ e há, em sepse ⛔ e em pós-parada —, ⛔ ela
-   * entra com slot próprio ⛔ e o consumidor declarado.
+   * ⚠️ Autor, 2026-09-15: ⛔ há eixo «E · Exposição» no AVC. A temperatura (D-PEND-18, §4.4, sem corte) é campo de
+   * «C · Circulação», ⛔ e ⛔ nunca vira ameaça: o eixo C continua lendo só a pressão.
    */
-  const exposicao = ((): AmeacaImediata => {
-    const t = numero(estado, "temperatura");
-    return {
-      id: "exposicao",
-      letra: "E",
-      nome: "Exposição",
-      estado: t === undefined ? "nao_avaliado" : "medido",
-      campo: "temperatura",
-      valor: t === undefined ? undefined : String(t),
-      unidade: "°C",
-    };
-  })();
-
-  return [viaAerea, respiracao, pressao, glicemia, exposicao];
+  return [viaAerea, respiracao, pressao, glicemia];
 }
 
 /**

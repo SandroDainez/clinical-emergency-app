@@ -745,8 +745,8 @@ test.describe("Superfície A — UX clínica", () => {
     /**
      * ⚠️⚠️ ⛔ O **ABCDE CLÁSSICO** — decisão **C1**, 2026-09-06.
      *
-     * ⛔ Eram quatro blocos, ⛔ e `D` era a glicemia. ⚠️ Agora são cinco, ⛔ `D`
-     * é o neurológico ⛔ com a glicemia dentro, ⛔ e `E · Exposição` existe.
+     * ⛔ Eram quatro blocos, ⛔ e `D` era a glicemia. ⚠️ `D` é o neurológico ⛔ com a glicemia dentro. ⚠️ Autor,
+     * 2026-09-15: `E · Exposição` saiu; a temperatura mora em `C · Circulação`.
      * ⛔ **Monitorização e acessos** entrou antes de `A`, porque instalar
      * monitor ⛔ e pegar acesso precede avaliar.
      *
@@ -766,7 +766,6 @@ test.describe("Superfície A — UX clínica", () => {
       "B · RESPIRAÇÃO",
       "C · CIRCULAÇÃO",
       "D · NEUROLÓGICO",
-      "E · EXPOSIÇÃO",
       /**
        * ⚠️ ⛔ *"PESO"* ⛔ e *"CRISE NO INÍCIO"* saíram da lista em 2026-09-08 —
        * ⛔ os dois deixaram de ser desenhados ⛔ aqui. ⚠️ ⛔ A ausência ⛔ deles

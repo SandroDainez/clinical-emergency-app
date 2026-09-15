@@ -50,7 +50,7 @@ test.describe("AVC · cockpit ABCDE", () => {
         els.map((e) => e.getAttribute("data-testid")!.replace("avc-ameaca-", ""))
       );
     expect(ordem, "⛔ o ABCDE clássico, na ordem").toEqual([
-      "via_aerea", "respiracao", "pressao", "glicemia", "exposicao",
+      "via_aerea", "respiracao", "pressao", "glicemia",
     ]);
   });
 
@@ -225,10 +225,13 @@ test.describe("AVC · cockpit ABCDE", () => {
      * ⛔ não a garantia: ⛔ quem mede o acordeão é `avc-eixos-acordeao`.
      */
     await abrirEixosDaEstabilizacao(page);
-    await page.getByTestId("avc-num-caixa-temperatura").fill("39");
-    const e = page.getByTestId("avc-ameaca-exposicao");
-    await expect(e).toContainText("39");
-    /** ⚠️ ⛔ Sem corte transcrito, ⛔ o app ⛔ não julga (**E-31**). */
-    await expect(e, "⛔ 39 °C ⛔ sem fonte ⛔ não pode acender").toContainText("Medido");
+    /** ⚠️ Ajuste consciente (autor, 2026-09-15): a temperatura mora em «C · Circulação», ⛔ num eixo E. */
+    const temperatura = page.getByTestId("avc-grupo-pressao").getByTestId("avc-num-caixa-temperatura");
+    await expect(temperatura, "⛔ a temperatura ⛔ está em C").toBeVisible();
+    await temperatura.fill("39");
+    await temperatura.blur();
+    await expect(page.getByTestId("avc-ameaca-exposicao"), "⛔ o eixo E voltou").toHaveCount(0);
+    /** ⚠️ ⛔ Sem corte transcrito, ⛔ o app ⛔ não julga (**E-31**): o cartão C ⛔ acende por temperatura. */
+    await expect(page.getByTestId("avc-ameaca-pressao"), "⛔ 39 °C ⛔ sem fonte ⛔ não pode acender").not.toContainText("39");
   });
 });

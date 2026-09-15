@@ -74,7 +74,8 @@ conf("o módulo de transferência existe ⛔ e exporta leitura, linha do tempo �
     && typeof T.pendenciasDoDestino === "function" && typeof T.avaliacaoEspecializadaRegistrada === "function",
   "⛔ avc/nucleo/transferencia.ts ausente ou incompleto");
 
-const EIXOS = ["via_aerea", "respiracao", "pressao", "glicemia", "exposicao"];
+/** ⚠️ Ajuste consciente (autor, 2026-09-15): ⛔ há eixo E. */
+const EIXOS = ["via_aerea", "respiracao", "pressao", "glicemia"];
 const rel = R.relogioControlado(1_800_000_000_000);
 const reg = (e, campo, valor, extra = {}) => E.registrarFato(e, { campo, valor, ...extra }, rel);
 const vazio = () => E.abrirAtendimento(rel);

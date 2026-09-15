@@ -44,16 +44,19 @@ test.describe("AVC · D-PEND-19 · segundo toque em opção marcada é ignorado"
 });
 
 test.describe("AVC · D-PEND-18 · temperatura no caminho isquêmico", () => {
-  test("a temperatura voltou à Estabilização, ⛔ e 39 °C fica medida sem virar ameaça", async ({ page }) => {
+  /**
+   * ⚠️ Ajuste consciente (autor, 2026-09-15): a temperatura fica, mas ⛔ num eixo «E · Exposição» — mora em
+   * «C · Circulação», junto de PAS, PAD ⛔ FC. ⛔ Sem corte na recomendação, 39 °C ⛔ acende nada.
+   */
+  test("a temperatura está em «C · Circulação», ⛔ e 39 °C ⛔ vira ameaça", async ({ page }) => {
     await abrir(page);
     await page.getByTestId("avc-aba-estabilizacao").click();
     await abrirEixosDaEstabilizacao(page);
-    const caixa = page.getByTestId("avc-num-caixa-temperatura");
-    await expect(caixa).toBeVisible();
+    const caixa = page.getByTestId("avc-grupo-pressao").getByTestId("avc-num-caixa-temperatura");
+    await expect(caixa, "⛔ a temperatura ⛔ está em C").toBeVisible();
     await caixa.fill("39");
     await caixa.blur();
-    const eixo = page.getByTestId("avc-ameaca-exposicao");
-    await expect(eixo).toContainText("39");
-    await expect(eixo, "⛔ 39 °C sem corte na recomendação ⛔ não pode acender").toContainText("Medido");
+    await expect(page.getByTestId("avc-ameaca-exposicao"), "⛔ o eixo E voltou").toHaveCount(0);
+    await expect(page.getByTestId("avc-ameaca-pressao"), "⛔ 39 °C sem corte na recomendação ⛔ não pode acender o cartão C").not.toContainText("39");
   });
 });
