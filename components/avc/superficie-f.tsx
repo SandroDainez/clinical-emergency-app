@@ -204,6 +204,8 @@ type Props = {
   onEscolherNaInstancia: (instancia: string, campo: string, valor: string) => void;
   onHoraNaInstancia: (instancia: string, campo: string, valor: number) => void;
   onDesfazerNaInstancia: (instancia: string, campo: string) => void;
+  /** ⚠️ AC-13 reaberto, item 2: correção explícita, por engano, de um registro da trilha. */
+  onCorrigirPorEngano: (fatoId: string) => void;
   /** ⚠️ AC-85 (15ª rodada): desfecho negativo — horário, «Limpar» ⛔ decisão global. */
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onDesfazer: (campo: string) => void;
@@ -220,6 +222,7 @@ export default function SuperficieF({
   onEscolherNaInstancia,
   onHoraNaInstancia,
   onDesfazerNaInstancia,
+  onCorrigirPorEngano,
   onHora,
   onDesfazer,
   onDecisaoGlobal,
@@ -1229,7 +1232,7 @@ export default function SuperficieF({
               />
             ))}
             {/** ⚠️ AC-13: cada situação registrada, com horário ⛔ autoria — ⛔ o estado antigo ⛔ some. */}
-            <TransicoesDaAcao estado={estado} instancia={inst} campo="ivt_estado" />
+            <TransicoesDaAcao estado={estado} instancia={inst} campo="ivt_estado" onCorrigirPorEngano={onCorrigirPorEngano} />
           </View>
         ))}
         {/**

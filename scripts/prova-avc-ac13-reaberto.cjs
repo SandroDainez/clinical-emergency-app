@@ -7,9 +7,12 @@
  *    agregação decidida pelo autor, e todo consumidor clínico que depende dela declara `desconhecida`
  *    em vez de devolver, calado, a saída de "sem trombólise". A conduta atual de cada consumidor é
  *    preservada: a conduta clínica final diante de `desconhecida` NÃO é decidida aqui (§9).
+ *  · item 2 — «Limpar» e a correção por engano são linhas próprias da trilha; nenhuma linha é vigente quando o
+ *    valor atual da instância está vazio; «Limpar» mantém a exposição já registrada e só a correção explícita,
+ *    com motivo, a retira; a retomada pelo log devolve a mesma trilha.
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
- *   sintese-do-caso}.ts`, `avc/persistencia/log.ts`.
+ *   sintese-do-caso,transicoes-da-acao,correcao-da-acao}.ts`, `avc/persistencia/log.ts`.
  * FONTE: `docs/decisoes.md`, AC-13 reaberto, §1 e §9.
  */
 const fs = require("node:fs");
@@ -22,6 +25,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "ac13-reaberto-"));
 const entradas = [
   "avc/nucleo/portao-ivt.ts", "avc/nucleo/derivacoes-f.ts", "avc/nucleo/derivacoes-g.ts", "avc/nucleo/alvo-pressorico.ts",
   "avc/nucleo/caminho-hemorragico.ts", "avc/nucleo/plano-48h.ts", "avc/nucleo/sintese-do-caso.ts", "avc/nucleo/transicoes-da-acao.ts",
+  "avc/nucleo/correcao-da-acao.ts",
   "avc/persistencia/log.ts", "avc/conteudo/campos.ts", "avc/conteudo/superficies.ts", "design-system/estados-clinicos.ts",
 ];
 try {
@@ -188,6 +192,157 @@ for (const [nome, e] of [["«não sei» sozinho", atendimento(["nao_sei"])], ["c
   conf("1e · sem nenhuma instância · plano sem incerteza da trombólise",
     tenta(() => (PL.planoAte48h(vazio, AGORA).incertezas || []).length) === 0, "⛔");
 }
+
+/* ══ ITEM 2 · a trilha fiel: desfazer e corrigir são eventos próprios ═══════ */
+/**
+ * Decisão do autor (AC-13 reaberto, §2 e §9): «Limpar» não apaga a consequência clínica de uma exposição
+ * já registrada; a exposição só sai por correção explícita do registro que a originou, com motivo e
+ * trilha; o estado vigente vem do estado reconstruído atual, e nunca da última linha listada.
+ */
+/** ⚠️ Uma exceção dentro de um bloco vira vermelho contado, ⛔ interrompe a prova. */
+const bloco = (nome, fn) => {
+  try { fn(); } catch (err) { conf(`${nome} · a conferência terminou sem exceção`, false, `⛔ ${String(err && err.message).slice(0, 160)}`); }
+};
+const TA = emT("avc/nucleo/transicoes-da-acao.js");
+const CA = emT("avc/nucleo/correcao-da-acao.js");
+const SE2 = emT("avc/conteudo/superficie-e.js");
+const inst1 = (e) => I.instanciasDe(e, SF.TROMBOLISE_IV)[0];
+const trilha = (e, inst = inst1(e), campo = "ivt_estado") => tenta(() => TA.transicoesDoEstadoDaAcao(e, inst, campo));
+/** ⚠️ O gesto «Limpar» da tela: correção sem motivo, que devolve o campo a vazio. */
+const limpar = (e, inst = inst1(e), campo = "ivt_estado") => CAMPOS.corrigirNaInstancia(e, { campo, valor: "nao_perguntado" }, rel, inst);
+const corrigirEngano = (e, fatoId) => tenta(() => CA.corrigirRegistroDaAcaoPorEngano(e, fatoId, rel));
+const idDoRegistro = (e, rotulo, inst = inst1(e), campo = "ivt_estado") =>
+  (I.fatosDaInstancia(e, inst).filter((f) => f.campo === campo && f.valor === rotulo).slice(-1)[0] || {}).id;
+
+/* 2a · «Limpar» vira linha própria, nada fica vigente, e a exposição fica */
+bloco("2a", () => {
+  const e = limpar(atendimento(["Iniciada"]));
+  const t = trilha(e);
+  conf("2a · «Limpar» depois de «Iniciada» → a trilha tem o registro e a limpeza, na ordem",
+    Array.isArray(t) && t.length === 2 && t[0].tipo === "registro" && t[0].estado === "iniciado"
+      && t[1].tipo === "limpeza" && t[1].corrigeFatoId === t[0].fatoId, `⛔ ${J(t)}`);
+  conf("2a · depois de «Limpar», nenhuma linha é a situação vigente", Array.isArray(t) && t.every((x) => x.vigente === false), `⛔ ${J(t)}`);
+  conf("2a · «Limpar» ⛔ apaga a exposição já registrada (decisão do autor)", certeza(e) === "exposta", `⛔ ${J(certeza(e))}`);
+  for (const rotulo of ["Administrada/concluída", "Interrompida"]) {
+    const x = limpar(atendimento([rotulo]));
+    conf(`2a · «Limpar» depois de «${rotulo}» → a exposição continua`, certeza(x) === "exposta", `⛔ ${J(certeza(x))}`);
+  }
+});
+
+/* 2b · correção explícita por engano: o registro é invalidado, com motivo, e a exposição sai */
+bloco("2b", () => {
+  const base = atendimento(["Iniciada"]);
+  const e = corrigirEngano(base, idDoRegistro(base, "Iniciada"));
+  const t = trilha(e);
+  conf("2b · correção por engano → o registro corrigido fica marcado como invalidado por correção",
+    Array.isArray(t) && t.length === 2 && t[0].tipo === "registro" && t[0].invalidadaPorCorrecao === true
+      && t[1].tipo === "correcao_por_engano" && t[1].corrigeFatoId === t[0].fatoId && t[1].motivo === "registrado por engano", `⛔ ${J(t)}`);
+  conf("2b · depois da correção, nenhuma linha é a situação vigente", Array.isArray(t) && t.every((x) => x.vigente === false), `⛔ ${J(t)}`);
+  conf("2b · a correção explícita retira a exposição: a instância volta a não ter situação, e a certeza é desconhecida",
+    certeza(e) === "desconhecida" && tenta(() => DF.exposicaoDaInstancia(e, inst1(e)).estado) === "registro_em_aberto", `⛔ ${J([certeza(e), tenta(() => DF.exposicaoDaInstancia(e, inst1(e)))])}`);
+  const depois = regI(e, inst1(e), "ivt_estado", "Cancelada");
+  const x = tenta(() => DF.exposicaoAoTrombolitico(depois));
+  conf("2b · corrigida por engano e depois «Cancelada» → não exposta, sem contradição, com «Cancelada» vigente",
+    certeza(depois) === "nao_exposta" && x && x.estado === "cancelada_antes_do_inicio"
+      && (trilha(depois) || []).filter((y) => y.vigente).map((y) => y.estado).join() === "cancelado", `⛔ ${J([certeza(depois), x, trilha(depois)])}`);
+  const dupla = corrigirEngano(e, idDoRegistro(base, "Iniciada"));
+  conf("2b · corrigir de novo o mesmo registro ⛔ cria segunda correção",
+    dupla && Array.isArray(dupla.fatos) && dupla.fatos.length === e.fatos.length, `⛔ ${dupla && dupla.fatos && dupla.fatos.length} × ${e.fatos.length}`);
+  const t0 = trilha(e) || [];
+  const daCorrecao = t0.find((y) => y.tipo === "correcao_por_engano");
+  const sobreCorrecao = daCorrecao ? corrigirEngano(e, daCorrecao.fatoId) : undefined;
+  conf("2b · uma correção ⛔ pode ser corrigida por engano como se fosse registro",
+    sobreCorrecao && sobreCorrecao.fatos && sobreCorrecao.fatos.length === e.fatos.length, `⛔ ${J(sobreCorrecao && sobreCorrecao.fatos && sobreCorrecao.fatos.length)}`);
+});
+
+/* 2c · só o registro corrigido perde a validade */
+bloco("2c", () => {
+  const base = atendimento(["Iniciada", "Interrompida"]);
+  const e = corrigirEngano(base, idDoRegistro(base, "Interrompida"));
+  const x = tenta(() => DF.exposicaoAoTrombolitico(e));
+  conf("2c · «Iniciada» → «Interrompida» corrigida por engano → continua exposta, na fase iniciada",
+    x && x.estado === "exposta" && x.fase === "iniciada", `⛔ ${J(x)}`);
+});
+
+/* 2c · a hora da interrupção lida pelo caminho hemorrágico ignora a interrupção corrigida por engano */
+bloco("2c", () => {
+  let e = atendimento(["Iniciada"]);
+  const inst = inst1(e);
+  e = CAMPOS.registrarComInstancia(e, { campo: "ivt_estado", valor: "Interrompida", horaClinica: AGORA - 30 * MIN }, rel, inst);
+  e = CAMPOS.registrarComInstancia(e, { campo: "ivt_estado", valor: "Interrompida", horaClinica: AGORA - 5 * MIN }, rel, inst);
+  const x = corrigirEngano(e, idDoRegistro(e, "Interrompida"));
+  const c = tenta(() => CH.caminhoHemorragico(comHemorragia(x)));
+  conf("2c · segunda «Interrompida» corrigida por engano → o caminho hemorrágico lê a hora da primeira",
+    c && c.infusao === "interrompida" && c.interrompidaEm === AGORA - 30 * MIN, `⛔ ${J(c && [c.infusao, c.interrompidaEm])}`);
+});
+
+/* 2d · propriedade: a linha vigente é sempre a do estado reconstruído atual */
+bloco("2d", () => {
+  let semente = 20260914;
+  const sorteio = (n) => { semente = (semente * 1103515245 + 12345) % 2147483648; return semente % n; };
+  const ROTULOS = ["Indicada", "Decidida", "Prescrita", "Preparada", "Iniciada", "Administrada/concluída", "Interrompida", "Cancelada", "nao_sei"];
+  const violacoes = [];
+  for (let seq = 0; seq < 150 && violacoes.length < 3; seq++) {
+    let e = atendimento([]);
+    const passos = [];
+    for (let k = 0; k < 7; k++) {
+      const acao = sorteio(3);
+      if (acao === 0) { const r = ROTULOS[sorteio(ROTULOS.length)]; e = regI(e, inst1(e), "ivt_estado", r); passos.push(r); }
+      else if (acao === 1) { e = limpar(e); passos.push("limpar"); }
+      else {
+        const validos = (trilha(e) || []).filter((t) => t.tipo === "registro" && !t.invalidadaPorCorrecao);
+        if (validos.length > 0) { const alvo = validos[sorteio(validos.length)]; e = corrigirEngano(e, alvo.fatoId); passos.push(`engano:${alvo.estado ?? "nao_sei"}`); }
+      }
+      const t = trilha(e);
+      const fatos = I.fatosDaInstancia(e, inst1(e)).filter((f) => f.campo === "ivt_estado");
+      const atual = I.valorNaInstancia(e, inst1(e), "ivt_estado");
+      const vigentes = Array.isArray(t) ? t.filter((x) => x.vigente) : null;
+      const atualValido = atual !== undefined && String(atual.valor) !== "nao_perguntado";
+      const ok = Array.isArray(t) && t.length === fatos.length && t.every((x, i) => x.fatoId === fatos[i].id)
+        && vigentes.length === (atualValido ? 1 : 0)
+        && (!atualValido || vigentes[0].fatoId === atual.id);
+      if (!ok) { violacoes.push({ passos: [...passos], trilha: t && t.map((x) => [x.tipo, x.estado, x.vigente]) }); break; }
+    }
+  }
+  conf("2d · propriedade: todo fato do campo aparece uma vez, e a vigente é sempre o valor atual da instância (150 sequências)",
+    violacoes.length === 0, `⛔ ${J(violacoes[0])}`);
+});
+
+/* 2e · a retomada pelo log devolve a mesma trilha, com limpeza e correção */
+bloco("2e", () => {
+  let ids = 0;
+  const ctx = () => ({ casoId: "caso-ac13-item2", autor: "local:prova", origemDoAutor: "aparelho", agora: rel.agora(), gerarId: () => `ev-${++ids}` });
+  let est = vazio;
+  const eventos = [...LOG.eventosDeAbertura(est, ctx())];
+  const passos = [
+    (e) => I.abrirNovaInstancia(e, SF.TROMBOLISE_IV, rel),
+    (e) => regI(e, inst1(e), "ivt_estado", "Iniciada"),
+    (e) => limpar(e),
+    (e) => regI(e, inst1(e), "ivt_estado", "Prescrita"),
+    (e) => corrigirEngano(e, idDoRegistro(e, "Prescrita")),
+  ];
+  for (const p of passos) { const prox = p(est); eventos.push(...LOG.eventosDaTransicao(est, prox, ctx())); est = prox; }
+  const rec = tenta(() => LOG.reconstruirEstado(JSON.parse(J(eventos))));
+  conf("2e · a retomada devolve a mesma trilha e a mesma exposição",
+    rec && !rec.erro && J(trilha(rec, inst1(rec))) === J(trilha(est)) && certeza(rec) === certeza(est), `⛔ ${J([trilha(rec, rec && inst1(rec)), trilha(est)])}`);
+});
+
+/* 2f · a mesma trilha vale para a ação corretiva de Correções */
+bloco("2f", () => {
+  let e = I.abrirNovaInstancia(vazio, SE2.ACAO, rel);
+  const inst = I.instanciasDe(e, SE2.ACAO)[0];
+  e = regI(e, inst, "acao_tipo", "Correção glicêmica");
+  e = regI(e, inst, "acao_estado", "Iniciada");
+  e = limpar(e, inst, "acao_estado");
+  const t = trilha(e, inst, "acao_estado");
+  conf("2f · Correções · «Limpar» na situação da ação vira linha de limpeza, sem vigente",
+    Array.isArray(t) && t.length === 2 && t[1].tipo === "limpeza" && t.every((x) => !x.vigente), `⛔ ${J(t)}`);
+  const comRegistro = regI(e, inst, "acao_estado", "Iniciada");
+  const idDaAcao = I.fatosDaInstancia(comRegistro, inst).filter((f) => f.campo === "acao_estado").slice(-1)[0].id;
+  const tentativa = corrigirEngano(comRegistro, idDaAcao);
+  conf("2f · Correções · a correção por engano ⛔ vale para a ação corretiva nesta rodada («Ações corretivas: nenhuma mudança», §9)",
+    tentativa && Array.isArray(tentativa.fatos) && tentativa.fatos.length === comRegistro.fatos.length, `⛔ ${J(tentativa && tentativa.fatos && tentativa.fatos.length)} × ${comRegistro.fatos.length}`);
+});
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);
 process.exit(falhas === 0 ? 0 : 1);

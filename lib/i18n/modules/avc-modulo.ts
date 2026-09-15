@@ -455,6 +455,13 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "situação vigente": "situación vigente",
   "Não sei — situação não informada": "No sé — situación no informada",
   "registro antigo": "registro antiguo",
+  // ── AC-13 reaberto · item 2 · trilha fiel (2026-09-14) ──────────────────
+  "Campo limpo": "Campo limpiado",
+  "Correção: registrado por engano": "Corrección: registrado por error",
+  "invalidado por correção": "invalidado por corrección",
+  "Situação registrada por engano?": "¿Situación registrada por error?",
+  "O registro não é apagado: fica na trilha, recebe correção com motivo «registrado por engano» e deixa de valer para a situação da ação. Os outros registros não mudam.":
+    "El registro no se borra: queda en el historial, recibe una corrección con motivo «registrado por error» y deja de valer para la situación de la acción. Los demás registros no cambian.",
   "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada":
     "Evaluación de riesgo y beneficio obligatoria — requiere decisión clínica registrada",
   "Avaliação cuidadosa de risco e benefício com as especialidades que a fonte indica; registrar a decisão clínica":

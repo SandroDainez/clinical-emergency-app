@@ -21,6 +21,7 @@ import { valorAtual, type EstadoAvc } from "./estado";
 import { leituraDoNihssCalculado, nihssCalculado, nihssInconclusivoPorSedacao } from "./derivacoes-b";
 import { ternario } from "./leitura";
 import { fatosDaInstancia, instanciasDe, valorNaInstancia } from "./instancia";
+import { idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
 import {
   DOSES, FAIXAS_TABLE_7_TNK, FONTE_DA_TABLE_7,
   RECOMENDACOES,
@@ -1101,8 +1102,14 @@ const FASE_DO_ESTADO: Readonly<Partial<Record<EstadoDaTrombolise, FaseDaExposica
 
 /** ⚠️ A exposição de **uma** instância, lida do histórico dela. */
 export function exposicaoDaInstancia(estado: EstadoAvc, instancia: string): Exposicao {
-  const registros = fatosDaInstancia(estado, instancia)
-    .filter((f) => f.campo === "ivt_estado")
+  const doCampo = fatosDaInstancia(estado, instancia).filter((f) => f.campo === "ivt_estado");
+  /**
+   * ⚠️ AC-13 reaberto, item 2: o registro corrigido por engano (correção COM motivo) deixa de valer. O «Limpar»
+   * (correção sem motivo) ⛔ invalida nada: a exposição já registrada continua.
+   */
+  const invalidados = idsInvalidadosPorCorrecao(doCampo);
+  const registros = doCampo
+    .filter((f) => !invalidados.has(f.id))
     .map((f) => informacaoDoEstadoDaAcao(f.valor))
     .filter((i) => i.tipo !== "nao_perguntado");
   const historico = registros.flatMap((i) => (i.tipo === "registrado" ? [i.estado] : []));

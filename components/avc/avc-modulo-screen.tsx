@@ -168,6 +168,7 @@ import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../.
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
+import { corrigirRegistroDaAcaoPorEngano } from "../../avc/nucleo/correcao-da-acao";
 import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
 import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
 import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeNeurocirurgia, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
@@ -2586,6 +2587,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onEscolherNaInstancia={escolherNaInstancia}
             onHoraNaInstancia={medirNaInstancia}
             onDesfazerNaInstancia={desfazerNaInstancia}
+            onCorrigirPorEngano={(fatoId) => setEstado((e) => corrigirRegistroDaAcaoPorEngano(e, fatoId, relogio))}
             onHora={registrarHora}
             onDesfazer={desfazer}
             onDecisaoGlobal={(motivo) => setEstado((e) => registrarDecisaoGlobalDeNaoReperfundir(e, motivo, relogio.agora(), relogio))}

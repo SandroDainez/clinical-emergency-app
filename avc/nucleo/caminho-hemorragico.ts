@@ -16,6 +16,7 @@ import { estudos } from "./derivacoes-c";
 import { certezaDaInstancia, exposicaoAoTrombolitico } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { fatosDaInstancia } from "./instancia";
+import { idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
 import type { Relogio } from "./relogio";
 import { itensSelecionados } from "./selecao";
 import type { Pendencia } from "./tipos";
@@ -49,7 +50,9 @@ function infusao(estado: EstadoAvc): { estado: InfusaoNoCaminho; instancia?: str
   if (x.estado !== "exposta") return { estado: certezaDaInstancia(x) === "desconhecida" ? "desconhecida" : "sem_trombolise" };
   if (x.fase === "iniciada") return { estado: "em_curso", instancia: x.instancia };
   if (x.fase === "interrompida") {
-    const f = [...fatosDaInstancia(estado, x.instancia)].reverse().find((y) => y.campo === "ivt_estado" && y.valor === "Interrompida");
+    const doCampo = fatosDaInstancia(estado, x.instancia).filter((y) => y.campo === "ivt_estado");
+    const invalidados = idsInvalidadosPorCorrecao(doCampo);
+    const f = [...doCampo].reverse().find((y) => y.valor === "Interrompida" && !invalidados.has(y.id));
     return { estado: "interrompida", instancia: x.instancia, interrompidaEm: f === undefined ? undefined : f.horaClinica ?? f.horaRegistro };
   }
   return { estado: "concluida", instancia: x.instancia };

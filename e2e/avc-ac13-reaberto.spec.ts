@@ -52,3 +52,38 @@ test.describe("AVC · AC-13 reaberto · item 1 · exposição desconhecida", () 
     await expect(page.getByTestId("avc-a-alvos-exposicao-desconhecida")).toBeVisible();
   });
 });
+
+test.describe("AVC · AC-13 reaberto · item 2 · a trilha fiel", () => {
+  test("«Iniciada» e «Limpar» → a trilha mostra a limpeza, nenhuma situação vigente, e a exposição continua", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-limpar-ivt_estado").click();
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("Iniciada");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-1")).toContainText("Campo limpo");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1")).not.toContainText("situação vigente");
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-g-monitorizacao")).toBeVisible();
+  });
+
+  test("«Iniciada» e «Foi engano — corrigir» na trilha → o registro fica invalidado e o Destino declara a exposição desconhecida", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await page.getByTestId("avc-transicoes-corrigir-trombolise_iv_1-0").click();
+    await page.getByTestId("avc-confirmar-engano-sim").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("invalidado por correção");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-1")).toContainText("registrado por engano");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1")).not.toContainText("situação vigente");
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-g-exposicao-desconhecida")).toBeVisible();
+    await expect(page.getByTestId("avc-g-monitorizacao")).toHaveCount(0);
+  });
+
+  test("«Manter o registro» no diálogo ⛔ muda nada", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await page.getByTestId("avc-transicoes-corrigir-trombolise_iv_1-0").click();
+    await page.getByTestId("avc-confirmar-engano-manter").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-1")).toHaveCount(0);
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("situação vigente");
+  });
+});
