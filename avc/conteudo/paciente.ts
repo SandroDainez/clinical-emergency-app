@@ -294,7 +294,8 @@ export const BASAIS_P: readonly CampoP[] = [
     tipo: "escolha",
     temporalidade: "estavel",
     /** ⚠️ VOCABULÁRIO PRÓPRIO — a origem muda a confiança sem mudar o número (E-14). */
-    opcoes: ["Informado pelo paciente ou família", "Estimado pela equipe", NAO_SEI],
+    /** ⚠️ ARQ-APOIO-01 F2 · AP-6 (autor, 2026-09-15): «Medido» entra; os valores gravados antigos continuam; ⛔ «Importado». */
+    opcoes: ["Medido", "Informado pelo paciente ou família", "Estimado pela equipe", NAO_SEI],
     fonte: "F-09",
     bloqueiaTerapia: false,
   },

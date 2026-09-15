@@ -400,7 +400,9 @@ export default function SuperficieF({
   const pesoBruto = valorAtual(estado, "peso")?.valor;
   const origemBruta = String(valorAtual(estado, "peso_origem")?.valor ?? "");
   const origem: OrigemDoPeso | undefined =
-    origemBruta === "Estimado pela equipe"
+    origemBruta === "Medido"
+      ? "medido"
+      : origemBruta === "Estimado pela equipe"
       ? "estimado"
       : origemBruta === "Informado pelo paciente ou família"
         ? "informado"
@@ -1106,15 +1108,24 @@ export default function SuperficieF({
                 <Text style={e.doseSub} testID="avc-f-dose-regulatorio">{tr(SITUACAO_REGULATORIA_TNK)}</Text>
               ) : null}
               <Text style={e.doseSub} testID="avc-f-dose-origem">
-                {tr("peso")} {dose.pesoKg} {tr("kg")} — {tr(origemBruta)}
+                {tr("peso")} {dose.pesoKg} {tr("kg")} — {dose.origemDoPeso === undefined ? tr("origem do peso não informada") : tr(origemBruta)}
+                {/** ⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): o teto da fonte dito na linha da dose, ⛔ um Math.min silencioso. */}
+                {dose.tetoAplicado ? (
+                  <Text testID="avc-f-dose-teto">
+                    {" — "}{tr("dose calculada limitada ao máximo de")} {dose.maximoMg} {tr("mg")}
+                  </Text>
+                ) : null}
               </Text>
             </>
           ) : (
             <>
               <Text style={e.doseVazia} testID="avc-f-dose-vazia">
-                {tr(
-                  "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso."
-                )}
+                {/** ⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): diz o dado que falta — ⛔ culpa o que já foi registrado. */}
+                {!(typeof pesoBruto === "number" && pesoBruto > 0)
+                  ? tr("Sem peso registrado, não há dose. O app não estima peso.")
+                  : agenteDose === undefined
+                    ? tr("Escolha o agente para ver a dose.")
+                    : tr("Dose por peso calculada só para a população validada.")}
               </Text>
               {/**
                 * ── ⚠️⚠️⚠️ **D-126** · A LEITURA DO PESO MORA ⛔ AQUI ────────

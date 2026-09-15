@@ -183,6 +183,7 @@ const campos = [
     "Periférico",
     "Central",
     "Leve",                      // "leve" tem a mesma forma nos dois idiomas
+    "Medido",                    // ARQ-APOIO-01 F2 · AP-6: origem do peso — "medido" tem a mesma forma nos dois idiomas
     "Puérpera",                  // AC-03: "puérpera" tem a mesma forma nos dois idiomas
     "Incapacitante",             // idem
     "Bilateral",                 // idem

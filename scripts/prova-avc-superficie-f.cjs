@@ -218,9 +218,13 @@ confere("⚠️⚠️ ⛔ ⛔ NENHUMA recomendação negativa tem zero insumos",
   `⛔ ela alertaria para todo paciente — encontradas: ${negativasSemInsumo.join(", ")}`);
 
 // ── ⚠️⚠️ 7 · DOSE ⛔ NÃO É PREPARO ────────────────────────────────────────
-confere("⚠️⚠️ ⛔ ⛔ SEM PESO ⛔ NÃO EXISTE DOSE",
+/**
+ * ⚠️ Ajuste consciente (ARQ-APOIO-01 F2 · AP-6, autor, 2026-09-15): peso numérico basta para calcular — a origem
+ * qualifica a proveniência, ⛔ impede a dose. Sem peso continua ⛔ existindo dose.
+ */
+confere("⚠️⚠️ ⛔ ⛔ SEM PESO ⛔ NÃO EXISTE DOSE; sem origem, a dose sai sem procedência declarada",
   D.doseDerivada("alteplase", undefined, "medido") === undefined &&
-    D.doseDerivada("alteplase", 70, undefined) === undefined,
+    D.doseDerivada("alteplase", 70, undefined)?.totalMg === 63 && D.doseDerivada("alteplase", 70, undefined)?.origemDoPeso === undefined,
   "⛔ ⛔ ⛔ não estimar, ⛔ não assumir 70 kg — dose fabricada é a pior espécie de E-52");
 
 confere("⚠️ a dose sai do peso, com o teto da fonte",

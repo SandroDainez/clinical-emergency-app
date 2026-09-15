@@ -306,9 +306,6 @@ const ordem = ["LIMPAR-TC", "LIMPAR-INR", "LIMPAR-DOIS-EXAMES", "LIMPAR-DIVERGEN
   "AP5", "AP5-SEQUENCIA", "AP5-TELA", "D-CMB", "D-TITULO", "D-GLOSA", "D-PORTAO", "AP6-OPCOES", "AP6-CALCULO", "DOSE-TETO",
   "D1393-NAO-INCOMPLETO", "D1393-SIM-SO-VALOR", "D1393-SIM-INCOMPLETO", "D1393-SIM-COMPLETO", "D1393-TELA"];
 const VERMELHAS_DECLARADAS = {
-  "AP6-OPCOES": "commit 3 · AP-6",
-  "AP6-CALCULO": "commit 3 · AP-6",
-  "DOSE-TETO": "commit 3 · dose",
   "D1393-SIM-SO-VALOR": "commit 4 · D-139-3 por completude",
   "D1393-SIM-INCOMPLETO": "commit 4 · D-139-3 por completude",
   "D1393-TELA": "commit 4 · D-139-3 por completude",

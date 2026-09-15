@@ -1929,8 +1929,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Requiere investigación antes de reperfundir — contenido pendiente de validación",
   "Situação regulatória no Brasil (ANVISA/bula): pendente de conferência":
     "Situación regulatoria en Brasil (ANVISA/prospecto): pendiente de verificación",
-  "Sem peso registrado e sem agente escolhido, não há dose. O app não estima peso.":
-    "Sin peso registrado y sin agente elegido, no hay dosis. La app no estima peso.",
+  "Sem peso registrado, não há dose. O app não estima peso.":
+    "Sin peso registrado, no hay dosis. La aplicación no estima el peso.",
+  "Escolha o agente para ver a dose.":
+    "Elija el agente para ver la dosis.",
+  "Dose por peso calculada só para a população validada.":
+    "Dosis por peso calculada solo para la población validada.",
+  "origem do peso não informada":
+    "origen del peso no informado",
+  "dose calculada limitada ao máximo de":
+    "dosis calculada limitada al máximo de",
   "Princípio geral": "Principio general",
   "Não afirma corresponder a este caso.": "No afirma corresponder a este caso.",
   "recomendação não corresponde a este paciente": "recomendación no corresponde a este paciente",

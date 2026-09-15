@@ -202,8 +202,11 @@ export type DoseDerivada = {
    * outro faria a dose declarar uma procedência que ⛔ ninguém deu (PD-17).
    * ⚠️ Descoberto ao ligar a primeira tela que consome esta função.
    */
-  readonly origemDoPeso: OrigemDoPeso;
+  /** ⚠️ ARQ-APOIO-01 F2 · AP-6 (autor, 2026-09-15): ausente quando a origem ⛔ foi informada — a dose sai assim mesmo. */
+  readonly origemDoPeso?: OrigemDoPeso;
   readonly totalMg: number;
+  /** ⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): o teto da fonte limitou a dose calculada — a tela o diz. */
+  readonly tetoAplicado: boolean;
   readonly slot: string;
   /** ⚠️ D-PEND-22/25: volume a `concentracaoMgPorMl`, com 0,1 mL. */
   readonly volumeMl?: number;
@@ -258,12 +261,14 @@ export function doseDerivada(
   pesoKg: number | undefined,
   origemDoPeso: OrigemDoPeso | undefined
 ): DoseDerivada | undefined {
-  if (pesoKg === undefined || origemDoPeso === undefined) return undefined;
+  /** ⚠️ AP-6 (autor, 2026-09-15): peso numérico basta para calcular; a origem qualifica a proveniência. */
+  if (pesoKg === undefined) return undefined;
   if (!(pesoKg > 0)) return undefined;
   const d = DOSES[agente];
   /** ⚠️ Sem lixo de ponto flutuante: seis casas ⛔ não alcançam ⛔ nenhum produto real desta conta. */
   const limpa = (x: number) => Number(x.toFixed(6));
-  const totalMg = Math.min(d.arredondaMgInteiro ? Math.round(pesoKg * d.mgPorKg) : limpa(pesoKg * d.mgPorKg), d.maximoMg);
+  const bruto = d.arredondaMgInteiro ? Math.round(pesoKg * d.mgPorKg) : limpa(pesoKg * d.mgPorKg);
+  const totalMg = Math.min(bruto, d.maximoMg);
   const volumeMl = d.concentracaoMgPorMl === undefined
     ? undefined
     : Math.round(limpa((totalMg / d.concentracaoMgPorMl) * 10)) / 10;
@@ -278,7 +283,8 @@ export function doseDerivada(
     mgPorKg: d.mgPorKg,
     maximoMg: d.maximoMg,
     pesoKg,
-    origemDoPeso,
+    ...(origemDoPeso === undefined ? {} : { origemDoPeso }),
+    tetoAplicado: bruto > d.maximoMg,
     /**
      * ⚠️⚠️ ⛔ SEM LIXO DE PONTO FLUTUANTE — 2026-09-12 (relato do autor: *"89.10000000000001
      * mg"* para 99 kg). ⛔ Artefato do `double`, ⛔ e ⛔ nunca dado clínico.

@@ -14,7 +14,6 @@ import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
  * VERMELHAS DECLARADAS: `test.fail` marca cada teste como vermelho esperado até o commit que o torna verde. Se passar
  * antes disso, a suíte reprova — a marca sai no commit que o torna verde.
  */
-const VERMELHA_DO_COMMIT_3 = "vermelha declarada · F2 commit 3 (AP-6/dose) — remover a marca no commit que a torna verde";
 
 const COM_HEMORRAGIA = "Hemorragia intracraniana identificada";
 const SEM_HEMORRAGIA = "Sem hemorragia intracraniana identificada";
@@ -108,7 +107,6 @@ test.describe("AVC · ARQ-APOIO-01 · F2", () => {
   });
 
   test("AP-6: origem «Não sei» calcula a dose e diz «origem do peso não informada»", async ({ page }) => {
-    test.fail(true, VERMELHA_DO_COMMIT_3);
     await abrir(page);
     await pesoEAgente(page, 70, "nao_sei", "Alteplase");
     await expect(page.getByTestId("avc-f-dose-valor"), "a origem impediu o cálculo").toContainText("63 mg");
@@ -116,24 +114,27 @@ test.describe("AVC · ARQ-APOIO-01 · F2", () => {
   });
 
   test("AP-6 + teto: 108 kg medido → «Dose calculada limitada ao máximo de 90 mg», origem na linha da dose", async ({ page }) => {
-    test.fail(true, VERMELHA_DO_COMMIT_3);
     await abrir(page);
-    /** ⚠️ Clique com limite curto: a opção ausente reprova com erro, não por tempo esgotado (que `test.fail` não aceita). */
     await page.getByTestId("avc-aba-paciente").click();
     await page.getByTestId("avc-opcao-peso_origem-Medido").click({ timeout: 5_000 });
     await pesoEAgente(page, 108, undefined, "Alteplase");
     await expect(page.getByTestId("avc-f-dose-valor")).toContainText("90 mg");
-    await expect(page.getByTestId("avc-f-dose-teto")).toContainText("Dose calculada limitada ao máximo de 90 mg");
+    await expect(page.getByTestId("avc-f-dose-teto")).toContainText(/dose calculada limitada ao máximo de 90 mg/i);
     await expect(page.getByTestId("avc-f-dose-origem")).toContainText(/108 kg.*medido/i);
   });
 
-  test("dose vazia: sem peso diz que falta o peso; com peso e sem agente não culpa o peso", async ({ page }) => {
-    test.fail(true, VERMELHA_DO_COMMIT_3);
+  /** ⚠️ Ajuste de instrumento: os dois casos em testes separados (contexto novo) — com o agente já marcado, a dose sai e ⛔ há texto vazio a ler. */
+  test("dose vazia sem peso: diz que falta o peso, sem culpar o agente já escolhido", async ({ page }) => {
     await abrir(page);
     await pesoEAgente(page, undefined, undefined, "Alteplase");
-    await expect(page.getByTestId("avc-f-dose-vazia")).toContainText(/Sem peso registrado/);
-    await expect(page.getByTestId("avc-f-dose-vazia"), "culpa o agente, que já foi escolhido").not.toContainText(/sem agente escolhido/i);
+    await expect(page.getByTestId("avc-f-dose-vazia")).toContainText("Sem peso registrado, não há dose. O app não estima peso.");
+    await expect(page.getByTestId("avc-f-dose-vazia"), "culpa o agente, que já foi escolhido").not.toContainText(/agente/i);
+  });
+
+  test("dose vazia com peso e sem agente: pede o agente, sem culpar o peso já registrado", async ({ page }) => {
+    await abrir(page);
     await pesoEAgente(page, 70, "Estimado pela equipe", undefined);
+    await expect(page.getByTestId("avc-f-dose-vazia")).toContainText("Escolha o agente para ver a dose.");
     await expect(page.getByTestId("avc-f-dose-vazia"), "culpa o peso, que já foi registrado").not.toContainText(/Sem peso registrado/);
   });
 });
