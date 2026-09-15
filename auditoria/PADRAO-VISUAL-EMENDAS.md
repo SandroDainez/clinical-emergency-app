@@ -71,3 +71,8 @@ paralela divergiria, e a página passaria a mostrar um app que não existe.
 ⚠️ **Não é trava e não reprova nada.** Julgar se um traçado está desenhado certo
 é do olho do médico. A ferramenta existe para que esse olho gaste um minuto por
 família em vez de quarenta toques em quarenta telas.
+
+---
+
+**Aposentado em 2026-09-15:** `npm run revisao:padroes` e `scripts/revisao-de-padroes.cjs` saíram do repositório. A ferramenta dependia de `design-system/tracado-de-ecg.ts`, apagado em `bdf02c8` com a remoção dos módulos clínicos antigos, e as árvores que ficaram (`acls-bradycardia-tree.ts`, `acls-tachycardia-tree.ts`) não têm nenhum painel `comparativo` para revisar. O script continua recuperável pelo histórico do git; se os painéis comparativos voltarem, ele volta junto com o desenho do traçado.
+
