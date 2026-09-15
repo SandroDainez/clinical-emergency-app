@@ -1149,14 +1149,45 @@ export function exposicoesPorInstancia(estado: EstadoAvc): readonly Exposicao[] 
  * ⛔ Sem ⛔ nenhuma exposta: cancelada antes do início > registro em aberto >
  * ⛔ nenhuma administração.
  */
+/**
+ * AC-13 REABERTO, ITEM 1 · a certeza sobre a exposição ao trombolítico (autor, 2026-09-14;
+ * `docs/decisoes.md`, AC-13 reaberto, §1 e §9).
+ *
+ * "Não sei" não é um terceiro rótulo do estado da ação: ele afeta a certeza sobre a exposição.
+ * Uma instância aberta sem nenhuma situação registrada também não é evidência de exposição nem de
+ * ausência, e por isso conta como `desconhecida` (§9, aplicação da regra "só quando todas forem
+ * inequivocamente sem exposição").
+ */
+export type CertezaDaExposicao = "exposta" | "nao_exposta" | "desconhecida";
+
+export function certezaDaInstancia(x: Exposicao): CertezaDaExposicao {
+  if (x.estado === "exposta") return "exposta";
+  if (x.estado === "situacao_desconhecida" || x.estado === "registro_em_aberto") return "desconhecida";
+  return "nao_exposta";
+}
+
+/**
+ * A exposição do atendimento, pela agregação decidida pelo autor: qualquer evidência positiva de
+ * exposição vence a incerteza, e a incerteza vence a ausência de exposição. Entre as instâncias sem
+ * exposição, a cancelada continua sendo a representante, como antes.
+ */
 export function exposicaoAoTrombolitico(estado: EstadoAvc): Exposicao {
   const todas = exposicoesPorInstancia(estado);
-  const expostas = todas.filter((x) => x.estado === "exposta");
-  if (expostas.length > 0) return expostas[expostas.length - 1];
+  const ultimaCom = (c: CertezaDaExposicao): Exposicao | undefined =>
+    todas.filter((x) => certezaDaInstancia(x) === c).slice(-1)[0];
+  const exposta = ultimaCom("exposta");
+  if (exposta !== undefined) return exposta;
+  const desconhecida = ultimaCom("desconhecida");
+  if (desconhecida !== undefined) return desconhecida;
   const canceladas = todas.filter((x) => x.estado === "cancelada_antes_do_inicio");
   if (canceladas.length > 0) return canceladas[canceladas.length - 1];
   if (todas.length > 0) return todas[todas.length - 1];
   return { estado: "nenhuma_administracao" };
+}
+
+/** A certeza do atendimento inteiro: `exposta`, `nao_exposta` ou `desconhecida`. */
+export function certezaDaExposicaoAoTrombolitico(estado: EstadoAvc): CertezaDaExposicao {
+  return certezaDaInstancia(exposicaoAoTrombolitico(estado));
 }
 
 /** ⚠️ Quantas administrações **com exposição** existem — ⛔ e ⛔ não quantas instâncias. */

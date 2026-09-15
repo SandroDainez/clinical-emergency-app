@@ -46,6 +46,7 @@ import {
 } from "../../avc/nucleo/apresentacao-f";
 import {
   administracoesRegistradas,
+  certezaDaExposicaoAoTrombolitico,
   doseDerivada,
   minutosDesdeCampoDoEstado,
   motivoDoInsumoInconclusivo,
@@ -323,6 +324,8 @@ export default function SuperficieF({
    * *"administração registrada apesar de bloqueio"* (AVC-13, commit 8b).
    */
   const administracoes = administracoesRegistradas(estado);
+  /** AC-13 reaberto, item 1: situação da trombólise desconhecida também é dita junto do portão. */
+  const exposicaoIvt = certezaDaExposicaoAoTrombolitico(estado);
 
 
   return (
@@ -1264,6 +1267,15 @@ export default function SuperficieF({
           * deve é **dizer que houve divergência** — ⛔ e ⛔ nunca escondê-la
           * ⛔ nem impedi-la.
           */}
+        {exposicaoIvt === "desconhecida" && !portao.liberado ? (
+          <View style={e.discrepancia} testID="avc-f-exposicao-desconhecida">
+            <Text style={e.discrepanciaTitulo}>
+              {SIMBOLO_DO_PORTAO[portao.estado]}{" "}
+              {tr("Situação da trombólise desconhecida com a trombólise ainda não liberada")}
+            </Text>
+            <Text style={e.discrepanciaEstado}>{tr(TITULO_DO_PORTAO[portao.estado])}</Text>
+          </View>
+        ) : null}
         {administracoes > 0 && !portao.liberado ? (
           <View style={e.discrepancia} testID="avc-f-discrepancia">
             <Text style={e.discrepanciaTitulo}>

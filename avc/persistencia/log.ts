@@ -19,7 +19,7 @@
  * "sem motivo informado".
  */
 import type { EstadoAvc } from "../nucleo/estado";
-import { exposicaoAoTrombolitico } from "../nucleo/derivacoes-f";
+import { certezaDaExposicaoAoTrombolitico, exposicaoAoTrombolitico } from "../nucleo/derivacoes-f";
 import { estadoDaPopulacao } from "../nucleo/populacao";
 import { estadoDoPortaoIVT } from "../nucleo/portao-ivt";
 import { vereditoDaTrombolise } from "../nucleo/veredito-da-trombolise";
@@ -48,6 +48,7 @@ export function conclusoesDo(estado: EstadoAvc, agora: number): Readonly<Record<
   return {
     populacao: estadoDaPopulacao(estado).estado,
     exposicao_trombolitico: exposicaoAoTrombolitico(estado).estado,
+    exposicao_trombolitico_certeza: certezaDaExposicaoAoTrombolitico(estado),
     veredito_ivt: vereditoDaTrombolise(estado, agora).tipo,
     portao_ivt: estadoDoPortaoIVT(estado, agora).estado,
     veredito_evt: vereditoDaTrombectomia(estado, agora).tipo,

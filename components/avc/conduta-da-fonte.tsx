@@ -1,4 +1,4 @@
-import { alvosPressoricosAplicaveis } from "../../avc/nucleo/alvo-pressorico";
+import { leituraDosAlvosPressoricos } from "../../avc/nucleo/alvo-pressorico";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { useState } from "react";
 /**
@@ -96,7 +96,8 @@ export function CondutaDaPressao({
   /** ⚠️ ⛔ Estado de **⛔ tela**: ⛔ ver mais alvos ⛔ não registra ⛔ nada (**E-20**). */
   const [todosOsAlvos, setTodosOsAlvos] = useState(false);
   /** ⚠️ Os que valem AGORA — ⛔ lista, ⛔ e ⛔ não vencedor (⛔ sem precedência inventada). */
-  const aplicaveis = alvosPressoricosAplicaveis(estado, agora);
+  const leituraDosAlvos = leituraDosAlvosPressoricos(estado, agora);
+  const aplicaveis = leituraDosAlvos.aplicaveis;
   /**
    * ── ⚠️⚠️⚠️ ⛔ OS AGENTES NASCEM **⛔ FECHADOS** — 2026-09-09 ──────────────
    *
@@ -254,6 +255,12 @@ export function CondutaDaPressao({
         * regra ⛔ para os outros dez pontos.
         */}
       <Text style={e.terapeuticaTitulo}>{tr("Alvos pressóricos")}</Text>
+      {/** AC-13 reaberto, item 1: exposição desconhecida é dita junto dos alvos, que continuam os de antes da trombólise. */}
+      {leituraDosAlvos.exposicao === "desconhecida" ? (
+        <Text style={e.alvoContexto} testID={`${prefixo}alvos-exposicao-desconhecida`}>
+          {tr("Exposição ao trombolítico desconhecida: os alvos pós-trombólise não foram aplicados.")}
+        </Text>
+      ) : null}
       {(todosOsAlvos
         ? ALVOS_PRESSORICOS
         : ALVOS_PRESSORICOS.filter((a) => aplicaveis.includes(a.id))

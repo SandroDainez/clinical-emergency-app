@@ -178,6 +178,11 @@ export function PlanoAte48h({
         </View>
       )}
 
+      {plano.incertezas.map((x) => (
+        <Text key={`incerto-${x.caminho}`} style={e.linha} testID={`avc-plano-incerto-${x.caminho}`}>
+          {tr(TITULO_DO_CAMINHO[x.caminho])} — {tr(x.motivo)}
+        </Text>
+      ))}
       {plano.encerrados.map((x) => (
         <Text key={x.caminho} style={e.linha} testID={`avc-plano-encerrado-${x.caminho}`}>
           {tr(TITULO_DO_CAMINHO[x.caminho])} — {tr("caminho encerrado")}: {tr(x.motivo)}

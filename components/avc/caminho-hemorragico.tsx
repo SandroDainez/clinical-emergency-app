@@ -73,6 +73,10 @@ export function CaminhoHemorragico({
         <Text style={e.linha} testID="avc-hem-infusao">
           {tr("Infusão interrompida às")} {c.interrompidaEm !== undefined ? hora(c.interrompidaEm) : tr("horário não registrado")}
         </Text>
+      ) : c.infusao === "desconhecida" ? (
+        <Text style={e.linha} testID="avc-hem-infusao-desconhecida">
+          {tr("Situação da trombólise desconhecida: não se sabe se houve infusão.")}
+        </Text>
       ) : null}
 
       {c.pendenciasNoCaminho.filter((p) => p.id !== "registrar_interrupcao_da_infusao").map((p) => (

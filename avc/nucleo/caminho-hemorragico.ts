@@ -13,14 +13,15 @@
 import { RESULTADO_TC } from "../conteudo/superficie-c";
 import { registrarComInstancia } from "../conteudo/campos";
 import { estudos } from "./derivacoes-c";
-import { exposicaoAoTrombolitico } from "./derivacoes-f";
+import { certezaDaInstancia, exposicaoAoTrombolitico } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { fatosDaInstancia } from "./instancia";
 import type { Relogio } from "./relogio";
 import { itensSelecionados } from "./selecao";
 import type { Pendencia } from "./tipos";
 
-export type InfusaoNoCaminho = "sem_trombolise" | "em_curso" | "interrompida" | "concluida";
+/** AC-13 reaberto, item 1: `desconhecida` quando não se sabe se houve trombólise. */
+export type InfusaoNoCaminho = "sem_trombolise" | "desconhecida" | "em_curso" | "interrompida" | "concluida";
 
 export type LeituraDoCaminhoHemorragico = {
   readonly ativo: boolean;
@@ -45,7 +46,7 @@ const ROTULO_DO_TIPO: Readonly<Record<string, string>> = { nao_sei: "Não sei" }
 
 function infusao(estado: EstadoAvc): { estado: InfusaoNoCaminho; instancia?: string; interrompidaEm?: number } {
   const x = exposicaoAoTrombolitico(estado);
-  if (x.estado !== "exposta") return { estado: "sem_trombolise" };
+  if (x.estado !== "exposta") return { estado: certezaDaInstancia(x) === "desconhecida" ? "desconhecida" : "sem_trombolise" };
   if (x.fase === "iniciada") return { estado: "em_curso", instancia: x.instancia };
   if (x.fase === "interrompida") {
     const f = [...fatosDaInstancia(estado, x.instancia)].reverse().find((y) => y.campo === "ivt_estado" && y.valor === "Interrompida");

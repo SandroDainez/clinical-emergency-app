@@ -28,6 +28,7 @@
 
 import type { EstadoAvc } from "./estado";
 import { pertinenciaDaMonitorizacao } from "./derivacoes-g";
+import type { CertezaDaExposicao } from "./derivacoes-f";
 
 /**
  * ⚠️⚠️⚠️ ⛔ OS TRÊS QUE ⛔ **⛔ NÃO** ⛔ DÁ PARA DERIVAR HOJE — ⛔ e ⛔ por quê.
@@ -105,4 +106,21 @@ export function alvosPressoricosAplicaveis(
 
   /** ⛔ Fora da janela: ⛔ a fonte ⛔ não dá alvo ⛔ de fase. ⛔ Dizer isso ⛔ é a resposta. */
   return [];
+}
+
+/**
+ * AC-13 reaberto, item 1: os alvos aplicados e a certeza sobre a exposição ao trombolítico. Com a
+ * exposição desconhecida, os alvos aplicados continuam os de antes da trombólise, e a leitura declara
+ * a incerteza para a tela; a conduta final diante dela ainda não foi decidida (§9).
+ */
+export type LeituraDosAlvosPressoricos = {
+  readonly aplicaveis: readonly string[];
+  readonly exposicao: CertezaDaExposicao;
+};
+
+export function leituraDosAlvosPressoricos(estado: EstadoAvc, agoraMs: number): LeituraDosAlvosPressoricos {
+  return {
+    aplicaveis: alvosPressoricosAplicaveis(estado, agoraMs),
+    exposicao: pertinenciaDaMonitorizacao(estado).certeza,
+  };
 }

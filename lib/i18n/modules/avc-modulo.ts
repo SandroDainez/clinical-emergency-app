@@ -430,6 +430,21 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Decisão de não prosseguir registrada neste episódio; mudar a decisão exige novo registro":
     "Decisión de no continuar registrada en este episodio; cambiar la decisión exige un nuevo registro",
   "Registrar a decisão clínica": "Registrar la decisión clínica",
+  // ── AC-13 reaberto · item 1 · exposição desconhecida (2026-09-14) ──────
+  "Situação da trombólise desconhecida": "Situación de la trombólisis desconocida",
+  "Situação da trombólise desconhecida: não se sabe se a ordem pós-trombólise se aplica.":
+    "Situación de la trombólisis desconocida: no se sabe si el orden postrombólisis se aplica.",
+  "Exposição ao trombolítico desconhecida": "Exposición al trombolítico desconocida",
+  "A situação da trombólise não foi informada com certeza. O aplicativo não aplicou a monitorização nem a ordem de antitrombóticos pós-trombólise.":
+    "La situación de la trombólisis no se informó con certeza. La aplicación no aplicó la monitorización ni el orden de antitrombóticos postrombólisis.",
+  "Situação da trombólise desconhecida com a trombólise ainda não liberada":
+    "Situación de la trombólisis desconocida con la trombólisis aún no liberada",
+  "Situação da trombólise desconhecida: não se sabe se houve infusão.":
+    "Situación de la trombólisis desconocida: no se sabe si hubo infusión.",
+  "Situação da trombólise desconhecida: o caminho da trombólise não foi aberto":
+    "Situación de la trombólisis desconocida: el camino de la trombólisis no se abrió",
+  "Exposição ao trombolítico desconhecida: os alvos pós-trombólise não foram aplicados.":
+    "Exposición al trombolítico desconocida: los objetivos postrombólisis no se aplicaron.",
   // ── AC-13 · estados da ação (19ª rodada · 2026-09-14) ─────────────────
   "Indicada": "Indicada",
   "Decidida": "Decidida",

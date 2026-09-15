@@ -23,7 +23,7 @@
  */
 import { decorridoEmMinutos, valorAtual, type EstadoAvc } from "./estado";
 import { destinoDaImagem } from "./derivacoes-c";
-import { exposicoesPorInstancia, type FaseDaExposicao } from "./derivacoes-f";
+import { certezaDaExposicaoAoTrombolitico, exposicoesPorInstancia, type FaseDaExposicao } from "./derivacoes-f";
 import { bloqueiosCorrigiveis } from "./derivacoes-d";
 import { leituraDoNihssCalculado, nihssCalculado, nihssInconclusivoPorSedacao, nihssInformado } from "./derivacoes-b";
 import { textoDoTotalNihss } from "../../lib/nihss";
@@ -173,6 +173,10 @@ export function sinteseDoCaso(
   }
   if (avaliacaoEspecializadaRegistrada(estado) !== undefined) {
     situacao.push({ id: "avaliacao-especializada", texto: "Avaliação especializada registrada" });
+  }
+  /** AC-13 reaberto, item 1: a situação desconhecida da trombólise é dita, e não omitida. */
+  if (certezaDaExposicaoAoTrombolitico(estado) === "desconhecida") {
+    situacao.push({ id: "trombolise-desconhecida", texto: "Situação da trombólise desconhecida" });
   }
 
   /* ── 2 · CONDUTA — ⛔ só o decidido, ⛔ e com a natureza explícita ──────── */

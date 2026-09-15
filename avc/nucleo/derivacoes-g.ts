@@ -27,8 +27,10 @@ import { reavaliacaoPressoricaIncompleta, ultimaPressaoCompleta } from "./deriva
  * mesmo fato (I6); o que ⛔ **não** pode existir é o caminho inverso.
  */
 import {
+  certezaDaInstancia,
   exposicaoAoTrombolitico,
   type AcaoDeTrombolise,
+  type CertezaDaExposicao,
   type FaseDaExposicao,
 } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
@@ -136,8 +138,10 @@ const ESTADO_DA_FASE: Readonly<Record<FaseDaExposicao, AcaoDeTrombolise["estado"
 export type PertinenciaDaMonitorizacao = {
   readonly pertinente: boolean;
   /** ⚠️ `interrompida` (D2): começou ⛔ e parou — ⛔ **houve** exposição, ⛔ e a vigilância segue. */
-  readonly motivo: FaseDaExposicao | "sem_administracao_registrada";
+  readonly motivo: FaseDaExposicao | "sem_administracao_registrada" | "exposicao_desconhecida";
   readonly acao: AcaoDeTrombolise | undefined;
+  /** AC-13 reaberto, item 1: a certeza sobre a exposição ao trombolítico, que a tela declara. */
+  readonly certeza: CertezaDaExposicao;
   /** ⚠️⚠️ HR-5: trilha `Iniciada → Cancelada` — ⛔ exposição preservada ⛔ e contradição dita. */
   readonly contraditoria?: boolean;
 };
@@ -162,11 +166,23 @@ export function pertinenciaDaMonitorizacao(estado: EstadoAvc): PertinenciaDaMoni
    * ⛔ interrompida ⛔ é exposição; ⛔ cancelada ⛔ só antes do início ⛔ não é.
    */
   const x = exposicaoAoTrombolitico(estado);
+  const certeza = certezaDaInstancia(x);
   if (x.estado !== "exposta") {
-    return { pertinente: false, motivo: "sem_administracao_registrada", acao: undefined };
+    /**
+     * AC-13 reaberto, item 1: com a exposição desconhecida, a monitorização continua não aplicada,
+     * como antes, mas o motivo diz que a exposição é desconhecida. A conduta final diante dela ainda
+     * não foi decidida pelo autor (§9).
+     */
+    return {
+      pertinente: false,
+      motivo: certeza === "desconhecida" ? "exposicao_desconhecida" : "sem_administracao_registrada",
+      acao: undefined,
+      certeza,
+    };
   }
   return {
     pertinente: true,
+    certeza,
     motivo: x.fase,
     acao: {
       instancia: x.instancia,
@@ -197,10 +213,13 @@ export type FaseAtual =
    * acaba é a tabela, ⛔ e ⛔ não a pertinência. ⛔ A fonte ⛔ não publica duração
    * além de 24 h, ⛔ e ⛔ inventar uma seria E-31.
    */
-  | { readonly tipo: "fora_da_janela_da_tabela" };
+  | { readonly tipo: "fora_da_janela_da_tabela" }
+  /** AC-13 reaberto, item 1: a exposição ao trombolítico é desconhecida, e nenhuma fase é aplicada. */
+  | { readonly tipo: "exposicao_desconhecida" };
 
 export function faseDaMonitorizacao(estado: EstadoAvc, agoraMs: number): FaseAtual | undefined {
   const p = pertinenciaDaMonitorizacao(estado);
+  if (p.motivo === "exposicao_desconhecida") return { tipo: "exposicao_desconhecida" };
   if (!p.pertinente || !p.acao) return undefined;
   /** ⚠️⚠️ ⛔ SEM O INÍCIO, ⛔ NENHUMA FASE — ⛔ e ⛔ nenhum substituto. */
   if (p.acao.inicioMs === undefined) return { tipo: "sem_horario", campo: "ivt_inicio" };
@@ -254,7 +273,9 @@ export type EstadoPressoricoPosIvt =
   | "afericao_incompleta"
   /** ⚠️ ⛔ As **duas** metades estritamente abaixo do alvo. */
   | "dentro_do_alvo"
-  | "acima_do_alvo";
+  | "acima_do_alvo"
+  /** AC-13 reaberto, item 1: a exposição ao trombolítico é desconhecida; o alvo pós-trombólise não é aplicado. */
+  | "exposicao_desconhecida";
 
 export type LeituraPressoricaPosIvt = {
   readonly estado: EstadoPressoricoPosIvt;
@@ -284,7 +305,7 @@ export function estadoPressoricoPosIvt(
   agoraMs: number
 ): LeituraPressoricaPosIvt | undefined {
   const p = pertinenciaDaMonitorizacao(estado);
-  if (!p.pertinente || !p.acao) return undefined;
+  if ((!p.pertinente || !p.acao) && p.motivo !== "exposicao_desconhecida") return undefined;
 
   const c = PA_POS_REPERFUSAO.consumidores.alvoTerapeuticoPosIvt;
   const base = {
@@ -294,6 +315,9 @@ export function estadoPressoricoPosIvt(
     cor: c.cor,
     loe: c.loe,
   } as const;
+
+  /** AC-13 reaberto, item 1: a leitura declara a exposição desconhecida; o alvo vem só como referência da regra. */
+  if (!p.pertinente || !p.acao) return { ...base, estado: "exposicao_desconhecida" };
 
   /** ⚠️⚠️ ⛔ SEM O INÍCIO, ⛔ NENHUMA JANELA — ⛔ e ⛔ nenhum substituto. */
   if (p.acao.inicioMs === undefined) return { ...base, estado: "sem_horario_ivt" };
@@ -393,6 +417,8 @@ export function leituraDaSuperficieG(estado: EstadoAvc): LeituraDaSuperficieG {
 export type EstadoAntitrombotico =
   /** ⚠️ ⛔ Sem trombólise, a regra ⛔ não se aplica. ⛔ Isso ⛔ não é pendência. */
   | "fora_do_contexto_pos_ivt"
+  /** AC-13 reaberto, item 1: não se sabe se houve trombólise; a ordem pós-trombólise não é aplicada. */
+  | "exposicao_desconhecida"
   /**
    * ⚠️⚠️ **HOUVE** trombólise ⛔ e o horário ⛔ não foi registrado (AVC-09,
    * commit 8b): *"exposição confirmada, intervalo indeterminado"*. ⛔ Nunca
@@ -491,6 +517,14 @@ export function estadoAntitromboticoPosIvt(
   const inicio = p.pertinente ? p.acao?.inicioMs : undefined;
 
   /** ⚠️ ⛔ SEM TROMBÓLISE, ⛔ a regra ⛔ não se aplica — ⛔ e ⛔ isso ⛔ não é pendência. */
+  if (p.motivo === "exposicao_desconhecida") {
+    return {
+      estado: "exposicao_desconhecida",
+      frase: "Situação da trombólise desconhecida: não se sabe se a ordem pós-trombólise se aplica.",
+      ressalva: RESSALVA_ANTITROMBOTICA,
+      aspirinaIvNosNoventaMin: undefined,
+    };
+  }
   if (!p.pertinente) {
     return {
       estado: "fora_do_contexto_pos_ivt",

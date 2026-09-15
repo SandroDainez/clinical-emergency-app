@@ -29,7 +29,12 @@ import {
 import { RESULTADO_TC } from "../conteudo/superficie-c";
 import { MONITORIZACAO_POS_IVT } from "../conteudo/superficie-g";
 import { estudos, exclusaoDeHemorragia, imagensAposInstante } from "./derivacoes-c";
-import { exposicaoAoTrombolitico } from "./derivacoes-f";
+import {
+  certezaDaExposicaoAoTrombolitico,
+  certezaDaInstancia,
+  exposicaoAoTrombolitico,
+  type CertezaDaExposicao,
+} from "./derivacoes-f";
 import { eventosDePiora } from "./deterioracao";
 import { registrarFato, valorAtual, type EstadoAvc } from "./estado";
 import type { Relogio } from "./relogio";
@@ -97,6 +102,8 @@ export type ProximaReavaliacao =
 export type PlanoAte48h = {
   readonly caminhos: readonly CaminhoDoPlano[];
   readonly encerrados: readonly { readonly caminho: CaminhoDoPlanoId; readonly motivo: string }[];
+  /** AC-13 reaberto, item 1: caminhos que não abriram porque não se sabe se o evento de origem aconteceu. */
+  readonly incertezas: readonly { readonly caminho: CaminhoDoPlanoId; readonly motivo: string }[];
   readonly transversais: readonly TarefaDoPlano[];
   readonly agenda: readonly ItemDaAgenda[];
   readonly proximaReavaliacao?: ProximaReavaliacao;
@@ -135,6 +142,8 @@ export type DesfechosNegativos = {
   readonly ivt: Desfecho;
   readonly evt: Desfecho;
   readonly ivtExposta: boolean;
+  /** AC-13 reaberto, item 1: a certeza sobre a exposição, que distingue «não exposta» de «desconhecida». */
+  readonly exposicaoIvt: CertezaDaExposicao;
 };
 
 export function desfechosNegativos(estado: EstadoAvc): DesfechosNegativos {
@@ -142,6 +151,7 @@ export function desfechosNegativos(estado: EstadoAvc): DesfechosNegativos {
     ivt: desfecho(estado, "ivt_nao_prosseguir_motivo", "ivt_nao_prosseguir_hora"),
     evt: desfecho(estado, "evt_desfecho_motivo", "evt_desfecho_hora"),
     ivtExposta: exposicaoAoTrombolitico(estado).estado === "exposta",
+    exposicaoIvt: certezaDaExposicaoAoTrombolitico(estado),
   };
 }
 
@@ -186,7 +196,8 @@ export function pendenciasDoPlano(estado: EstadoAvc): readonly Pendencia[] {
 
 /* ── eventos de origem ───────────────────────────────────────────────────── */
 
-type LeituraDeOrigem = { readonly origem?: OrigemDoCaminho; readonly encerrado?: string };
+/** AC-13 reaberto, item 1: `incerta` quando não se sabe se o evento de origem aconteceu. */
+type LeituraDeOrigem = { readonly origem?: OrigemDoCaminho; readonly encerrado?: string; readonly incerta?: string };
 
 function origemDoHorario(estado: EstadoAvc, campo: string, caminho: CaminhoDoPlanoId, motivo: string): LeituraDeOrigem {
   const v = valorAtual(estado, campo)?.valor;
@@ -206,6 +217,9 @@ function origemDaTrombolise(estado: EstadoAvc): LeituraDeOrigem {
         horaDesconhecida: x.inicio.tipo !== "conhecido",
       },
     };
+  }
+  if (certezaDaInstancia(x) === "desconhecida") {
+    return { incerta: "Situação da trombólise desconhecida: o caminho da trombólise não foi aberto" };
   }
   return x.estado === "cancelada_antes_do_inicio" ? { encerrado: "Trombólise cancelada antes do início" } : {};
 }
@@ -441,9 +455,11 @@ export function planoAte48h(estado: EstadoAvc, agoraMs: number): PlanoAte48h {
   const fora = corrigidos(estado);
   const caminhos: CaminhoDoPlano[] = [];
   const encerrados: { caminho: CaminhoDoPlanoId; motivo: string }[] = [];
+  const incertezas: { caminho: CaminhoDoPlanoId; motivo: string }[] = [];
   for (const [id, l] of leiturasDeOrigem(estado)) {
     if (l.origem !== undefined) caminhos.push({ id, origem: l.origem, tarefas: tarefasDoCaminho(estado, id, l.origem, agoraMs, fora) });
     else if (l.encerrado !== undefined) encerrados.push({ caminho: id, motivo: l.encerrado });
+    else if (l.incerta !== undefined) incertezas.push({ caminho: id, motivo: l.incerta });
   }
 
   const agenda: ItemDaAgenda[] = caminhos
@@ -461,5 +477,5 @@ export function planoAte48h(estado: EstadoAvc, agoraMs: number): PlanoAte48h {
         : caminhos.length > 0 ? { tipo: "sem_intervalo", caminhos: caminhos.map((c) => c.id) }
           : undefined;
 
-  return { caminhos, encerrados, transversais: transversais(estado, caminhos, fora), agenda, proximaReavaliacao, pendencias: pendenciasDoPlano(estado) };
+  return { caminhos, encerrados, incertezas, transversais: transversais(estado, caminhos, fora), agenda, proximaReavaliacao, pendencias: pendenciasDoPlano(estado) };
 }

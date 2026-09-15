@@ -443,6 +443,16 @@ export default function SuperficieG({
         * conduta geral do AVC. ⚠️ E o bloco ⛔ **não some** quando falta o
         * horário: o paciente continua em contexto pós-trombólise.
         */}
+      {/** AC-13 reaberto, item 1: com a exposição desconhecida, a tela diz isso; ela não aplica a monitorização nem a ordem pós-trombólise. */}
+      {pertinencia.motivo === "exposicao_desconhecida" ? (
+        <View style={e.grupo} testID="avc-g-exposicao-desconhecida">
+          <CabecalhoDeBloco titulo={tr("Exposição ao trombolítico desconhecida")} testID="avc-g-bloco-exposicao-desconhecida" />
+          <Text style={e.nota}>
+            {tr("A situação da trombólise não foi informada com certeza. O aplicativo não aplicou a monitorização nem a ordem de antitrombóticos pós-trombólise.")}
+          </Text>
+        </View>
+      ) : null}
+
       {pertinencia.pertinente && tabela ? (
         <View style={e.grupo} testID="avc-g-monitorizacao">
           <CabecalhoDeBloco
@@ -631,7 +641,7 @@ export default function SuperficieG({
         * ⚠️ ⛔ Quatro coisas, ⛔ separadas: situação da imagem · a ordem da
         * Table 7 · a exceção das 24 h · a aspirina IV dos 90 min.
         */}
-      {antitrombotico.estado !== "fora_do_contexto_pos_ivt" ? (
+      {antitrombotico.estado !== "fora_do_contexto_pos_ivt" && antitrombotico.estado !== "exposicao_desconhecida" ? (
         <View style={e.grupo} testID="avc-g-antitromboticos">
           <SectionTitle testID="avc-g-bloco-antitromboticos">Antitrombóticos pós-IVT</SectionTitle>
 
