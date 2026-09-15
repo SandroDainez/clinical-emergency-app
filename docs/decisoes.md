@@ -988,7 +988,7 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 
 ## AC-13 reaberto (2026-09-14) · auditoria do `5649ade`: exposição triestado, trilha fiel, horários, autoria, retrocessos
 
-**Data:** 2026-09-14 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** AC-13 **reaberto**; nenhuma implementação autorizada até a aprovação do plano de testes vermelhos.
+**Data:** 2026-09-14 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** AC-13 **reaberto** em 2026-09-14 e **encerrado em 2026-09-15** (§14); nenhuma implementação autorizada até a aprovação do plano de testes vermelhos.
 
 **Decisão, nos termos do autor:** o `5649ade` implementa corretamente a base do AC-13, mas o AC-13 continua aberto por dois defeitos e dois atendimentos parciais. Não recriar a etapa: os ajustes são feitos sobre o `5649ade`.
 
@@ -1247,6 +1247,19 @@ Nenhuma tela menciona a situação desconhecida.
 1. **Nome nunca derivado de e-mail.** O nome de exibição vem só de `full_name` e, na falta dele, de `nome`.
 2. **Identificador técnico nunca exibido como autoria.** Sem nome de exibição, a tela diz «Autoria não identificada», e nunca `user.id`, id do aparelho ou e-mail.
 3. **Migração nunca inventa nome.** Eventos anteriores ao schema v4 ficam com `nomeDoAutor = null`, e nenhum enriquecimento retroativo acontece; o nome gravado é o snapshot do momento do registro.
+
+### 14 · Encerramento formal do AC-13 (2026-09-15)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito, depois da auditoria final por mutação.
+
+**AC-13 encerrado após auditoria por mutação: 7/7 invariantes protegidas; suíte 108/108 mutações reprovadas; test:all 667 e2e, EXIT=0.**
+
+- **Invariantes protegidas:** triestado de exposição; «não sei» não vira ausência; terminais e retrocessos; trilha fiel a correção e desfazer; horário clínico separado do horário do registro; autoria como snapshot; persistência e legado sem reinterpretação. Cada uma tem prova ou e2e e ao menos uma mutação que quebra a regra de verdade e é reprovada pela trava (`scripts/mutacoes/ac13-invariantes.cjs`, `ac13-legado.cjs`, `horario-clinico.cjs`, `autoria.cjs`).
+- **Commits:** item 1 `a45b226` · item 2 `8a51a2a` · item 5 `25de4a8` · item 6 `dd6cf25` · item 5, terminais `89aab11` · teste do AC-03r `4472a39` · item 3 `507cb86` · item 4 `770a791` · item 7 `917b31d` · validação por mutação `433134d`.
+- **Não reabrir o AC-13** para os pontos abaixo; cada um segue em frente própria:
+  - conduta clínica final diante de exposição `desconhecida` (decisão clínica separada, §9);
+  - auditoria dos seis usos de `horaClinica ?? horaRegistro` fora do AC-13 (§11, 7);
+  - possível sensibilidade à meia-noite em `e2e/avc-controle-de-data.spec.ts`, que usa o mesmo gesto de data e hora corrigido no AC-03r por `4472a39` (não medida).
 
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
