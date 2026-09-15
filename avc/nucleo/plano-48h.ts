@@ -26,7 +26,7 @@ import {
   type ConteudoDaTarefa,
   type DefinicaoDeTarefa,
 } from "../conteudo/plano-48h";
-import { RESULTADO_TC } from "../conteudo/superficie-c";
+import { RESULTADOS_COM_HEMORRAGIA } from "../conteudo/superficie-c";
 import { MONITORIZACAO_POS_IVT } from "../conteudo/superficie-g";
 import { estudos, exclusaoDeHemorragia, imagensAposInstante } from "./derivacoes-c";
 import {
@@ -236,7 +236,7 @@ function origemSemReperfusao(estado: EstadoAvc): LeituraDeOrigem {
 }
 
 function origemDaHemorragia(estado: EstadoAvc): LeituraDeOrigem {
-  const com = estudos(estado).filter((e) => e.resultado === RESULTADO_TC.hemorragia);
+  const com = estudos(estado).filter((e) => e.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(e.resultado));
   if (com.length > 0) {
     const horas = com.map((e) => e.hora).filter((h): h is number => h !== undefined);
     return {
@@ -247,8 +247,9 @@ function origemDaHemorragia(estado: EstadoAvc): LeituraDeOrigem {
       },
     };
   }
-  const laudo = valorDaOpcao(RESULTADO_TC.hemorragia);
-  const houve = estado.fatos.some((f) => f.campo === "estudo_resultado" && f.valor === laudo);
+  /** ⚠️ AC-15 bloco D: HSA confirmada corrigida também encerra o caminho. */
+  const laudos = RESULTADOS_COM_HEMORRAGIA.map((r) => String(valorDaOpcao(r)));
+  const houve = estado.fatos.some((f) => f.campo === "estudo_resultado" && laudos.includes(String(f.valor)));
   return houve ? { encerrado: "Laudo de hemorragia corrigido" } : {};
 }
 

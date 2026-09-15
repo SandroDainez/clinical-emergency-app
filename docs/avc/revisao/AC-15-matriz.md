@@ -516,3 +516,33 @@ A escolha foi pedida ao autor antes de registrar no pipeline.
 **Mudança de rumo do autor (2026-09-15), depois deste commit:** o app é **apoio à decisão médica**, sem submissão à ANVISA por ora. O AC-15 fica restrito aos blocos A e D. Os blocos B e C (resolução da suspeita por TC <6 h, punção lombar e conclusão com atestação) ficam **adiados**, e o processo passa a ser proporcional: `test:all` completo por bloco, sem novas vermelhas declaradas.
 
 **Próximo passo autorizado:** bloco A só, a partir do derivado único `estadoDaSuspeitaDeHsa`, com todos os consumidores lendo o derivado. Sem PL, sem campos novos de TC e sem a classificação C4 no mesmo commit. Revisão do autor antes do bloco dos novos campos.
+
+## 15 · Encerramento: blocos A e D (2026-09-15)
+
+**Rumo do produto (autor):** apoio à decisão médica, sem ANVISA por ora. O AC-15 fica nos blocos A e D; B e C são adiados (§10–§12 guardam as decisões para quando voltarem).
+
+**Bloco A:** derivado único `estadoDaSuspeitaDeHsa`, lido por portão, EVT, card, pendência, destino, síntese e tela G.
+- «Incerto» retém; «Não» posterior não desativa.
+- Suspeita ativa aparece como investigação pendente, sem porta para o catálogo de manejo: `navegacao: "sem_acao_navegavel"`.
+- Evidência confirmatória acima da suspeita.
+- Varredura A20 estendida às telas.
+
+**Bloco D:**
+- Terceira opção da TC, «Hemorragia subaracnóidea identificada», que é hemorragia para todos os leitores.
+- Saída `hsa_confirmada`, com o catálogo de HSA; nome HSA no caminho, no cabeçalho, no plano até 48 h e na síntese.
+- Legado «Subaracnóidea» lido como HSA confirmada; «Subaracnóidea» fora das opções novas.
+- A superfície do catálogo passa a ser declarada pelo destino.
+
+**Um commit para A e D:** sem o D, o catálogo de HSA ficaria sem entrada no app, porque a E13 tirou a porta da suspeita, e a trava de cobertura de superfícies da rodada 16 reprova.
+
+**Marcas temporárias:** `VERMELHAS_DECLARADAS` vazia e nenhum `test.fail` no e2e do AC-15. As provas do AC-15 terminam com 29 linhas verdes e 0 divergências.
+
+**Ajustes conscientes:**
+- `prova-avc-superficie-c`: «Incerto» arma a saída de investigação; «Sim» e «Incerto» abrem pendência; três opções da TC.
+- `prova-avc-criticos` e `prova-avc-decisoes-d22-d24`: «Incerto» retém; nomes invertidos reescritos.
+- `prova-avc-rodada15`: tipos sem «Subaracnóidea»; título do caminho com HSA.
+- `prova-avc-rodada8`: exige a decisão carimbada.
+- e2e `avc-superficie-c`: «Incerto»; texto da leitura com hemorragia + suspeita.
+- e2e `avc-procedencia-fora-do-card`: 8 mede o card de investigação; 8b visita o catálogo de HSA pela HSA confirmada.
+
+**Não implementado, registrado:** E14 (xantocromia presente como evidência), porque depende da punção lombar do bloco C.

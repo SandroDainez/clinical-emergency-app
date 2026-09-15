@@ -10,9 +10,10 @@
  * ⛔ fez.
  * ⛔ Nenhuma conduta sai daqui: condutas são "conteúdo pendente de validação" no conteúdo.
  */
-import { RESULTADO_TC } from "../conteudo/superficie-c";
+import { RESULTADOS_COM_HEMORRAGIA } from "../conteudo/superficie-c";
+import { TIPO_LEGADO_SUBARACNOIDEA } from "../conteudo/caminho-hemorragico";
 import { registrarComInstancia } from "../conteudo/campos";
-import { estudos } from "./derivacoes-c";
+import { destinoDaImagem, estudos } from "./derivacoes-c";
 import { certezaDaInstancia, exposicaoAoTrombolitico } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { fatosDaInstancia } from "./instancia";
@@ -27,6 +28,8 @@ export type InfusaoNoCaminho = "sem_trombolise" | "desconhecida" | "em_curso" | 
 
 export type LeituraDoCaminhoHemorragico = {
   readonly ativo: boolean;
+  /** ⚠️ AC-15 bloco D (E9): «hsa» quando a hemorragia vista é HSA confirmada — o caminho ⛔ se chama «HIC». */
+  readonly nome?: "hic" | "hsa";
   readonly desde?: number;
   readonly tipo?: string;
   readonly anticoagulante?: { readonly campo: "anticoagulante_em_uso"; readonly itens: readonly string[] };
@@ -77,13 +80,15 @@ function infusao(estado: EstadoAvc): {
 }
 
 export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragico {
-  const com = estudos(estado).filter((e) => e.resultado === RESULTADO_TC.hemorragia);
+  const com = estudos(estado).filter((e) => e.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(e.resultado));
   const inf = infusao(estado);
   if (com.length === 0) return { ativo: false, infusao: inf.estado, pendencias: [], pendenciasNoCaminho: [] };
 
   const horas = com.map((e) => e.hora).filter((h): h is number => h !== undefined);
+  const ehHsa = destinoDaImagem(estado)?.saida === "hsa_confirmada";
   const t = valorAtual(estado, "hem_tipo")?.valor;
-  const tipo = typeof t === "string" && t !== "nao_perguntado" ? ROTULO_DO_TIPO[t] ?? t : undefined;
+  const registrado = typeof t === "string" && t !== "nao_perguntado" ? ROTULO_DO_TIPO[t] ?? t : undefined;
+  const tipo = ehHsa ? TIPO_LEGADO_SUBARACNOIDEA : registrado;
   const bruto = valorAtual(estado, "anticoagulante_em_uso")?.valor;
   const itens = typeof bruto === "string" && bruto !== "nao_perguntado" ? itensSelecionados(bruto) : [];
 
@@ -92,7 +97,7 @@ export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragi
     pendencias.push({ id: "registrar_interrupcao_da_infusao", rotulo: "Hemorragia com trombólise em curso: registrar a interrupção da infusão", dono: "destino", campo: "ivt_estado", resolvePor: "Registrar a interrupção da infusão" });
   }
   if (itens.length === 0) {
-    pendencias.push({ id: "hem_anticoagulante", rotulo: "Hemorragia intracraniana (HIC): registrar o anticoagulante em uso", dono: "paciente", campo: "anticoagulante_em_uso", resolvePor: "Registrar o anticoagulante em uso no Paciente" });
+    pendencias.push({ id: "hem_anticoagulante", rotulo: ehHsa ? "Hemorragia subaracnóidea (HSA): registrar o anticoagulante em uso" : "Hemorragia intracraniana (HIC): registrar o anticoagulante em uso", dono: "paciente", campo: "anticoagulante_em_uso", resolvePor: "Registrar o anticoagulante em uso no Paciente" });
   }
   if (tipo === undefined) {
     pendencias.push({ id: "hem_tipo", rotulo: "Hemorragia intracraniana (HIC): registrar o tipo de hemorragia", dono: "destino", campo: "hem_tipo", resolvePor: "Registrar o tipo de hemorragia" });
@@ -100,6 +105,7 @@ export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragi
 
   return {
     ativo: true,
+    nome: ehHsa ? "hsa" : "hic",
     desde: horas.length > 0 ? Math.min(...horas) : undefined,
     tipo,
     anticoagulante: itens.length === 0 ? undefined : { campo: "anticoagulante_em_uso", itens },

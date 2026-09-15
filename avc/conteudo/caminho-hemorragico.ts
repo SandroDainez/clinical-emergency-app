@@ -12,7 +12,12 @@ import { comCasa } from "./campo";
 
 const REGISTRO = { natureza: "administrativo", fonte: "administrativo", bloqueiaTerapia: false } as const;
 
-export const TIPOS_DE_HEMORRAGIA = ["Intraparenquimatosa", "Subaracnóidea", "Subdural", "Outra", "Não sei"] as const;
+/**
+ * ⚠️ AC-15 bloco D (E9, autor 2026-09-15): em caso novo, HSA ⛔ é subtipo de HIC — ela tem opção própria no resultado da
+ * TC. ⚠️ O valor «Subaracnóidea» já gravado continua legível e é lido como HSA confirmada, sem reescrita.
+ */
+export const TIPOS_DE_HEMORRAGIA = ["Intraparenquimatosa", "Subdural", "Outra", "Não sei"] as const;
+export const TIPO_LEGADO_SUBARACNOIDEA = "Subaracnóidea";
 
 /** ⚠️ As superfícies do caminho, na ordem da barra. */
 export const SUPERFICIES_DO_CAMINHO_HEMORRAGICO = ["estabilizacao", "neurologico", "imagem", "destino"] as const;

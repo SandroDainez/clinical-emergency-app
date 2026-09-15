@@ -55,7 +55,8 @@ export function CaminhoHemorragico({
 
   return (
     <View style={e.raiz} testID="avc-hem-caminho">
-      <CabecalhoDeBloco titulo={tr("Hemorragia intracraniana (HIC)")} testID="avc-g-bloco-hem-caminho" />
+      {/** ⚠️ AC-15 bloco D (E9): HSA confirmada ⛔ se chama «HIC». */}
+      <CabecalhoDeBloco titulo={c.nome === "hsa" ? tr("Hemorragia subaracnóidea (HSA)") : tr("Hemorragia intracraniana (HIC)")} testID="avc-g-bloco-hem-caminho" />
 
       <Text style={e.bloqueio} testID="avc-hem-bloqueio">
         {tr("Trombólise e trombectomia isquêmicas bloqueadas")}: {tr("hemorragia intracraniana identificada na imagem")}

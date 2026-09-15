@@ -152,7 +152,8 @@ export const CONSUMIDORES: Readonly<Record<string, readonly string[]>> = {
   evt_desfecho_motivo: ["plano-48h.ts"],
   evt_desfecho_hora: ["plano-48h.ts"],
   /** ⚠️ A07 (15ª rodada): estado do caminho hemorrágico ⛔ marcos da neurocirurgia. */
-  hem_tipo: ["caminho-hemorragico.ts"],
+  /** ⚠️ AC-15 bloco A: o derivado único da suspeita de HSA lê o tipo «Subaracnóidea» legado como evidência. */
+  hem_tipo: ["caminho-hemorragico.ts", "derivacoes-c.ts"],
   neuro_marco: ["transferencia.ts"],
   neuro_parecer: ["transferencia.ts"],
   neuro_parecer_autor: ["transferencia.ts"],

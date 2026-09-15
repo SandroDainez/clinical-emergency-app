@@ -85,4 +85,4 @@ Hoje "Incerto" é gravado como `nao_sei`, não retém e abre a pendência "Regis
 
 ## 11 · Decisão humana
 
-**Decisão humana:** ___ (nome, versão, data)
+**Decisão humana:** Dr. Sandro Dainez, por escrito, 2026-09-15 — `docs/decisoes.md`, seção «AC-15 · suspeita de HSA — decisões de 2026-09-15 e encerramento». Implementados os blocos A e D; a resolução da suspeita por fatos de investigação (blocos B e C) ficou adiada com a mudança para apoio à decisão.

@@ -82,7 +82,7 @@ Adulto com suspeita de AVC isquêmico, candidato a reperfusão, TC sem hemorragi
 
 ## 9 · Decisão humana
 
-**Decisão humana:** ___ (nome, versão, data)
+**Decisão humana:** Dr. Sandro Dainez, por escrito, 2026-09-15 — `docs/decisoes.md`, seção «AC-15 · suspeita de HSA — decisões de 2026-09-15 e encerramento». Implementados os blocos A e D; a resolução da suspeita por fatos de investigação (blocos B e C) ficou adiada com a mudança para apoio à decisão.
 
 ## 10 · Fonte conferida no PDF integral (18ª rodada, 2026-09-14)
 

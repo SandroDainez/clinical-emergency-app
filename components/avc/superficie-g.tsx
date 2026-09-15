@@ -791,22 +791,24 @@ export default function SuperficieG({
             <Text style={e.nota}>{tr(saida.oQueAcontece)}</Text>
             <Text style={e.fonte}>
               {tr("produzido em Imagem")}
-              {saida.moduloExiste ? "" : ` · ${tr("o módulo ainda não existe")}`}
+              {saida.moduloExiste || saida.navegacao === "sem_acao_navegavel" ? "" : ` · ${tr("o módulo ainda não existe")}`}
             </Text>
             {/**
               * ⚠️ A PORTA PARA O MÓDULO HEMORRÁGICO (PD-36). Só aparece quando o
               * módulo existe. G ⛔ não escolhe qual — a Imagem já decidiu em
-              * `saida.saida`; aqui só se traduz o destino para a superfície.
+              * `saida.saida`; aqui só se traduz o destino para a superfície. ⛔ Sem porta quando o estado ⛔ tem ação
+              * navegável (AC-15, E13).
               */}
-            {saida.moduloExiste ? (
+            {saida.moduloExiste && saida.navegacao === "catalogo" && saida.superficie !== undefined ? (
               <Pressable
                 style={e.saidaBotao}
                 accessibilityRole="button"
                 accessibilityLabel={tr("Abrir o catálogo de recomendações deste módulo")}
                 testID={`avc-g-abrir-${saida.saida}`}
-                onPress={() =>
-                  onAbrirSuperficie(saida.saida === "hemorragia_intracraniana" ? "hic" : "hsa")
-                }
+                onPress={() => {
+                  /** ⚠️ AC-15 bloco D: a superfície vem declarada pelo destino. */
+                  if (saida.superficie !== undefined) onAbrirSuperficie(saida.superficie);
+                }}
               >
                 <Text style={e.saidaBotaoTexto}>{tr("Abrir recomendações")}</Text>
               </Pressable>

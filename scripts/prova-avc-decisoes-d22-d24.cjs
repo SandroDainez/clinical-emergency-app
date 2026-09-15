@@ -125,8 +125,9 @@ conf("D-PEND-23 · procedência com fonte nominal de bula (Actilyse I23-01, p. 4
     && /avaliação especializada/i.test(ret.procedencia ?? "") && !/não transcrit/i.test(ret.procedencia ?? ""),
   `⛔ ${ret.procedencia}`);
 /** ⚠️ 8ª rodada: «Não» DEPOIS de «Sim» ⛔ libera (sem fato novo); o controle passa a ser «Não» desde o início. */
-conf("controle · «Não» desde o início ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao" }, rel)).estado === "livre", "⛔");
-conf("controle · «Incerto» ⛔ retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao_sei" }, rel)).estado === "livre", "⛔");
+conf("controle · «Não» desde o início não retém", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao" }, rel)).estado === "livre", "⛔");
+/** ⚠️ Ajuste consciente (AC-15 bloco A, E1, autor 2026-09-15): «Incerto» é suspeita ativa e retém. */
+conf("«Incerto» desde o início retém (suspeita ativa)", DC.retencaoDiagnostica(E.registrarFato(E.abrirAtendimento(rel), { campo: "suspeita_hsa", valor: "nao_sei" }, rel)).estado === "retida", "⛔ livre");
 const portao = lerFonte(path.join(appDir, "avc", "nucleo", "portao-ivt.ts"));
 conf("D-PEND-23 · no portão, o motivo da HSA ⛔ entra na camada de segurança e leva a classificação",
   /id:\s*"suspeita_hsa"[\s\S]{0,200}camada:\s*"destino"/.test(portao) && /retencao\.rotulo/.test(portao) && /retencao\.procedencia/.test(portao),

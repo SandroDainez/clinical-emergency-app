@@ -33,6 +33,7 @@ import {
 } from "./leitura";
 import { ALERGIA_A_CONTRASTE, SEM_ALERGIA } from "../conteudo/paciente";
 import { NAO_SEI } from "../conteudo/campo";
+import { TIPO_LEGADO_SUBARACNOIDEA } from "../conteudo/caminho-hemorragico";
 import type { Pendencia } from "./tipos";
 import {
   ESTUDO,
@@ -42,6 +43,7 @@ import {
   FATO_ASSOCIADO,
   IDS_DOSSIE_ENDOVASCULAR,
   RESULTADO_TC,
+  RESULTADOS_COM_HEMORRAGIA,
   SAIDA_SEM_CONCLUSAO,
   campoDeC,
 } from "../conteudo/superficie-c";
@@ -279,7 +281,8 @@ export function exclusaoDeHemorragia(estado: EstadoAvc): LeituraDaExclusao {
   const comResultado = tcsSemContraste(estado).filter((e) => e.resultado !== undefined);
   const nomes = comResultado.map((e) => e.id);
   const base = { insumos: INSUMOS_EXCLUSAO, fonte: FONTE_EXCLUSAO, estudos: nomes };
-  const valores = new Set(comResultado.map((e) => e.resultado));
+  /** ⚠️ AC-15 bloco D: HSA confirmada é hemorragia — ⛔ «divergente» da hemorragia genérica. */
+  const valores = new Set(comResultado.map((e) => (e.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(e.resultado) ? RESULTADO_TC.hemorragia : e.resultado)));
 
   if (valores.size > 1) {
     return {
@@ -524,10 +527,17 @@ export function barreiraDeReperfusao(estado: EstadoAvc): BarreiraDeReperfusao {
  * que distingue os vazios é `exclusaoDeHemorragia`.
  */
 export type DestinoResolvido = {
-  readonly saida: "suspeita_hsa" | "hemorragia_intracraniana";
+  readonly saida: "suspeita_hsa" | "hemorragia_intracraniana" | "hsa_confirmada";
   readonly rotulo: string;
   readonly modulo: string;
   readonly moduloExiste: boolean;
+  /**
+   * ⚠️ AC-15 (E13, autor, 2026-09-15): «catalogo» abre as recomendações; «sem_acao_navegavel» é um estado sem porta
+   * (investigação pendente) — ⛔ «módulo inexistente», ⛔ e ⛔ catálogo de manejo.
+   */
+  readonly navegacao: "catalogo" | "sem_acao_navegavel";
+  /** ⚠️ AC-15 bloco D: a superfície do catálogo, declarada pelo destino — ⛔ deduzida por exclusão na tela. */
+  readonly superficie?: "hic" | "hsa";
   readonly oQueAcontece: string;
   /**
    * ⚠️ Os fatos que COEXISTEM com esta saída, e que ⛔ não viram segundo destino.
@@ -541,9 +551,54 @@ export type DestinoResolvido = {
   readonly fonte: string;
 };
 
+/**
+ * ESTADO DA SUSPEITA DE HSA — o derivado único (AC-15, bloco A; decisões do autor E1, E2, E11 e E13, 2026-09-15).
+ *
+ * ⚠️⚠️ Toda leitura de `suspeita_hsa` passa por aqui: portão, EVT, card, pendência, destino, síntese e tela G. Cada
+ * consumidor lendo a pergunta por conta própria era o que fazia o portão reter enquanto a tela dizia «sem suspeita».
+ *
+ * · `suspeita`: respostas sem correção. «Sim» ou «Incerto» em qualquer ponto → ATIVA; só «Não» → SEM_SUSPEITA; nenhuma
+ *   → NAO_AVALIADA. Um «Não» registrado depois ⛔ desativa (E2): só a correção explícita — inclusive o «Limpar» auditado
+ *   e o desfazer — tira do histórico o fato corrigido.
+ * · `estado`: a evidência confirmatória vence a suspeita (E11, E14). Modeladas: HSA identificada na TC sem contraste
+ *   (bloco D) e o legado — hemorragia na TC com o tipo «Subaracnóidea» registrado no caminho hemorrágico. Limpar a
+ *   suspeita ⛔ as toca; só a correção do próprio exame.
+ */
+export type SituacaoDaSuspeitaDeHsa = "NAO_AVALIADA" | "SEM_SUSPEITA" | "ATIVA";
+export type EstadoDaSuspeitaDeHsa = {
+  readonly estado: SituacaoDaSuspeitaDeHsa | "HSA_CONFIRMADA";
+  readonly suspeita: SituacaoDaSuspeitaDeHsa;
+  /** Presente com a suspeita ATIVA: «sim» se algum «Sim» vale; senão «nao_sei». */
+  readonly respostaQueAtiva?: "sim" | "nao_sei";
+  readonly ultimaResposta?: "sim" | "nao" | "nao_sei";
+  readonly evidencia?: "tc_hsa" | "legado_subaracnoidea";
+};
+
+export function estadoDaSuspeitaDeHsa(estado: EstadoAvc): EstadoDaSuspeitaDeHsa {
+  const corrigidos = new Set(estado.fatos.map((f) => f.corrigeFatoId).filter((id): id is string => id !== undefined));
+  const respostas = estado.fatos
+    .filter((f) => f.campo === "suspeita_hsa" && f.instancia === undefined && !corrigidos.has(f.id))
+    .map((f) => String(f.valor))
+    .filter((v): v is "sim" | "nao" | "nao_sei" => v === "sim" || v === "nao" || v === "nao_sei");
+  const suspeita: SituacaoDaSuspeitaDeHsa =
+    respostas.some((v) => v !== "nao") ? "ATIVA" : respostas.length > 0 ? "SEM_SUSPEITA" : "NAO_AVALIADA";
+  const tcHsa = tcsSemContraste(estado).some((e) => e.resultado === RESULTADO_TC.hsa);
+  const legado =
+    tcsSemContraste(estado).some((e) => e.resultado === RESULTADO_TC.hemorragia)
+    && rotuloGravado(estado, "hem_tipo") === TIPO_LEGADO_SUBARACNOIDEA;
+  return {
+    estado: tcHsa || legado ? "HSA_CONFIRMADA" : suspeita,
+    suspeita,
+    ...(suspeita === "ATIVA" ? { respostaQueAtiva: respostas.includes("sim") ? ("sim" as const) : ("nao_sei" as const) } : {}),
+    ...(respostas.length > 0 ? { ultimaResposta: respostas[respostas.length - 1] } : {}),
+    ...(tcHsa ? { evidencia: "tc_hsa" as const } : legado ? { evidencia: "legado_subaracnoidea" as const } : {}),
+  };
+}
+
 export function destinoDaImagem(estado: EstadoAvc): DestinoResolvido | undefined {
   const insumos = ["estudo_resultado", "suspeita_hsa"];
-  const hsa = ternario(estado, "suspeita_hsa") === true;
+  const s = estadoDaSuspeitaDeHsa(estado);
+  const hsa = s.suspeita === "ATIVA";
   /**
    * ⚠️⚠️ **QUALQUER** estudo que descreva hemorragia manda para a saída
    * hemorrágica — inclusive na divergência. ⛔ Um achado de hemorragia ⛔ não
@@ -551,14 +606,23 @@ export function destinoDaImagem(estado: EstadoAvc): DestinoResolvido | undefined
    * hierarquia silenciosa que o autor proibiu.
    */
   const hemorragia = tcsSemContraste(estado).some(
-    (e) => e.resultado === RESULTADO_TC.hemorragia
+    (e) => e.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(e.resultado)
   );
+  const hicGenerica = tcsSemContraste(estado).some((e) => e.resultado === RESULTADO_TC.hemorragia) && s.evidencia !== "legado_subaracnoidea";
 
   /**
    * ⚠️⚠️ A HEMORRAGIA IDENTIFICADA VEM PRIMEIRO, e a ordem destes dois `if` É a
    * decisão — ⛔ não um detalhe de escrita. Invertê-los devolve o override que o
    * autor removeu: a hipótese passando por cima do achado de imagem.
    */
+  /**
+   * ⚠️ AC-15 bloco D (E9, E13): toda a hemorragia vista é HSA confirmada — pela opção própria ⛔ pelo legado — → saída de
+   * HSA confirmada, com o catálogo de manejo. Com hemorragia genérica também presente, a saída segue a hemorrágica, e a
+   * HSA confirmada fica associada.
+   */
+  if (hemorragia && s.estado === "HSA_CONFIRMADA" && !hicGenerica) {
+    return { saida: "hsa_confirmada", ...DESTINOS_DA_IMAGEM.hsaConfirmada, associados: [], insumos };
+  }
   if (hemorragia) {
     return {
       saida: "hemorragia_intracraniana",
@@ -568,7 +632,7 @@ export function destinoDaImagem(estado: EstadoAvc): DestinoResolvido | undefined
        * vê a suspeita junto dela — sem ser mandado para dois lugares, e sem que
        * a suspeita desapareça.
        */
-      associados: hsa ? [FATO_ASSOCIADO.suspeitaHsa] : [],
+      associados: [...(hsa ? [FATO_ASSOCIADO.suspeitaHsa] : []), ...(s.evidencia === "tc_hsa" ? [FATO_ASSOCIADO.hsaConfirmada] : [])],
       insumos,
     };
   }
@@ -584,57 +648,44 @@ export function destinoDaImagem(estado: EstadoAvc): DestinoResolvido | undefined
 }
 
 /**
- * A SUSPEITA DE HSA — ⚠️ e o que fazer com **Incerto**.
+ * A SUSPEITA DE HSA NA IMAGEM — lida do derivado único (AC-15, bloco A).
  *
- * ⚠️⚠️ "INCERTO" ⛔ NÃO VIRA "NÃO" (**E-23**) e ⛔ não arma a saída. Ele produz uma
- * **pendência nomeada**, e ⛔ nada além disso: ⛔ não retém reperfusão, ⛔ não
- * fecha campo, ⛔ não muda ⛔ nenhuma outra leitura.
+ * ⚠️ «Sim» ou «Incerto» sem correção deixam a suspeita ATIVA (E1): a leitura fala de investigação pendente, ⛔ de manejo
+ * de HSA confirmada (E13). Um «Não» registrado depois ⛔ encerra a suspeita (E2). «Incerto» continua `desconhecido`
+ * (E-23): ⛔ vira «Não» ⛔ nem «Sim».
  */
 export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
   const insumos = ["suspeita_hsa"];
   const fonte = "spec §1.8";
-  const valor = ternario(estado, "suspeita_hsa");
-  const incerto = respondeuDesconhecido(estado, "suspeita_hsa");
+  const s = estadoDaSuspeitaDeHsa(estado);
+  const naoPosterior = s.ultimaResposta === "nao";
 
-  if (valor === true) {
+  if (s.suspeita === "ATIVA" && s.respostaQueAtiva === "sim") {
     return {
       conclusao: "sim",
       tom: "atencao",
-      curto: "Suspeita clínica de hemorragia subaracnóidea registrada",
-      texto: "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua",
+      curto: "Suspeita de HSA ativa — investigação pendente",
+      texto: naoPosterior
+        ? "Suspeita clínica de hemorragia subaracnóidea registrada. Uma resposta registrada depois não encerra a suspeita, e a reperfusão fica retida enquanto a investigação estiver pendente"
+        : "Suspeita clínica de hemorragia subaracnóidea registrada. A reperfusão fica retida enquanto a investigação estiver pendente, e o atendimento continua",
       insumos,
       fonte,
     };
   }
-  if (incerto) {
+  if (s.suspeita === "ATIVA") {
     return {
       conclusao: "desconhecido",
-      /**
-       * ── ⚠️⚠️⚠️ ⛔ RESPONDIDO **⛔ NÃO É** PENDENTE — 2026-09-09 ────────────
-       *
-       * ⚠️ Relato do autor, ⛔ com captura: *"mesmo depois de marcado aparece
-       * como se ⛔ não estivesse marcado"* — ⛔ *"Incerto"* escolhido, ⛔ e o
-       * bloco dizendo *"Falta responder · 1"*.
-       *
-       * ⛔ ⛔ ⛔ **O `texto` ⛔ aqui ⛔ já dizia a coisa certa** — *"Incerto fica
-       * registrado como resposta"* —, ⛔ e o `tom` dizia o contrário.
-       * ⚠️ ⛔ E ⛔ os dois ramos estavam **⛔ trocados**: quem ⛔ **⛔ respondeu**
-       * caía em `pendente`, ⛔ e quem ⛔ **⛔ nunca foi perguntado** caía em
-       * `informativo`.
-       *
-       * ⛔ ⛔ **⛔ A conclusão ⛔ não muda**: `desconhecido` ⛔ continua
-       * `desconhecido`, ⛔ e ⛔ nada passa a ser afirmado (**E-23**). ⛔ O que
-       * muda ⛔ é a tela ⛔ parar de **cobrar** ⛔ uma resposta que ⛔ ela
-       * ⛔ **⛔ tem**.
-       */
-      tom: "informativo",
-      curto: "Suspeita clínica de hemorragia subaracnóidea em aberto",
-      texto: "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento",
+      /** ⚠️ Respondido ⛔ é pendente de resposta (2026-09-09): o tom é de atenção, ⛔ de pergunta sem resposta. */
+      tom: "atencao",
+      curto: "Suspeita de HSA incerta — investigação pendente",
+      texto: naoPosterior
+        ? "Incerto fica registrado como resposta e não vira ausência de suspeita. Uma resposta registrada depois não encerra a suspeita, e a reperfusão fica retida enquanto a investigação estiver pendente"
+        : "Incerto fica registrado como resposta e não vira ausência de suspeita. A reperfusão fica retida enquanto a investigação estiver pendente",
       insumos,
       fonte,
     };
   }
-  if (valor === false) {
+  if (s.suspeita === "SEM_SUSPEITA") {
     return {
       conclusao: "nao",
       tom: "informativo",
@@ -685,8 +736,9 @@ export function suspeitaDeHsa(estado: EstadoAvc): Leitura {
  * apaga a avaliação: IVT ⛔ e EVT continuam avaliadas; ⛔ o que ⛔ não fica é a
  * **execução liberada** com uma saída diagnóstica armada (§1.8, E-09).
  *
- * ⚠️ Resolve por «Não», correção ⛔ ou desfazer do fato. ⛔ «Incerto» ⛔ não retém
- * (⛔ e ⛔ não é «não»). ⛔ Nenhuma regra sobre como investigar HSA nasce aqui.
+ * ⚠️ AC-15 bloco A (autor, 2026-09-15): retém enquanto o derivado único diz suspeita ATIVA — «Sim» ou «Incerto» sem
+ * correção (E1). Um «Não» posterior ⛔ libera (E2); libera a correção explícita ou o desfazer do fato. ⛔ Nenhuma regra
+ * sobre como investigar HSA nasce aqui.
  *
  * ── ⚠️⚠️ D-PEND-23 (autor, 2026-09-13) · A CLASSIFICAÇÃO ─────────────────────
  * ⚠️ Suspeita clínica de HSA com TC sem sangue: reter a reperfusão, classificada como
@@ -714,19 +766,12 @@ export type RetencaoDiagnostica =
 
 export function retencaoDiagnostica(estado: EstadoAvc): RetencaoDiagnostica {
   /**
-   * ⚠️⚠️ SEM ATALHO — pedido do autor, 2026-09-13 (8ª rodada, prioridade alta).
+   * ⚠️⚠️ SEM ATALHO — pedido do autor, 2026-09-13 (8ª rodada), e AC-15 bloco A (2026-09-15).
    *
-   * ⛔ Trocar a resposta ⛔ é dado novo. Um «Sim» registrado mantém a retenção mesmo que
-   * depois se responda «Não» ⛔ ou «Incerto»: ⛔ condição corrigível exige FATO NOVO, ⛔ e o
-   * conteúdo do que resolve a suspeita ⛔ ainda ⛔ não existe (pacote
-   * `docs/avc/revisao/hsa-resolucao.md`). ⚠️ Libera ⛔ só a correção do próprio «Sim»
-   * (erro de registro) — ⛔ o que inclui «Limpar», que é correção: brecha declarada no
-   * pacote, com decisão pedida.
+   * ⛔ Trocar a resposta ⛔ é dado novo: a suspeita ativa continua retendo até a correção do próprio registro. A leitura é
+   * a do derivado único, a mesma da tela, da pendência e da síntese.
    */
-  const simVigente = estado.fatos.some(
-    (f) => f.campo === "suspeita_hsa" && f.valor === "sim" && !estado.fatos.some((c) => c.corrigeFatoId === f.id)
-  );
-  if (!simVigente) return { estado: "livre" };
+  if (estadoDaSuspeitaDeHsa(estado).suspeita !== "ATIVA") return { estado: "livre" };
   const s = suspeitaDeHsa(estado);
   return {
     estado: "retida",
@@ -1165,13 +1210,14 @@ export function pendenciasDaImagem(estado: EstadoAvc): readonly Pendencia[] {
       );
   }
 
-  if (respondeuDesconhecido(estado, "suspeita_hsa")) {
+  /** ⚠️ AC-15 (E13): suspeita ativa — «Sim» ou «Incerto» — é investigação pendente, com nome. */
+  if (estadoDaSuspeitaDeHsa(estado).suspeita === "ATIVA") {
     abertas.push({
       id: "suspeita_hsa",
-      rotulo: "Suspeita clínica de hemorragia subaracnóidea",
+      rotulo: "Suspeita de HSA ativa — investigação pendente",
       dono: "imagem",
       campo: "suspeita_hsa",
-      resolvePor: "Registrar a conclusão sobre a suspeita",
+      resolvePor: "Continuar investigação de HSA",
     });
   }
 
@@ -1280,7 +1326,7 @@ export function imagensAposInstante(
       ? { estado: "nenhuma_posterior" }
       : { estado: "posterior_sem_resultado", estudos: posteriores.map((x) => x.id) };
   }
-  const comAchado = comLaudo.filter((x) => x.resultado === RESULTADO_TC.hemorragia);
+  const comAchado = comLaudo.filter((x) => x.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(x.resultado));
   const estudosIds = comLaudo.map((x) => x.id);
   if (comAchado.length > 0) {
     const discordante = comLaudo.length > comAchado.length;
@@ -1289,7 +1335,7 @@ export function imagensAposInstante(
       estudos: estudosIds,
       achadoPresente: true,
       discordante,
-      resultado: RESULTADO_TC.hemorragia,
+      resultado: comAchado[0].resultado ?? RESULTADO_TC.hemorragia,
       curto: discordante
         ? "Hemorragia intracraniana identificada em imagem posterior à trombólise; há outra imagem posterior que não a descreve. O aplicativo não escolhe entre elas."
         : "Hemorragia intracraniana identificada em imagem posterior à trombólise.",

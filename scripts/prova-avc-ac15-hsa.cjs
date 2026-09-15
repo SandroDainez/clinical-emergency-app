@@ -204,10 +204,12 @@ bloco("A19", "«Não sei» em outros campos; suspeita nunca respondida (E1)", ()
   conf("A19", "livre; sem motivo, pendência nem saída de HSA", retencao(e) === "livre" && motivoHsa(e) === undefined && !pendenciaHsa(e) && destino(e) === undefined, `⛔ ${retencao(e)}`);
 });
 bloco("A20", "nenhuma leitura direta de `suspeita_hsa` fora do derivado", () => {
-  const dir = path.join(appDir, "avc", "nucleo");
+  /** Trava estrutural do bloco A (autor, 2026-09-15): núcleo ⛔ telas. */
   const achados = [];
-  for (const arq of fs.readdirSync(dir).filter((n) => n.endsWith(".ts"))) {
-    let src = lerFonte(path.join(dir, arq));
+  const alvos = [[["avc", "nucleo"], ".ts"], [["components", "avc"], ".tsx"]]
+    .flatMap(([sub, ext]) => fs.readdirSync(path.join(appDir, ...sub)).filter((n) => n.endsWith(ext)).map((n) => [path.join(appDir, ...sub, n), `${sub.join("/")}/${n}`]));
+  for (const [caminho, arq] of alvos) {
+    let src = lerFonte(caminho);
     const i = src.indexOf("function estadoDaSuspeitaDeHsa");
     if (i >= 0) {
       let j = src.indexOf("{", i), prof = 0, k = j;
@@ -297,20 +299,7 @@ bloco("D11", "terceira opção com par es-419 (E9b)", () => {
 
 /* ── vermelhas declaradas (autor, 2026-09-15): cada linha, com o bloco que a torna verde ── */
 const VERMELHAS_DECLARADAS = {
-  A0: "bloco A · derivado único `estadoDaSuspeitaDeHsa`",
-  A3b: "bloco A · suspeita ativa como investigação, ⛔ manejo (E13)",
-  A4: "bloco A · «Incerto» é suspeita ativa (E1, E13)",
-  A5: "bloco A · Sim → Não coerente em todas as superfícies (E2, E13)",
-  A6: "bloco A · Sim → Incerto sem «não retém» (E13)",
-  A7: "bloco A · Incerto → Não continua retendo (E2)",
-  A9: "bloco A · desfazer coerente (E13)",
-  A11: "bloco A · «Limpar» sobre «Incerto» pede «Foi engano?» (E1)",
-  A20: "bloco A · nenhuma leitura direta de `suspeita_hsa`",
-  A21a: "bloco A · evidência confirmatória domina a suspeita",
-  D8: "bloco D · legado «Subaracnóidea» sem «HIC» (E9)",
-  D9: "bloco D · «Subaracnóidea» fora de `hem_tipo` em caso novo (E9)",
-  D10: "bloco D · mapeamento explícito das saídas nas telas C e G",
-  D11: "bloco D · terceira opção e par es-419 (E9b)",
+  /** Vazia: as linhas do bloco A saíram com o bloco A, ⛔ e as do bloco D (D8–D11) com o bloco D (AC-15, 2026-09-15). */
 };
 
 /* ── relatório ── */

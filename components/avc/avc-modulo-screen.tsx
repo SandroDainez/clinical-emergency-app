@@ -1317,7 +1317,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
          */
         <ClinicalHeader
           /** ⚠️ 15ª rodada (captura do A07): com o caminho hemorrágico aberto, o título ⛔ diz "isquêmico". */
-          titulo={TITULO_DA_SINDROME[atual.id] ?? (caminhoHemorragico(estado).ativo ? TITULO_DA_SINDROME.hic : "AVC isquêmico agudo")}
+          titulo={TITULO_DA_SINDROME[atual.id] ?? (caminhoHemorragico(estado).ativo ? (caminhoHemorragico(estado).nome === "hsa" ? TITULO_DA_SINDROME.hsa : TITULO_DA_SINDROME.hic) : "AVC isquêmico agudo")}
           /**
            * ⚠️⚠️ O ESCOPO SAIU DO CABEÇALHO — 2026-09-06.
            *

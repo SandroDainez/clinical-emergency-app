@@ -214,6 +214,11 @@ export const RESULTADO_TC = {
    */
   semHemorragia: "Sem hemorragia intracraniana identificada",
   hemorragia: "Hemorragia intracraniana identificada",
+  /**
+   * ⚠️ AC-15 bloco D (E9, E9b, autor 2026-09-15): HSA confirmada na imagem tem opção própria, distinta da HIC. ⛔ Os
+   * dois valores acima ⛔ foram renomeados: casos gravados continuam lendo igual.
+   */
+  hsa: "Hemorragia subaracnóidea identificada",
 } as const;
 
 /**
@@ -232,7 +237,11 @@ export const PALAVRAS_DE_VEREDITO_PROIBIDAS: readonly string[] = ["excluí", "ex
 export const OPCOES_RESULTADO_TC: readonly string[] = [
   RESULTADO_TC.semHemorragia,
   RESULTADO_TC.hemorragia,
+  RESULTADO_TC.hsa,
 ];
+
+/** ⚠️ AC-15 bloco D: os resultados que descrevem hemorragia — a HSA confirmada ⛔ deixa de ser hemorragia para nenhum leitor. */
+export const RESULTADOS_COM_HEMORRAGIA: readonly string[] = [RESULTADO_TC.hemorragia, RESULTADO_TC.hsa];
 
 /**
  * ⚠️⚠️ **A INSTÂNCIA DE ESTUDO** — um exame, com a sua modalidade, a sua
@@ -968,17 +977,17 @@ export const DESTINOS_DA_IMAGEM = {
   hsa: {
     id: "suspeita_hsa",
     temporalidade: "estado",
-    rotulo: "Suspeita clínica de hemorragia subaracnóidea",
-    modulo: "Fluxo de hemorragia subaracnóidea",
+    rotulo: "Suspeita de HSA ativa — investigação pendente",
+    modulo: "Investigação de hemorragia subaracnóidea",
     /**
-     * ⚠️ EXISTE desde 2026-09-05 (PD-36): o catálogo de recomendações da HSA
-     * (AHA/ASA 2023) foi construído e é alcançável a partir do Destino. E-09
-     * agora se cumpre pelo caminho oposto — a tela abre o módulo em vez de dizer
-     * que ele não existe.
+     * ⚠️ O catálogo de recomendações da HSA (AHA/ASA 2023) EXISTE desde 2026-09-05 (PD-36).
+     * ⚠️⚠️ AC-15 (E13, autor, 2026-09-15): suspeita ativa é investigação pendente, ⛔ porta para o catálogo de manejo —
+     * a navegação é «sem ação navegável». A entrada no catálogo volta pela HSA confirmada (bloco D).
      */
     moduloExiste: true,
+    navegacao: "sem_acao_navegavel",
     oQueAcontece:
-      "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua.",
+      "A reperfusão fica retida enquanto a investigação estiver pendente. O motivo fica registrado, e o atendimento continua.",
     fonte: "spec §1.8",
   },
   hemorragia: {
@@ -992,6 +1001,21 @@ export const DESTINOS_DA_IMAGEM = {
     modulo: "Hemorragia intracraniana (HIC)",
     /** ⚠️ EXISTE desde 2026-09-05 (PD-36): catálogo HIC (AHA/ASA 2022) construído. */
     moduloExiste: true,
+    navegacao: "catalogo",
+    superficie: "hic",
+    oQueAcontece:
+      "A reperfusão não é iniciada sem exclusão de hemorragia. O motivo fica registrado, e o atendimento continua.",
+    fonte: "F-16",
+  },
+  /** ⚠️ AC-15 bloco D (E9, E13): HSA confirmada na imagem — saída própria, com a porta para o catálogo de manejo da HSA. */
+  hsaConfirmada: {
+    id: "hsa_confirmada",
+    temporalidade: "estado",
+    rotulo: "Hemorragia subaracnóidea identificada",
+    modulo: "Hemorragia subaracnóidea (HSA)",
+    moduloExiste: true,
+    navegacao: "catalogo",
+    superficie: "hsa",
     oQueAcontece:
       "A reperfusão não é iniciada sem exclusão de hemorragia. O motivo fica registrado, e o atendimento continua.",
     fonte: "F-16",
@@ -1016,6 +1040,12 @@ export const FATO_ASSOCIADO = {
     id: "suspeita_hsa",
     temporalidade: "estado",
     frase: "Há também suspeita de hemorragia subaracnóidea.",
+  },
+  /** ⚠️ AC-15 bloco D: HSA confirmada num estudo, convivendo com hemorragia genérica em outro. */
+  hsaConfirmada: {
+    id: "hsa_confirmada",
+    temporalidade: "estado",
+    frase: "Há também hemorragia subaracnóidea identificada.",
   },
 } as const;
 

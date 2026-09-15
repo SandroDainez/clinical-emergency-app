@@ -1110,6 +1110,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Tomografia sem contraste": "Tomografía sin contraste",
   "Sem hemorragia intracraniana identificada": "Sin hemorragia intracraneal identificada",
   "Hemorragia intracraniana identificada": "Hemorragia intracraneal identificada",
+  "Hemorragia subaracnóidea identificada": "Hemorragia subaracnoidea identificada",
+  "Há também hemorragia subaracnóidea identificada.": "Hay también hemorragia subaracnoidea identificada.",
   "Registra o achado deste exame. Não substitui o juízo clínico registrado separadamente, como suspeita clínica de hemorragia subaracnóidea.":
     "Registra el hallazgo de este estudio. No sustituye el juicio clínico registrado por separado, como la sospecha clínica de hemorragia subaracnoidea.",
   "Realizada — resultado ainda não disponível": "Realizada — resultado aún no disponible",
@@ -1210,7 +1212,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Este módulo aún no existe en esta aplicación.",
   "Há também suspeita de hemorragia subaracnóidea.":
     "Hay también sospecha de hemorragia subaracnoidea.",
-  "Fluxo de hemorragia subaracnóidea": "Flujo de hemorragia subaracnoidea",
   /**
    * ⚠️ DUAS CHAVES PARECIDAS, e as duas são necessárias: o **destino** diz
    * *identificada* (redação do autor, para separar achado de suspeita); a
@@ -1219,8 +1220,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
    * foi assim que a leitura ficou sem par por um minuto, em 2026-08-29.
    */
   "Hemorragia intracraniana na tomografia": "Hemorragia intracraneal en la tomografía",
-  "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua.":
-    "Esta atención sigue por el flujo específico de la hemorragia subaracnoidea. El motivo queda registrado, y la atención continúa.",
   "A reperfusão não é iniciada sem exclusão de hemorragia. O motivo fica registrado, e o atendimento continua.":
     "La reperfusión no se inicia sin exclusión de hemorragia. El motivo queda registrado, y la atención continúa.",
 
@@ -1239,13 +1238,21 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Resultado da tomografia ainda não registrado": "Resultado de la tomografía aún no registrado",
   "Suspeita clínica de hemorragia subaracnóidea registrada":
     "Sospecha de hemorragia subaracnoidea registrada",
-  "Este atendimento segue pelo fluxo específico da hemorragia subaracnóidea. O motivo fica registrado, e o atendimento continua":
-    "Esta atención sigue por el flujo específico de la hemorragia subaracnoidea. El motivo queda registrado, y la atención continúa",
-  "Suspeita clínica de hemorragia subaracnóidea em aberto":
-    "Sospecha de hemorragia subaracnoidea abierta",
-  "Incerto fica registrado como resposta, não vira ausência de suspeita, e não retém nada do atendimento":
-    "Incierto queda registrado como respuesta, no se convierte en ausencia de sospecha, y no retiene nada de la atención",
   "Sem suspeita de hemorragia subaracnóidea": "Sin sospecha de hemorragia subaracnoidea",
+  // AC-15 bloco A (E13): suspeita ativa é investigação pendente, ⛔ manejo.
+  "Suspeita de HSA ativa — investigação pendente": "Sospecha de HSA activa — investigación pendiente",
+  "Suspeita de HSA incerta — investigação pendente": "Sospecha de HSA incierta — investigación pendiente",
+  "Suspeita clínica de hemorragia subaracnóidea registrada. A reperfusão fica retida enquanto a investigação estiver pendente, e o atendimento continua":
+    "Sospecha clínica de hemorragia subaracnoidea registrada. La reperfusión queda retenida mientras la investigación esté pendiente, y la atención continúa",
+  "Suspeita clínica de hemorragia subaracnóidea registrada. Uma resposta registrada depois não encerra a suspeita, e a reperfusão fica retida enquanto a investigação estiver pendente":
+    "Sospecha clínica de hemorragia subaracnoidea registrada. Una respuesta registrada después no cierra la sospecha, y la reperfusión queda retenida mientras la investigación esté pendiente",
+  "Incerto fica registrado como resposta e não vira ausência de suspeita. A reperfusão fica retida enquanto a investigação estiver pendente":
+    "Incierto queda registrado como respuesta y no se convierte en ausencia de sospecha. La reperfusión queda retenida mientras la investigación esté pendiente",
+  "Incerto fica registrado como resposta e não vira ausência de suspeita. Uma resposta registrada depois não encerra a suspeita, e a reperfusão fica retida enquanto a investigação estiver pendente":
+    "Incierto queda registrado como respuesta y no se convierte en ausencia de sospecha. Una respuesta registrada después no cierra la sospecha, y la reperfusión queda retenida mientras la investigación esté pendiente",
+  "Investigação de hemorragia subaracnóidea": "Investigación de hemorragia subaracnoidea",
+  "A reperfusão fica retida enquanto a investigação estiver pendente. O motivo fica registrado, e o atendimento continua.":
+    "La reperfusión queda retenida mientras la investigación esté pendiente. El motivo queda registrado, y la atención continúa.",
   "Resposta registrada. A saída específica para hemorragia subaracnóidea não está armada":
     "Respuesta registrada. La salida específica para hemorragia subaracnoidea no está activada",
   "Suspeita clínica de hemorragia subaracnóidea ainda não avaliada":
@@ -1288,7 +1295,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Registrar o resultado da tomografia de crânio": "Registrar el resultado de la tomografía de cráneo",
   "Registrar o resultado quando o laudo estiver disponível":
     "Registrar el resultado cuando el informe esté disponible",
-  "Registrar a conclusão sobre a suspeita": "Registrar la conclusión sobre la sospecha",
   "Imagem vascular": "Imagen vascular",
   "Registrar a angiotomografia, ou que ela não está disponível neste serviço":
     "Registrar la angiotomografía, o que no está disponible en este servicio",

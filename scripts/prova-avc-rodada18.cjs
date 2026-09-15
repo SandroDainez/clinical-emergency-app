@@ -143,7 +143,8 @@ const telaF = lerFonte(arq("components", "avc", "superficie-f.tsx"));
   const res = ler("docs", "avc", "revisao", "hsa-resolucao.md");
   conf("⚠️ opção E com a regra real: déficit novo ou >6 h → TC negativa ⛔ resolve, punção lombar; angio-TC depois de HSA demonstrada",
     /\*\*E\*\*[\s\S]*déficit neurológico novo ou mais de 6 h[\s\S]*punção lombar[\s\S]*HSA demonstrada/.test(res), "⛔ opção E sem a regra");
-  conf("… a decisão continua em branco", /\*\*Decisão humana:\*\* ___/.test(res), "⛔");
+  /** ⚠️ Ajuste consciente (AC-15, 2026-09-15): a decisão foi tomada e carimbada pelo autor. */
+  conf("… a decisão humana está carimbada pelo autor", /\*\*Decisão humana:\*\* Dr\. Sandro Dainez/.test(res), "⛔ sem carimbo");
 }
 
 /* ══ C · LINHA DE CUIDADOS (MS) ════════════════════════════════════════════ */

@@ -212,8 +212,12 @@ export function sinteseDoCaso(
    */
   if (destino?.saida === "hemorragia_intracraniana") {
     proximaAcao.push({ id: "abrir-hic", texto: "Abrir o manejo de Hemorragia intracraniana (HIC)" });
-  } else if (destino?.saida === "suspeita_hsa") {
+  } else if (destino?.saida === "hsa_confirmada") {
+    /** ⚠️ AC-15 bloco D (E9, E13): HSA confirmada abre o manejo — a suspeita, ⛔. */
     proximaAcao.push({ id: "abrir-hsa", texto: "Abrir o manejo de hemorragia subaracnóidea" });
+  } else if (destino?.saida === "suspeita_hsa") {
+    /** ⚠️ AC-15 (E13): suspeita ativa pede investigação, ⛔ manejo de HSA confirmada. */
+    proximaAcao.push({ id: "investigar-hsa", texto: "Continuar investigação de HSA" });
   }
 
   /**

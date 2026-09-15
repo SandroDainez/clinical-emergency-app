@@ -277,8 +277,9 @@ if (H?.caminhoHemorragico !== undefined && CH !== undefined) {
   conf("… o portão da IVT ⛔ a classe da EVT confirmam o bloqueio",
     tenta(() => PI.estadoDoPortaoIVT(hem, T0 + MIN).estado, "") === "bloqueado_seguranca" && /* ⚠️ ajuste de instrumento: a classe usa `estado`, ⛔ `tipo` */ tenta(() => VE.vereditoDaTrombectomia(hem, T0 + MIN).classe?.estado, "") === "retida",
     `⛔ ${tenta(() => PI.estadoDoPortaoIVT(hem, T0 + MIN).estado, "")} · ${JSON.stringify(tenta(() => VE.vereditoDaTrombectomia(hem, T0 + MIN).classe, {}))}`);
-  conf("… tipo: intraparenquimatosa · subaracnóidea · subdural · outra · não sei",
-    JSON.stringify(CH.TIPOS_DE_HEMORRAGIA) === JSON.stringify(["Intraparenquimatosa", "Subaracnóidea", "Subdural", "Outra", "Não sei"]), `⛔ ${JSON.stringify(CH.TIPOS_DE_HEMORRAGIA)}`);
+  /** ⚠️ Ajuste consciente (AC-15 bloco D, E9): «Subaracnóidea» sai do tipo em caso novo — HSA tem opção própria na TC. */
+  conf("… tipo: intraparenquimatosa · subdural · outra · não sei",
+    JSON.stringify(CH.TIPOS_DE_HEMORRAGIA) === JSON.stringify(["Intraparenquimatosa", "Subdural", "Outra", "Não sei"]), `⛔ ${JSON.stringify(CH.TIPOS_DE_HEMORRAGIA)}`);
   const comTipo = E.registrarFato(hem, { campo: "hem_tipo", valor: "Subdural" }, rel);
   conf("… tipo registrado é lido", H.caminhoHemorragico(comTipo).tipo === "Subdural", `⛔ ${H.caminhoHemorragico(comTipo).tipo}`);
   const comAnticoag = E.registrarFato(hem, { campo: "anticoagulante_em_uso", valor: "Varfarina ou outro antagonista da vitamina K" }, rel);
@@ -322,7 +323,8 @@ if (H?.caminhoHemorragico !== undefined && CH !== undefined) {
   conf("a tela reduz as abas no caminho hemorrágico", /SUPERFICIES_DO_CAMINHO_HEMORRAGICO/.test(tela) && /caminhoHemorragico\(/.test(tela), "⛔ abas iguais");
   conf("⚠️ captura do A07: com o caminho aberto, o título ⛔ diz «AVC isquêmico agudo»",
     /* ⚠️ ajuste consciente (17ª rodada, AC-110): o título do caminho é o nome único da HIC (`TITULO_DA_SINDROME.hic`) */
-    /caminhoHemorragico\(estado\)\.ativo \? TITULO_DA_SINDROME\.hic : "AVC isquêmico agudo"/.test(tela), "⛔ título isquêmico no caminho hemorrágico");
+    /* ⚠️ ajuste consciente (AC-15 bloco D, E9): com HSA confirmada, o título é o da HSA (`TITULO_DA_SINDROME.hsa`) */
+    /caminhoHemorragico\(estado\)\.ativo \? \(caminhoHemorragico\(estado\)\.nome === "hsa" \? TITULO_DA_SINDROME\.hsa : TITULO_DA_SINDROME\.hic\) : "AVC isquêmico agudo"/.test(tela), "⛔ título isquêmico no caminho hemorrágico");
   conf("a Destino desenha o caminho hemorrágico", /<CaminhoHemorragico/.test(lerFonte(arq("components", "avc", "superficie-g.tsx"))), "⛔ fora da Destino");
 }
 

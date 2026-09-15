@@ -776,13 +776,14 @@ ausente("30 · HSA (API)", () => {
   conf("30 · ⛔ mas o veredito EVT carrega a retenção diagnóstica", ve.retencaoDiagnostica !== undefined && ve.retencaoDiagnostica.estado === "retida", `⛔ ${JSON.stringify(ve.retencaoDiagnostica)}`);
   conf("30 · ⛔ e o cartão da EVT ⛔ não se pinta de sucesso", AP.papelDoVereditoEvt(ve) !== "sucesso", `⛔ ${AP.papelDoVereditoEvt(ve)}`);
   /** ⚠️ Resolução. */
-  conf("30 · HSA Sim → Não SEM fato novo → portão ⛔ libera (8ª rodada; antes liberava)", ivt(reg(hsa, "suspeita_hsa", "nao")).p.liberado === false, `⛔ ${ivt(reg(hsa, "suspeita_hsa", "nao")).p.estado}`);
+  conf("30 · HSA Sim → Não SEM fato novo → o portão continua retendo (8ª rodada; antes liberava)", ivt(reg(hsa, "suspeita_hsa", "nao")).p.liberado === false, `⛔ ${ivt(reg(hsa, "suspeita_hsa", "nao")).p.estado}`);
   const desfeito = E.desfazerRegistro(hsa, "suspeita_hsa", rel);
   conf("30 · desfazer o registro → retenção sai (⛔ e ⛔ não vira «não»)", ivt(desfeito).p.liberado === true && DC.suspeitaDeHsa(desfeito).conclusao === "desconhecido", `⛔ ${ivt(desfeito).p.estado}`);
   const fato = [...hsa.fatos].reverse().find((f) => f.campo === "suspeita_hsa");
   const corrigido = E.corrigirFato(hsa, { campo: "suspeita_hsa", valor: "nao", corrigeFatoId: fato.id }, rel);
   conf("30 · correção do fato para «não» → portão liberado", ivt(corrigido).p.liberado === true, `⛔ ${ivt(corrigido).p.estado}`);
-  conf("30 · «Incerto» ⛔ não retém (⛔ e ⛔ não é «não»)", ivt(reg(candidatoIvt(), "suspeita_hsa", "nao_sei")).p.liberado === true, "⛔");
+  /** ⚠️ Ajuste consciente (AC-15 bloco A, E1, autor 2026-09-15): «Incerto» é suspeita ativa e retém. */
+  conf("30 · «Incerto» retém: é suspeita ativa, ⛔ «não»", ivt(reg(candidatoIvt(), "suspeita_hsa", "nao_sei")).p.estado === "saida_diagnostica_pendente", `⛔ ${ivt(reg(candidatoIvt(), "suspeita_hsa", "nao_sei")).p.estado}`);
   /** ⚠️ Ordem: contraindicação real prevalece; hemorragia identificada segue pela imagem. */
   conf("30 · HSA Sim + INR 3 → `bloqueado_seguranca` prevalece", ivt(regI(hsa, col(1), "inr", 3)).p.estado === "bloqueado_seguranca", "⛔");
   conf("30 · HSA Sim + hemorragia identificada → IVT `retida` pela imagem, destino hemorrágico",

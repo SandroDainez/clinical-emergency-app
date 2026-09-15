@@ -20,6 +20,7 @@ import {
 } from "../../avc/conteudo/plano-48h";
 import type { Campo } from "../../avc/conteudo/campo";
 import { valorAtual, type EstadoAvc } from "../../avc/nucleo/estado";
+import { caminhoHemorragico } from "../../avc/nucleo/caminho-hemorragico";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
 import { planoAte48h, textoDoIntervalo, type EstadoDaTarefa, type QuandoDaTarefa, type TarefaDoPlano } from "../../avc/nucleo/plano-48h";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
@@ -74,6 +75,10 @@ export function PlanoAte48h({
     return () => clearInterval(id);
   }, [agora]);
   const plano = useMemo(() => planoAte48h(estado, agoraVivo), [estado, agoraVivo]);
+  /** ⚠️ AC-15 bloco D (E9): com HSA confirmada, o caminho hemorrágico do plano ⛔ se chama «HIC». */
+  const nomeDoHemorragico = useMemo(() => caminhoHemorragico(estado).nome, [estado]);
+  const tituloDoCaminho = (id: keyof typeof TITULO_DO_CAMINHO) =>
+    id === "hemorragia" && nomeDoHemorragico === "hsa" ? "Hemorragia subaracnóidea (HSA)" : TITULO_DO_CAMINHO[id];
   const resultadoPorTarefa = useMemo(
     () => new Map<string, Campo>(CAMPOS_DE_RESULTADO_DO_PLANO.map((c) => [TAREFA_DO_RESULTADO[c.id], c])),
     []
@@ -180,18 +185,18 @@ export function PlanoAte48h({
 
       {plano.incertezas.map((x) => (
         <Text key={`incerto-${x.caminho}`} style={e.linha} testID={`avc-plano-incerto-${x.caminho}`}>
-          {tr(TITULO_DO_CAMINHO[x.caminho])} — {tr(x.motivo)}
+          {tr(tituloDoCaminho(x.caminho))} — {tr(x.motivo)}
         </Text>
       ))}
       {plano.encerrados.map((x) => (
         <Text key={x.caminho} style={e.linha} testID={`avc-plano-encerrado-${x.caminho}`}>
-          {tr(TITULO_DO_CAMINHO[x.caminho])} — {tr("caminho encerrado")}: {tr(x.motivo)}
+          {tr(tituloDoCaminho(x.caminho))} — {tr("caminho encerrado")}: {tr(x.motivo)}
         </Text>
       ))}
 
       {plano.caminhos.map((c) => (
         <View key={c.id} style={e.caminho} testID={`avc-plano-caminho-${c.id}`}>
-          <Text style={e.caminhoTitulo}>{tr(TITULO_DO_CAMINHO[c.id])}</Text>
+          <Text style={e.caminhoTitulo}>{tr(tituloDoCaminho(c.id))}</Text>
           <Text style={e.detalhe}>
             {tr("Evento de origem")}: {tr(c.origem.evento)}
             {c.origem.instante !== undefined ? ` · ${hora(c.origem.instante)}` : ` · ${tr("horário desconhecido — nenhum prazo calculado")}`}

@@ -82,8 +82,9 @@ const blocoHsa = (portao.match(/id:\s*"suspeita_hsa",[\s\S]*?\}\);/) || [""])[0]
 conf("HSA · o motivo do portão ⛔ oferece «Resolver» (sem `leva`)", blocoHsa !== "" && !/\bleva:/.test(blocoHsa), `⛔ ${blocoHsa.slice(0, 200)}`);
 const pacote = path.join(appDir, "docs", "avc", "revisao", "hsa-resolucao.md");
 const textoPacote = fs.existsSync(pacote) ? fs.readFileSync(pacote, "utf8") : "";
-conf("HSA · pacote docs/avc/revisao/hsa-resolucao.md existe, com decisão humana em branco",
-  /\*{0,2}Decisão humana:\*{0,2}\s*___/.test(textoPacote), "⛔ pacote ausente ou decisão preenchida");
+/** ⚠️ Ajuste consciente (AC-15, 2026-09-15): a decisão foi tomada e carimbada — a trava passa a exigir o carimbo com o autor. */
+conf("HSA · pacote docs/avc/revisao/hsa-resolucao.md existe, com a decisão humana carimbada pelo autor",
+  /\*{0,2}Decisão humana:\*{0,2}\s*Dr\. Sandro Dainez/.test(textoPacote), "⛔ pacote ausente ou decisão sem carimbo");
 
 /* ══ Entrega 3 · D-PEND-25 alteplase ══════════════════════════════════════ */
 const alt = (kg) => DF.doseDerivada("alteplase", kg, "medido");

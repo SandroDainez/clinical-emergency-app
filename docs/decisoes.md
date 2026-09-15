@@ -1261,6 +1261,30 @@ Nenhuma tela menciona a situação desconhecida.
   - auditoria dos seis usos de `horaClinica ?? horaRegistro` fora do AC-13 (§11, 7);
   - possível sensibilidade à meia-noite em `e2e/avc-controle-de-data.spec.ts`, que usa o mesmo gesto de data e hora corrigido no AC-03r por `4472a39` (não medida).
 
+## AC-15 · suspeita de HSA — decisões de 2026-09-15 e encerramento (blocos A e D)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito, em 2026-09-15. Matriz completa: `docs/avc/revisao/AC-15-matriz.md`.
+
+**Mudança de rumo do produto (autor):** o app é **apoio à decisão médica**, sem submissão à ANVISA por ora; a decisão é do médico. O AC-15 fica restrito aos blocos A e D. O processo passa a ser proporcional: `test:all` completo por bloco.
+
+**Decisões:**
+- **E1:** «Incerto» em `suspeita_hsa` é suspeita ativa e retém. Só `suspeita_hsa` ativa a suspeita; déficit, NIHSS e horários não a criam.
+- **E2:** «Não» posterior, a partir de «Sim» ou de «Incerto», não desativa. Encerram só a correção explícita do fato ou a resolução pela investigação.
+- **E11:** limpar ou corrigir a suspeita não altera exames. Evidência confirmatória vale até a correção do próprio exame.
+- **E13:** suspeita ativa é investigação pendente («Suspeita de HSA ativa — investigação pendente»), sem porta para o catálogo de manejo. HSA confirmada tem o fluxo de manejo.
+- **E9 e E9b:** HSA confirmada é a terceira opção da TC sem contraste, «Hemorragia subaracnóidea identificada», sem renomear valores gravados. Em caso novo, HSA não é subtipo de HIC. O legado «Subaracnóidea» é lido como HSA confirmada, sem reescrita.
+- **E14:** xantocromia presente é evidência confirmatória de HSA (revoga em parte a D3). Registrada; **não implementada**, porque a punção lombar é do bloco C, adiado.
+- **Invariante:** evidência confirmatória domina «Não», «Limpar» e conclusão anterior de exclusão, até a correção do próprio exame.
+
+**Implementado:** blocos A (derivado único `estadoDaSuspeitaDeHsa`, lido por portão, EVT, card, pendência, destino, síntese e tela G) e D (HSA confirmada com saída, nome e catálogo próprios), num commit só.
+
+**Adiados, com a mudança para apoio à decisão:**
+- **Blocos B e C:** resolução da suspeita pela TC <6 h, bloco de investigação (início da cefaleia, qualidade da TC, neurorradiologista, punção lombar e xantocromia), conclusão «HSA excluída após investigação» com atestação de autoria, e derivação da punção dural recente.
+- **O que continua valendo no lugar deles:** a suspeita ativa retém até a correção do registro, o lado conservador.
+- **Decisões guardadas para quando B e C voltarem:** E3, E4, E5, E6/E6b, E7/E7b, E8, E10 e E12, todas na matriz.
+
+**Separado, para rodada própria:** trocar retenção ou bloqueio por alerta com confirmação do médico, no modelo de apoio. Decisão do autor, fora do AC-15.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

@@ -373,8 +373,9 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
 
 // ── 3 · AS TRÊS SAÍDAS DA TC EXISTEM, e ⛔ NÃO COLAPSAM ────────────────────
 {
-  confere("o resultado da tomografia tem QUATRO respostas distintas",
-    new Set(C.OPCOES_RESULTADO_TC).size === 2,
+  /** ⚠️ Ajuste consciente (AC-15 bloco D, E9): terceira opção «Hemorragia subaracnóidea identificada». */
+  confere("o resultado da tomografia tem três respostas distintas",
+    new Set(C.OPCOES_RESULTADO_TC).size === 3,
     "§1.8: três saídas mais o estado de laudo pendente. Colapsar em sim/não apagaria a diferença entre 'sem hemorragia' e 'ainda não sei'");
   const campo = C.TODOS_OS_CAMPOS_C.find((c) => c.id === "estudo_resultado");
   confere("as quatro respostas do campo são as quatro constantes",
@@ -537,8 +538,9 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
 
   const incerto = escolhe(est, "suspeita_hsa", "Incerto");
   const negado = escolhe(est, "suspeita_hsa", "Não");
-  confere("⛔ nem 'Incerto' ⛔ nem 'Não' armam a saída de HSA",
-    D.destinoDaImagem(incerto) === undefined && D.destinoDaImagem(negado) === undefined,
+  /** ⚠️ Ajuste consciente (AC-15 bloco A; E1 e E13, autor 2026-09-15): «Incerto» é suspeita ATIVA — arma a saída de investigação, ⛔ de manejo. */
+  confere("'Incerto' arma a saída de investigação de HSA, sem ação navegável; 'Não' ⛔ arma nada",
+    D.destinoDaImagem(incerto)?.saida === "suspeita_hsa" && D.destinoDaImagem(incerto)?.navegacao === "sem_acao_navegavel" && D.destinoDaImagem(negado) === undefined,
     "E-23 dos dois lados: incerteza ⛔ não vira suspeita, e ⛔ também ⛔ não vira ausência de suspeita");
 }
 
@@ -588,9 +590,10 @@ const vascular = (e, inst) => escolheE(e, inst, "estudo_modalidade", MOD.angioTc
     && !ids(tcCom(est, s1, TC.hemorragia)).includes("tc_resultado"),
     "pendência que ⛔ não fecha quando o dado chega é ruído permanente, e ruído permanente deixa de ser lido");
 
-  confere("'Incerto' na HSA abre pendência própria; 'Sim' e 'Não' ⛔ não",
+  /** ⚠️ Ajuste consciente (AC-15 bloco A, E13): suspeita ativa — «Sim» ou «Incerto» — é investigação pendente com nome. */
+  confere("suspeita ativa ('Sim' ou 'Incerto') abre pendência de investigação; 'Não' ⛔ abre",
     ids(escolhe(est, "suspeita_hsa", "Incerto")).includes("suspeita_hsa")
-    && !ids(escolhe(est, "suspeita_hsa", "Sim")).includes("suspeita_hsa")
+    && ids(escolhe(est, "suspeita_hsa", "Sim")).includes("suspeita_hsa")
     && !ids(escolhe(est, "suspeita_hsa", "Não")).includes("suspeita_hsa"),
     "a incerteza declarada vira tarefa nomeada, e ⛔ nada além disso");
 

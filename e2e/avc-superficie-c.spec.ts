@@ -287,8 +287,9 @@ test.describe("AVC · Superfície C — Imagem", () => {
     // ⚠️ E as duas leituras continuam vivas, cada uma dizendo o seu.
     await expect(page.getByTestId("avc-leitura-curto-exclusao_hemorragia"))
       .toContainText(/Hemorragia intracraniana/i);
+    /** ⚠️ Ajuste consciente (AC-15 bloco A, E13, autor 2026-09-15): a suspeita ativa se lê como investigação pendente. */
     await expect(page.getByTestId("avc-leitura-curto-suspeita_hsa"))
-      .toContainText(/Suspeita clínica de hemorragia subaracnóidea registrada/i);
+      .toContainText(/Suspeita de HSA ativa — investigação pendente/i);
   });
 
   /**
@@ -308,16 +309,19 @@ test.describe("AVC · Superfície C — Imagem", () => {
   });
 
   /**
-   * ⚠️ "Incerto" ⛔ não arma saída e ⛔ não vira "Não": vira tarefa nomeada.
+   * ⚠️ Ajuste consciente (AC-15 bloco A; E1 e E13, autor 2026-09-15): "Incerto" é suspeita ATIVA — ⛔ vira "Não", arma a
+   * saída de investigação sem porta para o catálogo de manejo, ⛔ e abre pendência nomeada.
    */
-  test("suspeita de HSA incerta abre pendência e ⛔ não arma a saída", async ({ page }) => {
+  test("suspeita de HSA incerta é investigação pendente: saída sem porta e pendência", async ({ page }) => {
     await fixarIdioma(page, "pt-BR");
     await abrirC(page);
 
     await page.getByTestId(OPCAO("suspeita_hsa", "nao_sei")).click();
-    await expect(page.getByTestId("avc-destino-imagem")).toHaveCount(0);
+    await expect(page.getByTestId("avc-destino-suspeita_hsa")).toBeVisible();
+    await expect(page.getByTestId("avc-destino-abrir-suspeita_hsa")).toHaveCount(0);
+    await expect(page.getByTestId("avc-destino-modulo-inexistente")).toHaveCount(0);
     await expect(page.getByTestId("avc-pendencia-suspeita_hsa")).toBeVisible();
-    await expect(page.getByTestId("avc-leitura-curto-suspeita_hsa")).toContainText(/em aberto/i);
+    await expect(page.getByTestId("avc-leitura-curto-suspeita_hsa")).toContainText(/investigação pendente/i);
   });
 
   /**

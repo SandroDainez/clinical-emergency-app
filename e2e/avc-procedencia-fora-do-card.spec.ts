@@ -237,14 +237,30 @@ test.describe("AVC · procedência, inglês ⛔ pendente sem nome ⛔ renderizad
     expect(falhas, falhas.join("\n")).toEqual([]);
   });
 
-  test("8 · suspeita de HSA: catálogo HSA ⛔ correções", async ({ page }) => {
+  test("8 · suspeita de HSA: card de investigação ⛔ correções", async ({ page }) => {
     await abrir(page);
     await responderPopulacaoAdulta(page);
     await page.getByTestId("avc-aba-imagem").click();
     await abrirTudo(page);
     await page.getByTestId("avc-opcao-suspeita_hsa-sim").click();
-    /** ⚠️ visita("hsa") */
-    await page.getByTestId("avc-destino-abrir-suspeita_hsa").click();
+    /**
+     * ⚠️ Ajuste consciente (AC-15 bloco A, E13, autor 2026-09-15): suspeita ativa é investigação pendente, ⛔ porta para o
+     * catálogo de manejo. Aqui se mede o card de investigação; o catálogo de HSA volta a ser medido pelo caminho da HSA
+     * confirmada (bloco D).
+     */
+    await expect(page.getByTestId("avc-destino-suspeita_hsa")).toBeVisible();
+    await expect(page.getByTestId("avc-destino-abrir-suspeita_hsa")).toHaveCount(0);
+    const falhas = await verificar(page, "investigação de HSA");
+    expect(falhas, falhas.join("\n")).toEqual([]);
+  });
+
+  test("8b · HSA confirmada na imagem: catálogo HSA ⛔ correções", async ({ page }) => {
+    await abrir(page);
+    await responderPopulacaoAdulta(page);
+    await tcComResultado(page, "Hemorragia subaracnóidea identificada");
+    /** ⚠️ visita("hsa") — AC-15 bloco D (E9, E13): a entrada no catálogo de manejo vem da HSA confirmada. */
+    await page.getByTestId("avc-aba-imagem").click();
+    await page.getByTestId("avc-destino-abrir-hsa_confirmada").click();
     await expect(page.getByTestId("avc-superficie-hsa")).toBeVisible();
     const falhas = await verificar(page, "catálogo HSA");
     expect(falhas, falhas.join("\n")).toEqual([]);

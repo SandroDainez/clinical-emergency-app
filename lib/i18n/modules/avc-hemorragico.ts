@@ -25,7 +25,9 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   // ── Cromado da tela ────────────────────────────────────────────────────────
   "Nível": "Nivel",
   "Abrir o manejo de Hemorragia intracraniana (HIC)": "Abrir el manejo de Hemorragia intracraneal (HIC)",
+  "Continuar investigação de HSA": "Continuar investigación de HSA",
   "Abrir o manejo de hemorragia subaracnóidea": "Abrir el manejo de hemorragia subaracnoidea",
+  "Hemorragia subaracnóidea (HSA): registrar o anticoagulante em uso": "Hemorragia subaracnoidea (HSA): registrar el anticoagulante en uso",
   "Situação atual": "Situación actual",
   "Conduta": "Conducta",
   "Próxima ação": "Próxima acción",

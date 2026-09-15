@@ -368,7 +368,7 @@ export default function SuperficieC({
             * continua. Omitir a primeira frase deixaria o médico esperando por
             * uma tela que ⛔ nunca vai abrir.
             */}
-          {destino.moduloExiste ? null : (
+          {destino.moduloExiste || destino.navegacao === "sem_acao_navegavel" ? null : (
             <Text style={e.destinoNota} testID="avc-destino-modulo-inexistente">
               {tr("Este módulo ainda não existe neste aplicativo.")}
             </Text>
@@ -377,17 +377,19 @@ export default function SuperficieC({
           {/**
             * ⚠️⚠️ A PORTA, ⛔ e ⛔ não um "continuar" genérico. O rótulo nomeia o
             * que abre — recomendações da diretriz daquela síndrome —, ⛔ e ⛔ não
-            * promete conduta. ⛔ Ela só existe quando o módulo existe (PD-36).
+            * promete conduta. ⛔ Ela só existe quando o módulo existe (PD-36) ⛔ e o estado tem ação navegável
+            * (AC-15, E13: suspeita ativa é investigação pendente, sem porta).
             */}
-          {destino.moduloExiste ? (
+          {destino.moduloExiste && destino.navegacao === "catalogo" && destino.superficie !== undefined ? (
             <Pressable
               style={e.destinoBotao}
               accessibilityRole="button"
               accessibilityLabel={tr("Abrir o catálogo de recomendações deste módulo")}
               testID={`avc-destino-abrir-${destino.saida}`}
-              onPress={() =>
-                onAbrirSuperficie(destino.saida === "hemorragia_intracraniana" ? "hic" : "hsa")
-              }
+              onPress={() => {
+                /** ⚠️ AC-15 bloco D: a superfície vem declarada pelo destino — ⛔ «tudo que não é HIC abre HSA». */
+                if (destino.superficie !== undefined) onAbrirSuperficie(destino.superficie);
+              }}
             >
               <Text style={e.destinoBotaoTexto}>{tr("Abrir recomendações")}</Text>
             </Pressable>
