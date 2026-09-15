@@ -139,7 +139,7 @@ function habilitadoPorAmbiente(moduloId: string): boolean {
   const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? PADRAO).trim().toLowerCase();
   if (!bruto || bruto === DESLIGADO || bruto === "false" || bruto === "0") return false;
   if (bruto === TUDO || bruto === "true" || bruto === "1") return true;
-  return bruto.split(",").map((id) => id.trim()).includes(moduloId.toLowerCase());
+  return bruto.split(",").map((id: string) => id.trim()).includes(moduloId.toLowerCase());
 }
 
 /**
