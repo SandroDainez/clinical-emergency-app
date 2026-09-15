@@ -275,7 +275,7 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
       && trilha.every((t) => t.alvo === "doac" && typeof t.horaRegistro === "number" && typeof t.fatoId === "string" && typeof t.rotuloDoAlvo === "string" && t.rotuloDoAlvo !== ""),
     `⛔ ${JSON.stringify(trilha)}`);
   conf("… a tela mostra a trilha em detalhe expansível, com a autoria do fato (AC-40)",
-    /avc-f-julgamentos/.test(telaF) && /julgamentosRegistrados/.test(telaF) && /useAutoriaDoAtendimento/.test(telaF), "⛔ sem trilha na tela");
+    /avc-f-julgamentos/.test(telaF) && /julgamentosRegistrados/.test(telaF) && /useTextoDeAutoria/.test(telaF), "⛔ sem trilha na tela");
 }
 
 /* ══ AC-03r · C8 · data do parto e janela operacional LOCAL de 14 dias ═══════════════ */

@@ -23,8 +23,7 @@
  * era o pedido. A linguagem nova é dos relógios, das escolhas e dos números.
  */
 import { ameacasImediatas } from "../../avc/nucleo/ameacas-imediatas";
-import { marcaDeAutoria } from "../../avc/persistencia/autoria";
-import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { nomeDaNovaAfericao } from "../../avc/conteudo/campos";
 import { historicoDeAfericoes } from "../../avc/nucleo/instancia";
 import { horaDeExibicao } from "../../avc/nucleo/formato";
@@ -216,7 +215,7 @@ export default function SuperficieA({
 }: Props) {
   const tr = useTr();
   /** ⚠️ AC-40: a linha do tempo marca o registro feito sem conta. */
-  const autoriaDe = useAutoriaDoAtendimento();
+  const textoDeAutoria = useTextoDeAutoria();
   const foco = useFoco();
   /**
    * ⚠️⚠️ ⛔ ABERTO É **UI**, ⛔ e ⛔ não progresso — ⛔ a mesma separação do
@@ -867,6 +866,7 @@ export default function SuperficieA({
                           <Text key={x.fatoId} style={e.origem} testID={`avc-a-exame-glasgow-${x.fatoId}`}>
                             Glasgow {x.total} · {horaDeExibicao(x.quando, agora)}
                             {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_GLASGOW[x.marca])}`}
+                            {` · ${textoDeAutoria(x.fatoId)}`}
                           </Text>
                         ))}
                       </View>
@@ -995,9 +995,7 @@ export default function SuperficieA({
                                 {m.registradaEm === undefined
                                   ? ""
                                   : ` · ${horaDeExibicao(m.registradaEm, agora)}`}
-                                {marcaDeAutoria(autoriaDe(m.idDoFatoDeRegistro)) === undefined
-                                  ? ""
-                                  : ` · ${tr(marcaDeAutoria(autoriaDe(m.idDoFatoDeRegistro)) as string)}`}
+                                {` · ${textoDeAutoria(m.idDoFatoDeRegistro)}`}
                               </Text>
                               {m.valores.map((v) => (
                                 <Text key={v.campo} style={e.historicoValor}>

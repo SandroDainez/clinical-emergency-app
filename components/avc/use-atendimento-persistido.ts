@@ -102,6 +102,7 @@ export function useAtendimentoPersistido(relogio: Relogio) {
       casoId: caso.current as string,
       autor: autoria.current.autor,
       origemDoAutor: autoria.current.origemDoAutor,
+      nomeDoAutor: autoria.current.nomeDeExibicao ?? null,
       agora: relogio.agora(),
       gerarId,
     }),

@@ -14,6 +14,7 @@ import {
   type EventoDoAtendimento,
   type EventoV1,
   type EventoV2,
+  type EventoV3,
   type RascunhoDoAtendimento,
 } from "./tipos";
 
@@ -21,8 +22,8 @@ const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 
 export function criarArmazenamentoEmMemoria(opcoes?: {
   dumpV1?: { casos: readonly CasoGuardado[]; eventos: readonly EventoV1[] };
-  /** ⚠️ Dump de qualquer schema anterior (v1 ⛔ ou v2), migrado ao carregar. */
-  dumpAnterior?: { casos: readonly CasoGuardado[]; eventos: readonly (EventoV1 | EventoV2)[] };
+  /** Dump de qualquer schema anterior (v1, v2 ou v3), migrado ao carregar. */
+  dumpAnterior?: { casos: readonly CasoGuardado[]; eventos: readonly (EventoV1 | EventoV2 | EventoV3)[] };
 }): ArmazenamentoDoAtendimento {
   const casos = new Map<string, CasoGuardado>();
   const eventos = new Map<string, EventoDoAtendimento>();

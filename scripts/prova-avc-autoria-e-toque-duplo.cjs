@@ -121,12 +121,20 @@ const TD = carregar("avc/nucleo/toque-duplo.ts", "avc", "nucleo", "toque-duplo.j
     conf("sessão · sem cliente Supabase configurado → nenhuma", (await AUT.lerSessaoParaAutoria(null)) === undefined, "⛔");
     const quebrado = { auth: { getSession: async () => { throw new Error("offline"); } } };
     conf("sessão · falha ao ler a sessão ⛔ não derruba: cai no aparelho", (await AUT.lerSessaoParaAutoria(quebrado)) === undefined, "⛔");
+    /** AC-13 reaberto, item 4 (§10): o nome de exibição vem dos metadados da conta, nunca do e-mail. */
+    const comFullName = await AUT.lerSessaoParaAutoria(cliente({ data: { session: { user: { id: "u-123", email: "ana@hospital.org", user_metadata: { full_name: "Dra. Ana Souza", nome: "Ana" } } } } }));
+    conf("sessão · `full_name` vira nome de exibição", comFullName !== undefined && comFullName.nomeDeExibicao === "Dra. Ana Souza", `⛔ ${JSON.stringify(comFullName)}`);
+    const soNome = await AUT.lerSessaoParaAutoria(cliente({ data: { session: { user: { id: "u-123", user_metadata: { nome: "Dr. Bruno Lima" } } } } }));
+    conf("sessão · sem `full_name`, `nome` vira nome de exibição", soNome !== undefined && soNome.nomeDeExibicao === "Dr. Bruno Lima", `⛔ ${JSON.stringify(soNome)}`);
+    const soEmail = await AUT.lerSessaoParaAutoria(cliente({ data: { session: { user: { id: "u-123", email: "ana@hospital.org", user_metadata: { email: "ana@hospital.org" } } } } }));
+    conf("sessão · só e-mail → nenhum nome de exibição", soEmail !== undefined && soEmail.nomeDeExibicao === undefined, `⛔ ${JSON.stringify(soEmail)}`);
 
-    conf("linha do tempo · o recurso do aparelho tem marca visível",
-      /aparelho/.test(String(AUT.marcaDeAutoria(semSessao))) && /sem conta/.test(String(AUT.marcaDeAutoria(semSessao))),
-      `⛔ ${AUT.marcaDeAutoria(semSessao)}`);
-    conf("linha do tempo · sessão anônima tem marca visível", typeof AUT.marcaDeAutoria(anonima) === "string", `⛔ ${AUT.marcaDeAutoria(anonima)}`);
-    conf("linha do tempo · autor de conta ⛔ não ganha marca de recurso", AUT.marcaDeAutoria(comConta) === undefined, `⛔ ${AUT.marcaDeAutoria(comConta)}`);
+    /** AC-13 reaberto, item 4 (§10): com nome de exibição, «Registrado por:»; sem nome, «Autoria não identificada». */
+    const rotulo = (a) => JSON.stringify(AUT.rotuloDeAutoria ? AUT.rotuloDeAutoria(a) : undefined);
+    const naoIdentificada = JSON.stringify({ tipo: "nao_identificada", rotulo: "Autoria não identificada" });
+    conf("linha do tempo · sem conta → «Autoria não identificada»", rotulo(semSessao) === naoIdentificada, `⛔ ${rotulo(semSessao)}`);
+    conf("linha do tempo · sessão anônima sem nome → «Autoria não identificada»", rotulo(anonima) === naoIdentificada, `⛔ ${rotulo(anonima)}`);
+    conf("linha do tempo · conta sem nome de exibição → «Autoria não identificada», nunca o id", rotulo(comConta) === naoIdentificada, `⛔ ${rotulo(comConta)}`);
   }
 
   /* ══ (a) o evento carrega autor ⛔ e origem ═══════════════════════════════ */
@@ -142,19 +150,52 @@ const TD = carregar("avc/nucleo/toque-duplo.ts", "avc", "nucleo", "toque-duplo.j
     conf("evento · sem sessão, o evento leva o ID do aparelho ⛔ marcado `origemDoAutor = aparelho`",
       evsAp.every((e) => e.autor === "local:aparelho-1" && e.origemDoAutor === "aparelho"), `⛔ ${JSON.stringify(evsAp.map((e) => [e.autor, e.origemDoAutor]))}`);
 
-    conf("schema · a origem do autor sobe o schema para 3", T.VERSAO_DO_SCHEMA === 3, `⛔ ${T.VERSAO_DO_SCHEMA}`);
+    conf("schema · o nome de exibição do autor sobe o schema para 4 (AC-13 reaberto, item 4)", T.VERSAO_DO_SCHEMA === 4, `⛔ ${T.VERSAO_DO_SCHEMA}`);
     const migrar = T.migrarEvento ?? T.migrarEventoDeV1;
     const v2 = { id: "v2-a", casoId: "caso-v2", seq: 1, tipo: "fato", registradoEm: T0, observadoEm: null, autor: "local:antigo", versaoDoSchema: 2, dados: { fato: { id: "f1", campo: "peso", valor: 70, horaRegistro: T0 } } };
     const m2 = migrar(v2);
-    conf("v2 → v3 · autor `local:` gravado pelo v2 vira origem «aparelho», ⛔ nada inventado",
-      m2.versaoDoSchema === 3 && m2.origemDoAutor === "aparelho" && m2.autor === "local:antigo" && JSON.stringify(m2.dados) === JSON.stringify(v2.dados),
+    conf("v2 → v4 · autor `local:` gravado pelo v2 vira origem «aparelho», sem nome, nada inventado",
+      m2.versaoDoSchema === 4 && m2.nomeDoAutor === null && m2.origemDoAutor === "aparelho" && m2.autor === "local:antigo" && JSON.stringify(m2.dados) === JSON.stringify(v2.dados),
       `⛔ ${JSON.stringify(m2)}`);
     const v1 = { id: "v1-a", casoId: "caso-v1", seq: 1, tipo: "fato", registradoEm: T0, dados: { fato: { id: "f1", campo: "peso", valor: 70, horaRegistro: T0 } } };
     const m1 = migrar(v1);
-    conf("v1 → v3 · evento sem autor fica «nao_registrado»", m1.versaoDoSchema === 3 && m1.origemDoAutor === "nao_registrado", `⛔ ${JSON.stringify(m1)}`);
+    conf("v1 → v4 · evento sem autor fica «nao_registrado», sem nome", m1.versaoDoSchema === 4 && m1.nomeDoAutor === null && m1.origemDoAutor === "nao_registrado", `⛔ ${JSON.stringify(m1)}`);
     const arm = MEM.criarArmazenamentoEmMemoria({ dumpAnterior: { casos: [{ casoId: "caso-v2", abertoEm: T0, encerradoEm: null }], eventos: [v2] } });
     const lidos = await arm.lerEventos("caso-v2");
-    conf("v2 → v3 · o armazenamento devolve o dump v2 já migrado", lidos.length === 1 && lidos[0].origemDoAutor === "aparelho", `⛔ ${JSON.stringify(lidos)}`);
+    conf("v2 → v4 · o armazenamento devolve o dump v2 já migrado", lidos.length === 1 && lidos[0].origemDoAutor === "aparelho", `⛔ ${JSON.stringify(lidos)}`);
+  }
+
+  /* ══ AC-13 reaberto, item 4 · o nome é snapshot do evento; retomar não reescreve autoria antiga ═══ */
+  if (AUT && AUT.autoriaPorFatoDoLog) {
+    const arm = MEM.criarArmazenamentoEmMemoria();
+    const ctxDe = (nomeDoAutor, autor) => ({ casoId: "caso-snapshot", autor, origemDoAutor: "sessao", nomeDoAutor, agora: rel.agora(), gerarId });
+    const e0 = E.abrirAtendimento(rel);
+    await arm.anexarEventos("caso-snapshot", LOG.eventosDeAbertura(e0, ctxDe("Dra. Ana Souza", "u-123")));
+    const e1 = E.registrarFato(e0, { campo: "peso", valor: 70 }, rel);
+    await arm.anexarEventos("caso-snapshot", LOG.eventosDaTransicao(e0, e1, ctxDe("Dra. Ana Souza", "u-123")));
+    const idAntigo = e1.fatos[e1.fatos.length - 1].id;
+    /** A sessão muda depois (outro nome, outro usuário), e o caso é retomado do armazenamento. */
+    const retomado = LOG.reconstruirEstado(await arm.lerEventos("caso-snapshot"));
+    const e2 = E.registrarFato(retomado, { campo: "peso", valor: 72 }, rel);
+    await arm.anexarEventos("caso-snapshot", LOG.eventosDaTransicao(retomado, e2, ctxDe("Dr. Carlos Nunes", "u-456")));
+    const idNovo = e2.fatos[e2.fatos.length - 1].id;
+    const lidos = await arm.lerEventos("caso-snapshot");
+    const porFato = AUT.autoriaPorFatoDoLog(lidos);
+    conf("snapshot · o fato registrado antes mantém o nome gravado no evento, depois de a sessão mudar e o caso ser retomado",
+      porFato[idAntigo] !== undefined && porFato[idAntigo].nomeDeExibicao === "Dra. Ana Souza" && porFato[idAntigo].autor === "u-123", `⛔ ${JSON.stringify(porFato)}`);
+    conf("snapshot · o fato novo leva o nome da sessão do momento do registro",
+      porFato[idNovo] !== undefined && porFato[idNovo].nomeDeExibicao === "Dr. Carlos Nunes" && porFato[idNovo].autor === "u-456", `⛔ ${JSON.stringify(porFato)}`);
+    const antes = JSON.stringify(lidos.filter((ev) => ev.nomeDoAutor === "Dra. Ana Souza"));
+    await arm.anexarEventos("caso-snapshot", lidos.filter((ev) => ev.nomeDoAutor === "Dra. Ana Souza").map((ev) => ({ ...ev, nomeDoAutor: "Dr. Carlos Nunes", autor: "u-456" })));
+    const depois = JSON.stringify((await arm.lerEventos("caso-snapshot")).filter((ev) => ev.nomeDoAutor === "Dra. Ana Souza"));
+    conf("retomada · regravar evento já gravado com a sessão atual não reescreve a autoria antiga", antes === depois && antes !== "[]", `⛔ ${antes} × ${depois}`);
+
+    const v3 = { id: "v3-x", casoId: "caso-v3", seq: 1, tipo: "fato", registradoEm: T0, observadoEm: null, autor: "u-9", origemDoAutor: "sessao", versaoDoSchema: 3, dados: { fato: { id: "fx", campo: "peso", valor: 70, horaRegistro: T0 } } };
+    const armV3 = MEM.criarArmazenamentoEmMemoria({ dumpAnterior: { casos: [{ casoId: "caso-v3", abertoEm: T0, encerradoEm: null }], eventos: [v3] } });
+    const [m3] = await armV3.lerEventos("caso-v3");
+    const semVersaoNemNome = (x) => { const { versaoDoSchema, nomeDoAutor, ...resto } = x; return JSON.stringify(resto); };
+    conf("v3 → v4 · o armazenamento devolve o evento v3 sem perda, com nomeDoAutor = null e schema 4",
+      m3 !== undefined && m3.nomeDoAutor === null && m3.versaoDoSchema === 4 && semVersaoNemNome(m3) === semVersaoNemNome(v3), `⛔ ${JSON.stringify(m3)}`);
   }
 
   /* ══ (a) ligação: a sessão chega ao hook ⛔ e a marca chega à tela ════════ */
@@ -163,7 +204,7 @@ const TD = carregar("avc/nucleo/toque-duplo.ts", "avc", "nucleo", "toque-duplo.j
     conf("hook · lê a sessão Supabase para a autoria", /lerSessaoParaAutoria\(/.test(hook) && /autoriaDoEvento\(/.test(hook), "⛔ use-atendimento-persistido não lê a sessão");
     for (const arq of ["superficie-a.tsx", "campos-clinicos.tsx", path.join("ui", "index.tsx")]) {
       const t = fonte("components", "avc", arq);
-      conf(`linha do tempo · ${arq} mostra a marca de autoria`, /marcaDeAutoria\(/.test(t), `⛔ ${arq} não mostra autoria`);
+      conf(`linha do tempo · ${arq} mostra a autoria pela regra única`, /useTextoDeAutoria\(/.test(t), `⛔ ${arq} não mostra autoria`);
     }
   }
 

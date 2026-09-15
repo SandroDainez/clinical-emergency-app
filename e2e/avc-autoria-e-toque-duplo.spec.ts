@@ -56,7 +56,7 @@ test.describe("AVC · autoria do evento (AC-40)", () => {
     await page.getByTestId("avc-numerico-mais-inr").click();
     await expect(page.getByTestId("avc-valor-inr")).toContainText("1,5");
 
-    await expect(page.getByTestId("avc-correcao-inr")).toContainText("registrado neste aparelho, sem conta");
+    await expect(page.getByTestId("avc-correcao-inr")).toContainText("Autoria não identificada");
 
     await esperarGravacaoAte(page, "paciente");
     const evs = await eventos(page);
@@ -77,7 +77,7 @@ test.describe("AVC · autoria do evento (AC-40)", () => {
     await page.getByTestId("avc-num-caixa-glicemia").fill("96");
     await page.getByTestId("avc-num-caixa-glicemia").blur();
     await page.getByTestId("avc-historico-abrir-glicemia").click();
-    await expect(page.getByTestId("avc-historico-glicemia-1")).toContainText("registrado neste aparelho, sem conta");
+    await expect(page.getByTestId("avc-historico-glicemia-1")).toContainText("Autoria não identificada");
   });
 });
 

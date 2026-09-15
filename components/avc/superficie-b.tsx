@@ -61,6 +61,7 @@ import {
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { classeCurta, forcaDaClasse3 } from "../../avc/conteudo/forca-da-recomendacao";
 
 type Props = {
@@ -130,6 +131,8 @@ export default function SuperficieB({
   onSedacaoSuspensa,
 }: Props) {
   const examesDoNihss = examesNihss(estado);
+  /** AC-13 reaberto, item 4: cada exame mostra quem o registrou, pela regra única de autoria. */
+  const textoDeAutoria = useTextoDeAutoria();
   const nihssSoSobSedacao = nihssInconclusivoPorSedacao(estado);
   const sugestoesUN = itensNihssSugeridosComoNaoTestaveis(estado);
   const tr = useTr();
@@ -377,6 +380,7 @@ export default function SuperficieB({
                     <Text style={e.resumoLinha} testID={`avc-b-exame-nihss-${x.fatoId}`}>
                       NIHSS {x.total} · {horaCurta(x.quando)}
                       {x.marca === undefined ? "" : ` · ${tr(MARCA_DO_EXAME[x.marca])}`}
+                      {` · ${textoDeAutoria(x.fatoId)}`}
                     </Text>
                     {/**
                       * ⚠️ AC-77 (14ª rodada): exceção humana explícita, NO exame — com "sim" o exame

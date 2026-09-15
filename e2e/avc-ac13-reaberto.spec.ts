@@ -6,7 +6,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 async function tromboliseCom(page: Page, ...rotulos: string[]) {
   await fixarIdioma(page, "pt-BR");
@@ -195,5 +195,38 @@ test.describe("AVC · AC-13 reaberto · item 3 · horário clínico", () => {
     await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).not.toContainText("Horário clínico");
     await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("Registrado às");
     await expect(page.getByTestId("avc-horario-clinico-informar-trombolise_iv_1-1")).toBeVisible();
+  });
+});
+
+test.describe("AVC · AC-13 reaberto · item 4 · autoria", () => {
+  test("sem conta, a trilha diz «Autoria não identificada» e nunca mostra identificador técnico", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    const linha = page.getByTestId("avc-transicoes-trombolise_iv_1-0");
+    await expect(linha).toContainText("Autoria não identificada");
+    await expect(linha).not.toContainText("local:");
+    await expect(linha).not.toContainText("sem conta");
+    await expect(linha).not.toContainText(/respons/i);
+  });
+
+  test("a linha do tempo do Destino mostra a autoria da piora pela mesma regra", async ({ page }) => {
+    await tromboliseCom(page, "Administrada/concluída");
+    await page.getByTestId("avc-aba-destino").click();
+    await page.getByTestId("avc-piorou").click();
+    await page.getByTestId("avc-piorou-texto").fill("rebaixou o nível de consciência");
+    await page.getByTestId("avc-piorou-registrar").click();
+    await page.getByTestId("avc-aba-destino").click();
+    const autoria = page.getByTestId("avc-g-linha-do-tempo").locator('[data-testid^="avc-g-tempo-autoria-"]');
+    await expect(autoria.first()).toHaveText("Autoria não identificada");
+  });
+
+  test("os marcos da transferência mostram a autoria pela mesma regra", async ({ page }) => {
+    await fixarIdioma(page, "pt-BR");
+    await page.goto("/modulos/avc");
+    await responderPopulacaoAdulta(page);
+    await page.getByTestId("avc-aba-destino").click();
+    await registrarMarcoAgora(page, "Solicitada");
+    const autoria = page.getByTestId("avc-g-marcos").locator('[data-testid^="avc-g-marco-autoria-"]');
+    await expect(autoria.first()).toHaveText("Autoria não identificada");
   });
 });

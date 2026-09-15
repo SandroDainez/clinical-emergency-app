@@ -31,6 +31,7 @@ import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import SeletorDeHora from "./seletor-de-hora";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { ESTADOS_DA_NEUROCIRURGIA } from "../../avc/conteudo/caminho-hemorragico";
 import { marcosDaNeurocirurgia } from "../../avc/nucleo/transferencia";
 
@@ -98,6 +99,8 @@ export function MarcosDaTransferencia({
     .color as string;
   const marcos = ator === "teleconsulta" ? marcosDaTeleconsulta(estado)
     : ator === "neurocirurgia" ? marcosDaNeurocirurgia(estado) : marcosDaTransferencia(estado);
+  /** AC-13 reaberto, item 4: cada marco mostra quem o registrou, pela regra única de autoria. */
+  const textoDeAutoria = useTextoDeAutoria();
   const [registrando, setRegistrando] = useState(false);
   const [tipo, setTipo] = useState<string | undefined>(undefined);
   const [horaNova, setHoraNova] = useState<Hora | null>(null);
@@ -140,6 +143,7 @@ export function MarcosDaTransferencia({
               {tr("aconteceu às")} {horaCurta(m.observado)} · {tr("registrado às")} {horaCurta(m.registradoEm)}
               {m.horarioCorrigido ? ` · ${tr("horário corrigido")}` : ""}
             </Text>
+            <Text style={e.itemHoras} testID={`${cfg.prefixo}-autoria-${m.fatoId}`}>{textoDeAutoria(m.fatoId)}</Text>
             <View style={e.linha}>
               <Pressable
                 style={e.botaoSecundario}

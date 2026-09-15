@@ -39,6 +39,8 @@ export type ContextoDoLog = {
   readonly autor: string;
   /** ⚠️ AC-40: sessão, sessão anônima ⛔ ou recurso do aparelho. */
   readonly origemDoAutor: OrigemDoAutor;
+  /** AC-13 reaberto, item 4: o nome de exibição do autor; ausente ou `null` quando não há. */
+  readonly nomeDoAutor?: string | null;
   readonly agora: number;
   readonly gerarId: () => string;
 };
@@ -70,6 +72,7 @@ function evento(
     observadoEm,
     autor: ctx.autor,
     origemDoAutor: ctx.origemDoAutor,
+    nomeDoAutor: ctx.nomeDoAutor ?? null,
     versaoDoSchema: VERSAO_DO_SCHEMA,
     dados,
   };

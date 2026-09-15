@@ -73,8 +73,7 @@ import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
 import { horaComData, numeroCurto } from "../../avc/nucleo/formato";
 import { julgamentosRegistrados } from "../../avc/nucleo/derivacoes-d";
-import { marcaDeAutoria, type Autoria } from "../../avc/persistencia/autoria";
-import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { TransicoesDaAcao } from "./transicoes-da-acao";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { SETA } from "../../design-system/afordancia";
@@ -173,14 +172,6 @@ function InfoDoCard({ id, texto, children }: { id: string; texto?: string; child
   );
 }
 
-/**
- * ⚠️ Conclusão do D-139-3: quem registrou. Conta ⛔ tem nome no módulo (a autoria guarda o id); sem conta, a marca
- * de AC-40; ainda sem evento no log, dito como tal — ⛔ nunca inventado.
- */
-function rotuloDaAutoria(autoria: Autoria | undefined): string {
-  if (autoria === undefined) return "autoria ainda não gravada";
-  return marcaDeAutoria(autoria) ?? "registrado com conta";
-}
 
 /** ⚠️ D-139-3: os dois gestos do julgamento registrado, na ordem da decisão. */
 const GESTOS_DO_JULGAMENTO = [
@@ -239,7 +230,7 @@ export default function SuperficieF({
     setAbertos((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
   /** ⚠️ Conclusão do D-139-3: a trilha dos julgamentos ⛔ a autoria de cada registro (AC-40). */
   const julgamentos = useMemo(() => julgamentosRegistrados(estado), [estado]);
-  const autoriaDe = useAutoriaDoAtendimento();
+  const textoDeAutoria = useTextoDeAutoria();
   /** ⚠️ 14ª rodada (AC-77): o motivo do NIHSS inconclusivo, dito pelo núcleo. */
   const motivoDoNihss = motivoDoInsumoInconclusivo(estado, "nihss");
 
@@ -1128,7 +1119,7 @@ export default function SuperficieF({
                     <Text style={e.portaoRotulo}>{tr(j.rotuloDoAlvo)}</Text>
                     <Text style={e.portaoDado}>{tr(j.decisao)}</Text>
                     <Text style={e.portaoFonte}>{horaComData(j.horaRegistro)}</Text>
-                    <Text style={e.portaoFonte}>{tr(rotuloDaAutoria(autoriaDe(j.fatoId)))}</Text>
+                    <Text style={e.portaoFonte}>{textoDeAutoria(j.fatoId)}</Text>
                     <Text style={e.portaoNivel}>{j.vigente ? tr("decisão vigente") : tr("registro anterior")}</Text>
                   </View>
                 ))

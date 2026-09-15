@@ -64,6 +64,7 @@ import { CaminhoHemorragico } from "./caminho-hemorragico";
 import { Recolhido } from "./ui";
 import { classeCurta, forcaDaClasse3, rotuloDaForca } from "../../avc/conteudo/forca-da-recomendacao";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { useState } from "react";
 import { leituraDaTransferencia } from "../../avc/nucleo/transferencia";
 
@@ -174,6 +175,8 @@ export default function SuperficieG({
   onInterromperInfusao,
 }: Props) {
   const [enganoDaPiora, setEnganoDaPiora] = useState<string | undefined>(undefined);
+  /** AC-13 reaberto, item 4: cada item da linha do tempo mostra quem o registrou, pela regra única de autoria. */
+  const textoDeAutoria = useTextoDeAutoria();
   const [infoDaRec, setInfoDaRec] = useState<string | undefined>(undefined);
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -354,6 +357,7 @@ export default function SuperficieG({
                   {!item.estimativa && horaCurta(item.registradoEm) !== horaCurta(item.quando) ? (
                     <Text style={e.marcoDetalhe}>{tr("registrado às")} {horaCurta(item.registradoEm)}</Text>
                   ) : null}
+                  <Text style={e.marcoDetalhe} testID={`avc-g-tempo-autoria-${item.id}`}>{textoDeAutoria(item.fatoId)}</Text>
                   {/**
                     * ⚠️⚠️ AC-73 (autor, 2026-09-13): a correção «registrado por engano» fica
                     * SEMPRE no evento — ⛔ o tempo passar ⛔ tira a capacidade de corrigir a

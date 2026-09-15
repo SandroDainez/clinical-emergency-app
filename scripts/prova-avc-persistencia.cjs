@@ -264,7 +264,7 @@ const pronto = T && LOG && MEM && TR;
 
   /* ══ Schema versionado · migração v1 → v2 com dados gravados por v1 ═══════ */
   if (pronto) {
-    conf("o schema declara número de versão 3 (AC-40: origem do autor)", T.VERSAO_DO_SCHEMA === 3, `⛔ ${T.VERSAO_DO_SCHEMA}`);
+    conf("o schema declara número de versão 4 (AC-13 reaberto, item 4: nome de exibição do autor)", T.VERSAO_DO_SCHEMA === 4, `⛔ ${T.VERSAO_DO_SCHEMA}`);
     const v1 = {
       casos: [{ casoId: "caso-v1", abertoEm: T0, encerradoEm: null }],
       eventos: [

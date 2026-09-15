@@ -1231,6 +1231,15 @@ Nenhuma tela menciona a situação desconhecida.
 - Pendência documental por transição válida de estado obrigatório sem horário clínico; a transição corrigida por engano não gera pendência. A pendência entra nas pendências do caso e não é lida por portão, vereditos ou DOAC.
 - A trilha mostra, em linhas separadas, "Horário clínico: …" (ou "desconhecido", ou "não informado") e "Registrado às …". Indicada e Decidida mostram só o horário do registro. Em Correções, o horário clínico só aparece quando foi gravado; nunca o do registro no lugar.
 
+### 12 · Item 4 · como a autoria é aplicada, para conferência do autor (2026-09-14)
+
+- **Uma regra em todas as telas.** A trilha das transições, o julgamento registrado na Reperfusão, a correção de campo, o histórico de aferições da Estabilização e o kit visual passam a usar o mesmo texto (`useTextoDeAutoria`). Com nome de exibição: «Registrado por:» e o nome. Sem nome, sem conta, em sessão anônima sem nome ou em evento anterior à v4: «Autoria não identificada». As marcas antigas («registrado neste aparelho, sem conta», «registrado em sessão anônima, sem conta», «autor não registrado», «registrado com conta», «autoria ainda não gravada») deixam de existir.
+- **Históricos que passaram a mostrar autoria.** Marcos de transferência, teleconsulta e neurocirurgia; a linha do tempo do caso no Destino (piora, marcos, ajuda); os exames de Glasgow e de NIHSS com marca de sedação. Cada linha já trazia o fato de origem, então nenhuma autoria é inventada. A síntese do caso não mostra autoria.
+- **De onde vem o nome.** `user_metadata.full_name` da sessão Supabase; se ausente ou em branco, `user_metadata.nome`. O e-mail nunca entra, nem como fallback.
+- **Schema v4 do IndexedDB.** Todo evento declara `nomeDoAutor` (`null` quando não há nome). A migração v1, v2 e v3 grava `null`, sem inventar nome; `autor`, `origemDoAutor`, `dados` e `seq` não mudam.
+- **Snapshot.** `nomeDoAutor` é gravado no evento no momento do registro, com a sessão daquele instante. A tela lê o nome do evento, nunca do perfil atual da conta: um fato registrado antes continua com o nome da época, mesmo que a conta mude de nome ou outra pessoa entre depois. Regressão na prova do AC-13 (bloco 4b).
+- **Limite do e2e.** O navegador de teste não tem conta: o gesto real prova «Autoria não identificada». O caminho com nome é provado no núcleo (leitura da sessão, evento v4, rótulo).
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

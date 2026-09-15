@@ -14,16 +14,16 @@
 
 | peça | arquivo | papel |
 |---|---|---|
-| tipos, schema e migração | `avc/persistencia/tipos.ts` | `EventoDoAtendimento`, `VERSAO_DO_SCHEMA = 3`, `migrarEvento` (v1 e v2 → v3), interface `ArmazenamentoDoAtendimento` |
+| tipos, schema e migração | `avc/persistencia/tipos.ts` | `EventoDoAtendimento`, `VERSAO_DO_SCHEMA = 4`, `migrarEvento` (v1, v2 e v3 → v4), interface `ArmazenamentoDoAtendimento` |
 | log | `avc/persistencia/log.ts` | função pura: transição → eventos; eventos → estado; versões de conclusão |
-| autoria | `avc/persistencia/autoria.ts` | autor pela sessão Supabase, recurso do aparelho, marca da linha do tempo |
+| autoria | `avc/persistencia/autoria.ts` | autor pela sessão Supabase, recurso do aparelho, nome de exibição (`full_name`, senão `nome`) e o rótulo único de autoria |
 | IndexedDB | `avc/persistencia/armazenamento-indexeddb.ts` | armazenamento do navegador; lojas `casos`, `eventos` e `rascunhos` |
 | memória | `avc/persistencia/armazenamento-memoria.ts` | provas e nativo; ⛔ não persistente |
 | escolha por plataforma | `avc/persistencia/armazenamento.ts` · `.native.ts` | navegador: IndexedDB; nativo: memória |
 | trava do caso | `avc/persistencia/trava.ts` | Web Locks no navegador; memória como recurso |
 | toque duplo | `avc/nucleo/toque-duplo.ts` | `repeteOGestoAnterior`, regra pura aplicada no registro |
 | ligação com a tela | `components/avc/use-atendimento-persistido.ts` | recupera, trava, lê a sessão, aplica a regra de toque duplo, grava em fila, encerra |
-| autoria na tela | `components/avc/autoria-do-atendimento.tsx` | contexto com `autoriaPorFato` |
+| autoria na tela | `components/avc/autoria-do-atendimento.tsx` | contexto com `autoriaPorFato` e `useTextoDeAutoria`, a regra única de exibição |
 | avisos | `components/avc/avisos-do-atendimento.tsx` | carregando, bloqueado, recuperado, falha ao gravar |
 
 ## 2 · Como funciona
@@ -48,12 +48,15 @@ transação. O produtor nunca numera.
 - **Horários:** `registradoEm`, e `observadoEm` quando o médico informou a hora (senão `null`).
 - **Autor e origem (AC-40):**
 
-| `origemDoAutor` | `autor` | marca na linha do tempo |
-|---|---|---|
-| `sessao` | `user.id` da sessão Supabase | nenhuma |
-| `sessao_anonima` | `user.id` da sessão anônima | "registrado em sessão anônima, sem conta" |
-| `aparelho` | `local:<uuid>` do aparelho, recurso sem sessão | "registrado neste aparelho, sem conta" |
-| `nao_registrado` | marcador de evento migrado de v1 | "autor não registrado" |
+| `origemDoAutor` | `autor` |
+|---|---|
+| `sessao` | `user.id` da sessão Supabase |
+| `sessao_anonima` | `user.id` da sessão anônima |
+| `aparelho` | `local:<uuid>` do aparelho, recurso sem sessão |
+| `nao_registrado` | marcador de evento migrado de v1 |
+
+- **Nome do autor (AC-13 reaberto, item 4):** `nomeDoAutor`, o nome de exibição da sessão no momento do registro (`user_metadata.full_name`, senão `user_metadata.nome`; nunca o e-mail), ou `null` quando não há. É snapshot: a tela lê o nome do evento, nunca do perfil atual da conta.
+- **Na tela (regra única, `useTextoDeAutoria`):** "Registrado por: {nome}" quando o evento tem nome; "Autoria não identificada" em todos os outros casos (sem conta, conta sem nome, sessão anônima sem nome, evento anterior à v4). Identificadores técnicos nunca aparecem.
 
 - **Versão:** `versaoDoSchema`.
 
@@ -62,9 +65,12 @@ transação. O produtor nunca numera.
 - Os eventos **seguintes** passam a levar o novo autor.
 - Falha ao ler a sessão cai no recurso do aparelho, marcado.
 
-**A marca aparece em dois lugares:**
-- na linha de correção do Laboratório e da Imagem ("corrigido de … · sem motivo informado · registrado neste aparelho, sem conta");
-- no cabeçalho de cada medida do histórico de aferições da Estabilização.
+**A autoria aparece pela regra única (`useTextoDeAutoria`) em:**
+- na linha de correção do Laboratório e da Imagem, e na correção de campo do kit visual ("corrigido de … · sem motivo informado · Autoria não identificada");
+- no cabeçalho de cada medida do histórico de aferições da Estabilização;
+- na trilha das transições da trombólise e no julgamento registrado da Reperfusão;
+- nos marcos de transferência, teleconsulta e neurocirurgia, e na linha do tempo do caso no Destino;
+- nos exames de Glasgow e de NIHSS com marca de sedação.
 
 ⚠️ **O `dist` das provas não tem backend, portanto não tem sessão.** O e2e exerce o recurso do aparelho. O caminho com sessão é provado no módulo, com cliente Supabase falso.
 
@@ -113,6 +119,7 @@ vê o aviso e não escreve nada.
 | v1 | `casos` e `eventos`, sem autor e sem versão |
 | v2 | acrescenta `rascunhos` e o índice `porCasoSeq`; em todo evento, `autor`, `observadoEm` e `versaoDoSchema` |
 | v3 | AC-40: em todo evento, `origemDoAutor`. O v2 só gravava `local:<uuid>` (→ `aparelho`) ou o marcador de v1 (→ `nao_registrado`); nenhum autor é inventado. |
+| v4 | AC-13 reaberto, item 4: em todo evento, `nomeDoAutor`. Eventos de v1, v2 e v3 migram com `nomeDoAutor = null`; nenhum nome é inventado, e `autor`, `origemDoAutor`, `dados` e `seq` não mudam. |
 
 ⚠️ v1 e v2 foram escritos nesta mesma data. Não há dado real gravado por eles: as
 migrações são provadas com dados sintéticos.
@@ -149,7 +156,7 @@ Hoje `armazenamento.native.ts` devolve o armazenamento em memória, e fechar o a
 | tabela | colunas e restrições |
 |---|---|
 | `casos` | `caso_id` PK · `aberto_em` · `encerrado_em` NULL |
-| `eventos` | `id` PK · `caso_id` · `seq` · `tipo` · `registrado_em` · `observado_em` · `autor` · `origem_do_autor` · `versao_do_schema` · `dados` (JSON) · `UNIQUE (caso_id, seq)` |
+| `eventos` | `id` PK · `caso_id` · `seq` · `tipo` · `registrado_em` · `observado_em` · `autor` · `origem_do_autor` · `nome_do_autor` NULL · `versao_do_schema` · `dados` (JSON) · `UNIQUE (caso_id, seq)` |
 | `rascunhos` | `caso_id` · `chave` · `valor` (JSON) · `atualizado_em` · `PRIMARY KEY (caso_id, chave)` |
 | `schema` | versão atual, para a migração |
 
@@ -161,14 +168,19 @@ As provas de hoje exercem o armazenamento em **memória**. O adaptador SQLite te
 |---|---|---|
 | **A13** (8): fatos, relógios, eixos, superfície e abertura iguais; trombólise exposta; nenhuma administração duplicada; horário registrado e observado; reanexar o mesmo ID não duplica; recupera o caso mais recente não encerrado; encerrado não volta | gravar e ler **todo** evento sem perda de campo; ignorar ID já gravado (`INSERT` só se ausente, devolvendo o gravado); `casoMaisRecenteNaoEncerrado` por `aberto_em` desc com `encerrado_em IS NULL`; `encerrarCaso` | **sim** |
 | **Ordem de gravação** (3): produtor sem `seq`; `seq` 1, 2, 3 na ordem de gravação; reconstrução segue a gravação | `seq = max(seq do caso) + 1` **dentro da mesma transação** do `INSERT`, na ordem de entrada; `lerEventos` ordenado por `seq` | **sim** |
-| **Migração** (4): versão 3; eventos migrados com versão e autor; `dados` intactos; dump antigo recuperado | migração v1/v2 → v3 ao abrir, com `migrarEvento`, sem tocar `dados` nem `seq` | **sim** |
+| **Migração** (4): versão 4; eventos migrados com versão, autor e nome do autor (`null` nos antigos); `dados` intactos; dump antigo recuperado | migração v1/v2/v3 → v4 ao abrir, com `migrarEvento`, sem tocar `dados` nem `seq` | **sim** |
 | **Rascunho** (3): rascunho não vira evento; lido à parte; reconstrução o ignora | tabela `rascunhos` separada de `eventos` | **sim** |
 | **A17** (2), **A14** (3), **correção** (2), **linha do tempo e leitura** (10) | nada além de devolver os eventos intactos: são regras do log e do núcleo | não |
 | **D-PEND-03 · trava** (4) | no nativo há um processo por app. A trava em memória cobre a mesma instância; várias janelas do app exigiriam trava própria. | não para a prova atual |
 
-Das 32 conferências de `scripts/prova-avc-autoria-e-toque-duplo.cjs`, duas dependem do armazenamento:
+Das 39 conferências de `scripts/prova-avc-autoria-e-toque-duplo.cjs`, seis dependem do armazenamento:
 - `origem_do_autor` gravado e lido por evento;
-- dump v2 devolvido já migrado.
+- dump v2 devolvido já migrado;
+- `nome_do_autor` gravado como snapshot no momento do registro e lido do evento depois de a sessão mudar (duas);
+- regravar evento já gravado não reescreve a autoria antiga;
+- dump v3 devolvido já migrado, sem perda e com `nome_do_autor` NULL.
+
+O e2e `e2e/avc-persistencia.spec.ts` prova as mesmas regras no IndexedDB real: banco novo aberto na v4, banco v3 migrado sem perda com `nomeDoAutor = null`, e retomada do caso sem reescrever a autoria dos eventos antigos.
 
 As demais são do núcleo, do log e do hook.
 
@@ -178,7 +190,7 @@ As demais são do núcleo, do log e do hook.
 
 ## 5 · Ponto de extensão: sincronização (Supabase), não implementado
 
-- **Unidade:** o evento, que é imutável e tem `id`, `casoId`, `seq`, `autor`, `origemDoAutor` e `versaoDoSchema`.
+- **Unidade:** o evento, que é imutável e tem `id`, `casoId`, `seq`, `autor`, `origemDoAutor`, `nomeDoAutor` e `versaoDoSchema`.
 - **Encaixe:** uma camada acima de `ArmazenamentoDoAtendimento` enviaria em fila os eventos ainda não confirmados pelo servidor, com a mesma idempotência por `id`.
 - **Requisitos:** políticas de acesso por `user.id`, criptografia e revisão de LGPD antes de qualquer envio.
 - **Eventos com autor do aparelho:** precisam de regra de posse antes de sincronizar.

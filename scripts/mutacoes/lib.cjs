@@ -55,6 +55,9 @@ const ARQ = {
   horarioClinico: "avc/nucleo/horario-clinico.ts",
   caminhoHemorragico: "avc/nucleo/caminho-hemorragico.ts",
   vereditoEvt: "avc/nucleo/veredito-da-trombectomia.ts",
+  /** AC-13 reaberto, item 4: autoria por nome de exibição e o schema v4. */
+  autoria: "avc/persistencia/autoria.ts",
+  tiposDaPersistencia: "avc/persistencia/tipos.ts",
 };
 
 /**

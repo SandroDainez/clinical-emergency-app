@@ -23,22 +23,15 @@ import { ROTULO_DO_ESTADO_DA_ACAO } from "../../avc/conteudo/superficie-e";
 import { transicoesDoEstadoDaAcao, type TransicaoDaAcao } from "../../avc/nucleo/transicoes-da-acao";
 import type { EstadoAvc } from "../../avc/nucleo/estado";
 import { horaComData } from "../../avc/nucleo/formato";
-import { marcaDeAutoria, type Autoria } from "../../avc/persistencia/autoria";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { PAPEL } from "../../design-system/tipografia-clinica";
 import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
-import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
 import SeletorDeHora from "./seletor-de-hora";
 import { useFoco } from "./sistema/foco";
 import { aceitaGestoDeHorarioClinico, horarioClinicoDaTransicao } from "../../avc/nucleo/horario-clinico";
-
-/** ⚠️ Quem registrou: conta ⛔ tem nome no módulo; sem conta, a marca de AC-40; sem evento no log, dito como tal. */
-function rotuloDaAutoria(autoria: Autoria | undefined): string {
-  if (autoria === undefined) return "autoria ainda não gravada";
-  return marcaDeAutoria(autoria) ?? "registrado com conta";
-}
 
 function tituloDaLinha(t: TransicaoDaAcao): string {
   if (t.tipo === "limpeza") return "Campo limpo";
@@ -69,7 +62,7 @@ export function TransicoesDaAcao({
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
-  const autoriaDe = useAutoriaDoAtendimento();
+  const textoDeAutoria = useTextoDeAutoria();
   const [aberto, setAberto] = useState(false);
   const [engano, setEngano] = useState<string | undefined>(undefined);
   const [editandoHorario, setEditandoHorario] = useState<
@@ -116,7 +109,7 @@ export function TransicoesDaAcao({
               <Text style={e.meta}>
                 {tr("Registrado às")} {horaComData(t.horaRegistro)}
               </Text>
-              <Text style={e.meta}>{tr(rotuloDaAutoria(autoriaDe(t.fatoId)))}</Text>
+              <Text style={e.meta}>{textoDeAutoria(t.fatoId)}</Text>
               {t.foraDaOrdemCausal ? (
                 <Text style={e.meta}>
                   {tr("fora da ordem causal")}

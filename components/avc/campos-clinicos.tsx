@@ -15,8 +15,7 @@
  * ⚠️ Isto ⛔ NÃO é componente do app (§9.1): mora em `components/avc/` e ⛔ não
  * sai daqui enquanto um segundo módulo clínico não exigir o mesmo.
  */
-import { marcaDeAutoria } from "../../avc/persistencia/autoria";
-import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
+import { useTextoDeAutoria } from "./autoria-do-atendimento";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -1370,7 +1369,7 @@ export function CampoDaSuperficie({
 }) {
   const tr = useTr();
   /** ⚠️ AC-40: quem registrou a correção — marcado quando ⛔ não é conta. */
-  const autoriaDe = useAutoriaDoAtendimento();
+  const textoDeAutoria = useTextoDeAutoria();
   const e = useEstilosDoTema(criarEstilos);
   const emprestado = campo.casa !== casaAtual;
 
@@ -1502,7 +1501,7 @@ export function CampoDaSuperficie({
                 ? numeroCurto(correcao.valorOriginal, campo.faixa?.passo ?? 1)
                 : tr(String(correcao.valorOriginal))}`}
           {correcao.motivo === null ? ` · ${tr("sem motivo informado")}` : ` · ${tr("motivo")}: ${correcao.motivo}`}
-          {marcaDeAutoria(autoriaDe(correcao.fatoId)) === undefined ? "" : ` · ${tr(marcaDeAutoria(autoriaDe(correcao.fatoId)) as string)}`}
+          {` · ${textoDeAutoria(correcao.fatoId)}`}
         </Text>
       ) : null}
 

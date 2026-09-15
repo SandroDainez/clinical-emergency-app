@@ -503,8 +503,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Decisões clínicas registradas": "Decisiones clínicas registradas",
   "decisão vigente": "decisión vigente",
   "registro anterior": "registro anterior",
-  "autoria ainda não gravada": "autoría aún no grabada",
-  "registrado com conta": "registrado con cuenta",
+  // ── AC-13 reaberto · item 4 · autoria (2026-09-14) ──────────────────────
+  "Registrado por:": "Registrado por:",
+  "Autoria não identificada": "Autoría no identificada",
   "Ressonância prévia com mais de 10 microssangramentos": "Resonancia previa con más de 10 microsangrados",
   "Prosseguir": "Continuar",
   "Decisão clínica registrada": "Decisión clínica registrada",
@@ -1367,9 +1368,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Sin motivo para sospechar; warfarina o heparina registradas, con los exámenes de coagulación ya registrados",
   "Segurança desconhecida segundo a fonte; a trombólise não fica retida por ele": "Seguridad desconocida según la fuente; la trombólisis no queda retenida por ello",
   "Sem indicação neste caminho: o déficit foi registrado como não incapacitante": "Sin indicación por este camino: el déficit se registró como no incapacitante",
-  "registrado neste aparelho, sem conta": "registrado en este dispositivo, sin cuenta",
-  "registrado em sessão anônima, sem conta": "registrado en sesión anónima, sin cuenta",
-  "autor não registrado": "autor no registrado",
   /** ⚠️ Fase sem alvo publicado pela fonte — resposta, não vazio. */
   "A fonte não publica alvo pressórico para esta fase. Os alvos das fases anteriores seguem abaixo, para consulta.":
     "La fuente no publica objetivo de presión para esta fase. Los objetivos de las fases anteriores siguen abajo, para consulta.",

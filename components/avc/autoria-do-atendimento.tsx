@@ -3,11 +3,12 @@
  *
  * ⚠️ A trilha clínica ⛔ não carrega autor: quem registrou cada fato está no LOG.
  * O hook do atendimento monta `autoriaPorFato`; as telas que mostram histórico ou
- * correção perguntam aqui ⛔ e escrevem a marca (`marcaDeAutoria`).
+ * correção perguntam aqui e escrevem o texto de autoria (`useTextoDeAutoria`, AC-13 reaberto item 4).
  */
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
-import type { Autoria } from "../../avc/persistencia/autoria";
+import { rotuloDeAutoria, type Autoria } from "../../avc/persistencia/autoria";
+import { useTr } from "../../lib/use-tr";
 
 type AutoriaDe = (fatoId: string | undefined) => Autoria | undefined;
 
@@ -30,4 +31,17 @@ export function ProvedorDeAutoria({
 
 export function useAutoriaDoAtendimento(): AutoriaDe {
   return useContext(Contexto);
+}
+
+/**
+ * AC-13 reaberto, item 4: o texto de autoria de um fato, a regra única de todas as telas. Com nome de exibição,
+ * «Registrado por:» e o nome; sem nome, sem conta ou em evento antigo, «Autoria não identificada».
+ */
+export function useTextoDeAutoria(): (fatoId: string | undefined) => string {
+  const autoriaDe = useAutoriaDoAtendimento();
+  const tr = useTr();
+  return (fatoId) => {
+    const r = rotuloDeAutoria(autoriaDe(fatoId));
+    return r.tipo === "nome" ? `${tr(r.rotulo)} ${r.nome}` : tr(r.rotulo);
+  };
 }

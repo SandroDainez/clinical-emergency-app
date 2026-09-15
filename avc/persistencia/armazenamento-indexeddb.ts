@@ -1,9 +1,9 @@
 /**
  * ARMAZENAMENTO EM INDEXEDDB — o registro local-first do navegador (D-PEND-02).
  *
- * ⚠️ Schema v3 (`tipos.ts`). A abertura com `VERSAO_DO_SCHEMA` dispara a migração:
- * de 0 cria tudo; de 1 cria `rascunhos` ⛔ e o índice `porCasoSeq`; de 1 ⛔ ou 2
- * reescreve cada evento com `migrarEvento` — ⛔ sem tocar `dados` ⛔ nem `seq`.
+ * ⚠️ Schema v4 (`tipos.ts`). A abertura com `VERSAO_DO_SCHEMA` dispara a migração:
+ * de 0 cria tudo; de 1 cria `rascunhos` e o índice `porCasoSeq`; de 1, 2 ou 3
+ * reescreve cada evento com `migrarEvento`, sem tocar `dados` nem `seq`.
  *
  * ⚠️⚠️ `seq` É ATRIBUÍDO AQUI, NA GRAVAÇÃO, dentro de UMA transação readwrite: lê o
  * maior `seq` do caso pelo índice `[casoId, seq]` ⛔ e numera os eventos na ordem em
@@ -23,6 +23,7 @@ import {
   type EventoDoAtendimento,
   type EventoV1,
   type EventoV2,
+  type EventoV3,
   type NovoEvento,
   type RascunhoDoAtendimento,
 } from "./tipos";
@@ -58,13 +59,13 @@ function abrirBanco(nome: string): Promise<IDBDatabase> {
         db.createObjectStore("rascunhos", { keyPath: ["casoId", "chave"] });
         tx.objectStore("eventos").createIndex("porCasoSeq", ["casoId", "seq"]);
       }
-      /** ⚠️ v1 ⛔ e v2 → schema atual (v3, AC-40), evento a evento, ⛔ sem tocar `dados` ⛔ nem `seq`. */
+      /** v1, v2 e v3 → schema atual (v4, AC-13 reaberto item 4), evento a evento, sem tocar `dados` nem `seq`. */
       if (de >= 1 && de < VERSAO_DO_SCHEMA) {
         const cursor = tx.objectStore("eventos").openCursor();
         cursor.onsuccess = () => {
           const c = cursor.result;
           if (!c) return;
-          c.update(migrarEvento(c.value as EventoV1 | EventoV2));
+          c.update(migrarEvento(c.value as EventoV1 | EventoV2 | EventoV3));
           c.continue();
         };
       }
@@ -115,7 +116,7 @@ export function criarArmazenamentoIndexedDb(nome: string = NOME_DO_BANCO): Armaz
             const existe = eventos.get(e.id);
             existe.onsuccess = () => {
               if (existe.result !== undefined) {
-                gravados.push(migrarEvento(existe.result as EventoDoAtendimento | EventoV1 | EventoV2));
+                gravados.push(migrarEvento(existe.result as EventoDoAtendimento | EventoV1 | EventoV2 | EventoV3));
                 gravar(i + 1);
                 return;
               }
@@ -147,7 +148,7 @@ export function criarArmazenamentoIndexedDb(nome: string = NOME_DO_BANCO): Armaz
       const d = await db();
       const tx = d.transaction("eventos", "readonly");
       const lidos = await pedido(tx.objectStore("eventos").index("porCaso").getAll(casoId));
-      return (lidos as (EventoDoAtendimento | EventoV1 | EventoV2)[]).map(migrarEvento).sort((a, b) => a.seq - b.seq);
+      return (lidos as (EventoDoAtendimento | EventoV1 | EventoV2 | EventoV3)[]).map(migrarEvento).sort((a, b) => a.seq - b.seq);
     },
     async casoMaisRecenteNaoEncerrado() {
       const d = await db();

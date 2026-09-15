@@ -62,7 +62,7 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
     await expect(primeiro).toContainText("Não prosseguir");
     await expect(primeiro).toContainText("decisão vigente");
     await expect(primeiro).toContainText(/\d{2}\/\d{2} \d{2}:\d{2}/);
-    await expect(primeiro).toContainText("registrado neste aparelho, sem conta");
+    await expect(primeiro).toContainText("Autoria não identificada");
 
     await page.getByTestId("avc-f-julgamento-doac-prosseguir").click();
     const segundo = page.getByTestId("avc-f-julgamentos-1");
@@ -249,7 +249,7 @@ test.describe("AVC · 19ª rodada · AC-13 · estados da ação", () => {
     await expect(segunda).toContainText("situação vigente");
     await expect(segunda).toContainText("fora da ordem causal");
     await expect(primeira).toContainText(/\d{2}:\d{2}/);
-    await expect(segunda).toContainText("registrado neste aparelho, sem conta");
+    await expect(segunda).toContainText("Autoria não identificada");
     await page.getByTestId("avc-aba-destino").click();
     await expect(page.getByTestId("avc-g-conduta")).toContainText("Interrompida após o início — houve exposição");
   });

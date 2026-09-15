@@ -24,9 +24,13 @@
  *    Preparada e Cancelada aceitam horário opcional; Indicada e Decidida sem horário; o caminho hemorrágico não usa
  *    o horário do registro. Regressões E-49: o veredito da EVT e o portão da IVT não mudam com a ausência do horário
  *    (marca 6), e a última dose de DOAC nunca é inferida dele (marca 7).
+ *  · item 4 (§10) — autoria: nome de exibição de `full_name`, senão `nome`, nunca do e-mail; a tela diz «Registrado
+ *    por:» com o nome ou «Autoria não identificada», nunca um identificador; o evento v4 guarda o nome e os
+ *    eventos antigos migram sem nome; o nome é snapshot gravado no evento no momento do registro, nunca
+ *    recalculado a partir do perfil atual da conta.
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
- *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao,horario-clinico}.ts`, `avc/persistencia/log.ts`.
+ *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao,horario-clinico}.ts`, `avc/persistencia/{log,autoria,tipos}.ts`.
  * FONTE: `docs/decisoes.md`, AC-13 reaberto, §1 e §9.
  */
 const fs = require("node:fs");
@@ -43,6 +47,7 @@ const entradas = [
   "avc/nucleo/ordem-da-acao.ts",
   "avc/nucleo/horario-clinico.ts", "avc/nucleo/veredito-da-trombectomia.ts", "avc/nucleo/derivacoes-d.ts",
   "avc/nucleo/problemas-ativos.ts",
+  "avc/persistencia/autoria.ts", "avc/persistencia/tipos.ts",
   "avc/persistencia/log.ts", "avc/conteudo/campos.ts", "avc/conteudo/superficies.ts", "design-system/estados-clinicos.ts",
 ];
 try {
@@ -726,6 +731,66 @@ bloco("3i", () => {
   conf("3i · «Iniciada» · início declarado desconhecido resolve a pendência sem criar horário",
     pendHorario(inicioDesc).length === 0 && (horario(inicioDesc, "Iniciada") || {}).ms === undefined
       && !inicioDesc.fatos.some((f) => f.campo === "ivt_inicio" && typeof f.valor === "number"), `⛔ ${J(horario(inicioDesc, "Iniciada"))}`);
+});
+
+/* ══ ITEM 4 · autoria: nome de exibição ou «Autoria não identificada» ═════════════ */
+/**
+ * Decisão do autor (AC-13 reaberto, §10): nome de exibição `full_name`, senão `nome`; nunca derivado de e-mail;
+ * IndexedDB na v4 com o nome no evento; eventos antigos e registros sem conta ficam «Autoria não identificada».
+ */
+const AUT = emT("avc/persistencia/autoria.js");
+const TIP = emT("avc/persistencia/tipos.js");
+const NAO_IDENTIFICADA = J({ tipo: "nao_identificada", rotulo: "Autoria não identificada" });
+
+/* 4a · de onde vem o nome e o que a tela diz */
+bloco("4a", () => {
+  const N = (m) => tenta(() => AUT.nomeDeExibicaoDosMetadados(m));
+  conf("4a · nome de exibição: `full_name`", N({ full_name: "Dra. Ana Souza", nome: "Ana" }) === "Dra. Ana Souza", `⛔ ${J(N({ full_name: "Dra. Ana Souza", nome: "Ana" }))}`);
+  conf("4a · sem `full_name`, `nome`", N({ nome: "Dr. Bruno Lima" }) === "Dr. Bruno Lima", `⛔ ${J(N({ nome: "Dr. Bruno Lima" }))}`);
+  conf("4a · `full_name` em branco cai para `nome`", N({ full_name: "  ", nome: "Dr. Bruno Lima" }) === "Dr. Bruno Lima", "⛔");
+  conf("4a · só e-mail → nenhum nome (nunca derivado do e-mail)", N({ email: "ana.souza@hospital.org" }) === undefined, `⛔ ${J(N({ email: "ana.souza@hospital.org" }))}`);
+  conf("4a · sem metadados → nenhum nome", N(undefined) === undefined && N(null) === undefined, "⛔");
+  const R = (a) => J(tenta(() => AUT.rotuloDeAutoria(a)));
+  const comNome = tenta(() => AUT.autoriaDoEvento({ userId: "u-1", anonima: false, nomeDeExibicao: "Dra. Ana Souza" }, "local:ap-1"));
+  const semNome = tenta(() => AUT.autoriaDoEvento({ userId: "u-1", anonima: false }, "local:ap-1"));
+  const semConta = tenta(() => AUT.autoriaDoEvento(undefined, "local:ap-1"));
+  conf("4a · conta com nome → «Registrado por:» com o nome", R(comNome) === J({ tipo: "nome", rotulo: "Registrado por:", nome: "Dra. Ana Souza" }), `⛔ ${R(comNome)}`);
+  conf("4a · conta sem nome → «Autoria não identificada», nunca o id", R(semNome) === NAO_IDENTIFICADA && !R(semNome).includes("u-1"), `⛔ ${R(semNome)}`);
+  conf("4a · sem conta → «Autoria não identificada», nunca o id do aparelho", R(semConta) === NAO_IDENTIFICADA && !R(semConta).includes("local:"), `⛔ ${R(semConta)}`);
+  conf("4a · autoria ainda não lida do log → «Autoria não identificada»", R(undefined) === NAO_IDENTIFICADA, `⛔ ${R(undefined)}`);
+  conf("4a · o texto de autoria nunca usa «responsável»", ![R(comNome), R(semNome), R(semConta)].some((x) => /respons/i.test(x)), "⛔");
+});
+
+/* 4b · o evento v4 guarda o nome; eventos antigos migram sem nome */
+bloco("4b", () => {
+  conf("4b · o schema do evento é v4", TIP && TIP.VERSAO_DO_SCHEMA === 4, `⛔ ${TIP && TIP.VERSAO_DO_SCHEMA}`);
+  const e0 = vazio;
+  const e1 = E.registrarFato(e0, { campo: "peso", valor: 70 }, rel);
+  let n = 0;
+  const ctx = (extra) => ({ casoId: "caso-ac13-item4", autor: "u-1", origemDoAutor: "sessao", agora: rel.agora(), gerarId: () => `ev4-${++n}`, ...extra });
+  const comNome = tenta(() => LOG.eventosDaTransicao(e0, e1, ctx({ nomeDoAutor: "Dra. Ana Souza" })));
+  conf("4b · com nome, todo evento grava `nomeDoAutor` no schema v4",
+    Array.isArray(comNome) && comNome.length > 0 && comNome.every((x) => x.nomeDoAutor === "Dra. Ana Souza" && x.versaoDoSchema === 4), `⛔ ${J(comNome)}`);
+  const semNome = tenta(() => LOG.eventosDaTransicao(e0, e1, ctx({})));
+  conf("4b · sem nome, `nomeDoAutor` fica declarado como null", Array.isArray(semNome) && semNome.every((x) => x.nomeDoAutor === null), `⛔ ${J(semNome)}`);
+  const v3 = {
+    id: "v3-a", casoId: "caso-v3", seq: 1, tipo: "fato", registradoEm: AGORA, observadoEm: null, autor: "u-9", origemDoAutor: "sessao",
+    versaoDoSchema: 3, dados: { fato: { id: "fato-v3", campo: "peso", valor: 70, horaRegistro: AGORA } },
+  };
+  const m3 = tenta(() => TIP.migrarEvento(v3));
+  conf("4b · v3 → v4: evento antigo fica sem nome (null), com autor, origem e `dados` intactos",
+    m3 && m3.versaoDoSchema === 4 && m3.nomeDoAutor === null && m3.autor === "u-9" && m3.origemDoAutor === "sessao" && J(m3.dados) === J(v3.dados), `⛔ ${J(m3)}`);
+  const idNovo = e1.fatos[e1.fatos.length - 1].id;
+  const porFato = tenta(() => AUT.autoriaPorFatoDoLog([m3, ...(Array.isArray(comNome) ? comNome : [])]));
+  conf("4b · evento antigo → «Autoria não identificada»; evento novo com nome → «Registrado por:»",
+    porFato && J(tenta(() => AUT.rotuloDeAutoria(porFato["fato-v3"]))) === NAO_IDENTIFICADA
+      && J(tenta(() => AUT.rotuloDeAutoria(porFato[idNovo]))) === J({ tipo: "nome", rotulo: "Registrado por:", nome: "Dra. Ana Souza" }), `⛔ ${J(porFato)}`);
+  const e2 = E.registrarFato(e1, { campo: "peso", valor: 72 }, rel);
+  const idSeguinte = e2.fatos[e2.fatos.length - 1].id;
+  const depois = tenta(() => LOG.eventosDaTransicao(e1, e2, ctx({ nomeDoAutor: "Dr. Carlos Nunes" })));
+  const porFato2 = tenta(() => AUT.autoriaPorFatoDoLog([...(Array.isArray(comNome) ? comNome : []), ...(Array.isArray(depois) ? depois : [])]));
+  conf("4b · o nome é snapshot gravado no evento: o fato anterior mantém o nome da época, mesmo com outro nome na sessão depois",
+    porFato2 && (porFato2[idNovo] || {}).nomeDeExibicao === "Dra. Ana Souza" && (porFato2[idSeguinte] || {}).nomeDeExibicao === "Dr. Carlos Nunes", `⛔ ${J(porFato2)}`);
 });
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);
