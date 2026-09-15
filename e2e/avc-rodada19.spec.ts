@@ -84,7 +84,23 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
  * AC-03r (autor, 2026-09-14; `docs/decisoes.md` §7 e C8): data do parto e janela operacional LOCAL de 14 dias.
  * ⚠️ O seletor de data é tolerante a ±1 dia aqui (13 ⛔ 14 retêm; 15 ⛔ 16 liberam); os limites exatos são da prova.
  */
+/**
+ * Instrumento (2026-09-15): o relógio do navegador fica fixo nos testes do AC-03r. O seletor de data parte de `agora`;
+ * com o relógio real, «hora −1» entre 00:00 e 00:59 cruzava a meia-noite e o parto caía N+1 dias antes. Com o instante
+ * fixo ao meio-dia, a data e a hora do parto derivam dele: N dias antes, às 11:00. Cenários e expectativas não mudam.
+ */
+const AGORA_FIXO_AC03R = new Date(2026, 8, 15, 12, 0, 0);
+const HORA_DO_PARTO = "11";
+const MINUTO_DO_PARTO = "00";
+
+/** Confere, antes de confirmar, que o seletor chegou à hora derivada do instante fixo. */
+async function horaDerivadaDoInstanteFixo(page: Page) {
+  await expect(page.getByTestId("avc-seletor-hora-h-numero")).toHaveText(HORA_DO_PARTO);
+  await expect(page.getByTestId("avc-seletor-hora-m-numero")).toHaveText(MINUTO_DO_PARTO);
+}
+
 async function puerperaNoPortao(page: Page) {
+  await page.clock.setFixedTime(AGORA_FIXO_AC03R);
   await fixarIdioma(page, "pt-BR");
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/modulos/avc");
@@ -100,9 +116,11 @@ async function partoHaDias(page: Page, dias: number) {
   for (let i = 0; i < dias; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
   /**
    * ⚠️ Ajuste de instrumento (depois de implementar): mover só o dia ⛔ seleciona o valor, e «Confirmar» fica inativo.
-   * O gesto real toca a hora — o mesmo que `e2e/avc-controle-de-data` faz para o DOAC.
+   * O gesto real toca a hora — o mesmo que `e2e/avc-controle-de-data` faz para o DOAC. Com o relógio fixo ao meio-dia,
+   * a hora vai a 11:00 no mesmo dia.
    */
   await page.getByTestId("avc-seletor-hora-h-menos").click();
+  await horaDerivadaDoInstanteFixo(page);
   await page.getByTestId("avc-seletor-hora-confirmar").click();
   /** ⚠️ Decisão do autor: a hora só vale confirmada na pergunta separada. */
   await page.getByTestId("avc-opcao-parto_hora_conhecida-sim").click();
@@ -126,6 +144,7 @@ test.describe("AVC · 19ª rodada · AC-03r · data do parto e janela local de 1
     await expect(page.getByTestId("avc-portao-populacao")).toHaveCount(0);
 
     const outra = await context.newPage();
+    await outra.clock.setFixedTime(AGORA_FIXO_AC03R);
     await page.close();
     await fixarIdioma(outra, "pt-BR");
     await outra.goto("/modulos/avc");
@@ -152,6 +171,7 @@ test.describe("AVC · 19ª rodada · AC-03r · data do parto e janela local de 1
     await page.getByTestId("avc-seletor-data-escolher").click();
     for (let i = 0; i < dias; i += 1) await page.getByTestId("avc-seletor-data-passo-menos").click();
     await page.getByTestId("avc-seletor-hora-h-menos").click();
+    await horaDerivadaDoInstanteFixo(page);
     await page.getByTestId("avc-seletor-hora-confirmar").click();
     await page.getByTestId("avc-opcao-parto_hora_conhecida-Não, só a data").click();
   }
