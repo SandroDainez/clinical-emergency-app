@@ -224,5 +224,6 @@ export function useAtendimentoPersistido(relogio: Relogio) {
   }, [ctx, relogio]);
 
   /** ⚠️ 13ª rodada: o id do caso é o `encounterId` do contrato de navegação entre módulos. */
-  return { fase, estado, setEstado, recuperadoDe, falhaAoGravar, persistente, autoriaPorFato, encerrarEAbrirNovo, casoId: caso.current };
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-3): o nome de exibição da sessão, quando há — preenche o médico responsável da decisão. */
+  return { fase, estado, setEstado, recuperadoDe, falhaAoGravar, persistente, autoriaPorFato, encerrarEAbrirNovo, casoId: caso.current, nomeDaSessao: autoria.current.nomeDeExibicao };
 }

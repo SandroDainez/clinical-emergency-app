@@ -20,6 +20,17 @@ async function doacSemHora(page: Page, idioma: "pt-BR" | "es-419" = "pt-BR") {
   await expect(page.getByTestId("avc-f-portao-motivo-doac")).toBeVisible();
 }
 
+/**
+ * ⚠️ Ajuste consciente (ARQ-APOIO-01 F1, AP-3, autor 2026-09-15): toda decisão leva médico responsável e, sem sessão
+ * nominal, registro profissional. O gesto abre o registro; «Registrar decisão» grava.
+ */
+async function registrarDecisao(page: Page, alvo: string, sufixo: "prosseguir" | "nao-prosseguir") {
+  await page.getByTestId(`avc-f-julgamento-${alvo}-${sufixo}`).click();
+  await page.getByTestId(`avc-f-decisao-${alvo}-decisao_medico_responsavel`).fill("Dra. Teste");
+  await page.getByTestId(`avc-f-decisao-${alvo}-decisao_registro_profissional`).fill("CRM 12345/SP");
+  await page.getByTestId(`avc-f-decisao-${alvo}-registrar`).click();
+}
+
 test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", () => {
   test("DOAC: «Não prosseguir» nomeia a decisão; «Prosseguir» é novo registro e retira o motivo", async ({ page }) => {
     await doacSemHora(page);
@@ -32,14 +43,14 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
     const caixaSim = await page.getByTestId("avc-f-julgamento-doac-prosseguir").boundingBox();
     const caixaNao = await naoProsseguir.boundingBox();
     expect(Math.abs((caixaSim?.y ?? 0) - (caixaNao?.y ?? -100)), "os dois gestos na mesma linha").toBeLessThan(4);
-    await naoProsseguir.click();
+    await registrarDecisao(page, "doac", "nao-prosseguir");
 
     const estado = page.getByTestId("avc-f-portao-estado-decisao_de_nao_prosseguir");
-    await expect(estado).toContainText("Decisão clínica registrada: não prosseguir com a trombólise");
+    await expect(estado).toContainText("Decisão médica registrada: não prosseguir com a trombólise");
     await expect(estado, "⛔ a decisão ⛔ é contraindicação").not.toContainText(/contraindica/i);
     await expect(page.getByTestId("avc-f-portao-dado-doac")).toContainText("Decisão clínica registrada: não prosseguir");
 
-    await page.getByTestId("avc-f-julgamento-doac-prosseguir").click();
+    await registrarDecisao(page, "doac", "prosseguir");
     await expect(page.getByTestId("avc-f-portao-motivo-doac")).toHaveCount(0);
     await expect(page.getByTestId("avc-f-portao-estado-decisao_de_nao_prosseguir")).toHaveCount(0);
   });
@@ -50,7 +61,7 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
    */
   test("«não prosseguir» vigente é o motivo principal; a trilha mostra decisão, autor e data/hora", async ({ page }) => {
     await doacSemHora(page);
-    await page.getByTestId("avc-f-julgamento-doac-nao-prosseguir").click();
+    await registrarDecisao(page, "doac", "nao-prosseguir");
     const motivos = page.locator('[data-testid^="avc-f-portao-motivo-"]');
     await expect(motivos.first()).toHaveAttribute("data-testid", "avc-f-portao-motivo-doac");
     expect(await motivos.count(), "os outros motivos continuam visíveis").toBeGreaterThan(1);
@@ -64,7 +75,7 @@ test.describe("AVC · 19ª rodada · julgamento registrado no portão da IVT", (
     await expect(primeiro).toContainText(/\d{2}\/\d{2} \d{2}:\d{2}/);
     await expect(primeiro).toContainText("Autoria não identificada");
 
-    await page.getByTestId("avc-f-julgamento-doac-prosseguir").click();
+    await registrarDecisao(page, "doac", "prosseguir");
     const segundo = page.getByTestId("avc-f-julgamentos-1");
     await expect(segundo).toContainText("Prosseguir");
     await expect(segundo).toContainText("decisão vigente");

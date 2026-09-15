@@ -311,8 +311,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Problema detectado — acción correctiva aún no registrada",
   "Ação registrada — aguardando a reavaliação":
     "Acción registrada — esperando la reevaluación",
-  "Há contraindicação de segurança, além do que se corrige aqui":
-    "Hay una contraindicación de seguridad, además de lo que se corrige aquí",
   "Nada mais a corrigir aqui": "Nada más que corregir aquí",
 
   /* ── ⚠️ A DECISÃO ⛔ E A RAIA DA EVT — Fase 6, 2026-09-07 ─────────────── */
@@ -336,8 +334,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   /* ── ⚠️ O PORTÃO DA IVT — Fase 6, 2026-09-07 ─────────────────────────── */
   "Contraindicação de segurança ativa":
     "Contraindicación de seguridad activa",
-  "Há condição a corrigir antes":
-    "Hay una condición que corregir antes",
   "Correção registrada — falta a reavaliação":
     "Corrección registrada — falta la reevaluación",
   "Faltam dados para concluir":
@@ -393,7 +389,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ── incerteza tipada na segurança (R3 · commit 7 · 2026-09-12) ─────────
   "Resultados discordantes — reconcilie antes de decidir": "Resultados discordantes — concilie antes de decidir",
   "Exame pertinente ainda sem resultado": "Examen pertinente aún sin resultado",
-  "Situação que a fonte manda avaliar individualmente": "Situación que la fuente manda evaluar individualmente",
   "Condição resolutiva vinculada": "Condición resolutiva vinculada",
   "Risco declarado pela fonte": "Riesgo declarado por la fuente",
   "Ainda não dá para concluir: há situação que a fonte manda avaliar individualmente":
@@ -422,14 +417,9 @@ export const ES_AVC_MODULO: Record<string, string> = {
   // ── D-139-3 · julgamento registrado (19ª rodada · 2026-09-14) ─────────
   "Benefício da trombólise incerto segundo a fonte: registrar a decisão clínica":
     "Beneficio de la trombólisis incierto según la fuente: registrar la decisión clínica",
-  "Benefício da trombólise incerto — requer decisão clínica registrada":
-    "Beneficio de la trombólisis incierto — requiere decisión clínica registrada",
-  "Decisão clínica registrada: não prosseguir com a trombólise":
-    "Decisión clínica registrada: no continuar con la trombólisis",
   "Decisão clínica registrada: não prosseguir": "Decisión clínica registrada: no continuar",
   "Decisão de não prosseguir registrada neste episódio; mudar a decisão exige novo registro":
     "Decisión de no continuar registrada en este episodio; cambiar la decisión exige un nuevo registro",
-  "Registrar a decisão clínica": "Registrar la decisión clínica",
   // ── AC-13 reaberto · item 1 · exposição desconhecida (2026-09-14) ──────
   "Situação da trombólise desconhecida": "Situación de la trombólisis desconocida",
   "Situação da trombólise desconhecida: não se sabe se a ordem pós-trombólise se aplica.":
@@ -496,11 +486,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Situação registrada por engano?": "¿Situación registrada por error?",
   "O registro não é apagado: fica na trilha, recebe correção com motivo «registrado por engano» e deixa de valer para a situação da ação. Os outros registros não mudam.":
     "El registro no se borra: queda en el historial, recibe una corrección con motivo «registrado por error» y deja de valer para la situación de la acción. Los demás registros no cambian.",
-  "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada":
-    "Evaluación de riesgo y beneficio obligatoria — requiere decisión clínica registrada",
   "Avaliação cuidadosa de risco e benefício com as especialidades que a fonte indica; registrar a decisão clínica":
     "Evaluación cuidadosa de riesgo y beneficio con las especialidades que indica la fuente; registrar la decisión clínica",
-  "Decisões clínicas registradas": "Decisiones clínicas registradas",
   "decisão vigente": "decisión vigente",
   "registro anterior": "registro anterior",
   // ── AC-13 reaberto · item 4 · autoria (2026-09-14) ──────────────────────
@@ -517,7 +504,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Riesgo declarado por la fuente; la trombólisis no queda retenida por él",
   "Motivo para suspeitar de alteração da coagulação": "Motivo para sospechar alteración de la coagulación",
   // ── composição do veredito da IVT (D1 · commit 6 · 2026-09-12) ────────
-  "✕ Os critérios não sustentam a trombólise": "✕ Los criterios no sustentan la trombólisis",
   "Os critérios registrados não sustentam a trombólise":
     "Los criterios registrados no sustentan la trombólisis",
   "Conclusão composta pelo aplicativo a partir das regras-fonte citadas em cada critério. Nenhuma recomendação isolada afirma esta frase.":
@@ -535,7 +521,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Fuera de la ventana estándar; solo una recomendación de ventana extendida alcanzaría el caso",
   "Há impeditivo de segurança registrado": "Hay impedimento de seguridad registrado",
   // ── barreira de classe da reperfusão (R1 · 2026-09-12) ──────────────
-  "Reperfusão retida pela imagem": "Reperfusión retenida por la imagen",
   "Estudo registrado sem resultado que responda pela hemorragia":
     "Estudio registrado sin resultado que responda por la hemorragia",
   "Corrigir o resultado do exame que estiver errado, na mesma instância":
@@ -1532,10 +1517,6 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Recomendación: controlar la presión arterial antes de iniciar la trombólisis, para reducir complicaciones hemorrágicas",
   "Recomendação: tratar a hipoglicemia abaixo de 60 mg/dL, para evitar complicações":
     "Recomendación: tratar la hipoglucemia por debajo de 60 mg/dL, para evitar complicaciones",
-  "Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação.":
-    "Ningún bloqueo corregible registrado. Nada en esta pantalla espera por una acción.",
-  "O que faz este bloqueio cair":
-    "Qué hace caer este bloqueo",
   "Registrar ação":
     "Registrar acción",
   "Registrar outra ação":
@@ -2621,4 +2602,88 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "R6 · R4 (não transcritas) · AHA/ASA 2026 §5.2 rec. 1 (COR 1, C-EO), p. e389": "R6 · R4 (no transcritas) · AHA/ASA 2026 §5.2 rec. 1 (COR 1, C-EO), p. e389",
   /* ── 19ª rodada · Lote 1 (D-139-2, C6) ── */
   "Sem motivo para suspeitar; antagonista da vitamina K registrado, com o INR já registrado": "Sin motivo para sospechar; antagonista de la vitamina K registrado, con el INR ya registrado",
+  // ARQ-APOIO-01 F1: portão, telas E/F e decisão médica registrada.
+  "Alerta crítico — dados registrados incompatíveis com trombólise IV segundo a fonte":
+    "Alerta crítica — datos registrados incompatibles con trombólisis IV según la fuente",
+  "Há critérios a corrigir antes de prosseguir":
+    "Hay criterios que corregir antes de continuar",
+  "Segundo a fonte, a trombólise IV não é recomendada neste cenário":
+    "Según la fuente, la trombólisis IV no se recomienda en este escenario",
+  "Critérios registrados não compatíveis com trombólise IV":
+    "Criterios registrados no compatibles con trombólisis IV",
+  "Requer avaliação especializada antes de prosseguir: suspeita de hemorragia subaracnóidea ativa":
+    "Requiere evaluación especializada antes de continuar: sospecha de hemorragia subaracnoidea activa",
+  "Situação que a fonte manda avaliar individualmente — registrar a decisão médica":
+    "Situación que la fuente indica evaluar individualmente — registrar la decisión médica",
+  "Benefício da trombólise incerto — registrar a decisão médica":
+    "Beneficio de la trombólisis incierto — registrar la decisión médica",
+  "Avaliação de risco e benefício — registrar a decisão médica":
+    "Evaluación de riesgo y beneficio — registrar la decisión médica",
+  "Decisão médica registrada: não prosseguir com a trombólise":
+    "Decisión médica registrada: no continuar con la trombólisis",
+  "✓ Critérios registrados compatíveis com trombólise IV":
+    "✓ Criterios registrados compatibles con trombólisis IV",
+  "✕ Imagem com hemorragia ou resultados divergentes":
+    "✕ Imagen con hemorragia o resultados divergentes",
+  "Imagem com hemorragia ou resultados divergentes":
+    "Imagen con hemorragia o resultados divergentes",
+  "✕ Segundo a fonte, não recomendada neste cenário":
+    "✕ Según la fuente, no recomendada en este escenario",
+  "✕ Critérios registrados não compatíveis com trombólise IV":
+    "✕ Criterios registrados no compatibles con trombólisis IV",
+  "Há alerta crítico de segurança, além do que se corrige aqui":
+    "Hay una alerta crítica de seguridad, además de lo que se corrige aquí",
+  "Nenhum alerta pendente nesta tela para a trombólise":
+    "Ninguna alerta pendiente en esta pantalla para la trombólisis",
+  "Nenhuma correção pendente registrada. Nada nesta tela espera por ação.":
+    "Ninguna corrección pendiente registrada. Nada en esta pantalla espera una acción.",
+  "Nenhuma correção pendente para a trombólise. O que está abaixo pede conduta.":
+    "Ninguna corrección pendiente para la trombólisis. Lo que sigue pide conducta.",
+  "O que resolve este critério":
+    "Lo que resuelve este criterio",
+  "Informação":
+    "Información",
+  "Alerta clínico":
+    "Alerta clínica",
+  "Dados a corrigir":
+    "Datos por corregir",
+  "Alerta crítico":
+    "Alerta crítica",
+  "Registrar decisão médica":
+    "Registrar decisión médica",
+  "Decisão médica registrada":
+    "Decisión médica registrada",
+  "Registrar decisão":
+    "Registrar decisión",
+  "Prosseguir após avaliação médica":
+    "Continuar tras evaluación médica",
+  "Não prosseguir com a trombólise":
+    "No continuar con la trombólisis",
+  "Justificativa da decisão médica":
+    "Justificación de la decisión médica",
+  "Médico responsável":
+    "Médico responsable",
+  "Registro profissional (CRM/UF)":
+    "Registro profesional (CRM/UF)",
+  "Critérios pendentes no momento da decisão":
+    "Criterios pendientes en el momento de la decisión",
+  "Decisões médicas registradas":
+    "Decisiones médicas registradas",
+  "Justificativa":
+    "Justificación",
+  "não atestado":
+    "no atestado",
+  "Critérios pendentes no momento":
+    "Criterios pendientes en el momento",
+  // ARQ-APOIO-01 F1: invariante 3 — origem da identificação e decisão incompleta.
+  "Origem da identificação do médico":
+    "Origen de la identificación del médico",
+  "Sessão autenticada":
+    "Sesión autenticada",
+  "Atestação":
+    "Atestación",
+  "Decisão médica incompleta — falta":
+    "Decisión médica incompleta — falta",
+  "decisão completa":
+    "decisión completa",
 };

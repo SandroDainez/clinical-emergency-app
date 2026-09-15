@@ -56,9 +56,10 @@ import { retencaoDiagnostica, barreiraDeReperfusao } from "./derivacoes-c";
 import { acaoExpos, acoesDoBloqueio } from "./derivacoes-e";
 import { bloqueiosCorrigiveis, impedimentosDeSeguranca, type EfeitoNaAcao } from "./derivacoes-d";
 import { vereditoDaTrombolise } from "./veredito-da-trombolise";
+import { decisoesMedicasRegistradas, type DecisaoMedicaRegistrada } from "./decisao-medica";
 
 /**
- * ⚠️⚠️ SETE ESTADOS, ⛔ E ⛔ NENHUM DELES É *"desabilitado"*.
+ * ⚠️⚠️ OS ESTADOS DO PORTÃO (hoje dezesseis), ⛔ E ⛔ NENHUM DELES É *"desabilitado"*.
  *
  * ⚠️ Pedido do autor (**item 5**): *"⛔ Não reduzir todos a 'desabilitado'"*.
  * ⛔ Um botão cinza sem razão ensina o médico a desconfiar da tela — ⛔ e num
@@ -160,7 +161,22 @@ export type MotivoDoPortao = {
   readonly procedencia?: string;
   /** ⚠️ D-139-3: o alvo cujo julgamento a tela registra neste motivo — ⛔ ausente, ⛔ há gesto de julgamento. */
   readonly julgamento?: string;
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-1): informação · alerta clínico · dados a corrigir — soma-se a `camada` ⛔ `efeito`. */
+  readonly categoria: CategoriaDoMotivo;
+  /** ⚠️ AP-1: alerta crítico — prosseguir pede decisão médica com justificativa, autoria ⛔ horário. */
+  readonly critico?: true;
+  /** ⚠️ AP-10: a decisão médica vigente sobre este motivo — ela ⛔ muda o estado derivado (exceto o julgamento do D-139-3). */
+  readonly decisaoMedica?: DecisaoMedicaRegistrada;
 };
+
+/**
+ * ⚠️⚠️ ARQ-APOIO-01 F1 (autor, 2026-09-15): três categorias.
+ * · `informacao` — ⛔ impede nada;
+ * · `alerta` — permite prosseguir mediante decisão médica registrada; `critico` nos casos graves da fonte;
+ * · `dados_a_corrigir` — inconsistência ⛔ falta de dado: o sistema ⛔ conclui até corrigir.
+ */
+export type CategoriaDoMotivo = "informacao" | "alerta" | "dados_a_corrigir";
+type MotivoBruto = Omit<MotivoDoPortao, "categoria" | "critico" | "decisaoMedica">;
 
 export type PortaoIVT = {
   readonly estado: EstadoDoPortao;
@@ -175,6 +191,8 @@ export type PortaoIVT = {
    * esconde ⛔ nada.
    */
   readonly motivos: readonly MotivoDoPortao[];
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-10): a trilha das decisões médicas — separada do estado que o sistema deriva. */
+  readonly decisoesMedicas: readonly DecisaoMedicaRegistrada[];
 };
 
 /**
@@ -182,7 +200,7 @@ export type PortaoIVT = {
  * (R3, commit 7) — ⛔ rótulo do campo, valor, fonte, o que falta ⛔ e o efeito
  * tipado. ⛔ O portão ⛔ não reinterpreta ⛔ nenhum deles (**I6**).
  */
-function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]): MotivoDoPortao {
+function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]): MotivoBruto {
   return {
     id: i.id,
     camada: "seguranca",
@@ -207,6 +225,33 @@ function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]
  *
  * ⛔ ⛔ `cancelada` ⛔ não conta: ⛔ nada foi feito.
  */
+/**
+ * ⚠️⚠️ ARQ-APOIO-01 F1 · A CATEGORIA DE CADA MOTIVO (AP-1; mapa `docs/avc/revisao/ARQ-APOIO-01-mapa.md` §1).
+ * ⛔ Não muda regra da fonte ⛔ nem o estado: nomeia o que o motivo é para o médico.
+ * ⚠️ Estudos de imagem divergentes seguem ALERTA CRÍTICO (`imagem`), ⛔ «dados a corrigir»: com dois resultados
+ * possíveis, toda divergência inclui um achado de hemorragia — ⛔ e a prova dos críticos (caso 5) é regressão permanente.
+ */
+export function categoriaDoMotivo(
+  m: Pick<MotivoBruto, "id" | "camada" | "efeito">,
+  decididos: ReadonlySet<string>
+): { readonly categoria: CategoriaDoMotivo; readonly critico?: true } {
+  if (m.efeito === "condicao_resolutiva" || m.efeito === "informa" || m.id === "ultima_pressao_completa") return { categoria: "informacao" };
+  if (
+    m.id === "imagem_nao_excluida"
+    || m.id === "afericao_incompleta"
+    || m.efeito === "impede_ate_reconciliar"
+    || m.efeito === "aguarda_juizo"
+  ) {
+    return { categoria: "dados_a_corrigir" };
+  }
+  const critico =
+    m.id === "imagem"
+    || m.id.startsWith("corte-")
+    || m.id.startsWith("cor3-")
+    || (m.id.startsWith("item-") && m.efeito === "impede" && !decididos.has(m.id));
+  return critico ? { categoria: "alerta", critico: true } : { categoria: "alerta" };
+}
+
 function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
   /** ⚠️ Interrompida (D2): houve gesto; AC-13: prescrita e preparada não são gesto no paciente. Nada prova resolução. */
   return acoesDoBloqueio(estado, bloqueio).some(acaoExpos);
@@ -228,7 +273,7 @@ function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
  */
 export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT {
   const veredito = vereditoDaTrombolise(estado, agoraMs);
-  const motivos: MotivoDoPortao[] = [];
+  const motivos: MotivoBruto[] = [];
 
   /* ── 1 · segurança ⛔ NÃO corrigível ─────────────────────────────────── */
 
@@ -548,5 +593,12 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
     ? [...motivos.filter((m) => decididos.has(m.id)), ...motivos.filter((m) => !decididos.has(m.id))]
     : motivos;
 
-  return { estado: estadoFinal, liberado: estadoFinal === "liberado", motivos: ordenados };
+  /** ⚠️ AP-10: a categoria ⛔ a decisão médica vigente acompanham cada motivo; ⛔ nada disso reescreve `estadoFinal`. */
+  const decisoesMedicas = decisoesMedicasRegistradas(estado);
+  const classificados: MotivoDoPortao[] = ordenados.map((m) => {
+    const decisaoMedica = [...decisoesMedicas].reverse().find((d) => d.alvo === (m.julgamento ?? m.id));
+    return { ...m, ...categoriaDoMotivo(m, decididos), ...(decisaoMedica !== undefined ? { decisaoMedica } : {}) };
+  });
+
+  return { estado: estadoFinal, liberado: estadoFinal === "liberado", motivos: classificados, decisoesMedicas };
 }

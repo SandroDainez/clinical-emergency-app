@@ -1236,6 +1236,44 @@ export const CAMPO_DO_JULGAMENTO: CampoDeclarado = {
   nota: "Decisão clínica sobre a situação apontada no portão. Mudar a decisão é um novo registro; o anterior continua na trilha.",
 };
 
+/**
+ * ⚠️⚠️ ARQ-APOIO-01, F1 (autor, 2026-09-15; AP-1, AP-2, AP-3, AP-7, AP-10): os fatos que ACOMPANHAM a decisão médica
+ * registrada sobre um alerta do portão, na mesma instância do julgamento. ⛔ Novos valores de decisão: continua
+ * «Prosseguir» / «Não prosseguir» (AP-7). Justificativa (obrigatória para prosseguir num alerta crítico), médico
+ * responsável ⛔ registro profissional (autoria humana atestada) ⛔ o retrato dos critérios pendentes no instante.
+ */
+export const ID_DA_DECISAO = {
+  justificativa: "decisao_justificativa",
+  medico: "decisao_medico_responsavel",
+  registroProfissional: "decisao_registro_profissional",
+  identificacao: "decisao_identificacao",
+  criteriosNoMomento: "decisao_criterios_no_momento",
+} as const;
+/**
+ * ⚠️ Invariante 3 da F1 (autor, 2026-09-15): de onde veio a identidade do médico, gravada NO FATO — sessão autenticada
+ * com nome, ⛔ atestação (nome + CRM/UF). ⛔ O núcleo ⛔ consulta a persistência para saber (E7b).
+ */
+export const ORIGEM_DA_IDENTIFICACAO = { sessao: "Sessão autenticada", atestacao: "Atestação" } as const;
+const REGISTRO_DA_DECISAO = { temporalidade: "estado", instanciaDe: JULGAMENTO, tipo: "texto", fonte: "F-07", bloqueiaTerapia: false } as const;
+export const CAMPOS_DA_DECISAO_MEDICA: readonly CampoDeclarado[] = [
+  { id: ID_DA_DECISAO.justificativa, rotulo: "Justificativa da decisão médica", ...REGISTRO_DA_DECISAO },
+  { id: ID_DA_DECISAO.medico, rotulo: "Médico responsável", ...REGISTRO_DA_DECISAO },
+  { id: ID_DA_DECISAO.registroProfissional, rotulo: "Registro profissional (CRM/UF)", ...REGISTRO_DA_DECISAO },
+  {
+    id: ID_DA_DECISAO.identificacao,
+    rotulo: "Origem da identificação do médico",
+    ...REGISTRO_DA_DECISAO,
+    tipo: "escolha",
+    opcoes: [ORIGEM_DA_IDENTIFICACAO.sessao, ORIGEM_DA_IDENTIFICACAO.atestacao],
+  },
+  { id: ID_DA_DECISAO.criteriosNoMomento, rotulo: "Critérios pendentes no momento da decisão", ...REGISTRO_DA_DECISAO },
+];
+/** ⚠️ AP-1: o que a tela diz da decisão registrada — ⛔ «override»; o valor gravado continua o do julgamento. */
+export const ROTULO_DA_DECISAO_MEDICA = {
+  prosseguir: "Prosseguir após avaliação médica",
+  naoProsseguir: "Não prosseguir com a trombólise",
+} as const;
+
 
 /** ⚠️ Doses sustentadas por F-09. ⛔ **Preparo e administração ⛔ NÃO entram aqui.** */
 export type DoseDoAgente = {

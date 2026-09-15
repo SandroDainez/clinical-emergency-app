@@ -75,6 +75,8 @@ const POR_SUPERFICIE = {
     /** ⚠️ 19ª rodada, D-139-3: o julgamento registrado, respondido no motivo do portão da IVT (ajuste consciente). */
     SF.CAMPO_DO_JULGAMENTO,
     /** AC-13 reaberto, item 3: horário clínico da transição, respondido no gesto da trilha (`campoDoHorario`). */
+    /** ARQ-APOIO-01 F1: os fatos que acompanham a decisão médica, na instância do julgamento. */
+    ...SF.CAMPOS_DA_DECISAO_MEDICA,
     SF.CAMPO_DO_HORARIO_CLINICO,
     { id: SF.CAMPO_AGENTE.id, rotulo: SF.CAMPO_AGENTE.rotulo },
   ],
@@ -191,6 +193,8 @@ confere("⛔ nenhum id de campo se repete entre superfícies",
     DECISAO_DE_PROSSEGUIR: SF.DECISAO_DE_PROSSEGUIR.map((c) => c.id),
     /** ⚠️ 19ª rodada, D-139-3: o julgamento registrado — percorrido pelos gestos do motivo do portão (`GESTOS_DO_JULGAMENTO.map`). */
     GESTOS_DO_JULGAMENTO: [SF.CAMPO_DO_JULGAMENTO.id],
+    /** ARQ-APOIO-01 F1: os fatos da decisão médica — o retrato dos critérios é gravado pelo gesto «Registrar decisão». */
+    CAMPOS_DA_DECISAO_MEDICA: SF.CAMPOS_DA_DECISAO_MEDICA.map((c) => c.id),
     FATOS_OPERACIONAIS: SG.FATOS_OPERACIONAIS.map((c) => c.id),
     /** ⚠️ O julgamento da exceção das 24 h — percorrido no bloco antitrombótico. */
     CAMPOS_ANTITROMBOTICOS: SG.CAMPOS_ANTITROMBOTICOS.map((c) => c.id),

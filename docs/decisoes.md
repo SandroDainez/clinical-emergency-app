@@ -1285,6 +1285,31 @@ Nenhuma tela menciona a situação desconhecida.
 
 **Separado, para rodada própria:** trocar retenção ou bloqueio por alerta com confirmação do médico, no modelo de apoio. Decisão do autor, fora do AC-15.
 
+## ARQ-APOIO-01 · modo de apoio à decisão clínica — decisões AP-1 a AP-10 (2026-09-15)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito. Mapa, proposta e implementação da F1: `docs/avc/revisao/ARQ-APOIO-01-mapa.md` (§10).
+
+**Rumo:** o motor organiza evidência, critérios, doses, riscos e opções; o médico toma e registra a decisão. «Apoio» é decisão de produto e de UX. Não é garantia de enquadramento fora de SaMD; a avaliação regulatória fica para antes de comercializar.
+
+**Categorias:**
+1. **Informação:** não impede nada.
+2. **Alerta clínico:** permite prosseguir com decisão médica registrada; subtipo **alerta crítico** nos casos graves da fonte.
+3. **Dados a corrigir:** o sistema não conclui até corrigir.
+
+**Decisões:**
+- **AP-1:** alerta crítico para hemorragia, cortes laboratoriais, COR 3 e equivalentes. Prosseguir exige justificativa, autoria e horário. O registro de administração nunca é bloqueado.
+- **AP-2:** justificativa obrigatória só no crítico ou em decisão contra recomendação forte.
+- **AP-3:** autoria humana identificada em toda decisão; o motor nunca aparece como `user`; retrato dos critérios.
+- **AP-4:** fora do escopo validado (menor de 18 anos, gestação, puerpério) sem contraindicação automática; aviso de escopo.
+- **AP-5:** Reperfusão acessível e contextualizada no caminho hemorrágico.
+- **AP-6:** peso de origem desconhecida é dado a corrigir; origem sempre registrada.
+- **AP-7:** só rótulos mudam; valores persistidos ficam.
+- **AP-8:** aviso permanente «Apoio à decisão clínica · decisão final do médico».
+- **AP-9:** PCR na ARQ-APOIO-02.
+- **AP-10:** estado derivado ≠ decisão médica registrada.
+
+**Implementado:** F1 (portão da trombólise e telas E/F), com as quatro invariantes do autor (decisão ≠ alerta; «prosseguir» ≠ compatível; decisão incompleta nunca completa por inferência; mudança de decisão é registro novo). **Pendente:** F2 (AP-4, AP-5, AP-6, unificação dos registros de «não prosseguir», textos de D, e a escolha para os julgamentos antigos do D-139-3 sem atestação: compatibilidade legada marcada `legado_sem_atestacao_completa` ou revalidação), F3 (aviso permanente) e ARQ-APOIO-02 (PCR). AC-13 e AC-15 A/D não são reabertos; AC-15 B/C voltam depois desta rodada, terminando em decisão médica registrada.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

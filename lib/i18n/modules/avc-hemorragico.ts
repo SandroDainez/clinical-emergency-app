@@ -540,9 +540,6 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
   "Os dois gatilhos que a fonte nomeia foram perguntados, e ao menos um ficou incerto. Sem eles não se conclui que não há indicação":
     "Los dos gatillos que la fuente nombra fueron preguntados, y al menos uno quedó incierto. Sin ellos no se concluye que no hay indicación",
   "Outros": "Otros",
-  "Nada mais bloqueia a trombólise": "Nada más bloquea la trombólisis",
-  "Nenhum bloqueio da trombólise registrado. O que está abaixo pede conduta, e não trava a reperfusão.":
-    "Ningún bloqueo de la trombólisis registrado. Lo que está abajo pide conducta, y no traba la reperfusión.",
   "NIHSS somado pelos itens": "NIHSS sumado por los ítems",
   "NIHSS informado diretamente": "NIHSS informado directamente",
   "Sem dados clínicos registrados": "Sin datos clínicos registrados",
@@ -620,9 +617,6 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
     "oclusión de vaso mediano o distal — M2 no dominante o codominante, M3, cerebral anterior o posterior",
   "? Ainda não dá para concluir": "? Aún no es posible concluir",
   "· Sem critério aplicável ainda": "· Sin criterio aplicable todavía",
-  "✓ Trombólise indicada": "✓ Trombólisis indicada",
-  "✕ A diretriz não recomenda": "✕ La guía no recomienda",
-  "✕ Reperfusão retida pela imagem": "✕ Reperfusión retenida por la imagen",
   "Corrigir antes": "Corregir antes",
   "Registrar coleta": "Registrar recolección",
   "Registrar exame": "Registrar examen",

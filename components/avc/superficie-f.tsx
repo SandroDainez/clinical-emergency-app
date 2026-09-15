@@ -20,14 +20,15 @@
  * se prova. Vivem em `avc/nucleo/apresentacao-f`, e esta tela apenas as lê.
  */
 import { useMemo, useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   ACAO_DE_TROMBOLISE,
-  CAMPO_DO_JULGAMENTO,
+  CAMPOS_DA_DECISAO_MEDICA,
   DECISAO_DE_PROSSEGUIR,
   DECISAO_DO_JULGAMENTO,
-  instanciaDoJulgamento,
+  ID_DA_DECISAO,
+  ROTULO_DA_DECISAO_MEDICA,
   CAMPO_AGENTE, SITUACAO_REGULATORIA_TNK,
   TROMBOLISE_IV,
   IVT_E_EVT_EM_PARALELO,
@@ -67,7 +68,8 @@ import { peso as leituraDoPeso } from "../../avc/nucleo/derivacoes";
 import { ESTADOS } from "../../design-system/estados-clinicos";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
-import { estadoDoPortaoIVT } from "../../avc/nucleo/portao-ivt";
+import { estadoDoPortaoIVT, type MotivoDoPortao } from "../../avc/nucleo/portao-ivt";
+import { faltaNaDecisao, type CriterioNoMomento, type DadosDaDecisaoMedica } from "../../avc/nucleo/decisao-medica";
 import { vereditoDaTrombectomia } from "../../avc/nucleo/veredito-da-trombectomia";
 import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
 import { instanciasDe, valorNaInstancia } from "../../avc/nucleo/instancia";
@@ -133,25 +135,26 @@ const SIMBOLO_DO_CRITERIO: Readonly<Record<string, string>> = {
 };
 
 const TITULO_DO_PORTAO: Readonly<Record<string, string>> = {
-  bloqueado_seguranca: "Contraindicação de segurança ativa",
-  bloqueado_corrigivel: "Há condição a corrigir antes",
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-1): a fonte é quem afirma incompatibilidade — ⛔ «o app proibiu». */
+  bloqueado_seguranca: "Alerta crítico — dados registrados incompatíveis com trombólise IV segundo a fonte",
+  bloqueado_corrigivel: "Há critérios a corrigir antes de prosseguir",
   /** ⚠️ ⛔ Ela ⛔ não diz *"PA corrigida"* ⛔ nem *"aguardando decisão"* (item 4). */
   afericao_incompleta: "Nova aferição incompleta — complete para reavaliar",
   aguardando_reavaliacao: "Correção registrada — falta a reavaliação",
-  nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
+  nao_recomendada: "Segundo a fonte, a trombólise IV não é recomendada neste cenário",
   /** ⚠️ D1: resposta **do aplicativo** — ⛔ nunca *"contraindicada"*; o motivo nomeia o critério. */
-  nao_sustentada: "Os critérios registrados não sustentam a trombólise",
+  nao_sustentada: "Critérios registrados não compatíveis com trombólise IV",
   /** ⚠️ D-PEND-23: "requer avaliação especializada / corrigir e reavaliar" — ⛔ execução retida, ⛔ avaliação preservada, ⛔ não é contraindicação. */
-  saida_diagnostica_pendente: "Requer avaliação especializada — corrigir e reavaliar: suspeita clínica de hemorragia subaracnóidea com TC sem sangue",
+  saida_diagnostica_pendente: "Requer avaliação especializada antes de prosseguir: suspeita de hemorragia subaracnóidea ativa",
   /** ⚠️ R3: incerteza relevante ⛔ não libera — ⛔ e ⛔ nenhum destes é contraindicação. */
   reconciliacao_pendente: "Resultados discordantes — reconcilie antes de decidir",
   resultado_pendente: "Exame pertinente ainda sem resultado",
-  julgamento_individual_pendente: "Situação que a fonte manda avaliar individualmente",
+  julgamento_individual_pendente: "Situação que a fonte manda avaliar individualmente — registrar a decisão médica",
   /** ⚠️ D-139-3, C7: ⛔ «individual» ⛔ nem «contraindicação» — benefício incerto, decisão clínica a registrar. */
-  decisao_clinica_pendente: "Benefício da trombólise incerto — requer decisão clínica registrada",
+  decisao_clinica_pendente: "Benefício da trombólise incerto — registrar a decisão médica",
   /** ⚠️ Conclusão do D-139-3: ⛔ «individual» (⛔ é o verbo da fonte) ⛔ nem «contraindicação». */
-  avaliacao_risco_beneficio_pendente: "Avaliação de risco e benefício obrigatória — requer decisão clínica registrada",
-  decisao_de_nao_prosseguir: "Decisão clínica registrada: não prosseguir com a trombólise",
+  avaliacao_risco_beneficio_pendente: "Avaliação de risco e benefício — registrar a decisão médica",
+  decisao_de_nao_prosseguir: "Decisão médica registrada: não prosseguir com a trombólise",
   informacao_incompleta: "Faltam dados para concluir",
   sem_criterios: "Nenhum critério da diretriz alcança este caso ainda",
   liberado: "",
@@ -173,11 +176,133 @@ function InfoDoCard({ id, texto, children }: { id: string; texto?: string; child
 }
 
 
-/** ⚠️ D-139-3: os dois gestos do julgamento registrado, na ordem da decisão. */
+/**
+ * ⚠️ D-139-3 ⛔ ARQ-APOIO-01 F1: os dois gestos da decisão médica, na ordem da decisão. ⚠️ Revisão a 375 px: os dois na
+ * mesma linha; no alerta crítico o gesto de prosseguir diz «após avaliação médica» (AP-1).
+ */
 const GESTOS_DO_JULGAMENTO = [
-  { opcao: DECISAO_DO_JULGAMENTO.prosseguir, sufixo: "prosseguir" },
-  { opcao: DECISAO_DO_JULGAMENTO.naoProsseguir, sufixo: "nao-prosseguir" },
+  { decisao: "prosseguir", sufixo: "prosseguir" },
+  { decisao: "nao_prosseguir", sufixo: "nao-prosseguir" },
 ] as const;
+
+/** ⚠️ ARQ-APOIO-01 F1 (AP-1): a categoria do motivo, escrita — ⛔ só cor. */
+const ROTULO_DA_CATEGORIA: Readonly<Record<string, string>> = {
+  informacao: "Informação",
+  alerta: "Alerta clínico",
+  dados_a_corrigir: "Dados a corrigir",
+};
+
+/**
+ * ⚠️⚠️ ARQ-APOIO-01 F1 · REGISTRAR A DECISÃO MÉDICA (autor, 2026-09-15; AP-1, AP-2, AP-3, AP-10).
+ *
+ * ⚠️ Escolher abre o registro; ⛔ nada é gravado sem médico responsável ⛔ e, sem sessão nominal, sem registro
+ * profissional (AP-3). Prosseguir num alerta crítico pede justificativa (AP-2). ⛔ Nenhum botão cinza: o que falta é
+ * escrito ao tocar «Registrar decisão». ⛔ A decisão ⛔ apaga o alerta que o sistema derivou (AP-10).
+ */
+function RegistroDeDecisaoMedica({
+  m,
+  alvo,
+  criterios,
+  nomeDaSessao,
+  onRegistrar,
+}: {
+  m: MotivoDoPortao;
+  alvo: string;
+  criterios: readonly CriterioNoMomento[];
+  nomeDaSessao?: string;
+  onRegistrar: (alvo: string, dados: DadosDaDecisaoMedica) => void;
+}) {
+  const e = useEstilosDoTema(criarEstilos);
+  const tr = useTr();
+  const corDoMarcador = useEstilosDoTema((tema) => ({ c: { color: tema.cores.textSecondary } })).c.color as string;
+  const [escolha, setEscolha] = useState<"prosseguir" | "nao_prosseguir" | undefined>(undefined);
+  const [valores, setValores] = useState<Readonly<Record<string, string>>>({});
+  const [falta, setFalta] = useState<readonly string[]>([]);
+  const sessaoNominal = (nomeDaSessao ?? "").trim() !== "";
+  const valor = (id: string) => valores[id] ?? (id === ID_DA_DECISAO.medico ? nomeDaSessao ?? "" : "");
+  const vigente = m.decisaoMedica;
+  const rotuloDoGesto = (decisao: "prosseguir" | "nao_prosseguir") =>
+    decisao === "nao_prosseguir" ? "Não prosseguir" : m.critico ? ROTULO_DA_DECISAO_MEDICA.prosseguir : "Prosseguir";
+
+  const registrar = () => {
+    if (escolha === undefined) return;
+    const dados: DadosDaDecisaoMedica = {
+      decisao: escolha,
+      justificativa: valor(ID_DA_DECISAO.justificativa),
+      medico: valor(ID_DA_DECISAO.medico),
+      registroProfissional: valor(ID_DA_DECISAO.registroProfissional),
+      identificacao: sessaoNominal ? "sessao_autenticada" : "atestacao",
+      criterios,
+    };
+    const faltando = faltaNaDecisao(dados, { critico: m.critico === true, sessaoNominal });
+    setFalta(faltando);
+    if (faltando.length > 0) return;
+    onRegistrar(alvo, dados);
+    setEscolha(undefined);
+    setValores({});
+  };
+
+  return (
+    <View style={e.julgamento} testID={`avc-f-decisao-${m.id}`}>
+      <Text style={e.portaoNivel}>{tr("Registrar decisão médica")}</Text>
+      {vigente !== undefined ? (
+        <Text style={e.portaoDado} testID={`avc-f-decisao-${m.id}-vigente`}>
+          {/** ⚠️ Invariante 3: decisão incompleta ⛔ aparece como registrada. */}
+          {vigente.completa ? tr("Decisão médica registrada") : tr("Decisão médica incompleta — falta")}:{" "}
+          {vigente.completa
+            ? tr(vigente.decisao === "prosseguir" ? ROTULO_DA_DECISAO_MEDICA.prosseguir : ROTULO_DA_DECISAO_MEDICA.naoProsseguir)
+            : vigente.falta.map((x) => tr(x)).join(" · ")}
+          {vigente.completa && vigente.medico ? ` · ${vigente.medico}` : ""}
+          {` · ${horaComData(vigente.horaRegistro)}`}
+        </Text>
+      ) : null}
+      <View style={e.julgamentoGestos}>
+        {GESTOS_DO_JULGAMENTO.map((g) => (
+          <Pressable
+            key={g.sufixo}
+            style={[e.portaoIr, escolha === g.decisao && e.decisaoEscolhida]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: escolha === g.decisao }}
+            testID={`avc-f-julgamento-${m.id}-${g.sufixo}`}
+            onPress={() => {
+              setEscolha(g.decisao);
+              setFalta([]);
+            }}
+          >
+            <Text style={e.portaoIrTexto}>{tr(rotuloDoGesto(g.decisao))}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {escolha !== undefined ? (
+        <View style={e.julgamento} testID={`avc-f-decisao-${m.id}-registro`}>
+          {CAMPOS_DA_DECISAO_MEDICA.map((c) =>
+            c.id === ID_DA_DECISAO.criteriosNoMomento || c.id === ID_DA_DECISAO.identificacao ? null : (
+              <TextInput
+                key={c.id}
+                style={e.decisaoCampo}
+                value={valor(c.id)}
+                onChangeText={(t) => setValores((v) => ({ ...v, [c.id]: t }))}
+                placeholder={tr(c.rotulo)}
+                placeholderTextColor={corDoMarcador}
+                accessibilityLabel={tr(c.rotulo)}
+                multiline={c.id === ID_DA_DECISAO.justificativa}
+                testID={`avc-f-decisao-${m.id}-${c.id}`}
+              />
+            )
+          )}
+          {falta.length > 0 ? (
+            <Text style={e.portaoFalta} testID={`avc-f-decisao-${m.id}-falta`}>
+              {tr("Falta")}: {falta.map((x) => tr(x)).join(" · ")}
+            </Text>
+          ) : null}
+          <Pressable style={e.portaoIr} accessibilityRole="button" testID={`avc-f-decisao-${m.id}-registrar`} onPress={registrar}>
+            <Text style={e.portaoIrTexto}>{tr("Registrar decisão")}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
+  );
+}
 
 /** ⚠️ D-PEND-22: número com vírgula decimal; `casas` fixa as casas (volume com 0,1 mL). */
 function decimal(n: number, casas?: number): string {
@@ -204,6 +329,10 @@ type Props = {
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onDesfazer: (campo: string) => void;
   onDecisaoGlobal: (motivo: string) => void;
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-3, AP-10): grava a decisão médica sobre um alerta, com autoria atestada ⛔ retrato. */
+  onRegistrarDecisaoMedica: (alvo: string, dados: DadosDaDecisaoMedica) => void;
+  /** ⚠️ O nome de exibição da sessão, quando nominal — preenche o médico responsável; ⛔ substitui a atestação. */
+  nomeDaSessao?: string;
 };
 
 export default function SuperficieF({
@@ -222,6 +351,8 @@ export default function SuperficieF({
   onHora,
   onDesfazer,
   onDecisaoGlobal,
+  onRegistrarDecisaoMedica,
+  nomeDaSessao,
 }: Props) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
@@ -300,6 +431,12 @@ export default function SuperficieF({
    * ⛔ e a regra clínica ⛔ envelheceria junto com o layout (**I6**).
    */
   const portao = useMemo(() => estadoDoPortaoIVT(estado, agora), [estado, agora]);
+  /** ⚠️ ARQ-APOIO-01 F1 (AP-3): o retrato dos critérios pendentes que acompanha cada decisão registrada. */
+  const criteriosNoMomento = useMemo<readonly CriterioNoMomento[]>(
+    () => portao.motivos.filter((m) => m.categoria !== "informacao").map((m) => ({ id: m.id, rotulo: m.rotulo, categoria: m.categoria, critico: m.critico === true })),
+    [portao]
+  );
+  const detalhesDasDecisoes = useMemo(() => new Map(portao.decisoesMedicas.map((d) => [d.fatoId, d])), [portao]);
 
   /**
    * ⚠️⚠️ O VEREDITO DA EVT — ⛔ **outro motor**, ⛔ e ⛔ não outro ramo do da IVT.
@@ -388,13 +525,13 @@ export default function SuperficieF({
               * `prova-avc-apresentacao-f` na primeira versão deste bloco.
               */}
             {veredito.tipo === "indicada"
-              ? tr("✓ Trombólise indicada")
+              ? tr("✓ Critérios registrados compatíveis com trombólise IV")
               : veredito.tipo === "retida"
-                ? tr("✕ Reperfusão retida pela imagem")
+                ? tr("✕ Imagem com hemorragia ou resultados divergentes")
                 : veredito.tipo === "nao_recomendada"
-                  ? tr("✕ A diretriz não recomenda")
+                  ? tr("✕ Segundo a fonte, não recomendada neste cenário")
                   : veredito.tipo === "nao_sustentada"
-                    ? tr("✕ Os critérios não sustentam a trombólise")
+                    ? tr("✕ Critérios registrados não compatíveis com trombólise IV")
                     : veredito.tipo === "incompleta"
                       ? tr("? Ainda não dá para concluir")
                       : tr("· Sem critério aplicável ainda")}
@@ -617,7 +754,7 @@ export default function SuperficieF({
                 || vereditoEvt.classe.motivo === "divergente"
                 ? ESTADOS.impede.simbolo
                 : ESTADOS.verificar.simbolo}{" "}
-              {tr("Reperfusão retida pela imagem")}
+              {tr("Imagem com hemorragia ou resultados divergentes")}
             </Text>
             <Text style={e.portaoDado}>{tr(vereditoEvt.classe.curto)}</Text>
             <Text style={e.portaoFonte}>{vereditoEvt.classe.fonte}</Text>
@@ -1046,6 +1183,10 @@ export default function SuperficieF({
                 <Text style={e.portaoNivel}>
                   {i === 0 ? tr("Motivo principal") : tr("Também ativo")}
                 </Text>
+                {/** ⚠️ ARQ-APOIO-01 F1 (AP-1): a categoria escrita — alerta crítico, alerta clínico, dados a corrigir. */}
+                <Text style={e.portaoNivel} testID={`avc-f-portao-categoria-${m.id}`}>
+                  {m.critico ? tr("Alerta crítico") : tr(ROTULO_DA_CATEGORIA[m.categoria])}
+                </Text>
                 <Text style={e.portaoRotulo}>{tr(m.rotulo)}</Text>
                 {m.dado ? (
                   <Text style={e.portaoDado} testID={`avc-f-portao-dado-${m.id}`}>
@@ -1071,25 +1212,18 @@ export default function SuperficieF({
                     <Text style={e.portaoIrTexto}>{tr("Resolver")} ›</Text>
                   </Pressable>
                 ) : null}
-                {/** ⚠️ D-139-3: o julgamento registrado no próprio motivo — mudar a decisão é novo registro, ⛔ sobrescrita. */}
-                {m.julgamento ? (
-                  <View style={e.julgamento}>
-                    <Text style={e.portaoNivel}>{tr("Registrar a decisão clínica")}</Text>
-                    {/** ⚠️ Revisão a 375 px: os dois gestos da mesma decisão lado a lado, ⛔ um deles na linha do rótulo. */}
-                    <View style={e.julgamentoGestos}>
-                      {GESTOS_DO_JULGAMENTO.map((g) => (
-                        <Pressable
-                          key={g.sufixo}
-                          style={e.portaoIr}
-                          accessibilityRole="button"
-                          testID={`avc-f-julgamento-${m.id}-${g.sufixo}`}
-                          onPress={() => onEscolherNaInstancia(instanciaDoJulgamento(m.julgamento as string), CAMPO_DO_JULGAMENTO.id, g.opcao)}
-                        >
-                          <Text style={e.portaoIrTexto}>{tr(g.opcao)}</Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
+                {/**
+                  * ⚠️ D-139-3 ⛔ ARQ-APOIO-01 F1 (AP-1, AP-2, AP-3, AP-10): a decisão médica registrada no próprio motivo, em todo
+                  * alerta clínico. Mudar a decisão é novo registro, ⛔ sobrescrita.
+                  */}
+                {m.categoria === "alerta" ? (
+                  <RegistroDeDecisaoMedica
+                    m={m}
+                    alvo={m.julgamento ?? m.id}
+                    criterios={criteriosNoMomento}
+                    nomeDaSessao={nomeDaSessao}
+                    onRegistrar={onRegistrarDecisaoMedica}
+                  />
                 ) : null}
               </View>
             ))}
@@ -1110,14 +1244,41 @@ export default function SuperficieF({
               onPress={() => alternar("julgamentos")}
             >
               <Text style={e.portaoIrTexto}>
-                {tr("Decisões clínicas registradas")} ({julgamentos.length}) {abertos.includes("julgamentos") ? "▾" : "›"}
+                {tr("Decisões médicas registradas")} ({julgamentos.length}) {abertos.includes("julgamentos") ? "▾" : "›"}
               </Text>
             </Pressable>
             {abertos.includes("julgamentos")
               ? julgamentos.map((j, i) => (
                   <View key={j.fatoId} style={e.portaoMotivo} testID={`avc-f-julgamentos-${i}`}>
-                    <Text style={e.portaoRotulo}>{tr(j.rotuloDoAlvo)}</Text>
-                    <Text style={e.portaoDado}>{tr(j.decisao)}</Text>
+                    <Text style={e.portaoRotulo}>{tr(detalhesDasDecisoes.get(j.fatoId)?.rotuloDoAlvo ?? j.rotuloDoAlvo)}</Text>
+                    <Text style={e.portaoDado}>
+                      {tr(j.decisao === DECISAO_DO_JULGAMENTO.prosseguir ? ROTULO_DA_DECISAO_MEDICA.prosseguir : ROTULO_DA_DECISAO_MEDICA.naoProsseguir)}
+                    </Text>
+                    {detalhesDasDecisoes.get(j.fatoId)?.justificativa ? (
+                      <Text style={e.portaoFalta}>{tr("Justificativa")}: {detalhesDasDecisoes.get(j.fatoId)?.justificativa}</Text>
+                    ) : null}
+                    <Text style={e.portaoFonte}>
+                      {tr("Médico responsável")}: {detalhesDasDecisoes.get(j.fatoId)?.medico ?? tr("não atestado")}
+                      {detalhesDasDecisoes.get(j.fatoId)?.registroProfissional ? ` · ${detalhesDasDecisoes.get(j.fatoId)?.registroProfissional}` : ""}
+                    </Text>
+                    {(detalhesDasDecisoes.get(j.fatoId)?.criteriosNoMomento.length ?? 0) > 0 ? (
+                      <Text style={e.portaoFonte}>
+                        {tr("Critérios pendentes no momento")}: {detalhesDasDecisoes.get(j.fatoId)?.criteriosNoMomento.map((c) => tr(c.rotulo)).join(" · ")}
+                      </Text>
+                    ) : null}
+                    <Text style={e.portaoFonte}>
+                      {tr("Origem da identificação do médico")}:{" "}
+                      {detalhesDasDecisoes.get(j.fatoId)?.identificacao === "sessao_autenticada"
+                        ? tr("Sessão autenticada")
+                        : detalhesDasDecisoes.get(j.fatoId)?.identificacao === "atestacao"
+                          ? tr("Atestação")
+                          : tr("não atestado")}
+                    </Text>
+                    <Text style={e.portaoNivel}>
+                      {detalhesDasDecisoes.get(j.fatoId)?.completa
+                        ? tr("decisão completa")
+                        : `${tr("Decisão médica incompleta — falta")}: ${(detalhesDasDecisoes.get(j.fatoId)?.falta ?? []).map((x) => tr(x)).join(" · ")}`}
+                    </Text>
                     <Text style={e.portaoFonte}>{horaComData(j.horaRegistro)}</Text>
                     <Text style={e.portaoFonte}>{textoDeAutoria(j.fatoId)}</Text>
                     <Text style={e.portaoNivel}>{j.vigente ? tr("decisão vigente") : tr("registro anterior")}</Text>
@@ -1808,6 +1969,18 @@ const criarEstilos = (tema: Tema) =>
     portaoIrTexto: { ...PAPEL.textoPrincipal, color: tema.cores.primary, fontWeight: "700" },
     julgamento: { gap: ESPACO.xs, marginTop: ESPACO.xs },
     julgamentoGestos: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: ESPACO.xs },
+    /** ⚠️ ARQ-APOIO-01 F1: o registro da decisão médica — tokens do tema, ⛔ cor fixa. */
+    decisaoCampo: {
+      ...PAPEL.textoPrincipal,
+      color: tema.cores.text,
+      minHeight: TOQUE.minimo,
+      paddingHorizontal: ESPACO.sm,
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: tema.cores.controlBorder,
+      backgroundColor: tema.cores.controlSurface,
+    },
+    decisaoEscolhida: { borderColor: tema.cores.primary },
     /** ⚠️ ⛔ Bloqueado ⛔ e **legível** — ⛔ cinza sobre cinza esconde a razão. */
     opcaoBloqueada: { borderStyle: "dashed", opacity: 0.6 },
     /** ⚠️ ⛔ A divergência é **registro**, ⛔ e ⛔ não repreensão: ⛔ tom de aviso, ⛔ e ⛔ nada de vermelho de erro. */

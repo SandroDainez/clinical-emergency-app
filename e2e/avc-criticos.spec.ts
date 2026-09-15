@@ -85,12 +85,12 @@ test.describe("AVC · críticos — o gesto real", () => {
     await candidatoCompleto(page);
     await aba(page, "reperfusao");
     await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toBeVisible();
-    await expect(page.getByTestId("avc-f-veredito-tipo")).toContainText(/Trombólise indicada/);
+    await expect(page.getByTestId("avc-f-veredito-tipo")).toContainText(/Critérios registrados compatíveis com trombólise IV/);
 
     await page.getByTestId("avc-f-agente-Tenecteplase").click();
     await expect(page.getByTestId("avc-campo-ivt_indicacao_confirmada")).toBeVisible();
     await expect(page.getByTestId("avc-f-portao-estado-nao_recomendada")).toHaveCount(0);
-    await expect(page.getByTestId("avc-f-veredito-tipo")).toContainText(/Trombólise indicada/);
+    await expect(page.getByTestId("avc-f-veredito-tipo")).toContainText(/Critérios registrados compatíveis com trombólise IV/);
     /** ⚠️ ⛔ E o alerta posológico de 0,4 mg/kg ⛔ continua visível para quem considera TNK. */
     await expect(page.getByTestId("avc-superficie-f-conteudo")).toContainText(/0,4 mg\/kg/);
   });

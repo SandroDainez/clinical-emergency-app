@@ -165,6 +165,7 @@ const CURTO: Readonly<Record<string, { nome: string; icone: NomeDeIcone }>> = {
 import { ACAO } from "../../avc/conteudo/superficie-e";
 import { corrigirNaInstancia, registrarComInstancia, campoDoModulo } from "../../avc/conteudo/campos";
 import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../../avc/nucleo/limpar-auditado";
+import { registrarDecisaoMedica } from "../../avc/nucleo/decisao-medica";
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
@@ -2611,6 +2612,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onHora={registrarHora}
             onDesfazer={desfazer}
             onDecisaoGlobal={(motivo) => setEstado((e) => registrarDecisaoGlobalDeNaoReperfundir(e, motivo, relogio.agora(), relogio))}
+            onRegistrarDecisaoMedica={(alvo, dados) => setEstado((e) => registrarDecisaoMedica(e, alvo, dados, relogio))}
+            nomeDaSessao={atendimento.nomeDaSessao}
           />
         ) : atual.id === "destino" ? (
           <SuperficieG

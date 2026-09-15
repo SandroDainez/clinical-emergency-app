@@ -70,15 +70,16 @@ const TITULO_DO_CICLO: Readonly<Record<string, string>> = {
   bloqueado_corrigivel: "Problema detectado — ação corretiva ainda não registrada",
   aguardando_reavaliacao: "Ação registrada — aguardando a reavaliação",
   afericao_incompleta: "Nova aferição incompleta — complete para reavaliar",
-  bloqueado_seguranca: "Há contraindicação de segurança, além do que se corrige aqui",
-  nao_recomendada: "A diretriz não recomenda a trombólise neste caso",
-  nao_sustentada: "Os critérios registrados não sustentam a trombólise",
+  bloqueado_seguranca: "Há alerta crítico de segurança, além do que se corrige aqui",
+  nao_recomendada: "Segundo a fonte, a trombólise IV não é recomendada neste cenário",
+  nao_sustentada: "Critérios registrados não compatíveis com trombólise IV",
   reconciliacao_pendente: "Nada mais a corrigir aqui",
   resultado_pendente: "Nada mais a corrigir aqui",
   julgamento_individual_pendente: "Nada mais a corrigir aqui",
   decisao_clinica_pendente: "Nada mais a corrigir aqui",
   avaliacao_risco_beneficio_pendente: "Nada mais a corrigir aqui",
-  decisao_de_nao_prosseguir: "Nada mais a corrigir aqui",
+  /** ⚠️ ARQ-APOIO-01 F1: E ⛔ F leem a decisão do mesmo jeito. */
+  decisao_de_nao_prosseguir: "Decisão médica registrada: não prosseguir com a trombólise",
   informacao_incompleta: "Nada mais a corrigir aqui",
   sem_criterios: "Nada mais a corrigir aqui",
   liberado: "Nada mais a corrigir aqui",
@@ -97,7 +98,7 @@ const SIMBOLO_DO_CICLO: Readonly<Record<string, EstadoClinico>> = {
   julgamento_individual_pendente: "favoravel",
   decisao_clinica_pendente: "favoravel",
   avaliacao_risco_beneficio_pendente: "favoravel",
-  decisao_de_nao_prosseguir: "favoravel",
+  decisao_de_nao_prosseguir: "impede",
   informacao_incompleta: "favoravel",
   sem_criterios: "favoravel",
   liberado: "favoravel",
@@ -163,8 +164,8 @@ export default function SuperficieE({
         <Text style={e.vazio} testID="avc-e-sem-bloqueio">
           {tr(
             enviadosParaCa.length === 0
-              ? "Nenhum bloqueio corrigível registrado. Nada nesta tela espera por ação."
-              : "Nenhum bloqueio da trombólise registrado. O que está abaixo pede conduta, e não trava a reperfusão."
+              ? "Nenhuma correção pendente registrada. Nada nesta tela espera por ação."
+              : "Nenhuma correção pendente para a trombólise. O que está abaixo pede conduta."
           )}
         </Text>
       ) : null}
@@ -230,7 +231,7 @@ export default function SuperficieE({
           {tr(
             (TITULO_DO_CICLO[portao.estado] ?? "") === "Nada mais a corrigir aqui" &&
               enviadosParaCa.length > 0
-              ? "Nada mais bloqueia a trombólise"
+              ? "Nenhum alerta pendente nesta tela para a trombólise"
               : TITULO_DO_CICLO[portao.estado] ?? ""
           )}
         </Text>
@@ -286,7 +287,7 @@ export default function SuperficieE({
               * tela. Sem ela, registrar a ação pareceria fechar o bloqueio.
               */}
             <Text style={e.resolve} testID={`avc-e-resolve-${bloqueio.id}`}>
-              {tr("O que faz este bloqueio cair")}: {tr(bloqueio.resolvePor)} —{" "}
+              {tr("O que resolve este critério")}: {tr(bloqueio.resolvePor)} —{" "}
               {tr("registrada em Entrada e estabilização")}
             </Text>
 
