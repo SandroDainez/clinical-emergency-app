@@ -1227,7 +1227,7 @@ export default function SuperficieF({
                 onDesfazer={(c) => onDesfazerNaInstancia(inst, c)}
               />
             ))}
-            {/** ⚠️ AC-13: cada situação registrada, com horário ⛔ autoria — ⛔ o estado antigo ⛔ some. */}
+            {/** ⚠️ AC-13: cada situação registrada, com horário e autoria — o estado antigo não some. */}
             <TransicoesDaAcao
               estado={estado}
               instancia={inst}

@@ -2,19 +2,19 @@
  * TRILHA DAS TRANSIÇÕES DE UMA AÇÃO — AC-13 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8, e seção
  * "AC-13 reaberto", §2, §5 e §9).
  *
- * ⚠️ Leitura de AUDITORIA, ⛔ derivação clínica: diz o que foi registrado, em que ordem, quando ⛔ por qual fato (a
- * autoria vem do fato, AC-40). ⛔ Nenhum estado antigo some quando um novo é registrado.
+ * ⚠️ Leitura de AUDITORIA, não derivação clínica: diz o que foi registrado, em que ordem, quando e por qual fato (a
+ * autoria vem do fato, AC-40). Nenhum estado antigo some quando um novo é registrado.
  *
  * ⚠️ Desfazer e corrigir são linhas próprias da trilha (AC-13 reaberto, item 2):
- *  · «Limpar» é correção SEM motivo: vira linha `limpeza`. O registro limpo ⛔ perde a validade.
+ *  · «Limpar» é correção SEM motivo: vira linha `limpeza`. O registro limpo não perde a validade.
  *  · A correção explícita COM motivo vira linha `correcao_por_engano` e invalida só o registro que ela aponta.
- * ⚠️ A situação vigente vem do valor atual reconstruído da instância, ⛔ da última linha listada: depois de uma
+ * ⚠️ A situação vigente vem do valor atual reconstruído da instância, e não da última linha listada: depois de uma
  * limpeza ou de uma correção por engano, nenhuma linha é vigente.
  * ⚠️ Item 5: o registro que contraria a ordem causal decidida fica marcado `foraDaOrdemCausal`, comparado com os
  * registros válidos anteriores a ele; `registradaComoCorrecao` diz que entrou como correção explícita.
  *
- * ⛔ Mora fora de `derivacoes-e.ts` de propósito: a leitura de E ⛔ pode usar a ordem ⛔ o horário de registro para
- * inferir resposta (prova da Superfície E, §6). Aqui o horário só é MOSTRADO — ⛔ nada é concluído dele.
+ * Mora fora de `derivacoes-e.ts` de propósito: a leitura de E não pode usar a ordem nem o horário de registro para
+ * inferir resposta (prova da Superfície E, §6). Aqui o horário só é MOSTRADO — nada é concluído dele.
  */
 import type { EstadoAvc } from "./estado";
 import type { FatoRegistrado } from "./tipos";
@@ -26,7 +26,7 @@ import {
   type EstadoDaAcaoRegistrado,
 } from "../conteudo/superficie-e";
 
-/** ⚠️ Correção com motivo invalida o fato corrigido; correção sem motivo (o «Limpar») ⛔ invalida. */
+/** ⚠️ Correção com motivo invalida o fato corrigido; correção sem motivo (o «Limpar») não invalida. */
 export function ehCorrecaoComMotivo(f: FatoRegistrado): boolean {
   return f.tipo === "correcao" && f.corrigeFatoId !== undefined && typeof f.motivo === "string" && f.motivo.trim().length > 0;
 }
@@ -46,7 +46,7 @@ export const CAMPOS_DE_SITUACAO_DA_RODADA: ReadonlySet<string> = new Set(["ivt_e
 /**
  * ⚠️ AC-13 reaberto, item 6: a mesma transição idêntica, na mesma instância, sem mudança de contexto, é ignorada também
  * no núcleo. Idêntica = mesmo valor e mesmo horário clínico do último fato do campo na instância, sendo esse último
- * fato um registro. Marcar, limpar ou corrigir, e marcar de novo, ⛔ é duplicação: o último fato é a correção.
+ * fato um registro. Marcar, limpar ou corrigir, e marcar de novo, não é duplicação: o último fato é a correção.
  */
 export function repeteATransicaoAnterior(
   estado: EstadoAvc,
@@ -65,7 +65,7 @@ export type TipoDaLinhaDaTrilha = "registro" | "limpeza" | "correcao_por_engano"
 export type TransicaoDaAcao = {
   readonly fatoId: string;
   readonly tipo: TipoDaLinhaDaTrilha;
-  /** ⚠️ «não sei» é informação ausente, ⛔ estado: `estado` fica `undefined`. Limpeza e correção ⛔ trazem informação. */
+  /** ⚠️ «não sei» é informação ausente, não estado: `estado` fica `undefined`. Limpeza e correção não trazem informação. */
   readonly informacao: "registrado" | "nao_sei" | "nenhuma";
   readonly estado?: EstadoDaAcaoRegistrado;
   readonly rotuloGravado: string;
@@ -77,7 +77,7 @@ export type TransicaoDaAcao = {
   /** ⚠️ Limpeza e correção apontam para o fato que corrigem. */
   readonly corrigeFatoId?: string;
   readonly motivo?: string;
-  /** ⚠️ O registro recebeu correção explícita com motivo: continua na trilha, ⛔ vale. */
+  /** ⚠️ O registro recebeu correção explícita com motivo: continua na trilha, mas não vale. */
   readonly invalidadaPorCorrecao: boolean;
   /** ⚠️ Item 5: o estado contraria a ordem causal decidida, diante dos registros válidos anteriores. */
   readonly foraDaOrdemCausal: boolean;

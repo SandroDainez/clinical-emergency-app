@@ -586,18 +586,18 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
       (expo(e)?.estado === "exposta") === EXPOE[id] && DF?.administracoesRegistradas?.(e) === (EXPOE[id] ? 1 : 0), `⛔ ${JSON.stringify(expo(e))}`);
   }
   const preparo = ivtCom("Indicada", "Decidida", "Prescrita", "Preparada").e;
-  conf("⚠️ AC-13 · «Prescrita» ⛔ «Preparada» ⛔ contam como exposição — antes do início, com o último estado nomeado",
+  conf("⚠️ AC-13 · «Prescrita» e «Preparada» não contam como exposição — antes do início, com o último estado nomeado",
     expo(preparo)?.estado === "antes_do_inicio" && expo(preparo)?.ultimo === "preparado" && DF?.administracoesRegistradas?.(preparo) === 0
       && expo(ivtCom("Prescrita").e)?.estado === "antes_do_inicio", `⛔ ${JSON.stringify(expo(preparo))}`);
   const interrompida = ivtCom("Preparada", "Interrompida").e;
-  conf("⚠️ AC-13 · «Interrompida» conta como exposição (fase interrompida), ⛔ depois do preparo",
+  conf("⚠️ AC-13 · «Interrompida» conta como exposição (fase interrompida), mesmo depois do preparo",
     expo(interrompida)?.estado === "exposta" && expo(interrompida)?.fase === "interrompida", `⛔ ${JSON.stringify(expo(interrompida))}`);
   const cancelada = ivtCom("Prescrita", "Cancelada").e;
-  conf("⚠️ AC-13 · «Cancelada» ⛔ conta: cancelada antes do início; interrompido ≠ cancelado",
+  conf("⚠️ AC-13 · «Cancelada» não conta: cancelada antes do início; interrompido ≠ cancelado",
     expo(cancelada)?.estado === "cancelada_antes_do_inicio" && expo(interrompida)?.estado !== expo(cancelada)?.estado, `⛔ ${JSON.stringify(expo(cancelada))}`);
-  conf("… estado posterior sem exposição ⛔ apaga a exposição anterior (Iniciada → Prescrita continua exposta)",
+  conf("… estado posterior sem exposição não apaga a exposição anterior (Iniciada → Prescrita continua exposta)",
     expo(ivtCom("Iniciada", "Prescrita").e)?.estado === "exposta", `⛔ ${JSON.stringify(expo(ivtCom("Iniciada", "Prescrita").e))}`);
-  conf("⚠️ AC-13 · «não sei» sozinho ⛔ vira «sem exposição» ⛔ nem exposição: situação desconhecida; depois de «Iniciada», a exposição fica",
+  conf("⚠️ AC-13 · «não sei» sozinho não vira «sem exposição» nem exposição: situação desconhecida; depois de «Iniciada», a exposição fica",
     expo(ivtCom("nao_sei").e)?.estado === "situacao_desconhecida" && expo(ivtCom("Prescrita", "nao_sei").e)?.estado === "situacao_desconhecida"
       && expo(ivtCom("Iniciada", "nao_sei").e)?.estado === "exposta",
     `⛔ ${JSON.stringify([expo(ivtCom("nao_sei").e), expo(ivtCom("Prescrita", "nao_sei").e)])}`);
@@ -656,22 +656,22 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
   const rec = LOGa?.reconstruirEstado?.(JSON.parse(JSON.stringify(eventos)));
   const retrato = (e) => JSON.stringify([DF?.exposicoesPorInstancia?.(e), TA?.transicoesDoEstadoDaAcao?.(e, "trombolise_iv_1", "ivt_estado"),
     TA?.transicoesDoEstadoDaAcao?.(e, "trombolise_iv_2", "ivt_estado")]);
-  conf("⚠️ AC-13 · persistência e retomada: exposição ⛔ trilhas (legado, preparo ⛔ «não sei») voltam iguais do log",
+  conf("⚠️ AC-13 · persistência e retomada: exposição e trilhas (legado, preparo e «não sei») voltam iguais do log",
     rec !== undefined && retrato(rec) === retrato(est) && DF?.exposicoesPorInstancia?.(rec)?.[0]?.estado === "exposta"
       && DF?.exposicoesPorInstancia?.(rec)?.[1]?.estado === "situacao_desconhecida",
     `⛔ ${rec && JSON.stringify(DF?.exposicoesPorInstancia?.(rec))}`);
 
-  /* Não regressão: caminho hemorrágico ⛔ plano pós-trombólise */
+  /* Não regressão: caminho hemorrágico e plano pós-trombólise */
   const emCurso = ivtCom("Iniciada").e;
   const interrompidaNoCaminho = CH?.registrarInterrupcaoDaInfusao?.(emCurso, AGORA, rel);
-  conf("AC-13 · caminho hemorrágico ⛔ regride: iniciada = em curso; a interrupção registrada = interrompida (exposição preservada)",
+  conf("AC-13 · caminho hemorrágico não regride: iniciada = em curso; a interrupção registrada = interrompida (exposição preservada)",
     CH?.caminhoHemorragico?.(emCurso)?.infusao === "em_curso" && CH?.caminhoHemorragico?.(interrompidaNoCaminho)?.infusao === "interrompida"
       && expo(interrompidaNoCaminho)?.estado === "exposta",
     `⛔ ${JSON.stringify([CH?.caminhoHemorragico?.(emCurso)?.infusao, interrompidaNoCaminho && CH?.caminhoHemorragico?.(interrompidaNoCaminho)?.infusao])}`);
-  conf("… administrada/concluída ⛔ legado «Realizada» = concluída; prescrita = sem trombólise",
+  conf("… administrada/concluída e legado «Realizada» = concluída; prescrita = sem trombólise",
     CH?.caminhoHemorragico?.(ivtCom("Administrada/concluída").e)?.infusao === "concluida" && CH?.caminhoHemorragico?.(legado)?.infusao === "concluida"
       && CH?.caminhoHemorragico?.(ivtCom("Prescrita").e)?.infusao === "sem_trombolise", "⛔");
-  conf("AC-13 · plano pós-trombólise ⛔ regride: exposta com administrada, interrompida ⛔ legado; ⛔ com prescrita, preparada ⛔ cancelada",
+  conf("AC-13 · plano pós-trombólise não regride: exposta com administrada, interrompida e legado; não com prescrita, preparada e cancelada",
     PL?.desfechosNegativos?.(ivtCom("Administrada/concluída").e)?.ivtExposta === true && PL?.desfechosNegativos?.(interrompida)?.ivtExposta === true
       && PL?.desfechosNegativos?.(legado)?.ivtExposta === true && PL?.desfechosNegativos?.(preparo)?.ivtExposta === false
       && PL?.desfechosNegativos?.(cancelada)?.ivtExposta === false, "⛔");

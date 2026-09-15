@@ -222,7 +222,7 @@ async function trombolisePorEstados(page: Page, ...rotulos: string[]) {
 }
 
 test.describe("AVC · 19ª rodada · AC-13 · estados da ação", () => {
-  test("as 8 situações ⛔ «Não sei» aparecem como opções; ⛔ «Realizada»", async ({ page }) => {
+  test("as 8 situações e «Não sei» aparecem como opções; «Realizada» não aparece", async ({ page }) => {
     await trombolisePorEstados(page);
     for (const r of ["Indicada", "Decidida", "Prescrita", "Preparada", "Iniciada", "Administrada/concluída", "Interrompida", "Cancelada", "nao_sei"]) {
       await expect(page.getByTestId(`avc-opcao-ivt_estado-${r}`)).toBeVisible();
@@ -230,14 +230,14 @@ test.describe("AVC · 19ª rodada · AC-13 · estados da ação", () => {
     await expect(page.getByTestId("avc-opcao-ivt_estado-Realizada")).toHaveCount(0);
   });
 
-  test("«Prescrita» → «Preparada» ⛔ é exposição: o Destino ⛔ mostra conduta de trombólise", async ({ page }) => {
+  test("«Prescrita» → «Preparada» não é exposição: o Destino não mostra conduta de trombólise", async ({ page }) => {
     await trombolisePorEstados(page, "Prescrita", "Preparada");
     await page.getByTestId("avc-aba-destino").click();
     await expect(page.getByTestId("avc-superficie-g-conteudo")).toBeVisible();
     await expect(page.getByTestId("avc-g-conduta")).toHaveCount(0);
   });
 
-  test("«Preparada» → «Interrompida» é exposição; a trilha mostra as duas transições com horário ⛔ autoria", async ({ page }) => {
+  test("«Preparada» → «Interrompida» é exposição; a trilha mostra as duas transições com horário e autoria", async ({ page }) => {
     await trombolisePorEstados(page, "Preparada", "Interrompida");
     /** ⚠️ AC-13 reaberto, item 5: «Interrompida» sem «Iniciada» contraria a ordem decidida — pede confirmação e entra como correção. */
     await page.getByTestId("avc-confirmar-ordem-corrigir").click();

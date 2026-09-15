@@ -1075,9 +1075,9 @@ export type Exposicao =
   /** ⚠️ Instância aberta ⛔ sem situação registrada — ⛔ formulário, ⛔ não evento. */
   | { readonly estado: "registro_em_aberto"; readonly instancia: string }
   | { readonly estado: "cancelada_antes_do_inicio"; readonly instancia: string }
-  /** ⚠️ AC-13: indicada, decidida, prescrita ⛔ preparada — ⛔ exposição; o último estado fica nomeado. */
+  /** ⚠️ AC-13: indicada, decidida, prescrita e preparada — não é exposição; o último estado fica nomeado. */
   | { readonly estado: "antes_do_inicio"; readonly instancia: string; readonly ultimo: EstadoDaTrombolise }
-  /** ⚠️ AC-13: «não sei» ⛔ nenhuma exposição antes — ⛔ vira «sem exposição» ⛔ nem exposição. */
+  /** ⚠️ AC-13: «não sei» sem nenhuma exposição antes — não vira «sem exposição» nem exposição. */
   | { readonly estado: "situacao_desconhecida"; readonly instancia: string }
   | {
       readonly estado: "exposta";
@@ -1091,8 +1091,8 @@ export type Exposicao =
     };
 
 /**
- * ⚠️ AC-13: a fase que os consumidores já leem (plano até 48 h, caminho hemorrágico, síntese) — ⛔ renomeada, para
- * ⛔ regredir. administrado/concluído (⛔ o legado «Realizada») = `realizada`.
+ * ⚠️ AC-13: a fase que os consumidores já leem (plano até 48 h, caminho hemorrágico, síntese) — não renomeada, para
+ * não regredir. administrado/concluído (e o legado «Realizada») = `realizada`.
  */
 const FASE_DO_ESTADO: Readonly<Partial<Record<EstadoDaTrombolise, FaseDaExposicao>>> = {
   iniciado: "iniciada",
@@ -1105,7 +1105,7 @@ export function exposicaoDaInstancia(estado: EstadoAvc, instancia: string): Expo
   const doCampo = fatosDaInstancia(estado, instancia).filter((f) => f.campo === "ivt_estado");
   /**
    * ⚠️ AC-13 reaberto, item 2: o registro corrigido por engano (correção COM motivo) deixa de valer. O «Limpar»
-   * (correção sem motivo) ⛔ invalida nada: a exposição já registrada continua.
+   * (correção sem motivo) não invalida nada: a exposição já registrada continua.
    */
   const invalidados = idsInvalidadosPorCorrecao(doCampo);
   const registros = doCampo

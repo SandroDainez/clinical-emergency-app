@@ -2,19 +2,19 @@
  * TRILHA DAS TRANSIÇÕES DE UMA AÇÃO — AC-13 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8, e seção
  * "AC-13 reaberto", §2 e §9).
  *
- * ⚠️ Cada situação registrada fica visível, na ordem, com o horário ⛔ a autoria do fato (AC-40). ⛔ Nenhum estado
- * antigo some quando um novo é registrado; «não sei» aparece como informação ausente, ⛔ como estado. O registro
- * antigo «Realizada» é lido como administrada/concluída ⛔ e marcado como tal.
+ * ⚠️ Cada situação registrada fica visível, na ordem, com o horário e a autoria do fato (AC-40). Nenhum estado
+ * antigo some quando um novo é registrado; «não sei» aparece como informação ausente, não como estado. O registro
+ * antigo «Realizada» é lido como administrada/concluída e marcado como tal.
  *
- * ⚠️ «Limpar» ⛔ a correção por engano aparecem como linhas próprias. O registro corrigido por engano fica na trilha,
+ * ⚠️ «Limpar» e a correção por engano aparecem como linhas próprias. O registro corrigido por engano fica na trilha,
  * marcado como invalidado. A correção se pede aqui, registro a registro, com confirmação, quando a superfície oferece
- * o gesto: nesta rodada só a trombólise (Correções ⛔ muda, AC-13 reaberto §9).
+ * o gesto: nesta rodada só a trombólise (Correções não muda, AC-13 reaberto §9).
  *
  * AC-13 reaberto, item 3: cada linha separa o horário clínico («Horário clínico: …», «desconhecido» ou «não
  * informado») do horário do registro («Registrado às …»); um nunca preenche o outro. Na trombólise, a transição que
  * aceita horário (`aceitaGestoDeHorarioClinico`) oferece «Informar horário» e «Horário desconhecido».
  *
- * ⛔ Esta camada só DESENHA: a trilha vem de `transicoesDoEstadoDaAcao` (`avc/nucleo/transicoes-da-acao.ts`).
+ * Esta camada só DESENHA: a trilha vem de `transicoesDoEstadoDaAcao` (`avc/nucleo/transicoes-da-acao.ts`).
  */
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -52,7 +52,7 @@ export function TransicoesDaAcao({
   estado: EstadoAvc;
   instancia: string;
   campo: string;
-  /** ⚠️ Sem ele, a trilha só é lida: ⛔ oferece correção. */
+  /** ⚠️ Sem ele, a trilha só é lida: não oferece correção. */
   onCorrigirPorEngano?: (fatoId: string) => void;
   /** AC-13 reaberto, item 3: o campo que responde o horário clínico da transição; sem ele, a trilha não oferece o gesto. */
   campoDoHorario?: string;

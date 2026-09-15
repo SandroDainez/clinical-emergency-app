@@ -144,7 +144,7 @@ const certeza = (e) => tenta(() => DF.certezaDaExposicaoAoTrombolitico(e));
     conf(`1b · ${nome} → ${esperado}`, obtido === esperado, `⛔ ${J(obtido)}`);
   }
   const x = tenta(() => DF.exposicaoAoTrombolitico(atendimento(["Cancelada"], ["nao_sei"])));
-  conf("1b · a exposição detalhada do atendimento segue a agregação: cancelada ⛔ não esconde a «não sei»",
+  conf("1b · a exposição detalhada do atendimento segue a agregação: cancelada não esconde a «não sei»",
     x && x.estado === "situacao_desconhecida", `⛔ ${J(x)}`);
 }
 
@@ -186,10 +186,10 @@ for (const [nome, e] of [["«não sei» sozinho", atendimento(["nao_sei"])], ["c
   conf("1d · «não sei» · os alvos aplicados continuam os de antes da trombólise",
     J(antigos) === J(["antes_ivt"]) && alvos && J(alvos.aplicaveis) === J(["antes_ivt"]), `⛔ ${J([antigos, alvos])}`);
   const c = tenta(() => CH.caminhoHemorragico(comHemorragia(e)));
-  conf("1d · «não sei» · o caminho hemorrágico ⛔ ganha pendência de interromper infusão",
+  conf("1d · «não sei» · o caminho hemorrágico não ganha pendência de interromper infusão",
     c && Array.isArray(c.pendencias) && !c.pendencias.some((x) => x.id === "registrar_interrupcao_da_infusao"), `⛔ ${J(c && c.pendencias)}`);
   const d = tenta(() => PL.desfechosNegativos(e));
-  conf("1d · «não sei» · a trombólise ⛔ passa a contar como exposta", d && d.ivtExposta === false, `⛔ ${J(d)}`);
+  conf("1d · «não sei» · a trombólise não passa a contar como exposta", d && d.ivtExposta === false, `⛔ ${J(d)}`);
   conf("1d · «não sei» · nenhuma administração é contada", DF.administracoesRegistradas(e) === 0, `⛔ ${DF.administracoesRegistradas(e)}`);
 }
 
@@ -221,7 +221,7 @@ for (const [nome, e] of [["«não sei» sozinho", atendimento(["nao_sei"])], ["c
  * já registrada; a exposição só sai por correção explícita do registro que a originou, com motivo e
  * trilha; o estado vigente vem do estado reconstruído atual, e nunca da última linha listada.
  */
-/** ⚠️ Uma exceção dentro de um bloco vira vermelho contado, ⛔ interrompe a prova. */
+/** ⚠️ Uma exceção dentro de um bloco vira vermelho contado e não interrompe a prova. */
 const bloco = (nome, fn) => {
   try { fn(); } catch (err) { conf(`${nome} · a conferência terminou sem exceção`, false, `⛔ ${String(err && err.message).slice(0, 160)}`); }
 };
@@ -244,7 +244,7 @@ bloco("2a", () => {
     Array.isArray(t) && t.length === 2 && t[0].tipo === "registro" && t[0].estado === "iniciado"
       && t[1].tipo === "limpeza" && t[1].corrigeFatoId === t[0].fatoId, `⛔ ${J(t)}`);
   conf("2a · depois de «Limpar», nenhuma linha é a situação vigente", Array.isArray(t) && t.every((x) => x.vigente === false), `⛔ ${J(t)}`);
-  conf("2a · «Limpar» ⛔ apaga a exposição já registrada (decisão do autor)", certeza(e) === "exposta", `⛔ ${J(certeza(e))}`);
+  conf("2a · «Limpar» não apaga a exposição já registrada (decisão do autor)", certeza(e) === "exposta", `⛔ ${J(certeza(e))}`);
   for (const rotulo of ["Administrada/concluída", "Interrompida"]) {
     const x = limpar(atendimento([rotulo]));
     conf(`2a · «Limpar» depois de «${rotulo}» → a exposição continua`, certeza(x) === "exposta", `⛔ ${J(certeza(x))}`);
@@ -268,12 +268,12 @@ bloco("2b", () => {
     certeza(depois) === "nao_exposta" && x && x.estado === "cancelada_antes_do_inicio"
       && (trilha(depois) || []).filter((y) => y.vigente).map((y) => y.estado).join() === "cancelado", `⛔ ${J([certeza(depois), x, trilha(depois)])}`);
   const dupla = corrigirEngano(e, idDoRegistro(base, "Iniciada"));
-  conf("2b · corrigir de novo o mesmo registro ⛔ cria segunda correção",
+  conf("2b · corrigir de novo o mesmo registro não cria segunda correção",
     dupla && Array.isArray(dupla.fatos) && dupla.fatos.length === e.fatos.length, `⛔ ${dupla && dupla.fatos && dupla.fatos.length} × ${e.fatos.length}`);
   const t0 = trilha(e) || [];
   const daCorrecao = t0.find((y) => y.tipo === "correcao_por_engano");
   const sobreCorrecao = daCorrecao ? corrigirEngano(e, daCorrecao.fatoId) : undefined;
-  conf("2b · uma correção ⛔ pode ser corrigida por engano como se fosse registro",
+  conf("2b · uma correção não pode ser corrigida por engano como se fosse registro",
     sobreCorrecao && sobreCorrecao.fatos && sobreCorrecao.fatos.length === e.fatos.length, `⛔ ${J(sobreCorrecao && sobreCorrecao.fatos && sobreCorrecao.fatos.length)}`);
 });
 
@@ -362,7 +362,7 @@ bloco("2f", () => {
   const comRegistro = regI(e, inst, "acao_estado", "Iniciada");
   const idDaAcao = I.fatosDaInstancia(comRegistro, inst).filter((f) => f.campo === "acao_estado").slice(-1)[0].id;
   const tentativa = corrigirEngano(comRegistro, idDaAcao);
-  conf("2f · Correções · a correção por engano ⛔ vale para a ação corretiva nesta rodada («Ações corretivas: nenhuma mudança», §9)",
+  conf("2f · Correções · a correção por engano não vale para a ação corretiva nesta rodada («Ações corretivas: nenhuma mudança», §9)",
     tentativa && Array.isArray(tentativa.fatos) && tentativa.fatos.length === comRegistro.fatos.length, `⛔ ${J(tentativa && tentativa.fatos && tentativa.fatos.length)} × ${comRegistro.fatos.length}`);
 });
 
@@ -401,16 +401,16 @@ bloco("5a", () => {
   ];
   for (const [antes, novo] of avancos) {
     const v = violacao(atendimento(antes), novo);
-    conf(`5a · ${antes.join(" → ") || "instância vazia"} → «${novo}» ⛔ viola a ordem`, regraDe(v) === "nenhuma", `⛔ ${J(v)}`);
+    conf(`5a · ${antes.join(" → ") || "instância vazia"} → «${novo}» não viola a ordem`, regraDe(v) === "nenhuma", `⛔ ${J(v)}`);
   }
   const base = atendimento(["Iniciada"]);
   const v = violacao(base, "Prescrita");
   conf("5a · o retrocesso aponta o registro com que conflita", v && v.referencia && v.referencia.fatoId === idDoRegistro(base, "Iniciada") && v.referencia.estado === "iniciado", `⛔ ${J(v)}`);
-  conf("5a · detectar ⛔ grava fato", base.fatos.length === atendimento(["Iniciada"]).fatos.length, "⛔");
+  conf("5a · detectar não grava fato", base.fatos.length === atendimento(["Iniciada"]).fatos.length, "⛔");
   const corrigida = corrigirEngano(base, idDoRegistro(base, "Iniciada"));
-  conf("5a · o registro corrigido por engano ⛔ conta para a ordem", regraDe(violacao(corrigida, "Prescrita")) === "nenhuma", `⛔ ${J(violacao(corrigida, "Prescrita"))}`);
+  conf("5a · o registro corrigido por engano não conta para a ordem", regraDe(violacao(corrigida, "Prescrita")) === "nenhuma", `⛔ ${J(violacao(corrigida, "Prescrita"))}`);
   const limpa = limpar(base);
-  conf("5a · o registro limpo continua contando para a ordem (limpar ⛔ apaga o que houve)", regraDe(violacao(limpa, "Prescrita")) === "retrocesso", `⛔ ${J(violacao(limpa, "Prescrita"))}`);
+  conf("5a · o registro limpo continua contando para a ordem (limpar não apaga o que houve)", regraDe(violacao(limpa, "Prescrita")) === "retrocesso", `⛔ ${J(violacao(limpa, "Prescrita"))}`);
 });
 
 /* 5b · confirmado, entra como correção explícita; a exposição fica; a trilha marca */
@@ -428,7 +428,7 @@ bloco("5b", () => {
       && t[1].registradaComoCorrecao === true && t[0].foraDaOrdemCausal === false && t[0].invalidadaPorCorrecao === false, `⛔ ${J(t)}`);
   const semAnterior = foraDaOrdem(atendimento([]), "Interrompida");
   const ts = trilha(semAnterior);
-  conf("5b · «Interrompida» sem registro anterior: ⛔ há o que corrigir, entra como registro marcado fora da ordem",
+  conf("5b · «Interrompida» sem registro anterior: não há o que corrigir, entra como registro marcado fora da ordem",
     Array.isArray(ts) && ts.length === 1 && ts[0].foraDaOrdemCausal === true && ts[0].registradaComoCorrecao === false, `⛔ ${J(ts)}`);
   const cancelada = foraDaOrdem(atendimento(["Iniciada"]), "Cancelada");
   const x = tenta(() => DF.exposicaoAoTrombolitico(cancelada));
@@ -438,7 +438,7 @@ bloco("5b", () => {
   const ua = avanco.fatos[avanco.fatos.length - 1];
   conf("5b · sem violação, o mesmo gravador grava registro comum", ua.tipo === undefined && ua.valor === "Iniciada" && ua.corrigeFatoId === undefined, `⛔ ${J(ua)}`);
   const trilhaAvanco = trilha(atendimento(["Indicada", "Decidida", "Prescrita", "Preparada", "Iniciada", "Administrada/concluída"]));
-  conf("5b · a sequência na ordem ⛔ tem linha marcada", Array.isArray(trilhaAvanco) && trilhaAvanco.every((y) => y.foraDaOrdemCausal === false), `⛔ ${J(trilhaAvanco)}`);
+  conf("5b · a sequência na ordem não tem linha marcada", Array.isArray(trilhaAvanco) && trilhaAvanco.every((y) => y.foraDaOrdemCausal === false), `⛔ ${J(trilhaAvanco)}`);
 });
 
 /* 5c · Correções fica fora da ordem causal nesta rodada («Ações corretivas: nenhuma mudança», §9) */
@@ -447,8 +447,8 @@ bloco("5c", () => {
   const inst = I.instanciasDe(e, SE2.ACAO)[0];
   e = regI(e, inst, "acao_tipo", "Correção glicêmica");
   e = regI(e, inst, "acao_estado", "Iniciada");
-  conf("5c · Correções · «Iniciada» → «Indicada» ⛔ pede confirmação nesta rodada", regraDe(violacao(e, "Indicada", inst, "acao_estado")) === "nenhuma", `⛔ ${J(violacao(e, "Indicada", inst, "acao_estado"))}`);
-  conf("5c · outro campo ⛔ passa pela regra", regraDe(violacao(e, "Correção glicêmica", inst, "acao_tipo")) === "nenhuma", "⛔");
+  conf("5c · Correções · «Iniciada» → «Indicada» não pede confirmação nesta rodada", regraDe(violacao(e, "Indicada", inst, "acao_estado")) === "nenhuma", `⛔ ${J(violacao(e, "Indicada", inst, "acao_estado"))}`);
+  conf("5c · outro campo não passa pela regra", regraDe(violacao(e, "Correção glicêmica", inst, "acao_tipo")) === "nenhuma", "⛔");
 });
 
 /* ══ ITEM 6 · idempotência também no núcleo ═══════════════════════════════════════ */
@@ -475,9 +475,9 @@ bloco("6a", () => {
   conf("6a · mesmo valor com OUTRO horário clínico → registra", doCampo(comHora(hc, "Iniciada", AGORA - 10 * MIN)).length === 2, "⛔");
   conf("6a · mesmo valor, um com horário clínico e outro sem → registra (não são idênticos)", doCampo(regI(hc, inst1(hc), "ivt_estado", "Iniciada")).length === 2, "⛔");
   const eventos = tenta(() => LOG.eventosDaTransicao(um, dois, ctx6()));
-  conf("6a · a repetição ignorada ⛔ gera evento no log", Array.isArray(eventos) && eventos.length === 0, `⛔ ${J(eventos && eventos.length)}`);
+  conf("6a · a repetição ignorada não gera evento no log", Array.isArray(eventos) && eventos.length === 0, `⛔ ${J(eventos && eventos.length)}`);
   const outroCampoEntre = regI(regI(um, inst1(um), "ivt_inicio", AGORA - 5 * MIN), inst1(um), "ivt_estado", "Iniciada");
-  conf("6a · outro campo registrado entre os dois ⛔ muda a situação: a repetição continua ignorada", doCampo(outroCampoEntre).length === 1, `⛔ ${doCampo(outroCampoEntre).length}`);
+  conf("6a · outro campo registrado entre os dois não muda a situação: a repetição continua ignorada", doCampo(outroCampoEntre).length === 1, `⛔ ${doCampo(outroCampoEntre).length}`);
 });
 
 /* 6b · o que não é duplicação continua registrando */

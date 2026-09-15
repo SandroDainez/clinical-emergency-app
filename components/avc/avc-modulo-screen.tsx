@@ -793,8 +793,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    */
   function escolherNaInstancia(coleta: string, campo: string, valor: string) {
     /**
-     * ⚠️ AC-13 reaberto, item 5: a situação da trombólise que contraria a ordem causal decidida ⛔ é gravada
-     * direto. Pede confirmação e, confirmada, entra como correção explícita. ⛔ Bloqueia: registrar continua possível.
+     * ⚠️ AC-13 reaberto, item 5: a situação da trombólise que contraria a ordem causal decidida não é gravada
+     * direto. Pede confirmação e, confirmada, entra como correção explícita. Não bloqueia: registrar continua possível.
      */
     const violacao = violacaoAoRegistrar(estado, coleta, campo, valor);
     if (violacao !== undefined) {

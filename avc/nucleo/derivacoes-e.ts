@@ -27,8 +27,8 @@ import {
 } from "../conteudo/superficie-e";
 
 /**
- * ⚠️ AC-13: a ação JÁ expôs o paciente? — iniciada, administrada/concluída (⛔ o legado «Realizada») ⛔ interrompida.
- * ⛔ Indicada, decidida, prescrita, preparada, cancelada ⛔ «não sei» ⛔ contam. ⛔ Expor ⛔ é resolver.
+ * ⚠️ AC-13: a ação JÁ expôs o paciente? — iniciada, administrada/concluída (e o legado «Realizada») e interrompida.
+ * Indicada, decidida, prescrita, preparada, cancelada e «não sei» não contam. Expor não é resolver.
  */
 export function acaoExpos(acao: { readonly estado?: string }): boolean {
   const e = estadoDaAcaoRegistrado(acao.estado);
@@ -36,8 +36,8 @@ export function acaoExpos(acao: { readonly estado?: string }): boolean {
 }
 
 /**
- * ⚠️ AC-13: a trilha das transições (com horário ⛔ autoria) mora em `./transicoes-da-acao` — ⛔ aqui, onde o horário
- * de registro ⛔ pode entrar na leitura de E (§6 da prova da Superfície E).
+ * ⚠️ AC-13: a trilha das transições (com horário e autoria) mora em `./transicoes-da-acao`, e não aqui, onde o horário
+ * de registro não pode entrar na leitura de E (§6 da prova da Superfície E).
  */
 
 /** ⚠️ Uma ação registrada, como a tela e a prova a enxergam. */
@@ -151,7 +151,7 @@ export function bloqueiosComAcoes(estado: EstadoAvc): readonly LeituraDoBloqueio
  */
 export function pendenciasOriginadasEmE(estado: EstadoAvc): readonly Pendencia[] {
   const glicemicas = acoesDoBloqueio(estado, "glicemia_alterada");
-  /** ⚠️ Interrompida ⛔ também é *"houve correção"* (D2); AC-13: prescrita ⛔ preparada ⛔ são. */
+  /** ⚠️ Interrompida também é *"houve correção"* (D2); AC-13: prescrita e preparada não são. */
   const houveCorrecao = glicemicas.some(acaoExpos);
   if (!houveCorrecao) return [];
   return [

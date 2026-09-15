@@ -2,13 +2,13 @@
  * CORREÇÃO EXPLÍCITA DO REGISTRO DE UMA AÇÃO — AC-13 reaberto, itens 2 e 5 (autor, 2026-09-14; `docs/decisoes.md`,
  * seção "AC-13 reaberto", §2, §5 e §9).
  *
- * ⚠️ Item 2 · «Limpar» ⛔ remove exposição passada. Para retirar a consequência de um registro, o gesto é uma
+ * ⚠️ Item 2 · «Limpar» não remove exposição passada. Para retirar a consequência de um registro, o gesto é uma
  * correção COM o motivo «registrado por engano», apontando para o registro que a originou. Só esse registro perde a
- * validade; ele continua na trilha, marcado. ⛔ Nada é apagado.
+ * validade; ele continua na trilha, marcado. Nada é apagado.
  *
  * ⚠️ Item 5 · a situação que contraria a ordem causal decidida é permitida, depois de confirmação, e entra como
- * correção explícita do registro com que conflita, SEM motivo: ⛔ ninguém perguntou por quê, ⛔ e a correção sem
- * motivo ⛔ invalida o que já foi registrado.
+ * correção explícita do registro com que conflita, SEM motivo: ninguém perguntou por quê, e a correção sem
+ * motivo não invalida o que já foi registrado.
  */
 import type { EstadoAvc } from "./estado";
 import { corrigirFato, registrarFato } from "./estado";
@@ -28,10 +28,10 @@ const CAMPOS_DE_SITUACAO = CAMPOS_DE_SITUACAO_DA_RODADA;
 export function corrigirRegistroDaAcaoPorEngano(estado: EstadoAvc, fatoId: string, relogio: Relogio): EstadoAvc {
   const alvo = estado.fatos.find((f) => f.id === fatoId);
   if (alvo === undefined || alvo.instancia === undefined || !CAMPOS_DE_SITUACAO.has(alvo.campo)) return estado;
-  /** ⚠️ Só um registro com informação se corrige por engano: ⛔ uma limpeza ⛔ nem outra correção. */
+  /** ⚠️ Só um registro com informação se corrige por engano: não uma limpeza nem outra correção. */
   if (alvo.tipo === "correcao" || informacaoDoEstadoDaAcao(alvo.valor).tipo === "nao_perguntado") return estado;
   const doCampo = estado.fatos.filter((f) => f.instancia === alvo.instancia && f.campo === alvo.campo);
-  /** ⚠️ Idempotente: o mesmo registro ⛔ recebe segunda correção. */
+  /** ⚠️ Idempotente: o mesmo registro não recebe segunda correção. */
   if (idsInvalidadosPorCorrecao(doCampo).has(fatoId)) return estado;
   return corrigirFato(
     estado,
@@ -40,7 +40,7 @@ export function corrigirRegistroDaAcaoPorEngano(estado: EstadoAvc, fatoId: strin
   );
 }
 
-/** ⚠️ Os registros com estado, na ordem, ⛔ invalidados por correção. O registro limpo continua: limpar ⛔ apaga o que houve. */
+/** ⚠️ Os registros com estado, na ordem, sem os invalidados por correção. O registro limpo continua: limpar não apaga o que houve. */
 export function registrosValidosDaSituacao(estado: EstadoAvc, instancia: string, campo: string): readonly RegistroValido[] {
   const doCampo = fatosDaInstancia(estado, instancia).filter((f) => f.campo === campo);
   const invalidados = idsInvalidadosPorCorrecao(doCampo);
@@ -59,7 +59,7 @@ export function registrosValidosDaSituacao(estado: EstadoAvc, instancia: string,
   });
 }
 
-/** ⚠️ `undefined` quando o registro segue a ordem, ⛔ quando o campo ⛔ é de situação de ação. ⛔ Grava nada. */
+/** ⚠️ `undefined` quando o registro segue a ordem, ou quando o campo não é de situação de ação. Não grava nada. */
 export function violacaoAoRegistrar(estado: EstadoAvc, instancia: string, campo: string, valor: string): ViolacaoDaOrdem | undefined {
   if (!CAMPOS_DE_SITUACAO.has(campo)) return undefined;
   const info = informacaoDoEstadoDaAcao(valor);
@@ -69,7 +69,7 @@ export function violacaoAoRegistrar(estado: EstadoAvc, instancia: string, campo:
 
 /**
  * ⚠️ O gravador depois da confirmação. Com registro anterior em conflito, grava correção explícita dele; sem registro
- * anterior (ex.: «Interrompida» numa instância vazia), ⛔ há o que corrigir e grava registro comum, que a trilha marca
+ * anterior (ex.: «Interrompida» numa instância vazia), não há o que corrigir e grava registro comum, que a trilha marca
  * fora da ordem. Sem violação, grava registro comum.
  */
 export function registrarForaDaOrdemComoCorrecao(

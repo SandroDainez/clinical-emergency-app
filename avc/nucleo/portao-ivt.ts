@@ -208,7 +208,7 @@ function motivoDeSeguranca(i: ReturnType<typeof impedimentosDeSeguranca>[number]
  * ⛔ ⛔ `cancelada` ⛔ não conta: ⛔ nada foi feito.
  */
 function correcaoIniciada(estado: EstadoAvc, bloqueio: string): boolean {
-  /** ⚠️ Interrompida (D2): ⛔ houve gesto; AC-13: prescrita ⛔ preparada ⛔ são gesto no paciente. ⛔ Nada prova resolução. */
+  /** ⚠️ Interrompida (D2): houve gesto; AC-13: prescrita e preparada não são gesto no paciente. Nada prova resolução. */
   return acoesDoBloqueio(estado, bloqueio).some(acaoExpos);
 }
 

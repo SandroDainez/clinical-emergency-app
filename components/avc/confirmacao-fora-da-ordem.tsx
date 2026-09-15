@@ -3,7 +3,7 @@
  * seção "AC-13 reaberto", §5 e §9, opção B).
  *
  * ⚠️ Aparece quando a situação escolhida contraria a ordem decidida pelo autor (`avc/nucleo/ordem-da-acao.ts`).
- * ⛔ Não bloqueia: registrar continua possível, como correção explícita do registro anterior, marcada na trilha.
+ * Não bloqueia: registrar continua possível, como correção explícita do registro anterior, marcada na trilha.
  * ⚠️ O destaque visual fica no caminho seguro («Não registrar»), como na D-PEND-27.
  */
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";

@@ -1240,6 +1240,14 @@ Nenhuma tela menciona a situação desconhecida.
 - **Snapshot.** `nomeDoAutor` é gravado no evento no momento do registro, com a sessão daquele instante. A tela lê o nome do evento, nunca do perfil atual da conta: um fato registrado antes continua com o nome da época, mesmo que a conta mude de nome ou outra pessoa entre depois. Regressão na prova do AC-13 (bloco 4b).
 - **Limite do e2e.** O navegador de teste não tem conta: o gesto real prova «Autoria não identificada». O caminho com nome é provado no núcleo (leitura da sessão, evento v4, rótulo).
 
+### 13 · Invariantes de autoria do módulo (autor, 2026-09-15)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito, ao aceitar o item 4. Os três erros abaixo foram reencenados por mutação e reprovados pela prova do AC-13 (`scripts/mutacoes/autoria.cjs`); passam a ser invariantes do módulo:
+
+1. **Nome nunca derivado de e-mail.** O nome de exibição vem só de `full_name` e, na falta dele, de `nome`.
+2. **Identificador técnico nunca exibido como autoria.** Sem nome de exibição, a tela diz «Autoria não identificada», e nunca `user.id`, id do aparelho ou e-mail.
+3. **Migração nunca inventa nome.** Eventos anteriores ao schema v4 ficam com `nomeDoAutor = null`, e nenhum enriquecimento retroativo acontece; o nome gravado é o snapshot do momento do registro.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

@@ -78,7 +78,7 @@ export const ESTADO_DA_ACAO = {
   preparada: "Preparada",
   iniciada: "Iniciada",
   concluida: "Administrada/concluída",
-  /** ⚠️ AC-13: rótulo LEGADO — registros antigos continuam legíveis como administrada/concluída; ⛔ é mais oferecido. */
+  /** ⚠️ AC-13: rótulo LEGADO — registros antigos continuam legíveis como administrada/concluída; não é mais oferecido. */
   realizada: "Realizada",
   interrompida: "Interrompida",
   cancelada: "Cancelada",
@@ -88,11 +88,11 @@ export const ESTADO_DA_ACAO = {
  * ── ⚠️⚠️⚠️ AC-13 · OS 8 ESTADOS DA AÇÃO (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8, opção B) ────────
  *
  * indicado · decidido · prescrito · preparado · iniciado · administrado/concluído · interrompido · cancelado.
- * ⚠️ Os rótulos gravados seguem o gênero de «ação» (Indicada … Cancelada), ⛔ e os já gravados ⛔ mudam: «Iniciada»,
- * «Interrompida» ⛔ «Cancelada» são os mesmos; «Realizada» é lido como administrado/concluído.
- * ⛔ «Não sei» ⛔ é nono estado: é ausência de informação, lida à parte (`informacaoDoEstadoDaAcao`).
- * ⚠️ Exposição: iniciado, administrado/concluído ⛔ interrompido expõem; indicado, decidido, prescrito, preparado ⛔
- * cancelado ⛔ (interrompido ≠ cancelado, D2).
+ * ⚠️ Os rótulos gravados seguem o gênero de «ação» (Indicada … Cancelada), e os já gravados não mudam: «Iniciada»,
+ * «Interrompida» e «Cancelada» são os mesmos; «Realizada» é lido como administrado/concluído.
+ * «Não sei» não é um nono estado: é ausência de informação, lida à parte (`informacaoDoEstadoDaAcao`).
+ * ⚠️ Exposição: iniciado, administrado/concluído e interrompido expõem; indicado, decidido, prescrito, preparado e
+ * cancelado não expõem (interrompido ≠ cancelado, D2).
  */
 export type EstadoDaAcaoRegistrado =
   | "indicado"
@@ -119,7 +119,7 @@ export const ROTULO_DO_ESTADO_DA_ACAO: Readonly<Record<EstadoDaAcaoRegistrado, s
   cancelado: ESTADO_DA_ACAO.cancelada,
 };
 
-/** ⚠️ Rótulos antigos ⛔ que ⛔ são mais oferecidos — ⛔ perdem o significado. */
+/** ⚠️ Rótulos antigos que não são mais oferecidos — e não perdem o significado. */
 const ROTULO_LEGADO_DO_ESTADO: Readonly<Record<string, EstadoDaAcaoRegistrado>> = {
   [ESTADO_DA_ACAO.realizada]: "administrado_concluido",
 };

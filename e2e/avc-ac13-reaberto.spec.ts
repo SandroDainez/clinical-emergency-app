@@ -78,7 +78,7 @@ test.describe("AVC · AC-13 reaberto · item 2 · a trilha fiel", () => {
     await expect(page.getByTestId("avc-g-monitorizacao")).toHaveCount(0);
   });
 
-  test("«Manter o registro» no diálogo ⛔ muda nada", async ({ page }) => {
+  test("«Manter o registro» no diálogo não muda nada", async ({ page }) => {
     await tromboliseCom(page, "Iniciada");
     await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
     await page.getByTestId("avc-transicoes-corrigir-trombolise_iv_1-0").click();
@@ -89,7 +89,7 @@ test.describe("AVC · AC-13 reaberto · item 2 · a trilha fiel", () => {
 });
 
 test.describe("AVC · AC-13 reaberto · item 5 · retrocesso", () => {
-  test("«Iniciada» e depois «Prescrita» → pede confirmação; «Não registrar» ⛔ grava nada", async ({ page }) => {
+  test("«Iniciada» e depois «Prescrita» → pede confirmação; «Não registrar» não grava nada", async ({ page }) => {
     await tromboliseCom(page, "Iniciada");
     await page.getByTestId("avc-opcao-ivt_estado-Prescrita").click();
     const dialogo = page.getByTestId("avc-confirmar-ordem");
@@ -116,7 +116,7 @@ test.describe("AVC · AC-13 reaberto · item 5 · retrocesso", () => {
     await expect(page.getByTestId("avc-g-monitorizacao")).toBeVisible();
   });
 
-  test("avanço na ordem ⛔ pede confirmação", async ({ page }) => {
+  test("avanço na ordem não pede confirmação", async ({ page }) => {
     await tromboliseCom(page, "Prescrita", "Iniciada");
     await expect(page.getByTestId("avc-confirmar-ordem")).toHaveCount(0);
     await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(2)");

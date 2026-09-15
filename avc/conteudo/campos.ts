@@ -179,7 +179,7 @@ export function registrarComInstancia(
    * ⚠️ Quem corrige agora é `corrigirNaInstancia`, e ⛔ só quando a tela disser
    * que o médico tocou em **Corrigir**.
    */
-  /** ⚠️ AC-13 reaberto, item 6: a transição idêntica repetida ⛔ vira segundo fato — o estado volta intacto. */
+  /** ⚠️ AC-13 reaberto, item 6: a transição idêntica repetida não vira segundo fato — o estado volta intacto. */
   if (repeteATransicaoAnterior(estado, alvo, fato)) return estado;
   return registrarFato(estado, { ...fato, instancia: alvo }, relogio);
 }
