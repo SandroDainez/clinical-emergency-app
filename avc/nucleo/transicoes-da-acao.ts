@@ -1,6 +1,6 @@
 /**
  * TRILHA DAS TRANSIÇÕES DE UMA AÇÃO — AC-13 (autor, 2026-09-14; `docs/decisoes.md`, 19ª rodada §8, e seção
- * "AC-13 reaberto", §2 e §9).
+ * "AC-13 reaberto", §2, §5 e §9).
  *
  * ⚠️ Leitura de AUDITORIA, ⛔ derivação clínica: diz o que foi registrado, em que ordem, quando ⛔ por qual fato (a
  * autoria vem do fato, AC-40). ⛔ Nenhum estado antigo some quando um novo é registrado.
@@ -10,6 +10,8 @@
  *  · A correção explícita COM motivo vira linha `correcao_por_engano` e invalida só o registro que ela aponta.
  * ⚠️ A situação vigente vem do valor atual reconstruído da instância, ⛔ da última linha listada: depois de uma
  * limpeza ou de uma correção por engano, nenhuma linha é vigente.
+ * ⚠️ Item 5: o registro que contraria a ordem causal decidida fica marcado `foraDaOrdemCausal`, comparado com os
+ * registros válidos anteriores a ele; `registradaComoCorrecao` diz que entrou como correção explícita.
  *
  * ⛔ Mora fora de `derivacoes-e.ts` de propósito: a leitura de E ⛔ pode usar a ordem ⛔ o horário de registro para
  * inferir resposta (prova da Superfície E, §6). Aqui o horário só é MOSTRADO — ⛔ nada é concluído dele.
@@ -17,6 +19,7 @@
 import type { EstadoAvc } from "./estado";
 import type { FatoRegistrado } from "./tipos";
 import { fatosDaInstancia, valorNaInstancia } from "./instancia";
+import { violacaoDaOrdemCausal, type RegistroValido } from "./ordem-da-acao";
 import {
   ROTULO_DO_ESTADO_DA_ACAO,
   informacaoDoEstadoDaAcao,
@@ -53,6 +56,10 @@ export type TransicaoDaAcao = {
   readonly motivo?: string;
   /** ⚠️ O registro recebeu correção explícita com motivo: continua na trilha, ⛔ vale. */
   readonly invalidadaPorCorrecao: boolean;
+  /** ⚠️ Item 5: o estado contraria a ordem causal decidida, diante dos registros válidos anteriores. */
+  readonly foraDaOrdemCausal: boolean;
+  /** ⚠️ Item 5: o estado entrou como correção explícita de um registro anterior. */
+  readonly registradaComoCorrecao: boolean;
   readonly vigente: boolean;
 };
 
@@ -60,11 +67,15 @@ export function transicoesDoEstadoDaAcao(estado: EstadoAvc, instancia: string, c
   const fatos = fatosDaInstancia(estado, instancia).filter((f) => f.campo === campo);
   const invalidados = idsInvalidadosPorCorrecao(fatos);
   const atual = valorNaInstancia(estado, instancia, campo);
+  const validosAntes: RegistroValido[] = [];
   return fatos.map((f) => {
     const info = informacaoDoEstadoDaAcao(f.valor);
     const registrado = info.tipo === "registrado" ? info.estado : undefined;
     const tipo: TipoDaLinhaDaTrilha =
       info.tipo !== "nao_perguntado" ? "registro" : ehCorrecaoComMotivo(f) ? "correcao_por_engano" : "limpeza";
+    const valido = registrado !== undefined && !invalidados.has(f.id);
+    const foraDaOrdemCausal = valido && violacaoDaOrdemCausal(validosAntes, registrado) !== undefined;
+    if (valido) validosAntes.push({ fatoId: f.id, estado: registrado });
     return {
       fatoId: f.id,
       tipo,
@@ -77,6 +88,8 @@ export function transicoesDoEstadoDaAcao(estado: EstadoAvc, instancia: string, c
       corrigeFatoId: f.corrigeFatoId,
       motivo: typeof f.motivo === "string" && f.motivo.length > 0 ? f.motivo : undefined,
       invalidadaPorCorrecao: invalidados.has(f.id),
+      foraDaOrdemCausal,
+      registradaComoCorrecao: tipo === "registro" && f.tipo === "correcao",
       vigente: tipo === "registro" && atual !== undefined && atual.id === f.id,
     };
   });

@@ -79,6 +79,12 @@ export function TransicoesDaAcao({
               {t.legado ? <Text style={e.meta}>{tr("registro antigo")}: {tr(t.rotuloGravado)}</Text> : null}
               <Text style={e.meta}>{horaComData(t.horaClinica ?? t.horaRegistro)}</Text>
               <Text style={e.meta}>{tr(rotuloDaAutoria(autoriaDe(t.fatoId)))}</Text>
+              {t.foraDaOrdemCausal ? (
+                <Text style={e.meta}>
+                  {tr("fora da ordem causal")}
+                  {t.registradaComoCorrecao ? ` · ${tr("registrado como correção")}` : ""}
+                </Text>
+              ) : null}
               {t.tipo === "registro" ? (
                 <Text style={e.nivel}>
                   {t.invalidadaPorCorrecao ? tr("invalidado por correção") : t.vigente ? tr("situação vigente") : tr("registro anterior")}

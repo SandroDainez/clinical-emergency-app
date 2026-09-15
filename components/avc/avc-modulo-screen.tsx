@@ -168,12 +168,17 @@ import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../.
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
-import { corrigirRegistroDaAcaoPorEngano } from "../../avc/nucleo/correcao-da-acao";
+import {
+  corrigirRegistroDaAcaoPorEngano,
+  registrarForaDaOrdemComoCorrecao,
+  violacaoAoRegistrar,
+} from "../../avc/nucleo/correcao-da-acao";
 import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
 import { registrarCondutaExterna } from "../../avc/nucleo/ajuda";
 import { corrigirHorarioDoMarco, marcoPorEngano, registrarMarco, registrarMarcoDeNeurocirurgia, registrarMarcoDeTeleconsulta } from "../../avc/nucleo/transferencia";
 import { BotaoPrecisoDeAjuda, DialogoDeAjuda } from "./preciso-de-ajuda";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
+import { ConfirmacaoForaDaOrdem, type PedidoForaDaOrdem } from "./confirmacao-fora-da-ordem";
 import { chamarModulo, pilhaDeChamadas, retornarDoModulo, retornoDaChamada, type RetornoDeModulo } from "../../avc/nucleo/chamadas";
 import {
   intervencaoDeViaAereaPendente,
@@ -296,6 +301,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const [resumoAberto, setResumoAberto] = useState(false);
   /** ⚠️ D-PEND-26: «Limpar» que sustenta retenção ⛔ ou bloqueio espera confirmação. */
   const [pedidoDeLimpar, setPedidoDeLimpar] = useState<PedidoDeLimpar | undefined>(undefined);
+  const [pedidoForaDaOrdem, setPedidoForaDaOrdem] = useState<PedidoForaDaOrdem | undefined>(undefined);
   /** ⚠️ «Paciente piorou» global (ajuste de rota do autor, 2026-09-13). */
   const [pioraAberta, setPioraAberta] = useState(false);
   /** ⚠️ «Preciso de ajuda» global (11ª rodada) ⛔ e o ponto de origem para voltar. */
@@ -783,6 +789,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * ⚠️ **Servem as duas superfícies** — a regra mora num lugar só (I6).
    */
   function escolherNaInstancia(coleta: string, campo: string, valor: string) {
+    /**
+     * ⚠️ AC-13 reaberto, item 5: a situação da trombólise que contraria a ordem causal decidida ⛔ é gravada
+     * direto. Pede confirmação e, confirmada, entra como correção explícita. ⛔ Bloqueia: registrar continua possível.
+     */
+    const violacao = violacaoAoRegistrar(estado, coleta, campo, valor);
+    if (violacao !== undefined) {
+      setPedidoForaDaOrdem({ instancia: coleta, campo, valor, violacao });
+      return;
+    }
     setEstado((e) => registrarComInstancia(e, { campo, valor }, relogio, coleta));
   }
   function medirNaInstancia(coleta: string, campo: string, valor: number) {
@@ -2842,6 +2857,15 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           const alvo = pedidoDeLimpar;
           setPedidoDeLimpar(undefined);
           if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio));
+        }}
+      />
+      <ConfirmacaoForaDaOrdem
+        pedido={pedidoForaDaOrdem}
+        onCancelar={() => setPedidoForaDaOrdem(undefined)}
+        onRegistrarComoCorrecao={() => {
+          const alvo = pedidoForaDaOrdem;
+          setPedidoForaDaOrdem(undefined);
+          if (alvo) setEstado((e) => registrarForaDaOrdemComoCorrecao(e, alvo.instancia, alvo.campo, alvo.valor, relogio));
         }}
       />
       <DialogoDeAjuda

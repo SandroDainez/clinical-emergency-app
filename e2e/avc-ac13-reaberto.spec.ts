@@ -87,3 +87,38 @@ test.describe("AVC · AC-13 reaberto · item 2 · a trilha fiel", () => {
     await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("situação vigente");
   });
 });
+
+test.describe("AVC · AC-13 reaberto · item 5 · retrocesso", () => {
+  test("«Iniciada» e depois «Prescrita» → pede confirmação; «Não registrar» ⛔ grava nada", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-opcao-ivt_estado-Prescrita").click();
+    const dialogo = page.getByTestId("avc-confirmar-ordem");
+    await expect(dialogo).toBeVisible();
+    await expect(dialogo).toContainText("Prescrita");
+    await expect(dialogo).toContainText("Iniciada");
+    await page.getByTestId("avc-confirmar-ordem-cancelar").click();
+    await expect(dialogo).toHaveCount(0);
+    await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(1)");
+  });
+
+  test("«Iniciada», «Prescrita» e «Registrar como correção» → a trilha marca a correção fora da ordem e a exposição continua", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-opcao-ivt_estado-Prescrita").click();
+    await page.getByTestId("avc-confirmar-ordem-corrigir").click();
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    const nova = page.getByTestId("avc-transicoes-trombolise_iv_1-1");
+    await expect(nova).toContainText("Prescrita");
+    await expect(nova).toContainText("fora da ordem causal");
+    await expect(nova).toContainText("registrado como correção");
+    await expect(nova).toContainText("situação vigente");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).not.toContainText("fora da ordem causal");
+    await page.getByTestId("avc-aba-destino").click();
+    await expect(page.getByTestId("avc-g-monitorizacao")).toBeVisible();
+  });
+
+  test("avanço na ordem ⛔ pede confirmação", async ({ page }) => {
+    await tromboliseCom(page, "Prescrita", "Iniciada");
+    await expect(page.getByTestId("avc-confirmar-ordem")).toHaveCount(0);
+    await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(2)");
+  });
+});

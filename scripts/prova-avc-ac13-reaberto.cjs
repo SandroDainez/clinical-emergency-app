@@ -10,9 +10,12 @@
  *  · item 2 — «Limpar» e a correção por engano são linhas próprias da trilha; nenhuma linha é vigente quando o
  *    valor atual da instância está vazio; «Limpar» mantém a exposição já registrada e só a correção explícita,
  *    com motivo, a retira; a retomada pelo log devolve a mesma trilha.
+ *  · item 5 — na trombólise, o estado que contraria a ordem causal decidida é detectado sem gravar nada; confirmado,
+ *    entra como correção explícita do registro com que conflita, sem motivo, sem retirar exposição, e a trilha o
+ *    marca fora da ordem. Correções fica fora da regra nesta rodada (§9).
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
- *   sintese-do-caso,transicoes-da-acao,correcao-da-acao}.ts`, `avc/persistencia/log.ts`.
+ *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao}.ts`, `avc/persistencia/log.ts`.
  * FONTE: `docs/decisoes.md`, AC-13 reaberto, §1 e §9.
  */
 const fs = require("node:fs");
@@ -26,6 +29,7 @@ const entradas = [
   "avc/nucleo/portao-ivt.ts", "avc/nucleo/derivacoes-f.ts", "avc/nucleo/derivacoes-g.ts", "avc/nucleo/alvo-pressorico.ts",
   "avc/nucleo/caminho-hemorragico.ts", "avc/nucleo/plano-48h.ts", "avc/nucleo/sintese-do-caso.ts", "avc/nucleo/transicoes-da-acao.ts",
   "avc/nucleo/correcao-da-acao.ts",
+  "avc/nucleo/ordem-da-acao.ts",
   "avc/persistencia/log.ts", "avc/conteudo/campos.ts", "avc/conteudo/superficies.ts", "design-system/estados-clinicos.ts",
 ];
 try {
@@ -342,6 +346,92 @@ bloco("2f", () => {
   const tentativa = corrigirEngano(comRegistro, idDaAcao);
   conf("2f · Correções · a correção por engano ⛔ vale para a ação corretiva nesta rodada («Ações corretivas: nenhuma mudança», §9)",
     tentativa && Array.isArray(tentativa.fatos) && tentativa.fatos.length === comRegistro.fatos.length, `⛔ ${J(tentativa && tentativa.fatos && tentativa.fatos.length)} × ${comRegistro.fatos.length}`);
+});
+
+/* ══ ITEM 5 · retrocesso: permitido, confirmado e gravado como correção explícita ═══ */
+/**
+ * Decisão do autor (AC-13 reaberto, §5 e §9, opção B): ordem de referência indicado < decidido < prescrito <
+ * preparado < iniciado < administrado/concluído; `cancelado` só antes de `iniciado`; `interrompido` só depois de
+ * `iniciado`. O movimento contrário é tecnicamente permitido, exige confirmação e entra como correção explícita.
+ * ⛔ Não se conferem aqui os movimentos que o autor não decidiu (sair de «Cancelada»; trocar administrada/concluída
+ * por interrompida ou o inverso).
+ */
+const violacao = (e, rotulo, inst, campo = "ivt_estado") => tenta(() => CA.violacaoAoRegistrar(e, inst ?? inst1(e), campo, rotulo));
+const regraDe = (v) => (v === undefined ? "nenhuma" : v && v.erro ? `erro: ${v.erro}` : v.regra);
+const foraDaOrdem = (e, rotulo, inst) => tenta(() => CA.registrarForaDaOrdemComoCorrecao(e, inst ?? inst1(e), "ivt_estado", rotulo, rel));
+
+/* 5a · o que viola a ordem decidida */
+bloco("5a", () => {
+  const violacoes = [
+    [["Iniciada"], "Prescrita", "retrocesso"],
+    [["Administrada/concluída"], "Indicada", "retrocesso"],
+    [["Administrada/concluída"], "Iniciada", "retrocesso"],
+    [["Interrompida"], "Preparada", "retrocesso"],
+    [["Prescrita", "nao_sei"], "Decidida", "retrocesso"],
+    [["Preparada"], "Interrompida", "interrompida_sem_inicio"],
+    [[], "Interrompida", "interrompida_sem_inicio"],
+    [["Iniciada"], "Cancelada", "cancelada_depois_do_inicio"],
+    [["Administrada/concluída"], "Cancelada", "cancelada_depois_do_inicio"],
+  ];
+  for (const [antes, novo, esperado] of violacoes) {
+    const v = violacao(atendimento(antes), novo);
+    conf(`5a · ${antes.join(" → ") || "instância vazia"} → «${novo}» viola a ordem (${esperado})`, regraDe(v) === esperado, `⛔ ${J(v)}`);
+  }
+  const avancos = [
+    [[], "Indicada"], [["Indicada"], "Decidida"], [["Decidida"], "Prescrita"], [["Prescrita"], "Preparada"],
+    [["Preparada"], "Iniciada"], [["Iniciada"], "Administrada/concluída"], [["Iniciada"], "Interrompida"],
+    [["Prescrita"], "Cancelada"], [["Iniciada"], "nao_sei"], [["Iniciada", "nao_sei"], "Administrada/concluída"],
+  ];
+  for (const [antes, novo] of avancos) {
+    const v = violacao(atendimento(antes), novo);
+    conf(`5a · ${antes.join(" → ") || "instância vazia"} → «${novo}» ⛔ viola a ordem`, regraDe(v) === "nenhuma", `⛔ ${J(v)}`);
+  }
+  const base = atendimento(["Iniciada"]);
+  const v = violacao(base, "Prescrita");
+  conf("5a · o retrocesso aponta o registro com que conflita", v && v.referencia && v.referencia.fatoId === idDoRegistro(base, "Iniciada") && v.referencia.estado === "iniciado", `⛔ ${J(v)}`);
+  conf("5a · detectar ⛔ grava fato", base.fatos.length === atendimento(["Iniciada"]).fatos.length, "⛔");
+  const corrigida = corrigirEngano(base, idDoRegistro(base, "Iniciada"));
+  conf("5a · o registro corrigido por engano ⛔ conta para a ordem", regraDe(violacao(corrigida, "Prescrita")) === "nenhuma", `⛔ ${J(violacao(corrigida, "Prescrita"))}`);
+  const limpa = limpar(base);
+  conf("5a · o registro limpo continua contando para a ordem (limpar ⛔ apaga o que houve)", regraDe(violacao(limpa, "Prescrita")) === "retrocesso", `⛔ ${J(violacao(limpa, "Prescrita"))}`);
+});
+
+/* 5b · confirmado, entra como correção explícita; a exposição fica; a trilha marca */
+bloco("5b", () => {
+  const base = atendimento(["Iniciada"]);
+  const e = foraDaOrdem(base, "Prescrita");
+  const ultimo = e.fatos[e.fatos.length - 1];
+  conf("5b · o retrocesso confirmado é correção do registro com que conflita, sem motivo inventado",
+    e.fatos.length === base.fatos.length + 1 && ultimo.tipo === "correcao" && ultimo.valor === "Prescrita"
+      && ultimo.corrigeFatoId === idDoRegistro(base, "Iniciada") && ultimo.motivo === undefined, `⛔ ${J(ultimo)}`);
+  conf("5b · a exposição já registrada continua", certeza(e) === "exposta", `⛔ ${J(certeza(e))}`);
+  const t = trilha(e);
+  conf("5b · a linha nova é a vigente, marcada fora da ordem causal e registrada como correção; a anterior segue válida e na ordem",
+    Array.isArray(t) && t.length === 2 && t[1].tipo === "registro" && t[1].vigente === true && t[1].foraDaOrdemCausal === true
+      && t[1].registradaComoCorrecao === true && t[0].foraDaOrdemCausal === false && t[0].invalidadaPorCorrecao === false, `⛔ ${J(t)}`);
+  const semAnterior = foraDaOrdem(atendimento([]), "Interrompida");
+  const ts = trilha(semAnterior);
+  conf("5b · «Interrompida» sem registro anterior: ⛔ há o que corrigir, entra como registro marcado fora da ordem",
+    Array.isArray(ts) && ts.length === 1 && ts[0].foraDaOrdemCausal === true && ts[0].registradaComoCorrecao === false, `⛔ ${J(ts)}`);
+  const cancelada = foraDaOrdem(atendimento(["Iniciada"]), "Cancelada");
+  const x = tenta(() => DF.exposicaoAoTrombolitico(cancelada));
+  conf("5b · «Cancelada» depois de «Iniciada», confirmada: continua exposta e a contradição da HR-5 continua dita",
+    x && x.estado === "exposta" && x.contraditoria === true, `⛔ ${J(x)}`);
+  const avanco = foraDaOrdem(atendimento(["Preparada"]), "Iniciada");
+  const ua = avanco.fatos[avanco.fatos.length - 1];
+  conf("5b · sem violação, o mesmo gravador grava registro comum", ua.tipo === undefined && ua.valor === "Iniciada" && ua.corrigeFatoId === undefined, `⛔ ${J(ua)}`);
+  const trilhaAvanco = trilha(atendimento(["Indicada", "Decidida", "Prescrita", "Preparada", "Iniciada", "Administrada/concluída"]));
+  conf("5b · a sequência na ordem ⛔ tem linha marcada", Array.isArray(trilhaAvanco) && trilhaAvanco.every((y) => y.foraDaOrdemCausal === false), `⛔ ${J(trilhaAvanco)}`);
+});
+
+/* 5c · Correções fica fora da ordem causal nesta rodada («Ações corretivas: nenhuma mudança», §9) */
+bloco("5c", () => {
+  let e = I.abrirNovaInstancia(vazio, SE2.ACAO, rel);
+  const inst = I.instanciasDe(e, SE2.ACAO)[0];
+  e = regI(e, inst, "acao_tipo", "Correção glicêmica");
+  e = regI(e, inst, "acao_estado", "Iniciada");
+  conf("5c · Correções · «Iniciada» → «Indicada» ⛔ pede confirmação nesta rodada", regraDe(violacao(e, "Indicada", inst, "acao_estado")) === "nenhuma", `⛔ ${J(violacao(e, "Indicada", inst, "acao_estado"))}`);
+  conf("5c · outro campo ⛔ passa pela regra", regraDe(violacao(e, "Correção glicêmica", inst, "acao_tipo")) === "nenhuma", "⛔");
 });
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);

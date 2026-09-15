@@ -219,12 +219,15 @@ test.describe("AVC · 19ª rodada · AC-13 · estados da ação", () => {
 
   test("«Preparada» → «Interrompida» é exposição; a trilha mostra as duas transições com horário ⛔ autoria", async ({ page }) => {
     await trombolisePorEstados(page, "Preparada", "Interrompida");
+    /** ⚠️ AC-13 reaberto, item 5: «Interrompida» sem «Iniciada» contraria a ordem decidida — pede confirmação e entra como correção. */
+    await page.getByTestId("avc-confirmar-ordem-corrigir").click();
     await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
     const primeira = page.getByTestId("avc-transicoes-trombolise_iv_1-0");
     const segunda = page.getByTestId("avc-transicoes-trombolise_iv_1-1");
     await expect(primeira).toContainText("Preparada");
     await expect(segunda).toContainText("Interrompida");
     await expect(segunda).toContainText("situação vigente");
+    await expect(segunda).toContainText("fora da ordem causal");
     await expect(primeira).toContainText(/\d{2}:\d{2}/);
     await expect(segunda).toContainText("registrado neste aparelho, sem conta");
     await page.getByTestId("avc-aba-destino").click();
