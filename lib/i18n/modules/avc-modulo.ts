@@ -2697,6 +2697,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Sesión autenticada",
   "Atestação":
     "Atestación",
+  "Decisão médica incompleta — requer revalidação":
+    "Decisión médica incompleta — requiere revalidación",
   "Decisão médica incompleta — falta":
     "Decisión médica incompleta — falta",
   "decisão completa":

@@ -246,6 +246,11 @@ function RegistroDeDecisaoMedica({
   return (
     <View style={e.julgamento} testID={`avc-f-decisao-${m.id}`}>
       <Text style={e.portaoNivel}>{tr("Registrar decisão médica")}</Text>
+      {vigente?.requerRevalidacao ? (
+        <Text style={e.portaoFalta} testID={`avc-f-decisao-${m.id}-revalidacao`}>
+          {tr("Decisão médica incompleta — requer revalidação")}
+        </Text>
+      ) : null}
       {vigente !== undefined ? (
         <Text style={e.portaoDado} testID={`avc-f-decisao-${m.id}-vigente`}>
           {/** ⚠️ Invariante 3: decisão incompleta ⛔ aparece como registrada. */}
@@ -1299,6 +1304,9 @@ export default function SuperficieF({
                           ? tr("Atestação")
                           : tr("não atestado")}
                     </Text>
+                    {detalhesDasDecisoes.get(j.fatoId)?.requerRevalidacao ? (
+                      <Text style={e.portaoFalta}>{tr("Decisão médica incompleta — requer revalidação")}</Text>
+                    ) : null}
                     <Text style={e.portaoNivel}>
                       {detalhesDasDecisoes.get(j.fatoId)?.completa
                         ? tr("decisão completa")

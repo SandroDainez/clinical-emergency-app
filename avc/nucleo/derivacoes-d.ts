@@ -42,6 +42,7 @@ import { COLETA, FATOR_PARA_MM3 } from "../conteudo/laboratorio";
 import { NAO_SEI } from "../conteudo/campo";
 import { campoDoModulo } from "../conteudo/campos";
 import { ANTICOAGULANTE } from "../conteudo/paciente";
+import { decisoesMedicasRegistradas } from "./decisao-medica";
 import {
   CAMPO_DO_JULGAMENTO,
   DECISAO_DO_JULGAMENTO,
@@ -821,7 +822,15 @@ export type ImpedimentoDeSeguranca = {
 /** ⚠️ D-139-3: a decisão clínica vigente para um alvo — a última da instância; ⛔ `undefined` se ⛔ não há. */
 export function julgamentoRegistrado(estado: EstadoAvc, alvo: string): "prosseguir" | "nao_prosseguir" | undefined {
   const f = valorNaInstancia(estado, instanciaDoJulgamento(alvo), CAMPO_DO_JULGAMENTO.id);
-  if (f?.valor === DECISAO_DO_JULGAMENTO.prosseguir) return "prosseguir";
+  if (f?.valor === DECISAO_DO_JULGAMENTO.prosseguir) {
+    /**
+     * ⚠️⚠️ ARQ-APOIO-01 F2 · D-139-3 por COMPLETUDE (autor, 2026-09-15): «Prosseguir» só libera com a decisão médica
+     * vigente completa. Incompleto → o julgamento continua pendente, e a decisão fica marcada para revalidação.
+     * ⛔ Nenhum fato é reescrito: a leitura muda, a trilha ⛔.
+     */
+    const vigente = decisoesMedicasRegistradas(estado).filter((d) => d.alvo === alvo).pop();
+    return vigente?.fatoId === f.id && vigente.completa ? "prosseguir" : undefined;
+  }
   if (f?.valor === DECISAO_DO_JULGAMENTO.naoProsseguir) return "nao_prosseguir";
   return undefined;
 }

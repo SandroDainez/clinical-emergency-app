@@ -66,6 +66,12 @@ export type DecisaoMedicaRegistrada = {
    */
   readonly completa: boolean;
   readonly falta: readonly string[];
+  /**
+   * ⚠️⚠️ ARQ-APOIO-01 F2 · D-139-3 por COMPLETUDE (autor, 2026-09-15): «Prosseguir» incompleto ⛔ libera e requer
+   * revalidação — um novo registro completo. ⛔ Pela idade: o dado ⛔ distingue com segurança um julgamento antigo de
+   * uma decisão incompleta criada por chamada direta. «Não prosseguir» incompleto continua impedindo, marcado incompleto.
+   */
+  readonly requerRevalidacao: boolean;
   readonly horaRegistro: number;
   /** ⚠️ O último registro do alvo — ⛔ os anteriores continuam, ⛔ sobrescritos. */
   readonly vigente: boolean;
@@ -166,6 +172,7 @@ export function decisoesMedicasRegistradas(estado: EstadoAvc): readonly DecisaoM
         critico,
         completa: falta.length === 0,
         falta,
+        requerRevalidacao: decisao === "prosseguir" && falta.length > 0,
         horaRegistro: f.horaRegistro,
       });
       pendentes.set(instancia, {});

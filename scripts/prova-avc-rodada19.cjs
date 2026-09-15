@@ -172,8 +172,16 @@ const ivt = (e) => ({ v: V.vereditoDaTrombolise(e, AGORA), p: P.estadoDoPortaoIV
    * instrumento passa a usar as constantes do conteúdo — ⛔ o valor que a derivação lê é o que a tela grava.
    */
   const SF = emT("avc", "conteudo", "superficie-f.js");
-  const julgar = (e, alvo, decisao) => regI(e, SF?.instanciaDoJulgamento?.(alvo) ?? alvo, "julgamento_individual_registrado",
-    decisao === "prosseguir" ? SF?.DECISAO_DO_JULGAMENTO?.prosseguir : SF?.DECISAO_DO_JULGAMENTO?.naoProsseguir);
+  /**
+   * ⚠️ Ajuste consciente (ARQ-APOIO-01 F2 · D-139-3 por completude, autor, 2026-09-15): «Prosseguir» só com o valor
+   * gravado ⛔ libera mais — é decisão incompleta e requer revalidação (`prova-avc-arq-apoio-01-f2`, D1393-*). Aqui o
+   * «prosseguir» é registrado como a tela registra: decisão médica completa (médico, identificação, CRM/UF, retrato).
+   * «Não prosseguir» continua só com o valor — incompleto, ele segue impedindo.
+   */
+  const DMR = emT("avc", "nucleo", "decisao-medica.js");
+  const julgar = (e, alvo, decisao) => decisao === "prosseguir"
+    ? DMR.registrarDecisaoMedica(e, alvo, { decisao: "prosseguir", justificativa: "", medico: "Dra. Teste", registroProfissional: "CRM 12345/SP", identificacao: "atestacao", criterios: [] }, rel)
+    : regI(e, SF?.instanciaDoJulgamento?.(alvo) ?? alvo, "julgamento_individual_registrado", SF?.DECISAO_DO_JULGAMENTO?.naoProsseguir);
   const imp = (e, id) => (DD?.impedimentosDeSeguranca?.(e) ?? []).find((i) => i.id === id);
 
   /* DOAC <48 h: julgamento individual obrigatório (Table 8, p. e365) */
