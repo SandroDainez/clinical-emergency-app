@@ -128,14 +128,22 @@ export function textoDoIntervalo(minutos: number): string {
 
 /* ── AC-85 · desfechos negativos ─────────────────────────────────────────── */
 
-type Desfecho = { readonly motivo?: string; readonly instante?: number; readonly completo: boolean };
+/**
+ * ⚠️⚠️ ARQ-APOIO-01 F3 · 5c (autor, 2026-09-15): o estado é epistemicamente completo —
+ *  · motivo + hora conhecida → completo, com instante (pode haver cálculo temporal);
+ *  · motivo + hora EXPLICITAMENTE desconhecida → completo, sem instante (⛔ prazo calculado);
+ *  · motivo sem hora respondida → incompleto.
+ * ⛔ O desfecho é registro de EVENTO (5b): motivo, terapia, hora ⛔ autoria técnica da persistência — sem formulário médico.
+ */
+type Desfecho = { readonly motivo?: string; readonly instante?: number; readonly horaDesconhecida: boolean; readonly completo: boolean };
 
 function desfecho(estado: EstadoAvc, campoMotivo: string, campoHora: string): Desfecho {
   const m = valorAtual(estado, campoMotivo)?.valor;
   const motivo = typeof m === "string" && m !== "nao_perguntado" ? m : undefined;
   const h = valorAtual(estado, campoHora)?.valor;
   const instante = typeof h === "number" ? h : undefined;
-  return { motivo, instante, completo: motivo !== undefined && instante !== undefined };
+  const horaDesconhecida = h === "nao_sei";
+  return { motivo, instante, horaDesconhecida, completo: motivo !== undefined && (instante !== undefined || horaDesconhecida) };
 }
 
 export type DesfechosNegativos = {
@@ -179,7 +187,7 @@ const ROTULO_DA_PENDENCIA_SEM_REPERFUSAO: Readonly<Record<string, string>> = {
 export function pendenciasDoPlano(estado: EstadoAvc): readonly Pendencia[] {
   const d = desfechosNegativos(estado);
   if (d.ivtExposta) return [];
-  const iniciado = d.ivt.motivo !== undefined || d.ivt.instante !== undefined || d.evt.motivo !== undefined || d.evt.instante !== undefined;
+  const iniciado = [d.ivt, d.evt].some((x) => x.motivo !== undefined || x.instante !== undefined || x.horaDesconhecida);
   if (!iniciado || (d.ivt.completo && d.evt.completo)) return [];
   const falta = (x: Desfecho) => (x.completo ? "ok" : x.motivo === undefined ? "desfecho" : "horario");
   const rotulo = ROTULO_DA_PENDENCIA_SEM_REPERFUSAO[`${falta(d.ivt)}|${falta(d.evt)}`];
@@ -228,10 +236,18 @@ function origemSemReperfusao(estado: EstadoAvc): LeituraDeOrigem {
   const d = desfechosNegativos(estado);
   if (d.ivtExposta) return {};
   if (d.ivt.completo && d.evt.completo) {
-    return { origem: { evento: EVENTO_DE_ORIGEM.sem_reperfusao, instante: Math.max(d.ivt.instante as number, d.evt.instante as number), horaDesconhecida: false } };
+    if (d.ivt.instante !== undefined && d.evt.instante !== undefined) {
+      return { origem: { evento: EVENTO_DE_ORIGEM.sem_reperfusao, instante: Math.max(d.ivt.instante, d.evt.instante), horaDesconhecida: false } };
+    }
+    /**
+     * ⚠️⚠️ ARQ-APOIO-01 F3 · 5c (autor, 2026-09-15): com alguma hora explicitamente desconhecida o caminho abre SEM
+     * horário global — ⛔ se inventa ordenação ⛔ «horário do evento mais tardio». Cada desfecho guarda a sua hora; ⛔
+     * prazo nenhum parte da origem.
+     */
+    return { origem: { evento: EVENTO_DE_ORIGEM.sem_reperfusao, horaDesconhecida: true } };
   }
   const campos = ["ivt_nao_prosseguir_hora", "evt_desfecho_hora"];
-  const tinhaOsDois = campos.every((c) => estado.fatos.some((f) => f.campo === c && typeof f.valor === "number"));
+  const tinhaOsDois = campos.every((c) => estado.fatos.some((f) => f.campo === c && (typeof f.valor === "number" || f.valor === "nao_sei")));
   return tinhaOsDois ? { encerrado: "Desfecho negativo corrigido" } : {};
 }
 

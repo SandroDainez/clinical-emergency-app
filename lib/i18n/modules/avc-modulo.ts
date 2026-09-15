@@ -2618,10 +2618,14 @@ export const ES_AVC_MODULO: Record<string, string> = {
   /* ── ARQ-APOIO-01 F2 · AP-5: a Reperfusão contextual no caminho hemorrágico ── */
   "Hemorragia identificada — reperfusão do AVC isquêmico não se aplica neste estado.":
     "Hemorragia identificada — la reperfusión del ACV isquémico no se aplica en este estado.",
-  "Administração de trombolítico registrada; hemorragia identificada posteriormente":
-    "Administración de trombolítico registrada; hemorragia identificada posteriormente",
-  "Administração de trombolítico registrada; hemorragia identificada na imagem — os horários registrados não permitem ordenar os dois":
-    "Administración de trombolítico registrada; hemorragia identificada en la imagen — los horarios registrados no permiten ordenar ambos",
+  "Administração de trombolítico registrada após identificação do bloqueio.":
+    "Administración de trombolítico registrada tras la identificación del bloqueo.",
+  "Registro da decisão médica de prosseguir. Não altera o veredito, não cria elegibilidade e não significa administração.":
+    "Registro de la decisión médica de proseguir. No altera el veredicto, no crea elegibilidad y no significa administración.",
+  "Hemorragia identificada após a administração do trombolítico.":
+    "Hemorragia identificada tras la administración del trombolítico.",
+  "Administração de trombolítico registrada; hemorragia identificada na imagem. Os horários disponíveis não permitem determinar qual ocorreu primeiro.":
+    "Administración de trombolítico registrada; hemorragia identificada en la imagen. Los horarios disponibles no permiten determinar cuál ocurrió primero.",
   "Segundo a fonte, a trombólise IV não é recomendada neste cenário":
     "Según la fuente, la trombólisis IV no se recomienda en este escenario",
   "Critérios registrados não compatíveis com trombólise IV":

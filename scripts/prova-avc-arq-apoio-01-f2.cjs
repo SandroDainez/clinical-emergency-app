@@ -201,8 +201,9 @@ bloco("AP5-TELA", "a Reperfusão contextual", () => {
   conf("AP5-TELA", "agente ⛔ dose somem no modo contextual", /contextual \? null : \(<>[\s\S]{0,240}<View style=\{e\.grupo\} testID="avc-f-agente"/.test(telaF), "⛔");
   conf("AP5-TELA", "«Registrar administração» some no modo contextual", /contextual \? null : \(\s*<Pressable[\s\S]{0,160}testID="avc-nova-trombolise"/.test(telaF), "⛔");
   conf("AP5-TELA", "o formulário de decisão médica some no modo contextual", /m\.categoria === "alerta" && !contextual \? \(\s*<RegistroDeDecisaoMedica/.test(telaF), "⛔");
-  conf("AP5-TELA", "«apesar de bloqueio» no modo contextual só pela ordem dos fatos",
-    /sequenciaComHemorragia === "apesar_de_bloqueio"\s*\? tr\("Administração registrada apesar de bloqueio identificado"\)/.test(telaF)
+  /** ⚠️ Ajuste consciente (ARQ-APOIO-01 F3, autor, 2026-09-15): «apesar de» sugeria julgamento sobre a conduta — a frase descreve só a sequência. */
+  conf("AP5-TELA", "«após identificação do bloqueio» no modo contextual só pela ordem dos fatos",
+    /sequenciaComHemorragia === "apesar_de_bloqueio"\s*\? tr\("Administração de trombolítico registrada após identificação do bloqueio\."\)/.test(telaF)
     && /administracoes > 0 && !portao\.liberado && !contextual/.test(telaF), "⛔ o aviso antigo aparece sem ordem");
 });
 

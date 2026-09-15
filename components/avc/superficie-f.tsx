@@ -1357,6 +1357,7 @@ export default function SuperficieF({
 
         {portao.liberado ? (
           DECISAO_DE_PROSSEGUIR.map((campo) => (
+            <View key={campo.id}>
             <CampoDaSuperficie
               key={campo.id}
               campo={{ ...campo, casa: "reperfusao" }}
@@ -1380,6 +1381,11 @@ export default function SuperficieF({
               onHora={() => undefined}
               onDesfazer={() => undefined}
             />
+            {/** ⚠️ ARQ-APOIO-01 F3 (autor, 2026-09-15): mantido nesta versão — a função do registro dita, visível. */}
+            <Text style={e.agenteNota} testID="avc-f-decisao-ivt-nota">
+              {tr("Registro da decisão médica de prosseguir. Não altera o veredito, não cria elegibilidade e não significa administração.")}
+            </Text>
+            </View>
           ))
         ) : null}
       </View>
@@ -1487,11 +1493,12 @@ export default function SuperficieF({
         {contextual && sequenciaComHemorragia !== undefined ? (
           <View style={e.discrepancia} testID={`avc-f-hemorragia-sequencia-${sequenciaComHemorragia}`}>
             <Text style={e.discrepanciaTitulo}>
+              {/** ⚠️ ARQ-APOIO-01 F3 (autor, 2026-09-15): a sequência dos fatos, ⛔ julgamento sobre a conduta. */}
               {sequenciaComHemorragia === "apesar_de_bloqueio"
-                ? tr("Administração registrada apesar de bloqueio identificado")
+                ? tr("Administração de trombolítico registrada após identificação do bloqueio.")
                 : sequenciaComHemorragia === "hemorragia_posterior"
-                  ? tr("Administração de trombolítico registrada; hemorragia identificada posteriormente")
-                  : tr("Administração de trombolítico registrada; hemorragia identificada na imagem — os horários registrados não permitem ordenar os dois")}
+                  ? tr("Hemorragia identificada após a administração do trombolítico.")
+                  : tr("Administração de trombolítico registrada; hemorragia identificada na imagem. Os horários disponíveis não permitem determinar qual ocorreu primeiro.")}
             </Text>
           </View>
         ) : null}
