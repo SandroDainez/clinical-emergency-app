@@ -36,6 +36,29 @@ export function idsInvalidadosPorCorrecao(fatos: readonly FatoRegistrado[]): Rea
   return new Set(fatos.filter(ehCorrecaoComMotivo).map((f) => f.corrigeFatoId as string));
 }
 
+/**
+ * ⚠️ Os campos de situação que recebem, nesta rodada, os gestos novos do AC-13 reaberto: correção por engano (item 2),
+ * ordem causal (item 5) e idempotência (item 6). A ação corretiva (Correções) fica de fora: «Ações corretivas: nenhuma
+ * mudança nesta rodada» (autor, §9).
+ */
+export const CAMPOS_DE_SITUACAO_DA_RODADA: ReadonlySet<string> = new Set(["ivt_estado"]);
+
+/**
+ * ⚠️ AC-13 reaberto, item 6: a mesma transição idêntica, na mesma instância, sem mudança de contexto, é ignorada também
+ * no núcleo. Idêntica = mesmo valor e mesmo horário clínico do último fato do campo na instância, sendo esse último
+ * fato um registro. Marcar, limpar ou corrigir, e marcar de novo, ⛔ é duplicação: o último fato é a correção.
+ */
+export function repeteATransicaoAnterior(
+  estado: EstadoAvc,
+  instancia: string,
+  fato: Pick<FatoRegistrado, "campo" | "valor" | "horaClinica">
+): boolean {
+  if (!CAMPOS_DE_SITUACAO_DA_RODADA.has(fato.campo)) return false;
+  const anterior = valorNaInstancia(estado, instancia, fato.campo);
+  if (anterior === undefined || anterior.tipo === "correcao") return false;
+  return anterior.valor === fato.valor && anterior.horaClinica === fato.horaClinica;
+}
+
 export type TipoDaLinhaDaTrilha = "registro" | "limpeza" | "correcao_por_engano";
 
 /** ⚠️ Uma linha da trilha da situação de uma ação. */

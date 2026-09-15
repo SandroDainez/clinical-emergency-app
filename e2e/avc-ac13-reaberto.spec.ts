@@ -122,3 +122,17 @@ test.describe("AVC · AC-13 reaberto · item 5 · retrocesso", () => {
     await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(2)");
   });
 });
+
+test.describe("AVC · AC-13 reaberto · item 6 · toque repetido", () => {
+  test("«Iniciada» tocada duas vezes → a trilha fica com uma transição", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada", "Iniciada");
+    await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(1)");
+  });
+
+  test("«Iniciada», «Limpar» e «Iniciada» de novo → três linhas: marcar de novo não é duplicação", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-limpar-ivt_estado").click();
+    await page.getByTestId("avc-opcao-ivt_estado-Iniciada").click();
+    await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(3)");
+  });
+});

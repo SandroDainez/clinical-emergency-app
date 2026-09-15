@@ -16,15 +16,12 @@ import type { Relogio } from "./relogio";
 import { MOTIVO_ENGANO } from "./deterioracao";
 import { fatosDaInstancia } from "./instancia";
 import { violacaoDaOrdemCausal, type RegistroValido, type ViolacaoDaOrdem } from "./ordem-da-acao";
-import { idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
+import { CAMPOS_DE_SITUACAO_DA_RODADA, idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
 import { registrarComInstancia } from "../conteudo/campos";
 import { informacaoDoEstadoDaAcao } from "../conteudo/superficie-e";
 
-/**
- * ⚠️ Nesta rodada, só a situação da trombólise aceita a correção por engano e passa pela ordem causal. A ação
- * corretiva (Correções) fica de fora: «Ações corretivas: nenhuma mudança nesta rodada» (autor, AC-13 reaberto, §9).
- */
-const CAMPOS_DE_SITUACAO: ReadonlySet<string> = new Set(["ivt_estado"]);
+/** ⚠️ Nesta rodada, só a situação da trombólise: a lista mora num lugar só, `CAMPOS_DE_SITUACAO_DA_RODADA` (§9). */
+const CAMPOS_DE_SITUACAO = CAMPOS_DE_SITUACAO_DA_RODADA;
 
 export function corrigirRegistroDaAcaoPorEngano(estado: EstadoAvc, fatoId: string, relogio: Relogio): EstadoAvc {
   const alvo = estado.fatos.find((f) => f.id === fatoId);

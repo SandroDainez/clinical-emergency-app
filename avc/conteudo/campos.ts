@@ -15,6 +15,7 @@ import { corrigirFato, registrarFato } from "../nucleo/estado";
 import { instanciaParaRegistrar, proximaInstancia, valorNaInstancia } from "../nucleo/instancia";
 import type { Relogio } from "../nucleo/relogio";
 import type { FatoRegistrado } from "../nucleo/tipos";
+import { repeteATransicaoAnterior } from "../nucleo/transicoes-da-acao";
 import { TODOS_OS_CAMPOS_L } from "./laboratorio";
 import { TODOS_OS_CAMPOS_P } from "./paciente";
 import { TODOS_OS_CAMPOS_A } from "./superficie-a";
@@ -176,6 +177,8 @@ export function registrarComInstancia(
    * ⚠️ Quem corrige agora é `corrigirNaInstancia`, e ⛔ só quando a tela disser
    * que o médico tocou em **Corrigir**.
    */
+  /** ⚠️ AC-13 reaberto, item 6: a transição idêntica repetida ⛔ vira segundo fato — o estado volta intacto. */
+  if (repeteATransicaoAnterior(estado, alvo, fato)) return estado;
   return registrarFato(estado, { ...fato, instancia: alvo }, relogio);
 }
 

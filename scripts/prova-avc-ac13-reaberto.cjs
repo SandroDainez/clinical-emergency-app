@@ -13,6 +13,9 @@
  *  · item 5 — na trombólise, o estado que contraria a ordem causal decidida é detectado sem gravar nada; confirmado,
  *    entra como correção explícita do registro com que conflita, sem motivo, sem retirar exposição, e a trilha o
  *    marca fora da ordem. Correções fica fora da regra nesta rodada (§9).
+ *  · item 6 — na trombólise, o núcleo ignora a transição idêntica repetida (mesma instância, mesmo valor, mesmo
+ *    horário clínico, último fato do campo sendo registro) sem gerar evento; marcar, limpar ou corrigir, e marcar
+ *    de novo, continua registrando; outros campos e Correções não mudam.
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
  *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao}.ts`, `avc/persistencia/log.ts`.
@@ -432,6 +435,60 @@ bloco("5c", () => {
   e = regI(e, inst, "acao_estado", "Iniciada");
   conf("5c · Correções · «Iniciada» → «Indicada» ⛔ pede confirmação nesta rodada", regraDe(violacao(e, "Indicada", inst, "acao_estado")) === "nenhuma", `⛔ ${J(violacao(e, "Indicada", inst, "acao_estado"))}`);
   conf("5c · outro campo ⛔ passa pela regra", regraDe(violacao(e, "Correção glicêmica", inst, "acao_tipo")) === "nenhuma", "⛔");
+});
+
+/* ══ ITEM 6 · idempotência também no núcleo ═══════════════════════════════════════ */
+/**
+ * Decisão do autor (AC-13 reaberto, §6 e §9): a mesma transição idêntica, na mesma instância, no mesmo estado, sem
+ * mudança de contexto, é ignorada. Marcar, limpar ou corrigir, e marcar de novo, não é duplicação.
+ * Aplicado aqui: mesmo campo de situação da trombólise, mesma instância, mesmo valor, mesmo horário clínico, e o
+ * último fato desse campo na instância é um registro (não limpeza nem correção). Correções fica fora (§9).
+ */
+const doCampo = (e, inst, campo = "ivt_estado") => I.fatosDaInstancia(e, inst ?? inst1(e)).filter((f) => f.campo === campo);
+const comHora = (e, valor, horaClinica) => CAMPOS.registrarComInstancia(e, { campo: "ivt_estado", valor, horaClinica }, rel, inst1(e));
+const ctx6 = () => ({ casoId: "caso-ac13-item6", autor: "local:prova", origemDoAutor: "aparelho", agora: rel.agora(), gerarId: () => "ev-6" });
+
+/* 6a · a repetição idêntica é ignorada no núcleo */
+bloco("6a", () => {
+  const um = atendimento(["Iniciada"]);
+  const dois = regI(um, inst1(um), "ivt_estado", "Iniciada");
+  conf("6a · «Iniciada» registrada de novo, sem nada entre → ignorada: o mesmo estado volta", dois === um && doCampo(dois).length === 1, `⛔ ${doCampo(dois).length} fato(s)`);
+  const ns = atendimento(["nao_sei"]);
+  const ns2 = regI(ns, inst1(ns), "ivt_estado", "nao_sei");
+  conf("6a · «Não sei» repetido → ignorado", doCampo(ns2).length === 1, `⛔ ${doCampo(ns2).length} fato(s)`);
+  const hc = comHora(atendimento([]), "Iniciada", AGORA - 20 * MIN);
+  conf("6a · mesmo valor e mesmo horário clínico → ignorado", doCampo(comHora(hc, "Iniciada", AGORA - 20 * MIN)).length === 1, "⛔");
+  conf("6a · mesmo valor com OUTRO horário clínico → registra", doCampo(comHora(hc, "Iniciada", AGORA - 10 * MIN)).length === 2, "⛔");
+  conf("6a · mesmo valor, um com horário clínico e outro sem → registra (não são idênticos)", doCampo(regI(hc, inst1(hc), "ivt_estado", "Iniciada")).length === 2, "⛔");
+  const eventos = tenta(() => LOG.eventosDaTransicao(um, dois, ctx6()));
+  conf("6a · a repetição ignorada ⛔ gera evento no log", Array.isArray(eventos) && eventos.length === 0, `⛔ ${J(eventos && eventos.length)}`);
+  const outroCampoEntre = regI(regI(um, inst1(um), "ivt_inicio", AGORA - 5 * MIN), inst1(um), "ivt_estado", "Iniciada");
+  conf("6a · outro campo registrado entre os dois ⛔ muda a situação: a repetição continua ignorada", doCampo(outroCampoEntre).length === 1, `⛔ ${doCampo(outroCampoEntre).length}`);
+});
+
+/* 6b · o que não é duplicação continua registrando */
+bloco("6b", () => {
+  const base = atendimento(["Iniciada"]);
+  const limpo = regI(limpar(base), inst1(base), "ivt_estado", "Iniciada");
+  conf("6b · marcar, limpar e marcar de novo → três fatos, todos na trilha", doCampo(limpo).length === 3 && (trilha(limpo) || []).length === 3, `⛔ ${doCampo(limpo).length}`);
+  const engano = regI(corrigirEngano(base, idDoRegistro(base, "Iniciada")), inst1(base), "ivt_estado", "Iniciada");
+  conf("6b · marcar, corrigir por engano e marcar de novo → três fatos", doCampo(engano).length === 3, `⛔ ${doCampo(engano).length}`);
+  const idaEVolta = regI(regI(base, inst1(base), "ivt_estado", "Interrompida"), inst1(base), "ivt_estado", "Iniciada");
+  conf("6b · outro estado entre os dois → registra", doCampo(idaEVolta).length === 3, `⛔ ${doCampo(idaEVolta).length}`);
+  const duas = atendimento(["Iniciada"], ["Iniciada"]);
+  const [i1, i2] = I.instanciasDe(duas, SF.TROMBOLISE_IV);
+  conf("6b · a mesma situação em OUTRA instância → registra", doCampo(duas, i1).length === 1 && doCampo(duas, i2).length === 1, "⛔");
+});
+
+/* 6c · outros campos não mudam */
+bloco("6c", () => {
+  const base = atendimento(["Iniciada"]);
+  const hora = regI(regI(base, inst1(base), "ivt_inicio", AGORA - 5 * MIN), inst1(base), "ivt_inicio", AGORA - 5 * MIN);
+  conf("6c · o horário de início repetido continua registrando (a regra é só da situação)", doCampo(hora, undefined, "ivt_inicio").length === 2, `⛔ ${doCampo(hora, undefined, "ivt_inicio").length}`);
+  let e = I.abrirNovaInstancia(vazio, SE2.ACAO, rel);
+  const inst = I.instanciasDe(e, SE2.ACAO)[0];
+  e = regI(regI(regI(e, inst, "acao_tipo", "Correção glicêmica"), inst, "acao_estado", "Iniciada"), inst, "acao_estado", "Iniciada");
+  conf("6c · Correções · situação da ação repetida continua registrando nesta rodada (§9)", doCampo(e, inst, "acao_estado").length === 2, `⛔ ${doCampo(e, inst, "acao_estado").length}`);
 });
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);
