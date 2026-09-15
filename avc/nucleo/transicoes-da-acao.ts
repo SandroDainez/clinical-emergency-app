@@ -98,7 +98,14 @@ export function transicoesDoEstadoDaAcao(estado: EstadoAvc, instancia: string, c
       info.tipo !== "nao_perguntado" ? "registro" : ehCorrecaoComMotivo(f) ? "correcao_por_engano" : "limpeza";
     const valido = registrado !== undefined && !invalidados.has(f.id);
     const foraDaOrdemCausal = valido && violacaoDaOrdemCausal(validosAntes, registrado) !== undefined;
-    if (valido) validosAntes.push({ fatoId: f.id, estado: registrado });
+    if (valido) {
+      /** ⚠️ §10: o registro gravado como correção explícita de outro reabre o registro corrigido. */
+      if (f.tipo === "correcao" && f.corrigeFatoId !== undefined) {
+        const i = validosAntes.findIndex((r) => r.fatoId === f.corrigeFatoId);
+        if (i !== -1) validosAntes[i] = { ...validosAntes[i], reaberto: true };
+      }
+      validosAntes.push({ fatoId: f.id, estado: registrado });
+    }
     return {
       fatoId: f.id,
       tipo,

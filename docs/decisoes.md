@@ -1174,6 +1174,37 @@ Nenhuma tela menciona a situação desconhecida.
 - **Horário clínico obrigatório:** a transição fica pendente de horário clínico até ele ser informado ou declarado desconhecido. A exigência nunca impede o registro do estado nem inventa horário, pela E-49 e pela E-52.
 - **Idempotência, "sem mudança de contexto":** mesmo campo, mesma instância, mesmo valor e mesmo horário clínico, sem nenhum outro registro do campo naquela instância entre os dois.
 
+### 10 · Segunda leva de decisões do autor (2026-09-14), depois dos itens 1, 2, 5 e 6
+
+**Decidido por:** Dr. Sandro Dainez, por escrito, em resposta às perguntas levantadas na implementação. Ordem de implementação mantida: 1 → 2 → 5 → 6 → 3 → 4 → 7. Cada item só entra em commit com `test:all = 0`. Sem push.
+
+**Item 3 · horário clínico**
+- `Iniciada`: `ivt_inicio` é a única fonte de verdade do horário clínico. Não se cria segundo horário para o mesmo instante.
+- `Administrada/concluída` e `Interrompida`: gesto próprio para o horário clínico, com "Informar horário" e "Horário desconhecido".
+- Horário clínico e horário do registro permanecem separados; um nunca preenche o outro silenciosamente.
+- E-49: o rascunho completo da checagem contra as 12 marcas de não-exigir é apresentado ao autor para decisão final antes do commit do item 3.
+
+**Item 4 · autoria**
+- Nome de exibição: `full_name`; se ausente, `nome`. Nunca derivar nome de e-mail.
+- Permitido migrar o IndexedDB para a v4 para persistir o nome de exibição no evento.
+- Eventos antigos permanecem "Autoria não identificada". Registro sem conta também exibe "Autoria não identificada".
+
+**Item 6 · idempotência**
+- Repetir o mesmo estado na mesma instância continua idempotente se não houve mudança real do estado da ação.
+- Registros auxiliares no meio, como `ivt_inicio`, não tornam a repetição uma nova transição.
+- Correção, desfazer ou mudança de estado tornam o evento novo.
+
+**Item 5 · movimentos terminais**
+- `Cancelada`, `Interrompida` e `Administrada/concluída` são estados terminais distintos.
+- `Cancelada → qualquer outro estado`: somente como correção ou reabertura explícita, com confirmação.
+- `Administrada/concluída → Interrompida` e `Interrompida → Administrada/concluída`: não são transição normal; somente correção explícita.
+
+**Item 7 · comentários**
+- Corrigir os 17 pontos do §7 e as 45 linhas acrescentadas nos itens 1 a 6 em que `⛔` foi usado como negação.
+- Sem alteração de comportamento nesse commit.
+
+**Como o item 5 aplica os terminais, para conferência do autor:** a saída de terminal é conferida depois das regras já existentes (cancelada depois do início, interrompida sem início, retrocesso), que continuam dando o nome da violação quando também se aplicam. Um terminal reaberto por correção explícita confirmada deixa de exigir confirmação para os registros seguintes; repetir o mesmo terminal não é saída.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

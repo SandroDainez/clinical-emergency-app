@@ -475,6 +475,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Registrar como correção": "Registrar como corrección",
   "Registrar fora da ordem": "Registrar fuera de orden",
   "Não registrar": "No registrar",
+  "encerra esta ação. Mudar para": "cierra esta acción. Cambiar a",
+  "só vale como correção ou reabertura explícita.": "solo vale como corrección o reapertura explícita.",
   "Situação registrada por engano?": "¿Situación registrada por error?",
   "O registro não é apagado: fica na trilha, recebe correção com motivo «registrado por engano» e deixa de valer para a situação da ação. Os outros registros não mudam.":
     "El registro no se borra: queda en el historial, recibe una corrección con motivo «registrado por error» y deja de valer para la situación de la acción. Los demás registros no cambian.",

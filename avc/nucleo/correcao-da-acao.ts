@@ -42,9 +42,18 @@ export function corrigirRegistroDaAcaoPorEngano(estado: EstadoAvc, fatoId: strin
 export function registrosValidosDaSituacao(estado: EstadoAvc, instancia: string, campo: string): readonly RegistroValido[] {
   const doCampo = fatosDaInstancia(estado, instancia).filter((f) => f.campo === campo);
   const invalidados = idsInvalidadosPorCorrecao(doCampo);
+  /** ⚠️ §10: um registro válido gravado como correção explícita de outro reabre o registro corrigido. */
+  const reabertos = new Set(
+    doCampo
+      .filter((f) => f.tipo === "correcao" && f.corrigeFatoId !== undefined && !invalidados.has(f.id)
+        && informacaoDoEstadoDaAcao(f.valor).tipo === "registrado")
+      .map((f) => f.corrigeFatoId as string)
+  );
   return doCampo.flatMap((f) => {
     const info = informacaoDoEstadoDaAcao(f.valor);
-    return info.tipo === "registrado" && !invalidados.has(f.id) ? [{ fatoId: f.id, estado: info.estado }] : [];
+    return info.tipo === "registrado" && !invalidados.has(f.id)
+      ? [{ fatoId: f.id, estado: info.estado, reaberto: reabertos.has(f.id) }]
+      : [];
   });
 }
 

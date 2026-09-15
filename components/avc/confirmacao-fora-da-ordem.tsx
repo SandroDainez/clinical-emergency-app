@@ -48,7 +48,9 @@ export function ConfirmacaoForaDaOrdem({
                 ? `${novo} ${tr("vem antes de")} ${referencia}, ${tr("já registrada nesta ação.")}`
                 : v.regra === "cancelada_depois_do_inicio"
                   ? `${novo} ${tr("só vale antes de")} ${iniciada}, ${tr("e esta ação já tem")} ${referencia} ${tr("registrada.")}`
-                  : `${novo} ${tr("só vale depois de")} ${iniciada}, ${tr("que não foi registrada nesta ação.")}`}
+                  : v.regra === "saida_de_estado_terminal"
+                    ? `${referencia} ${tr("encerra esta ação. Mudar para")} ${novo} ${tr("só vale como correção ou reabertura explícita.")}`
+                    : `${novo} ${tr("só vale depois de")} ${iniciada}, ${tr("que não foi registrada nesta ação.")}`}
             </Text>
             <Text style={e.texto}>
               {v.referencia

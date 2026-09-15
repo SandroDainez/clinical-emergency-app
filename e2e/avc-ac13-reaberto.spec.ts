@@ -136,3 +136,24 @@ test.describe("AVC · AC-13 reaberto · item 6 · toque repetido", () => {
     await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(3)");
   });
 });
+
+test.describe("AVC · AC-13 reaberto · item 5 · estados terminais", () => {
+  test("«Cancelada» e depois «Iniciada» → pede confirmação; confirmada, a trilha marca a reabertura fora da ordem", async ({ page }) => {
+    await tromboliseCom(page, "Cancelada");
+    await page.getByTestId("avc-opcao-ivt_estado-Iniciada").click();
+    const dialogo = page.getByTestId("avc-confirmar-ordem");
+    await expect(dialogo).toBeVisible();
+    await expect(dialogo).toContainText("Cancelada");
+    await page.getByTestId("avc-confirmar-ordem-corrigir").click();
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-1")).toContainText("fora da ordem causal");
+  });
+
+  test("«Administrada/concluída» e depois «Interrompida» → pede confirmação; «Não registrar» não grava nada", async ({ page }) => {
+    await tromboliseCom(page, "Administrada/concluída");
+    await page.getByTestId("avc-opcao-ivt_estado-Interrompida").click();
+    await expect(page.getByTestId("avc-confirmar-ordem")).toBeVisible();
+    await page.getByTestId("avc-confirmar-ordem-cancelar").click();
+    await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(1)");
+  });
+});

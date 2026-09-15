@@ -16,6 +16,9 @@
  *  · item 6 — na trombólise, o núcleo ignora a transição idêntica repetida (mesma instância, mesmo valor, mesmo
  *    horário clínico, último fato do campo sendo registro) sem gerar evento; marcar, limpar ou corrigir, e marcar
  *    de novo, continua registrando; outros campos e Correções não mudam.
+ *  · item 5, complemento (§10) — Cancelada, Interrompida e Administrada/concluída são terminais distintos: sair
+ *    de um deles para outro estado pede confirmação e entra como correção explícita; o terminal reaberto por
+ *    correção confirmada deixa de pedir confirmação para os registros seguintes.
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
  *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao}.ts`, `avc/persistencia/log.ts`.
@@ -356,8 +359,7 @@ bloco("2f", () => {
  * Decisão do autor (AC-13 reaberto, §5 e §9, opção B): ordem de referência indicado < decidido < prescrito <
  * preparado < iniciado < administrado/concluído; `cancelado` só antes de `iniciado`; `interrompido` só depois de
  * `iniciado`. O movimento contrário é tecnicamente permitido, exige confirmação e entra como correção explícita.
- * ⛔ Não se conferem aqui os movimentos que o autor não decidiu (sair de «Cancelada»; trocar administrada/concluída
- * por interrompida ou o inverso).
+ * Os estados terminais, decididos depois (§10), são conferidos no bloco 5d.
  */
 const violacao = (e, rotulo, inst, campo = "ivt_estado") => tenta(() => CA.violacaoAoRegistrar(e, inst ?? inst1(e), campo, rotulo));
 const regraDe = (v) => (v === undefined ? "nenhuma" : v && v.erro ? `erro: ${v.erro}` : v.regra);
@@ -489,6 +491,44 @@ bloco("6c", () => {
   const inst = I.instanciasDe(e, SE2.ACAO)[0];
   e = regI(regI(regI(e, inst, "acao_tipo", "Correção glicêmica"), inst, "acao_estado", "Iniciada"), inst, "acao_estado", "Iniciada");
   conf("6c · Correções · situação da ação repetida continua registrando nesta rodada (§9)", doCampo(e, inst, "acao_estado").length === 2, `⛔ ${doCampo(e, inst, "acao_estado").length}`);
+});
+
+/* ══ ITEM 5 · complemento · estados terminais distintos (§10) ═══════════════════════ */
+/**
+ * Decisão do autor (AC-13 reaberto, §10): `Cancelada`, `Interrompida` e `Administrada/concluída` são terminais
+ * distintos. Sair de um deles para outro estado só vale como correção ou reabertura explícita, com confirmação.
+ */
+bloco("5d", () => {
+  const saidas = [
+    [["Cancelada"], "Iniciada"],
+    [["Cancelada"], "Indicada"],
+    [["Cancelada"], "Prescrita"],
+    [["Administrada/concluída"], "Interrompida"],
+    [["Interrompida"], "Administrada/concluída"],
+    [["Iniciada", "Interrompida"], "Iniciada"],
+  ];
+  for (const [antes, novo] of saidas) {
+    const v = violacao(atendimento(antes), novo);
+    conf(`5d · ${antes.join(" → ")} → «${novo}» sai de estado terminal`, regraDe(v) === "saida_de_estado_terminal", `⛔ ${J(v)}`);
+  }
+  const base = atendimento(["Cancelada"]);
+  const v = violacao(base, "Iniciada");
+  conf("5d · a saída aponta o terminal de onde sai", v && v.referencia && v.referencia.fatoId === idDoRegistro(base, "Cancelada") && v.referencia.estado === "cancelado", `⛔ ${J(v)}`);
+  conf("5d · repetir o mesmo terminal não é saída", regraDe(violacao(atendimento(["Cancelada"]), "Cancelada")) === "nenhuma", `⛔ ${J(violacao(atendimento(["Cancelada"]), "Cancelada"))}`);
+  conf("5d · «não sei» depois de terminal não passa pela regra (não é estado)", regraDe(violacao(atendimento(["Administrada/concluída"]), "nao_sei")) === "nenhuma", "⛔");
+  conf("5d · as regras anteriores continuam dando o nome: «Administrada/concluída» → «Cancelada» segue cancelada_depois_do_inicio",
+    regraDe(violacao(atendimento(["Administrada/concluída"]), "Cancelada")) === "cancelada_depois_do_inicio", "⛔");
+  const reaberta = foraDaOrdem(base, "Iniciada");
+  const ultimo = reaberta.fatos[reaberta.fatos.length - 1];
+  conf("5d · confirmada, a reabertura é correção explícita do terminal", ultimo.tipo === "correcao" && ultimo.corrigeFatoId === idDoRegistro(base, "Cancelada") && ultimo.valor === "Iniciada", `⛔ ${J(ultimo)}`);
+  conf("5d · depois da reabertura confirmada, o registro seguinte na ordem não pede confirmação de novo",
+    regraDe(violacao(reaberta, "Administrada/concluída")) === "nenhuma", `⛔ ${J(violacao(reaberta, "Administrada/concluída"))}`);
+  const t = trilha(regI(reaberta, inst1(reaberta), "ivt_estado", "Administrada/concluída"));
+  conf("5d · na trilha, só a reabertura fica marcada fora da ordem",
+    Array.isArray(t) && t.length === 3 && t.map((x) => x.foraDaOrdemCausal).join() === "false,true,false", `⛔ ${J(t && t.map((x) => [x.estado, x.foraDaOrdemCausal]))}`);
+  const trilhaSemConfirmar = trilha(regI(atendimento(["Administrada/concluída"]), undefined, "ivt_estado", "Interrompida"));
+  conf("5d · pela API, a saída gravada sem confirmação continua marcada na trilha",
+    Array.isArray(trilhaSemConfirmar) && trilhaSemConfirmar.length === 2 && trilhaSemConfirmar[1].foraDaOrdemCausal === true, `⛔ ${J(trilhaSemConfirmar)}`);
 });
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);
