@@ -986,6 +986,194 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 - **Aplicado:** o dossiê foi gerado de novo com o rótulo "[responsável médico do projeto]" e o texto acima no critério "Quem decide". O conteúdo dos nove pacotes não mudou.
 - **Não muda:** nenhuma decisão já registrada. Nenhum teste declara validação clínica.
 
+## AC-13 reaberto (2026-09-14) · auditoria do `5649ade`: exposição triestado, trilha fiel, horários, autoria, retrocessos
+
+**Data:** 2026-09-14 · **Decidido por:** Dr. Sandro Dainez, por escrito · **Estado:** AC-13 **reaberto**; nenhuma implementação autorizada até a aprovação do plano de testes vermelhos.
+
+**Decisão, nos termos do autor:** o `5649ade` implementa corretamente a base do AC-13, mas o AC-13 continua aberto por dois defeitos e dois atendimentos parciais. Não recriar a etapa: os ajustes são feitos sobre o `5649ade`.
+
+**Revoga:** o "✅ encerrado" do AC-13 na tabela da 19ª rodada, §11, quanto à implementação. O modelo decidido na §8 (opção B, 8 estados, "não sei" separado) continua vigente.
+
+### 0 · Como a auditoria foi feita
+
+- **Onde:** worktree isolado no `5649ade`, sem tocar na árvore principal.
+- **Provas:** 13 suítes verdes, incluindo 19ª rodada 123/0, críticos 185/0, fase 8 30/30, fase 10 41/41, Superfície G 77/77, persistência 40/40.
+- **E2e que o commit tocou:** 126 de 126.
+- **`tsc` na árvore principal:** limpo.
+- **Roteiro adversarial:** 40 cenários executados no núcleo, comparados com o `52aa4e2` onde o módulo já existia, para separar o que o AC-13 introduziu do que já vinha antes.
+
+### 1 · "Não sei" não pode ser consumido como "sem trombólise" · defeito
+
+**Decisão, nos termos do autor:** criar semântica triestado para exposição: `exposta`, `nao_exposta`, `desconhecida`. Todo consumidor clínico dependente de exposição deve tratar `desconhecida` explicitamente.
+
+**O que o código faz hoje:** `exposicaoAoTrombolitico` devolve seis formas, e todo consumidor pergunta só se a forma é `exposta`. Com "Não sei" na única trombólise, a forma é `situacao_desconhecida`, e o resultado em cada consumidor é o mesmo de "nenhuma trombólise":
+
+| consumidor | arquivo | com "Não sei" |
+|---|---|---|
+| pertinência da monitorização, fase, protocolo pós-IVT, pressão pós-IVT, antitrombóticos | `avc/nucleo/derivacoes-g.ts` | não pertinente; antitrombóticos "fora do contexto pós-IVT" |
+| alvos pressóricos aplicáveis | `avc/nucleo/alvo-pressorico.ts` | alvo de antes da trombólise |
+| caminho hemorrágico, com hemorragia na TC | `avc/nucleo/caminho-hemorragico.ts` | "sem trombólise", sem a pendência de registrar a interrupção da infusão |
+| plano até 48 h, desfechos e origem | `avc/nucleo/plano-48h.ts` | sem exposição e sem origem |
+| síntese do caso | `avc/nucleo/sintese-do-caso.ts` | nenhuma linha |
+| contagem de administrações, cartão de discrepância | `components/avc/superficie-f.tsx` | zero |
+| conclusão gravada no log | `avc/persistencia/log.ts` | `situacao_desconhecida`, valor que nenhum leitor interpreta |
+| ação corretiva com "Não sei", portão da PA e reavaliação glicêmica | `avc/nucleo/derivacoes-e.ts` | igual a nenhuma correção |
+
+Nenhuma tela menciona a situação desconhecida.
+
+**Agregação entre instâncias hoje:** exposta vence; senão, `cancelada_antes_do_inicio` vence qualquer outra; senão, vale a última. Com uma instância cancelada e outra "não sei", em qualquer ordem, o atendimento inteiro é lido como cancelado.
+
+**Novo ou pré-existente:** `situacao_desconhecida` é novo do `5649ade`. A precedência da cancelada já existia no `52aa4e2`, e passou a esconder o desconhecido.
+
+**Mapeamento proposto das formas atuais para as três, a confirmar pelo autor:**
+
+| forma atual | triestado proposto |
+|---|---|
+| `exposta` | `exposta` |
+| `nenhuma_administracao`, `cancelada_antes_do_inicio`, `antes_do_inicio` | `nao_exposta` |
+| `situacao_desconhecida` | `desconhecida` |
+| `registro_em_aberto`, instância aberta sem situação registrada | **a decidir**: o AVC-13 decidiu que formulário aberto não é conduta, e a E-23 separa não perguntado de "não" |
+
+**A decidir pelo autor, sem regra clínica inventada:**
+- **Agregação entre instâncias.** Proposta: `exposta` se alguma instância estiver exposta; senão `desconhecida` se alguma for desconhecida; senão `nao_exposta`.
+- **O que cada consumidor faz com `desconhecida`.** Monitorização pós-IVT, alvo pressórico, imagem de controle antes de antitrombótico, pendência de interromper a infusão e plano até 48 h são condutas clínicas. Esta decisão exige só que nenhum deles trate `desconhecida` como `nao_exposta` em silêncio.
+- **"Não sei" numa ação corretiva de Correções:** se entra na mesma semântica.
+
+### 2 · A trilha não pode marcar como vigente um estado desfeito ou corrigido · defeito
+
+**Decisão, nos termos do autor:** desfazer e corrigir precisam aparecer como eventos próprios, e o estado vigente deve ser derivado do estado reconstruído atual.
+
+**O que o código faz hoje:**
+- **Desfazer:** o gesto grava uma correção com valor vazio (`nao_perguntado`). A trilha filtra esse valor e continua exibindo, por exemplo, "Iniciada" como "situação vigente", enquanto o valor atual do campo está vazio.
+- **Corrigir:** a correção aparece como transição comum. O fato carrega `tipo: "correcao"` e `corrigeFatoId`, mas a trilha não lê nenhum dos dois, então o valor corrigido aparece só como "registro anterior".
+- **Vigente:** é a última linha listada, e não o valor atual da instância.
+
+**Novo ou pré-existente:** a trilha é nova do `5649ade`, então o defeito também.
+
+**Relacionado, pré-existente e a decidir:** a exposição por histórico continua contando um "Iniciada" depois desfeito ou corrigido. A saída é idêntica no `52aa4e2`. A pergunta é se uma **correção de registro**, que pela §3.4 significa que o valor nunca foi verdade, deve retirar a exposição. A HR-5 tratou "Iniciada seguida de Cancelada" como transição clínica, e não como correção.
+
+### 3 · Separar horário do registro de horário clínico da ação · parcial
+
+**Decisão, nos termos do autor:** separar `horário do registro` de `horário clínico da ação`.
+
+**O que o código faz hoje:**
+- O fato já tem os dois campos, `horaRegistro` e `horaClinica` opcional.
+- A tela grava `ivt_estado` sem `horaClinica`. O único gravador com horário clínico é o registro da interrupção no caminho hemorrágico.
+- A trilha mostra `horaClinica ?? horaRegistro` numa única linha, sem dizer qual dos dois é. O caminho hemorrágico faz o mesmo em `interrompidaEm`, e isso é pré-existente.
+- O início da infusão mora no campo `ivt_inicio`, que a trilha não mostra.
+
+**Referência:** a spec T06, bloco Rastreio, pede "horários reais".
+
+**A decidir:** quais transições pedem horário clínico, e se ele é exigido ou opcional, à luz da E-49. Regra desta decisão: horário clínico ausente é declarado como ausente, e nunca substituído pelo horário do registro.
+
+### 4 · "Responsável" reflete a identidade realmente disponível · parcial
+
+**Decisão, nos termos do autor:** "responsável" deve refletir a identidade realmente disponível; sem identidade, declarar autoria não identificada, e não inferir responsável clínico.
+
+**O que o código faz hoje:** a autoria vem do log (AC-40): `user.id` da sessão, ID do aparelho, sessão anônima ou não registrado. A trilha exibe "registrado neste aparelho, sem conta", "registrado em sessão anônima, sem conta", "autor não registrado", "registrado com conta" sem identidade, ou "autoria ainda não gravada". O comentário do componente afirma que "conta tem nome no módulo", e não tem.
+
+**A decidir:** qual atributo da conta pode ser exibido, por privacidade, e se "responsável clínico" será um fato próprio. Hoje esse fato não existe.
+
+### 5 · Retrocessos e contradições de estado precisam de política explícita
+
+**Decisão, nos termos do autor:** não aceitar silenciosamente `administrado → indicado`, `interrompido → preparado` e casos equivalentes.
+
+**O que o código faz hoje:** qualquer ordem é aceita. A exposição fica preservada, mas só "estado exposto seguido de Cancelada" é marcado como contraditório, pela HR-5. Medido:
+- "Iniciada" seguida de "Prescrita", "Administrada/concluída" seguida de "Indicada" e "Interrompida" seguida de "Preparada": exposição preservada, nenhuma marca, e a trilha exibe o estado de antes do início como "situação vigente".
+- "Cancelada" seguida de "Iniciada": exposta, sem marca.
+- "Preparada" seguida de "Interrompida", sem "Iniciada": aceita como exposição pelo e2e do próprio commit.
+
+**Opções para o autor:**
+
+| opção | comportamento |
+|---|---|
+| A | recusar o registro do retrocesso |
+| B | aceitar, marcar como contraditório na trilha e na exposição, e pedir correção ou motivo, como na HR-5 |
+| C | aceitar só depois de confirmação explícita no gesto |
+
+**Recomendação:** B. A trilha é append-only, o médico pode estar registrando um fato real fora de ordem, e o padrão já existe na HR-5.
+
+**A decidir:** a ordem de referência. Proposta: indicado, decidido, prescrito, preparado, iniciado, administrado/concluído, com interrompido e cancelado como terminais. Também é preciso decidir se "interrompido" sem "iniciado" registrado é contradição, e se "cancelado" seguido de "iniciado" na mesma instância é retrocesso ou retomada legítima.
+
+### 6 · Clique repetido não duplica transição idêntica
+
+**Decisão, nos termos do autor:** clique repetido não deve duplicar transição idêntica.
+
+**O que o código faz hoje, pela tela:** o D-PEND-19 ignora o segundo toque numa opção já marcada, e toda mudança de estado passa por `repeteOGestoAnterior`, a trava de toque duplo. Pelo gesto, a duplicação não foi reproduzida.
+
+**Onde a duplicação existe:** o núcleo grava dois fatos idênticos se registrar for chamado duas vezes em sequência. A auditoria mediu isso chamando o núcleo diretamente. O único gravador de `ivt_estado` fora da tela é o caminho hemorrágico, que só grava com a infusão em curso. Pela tela, a trilha mostra duas linhas iguais na sequência marcar, "Limpar" e marcar de novo, e isso é consequência do item 2.
+
+**Estado:** atendido no gesto, não garantido no núcleo. RQ-T06-03 consta como "não medido" na matriz de requisitos.
+
+**A decidir:** se a garantia também fica no núcleo, recusando fato idêntico consecutivo na mesma instância, além da tela.
+
+### 7 · Comentários que contradizem o comportamento e referências de arquivo erradas
+
+**Decisão, nos termos do autor:** revisar comentários do código que contradizem o comportamento real, e corrigir referências de arquivo.
+
+**Causa:** nos trechos do `5649ade`, o símbolo ⛔ ocupa o lugar de "não" e de "e". Várias frases passam a dizer o contrário do código.
+
+| arquivo e linha no `5649ade` | o comentário lê | o código faz |
+|---|---|---|
+| `avc/conteudo/superficie-e.ts:81` | "Realizada" "é mais oferecido" | não é mais oferecido |
+| `avc/conteudo/superficie-e.ts:91` | os rótulos já gravados "mudam" | não mudam |
+| `avc/conteudo/superficie-e.ts:93` | "Não sei" "é nono estado" | não é estado |
+| `avc/conteudo/superficie-e.ts:121` | rótulos antigos "são mais oferecidos" e "perdem o significado" | não são oferecidos e não perdem |
+| `avc/nucleo/derivacoes-e.ts:31` | indicada a cancelada e "não sei" "contam"; "expor é resolver" | não contam; expor não resolve |
+| `avc/nucleo/derivacoes-e.ts:38-39` | a trilha mora "aqui, onde o horário de registro pode entrar" | mora fora, porque ali o horário não pode entrar |
+| `avc/nucleo/derivacoes-e.ts:154` | prescrita e preparada "são" correção | não são |
+| `avc/nucleo/portao-ivt.ts:211` | prescrita e preparada "são gesto no paciente" | não são |
+| `avc/nucleo/derivacoes-f.ts:1077` | antes do início é "exposição" | não é |
+| `avc/nucleo/derivacoes-f.ts:1079` | "não sei" "vira sem exposição" | não vira nem sem exposição nem exposição |
+| `avc/nucleo/derivacoes-f.ts:1093-1094` | fases "renomeadas, para regredir" | não renomeadas, para não regredir |
+| `avc/nucleo/transicoes-da-acao.ts:4` e `:20` | "derivação clínica"; "não sei" é "estado" | não é derivação clínica; não é estado |
+| `components/avc/superficie-f.tsx:1228` | "o estado antigo some" | não some |
+| `components/avc/transicoes-da-acao.tsx:8` | a trilha vem de `avc/nucleo/derivacoes-e.ts` | vem de `avc/nucleo/transicoes-da-acao.ts` |
+| `components/avc/transicoes-da-acao.tsx:22` | "conta tem nome no módulo" | não tem |
+| `e2e/avc-rodada19.spec.ts:203` e `:210`, títulos de teste | "«Prescrita» → «Preparada» é exposição: o Destino mostra conduta" | o teste confere que não é exposição e não mostra conduta |
+| `scripts/prova-avc-rodada19.cjs:587`, `:594`, `:596`, `:598`, `:661`, `:668`, nomes de conferência | "contam como exposição", "conta", "apaga", "regride" | as conferências medem o contrário |
+
+**Sem guarda textual:** conforme a regra de desconfiar de guarda que mede texto de código, a revisão dos comentários não ganha teste automático. É conferida na revisão do commit.
+
+### 8 · O que não muda
+
+- O modelo da §8 da 19ª rodada: os 8 estados, "não sei" fora deles, a tabela de exposição, "interrompido" diferente de "cancelado" e a leitura do legado "Realizada".
+- A não regressão medida para os 8 estados no plano até 48 h, no caminho hemorrágico, na persistência e na retomada.
+- Nenhuma regra clínica nova. Os pontos marcados "a decidir" ficam com o autor.
+
+### 9 · Decisões do autor que fecham os pontos bloqueados (2026-09-14)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito · **Autoriza implementação:** sim, na ordem desta seção, com testes vermelhos antes de cada item.
+
+**Decisão, nos termos do autor:**
+- **Triestado de exposição:** `exposta`, `nao_exposta`, `desconhecida`. "Não sei" não é um terceiro rótulo do estado da ação: ele afeta a certeza sobre a exposição.
+- **Agregação entre instâncias**, conservadora mas não burra: qualquer evidência positiva de exposição vence a incerteza, e a incerteza vence a ausência de exposição.
+  - qualquer instância `iniciado`, `administrado/concluído` ou `interrompido` → atendimento `exposta`;
+  - nenhuma exposta e ao menos uma "não sei" → `desconhecida`;
+  - só quando todas forem inequivocamente sem exposição → `nao_exposta`.
+  - Exemplos: cancelada + não sei → `desconhecida`; preparada + não sei → `desconhecida`; iniciada + não sei → `exposta`; administrada + cancelada → `exposta`.
+- **"Registro em aberto"** não é quarta categoria do triestado: é estado de completude documental, não de exposição. Aberto e sem evidência de exposição, pode produzir `desconhecida` se a abertura impede conclusão; os eixos não se misturam.
+- **"Não sei" em ação corretiva:** mantém a semântica epistemológica, ausência de conhecimento, mas a consequência depende do tipo de ação. O triestado de exposição não é reaproveitado cegamente para toda intervenção; ele vale para o trombolítico e para intervenções em que exposição é clinicamente relevante.
+- **Corrigir ou desfazer "Iniciada":** distinguir correção de erro documental de reversão do fato clínico.
+  - «Limpar» não apaga a consequência clínica de uma exposição já registrada.
+  - A exposição só deixa de existir por correção explícita do registro que a originou, com motivo e trilha; a trilha mostra que o registro anterior foi invalidado por correção.
+- **Retrocesso de estado, opção B definida:** a alteração é tecnicamente permitida, mas marcada como correção ou contradição, com confirmação exigida quando viola a ordem causal. Não se bloqueia totalmente, porque erro de registro existe, e não se aceita em silêncio.
+  - Ordem de referência: `indicado < decidido < prescrito < preparado < iniciado < administrado/concluído`.
+  - `interrompido` e `cancelado` são terminais alternativos: `cancelado` só antes de `iniciado`; `interrompido` só depois de `iniciado`.
+  - Movimento contrário à causalidade é correção explícita, não nova transição.
+- **Horário clínico:** obrigatório para `iniciado`, `administrado/concluído` e `interrompido`; opcional para `prescrito`, `preparado` e `cancelado`; não pedido para `indicado` e `decidido` no V1. A tela sempre separa horário clínico de horário do registro; sem o clínico, mostra "Horário clínico não informado" e "Registrado às HH:MM".
+- **Autoria:** o nome de exibição da conta ou sessão, quando existir, como "Registrado por: Dr. Fulano"; nunca e-mail, ID ou identificador técnico. Sem identidade suficiente, "Autoria não identificada". Evitar a palavra "responsável", que sugere responsabilidade clínica formal quando o sistema só sabe quem registrou.
+- **Idempotência também no núcleo:** a mesma transição idêntica, na mesma instância, no mesmo estado, sem mudança de contexto, é ignorada. Marcar, limpar ou corrigir, e marcar de novo não é duplicação: são eventos distintos e aparecem na trilha.
+- **Ordem de implementação:** 1 → 2 → 5 → 6 → 3 → 4 → 7. Primeiro a semântica de exposição, depois a trilha, depois a consistência temporal dos estados; horário e autoria dependem da trilha já correta.
+- **Conduta clínica final diante de `desconhecida`: não implementar agora.** Cada consumidor deixa de colapsar para "sem trombólise" e passa a expor a incerteza. Depois se fecha, superfície por superfície, se cada uma apenas avisa, retém ou exige resolução.
+
+**Como estas decisões são aplicadas no código, para conferência do autor:**
+- **Registro em aberto:** uma instância aberta sem nenhum estado registrado não é evidência de exposição nem de ausência. Pela regra "só quando todas forem inequivocamente sem exposição", ela contribui `desconhecida` para a agregação. O eixo documental "em aberto" continua existindo à parte.
+- **Consumidores diante de `desconhecida`, nesta rodada:** a conduta atual de cada um fica como está, e a incerteza passa a ser declarada junto dela. Nenhum consumidor passa a aplicar conduta de pós-trombólise nem retira a de antes.
+- **Ações corretivas:** nenhuma mudança nesta rodada.
+- **Horário clínico obrigatório:** a transição fica pendente de horário clínico até ele ser informado ou declarado desconhecido. A exigência nunca impede o registro do estado nem inventa horário, pela E-49 e pela E-52.
+- **Idempotência, "sem mudança de contexto":** mesmo campo, mesma instância, mesmo valor e mesmo horário clínico, sem nenhum outro registro do campo naquela instância entre os dois.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
