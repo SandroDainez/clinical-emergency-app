@@ -1,5 +1,11 @@
 # `supabase/migrations-pendentes-futuras/` — retirada da sequência, ⛔ não descartada
 
+> **Atualização 2026-09-15:** o fechamento pelo caminho curto (`…_fecha_acesso_clinico_a_conta_ativa.sql`)
+> foi **aplicado em produção** por decisão do autor, depois da guarda de rota publicada, e registrado como
+> `20260915170914`. O arquivo foi movido para `supabase/migrations/20260915170914_fecha_acesso_clinico_a_conta_ativa.sql`
+> sem mudar um byte (SHA-256 `b70955f5237bea6fe40d6775f4d163fd30a55aecdb0588e1abd9f7180ef2db45`).
+> O `20260830191000` continua aqui como **o outro desenho** do mesmo fechamento — ⛔ não aplicar por cima.
+
 ⚠️⚠️ O arquivo aqui **pertence à Fase 4** do rollout e ⛔ está fora de
 `supabase/migrations/` ⛔ por decisão operacional, ⛔ e ⛔ não por estar errado.
 

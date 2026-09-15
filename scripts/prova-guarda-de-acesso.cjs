@@ -193,11 +193,16 @@ confere("⛔ ⛔ a guarda ⛔ não usa `getAuthRole` do storage local",
   !/getAuthRole/.test(raiz),
   "⛔ papel guardado no `localStorage` é editável pelo próprio visitante — ⛔ não é autorização");
 
-// ── ⚠️ 4 · A MIGRATION DE FECHAMENTO ⛔ NÃO está elegível ainda ────────────
+// ── ⚠️ 4 · A MIGRATION DE FECHAMENTO — aplicada DEPOIS da guarda publicada ──
+/**
+ * ⚠️ Ajuste consciente (2026-09-15, decisão do autor): a guarda foi publicada e validada em produção, e só então o
+ * fechamento entrou (versão 20260915170914). Mede-se que a guarda existe ⛔ e que o fechamento é o da conta ativa.
+ */
 const migDir = path.join(appDir, "supabase", "migrations");
-confere("⚠️⚠️ ⛔ o fechamento ⛔ NÃO está na sequência executável",
-  !fs.readdirSync(migDir).some((f) => /fecha_/.test(f)),
-  "⛔ aplicar a RLS antes da guarda publicada deixaria o cliente pedindo dados que o banco nega, ⛔ sem tela para explicar");
+confere("⚠️⚠️ o fechamento na sequência executável é o da conta ativa, que a guarda explica na tela",
+  fs.readdirSync(migDir).filter((f) => /fecha_/.test(f)).length === 1
+    && fs.readdirSync(migDir).some((f) => /fecha_acesso_clinico_a_conta_ativa/.test(f)),
+  "⛔ fechamento sem a tela da guarda ⛔ ou os dois desenhos juntos");
 
 // ── ⚠️⚠️ 5 · A CAPACIDADE MORA NUM LUGAR SÓ, ⛔ E ⛔ NÃO HÁ BYPASS ─────────
 const cap = lerFonte(path.join(appDir, "lib", "backend-clinico.ts"));

@@ -2,9 +2,9 @@
  * PROMETE: que a migration de fechamento negue no BANCO — papel `anon` sem
  *   policy, posse por `auth.uid()`, autorização por conta `ativo`, eventos
  *   derivados da sessão pai — e que ⛔ não amplie capacidade ⛔ nem toque dado.
- * NÃO PROMETE: que esteja aplicada. ⛔ Ela ⛔ **não** está, e ⛔ por decisão: só entra
- *   depois da guarda de rota publicada.
- * UNIVERSO: `migrations-pendentes-futuras/*fecha_acesso_clinico*`, com piso.
+ * NÃO PROMETE: que o banco a aplique — isso é `matriz-de-acesso`, ao vivo. Aplicada em produção
+ *   em 2026-09-15 (versão 20260915170914), depois da guarda de rota publicada, por decisão do autor.
+ * UNIVERSO: `supabase/migrations/*fecha_acesso_clinico*`, com piso.
  *
  * ── ⚠️⚠️ POR QUE ESTA TRAVA EXISTE SEPARADA DA GUARDA ─────────────────────
  *
@@ -21,11 +21,16 @@ const falhas = [];
 let ok = 0;
 const confere = (d, c, p) => (c ? ok++ : falhas.push(`${d}\n      ⚠️ ${p}`));
 
-const dir = path.join(appDir, "supabase", "migrations-pendentes-futuras");
+/** ⚠️ 2026-09-15: aplicada em produção — o arquivo saiu de `migrations-pendentes-futuras/` para `migrations/`, sem mudar um byte do SQL. */
+const dir = path.join(appDir, "supabase", "migrations");
 const alvo = fs.existsSync(dir)
   ? fs.readdirSync(dir).filter((f) => /fecha_acesso_clinico/.test(f))
   : [];
 confere("a migration de fechamento existe", alvo.length === 1, "sem ela ⛔ não há o que medir");
+const pendentes = path.join(appDir, "supabase", "migrations-pendentes-futuras");
+confere("⛔ ela ⛔ continua também entre as pendentes (seria aplicada duas vezes)",
+  !fs.existsSync(pendentes) || !fs.readdirSync(pendentes).some((f) => /fecha_acesso_clinico/.test(f)),
+  "o mesmo fechamento em dois lugares");
 
 const sql = alvo.length ? lerFonte(path.join(dir, alvo[0])) : "";
 const c = sql.replace(/^\s*--.*$/gm, "");
@@ -84,9 +89,15 @@ confere("⚠️ roda em UMA transação",
   /^\s*begin;/im.test(c) && /^\s*commit;/im.test(c),
   "sem transação haveria um instante com as policies antigas removidas e as novas ⛔ não criadas");
 
-confere("⚠️⚠️ ⛔ e ⛔ NÃO está na sequência executável ainda",
-  !fs.readdirSync(path.join(appDir, "supabase", "migrations")).some((f) => /fecha_/.test(f)),
-  "a ordem é guarda publicada → validada → só então RLS");
+/**
+ * ⚠️ Ajuste consciente (2026-09-15, decisão do autor): a ordem «guarda publicada → validada → RLS» foi cumprida — a
+ * guarda está em produção e a matriz de acesso passou 20/20 ao vivo. O fechamento entrou na sequência executável;
+ * mede-se agora que entrou UM só, e com o nome do caminho curto (conta ativa).
+ */
+confere("⚠️⚠️ o fechamento está na sequência executável — um só, o da conta ativa",
+  fs.readdirSync(path.join(appDir, "supabase", "migrations")).filter((f) => /fecha_/.test(f)).length === 1
+    && fs.readdirSync(path.join(appDir, "supabase", "migrations")).some((f) => /fecha_acesso_clinico_a_conta_ativa/.test(f)),
+  "os dois desenhos do fechamento ⛔ podem entrar juntos");
 
 // ── ⚠️⚠️ A MATRIZ DE ACESSO — medida na própria lógica ────────────────────
 //

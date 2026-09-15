@@ -87,7 +87,11 @@ export async function signUpAppUser(params: { nome: string; email: string; passw
   if (!email || !password) return { errorMessage: "Informe e-mail e senha." };
   if (password.length < 6) return { errorMessage: "A senha deve ter ao menos 6 caracteres." };
 
-  const { data, error } = await supabase.functions.invoke("create-user", {
+  /**
+   * ⚠️⚠️ Pós-produção (2026-09-15): o cadastro PÚBLICO vai por `request-access`, a porta pública (supabase/config.toml).
+   * `create-user` é criação por ADMIN e, endurecida, exige token de admin — chamá-la daqui devolvia 401 a quem se cadastra.
+   */
+  const { data, error } = await supabase.functions.invoke("request-access", {
     body: { nome, email, password },
   });
   if (error) return { errorMessage: await readFnError(error, "Falha ao criar a conta.") };

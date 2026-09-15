@@ -159,6 +159,21 @@ for (const f of funcoes) {
     "chave em corpo de resposta é vazamento, mesmo em erro");
 }
 
+/**
+ * ⚠️⚠️ REGRESSÃO DE 2026-09-15 — o cadastro PÚBLICO chamava `create-user`. Com `create-user` endurecida (só admin), quem
+ * se cadastrava recebia 401. A porta pública é `request-access`; a criação por admin fica em `create-user`.
+ */
+{
+  const adm = lerFonte(path.join(appDir, "lib", "admin-users.ts"));
+  const cadastro = (adm.match(/export async function signUpAppUser[\s\S]*?\n\}/) || [""])[0];
+  confere("o cadastro público (`signUpAppUser`) chama `request-access`, a porta pública",
+    /functions\.invoke\(\s*["']request-access["']/.test(cadastro),
+    "sem ele, quem se cadastra ⛔ chega a lugar nenhum");
+  confere("⛔ o cadastro público ⛔ chama `create-user` (criação por admin, exige token)",
+    cadastro !== "" && !/["']create-user["']/.test(cadastro),
+    "com `create-user` endurecida, o cadastro devolve 401 a todo visitante");
+}
+
 console.log(`\nFunções versionadas: ${funcoes.join(", ") || "—"}`);
 if (falhas.length > 0) {
   console.error(`\n❌ PROVA DAS EDGE FUNCTIONS — ${falhas.length} falha(s), ${ok} ok\n`);
