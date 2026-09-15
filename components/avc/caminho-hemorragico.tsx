@@ -71,7 +71,11 @@ export function CaminhoHemorragico({
         </View>
       ) : c.infusao === "interrompida" ? (
         <Text style={e.linha} testID="avc-hem-infusao">
-          {tr("Infusão interrompida às")} {c.interrompidaEm !== undefined ? hora(c.interrompidaEm) : tr("horário não registrado")}
+          {c.interrompidaEm !== undefined
+            ? `${tr("Infusão interrompida às")} ${hora(c.interrompidaEm)}`
+            : c.horarioDaInterrupcao === "desconhecido"
+              ? tr("Infusão interrompida — horário clínico desconhecido")
+              : tr("Infusão interrompida — horário clínico não informado")}
         </Text>
       ) : c.infusao === "desconhecida" ? (
         <Text style={e.linha} testID="avc-hem-infusao-desconhecida">

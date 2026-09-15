@@ -124,6 +124,9 @@ export const ACAO_PENDENTE: Readonly<Record<string, string>> = {
   anticoagulacao: "Confirmar uso recente de anticoagulante",
   glicemia: "Medir a glicemia",
   pressao_arterial: "Aferir a pressão arterial",
+  // ── AC-13 reaberto, item 3 · horário clínico das transições da trombólise ─
+  ivt_inicio: "Informar o horário de início da trombólise ou declarar desconhecido",
+  ivt_horario_clinico: "Informar o horário clínico da situação da trombólise ou declarar desconhecido",
   // ── segurança da IVT (commit 7 · 2026-09-12) ─────────────────────────────
   inr: "Registrar o resultado dos exames de coagulação",
   plaquetas_unidade: "Registrar a unidade do laudo, sem a qual o valor não se compara ao corte",

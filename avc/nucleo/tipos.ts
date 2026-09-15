@@ -170,6 +170,11 @@ export type FatoRegistrado = {
   readonly valor: string | number | Vazio;
   /** Quando o fato aconteceu no paciente. */
   readonly horaClinica?: Instante;
+  /**
+   * AC-13 reaberto, item 3: o fato a que este registro se refere quando ele QUALIFICA outro fato sem corrigi-lo. O
+   * horário clínico de uma transição aponta para o registro da transição; o fato apontado continua valendo como estava.
+   */
+  readonly referenteAoFatoId?: string;
   /** Quando entrou no sistema. Automático, nunca informado (§3.2). */
   readonly horaRegistro: Instante;
   readonly procedencia?: Procedencia;

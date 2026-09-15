@@ -17,6 +17,7 @@ import { certezaDaInstancia, exposicaoAoTrombolitico } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { fatosDaInstancia } from "./instancia";
 import { idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
+import { horarioClinicoDaTransicao } from "./horario-clinico";
 import type { Relogio } from "./relogio";
 import { itensSelecionados } from "./selecao";
 import type { Pendencia } from "./tipos";
@@ -32,6 +33,8 @@ export type LeituraDoCaminhoHemorragico = {
   readonly bloqueio?: { readonly ivt: true; readonly evt: true; readonly motivo: string };
   readonly infusao: InfusaoNoCaminho;
   readonly interrompidaEm?: number;
+  /** AC-13 reaberto, item 3: o estado documental da hora da interrupção. Sem hora clínica, não há hora. */
+  readonly horarioDaInterrupcao?: "conhecido" | "desconhecido" | "nao_informado";
   readonly pendencias: readonly Pendencia[];
   /** ⚠️ 16ª rodada: as mesmas pendências, com rótulo curto — dentro do caminho o prefixo é redundante. */
   readonly pendenciasNoCaminho: readonly Pendencia[];
@@ -45,7 +48,12 @@ const ROTULO_NO_CAMINHO: Readonly<Record<string, string>> = {
 
 const ROTULO_DO_TIPO: Readonly<Record<string, string>> = { nao_sei: "Não sei" };
 
-function infusao(estado: EstadoAvc): { estado: InfusaoNoCaminho; instancia?: string; interrompidaEm?: number } {
+function infusao(estado: EstadoAvc): {
+  estado: InfusaoNoCaminho;
+  instancia?: string;
+  interrompidaEm?: number;
+  horarioDaInterrupcao?: "conhecido" | "desconhecido" | "nao_informado";
+} {
   const x = exposicaoAoTrombolitico(estado);
   if (x.estado !== "exposta") return { estado: certezaDaInstancia(x) === "desconhecida" ? "desconhecida" : "sem_trombolise" };
   if (x.fase === "iniciada") return { estado: "em_curso", instancia: x.instancia };
@@ -53,7 +61,17 @@ function infusao(estado: EstadoAvc): { estado: InfusaoNoCaminho; instancia?: str
     const doCampo = fatosDaInstancia(estado, x.instancia).filter((y) => y.campo === "ivt_estado");
     const invalidados = idsInvalidadosPorCorrecao(doCampo);
     const f = [...doCampo].reverse().find((y) => y.valor === "Interrompida" && !invalidados.has(y.id));
-    return { estado: "interrompida", instancia: x.instancia, interrompidaEm: f === undefined ? undefined : f.horaClinica ?? f.horaRegistro };
+    /**
+     * AC-13 reaberto, item 3: a hora da interrupção é só a clínica. Ausente ou desconhecida, fica assim; o horário do
+     * registro continua na trilha, para auditoria.
+     */
+    const h = f === undefined ? ({ tipo: "nao_informado" } as const) : horarioClinicoDaTransicao(estado, f);
+    return {
+      estado: "interrompida",
+      instancia: x.instancia,
+      interrompidaEm: h.tipo === "conhecido" ? h.ms : undefined,
+      horarioDaInterrupcao: h.tipo === "conhecido" ? "conhecido" : h.tipo === "desconhecido_declarado" ? "desconhecido" : "nao_informado",
+    };
   }
   return { estado: "concluida", instancia: x.instancia };
 }
@@ -88,6 +106,7 @@ export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragi
     bloqueio: { ivt: true, evt: true, motivo: "Hemorragia intracraniana identificada na imagem: trombólise e trombectomia isquêmicas bloqueadas neste caminho" },
     infusao: inf.estado,
     interrompidaEm: inf.interrompidaEm,
+    horarioDaInterrupcao: inf.horarioDaInterrupcao,
     pendencias,
     pendenciasNoCaminho: pendencias.map((p) => ({ ...p, rotulo: ROTULO_NO_CAMINHO[p.id] ?? p.rotulo })),
   };

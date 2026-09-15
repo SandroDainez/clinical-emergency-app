@@ -74,6 +74,8 @@ const POR_SUPERFICIE = {
     ...SF.DECISAO_DE_PROSSEGUIR,
     /** ⚠️ 19ª rodada, D-139-3: o julgamento registrado, respondido no motivo do portão da IVT (ajuste consciente). */
     SF.CAMPO_DO_JULGAMENTO,
+    /** AC-13 reaberto, item 3: horário clínico da transição, respondido no gesto da trilha (`campoDoHorario`). */
+    SF.CAMPO_DO_HORARIO_CLINICO,
     { id: SF.CAMPO_AGENTE.id, rotulo: SF.CAMPO_AGENTE.rotulo },
   ],
   /**

@@ -19,9 +19,14 @@
  *  · item 5, complemento (§10) — Cancelada, Interrompida e Administrada/concluída são terminais distintos: sair
  *    de um deles para outro estado pede confirmação e entra como correção explícita; o terminal reaberto por
  *    correção confirmada deixa de pedir confirmação para os registros seguintes.
+ *  · item 3 (§11, E-49 aprovada) — horário clínico separado do horário do registro: Iniciada lê só ivt_inicio;
+ *    Administrada/concluída e Interrompida pedem resolução documental por fato ligado à transição; Prescrita,
+ *    Preparada e Cancelada aceitam horário opcional; Indicada e Decidida sem horário; o caminho hemorrágico não usa
+ *    o horário do registro. Regressões E-49: o veredito da EVT e o portão da IVT não mudam com a ausência do horário
+ *    (marca 6), e a última dose de DOAC nunca é inferida dele (marca 7).
  * NÃO PROMETE: que a conduta diante de `desconhecida` esteja certa. Ela ainda não foi decidida.
  * UNIVERSO: `avc/nucleo/{derivacoes-f,derivacoes-g,alvo-pressorico,caminho-hemorragico,plano-48h,
- *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao}.ts`, `avc/persistencia/log.ts`.
+ *   sintese-do-caso,transicoes-da-acao,correcao-da-acao,ordem-da-acao,horario-clinico}.ts`, `avc/persistencia/log.ts`.
  * FONTE: `docs/decisoes.md`, AC-13 reaberto, §1 e §9.
  */
 const fs = require("node:fs");
@@ -36,6 +41,8 @@ const entradas = [
   "avc/nucleo/caminho-hemorragico.ts", "avc/nucleo/plano-48h.ts", "avc/nucleo/sintese-do-caso.ts", "avc/nucleo/transicoes-da-acao.ts",
   "avc/nucleo/correcao-da-acao.ts",
   "avc/nucleo/ordem-da-acao.ts",
+  "avc/nucleo/horario-clinico.ts", "avc/nucleo/veredito-da-trombectomia.ts", "avc/nucleo/derivacoes-d.ts",
+  "avc/nucleo/problemas-ativos.ts",
   "avc/persistencia/log.ts", "avc/conteudo/campos.ts", "avc/conteudo/superficies.ts", "design-system/estados-clinicos.ts",
 ];
 try {
@@ -529,6 +536,196 @@ bloco("5d", () => {
   const trilhaSemConfirmar = trilha(regI(atendimento(["Administrada/concluída"]), undefined, "ivt_estado", "Interrompida"));
   conf("5d · pela API, a saída gravada sem confirmação continua marcada na trilha",
     Array.isArray(trilhaSemConfirmar) && trilhaSemConfirmar.length === 2 && trilhaSemConfirmar[1].foraDaOrdemCausal === true, `⛔ ${J(trilhaSemConfirmar)}`);
+});
+
+/* ══ ITEM 3 · horário clínico separado do horário do registro (E-49 aprovada) ═══════ */
+/**
+ * Decisões do autor (AC-13 reaberto, §9, §10 e §11): Iniciada lê só `ivt_inicio`; Administrada/concluída e Interrompida
+ * exigem resolução documental (informar ou declarar desconhecido) por fato ligado explicitamente à transição;
+ * Prescrita, Preparada e Cancelada aceitam horário opcional, sem pendência; Indicada e Decidida sem horário no V1. O
+ * horário do registro nunca preenche o clínico. E-49: marcas 6 e 7 viram regressões.
+ */
+const HC = emT("avc/nucleo/horario-clinico.js");
+const VT = emT("avc/nucleo/veredito-da-trombectomia.js");
+const PI = emT("avc/nucleo/portao-ivt.js");
+const DD = emT("avc/nucleo/derivacoes-d.js");
+const PA = emT("avc/nucleo/problemas-ativos.js");
+const fatoDoRegistro = (e, rotulo) => e.fatos.find((f) => f.id === idDoRegistro(e, rotulo));
+const horario = (e, rotulo) => tenta(() => HC.horarioClinicoDaTransicao(e, fatoDoRegistro(e, rotulo)));
+const tipoH = (e, rotulo) => { const h = horario(e, rotulo); return h && (h.tipo || `erro: ${h.erro}`); };
+const informar = (e, rotulo, valor) => tenta(() => CA.registrarHorarioClinicoDaTransicao(e, idDoRegistro(e, rotulo), valor, rel));
+const pendHorario = (e) => { const p = tenta(() => HC.pendenciasDoHorarioClinico(e)); return Array.isArray(p) ? p : []; };
+const comInicio = (e, valor) => regI(e, inst1(e), "ivt_inicio", valor);
+const tamanho = (e) => (e && Array.isArray(e.fatos) ? e.fatos.length : -1);
+
+/* 3a · exigência por estado */
+bloco("3a", () => {
+  const esperado = {
+    indicado: "nao_pedido", decidido: "nao_pedido", prescrito: "opcional", preparado: "opcional",
+    iniciado: "obrigatorio", administrado_concluido: "obrigatorio", interrompido: "obrigatorio", cancelado: "opcional",
+  };
+  conf("3a · a exigência do horário clínico por estado é a decidida", HC && J(HC.EXIGENCIA_DO_HORARIO_CLINICO) === J(esperado), `⛔ ${J(HC && HC.EXIGENCIA_DO_HORARIO_CLINICO)}`);
+  for (const r of ["Indicada", "Decidida"]) {
+    conf(`3a · «${r}» sem horário clínico no V1`, tipoH(atendimento([r]), r) === "nao_pedido", `⛔ ${tipoH(atendimento([r]), r)}`);
+  }
+});
+
+/* 3b · Iniciada: ivt_inicio é a única fonte */
+bloco("3b", () => {
+  const e = atendimento(["Iniciada"]);
+  conf("3b · «Iniciada» sem ivt_inicio → horário clínico não informado (o horário do registro não entra)", tipoH(e, "Iniciada") === "nao_informado", `⛔ ${J(horario(e, "Iniciada"))}`);
+  const h = horario(comInicio(e, AGORA - 40 * MIN), "Iniciada");
+  conf("3b · com ivt_inicio informado → conhecido, pela fonte ivt_inicio, no mesmo instante", h && h.tipo === "conhecido" && h.ms === AGORA - 40 * MIN && h.fonte === "ivt_inicio", `⛔ ${J(h)}`);
+  conf("3b · ivt_inicio declarado desconhecido → desconhecido declarado", tipoH(comInicio(e, "nao_sei"), "Iniciada") === "desconhecido_declarado", "⛔");
+  const vazia = atendimento([]);
+  const comHoraNoRegistro = CAMPOS.registrarComInstancia(vazia, { campo: "ivt_estado", valor: "Iniciada", horaClinica: AGORA - 5 * MIN }, rel, inst1(vazia));
+  conf("3b · «Iniciada» não ganha segundo horário: horário no próprio registro não substitui ivt_inicio", tipoH(comHoraNoRegistro, "Iniciada") === "nao_informado", `⛔ ${J(horario(comHoraNoRegistro, "Iniciada"))}`);
+  conf("3b · o gesto de horário da trilha não se aplica a «Iniciada»", tenta(() => HC.aceitaGestoDeHorarioClinico(e, fatoDoRegistro(e, "Iniciada"))) === false, "⛔");
+  conf("3b · horário ligado a «Iniciada» é recusado sem gravar fato", tamanho(informar(e, "Iniciada", AGORA - 3 * MIN)) === tamanho(e), "⛔");
+  const p = pendHorario(e);
+  conf("3b · «Iniciada» sem ivt_inicio gera pendência documental resolvida por ivt_inicio", p.length === 1 && p[0].campo === "ivt_inicio" && p[0].dono === "reperfusao", `⛔ ${J(p)}`);
+  conf("3b · ivt_inicio declarado desconhecido resolve a pendência", pendHorario(comInicio(e, "nao_sei")).length === 0, "⛔");
+  conf("3b · ivt_inicio informado resolve a pendência", pendHorario(comInicio(e, AGORA - 40 * MIN)).length === 0, "⛔");
+});
+
+/* 3c · Administrada/concluída e Interrompida: resolução documental ligada à transição */
+bloco("3c", () => {
+  for (const r of ["Administrada/concluída", "Interrompida"]) {
+    const e = comInicio(atendimento(["Iniciada", r]), AGORA - 60 * MIN);
+    conf(`3c · «${r}» sem horário → não informado`, tipoH(e, r) === "nao_informado", `⛔ ${J(horario(e, r))}`);
+    const p = pendHorario(e);
+    conf(`3c · «${r}» sem horário → pendência documental ligada à transição`, p.length === 1 && p[0].campo === "ivt_horario_clinico" && p[0].id.endsWith(String(idDoRegistro(e, r))), `⛔ ${J(p)}`);
+    const inf = informar(e, r, AGORA - 20 * MIN);
+    const ult = inf && inf.fatos ? inf.fatos[inf.fatos.length - 1] : undefined;
+    conf(`3c · «${r}» · informar horário grava fato ligado explicitamente à transição, sem ser correção dela`,
+      ult && ult.campo === "ivt_horario_clinico" && ult.referenteAoFatoId === idDoRegistro(e, r) && ult.valor === AGORA - 20 * MIN
+        && ult.horaClinica === AGORA - 20 * MIN && ult.instancia === inst1(e) && ult.corrigeFatoId === undefined, `⛔ ${J(ult)}`);
+    const h = horario(inf, r);
+    conf(`3c · «${r}» · informado → conhecido pelo horário informado`, h && h.tipo === "conhecido" && h.ms === AGORA - 20 * MIN && h.fonte === "horario_informado", `⛔ ${J(h)}`);
+    conf(`3c · «${r}» · informado, a pendência fecha`, pendHorario(inf).length === 0, "⛔");
+    const desc = informar(e, r, "nao_sei");
+    const ud = desc && desc.fatos ? desc.fatos[desc.fatos.length - 1] : undefined;
+    conf(`3c · «${r}» · «Horário desconhecido» fecha a pendência sem gravar instante`, tipoH(desc, r) === "desconhecido_declarado" && pendHorario(desc).length === 0 && ud && ud.horaClinica === undefined, `⛔ ${J(ud)}`);
+    const corr = informar(inf, r, AGORA - 25 * MIN);
+    const uc = corr && corr.fatos ? corr.fatos[corr.fatos.length - 1] : undefined;
+    conf(`3c · «${r}» · informar de novo corrige o horário anterior da mesma transição`, uc && uc.tipo === "correcao" && uc.corrigeFatoId === ult.id && (horario(corr, r) || {}).ms === AGORA - 25 * MIN, `⛔ ${J(uc)}`);
+    conf(`3c · «${r}» · repetir o mesmo horário não grava`, tamanho(informar(inf, r, AGORA - 20 * MIN)) === tamanho(inf), "⛔");
+    const limpo = tenta(() => CA.limparHorarioClinicoDaTransicao(desc, idDoRegistro(desc, r), rel));
+    conf(`3c · «${r}» · limpar o horário volta a não informado e reabre a pendência`, tipoH(limpo, r) === "nao_informado" && pendHorario(limpo).length === 1, `⛔ ${J(horario(limpo, r))}`);
+    conf(`3c · «${r}» · o horário do registro da transição segue separado e intacto`, (fatoDoRegistro(inf, r) || {}).horaRegistro === (fatoDoRegistro(e, r) || {}).horaRegistro, "⛔");
+  }
+  const base = comInicio(atendimento(["Iniciada", "Administrada/concluída"]), AGORA - 60 * MIN);
+  const engano = corrigirEngano(base, idDoRegistro(base, "Administrada/concluída"));
+  conf("3c · transição corrigida por engano não gera pendência de horário", pendHorario(engano).length === 0, `⛔ ${J(pendHorario(engano))}`);
+});
+
+/* 3d · Prescrita, Preparada e Cancelada: opcional, sem pendência */
+bloco("3d", () => {
+  for (const r of ["Prescrita", "Preparada", "Cancelada"]) {
+    const e = atendimento([r]);
+    conf(`3d · «${r}» sem horário → não informado e sem pendência`, tipoH(e, r) === "nao_informado" && pendHorario(e).length === 0, `⛔ ${J(pendHorario(e))}`);
+    conf(`3d · «${r}» aceita horário clínico opcional`, tipoH(informar(e, r, AGORA - 10 * MIN), r) === "conhecido", "⛔");
+  }
+  const ind = atendimento(["Indicada"]);
+  conf("3d · «Indicada» não aceita horário clínico", tenta(() => HC.aceitaGestoDeHorarioClinico(ind, fatoDoRegistro(ind, "Indicada"))) === false && tamanho(informar(ind, "Indicada", AGORA)) === tamanho(ind), "⛔");
+});
+
+/* 3e · caminho hemorrágico: sem fallback para o horário do registro */
+bloco("3e", () => {
+  const e = atendimento(["Iniciada", "Interrompida"]);
+  const c = tenta(() => CH.caminhoHemorragico(comHemorragia(e)));
+  conf("3e · interrupção sem horário clínico → sem hora; o horário do registro não entra", c && c.infusao === "interrompida" && c.interrompidaEm === undefined && c.horarioDaInterrupcao === "nao_informado", `⛔ ${J(c && [c.infusao, c.interrompidaEm, c.horarioDaInterrupcao])}`);
+  const d = tenta(() => CH.caminhoHemorragico(comHemorragia(informar(e, "Interrompida", "nao_sei"))));
+  conf("3e · horário da interrupção declarado desconhecido continua desconhecido", d && d.interrompidaEm === undefined && d.horarioDaInterrupcao === "desconhecido", `⛔ ${J(d && [d.interrompidaEm, d.horarioDaInterrupcao])}`);
+  const i = tenta(() => CH.caminhoHemorragico(comHemorragia(informar(e, "Interrompida", AGORA - 15 * MIN))));
+  conf("3e · horário da interrupção informado → hora clínica", i && i.interrompidaEm === AGORA - 15 * MIN && i.horarioDaInterrupcao === "conhecido", `⛔ ${J(i && [i.interrompidaEm, i.horarioDaInterrupcao])}`);
+  const viaCaminho = tenta(() => CH.caminhoHemorragico(CH.registrarInterrupcaoDaInfusao(comHemorragia(atendimento(["Iniciada"])), AGORA - 2 * MIN, rel)));
+  conf("3e · interrupção registrada pelo caminho, com horário clínico, continua lida", viaCaminho && viaCaminho.interrompidaEm === AGORA - 2 * MIN, `⛔ ${J(viaCaminho && viaCaminho.interrompidaEm)}`);
+});
+
+/* 3f · E-49 · marca 6: nunca participa do veredito da EVT nem cria espera para observar resposta à IVT */
+bloco("3f", () => {
+  const ver = (x) => J(tenta(() => VT.vereditoDaTrombectomia(x, AGORA)));
+  const port = (x) => J(tenta(() => PI.estadoDoPortaoIVT(x, AGORA)));
+  for (const r of ["Administrada/concluída", "Interrompida"]) {
+    const e = comInicio(atendimento(["Iniciada", r]), AGORA - 60 * MIN);
+    const [sem, desc, inf] = [e, informar(e, r, "nao_sei"), informar(e, r, AGORA - 30 * MIN)];
+    conf(`3f · E-49 marca 6 · «${r}»: o veredito da EVT é idêntico sem horário clínico, com horário desconhecido e com horário informado`,
+      !ver(sem).includes("\"erro\"") && ver(sem) === ver(desc) && ver(desc) === ver(inf), `⛔ ${ver(sem).slice(0, 160)} × ${ver(inf).slice(0, 160)}`);
+    conf(`3f · E-49 marca 6 · «${r}»: o veredito da EVT não carrega a pendência de horário clínico`, !ver(sem).includes("horario_clinico"), "⛔");
+    conf(`3f · E-49 · «${r}»: o portão da IVT é idêntico nas três variantes`, !port(sem).includes("\"erro\"") && port(sem) === port(desc) && port(desc) === port(inf), "⛔");
+  }
+  const semInicio = atendimento(["Iniciada"]);
+  conf("3f · E-49 marca 6 · «Iniciada»: o veredito da EVT é idêntico sem ivt_inicio e com ivt_inicio declarado desconhecido",
+    ver(semInicio) === ver(comInicio(semInicio, "nao_sei")), "⛔");
+});
+
+/* 3g · E-49 · marca 7: ausência de horário clínico nunca vira horário de última dose de DOAC */
+bloco("3g", () => {
+  const e = comInicio(atendimento(["Iniciada", "Administrada/concluída"]), AGORA - 60 * MIN);
+  const variantes = [
+    ["sem horário clínico", e],
+    ["horário clínico informado", informar(e, "Administrada/concluída", AGORA - 20 * MIN)],
+    ["horário clínico desconhecido", informar(e, "Administrada/concluída", "nao_sei")],
+    ["ivt_inicio desconhecido", comInicio(atendimento(["Iniciada"]), "nao_sei")],
+    ["ivt_inicio ausente", atendimento(["Iniciada"])],
+  ];
+  for (const [nome, x] of variantes) {
+    const d = tenta(() => DD.exposicaoADoac(x));
+    conf(`3g · E-49 marca 7 · ${nome}: a última dose de DOAC continua não perguntada`, d && d.exposicao === "nao_perguntado", `⛔ ${J(d && d.exposicao)}`);
+    conf(`3g · E-49 marca 7 · ${nome}: nenhum fato de última dose de DOAC é gravado ou inferido`, x && E.valorAtual(x, "doac_ultima_dose") === undefined, "⛔");
+  }
+});
+
+/* 3h · persistência e pendências do caso */
+bloco("3h", () => {
+  let ids = 0;
+  const ctx = () => ({ casoId: "caso-ac13-item3", autor: "local:prova", origemDoAutor: "aparelho", agora: rel.agora(), gerarId: () => `ev3-${++ids}` });
+  let est = vazio;
+  const eventos = [...LOG.eventosDeAbertura(est, ctx())];
+  const passos = [
+    (x) => I.abrirNovaInstancia(x, SF.TROMBOLISE_IV, rel),
+    (x) => regI(x, inst1(x), "ivt_estado", "Iniciada"),
+    (x) => regI(x, inst1(x), "ivt_inicio", AGORA - 60 * MIN),
+    (x) => regI(x, inst1(x), "ivt_estado", "Administrada/concluída"),
+    (x) => CA.registrarHorarioClinicoDaTransicao(x, idDoRegistro(x, "Administrada/concluída"), AGORA - 10 * MIN, rel),
+  ];
+  for (const p of passos) { const prox = p(est); eventos.push(...LOG.eventosDaTransicao(est, prox, ctx())); est = prox; }
+  const rec = tenta(() => LOG.reconstruirEstado(JSON.parse(J(eventos))));
+  conf("3h · a retomada pelo log devolve o horário clínico ligado à mesma transição",
+    rec && !rec.erro && J(horario(rec, "Administrada/concluída")) === J(horario(est, "Administrada/concluída")) && tipoH(rec, "Administrada/concluída") === "conhecido", `⛔ ${J(horario(rec, "Administrada/concluída"))}`);
+  const aberto = comInicio(atendimento(["Iniciada", "Administrada/concluída"]), AGORA - 60 * MIN);
+  const doCaso = tenta(() => PA.pendenciasDoCaso(aberto));
+  conf("3h · a pendência de horário clínico entra nas pendências do caso", Array.isArray(doCaso) && doCaso.some((p) => p.campo === "ivt_horario_clinico"), `⛔ ${J(doCaso)}`);
+  conf("3h · registrar a situação sem horário clínico sempre grava o estado", tamanho(atendimento(["Iniciada", "Administrada/concluída"])) > tamanho(atendimento(["Iniciada"])), "⛔");
+});
+
+/* 3i · «Limpar» não invalida a transição: a pendência de horário fica; só a correção por engano ou o horário resolvido a fecham */
+bloco("3i", () => {
+  const e = atendimento(["Iniciada"]);
+  const limpo = limpar(e);
+  const pl = pendHorario(limpo);
+  conf("3i · «Iniciada» → «Limpar»: a exposição continua", certeza(limpo) === "exposta", `⛔ ${J(certeza(limpo))}`);
+  conf("3i · «Iniciada» → «Limpar»: a pendência do horário clínico continua", pl.length === 1 && pl[0].campo === "ivt_inicio", `⛔ ${J(pl)}`);
+  const engano = corrigirEngano(e, idDoRegistro(e, "Iniciada"));
+  const te = trilha(engano);
+  conf("3i · «Iniciada» → correção explícita por engano: a transição deixa de valer e a pendência correspondente sai",
+    Array.isArray(te) && te[0].invalidadaPorCorrecao === true && pendHorario(engano).length === 0 && certeza(engano) !== "exposta",
+    `⛔ ${J([te, pendHorario(engano), certeza(engano)])}`);
+  const adm = comInicio(atendimento(["Iniciada", "Administrada/concluída"]), AGORA - 60 * MIN);
+  const admLimpo = limpar(adm);
+  conf("3i · «Administrada/concluída» → «Limpar»: a exposição e a pendência do horário clínico continuam",
+    certeza(admLimpo) === "exposta" && pendHorario(admLimpo).some((p) => p.campo === "ivt_horario_clinico"), `⛔ ${J(pendHorario(admLimpo))}`);
+  const desc = informar(adm, "Administrada/concluída", "nao_sei");
+  const ultimo = desc && desc.fatos ? desc.fatos[desc.fatos.length - 1] : undefined;
+  conf("3i · «Horário desconhecido» resolve a pendência sem criar horário",
+    pendHorario(desc).length === 0 && ultimo && ultimo.valor === "nao_sei" && ultimo.horaClinica === undefined
+      && (horario(desc, "Administrada/concluída") || {}).ms === undefined
+      && !desc.fatos.some((f) => f.campo === "ivt_horario_clinico" && typeof f.valor === "number"), `⛔ ${J(ultimo)}`);
+  const inicioDesc = comInicio(atendimento(["Iniciada"]), "nao_sei");
+  conf("3i · «Iniciada» · início declarado desconhecido resolve a pendência sem criar horário",
+    pendHorario(inicioDesc).length === 0 && (horario(inicioDesc, "Iniciada") || {}).ms === undefined
+      && !inicioDesc.fatos.some((f) => f.campo === "ivt_inicio" && typeof f.valor === "number"), `⛔ ${J(horario(inicioDesc, "Iniciada"))}`);
 });
 
 console.log(`\n${falhas === 0 ? "✅" : "🔴"} PROVA · AC-13 REABERTO — ${ok} verde(s) · ${falhas} vermelho(s)`);

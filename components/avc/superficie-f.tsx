@@ -206,6 +206,9 @@ type Props = {
   onDesfazerNaInstancia: (instancia: string, campo: string) => void;
   /** ⚠️ AC-13 reaberto, item 2: correção explícita, por engano, de um registro da trilha. */
   onCorrigirPorEngano: (fatoId: string) => void;
+  /** AC-13 reaberto, item 3: horário clínico de uma transição, informado ou declarado desconhecido, e o «Limpar» dele. */
+  onHorarioClinico: (fatoId: string, valor: number | "nao_sei") => void;
+  onLimparHorarioClinico: (fatoId: string) => void;
   /** ⚠️ AC-85 (15ª rodada): desfecho negativo — horário, «Limpar» ⛔ decisão global. */
   onHora: (campo: string, instante: number, relogio?: string) => void;
   onDesfazer: (campo: string) => void;
@@ -223,6 +226,8 @@ export default function SuperficieF({
   onHoraNaInstancia,
   onDesfazerNaInstancia,
   onCorrigirPorEngano,
+  onHorarioClinico,
+  onLimparHorarioClinico,
   onHora,
   onDesfazer,
   onDecisaoGlobal,
@@ -1232,7 +1237,16 @@ export default function SuperficieF({
               />
             ))}
             {/** ⚠️ AC-13: cada situação registrada, com horário ⛔ autoria — ⛔ o estado antigo ⛔ some. */}
-            <TransicoesDaAcao estado={estado} instancia={inst} campo="ivt_estado" onCorrigirPorEngano={onCorrigirPorEngano} />
+            <TransicoesDaAcao
+              estado={estado}
+              instancia={inst}
+              campo="ivt_estado"
+              campoDoHorario="ivt_horario_clinico"
+              agora={agora}
+              onCorrigirPorEngano={onCorrigirPorEngano}
+              onHorarioClinico={onHorarioClinico}
+              onLimparHorarioClinico={onLimparHorarioClinico}
+            />
           </View>
         ))}
         {/**

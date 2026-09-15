@@ -322,6 +322,25 @@ export const ACAO_DE_TROMBOLISE: readonly CampoDeclarado[] = [
 ];
 
 /**
+ * ── HORÁRIO CLÍNICO DA SITUAÇÃO DA TROMBÓLISE — AC-13 reaberto, item 3 (autor, 2026-09-14; E-49 aprovada) ───────
+ *
+ * Quando a situação registrada aconteceu no paciente, ligado explicitamente à transição (`referenteAoFatoId`). Fica
+ * fora de `ACAO_DE_TROMBOLISE` de propósito: é respondido no gesto da trilha, não é pergunta de formulário e não é
+ * pré-requisito do portão da IVT. «Iniciada» não usa este campo: a fonte dela é `ivt_inicio`.
+ */
+export const CAMPO_DO_HORARIO_CLINICO: CampoDeclarado = {
+  id: "ivt_horario_clinico",
+  temporalidade: "estavel",
+  instanciaDe: TROMBOLISE_IV,
+  rotulo: "Horário clínico da situação",
+  tipo: "hora",
+  fonte: "F-15",
+  bloqueiaTerapia: false,
+  aceitaDesconhecido: true,
+  nota: "Quando a situação aconteceu no paciente. Não é o horário do registro.",
+};
+
+/**
  * ── ⚠️⚠️ ⛔ O DOMÍNIO — ⛔ E ⛔ ELE É **ESTRUTURAL** ────────────────────────
  *
  * ⚠️ Decisão do autor, 2026-09-07:

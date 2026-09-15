@@ -1205,6 +1205,32 @@ Nenhuma tela menciona a situação desconhecida.
 
 **Como o item 5 aplica os terminais, para conferência do autor:** a saída de terminal é conferida depois das regras já existentes (cancelada depois do início, interrompida sem início, retrocesso), que continuam dando o nome da violação quando também se aplicam. Um terminal reaberto por correção explícita confirmada deixa de exigir confirmação para os registros seguintes; repetir o mesmo terminal não é saída.
 
+### 11 · Item 3 · horário clínico: checagem E-49 aprovada e decisões finais (2026-09-14)
+
+**Decidido por:** Dr. Sandro Dainez, por escrito, sobre o rascunho da checagem E-49 contra as 12 marcas de não-exigir.
+
+**Checagem E-49 · aprovada.** Nenhuma das 12 marcas do índice de `auditoria/CONSOLIDACAO-CLINICA-AVC.md` é violada: o horário clínico é pedido depois de a ação começar ou terminar e não pode atrasar a própria trombólise. As marcas com relação indireta viram regressões automatizadas:
+- **Marca 6** (observar resposta à IVT antes da EVT): pendência ou ausência de horário clínico nunca participa do veredito da EVT nem cria espera. Prova: o veredito da trombectomia e o portão da IVT são idênticos com o horário ausente, desconhecido e informado.
+- **Marca 7** (hora da última dose de DOAC): ausência de horário clínico nunca é reutilizada nem inferida como horário de última dose de DOAC. Prova: a leitura do DOAC continua "não perguntada" e nenhum fato de última dose é gravado, em todas as variantes.
+
+**Decisões finais:**
+1. O dado de horário clínico é ligado explicitamente à transição correspondente e aparece no gesto e na trilha. Não entra na lista genérica de campos da Reperfusão e não é pré-requisito do portão da IVT.
+2. `Iniciada`: `ivt_inicio` é a única fonte de verdade; não se cria segundo horário; o desconhecido declarado resolve a pendência como horário clínico desconhecido; o horário do registro nunca é substituto.
+3. `Administrada/concluída` e `Interrompida`: exigem resolução documental do horário, informar ou declarar desconhecido. A ausência não bloqueia retrospectivamente IVT ou EVT nem altera elegibilidade.
+4. `Prescrita`, `Preparada` e `Cancelada`: horário clínico opcional; a ausência não gera pendência.
+5. `Indicada` e `Decidida`: sem horário clínico no V1.
+6. Caminho hemorrágico: o horário do registro deixa de ser fallback da hora clínica da interrupção. Ausente ou desconhecido, fica assim; o horário do registro continua disponível na trilha, para auditoria.
+8. «Limpar» (decisão final, 2026-09-14): a pendência de horário clínico continua enquanto a transição continuar válida para exposição. «Limpar» não invalida o fato clínico. A pendência só sai com correção explícita que invalide a transição, ou com o horário resolvido como conhecido ou desconhecido. Regressões na prova do AC-13 (bloco 3i) e mutação correspondente.
+7. Os seis usos de `horaClinica ?? horaRegistro` fora do AC-13 (`ajuda.ts`, `avaliacao-anterior.ts`, `deterioracao.ts`, `plano-48h.ts`, `transferencia.ts`, `via-aerea-externa.ts`) ficam para rodada própria e não mudam neste item.
+
+**Esclarecimento de nome, registrado na implementação:** a decisão 2 citou `ivt_inicio_desconhecido`. No código, esse identificador é a recomendação F-03 (IVT com início dos sintomas desconhecido, janela por DWI/FLAIR), outro conceito. O desconhecido declarado do início da administração é o próprio `ivt_inicio` respondido com "Horário desconhecido" (valor `nao_sei`). É esse que resolve a pendência de `Iniciada`.
+
+**Como o item 3 aplica as decisões, para conferência do autor:**
+- Campo `ivt_horario_clinico` (instância da trombólise, tipo hora, aceita desconhecido, `bloqueiaTerapia: false`, fonte F-15), gravado com `referenteAoFatoId` apontando para o registro da transição. Não é correção da transição.
+- Informar de novo corrige o horário anterior da mesma transição; "Limpar" volta a não informado.
+- Pendência documental por transição válida de estado obrigatório sem horário clínico; a transição corrigida por engano não gera pendência. A pendência entra nas pendências do caso e não é lida por portão, vereditos ou DOAC.
+- A trilha mostra, em linhas separadas, "Horário clínico: …" (ou "desconhecido", ou "não informado") e "Registrado às …". Indicada e Decidida mostram só o horário do registro. Em Correções, o horário clínico só aparece quando foi gravado; nunca o do registro no lugar.
+
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.

@@ -23,7 +23,7 @@ import { TODOS_OS_CAMPOS_B } from "./superficie-b";
 import { TODOS_OS_CAMPOS_C } from "./superficie-c";
 import { TODOS_OS_CAMPOS_D } from "./superficie-d";
 import { TODOS_OS_CAMPOS_E } from "./superficie-e";
-import { ACAO_DE_TROMBOLISE, CAMPO_DO_JULGAMENTO, DECISAO_DE_PROSSEGUIR } from "./superficie-f";
+import { ACAO_DE_TROMBOLISE, CAMPO_DO_HORARIO_CLINICO, CAMPO_DO_JULGAMENTO, DECISAO_DE_PROSSEGUIR } from "./superficie-f";
 import { CAMPOS_ANTITROMBOTICOS, CAMPOS_DA_TELECONSULTA, CAMPOS_DA_TRANSFERENCIA } from "./superficie-g";
 import { CAMPOS_DA_VIA_AEREA_EXTERNA } from "./via-aerea-externa";
 import { CAMPOS_DE_DESFECHO, CAMPOS_DO_PLANO_48H } from "./plano-48h";
@@ -97,6 +97,8 @@ export function todosOsCampos(): readonly Campo[] {
     ...DECISAO_DE_PROSSEGUIR.map((c) => ({ ...c, casa: "reperfusao" as const })),
     /** ⚠️ D-139-3: o julgamento registrado tem instância por alvo — ⛔ fora do registro, perderia a instância. */
     { ...CAMPO_DO_JULGAMENTO, casa: "reperfusao" as const },
+    /** AC-13 reaberto, item 3: o horário clínico da transição tem instância; fora do registro, seria gravado sem ela. */
+    { ...CAMPO_DO_HORARIO_CLINICO, casa: "reperfusao" as const },
     /**
      * ⚠️⚠️ E **G** ENTROU EM 2026-09-07 — ⛔ pelo mesmo vão de sempre.
      *

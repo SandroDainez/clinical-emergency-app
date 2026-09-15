@@ -32,7 +32,7 @@ import SuperficieE from "./superficie-e";
 import SuperficieF from "./superficie-f";
 import SuperficieG from "./superficie-g";
 import SuperficieHemorragica from "./superficie-hemorragica";
-import { ACAO_DE_TROMBOLISE, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
+import { ACAO_DE_TROMBOLISE, CAMPO_DO_HORARIO_CLINICO, TROMBOLISE_IV } from "../../avc/conteudo/superficie-f";
 import {
   leituraDoNihssCalculado,
   nihssCalculado,
@@ -170,7 +170,9 @@ import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
 import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
 import {
   corrigirRegistroDaAcaoPorEngano,
+  limparHorarioClinicoDaTransicao,
   registrarForaDaOrdemComoCorrecao,
+  registrarHorarioClinicoDaTransicao,
   violacaoAoRegistrar,
 } from "../../avc/nucleo/correcao-da-acao";
 import { avaliacaoAntesDaPiora } from "../../avc/nucleo/avaliacao-anterior";
@@ -597,7 +599,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
        * pendência do horário de início em Destino ⛔ não levaria a lugar ⛔ nenhum
        * — gesto que ⛔ não faz nada, ⛔ e ⛔ sem erro visível.
        */
-      ["reperfusao", ACAO_DE_TROMBOLISE],
+      /** AC-13 reaberto, item 3: a pendência do horário clínico leva à trilha da trombólise, na Reperfusão. */
+      ["reperfusao", [...ACAO_DE_TROMBOLISE, CAMPO_DO_HORARIO_CLINICO]],
       /**
        * ⚠️⚠️ OS CAMPOS DO LABORATÓRIO LEVAM A **INVESTIGAÇÃO** — ⛔ e ⛔ não a
        * uma fase própria, que ⛔ não existe mais (**C3**).
@@ -2603,6 +2606,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             onHoraNaInstancia={medirNaInstancia}
             onDesfazerNaInstancia={desfazerNaInstancia}
             onCorrigirPorEngano={(fatoId) => setEstado((e) => corrigirRegistroDaAcaoPorEngano(e, fatoId, relogio))}
+            onHorarioClinico={(fatoId, valor) => setEstado((e) => registrarHorarioClinicoDaTransicao(e, fatoId, valor, relogio))}
+            onLimparHorarioClinico={(fatoId) => setEstado((e) => limparHorarioClinicoDaTransicao(e, fatoId, relogio))}
             onHora={registrarHora}
             onDesfazer={desfazer}
             onDecisaoGlobal={(motivo) => setEstado((e) => registrarDecisaoGlobalDeNaoReperfundir(e, motivo, relogio.agora(), relogio))}

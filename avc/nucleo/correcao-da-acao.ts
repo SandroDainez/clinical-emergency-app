@@ -11,7 +11,7 @@
  * motivo ⛔ invalida o que já foi registrado.
  */
 import type { EstadoAvc } from "./estado";
-import { corrigirFato } from "./estado";
+import { corrigirFato, registrarFato } from "./estado";
 import type { Relogio } from "./relogio";
 import { MOTIVO_ENGANO } from "./deterioracao";
 import { fatosDaInstancia } from "./instancia";
@@ -19,6 +19,8 @@ import { violacaoDaOrdemCausal, type RegistroValido, type ViolacaoDaOrdem } from
 import { CAMPOS_DE_SITUACAO_DA_RODADA, idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
 import { registrarComInstancia } from "../conteudo/campos";
 import { informacaoDoEstadoDaAcao } from "../conteudo/superficie-e";
+import { CAMPO_DO_HORARIO_CLINICO } from "../conteudo/superficie-f";
+import { aceitaGestoDeHorarioClinico, horarioInformadoDaTransicao } from "./horario-clinico";
 
 /** ⚠️ Nesta rodada, só a situação da trombólise: a lista mora num lugar só, `CAMPOS_DE_SITUACAO_DA_RODADA` (§9). */
 const CAMPOS_DE_SITUACAO = CAMPOS_DE_SITUACAO_DA_RODADA;
@@ -80,4 +82,45 @@ export function registrarForaDaOrdemComoCorrecao(
   const v = violacaoAoRegistrar(estado, instancia, campo, valor);
   if (v === undefined || v.referencia === undefined) return registrarComInstancia(estado, { campo, valor }, relogio, instancia);
   return corrigirFato(estado, { campo, valor, instancia, corrigeFatoId: v.referencia.fatoId }, relogio);
+}
+
+/**
+ * AC-13 reaberto, item 3: grava o horário clínico de uma transição, ligado a ela por `referenteAoFatoId`. Informar
+ * de novo corrige o horário anterior da mesma transição; repetir o mesmo valor não grava. «Iniciada» é recusada (a
+ * fonte dela é `ivt_inicio`), assim como Indicada, Decidida e o registro que já trouxe horário clínico próprio.
+ */
+export function registrarHorarioClinicoDaTransicao(
+  estado: EstadoAvc,
+  fatoId: string,
+  valor: number | "nao_sei",
+  relogio: Relogio
+): EstadoAvc {
+  const alvo = estado.fatos.find((f) => f.id === fatoId);
+  if (alvo === undefined || alvo.instancia === undefined || !aceitaGestoDeHorarioClinico(estado, alvo)) return estado;
+  if (typeof valor === "number" && !Number.isFinite(valor)) return estado;
+  const anterior = horarioInformadoDaTransicao(estado, alvo);
+  if (anterior !== undefined && anterior.valor === valor) return estado;
+  const fato = {
+    campo: CAMPO_DO_HORARIO_CLINICO.id,
+    valor,
+    instancia: alvo.instancia,
+    referenteAoFatoId: fatoId,
+    ...(typeof valor === "number" ? { horaClinica: valor } : {}),
+  };
+  return anterior === undefined
+    ? registrarFato(estado, fato, relogio)
+    : corrigirFato(estado, { ...fato, corrigeFatoId: anterior.id }, relogio);
+}
+
+/** AC-13 reaberto, item 3: «Limpar» do horário clínico de uma transição. Volta a não informado, com trilha. */
+export function limparHorarioClinicoDaTransicao(estado: EstadoAvc, fatoId: string, relogio: Relogio): EstadoAvc {
+  const alvo = estado.fatos.find((f) => f.id === fatoId);
+  if (alvo === undefined || alvo.instancia === undefined) return estado;
+  const anterior = horarioInformadoDaTransicao(estado, alvo);
+  if (anterior === undefined || anterior.valor === "nao_perguntado") return estado;
+  return corrigirFato(
+    estado,
+    { campo: CAMPO_DO_HORARIO_CLINICO.id, valor: "nao_perguntado", instancia: alvo.instancia, referenteAoFatoId: fatoId, corrigeFatoId: anterior.id },
+    relogio
+  );
 }

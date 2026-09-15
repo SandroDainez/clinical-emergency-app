@@ -40,6 +40,7 @@ import { pendenciasDoDestino } from "./transferencia";
 import { leituraDaViaAereaExterna } from "./via-aerea-externa";
 import { pendenciasDoPlano } from "./plano-48h";
 import { caminhoHemorragico } from "./caminho-hemorragico";
+import { pendenciasDoHorarioClinico } from "./horario-clinico";
 import { pendenciasDaPopulacao } from "./populacao";
 import { pendenciasAbertas, type EstadoAvc } from "./estado";
 import type { Pendencia, SuperficieId } from "./tipos";
@@ -139,6 +140,8 @@ function familiasDePendencia(
     /** ⚠️ 15ª rodada: desfecho negativo incompleto (AC-85) ⛔ pendências do caminho hemorrágico (A07). */
     { origem: "derivada", lista: pendenciasDoPlano(estado) },
     { origem: "derivada", lista: caminhoHemorragico(estado).pendencias },
+    /** AC-13 reaberto, item 3: horário clínico das transições da trombólise. Pendência documental, sem trava (E-49). */
+    { origem: "derivada", lista: pendenciasDoHorarioClinico(estado) },
     /** ⚠️ E **origina**, ⛔ mas a dona é B — ver `pendenciasOriginadasEmE`. */
     { origem: "derivada", lista: pendenciasOriginadasEmE(estado) },
     { origem: "derivada", lista: pendenciasDoLaboratorio(estado) },

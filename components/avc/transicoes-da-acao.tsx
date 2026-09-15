@@ -10,6 +10,10 @@
  * marcado como invalidado. A correção se pede aqui, registro a registro, com confirmação, quando a superfície oferece
  * o gesto: nesta rodada só a trombólise (Correções ⛔ muda, AC-13 reaberto §9).
  *
+ * AC-13 reaberto, item 3: cada linha separa o horário clínico («Horário clínico: …», «desconhecido» ou «não
+ * informado») do horário do registro («Registrado às …»); um nunca preenche o outro. Na trombólise, a transição que
+ * aceita horário (`aceitaGestoDeHorarioClinico`) oferece «Informar horário» e «Horário desconhecido».
+ *
  * ⛔ Esta camada só DESENHA: a trilha vem de `transicoesDoEstadoDaAcao` (`avc/nucleo/transicoes-da-acao.ts`).
  */
 import { useState } from "react";
@@ -26,6 +30,9 @@ import { ESPACO, RAIO, TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 import { useAutoriaDoAtendimento } from "./autoria-do-atendimento";
 import { ConfirmacaoDeEngano } from "./confirmacao-de-engano";
+import SeletorDeHora from "./seletor-de-hora";
+import { useFoco } from "./sistema/foco";
+import { aceitaGestoDeHorarioClinico, horarioClinicoDaTransicao } from "../../avc/nucleo/horario-clinico";
 
 /** ⚠️ Quem registrou: conta ⛔ tem nome no módulo; sem conta, a marca de AC-40; sem evento no log, dito como tal. */
 function rotuloDaAutoria(autoria: Autoria | undefined): string {
@@ -44,18 +51,46 @@ export function TransicoesDaAcao({
   instancia,
   campo,
   onCorrigirPorEngano,
+  campoDoHorario,
+  agora,
+  onHorarioClinico,
+  onLimparHorarioClinico,
 }: {
   estado: EstadoAvc;
   instancia: string;
   campo: string;
   /** ⚠️ Sem ele, a trilha só é lida: ⛔ oferece correção. */
   onCorrigirPorEngano?: (fatoId: string) => void;
+  /** AC-13 reaberto, item 3: o campo que responde o horário clínico da transição; sem ele, a trilha não oferece o gesto. */
+  campoDoHorario?: string;
+  agora?: number;
+  onHorarioClinico?: (fatoId: string, valor: number | "nao_sei") => void;
+  onLimparHorarioClinico?: (fatoId: string) => void;
 }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
   const autoriaDe = useAutoriaDoAtendimento();
   const [aberto, setAberto] = useState(false);
   const [engano, setEngano] = useState<string | undefined>(undefined);
+  const [editandoHorario, setEditandoHorario] = useState<
+    { readonly fatoId: string; readonly instante: number; readonly selecionado: boolean } | undefined
+  >(undefined);
+  const foco = useFoco();
+  const fatoDe = (fatoId: string) => estado.fatos.find((f) => f.id === fatoId);
+  function linhaDoHorarioClinico(t: TransicaoDaAcao): string | undefined {
+    const fato = fatoDe(t.fatoId);
+    if (fato === undefined || t.tipo !== "registro") return undefined;
+    const h = horarioClinicoDaTransicao(estado, fato);
+    if (h.tipo === "nao_pedido") {
+      /** Fora dos estados que pedem horário: mostra o horário clínico só quando foi gravado, nunca o do registro no lugar. */
+      return typeof fato.horaClinica === "number" ? `${tr("Horário clínico")}: ${horaComData(fato.horaClinica)}` : undefined;
+    }
+    if (h.tipo === "conhecido") {
+      return `${tr("Horário clínico")}: ${horaComData(h.ms)}${h.fonte === "ivt_inicio" ? ` · ${tr("início da administração")}` : ""}`;
+    }
+    if (h.tipo === "desconhecido_declarado") return tr("Horário clínico desconhecido");
+    return tr("Horário clínico não informado");
+  }
   const transicoes = transicoesDoEstadoDaAcao(estado, instancia, campo);
   if (transicoes.length === 0) return null;
 
@@ -77,7 +112,10 @@ export function TransicoesDaAcao({
             <View key={t.fatoId} style={e.linha} testID={`avc-transicoes-${instancia}-${i}`}>
               <Text style={[e.estado, t.invalidadaPorCorrecao ? e.invalidado : null]}>{tr(tituloDaLinha(t))}</Text>
               {t.legado ? <Text style={e.meta}>{tr("registro antigo")}: {tr(t.rotuloGravado)}</Text> : null}
-              <Text style={e.meta}>{horaComData(t.horaClinica ?? t.horaRegistro)}</Text>
+              {linhaDoHorarioClinico(t) !== undefined ? <Text style={e.meta}>{linhaDoHorarioClinico(t)}</Text> : null}
+              <Text style={e.meta}>
+                {tr("Registrado às")} {horaComData(t.horaRegistro)}
+              </Text>
               <Text style={e.meta}>{tr(rotuloDaAutoria(autoriaDe(t.fatoId)))}</Text>
               {t.foraDaOrdemCausal ? (
                 <Text style={e.meta}>
@@ -89,6 +127,61 @@ export function TransicoesDaAcao({
                 <Text style={e.nivel}>
                   {t.invalidadaPorCorrecao ? tr("invalidado por correção") : t.vigente ? tr("situação vigente") : tr("registro anterior")}
                 </Text>
+              ) : null}
+              {campoDoHorario !== undefined && agora !== undefined && onHorarioClinico !== undefined
+                && t.tipo === "registro" && !t.invalidadaPorCorrecao
+                && fatoDe(t.fatoId) !== undefined && aceitaGestoDeHorarioClinico(estado, fatoDe(t.fatoId)!) ? (
+                <View
+                  style={e.horario}
+                  ref={(no) => foco.registrarGrupo([campoDoHorario], no)}
+                  testID={`avc-horario-clinico-${instancia}-${i}`}
+                >
+                  {editandoHorario !== undefined && editandoHorario.fatoId === t.fatoId ? (
+                    <SeletorDeHora
+                      rotulo="Horário clínico da situação"
+                      instante={editandoHorario.instante}
+                      selecionado={editandoHorario.selecionado}
+                      agora={agora}
+                      onMudar={(instante, escolheuValor) =>
+                        setEditandoHorario({ fatoId: t.fatoId, instante, selecionado: escolheuValor || editandoHorario.selecionado })}
+                      onConfirmar={() => {
+                        if (editandoHorario.selecionado) onHorarioClinico(t.fatoId, editandoHorario.instante);
+                        setEditandoHorario(undefined);
+                      }}
+                      onCancelar={() => setEditandoHorario(undefined)}
+                    />
+                  ) : (
+                    <View style={e.linhaDeBotoes}>
+                      <Pressable
+                        style={e.corrigir}
+                        accessibilityRole="button"
+                        testID={`avc-horario-clinico-informar-${instancia}-${i}`}
+                        onPress={() => setEditandoHorario({ fatoId: t.fatoId, instante: agora, selecionado: false })}
+                      >
+                        <Text style={e.corrigirTexto}>{tr("Informar horário")}</Text>
+                      </Pressable>
+                      <Pressable
+                        style={e.corrigir}
+                        accessibilityRole="button"
+                        testID={`avc-horario-clinico-desconhecido-${instancia}-${i}`}
+                        onPress={() => onHorarioClinico(t.fatoId, "nao_sei")}
+                      >
+                        <Text style={e.corrigirTexto}>{tr("Horário desconhecido")}</Text>
+                      </Pressable>
+                      {onLimparHorarioClinico !== undefined
+                        && horarioClinicoDaTransicao(estado, fatoDe(t.fatoId)!).tipo !== "nao_informado" ? (
+                        <Pressable
+                          style={e.corrigir}
+                          accessibilityRole="button"
+                          testID={`avc-horario-clinico-limpar-${instancia}-${i}`}
+                          onPress={() => onLimparHorarioClinico(t.fatoId)}
+                        >
+                          <Text style={e.corrigirTexto}>{tr("Limpar")}</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  )}
+                </View>
               ) : null}
               {onCorrigirPorEngano !== undefined && t.tipo === "registro" && !t.invalidadaPorCorrecao ? (
                 <Pressable
@@ -147,4 +240,6 @@ const criarEstilos = (tema: Tema) =>
       backgroundColor: tema.cores.controlSurface,
     },
     corrigirTexto: { ...PAPEL.textoSecundario, color: tema.cores.text },
+    horario: { gap: ESPACO.xs },
+    linhaDeBotoes: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
   });

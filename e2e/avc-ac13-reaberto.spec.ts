@@ -157,3 +157,43 @@ test.describe("AVC · AC-13 reaberto · item 5 · estados terminais", () => {
     await expect(page.getByTestId("avc-transicoes-abrir-trombolise_iv_1")).toContainText("(1)");
   });
 });
+
+test.describe("AVC · AC-13 reaberto · item 3 · horário clínico", () => {
+  test("«Administrada/concluída» → a trilha separa horário clínico não informado do horário do registro; «Horário desconhecido» resolve", async ({ page }) => {
+    await tromboliseCom(page, "Administrada/concluída");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    const linha = page.getByTestId("avc-transicoes-trombolise_iv_1-0");
+    await expect(linha).toContainText("Horário clínico não informado");
+    await expect(linha).toContainText("Registrado às");
+    await page.getByTestId("avc-horario-clinico-desconhecido-trombolise_iv_1-0").click();
+    await expect(linha).toContainText("Horário clínico desconhecido");
+    await expect(linha).not.toContainText("Horário clínico não informado");
+  });
+
+  test("«Iniciada» e «Interrompida» → «Informar horário» grava o horário clínico ligado à interrupção", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada", "Interrompida");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await page.getByTestId("avc-horario-clinico-informar-trombolise_iv_1-1").click();
+    await page.getByTestId("avc-seletor-hora-agora").click();
+    await page.getByTestId("avc-seletor-hora-confirmar").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-1")).toContainText(/Horário clínico: .*\d{2}:\d{2}/);
+  });
+
+  test("«Iniciada» → o horário clínico vem só do início da administração; declarar o início desconhecido resolve", async ({ page }) => {
+    await tromboliseCom(page, "Iniciada");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    const linha = page.getByTestId("avc-transicoes-trombolise_iv_1-0");
+    await expect(linha).toContainText("Horário clínico não informado");
+    await expect(page.getByTestId("avc-horario-clinico-informar-trombolise_iv_1-0")).toHaveCount(0);
+    await page.getByTestId("avc-hora-desconhecido-ivt_inicio").click();
+    await expect(linha).toContainText("Horário clínico desconhecido");
+  });
+
+  test("«Indicada» não pede horário clínico; «Prescrita» aceita horário opcional", async ({ page }) => {
+    await tromboliseCom(page, "Indicada", "Prescrita");
+    await page.getByTestId("avc-transicoes-abrir-trombolise_iv_1").click();
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).not.toContainText("Horário clínico");
+    await expect(page.getByTestId("avc-transicoes-trombolise_iv_1-0")).toContainText("Registrado às");
+    await expect(page.getByTestId("avc-horario-clinico-informar-trombolise_iv_1-1")).toBeVisible();
+  });
+});

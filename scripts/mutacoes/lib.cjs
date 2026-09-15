@@ -51,6 +51,10 @@ const ARQ = {
   rascunho: "avc/nucleo/rascunho-numerico.ts",
   /** ⚠️ O kit visual novo — A, B ⛔ e agora o ASPECTS de C. */
   kit: "components/avc/ui/index.tsx",
+  /** AC-13 reaberto, item 3: horário clínico das transições e as regressões E-49. */
+  horarioClinico: "avc/nucleo/horario-clinico.ts",
+  caminhoHemorragico: "avc/nucleo/caminho-hemorragico.ts",
+  vereditoEvt: "avc/nucleo/veredito-da-trombectomia.ts",
 };
 
 /**
