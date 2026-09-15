@@ -58,6 +58,10 @@ const ARQ = {
   /** AC-13 reaberto, item 4: autoria por nome de exibição e o schema v4. */
   autoria: "avc/persistencia/autoria.ts",
   tiposDaPersistencia: "avc/persistencia/tipos.ts",
+  /** AC-13 reaberto · validação: ordem causal, trilha e conteúdo de E (legado «Realizada»). */
+  ordemDaAcao: "avc/nucleo/ordem-da-acao.ts",
+  transicoesDaAcao: "avc/nucleo/transicoes-da-acao.ts",
+  conteudoE: "avc/conteudo/superficie-e.ts",
 };
 
 /**
