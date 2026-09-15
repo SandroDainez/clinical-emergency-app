@@ -392,7 +392,7 @@ export function estadoDoPortaoIVT(estado: EstadoAvc, agoraMs: number): PortaoIVT
          * está implementada (item 7 do autor), ⛔ e inventá-la aqui seria criar
          * conduta.
          */
-        oQueFalta: "A diretriz não recomenda a trombólise neste caso",
+        oQueFalta: "Segundo a fonte, a trombólise IV não é recomendada neste cenário",
         leva: "reperfusao",
       });
     }

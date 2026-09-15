@@ -144,7 +144,7 @@ export const FORMULACAO_PT: Readonly<Record<string, string>> = {
   "reasonably safe within 4.5 h and probably recommended":
     "razoavelmente seguro dentro de 4,5 horas, e provavelmente recomendado",
   "should be considered as benefit likely outweighs risk":
-    "deve ser considerado, porque o benefício provavelmente supera o risco",
+    "a fonte diz que deve ser considerado, porque o benefício provavelmente supera o risco",
   "does not appear to have an increased risk of ICH":
     "não parece haver risco aumentado de hemorragia intracraniana",
   "risk … is unknown and IV thrombolysis should be avoided":

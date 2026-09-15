@@ -489,7 +489,7 @@ export function vereditoDaTrombolise(estado: EstadoAvc, agoraMs: number): Veredi
       ...comum,
       tipo: "nao_recomendada",
       /** ⚠️ *"⛔ não recomenda"* — ⛔ e ⛔ nunca *"contraindica"*. A força é da fonte. */
-      frase: "A diretriz não recomenda a trombólise neste caso",
+      frase: "Segundo a fonte, a trombólise IV não é recomendada neste cenário",
       sustentam: [],
       contra: contra.map(motivo),
       faltam: [],

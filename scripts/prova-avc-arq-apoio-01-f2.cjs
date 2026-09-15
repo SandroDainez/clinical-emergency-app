@@ -33,7 +33,7 @@ const appDir = path.resolve(__dirname, "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "arq-apoio-01-f2-"));
 const fontes = [
   ["avc", "nucleo", "estado.ts"], ["avc", "nucleo", "relogio.ts"], ["avc", "nucleo", "portao-ivt.ts"], ["avc", "nucleo", "decisao-medica.ts"],
-  ["avc", "nucleo", "derivacoes-d.ts"], ["avc", "nucleo", "derivacoes-f.ts"], ["avc", "nucleo", "limpar-auditado.ts"], ["avc", "nucleo", "instancia.ts"],
+  ["avc", "nucleo", "derivacoes-d.ts"], ["avc", "nucleo", "derivacoes-f.ts"], ["avc", "nucleo", "limpar-auditado.ts"], ["avc", "nucleo", "instancia.ts"], ["avc", "nucleo", "caminho-hemorragico.ts"],
   ["avc", "conteudo", "campos.ts"], ["avc", "conteudo", "campo.ts"], ["avc", "conteudo", "superficie-c.ts"], ["avc", "conteudo", "superficie-d.ts"],
   ["avc", "conteudo", "superficie-f.ts"], ["avc", "conteudo", "caminho-hemorragico.ts"], ["avc", "conteudo", "paciente.ts"], ["avc", "conteudo", "laboratorio.ts"],
 ].map((p) => path.join(appDir, ...p));
@@ -50,6 +50,7 @@ const DD = emT("avc", "nucleo", "derivacoes-d.js");
 const DF = emT("avc", "nucleo", "derivacoes-f.js");
 const L = emT("avc", "nucleo", "limpar-auditado.js");
 const I = emT("avc", "nucleo", "instancia.js");
+const HN = emT("avc", "nucleo", "caminho-hemorragico.js");
 const K = emT("avc", "conteudo", "campos.js");
 const CAMPO = emT("avc", "conteudo", "campo.js");
 const SC = emT("avc", "conteudo", "superficie-c.js");
@@ -175,6 +176,36 @@ bloco("AP5", "barra", () => {
   conf("AP5", "a Reperfusão fica na barra do caminho hemorrágico", (CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO ?? []).includes("reperfusao"), `⛔ ${JSON.stringify(CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO)}`);
 });
 
+/* ══ AP-5 · a ordem entre administração e hemorragia (autor, 2026-09-15) ══════
+ * «Apesar de bloqueio» só cabe se o bloqueio já existia no momento da administração. Só o que os horários provam. */
+const administrada = (e, inicio) => {
+  let x = regI(e, `${SF.TROMBOLISE_IV}_1`, "ivt_estado", CAMPO.valorDaOpcao("Iniciada"));
+  return inicio === undefined ? x : regI(x, `${SF.TROMBOLISE_IV}_1`, "ivt_inicio", inicio);
+};
+bloco("AP5-SEQUENCIA", "ordem dos fatos", () => {
+  const seq = (e) => HN.sequenciaDaAdministracaoComHemorragia(e);
+  conf("AP5-SEQUENCIA", "controle: sem administração, nada a ordenar", seq(comTc(vazio(), "Hemorragia intracraniana identificada").e) === undefined, "⛔ definido");
+  conf("AP5-SEQUENCIA", "controle: sem hemorragia, nada a ordenar", seq(administrada(comTc(vazio(), "Sem hemorragia intracraniana identificada").e, AGORA - 3 * H)) === undefined, "⛔ definido");
+  const posterior = comTc(administrada(vazio(), AGORA - 3 * H), "Hemorragia intracraniana identificada", AGORA - 1 * H).e;
+  conf("AP5-SEQUENCIA", "trombólise iniciada há 3 h, TC com hemorragia há 1 h → hemorragia identificada posteriormente", seq(posterior) === "hemorragia_posterior", `⛔ ${seq(posterior)}`);
+  const apesar = administrada(comTc(vazio(), "Hemorragia intracraniana identificada", AGORA - 2 * H).e, AGORA);
+  conf("AP5-SEQUENCIA", "resultado com hemorragia já registrado quando a administração começou → apesar de bloqueio", seq(apesar) === "apesar_de_bloqueio", `⛔ ${seq(apesar)}`);
+  const ambigua = comTc(administrada(vazio(), AGORA - 1 * H), "Hemorragia intracraniana identificada", AGORA - 2 * H).e;
+  conf("AP5-SEQUENCIA", "imagem adquirida antes do início, resultado registrado depois → indeterminada, ⛔ um lado escolhido", seq(ambigua) === "indeterminada", `⛔ ${seq(ambigua)}`);
+  const semInicio = comTc(administrada(vazio(), undefined), "Hemorragia intracraniana identificada", AGORA - 1 * H).e;
+  conf("AP5-SEQUENCIA", "início sem horário → indeterminada", seq(semInicio) === "indeterminada", `⛔ ${seq(semInicio)}`);
+});
+bloco("AP5-TELA", "a Reperfusão contextual", () => {
+  const telaF = lerFonte(path.join(appDir, "components", "avc", "superficie-f.tsx"));
+  conf("AP5-TELA", "o modo contextual vem do caminho hemorrágico", /const contextual = useMemo\(\(\) => caminhoHemorragico\(estado\)\.ativo/.test(telaF), "⛔");
+  conf("AP5-TELA", "agente ⛔ dose somem no modo contextual", /contextual \? null : \(<>[\s\S]{0,240}<View style=\{e\.grupo\} testID="avc-f-agente"/.test(telaF), "⛔");
+  conf("AP5-TELA", "«Registrar administração» some no modo contextual", /contextual \? null : \(\s*<Pressable[\s\S]{0,160}testID="avc-nova-trombolise"/.test(telaF), "⛔");
+  conf("AP5-TELA", "o formulário de decisão médica some no modo contextual", /m\.categoria === "alerta" && !contextual \? \(\s*<RegistroDeDecisaoMedica/.test(telaF), "⛔");
+  conf("AP5-TELA", "«apesar de bloqueio» no modo contextual só pela ordem dos fatos",
+    /sequenciaComHemorragia === "apesar_de_bloqueio"\s*\? tr\("Administração registrada apesar de bloqueio identificado"\)/.test(telaF)
+    && /administracoes > 0 && !portao\.liberado && !contextual/.test(telaF), "⛔ o aviso antigo aparece sem ordem");
+});
+
 /* ══ Tela D ════════════════════════════════════════════════════════════════ */
 bloco("D-CMB", ">10 microssangramentos", () => {
   const r = DD.microssangramentos(reg(vazio(), "informacao_previa_cmb", "Ressonância prévia com mais de 10 microssangramentos"));
@@ -272,14 +303,9 @@ bloco("D1393-TELA", "a tela", () => {
 });
 
 const ordem = ["LIMPAR-TC", "LIMPAR-INR", "LIMPAR-DOIS-EXAMES", "LIMPAR-DIVERGENTES", "LIMPAR-DUAS-COLETAS", "LIMPAR-TELA",
-  "AP5", "D-CMB", "D-TITULO", "D-GLOSA", "D-PORTAO", "AP6-OPCOES", "AP6-CALCULO", "DOSE-TETO",
+  "AP5", "AP5-SEQUENCIA", "AP5-TELA", "D-CMB", "D-TITULO", "D-GLOSA", "D-PORTAO", "AP6-OPCOES", "AP6-CALCULO", "DOSE-TETO",
   "D1393-NAO-INCOMPLETO", "D1393-SIM-SO-VALOR", "D1393-SIM-INCOMPLETO", "D1393-SIM-COMPLETO", "D1393-TELA"];
 const VERMELHAS_DECLARADAS = {
-  AP5: "commit 2 · AP-5 contextual",
-  "D-CMB": "commit 2 · textos D",
-  "D-TITULO": "commit 2 · textos D",
-  "D-GLOSA": "commit 2 · textos D",
-  "D-PORTAO": "commit 2 · textos D",
   "AP6-OPCOES": "commit 3 · AP-6",
   "AP6-CALCULO": "commit 3 · AP-6",
   "DOSE-TETO": "commit 3 · dose",

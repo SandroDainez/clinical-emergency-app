@@ -14,7 +14,7 @@ import { RESULTADOS_COM_HEMORRAGIA } from "../conteudo/superficie-c";
 import { TIPO_LEGADO_SUBARACNOIDEA } from "../conteudo/caminho-hemorragico";
 import { registrarComInstancia } from "../conteudo/campos";
 import { destinoDaImagem, estudos } from "./derivacoes-c";
-import { certezaDaInstancia, exposicaoAoTrombolitico } from "./derivacoes-f";
+import { certezaDaInstancia, exposicaoAoTrombolitico, exposicoesPorInstancia } from "./derivacoes-f";
 import { valorAtual, type EstadoAvc } from "./estado";
 import { fatosDaInstancia } from "./instancia";
 import { idsInvalidadosPorCorrecao } from "./transicoes-da-acao";
@@ -77,6 +77,37 @@ function infusao(estado: EstadoAvc): {
     };
   }
   return { estado: "concluida", instancia: x.instancia };
+}
+
+/**
+ * ⚠️⚠️ ARQ-APOIO-01 F2 · AP-5 (autor, 2026-09-15): a ORDEM entre a administração do trombolítico e a hemorragia.
+ *
+ * > *"«Apesar de bloqueio» só cabe se o bloqueio já existia no momento da administração."*
+ *
+ * ⚠️ Só o que os horários registrados PROVAM:
+ *  · `apesar_de_bloqueio` — o resultado com hemorragia já estava registrado quando alguma administração começou;
+ *  · `hemorragia_posterior` — toda imagem com hemorragia foi adquirida depois do início de toda administração (a
+ *    hemorragia não pode ter sido vista antes de a imagem existir);
+ *  · `indeterminada` — qualquer outro caso, inclusive início ou aquisição sem horário. ⛔ Nunca se escolhe um lado.
+ * ⛔ `undefined` sem hemorragia ⛔ ou sem administração com exposição.
+ */
+export type SequenciaDaAdministracao = "apesar_de_bloqueio" | "hemorragia_posterior" | "indeterminada";
+
+export function sequenciaDaAdministracaoComHemorragia(estado: EstadoAvc): SequenciaDaAdministracao | undefined {
+  const com = estudos(estado).filter((e) => e.resultado !== undefined && RESULTADOS_COM_HEMORRAGIA.includes(e.resultado));
+  const expostas = exposicoesPorInstancia(estado).flatMap((x) => (x.estado === "exposta" ? [x] : []));
+  if (com.length === 0 || expostas.length === 0) return undefined;
+  const inicios = expostas.map((x) => (x.inicio.tipo === "conhecido" ? x.inicio.ms : undefined));
+  const registros = com.map((e) => e.resultadoRegistradoEm).filter((h): h is number => typeof h === "number");
+  if (registros.length > 0) {
+    const achadoRegistrado = Math.min(...registros);
+    if (inicios.some((i) => i !== undefined && i >= achadoRegistrado)) return "apesar_de_bloqueio";
+  }
+  const aquisicoes = com.map((e) => e.hora);
+  if (inicios.every((i): i is number => i !== undefined) && aquisicoes.every((h): h is number => h !== undefined)) {
+    if (Math.min(...(aquisicoes as number[])) > Math.max(...(inicios as number[]))) return "hemorragia_posterior";
+  }
+  return "indeterminada";
 }
 
 export function caminhoHemorragico(estado: EstadoAvc): LeituraDoCaminhoHemorragico {

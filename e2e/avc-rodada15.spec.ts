@@ -139,8 +139,9 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
   test("A07: hemorragia na imagem abre o caminho próprio: abas reduzidas, IVT/EVT bloqueadas com motivo, tipo, anticoagulante, neurocirurgia, condutas pendentes", async ({ page }) => {
     await abrir(page);
     await tcComHemorragia(page);
-    for (const aba of ["estabilizacao", "neurologico", "imagem", "destino"]) await expect(page.getByTestId(`avc-aba-${aba}`)).toBeVisible();
-    for (const aba of ["reperfusao", "seguranca", "laboratorio"]) await expect(page.getByTestId(`avc-aba-${aba}`), `⛔ aba ${aba} no caminho hemorrágico`).toHaveCount(0);
+    /** ⚠️ Ajuste consciente (ARQ-APOIO-01 F2 · AP-5, autor, 2026-09-15): a Reperfusão fica na barra, contextual. */
+    for (const aba of ["estabilizacao", "neurologico", "imagem", "reperfusao", "destino"]) await expect(page.getByTestId(`avc-aba-${aba}`)).toBeVisible();
+    for (const aba of ["seguranca", "laboratorio"]) await expect(page.getByTestId(`avc-aba-${aba}`), `⛔ aba ${aba} no caminho hemorrágico`).toHaveCount(0);
     await page.getByTestId("avc-aba-destino").click();
     const caminho = page.getByTestId("avc-hem-caminho");
     await expect(caminho).toBeVisible();
@@ -198,7 +199,7 @@ test.describe("AVC · 15ª rodada · decisões do autor ⛔ caminho hemorrágico
     await page.getByTestId("avc-aba-destino").click({ timeout: 30_000 });
     await expect(page.getByTestId("avc-hem-caminho"), "⛔ a troca de idioma perdeu o caminho").toBeVisible();
     await expect(page.getByTestId("avc-hem-conduta-reversao_anticoagulante")).toContainText("contenido pendiente de validación");
-    await expect(page.getByTestId("avc-aba-reperfusao")).toHaveCount(0);
+    await expect(page.getByTestId("avc-aba-reperfusao"), "AP-5: a Reperfusão fica na barra, contextual").toBeVisible();
   });
 
   test("ES · trava de via oral ⛔ sem reperfusão em espanhol", async ({ page }) => {

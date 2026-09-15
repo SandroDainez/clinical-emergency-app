@@ -121,7 +121,8 @@ test.describe("AVC · críticos — o gesto real", () => {
      * hemorrágico, que tira a Reperfusão da barra ⛔ e diz o bloqueio da IVT ⛔ da EVT com motivo. ⚠️ A
      * classe retida da EVT segue medida no núcleo (`prova-avc-criticos`, bloco 5); ⛔ aqui mede-se a tela.
      */
-    await expect(page.getByTestId("avc-aba-reperfusao"), "⛔ Reperfusão na barra do caminho hemorrágico").toHaveCount(0);
+    /** ⚠️ Ajuste consciente (ARQ-APOIO-01 F2 · AP-5, autor, 2026-09-15): a Reperfusão volta à barra, contextual e sem controles. */
+    await expect(page.getByTestId("avc-aba-reperfusao")).toBeVisible();
     await aba(page, "destino");
     await expect(page.getByTestId("avc-hem-bloqueio")).toContainText(/Trombólise e trombectomia isquêmicas bloqueadas/);
     await expect(page.getByTestId("avc-f-evt-sem-esperar")).toHaveCount(0);

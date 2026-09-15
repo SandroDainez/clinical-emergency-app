@@ -62,6 +62,8 @@ export type Estudo = {
   readonly horaConhecida: boolean;
   readonly horaDesconhecida: boolean;
   readonly resultado?: string;
+  /** ⚠️ ARQ-APOIO-01 F2 · AP-5: quando o resultado vigente entrou na trilha — a ordem entre achado e administração. */
+  readonly resultadoRegistradoEm?: number;
 };
 
 const rotuloNa = (estado: EstadoAvc, inst: string, campo: string): string | undefined => {
@@ -84,6 +86,7 @@ export function estudos(estado: EstadoAvc): readonly Estudo[] {
       horaConhecida: hora !== undefined,
       horaDesconhecida: String(f?.valor ?? "") === "nao_sei",
       resultado: rotuloNa(estado, id, "estudo_resultado"),
+      resultadoRegistradoEm: valorNaInstancia(estado, id, "estudo_resultado")?.horaRegistro,
     };
   });
 }

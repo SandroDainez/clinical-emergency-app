@@ -69,6 +69,7 @@ import { ESTADOS } from "../../design-system/estados-clinicos";
 import type { SuperficieId } from "../../avc/nucleo/tipos";
 import { vereditoDaTrombolise } from "../../avc/nucleo/veredito-da-trombolise";
 import { estadoDoPortaoIVT, type MotivoDoPortao } from "../../avc/nucleo/portao-ivt";
+import { caminhoHemorragico, sequenciaDaAdministracaoComHemorragia } from "../../avc/nucleo/caminho-hemorragico";
 import { faltaNaDecisao, type CriterioNoMomento, type DadosDaDecisaoMedica } from "../../avc/nucleo/decisao-medica";
 import { vereditoDaTrombectomia } from "../../avc/nucleo/veredito-da-trombectomia";
 import { ROTULO_CURTO } from "../../avc/conteudo/superficie-c";
@@ -431,6 +432,9 @@ export default function SuperficieF({
    * ⛔ e a regra clínica ⛔ envelheceria junto com o layout (**I6**).
    */
   const portao = useMemo(() => estadoDoPortaoIVT(estado, agora), [estado, agora]);
+  /** ⚠️ ARQ-APOIO-01 F2 · AP-5: hemorragia válida na imagem → Reperfusão contextual, só leitura. */
+  const contextual = useMemo(() => caminhoHemorragico(estado).ativo, [estado]);
+  const sequenciaComHemorragia = useMemo(() => sequenciaDaAdministracaoComHemorragia(estado), [estado]);
   /** ⚠️ ARQ-APOIO-01 F1 (AP-3): o retrato dos critérios pendentes que acompanha cada decisão registrada. */
   const criteriosNoMomento = useMemo<readonly CriterioNoMomento[]>(
     () => portao.motivos.filter((m) => m.categoria !== "informacao").map((m) => ({ id: m.id, rotulo: m.rotulo, categoria: m.categoria, critico: m.critico === true })),
@@ -466,6 +470,13 @@ export default function SuperficieF({
 
   return (
     <View style={e.raiz} testID="avc-superficie-f-conteudo">
+      {/** ⚠️⚠️ ARQ-APOIO-01 F2 · AP-5 (autor, 2026-09-15): com hemorragia válida, a Reperfusão é contextual — só leitura, ⛔ sem agente, dose, nova trombólise ⛔ nem formulário de decisão. */}
+      {contextual ? (
+        <View style={e.discrepancia} testID="avc-f-contexto-hemorragia">
+          <Text style={e.discrepanciaTitulo}>{tr("Hemorragia identificada — reperfusão do AVC isquêmico não se aplica neste estado.")}</Text>
+        </View>
+      ) : null}
+      {contextual ? null : (<>
       {/**
         * ── ⚠️⚠️ O VEREDITO DA TROMBÓLISE ────────────────────────────────────
         *
@@ -925,6 +936,7 @@ export default function SuperficieF({
         <Raia titulo={tr("Trombólise")} itens={itens} terapia="ivt" testID="avc-f-raia-ivt" />
         <Raia titulo={tr("Trombectomia")} itens={itens} terapia="evt" testID="avc-f-raia-evt" />
       </View>
+      </>)}
 
       {/* ── AC-85 (15ª rodada): desfecho negativo de IVT ⛔ EVT, com decisão global ─────── */}
       <DesfechoNegativo
@@ -952,6 +964,7 @@ export default function SuperficieF({
         * ⛔ ⛔ NADA foi removido ⛔ e ⛔ nenhuma regra clínica mudou: é reordenação
         * de apresentação. As faixas continuam inteiras, logo abaixo.
         */}
+      {contextual ? null : (<>
       {/* ── agente e dose ────────────────────────────────────────────────── */}
       <View style={e.grupo} testID="avc-f-agente">
         <CabecalhoDeBloco titulo={tr(CAMPO_AGENTE.rotulo)} testID="avc-f-bloco-agente" />
@@ -1138,6 +1151,7 @@ export default function SuperficieF({
           )}
         </View>
       </View>
+      </>)}
 
       {/**
         * ── ⚠️⚠️ ⛔ A DECISÃO — ⛔ O DEGRAU QUE O PORTÃO GOVERNA ─────────────
@@ -1216,7 +1230,7 @@ export default function SuperficieF({
                   * ⚠️ D-139-3 ⛔ ARQ-APOIO-01 F1 (AP-1, AP-2, AP-3, AP-10): a decisão médica registrada no próprio motivo, em todo
                   * alerta clínico. Mudar a decisão é novo registro, ⛔ sobrescrita.
                   */}
-                {m.categoria === "alerta" ? (
+                {m.categoria === "alerta" && !contextual ? (
                   <RegistroDeDecisaoMedica
                     m={m}
                     alvo={m.julgamento ?? m.id}
@@ -1418,6 +1432,7 @@ export default function SuperficieF({
           * ⚠️ ⛔ O portão governa a **decisão**, ⛔ acima. ⛔ Aqui ⛔ só se
           * registra o que aconteceu.
           */}
+        {contextual ? null : (
         <Pressable
           style={e.opcao}
           accessibilityRole="button"
@@ -1426,6 +1441,7 @@ export default function SuperficieF({
         >
           <Text style={e.opcaoTexto}>{tr("Registrar administração")}</Text>
         </Pressable>
+        )}
 
         {/**
           * ⚠️⚠️ ⛔ E A DISCREPÂNCIA FICA **AUDITÁVEL**, ⛔ sem impedir ⛔ nada.
@@ -1445,7 +1461,22 @@ export default function SuperficieF({
             <Text style={e.discrepanciaEstado}>{tr(TITULO_DO_PORTAO[portao.estado])}</Text>
           </View>
         ) : null}
-        {administracoes > 0 && !portao.liberado ? (
+        {/**
+          * ⚠️⚠️ ARQ-APOIO-01 F2 · AP-5 (autor, 2026-09-15): no caminho hemorrágico o aviso respeita a ORDEM dos fatos —
+          * «apesar de bloqueio» só quando o bloqueio já existia na administração; ⛔ o que os horários ⛔ provam fica dito.
+          */}
+        {contextual && sequenciaComHemorragia !== undefined ? (
+          <View style={e.discrepancia} testID={`avc-f-hemorragia-sequencia-${sequenciaComHemorragia}`}>
+            <Text style={e.discrepanciaTitulo}>
+              {sequenciaComHemorragia === "apesar_de_bloqueio"
+                ? tr("Administração registrada apesar de bloqueio identificado")
+                : sequenciaComHemorragia === "hemorragia_posterior"
+                  ? tr("Administração de trombolítico registrada; hemorragia identificada posteriormente")
+                  : tr("Administração de trombolítico registrada; hemorragia identificada na imagem — os horários registrados não permitem ordenar os dois")}
+            </Text>
+          </View>
+        ) : null}
+        {administracoes > 0 && !portao.liberado && !contextual ? (
           <View style={e.discrepancia} testID="avc-f-discrepancia">
             <Text style={e.discrepanciaTitulo}>
               {SIMBOLO_DO_PORTAO[portao.estado]}{" "}
@@ -1478,6 +1509,7 @@ export default function SuperficieF({
       </View>
 
 
+      {contextual ? null : (<>
       {/**
         * ⚠️⚠️ ⛔ NENHUM RELÓGIO CORRENDO — e isso precisa APARECER.
         *
@@ -1708,6 +1740,7 @@ export default function SuperficieF({
             : null}
         </View>
       ) : null}
+      </>)}
     </View>
   );
 }

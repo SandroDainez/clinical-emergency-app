@@ -271,8 +271,9 @@ if (H?.caminhoHemorragico !== undefined && CH !== undefined) {
   const hem = comTc(vazio, T0, "Hemorragia intracraniana identificada");
   const c = H.caminhoHemorragico(hem);
   conf("A07: hemorragia na imagem (saída da T04) abre o caminho próprio", c.ativo === true && c.desde === T0, `⛔ ${JSON.stringify(c)}`);
-  conf("… superfícies reduzidas: estabilização, neurológico, imagem, destino",
-    JSON.stringify(CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO) === JSON.stringify(["estabilizacao", "neurologico", "imagem", "destino"]), `⛔ ${CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO}`);
+  /** ⚠️ Ajuste consciente (ARQ-APOIO-01 F2 · AP-5, autor, 2026-09-15): a Reperfusão fica na barra, contextual. */
+  conf("… superfícies reduzidas: estabilização, neurológico, imagem, reperfusão (contextual), destino",
+    JSON.stringify(CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO) === JSON.stringify(["estabilizacao", "neurologico", "imagem", "reperfusao", "destino"]), `⛔ ${CH.SUPERFICIES_DO_CAMINHO_HEMORRAGICO}`);
   conf("… IVT ⛔ EVT isquêmicas bloqueadas com motivo", c.bloqueio?.ivt === true && c.bloqueio?.evt === true && /hemorragia/i.test(c.bloqueio?.motivo ?? ""), `⛔ ${JSON.stringify(c.bloqueio)}`);
   conf("… o portão da IVT ⛔ a classe da EVT confirmam o bloqueio",
     tenta(() => PI.estadoDoPortaoIVT(hem, T0 + MIN).estado, "") === "bloqueado_seguranca" && /* ⚠️ ajuste de instrumento: a classe usa `estado`, ⛔ `tipo` */ tenta(() => VE.vereditoDaTrombectomia(hem, T0 + MIN).classe?.estado, "") === "retida",

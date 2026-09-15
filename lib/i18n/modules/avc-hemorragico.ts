@@ -418,8 +418,6 @@ export const ES_AVC_HEMORRAGICO: Record<string, string> = {
     "Ya tengo el total, medido en otro servicio",
 
   /* ── ⚠️ PD-40 · o veredito da trombólise ──────────────────────────────── */
-  "A diretriz não recomenda a trombólise neste caso":
-    "La guía no recomienda la trombólisis en este caso",
   "Ainda não dá para concluir: faltam dados":
     "Aún no es posible concluir: faltan datos",
   "Conferência dos critérios da diretriz contra o que foi registrado. A decisão é do médico.":

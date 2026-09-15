@@ -119,7 +119,8 @@ const ORDEM: readonly {
    * ⚠️⚠️ ⛔ E O PRIMEIRO NASCE **ABERTO**: ⛔ o que a fonte manda ⛔ não
    * administrar ⛔ não pode depender de um toque para aparecer.
    */
-  { estado: "contraindicacao_nao_corrigivel", titulo: "A fonte diz para não administrar" },
+  /** ⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): o grupo junta «should not be administered» ⛔ «likely contraindicated» — o verbo de cada item fica. */
+  { estado: "contraindicacao_nao_corrigivel", titulo: "Contraindicações segundo a fonte" },
   { estado: "risco_aumentado", titulo: "A fonte descreve risco aumentado", recolhido: true },
   { estado: "informacao_insuficiente", titulo: "A fonte declara segurança desconhecida", recolhido: true },
   { estado: "situacao_individualizada", titulo: "A fonte manda decidir caso a caso", recolhido: true },

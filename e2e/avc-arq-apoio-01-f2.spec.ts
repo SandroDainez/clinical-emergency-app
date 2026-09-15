@@ -14,7 +14,6 @@ import { fixarIdioma, responderPopulacaoAdulta } from "./helpers";
  * VERMELHAS DECLARADAS: `test.fail` marca cada teste como vermelho esperado até o commit que o torna verde. Se passar
  * antes disso, a suíte reprova — a marca sai no commit que o torna verde.
  */
-const VERMELHA_DO_COMMIT_2 = "vermelha declarada · F2 commit 2 (AP-5 + textos D) — remover a marca no commit que a torna verde";
 const VERMELHA_DO_COMMIT_3 = "vermelha declarada · F2 commit 3 (AP-6/dose) — remover a marca no commit que a torna verde";
 
 const COM_HEMORRAGIA = "Hemorragia intracraniana identificada";
@@ -94,7 +93,6 @@ test.describe("AVC · ARQ-APOIO-01 · F2", () => {
    */
 
   test("AP-5: Reperfusão acessível no caminho hemorrágico, contextual, sem controles executáveis", async ({ page }) => {
-    test.fail(true, VERMELHA_DO_COMMIT_2);
     await abrir(page);
     await novaTc(page, "estudo_1", COM_HEMORRAGIA);
     await expect(page.getByTestId("avc-aba-reperfusao"), "a aba sumiu").toBeVisible();
@@ -103,6 +101,10 @@ test.describe("AVC · ARQ-APOIO-01 · F2", () => {
     await expect(page.getByTestId("avc-nova-trombolise")).toHaveCount(0);
     await expect(page.getByTestId("avc-f-agente-Alteplase")).toHaveCount(0);
     await expect(page.getByTestId("avc-f-decisao-imagem")).toHaveCount(0);
+    /** ⚠️ Fica, só leitura: o motivo do portão com a fonte. */
+    await expect(page.getByTestId("avc-f-portao-motivo-imagem")).toBeVisible();
+    /** ⚠️ Sem administração, ⛔ nenhum aviso de ordem. */
+    await expect(page.locator('[data-testid^="avc-f-hemorragia-sequencia-"]')).toHaveCount(0);
   });
 
   test("AP-6: origem «Não sei» calcula a dose e diz «origem do peso não informada»", async ({ page }) => {

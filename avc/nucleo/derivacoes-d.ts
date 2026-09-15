@@ -325,8 +325,9 @@ export function microssangramentos(estado: EstadoAvc): Leitura & { estado: Estad
   }
   if (/mais de 10|>10/i.test(rotulo)) {
     return { ...base, estado: "informacao_insuficiente", tom: "atencao",
-      curto: "Ressonância prévia com mais de 10 microssangramentos — utilidade incerta",
-      texto: "A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b, e a trombólise não fica bloqueada" };
+      /** ⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): o portão retém até a decisão registrada (D-139-3) — «não fica bloqueada» contradizia. */
+      curto: "Ressonância prévia com mais de 10 microssangramentos — benefício incerto",
+      texto: "Benefício da trombólise incerto — requer decisão clínica registrada. A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b" };
   }
   return { ...base, estado: "baixa_preocupacao_declarada", tom: "informativo",
     curto: "Sem informação prévia sobre microssangramentos — e nada espera por ela",

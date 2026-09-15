@@ -20,7 +20,8 @@ export const TIPOS_DE_HEMORRAGIA = ["Intraparenquimatosa", "Subdural", "Outra", 
 export const TIPO_LEGADO_SUBARACNOIDEA = "Subaracnóidea";
 
 /** ⚠️ As superfícies do caminho, na ordem da barra. */
-export const SUPERFICIES_DO_CAMINHO_HEMORRAGICO = ["estabilizacao", "neurologico", "imagem", "destino"] as const;
+/** ⚠️ ARQ-APOIO-01 F2 · AP-5 (autor, 2026-09-15): a Reperfusão fica na barra, em modo contextual e só leitura. */
+export const SUPERFICIES_DO_CAMINHO_HEMORRAGICO = ["estabilizacao", "neurologico", "imagem", "reperfusao", "destino"] as const;
 
 /** ⚠️ Marcos da neurocirurgia pelo modelo da teleconsulta (AC-72). */
 export const ESTADOS_DA_NEUROCIRURGIA = ["Contatada", "Em avaliação", "Parecer registrado", "Não disponível"] as const;

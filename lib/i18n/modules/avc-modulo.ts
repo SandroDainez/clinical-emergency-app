@@ -1541,8 +1541,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "la fuente dice que no debe administrarse",
   "a segurança é desconhecida":
     "la seguridad es desconocida",
-  "deve ser considerado, porque o benefício provavelmente supera o risco":
-    "debe considerarse, porque el beneficio probablemente supera al riesgo",
+  "a fonte diz que deve ser considerado, porque o benefício provavelmente supera o risco":
+    "la fuente dice que debe considerarse, porque el beneficio probablemente supera el riesgo",
   "há risco de hemopericárdio":
     "hay riesgo de hemopericardio",
   "não parece haver risco aumentado de hemorragia intracraniana":
@@ -1611,8 +1611,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Registra la duda clínica sobre el diagnóstico. La fuente declara riesgo bajo de daño con la trombólisis en esta situación.",
   "A fonte diz que a segurança da trombólise nesta situação é desconhecida, e que ela pode ser considerada após análise individual de risco e benefício. O aplicativo não classifica a janela de 48 horas, porque a fonte não define o instante de referência":
     "La fuente dice que la seguridad de la trombólisis en esta situación es desconocida, y que puede considerarse tras un análisis individual de riesgo y beneficio. La aplicación no clasifica la ventana de 48 horas, porque la fuente no define el instante de referencia",
-  "A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b, e a trombólise não fica bloqueada":
-    "La fuente dice que la utilidad de la trombólisis es incierta, y puede asociarse a mayor riesgo de hemorragia sintomática. Recomendación clase 2b, y la trombólisis no queda bloqueada",
+  "Benefício da trombólise incerto — requer decisão clínica registrada. A fonte diz que a utilidade da trombólise é incerta, e pode associar-se a maior risco de hemorragia sintomática. Recomendação classe 2b":
+    "Beneficio de la trombólisis incierto — requiere decisión clínica registrada. La fuente dice que la utilidad de la trombólisis es incierta, y puede asociarse a mayor riesgo de hemorragia sintomática. Recomendación clase 2b",
   "A fonte lista o horário entre os fatores da análise individual, e não define o instante de referência da janela de 48 horas. O aplicativo não calcula essa janela":
     "La fuente lista la hora entre los factores del análisis individual, y no define el instante de referencia de la ventana de 48 horas. La aplicación no calcula esa ventana",
   "A fonte recomenda a trombólise para melhorar o desfecho funcional, apesar do aumento de risco de hemorragia sintomática comparado a não usar antiagregante":
@@ -1641,16 +1641,16 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Registrar el resultado de los estudios de coagulación",
   "Ressonância prévia com 1 a 10 microssangramentos — a fonte considera razoável":
     "Resonancia previa con 1 a 10 microsangrados — la fuente lo considera razonable",
-  "Ressonância prévia com mais de 10 microssangramentos — utilidade incerta":
-    "Resonancia previa con más de 10 microsangrados — utilidad incierta",
+  "Ressonância prévia com mais de 10 microssangramentos — benefício incerto":
+    "Resonancia previa con más de 10 microsangrados — beneficio incierto",
   "Sem informação prévia sobre microssangramentos — e nada espera por ela":
     "Sin información previa sobre microsangrados — y nada espera por ella",
   "Última dose de anticoagulante direto ainda não registrada":
     "Última dosis de anticoagulante directo aún no registrada",
   "A fonte declara segurança desconhecida":
     "La fuente declara seguridad desconocida",
-  "A fonte diz para não administrar":
-    "La fuente dice que no se administre",
+  "Contraindicações segundo a fonte":
+    "Contraindicaciones según la fuente",
   "A fonte manda decidir caso a caso":
     "La fuente indica decidir caso por caso",
   "A fonte declara risco baixo":
@@ -2607,6 +2607,13 @@ export const ES_AVC_MODULO: Record<string, string> = {
     "Alerta crítica — datos registrados incompatibles con trombólisis IV según la fuente",
   "Há critérios a corrigir antes de prosseguir":
     "Hay criterios que corregir antes de continuar",
+  /* ── ARQ-APOIO-01 F2 · AP-5: a Reperfusão contextual no caminho hemorrágico ── */
+  "Hemorragia identificada — reperfusão do AVC isquêmico não se aplica neste estado.":
+    "Hemorragia identificada — la reperfusión del ACV isquémico no se aplica en este estado.",
+  "Administração de trombolítico registrada; hemorragia identificada posteriormente":
+    "Administración de trombolítico registrada; hemorragia identificada posteriormente",
+  "Administração de trombolítico registrada; hemorragia identificada na imagem — os horários registrados não permitem ordenar os dois":
+    "Administración de trombolítico registrada; hemorragia identificada en la imagen — los horarios registrados no permiten ordenar ambos",
   "Segundo a fonte, a trombólise IV não é recomendada neste cenário":
     "Según la fuente, la trombólisis IV no se recomienda en este escenario",
   "Critérios registrados não compatíveis com trombólise IV":
