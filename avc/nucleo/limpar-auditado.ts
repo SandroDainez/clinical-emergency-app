@@ -37,26 +37,30 @@ function motivosRestritivos(estado: EstadoAvc, agoraMs: number): ReadonlySet<str
  * «Não», corrigir ⛔ só o «Não» deixaria o «Sim» sustentando a retenção para sempre.
  * ⚠️ Cada correção aponta o fato corrigido ⛔ e leva o motivo "toque errado".
  */
-export function limparComCorrecaoAuditada(estado: EstadoAvc, campo: string, relogio: Relogio): EstadoAvc {
+export function limparComCorrecaoAuditada(estado: EstadoAvc, campo: string, relogio: Relogio, instancia?: string): EstadoAvc {
   const corrigidos = new Set(estado.fatos.map((f) => f.corrigeFatoId).filter((id): id is string => id !== undefined));
+  /**
+   * ⚠️⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): a correção aponta a instância que o médico TOCOU — o exame, a coleta —
+   * e nunca «a mais recente». Com duas TCs, limpar a primeira deixa a segunda intocada.
+   */
   const vigentes = estado.fatos.filter(
-    (f) => f.campo === campo && f.instancia === undefined && String(f.valor) !== "nao_perguntado" && !corrigidos.has(f.id)
+    (f) => f.campo === campo && f.instancia === instancia && String(f.valor) !== "nao_perguntado" && !corrigidos.has(f.id)
   );
   if (vigentes.length === 0) {
-    return corrigirNaInstancia(estado, { campo, valor: "nao_perguntado", motivo: MOTIVO_TOQUE_ERRADO }, relogio);
+    return corrigirNaInstancia(estado, { campo, valor: "nao_perguntado", motivo: MOTIVO_TOQUE_ERRADO }, relogio, instancia);
   }
   return vigentes.reduce(
-    (e, f) => corrigirFato(e, { campo, valor: "nao_perguntado", motivo: MOTIVO_TOQUE_ERRADO, corrigeFatoId: f.id }, relogio),
+    (e, f) => corrigirFato(e, { campo, valor: "nao_perguntado", motivo: MOTIVO_TOQUE_ERRADO, corrigeFatoId: f.id, instancia }, relogio),
     estado
   );
 }
 
-/** ⚠️ `true` quando limpar a resposta faria sumir um motivo restritivo do portão. */
-export function campoSustentaRetencaoOuBloqueio(estado: EstadoAvc, campo: string, relogio: Relogio): boolean {
+/** ⚠️ `true` quando limpar a resposta (na instância tocada, se houver) faria sumir um motivo restritivo do portão. */
+export function campoSustentaRetencaoOuBloqueio(estado: EstadoAvc, campo: string, relogio: Relogio, instancia?: string): boolean {
   const agora = relogio.agora();
   const antes = motivosRestritivos(estado, agora);
   if (antes.size === 0) return false;
-  const depois = motivosRestritivos(limparComCorrecaoAuditada(estado, campo, relogio), agora);
+  const depois = motivosRestritivos(limparComCorrecaoAuditada(estado, campo, relogio, instancia), agora);
   for (const k of antes) if (!depois.has(k)) return true;
   return false;
 }

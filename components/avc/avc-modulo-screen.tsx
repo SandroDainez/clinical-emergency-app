@@ -823,7 +823,25 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
    * **tipo** da operação, e ⛔ não um motivo. ⛔ Ninguém perguntou por quê.
    */
   function desfazerNaInstancia(coleta: string, campo: string) {
+    /**
+     * ⚠️⚠️ ARQ-APOIO-01 F2 (autor, 2026-09-15): resultado de exame que sustenta retenção ou alerta — TC com
+     * hemorragia, INR crítico — passa pela mesma confirmação auditada do D-PEND-26, apontando a instância tocada.
+     */
+    if (campoSustentaRetencaoOuBloqueio(estado, campo, relogio, coleta)) {
+      pedirLimparAuditado(campo, coleta);
+      return;
+    }
     setEstado((e) => corrigirNaInstancia(e, { campo, valor: "nao_perguntado" }, relogio, coleta));
+  }
+
+  /** Abre «Foi engano?» com as respostas vigentes do campo — na instância tocada, quando houver. */
+  function pedirLimparAuditado(campo: string, instancia?: string) {
+    const corrigidos = new Set(estado.fatos.map((f) => f.corrigeFatoId));
+    const ROTULO: Readonly<Record<string, string>> = { sim: "Sim", nao: "Não", nao_sei: "Incerto" };
+    const respostas = estado.fatos
+      .filter((f) => f.campo === campo && (instancia === undefined || f.instancia === instancia) && String(f.valor) !== "nao_perguntado" && !corrigidos.has(f.id))
+      .map((f) => ROTULO[String(f.valor)] ?? String(f.valor));
+    setPedidoDeLimpar({ campo, instancia, rotulo: campoDoModulo(campo)?.rotulo ?? campo, respostas });
   }
 
   /**
@@ -949,12 +967,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
      * com motivo "toque errado".
      */
     if (campoSustentaRetencaoOuBloqueio(estado, campo, relogio)) {
-      const corrigidos = new Set(estado.fatos.map((f) => f.corrigeFatoId));
-      const ROTULO: Readonly<Record<string, string>> = { sim: "Sim", nao: "Não", nao_sei: "Incerto" };
-      const respostas = estado.fatos
-        .filter((f) => f.campo === campo && String(f.valor) !== "nao_perguntado" && !corrigidos.has(f.id))
-        .map((f) => ROTULO[String(f.valor)] ?? String(f.valor));
-      setPedidoDeLimpar({ campo, rotulo: campoDoModulo(campo)?.rotulo ?? campo, respostas });
+      pedirLimparAuditado(campo);
       return;
     }
     /**
@@ -2864,7 +2877,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         onConfirmar={() => {
           const alvo = pedidoDeLimpar;
           setPedidoDeLimpar(undefined);
-          if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio));
+          if (alvo) setEstado((e) => limparComCorrecaoAuditada(e, alvo.campo, relogio, alvo.instancia));
         }}
       />
       <ConfirmacaoForaDaOrdem

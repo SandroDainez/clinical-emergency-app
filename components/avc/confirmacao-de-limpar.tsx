@@ -15,6 +15,8 @@ import { useTr } from "../../lib/use-tr";
 
 export type PedidoDeLimpar = {
   readonly campo: string;
+  /** ⚠️ ARQ-APOIO-01 F2: a instância tocada (exame, coleta) — a correção aponta ESTA, nunca a mais recente. */
+  readonly instancia?: string;
   readonly rotulo: string;
   /** Rótulos das respostas vigentes — ⛔ o que será corrigido. */
   readonly respostas: readonly string[];
