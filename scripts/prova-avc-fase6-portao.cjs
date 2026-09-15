@@ -367,7 +367,8 @@ function acao(e, rotuloDaAcao, estadoDaAcao, inst) {
   conf(
     "⚠️⚠️ a divergência entre registro ⛔ e motor fica AUDITÁVEL",
     /avc-f-discrepancia/.test(tela)
-    && /Administração registrada apesar de bloqueio identificado/.test(tela)
+    /* ⚠️ Ajuste consciente (pós-produção, 2026-09-15): a frase deixa de dizer «apesar de bloqueio» — sem ordem nem julgamento. */
+    && /Administração de trombolítico registrada; o portão da trombólise não está liberado com os dados atuais\./.test(tela)
     && /avc-f-discrepancia-estado/.test(tela)
     && /avc-f-discrepancia-motivo-/.test(tela),
     "⛔ registrar apesar do bloqueio ⛔ não é erro de uso — ⛔ esconder ⛔ o que foi divergido é"

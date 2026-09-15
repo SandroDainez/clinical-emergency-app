@@ -322,8 +322,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "Registra a decisão clínica de prosseguir. Não é a administração, e não substitui o registro do que foi feito.":
     "Registra la decisión clínica de continuar. No es la administración, y no sustituye el registro de lo que se hizo.",
   /** ⚠️ ⛔ Registro da divergência — ⛔ e ⛔ nunca repreensão. */
-  "Administração registrada apesar de bloqueio identificado":
-    "Administración registrada a pesar de un bloqueo identificado",
+  "Administração de trombolítico registrada; o portão da trombólise não está liberado com os dados atuais.":
+    "Administración de trombolítico registrada; la puerta de la trombólisis no está liberada con los datos actuales.",
   "Motivo principal": "Motivo principal",
   "Também ativo": "También activo",
   /** ⚠️⚠️ ⛔ Linguagem NEUTRA — ⛔ nem *elegível* ⛔ nem *⛔ não elegível* (**F-08**). */

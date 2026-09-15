@@ -1382,7 +1382,7 @@ export default function SuperficieF({
               onDesfazer={() => undefined}
             />
             {/** ⚠️ ARQ-APOIO-01 F3 (autor, 2026-09-15): mantido nesta versão — a função do registro dita, visível. */}
-            <Text style={e.agenteNota} testID="avc-f-decisao-ivt-nota">
+            <Text style={[e.agenteNota, e.decisaoIvtNota]} testID="avc-f-decisao-ivt-nota">
               {tr("Registro da decisão médica de prosseguir. Não altera o veredito, não cria elegibilidade e não significa administração.")}
             </Text>
             </View>
@@ -1506,7 +1506,8 @@ export default function SuperficieF({
           <View style={e.discrepancia} testID="avc-f-discrepancia">
             <Text style={e.discrepanciaTitulo}>
               {SIMBOLO_DO_PORTAO[portao.estado]}{" "}
-              {tr("Administração registrada apesar de bloqueio identificado")}
+              {/** ⚠️ Pós-produção (2026-09-15): ⛔ «apesar de» — a frase diz só o que o app sabe agora, sem afirmar ordem nem julgar a conduta. */}
+              {tr("Administração de trombolítico registrada; o portão da trombólise não está liberado com os dados atuais.")}
             </Text>
             {/**
               * ⚠️⚠️ ⛔ A DIVERGÊNCIA CARREGA **O QUE FOI DIVERGIDO** — ⛔ e ⛔ não
@@ -2357,6 +2358,8 @@ const criarEstilos = (tema: Tema) =>
     opcaoTexto: { color: tema.cores.text, fontSize: TIPOGRAFIA.caption.fontSize },
     opcaoTextoAtivo: { color: tema.cores.primary, fontWeight: "700" },
     agenteNota: { color: tema.cores.textSecondary, fontSize: TIPOGRAFIA.caption.fontSize, flexShrink: 1 },
+    /** ⚠️ Pós-produção (2026-09-15): a nota fica fora do cartão do campo; a margem interna dele (ESPACO.md) a alinha ao texto. */
+    decisaoIvtNota: { paddingHorizontal: ESPACO.md, paddingTop: ESPACO.xs },
     agenteLinha: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: ESPACO.xs },
 
     dose: {

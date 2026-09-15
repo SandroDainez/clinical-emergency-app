@@ -256,7 +256,8 @@ test.describe("AVC · Reperfusão", () => {
 
       /** ⚠️ A divergência aparece — ⛔ e ⛔ não impede ⛔ nada. */
       await expect(page.getByTestId("avc-f-discrepancia"))
-        .toContainText(/Administração registrada apesar de bloqueio/i);
+        /** ⚠️ Ajuste consciente (pós-produção, 2026-09-15): sem «apesar de» — o que o app sabe agora. */
+        .toContainText(/Administração de trombolítico registrada; o portão da trombólise não está liberado com os dados atuais/i);
 
       /**
        * ⚠️⚠️ ⛔ E A MONITORIZAÇÃO NASCE NORMALMENTE — ⛔ era **isto** que o meu
