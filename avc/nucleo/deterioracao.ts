@@ -28,9 +28,11 @@
 import type { EstadoAvc } from "./estado";
 import { corrigirFato, registrarFato } from "./estado";
 import type { Relogio } from "./relogio";
-import type { Pendencia } from "./tipos";
+import type { Pendencia, SuperficieId } from "./tipos";
 import { ameacasImediatas } from "./ameacas-imediatas";
+import { exposicaoAoTrombolitico } from "./derivacoes-f";
 import { TODOS_OS_CAMPOS_A } from "../conteudo/superficie-a";
+import { MONITORIZACAO_POS_IVT } from "../conteudo/superficie-g";
 
 export const CAMPO_PACIENTE_PIOROU = "paciente_piorou";
 
@@ -80,6 +82,56 @@ export function registrarPiora(estado: EstadoAvc, texto: string, relogio: Relogi
     ? comEvento
     : registrarFato(comEvento, { campo: CAMPO_EIXOS_REABERTOS, valor: reabertos.join(",") }, relogio);
   return { ...comReabertos, eixosConcluidos: comReabertos.eixosConcluidos.filter((x) => !eixos.includes(x)) };
+}
+
+/**
+ * ⚠️⚠️ D-140 (autor, 2026-09-16) — «PIORA CLÍNICA: O QUE FAZER AGORA».
+ *
+ * ⚠️ ROTEADOR, ⛔ E ⛔ NÃO CONTEÚDO NOVO: ⛔ nenhuma frase clínica nasce aqui. As duas
+ * primeiras ações são NAVEGAÇÃO (para onde o médico olha agora); as da Table 7 são
+ * CITAÇÃO — `MONITORIZACAO_POS_IVT.deterioracao.condutas`, lidas da constante, ⛔ nunca
+ * reescritas. Se a fonte mudar de palavra, esta lista muda junto, ⛔ sem tocar aqui.
+ *
+ * ⚠️⚠️ ⛔ A PIORA ⛔ DIAGNOSTICA ⛔ NEM CONTRAINDICA — ⛔ e ⛔ isto é o invariante que a
+ * prova protege. Esta função ⛔ é lida por portão, veredito ⛔ ou caminho hemorrágico:
+ * ela só ORDENA O OLHAR. Registrar piora continua ⛔ mudando ⛔ nenhuma decisão.
+ *
+ * ⚠️⚠️ INTERROMPER SÓ COM INFUSÃO CORRENDO (correção do autor, 2026-09-16): com a
+ * exposição já concluída, aparece **só** a TC. ⛔ Mandar interromper uma infusão que ⛔
+ * está em curso ⛔ é conduta — é ruído na tela em que o médico tem menos tempo.
+ * ⚠️ A condicional *«se estiver em curso»* da fonte viaja no texto; ⛔ o APP ⛔ a repete
+ * quando ⛔ há o que interromper.
+ *
+ * ⚠️ `gesto` = o app REGISTRA o ato (só a interrupção). A tomografia ⛔ é gesto: ⛔ o app
+ * ⛔ a executa ⛔ nem a agenda.
+ */
+export type AcaoDaPiora = {
+  readonly id: string;
+  readonly rotulo: string;
+  /** ⚠️ A superfície que o toque abre — só nas reavaliações. */
+  readonly leva?: SuperficieId;
+  /** ⚠️ Conduta CITADA da Table 7 — ⛔ redigida aqui. */
+  readonly fonte?: "Table 7";
+  /** ⚠️ O app registra o ato. Só `interromper_infusao`, ⛔ e só com infusão em curso. */
+  readonly gesto?: true;
+};
+
+export function acoesDaPioraClinica(estado: EstadoAvc): readonly AcaoDaPiora[] {
+  /** ⚠️ Piora corrigida por engano ⛔ pede conduta nenhuma. */
+  if (eventosDePiora(estado).every((ev) => ev.engano)) return [];
+  const base: readonly AcaoDaPiora[] = [
+    { id: "reavaliar_abcd", rotulo: "Reavaliar ABCD", leva: "estabilizacao" },
+    { id: "repetir_neurologico", rotulo: "Repetir a avaliação neurológica (NIHSS)", leva: "neurologico" },
+  ];
+  const exposicao = exposicaoAoTrombolitico(estado);
+  if (exposicao.estado !== "exposta") return base;
+  const [interromper, tomografia] = MONITORIZACAO_POS_IVT.deterioracao.condutas;
+  const emCurso = exposicao.fase === "iniciada";
+  return [
+    ...base,
+    ...(emCurso ? [{ id: "interromper_infusao", rotulo: interromper, fonte: "Table 7", gesto: true } as const] : []),
+    { id: "tc_de_emergencia", rotulo: tomografia, fonte: "Table 7" },
+  ];
 }
 
 export function eventosDePiora(estado: EstadoAvc): readonly EventoDePiora[] {

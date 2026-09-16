@@ -62,6 +62,15 @@ test.describe("AVC · «Preciso de ajuda» global", () => {
       await expect(painel, `⛔ ${op} ⛔ abriu painel`).toBeVisible();
       await expect(painel.getByTestId("avc-ajuda-texto-da-opcao")).not.toBeEmpty();
       expect(await painel.locator('[data-testid^="avc-ajuda-caminho-"]').count(), `⛔ ${op} sem caminho`).toBeGreaterThan(0);
+      /**
+       * ⚠️⚠️ D-140 (autor, 2026-09-16) — ajuste consciente, ⛔ e MAIS apertado que antes.
+       *
+       * ⛔ Antes bastava o campo de anotação estar visível. ⚠️ Agora o teste exige as DUAS
+       * coisas: que ele ⛔ abra por padrão (é ação SECUNDÁRIA) ⛔ e que continue alcançável
+       * num toque — a promessa de «⛔ beco sem saída» deste teste segue de pé.
+       */
+      await expect(painel.getByTestId("avc-ajuda-conduta"), `⛔ ${op} abre com o campo de anotação na frente`).toHaveCount(0);
+      await painel.getByTestId("avc-ajuda-conduta-abrir").click();
       await expect(painel.getByTestId("avc-ajuda-conduta")).toBeVisible();
       await expect(painel.getByTestId("avc-ajuda-registrar")).toBeVisible();
       await expect(painel.getByTestId("avc-ajuda-fechar")).toBeVisible();
@@ -110,7 +119,10 @@ test.describe("AVC · «Preciso de ajuda» global", () => {
     await page.getByTestId("avc-ajuda").click();
     await page.getByTestId("avc-ajuda-opcao-sem_equipamento").click();
     const painel = page.getByTestId("avc-ajuda-painel-sem_equipamento");
-    await expect(painel.getByTestId("avc-ajuda-texto-da-opcao")).toContainText("não tem conteúdo");
+    /** ⚠️ D-140 (2026-09-16): o texto aponta o CAMINHO, ⛔ e ⛔ anuncia ausência de conteúdo. */
+    await expect(painel.getByTestId("avc-ajuda-texto-da-opcao")).toContainText("Destino");
+    /** ⚠️ A anotação é secundária: abre num toque — ⛔ e o registro em si ⛔ mudou. */
+    await painel.getByTestId("avc-ajuda-conduta-abrir").click();
     await painel.getByTestId("avc-ajuda-conduta").fill("TC do hospital em manutenção; regulação acionada");
     await painel.getByTestId("avc-ajuda-registrar").click();
     await expect(painel.getByTestId("avc-ajuda-registrado")).toBeVisible();

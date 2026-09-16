@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, preencherNihssComSoma, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, preencherNihssComSoma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * 14ª rodada (autor, 2026-09-13): via aérea avançada com definitiva pelo tipo (AC-76), NIHSS
@@ -174,6 +174,8 @@ test.describe("AVC · 14ª rodada · via aérea avançada, sedação ⛔ plano a
     await expect(page.getByTestId("avc-plano-proxima-reavaliacao"), "⛔ atraso ⛔ dito").toContainText(/atrasada há 1[5-7] min/);
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
     await page.getByTestId("avc-aba-destino").click();
     await expect(page.getByTestId("avc-plano-proxima-reavaliacao")).toContainText("agora — antecipada por piora");
   });

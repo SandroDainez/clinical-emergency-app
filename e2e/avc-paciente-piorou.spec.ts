@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * «Paciente piorou» GLOBAL — ajuste de rota do autor, 2026-09-13 (AC-10, A11).
@@ -90,6 +90,8 @@ test.describe("AVC · «Paciente piorou» global", () => {
     await page.getByTestId("avc-piorou-texto").fill("rebaixou o nível de consciência");
     await page.getByTestId("avc-piorou-registrar").click();
     await expect(dialogo).toHaveCount(0);
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
 
     await expect(page.getByTestId("avc-superficie-estabilizacao"), "⛔ a avaliação de ameaças ⛔ foi reaberta").toBeVisible();
     const prioridade = page.getByTestId("avc-prioridade-reavaliar");
@@ -115,6 +117,8 @@ test.describe("AVC · «Paciente piorou» global", () => {
 
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
     await expect(page.getByTestId("avc-prioridade-reavaliar")).toBeInViewport();
 
     await page.getByTestId("avc-aba-destino").click();
@@ -131,6 +135,8 @@ test.describe("AVC · «Paciente piorou» global", () => {
     await botao.click();
     await expect(page.getByTestId("avc-piorou-dialogo")).not.toContainText("Registra o evento");
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: dispensada por testID — o rótulo aqui está em espanhol. */
+    await dispensarAcoesDaPiora(page);
     await expect(page.getByTestId("avc-prioridade-reavaliar")).toContainText("Reevaluar ahora");
   });
 });

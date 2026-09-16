@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * 12ª rodada · Entrega 1 (autor, 2026-09-13): AC-71 (estimativa aceita futuro, observado
@@ -89,6 +89,8 @@ test.describe("AVC · 12ª rodada · Entrega 1", () => {
     await page.getByTestId("avc-aba-estabilizacao").click();
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
     for (const g of ["via-aerea", "respiracao", "pressao", "neurologico-inicial"]) {
       await abrirEixosDaEstabilizacao(page);
       const botao = page.getByTestId(`avc-eixo-concluir-${g}`);

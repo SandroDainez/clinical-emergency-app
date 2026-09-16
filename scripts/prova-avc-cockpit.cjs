@@ -196,8 +196,26 @@ conf(
      * ⚠️ 2026-09-13 (11ª rodada, AC-67): + `corrigirPioraPorEngano` — a correção auditada
      * da piora devolve os eixos concluídos antes quando ⛔ houve reavaliação. Workflow.
      */
-    exportsDoWorkflow.length === 4
-      && ["registrarPiora", "eventosDePiora", "reavaliacaoPendente", "corrigirPioraPorEngano"].every((n) => exportsDoWorkflow.some((x) => x.endsWith(n))),
+    /**
+     * ⚠️⚠️ 2026-09-16 (D-140): + `acoesDaPioraClinica` — DECISÃO DECLARADA, ⛔ e ⛔ não
+     * alargamento silencioso da exceção. ⚠️ Esta trava existe exatamente para forçar
+     * esta frase, ⛔ e ela é: **a função ordena o OLHAR, ⛔ e ⛔ não emite conduta.**
+     *
+     * ⚠️ Por que é workflow: devolve para onde o médico vai agora (Estabilização, NIHSS)
+     * ⛔ e CITA a conduta da Table 7 já transcrita — ⛔ ela ⛔ redige conduta, ⛔ não
+     * calcula limiar, ⛔ não produz achado ⛔ e ⛔ não cria bloqueio. ⛔ Ela ⛔ lê
+     * `eixosConcluidos` (a regra que esta trava protege continua inteira).
+     *
+     * ⚠️ Ela LÊ estado clínico (`exposicaoAoTrombolitico`) só para decidir **o que
+     * exibir** — ⛔ e ⛔ isso ⛔ é o mesmo que derivar conduta a partir de progresso de
+     * tela, que é o defeito que esta trava impede.
+     *
+     * ⚠️⚠️ A garantia ⛔ é retórica: `D140-INVARIANTE`
+     * (`scripts/prova-avc-d140-piora-e-ajuda.cjs`, no test:all) prova que portão,
+     * veredito ⛔ e caminho hemorrágico ficam IDÊNTICOS antes ⛔ e depois da piora.
+     */
+    exportsDoWorkflow.length === 5
+      && ["registrarPiora", "eventosDePiora", "reavaliacaoPendente", "corrigirPioraPorEngano", "acoesDaPioraClinica"].every((n) => exportsDoWorkflow.some((x) => x.endsWith(n))),
     `⛔ ${exportsDoWorkflow.join(" · ")} — ⛔ função nova no módulo de workflow pede decisão`
   );
 }

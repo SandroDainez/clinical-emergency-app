@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, preencherNihssComSoma, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, preencherNihssComSoma, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * 13ª rodada (autor, 2026-09-13, opção A): contrato de navegação com destinos
@@ -135,6 +135,8 @@ test.describe("AVC · 13ª rodada · contrato de navegação ⛔ via aérea exte
     await expect(page.getByTestId("avc-piorou")).toBeInViewport();
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
     await expect(page.getByTestId("avc-prioridade-reavaliar")).toBeVisible();
     const andamento = page.getByTestId("avc-chamada-em-andamento");
     await expect(andamento, "⛔ a piora apagou a intervenção em andamento").toContainText("Via aérea");

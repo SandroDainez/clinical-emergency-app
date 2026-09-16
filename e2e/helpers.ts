@@ -65,6 +65,28 @@ export async function press(page: Page, texto: string) {
   await alvo.click();
 }
 
+/**
+ * ⚠️⚠️ D-140 (autor, 2026-09-16) — ETAPA NOVA ⛔ E INTENCIONAL DO FLUXO.
+ *
+ * ⚠️ Registrar piora passou a abrir a tela «Piora clínica — o que fazer agora», que
+ * BLOQUEIA de propósito: *«é justamente o momento em que faz sentido interromper o fluxo
+ * normal e colocar na frente do médico "o que fazer agora"»*. ⛔ Sem isto, o médico
+ * registraria a piora e seguiria navegando ⛔ sem ver a orientação.
+ *
+ * ⚠️ Por isso o fluxo dos testes antigos passou a ser:
+ *   registrar piora → modal D-140 → agir ou dispensar → continuar as asserções originais.
+ *
+ * ⚠️⚠️ ⛔ ISTO ⛔ É MAQUIAGEM PARA FICAR VERDE: o auxiliar EXIGE que o modal tenha
+ * aparecido antes de dispensá-lo. ⚠️ Cada teste antigo que o chama passa a provar,
+ * de brinde, que a tela do D-140 abre naquele fluxo — ⛔ eles ⛔ perdem garantia, ganham.
+ */
+export async function dispensarAcoesDaPiora(page: Page): Promise<void> {
+  const tela = page.getByTestId("avc-piora-acoes");
+  await expect(tela, "⛔ registrar a piora ⛔ abriu a tela de ações (D-140)").toBeVisible();
+  await page.getByTestId("avc-piora-acoes-fechar").click();
+  await expect(tela, "⛔ «Continuar na tela atual» ⛔ fechou a tela").toHaveCount(0);
+}
+
 /** Texto corrente da tela inteira, normalizado. */
 export async function texto(page: Page): Promise<string> {
   return (await page.locator("body").innerText()).replace(/ /g, " ");

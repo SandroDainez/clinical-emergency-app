@@ -6,7 +6,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 async function tromboliseCom(page: Page, ...rotulos: string[]) {
   await fixarIdioma(page, "pt-BR");
@@ -215,6 +215,8 @@ test.describe("AVC · AC-13 reaberto · item 4 · autoria", () => {
     await page.getByTestId("avc-piorou").click();
     await page.getByTestId("avc-piorou-texto").fill("rebaixou o nível de consciência");
     await page.getByTestId("avc-piorou-registrar").click();
+    /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+    await dispensarAcoesDaPiora(page);
     await page.getByTestId("avc-aba-destino").click();
     const autoria = page.getByTestId("avc-g-linha-do-tempo").locator('[data-testid^="avc-g-tempo-autoria-"]');
     await expect(autoria.first()).toHaveText("Autoria não identificada");

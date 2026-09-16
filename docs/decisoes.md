@@ -213,8 +213,8 @@ Isso complementa a D-PEND-13 (teto nunca satisfeito). Na faixa 6–9:
 - Atendimentos salvos com o eixo `exposicao` concluído continuam abrindo: o nome sobra na trilha e nenhuma tela o lê.
 
 **Na mesma mensagem:**
-- **«Paciente piorou» sem tela de ação:** decidir depois; registrado como dívida (`auditoria/DIVIDAS-CONHECIDAS.md`, D-140).
-- **«Preciso de ajuda»:** fica como está até existirem outros módulos para ligar às opções.
+- ~~**«Paciente piorou» sem tela de ação:** decidir depois; registrado como dívida.~~ Decidido em 2026-09-16: implementar (D-140, abaixo).
+- ~~**«Preciso de ajuda»:** fica como está até existirem outros módulos para ligar às opções.~~ Revisto em 2026-09-16: o roteamento já existia; a correção foi de hierarquia e linguagem (D-140, abaixo).
 
 ## D-PEND-19 · AC-45: segundo toque em opção já marcada é ignorado
 
@@ -1328,3 +1328,31 @@ Nenhuma tela menciona a situação desconhecida.
 ## Pendentes do autor em 2026-09-13 (não implementar)
 
 - ~~AC-43, AC-15, janela de puerpério~~: decididos pelas D-PEND-22, D-PEND-23 e D-PEND-24.
+
+## D-140 · «Piora clínica: o que fazer agora» e a hierarquia do «Preciso de ajuda» (autor, 2026-09-16)
+
+Nasceu do uso real: *«esse preciso de ajuda, paciente piorou não entendi bem porque ele leva só em tela de anotações e
+não de ações»*. Registrar não é conduzir.
+
+**Decidido — piora (D-140):** depois de registrar a piora, abrir uma tela «Piora clínica — o que fazer agora» contendo
+**somente**: reavaliar ABCD; repetir a avaliação neurológica/NIHSS; e, havendo trombolítico em curso ou exposição
+registrada, a conduta **já existente** da Table 7. Roteador, sem conteúdo clínico novo. **Piora isolada não diagnostica
+hemorragia nem cria nova contraindicação** — e isso é o invariante que a prova protege (`D140-INVARIANTE`).
+
+**Nuance do autor, aplicada:** «interromper a infusão» só aparece com infusão **efetivamente em curso**; com exposição
+concluída, aparece só a TC de emergência. A prova vermelha original exigia as duas condutas com exposição concluída
+(interromper apenas sem gesto); foi **corrigida antes de implementar**, com o ajuste declarado — mandar interromper
+uma infusão que não está correndo é ruído na tela em que o médico tem menos tempo.
+
+**Decidido — «Preciso de ajuda» (hierarquia, não reconstrução):** a leitura mudou durante as provas vermelhas. O
+roteamento **já existia** («Abrir Destino» já estava lá); o defeito era de ordem de importância. Então:
+
+- sai o texto tipo «Este módulo não tem conteúdo sobre…» como manchete;
+- o caminho clínico existente é a ação principal;
+- «Registrar conduta feita fora do app» permanece, como **ação secundária explícita**: fechada por padrão, atrás de um
+  toque («Registrar conduta realizada fora do app»);
+- o registro continua auditável exatamente como antes — esconder ou mostrar o campo **não muda regra clínica nenhuma**;
+- onde não houver caminho real no app, cabe uma mensagem curta — nunca como manchete dominante.
+
+**Razão declarada pelo autor:** na primeira dobra o médico deve ver só o que o app consegue fazer agora — reavaliar
+ABCD/NIHSS, ir para Destino, ou abrir a tela de piora.

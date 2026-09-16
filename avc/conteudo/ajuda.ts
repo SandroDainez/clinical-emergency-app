@@ -3,9 +3,15 @@
  * 2026-09-13, 11ª rodada; fecha AC-10).
  *
  * ⚠️ CAMINHO, ⛔ E ⛔ NÃO CONDUTA: cada opção leva a uma superfície que JÁ existe, com
- * retorno ao ponto de origem. ⛔ Onde este módulo ⛔ tem conteúdo, o texto DIZ isso ⛔ e
- * permite registrar a conduta adotada fora do app — ⛔ sem sugerir substituto, ⛔ sem
- * número, ⛔ sem simular execução.
+ * retorno ao ponto de origem. ⛔ Sem sugerir substituto, ⛔ sem número, ⛔ sem simular
+ * execução.
+ *
+ * ⚠️⚠️ HIERARQUIA (autor, 2026-09-16) — ⛔ E ⛔ ISTO ⛔ É ESTILO. ⛔ Estes textos abriam
+ * ANUNCIANDO o que o app ⛔ sabe (*«Este módulo não tem conteúdo sobre…»*), ⛔ e o médico
+ * caía numa tela de ANOTAÇÃO em vez de uma tela de AÇÃO. ⚠️ Na primeira dobra vai só o
+ * que o app consegue fazer agora; a limitação, quando cabe, vira linha curta ⛔ e ⛔ não
+ * manchete. ⚠️ O registro da conduta externa CONTINUA — atrás de um toque secundário,
+ * ⛔ e auditável como sempre (esconder o campo ⛔ muda regra clínica ⛔ nenhuma).
  *
  * ⚠️ «Paciente piorou» ⛔ tem painel: chama o mecanismo global existente.
  */
@@ -34,7 +40,7 @@ export const OPCOES_DE_AJUDA: readonly OpcaoDeAjuda[] = [
     id: "nao_sei_avaliar",
     rotulo: "Não sei avaliar",
     texto:
-      "O conteúdo existente são os campos guiados de cada superfície, com a explicação no ⓘ, pendente de validação médica. Ele não substitui apoio presencial: se chamou ajuda, registre abaixo.",
+      "Os campos guiados de cada superfície indicam o que avaliar, com a explicação no ⓘ, pendente de validação médica. Não substituem apoio presencial.",
     caminhos: [
       { superficie: "estabilizacao", rotulo: "Abrir a Estabilização (ABCDE)" },
       { superficie: "neurologico", rotulo: "Abrir o exame neurológico (NIHSS)" },
@@ -46,7 +52,7 @@ export const OPCOES_DE_AJUDA: readonly OpcaoDeAjuda[] = [
     id: "sem_medicamento",
     rotulo: "Não tenho o medicamento",
     texto:
-      "Este módulo não tem conteúdo sobre medicamento indisponível e não sugere substituto. A capacidade do serviço e a transferência ficam em Destino. Registre abaixo a conduta adotada.",
+      "A capacidade do serviço e a transferência ficam em Destino. O app não sugere substituto.",
     caminhos: [DESTINO],
     registraCondutaExterna: true,
     rotuloNaLinhaDoTempo: "Conduta externa registrada: medicamento indisponível",
@@ -55,7 +61,7 @@ export const OPCOES_DE_AJUDA: readonly OpcaoDeAjuda[] = [
     id: "sem_equipamento",
     rotulo: "Não tenho o equipamento",
     texto:
-      "Este módulo não tem conteúdo sobre equipamento indisponível e não sugere substituto. A capacidade do serviço e a transferência ficam em Destino. Registre abaixo a conduta adotada.",
+      "A capacidade do serviço e a transferência ficam em Destino. O app não sugere substituto.",
     caminhos: [DESTINO],
     registraCondutaExterna: true,
     rotuloNaLinhaDoTempo: "Conduta externa registrada: equipamento indisponível",
@@ -64,7 +70,7 @@ export const OPCOES_DE_AJUDA: readonly OpcaoDeAjuda[] = [
     id: "nao_melhorou",
     rotulo: "Não melhorou",
     texto:
-      "Este módulo não tem conteúdo sobre ausência de melhora. Os caminhos abaixo levam à reavaliação registrada; se houve piora, toque em «Paciente piorou». Registre abaixo a conduta adotada.",
+      "Os caminhos abaixo levam à reavaliação registrada. Se houve piora, toque em «Paciente piorou».",
     caminhos: [
       { superficie: "neurologico", rotulo: "Abrir o exame neurológico (NIHSS)" },
       { superficie: "estabilizacao", rotulo: "Abrir a Estabilização (ABCDE)" },

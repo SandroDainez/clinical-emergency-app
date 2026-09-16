@@ -5776,7 +5776,19 @@ EVIDÊNCIA INSUFICIENTE** na fonte transcrita.
 
 ## D-140 · AVC — «Paciente piorou» registra, mas não mostra o que fazer (2026-09-15)
 
-**Estado:** ⏸️ aberta, por decisão do autor («depois decidimos isso, deixe como uma dívida»).
+**Estado:** ✅ fechada em 2026-09-16, por decisão do autor («D-140 Paciente piorou: implementar»).
+
+**Como foi fechada:** `acoesDaPioraClinica` (`avc/nucleo/deterioracao.ts`) devolve as ações da piora, e
+`components/avc/piora-acoes.tsx` as mostra numa tela «Piora clínica — o que fazer agora», aberta logo depois do
+registro, POR CIMA da Estabilização já reaberta (a reabertura da A11 não mudou). Reavaliar ABCD e repetir o NIHSS
+sempre; as duas condutas da Table 7 só com trombolítico, CITADAS da constante — nenhuma frase clínica nasceu no código.
+
+**Correção do autor na implementação (2026-09-16):** «interromper a infusão» só APARECE com infusão em curso; com
+exposição já concluída, aparece só a TC. A prova exigia as duas com exposição concluída (interromper apenas sem gesto)
+e foi corrigida antes de implementar — mandar interromper o que não está correndo é ruído na tela de piora.
+
+**Invariante provado (não regride):** registrar piora não muda portão, veredito nem abre o caminho hemorrágico —
+`D140-INVARIANTE` em `scripts/prova-avc-d140-piora-e-ajuda.cjs`, no `test:all`.
 
 **O que acontece hoje:** o botão global registra o evento (autor, horário, texto opcional), cria «Reavaliar agora» e abre a
 Estabilização com os eixos reabertos (10ª rodada: «sem limiar, sem conduta»). No uso real, a tela que aparece são os

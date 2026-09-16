@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { abrirEixosDaEstabilizacao, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
+import { abrirEixosDaEstabilizacao, dispensarAcoesDaPiora, fixarIdioma, registrarMarcoAgora, responderPopulacaoAdulta } from "./helpers";
 
 /**
  * 11ª rodada (autor, 2026-09-13): eixos reabertos com a última avaliação; piora por
@@ -18,6 +18,8 @@ async function abrir(page: Page) {
 async function registrarPiora(page: Page) {
   await page.getByTestId("avc-piorou").click();
   await page.getByTestId("avc-piorou-registrar").click();
+  /** ⚠️ D-140: a tela de ações abre por cima ⛔ e é dispensada antes de seguir. */
+  await dispensarAcoesDaPiora(page);
   await expect(page.getByTestId("avc-prioridade-reavaliar")).toBeVisible();
 }
 

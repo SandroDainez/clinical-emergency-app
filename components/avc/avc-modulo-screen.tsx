@@ -168,7 +168,8 @@ import { campoSustentaRetencaoOuBloqueio, limparComCorrecaoAuditada } from "../.
 import { registrarDecisaoMedica } from "../../avc/nucleo/decisao-medica";
 import { ConfirmacaoDeLimpar, type PedidoDeLimpar } from "./confirmacao-de-limpar";
 import { BotaoPacientePiorou, DialogoPacientePiorou } from "./paciente-piorou";
-import { corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
+import { DialogoDaPioraClinica } from "./piora-acoes";
+import { type AcaoDaPiora, corrigirPioraPorEngano, eventosDePiora, reavaliacaoPendente, registrarPiora } from "../../avc/nucleo/deterioracao";
 import {
   corrigirRegistroDaAcaoPorEngano,
   limparHorarioClinicoDaTransicao,
@@ -307,6 +308,8 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
   const [pedidoForaDaOrdem, setPedidoForaDaOrdem] = useState<PedidoForaDaOrdem | undefined>(undefined);
   /** ⚠️ «Paciente piorou» global (ajuste de rota do autor, 2026-09-13). */
   const [pioraAberta, setPioraAberta] = useState(false);
+  /** ⚠️ D-140: a tela «o que fazer agora», aberta logo DEPOIS de registrar a piora. */
+  const [acoesDaPioraAbertas, setAcoesDaPioraAbertas] = useState(false);
   /** ⚠️ «Preciso de ajuda» global (11ª rodada) ⛔ e o ponto de origem para voltar. */
   const [ajudaAberta, setAjudaAberta] = useState(false);
   const [retornoDaAjuda, setRetornoDaAjuda] = useState<{ readonly superficie: SuperficieId; readonly y: number } | undefined>(undefined);
@@ -752,10 +755,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     }
   }
 
+  /**
+   * ⚠️⚠️ D-140 (autor, 2026-09-16): registrar ⛔ é conduzir. A reabertura da avaliação
+   * (A11) continua — ⛔ e a tela «o que fazer agora» abre POR CIMA dela, ⛔ e ⛔ no lugar
+   * dela: quem fechar a tela cai na Estabilização já reaberta, como sempre caiu.
+   */
+  /**
+   * ⚠️ D-140 (autor, 2026-09-16): ⛔ dois modais de piora sobrepostos. Com a tela de ações
+   * aberta, o botão global ⛔ empilha um diálogo novo atrás dela — ⛔ o médico ficaria com
+   * duas camadas e ⛔ nenhuma saída óbvia.
+   */
+  function abrirPiora() {
+    if (acoesDaPioraAbertas) return;
+    setPioraAberta(true);
+  }
+
   function registrarPioraDaTela(texto: string) {
     setPioraAberta(false);
     setEstado((e) => registrarPiora(e, texto, relogio));
     abrir("estabilizacao");
+    setAcoesDaPioraAbertas(true);
   }
 
   function escolher(campo: string, valor: string) {
@@ -1296,7 +1315,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
           {atendimento.fase === "pronto" ? (
             <View style={s.acoesGlobais}>
               <BotaoPrecisoDeAjuda onPress={() => setAjudaAberta(true)} />
-              <BotaoPacientePiorou onPress={() => setPioraAberta(true)} />
+              <BotaoPacientePiorou onPress={abrirPiora} />
             </View>
           ) : null}
           {/** ⚠️ 13ª rodada (A09): suporte ativo registrado, no topo fixo de toda superfície. */}
@@ -2896,7 +2915,7 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         onRegistrar={(opcao, texto) => setEstado((e) => registrarCondutaExterna(e, opcao, texto, relogio))}
         onPiora={() => {
           setAjudaAberta(false);
-          setPioraAberta(true);
+          abrirPiora();
         }}
       />
       <ConfirmacaoDeEngano
@@ -2911,9 +2930,28 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
         }}
       />
       <DialogoPacientePiorou
-        aberto={pioraAberta}
+        aberto={pioraAberta && !acoesDaPioraAbertas}
         onCancelar={() => setPioraAberta(false)}
         onRegistrar={registrarPioraDaTela}
+      />
+      {/**
+       * ⚠️ D-140. ⚠️ O único GESTO daqui é interromper a infusão — ⛔ e ele só chega como
+       * ação quando há infusão em curso (`acoesDaPioraClinica`). ⚠️ É o MESMO
+       * `registrarInterrupcaoDaInfusao` do caminho hemorrágico: ⛔ caminho paralelo, ⛔
+       * segunda verdade. As demais ações só NAVEGAM — ⛔ registram nada.
+       */}
+      <DialogoDaPioraClinica
+        aberto={acoesDaPioraAbertas}
+        estado={estado}
+        onFechar={() => setAcoesDaPioraAbertas(false)}
+        onAcao={(acao: AcaoDaPiora) => {
+          setAcoesDaPioraAbertas(false);
+          if (acao.id === "interromper_infusao") {
+            setEstado((e) => registrarInterrupcaoDaInfusao(e, relogio.agora(), relogio));
+            return;
+          }
+          if (acao.leva !== undefined) abrir(acao.leva);
+        }}
       />
     </ClinicalShell>
   );

@@ -95,8 +95,19 @@ if (CAJ !== undefined && AJ !== undefined) {
   }
   for (const id of ["sem_medicamento", "sem_equipamento", "nao_melhorou"]) {
     const o = ops.find((x) => x.id === id);
-    conf(`${id} · diz que o módulo ⛔ tem conteúdo ⛔ e ⛔ sugere substituto`,
-      o !== undefined && /não tem conteúdo/i.test(o.texto) && !/\d|\bmg\b|use |administr/i.test(o.texto),
+    /**
+     * ⚠️⚠️ INVERTIDA POR DECISÃO DO AUTOR (2026-09-16) — ajuste consciente, declarado.
+     *
+     * ⛔ Esta linha EXIGIA a manchete «não tem conteúdo» (decisão de 2026-09-13, 11ª
+     * rodada). ⚠️ O uso real mostrou o custo: *«ele leva só em tela de anotações e não de
+     * ações»*. ⚠️ O autor decidiu que na primeira dobra vai só o que o app CONSEGUE FAZER
+     * agora, ⛔ e a limitação ⛔ é manchete.
+     *
+     * ⚠️ O que ⛔ mudou, ⛔ e é o essencial: o texto continua PROIBIDO de sugerir
+     * substituto, dose ⛔ ou número — a segunda metade da asserção fica intacta.
+     */
+    conf(`${id} · ⛔ anuncia ausência de conteúdo como manchete ⛔ e ⛔ sugere substituto`,
+      o !== undefined && !/não tem conteúdo/i.test(o.texto) && !/\d|\bmg\b|use |administr/i.test(o.texto),
       `⛔ ${o && o.texto}`);
   }
   const rel = R.relogioControlado(1_800_000_000_000);

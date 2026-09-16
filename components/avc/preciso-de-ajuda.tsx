@@ -55,11 +55,14 @@ export function DialogoDeAjuda({
   const [opcao, setOpcao] = useState<string | undefined>(undefined);
   const [texto, setTexto] = useState("");
   const [registrado, setRegistrado] = useState(false);
+  /** ⚠️ A anotação é ação SECUNDÁRIA (autor, 2026-09-16): fechada por padrão, em toda opção. */
+  const [registroAberto, setRegistroAberto] = useState(false);
   useEffect(() => {
     if (!aberto) {
       setOpcao(undefined);
       setTexto("");
       setRegistrado(false);
+      setRegistroAberto(false);
     }
   }, [aberto]);
   const atual = OPCOES_DE_AJUDA.find((o) => o.id === opcao);
@@ -87,6 +90,7 @@ export function DialogoDeAjuda({
                         setOpcao(o.id);
                         setTexto("");
                         setRegistrado(false);
+                        setRegistroAberto(false);
                       }}
                     >
                       <Text style={e.opcaoTexto}>{tr(o.rotulo)}</Text>
@@ -111,7 +115,27 @@ export function DialogoDeAjuda({
                       <Text style={e.opcaoTexto}>{tr(c.rotulo)}</Text>
                     </Pressable>
                   ))}
-                  {atual.registraCondutaExterna ? (
+                  {/**
+                   * ⚠️⚠️ AÇÃO SECUNDÁRIA (autor, 2026-09-16): a anotação ⛔ compete com o
+                   * caminho de ação. ⛔ O campo ficava ABERTO, do mesmo tamanho do caminho
+                   * clínico — ⛔ e era a primeira coisa que o médico via. ⚠️ Agora mora
+                   * atrás de um toque discreto.
+                   *
+                   * ⚠️⚠️ ESCONDER O CAMPO ⛔ MUDA ⛔ NENHUMA REGRA CLÍNICA: é o MESMO
+                   * `registrarCondutaExterna`, com a MESMA trilha auditável. ⛔ Nada deixa
+                   * de ser registrável — muda só o que ocupa a primeira dobra.
+                   */}
+                  {atual.registraCondutaExterna && !registroAberto ? (
+                    <Pressable
+                      style={e.botaoSecundario}
+                      accessibilityRole="button"
+                      testID="avc-ajuda-conduta-abrir"
+                      onPress={() => setRegistroAberto(true)}
+                    >
+                      <Text style={e.botaoSecundarioTexto}>{tr("Registrar conduta realizada fora do app")}</Text>
+                    </Pressable>
+                  ) : null}
+                  {atual.registraCondutaExterna && registroAberto ? (
                     <View style={e.registro}>
                       <Text style={e.rotulo}>{tr("Conduta adotada fora do app (registro da equipe)")}</Text>
                       <TextInput
@@ -148,7 +172,7 @@ export function DialogoDeAjuda({
                     </View>
                   ) : null}
                   <View style={e.linha}>
-                    <Pressable style={e.botaoSecundario} accessibilityRole="button" testID="avc-ajuda-voltar" onPress={() => setOpcao(undefined)}>
+                    <Pressable style={e.botaoSecundario} accessibilityRole="button" testID="avc-ajuda-voltar" onPress={() => { setOpcao(undefined); setRegistroAberto(false); }}>
                       <Text style={e.botaoSecundarioTexto}>{tr("Voltar às opções")}</Text>
                     </Pressable>
                     <Pressable style={e.botaoSecundario} accessibilityRole="button" testID="avc-ajuda-fechar" onPress={onFechar}>
