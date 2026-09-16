@@ -1239,6 +1239,26 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
     glicemia: "glicemia_alterada",
   };
 
+  /**
+   * ⚠️⚠️ `ABRIR_E_LEVAR_ATE_LA` — achado do autor em produção, 2026-09-16:
+   * *«aqui tem uns clicáveis que direcionam corretamente e outros não respondem»*.
+   *
+   * ⛔ O último ramo do toque no cartão só alternava o booleano abaixo. ⚠️ O grupo abre
+   * ABAIXO da dobra: o toque funcionava ⛔ e ⛔ nada visível acontecia. ⛔ E ⛔ era o ramo
+   * de **A** ⛔ e **B** SEMPRE (⛔ eles ⛔ têm entrada em `BLOQUEIO_DO_EIXO`), ⛔ e de
+   * **C** ⛔ e **D** fora de ameaça.
+   *
+   * ⚠️ Por isso o cartão passa a chamar `rolarAte(a.campo)` ao ABRIR: ele já guarda o
+   * pedido quando o nó ⛔ ainda ⛔ não montou — que é o caso, ⛔ porque o grupo acabou de
+   * abrir. ⚠️⚠️ Fechar ⛔ não rola: ⛔ não se arranca a tela do lugar de quem só fechou.
+   * ⛔ E ⛔ nenhum destino clínico novo nasce daqui — leva ao campo do PRÓPRIO eixo tocado.
+   *
+   * ⚠️⚠️ ⛔ E ELE MORA AQUI, ⛔ E ⛔ NÃO DENTRO DA TAG: escrito no `onPress`, empurrou
+   * `testID` ⛔ e `style` para além da janela de 45 linhas de `prova-avc-afordancia`, que
+   * reprovou o cartão como *"controle desenhado como texto"*. ⚠️ A trava estava certa —
+   * bloco de abertura gigante é cheiro. ⛔ Justificativa longa fica fora do JSX, como a de
+   * `BLOQUEIO_DO_EIXO`.
+   */
   function alternarEixo(grupo: string) {
     setEixosAbertos((a) => (a.includes(grupo) ? a.filter((g) => g !== grupo) : [...a, grupo]));
   }
@@ -1745,6 +1765,22 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
             <Pressable
               key={a.id}
               /**
+               * ⚠️⚠️ `testID` ⛔ E `style` VÊM PRIMEIRO — ⛔ e ⛔ isto ⛔ é preferência.
+               *
+               * ⛔ Escritos depois do `onPress` longo, caíam além da janela de 45 linhas de
+               * `prova-avc-afordancia`, que reprovou este cartão como *"controle desenhado
+               * como texto"* — ⛔ mesmo ele TENDO moldura: `s.ameaca` traz `backgroundColor`,
+               * `borderWidth` ⛔ e `borderColor`.
+               *
+               * ⚠️ A trava estava certa no fundo: a identidade ⛔ e a moldura de um controle
+               * devem ser legíveis ⛔ no topo dele, ⛔ e ⛔ não soterradas por um handler.
+               */
+              testID={`avc-ameaca-${a.id}`}
+              style={[
+                s.ameaca,
+                a.estado === "ameaca" && s.ameacaAtiva,
+              ]}
+              /**
                * ── ⚠️⚠️⚠️ O TILE **ABRE O EIXO** — 2026-09-08 ────────────────
                *
                * ⛔ ⛔ Ele rolava até o primeiro campo do eixo, ⛔ numa lista que
@@ -1775,17 +1811,16 @@ export default function AvcModuloScreen({ onVoltar }: { onVoltar: () => void }) 
                   return;
                 }
                 if (grupo === undefined) irParaCampo(a.campo);
-                else alternarEixo(grupo);
+                /** ⚠️ Ver `ABRIR_E_LEVAR_ATE_LA`: o porquê mora lá, fora do JSX. */
+                else if (!eixosAbertos.includes(grupo)) {
+                  alternarEixo(grupo);
+                  rolarAte(a.campo);
+                } else alternarEixo(grupo);
               }}
               accessibilityRole="button"
               accessibilityLabel={`${tr(a.nome)}: ${tr(
                 ESTADOS[estadoClinicoDoEixo(a.estado)].rotulo
               )}`}
-              testID={`avc-ameaca-${a.id}`}
-              style={[
-                s.ameaca,
-                a.estado === "ameaca" && s.ameacaAtiva,
-              ]}
             >
               <View style={s.ameacaTopo}>
                 {/**
