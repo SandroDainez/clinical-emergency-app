@@ -396,16 +396,26 @@ export function CondutaGlicemica({ prefixo }: { prefixo: string }) {
       ))}
 
       {/**
-        * ⚠️⚠️ ⛔ O BLOCO DOS ERROS FICA **NA TELA**: `<50` ⛔ e `>400` foram,
-        * por anos, critério de exclusão. ⚠️ Quem aprendeu assim ⛔ não
-        * desaprende lendo uma faixa — ⛔ precisa ler que aquilo mudou, ⛔ e o
-        * que ficou no lugar.
+        * ⚠️⚠️ SÓ A FORMULAÇÃO CORRETA — decisão do autor, 2026-09-16, a partir do
+        * uso real.
+        *
+        * ⛔ Este bloco mostrava a leitura antiga RISCADA, ao lado da correta, para
+        * desaprender o reflexo de `<50`/`>400` como exclusão. ⚠️ O autor reviu, ⛔ e
+        * a razão é a natureza deste app: *«A frase errada, mesmo riscada e em cinza,
+        * continua cognitivamente disponível e pode ser capturada de forma rápida sob
+        * pressão. O "desaprendizado" faz sentido em material de estudo, mas não
+        * precisa competir com a conduta correta dentro do fluxo de emergência.»*
+        *
+        * ⚠️⚠️ `ERROS_A_EVITAR` CONTINUA no conteúdo ⛔ e na trava: o sistema segue
+        * sabendo quais leituras ⛔ podem voltar a ser apresentadas como verdade.
+        * ⛔ O que saiu foi a RENDERIZAÇÃO — memória do sistema ⛔ é conteúdo de tela.
+        * ⚠️ `prova-avc-glicemia.cjs` mede as duas metades: `.correto` chega,
+        * `.errado` ⛔ nunca.
         */}
       <View style={e.alerta} testID={`${prefixo}erros-glicemia`}>
-        <Text style={e.alertaTitulo}>{tr("Leituras antigas que hoje estão erradas")}</Text>
+        <Text style={e.alertaTitulo}>{tr("Formulações corretas")}</Text>
         {ERROS_A_EVITAR.map((x) => (
-          <View key={x.errado} style={e.erro}>
-            <Text style={e.erroErrado}>{tr(x.errado)}</Text>
+          <View key={x.correto} style={e.erro}>
             <Text style={e.erroCerto}>{tr(x.correto)}</Text>
           </View>
         ))}
@@ -493,10 +503,6 @@ const criarEstilos = (tema: Tema) =>
     perguntaTexto: { ...PAPEL.tituloDaDecisao, color: tema.cores.text },
     perguntaRamo: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
     erro: { gap: 2, paddingTop: ESPACO.xs },
-    erroErrado: {
-      ...PAPEL.textoSecundario,
-      color: tema.cores.textSecondary,
-      textDecorationLine: "line-through",
-    },
+    /** ⚠️ 2026-09-16: `erroErrado` (cinza + tachado) saiu junto com a renderização da leitura antiga. */
     erroCerto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
   });

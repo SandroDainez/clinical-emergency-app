@@ -1376,3 +1376,26 @@ Avaliação AVC. Antes desta decisão, `docs/decisoes.md` não tinha nenhuma lin
 continua `recolhido: true` (subir de posição não muda a natureza dele, e a trava de recolhimento fica); nenhum id,
 valor persistido, regra clínica ou consumidor muda; ajustada somente a trava que fixa a ordem
 (`scripts/prova-avc-paciente.cjs`).
+
+## Glicemia — a tela mostra só a formulação correta (autor, 2026-09-16)
+
+Achado do uso real: o bloco «Leituras antigas que hoje estão erradas» exibia a frase errada riscada, em cinza, acima
+da correta.
+
+**Decisão, na redação do autor:** «A frase errada, mesmo riscada e em cinza, continua cognitivamente disponível e pode
+ser capturada de forma rápida sob pressão. O "desaprendizado" faz sentido em material de estudo, mas não precisa
+competir com a conduta correta dentro do fluxo de emergência.»
+
+**A distinção que a decisão faz:** memória do **sistema** não é conteúdo de **tela**.
+
+- `ERROS_A_EVITAR` permanece no conteúdo e na trava, como proteção anti-regressão: o sistema segue sabendo quais
+  interpretações antigas não podem voltar a ser apresentadas como verdade.
+- A tela clínica não renderiza mais o campo `errado`; mostra apenas `correto`.
+- A trava que exigia a exibição (`prova-avc-glicemia.cjs`, com a razão «correção que não é exibida não corrige
+  ninguém») foi **invertida**, não removida — e ficou mais apertada, medindo as duas metades: `.correto` chega à tela,
+  `.errado` nunca. A linha que exige as cinco leituras declaradas no conteúdo continua intacta.
+- Título passou a «Formulações corretas» (nenhuma trava exigia o antigo). Nenhuma regra clínica, limiar, cálculo,
+  verbatim ou persistência muda.
+
+**Revoga a decisão anterior** que mandava exibir os erros para desaprendizado — decisão boa para material de estudo,
+inadequada para o fluxo agudo deste app.

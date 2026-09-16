@@ -2253,6 +2253,8 @@ export const ES_AVC_MODULO: Record<string, string> = {
   "A capacidade do serviço e a transferência ficam em Destino. O app não sugere substituto.": "La capacidad del servicio y el traslado están en Destino. La app no sugiere sustituto.",
   "Piora clínica — o que fazer agora": "Empeoramiento clínico — qué hacer ahora",
   "Continuar na tela atual": "Continuar en la pantalla actual",
+  /** ⚠️ 2026-09-16: título do bloco de glicemia, que deixou de exibir a leitura antiga. */
+  "Formulações corretas": "Formulaciones correctas",
   "Reavaliar ABCD": "Reevaluar ABCD",
   "Repetir a avaliação neurológica (NIHSS)": "Repetir la evaluación neurológica (NIHSS)",
   "Registrar conduta realizada fora do app": "Registrar conducta realizada fuera de la app",

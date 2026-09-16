@@ -6,6 +6,8 @@
  *   absoluta**, ⛔ que ⛔ não invente um valor de "liberação" depois de `>400`,
  *   ⛔ que ⛔ não escreva dose fixa de insulina, ⛔ e que a **pergunta que decide**
  *   — o déficit persistir depois da correção — chegue à tela.
+ *   ⚠️ E, desde 2026-09-16: que as cinco leituras antigas continuem DECLARADAS no
+ *   conteúdo (anti-regressão) ⛔ e ⛔ nunca sejam RENDERIZADAS na tela clínica.
  *
  * NÃO PROMETE: que os cortes sejam clinicamente os melhores. ⚠️ Ela guarda a
  *   **estrutura da decisão**, ⛔ e ⛔ não a escolha dos números.
@@ -106,9 +108,34 @@ confere("⚠️ os cinco erros do reflexo antigo estão declarados",
   /ERROS_A_EVITAR/.test(conteudo) && (semComentarios.match(/errado:/g) || []).length >= 5,
   "⛔ quem aprendeu `<50` como exclusão ⛔ não desaprende lendo ⛔ só a faixa nova");
 
-confere("⚠️ ⛔ e eles CHEGAM à tela",
-  /ERROS_A_EVITAR/.test(tela),
-  "⛔ correção que ⛔ não é exibida ⛔ não corrige ⛔ ninguém");
+/**
+ * ⚠️⚠️ INVERTIDA POR DECISÃO DO AUTOR (2026-09-16) — ajuste consciente, declarado.
+ *
+ * ⛔ Esta linha EXIGIA que as leituras antigas fossem EXIBIDAS, com a razão escrita
+ * *«correção que não é exibida não corrige ninguém»*. ⚠️ O autor reviu, ⛔ e a razão da
+ * revisão é a natureza DESTE app:
+ *
+ * > *«A frase errada, mesmo riscada e em cinza, continua cognitivamente disponível e pode
+ * > ser capturada de forma rápida sob pressão. O "desaprendizado" faz sentido em material
+ * > de estudo, mas não precisa competir com a conduta correta dentro do fluxo de
+ * > emergência.»*
+ *
+ * ⚠️⚠️ ⛔ O DADO ⛔ SAI: `ERROS_A_EVITAR` fica no conteúdo ⛔ e a linha de cima continua
+ * exigindo as cinco. ⚠️ O sistema segue SABENDO quais leituras ⛔ podem voltar — ⛔ o que
+ * muda é que o médico ⛔ as lê durante o atendimento. Memória do sistema ⛔ é conteúdo de
+ * tela.
+ *
+ * ⚠️ ⛔ A medida ⛔ pode ser «`ERROS_A_EVITAR` ausente da tela»: a tela CONTINUA
+ * percorrendo a lista, para mostrar as corretas. ⚠️ Mede-se o CAMPO: `.correto` chega,
+ * `.errado` ⛔ nunca. ⛔ Isto é mais apertado que a trava anterior — prova as duas metades.
+ */
+confere("⚠️⚠️ as formulações CORRETAS chegam à tela clínica",
+  /ERROS_A_EVITAR/.test(tela) && /\.correto/.test(tela),
+  "⛔ o conteúdo existe ⛔ e ⛔ não chega ao médico");
+
+confere("⚠️⚠️ ⛔ e a leitura antiga ⛔ é RENDERIZADA na tela clínica",
+  !/\.errado/.test(tela),
+  "⛔ frase errada riscada ⛔ continua legível: sob pressão o olho pega o TEXTO, ⛔ e ⛔ não o risco");
 
 /* ══ ⚠️⚠️ ⛔ NENHUM LIMIAR DE LIBERAÇÃO INVENTADO ════════════════════════ */
 
