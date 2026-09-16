@@ -1356,3 +1356,23 @@ roteamento **já existia** («Abrir Destino» já estava lá); o defeito era de 
 
 **Razão declarada pelo autor:** na primeira dobra o médico deve ver só o que o app consegue fazer agora — reavaliar
 ABCD/NIHSS, ir para Destino, ou abrir a tela de piora.
+
+## Ordem dos grupos em Paciente — antecedentes antes das medicações (autor, 2026-09-16)
+
+Achado do uso real: «antecedentes tem que ficar antes das medicações e não depois».
+
+**Decisão, na redação do autor:** «Antecedentes crônicos passam a ser apresentados antes de Medicações habituais,
+preservando todos os ids, persistência e estado inicial recolhido. A mudança é exclusivamente de ordem de
+apresentação.»
+
+O autor recusou explicitamente registrar como justificativa formal a leitura de UX que eu havia proposto («quem é o
+paciente → o que ele tem → o que ele toma»): boa leitura, mas não é decisão documental dele.
+
+**Não revoga a AC-03:** «população em primeiro» continua valendo. Nunca se decidiu que antecedentes ficaria por
+último — ele era apenas o grupo que entrou por último, em 2026-09-07, quando cinco grupos mudaram de casa para a
+Avaliação AVC. Antes desta decisão, `docs/decisoes.md` não tinha nenhuma linha sobre esta ordem.
+
+**Recorte:** ordem `população → identificação → basais → alergias → antecedentes crônicos → medicações`; antecedentes
+continua `recolhido: true` (subir de posição não muda a natureza dele, e a trava de recolhimento fica); nenhum id,
+valor persistido, regra clínica ou consumidor muda; ajustada somente a trava que fixa a ordem
+(`scripts/prova-avc-paciente.cjs`).

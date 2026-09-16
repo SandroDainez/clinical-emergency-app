@@ -776,7 +776,6 @@ const GRUPOS_P_DECLARADOS: readonly GrupoDeclarado[] = [
   { id: "identificacao", titulo: "Identificação", campos: IDENTIFICACAO_P },
   { id: "basais", titulo: "Dados basais", campos: BASAIS_P },
   { id: "alergias", titulo: "Alergias", campos: ALERGIAS_P },
-  { id: "medicacoes", titulo: "Medicações em uso", campos: MEDICACOES_P },
   /**
    * ⚠️⚠️⚠️ ⛔ CINCO GRUPOS SAÍRAM DAQUI EM 2026-09-07 — ⛔ e ⛔ eles ⛔ não
    * foram apagados: ⛔ mudaram de casa para a **Avaliação AVC**.
@@ -794,13 +793,24 @@ const GRUPOS_P_DECLARADOS: readonly GrupoDeclarado[] = [
    * intacto: ⛔ o que mudou foi a **composição**, ⛔ e ⛔ não o conteúdo.
    * ⛔ `superficie-b.ts` as importa ⛔ e as declara com casa `neurologico`.
    */
+  /**
+   * ⚠️⚠️ ANTES DAS MEDICAÇÕES — achado do autor no uso real, 2026-09-16.
+   *
+   * ⚠️ *«Antecedentes crônicos passam a ser apresentados antes de Medicações habituais,
+   * preservando todos os ids, persistência e estado inicial recolhido. A mudança é
+   * exclusivamente de ordem de apresentação.»*
+   *
+   * ⚠️ ⛔ REVOGA A AC-03 — *«população em primeiro»* continua valendo. ⛔ Nunca se
+   * decidiu que antecedentes ficaria por último: ele era o grupo que ENTROU por último.
+   */
   {
     id: "comorbidades",
     titulo: "Antecedentes crônicos",
     campos: COMORBIDADES_P,
-    /** ⚠️ Recolhido: lista longa, ⛔ e ⛔ nada aqui decide agora. */
+    /** ⚠️ Recolhido: lista longa, ⛔ e ⛔ nada aqui decide agora. ⛔ Subir de posição ⛔ muda isso. */
     recolhido: true,
   },
+  { id: "medicacoes", titulo: "Medicações em uso", campos: MEDICACOES_P },
 ];
 
 export const GRUPOS_P: readonly Grupo[] = comCasa("paciente", GRUPOS_P_DECLARADOS);

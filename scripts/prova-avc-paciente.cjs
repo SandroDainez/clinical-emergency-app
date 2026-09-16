@@ -113,9 +113,28 @@ const TODOS = [
    * decisão escrita do autor). ⛔ A lista é conferida por id ⛔ e ordem, ⛔ não só
    * pela contagem.
    */
-  confere("⚠️⚠️ os SEIS blocos de Paciente existem, com a população primeiro",
-    P.GRUPOS_P.map((g) => g.id).join(",") === "populacao,identificacao,basais,alergias,medicacoes,comorbidades",
-    `população · identificação · basais · alergias · medicações · antecedentes crônicos — ${P.GRUPOS_P.map((g) => g.id).join(", ")}`);
+  /**
+   * ⚠️⚠️ ANTECEDENTES ANTES DAS MEDICAÇÕES — achado do autor no uso real, 2026-09-16:
+   * *«antecedentes tem que ficar antes das medicações e não depois»*.
+   *
+   * ⚠️ ⛔ ISTO ⛔ REVOGA A AC-03: a decisão escrita é *«população em primeiro»*, ⛔ e ela
+   * continua intacta. ⛔ Nunca se decidiu que antecedentes ficaria por ÚLTIMO — ele é só
+   * o grupo que ENTROU por último (2026-09-07, quando cinco grupos mudaram de casa para
+   * a Avaliação AVC). ⚠️ `docs/decisoes.md` ⛔ tem uma linha sequer sobre esta ordem:
+   * ⛔ é resíduo de composição, ⛔ e ⛔ não escolha registrada.
+   *
+   * ⚠️⚠️ A DECISÃO, NA REDAÇÃO DO AUTOR — ⛔ e ⛔ numa racionalização clínica inventada
+   * por mim, que ele recusou de propósito: *«Antecedentes crônicos passam a ser
+   * apresentados antes de Medicações habituais, preservando todos os ids, persistência e
+   * estado inicial recolhido. A mudança é exclusivamente de ordem de apresentação.»*
+   *
+   * ⚠️⚠️ ⛔ MUDA ⛔ NENHUM `id`, ⛔ de grupo ⛔ nem de campo — ⛔ nada persistido é
+   * renomeado (AP-7). ⛔ E antecedentes continua nascendo RECOLHIDO
+   * (`prova-avc-abertura.cjs`): mudou de lugar, ⛔ e ⛔ de natureza.
+   */
+  confere("⚠️⚠️ os SEIS blocos de Paciente existem, com a população primeiro ⛔ e antecedentes antes das medicações",
+    P.GRUPOS_P.map((g) => g.id).join(",") === "populacao,identificacao,basais,alergias,comorbidades,medicacoes",
+    `população · identificação · basais · alergias · antecedentes crônicos · medicações — ${P.GRUPOS_P.map((g) => g.id).join(", ")}`);
   const ids = P.TODOS_OS_CAMPOS_P.map((c) => c.id);
   confere("⛔ nenhum id duplicado dentro de Paciente",
     new Set(ids).size === ids.length,
