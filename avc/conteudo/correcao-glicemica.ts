@@ -276,31 +276,12 @@ export const ALVOS_GLICEMICOS: readonly AlvoGlicemico[] = [
 ];
 
 /**
- * ⚠️⚠️ ⛔ O QUE O APP ⛔ NÃO PODE DIZER — declarado como **conteúdo**, ⛔ e ⛔ não
- * ⛔ só como comentário, para que a trava possa medir ⛔ e a tela possa mostrar.
+ * ⚠️⚠️ ⛔ AS FORMULAÇÕES PROIBIDAS SAÍRAM DAQUI — autor, 2026-09-16.
  *
- * ⚠️ Cada linha é um erro que o reflexo antigo produz naturalmente.
+ * ⛔ `ERROS_A_EVITAR` mora agora em `avc/nucleo/anti-regressao-glicemia.ts`: ⛔ ele ⛔ é
+ * conteúdo clínico, ⛔ e ⛔ não pode ser varrido como texto de tela. ⚠️ *«O sistema se
+ * lembra do erro; a interface não o conhece como conteúdo disponível.»*
+ *
+ * ⚠️ O que substitui cada linha está NESTE arquivo, com COR/LOE ⛔ e procedência:
+ * `CORTES_GLICEMICOS`, `ALVOS_GLICEMICOS`, `TRATAMENTOS_GLICEMICOS`, `PERGUNTA_QUE_DECIDE`.
  */
-export const ERROS_A_EVITAR: readonly { readonly errado: string; readonly correto: string }[] = [
-  {
-    errado: "Glicemia abaixo de 50 é contraindicação absoluta",
-    correto: "É disglicemia grave. Corrigir e reavaliar o déficit",
-  },
-  {
-    errado: "Glicemia acima de 400 é contraindicação absoluta",
-    correto:
-      "É disglicemia grave. Déficit incapacitante que persiste após a correção mantém a indicação",
-  },
-  {
-    errado: "Só trombolisar quando a glicemia estiver abaixo de 180",
-    correto: "De 140 a 180 é alvo de manejo, e não pré-requisito de reperfusão",
-  },
-  {
-    errado: "Dez unidades de insulina por via endovenosa para glicemia acima de 300",
-    correto: "Insulinoterapia por protocolo dinâmico validado",
-  },
-  {
-    errado: "Meta de 80 a 130",
-    correto: "Não é recomendada para melhorar o desfecho do acidente vascular cerebral",
-  },
-];

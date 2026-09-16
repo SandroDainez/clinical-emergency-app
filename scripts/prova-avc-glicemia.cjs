@@ -30,6 +30,18 @@ const { lerFonte } = require("./lib/fonte.cjs");
 const appDir = path.resolve(__dirname, "..");
 const conteudo = lerFonte(path.join(appDir, "avc", "conteudo", "correcao-glicemica.ts"));
 /**
+ * ⚠️⚠️ AS FORMULAÇÕES PROIBIDAS MUDARAM DE CASA — autor, 2026-09-16, ajuste consciente.
+ *
+ * ⛔ `ERROS_A_EVITAR` saiu de `avc/conteudo/` para `avc/nucleo/anti-regressao-glicemia.ts`:
+ * ⛔ enquanto vivia junto do conteúdo clínico, era varrido como texto de tela ⛔ e exigia
+ * tradução — ⛔ e traduzir formulação proibida dá a ela status de conteúdo disponível.
+ *
+ * ⚠️ É a mesma regra que o comentário abaixo já registra para a TELA: quando o que se mede
+ * muda de casa, a trava vai junto. ⛔ Aqui ela foi atualizada de propósito, ⛔ e ⛔ não
+ * descoberta vermelha por endereço.
+ */
+const antiRegressao = lerFonte(path.join(appDir, "avc", "nucleo", "anti-regressao-glicemia.ts"));
+/**
  * ── ⚠️⚠️⚠️ A TELA MUDOU DE ARQUIVO, ⛔ E ESTA TRAVA ⛔ NÃO SEGUIU ──────────
  *
  * ⛔ ⛔ Mesma história da prova dos anti-hipertensivos, ⛔ no mesmo dia: em
@@ -104,9 +116,19 @@ confere("⚠️⚠️ ⛔ NENHUM corte é declarado como contraindicação",
   !/(natureza|conduta):\s*"[^"]*contraindica/i.test(semComentarios),
   "⛔ `<50` ⛔ e `>400` definem **gravidade** na edição de 2026, ⛔ e ⛔ não exclusão");
 
-confere("⚠️ os cinco erros do reflexo antigo estão declarados",
-  /ERROS_A_EVITAR/.test(conteudo) && (semComentarios.match(/errado:/g) || []).length >= 5,
-  "⛔ quem aprendeu `<50` como exclusão ⛔ não desaprende lendo ⛔ só a faixa nova");
+confere("⚠️ as cinco formulações proibidas seguem declaradas (anti-regressão)",
+  /ERROS_A_EVITAR/.test(antiRegressao) && (antiRegressao.match(/errado:/g) || []).length >= 5,
+  "⛔ sem elas, ⛔ nada impede a leitura antiga de voltar como verdade");
+
+/**
+ * ⚠️⚠️ ⛔ E ELAS ⛔ NÃO PODEM TER CONSUMIDOR DE UI — regra 1 do arquivo novo.
+ *
+ * ⛔ A tela ⛔ pode CONHECER estas frases: é o que a separação de 2026-09-16 comprou.
+ * ⚠️ Se um componente importar daqui, a proibição vira conteúdo disponível outra vez.
+ */
+confere("⚠️⚠️ ⛔ a tela clínica ⛔ importa o artefato de anti-regressão",
+  !/anti-regressao-glicemia/.test(tela),
+  "⛔ formulação proibida com consumidor de UI volta a ser conteúdo");
 
 /**
  * ⚠️⚠️ INVERTIDA POR DECISÃO DO AUTOR (2026-09-16) — ajuste consciente, declarado.
@@ -125,17 +147,23 @@ confere("⚠️ os cinco erros do reflexo antigo estão declarados",
  * muda é que o médico ⛔ as lê durante o atendimento. Memória do sistema ⛔ é conteúdo de
  * tela.
  *
- * ⚠️ ⛔ A medida ⛔ pode ser «`ERROS_A_EVITAR` ausente da tela»: a tela CONTINUA
- * percorrendo a lista, para mostrar as corretas. ⚠️ Mede-se o CAMPO: `.correto` chega,
- * `.errado` ⛔ nunca. ⛔ Isto é mais apertado que a trava anterior — prova as duas metades.
+ * ⚠️⚠️ SEGUNDA REVISÃO, no mesmo dia — ⛔ e ⛔ ela corrige um erro MEU.
+ *
+ * ⛔ A primeira versão desta trava tirou só a coluna ERRADA ⛔ e mandou a CORRETA
+ * continuar na tela. ⚠️ O resultado, visto no app em produção: sem o contraste, as cinco
+ * frases viraram REPETIÇÃO do que as faixas já dizem — ⛔ e herdaram a moldura do bloco
+ * de alerta (`cores.critical`). ⚠️⚠️ ⛔ Conduta CORRETA pintada como CRITICIDADE, num
+ * módulo onde cor carrega significado clínico. ⛔ Nenhuma trava pegou: elas mediam se o
+ * bloco existia ⛔ e o que continha, ⛔ e ⛔ nenhuma media se o ALARME corresponde ao
+ * CONTEÚDO.
+ *
+ * ⚠️ Agora a tela ⛔ renderiza o bloco: as cinco formulações já vivem nas FAIXAS, com
+ * COR/LOE ⛔ e procedência — ⛔ que é o lugar delas. `ERROS_A_EVITAR` segue no conteúdo,
+ * ⛔ e a linha de cima continua exigindo as cinco: memória do sistema ⛔ é tela.
  */
-confere("⚠️⚠️ as formulações CORRETAS chegam à tela clínica",
-  /ERROS_A_EVITAR/.test(tela) && /\.correto/.test(tela),
-  "⛔ o conteúdo existe ⛔ e ⛔ não chega ao médico");
-
-confere("⚠️⚠️ ⛔ e a leitura antiga ⛔ é RENDERIZADA na tela clínica",
-  !/\.errado/.test(tela),
-  "⛔ frase errada riscada ⛔ continua legível: sob pressão o olho pega o TEXTO, ⛔ e ⛔ não o risco");
+confere("⚠️⚠️ ⛔ a tela clínica ⛔ renderiza `ERROS_A_EVITAR` — ⛔ nem errado, ⛔ nem correto",
+  !/ERROS_A_EVITAR/.test(tela),
+  "⛔ sem o contraste, as cinco frases viram REPETIÇÃO das faixas — ⛔ e ficaram numa moldura `critical`");
 
 /* ══ ⚠️⚠️ ⛔ NENHUM LIMIAR DE LIBERAÇÃO INVENTADO ════════════════════════ */
 

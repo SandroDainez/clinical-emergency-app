@@ -97,31 +97,17 @@ export const ES_AVC_GLICEMIA: Readonly<Record<string, string>> = {
     "Disparador para iniciar o intensificar insulinoterapia en el paciente crítico. Es manejo hospitalario, y no criterio de elegibilidad",
   "Manejo hospitalar": "Manejo hospitalario",
 
-  /* ── ⛔ os erros que o reflexo antigo produz ────────────────────────────── */
-  "Glicemia abaixo de 50 é contraindicação absoluta":
-    "Glucemia por debajo de 50 es contraindicación absoluta",
-  "É disglicemia grave. Corrigir e reavaliar o déficit":
-    "Es disglucemia grave. Corregir y reevaluar el déficit",
-  "Glicemia acima de 400 é contraindicação absoluta":
-    "Glucemia por encima de 400 es contraindicación absoluta",
-  "É disglicemia grave. Déficit incapacitante que persiste após a correção mantém a indicação":
-    "Es disglucemia grave. Un déficit incapacitante que persiste tras la corrección mantiene la indicación",
-  "Só trombolisar quando a glicemia estiver abaixo de 180":
-    "Solo trombolisar cuando la glucemia esté por debajo de 180",
-  "De 140 a 180 é alvo de manejo, e não pré-requisito de reperfusão":
-    "De 140 a 180 es objetivo de manejo, y no prerrequisito de reperfusión",
-  "Dez unidades de insulina por via endovenosa para glicemia acima de 300":
-    "Diez unidades de insulina por vía endovenosa para glucemia por encima de 300",
-  "Insulinoterapia por protocolo dinâmico validado":
-    "Insulinoterapia por protocolo dinámico validado",
-  "Meta de 80 a 130": "Meta de 80 a 130",
-  "Não é recomendada para melhorar o desfecho do acidente vascular cerebral":
-    "No está recomendada para mejorar el desenlace del accidente cerebrovascular",
+  /**
+   * ⚠️⚠️ ⛔ AS DEZ CHAVES DO BLOCO «LEITURAS ANTIGAS» SAÍRAM — autor, 2026-09-16.
+   *
+   * ⛔ Cinco erradas ⛔ e cinco corretas: o bloco deixou de ser renderizado, ⛔ e chave
+   * publicada ⛔ sem tela é como a frase volta. ⚠️ Estão declaradas em `APOSENTADAS`
+   * (`scripts/prova-sem-orfas-de-i18n.cjs`), cada uma com o substituto escrito.
+   * ⚠️ O conteúdo clínico ⛔ se perdeu: vive nas FAIXAS, com COR/LOE ⛔ e procedência.
+   */
 
   /* ── a tela ────────────────────────────────────────────────────────────── */
   "Como corrigir": "Cómo corregir",
   "O que cada faixa significa": "Qué significa cada franja",
   "Alvos glicêmicos": "Objetivos glucémicos",
-  "Leituras antigas que hoje estão erradas":
-    "Lecturas antiguas que hoy están equivocadas",
 };

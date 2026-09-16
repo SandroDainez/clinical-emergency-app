@@ -336,8 +336,18 @@ test.describe("AVC · Estabilização — composição", () => {
       await expect(page.getByTestId("avc-a-terapeutica-glicemia")).toBeVisible();
       /** ⚠️ ⛔ A pergunta que decide vem **antes** das faixas. */
       await expect(page.getByTestId("avc-a-pergunta-glicemia")).toBeVisible();
-      /** ⚠️⚠️ ⛔ E as leituras antigas erradas ficam **na tela**. */
-      await expect(page.getByTestId("avc-a-erros-glicemia")).toBeVisible();
+      /**
+       * ⚠️⚠️ ⛔ E ⛔ NÃO HÁ bloco de «leituras antigas» — decisão do autor, 2026-09-16.
+       *
+       * ⛔ Ele exibia a frase errada riscada; depois, só a correta. ⚠️ Nas duas formas
+       * competia com a conduta na tela do agudo: *«a frase errada, mesmo riscada e em
+       * cinza, continua cognitivamente disponível»*, ⛔ e sem ela o bloco virou repetição
+       * das faixas dentro de uma moldura de alerta.
+       *
+       * ⚠️ O conteúdo ⛔ foi apagado: `ERROS_A_EVITAR` segue no núcleo como proteção
+       * anti-regressão, ⛔ e as formulações corretas vivem nas FAIXAS, logo acima.
+       */
+      await expect(page.getByTestId("avc-a-erros-glicemia")).toHaveCount(0);
     });
 
   /* ══ ⚠️⚠️⚠️ 9 · ⛔ SEM FONTE, ⛔ SEM CONDUTA ═════════════════════════════ */

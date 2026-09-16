@@ -154,6 +154,21 @@ const NAO_E_TELA = new Set([
   // Preços em reais. Traduzir aqui seria errado: cobrar em espanhol exige
   // decisão de moeda e valor, não tradução. Fica em aberto de propósito.
   "lib/subscription.ts",
+  // ── ⚠️⚠️⚠️ FORMULAÇÕES PROIBIDAS — anti-regressão, autor 2026-09-16 ──────
+  //
+  // Este arquivo contém EXCLUSIVAMENTE formulações que o app NÃO pode dizer:
+  // leituras antigas da glicemia no AVC ("<50 é contraindicação absoluta") que
+  // foram ensinadas por anos como critério de exclusão da trombólise. Elas são
+  // mantidas SÓ para que uma trava possa medir que nenhuma voltou à tela.
+  //
+  // Traduzi-las seria o oposto do objetivo: daria a uma frase proibida o status
+  // de conteúdo disponível — e conteúdo disponível alguém um dia decide mostrar.
+  // As chaves ES foram aposentadas por nome em prova-sem-orfas-de-i18n.cjs.
+  //
+  // ⛔ A isenção vale SÓ para este arquivo, que não tem nenhum consumidor de UI
+  // (medido por prova-avc-glicemia.cjs). O conteúdo clínico da glicemia segue
+  // varrido normalmente em avc/conteudo/correcao-glicemica.ts.
+  "avc/nucleo/anti-regressao-glicemia.ts",
 ]);
 /**
  * Mensagem de efeito SPEAK: falada por cueId (nunca renderizada como texto).

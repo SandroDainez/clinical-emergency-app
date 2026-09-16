@@ -1399,3 +1399,36 @@ competir com a conduta correta dentro do fluxo de emergência.»
 
 **Revoga a decisão anterior** que mandava exibir os erros para desaprendizado — decisão boa para material de estudo,
 inadequada para o fluxo agudo deste app.
+
+### Segunda revisão no mesmo dia: o bloco sai inteiro da tela
+
+Tirar só a coluna errada não bastou. Visto em produção, o que sobrou virou **repetição** do que as faixas já dizem —
+dentro da moldura de alerta (`cores.critical`) herdada de quando o bloco avisava sobre erro. Conduta correta pintada
+como criticidade, num módulo onde cor carrega significado clínico. Nenhuma trava pegou: elas mediam se o bloco existia
+e o que continha, e nenhuma media se o **alarme corresponde ao conteúdo**.
+
+O bloco deixou a tela. As cinco formulações corretas já vivem nas faixas, com COR/LOE e procedência.
+
+### `ERROS_A_EVITAR` vira artefato interno de anti-regressão (Opção A)
+
+Remover a renderização deixou doze chaves de tradução órfãs, publicadas no bundle — o defeito que
+`prova-sem-orfas-de-i18n` existe para fechar («chave órfã é como a frase volta»). Aposentá-las deixou os literais PT
+sem tradução, e `varredura-pt` reprovou. Três exigências ficaram insatisfazíveis juntas: preservar o dado, aposentar as
+chaves, e traduzir todo literal PT.
+
+**Decisão do autor:** separar as naturezas. «O sistema se lembra do erro; a interface não o conhece como conteúdo
+disponível.»
+
+- `ERROS_A_EVITAR` muda para `avc/nucleo/anti-regressao-glicemia.ts`, sem nenhum consumidor de UI;
+- a isenção da varredura PT vale **só para esse arquivo**, e diz que ele contém formulações proibidas mantidas
+  exclusivamente para impedir regressão — isentar um arquivo de conteúdo clínico é proibido pela própria regra da lista;
+- `prova-avc-glicemia.cjs` foi atualizada conscientemente para o novo endereço, e passou a exigir que a tela **não
+  importe** o artefato;
+- as doze chaves ficam aposentadas por nome, cada uma com o substituto escrito.
+
+### Correção de uma afirmação falsa minha (assistente), registrada a pedido do método
+
+O commit `803195c` afirma que as cinco frases estavam em `tr()` «sem entrada no dicionário ES». **É falso** — estavam
+traduzidas em `lib/i18n/modules/avc-glicemia.ts`. A origem do erro: busquei em um único módulo de i18n, vi zeros e
+generalizei, sem verificar que o repositório tem dezenas deles. O commit está publicado e não se reescreve histórico
+empurrado; a correção fica aqui, visível em vez de apagada.

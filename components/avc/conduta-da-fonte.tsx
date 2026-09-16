@@ -42,7 +42,6 @@ import {
 import {
   ALVOS_GLICEMICOS,
   CORTES_GLICEMICOS,
-  ERROS_A_EVITAR,
   PERGUNTA_QUE_DECIDE,
   TRATAMENTOS_GLICEMICOS,
 } from "../../avc/conteudo/correcao-glicemica";
@@ -396,30 +395,19 @@ export function CondutaGlicemica({ prefixo }: { prefixo: string }) {
       ))}
 
       {/**
-        * ⚠️⚠️ SÓ A FORMULAÇÃO CORRETA — decisão do autor, 2026-09-16, a partir do
-        * uso real.
+        * ⚠️⚠️ ⛔ AQUI ⛔ NÃO ENTRA BLOCO DE «LEITURAS ANTIGAS» — autor, 2026-09-16.
         *
-        * ⛔ Este bloco mostrava a leitura antiga RISCADA, ao lado da correta, para
-        * desaprender o reflexo de `<50`/`>400` como exclusão. ⚠️ O autor reviu, ⛔ e
-        * a razão é a natureza deste app: *«A frase errada, mesmo riscada e em cinza,
-        * continua cognitivamente disponível e pode ser capturada de forma rápida sob
-        * pressão. O "desaprendizado" faz sentido em material de estudo, mas não
-        * precisa competir com a conduta correta dentro do fluxo de emergência.»*
+        * ⛔ Ele mostrava a frase errada riscada ao lado da correta, para desaprender o
+        * reflexo de `<50`/`>400` como exclusão. ⚠️ Duas revisões no mesmo dia: primeiro
+        * saiu a coluna errada (*«mesmo riscada e em cinza, continua cognitivamente
+        * disponível… sob pressão»*); ⛔ e aí o que sobrou virou REPETIÇÃO das faixas,
+        * ⛔ herdando a moldura `cores.critical` — conduta correta pintada de criticidade.
         *
-        * ⚠️⚠️ `ERROS_A_EVITAR` CONTINUA no conteúdo ⛔ e na trava: o sistema segue
-        * sabendo quais leituras ⛔ podem voltar a ser apresentadas como verdade.
-        * ⛔ O que saiu foi a RENDERIZAÇÃO — memória do sistema ⛔ é conteúdo de tela.
-        * ⚠️ `prova-avc-glicemia.cjs` mede as duas metades: `.correto` chega,
-        * `.errado` ⛔ nunca.
+        * ⚠️⚠️ O conteúdo ⛔ se perdeu: as cinco formulações vivem nas FAIXAS acima, com
+        * COR/LOE ⛔ e procedência. `ERROS_A_EVITAR` fica no núcleo como proteção
+        * anti-regressão, ⛔ e as chaves de tradução foram APOSENTADAS por nome
+        * (`scripts/prova-sem-orfas-de-i18n.cjs`) — chave órfã é como a frase volta.
         */}
-      <View style={e.alerta} testID={`${prefixo}erros-glicemia`}>
-        <Text style={e.alertaTitulo}>{tr("Formulações corretas")}</Text>
-        {ERROS_A_EVITAR.map((x) => (
-          <View key={x.correto} style={e.erro}>
-            <Text style={e.erroCerto}>{tr(x.correto)}</Text>
-          </View>
-        ))}
-      </View>
     </View>
   );
 }
@@ -502,7 +490,5 @@ const criarEstilos = (tema: Tema) =>
     perguntaGrau: { ...PAPEL.rotuloDeMetrica, color: tema.cores.primary },
     perguntaTexto: { ...PAPEL.tituloDaDecisao, color: tema.cores.text },
     perguntaRamo: { ...PAPEL.textoSecundario, color: tema.cores.textSecondary },
-    erro: { gap: 2, paddingTop: ESPACO.xs },
-    /** ⚠️ 2026-09-16: `erroErrado` (cinza + tachado) saiu junto com a renderização da leitura antiga. */
-    erroCerto: { ...PAPEL.textoPrincipal, color: tema.cores.text },
+    /** ⚠️ 2026-09-16: `erro`, `erroErrado` e `erroCerto` saíram com o bloco «leituras antigas». */
   });
