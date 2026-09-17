@@ -361,6 +361,27 @@ function getClinicalSpeakPriority(key: string): ClinicalSpeakPriority {
       "start_cpr_nonshockable",
       "epinephrine_now",
       "antiarrhythmic_now",
+      /**
+       * ⚠️⚠️ A TROCA DE COMPRESSOR SOBE PARA `main` — autor, 2026-09-16.
+       *
+       * ⛔ Ela era `secondary` (nível `explanation`), o mais baixo — e na entrada do
+       * ciclo o reducer empurra `resume_cpr` ANTES dela, no MESMO nível. Com inserção
+       * estável, a troca falava por último: atrás de 5,1 s de adrenalina + 8,1 s de
+       * retomar, ~13 s depois — quando as compressões já haviam recomeçado, com o
+       * mesmo socorrista cansado que ela mandava trocar.
+       *
+       * ⚠️ A regra clínica do autor: *"logo antes de mandar reiniciar compressões dê o
+       * aviso trocar quem comprime e seguindo reiniciar"*. Em `action` ela passa à
+       * frente do `resume_cpr` (que segue em `explanation`) ⛔ e continua atrás da
+       * adrenalina, que é `main` e chegou antes — a ordem falada vira
+       * adrenalina → TROCAR → retomar.
+       *
+       * ⛔ ⛔ ISTO ⛔ NÃO A TORNA INTERRUPTORA: nível governa ORDEM; quem interrompe é
+       * `interruptPolicy`, que ⛔ não muda. ⛔ E ⛔ não entra em `CUES_QUE_DEVEM_TERMINAR`
+       * — aquela lista é para o que, cortado no meio, torna a execução INSEGURA (dose,
+       * energia). Um aviso de rodízio cortado ⛔ é perigoso, ⛔ é só não ouvido.
+       */
+      "switch_compressor",
     ].includes(resolvedKey)
   ) {
     return "main";

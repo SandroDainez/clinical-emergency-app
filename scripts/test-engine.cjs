@@ -2047,6 +2047,87 @@ function testNonShockableToShockableFlowStartsAtFirstShock() {
   assert.equal(engine.getCurrentStateId(), "choque_bi_1");
 }
 
+/**
+ * ⚠️⚠️ A TROCA DE COMPRESSOR FALA ANTES DE "RETOMAR" — autor, 2026-09-16.
+ *
+ * ⛔ Regra clínica do autor, nas palavras dele: *"avalia o ritmo, se for chocável
+ * choque… e **logo antes** de mandar reiniciar compressões dê o aviso trocar quem
+ * comprime e seguindo reiniciar"*.
+ *
+ * ⛔ O app fazia o contrário. Na entrada de `rcp_2` o reducer empurra, nesta ordem,
+ * `epinephrine_now` → `resume_cpr` → `switch_compressor`. Os dois últimos caem no
+ * MESMO nível (`secondary` → `explanation`, via `getClinicalSpeakPriority`), e a
+ * inserção na fila é **estável** — então quem chegou antes fala antes, e a troca
+ * ficava por ÚLTIMA, atrás de 5,1 s de adrenalina + 8,1 s de retomar: ~13 s para
+ * um aviso de rodízio que deveria preceder a retomada.
+ *
+ * ⚠️⚠️ ⛔ ESTA PROVA MEDE **ORDEM DO QUE TOCA**, ⛔ e ⛔ não a constante de nível.
+ * ⛔ Afirmar o nível deixaria a trava passar se a fila mudasse de critério de
+ * ordenação — o que importa ao médico é a sequência que ele OUVE.
+ *
+ * ⚠️ Os três compartilham o mesmo `stateId` de propósito: com o estado mudando em
+ * rajada a fila DESCARTA os superados (ver `testSpeechQueueInterruptPolicy…`), e
+ * aí se estaria medindo descarte, ⛔ e ⛔ não ordem.
+ */
+async function testTrocaDeCompressorFalaAntesDoRetomar() {
+  let outputActive = false;
+  const played = [];
+  let resolvePlayback = null;
+
+  const queue = speechQueue.createSpeechQueue({
+    getCurrentStateId: () => "rcp_2",
+    isOutputActive: () => outputActive,
+    play: async (message, cueId) => {
+      outputActive = true;
+      played.push({ message, cueId });
+      await new Promise((resolve) => {
+        resolvePlayback = () => {
+          outputActive = false;
+          resolve();
+        };
+      });
+    },
+    stop: () => {
+      outputActive = false;
+      resolvePlayback?.();
+      resolvePlayback = null;
+    },
+    now: () => 0,
+    waitMs: async () => {},
+  });
+
+  /** ⚠️ A ordem EXATA em que o reducer empurra na entrada do ciclo. */
+  const epinefrina = queue.enqueue({
+    effect: { type: "SPEAK", key: "epinephrine_now", cueId: "epinephrine_now" },
+    stateId: "rcp_2",
+  });
+  const retomar = queue.enqueue({
+    effect: { type: "SPEAK", key: "resume_cpr", cueId: "resume_cpr" },
+    stateId: "rcp_2",
+  });
+  const trocar = queue.enqueue({
+    effect: { type: "SPEAK", key: "switch_compressor", cueId: "switch_compressor" },
+    stateId: "rcp_2",
+  });
+
+  for (let volta = 0; volta < 30 && played.length < 3; volta += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    resolvePlayback?.();
+    resolvePlayback = null;
+  }
+  await epinefrina;
+  await retomar;
+  await trocar;
+
+  assert.deepEqual(
+    played.map((item) => item.cueId),
+    ["epinephrine_now", "switch_compressor", "resume_cpr"],
+    "⛔ a troca de compressor tem de ser falada ANTES de retomar as compressões — " +
+      "ela é o último gesto antes de reiniciar, e ficando por último na fila chega " +
+      "~13 s tarde, quando as compressões já recomeçaram com o mesmo socorrista"
+  );
+}
+
 function testVoiceIntentMatching() {
   const allowedIntents = [
     "confirm_epinephrine_administered",
@@ -5839,6 +5920,7 @@ async function runAllTests() {
   await testSpeechQueueSilencePolicy();
   await testSpeechQueueInterruptPolicyRespectsClinicalContext();
   await testSpeechQueueHumanizedDelay();
+  await testTrocaDeCompressorFalaAntesDoRetomar();
   testVoiceIntentMatching();
   testVoicePolicyRejectsInvalidStateIntent();
   testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr();
